@@ -1,0 +1,4 @@
+﻿Module Common
+{
+    SqlProcedure GenerateNextAutoCode <GenerateNextAutoCode param.sql> <GenerateNextAutoCode body.sql>;
+}

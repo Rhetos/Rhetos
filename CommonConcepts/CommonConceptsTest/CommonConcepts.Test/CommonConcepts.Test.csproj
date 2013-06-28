@@ -1,0 +1,206 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{39B7E880-2538-47DF-A185-FD0A08289DE7}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>CommonConcepts.Test</RootNamespace>
+    <AssemblyName>CommonConcepts.Test</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Autofac, Version=2.5.2.830, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="Iesi.Collections, Version=1.0.1.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Iesi.Collections.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="NHibernate, Version=3.1.0.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\NHibernate.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Utilities, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Utilities.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Dom.DefaultConcepts, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Plugins\Rhetos.Dom.DefaultConcepts.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Dom.DefaultConcepts.Interfaces, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Dom.Interfaces, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Dom.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Dsl.DefaultConcepts, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Plugins\Rhetos.Dsl.DefaultConcepts.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Dsl.Interfaces, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Dsl.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Factory.Interfaces, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Factory.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Logging.Interfaces, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Logging.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Persistence.Interfaces, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Persistence.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Persistence.NHibernate, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Persistence.NHibernate.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Persistence.NHibernateDefaultConcepts, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Plugins\Rhetos.Persistence.NHibernateDefaultConcepts.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Processing.DefaultCommands, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Plugins\Rhetos.Processing.DefaultCommands.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Processing.DefaultCommands.Interfaces, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Plugins\Rhetos.Processing.DefaultCommands.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Processing.Interfaces, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Processing.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Security.Interfaces, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Security.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.TestCommon, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos.TestCommon\bin\$(Configuration)\Rhetos.TestCommon.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.XmlSerialization, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.XmlSerialization.dll</HintPath>
+    </Reference>
+    <Reference Include="Oracle.DataAccess, Version=4.112.3.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Oracle.DataAccess.dll</HintPath>
+    </Reference>
+    <Reference Include="ServerDom, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\ServerDom.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <CodeAnalysisDependentAssemblyPaths Condition=" '$(VS100COMNTOOLS)' != '' " Include="$(VS100COMNTOOLS)..\IDE\PrivateAssemblies">
+      <Visible>False</Visible>
+    </CodeAnalysisDependentAssemblyPaths>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ActionTest.cs" />
+    <Compile Include="BinaryTest.cs" />
+    <Compile Include="AutoCodeTest.cs" />
+    <Compile Include="CommonTestExecutionContext.cs" />
+    <Compile Include="ComputationsUtilityTest.cs" />
+    <Compile Include="ComputedTest.cs" />
+    <Compile Include="AuditablePropertiesTest.cs" />
+    <Compile Include="CloningTest.cs" />
+    <Compile Include="EntityHistoryTest.cs" />
+    <Compile Include="DatabaseExtensionsTest.cs" />
+    <Compile Include="LockPropertyTest.cs" />
+    <Compile Include="ReportTest.cs" />
+    <Compile Include="HierarchyTest.cs" />
+    <Compile Include="PessimisticLockingTest.cs" />
+    <Compile Include="CustomClaimTest.cs" />
+    <Compile Include="LockItemsTest.cs" />
+    <Compile Include="LoggingTest.cs" />
+    <Compile Include="PersistedAllPropertiesTest.cs" />
+    <Compile Include="DenySaveTest.cs" />
+    <Compile Include="RequiredPropertyTest.cs" />
+    <Compile Include="SqlFilter.cs" />
+    <Compile Include="SqlWorkaroundsTest.cs" />
+    <Compile Include="UniqueTest.cs" />
+    <Compile Include="EntityTest.cs" />
+    <Compile Include="GenericFilterTest.cs" />
+    <Compile Include="FilterTest.cs" />
+    <Compile Include="LegacyEntityTest.cs" />
+    <Compile Include="MaxLengthTest.cs" />
+    <Compile Include="BrowseTest.cs" />
+    <Compile Include="PersistedDataStructureTest.cs" />
+    <Compile Include="DataStructureExtendsTest.cs" />
+    <Compile Include="DataStructureTest.cs" />
+    <Compile Include="QueryableExtensionTest.cs" />
+    <Compile Include="QueryDataSourceCommandTest.cs" />
+    <Compile Include="SqlQueryableTest.cs" />
+    <Compile Include="TestExecutionContext.cs" />
+    <Compile Include="ModuleRepositioryTest.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="READ_ME.txt" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

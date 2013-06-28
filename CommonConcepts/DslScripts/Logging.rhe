@@ -1,0 +1,23 @@
+﻿Module Common
+{
+	// Recomended for reading the Log without locking the other server transactions. Data will include transations that are not yet committed.
+	SqlQueryable LogReader <LogReader.sql>
+	{
+		AllPropertiesFrom Common.Log;
+		SqlDependsOn Common.Log;
+	}
+
+	Entity Log
+	{
+		DateTime Created { SqlDefault <Log.Created default.sql>; Required; }
+		ShortString UserName { SqlDefault <Log.UserName default.sql>; Required; }
+		ShortString Workstation { SqlDefault <Log.Workstation default.sql>; Required; }
+		ShortString ContextInfo { SqlDefault <Log.ContextInfo default.sql>; }
+		ShortString Action { Required; }
+		ShortString TableName;
+		Guid ItemId;
+		LongString Description;
+		
+		PrerequisiteAllProperties; // Internal use for functionality that depends on this table being fully created.
+	}
+}

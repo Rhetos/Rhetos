@@ -1,0 +1,190 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{6FA98D51-A0B6-4E5F-8C78-0D369DDD6DCC}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Rhetos.Dom.DefaultConcepts</RootNamespace>
+    <AssemblyName>Rhetos.Dom.DefaultConcepts</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Autofac, Version=2.5.2.830, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\..\External\Autofac\Autofac.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Castle.Core">
+      <HintPath>..\..\..\External\Castle\Castle.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="NHibernate, Version=3.3.1.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <HintPath>..\..\..\External\NHibernate\NHibernate.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Advanced\EntityHistoryAllPropertiesCodeGenerator.cs" />
+    <Compile Include="Advanced\EntityHistoryPropertyExCodeGenerator.cs" />
+    <Compile Include="Advanced\EntityHistoryExCodeGenerator.cs" />
+    <Compile Include="Computations\LockPropertyCodeGenerator.cs" />
+    <Compile Include="Computations\HierarchySingleRootInternalCodeGenerator.cs" />
+    <Compile Include="Computations\ReportFileCodeGenerator.cs" />
+    <Compile Include="Computations\ReportDataSourceCodeGenerator.cs" />
+    <Compile Include="Computations\LockItemsCodeGenerator.cs" />
+    <Compile Include="Computations\FilterUseExecutionContextCodeGenerator.cs" />
+    <Compile Include="Computations\ReportDataCodeGenerator.cs" />
+    <Compile Include="DataStructure\ComputedCodeGenerator.cs" />
+    <Compile Include="DataStructure\ClaimLoaderCodeGenerator.cs" />
+    <Compile Include="DataStructure\PermissionLoaderCodeGenerator.cs" />
+    <Compile Include="DomUtility.cs" />
+    <Compile Include="Computations\ComposableFilterByCodeGenerator.cs" />
+    <Compile Include="Computations\ComputationUseExecutionContextCodeGenerator.cs" />
+    <Compile Include="Computations\DenySaveCodeGenerator.cs" />
+    <Compile Include="Computations\FilterByCodeGenerator.cs" />
+    <Compile Include="Computations\KeepSynchronizedOnChangedItemsCodeGenerator.cs" />
+    <Compile Include="Computations\ComputeForNewBaseItemsExtensionCodeGenerator.cs" />
+    <Compile Include="Computations\QueryableExtensionCodeGenerator.cs" />
+    <Compile Include="Computations\ReadChangedItemsOnSaveCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\ActionCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\ReferenceCascadeDeleteCodeGenerator.cs" />
+    <Compile Include="Computations\ExtensionPersistedCodeGenerator.cs" />
+    <Compile Include="DataStructure\LinkedItemsCodeGenerator.cs" />
+    <Compile Include="Computations\PersistedDataStructureCodeGenerator.cs" />
+    <Compile Include="Computations\PropertyPersistedCodeGenerator.cs" />
+    <Compile Include="DataStructure\EntityCodeGenerator.cs" />
+    <Compile Include="DataStructure\OrmDataStructureCodeGenerator.cs" />
+    <Compile Include="DataStructure\DataStructureCodeGenerator.cs" />
+    <Compile Include="DataStructure\ModuleCodeGenerator.cs" />
+    <Compile Include="DataStructure\Properties\BinaryCodeGenerator.cs" />
+    <Compile Include="DataStructure\Properties\BoolPropertyCodeGenerator.cs" />
+    <Compile Include="DataStructure\DataStructureExtendsCodeGenerator.cs" />
+    <Compile Include="DataStructure\Properties\GuidPropertyCodeGenerator.cs" />
+    <Compile Include="DataStructure\Properties\MoneyPropertyCodeGenerator.cs" />
+    <Compile Include="DataStructure\Properties\DateTimePropertyCodeGenerator.cs" />
+    <Compile Include="DataStructure\Properties\LongStringPropertyCodeGenerator.cs" />
+    <Compile Include="DataStructure\Properties\DatePropertyCodeGenerator.cs" />
+    <Compile Include="DataStructure\Properties\DecimalPropertyCodeGenerator.cs" />
+    <Compile Include="DataStructure\Properties\IntegerPropertyCodeGenerator.cs" />
+    <Compile Include="DataStructure\Properties\PropertyHelper.cs" />
+    <Compile Include="DataStructure\Properties\ReferencePropertyCodeGenerator.cs" />
+    <Compile Include="DataStructure\Properties\ShortStringPropertyCodeGenerator.cs" />
+    <Compile Include="DataStructure\WritableOrmDataStructureCodeGenerator.cs" />
+    <Compile Include="DataStructure\RepositoryHelper.cs" />
+    <Compile Include="DataStructure\SqlQueryableCodeGenerator.cs" />
+    <Compile Include="DataStructure\BrowseDataStructureCodeGenerator.cs" />
+    <Compile Include="GenericFilterWithPagingUtility.cs" />
+    <Compile Include="HierarchyInfo.cs" />
+    <Compile Include="HierarchyItem.cs" />
+    <Compile Include="SimpleBusinessLogic\ModuleExternalReferenceCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\MaxLengthCodeGenerator.cs" />
+    <Compile Include="DataStructure\BrowsePropertyCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\RequiredPropertyCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\RequiredStringPropertyCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\UniqueMultiplePropertyCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\UniqueMultiplePropertiesCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\PessimisticLockingParentCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\ImplementsInterfaceCodeGenerator.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\PessimisticLockingCodeGenerator.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Utilities\Rhetos.Utilities.csproj">
+      <Project>{71e63722-57bc-41df-9ff5-57ecc67e4bc1}</Project>
+      <Name>Rhetos.Utilities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Compiler.Interfaces\Rhetos.Compiler.Interfaces.csproj">
+      <Project>{fcad7f9a-4c31-4d5a-8699-c291ae09d006}</Project>
+      <Name>Rhetos.Compiler.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Dom.Interfaces\Rhetos.Dom.Interfaces.csproj">
+      <Project>{91bdf488-0921-4969-8a53-32169338d8db}</Project>
+      <Name>Rhetos.Dom.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Dsl.Interfaces\Rhetos.Dsl.Interfaces.csproj">
+      <Project>{f4acd412-2782-4191-8708-c7ae99b0cee9}</Project>
+      <Name>Rhetos.Dsl.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Extensibility.Interfaces\Rhetos.Extensibility.Interfaces.csproj">
+      <Project>{ddc73f5f-bb0e-4944-92cc-4ac937398499}</Project>
+      <Name>Rhetos.Extensibility.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Factory.Interfaces\Rhetos.Factory.Interfaces.csproj">
+      <Project>{b5a06d77-e076-4fd6-acc5-dbe6bfed49d8}</Project>
+      <Name>Rhetos.Factory.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Persistence.Interfaces\Rhetos.Persistence.Interfaces.csproj">
+      <Project>{5e3bbd83-91cb-4fba-81b2-79a81ec94d70}</Project>
+      <Name>Rhetos.Persistence.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Processing.Interfaces\Rhetos.Processing.Interfaces.csproj">
+      <Project>{4d2fcd7f-d9bb-4e55-b9c6-fdf352f6dcf3}</Project>
+      <Name>Rhetos.Processing.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Security.Interfaces\Rhetos.Security.Interfaces.csproj">
+      <Project>{8e1d4acd-b1aa-433f-9e52-fa50d4a1c9dc}</Project>
+      <Name>Rhetos.Security.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Dom.DefaultConcepts.Interfaces\Rhetos.Dom.DefaultConcepts.Interfaces.csproj">
+      <Project>{32d57085-6113-43f9-a505-d8b311bd6204}</Project>
+      <Name>Rhetos.Dom.DefaultConcepts.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Dsl.DefaultConcepts\Rhetos.Dsl.DefaultConcepts.csproj">
+      <Project>{24bc6b74-703a-4aaf-99c3-b5cd760f3d22}</Project>
+      <Name>Rhetos.Dsl.DefaultConcepts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Processing.DefaultCommands.Interfaces\Rhetos.Processing.DefaultCommands.Interfaces.csproj">
+      <Project>{98f36936-5842-49cf-bacf-61119ac7bf3e}</Project>
+      <Name>Rhetos.Processing.DefaultCommands.Interfaces</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

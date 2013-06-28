@@ -1,0 +1,389 @@
+Module TestAllProperties
+{
+	Entity Parent
+	{
+	}
+	
+	Entity Base
+	{
+	}
+	
+	Browse UsesImplicitlyCreatedProperties TestAllProperties.Base
+	{
+		ShortString ComputedName { From 'Extension_TestAllPropertiesCopyAllFeatures.Name'; }
+	}
+	
+	Entity Source
+	{
+		Extends TestAllProperties.Base;
+		ShortString Name { SqlIndex; }
+		DateTime Start;
+		Reference TheParent TestAllProperties.Parent { Detail; } // Instead of full Detail concept, only CascadeDelete base concept will be used.
+		Unique TestAllProperties.Source.Name TestAllProperties.Source.Start; // Instead of full Unique concept, only SqlIndex base concept will be used.
+		Unique TestAllProperties.Source.Name TestAllProperties.Source.Start TestAllProperties.Source.TheParent;
+	}
+
+	Persisted TestAllPropertiesCopyAllFeatures TestAllProperties.Source
+	{
+		AllProperties;
+	}
+}
+
+
+Module Test6
+{
+	SqlQueryable Comp
+		"SELECT ID=CONVERT(UNIQUEIDENTIFIER, 'DEC7CD4A-11EC-40E3-8463-5D2EF411449B'), Name='a', Num=1
+		UNION ALL SELECT CONVERT(UNIQUEIDENTIFIER, 'C7BC64CB-B62C-459E-9C3A-D029BED616B6'), 'b', 2
+		UNION ALL SELECT CONVERT(UNIQUEIDENTIFIER, '42446896-BA6A-4B3C-869C-1674FFA2A481'), 'c', 3"
+	{
+		ShortString Name;
+		Integer Num;
+	}
+
+	Persisted Pers Test6.Comp
+	{
+		AllProperties;
+	}
+}
+
+
+Module Test9
+{
+	Entity Document
+	{
+		ShortString Name;
+	}
+	
+	SqlQueryable ComputeDocumentCreationInfo
+		"SELECT d.ID, Rank = (SELECT COUNT(*) FROM Test9.Document), Datum = GETDATE() FROM Test9.Document d"
+	{
+		Extends Test9.Document;
+		Integer Rank;
+		DateTime Datum;
+	}
+	
+	Persisted DocumentCreationInfo Test9.ComputeDocumentCreationInfo
+	{
+		AllProperties;
+		ComputeForNewBaseItems;
+	}
+	
+	Entity Part
+	{
+		Reference Head Test9.Document { CascadeDelete; }
+		ShortString Name;
+	}
+
+	SqlQueryable ComputeDocumentSimpleAggregate
+		"SELECT
+			ID = d.ID,
+			NumParts = COUNT(s.ID)
+		FROM
+			Test9.Document d
+			LEFT JOIN Test9.Part s ON s.HeadID = d.ID
+		GROUP BY
+			d.ID"
+	{
+		Extends Test9.Document;
+		Integer NumParts;
+		
+		SqlDependsOn Test9.Document;
+        SqlDependsOn Test9.Part;
+        
+		ChangesOnLinkedItems Test9.Part.Head;
+	}
+
+	Persisted DocumentSimpleAggregate Test9.ComputeDocumentSimpleAggregate
+	{
+		AllProperties;
+		KeepSynchronized;
+	}
+    
+	SqlQueryable ComputeDocumentAggregates
+		"SELECT
+			ID = d.ID,
+			NameNumParts = d.Name + ':' + CONVERT(NVARCHAR(100), COUNT(s.ID))
+		FROM
+			Test9.Document d
+			LEFT JOIN Test9.Part s ON s.HeadID = d.ID
+		GROUP BY
+			d.ID, d.Name"
+	{
+		Extends Test9.Document;
+		ShortString NameNumParts;
+		
+		SqlDependsOn Test9.Document;
+		SqlDependsOn Test9.Part;
+		
+		//ChangesOnChangedItems Test9.Document 'Guid[]' 'changedItems => changedItems.Select(document => document.ID).ToArray()';
+		ChangesOnBaseItem;
+		//ChangesOnChangedItems Test9.Part 'Guid[]' 'changedItems => changedItems.Where(part => part.HeadID.HasValue).Select(part => part.HeadID.Value).Distinct().ToArray()';
+		ChangesOnLinkedItems Test9.Part.Head;
+	}
+
+	Persisted DocumentAggregates Test9.ComputeDocumentAggregates
+	{
+		AllProperties;
+		KeepSynchronized 'documentAggregates => documentAggregates.Where(item => !item.Base.Name.Contains("locked"))';
+	}
+}
+
+
+Module Test10
+{
+	SqlQueryable Source "SELECT ID = CONVERT(UNIQUEIDENTIFIER, 'F26D84E7-5072-42BF-84DF-3CB4D5946647'), i = 1, s = 'a'
+		UNION ALL SELECT '0690E99C-CC54-4ADF-B177-C4BDB54B3954', 2, 'b'"
+	{
+		Integer i;
+		ShortString s;
+	}
+	
+	Entity Simple
+	{
+		Integer i;
+	}
+}
+
+Module Test11
+{
+	Entity Source
+	{
+		ShortString Name;
+	}
+	
+	QueryableExtension QE Test11.Source
+		'(IQueryable<Test11.Source> source, Common.DomRepository repository) =>
+			source.Select(item => new Test11.QE
+				{
+					Base = item,
+					Info = item.Name + "x"
+				})'
+	{
+		ShortString Info;
+	}
+	
+	QueryableExtension QEContext Test11.Source
+		'(IQueryable<Test11.Source> source, Common.DomRepository repository, Common.ExecutionContext executionContext) =>
+			source.Select(item => new Test11.QEContext
+				{
+					Base = item,
+					UserInfo = item.Name + " " + executionContext.UserInfo.UserName
+				})'
+	{
+		UseExecutionContext;
+		ShortString UserInfo;
+	}
+	
+	Browse QEBrowse Test11.QE
+	{
+		ShortString Info { From 'Info'; }
+		ShortString Name { From 'Base.Name'; }
+	}
+}
+
+Module TestFilter
+{
+	Entity Source
+	{
+		ShortString Name;
+	}
+	
+	Parameter FilterByPrefix { ShortString Prefix; }
+	FilterBy Source.'TestFilter.FilterByPrefix' '(repos, parameter) => repos.TestFilter.Source.Query().Where(s => s.Name.StartsWith(parameter.Prefix)).ToArray()';
+	
+	Parameter ComposableFilterByPrefix { ShortString Prefix; }
+	Parameter ComposableFilterByContains { ShortString Pattern; }
+	ComposableFilterBy Source.'TestFilter.ComposableFilterByPrefix' '(source, repos, filter) => source.Where(s => s.Name.StartsWith(filter.Prefix))';
+	ComposableFilterBy Source.'TestFilter.ComposableFilterByContains' '(source, repos, filter) => source.Where(s => s.Name.Contains(filter.Pattern))';
+	
+	ItemFilter Source.ItemStartsWithB 'item => item.Name.StartsWith("b")';
+	ItemFilter Source.ItemContains2 'item => item.Name.Contains("2")';
+	
+	ItemFilter Source.'TestFilter2.ItemStartsWithC' 'item => item.Name.StartsWith("c")';
+
+    // FilterByBase test:
+    Entity SourceExtension { Extends TestFilter.Source; ShortString Name2; }
+    FilterByBase SourceExtension.'TestFilter.FilterByPrefix';
+    
+    // FilterByReferenced test:
+    Entity SourceDetail { Reference Parent TestFilter.Source { Detail; } ShortString Name2; }
+    FilterByReferenced SourceDetail.'TestFilter.FilterByPrefix' TestFilter.SourceDetail.Parent '';
+    
+    // FilterByLinkedItems test:
+    Parameter FilterDetail { ShortString Prefix; }
+	FilterBy SourceDetail.'TestFilter.FilterDetail' '(repos, parameter) => repos.TestFilter.SourceDetail.Query().Where(s => s.Name2.StartsWith(parameter.Prefix)).ToArray()';
+    FilterByLinkedItems Source.'TestFilter.FilterDetail' TestFilter.SourceDetail.Parent;
+}
+
+Module TestFilter2;
+
+Module TestGenericFilter
+{
+	Entity Simple
+	{
+		Integer Code;
+		ShortString Name;
+		DateTime Start;
+	}
+}
+
+Module TestDenySave
+{
+	Entity Simple
+	{
+		ShortString Name { Unique; }
+		Integer Count;
+		
+		ItemFilter TooMuch 'item => item.Count > 100';
+		DenySave TooMuch 'Quantity may not be larger than 100.';
+	}
+}
+
+Module TestLockItems
+{
+	Entity Simple2 {
+		Reference TestReference TestLockItems.Simple;
+		
+		Integer Count;
+		ShortString Name;
+				
+		ItemFilter CountNegative 'item => item.Count < 0';
+		LockProperty Name.CountNegative 'Name is locked if count negative.';
+		
+		LockProperty TestReference.CountNegative 'TestReference is locked if count negative.';
+	}
+	
+	
+	Entity Simple
+	{
+		ShortString Name;
+		Integer Count;
+		
+		ItemFilter ContainsLockMark 'item => item.Name.Contains("lock")';
+		Lock ContainsLockMark 'Name contains lock mark.';
+		
+		ItemFilter CountNegative 'item => item.Count < 0';
+		LockProperty Name.CountNegative 'Name is locked if count negative.';
+	}
+}
+
+Module TestSqlQueryable
+{
+	Entity Document
+	{
+		ShortString Name;
+	}
+	
+	SqlQueryable DocumentInfo
+		"SELECT d.ID, NameLen = LEN(d.Name) FROM TestSqlQueryable.Document d"
+	{
+		Extends TestSqlQueryable.Document;
+		Integer NameLen;
+	}
+}
+
+Module TestComputed
+{
+    Computed Simple 'repository => new[]
+        {
+            new TestComputed.Simple { Name = "a" },
+            new TestComputed.Simple { Name = "b" }
+        }'
+    {
+        ShortString Name;
+        
+        FilterBy SpecialLoad '(repos, parameter) => new[]
+        {
+            new TestComputed.Simple { Name = parameter.SpecialName }
+        }';
+    }
+    
+    Parameter SpecialLoad
+    {
+        ShortString SpecialName;
+    }
+}
+
+Module TestReport
+{
+    Entity Document
+    {
+        ShortString Name;
+        Integer Code;
+    }
+    
+    // Report (only data) with multiple sources:
+    
+    Entity Part1 { Reference Parent TestReport.Document { Detail; } ShortString Name; }
+    Entity Part2 { Reference Parent TestReport.Document { Detail; } ShortString Name; }
+    
+    ReportData MultipleSourcesReport
+    {
+        ShortString Part1Prefix;
+        DataSources 'Document, Part2, TestReport.Part1';
+    }
+
+    FilterBy Part1.'TestReport.MultipleSourcesReport' '(repository, parameter) =>
+        repository.TestReport.Part1.Query()
+            .Where(s1 => s1.Name.StartsWith(parameter.Part1Prefix))
+            .OrderByDescending(s1 => s1.Name).ToArray()';
+    FilterByLinkedItems Document.'TestReport.MultipleSourcesReport' TestReport.Part1.Parent;
+    FilterByReferenced Part2.'TestReport.MultipleSourcesReport' TestReport.Part2.Parent 'subItems => subItems.OrderBy(item => item.Name.Length).ToArray()';
+    
+    // Report with custom file generator:
+    
+    ReportFile CustomFileReport '(object[][] reportData, string convertFormat, Common.ExecutionContext executionContext) =>
+        {
+            var documents = reportData[0].Cast<TestReport.Document>();
+            var parts = reportData[1].Cast<TestReport.Part1>();
+            string textFileData =
+                string.Join(", ", documents.Select(item => item.Name))
+                + "|" + string.Join(", ", parts.Select(item => item.Name));
+                
+            byte[] fileData = new UTF8Encoding().GetBytes(textFileData);
+            return new Rhetos.Dom.DefaultConcepts.ReportFile { Name = "CustomFileReport.txt", Content = fileData };
+        }'
+    {
+        ShortString Prefix;
+        DataSources 'Document, Part1';
+    }
+    
+    FilterBy Part1.'TestReport.CustomFileReport' '(repository, parameter) => repository.TestReport.Part1.Query()
+        .Where(s => s.Name.StartsWith(parameter.Prefix))
+        .OrderBy(s => s.Name).ToArray()';
+    FilterByLinkedItems Document.'TestReport.CustomFileReport' TestReport.Part1.Parent;
+}
+
+Module TestSqlFilter
+{
+    Entity Simple
+    {
+        Integer Code;
+        DateTime Start;
+    }
+    
+    SqlFunction GetSome '@start DATETIME' "RETURNS TABLE
+        AS RETURN
+            SELECT ID = CONVERT(UNIQUEIDENTIFIER, '11111111-1111-1111-1111-111111111111'), Code = 1, Start = @start
+            UNION ALL 
+            SELECT CONVERT(UNIQUEIDENTIFIER, '22222222-2222-2222-2222-222222222222'), 2, DATEADD(day, 1, @start)"
+    {
+        SqlDependsOn TestSqlFilter.Simple;
+    }
+    
+    Entity Ref
+    {
+        ShortString Name;
+        Reference Other TestSqlFilter.Simple;
+        DateTime Finish;
+    }
+    
+    SqlFunction GetRef '@start DATETIME' "RETURNS TABLE
+        AS RETURN
+            SELECT ID = s.ID, Name = 'name_' + CONVERT(NVARCHAR(256), s.Code), OtherID = s.ID, Finish = DATEADD(day, s.Code, @start)
+            FROM TestSqlFilter.Simple s"
+    {
+        SqlDependsOn TestSqlFilter.Simple;
+    }
+}

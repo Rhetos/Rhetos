@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Dictionary>
+  <Words>
+    <Recognized>
+      <Word>Plugin</Word>
+      <Word>Plugins</Word>
+      <Word>Pointcut</Word>
+      <Word>Pointcuts</Word>
+      <Word>Mef</Word>
+      <Word>Autofac</Word>
+      <Word>Registrator</Word>      
+    </Recognized>
+  </Words>
+  <Acronyms>
+    <CasingExceptions>
+      <Acronym>ID</Acronym>
+      <Acronym>Ms</Acronym>
+    </CasingExceptions>
+  </Acronyms>
+</Dictionary>

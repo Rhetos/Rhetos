@@ -1,0 +1,543 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="EntityDatabaseDefinition_Create" xml:space="preserve">
+    <value>CREATE TABLE {0}.{1} (ID RAW(16) DEFAULT SYS_GUID() NOT NULL
+CONSTRAINT {2} PRIMARY KEY)</value>
+  </data>
+  <data name="EntityDatabaseDefinition_Remove" xml:space="preserve">
+    <value>DROP TABLE {0}.{1}</value>
+  </data>
+  <data name="ModuleDatabaseDefinition_Create" xml:space="preserve">
+    <value>BEGIN
+  EXECUTE IMMEDIATE ('CREATE USER {0} IDENTIFIED BY null
+    DEFAULT TABLESPACE "USERS"
+    TEMPORARY TABLESPACE "TEMP"
+    ACCOUNT LOCK');
+  EXECUTE IMMEDIATE ('ALTER USER {0} QUOTA UNLIMITED ON USERS');
+  EXECUTE IMMEDIATE ('GRANT UPDATE ANY TABLE TO {0}');
+  EXECUTE IMMEDIATE ('GRANT SELECT ANY TABLE TO {0}');
+  EXECUTE IMMEDIATE ('GRANT INSERT ANY TABLE TO {0}');
+  EXECUTE IMMEDIATE ('GRANT EXECUTE ANY PROCEDURE TO {0}');
+  EXECUTE IMMEDIATE ('GRANT DELETE ANY TABLE TO {0}');
+END;</value>
+  </data>
+  <data name="ModuleDatabaseDefinition_Remove" xml:space="preserve">
+    <value>DROP USER {0}</value>
+  </data>
+  <data name="ReferencePropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>RAW(16)</value>
+  </data>
+  <data name="BinaryPropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>BLOB</value>
+  </data>
+  <data name="BoolPropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>NUMBER(3)</value>
+  </data>
+  <data name="DatePropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>DATE</value>
+  </data>
+  <data name="DateTimePropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>DATE</value>
+  </data>
+  <data name="DecimalPropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>NUMBER(28,10)</value>
+  </data>
+  <data name="GuidPropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>RAW(16)</value>
+  </data>
+  <data name="IntegerPropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>NUMBER(10)</value>
+  </data>
+  <data name="LongStringPropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>NCLOB</value>
+  </data>
+  <data name="MoneyPropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>NUMBER(19,4)</value>
+  </data>
+  <data name="ShortStringPropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>NVARCHAR2({0})</value>
+  </data>
+  <data name="PropertyDatabaseDefinition_AddColumn" xml:space="preserve">
+    <value>ALTER TABLE {0}.{1} ADD {2} {3} {4}</value>
+  </data>
+  <data name="PropertyDatabaseDefinition_RemoveColumn" xml:space="preserve">
+    <value>ALTER TABLE {0}.{1} DROP COLUMN {2}</value>
+  </data>
+  <data name="ReferencePropertyConstraintDatabaseDefinition_Create" xml:space="preserve">
+    <value>ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) REFERENCES {3} (ID) {4}</value>
+  </data>
+  <data name="ReferencePropertyConstraintDatabaseDefinition_Remove" xml:space="preserve">
+    <value>ALTER TABLE {0} DROP CONSTRAINT {1}</value>
+  </data>
+  <data name="ReferencePropertyConstraintDatabaseDefinition_ConstraintName" xml:space="preserve">
+    <value>FK_{0}_{2}ID</value>
+  </data>
+  <data name="ReferenceCascadeDeleteDatabaseDefinition_ExtendForeignKey" xml:space="preserve">
+    <value> ON DELETE CASCADE </value>
+  </data>
+  <data name="SqlIndex2DatabaseDefinition_ConstraintName" xml:space="preserve">
+    <value>IX{0}{1}</value>
+  </data>
+  <data name="SqlIndex3DatabaseDefinition_ConstraintName" xml:space="preserve">
+    <value>IX{0}{1}</value>
+  </data>
+  <data name="SqlIndexDatabaseDefinition_ConstraintName" xml:space="preserve">
+    <value>IX{0}{1}</value>
+  </data>
+  <data name="SqlIndexMultipleDatabaseDefinition_ConstraintName" xml:space="preserve">
+    <value>IX{0}{1}</value>
+  </data>
+  <data name="SqlUniqueMultipleDatabaseDefinition_ExtendOption1" xml:space="preserve">
+    <value>UNIQUE</value>
+  </data>
+  <data name="DataStructureExtendsDatabaseDefinition_ConstraintName" xml:space="preserve">
+    <value>FK_{0}_ID</value>
+  </data>
+  <data name="DataStructureExtendsDatabaseDefinition_Create" xml:space="preserve">
+    <value>ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY (ID) REFERENCES {2} (ID) ON DELETE CASCADE {3}</value>
+  </data>
+  <data name="DataStructureExtendsDatabaseDefinition_Remove" xml:space="preserve">
+    <value>ALTER TABLE {0} DROP CONSTRAINT {1}</value>
+  </data>
+  <data name="SqlIndexMultipleDatabaseDefinition_Create" xml:space="preserve">
+    <value>CREATE {4} INDEX {1}.{0} ON {1}.{2} ({3}) {5}</value>
+  </data>
+  <data name="SqlIndexMultipleDatabaseDefinition_Remove" xml:space="preserve">
+    <value>DROP INDEX {0}.{2}</value>
+  </data>
+  <data name="LegacyPropertySimpleDatabaseDefinition_ExtendTriggerSelectForUpdate" xml:space="preserve">
+    <value>,
+    {0} = :NEW.{1}</value>
+  </data>
+  <data name="LegacyEntityWithAutoCreatedViewDatabaseDefinition_Create" xml:space="preserve">
+    <value>CREATE VIEW {0}.{1}
+AS
+SELECT
+  source.ID{7}
+FROM
+  {3} source
+{8}
+
+{2}
+
+CREATE TRIGGER {0}.{4}
+INSTEAD OF INSERT ON {0}.{1}
+BEGIN
+  INSERT INTO
+    {3} (ID{9})
+  SELECT
+    :NEW.ID{10}
+  FROM
+    dual;
+END;
+
+{2}
+
+CREATE TRIGGER {0}.{5}
+INSTEAD OF UPDATE ON {0}.{1}
+BEGIN
+  UPDATE
+    {3}
+  SET
+    ID = :NEW.ID{11}
+  WHERE
+    ID = :OLD.ID;
+END;
+
+{2}
+
+CREATE TRIGGER {0}.{6}
+INSTEAD OF DELETE ON {0}.{1}
+BEGIN
+  DELETE FROM {3} WHERE ID = :OLD.ID;
+END;
+
+{12}</value>
+  </data>
+  <data name="LegacyPropertyReadOnlyDatabaseDefinition_ViewSelect" xml:space="preserve">
+    <value>,
+  source.{1} AS {0}</value>
+  </data>
+  <data name="LegacyPropertySimpleDatabaseDefinition_ExtendTriggerSelectForInsert" xml:space="preserve">
+    <value>,
+    :NEW.{1} AS {0}</value>
+  </data>
+  <data name="LegacyEntityWithAutoCreatedViewDatabaseDefinition_InsertTriggerName" xml:space="preserve">
+    <value>LegacyInsert_{0}</value>
+  </data>
+  <data name="LegacyEntityWithAutoCreatedViewDatabaseDefinition_UpdateTriggerName" xml:space="preserve">
+    <value>LegacyUpdate_{0}</value>
+  </data>
+  <data name="LegacyEntityWithAutoCreatedViewDatabaseDefinition_DeleteTriggerName" xml:space="preserve">
+    <value>LegacyDelete_{0}</value>
+  </data>
+  <data name="LegacyEntityWithAutoCreatedViewDatabaseDefinition_Remove" xml:space="preserve">
+    <value>BEGIN
+  EXECUTE IMMEDIATE('DROP TRIGGER {0}.{4}');
+  EXECUTE IMMEDIATE('DROP TRIGGER {0}.{3}');
+  EXECUTE IMMEDIATE('DROP TRIGGER {0}.{2}');
+  EXECUTE IMMEDIATE('DROP VIEW {0}.{1}');
+END;</value>
+  </data>
+  <data name="LegacyPropertyReferenceDatabaseDefinition_ExtendViewSelect" xml:space="preserve">
+    <value>,
+  {1}.ID AS {0}ID</value>
+  </data>
+  <data name="LegacyPropertyReferenceDatabaseDefinition_ExtendViewFrom" xml:space="preserve">
+    <value>  LEFT JOIN {0} {1} ON {2}
+</value>
+  </data>
+  <data name="LegacyPropertySimpleDatabaseDefinition_ExtendViewSelect" xml:space="preserve">
+    <value>,
+  source.{1} AS {0}</value>
+  </data>
+  <data name="LegacyPropertySimpleDatabaseDefinition_ExtendTriggerInsert" xml:space="preserve">
+    <value>, {0}</value>
+  </data>
+  <data name="LegacyPropertyReferenceDatabaseDefinition_ExtendFromJoin" xml:space="preserve">
+    <value>{0}.{1} = source.{2}</value>
+  </data>
+  <data name="LegacyPropertyReferenceDatabaseDefinition_ExtendTriggerInsert" xml:space="preserve">
+    <value>, {0}</value>
+  </data>
+  <data name="LegacyPropertyReferenceDatabaseDefinition_ExtendTriggerSelectForInsert" xml:space="preserve">
+    <value>,
+    (SELECT {2} FROM {3} WHERE ID = :NEW.{4}ID) AS {0}</value>
+  </data>
+  <data name="LegacyPropertyReferenceDatabaseDefinition_ExtendTriggerSelectForUpdate" xml:space="preserve">
+    <value>,
+    {0} = (SELECT {2} FROM {3} WHERE ID = :NEW.{4}ID)</value>
+  </data>
+  <data name="LegacyPropertyReferenceDatabaseDefinition_ExtendTriggerFrom" xml:space="preserve">
+    <value>/*unused*/</value>
+  </data>
+  <data name="SqlDefaultPropertyDatabaseDefinition_Create" xml:space="preserve">
+    <value>ALTER TABLE {0}.{1} MODIFY {2} DEFAULT {4}</value>
+  </data>
+  <data name="SqlDefaultPropertyDatabaseDefinition_Remove" xml:space="preserve">
+    <value>ALTER TABLE {0}.{1} MODIFY {2} DEFAULT NULL</value>
+  </data>
+  <data name="SqlDefaultPropertyDatabaseDefinition_ConstraintName" xml:space="preserve">
+    <value>DF_{0}_{1}</value>
+  </data>
+  <data name="EntityLoggingDefinition_Create" xml:space="preserve">
+    <value>CREATE TRIGGER {0}.{2}
+AFTER INSERT ON {0}.{1}
+FOR EACH ROW 
+BEGIN
+	INSERT INTO Common.Log
+    (
+        Action,
+        TableName,
+        ItemId,
+        Description
+    )
+	VALUES
+	(
+		'Insert',
+		'{0}.{1}',
+		:NEW.ID,
+		''
+	);
+END;
+{5}
+CREATE TRIGGER {0}.{3}
+AFTER UPDATE ON {0}.{1}
+FOR EACH ROW 
+BEGIN
+	INSERT INTO Common.Log
+    (
+        Action,
+        TableName,
+        ItemId,
+        Description
+    )
+	VALUES
+	(
+		'Update',
+		'{0}.{1}',
+		:NEW.ID,
+		N'&lt;PREVIOUS'
+			{6}
+            || N' /&gt;'
+	);
+END;
+{5}
+CREATE TRIGGER {0}.{4}
+AFTER DELETE ON {0}.{1}
+FOR EACH ROW 
+BEGIN
+	INSERT INTO Common.Log
+    (
+        Action,
+        TableName,
+        ItemId,
+        Description
+    )
+	VALUES
+	(
+		'Delete',
+		'{0}.{1}',
+		:OLD.ID,
+		N'&lt;PREVIOUS'
+			{6}
+            || N' /&gt;'
+	);
+END;</value>
+  </data>
+  <data name="EntityLoggingDefinition_Remove" xml:space="preserve">
+    <value>BEGIN
+  EXECUTE IMMEDIATE('DROP TRIGGER {0}.{1}');
+  EXECUTE IMMEDIATE('DROP TRIGGER {0}.{2}');
+  EXECUTE IMMEDIATE('DROP TRIGGER {0}.{3}');
+END;</value>
+  </data>
+  <data name="EntityLoggingDefinition_TriggerNameInsert" xml:space="preserve">
+    <value>LogInsert_{1}</value>
+  </data>
+  <data name="PropertyLoggingDefinition_GenericPropertyLogging" xml:space="preserve">
+    <value>|| CASE WHEN :NEW.{0} &lt;&gt; :OLD.{0}
+                    OR :NEW.{0} IS NULL AND :OLD.{0} IS NOT NULL
+                    OR :NEW.{0} IS NOT NULL AND :OLD.{0} IS NULL
+					THEN N' {0}="' || REPLACE(REPLACE(REPLACE(REPLACE({1}, '&amp;', '&amp;amp;'), '&lt;', '&amp;lt;'), '&gt;', '&amp;gt;'), '"', '&amp;quot;') || N'"'
+					ELSE N'' END
+			</value>
+  </data>
+  <data name="PropertyLoggingDefinition_TextValue" xml:space="preserve">
+    <value>:OLD.{0}</value>
+  </data>
+  <data name="PropertyLoggingDefinition_TextValue_Date" xml:space="preserve">
+    <value>TO_CHAR(:OLD.{0}, 'YYYY-MM-DD"T"HH24:MI:SS')</value>
+  </data>
+  <data name="PropertyLoggingDefinition_TextValue_DateTime" xml:space="preserve">
+    <value>TO_CHAR(:OLD.{0}, 'YYYY-MM-DD"T"HH24:MI:SS')</value>
+  </data>
+  <data name="PropertyLoggingDefinition_TextValue_Binary" xml:space="preserve">
+    <value>UTL_RAW.CAST_TO_VARCHAR2(:OLD.{0})</value>
+  </data>
+  <data name="SqlProcedureDatabaseDefinition_Create" xml:space="preserve">
+    <value>CREATE PROCEDURE {0}.{1}
+{2} AS
+{3}</value>
+  </data>
+  <data name="SqlProcedureDatabaseDefinition_Remove" xml:space="preserve">
+    <value>DROP PROCEDURE {0}.{1}</value>
+  </data>
+  <data name="EntityDatabaseDefinition_DefaultConstraintName" xml:space="preserve">
+    <value>DF_{1}_ID</value>
+  </data>
+  <data name="EntityDatabaseDefinition_PrimaryKeyConstraintName" xml:space="preserve">
+    <value>PK_{1}</value>
+  </data>
+  <data name="EntityLoggingDefinition_TriggerNameDelete" xml:space="preserve">
+    <value>LogDelete_{1}</value>
+  </data>
+  <data name="EntityLoggingDefinition_TriggerNameUpdate" xml:space="preserve">
+    <value>LogUpdate_{1}</value>
+  </data>
+  <data name="AutoCodeDatabaseDefinition_Remove" xml:space="preserve">
+    <value>DROP TRIGGER {0}.{1}</value>
+  </data>
+  <data name="AutoCodeDatabaseDefinition_TriggerName" xml:space="preserve">
+    <value>AutoCode_{0}{1}</value>
+  </data>
+  <data name="AutoCodeDatabaseDefinition_TriggerSnippet" xml:space="preserve">
+    <value>CREATE TRIGGER {0}.{3}
+BEFORE INSERT ON {0}.{1}
+FOR EACH ROW
+DECLARE
+  NewCode NVARCHAR2({4});
+  Filter NVARCHAR2(2000);
+  {5}
+BEGIN
+  IF INSTR(:NEW.{2}, '+') &lt;&gt; 0 THEN
+    
+    {6}
+    {7}
+    {8}
+    
+    Common.GenerateNextAutoCode(
+      '{0}.{1}',
+      '{2}',
+      Filter,
+      :NEW.{2},
+      NewCode);
+    
+    SELECT NewCode
+    INTO :NEW.{2}
+    FROM dual;
+    
+  END IF;
+END;</value>
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendBeforeCursor" xml:space="preserve">
+    <value />
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendBeforeGenerate" xml:space="preserve">
+    <value />
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorFetch" xml:space="preserve">
+    <value>Filter := CASE WHEN :NEW.{0} IS NOT NULL
+      THEN '{0} = ' || Filter
+      ELSE '{0} IS NULL' END;
+    </value>
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_BoolPropertyInfo" xml:space="preserve">
+    <value>RAISE_APPLICATION_ERROR(-20000, 'AutoCodeForEach is not yet supported on data type Bool for Oracle database.', TRUE);</value>
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_DatePropertyInfo" xml:space="preserve">
+    <value>RAISE_APPLICATION_ERROR(-20000, 'AutoCodeForEach is not yet supported on data type Date for Oracle database.', TRUE);</value>
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_DateTimePropertyInfo" xml:space="preserve">
+    <value>RAISE_APPLICATION_ERROR(-20000, 'AutoCodeForEach is not yet supported on data type DateTime for Oracle database.', TRUE);</value>
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_DecimalPropertyInfo" xml:space="preserve">
+    <value>RAISE_APPLICATION_ERROR(-20000, 'AutoCodeForEach is not yet supported on data type Decimal for Oracle database.', TRUE);</value>
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_GuidPropertyInfo" xml:space="preserve">
+    <value>Filter := '''' || :NEW.{0} || '''';
+    </value>
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_IntegerPropertyInfo" xml:space="preserve">
+    <value>RAISE_APPLICATION_ERROR(-20000, 'AutoCodeForEach is not yet supported on data type Integer for Oracle database.', TRUE);</value>
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_MoneyPropertyInfo" xml:space="preserve">
+    <value>RAISE_APPLICATION_ERROR(-20000, 'AutoCodeForEach is not yet supported on data type Money for Oracle database.', TRUE);</value>
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_ReferencePropertyInfo" xml:space="preserve">
+    <value>Filter := '''' || :NEW.{0} || '''';
+    </value>
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_ShortStringPropertyInfo" xml:space="preserve">
+    <value>Filter := '''' || REPLACE(:NEW.{0}, '''', '''''') || '''';
+    </value>
+  </data>
+  <data name="SqlQueryableDatabaseDefinition_Create" xml:space="preserve">
+    <value>CREATE VIEW {0}.{1}
+AS
+{2}</value>
+  </data>
+  <data name="SqlQueryableDatabaseDefinition_Remove" xml:space="preserve">
+    <value>DROP VIEW {0}.{1}</value>
+  </data>
+  <data name="SqlIndexMultiplePropertyDatabaseDefinition_National_ShortStringPropertyInfo" xml:space="preserve">
+    <value>NLSSORT({0}, 'NLS_SORT={1}')</value>
+  </data>
+</root>

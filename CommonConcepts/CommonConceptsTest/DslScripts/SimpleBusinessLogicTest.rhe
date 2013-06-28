@@ -1,0 +1,113 @@
+Module TestMaxLength
+{
+	Entity Old1
+	{
+		Integer IDOld1;
+		ShortString Name { MaxLength 5; }
+		ShortString Name2;
+		Binary Blob;
+	}
+}
+
+Module TestAutoCode
+{
+	Entity Simple
+	{
+		ShortString Code {  AutoCode; }
+	}
+	
+	Entity IntGroup
+	{
+		Integer Grouping;
+		ShortString Code {  AutoCodeForEach TestAutoCode.IntGroup.Grouping; }
+	}
+	
+	Entity StringGroup
+	{
+		ShortString Grouping;
+		ShortString Code {  AutoCodeForEach TestAutoCode.StringGroup.Grouping; }
+	}
+	
+	Entity ReferenceGroup
+	{
+		Reference Grouping TestAutoCode.Simple;
+		ShortString Code {  AutoCodeForEach TestAutoCode.ReferenceGroup.Grouping; }
+	}
+}
+
+Module TestRequired
+{
+	Entity Simple
+	{
+		Integer Count { Required; }
+		ShortString Name { Required; }
+	}
+}
+
+Module TestLogging
+{
+	Entity Simple
+	{
+		Logging { AllProperties; }
+		Integer Count;
+		ShortString Name;
+		DateTime Created;
+	}
+	
+	Entity Complex
+	{
+		Logging { AllProperties; }
+		Binary bi;
+		Bool bo;
+		Date da;
+		DateTime t;
+		Decimal de;
+		Guid g;
+		Integer i;
+		LongString ls;
+		Money m;
+		Reference r TestLogging.Simple { Detail; }
+	}
+}
+
+Module TestPessimisticLocking
+{
+	Entity Article
+	{
+		ShortString Name;
+        Reference Parent TestPessimisticLocking.ArticleGroup { Detail; }
+        PessimisticLocking;
+	}
+    
+	Entity ArticleGroup
+	{
+		ShortString Name;
+        PessimisticLocking;
+	}
+}
+
+Module TestDatabaseExtensions
+{
+	Entity Simple
+	{
+		ShortString Name;
+		Integer Code;
+	}
+}
+
+Module TestAuditable
+{
+	Entity Parent
+	{
+		ShortString Name;
+	}
+	
+	Entity Simple
+	{
+		ShortString Name;
+		Reference Parent TestAuditable.Parent;
+		DateTime Started { CreationTime; }
+		DateTime ModifiedParentProperty { ModificationTimeOf TestAuditable.Simple.Parent; }
+		DateTime ModifiedNameOrParentModification { ModificationTimeOf TestAuditable.Simple.Name; ModificationTimeOf TestAuditable.Simple.ModifiedParentProperty; }
+	}
+}

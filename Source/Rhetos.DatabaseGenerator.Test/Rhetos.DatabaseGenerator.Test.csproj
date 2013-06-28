@@ -1,0 +1,121 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{3FC4E5BB-F6A8-4E74-9B22-0181F003551B}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Rhetos.DatabaseGenerator.Test</RootNamespace>
+    <AssemblyName>Rhetos.DatabaseGenerator.Test</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ConceptApplicationRepositoryTest.cs" />
+    <Compile Include="DatabaseGeneratorTest.cs" />
+    <Compile Include="DatabaseGenerator_Accessor.cs" />
+    <Compile Include="NullConceptRepository.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Source\Rhetos.Utilities\Rhetos.Utilities.csproj">
+      <Project>{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}</Project>
+      <Name>Rhetos.Utilities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Source\Rhetos.DatabaseGenerator.Interfaces\Rhetos.DatabaseGenerator.Interfaces.csproj">
+      <Project>{CA29D948-78B1-42D9-8E24-D2811E355F5A}</Project>
+      <Name>Rhetos.DatabaseGenerator.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Source\Rhetos.DatabaseGenerator\Rhetos.DatabaseGenerator.csproj">
+      <Project>{237EA20F-0BD0-45A7-BE7A-8A43E58306A2}</Project>
+      <Name>Rhetos.DatabaseGenerator</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Source\Rhetos.Dsl.Interfaces\Rhetos.Dsl.Interfaces.csproj">
+      <Project>{F4ACD412-2782-4191-8708-C7AE99B0CEE9}</Project>
+      <Name>Rhetos.Dsl.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Source\Rhetos.Extensibility\Rhetos.Extensibility.csproj">
+      <Project>{7EAF15BD-39C9-44AB-8834-EC0AE013A8A2}</Project>
+      <Name>Rhetos.Extensibility</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Compiler.Interfaces\Rhetos.Compiler.Interfaces.csproj">
+      <Project>{FCAD7F9A-4C31-4D5A-8699-C291AE09D006}</Project>
+      <Name>Rhetos.Compiler.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Compiler\Rhetos.Compiler.csproj">
+      <Project>{C0DC3D80-A1FE-46FA-8B97-5B80962687FB}</Project>
+      <Name>Rhetos.Compiler</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Extensibility.Interfaces\Rhetos.Extensibility.Interfaces.csproj">
+      <Project>{DDC73F5F-BB0E-4944-92CC-4AC937398499}</Project>
+      <Name>Rhetos.Extensibility.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Factory.Interfaces\Rhetos.Factory.Interfaces.csproj">
+      <Project>{B5A06D77-E076-4FD6-ACC5-DBE6BFED49D8}</Project>
+      <Name>Rhetos.Factory.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj">
+      <Project>{BB7E5668-1B43-4FCE-A832-444CC57FEE80}</Project>
+      <Name>Rhetos.Logging.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.TestCommon\Rhetos.TestCommon.csproj">
+      <Project>{43BA178B-7642-473C-A43A-DBF58294635A}</Project>
+      <Name>Rhetos.TestCommon</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,227 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{759CEA3C-1CD0-449C-977E-102CE308F4DE}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Rhetos.Configuration.Autofac</RootNamespace>
+    <AssemblyName>Rhetos.Configuration.Autofac</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeContractsEnableRuntimeChecking>False</CodeContractsEnableRuntimeChecking>
+    <CodeContractsRuntimeOnlyPublicSurface>False</CodeContractsRuntimeOnlyPublicSurface>
+    <CodeContractsRuntimeThrowOnFailure>False</CodeContractsRuntimeThrowOnFailure>
+    <CodeContractsRuntimeCallSiteRequires>False</CodeContractsRuntimeCallSiteRequires>
+    <CodeContractsRunCodeAnalysis>False</CodeContractsRunCodeAnalysis>
+    <CodeContractsNonNullObligations>True</CodeContractsNonNullObligations>
+    <CodeContractsBoundsObligations>True</CodeContractsBoundsObligations>
+    <CodeContractsArithmeticObligations>True</CodeContractsArithmeticObligations>
+    <CodeContractsRedundantAssumptions>True</CodeContractsRedundantAssumptions>
+    <CodeContractsRunInBackground>True</CodeContractsRunInBackground>
+    <CodeContractsShowSquigglies>True</CodeContractsShowSquigglies>
+    <CodeContractsUseBaseLine>False</CodeContractsUseBaseLine>
+    <CodeContractsEmitXMLDocs>False</CodeContractsEmitXMLDocs>
+    <CodeContractsCustomRewriterAssembly />
+    <CodeContractsCustomRewriterClass />
+    <CodeContractsLibPaths />
+    <CodeContractsPlatformPath />
+    <CodeContractsExtraAnalysisOptions />
+    <CodeContractsBaseLineFile />
+    <CodeContractsRuntimeCheckingLevel>Full</CodeContractsRuntimeCheckingLevel>
+    <CodeContractsReferenceAssembly>%28none%29</CodeContractsReferenceAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'CodeAnalysis|AnyCPU'">
+    <OutputPath>bin\CodeAnalysis\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisLogFile>bin\Release\Rhetos.Configuration.Autofac.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Autofac">
+      <HintPath>..\..\External\Autofac\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac.Integration.Mef">
+      <HintPath>..\..\External\Autofac\Autofac.Integration.Mef.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac.Integration.Wcf">
+      <HintPath>..\..\External\Autofac\Autofac.Integration.Wcf.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CompilerConfiguration.cs" />
+    <Compile Include="CommonModuleConfiguration.cs" />
+    <Compile Include="LoggingConfiguration.cs" />
+    <Compile Include="DatabaseGeneratorModuleConfiguration.cs" />
+    <Compile Include="DomModuleConfiguration.cs" />
+    <Compile Include="DslModuleConfiguration.cs" />
+    <Compile Include="ExtensibilityModuleConfiguration.cs" />
+    <Compile Include="FactoryModuleConfiguration.cs" />
+    <Compile Include="NHibernateModuleConfiguration.cs" />
+    <Compile Include="ProcessingModuleConfiguration.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RestGeneratorModuleConfiguration.cs" />
+    <Compile Include="SecurityModuleConfiguration.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Source\Rhetos.Utilities\Rhetos.Utilities.csproj">
+      <Project>{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}</Project>
+      <Name>Rhetos.Utilities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Source\Rhetos.Processing.Interfaces\Rhetos.Processing.Interfaces.csproj">
+      <Project>{4D2FCD7F-D9BB-4E55-B9C6-FDF352F6DCF3}</Project>
+      <Name>Rhetos.Processing.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Compiler.Interfaces\Rhetos.Compiler.Interfaces.csproj">
+      <Project>{fcad7f9a-4c31-4d5a-8699-c291ae09d006}</Project>
+      <Name>Rhetos.Compiler.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Compiler\Rhetos.Compiler.csproj">
+      <Project>{c0dc3d80-a1fe-46fa-8b97-5b80962687fb}</Project>
+      <Name>Rhetos.Compiler</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.DatabaseGenerator.Interfaces\Rhetos.DatabaseGenerator.Interfaces.csproj">
+      <Project>{ca29d948-78b1-42d9-8e24-d2811e355f5a}</Project>
+      <Name>Rhetos.DatabaseGenerator.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.DatabaseGenerator\Rhetos.DatabaseGenerator.csproj">
+      <Project>{237ea20f-0bd0-45a7-be7a-8a43e58306a2}</Project>
+      <Name>Rhetos.DatabaseGenerator</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Dom.Interfaces\Rhetos.Dom.Interfaces.csproj">
+      <Project>{91bdf488-0921-4969-8a53-32169338d8db}</Project>
+      <Name>Rhetos.Dom.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Dom\Rhetos.Dom.csproj">
+      <Project>{69101d48-a062-4af0-96e1-21f7af38d2b4}</Project>
+      <Name>Rhetos.Dom</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Dsl.Interfaces\Rhetos.Dsl.Interfaces.csproj">
+      <Project>{f4acd412-2782-4191-8708-c7ae99b0cee9}</Project>
+      <Name>Rhetos.Dsl.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Dsl\Rhetos.Dsl.csproj">
+      <Project>{aa08ecfa-2ad6-4b0c-86b9-c5d8754a2073}</Project>
+      <Name>Rhetos.Dsl</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Extensibility.Interfaces\Rhetos.Extensibility.Interfaces.csproj">
+      <Project>{ddc73f5f-bb0e-4944-92cc-4ac937398499}</Project>
+      <Name>Rhetos.Extensibility.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Extensibility\Rhetos.Extensibility.csproj">
+      <Project>{7eaf15bd-39c9-44ab-8834-ec0ae013a8a2}</Project>
+      <Name>Rhetos.Extensibility</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Factory.Interfaces\Rhetos.Factory.Interfaces.csproj">
+      <Project>{b5a06d77-e076-4fd6-acc5-dbe6bfed49d8}</Project>
+      <Name>Rhetos.Factory.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Factory\Rhetos.Factory.csproj">
+      <Project>{89615e35-a3c7-48ac-b8bc-dd5bfefbda2c}</Project>
+      <Name>Rhetos.Factory</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj">
+      <Project>{bb7e5668-1b43-4fce-a832-444cc57fee80}</Project>
+      <Name>Rhetos.Logging.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Logging\Rhetos.Logging.csproj">
+      <Project>{8c9f1c24-2d9c-420b-9787-3fcad96c5b3e}</Project>
+      <Name>Rhetos.Logging</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Persistence.Interfaces\Rhetos.Persistence.Interfaces.csproj">
+      <Project>{5e3bbd83-91cb-4fba-81b2-79a81ec94d70}</Project>
+      <Name>Rhetos.Persistence.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Persistence.NHibernate\Rhetos.Persistence.NHibernate.csproj">
+      <Project>{24238da8-70c5-4be5-85b3-359e60b40acf}</Project>
+      <Name>Rhetos.Persistence.NHibernate</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Processing\Rhetos.Processing.csproj">
+      <Project>{eb4237c4-3d83-4632-b8c9-ac08c886720a}</Project>
+      <Name>Rhetos.Processing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.RestGenerator.Interfaces\Rhetos.RestGenerator.Interfaces.csproj">
+      <Project>{1FB9D8BD-03E3-4EF8-80A4-1376AB271BEA}</Project>
+      <Name>Rhetos.RestGenerator.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.RestGenerator\Rhetos.RestGenerator.csproj">
+      <Project>{72E0C1AB-1FAC-4FB3-8AAC-923BA4AE79CB}</Project>
+      <Name>Rhetos.RestGenerator</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Security.Interfaces\Rhetos.Security.Interfaces.csproj">
+      <Project>{8E1D4ACD-B1AA-433F-9E52-FA50D4A1C9DC}</Project>
+      <Name>Rhetos.Security.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Security\Rhetos.Security.csproj">
+      <Project>{F3480D1E-1C20-448D-B2F6-133472CEEB93}</Project>
+      <Name>Rhetos.Security</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.XmlSerialization\Rhetos.XmlSerialization.csproj">
+      <Project>{726ca0fb-70e7-44f3-9fca-e703598bfc7e}</Project>
+      <Name>Rhetos.XmlSerialization</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <CodeAnalysisDictionary Include="..\..\CodeAnalysisDictionary.xml">
+      <Link>CodeAnalysisDictionary.xml</Link>
+    </CodeAnalysisDictionary>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

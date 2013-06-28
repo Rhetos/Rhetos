@@ -1,0 +1,626 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AutoCodeDatabaseDefinition_TriggerName" xml:space="preserve">
+    <value>trg_{0}_{1}_AutoCode</value>
+  </data>
+  <data name="AutoCodeDatabaseDefinition_TriggerSnippet" xml:space="preserve">
+    <value>CREATE TRIGGER {0}.{3}
+ON {0}.{1}
+INSTEAD OF Insert
+AS
+
+SET NOCOUNT ON
+
+DECLARE @Error INT
+DECLARE @CodeFormat VARCHAR({4})
+DECLARE @NewCode VARCHAR({4})
+DECLARE @id as UNIQUEIDENTIFIER
+
+SELECT * INTO #t FROM inserted
+SET @Error = @@ERROR IF @Error &gt; 0 BEGIN ROLLBACK TRANSACTION RETURN END
+
+INSERT INTO {0}.{1}
+SELECT *
+FROM #t
+WHERE (CHARINDEX('+', {2}) = 0 AND CHARINDEX ('&gt;', {2}) = 0) OR {2} IS NULL
+
+SET @Error = @@ERROR IF @Error &gt; 0 BEGIN ROLLBACK TRANSACTION RETURN END
+
+DECLARE @Filter VARCHAR(2000)
+{5}
+
+DECLARE cur CURSOR FOR
+SELECT {2}, ID{6} FROM #t
+WHERE CHARINDEX('+', {2}) &lt;&gt; 0 OR CHARINDEX('&gt;', {2}) &lt;&gt; 0
+
+OPEN cur
+FETCH NEXT FROM cur INTO @CodeFormat, @id{7}
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    {8}
+
+    EXEC @Error = Common.GenerateNextAutoCode '{0}.{1}', '{2}', @Filter, @CodeFormat, @NewCode OUTPUT
+
+    SET @Error = ISNULL(NULLIF(@Error, 0), @@ERROR) IF @Error &gt; 0 BEGIN ROLLBACK TRANSACTION CLOSE cur DEALLOCATE cur RETURN END
+
+
+    UPDATE #t
+    SET {2} = @NewCode
+    WHERE id = @id
+
+    SET @Error = @@ERROR IF @Error &gt; 0 BEGIN ROLLBACK TRANSACTION CLOSE cur DEALLOCATE cur RETURN END
+
+    INSERT INTO {0}.{1}
+    SELECT *
+    FROM #t
+    WHERE id = @id
+
+    SET @Error = @@ERROR IF @Error &gt; 0 BEGIN ROLLBACK TRANSACTION CLOSE cur DEALLOCATE cur RETURN END
+
+    FETCH NEXT FROM cur INTO @CodeFormat, @id{7}
+END
+CLOSE cur
+DEALLOCATE cur</value>
+  </data>
+  <data name="AutoCodeDatabaseDefinition_Remove" xml:space="preserve">
+    <value>DROP TRIGGER {0}.{1}</value>
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendBeforeCursor" xml:space="preserve">
+    <value>DECLARE @groupValue NVARCHAR({0})
+</value>
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_BoolPropertyInfo" xml:space="preserve">
+    <value>, GroupValue = CONVERT(NVARCHAR({1}), {0}, 126)</value>
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_DecimalPropertyInfo" xml:space="preserve">
+    <value>, GroupValue = CONVERT(NVARCHAR({1}), {0}, 126)</value>
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_IntegerPropertyInfo" xml:space="preserve">
+    <value>, GroupValue = CONVERT(NVARCHAR({1}), {0}, 126)</value>
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_MoneyPropertyInfo" xml:space="preserve">
+    <value>, GroupValue = CONVERT(NVARCHAR({1}), {0}, 126)</value>
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_DatePropertyInfo" xml:space="preserve">
+    <value>, GroupValue = '''' + CONVERT(NVARCHAR({1}), {0}, 126) + ''''</value>
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_DateTimePropertyInfo" xml:space="preserve">
+    <value>, GroupValue = '''' + CONVERT(NVARCHAR({1}), {0}, 126) + ''''</value>
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_GuidPropertyInfo" xml:space="preserve">
+    <value>, GroupValue = '''' + CONVERT(NVARCHAR({1}), {0}, 126) + ''''</value>
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_ReferencePropertyInfo" xml:space="preserve">
+    <value>, GroupValue = '''' + CONVERT(NVARCHAR({1}), {0}, 126) + ''''</value>
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_ShortStringPropertyInfo" xml:space="preserve">
+    <value>, GroupValue = '''' + CONVERT(NVARCHAR({1}), {0}, 126) + ''''</value>
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorFetch" xml:space="preserve">
+    <value>, @groupValue</value>
+  </data>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendBeforeGenerate" xml:space="preserve">
+    <value>SET @Filter = ISNULL('{0} = ' + @groupValue, '{0} IS NULL')
+    </value>
+  </data>
+  <data name="DataStructureExtendsDatabaseDefinition_ConstraintName" xml:space="preserve">
+    <value>FK_{0}_{1}_ID</value>
+  </data>
+  <data name="DataStructureExtendsDatabaseDefinition_Create" xml:space="preserve">
+    <value>ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY (ID) REFERENCES {2} (ID) ON DELETE CASCADE {3};</value>
+  </data>
+  <data name="DataStructureExtendsDatabaseDefinition_Remove" xml:space="preserve">
+    <value>ALTER TABLE {0} DROP CONSTRAINT {1};</value>
+  </data>
+  <data name="EntityDatabaseDefinition_Create" xml:space="preserve">
+    <value>CREATE TABLE {0}.{1} (ID UNIQUEIDENTIFIER NOT NULL CONSTRAINT {2} PRIMARY KEY NONCLUSTERED CONSTRAINT {3} DEFAULT (NEWID()));
+EXEC Rhetos.DataMigrationApply '{0}', '{1}', 'ID';</value>
+  </data>
+  <data name="EntityDatabaseDefinition_Remove" xml:space="preserve">
+    <value>EXEC Rhetos.DataMigrationUse '{0}', '{1}', 'ID', NULL;
+DROP TABLE {0}.{1};</value>
+  </data>
+  <data name="EntityLoggingDefinition_Create" xml:space="preserve">
+    <value>CREATE TRIGGER {0}.{2} ON {0}.{1}
+FOR UPDATE, DELETE, INSERT
+AS
+BEGIN
+SET NOCOUNT ON
+IF NOT EXISTS (SELECT TOP 1 1 FROM inserted UNION ALL SELECT TOP 1 1 FROM deleted) RETURN
+
+INSERT INTO
+    Common.Log
+    (
+        ID,
+        Action,
+        TableName,
+        ItemId,
+        Description
+    )
+SELECT
+    ID = newid(),
+    Action = CASE
+        WHEN inserted.ID IS NOT NULL AND deleted.ID IS NULL THEN 'Insert'
+        WHEN inserted.ID IS NULL AND deleted.ID IS NOT NULL THEN 'Delete'
+        ELSE 'Update'
+    END,
+    TableName = '{0}.{1}',
+    ItemId = COALESCE(inserted.ID, deleted.ID),
+    Description = CASE WHEN inserted.ID IS NOT NULL AND deleted.ID IS NULL
+        THEN ''	--When inserting, Description is not available (there is no previous state)
+        ELSE '&lt;PREVIOUS'
+			{6}
+            + ' /&gt;'
+    END
+FROM
+    inserted
+    FULL OUTER JOIN deleted ON inserted.ID = deleted.ID
+
+END</value>
+  </data>
+  <data name="EntityLoggingDefinition_Remove" xml:space="preserve">
+    <value>DROP TRIGGER {0}.{1};</value>
+  </data>
+  <data name="EntityLoggingDefinition_TriggerNameInsert" xml:space="preserve">
+    <value>trg_{1}_Logging</value>
+  </data>
+  <data name="LegacyEntityWithAutoCreatedViewDatabaseDefinition_InsertTriggerName" xml:space="preserve">
+    <value>trg_{0}_LegacyInsert</value>
+  </data>
+  <data name="LegacyEntityWithAutoCreatedViewDatabaseDefinition_UpdateTriggerName" xml:space="preserve">
+    <value>trg_{0}_LegacyUpdate</value>
+  </data>
+  <data name="LegacyEntityWithAutoCreatedViewDatabaseDefinition_DeleteTriggerName" xml:space="preserve">
+    <value>trg_{0}_LegacyDelete</value>
+  </data>
+  <data name="LegacyEntityWithAutoCreatedViewDatabaseDefinition_Create" xml:space="preserve">
+    <value>CREATE VIEW {0}.{1} WITH VIEW_METADATA AS
+SELECT
+    source.ID{7}
+FROM
+    {3} source
+{8};
+
+{2}
+
+CREATE TRIGGER {0}.{4}
+ON {0}.{1} INSTEAD OF INSERT
+AS
+IF NOT EXISTS(SELECT * FROM inserted) RETURN;
+SET NOCOUNT ON;
+
+INSERT INTO
+    {3} (ID{9})
+SELECT
+    inserted.ID{10}
+FROM
+    inserted
+{12};
+
+{2}
+
+CREATE TRIGGER {0}.{5}
+ON {0}.{1} INSTEAD OF UPDATE
+AS
+IF NOT EXISTS(SELECT * FROM inserted) RETURN;
+SET NOCOUNT ON;
+
+DECLARE @dummy INT
+
+UPDATE
+    source
+SET
+    @dummy = 0{11}
+FROM
+    {3} source
+    INNER JOIN inserted ON inserted.ID = source.ID
+{12};
+
+{2}
+
+CREATE TRIGGER {0}.{6}
+ON {0}.{1} INSTEAD OF DELETE
+AS
+IF NOT EXISTS(SELECT * FROM deleted) RETURN;
+SET NOCOUNT ON;
+
+DELETE FROM {3} WHERE ID IN (SELECT ID FROM deleted);</value>
+  </data>
+  <data name="LegacyEntityWithAutoCreatedViewDatabaseDefinition_Remove" xml:space="preserve">
+    <value>DROP TRIGGER {0}.{4};
+DROP TRIGGER {0}.{3};
+DROP TRIGGER {0}.{2};
+DROP VIEW {0}.{1};</value>
+  </data>
+  <data name="LegacyPropertyReadOnlyDatabaseDefinition_ViewSelect" xml:space="preserve">
+    <value>,
+    {0} = source.{1}</value>
+  </data>
+  <data name="LegacyPropertyReferenceDatabaseDefinition_ExtendViewSelect" xml:space="preserve">
+    <value>,
+    {0}ID = {1}.ID</value>
+  </data>
+  <data name="LegacyPropertyReferenceDatabaseDefinition_ExtendViewFrom" xml:space="preserve">
+    <value>    LEFT JOIN {0} {1} ON {2}
+</value>
+  </data>
+  <data name="LegacyPropertyReferenceDatabaseDefinition_ExtendFromJoin" xml:space="preserve">
+    <value>{0}.{1} = source.{2}</value>
+  </data>
+  <data name="LegacyPropertyReferenceDatabaseDefinition_ExtendTriggerInsert" xml:space="preserve">
+    <value>, {0}</value>
+  </data>
+  <data name="LegacyPropertyReferenceDatabaseDefinition_ExtendTriggerSelectForInsert" xml:space="preserve">
+    <value>,
+    {0} = {1}.{2}</value>
+  </data>
+  <data name="LegacyPropertyReferenceDatabaseDefinition_ExtendTriggerFrom" xml:space="preserve">
+    <value>    LEFT JOIN {0} {1} ON {1}.ID = inserted.{2}ID
+</value>
+  </data>
+  <data name="LegacyPropertySimpleDatabaseDefinition_ExtendViewSelect" xml:space="preserve">
+    <value>,
+    {0} = source.{1}</value>
+  </data>
+  <data name="LegacyPropertySimpleDatabaseDefinition_ExtendTriggerInsert" xml:space="preserve">
+    <value>, {0}</value>
+  </data>
+  <data name="LegacyPropertySimpleDatabaseDefinition_ExtendTriggerSelectForInsert" xml:space="preserve">
+    <value>,
+    {0} = inserted.{1}</value>
+  </data>
+  <data name="ModuleDatabaseDefinition_Create" xml:space="preserve">
+    <value>CREATE SCHEMA {0}</value>
+  </data>
+  <data name="ModuleDatabaseDefinition_Remove" xml:space="preserve">
+    <value>DROP SCHEMA {0}</value>
+  </data>
+  <data name="PropertyLoggingDefinition_GenericPropertyLogging" xml:space="preserve">
+    <value>+ CASE WHEN inserted.{0} &lt;&gt; deleted.{0}
+                    OR inserted.{0} IS NULL AND deleted.{0} IS NOT NULL
+                    OR inserted.{0} IS NOT NULL AND deleted.{0} IS NULL
+                THEN ' {0}="' + REPLACE(REPLACE(REPLACE(REPLACE(ISNULL({1}, ''), '&amp;', '&amp;amp;'), '&lt;', '&amp;lt;'), '&gt;', '&amp;gt;'), '"', '&amp;quot;') + '"'
+                ELSE '' END
+			</value>
+  </data>
+  <data name="PropertyLoggingDefinition_TextValue" xml:space="preserve">
+    <value>CONVERT(NVARCHAR(MAX), deleted.{0}, 126)</value>
+  </data>
+  <data name="PropertyLoggingDefinition_TextValue_ShortString" xml:space="preserve">
+    <value>deleted.{0}</value>
+  </data>
+  <data name="PropertyLoggingDefinition_TextValue_LongString" xml:space="preserve">
+    <value>deleted.{0}</value>
+  </data>
+  <data name="ReferenceCascadeDeleteDatabaseDefinition_ExtendForeignKey" xml:space="preserve">
+    <value> ON DELETE CASCADE </value>
+  </data>
+  <data name="ReferencePropertyConstraintDatabaseDefinition_Create" xml:space="preserve">
+    <value>ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) REFERENCES {3} (ID) {4}</value>
+  </data>
+  <data name="ReferencePropertyConstraintDatabaseDefinition_Remove" xml:space="preserve">
+    <value>ALTER TABLE {0} DROP CONSTRAINT {1}</value>
+  </data>
+  <data name="ReferencePropertyConstraintDatabaseDefinition_ConstraintName" xml:space="preserve">
+    <value>FK_{0}_{1}_{2}ID</value>
+  </data>
+  <data name="ReferencePropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>UNIQUEIDENTIFIER</value>
+  </data>
+  <data name="SqlDefaultPropertyDatabaseDefinition_Create" xml:space="preserve">
+    <value>ALTER TABLE {0}.{1} ADD CONSTRAINT {3} DEFAULT ({4}) FOR {2};</value>
+  </data>
+  <data name="SqlDefaultPropertyDatabaseDefinition_Remove" xml:space="preserve">
+    <value>ALTER TABLE {0}.{1} DROP CONSTRAINT {3};</value>
+  </data>
+  <data name="SqlDefaultPropertyDatabaseDefinition_ConstraintName" xml:space="preserve">
+    <value>DF_{0}_{1}</value>
+  </data>
+  <data name="SqlFunctionDatabaseDefinition_Create" xml:space="preserve">
+    <value>
+CREATE FUNCTION {0}.{1} ({2})
+{3}
+</value>
+  </data>
+  <data name="SqlFunctionDatabaseDefinition_Remove" xml:space="preserve">
+    <value>DROP FUNCTION {0}.{1}</value>
+  </data>
+  <data name="SqlIndex2DatabaseDefinition_ConstraintName" xml:space="preserve">
+    <value>IX_{0}_{1}_{2}</value>
+  </data>
+  <data name="SqlIndex3DatabaseDefinition_ConstraintName" xml:space="preserve">
+    <value>IX_{0}_{1}_{2}_{3}</value>
+  </data>
+  <data name="SqlIndexDatabaseDefinition_ConstraintName" xml:space="preserve">
+    <value>IX_{0}_{1}</value>
+  </data>
+  <data name="SqlIndexMultipleDatabaseDefinition_Create" xml:space="preserve">
+    <value>CREATE {4} INDEX {0} ON {1}.{2} ({3}) {5}</value>
+  </data>
+  <data name="SqlIndexMultipleDatabaseDefinition_Remove" xml:space="preserve">
+    <value>DROP INDEX {0}.{1}.{2}</value>
+  </data>
+  <data name="SqlIndexMultipleDatabaseDefinition_ConstraintName" xml:space="preserve">
+    <value>IX_{0}_{1}</value>
+  </data>
+  <data name="SqlProcedureDatabaseDefinition_Create" xml:space="preserve">
+    <value>CREATE PROCEDURE {0}.{1}
+{2}
+AS
+{3}
+</value>
+  </data>
+  <data name="SqlProcedureDatabaseDefinition_Remove" xml:space="preserve">
+    <value>DROP PROCEDURE {0}.{1}</value>
+  </data>
+  <data name="SqlQueryableDatabaseDefinition_Create" xml:space="preserve">
+    <value>CREATE VIEW {0}.{1} AS {2}</value>
+  </data>
+  <data name="SqlQueryableDatabaseDefinition_Remove" xml:space="preserve">
+    <value>DROP VIEW {0}.{1}</value>
+  </data>
+  <data name="SqlTriggerDatabaseDefinition_Create" xml:space="preserve">
+    <value>CREATE TRIGGER {0}.{1}
+ON {0}.{2} {3}
+AS
+IF (NOT EXISTS(SELECT * FROM inserted))
+	AND (NOT EXISTS(SELECT * FROM deleted)) RETURN
+{4}</value>
+  </data>
+  <data name="SqlTriggerDatabaseDefinition_Remove" xml:space="preserve">
+    <value>DROP TRIGGER {0}.{1}</value>
+  </data>
+  <data name="SqlTriggerDatabaseDefinition_TriggerName" xml:space="preserve">
+    <value>trg_{0}_{1}</value>
+  </data>
+  <data name="SqlUniqueMultipleDatabaseDefinition_ExtendOption1" xml:space="preserve">
+    <value>UNIQUE</value>
+  </data>
+  <data name="SqlViewDatabaseDefinition_Create" xml:space="preserve">
+    <value>CREATE VIEW {0}.{1}
+AS
+{2}
+</value>
+  </data>
+  <data name="SqlViewDatabaseDefinition_Remove" xml:space="preserve">
+    <value>DROP VIEW {0}.{1}</value>
+  </data>
+  <data name="BinaryPropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>VARBINARY(MAX)</value>
+  </data>
+  <data name="BoolPropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>BIT</value>
+  </data>
+  <data name="DatePropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>DATE</value>
+  </data>
+  <data name="DateTimePropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>DATETIME</value>
+  </data>
+  <data name="DecimalPropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>DECIMAL(28,10)</value>
+  </data>
+  <data name="GuidPropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>UNIQUEIDENTIFIER</value>
+  </data>
+  <data name="IntegerPropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>INTEGER</value>
+  </data>
+  <data name="LongStringPropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>NVARCHAR(MAX)</value>
+  </data>
+  <data name="MoneyPropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>MONEY</value>
+  </data>
+  <data name="ShortStringPropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>NVARCHAR({0})</value>
+  </data>
+  <data name="MoneyPropertyDatabaseDefinition_CheckConstraintName" xml:space="preserve">
+    <value>CK_{0}_{1}_money</value>
+  </data>
+  <data name="MoneyPropertyDatabaseDefinition_CreateCheckConstraint" xml:space="preserve">
+    <value>CONSTRAINT {0} CHECK({1} IS NULL OR {1} = ROUND({1}, 2))</value>
+  </data>
+  <data name="MoneyPropertyDatabaseDefinition_RemoveCheckConstraint" xml:space="preserve">
+    <value>ALTER TABLE {0}.{1} DROP CONSTRAINT {2};</value>
+  </data>
+  <data name="PropertyDatabaseDefinition_AddColumn" xml:space="preserve">
+    <value>ALTER TABLE {0}.{1} ADD {2} {3} {4};
+EXEC Rhetos.DataMigrationApply '{0}', '{1}', '{2}';</value>
+  </data>
+  <data name="PropertyDatabaseDefinition_RemoveColumn" xml:space="preserve">
+    <value>EXEC Rhetos.DataMigrationUse '{0}', '{1}', '{2}', NULL;
+ALTER TABLE {0}.{1} DROP COLUMN [{2}]</value>
+  </data>
+  <data name="LegacyPropertySimpleDatabaseDefinition_ExtendTriggerSelectForUpdate" xml:space="preserve">
+    <value>,
+    {0} = inserted.{1}</value>
+  </data>
+  <data name="LegacyPropertyReferenceDatabaseDefinition_ExtendTriggerSelectForUpdate" xml:space="preserve">
+    <value>,
+    {0} = {1}.{2}</value>
+  </data>
+  <data name="PropertyLoggingDefinition_TextValue_Binary" xml:space="preserve">
+    <value>CONVERT(NVARCHAR(MAX), deleted.{0}, 1)</value>
+  </data>
+  <data name="EntityDatabaseDefinition_DefaultConstraintName" xml:space="preserve">
+    <value>DF_{1}_ID</value>
+  </data>
+  <data name="EntityDatabaseDefinition_PrimaryKeyConstraintName" xml:space="preserve">
+    <value>PK_{1}</value>
+  </data>
+  <data name="EntityLoggingDefinition_TriggerNameDelete" xml:space="preserve">
+    <value>trg_{1}_Logging</value>
+  </data>
+  <data name="EntityLoggingDefinition_TriggerNameUpdate" xml:space="preserve">
+    <value>trg_{1}_Logging</value>
+  </data>
+  <data name="CreationTimeDatabaseDefinition_TriggerBody" xml:space="preserve">
+    <value>
+SET NOCOUNT ON
+
+UPDATE
+	newData
+SET
+	{2} = GETDATE()
+FROM
+	{0}.{1} newData
+	INNER JOIN inserted ON inserted.ID = newData.ID
+WHERE
+	inserted.{2} IS NULL
+</value>
+  </data>
+  <data name="ModificationTimeOfDatabaseDefinition_InsertTriggerBody" xml:space="preserve">
+    <value>
+SET NOCOUNT ON
+
+UPDATE
+	newData
+SET
+	{2} = GETDATE()
+FROM
+	{0}.{1} newData
+	INNER JOIN inserted ON inserted.ID = newData.ID
+WHERE
+	inserted.{2} IS NULL
+</value>
+  </data>
+  <data name="ModificationTimeOfDatabaseDefinition_UpdateTriggerBody" xml:space="preserve">
+    <value>
+SET NOCOUNT ON
+
+IF UPDATE({3})
+BEGIN
+  UPDATE
+    newData
+  SET
+    {2} = GETDATE()
+  FROM
+    {0}.{1} newData
+    INNER JOIN inserted ON inserted.ID = newData.ID
+    INNER JOIN deleted ON deleted.ID = inserted.ID
+  WHERE
+    inserted.{3} &lt;&gt; deleted.{3}
+    OR inserted.{3} IS NULL AND deleted.{3} IS NOT NULL
+    OR inserted.{3} IS NOT NULL AND deleted.{3} IS NULL
+END
+</value>
+  </data>
+</root>

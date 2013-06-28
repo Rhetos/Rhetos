@@ -1,0 +1,13 @@
+﻿Menu Common 'Rhetos Common'
+{
+	Menu CommonPermissions 'Permissions and Security'
+	{
+		MenuItem 'Principals' Common.Principal.Default { RequiredClaim 'Common.Principal' 'Read'; }
+		MenuItem 'Claims' Common.Claim.Default { RequiredClaim 'Common.Claim' 'Read'; }
+		MenuItem 'Permissions' Common.Permission.Default 
+        { 
+            RequiredClaim 'Common.Permission' 'Read'; 
+            RequiredClaim 'Common.PermissionBrowse' 'Read'; 
+        }
+	}
+}

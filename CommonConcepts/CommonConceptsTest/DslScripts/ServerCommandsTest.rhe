@@ -1,0 +1,17 @@
+Module TestQueryDataStructureCommand
+{
+	Entity E { ShortString Name; }
+
+	//========
+
+	DataStructure FilterByPrefix { ShortString Prefix; }
+	
+	Entity Source
+	{
+		ShortString Name;
+		FilterBy 'TestQueryDataStructureCommand.FilterByPrefix'
+			'(repos, parameter) => repos.TestQueryDataStructureCommand.Source.Query().Where(s => s.Name.StartsWith(parameter.Prefix)).ToArray()';
+	}
+}
+
+CustomClaim 'TestCustomPermission.ClaimResource' 'TestClaimRight';

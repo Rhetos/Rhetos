@@ -1,0 +1,10 @@
+Module TestAction
+{
+	Action ThrowException
+	'
+		(TestAction.ThrowException parameters, Common.DomRepository repository, IUserInfo userInfo) => { throw new ApplicationException("TestAction exception " + parameters.Message); }
+	'
+	{
+		ShortString Message;
+	}
+}

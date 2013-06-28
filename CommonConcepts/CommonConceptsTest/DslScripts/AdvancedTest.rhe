@@ -1,0 +1,72 @@
+﻿Module TestHierarchy
+{
+	Entity Simple
+	{
+        ShortString Name;
+        Hierarchy Parent;
+        
+        ItemFilter Level2OrDeeper 'item => item.Extension_SimpleParentHierarchy.Level >= 2';
+	}
+    
+	Entity Simple2
+	{
+        ShortString Name2;
+        Hierarchy Parent2 { SingleRoot; }
+	}
+    
+	Entity WithPath
+	{
+        ShortString Title;
+        Hierarchy Group GroupSequence Title ' - ';
+	}
+    
+    Browse BrowseWithPath TestHierarchy.WithPath
+    {
+        LongString GroupSequence { From 'Extension_WithPathGroupHierarchy.GroupSequence'; }
+    }
+}
+
+Module TestHistory
+{
+	Entity Minimal
+	{
+		History;
+        Integer Code;
+	}
+	
+	Entity Simple
+	{
+        Integer Code { History; }
+		ShortString Name;
+	}
+	
+	Entity Standard
+	{
+		History { AllProperties; }
+        Integer Code;
+        ShortString Name;
+        DateTime Birthday;
+	}
+    
+    Entity Other;
+    
+	Entity Complex
+	{
+		History { AllProperties; }
+        ShortString Name { Required; Unique; }
+        ShortString Code { AutoCodeForEach TestHistory.Complex.Parent; }
+		DateTime Created { CreationTime; }
+		DateTime Modified { ModificationTimeOf TestHistory.Complex.Name; }
+        Reference Other TestHistory.Other { Detail; SqlIndex; }
+        Hierarchy Parent;
+        PessimisticLocking;
+        Logging { Log TestHistory.Complex.Name; }
+        ItemFilter TooLong 'item => item.Name.Length > 10';
+		DenySave TooLong 'Name too long.';
+	}
+    
+    Entity Sub
+    {
+        Reference Complex TestHistory.Complex { Detail; }
+    }
+}

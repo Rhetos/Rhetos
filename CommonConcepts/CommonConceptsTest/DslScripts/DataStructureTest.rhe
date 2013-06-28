@@ -1,0 +1,311 @@
+Module TestDataStructure { DataStructure SimpleDataStructure1; }
+
+Module TestDataStructure { DataStructure SimpleDataStructure2 { ShortString SimpleShortString; } }
+
+Module TestDataStructure
+{
+	SqlQueryable SqlQueryable1 "SELECT ID = NEWID(), i = 1, s = 'a' UNION ALL SELECT NEWID(), 2, 'b'"
+	{
+		Integer i;
+		ShortString s;
+	}
+	
+	Entity CachingTestEntity { ShortString S; }
+	SqlQueryable CachingTestView "SELECT * FROM TestDataStructure.CachingTestEntity" { ShortString S; }
+	
+	Entity Parent;
+	Entity Child
+	{
+		Reference Parent  { Detail; }
+	}
+}
+
+Module TestExtension
+{
+	SqlQueryable SqlQueryableBase1 "SELECT ID = '5D089327-97EF-418D-A7DF-783D3873A5B4', i = 1, s = 'a' UNION ALL SELECT 'DB97EA5F-FB8C-408F-B35B-AD6642C593D7', 2, 'b'"
+	{
+		Integer i;
+		ShortString s;
+	}
+
+	SqlQueryable SqlQueryableExtenson1 "SELECT ID, info = CAST(i AS varchar(20)) + '-' + s FROM TestExtension.SqlQueryableBase1"
+	{
+		Extends TestExtension.SqlQueryableBase1;
+		ShortString info;
+	}
+
+	Entity Old1
+	{
+		Integer i;
+		ShortString s;
+	}
+	
+	SqlView Old1View 'SELECT * FROM TestExtension.Old1' { SqlDependsOn TestExtension.Old1; }
+	
+	LegacyEntity Legacy1 'TestExtension.Old1' 'TestExtension.Old1View'
+	{
+		Integer i;
+		ShortString s;
+	}
+
+	Entity EntityExtension1
+	{
+		Extends TestExtension.Legacy1;
+		ShortString info;
+	}
+	
+	Entity SimpleBase { ShortString Name; }
+	Entity SimpleExtension { Extends TestExtension.SimpleBase; ShortString Name; }
+	SqlQueryable MissingExtensionSql "SELECT sb.ID, Name = sb.Name + 'Sql' FROM TestExtension.SimpleBase sb WHERE sb.Name NOT LIKE '%missing%'" { Extends TestExtension.SimpleBase; ShortString Name; }
+	QueryableExtension MissingExtensionCs TestExtension.SimpleBase '(source, repository) => source
+		.Where(item => !item.Name.Contains("missing"))
+		.Select(item => new MissingExtensionCs { Base = item, Name = item.Name + "Cs" })' { ShortString Name; }
+	SqlQueryable InvalidExtension 'SELECT ID, Data = 1/0 FROM TestExtension.SimpleBase' { Extends TestExtension.SimpleBase; Integer Data; }
+}
+
+Module Test8
+{
+	Entity Principal
+	{
+		ShortString Name;
+	}
+	
+	Entity Claim
+	{
+		ShortString ClaimResource;
+		ShortString ClaimRight;
+	}
+	
+	Entity Permission
+	{
+		Reference Principal Test8.Principal { CascadeDelete; }
+		Reference Claim Test8.Claim { CascadeDelete; }
+		Bool IsAuthorized;
+	}
+
+	Entity BaseEntity
+	{
+		ShortString Name;
+	}
+
+	Entity Extension
+	{
+		Extends Test8.BaseEntity;
+		ShortString Title;
+	}
+	
+	Entity Child
+	{
+		ShortString Name;
+		Reference Parent Test8.BaseEntity { Detail; }
+	}
+	
+	Browse ChildBrowse Test8.Child
+	{
+		ShortString Name { From 'Name'; }
+		ShortString ParentName { From 'Parent.Name'; }
+	}
+}
+
+Module TestBrowse
+{
+	Entity Other
+	{
+		ShortString Name;
+	}
+	
+	Entity Source
+	{
+		ShortString Code;
+		Reference Ref TestBrowse.Other;
+	}
+	
+	Browse SF TestBrowse.Source
+	{
+		ShortString RefName { From 'Ref.Name'; }
+	}
+	
+	Browse SFMulti TestBrowse.Source
+	{
+		ShortString Code1 { From Code; }
+		ShortString Code2 { From Code; }
+		ShortString RefName1 { From 'Ref.Name'; }
+		ShortString RefName2 { From 'Ref.Name'; }
+	}
+	
+	//=================================
+	
+	Entity ParentBase
+	{
+		ShortString Name;
+	}
+	
+	Entity Parent
+	{
+		Extends TestBrowse.ParentBase;
+		ShortString Name;
+	}
+	
+	Entity ParentExtension1
+	{
+		Extends TestBrowse.Parent;
+		ShortString Name1;
+	}
+	
+	Entity ParentExtension2
+	{
+		Extends TestBrowse.Parent;
+		ShortString Name2;
+	}
+	
+	Entity Complex
+	{
+		ShortString Code;
+		Reference Ref TestBrowse.Parent;
+	}
+
+	Browse SFTake TestBrowse.Complex
+	{
+		Take Code;
+		Take 'Ref.Name';
+		Take RefName2 'Ref.Name';
+		ShortString RefName3 { From 'Ref.Name'; }
+		
+		Take 'Ref.Base.Name';
+		Take 'Ref.Extension_ParentExtension2.Name2';
+		
+		Take 'Ref.ID';
+		Take ParentReference Ref;
+	}
+}
+
+Module Test13
+{
+	Entity Old1
+	{
+		Integer IDOld1;
+		ShortString Name;
+	}
+	
+	SqlView Old1View 'SELECT ID, Name FROM Test13.Old1'
+	{
+		SqlDependsOn Test13.Old1;
+	}
+
+	LegacyEntity Legacy1 'Test13.Old2' 'Test13.Old1View'
+	{
+		ShortString Name;
+
+		SqlDependsOn Test13.Old2;
+		SqlDependsOnView Test13.Old1View;
+	}
+	
+	Entity Old2
+	{
+		Integer IDOld2;
+		ShortString Name;
+		Integer Old1ID;
+	}
+	
+	LegacyEntity Legacy2 'Test13.Old2' // view is automatically generated
+	{
+		ShortString NameNew { LegacyProperty 'Name'; }
+		Reference Leg1 Test13.Legacy1 { LegacyProperty 'Old1ID' 'Test13.Old1' 'IDOld1'; }
+		
+		SqlDependsOn Test13.Old2;
+	}
+	
+	Entity Old3
+	{
+		Integer Num;
+		ShortString Text;
+	}
+	
+	LegacyEntity Legacy3 'Test13.Old3'
+	{
+		Integer NumNew { LegacyPropertyReadOnly 'Num'; }
+		ShortString TextNew { LegacyProperty 'Text'; }
+		
+		SqlDependsOn Test13.Old3;
+	}
+	
+	Parameter PatternFilter { ShortString Pattern; }
+	FilterBy Legacy3.'Test13.PatternFilter'
+		'(repos, filter) => repos.Test13.Legacy3.Query().Where(item => item.TextNew.Contains(filter.Pattern) || item.NumNew.CastToString().StartsWith(filter.Pattern)).ToArray()';
+}
+
+Module TestBinary
+{
+	Entity E
+	{
+		Binary Blob;
+	}
+}
+
+Module TestUnique
+{
+	Entity R
+	{
+		ShortString S;
+	}
+	
+	Entity E
+	{
+		ShortString S;
+		Integer I;
+		Reference R TestUnique.R;
+		
+		Unique TestUnique.E.S TestUnique.E.I TestUnique.E.R;
+	}
+	
+	Entity Multi
+	{
+		ShortString S;
+		Integer I;
+		Reference R TestUnique.R;
+		
+		UniqueMultiple 'S R';
+		UniqueMultiple 'I';
+	}
+}
+
+Module TestCloning
+{
+	Entity Parent
+	{
+		ShortString Name;
+	}
+	
+	Entity Base
+	{
+		ShortString Name;
+	}
+	
+	Entity Source
+	{
+		Extends TestCloning.Base;
+		
+		Integer Code { Unique; }
+		ShortString Name { Required; }
+		DateTime Start;
+		Reference Parent TestCloning.Parent { Detail; }
+		SqlIndexMultiple 'Start Parent';
+	}
+	
+	Entity Clone1
+	{
+		PropertyFrom TestCloning.Source.Start;
+	}
+	
+	Entity Clone2
+	{
+		PropertyFrom TestCloning.Source.Name;
+		PropertyFrom TestCloning.Source.Parent;
+		PropertyFrom TestCloning.Source.Start;
+	}
+	
+	Entity Clone3
+	{
+		AllPropertiesWithCascadeDeleteFrom TestCloning.Source;
+	}
+}

@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{DB291A1A-BD71-4EEA-898A-7B353C7D1EF5}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DeployPackages</RootNamespace>
+    <AssemblyName>DeployPackages</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Autofac">
+      <HintPath>..\..\External\Autofac\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="Oracle.DataAccess">
+      <HintPath>..\..\External\Oracle\Oracle.DataAccess.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AutofacConfiguration.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="Settings.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="PrepareTestEnvironment.bat" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Source\Rhetos.Utilities\Rhetos.Utilities.csproj">
+      <Project>{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}</Project>
+      <Name>Rhetos.Utilities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Source\Rhetos.Configuration.Autofac\Rhetos.Configuration.Autofac.csproj">
+      <Project>{759CEA3C-1CD0-449C-977E-102CE308F4DE}</Project>
+      <Name>Rhetos.Configuration.Autofac</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Source\Rhetos.DatabaseGenerator.Interfaces\Rhetos.DatabaseGenerator.Interfaces.csproj">
+      <Project>{CA29D948-78B1-42D9-8E24-D2811E355F5A}</Project>
+      <Name>Rhetos.DatabaseGenerator.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Source\Rhetos.Dom.Interfaces\Rhetos.Dom.Interfaces.csproj">
+      <Project>{91BDF488-0921-4969-8A53-32169338D8DB}</Project>
+      <Name>Rhetos.Dom.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Source\Rhetos.Dsl.Interfaces\Rhetos.Dsl.Interfaces.csproj">
+      <Project>{F4ACD412-2782-4191-8708-C7AE99B0CEE9}</Project>
+      <Name>Rhetos.Dsl.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Source\Rhetos.Dsl\Rhetos.Dsl.csproj">
+      <Project>{AA08ECFA-2AD6-4B0C-86B9-C5D8754A2073}</Project>
+      <Name>Rhetos.Dsl</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Source\Rhetos.Factory.Interfaces\Rhetos.Factory.Interfaces.csproj">
+      <Project>{B5A06D77-E076-4FD6-ACC5-DBE6BFED49D8}</Project>
+      <Name>Rhetos.Factory.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Source\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj">
+      <Project>{BB7E5668-1B43-4FCE-A832-444CC57FEE80}</Project>
+      <Name>Rhetos.Logging.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Source\Rhetos.Persistence.NHibernate\Rhetos.Persistence.NHibernate.csproj">
+      <Project>{24238DA8-70C5-4BE5-85B3-359E60B40ACF}</Project>
+      <Name>Rhetos.Persistence.NHibernate</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Source\Rhetos.RestGenerator.Interfaces\Rhetos.RestGenerator.Interfaces.csproj">
+      <Project>{1FB9D8BD-03E3-4EF8-80A4-1376AB271BEA}</Project>
+      <Name>Rhetos.RestGenerator.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Source\Rhetos.Security.Interfaces\Rhetos.Security.Interfaces.csproj">
+      <Project>{8E1D4ACD-B1AA-433F-9E52-FA50D4A1C9DC}</Project>
+      <Name>Rhetos.Security.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Deployment\Rhetos.Deployment.csproj">
+      <Project>{A7328BFA-A009-4F1E-B9A1-B51B2020F45C}</Project>
+      <Name>Rhetos.Deployment</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>CALL "$(ProjectDir)PrepareTestEnvironment.bat" $(ConfigurationName)
+</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
