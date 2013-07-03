@@ -31,16 +31,16 @@ using Rhetos.Extensibility;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(ExtendedLockItemsInfo))]
-    public class ExtendedLockItemsCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(DenySaveForPropertyInfo))]
+    public class DenySaveForPropertyCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (ExtendedLockItemsInfo)conceptInfo;
-            codeBuilder.InsertCode(AdditionalInvalidMessageSnippet(info), LockItemsCodeGenerator.UserMessageAppend, info);
+            var info = (DenySaveForPropertyInfo)conceptInfo;
+            codeBuilder.InsertCode(AdditionalInvalidMessageSnippet(info), DenySaveCodeGenerator.UserMessageAppend, info);
         }
 
-        private static string AdditionalInvalidMessageSnippet(ExtendedLockItemsInfo info)
+        private static string AdditionalInvalidMessageSnippet(DenySaveForPropertyInfo info)
         {
             return string.Format(
                 @"+(String.IsNullOrEmpty({1})?"""":"", Properties:{0}."" + {1})",

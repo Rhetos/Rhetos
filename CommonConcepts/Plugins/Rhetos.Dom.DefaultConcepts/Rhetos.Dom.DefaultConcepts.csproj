@@ -64,9 +64,8 @@
     <Compile Include="Advanced\EntityHistoryAllPropertiesCodeGenerator.cs" />
     <Compile Include="Advanced\EntityHistoryPropertyExCodeGenerator.cs" />
     <Compile Include="Advanced\EntityHistoryExCodeGenerator.cs" />
-    <Compile Include="Computations\ExtendedLockItemsCodeGenerator.cs" />
-    <Compile Include="Computations\ExtendedLockPropertyCodeGenerator.cs" />
-    <Compile Include="Computations\ExtendedDenySaveCodeGenerator.cs" />
+    <Compile Include="Computations\LockItemsForPropertyCodeGenerator.cs" />
+    <Compile Include="Computations\DenySaveForPropertyCodeGenerator.cs" />
     <Compile Include="Computations\LockPropertyCodeGenerator.cs" />
     <Compile Include="Computations\HierarchySingleRootInternalCodeGenerator.cs" />
     <Compile Include="Computations\ReportFileCodeGenerator.cs" />

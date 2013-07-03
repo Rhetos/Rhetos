@@ -41,8 +41,6 @@ namespace Rhetos.Dom.DefaultConcepts
             { }
         }
 
-        public static readonly LockPropertyTag UserMessageAppend = new LockPropertyTag(TagType.Appendable, "/*LockProperty {0}.{1}.{2}*/");
-
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (LockPropertyInfo)conceptInfo;
@@ -66,13 +64,13 @@ namespace Rhetos.Dom.DefaultConcepts
                 {0}[] changedItems = updated.Zip(updatedNew, (i, j) => (" + propertyChanged + @")?i:null).Where(x => x != null).ToArray();
                 var lockedItems = _domRepository.{0}.Filter(changedItems.AsQueryable(), new {1}());
                 if (lockedItems.Count() > 0)
-                    throw new Rhetos.UserException({2}, ""Entity:{0}_"" + lockedItems.First().ID.ToString(){3});
+                    throw new Rhetos.UserException({2}, ""Entity:{0}_"" + lockedItems.First().ID.ToString() + "", Property:{3}"");
             }}
 ",
                 info.Source.DataStructure.GetKeyProperties(),
                 info.FilterType,
                 CsUtility.QuotedString(info.Title),
-                UserMessageAppend.Evaluate(info));
+                propName);
         }
     }
 }

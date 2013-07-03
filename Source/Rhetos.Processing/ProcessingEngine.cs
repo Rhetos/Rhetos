@@ -74,7 +74,6 @@ namespace Rhetos.Processing
                     // TODO: This might be register in the main type factory.
                     inner.RegisterTypes(commands.SelectMany(ci => CommandRepository.GetImplementations(ci.GetType())));
 
-                    var commandReports = new StringBuilder();
                     var commandResults = new List<CommandResult>();
                     int commandCount = 0;
                     try
@@ -109,7 +108,6 @@ namespace Rhetos.Processing
                             PerformanceLogger.Write(swCommand, "ProcessingEngine: Command executed.");
 
                             commandResults.Add(commandResult);
-                            commandReports.AppendLine(commandResult.Message);
 
                             if (!commandResult.Success)
                             {
@@ -117,7 +115,7 @@ namespace Rhetos.Processing
                              
                                 return LogResultsReturnError(commandResults, 
                                     String.Format(CultureInfo.InvariantCulture, "Command failed. {0} {1} {2} {3}", commandInfo.GetType().Name, commandInfo, implementationType.Name, commandResult.Message),
-                                    commandCount, commandReports.ToString(), null);
+                                    commandCount, null, null);
                             }
                         }
 
@@ -127,7 +125,7 @@ namespace Rhetos.Processing
                         {
                             CommandResults = commandResults.ToArray(),
                             Success = true,
-                            SystemMessage = commandReports.ToString()
+                            SystemMessage = null
                         };
                     }
                     catch (Exception ex)
@@ -147,7 +145,7 @@ namespace Rhetos.Processing
                             commandResults,
                             "Exception in command execution or ApplyChanges. " + ex,
                             commandCount,
-                            (String.IsNullOrEmpty(systemMessage) && String.IsNullOrEmpty(userMessage)) ? commandReports.ToString() + ex : systemMessage,
+                            systemMessage,
                             userMessage);
                     }
                 }

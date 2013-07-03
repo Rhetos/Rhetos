@@ -25,8 +25,8 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("LockProperty")]
-    public class ExtendedLockPropertyInfo : LockPropertyInfo
+    [ConceptKeyword("LockItems")]
+    public class LockItemsForPropertyInfo : LockItemsInfo
     {
         public string DependedProperties { get; set; }
     }

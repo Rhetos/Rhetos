@@ -118,9 +118,8 @@
     <Compile Include="Advanced\HierarchySingleRootInfo.cs" />
     <Compile Include="Advanced\HierarchyWithPathInfo.cs" />
     <Compile Include="Computations\ComputeForNewBaseItemsWithFilterInfo.cs" />
-    <Compile Include="Computations\ExtendedLockItemsInfo.cs" />
-    <Compile Include="Computations\ExtendedLockPropertyInfo.cs" />
-    <Compile Include="Computations\ExtendedDenySaveInfo.cs" />
+    <Compile Include="Computations\LockItemsForPropertyInfo.cs" />
+    <Compile Include="Computations\DenySaveForPropertyInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlDependsOnSqlObjectInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlObjectInfo.cs" />
     <Compile Include="DataStructure\AllPropertiesWithCascadeDeleteFromInfo.cs" />

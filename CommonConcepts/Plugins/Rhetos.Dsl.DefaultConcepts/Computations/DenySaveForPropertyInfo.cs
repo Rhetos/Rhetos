@@ -26,7 +26,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("DenySave")]
-    public class ExtendedDenySaveInfo : DenySaveInfo
+    public class DenySaveForPropertyInfo : DenySaveInfo
     {
         public string DependedProperties { get; set; }
     }
