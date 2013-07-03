@@ -104,6 +104,13 @@ namespace Rhetos.Rest.DefaultConcepts
 
             codeBuilder.InsertCode(@"
 
+        public class InsertDataResult
+        {
+            public Guid ID;
+        }", RestGeneratorTags.NamespaceMembers);
+
+            codeBuilder.InsertCode(@"
+
         private ServerProcessingResult InsertData<T>(T entity)
         {
             var commandInfo = new SaveEntityCommandInfo

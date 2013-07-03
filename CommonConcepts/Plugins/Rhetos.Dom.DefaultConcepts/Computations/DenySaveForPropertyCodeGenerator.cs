@@ -45,7 +45,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format(
                 @"+(String.IsNullOrEmpty({1})?"""":"", Properties:{0}."" + {1})",
                 info.Source.GetKeyProperties(),
-                CsUtility.QuotedString(info.DependedProperties));
+                CsUtility.QuotedString(info.DependedProperties.Name));
         }
     }
 }

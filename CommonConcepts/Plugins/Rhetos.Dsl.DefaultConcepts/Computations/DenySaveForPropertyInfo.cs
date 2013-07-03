@@ -28,6 +28,6 @@ namespace Rhetos.Dsl.DefaultConcepts
     [ConceptKeyword("DenySave")]
     public class DenySaveForPropertyInfo : DenySaveInfo
     {
-        public string DependedProperties { get; set; }
+        public PropertyInfo DependedProperties { get; set; }
     }
 }

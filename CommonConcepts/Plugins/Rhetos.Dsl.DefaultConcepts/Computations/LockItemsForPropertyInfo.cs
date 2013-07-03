@@ -28,6 +28,6 @@ namespace Rhetos.Dsl.DefaultConcepts
     [ConceptKeyword("LockItems")]
     public class LockItemsForPropertyInfo : LockItemsInfo
     {
-        public string DependedProperties { get; set; }
+        public PropertyInfo DependedProperties { get; set; }
     }
 }

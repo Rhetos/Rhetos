@@ -194,11 +194,6 @@ using System.Linq;
         public QueryDataSourceCommandInfo CommandArguments { get; set; }
     }
 
-    public class InsertDataResult
-    {
-        public Guid ID;
-    }
-
 ", RestGeneratorTags.NamespaceMembers);
 
             codeBuilder.AddReferencesFromDependency(typeof(QueryDataSourceCommandInfo));
