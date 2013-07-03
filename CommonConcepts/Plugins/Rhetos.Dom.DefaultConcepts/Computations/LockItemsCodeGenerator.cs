@@ -58,7 +58,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 {0}[] changedItems = updated.Concat(deleted).ToArray();
                 var lockedItems = _domRepository.{0}.Filter(changedItems.AsQueryable(), new {1}());
                 if (lockedItems.Count() > 0)
-                    throw new Rhetos.UserException({2}, ""Entity:{0}_"" + lockedItems.First().ID.ToString(){3});
+                    throw new Rhetos.UserException({2}, ""DataStructure:{0},ID:"" + lockedItems.First().ID.ToString(){3});
             }}
 ",
                 info.Source.GetKeyProperties(),

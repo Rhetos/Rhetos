@@ -43,9 +43,9 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string AdditionalInvalidMessageSnippet(LockItemsForPropertyInfo info)
         {
             return string.Format(
-                @"+(String.IsNullOrEmpty({1})?"""":"", Properties:{0}."" + {1})",
+                @"+(String.IsNullOrEmpty(""{1}"")?"""":"",Property:{0}.{1}"")",
                 info.Source.GetKeyProperties(),
-                CsUtility.QuotedString(info.DependedProperties.Name));
+                info.DependedProperties.Name);
         }
     }
 }

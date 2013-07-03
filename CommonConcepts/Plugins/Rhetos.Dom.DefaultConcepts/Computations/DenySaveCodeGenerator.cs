@@ -58,7 +58,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 {0}[] changedItems = inserted.Concat(updated).ToArray();
                 var invalidItems = _domRepository.{0}.Filter(changedItems.AsQueryable(), new {1}());
                 if (invalidItems.Count() > 0)
-                    throw new Rhetos.UserException({2}, ""Entity:{0}_"" + invalidItems.First().ID.ToString(){3});
+                    throw new Rhetos.UserException({2}, ""DataStructure:{0},ID:"" + invalidItems.First().ID.ToString(){3});
             }}
 ",
                 info.Source.GetKeyProperties(),
