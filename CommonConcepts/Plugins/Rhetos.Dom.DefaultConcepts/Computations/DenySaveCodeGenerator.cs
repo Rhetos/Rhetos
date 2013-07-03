@@ -41,6 +41,8 @@ namespace Rhetos.Dom.DefaultConcepts
             { }
         }
 
+        public static readonly DenySaveTag UserMessageAppend = new DenySaveTag(TagType.Appendable, "/*DenySave {0}.{1}.{2}*/");
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (DenySaveInfo)conceptInfo;
@@ -56,12 +58,13 @@ namespace Rhetos.Dom.DefaultConcepts
                 {0}[] changedItems = inserted.Concat(updated).ToArray();
                 var invalidItems = _domRepository.{0}.Filter(changedItems.AsQueryable(), new {1}());
                 if (invalidItems.Count() > 0)
-                    throw new Rhetos.UserException({2});
+                    throw new Rhetos.UserException({2}, ""DataStructure:{0},ID:"" + invalidItems.First().ID.ToString(){3});
             }}
 ",
                 info.Source.GetKeyProperties(),
                 info.FilterType,
-                CsUtility.QuotedString(info.Title));
+                CsUtility.QuotedString(info.Title),
+                UserMessageAppend.Evaluate(info));
         }
     }
 }

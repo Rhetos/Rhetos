@@ -26,6 +26,7 @@ using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using Rhetos.Utilities;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -63,12 +64,13 @@ namespace Rhetos.Dom.DefaultConcepts
                 {0}[] changedItems = updated.Zip(updatedNew, (i, j) => (" + propertyChanged + @")?i:null).Where(x => x != null).ToArray();
                 var lockedItems = _domRepository.{0}.Filter(changedItems.AsQueryable(), new {1}());
                 if (lockedItems.Count() > 0)
-                    throw new Rhetos.UserException(""{2}"");
+                    throw new Rhetos.UserException({2}, ""DataStructure:{0},ID:"" + lockedItems.First().ID.ToString() + "",Property:{3}"");
             }}
 ",
                 info.Source.DataStructure.GetKeyProperties(),
                 info.FilterType,
-                info.Title);
+                CsUtility.QuotedString(info.Title),
+                propName);
         }
     }
 }
