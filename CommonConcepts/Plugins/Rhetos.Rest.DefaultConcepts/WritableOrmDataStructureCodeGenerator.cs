@@ -35,7 +35,7 @@ namespace Rhetos.Rest.DefaultConcepts
         private const string DeclarationCodeSnippet = @"
         [OperationContract]
         [WebInvoke(Method = ""POST"", UriTemplate = ""/{0}/{1}"", BodyStyle = WebMessageBodyStyle.Bare, RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
-        string Insert{0}{1}({0}.{1} entity);
+        InsertDataResult Insert{0}{1}({0}.{1} entity);
 
         [OperationContract]
         [WebInvoke(Method = ""PUT"", UriTemplate = ""/{0}/{1}/{{id}}"", BodyStyle = WebMessageBodyStyle.Bare, RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
@@ -45,16 +45,15 @@ namespace Rhetos.Rest.DefaultConcepts
         [WebInvoke(Method = ""DELETE"", UriTemplate = ""/{0}/{1}/{{id}}"", BodyStyle = WebMessageBodyStyle.Bare, RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void Delete{0}{1}(string id);
 ";
-
+        
         private const string ImplementationCodeSnippet = @"
-        public string Insert{0}{1}({0}.{1} entity)
+        public InsertDataResult Insert{0}{1}({0}.{1} entity)
         {{
             if (Guid.Empty == entity.ID)
                 entity.ID = Guid.NewGuid();
 
-            InsertData(entity);
-
-            return entity.ID.ToString();
+            var result = InsertData(entity);
+            return new InsertDataResult {{ ID = entity.ID }};
         }}
 
         public void Update{0}{1}(string id, {0}.{1} entity)
@@ -104,7 +103,15 @@ namespace Rhetos.Rest.DefaultConcepts
             _isInitialCallMade = true;
 
             codeBuilder.InsertCode(@"
-        private void InsertData<T>(T entity)
+
+        public class InsertDataResult
+        {
+            public Guid ID;
+        }", RestGeneratorTags.NamespaceMembers);
+
+            codeBuilder.InsertCode(@"
+
+        private ServerProcessingResult InsertData<T>(T entity)
         {
             var commandInfo = new SaveEntityCommandInfo
                                   {
@@ -114,9 +121,11 @@ namespace Rhetos.Rest.DefaultConcepts
 
             var result = _serverApplication.Execute(ToServerCommand(commandInfo));
             CheckForErrors(result);
+
+            return result;
         }
 
-        private void UpdateData<T>(T entity)
+        private ServerProcessingResult UpdateData<T>(T entity)
         {
             var commandInfo = new SaveEntityCommandInfo
             {
@@ -126,9 +135,11 @@ namespace Rhetos.Rest.DefaultConcepts
 
             var result = _serverApplication.Execute(ToServerCommand(commandInfo));
             CheckForErrors(result);
+
+            return result;
         }
 
-        private void DeleteData<T>(T entity)
+        private ServerProcessingResult DeleteData<T>(T entity)
         {
             var commandInfo = new SaveEntityCommandInfo
             {
@@ -138,6 +149,8 @@ namespace Rhetos.Rest.DefaultConcepts
 
             var result = _serverApplication.Execute(ToServerCommand(commandInfo));
             CheckForErrors(result);
+
+            return result;
         }
 ", RestGeneratorTags.ImplementationMembers);
 

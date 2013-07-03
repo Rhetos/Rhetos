@@ -17,22 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.Linq;
+using System.Text;
 
-namespace Rhetos
+namespace Rhetos.Dsl.DefaultConcepts
 {
-    [global::System.Serializable]
-    public class UserException : Exception
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("DenySave")]
+    public class DenySaveForPropertyInfo : DenySaveInfo
     {
-        public string SystemMessage;
-        public UserException() { }
-        public UserException(string message) : base(message) { }
-        public UserException(string message, string systemMessage) : base(message) { SystemMessage = systemMessage; }
-        public UserException(string message, Exception inner) : base(message, inner) { }
-        public UserException(string message, string systemMessage, Exception inner) : base(message, inner) { SystemMessage = systemMessage; }
-        protected UserException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context)
-            : base(info, context) { }
+        public PropertyInfo DependedProperties { get; set; }
     }
-
 }
