@@ -42,10 +42,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string AdditionalInvalidMessageSnippet(LockItemsForPropertyInfo info)
         {
-            return string.Format(
-                @"+(String.IsNullOrEmpty(""{1}"")?"""":"",Property:{0}.{1}"")",
-                info.Source.GetKeyProperties(),
-                info.DependedProperties.Name);
+            return string.Format(@"+"",Property:{0}""", info.DependedProperties.Name);
         }
     }
 }
