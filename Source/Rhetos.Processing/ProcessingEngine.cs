@@ -135,8 +135,11 @@ namespace Rhetos.Processing
                         tran.DiscardChanges();
 
                         string userMessage = null;
-                        if (ex is UserException)
+                        string systemMessage = null;
+                        if (ex is UserException) {
                             userMessage = ex.Message;
+                            systemMessage = (ex as UserException).SystemMessage;
+                        }
                         if (userMessage == null)
                             userMessage = TryParseSqlException(ex);
 
@@ -144,7 +147,7 @@ namespace Rhetos.Processing
                             commandResults,
                             "Exception in command execution or ApplyChanges. " + ex,
                             commandCount,
-                            commandReports.ToString() + ex,
+                            (String.IsNullOrEmpty(systemMessage) && String.IsNullOrEmpty(userMessage)) ? commandReports.ToString() + ex : systemMessage,
                             userMessage);
                     }
                 }
@@ -203,7 +206,7 @@ namespace Rhetos.Processing
             return new ProcessingResult
                 {
                     Success = false,
-                    SystemMessage = String.Format(CultureInfo.InvariantCulture, "Command #{0} failed.", commandCount) + Environment.NewLine + systemMessage,
+                    SystemMessage = systemMessage,
                     UserMessage = userMessage
                 };
         }

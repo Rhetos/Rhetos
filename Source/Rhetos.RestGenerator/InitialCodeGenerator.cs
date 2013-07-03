@@ -65,6 +65,12 @@ namespace Rhetos
 " + RestGeneratorTags.InterfaceMembers + @"
 	}
 	
+    public class MessagesResult 
+    {
+        public string SystemMessage;
+        public string UserMessage;
+    }
+
 	public class DomainService : IDomainService
 	{
 
@@ -101,10 +107,10 @@ namespace Rhetos
         private static void CheckForErrors(ServerProcessingResult result)
         {
             if (!result.Success)
-                if (string.IsNullOrEmpty(result.UserMessage))
-                    throw new WebFaultException<string>(result.SystemMessage, HttpStatusCode.InternalServerError);
-                else
-                    throw new WebFaultException<string>(result.UserMessage, HttpStatusCode.BadRequest);
+                throw new WebFaultException<MessagesResult>(
+                        new MessagesResult { SystemMessage = result.SystemMessage, UserMessage = result.UserMessage }, 
+                        string.IsNullOrEmpty(result.UserMessage) ? HttpStatusCode.InternalServerError : HttpStatusCode.BadRequest
+                );
         }
 
 " + RestGeneratorTags.ImplementationMembers + @"

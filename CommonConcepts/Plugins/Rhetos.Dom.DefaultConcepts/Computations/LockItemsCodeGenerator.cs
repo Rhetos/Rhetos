@@ -26,6 +26,7 @@ using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using Rhetos.Utilities;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -39,6 +40,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format, info.Source.Module.Name, info.Source.Name, info.FilterType), nextTagFormat, firstEvaluationContext, nextEvaluationContext)
             { }
         }
+
+        public static readonly LockItemsTag UserMessageAppend = new LockItemsTag(TagType.Appendable, "/*LockItems {0}.{1}.{2}*/");
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
@@ -55,12 +58,13 @@ namespace Rhetos.Dom.DefaultConcepts
                 {0}[] changedItems = updated.Concat(deleted).ToArray();
                 var lockedItems = _domRepository.{0}.Filter(changedItems.AsQueryable(), new {1}());
                 if (lockedItems.Count() > 0)
-                    throw new Rhetos.UserException(""{2}"");
+                    throw new Rhetos.UserException({2}, ""Entity:{0}_"" + lockedItems.First().ID.ToString(){3});
             }}
 ",
                 info.Source.GetKeyProperties(),
                 info.FilterType,
-                info.Title);
+                CsUtility.QuotedString(info.Title),
+                UserMessageAppend.Evaluate(info));
         }
     }
 }
