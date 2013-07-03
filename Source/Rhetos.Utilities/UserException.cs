@@ -23,9 +23,12 @@ namespace Rhetos
     [global::System.Serializable]
     public class UserException : Exception
     {
+        public string SystemMessage;
         public UserException() { }
         public UserException(string message) : base(message) { }
+        public UserException(string message, string systemMessage) : base(message) { SystemMessage = systemMessage; }
         public UserException(string message, Exception inner) : base(message, inner) { }
+        public UserException(string message, string systemMessage, Exception inner) : base(message, inner) { SystemMessage = systemMessage; }
         protected UserException(
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context)
