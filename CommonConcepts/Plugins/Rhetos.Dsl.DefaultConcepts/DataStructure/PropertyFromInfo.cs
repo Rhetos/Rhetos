@@ -59,13 +59,14 @@ namespace Rhetos.Dsl.DefaultConcepts
                     .Where(ci => ci.DataStructure == Destination)
                     .Select(ci => ci.Name));
 
-            foreach (var sourceIndex in existingConcepts.OfType<SqlIndexMultipleInfo>().Where(ci => ci.Entity == Source.DataStructure))
-            {
-                var indexProperties = sourceIndex.PropertyNames.Split(' ');
-                if (property.Name == indexProperties.FirstOrDefault()
-                    && indexProperties.Skip(1).All(indexProperty => destinationProperties.Contains(indexProperty)))
-                    newConcepts.Add(new SqlIndexMultipleInfo { Entity = Destination, PropertyNames = sourceIndex.PropertyNames });
-            }
+            if (SqlIndexMultipleInfo.IsSupported(Destination))
+                foreach (var sourceIndex in existingConcepts.OfType<SqlIndexMultipleInfo>().Where(ci => ci.Entity == Source.DataStructure))
+                {
+                    var indexProperties = sourceIndex.PropertyNames.Split(' ');
+                    if (property.Name == indexProperties.FirstOrDefault()
+                        && indexProperties.Skip(1).All(indexProperty => destinationProperties.Contains(indexProperty)))
+                        newConcepts.Add(new SqlIndexMultipleInfo { Entity = Destination, PropertyNames = sourceIndex.PropertyNames });
+                }
 
             return newConcepts;
         }

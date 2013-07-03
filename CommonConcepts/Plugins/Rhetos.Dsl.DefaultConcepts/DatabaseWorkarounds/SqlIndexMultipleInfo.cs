@@ -46,11 +46,17 @@ namespace Rhetos.Dsl.DefaultConcepts
             return result;
         }
 
+        public static bool IsSupported(DataStructureInfo dataStructure)
+        {
+            return dataStructure is IWritableOrmDataStructure;
+        }
+
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
-            if (!(Entity is IWritableOrmDataStructure))
+            if (!IsSupported(Entity))
                 throw new DslSyntaxException(
-                    string.Format("SqlIndexMultiple must be used inside writable data structure. DateStructure {0} is of type {1}.",
+                    string.Format("{0} must be used inside writable data structure. DateStructure {1} is of type {2}.",
+                        this.GetUserDescription(),
                         Entity,
                         Entity.GetType().FullName));
 
