@@ -36,9 +36,11 @@ namespace Rhetos.Dom.DefaultConcepts
         private string CheckDataSnippet(RequiredPropertyInfo info)
         {
             return string.Format(
-@"            if (inserted.Any(item => string.IsNullOrWhiteSpace(item.{2})) || updated.Any(item => string.IsNullOrWhiteSpace(item.{2})))
-                throw new Rhetos.UserException(""It is not allowed to enter {0}.{1} because the required property {2} is not set."");
-
+@"          {{ 
+                var invalid = inserted.Concat(updated).FirstOrDefault(item => string.IsNullOrWhiteSpace(item.{2}));
+                if (invalid != null)
+                    throw new Rhetos.UserException(""It is not allowed to enter {0}.{1} because the required property {2} is not set."", ""DataStructure:{0}.{1},ID:"" + invalid.ID.ToString() + "",Property:{2}"");
+            }}
 ",
                 info.Property.DataStructure.Module.Name,
                 info.Property.DataStructure.Name,
