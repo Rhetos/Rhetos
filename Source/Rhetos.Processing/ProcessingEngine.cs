@@ -112,10 +112,9 @@ namespace Rhetos.Processing
                             if (!commandResult.Success)
                             {
                                 tran.DiscardChanges();
-                             
-                                return LogResultsReturnError(commandResults, 
-                                    String.Format(CultureInfo.InvariantCulture, "Command failed. {0} {1} {2} {3}", commandInfo.GetType().Name, commandInfo, implementationType.Name, commandResult.Message),
-                                    commandCount, null, null);
+
+                                var systemMessage = String.Format(CultureInfo.InvariantCulture, "Command failed. {0} {1} {2}", commandInfo.GetType().Name, commandInfo, implementationType.Name);
+                                return LogResultsReturnError(commandResults, systemMessage + " " + commandResult.Message, commandCount, systemMessage, commandResult.Message);
                             }
                         }
 
@@ -140,6 +139,9 @@ namespace Rhetos.Processing
                         }
                         if (userMessage == null)
                             userMessage = TryParseSqlException(ex);
+
+                        if (userMessage == null && systemMessage == null)
+                            systemMessage = ex.GetType().Name + ". For details see RhetosServer.log.";
 
                         return LogResultsReturnError(
                             commandResults,

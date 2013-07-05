@@ -181,6 +181,13 @@
     <Compile Include="DataStructure\Properties\DateTimePropertyInfo.cs" />
     <Compile Include="DataStructure\Properties\LongStringPropertyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\BrowseTakeNamedPropertyInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\MaxValueInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\MinValueInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\IntegerRangeInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\RegExMatchInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\DateRangeInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\RangeInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\MinLengthInfo.cs" />
     <Compile Include="SimpleBusinessLogic\ModificationTimeOfInfo.cs" />
     <Compile Include="SimpleBusinessLogic\CreationTimeInfo.cs" />
     <Compile Include="SimpleBusinessLogic\ModuleExternalReferenceInfo.cs" />

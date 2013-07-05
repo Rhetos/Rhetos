@@ -153,6 +153,11 @@
     <Compile Include="ComputedTest.cs" />
     <Compile Include="AuditablePropertiesTest.cs" />
     <Compile Include="CloningTest.cs" />
+    <Compile Include="MaxValueTest.cs" />
+    <Compile Include="MinValueTest.cs" />
+    <Compile Include="RegExMatchTest.cs" />
+    <Compile Include="RangeTest.cs" />
+    <Compile Include="MinLengthTest.cs" />
     <Compile Include="EntityHistoryTest.cs" />
     <Compile Include="DatabaseExtensionsTest.cs" />
     <Compile Include="LockPropertyTest.cs" />

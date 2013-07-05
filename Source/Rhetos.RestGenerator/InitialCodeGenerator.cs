@@ -69,7 +69,12 @@ namespace Rhetos
     {
         public string SystemMessage;
         public string UserMessage;
-    }
+
+        public override string ToString() 
+        {
+            return ""SystemMessage: "" + (SystemMessage ?? ""<null>"") + "", UserMessage: "" + (UserMessage ?? ""<null>"");
+        }
+    } 
 
 	public class DomainService : IDomainService
 	{

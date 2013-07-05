@@ -26,7 +26,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace CommonConcepts.Test
 {
     [TestClass]
-    public class MaxLengthTest
+    public class MinLengthTest
     {
         [TestMethod]
         [ExpectedException(typeof(Rhetos.UserException))]
@@ -35,24 +35,19 @@ namespace CommonConcepts.Test
             using (var executionContext = new CommonTestExecutionContext())
             {
                 var repository = new Common.DomRepository(executionContext);
-                var entity = new SimpleMaxLength { StringLessThan10Chars = "More than 10 characters." };
-                repository.TestLengthLimit.SimpleMaxLength.Insert(new[] { entity });
+                var entity = new SimpleMinLength { StringMoreThan2Chars = "." };
+                repository.TestLengthLimit.SimpleMinLength.Insert(new[] { entity });
             }
         }
-
+        
         [TestMethod]
-        public void ShouldInsertWithShortStringEntity()
+        public void ShouldNotThrowUserExceptionOnInsert()
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
-                    {
-                        "DELETE FROM TestLengthLimit.SimpleMaxLength;",
-                    });
-
                 var repository = new Common.DomRepository(executionContext);
-                var entity = new SimpleMaxLength { StringLessThan10Chars = "abc" };
-                repository.TestLengthLimit.SimpleMaxLength.Insert(new[] { entity });
+                var entity = new SimpleMinLength { StringMoreThan2Chars = ".aaa" };
+                repository.TestLengthLimit.SimpleMinLength.Insert(new[] { entity });
             }
         }
 
@@ -67,8 +62,8 @@ namespace CommonConcepts.Test
                     });
 
                 var repository = new Common.DomRepository(executionContext);
-                var entity = new SimpleMaxLength { LongStringLessThan10Chars = "abc" };
-                repository.TestLengthLimit.SimpleMaxLength.Insert(new[] { entity });
+                var entity = new SimpleMinLength { StringMoreThan2Chars = "abc" };
+                repository.TestLengthLimit.SimpleMinLength.Insert(new[] { entity });
             }
         }
 
@@ -79,8 +74,8 @@ namespace CommonConcepts.Test
             using (var executionContext = new CommonTestExecutionContext())
             {
                 var repository = new Common.DomRepository(executionContext);
-                var entity = new SimpleMaxLength { LongStringLessThan10Chars = "More than 10 characters." };
-                repository.TestLengthLimit.SimpleMaxLength.Update(new[] { entity });
+                var entity = new SimpleMinLength { StringMoreThan2Chars = "." };
+                repository.TestLengthLimit.SimpleMinLength.Update(new[] { entity });
             }
         }
     }

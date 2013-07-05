@@ -26,42 +26,31 @@ using Rhetos.Utilities;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("MaxLength")]
-    public class MaxLengthInfo : IMacroConcept, IValidationConcept
+    [ConceptKeyword("RegExMatch")]
+    public class RegExMatchInfo : IMacroConcept
     {
         [ConceptKey]
         public PropertyInfo Property { get; set; }
 
-        public string Length { get; set; }
+        public string Regex2 { get; set; }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
             // Expand the base entity:
-            var itemFilterMinLengthProperty = new ItemFilterInfo
+            var itemFilterRegExMatchProperty = new ItemFilterInfo
             {
-                Expression = String.Format("item => item.{0}.Length > {1}", Property.Name, Length),
-                FilterName = Property.Name + "_MaxLengthFilter",
+                Expression = String.Format(@"item => !(new System.Text.RegularExpressions.Regex(""{1}"")).IsMatch(item.{0})", Property.Name, Regex2),
+                FilterName = Property.Name + "_RegExMatchFilter",
                 Source = Property.DataStructure
             };
-            var denySaveMinLengthProperty = new DenySaveForPropertyInfo
+            var denySaveRegExMatchProperty = new DenySaveForPropertyInfo
             {
                 DependedProperties = Property,
-                FilterType = itemFilterMinLengthProperty.FilterName,
-                Title = String.Format("Maximum allowed length of {0} is {1} characters.", Property.Name, Length),
+                FilterType = itemFilterRegExMatchProperty.FilterName,
+                Title = String.Format("{0} has to match {1}.", Property.Name, Regex2),
                 Source = Property.DataStructure
             };
-            return new IConceptInfo[] { itemFilterMinLengthProperty, denySaveMinLengthProperty };
-        }
-
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
-        {
-            int i;
-
-            if (!(this.Property is ShortStringPropertyInfo || this.Property is LongStringPropertyInfo))
-                throw new DslSyntaxException("MaxLength can only be used on ShortString or LongString.");
-
-            if (!Int32.TryParse(this.Length, out i))
-                throw new DslSyntaxException("Length is not an integer.");
+            return new IConceptInfo[] { itemFilterRegExMatchProperty, denySaveRegExMatchProperty };
         }
     }
 }

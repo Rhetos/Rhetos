@@ -116,7 +116,6 @@
     <Compile Include="HierarchyInfo.cs" />
     <Compile Include="HierarchyItem.cs" />
     <Compile Include="SimpleBusinessLogic\ModuleExternalReferenceCodeGenerator.cs" />
-    <Compile Include="SimpleBusinessLogic\MaxLengthCodeGenerator.cs" />
     <Compile Include="DataStructure\BrowsePropertyCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\RequiredPropertyCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\RequiredStringPropertyCodeGenerator.cs" />
