@@ -26,20 +26,27 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class ComputeForNewBaseItemsExtensionInfo : IConceptInfo, IValidationConcept
+    public class ComputeForNewBaseItemsExtensionInfo : IValidationConcept
     {
         [ConceptKey]
         public DataStructureExtendsInfo Extends { get; set; }
 
+        /// <summary>May be empty.</summary>
         public string FilterSaveExpression { get; set; }
+
+        public EntityComputedFromInfo EntityComputedFrom { get; set; }
 
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
             if (!(Extends.Base is IWritableOrmDataStructure))
-                throw new DslSyntaxException("ComputeForNewBaseItems can only be used if a persisted data structure extends a writable data structure. Base data structure of type '" + Extends.Base.GetUserDescription() + "' is not supported.");
-            
-            if (!(Extends.Extension is PersistedDataStructureInfo))
-                throw new DslSyntaxException("ComputeForNewBaseItems can only be used if a persisted data structure extends a base entity. Extended data structure of type '" + Extends.Extension.GetUserDescription() + "' is not supported.");
+                throw new DslSyntaxException(
+                    "ComputeForNewBaseItems can only be used if a persisted data structure extends a writable data structure. Base data structure of type '"
+                    + Extends.Base.GetUserDescription() + "' is not supported.");
+
+            if (Extends.Extension != EntityComputedFrom.Target)
+                throw new DslSyntaxException("Invalid " + this.GetKeywordOrTypeName()
+                    + ": The given extension (" + Extends.Extension.GetUserDescription()
+                    + ") should be same as the computed target entity (" + EntityComputedFrom.Target + ").");
         }
     }
 }

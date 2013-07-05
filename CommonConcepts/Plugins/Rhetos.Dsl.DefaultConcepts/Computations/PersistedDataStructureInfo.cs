@@ -32,15 +32,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            IEnumerable<IConceptInfo> persistedProperties = existingConcepts.OfType<PropertyInfo>()
-                .Where(property => property.DataStructure == this)
-                .Select(myProperty => new PropertyPersistedInfo {Property = myProperty});
-
-            IEnumerable<IConceptInfo> persistedExtension = existingConcepts.OfType<DataStructureExtendsInfo>()
-                .Where(extension => extension.Extension == this)
-                .Select(extension => new ExtensionPersistedInfo {Persisted = this});
-
-            return persistedProperties.Concat(persistedExtension).ToArray();
+            return new[] { new EntityComputedFromInfo { Target = this, Source = Source } };
         }
     }
 }

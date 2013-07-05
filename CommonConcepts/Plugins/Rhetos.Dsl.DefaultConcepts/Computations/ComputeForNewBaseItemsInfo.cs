@@ -31,12 +31,12 @@ namespace Rhetos.Dsl.DefaultConcepts
     public class ComputeForNewBaseItemsInfo : IMacroConcept, IValidationConcept
     {
         [ConceptKey]
-        public PersistedDataStructureInfo Persisted { get; set; }
+        public EntityComputedFromInfo EntityComputedFrom { get; set; }
 
         private DataStructureExtendsInfo MyExtendsConceptInfo(IEnumerable<IConceptInfo> existingConcepts)
         {
             return existingConcepts.OfType<DataStructureExtendsInfo>()
-                .Where(extends => extends.Extension == Persisted)
+                .Where(extends => extends.Extension == EntityComputedFrom.Target)
                 .FirstOrDefault();
         }
 
@@ -51,7 +51,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var myExtends = MyExtendsConceptInfo(existingConcepts);
             if (myExtends != null)
-                return new[] {new ComputeForNewBaseItemsExtensionInfo {Extends = myExtends}};
+                return new[] { new ComputeForNewBaseItemsExtensionInfo { Extends = myExtends, FilterSaveExpression = "", EntityComputedFrom = EntityComputedFrom } };
             return null;
         }
     }

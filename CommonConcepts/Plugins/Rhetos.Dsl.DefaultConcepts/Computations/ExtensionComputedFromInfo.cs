@@ -25,9 +25,10 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class ExtensionPersistedInfo : IConceptInfo
+    [ConceptKeyword("Extension")]
+    public class ExtensionComputedFromInfo : IConceptInfo
     {
         [ConceptKey]
-        public PersistedDataStructureInfo Persisted { get; set; }
+        public EntityComputedFromInfo EntityComputedFrom { get; set; }
     }
 }

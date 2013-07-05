@@ -34,7 +34,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return new[] { new AllPropertiesWithCascadeDeleteFromInfo { Destination = Persisted, Source = Persisted.Source } };
+            return new[] { new EntityComputedFromAllPropertiesInfo { EntityComputedFrom = new EntityComputedFromInfo { Target = Persisted, Source = Persisted.Source } } };
         }
     }
 }

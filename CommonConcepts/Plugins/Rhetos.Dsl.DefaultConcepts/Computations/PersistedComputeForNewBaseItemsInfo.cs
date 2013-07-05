@@ -28,17 +28,15 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ComputeForNewBaseItems")]
-    public class ComputeForNewBaseItemsWithFilterInfo : IMacroConcept, IValidationConcept
+    public class PersistedComputeForNewBaseItemsInfo : IMacroConcept, IValidationConcept
     {
         [ConceptKey]
-        public EntityComputedFromInfo EntityComputedFrom { get; set; }
-
-        public string FilterSaveExpression { get; set; }
+        public PersistedDataStructureInfo Persisted { get; set; }
 
         private DataStructureExtendsInfo MyExtendsConceptInfo(IEnumerable<IConceptInfo> existingConcepts)
         {
             return existingConcepts.OfType<DataStructureExtendsInfo>()
-                .Where(extends => extends.Extension == EntityComputedFrom.Target)
+                .Where(extends => extends.Extension == Persisted)
                 .FirstOrDefault();
         }
 
@@ -46,15 +44,15 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var myExtends = MyExtendsConceptInfo(concepts);
             if (myExtends == null)
-                throw new DslSyntaxException("ComputeForNewBaseItemsWithFilter can only be used if the persisted data structure extends a base entity. Use 'Extends' keyword to define the extension is applicable.");
+                throw new DslSyntaxException("ComputeForNewBaseItems can only be used if the persisted data structure extends a base entity. Use 'Extends' keyword to define the extension is applicable.");
         }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            var myExtends = MyExtendsConceptInfo(existingConcepts);
-            if (myExtends != null)
-                return new[] { new ComputeForNewBaseItemsExtensionInfo { Extends = myExtends, FilterSaveExpression = FilterSaveExpression, EntityComputedFrom = EntityComputedFrom } };
-            return null;
+            return new[] { new ComputeForNewBaseItemsInfo
+                {
+                    EntityComputedFrom = new EntityComputedFromInfo { Target = Persisted, Source = Persisted.Source }
+                } };
         }
     }
 }

@@ -38,7 +38,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (ComputeForNewBaseItemsExtensionInfo) conceptInfo;
 
             var baseDS = info.Extends.Base;
-            var persistedExtension = (PersistedDataStructureInfo) info.Extends.Extension;
+            var persistedExtension = info.EntityComputedFrom.Target;
 
             string uniqueName = persistedExtension.Module.Name + persistedExtension.Name;
             codeBuilder.InsertCode(RecomputeForNewItemsSnippet(baseDS, persistedExtension, uniqueName, info.FilterSaveExpression), WritableOrmDataStructureCodeGenerator.OnSaveTag1, baseDS);
@@ -48,7 +48,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 codeBuilder.InsertCode(FilterSaveFunction(info, uniqueName), RepositoryHelper.RepositoryMembers, baseDS);
         }
 
-        private static string RecomputeForNewItemsSnippet(DataStructureInfo hookOnSave, PersistedDataStructureInfo updatePersistedComputation, string uniqueName, string filterSaveExpression)
+        private static string RecomputeForNewItemsSnippet(DataStructureInfo hookOnSave, EntityInfo updatePersistedComputation, string uniqueName, string filterSaveExpression)
         {
             return string.Format(
 @"            if (inserted.Count() > 0)

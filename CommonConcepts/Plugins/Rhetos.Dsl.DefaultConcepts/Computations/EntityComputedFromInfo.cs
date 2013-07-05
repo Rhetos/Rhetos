@@ -25,15 +25,13 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class PropertyPersistedInfo : IConceptInfo, IValidationConcept
+    [ConceptKeyword("ComputedFrom")]
+    public class EntityComputedFromInfo : IConceptInfo
     {
         [ConceptKey]
-        public PropertyInfo Property { get; set; }
+        public EntityInfo Target { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
-        {
-            if (!(Property.DataStructure is PersistedDataStructureInfo))
-                throw new FrameworkException("PropertyPersistedInfo can only be used on properties of PersistedDataStructureInfo. Property " + Property.GetKeyProperties() + " is a member of " + Property.DataStructure.GetType().Name);
-        }
+        [ConceptKey]
+        public DataStructureInfo Source { get; set; }
     }
 }

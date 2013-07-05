@@ -43,7 +43,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 ReadChangedItemsOnSaveCodeGenerator.BeforeSaveUseChangedItems, info.UpdateOnChange.DependsOn);
 
             codeBuilder.InsertCode(
-                FilterAndRecomputePersistedAfterSave(info, uniqueName),
+                FilterAndRecomputeAfterSave(info, uniqueName),
                 ReadChangedItemsOnSaveCodeGenerator.AfterSaveUseChangedItems, info.UpdateOnChange.DependsOn);
 
             codeBuilder.InsertCode(
@@ -65,7 +65,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 uniqueName, fliterType);
         }
 
-        private static string FilterAndRecomputePersistedAfterSave(KeepSynchronizedOnChangedItemsInfo info, string uniqueName)
+        private static string FilterAndRecomputeAfterSave(KeepSynchronizedOnChangedItemsInfo info, string uniqueName)
         {
             return string.Format(
 @"            {{
@@ -80,8 +80,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
 ",
                 uniqueName,
-                info.Persisted.Module.Name,
-                info.Persisted.Name,
+                info.EntityComputedFrom.Target.Module.Name,
+                info.EntityComputedFrom.Target.Name,
                 !string.IsNullOrWhiteSpace(info.FilterSaveExpression) ? (", _filterSaveKeepSynchronizedOnChangedItems" + uniqueName) : "",
                 info.UpdateOnChange.DependsOn.Module.Name,
                 info.UpdateOnChange.DependsOn.Name);
@@ -108,7 +108,7 @@ namespace Rhetos.Dom.DefaultConcepts
             {3};
 
 ",
-                info.Persisted.Module.Name, info.Persisted.Name, uniqueName, info.FilterSaveExpression);
+                info.EntityComputedFrom.Target.Module.Name, info.EntityComputedFrom.Target.Name, uniqueName, info.FilterSaveExpression);
         }
     }
 }

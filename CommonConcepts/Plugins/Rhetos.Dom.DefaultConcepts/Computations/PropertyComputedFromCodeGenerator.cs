@@ -29,14 +29,29 @@ using Rhetos.Extensibility;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(ExtensionPersistedInfo))]
-    public class ExtensionPersistedCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(PropertyComputedFromInfo))]
+    public class PropertyComputedFromCodeGenerator : IConceptCodeGenerator
     {
+        private static string ComparePropertySnippet(PropertyComputedFromInfo info)
+        {
+            return string.Format(
+@"                        if (same && (sourceEnum.Current.{0} == null && destEnum.Current.{0} != null || sourceEnum.Current.{0} != null && !sourceEnum.Current.{0}.Equals(destEnum.Current.{0})))
+                            same = false;
+", info.Target.Name);
+        }
+
+        private static string ClonePropertySnippet(PropertyComputedFromInfo info)
+        {
+            return string.Format(
+@",
+                                    {0} = sourceEnum.Current.{0}", info.Target.Name);
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (ExtensionPersistedInfo)conceptInfo;
-            codeBuilder.InsertCode(@",
-                                           Base = sourceEnum.Current.Base", PersistedDataStructureCodeGenerator.ClonePropertyTag, info.Persisted);
+            var info = (PropertyComputedFromInfo) conceptInfo;
+            codeBuilder.InsertCode(ComparePropertySnippet(info), EntityComputedFromCodeGenerator.ComparePropertyTag, info.EntityComputedFrom);
+            codeBuilder.InsertCode(ClonePropertySnippet(info), EntityComputedFromCodeGenerator.ClonePropertyTag, info.EntityComputedFrom);
         }
     }
 }

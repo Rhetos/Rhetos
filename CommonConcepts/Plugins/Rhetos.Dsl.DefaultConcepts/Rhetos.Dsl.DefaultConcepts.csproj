@@ -118,6 +118,12 @@
     <Compile Include="Advanced\HierarchySingleRootInfo.cs" />
     <Compile Include="Advanced\HierarchyWithPathInfo.cs" />
     <Compile Include="Computations\ComputeForNewBaseItemsWithFilterInfo.cs" />
+    <Compile Include="Computations\PersistedKeepSynchronizedInfo.cs" />
+    <Compile Include="Computations\PersistedKeepSynchronizedWithFilteredSaveInfo.cs" />
+    <Compile Include="Computations\PersistedComputeForNewBaseItemsInfo.cs" />
+    <Compile Include="Computations\PersistedComputeForNewBaseItemsWithFilterInfo.cs" />
+    <Compile Include="Computations\EntityComputedFromAllPropertiesInfo.cs" />
+    <Compile Include="Computations\EntityComputedFromInfo.cs" />
     <Compile Include="Computations\LockItemsForPropertyInfo.cs" />
     <Compile Include="Computations\DenySaveForPropertyInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlDependsOnSqlObjectInfo.cs" />
@@ -152,9 +158,9 @@
     <Compile Include="Computations\ComputeForNewBaseItemsExtensionInfo.cs" />
     <Compile Include="Computations\ComputeForNewBaseItemsInfo.cs" />
     <Compile Include="Computations\KeepSynchronizedWithFilteredSaveInfo.cs" />
-    <Compile Include="Computations\ExtensionPersistedInfo.cs" />
+    <Compile Include="Computations\ExtensionComputedFromInfo.cs" />
     <Compile Include="Computations\PersistedDataStructureInfo.cs" />
-    <Compile Include="Computations\PropertyPersistedInfo.cs" />
+    <Compile Include="Computations\PropertyComputedFromInfo.cs" />
     <Compile Include="Computations\QueryableExtensionInfo.cs" />
     <Compile Include="Computations\ReadChangedItemsOnSaveInfo.cs" />
     <Compile Include="Computations\SqlQueryableInfo.cs" />

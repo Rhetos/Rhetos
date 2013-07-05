@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     public class KeepSynchronizedOnChangedItemsInfo : IConceptInfo, IValidationConcept
     {
         [ConceptKey]
-        public PersistedDataStructureInfo Persisted { get; set; }
+        public EntityComputedFromInfo EntityComputedFrom { get; set; }
 
         [ConceptKey]
         public ChangesOnChangedItemsInfo UpdateOnChange { get; set; }
