@@ -26,42 +26,38 @@ using Rhetos.Utilities;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("MaxLength")]
-    public class MaxLengthInfo : IMacroConcept, IValidationConcept
+    [ConceptKeyword("Range")]
+    public class RangeInfo : IMacroConcept, IValidationConcept
     {
         [ConceptKey]
-        public PropertyInfo Property { get; set; }
+        public PropertyInfo PropertyFrom { get; set; }
 
-        public string Length { get; set; }
+        [ConceptKey]
+        public PropertyInfo PropertyTo { get; set; }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
             // Expand the base entity:
-            var itemFilterMinLengthProperty = new ItemFilterInfo
+            var itemFilterRange = new ItemFilterInfo
             {
-                Expression = String.Format("item => item.{0}.Length > {1}", Property.Name, Length),
-                FilterName = Property.Name + "_MaxLengthFilter",
-                Source = Property.DataStructure
+                Expression = String.Format("item => item.{0} != null && item.{1} != null && item.{0} > item.{1}", PropertyFrom.Name, PropertyTo.Name),
+                FilterName = PropertyFrom.Name + "_" + PropertyTo.Name + "_RangeFilter",
+                Source = PropertyFrom.DataStructure
             };
-            var denySaveMinLengthProperty = new DenySaveForPropertyInfo
+            var denySaveRange = new DenySaveForPropertyInfo
             {
-                DependedProperties = Property,
-                FilterType = itemFilterMinLengthProperty.FilterName,
-                Title = String.Format("Maximum allowed length of {0} is {1} characters.", Property.Name, Length),
-                Source = Property.DataStructure
+                DependedProperties = PropertyFrom,
+                FilterType = itemFilterRange.FilterName,
+                Title = String.Format("Value of {0} has to be less than or equal to {1}.", PropertyFrom.Name, PropertyTo.Name),
+                Source = PropertyFrom.DataStructure
             };
-            return new IConceptInfo[] { itemFilterMinLengthProperty, denySaveMinLengthProperty };
+            return new IConceptInfo[] { itemFilterRange, denySaveRange };
         }
 
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
-            int i;
-
-            if (!(this.Property is ShortStringPropertyInfo || this.Property is LongStringPropertyInfo))
-                throw new DslSyntaxException("MaxLength can only be used on ShortString or LongString.");
-
-            if (!Int32.TryParse(this.Length, out i))
-                throw new DslSyntaxException("Length is not an integer.");
+            if (!(this.PropertyFrom.GetType() == this.PropertyTo.GetType()))
+                throw new DslSyntaxException(this, "Range can only be used on two properties of same type.");
         }
     }
 }

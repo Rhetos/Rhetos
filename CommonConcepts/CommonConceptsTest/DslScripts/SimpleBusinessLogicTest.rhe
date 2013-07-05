@@ -111,3 +111,111 @@ Module TestAuditable
 		DateTime ModifiedNameOrParentModification { ModificationTimeOf TestAuditable.Simple.Name; ModificationTimeOf TestAuditable.Simple.ModifiedParentProperty; }
 	}
 }
+
+Module TestRange
+{
+    Entity SimpleRange
+    {
+        Decimal FromValue { Range TestRange.SimpleRange.ToValue; }
+        Decimal ToValue;
+    }
+    
+    Entity DateRangeWithoutDef 
+    {
+        DateRange FromDate ToDate;
+    }
+
+    Entity DateRangeWithRequired
+    {
+        Date FromDate { Required; }
+        DateRange FromDate ToDate;
+    }
+
+    Entity IntegerRange
+    {
+        IntegerRange FromValue ToValue;
+    }
+}
+
+Module TestLengthLimit
+{
+    Entity SimpleMaxLength
+    {
+        ShortString StringLessThan10Chars { MaxLength 10; }
+        LongString LongStringLessThan10Chars { MaxLength 10; }
+    }
+
+    Entity SimpleMinLength 
+    {
+        LongString StringMoreThan2Chars { MinLength 3; }
+    }
+    
+    Entity ExactlyLength
+    {
+        ShortString StringExactly5Chars { MinLength 5; MaxLength 5; }
+    }
+}
+
+Module TestRegex
+{
+    Entity Simple 
+    {      
+        ShortString StringFrom200To249 { RegExMatch "2[0-4][0-9]"; }
+    }
+}
+
+Module TestMinValue
+{
+    Entity SimpleInteger
+    {
+        Integer Value { MinValue 2; }
+    }
+    
+    Entity SimpleDecimal
+    {
+        Decimal Value { MinValue "2.34"; }
+    }
+
+    Entity SimpleMoney
+    {
+        Money Value { MinValue "2.34"; }
+    }
+
+    Entity SimpleDate
+    {
+        Date Value { MinValue "05.07.2013"; }
+    }
+
+    Entity SimpleDateTime
+    {
+        DateTime Value { MinValue "05.07.2013 12:34:00"; }
+    }
+}
+
+Module TestMaxValue
+{
+    Entity SimpleInteger
+    {
+        Integer Value { MaxValue 2; }
+    }
+    
+    Entity SimpleDecimal
+    {
+        Decimal Value { MaxValue "2.34"; }
+    }
+
+    Entity SimpleMoney
+    {
+        Money Value { MaxValue "2.34"; }
+    }
+
+    Entity SimpleDate
+    {
+        Date Value { MaxValue "05.07.2013"; }
+    }
+
+    Entity SimpleDateTime
+    {
+        DateTime Value { MaxValue "05.07.2013 12:34:00"; }
+    }
+}
