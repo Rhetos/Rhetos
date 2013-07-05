@@ -26,8 +26,8 @@ using Rhetos.Utilities;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("MaxLength")]
-    public class MaxLengthInfo : IMacroConcept, IValidationConcept
+    [ConceptKeyword("MinLength")]
+    public class MinLengthInfo : IMacroConcept, IValidationConcept
     {
         [ConceptKey]
         public PropertyInfo Property { get; set; }
@@ -37,18 +37,16 @@ namespace Rhetos.Dsl.DefaultConcepts
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
             // Expand the base entity:
-            var itemFilterMinLengthProperty = new ItemFilterInfo
-            {
-                Expression = String.Format("item => item.{0}.Length > {1}", Property.Name, Length),
-                FilterName = Property.Name + "_MaxLengthFilter",
-                Source = Property.DataStructure
+            var itemFilterMinLengthProperty = new ItemFilterInfo { 
+                    Expression = String.Format("item => item.{0}.Length < {1}", Property.Name, Length),
+                    FilterName = Property.Name + "_MinLengthFilter", 
+                    Source = Property.DataStructure 
             };
-            var denySaveMinLengthProperty = new DenySaveForPropertyInfo
-            {
-                DependedProperties = Property,
-                FilterType = itemFilterMinLengthProperty.FilterName,
-                Title = String.Format("Maximum allowed length of {0} is {1} characters.", Property.Name, Length),
-                Source = Property.DataStructure
+            var denySaveMinLengthProperty = new DenySaveForPropertyInfo { 
+                    DependedProperties = Property, 
+                    FilterType = itemFilterMinLengthProperty.FilterName, 
+                    Title = String.Format("Minimum allowed length of {0} is {1} characters.", Property.Name, Length), 
+                    Source = Property.DataStructure 
             };
             return new IConceptInfo[] { itemFilterMinLengthProperty, denySaveMinLengthProperty };
         }
@@ -58,7 +56,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             int i;
 
             if (!(this.Property is ShortStringPropertyInfo || this.Property is LongStringPropertyInfo))
-                throw new DslSyntaxException("MaxLength can only be used on ShortString or LongString.");
+                throw new DslSyntaxException("MinLength can only be used on ShortString or LongString.");
 
             if (!Int32.TryParse(this.Length, out i))
                 throw new DslSyntaxException("Length is not an integer.");

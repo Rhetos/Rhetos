@@ -20,13 +20,13 @@ using System;
 using System.Text;
 using System.Collections.Generic;
 using System.Linq;
-using TestLengthLimit;
+using TestRegex;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CommonConcepts.Test
 {
     [TestClass]
-    public class MaxLengthTest
+    public class RegExMatchTest
     {
         [TestMethod]
         [ExpectedException(typeof(Rhetos.UserException))]
@@ -35,43 +35,22 @@ namespace CommonConcepts.Test
             using (var executionContext = new CommonTestExecutionContext())
             {
                 var repository = new Common.DomRepository(executionContext);
-                var entity = new SimpleMaxLength { StringLessThan10Chars = "More than 10 characters." };
-                repository.TestLengthLimit.SimpleMaxLength.Insert(new[] { entity });
+                var entity = new Simple { StringFrom200To249 = "." };
+                repository.TestRegex.Simple.Insert(new[] { entity });
             }
         }
 
         [TestMethod]
-        public void ShouldInsertWithShortStringEntity()
+        public void ShouldNotThrowUserExceptionOnInsert()
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
-                    {
-                        "DELETE FROM TestLengthLimit.SimpleMaxLength;",
-                    });
-
                 var repository = new Common.DomRepository(executionContext);
-                var entity = new SimpleMaxLength { StringLessThan10Chars = "abc" };
-                repository.TestLengthLimit.SimpleMaxLength.Insert(new[] { entity });
+                var entity = new Simple { StringFrom200To249 = "205" };
+                repository.TestRegex.Simple.Insert(new[] { entity });
             }
         }
-
-        [TestMethod]
-        public void ShouldInsertEntity()
-        {
-            using (var executionContext = new CommonTestExecutionContext())
-            {
-                executionContext.SqlExecuter.ExecuteSql(new[]
-                    {
-                        "DELETE FROM TestLengthLimit.SimpleMaxLength;",
-                    });
-
-                var repository = new Common.DomRepository(executionContext);
-                var entity = new SimpleMaxLength { LongStringLessThan10Chars = "abc" };
-                repository.TestLengthLimit.SimpleMaxLength.Insert(new[] { entity });
-            }
-        }
-
+        
         [TestMethod]
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnUpdate()
@@ -79,8 +58,11 @@ namespace CommonConcepts.Test
             using (var executionContext = new CommonTestExecutionContext())
             {
                 var repository = new Common.DomRepository(executionContext);
-                var entity = new SimpleMaxLength { LongStringLessThan10Chars = "More than 10 characters." };
-                repository.TestLengthLimit.SimpleMaxLength.Update(new[] { entity });
+                var entity = new Simple { StringFrom200To249 = "205" };
+                repository.TestRegex.Simple.Insert(new[] { entity });
+
+                entity.StringFrom200To249 = "259";
+                repository.TestRegex.Simple.Update(new[] { entity });
             }
         }
     }
