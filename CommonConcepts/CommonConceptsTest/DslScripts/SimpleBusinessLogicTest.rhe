@@ -124,7 +124,12 @@ Module TestRange
     {
         DateRange FromDate ToDate;
     }
-
+    
+    Entity DateTimeRangeWithoutDef 
+    {
+        DateTimeRange FromDate ToDate;
+    }
+    
     Entity DateRangeWithRequired
     {
         Date FromDate { Required; }
