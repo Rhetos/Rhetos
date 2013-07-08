@@ -26,16 +26,17 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("KeepSynchronized")]
-    public class KeepSynchronizedWithFilteredSaveInfo : IMacroConcept
+    public class KeepSynchronizedWithoutFilteredSaveInfo : KeepSynchronizedInfo, IAlternativeInitializationConcept
     {
-        [ConceptKey]
-        public EntityComputedFromInfo EntityComputedFrom { get; set; }
-
-        public string FilterSaveExpression { get; set; }
-
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<string> DeclareNonparsableProperties()
         {
-            return KeepSynchronizedInfo.CreateNewConcepts(EntityComputedFrom, existingConcepts, FilterSaveExpression);
+            return new[] { "FilterSaveExpression" };
+        }
+
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            FilterSaveExpression = "";
+            createdConcepts = null;
         }
     }
 }

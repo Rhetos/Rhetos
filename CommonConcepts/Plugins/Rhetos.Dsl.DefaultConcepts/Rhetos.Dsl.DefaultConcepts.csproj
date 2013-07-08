@@ -157,12 +157,11 @@
     <Compile Include="Computations\ChangesOnChangedItemsInfo.cs" />
     <Compile Include="Computations\ComputeForNewBaseItemsExtensionInfo.cs" />
     <Compile Include="Computations\ComputeForNewBaseItemsInfo.cs" />
-    <Compile Include="Computations\KeepSynchronizedWithFilteredSaveInfo.cs" />
+    <Compile Include="Computations\KeepSynchronizedWithoutFilteredSaveInfo.cs" />
     <Compile Include="Computations\ExtensionComputedFromInfo.cs" />
     <Compile Include="Computations\PersistedDataStructureInfo.cs" />
     <Compile Include="Computations\PropertyComputedFromInfo.cs" />
     <Compile Include="Computations\QueryableExtensionInfo.cs" />
-    <Compile Include="Computations\ReadChangedItemsOnSaveInfo.cs" />
     <Compile Include="Computations\SqlQueryableInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlDependsOnSqlFunctionInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlFunctionInfo.cs" />

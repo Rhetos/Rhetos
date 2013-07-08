@@ -35,7 +35,8 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             return new[] { new KeepSynchronizedInfo
                 {
-                    EntityComputedFrom = new EntityComputedFromInfo { Target = Persisted, Source = Persisted.Source }
+                    EntityComputedFrom = new EntityComputedFromInfo { Target = Persisted, Source = Persisted.Source },
+                    FilterSaveExpression = ""
                 } };
         }
     }

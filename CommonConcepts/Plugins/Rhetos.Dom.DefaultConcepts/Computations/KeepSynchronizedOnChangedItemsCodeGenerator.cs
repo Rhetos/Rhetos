@@ -40,11 +40,11 @@ namespace Rhetos.Dom.DefaultConcepts
 
             codeBuilder.InsertCode(
                 FilterOldItemsBeforeSaveSnippet(uniqueName, info.UpdateOnChange.FilterType),
-                ReadChangedItemsOnSaveCodeGenerator.BeforeSaveUseChangedItems, info.UpdateOnChange.DependsOn);
+                WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.UpdateOnChange.DependsOn);
 
             codeBuilder.InsertCode(
                 FilterAndRecomputeAfterSave(info, uniqueName),
-                ReadChangedItemsOnSaveCodeGenerator.AfterSaveUseChangedItems, info.UpdateOnChange.DependsOn);
+                WritableOrmDataStructureCodeGenerator.OnSaveTag1, info.UpdateOnChange.DependsOn);
 
             codeBuilder.InsertCode(
                 FilterLoadFunction(info.UpdateOnChange.DependsOn, info.UpdateOnChange.FilterType, info.UpdateOnChange.FilterFormula, uniqueName),
@@ -59,7 +59,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string FilterOldItemsBeforeSaveSnippet(string uniqueName, string fliterType)
         {
             return string.Format(
-@"            {1} filterKeepSynchronizedOnChangedItems{0}Old = _filterLoadKeepSynchronizedOnChangedItems{0}(changedItemsOld);
+@"            {1} filterKeepSynchronizedOnChangedItems{0}Old = _filterLoadKeepSynchronizedOnChangedItems{0}(updated.Concat(deleted).ToArray());
 
 ",
                 uniqueName, fliterType);
@@ -68,15 +68,15 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string FilterAndRecomputeAfterSave(KeepSynchronizedOnChangedItemsInfo info, string uniqueName)
         {
             return string.Format(
-@"            {{
-                _domRepository.{1}.{2}.Recompute(filterKeepSynchronizedOnChangedItems{0}Old{3});
-                var filter = _filterLoadKeepSynchronizedOnChangedItems{0}(changedItemsNew);
-                _domRepository.{1}.{2}.Recompute(filter{3});
+@"                {{
+                    var filteredNew = _filterLoadKeepSynchronizedOnChangedItems{0}(inserted.Concat(updated).ToArray());
+                    _domRepository.{1}.{2}.Recompute(filterKeepSynchronizedOnChangedItems{0}Old{3});
+                    _domRepository.{1}.{2}.Recompute(filteredNew{3});
                 
-                // Workaround to restore NH proxies after using NHSession.Clear() when saving data in Recompute().
-                for (int i=0; i<inserted.Length; i++) inserted[i] = _executionContext.NHibernateSession.Load<{4}.{5}>(inserted[i].ID);
-                for (int i=0; i<updated.Length; i++) updated[i] = _executionContext.NHibernateSession.Load<{4}.{5}>(updated[i].ID);
-            }}
+                    // Workaround to restore NH proxies after using NHSession.Clear() when saving data in Recompute().
+                    for (int i=0; i<inserted.Length; i++) inserted[i] = _executionContext.NHibernateSession.Load<{4}.{5}>(inserted[i].ID);
+                    for (int i=0; i<updated.Length; i++) updated[i] = _executionContext.NHibernateSession.Load<{4}.{5}>(updated[i].ID);
+                }}
 
 ",
                 uniqueName,

@@ -35,7 +35,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return new[] { new KeepSynchronizedWithFilteredSaveInfo
+            return new[] { new KeepSynchronizedInfo
                 {
                     EntityComputedFrom = new EntityComputedFromInfo { Target = Persisted, Source = Persisted.Source },
                     FilterSaveExpression = FilterSaveExpression

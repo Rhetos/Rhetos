@@ -25,7 +25,7 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class KeepSynchronizedOnChangedItemsInfo : IConceptInfo, IValidationConcept
+    public class KeepSynchronizedOnChangedItemsInfo : IConceptInfo
     {
         [ConceptKey]
         public EntityComputedFromInfo EntityComputedFrom { get; set; }
@@ -33,17 +33,6 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public ChangesOnChangedItemsInfo UpdateOnChange { get; set; }
 
-        [ConceptKey]
-        public ReadChangedItemsOnSaveInfo ReadChanged { get; set; }
-
         public string FilterSaveExpression { get; set; }
-
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
-        {
-            if (UpdateOnChange.DependsOn != ReadChanged.DataStructure)
-                throw new Exception("KeepSynchronizedOnChangedItemsInfo must have UpdateOnChange.DependsOn == ReadChanged.DataStructure."
-                    + " UpdateOnChange.DependsOn is '" + UpdateOnChange.DependsOn.GetKeyProperties() + "',"
-                    + " ReadChanged.DataStructure is '" + ReadChanged.DataStructure.GetKeyProperties() + "'.");
-        }
     }
 }

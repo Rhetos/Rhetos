@@ -31,36 +31,31 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public EntityComputedFromInfo EntityComputedFrom { get; set; }
 
+        public string FilterSaveExpression { get; set; }
+
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return CreateNewConcepts(EntityComputedFrom, existingConcepts, "");
-        }
+            var newConcepts = new List<IConceptInfo>();
 
-        public static IEnumerable<IConceptInfo> CreateNewConcepts(EntityComputedFromInfo entityComputedFrom, IEnumerable<IConceptInfo> existingConcepts, string filterSaveExpression)
-        {
             var changesOnChangesItems = existingConcepts.OfType<ChangesOnChangedItemsInfo>()
-                .Where(change => change.Computation == entityComputedFrom.Source)
+                .Where(change => change.Computation == EntityComputedFrom.Source)
                 .ToArray();
 
-            var newConcepts = changesOnChangesItems.SelectMany(change =>
-            {
-                var readChanged = new ReadChangedItemsOnSaveInfo { DataStructure = change.DependsOn };
-                var updateOnChange = new KeepSynchronizedOnChangedItemsInfo { EntityComputedFrom = entityComputedFrom, UpdateOnChange = change, ReadChanged = readChanged, FilterSaveExpression = filterSaveExpression };
-                return new IConceptInfo[] { readChanged, updateOnChange };
-            }).ToList();
+            newConcepts.AddRange(changesOnChangesItems.Select(change =>
+                new KeepSynchronizedOnChangedItemsInfo { EntityComputedFrom = EntityComputedFrom, UpdateOnChange = change, FilterSaveExpression = FilterSaveExpression }));
 
             // If the computed data source is an extension, but its value does not depend on changes in its base data structure,
             // it should still be computed every time the base data structure data is inserted.
 
             DataStructureInfo dataSourceExtensionBase = existingConcepts.OfType<DataStructureExtendsInfo>()
-                .Where(ex => ex.Extension == entityComputedFrom.Source)
+                .Where(ex => ex.Extension == EntityComputedFrom.Source)
                 .Select(ex => ex.Base).SingleOrDefault();
             
             if (dataSourceExtensionBase != null
                 && dataSourceExtensionBase is IWritableOrmDataStructure
                 && !changesOnChangesItems.Any(c => c.DependsOn == dataSourceExtensionBase)
-                && !existingConcepts.OfType<ChangesOnBaseItemInfo>().Where(c => c.Computation == entityComputedFrom.Source).Any())
-                newConcepts.Add(new ComputeForNewBaseItemsWithFilterInfo { EntityComputedFrom = entityComputedFrom, FilterSaveExpression = filterSaveExpression });
+                && !existingConcepts.OfType<ChangesOnBaseItemInfo>().Where(c => c.Computation == EntityComputedFrom.Source).Any())
+                newConcepts.Add(new ComputeForNewBaseItemsWithFilterInfo { EntityComputedFrom = EntityComputedFrom, FilterSaveExpression = FilterSaveExpression });
 
             return newConcepts;
         }
