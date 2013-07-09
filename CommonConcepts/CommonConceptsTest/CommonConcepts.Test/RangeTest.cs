@@ -121,6 +121,32 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
+        public void ShoulInsertNormallySameDateTime()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var repository = new Common.DomRepository(executionContext);
+                var entity = new DateTimeRangeWithoutDef { FromDate = DateTime.Today, ToDate = DateTime.Today };
+                repository.TestRange.DateTimeRangeWithoutDef.Insert(new[] { entity });
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Rhetos.UserException))]
+        public void ShouldThowUserExceptionOnUpdateDateTime()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var repository = new Common.DomRepository(executionContext);
+                var entity = new DateTimeRangeWithoutDef { FromDate = DateTime.Today, ToDate = DateTime.Today.AddDays(2) };
+                repository.TestRange.DateTimeRangeWithoutDef.Insert(new[] { entity });
+
+                entity.ToDate = DateTime.Today.AddDays(-2);
+                repository.TestRange.DateTimeRangeWithoutDef.Update(new[] { entity });
+            }
+        }
+
+        [TestMethod]
         public void ShouldInsertNormallyJustOneDate()
         {
             using (var executionContext = new CommonTestExecutionContext())
