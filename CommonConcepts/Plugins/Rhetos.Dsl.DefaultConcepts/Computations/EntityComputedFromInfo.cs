@@ -25,17 +25,18 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("KeepSynchronized")]
-    public class KeepSynchronizedWithFilteredSaveInfo : IMacroConcept
+    [ConceptKeyword("ComputedFrom")]
+    public class EntityComputedFromInfo : IConceptInfo
     {
         [ConceptKey]
-        public PersistedDataStructureInfo Persisted { get; set; }
+        public EntityInfo Target { get; set; }
 
-        public string FilterSaveExpression { get; set; }
+        [ConceptKey]
+        public DataStructureInfo Source { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public static string RecomputeFunctionName(EntityComputedFromInfo info)
         {
-            return KeepSynchronizedInfo.CreateNewConcepts(Persisted, existingConcepts, FilterSaveExpression);
+            return "RecomputeFrom" + DslUtility.NameOptionalModule(info.Source, info.Target.Module);
         }
     }
 }

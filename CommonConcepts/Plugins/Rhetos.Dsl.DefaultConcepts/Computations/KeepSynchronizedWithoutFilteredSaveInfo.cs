@@ -21,22 +21,22 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
-using Rhetos.Compiler;
-using Rhetos.Dsl;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Dsl.DefaultConcepts
 {
-    [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(ExtensionPersistedInfo))]
-    public class ExtensionPersistedCodeGenerator : IConceptCodeGenerator
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("KeepSynchronized")]
+    public class KeepSynchronizedWithoutFilteredSaveInfo : KeepSynchronizedInfo, IAlternativeInitializationConcept
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        public IEnumerable<string> DeclareNonparsableProperties()
         {
-            var info = (ExtensionPersistedInfo)conceptInfo;
-            codeBuilder.InsertCode(@",
-                                           Base = sourceEnum.Current.Base", PersistedDataStructureCodeGenerator.ClonePropertyTag, info.Persisted);
+            return new[] { "FilterSaveExpression" };
+        }
+
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            FilterSaveExpression = "";
+            createdConcepts = null;
         }
     }
 }

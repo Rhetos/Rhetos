@@ -100,11 +100,28 @@ namespace Rhetos.Dsl
 
                 foreach (IMacroConcept macroConcept in resolvedMacroConcepts)
                 {
+                    // Evaluate macro concept:
+
                     var macroCreatedConcepts = macroConcept.CreateNewConcepts(_dslContainer.Concepts) ?? new IConceptInfo[] { };
                     createdConcepts.AddRange(macroCreatedConcepts);
 
                     var logConcept = macroConcept;
                     _logger.Trace("Macro concept {0} generated: {1}.", logConcept.GetShortDescription(), string.Join(", ", macroCreatedConcepts.Select(c => c.GetShortDescription())));
+
+                    // Alternative initialization of the created concepts:
+
+                    var alternativeInitializationCreatedConcepts = new List<IConceptInfo>();
+                    foreach (var macroCreatedAlternativeInitializationConcept in macroCreatedConcepts.OfType<IAlternativeInitializationConcept>())
+                    {
+                        IEnumerable<IConceptInfo> aicc;
+                        macroCreatedAlternativeInitializationConcept.InitializeNonparsableProperties(out aicc);
+                        if (aicc != null)
+                            alternativeInitializationCreatedConcepts.AddRange(aicc);
+                    }
+                    createdConcepts.AddRange(alternativeInitializationCreatedConcepts);
+
+                    if (alternativeInitializationCreatedConcepts.Count() > 0)
+                        _logger.Trace("Macro concept {0} generated through alternative initialization: {1}.", logConcept.GetShortDescription(), string.Join(", ", alternativeInitializationCreatedConcepts.Select(c => c.GetShortDescription())));
                 }
 
                 createdConcepts = _dslContainer.AddNewConceptsAndReplaceReferences(createdConcepts);

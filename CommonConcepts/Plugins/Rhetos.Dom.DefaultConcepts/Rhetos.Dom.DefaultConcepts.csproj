@@ -64,6 +64,7 @@
     <Compile Include="Advanced\EntityHistoryAllPropertiesCodeGenerator.cs" />
     <Compile Include="Advanced\EntityHistoryPropertyExCodeGenerator.cs" />
     <Compile Include="Advanced\EntityHistoryExCodeGenerator.cs" />
+    <Compile Include="Computations\EntityComputedFromCodeGenerator.cs" />
     <Compile Include="Computations\LockItemsForPropertyCodeGenerator.cs" />
     <Compile Include="Computations\DenySaveForPropertyCodeGenerator.cs" />
     <Compile Include="Computations\LockPropertyCodeGenerator.cs" />
@@ -82,15 +83,14 @@
     <Compile Include="Computations\DenySaveCodeGenerator.cs" />
     <Compile Include="Computations\FilterByCodeGenerator.cs" />
     <Compile Include="Computations\KeepSynchronizedOnChangedItemsCodeGenerator.cs" />
-    <Compile Include="Computations\ComputeForNewBaseItemsExtensionCodeGenerator.cs" />
+    <Compile Include="Computations\ComputeForNewBaseItemsCodeGenerator.cs" />
     <Compile Include="Computations\QueryableExtensionCodeGenerator.cs" />
-    <Compile Include="Computations\ReadChangedItemsOnSaveCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ActionCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ReferenceCascadeDeleteCodeGenerator.cs" />
-    <Compile Include="Computations\ExtensionPersistedCodeGenerator.cs" />
+    <Compile Include="Computations\ExtensionComputedFromCodeGenerator.cs" />
     <Compile Include="DataStructure\LinkedItemsCodeGenerator.cs" />
     <Compile Include="Computations\PersistedDataStructureCodeGenerator.cs" />
-    <Compile Include="Computations\PropertyPersistedCodeGenerator.cs" />
+    <Compile Include="Computations\PropertyComputedFromCodeGenerator.cs" />
     <Compile Include="DataStructure\EntityCodeGenerator.cs" />
     <Compile Include="DataStructure\OrmDataStructureCodeGenerator.cs" />
     <Compile Include="DataStructure\DataStructureCodeGenerator.cs" />

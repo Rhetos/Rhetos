@@ -25,15 +25,19 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class PropertyPersistedInfo : IConceptInfo, IValidationConcept
+    [ConceptKeyword("KeepSynchronized")]
+    public class PersistedKeepSynchronizedInfo : IMacroConcept
     {
         [ConceptKey]
-        public PropertyInfo Property { get; set; }
+        public PersistedDataStructureInfo Persisted { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            if (!(Property.DataStructure is PersistedDataStructureInfo))
-                throw new FrameworkException("PropertyPersistedInfo can only be used on properties of PersistedDataStructureInfo. Property " + Property.GetKeyProperties() + " is a member of " + Property.DataStructure.GetType().Name);
+            return new[] { new KeepSynchronizedInfo
+                {
+                    EntityComputedFrom = new EntityComputedFromInfo { Target = Persisted, Source = Persisted.Source },
+                    FilterSaveExpression = ""
+                } };
         }
     }
 }

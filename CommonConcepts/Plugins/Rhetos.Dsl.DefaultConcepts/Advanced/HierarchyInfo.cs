@@ -97,7 +97,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 // Persisting the hierarcy information:
                 persistedDataStructure,
                 new PersistedAllPropertiesInfo { Persisted = persistedDataStructure }, // This will copy all properties from computedDataStructure.
-                new KeepSynchronizedInfo { Persisted = persistedDataStructure },
+                new PersistedKeepSynchronizedInfo { Persisted = persistedDataStructure },
                 persistedLeftIndexProperty,
                 new SqlIndexInfo { Property = persistedLeftIndexProperty },
 

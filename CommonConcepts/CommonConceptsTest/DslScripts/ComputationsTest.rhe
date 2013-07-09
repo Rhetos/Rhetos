@@ -387,3 +387,74 @@ Module TestSqlFilter
         SqlDependsOn TestSqlFilter.Simple;
     }
 }
+
+Module TestComputedFrom
+{
+    Computed Source 'repository => new[]
+        {
+            new Source { ID = new Guid("16BB8451-BC22-4B4E-888E-9B5DD2355A61"), Name = "aa", Code = 11 },
+            new Source { ID = new Guid("15CFF81D-8FA4-4E33-981A-BBCDB1EE63F1"), Name = "bb", Code = 22 }
+        }'
+    {
+        ShortString Name;
+        Integer Code;
+        
+        FilterBy 'IEnumerable<Guid>' '(repository, paremeter) => repository.TestComputedFrom.Source.All().Where(item => paremeter.Contains(item.ID)).ToArray()';
+    }
+    
+    Entity PersistAll
+    {
+        ComputedFrom TestComputedFrom.Source { AllProperties; }
+    }
+    
+    Entity PersistPartial
+    {
+        ShortString Name { ComputedFrom TestComputedFrom.Source.Name; }
+    }
+
+    Entity PersistCustom
+    {
+        Integer Code;
+        ShortString NamePersist { ComputedFrom TestComputedFrom.Source.Name; }
+        
+        ComputedFrom TestComputedFrom.Source { AllProperties; }
+    }
+    
+    Computed Source2 'repository => new[]
+        {
+            new Source2 { ID = new Guid("16BB8451-BC22-4B4E-888E-9B5DD2355A61"), Name = "cc" },
+            new Source2 { ID = new Guid("15CFF81D-8FA4-4E33-981A-BBCDB1EE63F1"), Name = "dd" }
+        }'
+    {
+        ShortString Name;
+    }
+    
+    Entity PersistComplex
+    {
+        ComputedFrom TestComputedFrom.Source { AllProperties; }
+        ShortString Name2 { ComputedFrom TestComputedFrom.Source2.Name; }
+    }
+    
+    // KeepSynchronized:
+    
+    Entity Base1 { ShortString Name1; ShortString Info; }
+    Entity Base2 { ShortString Name2; }
+    
+    QueryableExtension Comp1a TestComputedFrom.Base1 '(items, repos) => items.Select(item => new Comp1a { ID = item.ID, Base = item, Name1a = item.Name1 + "a" })' { ShortString Name1a; ChangesOnBaseItem; }
+    QueryableExtension Comp1b TestComputedFrom.Base1 '(items, repos) => items.Select(item => new Comp1b { ID = item.ID, Base = item, Name1b = item.Name1 + "b" })' { ShortString Name1b; ChangesOnBaseItem; }
+    QueryableExtension Comp2a TestComputedFrom.Base2 '(items, repos) => items.Select(item => new Comp2a { ID = item.ID, Base = item, Name2a = item.Name2 + "a" })' { ShortString Name2a; ChangesOnBaseItem; }
+    
+    Entity MultiSync
+    {
+        ComputedFrom TestComputedFrom.Comp1a { AllProperties; KeepSynchronized; } // The AllProperties concept includes "Base".
+        
+        ShortString Name1bx { ComputedFrom TestComputedFrom.Comp1b.Name1b; }
+        ComputedFrom TestComputedFrom.Comp1b { KeepSynchronized; }
+        
+        ShortString Name2a { ComputedFrom TestComputedFrom.Comp2a.Name2a; }
+        ComputedFrom TestComputedFrom.Comp2a { KeepSynchronized; } // TODO: This should not be allowed.
+        
+        DateTime Start { CreationTime; }
+        DateTime LastModifiedName1bx { ModificationTimeOf TestComputedFrom.MultiSync.Name1bx; }
+    }
+}

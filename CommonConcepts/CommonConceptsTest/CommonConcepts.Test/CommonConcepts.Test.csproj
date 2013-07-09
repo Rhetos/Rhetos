@@ -158,6 +158,7 @@
     <Compile Include="RegExMatchTest.cs" />
     <Compile Include="RangeTest.cs" />
     <Compile Include="MinLengthTest.cs" />
+    <Compile Include="ComputedFromTest.cs" />
     <Compile Include="EntityHistoryTest.cs" />
     <Compile Include="DatabaseExtensionsTest.cs" />
     <Compile Include="LockPropertyTest.cs" />

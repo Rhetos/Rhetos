@@ -20,21 +20,39 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
+using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("AllProperties")]
-    public class PersistedAllPropertiesInfo : IMacroConcept
+    [ConceptKeyword("ComputeForNewBaseItems")]
+    public class PersistedComputeForNewBaseItemsInfo : IMacroConcept, IValidationConcept
     {
         [ConceptKey]
         public PersistedDataStructureInfo Persisted { get; set; }
 
+        private DataStructureExtendsInfo MyExtendsConceptInfo(IEnumerable<IConceptInfo> existingConcepts)
+        {
+            return existingConcepts.OfType<DataStructureExtendsInfo>()
+                .Where(extends => extends.Extension == Persisted)
+                .FirstOrDefault();
+        }
+
+        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        {
+            var myExtends = MyExtendsConceptInfo(concepts);
+            if (myExtends == null)
+                throw new DslSyntaxException("ComputeForNewBaseItems can only be used if the persisted data structure extends a base entity. Use 'Extends' keyword to define the extension is applicable.");
+        }
+
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return new[] { new EntityComputedFromAllPropertiesInfo { EntityComputedFrom = new EntityComputedFromInfo { Target = Persisted, Source = Persisted.Source } } };
+            return new[] { new ComputeForNewBaseItemsInfo
+                {
+                    EntityComputedFrom = new EntityComputedFromInfo { Target = Persisted, Source = Persisted.Source }
+                } };
         }
     }
 }

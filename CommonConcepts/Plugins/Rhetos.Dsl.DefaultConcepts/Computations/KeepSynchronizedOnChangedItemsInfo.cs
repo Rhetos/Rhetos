@@ -28,22 +28,21 @@ namespace Rhetos.Dsl.DefaultConcepts
     public class KeepSynchronizedOnChangedItemsInfo : IConceptInfo, IValidationConcept
     {
         [ConceptKey]
-        public PersistedDataStructureInfo Persisted { get; set; }
+        public EntityComputedFromInfo EntityComputedFrom { get; set; }
 
         [ConceptKey]
         public ChangesOnChangedItemsInfo UpdateOnChange { get; set; }
-
-        [ConceptKey]
-        public ReadChangedItemsOnSaveInfo ReadChanged { get; set; }
 
         public string FilterSaveExpression { get; set; }
 
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
-            if (UpdateOnChange.DependsOn != ReadChanged.DataStructure)
-                throw new Exception("KeepSynchronizedOnChangedItemsInfo must have UpdateOnChange.DependsOn == ReadChanged.DataStructure."
-                    + " UpdateOnChange.DependsOn is '" + UpdateOnChange.DependsOn.GetKeyProperties() + "',"
-                    + " ReadChanged.DataStructure is '" + ReadChanged.DataStructure.GetKeyProperties() + "'.");
+            if (UpdateOnChange.Computation != EntityComputedFrom.Source)
+                throw new DslSyntaxException(string.Format(
+                    "Invalid use of {0}: UpdateOnChange.Computation ({1}) should be same as EntityComputedFrom.Source ({2}).",
+                    this.GetUserDescription(),
+                    UpdateOnChange.Computation.GetUserDescription(),
+                    EntityComputedFrom.Source.GetUserDescription()));
         }
     }
 }

@@ -20,26 +20,26 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class ComputeForNewBaseItemsExtensionInfo : IConceptInfo, IValidationConcept
+    [ConceptKeyword("KeepSynchronized")]
+    public class PersistedKeepSynchronizedWithFilteredSaveInfo : IMacroConcept
     {
         [ConceptKey]
-        public DataStructureExtendsInfo Extends { get; set; }
+        public PersistedDataStructureInfo Persisted { get; set; }
 
         public string FilterSaveExpression { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            if (!(Extends.Base is IWritableOrmDataStructure))
-                throw new DslSyntaxException("ComputeForNewBaseItems can only be used if a persisted data structure extends a writable data structure. Base data structure of type '" + Extends.Base.GetUserDescription() + "' is not supported.");
-            
-            if (!(Extends.Extension is PersistedDataStructureInfo))
-                throw new DslSyntaxException("ComputeForNewBaseItems can only be used if a persisted data structure extends a base entity. Extended data structure of type '" + Extends.Extension.GetUserDescription() + "' is not supported.");
+            return new[] { new KeepSynchronizedInfo
+                {
+                    EntityComputedFrom = new EntityComputedFromInfo { Target = Persisted, Source = Persisted.Source },
+                    FilterSaveExpression = FilterSaveExpression
+                } };
         }
     }
 }

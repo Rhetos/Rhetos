@@ -34,9 +34,6 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(PersistedDataStructureInfo))]
     public class PersistedDataStructureCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly DataStructureCodeGenerator.DataStructureTag ComparePropertyTag = new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*PersistedDataStructureCodeGenerator CompareProperty {0}.{1}*/");
-        public static readonly DataStructureCodeGenerator.DataStructureTag ClonePropertyTag = new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*PersistedDataStructureCodeGenerator CloneProperty {0}.{1}*/");
-
         protected static string CodeSnippet(PersistedDataStructureInfo info)
         {
             return string.Format(
@@ -52,86 +49,13 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public void Recompute<T>(T filterLoad, Func<IEnumerable<{0}>, IEnumerable<{0}>> filterSave)
         {{
-            var delete = new List<{0}>();
-            var insert = new List<{0}>();
-            var update = new List<{0}>();
-
-            var sourceRepository = (IFilterRepository<T, {1}>)_domRepository.{1};
-            var destRepository = (IFilterRepository<T, {0}>)_domRepository.{0};
-
-            {1}[] sourceArray = sourceRepository.Filter(filterLoad);
-            {0}[] destArray = destRepository.Filter(filterLoad);
-
-            Array.Sort(sourceArray, (a, b)=>a.ID.CompareTo(b.ID));
-            Array.Sort(destArray, (a, b) => a.ID.CompareTo(b.ID));
-
-            IEnumerator<{1}> sourceEnum = sourceArray.AsEnumerable().GetEnumerator();
-            IEnumerator<{0}> destEnum = destArray.AsEnumerable().GetEnumerator();
-
-            try
-            {{
-                bool sourceExists = sourceEnum.MoveNext();
-                bool destExists = destEnum.MoveNext();
-
-                while (true)
-                {{
-                    int keyDiff;
-
-                    if (sourceExists)
-                        if (destExists)
-                            keyDiff = sourceEnum.Current.ID.CompareTo(destEnum.Current.ID);
-                        else
-                            keyDiff = -1;
-                    else
-                        if (destExists)
-                            keyDiff = 1;
-                        else
-                            break;
-
-                    if (keyDiff == 0)
-                    {{
-                        bool same = true;
-{2}
-
-                        if (!same)
-                            update.Add(new {0}
-                                {{
-                                    ID = sourceEnum.Current.ID{3}
-                                }});
-
-                        sourceExists = sourceEnum.MoveNext();
-                        destExists = destEnum.MoveNext();
-                    }}
-                    else if (keyDiff < 0)
-                    {{
-                        insert.Add(new {0}
-                                {{
-                                    ID = sourceEnum.Current.ID{3}
-                                }});
-
-                        sourceExists = sourceEnum.MoveNext();
-                    }}
-                    else
-                    {{
-                        delete.Add(destEnum.Current);
-                        destExists = destEnum.MoveNext();
-                    }}
-                }}
-            }}
-            finally
-            {{
-                sourceEnum.Dispose();
-                destEnum.Dispose();
-            }}
-
-            _domRepository.{0}.Save(filterSave(insert).ToArray(), filterSave(update).ToArray(), filterSave(delete).ToArray());
+            {2}<T>(filterLoad, filterSave);
         }}
 
 ",
             info.GetKeyProperties(),
             info.Source.GetKeyProperties(),
-            ComparePropertyTag.Evaluate(info),
-            ClonePropertyTag.Evaluate(info));
+            EntityComputedFromInfo.RecomputeFunctionName(new EntityComputedFromInfo { Source = info.Source, Target = info }));
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)

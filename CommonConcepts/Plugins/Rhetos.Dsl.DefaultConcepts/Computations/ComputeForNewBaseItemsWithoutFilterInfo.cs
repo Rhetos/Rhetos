@@ -20,14 +20,26 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
+using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class ReadChangedItemsOnSaveInfo : IConceptInfo
+    [ConceptKeyword("ComputeForNewBaseItems")]
+    public class ComputeForNewBaseItemsWithoutFilterInfo : ComputeForNewBaseItemsInfo, IAlternativeInitializationConcept
     {
-        [ConceptKey]
-        public DataStructureInfo DataStructure { get; set; }
+        public new IEnumerable<string> DeclareNonparsableProperties()
+        {
+            return base.DeclareNonparsableProperties()
+                .Concat(new[] { "FilterSaveExpression" });
+        }
+
+        public new void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            base.InitializeNonparsableProperties(out createdConcepts);
+            FilterSaveExpression = "";
+        }
     }
 }

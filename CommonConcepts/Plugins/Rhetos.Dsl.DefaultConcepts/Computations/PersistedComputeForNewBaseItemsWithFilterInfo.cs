@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ComputeForNewBaseItems")]
-    public class ComputeForNewBaseItemsWithFilterInfo : IMacroConcept, IValidationConcept
+    public class PersistedComputeForNewBaseItemsWithFilterInfo : IMacroConcept, IValidationConcept
     {
         [ConceptKey]
         public PersistedDataStructureInfo Persisted { get; set; }
@@ -51,10 +51,11 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            var myExtends = MyExtendsConceptInfo(existingConcepts);
-            if (myExtends != null)
-                return new[] { new ComputeForNewBaseItemsExtensionInfo { Extends = myExtends, FilterSaveExpression = FilterSaveExpression } };
-            return null;
+            return new[] { new ComputeForNewBaseItemsInfo
+                {
+                    EntityComputedFrom = new EntityComputedFromInfo { Target = Persisted, Source = Persisted.Source },
+                    FilterSaveExpression = FilterSaveExpression
+                } };
         }
     }
 }
