@@ -43,21 +43,22 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static readonly EntityComputedFromTag ComparePropertyTag = new EntityComputedFromTag(TagType.Appendable, "/*EntityComputedFromCodeGenerator CompareProperty {0}.{1}.{2}.{3}*/");
         public static readonly EntityComputedFromTag ClonePropertyTag = new EntityComputedFromTag(TagType.Appendable, "/*EntityComputedFromCodeGenerator CloneProperty {0}.{1}.{2}.{3}*/");
+        public static readonly EntityComputedFromTag AssignPropertyTag = new EntityComputedFromTag(TagType.Appendable, "/*EntityComputedFromCodeGenerator AssignProperty {0}.{1}.{2}.{3}*/");
 
         protected static string CodeSnippet(EntityComputedFromInfo info)
         {
             return string.Format(
-@"        public void RecomputeFrom{4}()
+@"        public void {4}()
         {{
-            RecomputeFrom{4}<FilterAll>(null);
+            {4}<FilterAll>(null);
         }}
 
-        public void RecomputeFrom{4}<T>(T filterLoad)
+        public void {4}<T>(T filterLoad)
         {{
-            RecomputeFrom{4}(filterLoad, x => x);
+            {4}(filterLoad, x => x);
         }}
 
-        public void RecomputeFrom{4}<T>(T filterLoad, Func<IEnumerable<{0}>, IEnumerable<{0}>> filterSave)
+        public void {4}<T>(T filterLoad, Func<IEnumerable<{0}>, IEnumerable<{0}>> filterSave)
         {{
             var delete = new List<{0}>();
             var insert = new List<{0}>();
@@ -101,10 +102,11 @@ namespace Rhetos.Dom.DefaultConcepts
 {2}
 
                         if (!same)
-                            update.Add(new {0}
-                                {{
-                                    ID = sourceEnum.Current.ID{3}
-                                }});
+                        {{
+                            _executionContext.NHibernateSession.Evict(destEnum.Current);
+                            {5}
+                            update.Add(destEnum.Current);
+                        }}
 
                         sourceExists = sourceEnum.MoveNext();
                         destExists = destEnum.MoveNext();
@@ -139,7 +141,8 @@ namespace Rhetos.Dom.DefaultConcepts
             info.Source.GetKeyProperties(),
             ComparePropertyTag.Evaluate(info),
             ClonePropertyTag.Evaluate(info),
-            info.Target.Module.Name == info.Source.Module.Name ? info.Source.Name : (info.Source.Module.Name + info.Source.Name));
+            EntityComputedFromInfo.RecomputeFunctionName(info),
+            AssignPropertyTag.Evaluate(info));
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)

@@ -71,5 +71,10 @@ namespace Rhetos.Dsl.DefaultConcepts
                     dataStructure.Module.Name,
                     dataStructure.Name));
         }
+
+        public static string NameOptionalModule(DataStructureInfo dataStructure, ModuleInfo module)
+        {
+            return dataStructure.Module != module ? (dataStructure.Module.Name + dataStructure.Name) : dataStructure.Name;
+        }
     }
 }

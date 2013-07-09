@@ -30,32 +30,42 @@ using Rhetos.Extensibility;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(ComputeForNewBaseItemsExtensionInfo))]
-    public class ComputeForNewBaseItemsExtensionCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(ComputeForNewBaseItemsInfo))]
+    public class ComputeForNewBaseItemsCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (ComputeForNewBaseItemsExtensionInfo) conceptInfo;
+            var info = (ComputeForNewBaseItemsInfo) conceptInfo;
 
             var baseDS = info.Extends.Base;
             var persistedExtension = info.EntityComputedFrom.Target;
+            var uniqueSuffix = GetUniqueSuffixWithinBase(info);
 
-            string uniqueName = persistedExtension.Module.Name + persistedExtension.Name;
-            codeBuilder.InsertCode(RecomputeForNewItemsSnippet(baseDS, persistedExtension, uniqueName, info.FilterSaveExpression), WritableOrmDataStructureCodeGenerator.OnSaveTag1, baseDS);
-            codeBuilder.InsertCode(HelperFunctionSnippet(baseDS, uniqueName), RepositoryHelper.RepositoryMembers, baseDS);
+            codeBuilder.InsertCode(RecomputeForNewItemsSnippet(info, uniqueSuffix), WritableOrmDataStructureCodeGenerator.OnSaveTag1, baseDS);
+            codeBuilder.InsertCode(HelperFunctionSnippet(info, uniqueSuffix), RepositoryHelper.RepositoryMembers, baseDS);
 
             if (!string.IsNullOrWhiteSpace(info.FilterSaveExpression))
-                codeBuilder.InsertCode(FilterSaveFunction(info, uniqueName), RepositoryHelper.RepositoryMembers, baseDS);
+                codeBuilder.InsertCode(FilterSaveFunction(info, uniqueSuffix), RepositoryHelper.RepositoryMembers, baseDS);
         }
 
-        private static string RecomputeForNewItemsSnippet(DataStructureInfo hookOnSave, EntityInfo updatePersistedComputation, string uniqueName, string filterSaveExpression)
+        private static string GetUniqueSuffixWithinBase(ComputeForNewBaseItemsInfo info)
         {
+            var baseModule = info.Extends.Base.Module;
+            return DslUtility.NameOptionalModule(info.EntityComputedFrom.Source, baseModule)
+                + DslUtility.NameOptionalModule(info.EntityComputedFrom.Target, baseModule);
+        }
+
+        private static string RecomputeForNewItemsSnippet(ComputeForNewBaseItemsInfo info, string uniqueSuffix)
+        {
+            DataStructureInfo hookOnSave = info.Extends.Base;
+            EntityInfo updatePersistedComputation = info.EntityComputedFrom.Target;
+
             return string.Format(
 @"            if (inserted.Count() > 0)
             {{
                 IEnumerable<{0}.{1}> changedItems = inserted;
-                var filter = _filterFunctionComputeForNewBaseItems{2}(changedItems);
-                _domRepository.{3}.{4}.Recompute(filter{5});
+                var filter = _filterComputeForNewBaseItems_{2}(changedItems);
+                _domRepository.{3}.{4}.{6}(filter{5});
 
                 // Workaround to restore NH proxies after using NHSession.Clear() when saving data in Recompute().
                 for (int i=0; i<inserted.Length; i++) inserted[i] = _executionContext.NHibernateSession.Load<{0}.{1}>(inserted[i].ID);
@@ -64,32 +74,35 @@ namespace Rhetos.Dom.DefaultConcepts
 ",
                 hookOnSave.Module.Name,
                 hookOnSave.Name,
-                uniqueName,
+                uniqueSuffix,
                 updatePersistedComputation.Module.Name,
                 updatePersistedComputation.Name,
-                !string.IsNullOrWhiteSpace(filterSaveExpression) ? (", _filterSaveComputeForNewBaseItems" + uniqueName) : "");
+                !string.IsNullOrWhiteSpace(info.FilterSaveExpression) ? (", _filterSaveComputeForNewBaseItems_" + uniqueSuffix) : "",
+                EntityComputedFromInfo.RecomputeFunctionName(info.EntityComputedFrom));
         }
 
-        private static string HelperFunctionSnippet(DataStructureInfo hookOnSave, string uniqueName)
+        private static string HelperFunctionSnippet(ComputeForNewBaseItemsInfo info, string uniqueSuffix)
         {
+            DataStructureInfo hookOnSave = info.Extends.Base;
+
             return string.Format(
-@"        private static readonly Func<IEnumerable<{0}.{1}>, Guid[]> _filterFunctionComputeForNewBaseItems{2} =
+@"        private static readonly Func<IEnumerable<{0}.{1}>, Guid[]> _filterComputeForNewBaseItems_{2} =
             changedItems => changedItems.Select(item => item.ID).ToArray();
 
 ",
                 hookOnSave.Module.Name,
                 hookOnSave.Name,
-                uniqueName);
+                uniqueSuffix);
         }
 
-        private static string FilterSaveFunction(ComputeForNewBaseItemsExtensionInfo info, string uniqueName)
+        private static string FilterSaveFunction(ComputeForNewBaseItemsInfo info, string uniqueSuffix)
         {
             return string.Format(
-@"        private static readonly Func<IEnumerable<{0}.{1}>, IEnumerable<{0}.{1}>> _filterSaveComputeForNewBaseItems{2} =
+@"        private static readonly Func<IEnumerable<{0}.{1}>, IEnumerable<{0}.{1}>> _filterSaveComputeForNewBaseItems_{2} =
             {3};
 
 ",
-                info.Extends.Extension.Module.Name, info.Extends.Extension.Name, uniqueName, info.FilterSaveExpression);
+                info.Extends.Extension.Module.Name, info.Extends.Extension.Name, uniqueSuffix, info.FilterSaveExpression);
         }
     }
 }

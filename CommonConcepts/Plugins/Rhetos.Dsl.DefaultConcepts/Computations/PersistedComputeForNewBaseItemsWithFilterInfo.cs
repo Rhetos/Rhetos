@@ -51,7 +51,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return new[] { new ComputeForNewBaseItemsWithFilterInfo
+            return new[] { new ComputeForNewBaseItemsInfo
                 {
                     EntityComputedFrom = new EntityComputedFromInfo { Target = Persisted, Source = Persisted.Source },
                     FilterSaveExpression = FilterSaveExpression

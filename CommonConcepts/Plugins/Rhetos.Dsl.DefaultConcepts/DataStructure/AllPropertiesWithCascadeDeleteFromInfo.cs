@@ -31,9 +31,11 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         new public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            var clones = new List<IConceptInfo>(base.CreateNewConcepts(existingConcepts));
+            var newConcepts = new List<IConceptInfo>();
+            
+            newConcepts.AddRange(base.CreateNewConcepts(existingConcepts));
 
-            clones.AddRange(existingConcepts.OfType<ReferenceCascadeDeleteInfo>().Where(ci => ci.Reference.DataStructure == Source)
+            newConcepts.AddRange(existingConcepts.OfType<ReferenceCascadeDeleteInfo>().Where(ci => ci.Reference.DataStructure == Source)
                 .Select(ci => new ReferenceCascadeDeleteInfo
                 {
                     Reference = new ReferencePropertyInfo
@@ -44,7 +46,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                         }
                 }));
 
-            return clones;
+            return newConcepts;
         }
     }
 }

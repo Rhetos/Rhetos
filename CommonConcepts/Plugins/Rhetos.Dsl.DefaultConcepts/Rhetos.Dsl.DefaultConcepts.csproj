@@ -117,7 +117,7 @@
     <Compile Include="Advanced\HierarchySingleRootInternalInfo.cs" />
     <Compile Include="Advanced\HierarchySingleRootInfo.cs" />
     <Compile Include="Advanced\HierarchyWithPathInfo.cs" />
-    <Compile Include="Computations\ComputeForNewBaseItemsWithFilterInfo.cs" />
+    <Compile Include="Computations\ComputeForNewBaseItemsWithoutFilterInfo.cs" />
     <Compile Include="Computations\PersistedKeepSynchronizedInfo.cs" />
     <Compile Include="Computations\PersistedKeepSynchronizedWithFilteredSaveInfo.cs" />
     <Compile Include="Computations\PersistedComputeForNewBaseItemsInfo.cs" />
@@ -155,7 +155,6 @@
     <Compile Include="Computations\KeepSynchronizedInfo.cs" />
     <Compile Include="Computations\KeepSynchronizedOnChangedItemsInfo.cs" />
     <Compile Include="Computations\ChangesOnChangedItemsInfo.cs" />
-    <Compile Include="Computations\ComputeForNewBaseItemsExtensionInfo.cs" />
     <Compile Include="Computations\ComputeForNewBaseItemsInfo.cs" />
     <Compile Include="Computations\KeepSynchronizedWithoutFilteredSaveInfo.cs" />
     <Compile Include="Computations\ExtensionComputedFromInfo.cs" />

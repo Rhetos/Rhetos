@@ -153,6 +153,7 @@
     <Compile Include="ComputedTest.cs" />
     <Compile Include="AuditablePropertiesTest.cs" />
     <Compile Include="CloningTest.cs" />
+    <Compile Include="ComputedFromTest.cs" />
     <Compile Include="EntityHistoryTest.cs" />
     <Compile Include="DatabaseExtensionsTest.cs" />
     <Compile Include="LockPropertyTest.cs" />

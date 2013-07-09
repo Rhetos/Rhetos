@@ -28,31 +28,34 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ComputeForNewBaseItems")]
-    public class ComputeForNewBaseItemsInfo : IMacroConcept, IValidationConcept
+    public class ComputeForNewBaseItemsInfo : IAlternativeInitializationConcept, IValidationConcept
     {
         [ConceptKey]
         public EntityComputedFromInfo EntityComputedFrom { get; set; }
 
-        private DataStructureExtendsInfo MyExtendsConceptInfo(IEnumerable<IConceptInfo> existingConcepts)
+        /// <summary>May be empty.</summary>
+        public string FilterSaveExpression { get; set; }
+
+        public DataStructureExtendsInfo Extends { get; set; }
+
+        public IEnumerable<string> DeclareNonparsableProperties()
         {
-            return existingConcepts.OfType<DataStructureExtendsInfo>()
-                .Where(extends => extends.Extension == EntityComputedFrom.Target)
-                .FirstOrDefault();
+            return new[] { "Extends" };
+        }
+
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            Extends = new DataStructureExtendsInfo { Extension = EntityComputedFrom.Target };
+            createdConcepts = null;
         }
 
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
-            var myExtends = MyExtendsConceptInfo(concepts);
-            if (myExtends == null)
-                throw new DslSyntaxException("ComputeForNewBaseItems can only be used if the persisted data structure extends a base entity. Use 'Extends' keyword to define the extension is applicable.");
-        }
-
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            var myExtends = MyExtendsConceptInfo(existingConcepts);
-            if (myExtends != null)
-                return new[] { new ComputeForNewBaseItemsExtensionInfo { Extends = myExtends, FilterSaveExpression = "", EntityComputedFrom = EntityComputedFrom } };
-            return null;
+            if (Extends.Extension != EntityComputedFrom.Target)
+                throw new DslSyntaxException("Invalid use of " + this.GetUserDescription()
+                    + ": Extension '" + Extends.Extension.GetUserDescription()
+                    + "' is not same as " + this.GetKeywordOrTypeName()
+                    + " target '" + EntityComputedFrom.Target.GetUserDescription() + "'.");
         }
     }
 }

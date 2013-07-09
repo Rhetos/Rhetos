@@ -1,3 +1,10 @@
+0.9.6 (to be released)
+------------------
+
+New features:
+
+* New concept: **ComputedFrom** is a more flexible version of **Persisted**. It allows a property-level recomputing instead of entity-level. It is intended to be used as an internal concept for building simpler macro concepts such as Persisted.
+
 0.9.5 (2013-06-28)
 ------------------
 

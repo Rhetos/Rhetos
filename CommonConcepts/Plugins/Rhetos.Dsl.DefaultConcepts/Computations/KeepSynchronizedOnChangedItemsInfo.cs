@@ -25,7 +25,7 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class KeepSynchronizedOnChangedItemsInfo : IConceptInfo
+    public class KeepSynchronizedOnChangedItemsInfo : IConceptInfo, IValidationConcept
     {
         [ConceptKey]
         public EntityComputedFromInfo EntityComputedFrom { get; set; }
@@ -34,5 +34,15 @@ namespace Rhetos.Dsl.DefaultConcepts
         public ChangesOnChangedItemsInfo UpdateOnChange { get; set; }
 
         public string FilterSaveExpression { get; set; }
+
+        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        {
+            if (UpdateOnChange.Computation != EntityComputedFrom.Source)
+                throw new DslSyntaxException(string.Format(
+                    "Invalid use of {0}: UpdateOnChange.Computation ({1}) should be same as EntityComputedFrom.Source ({2}).",
+                    this.GetUserDescription(),
+                    UpdateOnChange.Computation.GetUserDescription(),
+                    EntityComputedFrom.Source.GetUserDescription()));
+        }
     }
 }

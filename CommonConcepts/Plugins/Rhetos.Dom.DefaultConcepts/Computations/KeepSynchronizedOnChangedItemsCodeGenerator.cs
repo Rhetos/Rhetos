@@ -70,8 +70,8 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format(
 @"                {{
                     var filteredNew = _filterLoadKeepSynchronizedOnChangedItems{0}(inserted.Concat(updated).ToArray());
-                    _domRepository.{1}.{2}.Recompute(filterKeepSynchronizedOnChangedItems{0}Old{3});
-                    _domRepository.{1}.{2}.Recompute(filteredNew{3});
+                    _domRepository.{1}.{2}.{6}(filterKeepSynchronizedOnChangedItems{0}Old{3});
+                    _domRepository.{1}.{2}.{6}(filteredNew{3});
                 
                     // Workaround to restore NH proxies after using NHSession.Clear() when saving data in Recompute().
                     for (int i=0; i<inserted.Length; i++) inserted[i] = _executionContext.NHibernateSession.Load<{4}.{5}>(inserted[i].ID);
@@ -84,7 +84,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 info.EntityComputedFrom.Target.Name,
                 !string.IsNullOrWhiteSpace(info.FilterSaveExpression) ? (", _filterSaveKeepSynchronizedOnChangedItems" + uniqueName) : "",
                 info.UpdateOnChange.DependsOn.Module.Name,
-                info.UpdateOnChange.DependsOn.Name);
+                info.UpdateOnChange.DependsOn.Name,
+                EntityComputedFromInfo.RecomputeFunctionName(info.EntityComputedFrom));
         }
 
         private static string FilterLoadFunction(DataStructureInfo hookOnSaveEntity, string filterType, string filterFormula, string uniqueName)

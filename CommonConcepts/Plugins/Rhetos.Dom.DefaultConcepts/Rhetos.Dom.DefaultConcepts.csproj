@@ -83,7 +83,7 @@
     <Compile Include="Computations\DenySaveCodeGenerator.cs" />
     <Compile Include="Computations\FilterByCodeGenerator.cs" />
     <Compile Include="Computations\KeepSynchronizedOnChangedItemsCodeGenerator.cs" />
-    <Compile Include="Computations\ComputeForNewBaseItemsExtensionCodeGenerator.cs" />
+    <Compile Include="Computations\ComputeForNewBaseItemsCodeGenerator.cs" />
     <Compile Include="Computations\QueryableExtensionCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ActionCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ReferenceCascadeDeleteCodeGenerator.cs" />

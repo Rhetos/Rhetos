@@ -43,11 +43,16 @@ namespace Rhetos.Dsl.DefaultConcepts
                 existingConcepts.OfType<PropertyInfo>().Where(ci => ci.DataStructure == Source)
                 .Select(property => new PropertyFromInfo { Destination = Destination, Source = property }));
 
-            newConcepts.AddRange(
-                existingConcepts.OfType<DataStructureExtendsInfo>().Where(ci => ci.Extension == Source)
-                .Select(ci => new DataStructureExtendsInfo { Extension = Destination, Base = ci.Base }));
+            CloneExtension(Source, Destination, existingConcepts, newConcepts);
 
             return newConcepts;
+        }
+
+        public static void CloneExtension(DataStructureInfo source, DataStructureInfo destination, IEnumerable<IConceptInfo> existingConcepts, List<IConceptInfo> newConcepts)
+        {
+            newConcepts.AddRange(
+                existingConcepts.OfType<DataStructureExtendsInfo>().Where(ci => ci.Extension == source)
+                .Select(ci => new DataStructureExtendsInfo { Extension = destination, Base = ci.Base }));
         }
     }
 }

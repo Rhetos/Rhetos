@@ -49,13 +49,13 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public void Recompute<T>(T filterLoad, Func<IEnumerable<{0}>, IEnumerable<{0}>> filterSave)
         {{
-            RecomputeFrom{2}<T>(filterLoad, filterSave);
+            {2}<T>(filterLoad, filterSave);
         }}
 
 ",
             info.GetKeyProperties(),
             info.Source.GetKeyProperties(),
-            info.Module.Name == info.Source.Module.Name ? info.Source.Name : (info.Source.Module.Name + info.Source.Name));
+            EntityComputedFromInfo.RecomputeFunctionName(new EntityComputedFromInfo { Source = info.Source, Target = info }));
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)

@@ -36,19 +36,40 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var newConcepts = new List<IConceptInfo>();
 
-            newConcepts.Add(new AllPropertiesWithCascadeDeleteFromInfo { Source = EntityComputedFrom.Source, Destination = EntityComputedFrom.Target });
-
             var sourceProperties = existingConcepts.OfType<PropertyInfo>().Where(p => p.DataStructure == EntityComputedFrom.Source);
 
-            // Some computed properties might be customized, so ignore existing ones.
-            var existingTargetComputedProperties = new HashSet<string>(
-                existingConcepts.OfType<PropertyComputedFromInfo>()
-                    .Where(comp => comp.Target.DataStructure == EntityComputedFrom.Target)
-                    .Select(comp => comp.Target.Name));
+            // Some computed properties might be customized, so ignore existing ones:
 
-            newConcepts.AddRange(sourceProperties
-                .Where(sp => !existingTargetComputedProperties.Contains(sp.Name))
-                .Select(sp =>
+            var existingComputedPropertiesSource = new HashSet<string>(
+                existingConcepts.OfType<PropertyComputedFromInfo>()
+                    .Where(comp => comp.EntityComputedFrom == EntityComputedFrom)
+                    .Select(comp => comp.Source.Name));
+
+            var newSourceProperties = sourceProperties
+                .Where(sp => !existingComputedPropertiesSource.Contains(sp.Name)).ToArray();
+
+            // Clone source properties, including their cascade delete and extension concepts (only for automatically created propeties):
+
+            newConcepts.AddRange(newSourceProperties.Select(sp => new PropertyFromInfo { Source = sp, Destination = EntityComputedFrom.Target }));
+
+            AllPropertiesFromInfo.CloneExtension(EntityComputedFrom.Source, EntityComputedFrom.Target, existingConcepts, newConcepts);
+
+            newConcepts.AddRange(existingConcepts.OfType<ReferenceCascadeDeleteInfo>()
+                .Where(ci => ci.Reference.DataStructure == EntityComputedFrom.Source)
+                .Where(ci => newSourceProperties.Contains(ci.Reference))
+                .Select(ci => new ReferenceCascadeDeleteInfo
+                {
+                    Reference = new ReferencePropertyInfo
+                    {
+                        DataStructure = EntityComputedFrom.Target,
+                        Name = ci.Reference.Name,
+                        Referenced = ci.Reference.Referenced
+                    }
+                }));
+
+            // Assign ComputedFrom to the target properties and extension:
+
+            newConcepts.AddRange(newSourceProperties.Select(sp =>
                     new PropertyComputedFromInfo
                     {
                         Target = new PropertyInfo { DataStructure = EntityComputedFrom.Target, Name = sp.Name },

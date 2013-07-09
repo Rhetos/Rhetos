@@ -35,16 +35,24 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string ComparePropertySnippet(PropertyComputedFromInfo info)
         {
             return string.Format(
-@"                        if (same && (sourceEnum.Current.{0} == null && destEnum.Current.{0} != null || sourceEnum.Current.{0} != null && !sourceEnum.Current.{0}.Equals(destEnum.Current.{0})))
+@"                        if (same && (sourceEnum.Current.{1} == null && destEnum.Current.{0} != null || sourceEnum.Current.{1} != null && !sourceEnum.Current.{1}.Equals(destEnum.Current.{0})))
                             same = false;
-", info.Target.Name);
+",
+                info.Target.Name, info.Source.Name);
         }
 
         private static string ClonePropertySnippet(PropertyComputedFromInfo info)
         {
             return string.Format(
 @",
-                                    {0} = sourceEnum.Current.{0}", info.Target.Name);
+                                    {0} = sourceEnum.Current.{1}", info.Target.Name, info.Source.Name);
+        }
+
+        private static string AssignPropertySnippet(PropertyComputedFromInfo info)
+        {
+            return string.Format(@"destEnum.Current.{0} = sourceEnum.Current.{1};
+                            ",
+                info.Target.Name, info.Source.Name);
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
@@ -52,6 +60,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (PropertyComputedFromInfo) conceptInfo;
             codeBuilder.InsertCode(ComparePropertySnippet(info), EntityComputedFromCodeGenerator.ComparePropertyTag, info.EntityComputedFrom);
             codeBuilder.InsertCode(ClonePropertySnippet(info), EntityComputedFromCodeGenerator.ClonePropertyTag, info.EntityComputedFrom);
+            codeBuilder.InsertCode(AssignPropertySnippet(info), EntityComputedFromCodeGenerator.AssignPropertyTag, info.EntityComputedFrom);
         }
     }
 }
