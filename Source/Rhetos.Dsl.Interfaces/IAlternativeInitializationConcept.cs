@@ -27,6 +27,8 @@ namespace Rhetos.Dsl
     /// Implement this interface to alter a concept's DSL syntax
 	/// by ignoring some of its properties when parsing a DSL script.
     /// The ignored properties (nonparsable) must be initialized manually in the InitializeNonparsableProperties function.
+    /// 
+    /// When creating this kind of concept from a IMacroConcept, it is not needed to assign nonparsable properties.
     /// </summary>
     public interface IAlternativeInitializationConcept : IConceptInfo
     {
