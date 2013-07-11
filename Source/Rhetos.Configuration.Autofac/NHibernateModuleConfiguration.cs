@@ -59,6 +59,8 @@ namespace Rhetos.Configuration.Autofac
             builder.RegisterType<NHibernatePersistenceTransaction>();
             builder.RegisterGeneratedFactory<NHibernatePersistenceTransaction.Factory>();
             builder.RegisterType<NHibernatePersistenceEngine>().As<IPersistenceEngine>().SingleInstance();
+            PluginsUtility.RegisterPlugins<IConceptMappingCodeGenerator>(builder);
+            PluginsUtility.RegisterPlugins<INHibernateConfigurationExtension>(builder);
 
             base.Load(builder);
         }

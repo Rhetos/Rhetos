@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 using Autofac;
+using Rhetos.Extensibility;
 using Rhetos.RestGenerator;
 
 namespace Rhetos.Configuration.Autofac
@@ -26,6 +27,8 @@ namespace Rhetos.Configuration.Autofac
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<RestGenerator.RestGenerator>().As<IRestGenerator>();
+            PluginsUtility.RegisterPlugins<IRestGeneratorPlugin>(builder);
+
             base.Load(builder);
         }
 

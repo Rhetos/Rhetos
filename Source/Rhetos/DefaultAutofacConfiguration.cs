@@ -47,7 +47,7 @@ namespace Rhetos
             builder.RegisterType<GlobalErrorHandler>();
 
             builder.RegisterModule(new CommonModuleConfiguration());
-            builder.RegisterModule(new ExtensibilityModuleConfiguration(ListPluginsAssemblies()));
+            builder.RegisterModule(new ExtensibilityModuleConfiguration());
             builder.RegisterModule(new DslModuleConfiguration());
             builder.RegisterModule(new CompilerConfiguration());
             builder.RegisterModule(new FactoryModuleConfiguration());
@@ -60,20 +60,5 @@ namespace Rhetos
             base.Load(builder);
         }
 
-        private static IEnumerable<string> ListPluginsAssemblies()
-        {
-            List<string> pluginsAssemblies = new List<string>();
-            if (ConfigurationManager.AppSettings["PluginsDirectory"] != null)
-            {
-                string pluginsPath = Path.Combine(_rootPath, ConfigurationManager.AppSettings["PluginsDirectory"]);
-                pluginsAssemblies.AddRange(Directory.EnumerateFiles(pluginsPath, "*.dll", SearchOption.AllDirectories));
-            }
-            if (ConfigurationManager.AppSettings["PluginsAssemblies"] != null)
-            {
-                IEnumerable<string> pluginsFiles = ConfigurationManager.AppSettings["PluginsAssemblies"].Split(new[] {','}).Select(a => a.Trim());
-                pluginsAssemblies.AddRange(pluginsFiles.Select(a => Path.Combine(_rootPath, a)));
-            }
-            return pluginsAssemblies;
-        }
     }
 }

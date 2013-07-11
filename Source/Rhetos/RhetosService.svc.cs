@@ -39,7 +39,6 @@ namespace Rhetos
         private readonly ILogger _commandResultsLogger;
         private readonly ILogger _performanceLogger;
         private readonly IAuthorizationManager _authorizationManager;
-        private readonly IPluginsInitializer _pluginsInitializer;
         private readonly Func<WcfUserInfo> _wcfUserInfoFactory;
         private readonly IDomainObjectModel _domainObjectModel;
 
@@ -48,7 +47,6 @@ namespace Rhetos
             IConceptRepository<ICommandInfo> commandInfoRepository,
             ILogProvider logProvider,
             IAuthorizationManager authorizationManager,
-            IPluginsInitializer pluginsInitializer,
             Func<WcfUserInfo> wcfUserInfoFactory,
             IDomainObjectModel domainObjectModel)
         {
@@ -60,7 +58,6 @@ namespace Rhetos
             _commandResultsLogger = logProvider.GetLogger("IServerApplication CommandResults");
             _performanceLogger = logProvider.GetLogger("Performance");
             _authorizationManager = authorizationManager;
-            _pluginsInitializer = pluginsInitializer;
             _wcfUserInfoFactory = wcfUserInfoFactory;
             _domainObjectModel = domainObjectModel;
         }
@@ -87,7 +84,6 @@ namespace Rhetos
             if (commands == null || commands.Length == 0)
                 return new ServerProcessingResult { SystemMessage = "Commands missing", Success = false };
 
-            _pluginsInitializer.InitializePlugins();
             if (XmlUtility.Dom == null)
                 lock (XmlUtility.DomLock)
                     if (XmlUtility.Dom == null)

@@ -31,7 +31,6 @@ namespace DeployPackages
     {
         private static readonly string _rootPath = AppDomain.CurrentDomain.BaseDirectory;
 
-        public static readonly string PluginsFolder = Path.Combine(_rootPath, "Plugins");
         public static readonly string DslScriptsFolder = Path.Combine(_rootPath, "..\\DslScripts");
         public static readonly string DataMigrationScriptsFolder = Path.Combine(_rootPath, "..\\DataMigration");
         public static readonly string DomAssemblyName = "ServerDom";
@@ -51,7 +50,7 @@ namespace DeployPackages
             builder.RegisterInstance(new ResourcesFolder(""));
             builder.RegisterType<NullUserInfo>().As<IUserInfo>();
             builder.RegisterModule(new CommonModuleConfiguration());
-            builder.RegisterModule(new ExtensibilityModuleConfiguration(ListPluginsAssemblies()));
+            builder.RegisterModule(new ExtensibilityModuleConfiguration());
             builder.RegisterModule(new DslModuleConfiguration());
             builder.RegisterInstance<IDslSource>(new DiskDslScriptProvider(DslScriptsFolder));
             builder.RegisterModule(new CompilerConfiguration());
@@ -67,14 +66,6 @@ namespace DeployPackages
             builder.RegisterType<DatabaseCleaner>();
 
             base.Load(builder);
-        }
-
-        private static IEnumerable<string> ListPluginsAssemblies()
-        {
-            if (!Directory.Exists(PluginsFolder))
-                throw new ApplicationException(String.Format("Folder {0} does not exist.", PluginsFolder));
-
-            return Directory.EnumerateFiles(PluginsFolder, "*.dll");
         }
     }
 }

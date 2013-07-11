@@ -85,7 +85,6 @@ namespace DeployPackages
                 builder.RegisterModule(new AutofacConfiguration(connectionString));
                 var container = builder.Build();
                 logger = container.Resolve<ILogProvider>().GetLogger("DeployPackages");
-                container.Resolve<IPluginsInitializer>().InitializePlugins();
 
                 Console.WriteLine("SQL connection string: " + SqlUtility.MaskPassword(connectionString));
 

@@ -20,17 +20,16 @@ using System.ComponentModel.Composition;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Extensibility;
 using Rhetos.Factory;
+using Autofac;
 
 namespace Rhetos.Processing.DefaultCommands
 {
     [Export(typeof(IPluginConfiguration))]
-    [ExportMetadata(MefProvider.Implements, typeof(IPluginConfiguration))]
-    [ExportMetadata(MefProvider.ClassType, typeof(CommonConceptsConfiguration))]
     public class CommonConceptsConfiguration : IPluginConfiguration
     {
-        public void Load(ITypeFactoryBuilder typeFactoryBuilder)
+        public void Load(ContainerBuilder containerBuilder)
         {
-            typeFactoryBuilder.RegisterType(typeof(DownloadReportCommandClaims));
+            containerBuilder.RegisterType<DownloadReportCommandClaims>();
         }
     }
 }
