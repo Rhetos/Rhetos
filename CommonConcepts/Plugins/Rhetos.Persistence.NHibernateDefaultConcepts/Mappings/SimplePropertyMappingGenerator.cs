@@ -43,7 +43,7 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
 ";
         }
 
-        private static HashSet<Type> simplePropertyMappings = new HashSet<Type>()
+        private static IEnumerable<Type> simplePropertyTypes = new[]
         {
             typeof(ShortStringPropertyInfo),
             typeof(BinaryPropertyInfo),
@@ -60,7 +60,15 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
 
         public static bool IsSupported(PropertyInfo info)
         {
-            return info.DataStructure is IOrmDataStructure && simplePropertyMappings.Contains(info.GetType());
+            if (!(info.DataStructure is IOrmDataStructure))
+                return false;
+
+            var currentPropertyType = info.GetType();
+            foreach (var simplePropertyType in simplePropertyTypes)
+                if (simplePropertyType.IsAssignableFrom(currentPropertyType))
+                    return true;
+                
+            return false;
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
