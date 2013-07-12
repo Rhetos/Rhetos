@@ -1,9 +1,24 @@
-0.9.6 (to be released)
+0.9.6 (2013-07-12)
 ------------------
+
+Breaking changes:
+
+* REST error result was previously a JSON string. Now the result is an object with string properties *UserMessage* and *SystemMessage*. UserMessage should be reported to the end user. SystemMessage contains additional system information, such as entity or property that caused an error.
+* REST method for inserting an entity record (POST) previously returned the generated ID as a string. Now the command returns an object with GUID property named *ID*. 
 
 New features:
 
-* New concept: **ComputedFrom** is a more flexible version of **Persisted**. It allows a property-level recomputing instead of entity-level. It is intended to be used as an internal concept for building simpler macro concepts such as Persisted.
+* New concepts for simplified validations: **MaxLength**, **MinLength**, **MaxValue**, **MinValue**, **RegExMatch**, **Range**, **IntegerRange**, **DateRange** and **DateTimeRange**.
+* New version of concepts **DenySave**, **LockItems** and **LockProperty** with additional reference to the property that is being validated. That property will be reported to the client in case of an error during Save. 
+
+Internal improvements:
+
+* New concept: **ComputedFrom** is a more flexible version of **Persisted**. It allows a property-level recomputing instead of entity-level. It is intended to be used as an internal concept for building simpler macro concepts.
+* Better handling of plugins: allowed non-default constructors for all plugins, simplified plugin registration and retrieval. 
+* Bugfix: Set default git repository configuration to use CRLF for end-of-line. 
+* Bugfix: Using AllPropertiesFrom to copy properties with an SqlIndex to a data structure that does not support SqlIndex will throw an error.
+* Bugfix: NHibernate mapping for properties did not apply to derivations of the existing property types.
+* An IMacroConcept may create an IAlternativeInitializationConcept without setting non-parsable properties.
 
 0.9.5 (2013-06-28)
 ------------------
