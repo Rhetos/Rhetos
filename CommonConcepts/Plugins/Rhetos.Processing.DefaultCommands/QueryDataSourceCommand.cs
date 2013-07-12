@@ -31,7 +31,6 @@ namespace Rhetos.Processing.DefaultCommands
 {
     [Export(typeof(ICommandImplementation))]
     [ExportMetadata(MefProvider.Implements, typeof(QueryDataSourceCommandInfo))]
-    [ExportMetadata(MefProvider.ClassType, typeof(QueryDataSourceCommand))]
     public class QueryDataSourceCommand : ICommandImplementation
     {
         private readonly IDataTypeProvider _dataTypeProvider;

@@ -28,6 +28,8 @@ using Rhetos.Factory;
 using Rhetos.Logging;
 using Rhetos.TestCommon;
 using Rhetos.DatabaseGenerator;
+using Autofac.Features.Metadata;
+using System.Text;
 
 namespace Rhetos.DatabaseGenerator.Test
 {
@@ -38,13 +40,13 @@ namespace Rhetos.DatabaseGenerator.Test
 
         public class SimpleConceptImplementation : IConceptDatabaseDefinition
         {
-            public string CreateDatabaseStructure(IConceptInfo conceptInfo) { return ""; }
+            public string CreateDatabaseStructure(IConceptInfo conceptInfo) { return "CREATE SimpleConceptImplementation"; }
             public string RemoveDatabaseStructure(IConceptInfo conceptInfo) { return ""; }
         }
 
         public class DependentConceptImplementation : IConceptDatabaseDefinition
         {
-            public string CreateDatabaseStructure(IConceptInfo conceptInfo) { return ""; }
+            public string CreateDatabaseStructure(IConceptInfo conceptInfo) { return "CREATE DependentConceptImplementation"; }
             public string RemoveDatabaseStructure(IConceptInfo conceptInfo) { return ""; }
         }
 
@@ -60,7 +62,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
             public static NewConceptApplication CreateApplication(string name)
             {
-                return new NewConceptApplication(new BaseCi { Name = name }, typeof(SimpleConceptImplementation))
+                return new NewConceptApplication(new BaseCi { Name = name }, new SimpleConceptImplementation())
                 {
                     CreateQuery = "sql",
                     DependsOn = new ConceptApplication[] { }
@@ -93,7 +95,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
             public static NewConceptApplication CreateApplication(string name, IConceptDatabaseDefinition implementation)
             {
-                return new NewConceptApplication(new BaseCi { Name = name }, implementation.GetType())
+                return new NewConceptApplication(new BaseCi { Name = name }, implementation)
                 {
                     CreateQuery = "sql",
                     DependsOn = new ConceptApplication[] { }
@@ -112,7 +114,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
             new public static NewConceptApplication CreateApplication(string sql)
             {
-                return new NewConceptApplication(new SimpleCi { Name = "name", Data = "data" }, typeof(SimpleConceptImplementation))
+                return new NewConceptApplication(new SimpleCi { Name = "name", Data = "data" }, new SimpleConceptImplementation())
                 {
                     CreateQuery = sql,
                     DependsOn = new ConceptApplication[] { }
@@ -121,7 +123,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
             public static NewConceptApplication CreateApplication(string name, string sql)
             {
-                return new NewConceptApplication(new SimpleCi { Name = name, Data = "data" }, typeof(SimpleConceptImplementation))
+                return new NewConceptApplication(new SimpleCi { Name = name, Data = "data" }, new SimpleConceptImplementation())
                 {
                     CreateQuery = sql,
                     DependsOn = new ConceptApplication[] { }
@@ -130,7 +132,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
             new public static NewConceptApplication CreateApplication(string name, IConceptDatabaseDefinition implementation)
             {
-                return new NewConceptApplication(new SimpleCi { Name = name, Data = "data" }, implementation.GetType())
+                return new NewConceptApplication(new SimpleCi { Name = name, Data = "data" }, implementation)
                 {
                     CreateQuery = "sql",
                     DependsOn = new ConceptApplication[] { }
@@ -139,7 +141,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
             public static NewConceptApplication CreateApplication(string name, string sql, string data)
             {
-                return new NewConceptApplication(new SimpleCi { Name = name, Data = data }, typeof(SimpleConceptImplementation))
+                return new NewConceptApplication(new SimpleCi { Name = name, Data = data }, new SimpleConceptImplementation())
                 {
                     CreateQuery = sql,
                     DependsOn = new ConceptApplication[] { }
@@ -182,7 +184,7 @@ namespace Rhetos.DatabaseGenerator.Test
             {
                 return new NewConceptApplication(
                     new ReferencingCi { Reference = (SimpleCi)(reference.ConceptInfo), Data = "data" },
-                    typeof(SimpleConceptImplementation))
+                    new SimpleConceptImplementation())
                 {
                     CreateQuery = sql,
                     DependsOn = new ConceptApplication[] { }
@@ -205,7 +207,7 @@ namespace Rhetos.DatabaseGenerator.Test
             {
                 return new NewConceptApplication(
                     new ReferenceToReferencingCi { Reference = (ReferencingCi)(reference.ConceptInfo), Data = "data" },
-                    typeof(SimpleConceptImplementation))
+                    new SimpleConceptImplementation())
                 {
                     CreateQuery = sql,
                     DependsOn = new ConceptApplication[] { }
@@ -227,7 +229,7 @@ namespace Rhetos.DatabaseGenerator.Test
             {
                 return new NewConceptApplication(
                     new MultipleReferencingCi { Name = name, Reference1 = (BaseCi)reference1.ConceptInfo, Reference2 = (BaseCi)reference2.ConceptInfo },
-                    typeof(SimpleConceptImplementation))
+                    new SimpleConceptImplementation())
                 {
                     CreateQuery = "sql",
                     DependsOn = new ConceptApplication[] { }
@@ -242,7 +244,13 @@ namespace Rhetos.DatabaseGenerator.Test
             out List<NewConceptApplication> toBeInserted)
         {
 
-            var databaseGenerator = new DatabaseGenerator_Accessor();
+            var plugins = new PluginsContainer<IConceptDatabaseDefinition>(new []
+            {
+                new Meta<IConceptDatabaseDefinition>(new NullImplementation(), new Dictionary<string, object> { }),
+                new Meta<IConceptDatabaseDefinition>(new SimpleConceptImplementation(), new Dictionary<string, object> { }),
+                new Meta<IConceptDatabaseDefinition>(new DependentConceptImplementation(), new Dictionary<string, object> { })
+            });
+            var databaseGenerator = new DatabaseGenerator_Accessor(null, plugins);
 
             databaseGenerator.ComputeDependsOn(oldApplications.Cast<NewConceptApplication>());
             databaseGenerator.ComputeDependsOn(newApplications);
@@ -458,64 +466,6 @@ namespace Rhetos.DatabaseGenerator.Test
         }
 
         [TestMethod]
-        public void ExtractDependenciesFromMefPluginMetadataTest()
-        {
-            var ca = BaseCi.CreateApplication("ca");
-            var implDepCa = BaseCi.CreateApplication("ca", new DependentConceptImplementation());
-
-            var mockImplementationRepository = new MockImplementationRepository(new Dictionary<string, Dictionary<string, object>>
-            {
-                {typeof(SimpleConceptImplementation).FullName, new Dictionary<string, object> {{"Implements", typeof(BaseCi)}}},
-                {typeof(DependentConceptImplementation).FullName, new Dictionary<string, object>
-                    {
-                        {"Implements", typeof(BaseCi)},
-                        {"DependsOn", typeof(SimpleConceptImplementation)}
-                    }}
-            });
-
-            Assert.AreEqual(ca.ConceptImplementationType, mockImplementationRepository.GetMetadata(implDepCa.ConceptImplementationType.FullName)["DependsOn"]);
-
-            var all = new[] { ca, implDepCa };
-            var dependencies = DatabaseGenerator_Accessor.ExtractDependenciesFromMefPluginMetadata(mockImplementationRepository, all);
-
-            Assert.AreEqual(1, dependencies.Count());
-            Assert.AreEqual(ca, dependencies.Single().DependsOn);
-            Assert.AreEqual(implDepCa, dependencies.Single().Dependent);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(FrameworkException))]
-        public void ExtractDependenciesFromMefPluginMetadataTest_InvalidDependsOnMetadata()
-        {
-            var ca = BaseCi.CreateApplication("ca");
-            var ca2 = OtherBaseCi.CreateApplication("ca2", new DependentConceptImplementation());
-
-            var mockImplementationRepository = new MockImplementationRepository(new Dictionary<string, Dictionary<string, object>>
-            {
-                {typeof(SimpleConceptImplementation).FullName, new Dictionary<string, object> {{"Implements", typeof(BaseCi)}}},
-                {typeof(DependentConceptImplementation).FullName, new Dictionary<string, object>
-                    {
-                        {"Implements", typeof(OtherBaseCi)},
-                        {"DependsOn", typeof(SimpleConceptImplementation)}
-                    }}
-            });
-
-            Assert.AreEqual(ca.ConceptImplementationType, mockImplementationRepository.GetMetadata(ca2.ConceptImplementationType.FullName)["DependsOn"]);
-
-            var all = new[] { ca, ca2 };
-            try
-            {
-                DatabaseGenerator_Accessor.ExtractDependenciesFromMefPluginMetadata(mockImplementationRepository, all);
-            }
-            catch (Exception ex)
-            {
-                Assert.IsTrue(ex.Message.Contains(typeof(OtherBaseCi).Name));
-                Assert.IsTrue(ex.Message.Contains(typeof(DependentConceptImplementation).Name));
-                throw;
-            }
-        }
-
-        [TestMethod]
         [DeploymentItem("Rhetos.DatabaseGenerator.dll")]
         public void DatabaseGenerator_UnchangedMiddleReference()
         {
@@ -546,7 +496,7 @@ namespace Rhetos.DatabaseGenerator.Test
             var sqlCodeBuilder = new CodeBuilder("/*", "*/");
             sqlCodeBuilder.InsertCode("before first");
 
-            var ca1 = new NewConceptApplication(new BaseCi { Name = "ci1" }, typeof (SimpleConceptImplementation))
+            var ca1 = new NewConceptApplication(new BaseCi { Name = "ci1" }, new SimpleConceptImplementation())
             {
                 CreateQuery = "sql",
                 DependsOn = new ConceptApplication[] { }
@@ -555,7 +505,7 @@ namespace Rhetos.DatabaseGenerator.Test
             const string createQuery1 = "create query 1";
             sqlCodeBuilder.InsertCode(createQuery1);
 
-            var ca2 = new NewConceptApplication(new BaseCi { Name = "ci2" }, typeof(SimpleConceptImplementation))
+            var ca2 = new NewConceptApplication(new BaseCi { Name = "ci2" }, new SimpleConceptImplementation())
             {
                 CreateQuery = "sql",
                 DependsOn = new ConceptApplication[] { }
@@ -599,10 +549,10 @@ namespace Rhetos.DatabaseGenerator.Test
         {
             IConceptInfo ci1 = new SimpleCi { Name = "1" };
             IConceptInfo ci2 = new SimpleCi { Name = "2" };
-            ConceptApplication ca1a = new NewConceptApplication(ci1, typeof(SimpleConceptImplementation)) { CreateQuery = "1a" };
-            ConceptApplication ca1b = new NewConceptApplication(ci1, typeof(SimpleConceptImplementation)) { CreateQuery = "1b" };
-            ConceptApplication ca2a = new NewConceptApplication(ci2, typeof(SimpleConceptImplementation)) { CreateQuery = "2a" };
-            ConceptApplication ca2b = new NewConceptApplication(ci2, typeof(SimpleConceptImplementation)) { CreateQuery = "2b" };
+            ConceptApplication ca1a = new NewConceptApplication(ci1, new SimpleConceptImplementation()) { CreateQuery = "1a" };
+            ConceptApplication ca1b = new NewConceptApplication(ci1, new SimpleConceptImplementation()) { CreateQuery = "1b" };
+            ConceptApplication ca2a = new NewConceptApplication(ci2, new SimpleConceptImplementation()) { CreateQuery = "2a" };
+            ConceptApplication ca2b = new NewConceptApplication(ci2, new SimpleConceptImplementation()) { CreateQuery = "2b" };
 
             IEnumerable<Tuple<IConceptInfo, IConceptInfo>> conceptInfoDependencies = new[] { Tuple.Create(ci2, ci1) };
 
@@ -663,7 +613,7 @@ namespace Rhetos.DatabaseGenerator.Test
         [DeploymentItem("Rhetos.DatabaseGenerator.dll")]
         public void CreateNewApplications_MissingMiddleApplications()
         {
-            IConceptInfo ci1 = new SimpleCi {Name = "1" };
+            IConceptInfo ci1 = new SimpleCi { Name = "1" };
             IConceptInfo ci2 = new SimpleCi2 { Name = "2" };
             IConceptInfo ci3 = new SimpleCi3 { Name = "3" };
 
@@ -671,16 +621,16 @@ namespace Rhetos.DatabaseGenerator.Test
             // Concept application that implements ci3 should (indirectly) depend on concept application that implements ci1.
             // This test is specific because there is no concept application for ci2, so there is possibility of error when calculating dependencies between concept applications.
 
-            var dslModel = new MockDslModel(new [] {ci1, ci2, ci3});
+            var dslModel = new MockDslModel(new[] { ci1, ci2, ci3 });
 
-            var conceptImplementationPlugins = new MockConceptImplementationPlugins(new Dictionary<Type, List<Type>>()
-            {
-                {typeof(SimpleCi), new List<Type>{typeof(SimpleConceptImplementation)}},
-                {typeof(SimpleCi2), new List<Type>{}},
-                {typeof(SimpleCi3), new List<Type>{typeof(ExtendingConceptImplementation)}}
-            });
+            var plugins = new PluginsContainer<IConceptDatabaseDefinition>(new Meta<IConceptDatabaseDefinition>[]
+                {
+                    new Meta<IConceptDatabaseDefinition>(new NullImplementation(), new Dictionary<string, object> { }),
+                    new Meta<IConceptDatabaseDefinition>(new SimpleConceptImplementation(), new Dictionary<string, object> { { "Implements", typeof(SimpleCi) } }),
+                    new Meta<IConceptDatabaseDefinition>(new ExtendingConceptImplementation(), new Dictionary<string, object> { { "Implements", typeof(SimpleCi3) } })
+                });
 
-            DatabaseGenerator_Accessor databaseGenerator = new DatabaseGenerator_Accessor(new StubTypeFactory(), dslModel, conceptImplementationPlugins);
+            DatabaseGenerator_Accessor databaseGenerator = new DatabaseGenerator_Accessor(dslModel, plugins);
             var createdApplications = databaseGenerator.CreateNewApplications();
             tempConceptInfoDependencies = null;
 

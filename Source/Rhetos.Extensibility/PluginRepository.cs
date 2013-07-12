@@ -28,11 +28,41 @@ namespace Rhetos.Extensibility
     {
         private readonly Dictionary<Type, List<Type>> ConceptImplementationsDictionary;
 
-        public PluginRepository(
-            IExtensionsProvider pluginProvider, 
-            Lazy<TPlugin, Dictionary<string, object>>[] pluginsAndMetadata)
+        /// <summary>
+        /// Organizes plugins in groups by Type that each plugin is handling (MEF metadata "Implements").
+        /// Sorts plugins by their explicitly given dependencies (MEF metadata "DependsOn").
+        /// </summary>
+        public PluginRepository(Lazy<TPlugin, Dictionary<string, object>>[] pluginsAndMetadata)
         {
-            ConceptImplementationsDictionary = pluginProvider.OrganizePlugins<TPlugin>(pluginsAndMetadata);
+            var groups = new Dictionary<Type, List<Type>>();
+            var dependencies = new List<Tuple<Type, Type>>();
+            foreach (var plugin in pluginsAndMetadata)
+            {
+                Type pluginType = plugin.Value.GetType();
+
+                List<Type> list;
+                Type commandName = (Type)plugin.Metadata[MefProvider.Implements];
+                if (!groups.TryGetValue(commandName, out list))
+                {
+                    list = new List<Type>();
+                    groups.Add(commandName, list);
+                }
+                list.Add(pluginType);
+
+                object dependantObject;
+                plugin.Metadata.TryGetValue(MefProvider.DependsOn, out dependantObject);
+                if (dependantObject != null)
+                {
+                    Type dependantValue = dependantObject as Type;
+                    if (dependantValue == null)
+                        throw new ApplicationException("Plugin " + pluginType + " has " + MefProvider.DependsOn + " attribute set to a " + dependantObject.GetType().Name + " instead of a Type.");
+                    dependencies.Add(Tuple.Create(dependantValue, pluginType));
+                }
+            }
+
+            foreach (List<Type> pluginsInGroup in groups.Values)
+                DirectedGraph.TopologicalSort(pluginsInGroup, dependencies);
+            ConceptImplementationsDictionary = groups;
         }
 
         public IEnumerable<Type> GetImplementations(Type pluginType)

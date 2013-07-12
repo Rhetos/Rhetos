@@ -27,7 +27,6 @@ namespace Rhetos.Processing.DefaultCommands
 {
     [Export(typeof(IClaimProvider))]
     [ExportMetadata(MefProvider.Implements, typeof(LoadDslModelCommandInfo))]
-    [ExportMetadata(MefProvider.ClassType, typeof(LoadDslModelCommandClaims))]
     public class LoadDslModelCommandClaims : IClaimProvider
     {
         public IEnumerable<IClaim> GetRequiredClaims(ICommandInfo info, Func<string, string, IClaim> newClaim)

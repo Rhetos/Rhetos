@@ -29,6 +29,7 @@ namespace Rhetos.Configuration.Autofac
             builder.RegisterType<ConceptApplicationRepository>();
             builder.RegisterType<DatabaseGenerator.DatabaseGenerator>().As<IDatabaseGenerator>().SingleInstance();
             PluginsUtility.RegisterPlugins<IConceptDatabaseDefinition>(builder);
+            builder.RegisterType<NullImplementation>().As<IConceptDatabaseDefinition>();
 
             base.Load(builder);
         }

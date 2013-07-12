@@ -94,13 +94,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IGenericContainer.cs" />
-    <Compile Include="IPluginRepository.cs" />
     <Compile Include="IConceptRepository.cs" />
+    <Compile Include="IPluginRepository.cs" />
     <Compile Include="IAspectPointcuts.cs" />
     <Compile Include="IAspect.cs" />
     <Compile Include="IComponentInterceptor.cs" />
-    <Compile Include="IExtensionsProvider.cs" />
+    <Compile Include="IPluginsContainer.cs" />
     <Compile Include="MefProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -30,7 +30,6 @@ namespace Rhetos.Processing.DefaultCommands
 {
     [Export(typeof(ICommandImplementation))]
     [ExportMetadata(MefProvider.Implements, typeof(DownloadReportCommandInfo))]
-    [ExportMetadata(MefProvider.ClassType, typeof(DownloadReportCommand))]
     public class DownloadReportCommand : ICommandImplementation
     {
         private readonly IIndex<string, IReportRepository> _reportIndex;

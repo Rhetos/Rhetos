@@ -29,14 +29,27 @@ namespace Rhetos.Extensibility
     {
         private readonly Dictionary<string, KeyValuePair<Type, Dictionary<string, object>>> ConceptDictionary;
 
-        public ConceptRepository(
-            IExtensionsProvider conceptProvider,
-            Lazy<TConcept, Dictionary<string, object>>[] conceptInfos)
+        public ConceptRepository(Lazy<TConcept, Dictionary<string, object>>[] conceptInfos)
         {
-            Contract.Requires(conceptProvider != null);
-            Contract.Requires(conceptInfos != null);
+            ConceptDictionary = FindConcepts<TConcept>(conceptInfos);
+        }
 
-            ConceptDictionary = conceptProvider.FindConcepts<TConcept>(conceptInfos);
+        public static Dictionary<string, KeyValuePair<Type, Dictionary<string, object>>> FindConcepts<TPluginInterface>(Lazy<TPluginInterface, Dictionary<string, object>>[] implementations)
+        {
+            var dict = new Dictionary<string, KeyValuePair<Type, Dictionary<string, object>>>();
+            foreach (var impl in implementations)
+            {
+                Type implType = impl.Value.GetType();
+                var pair = new KeyValuePair<Type, Dictionary<string, object>>(implType, impl.Metadata);
+
+                if (!dict.ContainsKey(implType.Name))
+                {
+                    dict.Add(implType.Name, pair);
+                    dict.Add(implType.FullName, pair);
+                }
+                dict.Add(implType.AssemblyQualifiedName, pair);
+            }
+            return dict;
         }
 
         public Type FindConcept(string name)

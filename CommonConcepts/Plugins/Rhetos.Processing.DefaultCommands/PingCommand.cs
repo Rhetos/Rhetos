@@ -28,7 +28,6 @@ namespace Rhetos.Processing.DefaultCommands
 {
     [Export(typeof(ICommandImplementation))]
     [ExportMetadata(MefProvider.Implements, typeof(PingCommandInfo))]
-    [ExportMetadata(MefProvider.ClassType, typeof(PingCommand))]
     class PingCommand : ICommandImplementation
     {
         private readonly IDataTypeProvider _dataTypeProvider;

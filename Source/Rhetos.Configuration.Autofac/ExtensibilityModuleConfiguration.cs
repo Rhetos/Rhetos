@@ -39,13 +39,9 @@ namespace Rhetos.Configuration.Autofac
             builder.RegisterInstance(ci).As<IComponentInterceptorRegistrator>();
             builder.RegisterModule(new ComponentInterceptionModule(ci));
 
-            builder.RegisterType<MefExtensionsProvider>().As<IExtensionsProvider>().SingleInstance();
             builder.RegisterGeneric(typeof(PluginRepository<>)).As(typeof(IPluginRepository<>)).SingleInstance();
             builder.RegisterGeneric(typeof(ConceptRepository<>)).As(typeof(IConceptRepository<>)).SingleInstance();
-
-            builder.RegisterGeneric(typeof(GenericContainer<,>)).As(typeof(IGenericContainer<,>)).SingleInstance();
-
-            
+            builder.RegisterGeneric(typeof(PluginsContainer<>)).As(typeof(IPluginsContainer<>)).SingleInstance();
 
             base.Load(builder);
         }

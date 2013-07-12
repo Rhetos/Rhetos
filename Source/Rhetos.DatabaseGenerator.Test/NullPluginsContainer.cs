@@ -24,16 +24,26 @@ using System.Text;
 
 namespace Rhetos.DatabaseGenerator.Test
 {
-    class NullConceptRepository : IConceptRepository<IConceptDatabaseDefinition>
+    public class NullPluginsContainer<T> : IPluginsContainer<T>
     {
-        public Type FindConcept(string concept)
+        public IEnumerable<T> GetPlugins()
+        {
+            return new T[] {};
+        }
+
+        public Type GetMetadata(T plugin, string metadataKey)
         {
             return null;
         }
 
-        public Dictionary<string, object> GetMetadata(string concept)
+        public Type GetMetadata(Type pluginType, string metadataKey)
         {
             return null;
+        }
+
+        public IEnumerable<T> GetImplementations(Type implements)
+        {
+            return new T[] { };
         }
     }
 }

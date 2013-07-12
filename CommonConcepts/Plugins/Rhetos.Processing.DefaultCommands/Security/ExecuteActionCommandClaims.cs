@@ -30,7 +30,6 @@ namespace Rhetos.Processing.DefaultCommands
 {
     [Export(typeof(IClaimProvider))]
     [ExportMetadata(MefProvider.Implements, typeof(ExecuteActionCommandInfo))]
-    [ExportMetadata(MefProvider.ClassType, typeof(ExecuteActionCommandClaims))]
     public class ExecuteActionCommandClaims : IClaimProvider
     {
         public IEnumerable<IClaim> GetRequiredClaims(ICommandInfo info, Func<string, string, IClaim> newClaim)

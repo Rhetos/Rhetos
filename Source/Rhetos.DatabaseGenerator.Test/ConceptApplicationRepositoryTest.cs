@@ -122,14 +122,14 @@ namespace Rhetos.DatabaseGenerator.Test
     {
         private class MockSqlExecuter : ISqlExecuter
         {
-            public static readonly NewConceptApplication DependencyCa1 = new NewConceptApplication(new TestConceptInfo { Name = "dep1" }, typeof(TestConceptImplementation))
+            public static readonly NewConceptApplication DependencyCa1 = new NewConceptApplication(new TestConceptInfo { Name = "dep1" }, new TestConceptImplementation())
             { 
                 Id = Guid.Parse("88CAD02E-5869-4028-B528-4A4723B47C85"),
                 CreateQuery = "dep 1 create query",
                 DependsOn = new ConceptApplication[] {},
                 OldCreationOrder = 1
             };
-            public static readonly NewConceptApplication DependencyCa2 = new NewConceptApplication(new TestConceptInfo { Name = "dep2" }, typeof(TestConceptImplementation))
+            public static readonly NewConceptApplication DependencyCa2 = new NewConceptApplication(new TestConceptInfo { Name = "dep2" }, new TestConceptImplementation())
             {
                 Id = Guid.Parse("2567A911-4DA4-4737-B68B-3A51364E667B"),
                 CreateQuery = "dep 2 create query",
@@ -137,7 +137,7 @@ namespace Rhetos.DatabaseGenerator.Test
                 OldCreationOrder = 2
             };
 
-            public static readonly NewConceptApplication ConceptApplication = new NewConceptApplication(new TestConceptInfo { Name = "abc" }, typeof(TestConceptImplementation))
+            public static readonly NewConceptApplication ConceptApplication = new NewConceptApplication(new TestConceptInfo { Name = "abc" }, new TestConceptImplementation())
             {
                 Id = Guid.Parse("E687F635-E5B4-4DEA-8079-F9F17B7237D6"),
                 CreateQuery = "create query",
@@ -145,7 +145,7 @@ namespace Rhetos.DatabaseGenerator.Test
                 OldCreationOrder = 3
             };
 
-            public static readonly NewConceptApplication ConceptApplicationCopy = new NewConceptApplication(ConceptApplication.ConceptInfo, ConceptApplication.ConceptImplementationType)
+            public static readonly NewConceptApplication ConceptApplicationCopy = new NewConceptApplication(ConceptApplication.ConceptInfo, ConceptApplication.ConceptImplementation)
             {
                 Id = Guid.Parse("30703370-A222-4467-B199-3E8F7E74609D"),
                 CreateQuery = ConceptApplication.CreateQuery,
@@ -153,7 +153,7 @@ namespace Rhetos.DatabaseGenerator.Test
                 OldCreationOrder = 4
             };
 
-            public static readonly NewConceptApplication ConceptApplication3 = new NewConceptApplication(new TestConceptInfo { Name = "ca3" }, typeof(TestConceptImplementation))
+            public static readonly NewConceptApplication ConceptApplication3 = new NewConceptApplication(new TestConceptInfo { Name = "ca3" }, new TestConceptImplementation())
             {
                 Id = Guid.Parse("FCAC6CA0-5A8F-4848-980B-573C32710374"),
                 CreateQuery = "create query",

@@ -18,23 +18,14 @@
 */
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Extensibility
 {
-    public class GenericContainer<TConcept, TItem> : IGenericContainer<TConcept, TItem>
+    public interface IPluginsContainer<TPlugin>
     {
-        private readonly List<TItem> Items = new List<TItem>();
-
-        public void RegisterItem(TItem item)
-        {
-            Items.Add(item);
-        }
-
-        public IEnumerable<TItem> GetRegisteredItems()
-        {
-            return Items;
-        }
+        IEnumerable<TPlugin> GetPlugins();
+        Type GetMetadata(TPlugin plugin, string metadataKey);
+        Type GetMetadata(Type pluginType, string metadataKey);
+        IEnumerable<TPlugin> GetImplementations(Type implements);
     }
 }
