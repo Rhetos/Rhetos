@@ -40,13 +40,13 @@ namespace Rhetos.Persistence.NHibernate
         public const string AssemblyTag = "<!--assemblyName-->";
 
         private readonly ICodeGenerator _codeGenerator;
-        private readonly IPluginRepository<IConceptMappingCodeGenerator> _plugins;
+        private readonly IPluginsContainer<IConceptMappingCodeGenerator> _plugins;
         private readonly IDomainObjectModel _domainObjectModel;
         private readonly ILogger _performanceLogger;
 
         public NHibernateMappingGenerator(
             ICodeGenerator codeGenerator,
-            IPluginRepository<IConceptMappingCodeGenerator> plugins,
+            IPluginsContainer<IConceptMappingCodeGenerator> plugins,
             IDomainObjectModel domainObjectModel,
             ILogProvider logProvider)
         {

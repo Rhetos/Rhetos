@@ -31,19 +31,6 @@ namespace Rhetos.Configuration.Autofac
 {
     public class ExtensibilityModuleConfiguration : Module
     {
-        private readonly IEnumerable<string> PluginsAssemblies;
-
-        public ExtensibilityModuleConfiguration()
-        {
-            PluginsAssemblies = new string[] {};
-        }
-
-        /// <param name="pluginsAssemblies">A list of dll files. Plugins will be searched and loaded from those files.</param>
-        public ExtensibilityModuleConfiguration(IEnumerable<string> pluginsAssemblies)
-        {
-            PluginsAssemblies = pluginsAssemblies;
-        }
-
         protected override void Load(ContainerBuilder builder)
         {
             Contract.Requires(builder != null);
@@ -52,22 +39,7 @@ namespace Rhetos.Configuration.Autofac
             builder.RegisterInstance(ci).As<IComponentInterceptorRegistrator>();
             builder.RegisterModule(new ComponentInterceptionModule(ci));
 
-            try
-            {
-                var assemblyCatalogs = PluginsAssemblies.Select(a => new AssemblyCatalog(a));
-                builder.RegisterComposablePartCatalog(new AggregateCatalog(assemblyCatalogs));
-            }
-            catch (System.Reflection.ReflectionTypeLoadException rtle)
-            {
-                var firstFive = rtle.LoaderExceptions.Take(5).Select(it => Environment.NewLine + it.Message);
-                throw new FrameworkException("Can't find MEF plugin dependencies:" + string.Concat(firstFive), rtle);
-            }
-
-            builder.RegisterType<MefExtensionsProvider>().As<IExtensionsProvider>().SingleInstance();
-            builder.RegisterGeneric(typeof(PluginRepository<>)).As(typeof(IPluginRepository<>)).SingleInstance();
-            builder.RegisterGeneric(typeof(ConceptRepository<>)).As(typeof(IConceptRepository<>)).SingleInstance();
-
-            builder.RegisterGeneric(typeof(GenericContainer<,>)).As(typeof(IGenericContainer<,>)).SingleInstance();
+            builder.RegisterGeneric(typeof(PluginsContainer<>)).As(typeof(IPluginsContainer<>)).SingleInstance();
 
             base.Load(builder);
         }

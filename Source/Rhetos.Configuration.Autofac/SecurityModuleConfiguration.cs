@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 using Autofac;
+using Rhetos.Extensibility;
 using Rhetos.Security;
 
 namespace Rhetos.Configuration.Autofac
@@ -28,6 +29,7 @@ namespace Rhetos.Configuration.Autofac
             builder.RegisterType<AuthorizationManager>().As<IAuthorizationManager>().InstancePerLifetimeScope();
             builder.RegisterType<ClaimGenerator>().As<IClaimGenerator>().SingleInstance();
             builder.RegisterType<DomainPrincipalProvider>().As<IPrincipalProvider>().InstancePerLifetimeScope();
+            PluginsUtility.RegisterPlugins<IClaimProvider>(builder);
 
             base.Load(builder);
         }

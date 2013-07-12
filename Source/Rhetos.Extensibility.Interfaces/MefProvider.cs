@@ -25,7 +25,6 @@ namespace Rhetos.Extensibility
 {
     public static class MefProvider
     {
-        public const string ClassType = "ClassType";
         public const string Implements = "Implements";
         public const string DependsOn = "DependsOn";
     }

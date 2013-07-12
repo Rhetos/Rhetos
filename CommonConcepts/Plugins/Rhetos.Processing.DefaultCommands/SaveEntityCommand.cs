@@ -34,7 +34,6 @@ namespace Rhetos.Processing.DefaultCommands
 {
     [Export(typeof(ICommandImplementation))]
     [ExportMetadata(MefProvider.Implements, typeof(SaveEntityCommandInfo))]
-    [ExportMetadata(MefProvider.ClassType, typeof(SaveEntityCommand))]
     public class SaveEntityCommand : ICommandImplementation
     {
         private readonly IIndex<string, IWritableRepository> _writableRepositories;

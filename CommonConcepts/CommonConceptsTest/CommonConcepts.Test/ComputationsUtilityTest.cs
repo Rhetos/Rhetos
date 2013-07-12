@@ -21,6 +21,7 @@ using System;
 using System.Linq;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.TestCommon;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -51,7 +52,7 @@ namespace CommonConcepts.Test
                 new SomeEntity { Name = "e", Reference = id4 }
             };
 
-            DslUtility.SortByGivenOrder(items, expectedOrder, item => item.Reference);
+            DirectedGraph.SortByGivenOrder(items, expectedOrder, item => item.Reference);
             string result = string.Join(", ", items.Select(item => item.Name));
             const string expectedResult1 = "c, b, d, a, e";
             const string expectedResult2 = "c, d, b, a, e";
@@ -76,7 +77,7 @@ namespace CommonConcepts.Test
                 new SomeEntity { Name = "b", Reference = id2 },
             };
 
-            TestUtility.ShouldFail(() => DslUtility.SortByGivenOrder(items, expectedOrder, item => item.Reference),
+            TestUtility.ShouldFail(() => DirectedGraph.SortByGivenOrder(items, expectedOrder, item => item.Reference),
                 "Using item with a key that does not exist in given expectedOrder.", "SomeEntity", "ComputationsUtilityTest", id2.ToString());
         }
     }

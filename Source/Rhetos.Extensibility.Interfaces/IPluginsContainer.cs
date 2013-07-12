@@ -18,23 +18,18 @@
 */
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Diagnostics.Contracts;
-using Rhetos.Extensibility;
 
 namespace Rhetos.Extensibility
 {
-    /// <summary>
-    /// Automatically filled with plugins that directly implement interface TPluginInterface.
-    /// </summary>
-    public interface IPluginRepository<TPluginInterface> : IPluginRepository
+    public interface IPluginsContainer<TPlugin>
     {
-    }
+        IEnumerable<TPlugin> GetPlugins();
+        Type GetMetadata(TPlugin plugin, string metadataKey);
+        Type GetMetadata(Type pluginType, string metadataKey);
 
-    public interface IPluginRepository
-    {
-        IEnumerable<Type> GetImplementations(Type pluginType);
-        IEnumerable<Type> GetImplementations();
+        /// <summary>
+        /// The implementations are already sorted by their dependencies.
+        /// </summary>
+        IEnumerable<TPlugin> GetImplementations(Type implements);
     }
 }

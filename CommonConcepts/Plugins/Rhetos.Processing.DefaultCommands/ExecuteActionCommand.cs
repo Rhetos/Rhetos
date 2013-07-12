@@ -29,7 +29,6 @@ namespace Rhetos.Processing.DefaultCommands
 {
     [Export(typeof(ICommandImplementation))]
     [ExportMetadata(MefProvider.Implements, typeof(ExecuteActionCommandInfo))]
-    [ExportMetadata(MefProvider.ClassType, typeof(ExecuteActionCommand))]
     public class ExecuteActionCommand : ICommandImplementation
     {
         private readonly IIndex<string, IActionRepository> _actionIndex;

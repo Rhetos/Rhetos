@@ -68,7 +68,6 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.AddReferencesFromDependency(typeof(ExportAttribute));
             codeBuilder.AddReferencesFromDependency(typeof(ExportMetadataAttribute));
             codeBuilder.AddReferencesFromDependency(typeof(MefProvider));
-            codeBuilder.AddReferencesFromDependency(typeof(IExtensionsProvider));
         }
     }
 }

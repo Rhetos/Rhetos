@@ -27,7 +27,6 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
     [ExportMetadata(MefProvider.Implements, typeof(ModuleExternalReferenceInfo))]
-    [ExportMetadata(MefProvider.ClassType, typeof(ModuleExternalReferenceCodeGenerator))]
 
     public class ModuleExternalReferenceCodeGenerator : IConceptCodeGenerator
     {

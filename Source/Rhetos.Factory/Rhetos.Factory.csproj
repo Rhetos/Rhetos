@@ -98,7 +98,6 @@
   <ItemGroup>
     <Compile Include="InterceptionFactory.cs" />
     <Compile Include="DynamicProxyFactory.cs" />
-    <Compile Include="PluginsInitializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TypeFactory.cs" />
     <Compile Include="TypeFactoryBuilder.cs" />

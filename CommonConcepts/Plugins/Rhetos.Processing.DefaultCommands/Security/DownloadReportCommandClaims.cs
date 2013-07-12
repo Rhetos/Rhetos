@@ -30,7 +30,6 @@ namespace Rhetos.Processing.DefaultCommands
 {
     [Export(typeof(IClaimProvider))]
     [ExportMetadata(MefProvider.Implements, typeof(DownloadReportCommandInfo))]
-    [ExportMetadata(MefProvider.ClassType, typeof(DownloadReportCommandClaims))]
     public class DownloadReportCommandClaims : IClaimProvider
     {
         private readonly IDslModel _dslModel;

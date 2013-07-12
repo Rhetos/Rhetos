@@ -152,5 +152,15 @@ namespace Rhetos.Utilities
                         RemoveLeaf(dep, removed, numberOfDependents, dependsOn, candidatesIndex);
                 }
         }
+
+        public static void SortByGivenOrder<TItem, TKey>(TItem[] items, TKey[] expectedKeyOrder, Func<TItem, TKey> itemKeySelector)
+        {
+            var expectedIndex = expectedKeyOrder.Select((key, index) => new { key, index }).ToDictionary(item => item.key, item => item.index);
+
+            string cannotFindKeyError = "Given array expectedKeyOrder does not contain key '{0}' that is present in given items (" + typeof(TItem).FullName + ").";
+            var itemsOrder = items.Select(item => expectedIndex.GetValue(itemKeySelector(item), cannotFindKeyError)).ToArray();
+
+            Array.Sort(itemsOrder, items);
+        }
     }
 }

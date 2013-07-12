@@ -25,6 +25,7 @@ using Rhetos.Factory;
 using System.Diagnostics.Contracts;
 using Rhetos.Compiler;
 using Rhetos.Extensibility;
+using System.ComponentModel.Composition.Hosting;
 
 namespace Rhetos.Configuration.Autofac
 {
@@ -36,12 +37,15 @@ namespace Rhetos.Configuration.Autofac
 
             builder.RegisterType<DynamicProxyFactory>().As<IAspectFactory>().SingleInstance();
             builder.RegisterType<TypeFactory>().As<ITypeFactory>().SingleInstance();
-
             builder.RegisterType<TypeFactoryBuilder>().As<ITypeFactoryBuilder>();
-
             builder.RegisterGeneric(typeof(InterceptionFactory<>)).As(typeof(IInterceptionFactory<>)).SingleInstance();
 
-            builder.RegisterType<PluginsInitializer>().As<IPluginsInitializer>().SingleInstance();
+            // Allow DSL packages and other plugins to register their own specific types to Autofac:
+
+            var assemblyCatalogs = PluginsUtility.ListPluginsAssemblies().Select(a => new AssemblyCatalog(a));
+            var container = new CompositionContainer(new AggregateCatalog(assemblyCatalogs));
+            foreach (var pluginConfiguration in container.GetExports<IPluginConfiguration>())
+                pluginConfiguration.Value.Load(builder);
 
             base.Load(builder);
         }

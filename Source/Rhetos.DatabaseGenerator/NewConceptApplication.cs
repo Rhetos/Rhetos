@@ -27,15 +27,16 @@ namespace Rhetos.DatabaseGenerator
 {
     public class NewConceptApplication : ConceptApplication
     {
-        public NewConceptApplication(IConceptInfo conceptInfo, Type conceptImplementationType)
+        public NewConceptApplication(IConceptInfo conceptInfo, IConceptDatabaseDefinition conceptImplementation)
         {
             Id = Guid.NewGuid();
             ConceptInfo = conceptInfo;
             ConceptInfoTypeName = conceptInfo.GetType().AssemblyQualifiedName;
             ConceptInfoKey = conceptInfo.GetKey();
-            ConceptImplementationType = conceptImplementationType;
-            ConceptImplementationTypeName = conceptImplementationType.AssemblyQualifiedName;
-            ConceptImplementationVersion = GetVersionFromAttribute(conceptImplementationType);
+            ConceptImplementation = conceptImplementation;
+            ConceptImplementationType = conceptImplementation.GetType();
+            ConceptImplementationTypeName = ConceptImplementationType.AssemblyQualifiedName;
+            ConceptImplementationVersion = GetVersionFromAttribute(ConceptImplementationType);
         }
 
         private static Version GetVersionFromAttribute(Type implementationType)
@@ -51,6 +52,7 @@ namespace Rhetos.DatabaseGenerator
         }
 
         public IConceptInfo ConceptInfo;
+        public IConceptDatabaseDefinition ConceptImplementation;
         public Type ConceptImplementationType;
         public Version ConceptImplementationVersion;
     }
