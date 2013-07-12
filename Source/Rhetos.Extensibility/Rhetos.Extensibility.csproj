@@ -118,7 +118,6 @@
   <ItemGroup>
     <Compile Include="Aspect.cs" />
     <Compile Include="PluginRepository.cs" />
-    <Compile Include="ConceptRepository.cs" />
     <Compile Include="ComponentInterceptionModule.cs" />
     <Compile Include="ComponentInterceptor.cs" />
     <Compile Include="PluginsContainer.cs" />

@@ -446,25 +446,6 @@ namespace Rhetos.DatabaseGenerator.Test
             Assert.AreEqual("1<3 2<3 5<4 A<1 A<3 B<1 B<2 B<3 C<2 C<3 C<4 C<5", result);
         }
 
-        private class MockImplementationRepository : IConceptRepository<IConceptDatabaseDefinition>
-        {
-            private readonly Dictionary<string, Dictionary<string, object>> _metadataByImplementationTypeName;
-
-            public MockImplementationRepository(Dictionary<string, Dictionary<string, object>> metadataByImplementationTypeName)
-            {
-                _metadataByImplementationTypeName = metadataByImplementationTypeName;
-            }
-
-            public Type FindConcept(string concept)
-            {
-                return null;
-            }
-            public Dictionary<string, object> GetMetadata(string concept)
-            {
-                return _metadataByImplementationTypeName[concept];
-            }
-        }
-
         [TestMethod]
         [DeploymentItem("Rhetos.DatabaseGenerator.dll")]
         public void DatabaseGenerator_UnchangedMiddleReference()
@@ -580,21 +561,6 @@ namespace Rhetos.DatabaseGenerator.Test
             public MockDslModel(IEnumerable<IConceptInfo> conceptInfos) { _conceptInfos = conceptInfos; }
             public IEnumerable<IConceptInfo> Concepts { get { return _conceptInfos; } }
             public IConceptInfo FindByKey(string conceptKey) { throw new NotImplementedException(); }
-        }
-
-        class NullImplementationRepository : IConceptRepository<IConceptDatabaseDefinition>
-        {
-            public Type FindConcept(string concept) { throw new NotImplementedException(); }
-            public Dictionary<string, object> GetMetadata(string concept) { return new Dictionary<string, object>(); }
-        }
-
-        class StubTypeFactory : ITypeFactory
-        {
-            public object CreateInstance(Type type) { return Activator.CreateInstance(type); }
-            public bool IsRegistered(Type type) { return true; }
-            public ITypeFactory CreateInnerTypeFactory() { return this; }
-            public void Register(ITypeFactoryBuilder typeFactoryBuilder) { }
-            public void Dispose() { }
         }
 
         private class ExtendingConceptImplementation : IConceptDatabaseDefinition, IConceptDatabaseDefinitionExtension

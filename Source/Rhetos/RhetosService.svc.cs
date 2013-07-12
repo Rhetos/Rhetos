@@ -33,7 +33,8 @@ namespace Rhetos
     public class RhetosService : IServerApplication
     {
         private readonly IProcessingEngine _processingEngine;
-        private readonly IConceptRepository<ICommandInfo> _commandInfoRepository;
+        private readonly IEnumerable<ICommandInfo> _commands;
+        private IDictionary<string, ICommandInfo> _commandsByName;
         private readonly ILogger _logger;
         private readonly ILogger _commandsLogger;
         private readonly ILogger _commandResultsLogger;
@@ -44,15 +45,14 @@ namespace Rhetos
 
         public RhetosService(
             IProcessingEngine processingEngine,
-            IConceptRepository<ICommandInfo> commandInfoRepository,
+            IEnumerable<ICommandInfo> commands,
             ILogProvider logProvider,
             IAuthorizationManager authorizationManager,
             Func<WcfUserInfo> wcfUserInfoFactory,
             IDomainObjectModel domainObjectModel)
         {
-
             _processingEngine = processingEngine;
-            _commandInfoRepository = commandInfoRepository;
+            _commands = commands;
             _logger = logProvider.GetLogger("IServerApplication.RhetosService.Execute");
             _commandsLogger = logProvider.GetLogger("IServerApplication Commands");
             _commandResultsLogger = logProvider.GetLogger("IServerApplication CommandResults");
@@ -80,6 +80,9 @@ namespace Rhetos
         private ServerProcessingResult ExecuteInner(ServerCommandInfo[] commands)
         {
             var stopwatch = Stopwatch.StartNew();
+
+            if (_commandsByName == null)
+                PrepareCommandByName();
 
             if (commands == null || commands.Length == 0)
                 return new ServerProcessingResult { SystemMessage = "Commands missing", Success = false };
@@ -125,12 +128,37 @@ namespace Rhetos
             return convertedResult;
         }
 
+        private void PrepareCommandByName()
+        {
+            var commandNames = _commands
+                .SelectMany(command => new[] { command.GetType().Name, command.GetType().FullName, command.GetType().AssemblyQualifiedName }
+                    .Select(name => new { command, name }));
+
+            var invalidGroup = commandNames.GroupBy(cn => cn.name).Where(g => g.Count() > 1).FirstOrDefault();
+            if (invalidGroup != null)
+                throw new FrameworkException(string.Format(
+                    "Two commands {0} and {1} have the same name: \"{2}\".",
+                    invalidGroup.ToArray()[0].command.GetType().AssemblyQualifiedName,
+                    invalidGroup.ToArray()[1].command.GetType().AssemblyQualifiedName,
+                    invalidGroup.Key));
+
+            _commandsByName = commandNames.ToDictionary(cn => cn.name, cn => cn.command);
+        }
+
         private ValueOrError<List<ICommandInfo>> Deserialize(IEnumerable<ServerCommandInfo> commands)
         {
             if (commands.Any(c => c == null))
                 return ValueOrError.CreateError("Null command sent.");
 
-            var commandsWithType = commands.Select(c => new {Command = c, Type = _commandInfoRepository.FindConcept(c.CommandName)}).ToArray();
+            var commandsWithType = commands.Select(c => 
+                {
+                    Type commandType = null;
+                    ICommandInfo command;
+                    if (_commandsByName.TryGetValue(c.CommandName, out command))
+                        commandType = command.GetType();
+
+                    return new { Command = c, Type = commandType };
+                }).ToArray();
 
             var unknownCommandNames = commandsWithType.Where(c => c.Type == null).Select(c => c.Command.CommandName).ToArray();
             if (unknownCommandNames.Length > 0)

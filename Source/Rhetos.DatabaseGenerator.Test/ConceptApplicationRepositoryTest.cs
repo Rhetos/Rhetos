@@ -224,24 +224,6 @@ namespace Rhetos.DatabaseGenerator.Test
             }
         }
 
-        private class TestConceptRepository : IConceptRepository<IConceptInfo>, IConceptRepository<IConceptDatabaseDefinition>
-        {
-            public Type FindConcept(string typeName)
-            {
-                if (typeName == typeof(TestConceptInfo).FullName)
-                    return typeof(TestConceptInfo);
-                if (typeName == typeof(TestConceptImplementation).FullName)
-                    return typeof(TestConceptImplementation);
-
-                throw new Exception("Unexpected typeName.");
-            }
-
-            public Dictionary<string, object> GetMetadata(string typeName)
-            {
-                throw new Exception("Unexpected GetMetadata call.");
-            }
-        }
-
         private static string Dump(IEnumerable<ConceptApplication> appliedConcepts)
         {
             return string.Join(Environment.NewLine, appliedConcepts.Select(Dump));
