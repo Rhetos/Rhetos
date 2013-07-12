@@ -108,6 +108,11 @@ namespace Rhetos.DatabaseGenerator.Test
         {
             throw new NotImplementedException();
         }
+
+        public T CreateInstanceKeyed<T>(object key)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     [ConceptImplementationVersion(1, 0)]

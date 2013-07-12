@@ -96,6 +96,9 @@ namespace Rhetos.Processing
 
                             var swCommand = Stopwatch.StartNew();
 
+                            inner.RegisterType(commandImplementation.GetType());
+                            commandImplementation = (ICommandImplementation)inner.CreateInstance(commandImplementation.GetType());
+
                             var commandResult = commandImplementation.Execute(commandInfo);
 
                             swCommand.Stop();
