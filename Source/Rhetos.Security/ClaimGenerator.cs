@@ -118,7 +118,7 @@ namespace Rhetos.Security
                     if (insert.Any())
                         _logger.Info(() => "Inserting claims: " + string.Join(", ", insert.Select(claim => claim.ClaimResource + "." + claim.ClaimRight)) + ".");
 
-                    var claimRepos = (IWritableRepository)inner.CreateInstance(Type.GetType("Common._Helper.Claim_Repository, ServerDom"));
+                    var claimRepos = inner.CreateInstanceKeyed<IWritableRepository>("Common.Claim");
                     claimRepos.Save(insert, null, delete);
 
                     tran.ApplyChanges();

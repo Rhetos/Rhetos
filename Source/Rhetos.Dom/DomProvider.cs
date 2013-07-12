@@ -51,8 +51,6 @@ namespace Rhetos.Dom
                 {
                     if (typeof(Autofac.Module).IsAssignableFrom(type))
                         typeFactory.RegisterModule((Autofac.Module)Activator.CreateInstance(type));
-                    else
-                        typeFactory.RegisterType(type);
                 }
                 catch (Exception)
                 {

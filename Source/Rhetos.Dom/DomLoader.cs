@@ -65,9 +65,6 @@ namespace Rhetos.Dom
             _objectModel = Assembly.Load(new AssemblyName(_assemblyName));
             _logger.Trace("Loaded assembly " + _objectModel.FullName + " at " + _objectModel.Location + ".");
 
-            _logger.Trace("Registring types in assembly.");
-            RegisterTypes(_objectModel, _typeFactory);
-
             _performanceLogger.Write(sw, "DomLoader.LoadObjectModel done.");
         }
     }

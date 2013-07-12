@@ -24,12 +24,13 @@ using Autofac;
 
 namespace Rhetos.Processing.DefaultCommands
 {
-    [Export(typeof(IPluginConfiguration))]
-    public class CommonConceptsConfiguration : IPluginConfiguration
+    [Export(typeof(Module))]
+    public class CommonConceptsConfiguration : Module
     {
-        public void Load(ContainerBuilder containerBuilder)
+        protected override void Load(ContainerBuilder builder)
         {
-            containerBuilder.RegisterType<DownloadReportCommandClaims>();
+            builder.RegisterType<DownloadReportCommandClaims>();
+            base.Load(builder);
         }
     }
 }

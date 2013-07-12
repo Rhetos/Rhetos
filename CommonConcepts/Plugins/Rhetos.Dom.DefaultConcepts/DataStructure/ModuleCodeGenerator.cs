@@ -117,12 +117,13 @@ namespace {0}._Helper
             {
                 codeBuilder.InsertCode(GenerateCommonClassesSnippet());
                 // Types used in the preceding code snippet:
-                codeBuilder.AddReferencesFromDependency(typeof(Autofac.Module)); // Includes reference to Autofac.dll
+                codeBuilder.AddReferencesFromDependency(typeof(Autofac.Module)); // Includes a reference to Autofac.dll.
                 codeBuilder.AddReferencesFromDependency(typeof(NHibernate.ISession));
                 codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.IUserInfo));
                 codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.ISqlExecuter));
                 codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Security.IAuthorizationManager));
                 codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.ResourcesFolder));
+                codeBuilder.AddReferencesFromDependency(typeof(System.ComponentModel.Composition.ExportAttribute));
 
                 CommonClassesCreated = true;
             }
@@ -216,10 +217,12 @@ namespace {0}._Helper
         }}
     }}
 
+    [System.ComponentModel.Composition.Export(typeof(Autofac.Module))]
     public class AutofacConfiguration : Autofac.Module
     {{
         protected override void Load(Autofac.ContainerBuilder builder)
         {{
+            builder.RegisterType<DomRepository>().InstancePerLifetimeScope();
             builder.RegisterType<ExecutionContext>().InstancePerLifetimeScope();
             {3}
 

@@ -207,6 +207,17 @@ namespace Rhetos.Factory
             }
         }
 
+        public T CreateInstanceKeyed<T>(object key)
+        {
+            lock (RegisteredBuilders)
+            {
+                if (FactoryScope == null)
+                    BuildFactory();
+
+                return FactoryScope.ResolveKeyed<T>(key);
+            }
+        }
+
         public void Dispose()
         {
             if (MyRootContainerScope != null)

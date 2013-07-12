@@ -27,6 +27,7 @@ namespace Rhetos.Factory
     public interface ITypeFactory : IDisposable
     {
         object CreateInstance(Type type);
+        T CreateInstanceKeyed<T>(object key);
 
         bool IsRegistered(Type type);
 
