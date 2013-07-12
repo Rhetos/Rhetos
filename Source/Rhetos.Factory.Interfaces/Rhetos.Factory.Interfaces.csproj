@@ -97,7 +97,6 @@
   <ItemGroup>
     <Compile Include="IInterceptionFactory.cs" />
     <Compile Include="IAspectFactory.cs" />
-    <Compile Include="IPluginConfiguration.cs" />
     <Compile Include="ITypeFactory.cs" />
     <Compile Include="ITypeFactoryBuilder.cs" />
     <Compile Include="ITypeFactoryBuilderUtility.cs" />

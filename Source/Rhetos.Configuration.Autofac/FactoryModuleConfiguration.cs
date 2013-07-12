@@ -44,8 +44,8 @@ namespace Rhetos.Configuration.Autofac
 
             var assemblyCatalogs = PluginsUtility.ListPluginsAssemblies().Select(a => new AssemblyCatalog(a));
             var container = new CompositionContainer(new AggregateCatalog(assemblyCatalogs));
-            foreach (var pluginConfiguration in container.GetExports<IPluginConfiguration>())
-                pluginConfiguration.Value.Load(builder);
+            foreach (var pluginModule in container.GetExports<Module>())
+                builder.RegisterModule(pluginModule.Value);
 
             base.Load(builder);
         }
