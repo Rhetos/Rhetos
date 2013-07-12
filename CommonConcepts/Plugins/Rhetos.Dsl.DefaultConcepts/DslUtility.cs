@@ -27,16 +27,6 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     public static class DslUtility
     {
-        public static void SortByGivenOrder<TItem, TKey>(TItem[] items, TKey[] expectedKeyOrder, Func<TItem, TKey> itemKeySelector)
-        {
-            var expectedIndex = expectedKeyOrder.Select((key, index) => new { key, index }).ToDictionary(item => item.key, item => item.index);
-
-            string cannotFindKeyError = "Given array expectedKeyOrder does not contain key '{0}' that is present in given items (" + typeof(TItem).FullName + ").";
-            var itemsOrder = items.Select(item => expectedIndex.GetValue(itemKeySelector(item), cannotFindKeyError)).ToArray();
-
-            Array.Sort(itemsOrder, items);
-        }
-
         public static void ValidatePropertyListSyntax(string dslList, IConceptInfo errorContext)
         {
             var errorHeader = new Lazy<string>(() => 

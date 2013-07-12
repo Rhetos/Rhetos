@@ -1,4 +1,4 @@
-/*
+﻿/*
     Copyright (C) 2013 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -16,10 +16,34 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-namespace Rhetos.Factory
+using Rhetos.Extensibility;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace Rhetos.DatabaseGenerator.Test
 {
-    public interface IPluginsInitializer
+    public class NullPluginsContainer<T> : IPluginsContainer<T>
     {
-        void InitializePlugins(); 
+        public IEnumerable<T> GetPlugins()
+        {
+            return new T[] {};
+        }
+
+        public Type GetMetadata(T plugin, string metadataKey)
+        {
+            return null;
+        }
+
+        public Type GetMetadata(Type pluginType, string metadataKey)
+        {
+            return null;
+        }
+
+        public IEnumerable<T> GetImplementations(Type implements)
+        {
+            return new T[] { };
+        }
     }
 }

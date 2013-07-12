@@ -25,6 +25,7 @@ namespace Rhetos.Compiler
         /// <param name="initialCodeGenerator">
         /// Used to initialize generated AssebmlyInfo. It will be called with IConceptInfo argument set to null.
         /// </param>
-        IAssemblySource ExecutePlugins(IPluginRepository pluginRepository, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator);
+        IAssemblySource ExecutePlugins<TPlugin>(IPluginsContainer<TPlugin> pluginRepository, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator)
+            where TPlugin : IConceptCodeGenerator;
     }
 }

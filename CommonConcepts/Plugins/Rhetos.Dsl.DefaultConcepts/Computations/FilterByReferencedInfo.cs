@@ -90,7 +90,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 			    }}
 
                 var groups = result.GroupBy(s => s.{5}ID.Value).ToArray();
-                Rhetos.Dsl.DefaultConcepts.DslUtility.SortByGivenOrder(groups, references, item => item.Key);
+                Rhetos.Utilities.DirectedGraph.SortByGivenOrder(groups, references, item => item.Key);
 
                 Func<IEnumerable<{0}.{1}>, IEnumerable<{0}.{1}>> subFilter = {7};
                 return groups.SelectMany(g => subFilter(g)).ToArray();

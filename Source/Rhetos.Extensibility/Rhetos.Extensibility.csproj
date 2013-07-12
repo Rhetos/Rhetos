@@ -107,6 +107,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -116,16 +117,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aspect.cs" />
-    <Compile Include="GenericContainer.cs" />
-    <Compile Include="PluginRepository.cs" />
-    <Compile Include="ConceptRepository.cs" />
     <Compile Include="ComponentInterceptionModule.cs" />
     <Compile Include="ComponentInterceptor.cs" />
+    <Compile Include="PluginsContainer.cs" />
     <Compile Include="RegisteredAspects.cs" />
     <Compile Include="AspectPointcut.cs" />
-    <Compile Include="MefExtensionsProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StrongReflection.cs" />
+    <Compile Include="PluginsUtility.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj">

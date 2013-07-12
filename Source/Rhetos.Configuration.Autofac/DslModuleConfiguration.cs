@@ -18,6 +18,7 @@
 */
 using Autofac;
 using Rhetos.Dsl;
+using Rhetos.Extensibility;
 using System.Diagnostics.Contracts;
 
 namespace Rhetos.Configuration.Autofac
@@ -32,6 +33,7 @@ namespace Rhetos.Configuration.Autofac
             builder.RegisterType<DslModel>().As<IDslModel>().SingleInstance();
             builder.RegisterType<DslParser>().As<IDslParser>().SingleInstance();
             builder.RegisterType<DslContainer>().As<IDslContainer>().InstancePerDependency();
+            PluginsUtility.RegisterPlugins<IConceptInfo>(builder);
 
             base.Load(builder);
         }

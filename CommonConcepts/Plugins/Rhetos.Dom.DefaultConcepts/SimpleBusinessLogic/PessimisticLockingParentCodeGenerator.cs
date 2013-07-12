@@ -31,7 +31,6 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
     [ExportMetadata(MefProvider.Implements, typeof(PessimisticLockingParentInfo))]
-    [ExportMetadata(MefProvider.ClassType, typeof(PessimisticLockingParentCodeGenerator))]
     public class PessimisticLockingParentCodeGenerator : IConceptCodeGenerator
     {
         private string CodeSnippet(PessimisticLockingParentInfo info)

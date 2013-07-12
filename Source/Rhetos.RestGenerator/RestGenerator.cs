@@ -28,20 +28,20 @@ namespace Rhetos.RestGenerator
 {
     public class RestGenerator : IRestGenerator
     {
-        private readonly IPluginRepository<IRestGeneratorPlugin> _pluginRepository;
+        private readonly IPluginsContainer<IRestGeneratorPlugin> _plugins;
         private readonly ICodeGenerator _codeGenerator;
         private readonly IAssemblyGenerator _assemblyGenerator;
         private readonly ILogger _logger;
         private readonly ILogger _sourceLogger;
 
         public RestGenerator(
-            IPluginRepository<IRestGeneratorPlugin> pluginRepository,
+            IPluginsContainer<IRestGeneratorPlugin> plugins,
             ICodeGenerator codeGenerator,
             ILogProvider logProvider,
             IAssemblyGenerator assemblyGenerator
         )
         {
-            _pluginRepository = pluginRepository;
+            _plugins = plugins;
             _codeGenerator = codeGenerator;
             _assemblyGenerator = assemblyGenerator;
 
@@ -54,7 +54,7 @@ namespace Rhetos.RestGenerator
             if (String.IsNullOrEmpty(assemblyName))
                 throw new ArgumentNullException("assemblyName");
 
-            IAssemblySource assemblySource = _codeGenerator.ExecutePlugins(_pluginRepository, "/*", "*/", new InitialCodeGenerator());
+            IAssemblySource assemblySource = _codeGenerator.ExecutePlugins(_plugins, "/*", "*/", new InitialCodeGenerator());
             _logger.Trace("References: " + string.Join(", ", assemblySource.RegisteredReferences));
             _sourceLogger.Trace(assemblySource.GeneratedCode);
 

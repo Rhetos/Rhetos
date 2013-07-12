@@ -35,7 +35,7 @@ namespace Rhetos.Dom
 {
     public class DomGenerator : DomProvider, IDomGenerator
     {
-        private readonly IPluginRepository _pluginRepository;
+        private readonly IPluginsContainer<IConceptCodeGenerator> _pluginRepository;
         private Assembly _objectModel;
         private readonly ICodeGenerator _codeGenerator; //********????***********/
         private readonly ILogProvider _log;
@@ -48,7 +48,7 @@ namespace Rhetos.Dom
         /// If assemblyName is null, the assembly will be generated in memory.
         /// </summary>
         public DomGenerator(
-            IPluginRepository<IConceptCodeGenerator> plugins,
+            IPluginsContainer<IConceptCodeGenerator> plugins,
             ICodeGenerator codeGenerator,
             ILogProvider logProvider,
             ITypeFactory typeFactory,

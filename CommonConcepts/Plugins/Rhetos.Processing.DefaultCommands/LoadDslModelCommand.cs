@@ -34,7 +34,6 @@ namespace Rhetos.Processing.DefaultCommands
 
     [Export(typeof(ICommandImplementation))]
     [ExportMetadata(MefProvider.Implements, typeof(LoadDslModelCommandInfo))]
-    [ExportMetadata(MefProvider.ClassType, typeof(LoadDslModelCommand))]
     public class LoadDslModelCommand : ICommandImplementation
     {
         private readonly ITypeFactory TypeFactory;

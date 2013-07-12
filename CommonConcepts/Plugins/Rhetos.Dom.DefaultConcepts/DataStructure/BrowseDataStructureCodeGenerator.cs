@@ -36,7 +36,6 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
     [ExportMetadata(MefProvider.Implements, typeof(BrowseDataStructureInfo))]
-    [ExportMetadata(MefProvider.ClassType, typeof(BrowseDataStructureCodeGenerator))]
     public class BrowseDataStructureCodeGenerator : IConceptCodeGenerator
     {
         public class BrowseTag : Tag<BrowseDataStructureInfo>

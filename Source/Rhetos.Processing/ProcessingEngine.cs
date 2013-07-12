@@ -35,7 +35,7 @@ namespace Rhetos.Processing
     {
         private readonly ITypeFactory TypeFactory;
         private readonly IPersistenceEngine PersistenceEngine;
-        private readonly IPluginRepository<ICommandImplementation> CommandRepository;
+        private readonly IPluginsContainer<ICommandImplementation> CommandRepository;
         private readonly Func<IUserInfo, ISqlExecuter> _sqlExecuterProvider;
         private readonly ILogger Logger;
         private readonly ILogger PerformanceLogger;
@@ -43,7 +43,7 @@ namespace Rhetos.Processing
         public ProcessingEngine(
             ITypeFactory typeFactory,
             IPersistenceEngine persistenceEngine,
-            IPluginRepository<ICommandImplementation> commandRepository,
+            IPluginsContainer<ICommandImplementation> commandRepository,
             ILogProvider logProvider,
             Func<IUserInfo, ISqlExecuter> sqlExecuterProvider)
         {
@@ -71,9 +71,6 @@ namespace Rhetos.Processing
                     inner.RegisterInstance(_sqlExecuterProvider(userInfo));
                     // TODO: Register IUserInfo and ISqlExecuter outside PersistanceEngine only once for the user. Carefully configure instance lifetime.
 					
-                    // TODO: This might be register in the main type factory.
-                    inner.RegisterTypes(commands.SelectMany(ci => CommandRepository.GetImplementations(ci.GetType())));
-
                     var commandResults = new List<CommandResult>();
                     int commandCount = 0;
                     try
@@ -92,15 +89,13 @@ namespace Rhetos.Processing
 
                             if (implementations.Count() > 1)
                                 throw new FrameworkException(string.Format(CultureInfo.InvariantCulture, 
-                                    "Cannot execute command \"{0}\". It has more than one implementation registered: {1}.", commandInfo, String.Join(", ", implementations.Select(i => i.Name))));
+                                    "Cannot execute command \"{0}\". It has more than one implementation registered: {1}.", commandInfo, String.Join(", ", implementations.Select(i => i.GetType().Name))));
 
-                            var implementationType = implementations.Single();
-
-                            Logger.Trace("Executing implementation {0}.", implementationType.Name);
+                            var commandImplementation = implementations.Single();
+                            Logger.Trace("Executing implementation {0}.", commandImplementation.GetType().Name);
 
                             var swCommand = Stopwatch.StartNew();
 
-                            var commandImplementation = inner.CreateInstance<ICommandImplementation>(implementationType);
                             var commandResult = commandImplementation.Execute(commandInfo);
 
                             swCommand.Stop();
@@ -113,7 +108,7 @@ namespace Rhetos.Processing
                             {
                                 tran.DiscardChanges();
 
-                                var systemMessage = String.Format(CultureInfo.InvariantCulture, "Command failed. {0} {1} {2}", commandInfo.GetType().Name, commandInfo, implementationType.Name);
+                                var systemMessage = String.Format(CultureInfo.InvariantCulture, "Command failed. {0} {1} {2}", commandInfo.GetType().Name, commandInfo, commandImplementation.GetType().Name);
                                 return LogResultsReturnError(commandResults, systemMessage + " " + commandResult.Message, commandCount, systemMessage, commandResult.Message);
                             }
                         }

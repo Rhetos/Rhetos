@@ -32,12 +32,12 @@ namespace Rhetos.DatabaseGenerator.Test
     class DatabaseGenerator_Accessor : DatabaseGenerator
     {
         public DatabaseGenerator_Accessor()
-            : base(null, null, null, null, null, new NullConceptRepository(), null, new ConsoleLogProvider())
+            : base(null, null, new NullPluginsContainer<IConceptDatabaseDefinition>(), null, new ConsoleLogProvider())
         {
         }
 
-        public DatabaseGenerator_Accessor(ITypeFactory stubTypeFactory, IDslModel dslModel, IPluginRepository<IConceptDatabaseDefinition> conceptImplementationPlugins)
-            : base(stubTypeFactory, null, dslModel, conceptImplementationPlugins, null, new NullConceptRepository(), null, new ConsoleLogProvider())
+        public DatabaseGenerator_Accessor(IDslModel dslModel, PluginsContainer<IConceptDatabaseDefinition> plugins)
+            : base(null, dslModel, plugins, null, new ConsoleLogProvider())
         {
         }
 
@@ -79,11 +79,6 @@ namespace Rhetos.DatabaseGenerator.Test
         new public static IEnumerable<Dependency> ExtractDependenciesFromConceptInfos(IEnumerable<NewConceptApplication> all)
         {
             return DatabaseGenerator.ExtractDependenciesFromConceptInfos(all);
-        }
-
-        new public static IEnumerable<Dependency> ExtractDependenciesFromMefPluginMetadata(IConceptRepository<IConceptDatabaseDefinition> implementationRepository, IEnumerable<NewConceptApplication> newConceptApplications)
-        {
-            return DatabaseGenerator.ExtractDependenciesFromMefPluginMetadata(implementationRepository, newConceptApplications);
         }
 
         new public static IEnumerable<Dependency> GetConceptApplicationDependencies(IEnumerable<Tuple<IConceptInfo, IConceptInfo>> conceptInfoDependencies, IEnumerable<ConceptApplication> conceptApplications)

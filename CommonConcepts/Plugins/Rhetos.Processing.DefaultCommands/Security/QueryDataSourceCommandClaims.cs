@@ -29,7 +29,6 @@ namespace Rhetos.Processing.DefaultCommands
 {
     [Export(typeof(IClaimProvider))]
     [ExportMetadata(MefProvider.Implements, typeof(QueryDataSourceCommandInfo))]
-    [ExportMetadata(MefProvider.ClassType, typeof(QueryDataSourceCommandClaims))]
     public class QueryDataSourceCommandClaims : IClaimProvider
     {
         public IEnumerable<IClaim> GetRequiredClaims(ICommandInfo info, Func<string, string, IClaim> newClaim)

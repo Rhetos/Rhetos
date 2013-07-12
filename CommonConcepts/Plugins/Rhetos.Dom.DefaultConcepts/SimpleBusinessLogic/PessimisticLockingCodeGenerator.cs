@@ -31,7 +31,6 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
     [ExportMetadata(MefProvider.Implements, typeof(PessimisticLockingInfo))]
-    [ExportMetadata(MefProvider.ClassType, typeof(PessimisticLockingCodeGenerator))]
     public class PessimisticLockingCodeGenerator : IConceptCodeGenerator
     {
         public static readonly DataStructureCodeGenerator.DataStructureTag AdditionalLocksTag =

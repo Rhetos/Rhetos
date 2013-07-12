@@ -32,11 +32,9 @@ namespace Rhetos.DatabaseGenerator
 {
     public class DatabaseGenerator : IDatabaseGenerator
     {
-        protected readonly ITypeFactory _typeFactory;
         protected readonly ISqlExecuter _sqlExecuter;
         protected readonly IDslModel _dslModel;
-        protected readonly IConceptRepository<IConceptDatabaseDefinition> _implementationRepository;
-        protected readonly IPluginRepository<IConceptDatabaseDefinition> _conceptImplementationPlugins;
+        protected readonly IPluginsContainer<IConceptDatabaseDefinition> _plugins;
         protected readonly ConceptApplicationRepository _conceptApplicationRepository;
         protected readonly ILogger _logger;
         protected readonly ILogger _performanceLogger;
@@ -46,20 +44,15 @@ namespace Rhetos.DatabaseGenerator
         protected readonly object _databaseUpdateLock = new object();
 
         public DatabaseGenerator(
-            ITypeFactory typeFactory,
             ISqlExecuter sqlExecuter, 
             IDslModel dslModel,
-            IPluginRepository<IConceptDatabaseDefinition> conceptImplementationPlugins,
-            IConceptRepository<IConceptInfo> infoRepository,
-            IConceptRepository<IConceptDatabaseDefinition> implementationRepository,
+            IPluginsContainer<IConceptDatabaseDefinition> plugins,
             ConceptApplicationRepository conceptApplicationRepository,
             ILogProvider logProvider)
         {
-            _typeFactory = typeFactory;
             _sqlExecuter = sqlExecuter;
             _dslModel = dslModel;
-            _implementationRepository = implementationRepository;
-            _conceptImplementationPlugins = conceptImplementationPlugins;
+            _plugins = plugins;
             _conceptApplicationRepository = conceptApplicationRepository;
             _logger = logProvider.GetLogger("DatabaseGenerator");
             _performanceLogger = logProvider.GetLogger("Performance");
@@ -128,12 +121,16 @@ namespace Rhetos.DatabaseGenerator
         {
             var stopwatch = Stopwatch.StartNew();
 
-            var conceptApplications =
-                (
-                    from conceptInfo in _dslModel.Concepts
-                    from implementationType in _conceptImplementationPlugins.GetImplementations(conceptInfo.GetType()).DefaultIfEmpty(typeof(NullImplementation))
-                    select new NewConceptApplication(conceptInfo, implementationType) // DependsOn, CreateQuery and RemoveQuery will be set later.
-                ).ToList();
+            var conceptApplications = new List<NewConceptApplication>();
+            foreach (var conceptInfo in _dslModel.Concepts)
+            {
+                IConceptDatabaseDefinition[] implementations = _plugins.GetImplementations(conceptInfo.GetType()).ToArray();
+
+                if (implementations.Count() == 0)
+                    implementations = new[] { new NullImplementation() };
+
+                conceptApplications.AddRange(implementations.Select(impl => new NewConceptApplication(conceptInfo, impl))); // DependsOn, CreateQuery and RemoveQuery will be set later.
+            }
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: Created concept applications from plugins.");
 
             ComputeDependsOn(conceptApplications);
@@ -174,7 +171,7 @@ namespace Rhetos.DatabaseGenerator
         protected IEnumerable<Dependency> ExtractDependencies(IEnumerable<NewConceptApplication> newConceptApplications)
         {
             return ExtractDependenciesFromConceptInfos(newConceptApplications)
-                    .Union(ExtractDependenciesFromMefPluginMetadata(_implementationRepository, newConceptApplications)).ToList();
+                    .Union(ExtractDependenciesFromMefPluginMetadata(_plugins, newConceptApplications)).ToList();
         }
 
         protected static IEnumerable<Dependency> ExtractDependenciesFromConceptInfos(IEnumerable<NewConceptApplication> newConceptApplications)
@@ -210,7 +207,7 @@ namespace Rhetos.DatabaseGenerator
             return conceptApplicationDependencies.ToList();
         }
 
-        protected static IEnumerable<Dependency> ExtractDependenciesFromMefPluginMetadata(IConceptRepository<IConceptDatabaseDefinition> implementationRepository, IEnumerable<NewConceptApplication> newConceptApplications)
+        protected static IEnumerable<Dependency> ExtractDependenciesFromMefPluginMetadata(IPluginsContainer<IConceptDatabaseDefinition> plugins, IEnumerable<NewConceptApplication> newConceptApplications)
         {
             var dependencies = new List<Dependency>();
 
@@ -220,7 +217,7 @@ namespace Rhetos.DatabaseGenerator
 
             var distinctConceptImplementations = newConceptApplications.Select(ca => ca.ConceptImplementationType).Distinct().ToList();
 
-            var implementationDependencies = GetImplementationDependencies(implementationRepository, distinctConceptImplementations);
+            var implementationDependencies = GetImplementationDependencies(plugins, distinctConceptImplementations);
 
             foreach (var implementationDependency in implementationDependencies)
                 if (conceptApplicationsByImplementation.ContainsKey(implementationDependency.Item1)
@@ -233,17 +230,18 @@ namespace Rhetos.DatabaseGenerator
             return dependencies.Distinct().ToList();
         }
 
-        protected static IEnumerable<Tuple<Type, Type>> GetImplementationDependencies(IConceptRepository<IConceptDatabaseDefinition> implementationRepository, IEnumerable<Type> conceptImplementations)
+        protected static IEnumerable<Tuple<Type, Type>> GetImplementationDependencies(IPluginsContainer<IConceptDatabaseDefinition> plugins, IEnumerable<Type> conceptImplementations)
         {
             var dependencies = new List<Tuple<Type, Type>>();
 
             foreach (Type conceptImplementation in conceptImplementations)
             {
-                Type dependency = GetMefMetadata(implementationRepository, conceptImplementation, "DependsOn");
+                Type dependency = plugins.GetMetadata(conceptImplementation, "DependsOn");
+
                 if (dependency == null)
                     continue;
-                Type implements = GetMefMetadata(implementationRepository, conceptImplementation, "Implements");
-                Type dependencyImplements = GetMefMetadata(implementationRepository, dependency, "Implements");
+                Type implements = plugins.GetMetadata(conceptImplementation, "Implements");
+                Type dependencyImplements = plugins.GetMetadata(dependency, "Implements");
 
                 if (!implements.Equals(dependencyImplements)
                     && !implements.IsAssignableFrom(dependencyImplements)
@@ -264,14 +262,6 @@ namespace Rhetos.DatabaseGenerator
             }
 
             return dependencies;
-        }
-
-        protected static Type GetMefMetadata(IConceptRepository<IConceptDatabaseDefinition> implementationRepository, Type conceptImplementation, string parameter)
-        {
-            var metadata = implementationRepository.GetMetadata(conceptImplementation.FullName);
-            if (metadata != null && metadata.ContainsKey(parameter))
-                return metadata[parameter] as Type;
-            return null;
         }
 
         protected static void AddDependenciesOnSameConceptInfo(
@@ -312,20 +302,18 @@ namespace Rhetos.DatabaseGenerator
             {
                 AddConceptApplicationSeparator(ca, sqlCodeBuilder);
 
-                var plugin = CreateDatabasePluginInstance(_typeFactory, ca.ConceptImplementationType);
-
                 // Generate RemoveQuery:
 
-                GenerateRemoveQuery(ca, plugin);
+                GenerateRemoveQuery(ca);
 
                 // Generate CreateQuery:
 
-                sqlCodeBuilder.InsertCode(plugin.CreateDatabaseStructure(ca.ConceptInfo));
+                sqlCodeBuilder.InsertCode(ca.ConceptImplementation.CreateDatabaseStructure(ca.ConceptInfo));
 
-                if (plugin is IConceptDatabaseDefinitionExtension)
+                if (ca.ConceptImplementation is IConceptDatabaseDefinitionExtension)
                 {
                     IEnumerable<Tuple<IConceptInfo, IConceptInfo>> pluginCreatedDependencies;
-                    ((IConceptDatabaseDefinitionExtension)plugin).ExtendDatabaseStructure(ca.ConceptInfo, sqlCodeBuilder, out pluginCreatedDependencies);
+                    ((IConceptDatabaseDefinitionExtension)ca.ConceptImplementation).ExtendDatabaseStructure(ca.ConceptInfo, sqlCodeBuilder, out pluginCreatedDependencies);
 
                     if (pluginCreatedDependencies != null)
                     {
@@ -349,9 +337,9 @@ namespace Rhetos.DatabaseGenerator
             UpdateConceptApplicationsFromDependencyList(createdConceptApplicationDependencies);
         }
 
-        public static void GenerateRemoveQuery(NewConceptApplication ca, IConceptDatabaseDefinition plugin)
+        public static void GenerateRemoveQuery(NewConceptApplication ca)
         {
-            ca.RemoveQuery = plugin.RemoveDatabaseStructure(ca.ConceptInfo);
+            ca.RemoveQuery = ca.ConceptImplementation.RemoveDatabaseStructure(ca.ConceptInfo);
             if (ca.RemoveQuery != null)
                 ca.RemoveQuery = ca.RemoveQuery.Trim();
             else

@@ -41,14 +41,14 @@ namespace Rhetos.Security
         private readonly ITypeFactory _typeFactory;
         private readonly IDomainObjectModel _domainObjectModel;
         private readonly IPersistenceEngine _persistenceEngine;
-        private readonly IPluginRepository<IClaimProvider> _contextPermissionsRepository;
+        private readonly IPluginsContainer<IClaimProvider> _contextPermissionsRepository;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
         private readonly bool _allowBuiltinAdminOverride;
         private readonly Lazy<Type> _claimType;
 
         public AuthorizationManager(
-            IPluginRepository<IClaimProvider> contextPermissionsRepository, 
+            IPluginsContainer<IClaimProvider> contextPermissionsRepository, 
             IPrincipalProvider principalProvider,
             ITypeFactory typeFactory, 
             ILogProvider logProvider,
@@ -146,12 +146,9 @@ namespace Rhetos.Security
             List<IClaim> requiredPermissions = new List<IClaim>();
             foreach (ICommandInfo commandInfo in commandInfos)
             {
-                var providerTypes = _contextPermissionsRepository.GetImplementations(commandInfo.GetType());
-                foreach (Type providerType in providerTypes)
-                {
-                    IClaimProvider provider = _typeFactory.CreateInstance<IClaimProvider>(providerType);
+                var providers = _contextPermissionsRepository.GetImplementations(commandInfo.GetType());
+                foreach (var provider in providers)
                     requiredPermissions.AddRange(provider.GetRequiredClaims(commandInfo, CreateClaim));
-                }
             }
             return requiredPermissions;
         }
