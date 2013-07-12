@@ -547,14 +547,6 @@ namespace Rhetos.DatabaseGenerator.Test
             return dependency.DependsOn.CreateQuery + "-" + dependency.Dependent.CreateQuery;
         }
 
-        class MockConceptImplementationPlugins : IPluginRepository<IConceptDatabaseDefinition>
-        {
-            private readonly Dictionary<Type, List<Type>> _implementations;
-            public MockConceptImplementationPlugins(Dictionary<Type, List<Type>> implementations) { _implementations = implementations; }
-            public IEnumerable<Type> GetImplementations(Type pluginType) { return _implementations[pluginType]; }
-            public IEnumerable<Type> GetImplementations() { throw new NotImplementedException(); }
-        }
-
         class MockDslModel : IDslModel
         {
             private readonly IEnumerable<IConceptInfo> _conceptInfos;

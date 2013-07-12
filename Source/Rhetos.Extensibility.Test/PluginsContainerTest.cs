@@ -20,11 +20,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Autofac.Features.Metadata;
 
 namespace Rhetos.Extensibility.Test
 {
+    public class PluginsContainerAccessor<TPlugin> : PluginsContainer<TPlugin>
+    {
+        public PluginsContainerAccessor() : base(new Meta<TPlugin>[] {})
+        {
+        }
+
+        public static List<Type> Access_GetTypeHierarchy(Type type)
+        {
+            return GetTypeHierarchy(type);
+        }
+    }
+
     [TestClass]
-    public class PluginRepositoryTest
+    public class PluginsContainerTest
     {
         class BaseClass
         {
@@ -39,14 +52,13 @@ namespace Rhetos.Extensibility.Test
         {
             object o = new DerivedClass();
             string expected = "BaseClass-DerivedClass";
-            string actual = string.Join("-", PluginRepository<object>.GetTypeHierarchy(o.GetType()).Select(type => type.Name));
+            string actual = string.Join("-", PluginsContainerAccessor<object>.Access_GetTypeHierarchy(o.GetType()).Select(type => type.Name));
             Assert.AreEqual(expected, actual);
 
             o = new object();
             expected = "";
-            actual = string.Join("-", PluginRepository<object>.GetTypeHierarchy(o.GetType()).Select(type => type.Name));
+            actual = string.Join("-", PluginsContainerAccessor<object>.Access_GetTypeHierarchy(o.GetType()).Select(type => type.Name));
             Assert.AreEqual(expected, actual);
         }
-
     }
 }

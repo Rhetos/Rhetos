@@ -26,6 +26,10 @@ namespace Rhetos.Extensibility
         IEnumerable<TPlugin> GetPlugins();
         Type GetMetadata(TPlugin plugin, string metadataKey);
         Type GetMetadata(Type pluginType, string metadataKey);
+
+        /// <summary>
+        /// The implementations are already sorted by their dependencies.
+        /// </summary>
         IEnumerable<TPlugin> GetImplementations(Type implements);
     }
 }

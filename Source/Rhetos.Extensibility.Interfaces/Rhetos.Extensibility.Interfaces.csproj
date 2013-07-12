@@ -94,7 +94,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IPluginRepository.cs" />
     <Compile Include="IAspectPointcuts.cs" />
     <Compile Include="IAspect.cs" />
     <Compile Include="IComponentInterceptor.cs" />

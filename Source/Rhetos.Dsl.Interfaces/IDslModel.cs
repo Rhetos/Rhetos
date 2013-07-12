@@ -26,6 +26,9 @@ namespace Rhetos.Dsl
 {
     public interface IDslModel
     {
+        /// <summary>
+        /// The concepts are already sorted by their dependencies.
+        /// </summary>
         IEnumerable<IConceptInfo> Concepts { get; }
 
         /// <summary>

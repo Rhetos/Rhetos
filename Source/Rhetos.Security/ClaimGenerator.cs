@@ -34,7 +34,7 @@ namespace Rhetos.Security
 {
     public class ClaimGenerator : IClaimGenerator
     {
-        private readonly IPluginRepository<IClaimProvider> _contextPermissionsRepository;
+        private readonly IPluginsContainer<IClaimProvider> _contextPermissionsRepository;
         private readonly IDslModel _dslModel;
         private readonly ITypeFactory _typeFactory;
         private readonly IDomainObjectModel _domainObjectModel;
@@ -45,7 +45,7 @@ namespace Rhetos.Security
         private readonly ILogger _logger;
 
         public ClaimGenerator(
-            IPluginRepository<IClaimProvider> contextPermissionsRepository,
+            IPluginsContainer<IClaimProvider> contextPermissionsRepository,
             IDslModel dslModel,
             ITypeFactory typeFactory,
             IDomainObjectModel domainObjectModel,
@@ -104,7 +104,6 @@ namespace Rhetos.Security
                     inner.RegisterInstance<ISqlExecuter>(new NullSqlExecuter());
                     inner.RegisterInstance(inner);
 
-                    inner.RegisterTypes(_contextPermissionsRepository.GetImplementations());
                     var claims = CreateClaims(inner);
 
                     var oldClaims = inner.Resolve<IClaimLoader>().LoadClaims();
@@ -133,9 +132,8 @@ namespace Rhetos.Security
         {
             List<IClaim> claims = new List<IClaim>();
 
-            foreach (Type providerType in _contextPermissionsRepository.GetImplementations())
+            foreach (var provider in _contextPermissionsRepository.GetPlugins())
             {
-                IClaimProvider provider = inner.CreateInstance<IClaimProvider>(providerType);
                 claims.AddRange(provider.GetAllClaims(_dslModel, CreateClaim));
             }
 

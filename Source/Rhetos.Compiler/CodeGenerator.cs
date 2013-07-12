@@ -28,61 +28,51 @@ namespace Rhetos.Compiler
 {
     public class CodeGenerator : ICodeGenerator
     {
-        private readonly ITypeFactory _typeFactory;
         private readonly ILogger _performanceLogger;
         private readonly IDslModel _dslModel;
         private readonly ILogger _logger;
 
         public CodeGenerator(
-            ITypeFactory typeFactory,
             ILogProvider logProvider,
             IDslModel dslModel)
         {
-            _typeFactory = typeFactory;
             _performanceLogger = logProvider.GetLogger("Performance");
-            _dslModel = dslModel;
             _logger = logProvider.GetLogger("CodeGenerator");
+            _dslModel = dslModel;
         }
 
 
-        public IAssemblySource ExecutePlugins(IPluginRepository pluginRepository, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator)
+        public IAssemblySource ExecutePlugins<TPlugin>(IPluginsContainer<TPlugin> plugins, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator)
+            where TPlugin : IConceptCodeGenerator
         {
-            using (var innerTypeFactory = _typeFactory.CreateInnerTypeFactory())
-            {
-                var stopwatch = Stopwatch.StartNew();
+            var stopwatch = Stopwatch.StartNew();
 
-                foreach (var conceptInfo in _dslModel.Concepts)
-                    foreach (var pluginType in pluginRepository.GetImplementations(conceptInfo.GetType()))
-                        innerTypeFactory.RegisterType(pluginType);
+            _performanceLogger.Write(stopwatch, "CodeGenerator: Plugins registered.");
 
-                _performanceLogger.Write(stopwatch, "CodeGenerator: Plugins registered.");
+            var codeBuilder = new CodeBuilder(tagOpen, tagClose);
 
-                var codeBuilder = new CodeBuilder(tagOpen, tagClose);
+            if (initialCodeGenerator != null)
+                initialCodeGenerator.GenerateCode(null, codeBuilder);
 
-                if (initialCodeGenerator != null)
-                    initialCodeGenerator.GenerateCode(null, codeBuilder);
-
-                foreach (var conceptInfo in _dslModel.Concepts)
-                    foreach (var pluginType in pluginRepository.GetImplementations(conceptInfo.GetType()))
+            foreach (var conceptInfo in _dslModel.Concepts)
+                foreach (var plugin in plugins.GetImplementations(conceptInfo.GetType()))
+                {
+                    try
                     {
-                        var plugin = innerTypeFactory.CreateInstance<IConceptCodeGenerator>(pluginType);
-                        try
-                        {
-                            plugin.GenerateCode(conceptInfo, codeBuilder);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.Error(ex.ToString());
-                            _logger.Error("Part of the source code that was generated before the exception was thrown is written in the trace log.");
-                            _logger.Trace(codeBuilder.GeneratedCode);
-                            throw;
-                        }
+                        plugin.GenerateCode(conceptInfo, codeBuilder);
                     }
+                    catch (Exception ex)
+                    {
+                        _logger.Error(ex.ToString());
+                        _logger.Error("Part of the source code that was generated before the exception was thrown is written in the trace log.");
+                        _logger.Trace(codeBuilder.GeneratedCode);
+                        throw;
+                    }
+                }
 
-                _performanceLogger.Write(stopwatch, "CodeGenerator: Code generated.");
+            _performanceLogger.Write(stopwatch, "CodeGenerator: Code generated.");
 
-                return codeBuilder;
-            }
+            return codeBuilder;
         }
     }
 }
