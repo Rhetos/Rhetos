@@ -41,3 +41,4 @@ XCOPY /Y/D/R Source\Rhetos\*.svc Install\Rhetos\
 XCOPY /Y/D/R Source\Rhetos\Site.Master Install\Rhetos\
 
 XCOPY /Y/D/R ChangeLog.md Install\Rhetos\
+XCOPY /Y/D/R Readme.md Install\Rhetos\
