@@ -106,6 +106,10 @@ namespace DeployPackages
                 container.Resolve<IRestGenerator>().Generate("DomainService");
                 Console.WriteLine("Done.");
 
+                Console.Write("Executing custom generators... ");
+                container.Resolve<Rhetos.Generator.GeneratorProcessor>().ProcessGenerators();
+                Console.WriteLine("Done.");
+
                 Console.Write("Preparing Rhetos database ... ");
                 DeploymentUtility.PrepareRhetosDatabase(container.Resolve<ISqlExecuter>());
                 Console.WriteLine("Done.");

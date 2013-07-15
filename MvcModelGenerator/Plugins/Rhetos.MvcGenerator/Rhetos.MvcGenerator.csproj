@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{96F36FDA-7AF3-4FFC-8015-AA283337FD74}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Rhetos.MvcGenerator</RootNamespace>
+    <AssemblyName>Rhetos.MvcGenerator</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Autofac, Version=3.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\Work\GitHub\Rhetos\Source\Rhetos.Factory\bin\Debug\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac.Integration.Mef">
+      <HintPath>D:\Work\GitHub\Rhetos\Source\Rhetos.Factory\bin\Debug\Autofac.Integration.Mef.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Compiler">
+      <HintPath>D:\Work\GitHub\Rhetos\Source\Rhetos.Compiler\bin\Debug\Rhetos.Compiler.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Compiler.Interfaces">
+      <HintPath>D:\Work\GitHub\Rhetos\Source\Rhetos.Compiler\bin\Debug\Rhetos.Compiler.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Dsl">
+      <HintPath>D:\Work\GitHub\Rhetos\Source\Rhetos.Dsl\bin\Debug\Rhetos.Dsl.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Dsl.DefaultConcepts">
+      <HintPath>D:\Work\GitHub\Rhetos\CommonConcepts\Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\Rhetos.Dsl.DefaultConcepts.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Dsl.Interfaces">
+      <HintPath>D:\Work\GitHub\Rhetos\CommonConcepts\Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\Rhetos.Dsl.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Extensibility">
+      <HintPath>D:\Work\GitHub\Rhetos\Source\Rhetos.Extensibility\bin\Debug\Rhetos.Extensibility.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Extensibility.Interfaces">
+      <HintPath>D:\Work\GitHub\Rhetos\Source\Rhetos.Extensibility\bin\Debug\Rhetos.Extensibility.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Generator.Interfaces">
+      <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Generator.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Logging.Interfaces, Version=0.9.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\Work\GitHub\Rhetos\Source\Rhetos\bin\Rhetos.Logging.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web.Mvc, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="IMvcGeneratorPlugin.cs" />
+    <Compile Include="MvcGeneratorModuleConfiguration.cs" />
+    <Compile Include="MvcGenerator.cs" />
+    <Compile Include="InitialCodeGenerator.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MvcGeneratorTags.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
