@@ -106,6 +106,7 @@ namespace CommonConcepts.Test
 
                 Assert.AreEqual("1, 2", TestUtility.DumpSorted(repository.TestHistory.Minimal.All(), item => item.Code.ToString()));
                 Assert.AreEqual(0, repository.TestHistory.Minimal_History.All().Count());
+                Assert.AreEqual(2, repository.TestHistory.Minimal_FullHistory.All().Count());
                 foreach (var item in repository.TestHistory.Minimal.All())
                     AssertIsRecently(item.ActiveSince, now);
             }
@@ -139,6 +140,44 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
+        public void SimpleFullHistoryUpdate()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var id1 = Guid.NewGuid();
+                executionContext.SqlExecuter.ExecuteSql(new[] {
+                    "DELETE FROM TestHistory.Simple",
+                    "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'Test', '2001-01-01')"});
+                var repository = new Common.DomRepository(executionContext);
+
+                var m1 = repository.TestHistory.Simple_FullHistory.All().Single();
+                m1.ActiveSince = null;
+                m1.Code = 11;
+                TestUtility.ShouldFail(() => repository.TestHistory.Simple_FullHistory.Update(new[] { m1 }), "Directly update full history");
+            }
+        }
+
+        [TestMethod]
+        public void SimpleFullHistoryInsert()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var id1 = Guid.NewGuid();
+                executionContext.SqlExecuter.ExecuteSql(new[] {
+                    "DELETE FROM TestHistory.Simple"});
+                var repository = new Common.DomRepository(executionContext);
+
+                TestUtility.ShouldFail(() => repository.TestHistory.Simple_FullHistory.Insert(new[] { 
+                    new TestHistory.Simple_FullHistory {
+                        ActiveSince = DateTime.Now,
+                        Code = 1,
+                        ID = Guid.NewGuid()
+                    }
+                }), "Directly update full history");
+            }
+        }
+
+        [TestMethod]
         public void CrudWithExplicitTime()
         {
             using (var executionContext = new CommonTestExecutionContext())
@@ -149,6 +188,7 @@ namespace CommonConcepts.Test
                 // Insert:
                 var s = new TestHistory.Simple { ID = Guid.NewGuid(), Code = 1, ActiveSince = Day(1), Name = "a" };
                 repository.TestHistory.Simple.Insert(new[] { s });
+                Assert.AreEqual(1, repository.TestHistory.Simple_FullHistory.All().Count());
 
                 executionContext.NHibernateSession.Clear();
                 Assert.AreEqual("1 a 2001-01-01T00:00:00", DumpFull(repository.TestHistory.Simple.All()));
@@ -163,6 +203,7 @@ namespace CommonConcepts.Test
                 executionContext.NHibernateSession.Clear();
                 Assert.AreEqual("2 b 2001-01-02T00:00:00", DumpFull(repository.TestHistory.Simple.All()));
                 Assert.AreEqual("1 2001-01-01T00:00:00", DumpFull(repository.TestHistory.Simple_History.All()));
+                Assert.AreEqual(2, repository.TestHistory.Simple_FullHistory.All().Count());
 
                 // Another update:
                 s.Code = 3;
@@ -173,6 +214,7 @@ namespace CommonConcepts.Test
                 executionContext.NHibernateSession.Clear();
                 Assert.AreEqual("3 c 2001-01-03T00:00:00", DumpFull(repository.TestHistory.Simple.All()));
                 Assert.AreEqual("1 2001-01-01T00:00:00, 2 2001-01-02T00:00:00", DumpFull(repository.TestHistory.Simple_History.All()));
+                Assert.AreEqual(3, repository.TestHistory.Simple_FullHistory.All().Count());
 
                 // Delete:
                 repository.TestHistory.Simple.Delete(new[] { s });
@@ -264,6 +306,8 @@ namespace CommonConcepts.Test
                     h.Count(), sw.Elapsed.TotalSeconds);
                 Console.WriteLine(msg);
                 Assert.IsTrue(sw.Elapsed.TotalSeconds-1 < h.Count() && h.Count() < sw.Elapsed.TotalSeconds+1, msg);
+                Assert.AreEqual(h.Count() + 1, repository.TestHistory.Simple_FullHistory.All().Count());
+
             }
         }
 

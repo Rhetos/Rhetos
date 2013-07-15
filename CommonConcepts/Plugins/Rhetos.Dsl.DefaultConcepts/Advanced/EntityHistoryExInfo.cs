@@ -26,7 +26,7 @@ using Rhetos.Utilities;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class EntityHistoryExInfo : IConceptInfo
+    public class EntityHistoryExInfo : IConceptInfo, IMacroConcept
    {
         // TODO: Remove this concept atfer implementing alternative constructors.
 
@@ -34,5 +34,34 @@ namespace Rhetos.Dsl.DefaultConcepts
         public EntityInfo Entity { get; set; }
 
         public EntityInfo HistoryEntity { get; set; }
-    }
+
+        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        {
+            var legacyEntityForFullHistory = new LegacyEntityInfo
+            {
+                Module = this.Entity.Module,
+                Name = this.Entity.Name + "_FullHistory",
+                Table = this.Entity.Module + "." + this.Entity.Name + "_FullHistory",
+                View = this.Entity.Module + "." + this.Entity.Name + "_FullHistory"
+            };
+            var propertiesForLegacyEntity = new AllPropertiesFromInfo
+            {
+                Source = this.HistoryEntity,
+                Destination = legacyEntityForFullHistory
+            };
+            var allItemsFilter = new ItemFilterInfo
+            {
+                Expression = "(i => true)",
+                FilterName = "AllItems",
+                Source = legacyEntityForFullHistory
+            };
+            var lockLegacyEntityForChanges = new LockItemsInfo
+            {
+                FilterType = "AllItems",
+                Source = legacyEntityForFullHistory,
+                Title = "Full history does not allow changes."
+            };
+            return new IConceptInfo[] { legacyEntityForFullHistory, propertiesForLegacyEntity, allItemsFilter, lockLegacyEntityForChanges };
+        }
+   }
 }
