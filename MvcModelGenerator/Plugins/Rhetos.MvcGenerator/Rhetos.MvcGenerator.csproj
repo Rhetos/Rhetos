@@ -33,38 +33,38 @@
   <ItemGroup>
     <Reference Include="Autofac, Version=3.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>D:\Work\GitHub\Rhetos\Source\Rhetos.Factory\bin\Debug\Autofac.dll</HintPath>
+      <HintPath>..\..\..\External\Autofac\Autofac.dll</HintPath>
     </Reference>
     <Reference Include="Autofac.Integration.Mef">
-      <HintPath>D:\Work\GitHub\Rhetos\Source\Rhetos.Factory\bin\Debug\Autofac.Integration.Mef.dll</HintPath>
+      <HintPath>..\..\..\External\Autofac\Autofac.Integration.Mef.dll</HintPath>
     </Reference>
     <Reference Include="Rhetos.Compiler">
-      <HintPath>D:\Work\GitHub\Rhetos\Source\Rhetos.Compiler\bin\Debug\Rhetos.Compiler.dll</HintPath>
+      <HintPath>..\..\..\Source\Rhetos.Compiler\bin\Debug\Rhetos.Compiler.dll</HintPath>
     </Reference>
     <Reference Include="Rhetos.Compiler.Interfaces">
-      <HintPath>D:\Work\GitHub\Rhetos\Source\Rhetos.Compiler\bin\Debug\Rhetos.Compiler.Interfaces.dll</HintPath>
+      <HintPath>..\..\..\Source\Rhetos.Compiler\bin\Debug\Rhetos.Compiler.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="Rhetos.Dsl">
-      <HintPath>D:\Work\GitHub\Rhetos\Source\Rhetos.Dsl\bin\Debug\Rhetos.Dsl.dll</HintPath>
+      <HintPath>..\..\..\Source\Rhetos.Dsl\bin\Debug\Rhetos.Dsl.dll</HintPath>
     </Reference>
     <Reference Include="Rhetos.Dsl.DefaultConcepts">
-      <HintPath>D:\Work\GitHub\Rhetos\CommonConcepts\Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\Rhetos.Dsl.DefaultConcepts.dll</HintPath>
+      <HintPath>..\..\..\CommonConcepts\Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\Rhetos.Dsl.DefaultConcepts.dll</HintPath>
     </Reference>
     <Reference Include="Rhetos.Dsl.Interfaces">
-      <HintPath>D:\Work\GitHub\Rhetos\CommonConcepts\Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\Rhetos.Dsl.Interfaces.dll</HintPath>
+      <HintPath>..\..\..\CommonConcepts\Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\Rhetos.Dsl.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="Rhetos.Extensibility">
-      <HintPath>D:\Work\GitHub\Rhetos\Source\Rhetos.Extensibility\bin\Debug\Rhetos.Extensibility.dll</HintPath>
+      <HintPath>..\..\..\Source\Rhetos.Extensibility\bin\Debug\Rhetos.Extensibility.dll</HintPath>
     </Reference>
     <Reference Include="Rhetos.Extensibility.Interfaces">
-      <HintPath>D:\Work\GitHub\Rhetos\Source\Rhetos.Extensibility\bin\Debug\Rhetos.Extensibility.Interfaces.dll</HintPath>
+      <HintPath>..\..\..\Source\Rhetos.Extensibility\bin\Debug\Rhetos.Extensibility.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="Rhetos.Generator.Interfaces">
       <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Generator.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="Rhetos.Logging.Interfaces, Version=0.9.5.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>D:\Work\GitHub\Rhetos\Source\Rhetos\bin\Rhetos.Logging.Interfaces.dll</HintPath>
+      <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Logging.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
