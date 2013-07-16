@@ -46,6 +46,8 @@ Module TestHistory
         Integer Code;
         ShortString Name;
         DateTime Birthday;
+        ItemFilter TooLongName 'item => item.Name.Length > 10';
+		DenySave TooLongName 'Name too long.';
 	}
     
     Entity Other;

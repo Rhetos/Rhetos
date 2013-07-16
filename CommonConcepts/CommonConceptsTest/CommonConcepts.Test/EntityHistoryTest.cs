@@ -140,6 +140,50 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
+        public void HistoryWithDenySave()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Standard" });
+                var repository = new Common.DomRepository(executionContext);
+                var standardRepos = repository.TestHistory.Standard;
+
+                var e = new TestHistory.Standard { Code = 1, Name = "a", Birthday = new DateTime(2001, 2, 3, 4, 5, 6) };
+                standardRepos.Insert(new[] { e });
+                DateTime t1 = GetServerTime(executionContext);
+                string v1 = "1 a 2001-02-03T04:05:06";
+                Assert.AreEqual(v1, Dump(standardRepos.All()));
+
+                System.Threading.Thread.Sleep(TimeSpan.FromSeconds(1));
+                e.Code = 2;
+                e.Name = "baaaaaaaaaaaaaaaaaaaa";
+                e.ActiveSince = null;
+                e.Birthday = new DateTime(2011, 12, 13, 14, 15, 16);
+                TestUtility.ShouldFail(() => standardRepos.Update(new[] { e }), "Name TooLong deny save.");
+            }
+        }
+
+        [TestMethod]
+        public void MinimalHistoryUpdateInvalidActiveSince()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var id1 = Guid.NewGuid();
+                executionContext.SqlExecuter.ExecuteSql(new[] {
+                    "DELETE FROM TestHistory.Minimal",
+                    "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2013-01-01')",
+                    "INSERT INTO TestHistory.Minimal_History (ID, EntityID, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(Guid.NewGuid()) + ", " + SqlUtility.QuoteGuid(id1) + ", '2012-12-30')"});
+                var repository = new Common.DomRepository(executionContext);
+
+                var m1 = repository.TestHistory.Minimal.All().Single();
+                m1.ActiveSince = new DateTime(2012, 12, 25);
+                m1.Code = 11;
+                // Should fail
+                TestUtility.ShouldFail(() => repository.TestHistory.Minimal.Update(new[] { m1 }), "ActiveSince set older than last history entry");
+            }
+        }
+
+        [TestMethod]
         public void SimpleFullHistoryUpdate()
         {
             using (var executionContext = new CommonTestExecutionContext())

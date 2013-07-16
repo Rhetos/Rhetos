@@ -41,6 +41,11 @@ namespace Rhetos.Dsl.DefaultConcepts
             var activeSinceHistory = new EntityHistoryPropertyInfo { Property = activeSinceProperty };
             newConcepts.AddRange(new IConceptInfo[] { activeSinceProperty, activeSinceHistory });
 
+            // DenySave for base entity: it is not allowed to save with ActiveSince older than last one used in History
+            var denyFilter = new ItemFilterInfo { FilterName = Entity.Name + "OlderThanHistoryEntries", Source = Entity, Expression = String.Format("item => repository.{0}.{1}_History.Query().Where(his => his.ActiveSince > item.ActiveSince).Count() > 0", Entity.Module.Name, Entity.Name) };
+            var denySaveValidation = new DenySaveForPropertyInfo { FilterType = Entity.Name + "OlderThanHistoryEntries", Source = Entity, Title = "ActiveSince is not allowed to be older than last entry in history.", DependedProperties = activeSinceProperty };
+            newConcepts.AddRange(new IConceptInfo[] { denyFilter, denySaveValidation });
+
             // Create a new entity for history data:
             var historyEntity = new EntityInfo { Module = Entity.Module, Name = Entity.Name + "_History" };
             var currentProperty = new ReferencePropertyInfo { DataStructure = historyEntity, Name = "Entity", Referenced = Entity };
