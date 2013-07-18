@@ -46,6 +46,16 @@ namespace CommonConcepts.Test
             return TestUtility.DumpSorted(items, item => item.Code + " " + item.Name);
         }
 
+        private static string Dump(IEnumerable<TestHistory.BasicAutocode_History> items)
+        {
+            return TestUtility.DumpSorted(items, item => item.Code + " " + item.Name);
+        }
+
+        private static string Dump(IEnumerable<TestHistory.BasicAutocode> items)
+        {
+            return TestUtility.DumpSorted(items, item => item.Code + " " + item.Name);
+        }
+
         private static string DumpFull(IEnumerable<TestHistory.Simple> items)
         {
             return TestUtility.DumpSorted(items, item => item.Code + " " + item.Name + " " + Dump(item.ActiveSince));
@@ -160,6 +170,111 @@ namespace CommonConcepts.Test
                 e.ActiveSince = null;
                 e.Birthday = new DateTime(2011, 12, 13, 14, 15, 16);
                 TestUtility.ShouldFail(() => standardRepos.Update(new[] { e }), "Name TooLong deny save.");
+            }
+        }
+
+        [TestMethod]
+        public void HistoryWithReference()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                Guid c1ID = Guid.NewGuid();
+                Guid c2ID = Guid.NewGuid();
+                Guid rcID = Guid.NewGuid();
+
+                executionContext.SqlExecuter.ExecuteSql(new[] { 
+                    "DELETE FROM TestHistory.ReferenceClean_History;",
+                    "DELETE FROM TestHistory.ReferenceClean;",
+                    "DELETE FROM TestHistory.Clean;",
+                    "INSERT INTO TestHistory.Clean (ID, Name) VALUES ('" + c1ID.ToString() + "', 'c1');",
+                    "INSERT INTO TestHistory.Clean (ID, Name) VALUES ('" + c2ID.ToString() + "', 'c1');",
+                    "INSERT INTO TestHistory.ReferenceClean (ID, AddName, CleanID) VALUES ('" + rcID.ToString() + "', 'rc','" + c1ID.ToString() + "');"
+                });
+                var repository = new Common.DomRepository(executionContext);
+                var cleanRepos = repository.TestHistory.Clean;
+
+                var c1 = repository.TestHistory.Clean.Query().Where(item => item.ID == c1ID).SingleOrDefault();
+                var c2 = repository.TestHistory.Clean.Query().Where(item => item.ID == c2ID).SingleOrDefault();
+                
+                var refCleanRepos = repository.TestHistory.ReferenceClean;
+                var rc = repository.TestHistory.ReferenceClean.Query().Where(item => item.ID == rcID).SingleOrDefault();
+
+                rc.Clean = c2;
+                refCleanRepos.Update(new[] { rc });
+
+                TestUtility.ShouldFail(() => cleanRepos.Delete(new[] { c1 }), "History still references that object.");
+            }
+        }
+
+        [TestMethod]
+        public void HistoryWithAutocode()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                Guid c1ID = Guid.NewGuid();
+                Guid c2ID = Guid.NewGuid();
+                Guid rcID = Guid.NewGuid();
+
+                executionContext.SqlExecuter.ExecuteSql(new[] { 
+                    "DELETE FROM TestHistory.BasicAutocode_History;",
+                    "DELETE FROM TestHistory.BasicAutocode;",
+                    "INSERT INTO TestHistory.BasicAutocode (ID, Name, Code) VALUES ('" + c1ID.ToString() + "', 'c1', '+');",
+                    "INSERT INTO TestHistory.BasicAutocode (ID, Name, Code) VALUES ('" + c2ID.ToString() + "', 'c2', '+');",
+                });
+                var repository = new Common.DomRepository(executionContext);
+                var cleanRepos = repository.TestHistory.BasicAutocode;
+
+                var c1 = repository.TestHistory.BasicAutocode.Query().Where(item => item.ID == c1ID).SingleOrDefault();
+                var c2 = repository.TestHistory.BasicAutocode.Query().Where(item => item.ID == c2ID).SingleOrDefault();
+                c1.Name = "C1New";
+                c2.Name = "C2New";
+
+                cleanRepos.Update(new[] { c1, c2 });
+                
+                string v1 = "1 c1, 2 c2";
+                Assert.AreEqual(v1, Dump(repository.TestHistory.BasicAutocode_History.All()));
+            }
+        }
+
+        [TestMethod]
+        public void HistoryWithUnique()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                Guid c1ID = Guid.NewGuid();
+                Guid c2ID = Guid.NewGuid();
+                Guid c3ID = Guid.NewGuid();
+
+                executionContext.SqlExecuter.ExecuteSql(new[] { 
+                    "DELETE FROM TestHistory.BasicUnique_History;",
+                    "DELETE FROM TestHistory.BasicUnique;",
+                    "INSERT INTO TestHistory.BasicUnique (ID, Name, ActiveSince) VALUES ('" + c1ID.ToString() + "', 'c1', '2013-01-01');",
+                    "INSERT INTO TestHistory.BasicUnique (ID, Name, ActiveSince) VALUES ('" + c2ID.ToString() + "', 'c2', '2013-01-01');",
+                    "INSERT INTO TestHistory.BasicUnique (ID, Name, ActiveSince) VALUES ('" + c3ID.ToString() + "', 'c3', '2013-01-01');",
+                    "INSERT INTO TestHistory.BasicUnique_History (ID, EntityID, Name, ActiveSince) VALUES ('" + Guid.NewGuid().ToString() + "', '" + c1ID.ToString() + "', 'oldc1', '2012-01-01');",
+                    "INSERT INTO TestHistory.BasicUnique_History (ID, EntityID, Name, ActiveSince) VALUES ('" + Guid.NewGuid().ToString() + "', '" + c2ID.ToString() + "', 'c3', '2012-01-01');"
+                });
+                var repository = new Common.DomRepository(executionContext);
+                var cleanRepos = repository.TestHistory.BasicUnique;
+
+                var c1 = repository.TestHistory.BasicUnique.Query().Where(item => item.ID == c1ID).SingleOrDefault();
+                c1.Name = "oldc2";
+
+                cleanRepos.Update(new[] { c1 });
+
+                var c3 = repository.TestHistory.BasicUnique.Query().Where(item => item.ID == c3ID).SingleOrDefault();
+                c3.Name = "newc3";
+
+                // Current name of c3 already exists as old name of c1, but, since all that will be in history table, update should pass just fine.
+                cleanRepos.Update(new[] { c3 });
+
+                // revert to c3 name
+                c3.Name = "c3";
+                cleanRepos.Update(new[] { c3 });
+
+                var c2 = repository.TestHistory.BasicUnique.Query().Where(item => item.ID == c2ID).SingleOrDefault();
+                c2.Name = "c3";
+                TestUtility.ShouldFail(() => cleanRepos.Update(new[] { c2 }), "Simply test basic unique funcionality on base item.");
             }
         }
 

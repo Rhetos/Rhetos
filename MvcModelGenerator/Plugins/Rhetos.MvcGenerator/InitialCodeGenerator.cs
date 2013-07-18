@@ -35,8 +35,30 @@ using System.ComponentModel.DataAnnotations;
 using System.Web.Mvc;
 " + MvcGeneratorTags.Using + @"
 
+/*
+    If additional DataAnnotation attributes wants to be used for specific Model here generated, create class as following:
+
+    [MetadataTypeAttribute(typeof(MyModel.AdditionalAttributes))]{
+    public partial class MyModel
+    {
+        internal sealed class AdditionalAttributes
+        {
+            private AdditionalAttributes() { }
+
+            ...
+            List of properties along with additional DataAnnotation attributes.
+            Example:
+            [Display(Name = ""Last Name"", Order = 1, Prompt = ""Enter Last Name"")]
+            public string LastName { get; set; }
+            ...
+
+        }
+    }
+
+*/
 namespace Rhetos.Mvc.Model
 {
+
     public class BaseMvcModel
     {
          public Guid ID { get; set; }

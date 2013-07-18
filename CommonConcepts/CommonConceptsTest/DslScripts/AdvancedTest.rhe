@@ -71,4 +71,36 @@ Module TestHistory
     {
         Reference Complex TestHistory.Complex { Detail; }
     }
+        
+    Entity BasicAutocode
+    {
+        History { AllProperties; }
+        ShortString Name;
+        ShortString Code { AutoCode; }
+    }
+            
+    Entity BasicUnique
+    {
+        History { AllProperties; }
+        ShortString Name { Unique; }
+    }
+    
+    Entity Clean
+    {
+        ShortString Name;
+    }
+        
+    Entity ReferenceClean
+    {
+        History { AllProperties; }
+        Reference Clean TestHistory.Clean { Detail; }
+        ShortString AddName;
+    }
+    
+    Entity ExtendClean
+    {
+        Extends TestHistory.Clean;
+        History { AllProperties; }
+        ShortString SurName;
+    }
 }
