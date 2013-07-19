@@ -229,3 +229,12 @@ Module TestMaxValue
         DateTime Value { MaxValue "05.07.2013 12:34:00"; }
     }
 }
+
+Module TestDeactivateable
+{
+    Entity BasicEnt
+    {
+        Deactivateable;
+        ShortString Name;
+    }
+}
