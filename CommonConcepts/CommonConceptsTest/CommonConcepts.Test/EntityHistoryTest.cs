@@ -150,6 +150,59 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
+        public void ActiveUntilCheck()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var id1 = Guid.NewGuid();
+                executionContext.SqlExecuter.ExecuteSql(new[] {
+                    "DELETE FROM TestHistory.Minimal",
+                    "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2001-01-01')"});
+                var repository = new Common.DomRepository(executionContext);
+
+                var m1 = repository.TestHistory.Minimal.All().Single();
+                m1.ActiveSince = null;
+                m1.Code = 11;
+                repository.TestHistory.Minimal.Update(new[] { m1 });
+
+                executionContext.NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+
+                var h = repository.TestHistory.Minimal_History.All().Single();
+                var m = repository.TestHistory.Minimal.All().Single();
+
+                Assert.AreEqual(h.ActiveUntil, m.ActiveSince);
+            }
+        }
+
+
+        [TestMethod]
+        public void ActiveUntilInFullHistory()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var id1 = Guid.NewGuid();
+                executionContext.SqlExecuter.ExecuteSql(new[] {
+                    "DELETE FROM TestHistory.Minimal",
+                    "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2001-01-01')"});
+                var repository = new Common.DomRepository(executionContext);
+
+                var m1 = repository.TestHistory.Minimal.All().Single();
+                m1.ActiveSince = null;
+                m1.Code = 11;
+                repository.TestHistory.Minimal.Update(new[] { m1 });
+
+                executionContext.NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+
+                var fullh = repository.TestHistory.Minimal_FullHistory.Query().Where(item => item.Entity == m1).OrderBy(item => item.ActiveSince).Select(item => item).ToList();
+
+                Assert.AreEqual(fullh[0].ActiveUntil, fullh[1].ActiveSince);
+                Assert.IsNull(fullh[1].ActiveUntil);
+            }
+        }
+
+        [TestMethod]
         public void HistoryWithDenySave()
         {
             using (var executionContext = new CommonTestExecutionContext())

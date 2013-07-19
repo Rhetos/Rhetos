@@ -46,6 +46,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 AS
     SELECT
         ID = entity.ID,
+        ActiveUntil = CAST(NULL AS DateTime),
         EntityID = entity.ID{7}
     FROM
         {0}.{1} entity
@@ -54,6 +55,7 @@ AS
 
     SELECT
         ID = history.ID,
+        ActiveUntil,
         EntityID = history.EntityID{6}
     FROM
         {0}.{3} history
@@ -66,6 +68,7 @@ AS
 RETURN
 	SELECT
         ID = history.EntityID,
+        ActiveUntil,
         EntityID = history.EntityID{6}
     FROM
         {0}.{4} history
