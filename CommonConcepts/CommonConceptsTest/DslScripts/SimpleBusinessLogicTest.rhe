@@ -230,11 +230,11 @@ Module TestMaxValue
     }
 }
 
-Module TestDeactivateable
+Module TestDeactivatable
 {
     Entity BasicEnt
     {
-        Deactivateable;
+        Deactivatable;
         ShortString Name;
     }
 }

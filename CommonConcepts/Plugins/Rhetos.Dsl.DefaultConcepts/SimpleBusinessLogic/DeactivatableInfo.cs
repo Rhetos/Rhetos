@@ -21,7 +21,7 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("Deactivateable")]
+    [ConceptKeyword("Deactivatable")]
     public class DeactivateableInfo : IConceptInfo, IMacroConcept
     {
         [ConceptKey]

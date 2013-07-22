@@ -153,7 +153,7 @@
     <Compile Include="ComputedTest.cs" />
     <Compile Include="AuditablePropertiesTest.cs" />
     <Compile Include="CloningTest.cs" />
-    <Compile Include="DeactivateableTest.cs" />
+    <Compile Include="DeactivatableTest.cs" />
     <Compile Include="MaxValueTest.cs" />
     <Compile Include="MinValueTest.cs" />
     <Compile Include="RegExMatchTest.cs" />
