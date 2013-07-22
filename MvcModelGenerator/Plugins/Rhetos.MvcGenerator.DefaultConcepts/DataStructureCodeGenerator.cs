@@ -44,7 +44,7 @@ namespace Rhetos.MvcGenerator.DefaultConcepts
             return string.Format(@"
     namespace {0} 
     {{ 
-        public partial class {1} : BaseMvcModel
+        public partial class {1} : Rhetos.Mvc.Model.BaseMvcModel
         {{
             " + MvcGeneratorTags.ImplementationPropertyMembers.Replace("ENTITY", info.Module.Name + "_" + info.Name) + @"
         }}

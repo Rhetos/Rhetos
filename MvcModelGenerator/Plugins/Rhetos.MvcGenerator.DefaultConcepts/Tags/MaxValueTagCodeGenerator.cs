@@ -45,7 +45,7 @@ namespace Rhetos.MvcGenerator.DefaultConcepts
                 (info.Property is MoneyPropertyInfo || info.Property is DecimalPropertyInfo) ? "Decimal" :
                 (info.Property is DatePropertyInfo || info.Property is DateTimePropertyInfo) ? "Date" : "";
 
-            return string.Format(@"[MaxValue{0}(MaxValue = ""{1}"", ErrorMessage = ""Value for {2} must be less than or equal to {1}."")]
+            return string.Format(@"[Rhetos.Mvc.Model.MaxValue{0}(MaxValue = ""{1}"", ErrorMessage = ""Value for {2} must be less than or equal to {1}."")]
             ", typeRange, info.Value.ToString(), info.Property.Name);
         }
 

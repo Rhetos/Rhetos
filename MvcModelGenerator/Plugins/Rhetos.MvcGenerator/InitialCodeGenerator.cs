@@ -131,10 +131,10 @@ namespace Rhetos.Mvc.Model
 	{
     " + MvcGeneratorTags.InterfaceMembers + @"
 	}
+}
 
     " + MvcGeneratorTags.ImplementationMembers + @"
 
-}
 ";
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
