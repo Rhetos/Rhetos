@@ -64,9 +64,8 @@ namespace Rhetos.Dsl.DefaultConcepts
             var currentRequired = new RequiredPropertyInfo { Property = currentProperty }; // TODO: SystemRequired
             var cloneActiveSincePropertyWithRelatedFeatures = new PropertyFromInfo { Destination = historyEntity, Source = activeSinceProperty };
             var historyActiveSinceProperty = new DateTimePropertyInfo { DataStructure = historyEntity, Name = activeSinceProperty.Name };
-            var historyActiveUntilProperty = new DateTimePropertyInfo { DataStructure = historyEntity, Name = "ActiveUntil" }; 
             var unique = new UniquePropertiesInfo { DataStructure = historyEntity, Property1 = currentProperty, Property2 = historyActiveSinceProperty };
-            newConcepts.AddRange(new IConceptInfo[] { historyEntity, currentProperty, currentDetail, currentRequired, historyActiveSinceProperty, unique, cloneActiveSincePropertyWithRelatedFeatures, historyActiveUntilProperty });
+            newConcepts.AddRange(new IConceptInfo[] { historyEntity, currentProperty, currentDetail, currentRequired, historyActiveSinceProperty, unique, cloneActiveSincePropertyWithRelatedFeatures });
 
             var entityHistoryEx = new EntityHistoryExInfo { Entity = Entity, HistoryEntity = historyEntity }; // TODO: Remove this concept atfer implementing alternative constructors.
             newConcepts.Add(entityHistoryEx);

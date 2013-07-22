@@ -95,16 +95,15 @@ namespace Rhetos.Dom.DefaultConcepts
 			    {{
 				    var createHistory = updatedNew.Zip(updated, (newItem, oldItem) => new {{ newItem, oldItem }})
 					    .Where(change => change.oldItem.ActiveSince == null || change.newItem.ActiveSince > change.oldItem.ActiveSince)
-					    .Select(change => Tuple.Create(change.oldItem, change.newItem.ActiveSince))
+					    .Select(change => change.oldItem)
 					    .ToArray();
 					
 				    _domRepository.{0}.{1}_History.Insert(
-					    createHistory.Select(change =>
+					    createHistory.Select(olditem =>
 						    new {0}.{1}_History
 						    {{
                                 ID = Guid.NewGuid(),
-                                ActiveUntil = change.Item2,
-							    EntityID = change.Item1.ID{2}
+							    EntityID = olditem.ID{2}
 						    }}).ToArray());
 			    }}
             }}

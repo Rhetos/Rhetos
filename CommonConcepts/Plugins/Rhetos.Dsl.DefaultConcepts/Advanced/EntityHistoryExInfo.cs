@@ -37,12 +37,18 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
+            var newConcepts = new List<IConceptInfo>();
             var legacyEntityForFullHistory = new LegacyEntityInfo
             {
                 Module = this.Entity.Module,
                 Name = this.Entity.Name + "_FullHistory",
                 Table = this.Entity.Module + "." + this.Entity.Name + "_FullHistory",
                 View = this.Entity.Module + "." + this.Entity.Name + "_FullHistory"
+            };
+            var fullHistoryActiveUntilPropertyInfo = new DateTimePropertyInfo
+            {
+                DataStructure = legacyEntityForFullHistory,
+                Name = "ActiveUntil"
             };
             var propertiesForLegacyEntity = new AllPropertiesFromInfo
             {
@@ -61,7 +67,30 @@ namespace Rhetos.Dsl.DefaultConcepts
                 Source = legacyEntityForFullHistory,
                 Title = "Full history does not allow changes."
             };
-            return new IConceptInfo[] { legacyEntityForFullHistory, propertiesForLegacyEntity, allItemsFilter, lockLegacyEntityForChanges };
+
+            newConcepts.AddRange(new IConceptInfo[] { legacyEntityForFullHistory, fullHistoryActiveUntilPropertyInfo, propertiesForLegacyEntity, allItemsFilter, lockLegacyEntityForChanges });
+
+            // Creates extension on history data (for ActiveUntil):
+            var legacyEntityForActiveUntil = new LegacyEntityInfo
+            {
+                Module = this.Entity.Module,
+                Name = this.Entity.Name + "_History_ActiveUntil",
+                Table = this.Entity.Module + "." + this.Entity.Name + "_History_ActiveUntil",
+                View = this.Entity.Module + "." + this.Entity.Name + "_History_ActiveUntil"
+            };
+            var historyActiveUntilProperty = new DateTimePropertyInfo
+            {
+                DataStructure = legacyEntityForActiveUntil,
+                Name = "ActiveUntil"
+            };
+            var historyActiveUntilEx = new DataStructureExtendsInfo
+            {
+                Base = (DataStructureInfo)existingConcepts.Where<IConceptInfo>(t => t is DataStructureInfo).Where(t => ((DataStructureInfo)t).Module.Name == this.Entity.Module.Name && ((DataStructureInfo)t).Name == this.Entity.Name + "_History").Single(),
+                Extension = legacyEntityForActiveUntil
+            };
+            newConcepts.AddRange(new IConceptInfo[] { legacyEntityForActiveUntil, historyActiveUntilProperty, historyActiveUntilEx });
+
+            return newConcepts;
         }
    }
 }

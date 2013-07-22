@@ -168,13 +168,40 @@ namespace CommonConcepts.Test
                 executionContext.NHibernateSession.Clear();
                 var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
 
-                var h = repository.TestHistory.Minimal_History.All().Single();
+                var h = repository.TestHistory.Minimal_FullHistory.All().OrderBy(t => t.ActiveSince).FirstOrDefault();
                 var m = repository.TestHistory.Minimal.All().Single();
 
                 Assert.AreEqual(h.ActiveUntil, m.ActiveSince);
             }
         }
 
+        [TestMethod]
+        public void ActiveUntilEditingCurrentVersionActiveFromCheck()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var id1 = Guid.NewGuid();
+                executionContext.SqlExecuter.ExecuteSql(new[] {
+                    "DELETE FROM TestHistory.Minimal",
+                    "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2012-01-01')",
+                    "INSERT INTO TestHistory.Minimal_History (ID, EntityID, ActiveSince) VALUES ('"+Guid.NewGuid().ToString()+"'," + SqlUtility.QuoteGuid(id1) + ", '2000-01-01')"                    
+                });
+                var repository = new Common.DomRepository(executionContext);
+
+                var m1 = repository.TestHistory.Minimal.All().Single();
+                m1.ActiveSince = new DateTime(2012, 12, 25);
+                repository.TestHistory.Minimal.Update(new[] { m1 });
+
+                executionContext.NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+
+                var h = repository.TestHistory.Minimal_FullHistory.All().OrderBy(t => t.ActiveSince).ToList();
+                var m = repository.TestHistory.Minimal.All().Single();
+
+                Assert.AreEqual(h[0].ActiveUntil, h[1].ActiveSince);
+                Assert.AreEqual(h[1].ActiveUntil, m.ActiveSince);
+            }
+        }
 
         [TestMethod]
         public void ActiveUntilInFullHistory()

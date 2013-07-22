@@ -42,7 +42,22 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         protected string SqlCreate(EntityHistoryExInfo info)
         {
             return string.Format(
-@"CREATE VIEW {0}.{4}
+@"
+CREATE VIEW {0}.{3}_ActiveUntil
+AS
+SELECT
+	history.ID,
+	ActiveUntil = COALESCE(MIN(newerVersion.ActiveSince), MIN(currentItem.ActiveSince)) 
+FROM {0}.{1}_History history
+	LEFT JOIN {0}.{1}_History newerVersion ON 
+				newerVersion.EntityID = history.EntityID AND 
+				newerVersion.ActiveSince > history.ActiveSince
+	INNER JOIN {0}.{1} currentItem ON currentItem.ID = history.EntityID
+GROUP BY history.ID
+
+{5}
+
+CREATE VIEW {0}.{4}
 AS
     SELECT
         ID = entity.ID,
@@ -55,10 +70,11 @@ AS
 
     SELECT
         ID = history.ID,
-        ActiveUntil,
+        au.ActiveUntil,
         EntityID = history.EntityID{6}
     FROM
         {0}.{3} history
+        INNER JOIN {0}.{3}_ActiveUntil au ON au.ID = history.ID
 
 {5}
 
