@@ -204,6 +204,32 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
+        public void ActiveUntilAsExtensionInHistory()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var id1 = Guid.NewGuid();
+                executionContext.SqlExecuter.ExecuteSql(new[] {
+                    "DELETE FROM TestHistory.Minimal",
+                    "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2001-01-01')"});
+                var repository = new Common.DomRepository(executionContext);
+
+                var m1 = repository.TestHistory.Minimal.All().Single();
+                m1.ActiveSince = null;
+                m1.Code = 11;
+                repository.TestHistory.Minimal.Update(new[] { m1 });
+
+                executionContext.NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+
+                var hist = repository.TestHistory.Minimal_History.Query().Where(item => item.Entity == m1).Single();
+                var m = repository.TestHistory.Minimal.All().Single();
+
+                Assert.AreEqual(hist.Extension_Minimal_History_ActiveUntil.ActiveUntil, m.ActiveSince);
+            }
+        }
+
+        [TestMethod]
         public void ActiveUntilInFullHistory()
         {
             using (var executionContext = new CommonTestExecutionContext())
@@ -499,6 +525,43 @@ namespace CommonConcepts.Test
                     () => repository.TestHistory.Simple.Update(new[] { s }),
                     "insert with future time",
                     "ActiveSince", "TestHistory.Simple", "future");
+            }
+        }
+
+        [TestMethod]
+        public void NormalUpdate()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var id1 = Guid.NewGuid();
+                executionContext.SqlExecuter.ExecuteSql(new[] {
+                    "DELETE FROM TestHistory.Simple",
+                    "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'Test', '2001-01-01')"});
+                var repository = new Common.DomRepository(executionContext);
+
+                var m1 = repository.TestHistory.Simple.All().Single();
+                m1.ActiveSince = null;
+                m1.Code = 11;
+                repository.TestHistory.Simple.Update(new[] { m1 });
+            }
+        }
+
+        [TestMethod]
+        public void UpdateWithoutSettingActiveSince()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
+                var repository = new Common.DomRepository(executionContext);
+
+                var inPast = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter).AddMinutes(-1);
+                var s = new TestHistory.Simple { ID = Guid.NewGuid(), Code = 1, ActiveSince = inPast };
+                repository.TestHistory.Simple.Insert(new[] { s });
+
+                s.ActiveSince = null;
+                s.Name = "test";
+
+                repository.TestHistory.Simple.Update(new[] { s });
             }
         }
 
