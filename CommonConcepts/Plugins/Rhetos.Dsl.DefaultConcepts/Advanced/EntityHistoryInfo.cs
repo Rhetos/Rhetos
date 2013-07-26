@@ -44,8 +44,8 @@ namespace Rhetos.Dsl.DefaultConcepts
             // DenySave for base entity: it is not allowed to save with ActiveSince older than last one used in History
             var denyFilter = new ItemFilterInfo { 
                 FilterName = Entity.Name + "OlderThanHistoryEntries", 
-                Source = Entity, 
-                Expression = String.Format("item => repository.{0}.{1}_History.Query().Where(his => his.ActiveSince > item.ActiveSince).Count() > 0", 
+                Source = Entity,
+                Expression = String.Format("item => repository.{0}.{1}_History.Query().Where(his => his.ActiveSince > item.ActiveSince && his.Entity == item).Count() > 0", 
                                 Entity.Module.Name, 
                                 Entity.Name) 
             };

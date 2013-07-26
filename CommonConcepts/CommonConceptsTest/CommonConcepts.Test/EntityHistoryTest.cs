@@ -529,6 +529,28 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
+        public void NormalUpdateIfExistsNewerHistoryEntryDiffBase()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var id1 = Guid.NewGuid();
+                var id2 = Guid.NewGuid();
+                executionContext.SqlExecuter.ExecuteSql(new[] {
+                    "DELETE FROM TestHistory.Simple_History",
+                    "DELETE FROM TestHistory.Simple",
+                    "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'Test1', '2001-01-01')",
+                    "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id2) + ", 1, 'Test2', '2013-12-12')",
+                    "INSERT INTO TestHistory.Simple_History (EntityID, Code, ActiveSince, ID) VALUES (" + SqlUtility.QuoteGuid(id2) + ", 1, '2013-10-10', '"+(Guid.NewGuid()).ToString()+"')"});
+                var repository = new Common.DomRepository(executionContext);
+
+                var m1 = repository.TestHistory.Simple.Query().Where(t => t.ID == id1).SingleOrDefault();
+                m1.ActiveSince = new DateTime(2013, 5, 5);
+                m1.Code = 11;
+                repository.TestHistory.Simple.Update(new[] { m1 });
+            }
+        }
+
+        [TestMethod]
         public void NormalUpdate()
         {
             using (var executionContext = new CommonTestExecutionContext())
