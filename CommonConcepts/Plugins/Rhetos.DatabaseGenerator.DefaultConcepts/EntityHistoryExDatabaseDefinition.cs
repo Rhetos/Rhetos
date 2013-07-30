@@ -118,10 +118,12 @@ RETURN
 
             return string.Format(
 @"DROP FUNCTION {0}.{1};
+DROP VIEW {0}.{3};
 DROP VIEW {0}.{2};",
                 SqlUtility.Identifier(info.Entity.Module.Name),
                 SqlUtility.Identifier(info.Entity.Name + "_AtTime"),
-                SqlUtility.Identifier(info.Entity.Name + "_FullHistory"));
+                SqlUtility.Identifier(info.Entity.Name + "_FullHistory"),
+                SqlUtility.Identifier(info.Entity.Name + "_History_ActiveUntil"));
         }
     }
 }
