@@ -27,10 +27,31 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("History")]
-    public class EntityHistoryInfo : IMacroConcept
+    public class EntityHistoryInfo : IMacroConcept, IAlternativeInitializationConcept
     {
         [ConceptKey]
         public EntityInfo Entity { get; set; }
+        
+        public EntityInfo HistoryEntity { get; set; }
+        public LegacyEntityInfo FullHistoryEntity { get; set; }
+
+        public IEnumerable<string> DeclareNonparsableProperties()
+        {
+            return new string[] { "HistoryEntity", "FullHistoryEntity" };
+        }
+
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            HistoryEntity = new EntityInfo { Module = Entity.Module, Name = Entity.Name + "_History" };
+            FullHistoryEntity = new LegacyEntityInfo
+            {
+                Module = this.Entity.Module,
+                Name = this.Entity.Name + "_FullHistory",
+                Table = this.Entity.Module + "." + this.Entity.Name + "_FullHistory",
+                View = this.Entity.Module + "." + this.Entity.Name + "_FullHistory"
+            };
+            createdConcepts = new IConceptInfo[] { HistoryEntity, FullHistoryEntity };
+        }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
@@ -58,19 +79,50 @@ namespace Rhetos.Dsl.DefaultConcepts
             newConcepts.AddRange(new IConceptInfo[] { denyFilter, denySaveValidation });
 
             // Create a new entity for history data:
-            var historyEntity = new EntityInfo { Module = Entity.Module, Name = Entity.Name + "_History" };
-            var currentProperty = new ReferencePropertyInfo { DataStructure = historyEntity, Name = "Entity", Referenced = Entity };
+            var currentProperty = new ReferencePropertyInfo { DataStructure = HistoryEntity, Name = "Entity", Referenced = Entity };
             var currentDetail = new ReferenceDetailInfo { Reference = currentProperty };
             var currentRequired = new RequiredPropertyInfo { Property = currentProperty }; // TODO: SystemRequired
-            var cloneActiveSincePropertyWithRelatedFeatures = new PropertyFromInfo { Destination = historyEntity, Source = activeSinceProperty };
-            var historyActiveSinceProperty = new DateTimePropertyInfo { DataStructure = historyEntity, Name = activeSinceProperty.Name };
-            var unique = new UniquePropertiesInfo { DataStructure = historyEntity, Property1 = currentProperty, Property2 = historyActiveSinceProperty };
-            newConcepts.AddRange(new IConceptInfo[] { historyEntity, currentProperty, currentDetail, currentRequired, historyActiveSinceProperty, unique, cloneActiveSincePropertyWithRelatedFeatures });
+            var cloneActiveSincePropertyWithRelatedFeatures = new PropertyFromInfo { Destination = HistoryEntity, Source = activeSinceProperty };
+            var historyActiveSinceProperty = new DateTimePropertyInfo { DataStructure = HistoryEntity, Name = activeSinceProperty.Name };
+            var unique = new UniquePropertiesInfo { DataStructure = HistoryEntity, Property1 = currentProperty, Property2 = historyActiveSinceProperty };
+            newConcepts.AddRange(new IConceptInfo[] { currentProperty, currentDetail, currentRequired, historyActiveSinceProperty, unique, cloneActiveSincePropertyWithRelatedFeatures });
 
-            var entityHistoryEx = new EntityHistoryExInfo { Entity = Entity, HistoryEntity = historyEntity }; // TODO: Remove this concept atfer implementing alternative constructors.
-            newConcepts.Add(entityHistoryEx);
+            // Creates properties of FullHistoryEntity
+            var fullHistoryActiveUntilPropertyInfo = new DateTimePropertyInfo
+            {
+                DataStructure = FullHistoryEntity,
+                Name = "ActiveUntil"
+            };
+            var propertiesForLegacyEntity = new AllPropertiesFromInfo
+            {
+                Source = this.HistoryEntity,
+                Destination = FullHistoryEntity
+            };
+
+            newConcepts.AddRange(new IConceptInfo[] { fullHistoryActiveUntilPropertyInfo, propertiesForLegacyEntity });
+
+            // Creates extension on history data (for ActiveUntil):
+            var legacyEntityForActiveUntil = new LegacyEntityInfo
+            {
+                Module = this.Entity.Module,
+                Name = this.Entity.Name + "_History_ActiveUntil",
+                Table = this.Entity.Module + "." + this.Entity.Name + "_History_ActiveUntil",
+                View = this.Entity.Module + "." + this.Entity.Name + "_History_ActiveUntil"
+            };
+            var historyActiveUntilProperty = new DateTimePropertyInfo
+            {
+                DataStructure = legacyEntityForActiveUntil,
+                Name = "ActiveUntil"
+            };
+            var historyActiveUntilEx = new DataStructureExtendsInfo
+            {
+                Base = (DataStructureInfo)existingConcepts.Where<IConceptInfo>(t => t is DataStructureInfo).Where(t => ((DataStructureInfo)t).Module.Name == this.Entity.Module.Name && ((DataStructureInfo)t).Name == this.Entity.Name + "_History").Single(),
+                Extension = legacyEntityForActiveUntil
+            };
+            newConcepts.AddRange(new IConceptInfo[] { legacyEntityForActiveUntil, historyActiveUntilProperty, historyActiveUntilEx });
 
             return newConcepts;
         }
+
     }
 }

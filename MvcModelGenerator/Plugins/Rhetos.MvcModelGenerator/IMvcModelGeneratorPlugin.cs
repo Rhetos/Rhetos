@@ -16,18 +16,12 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
+using Rhetos.Compiler;
+using Rhetos.Dsl;
 
-namespace Rhetos.Dsl.DefaultConcepts
+namespace Rhetos.MvcModelGenerator
 {
-    [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("LockItems")]
-    public class LockItemsForPropertyInfo : LockItemsInfo
+    public interface IMvcModelGeneratorPlugin : IConceptCodeGenerator
     {
-        public PropertyInfo DependedProperty { get; set; }
     }
 }

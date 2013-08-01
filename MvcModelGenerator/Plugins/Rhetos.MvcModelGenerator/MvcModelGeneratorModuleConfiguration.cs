@@ -16,18 +16,24 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-using System;
-using System.Collections.Generic;
+using Autofac;
+using Rhetos.Dsl;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
+using System.Diagnostics.Contracts;
 
-namespace Rhetos.Dsl.DefaultConcepts
+namespace Rhetos.MvcModelGenerator
 {
-    [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("LockItems")]
-    public class LockItemsForPropertyInfo : LockItemsInfo
+    /// <summary>
+    /// Specific IDslSource must be registered separately.
+    /// </summary>
+    [Export(typeof(Module))]
+    public class MvcModelGeneratorModuleConfiguration : Module
     {
-        public PropertyInfo DependedProperty { get; set; }
+        protected override void Load(ContainerBuilder builder)
+        {
+            Rhetos.Extensibility.PluginsUtility.RegisterPlugins<IMvcModelGeneratorPlugin>(builder);
+
+            base.Load(builder);
+        }
     }
 }

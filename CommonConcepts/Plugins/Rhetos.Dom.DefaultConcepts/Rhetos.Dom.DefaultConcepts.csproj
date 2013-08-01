@@ -62,8 +62,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Advanced\EntityHistoryAllPropertiesCodeGenerator.cs" />
-    <Compile Include="Advanced\EntityHistoryPropertyExCodeGenerator.cs" />
-    <Compile Include="Advanced\EntityHistoryExCodeGenerator.cs" />
+    <Compile Include="Advanced\EntityHistoryPropertyCodeGenerator.cs" />
+    <Compile Include="Advanced\EntityHistoryCodeGenerator.cs" />
     <Compile Include="Computations\EntityComputedFromCodeGenerator.cs" />
     <Compile Include="Computations\LockItemsForPropertyCodeGenerator.cs" />
     <Compile Include="Computations\DenySaveForPropertyCodeGenerator.cs" />

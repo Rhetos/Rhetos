@@ -18,31 +18,27 @@
 */
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Globalization;
 using System.Linq;
 using System.Text;
-using Rhetos.Utilities;
-using Rhetos.Compiler;
-using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
+using System.Globalization;
+using System.ComponentModel.Composition;
 using Rhetos.Extensibility;
+using Rhetos.Dsl;
+using Rhetos.Compiler;
+using Rhetos.Utilities;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(LockItemsForPropertyInfo))]
-    public class LockItemsForPropertyCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(EntityHistoryPropertyInfo))]
+    public class EntityHistoryPropertyCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (LockItemsForPropertyInfo)conceptInfo;
-            codeBuilder.InsertCode(AdditionalInvalidMessageSnippet(info), LockItemsCodeGenerator.UserMessageAppend, info);
-        }
-
-        private static string AdditionalInvalidMessageSnippet(LockItemsForPropertyInfo info)
-        {
-            return string.Format(@"+"",Property:{0}""", info.DependedProperty.Name);
+            var info = (EntityHistoryPropertyInfo)conceptInfo;
+            codeBuilder.InsertCode(string.Format(",\r\n							    {0} = olditem.{0}", info.Property.Name),
+                EntityHistoryCodeGenerator.ClonePropertiesTag, info.EntityHistory.Entity);
         }
     }
 }

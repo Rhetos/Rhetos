@@ -110,6 +110,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AlternativeInitialization.cs" />
     <Compile Include="DiskDslScriptProvider.cs" />
     <Compile Include="DslContainer.cs" />
     <Compile Include="DslParser.cs" />

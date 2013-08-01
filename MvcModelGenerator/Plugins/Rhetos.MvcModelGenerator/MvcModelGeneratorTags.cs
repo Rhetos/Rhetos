@@ -18,16 +18,18 @@
 */
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 
-namespace Rhetos.Dsl.DefaultConcepts
+namespace Rhetos.MvcModelGenerator
 {
-    [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("LockItems")]
-    public class LockItemsForPropertyInfo : LockItemsInfo
+    public static class MvcModelGeneratorTags
     {
-        public PropertyInfo DependedProperty { get; set; }
+        public const string Using = "/*using*/";
+        public const string InterfaceMembers = "/*declaration*/";
+        public const string ImplementationMembers = "/*implementation*/";
+        public const string ImplementationPropertyMembers = "/*implementationProperties_ENTITY*/";
+        public const string ImplementationPropertyAttributeMembers = "/*implementationProperties_PROPERTY_ATTRIBUTE*/";
+        public const string NamespaceMembers = "/*body*/";
     }
 }

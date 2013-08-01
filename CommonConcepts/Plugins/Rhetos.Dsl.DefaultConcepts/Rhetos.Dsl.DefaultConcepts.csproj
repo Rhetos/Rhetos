@@ -109,9 +109,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Advanced\EntityHistoryExInfo.cs" />
     <Compile Include="Advanced\EntityHistoryAllPropertiesInfo.cs" />
-    <Compile Include="Advanced\EntityHistoryPropertyExInfo.cs" />
     <Compile Include="Advanced\EntityHistoryPropertyInfo.cs" />
     <Compile Include="Advanced\EntityHistoryInfo.cs" />
     <Compile Include="Advanced\HierarchySingleRootInternalInfo.cs" />
