@@ -54,7 +54,8 @@ namespace CommonConcepts.Test
             }
         }
 
-        public CommonTestExecutionContext() : base(false, RhetosServerPath)
+        public CommonTestExecutionContext(bool commitChanges = false)
+            : base(commitChanges, RhetosServerPath)
         {
         }
     }

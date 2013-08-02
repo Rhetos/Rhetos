@@ -46,6 +46,8 @@ Module TestHistory
         Integer Code;
         ShortString Name;
         DateTime Birthday;
+        ItemFilter TooLongName 'item => item.Name.Length > 10';
+		DenySave TooLongName 'Name too long.';
 	}
     
     Entity Other;
@@ -68,5 +70,37 @@ Module TestHistory
     Entity Sub
     {
         Reference Complex TestHistory.Complex { Detail; }
+    }
+        
+    Entity BasicAutocode
+    {
+        History { AllProperties; }
+        ShortString Name;
+        ShortString Code { AutoCode; }
+    }
+            
+    Entity BasicUnique
+    {
+        History { AllProperties; }
+        ShortString Name { Unique; }
+    }
+    
+    Entity Clean
+    {
+        ShortString Name;
+    }
+        
+    Entity ReferenceClean
+    {
+        History { AllProperties; }
+        Reference Clean TestHistory.Clean { Detail; }
+        ShortString AddName;
+    }
+    
+    Entity ExtendClean
+    {
+        Extends TestHistory.Clean;
+        History { AllProperties; }
+        ShortString SurName;
     }
 }

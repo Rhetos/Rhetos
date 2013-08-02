@@ -62,8 +62,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Advanced\EntityHistoryAllPropertiesCodeGenerator.cs" />
-    <Compile Include="Advanced\EntityHistoryPropertyExCodeGenerator.cs" />
-    <Compile Include="Advanced\EntityHistoryExCodeGenerator.cs" />
+    <Compile Include="Advanced\EntityHistoryPropertyCodeGenerator.cs" />
+    <Compile Include="Advanced\EntityHistoryCodeGenerator.cs" />
     <Compile Include="Computations\EntityComputedFromCodeGenerator.cs" />
     <Compile Include="Computations\LockItemsForPropertyCodeGenerator.cs" />
     <Compile Include="Computations\DenySaveForPropertyCodeGenerator.cs" />
@@ -86,6 +86,7 @@
     <Compile Include="Computations\ComputeForNewBaseItemsCodeGenerator.cs" />
     <Compile Include="Computations\QueryableExtensionCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ActionCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\DeactivatableCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ReferenceCascadeDeleteCodeGenerator.cs" />
     <Compile Include="Computations\ExtensionComputedFromCodeGenerator.cs" />
     <Compile Include="DataStructure\LinkedItemsCodeGenerator.cs" />

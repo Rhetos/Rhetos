@@ -31,22 +31,24 @@ using Rhetos.Utilities;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(EntityHistoryExInfo))]
-    public class EntityHistoryExCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(EntityHistoryInfo))]
+    public class EntityHistoryCodeGenerator : IConceptCodeGenerator
     {
         public static readonly DataStructureCodeGenerator.DataStructureTag ClonePropertiesTag =
             new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*EntityHistory.CloneProperties {0}.{1}*/");
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (EntityHistoryExInfo)conceptInfo;
+            var info = (EntityHistoryInfo)conceptInfo;
             codeBuilder.InsertCode(FilterInterfaceSnippet(info), RepositoryHelper.RepositoryInterfaces, info.HistoryEntity);
             codeBuilder.InsertCode(FilterImplementationSnippet(info), RepositoryHelper.RepositoryMembers, info.HistoryEntity);
             codeBuilder.InsertCode(CreateHistoryOnUpdateSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Entity);
             codeBuilder.InsertCode(VerifyHistoryEntityTimeSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.HistoryEntity);
+
+            codeBuilder.InsertCode(DenyAllActionsOnFullHistorySnippet(info), WritableOrmDataStructureCodeGenerator.InitializationTag, info.FullHistoryEntity);        
         }
 
-        private static string FilterInterfaceSnippet(EntityHistoryExInfo info)
+        private static string FilterInterfaceSnippet(EntityHistoryInfo info)
         {
             return "IFilterRepository<System.DateTime, " + info.HistoryEntity.Module.Name + "." + info.HistoryEntity.Name + ">";
         }
@@ -55,7 +57,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Creates a DateTime filter that returns the "Entity"_History records that were active at the time (including the current records in the base entity).
         /// AllProperties concept (EntityHistoryAllPropertiesInfo) creates a similar filter on the base Entity class.
         /// </summary>
-        private static string FilterImplementationSnippet(EntityHistoryExInfo info)
+        private static string FilterImplementationSnippet(EntityHistoryInfo info)
         {
             return string.Format(
 @"        public global::{0}.{1}[] Filter(System.DateTime parameter)
@@ -75,7 +77,15 @@ namespace Rhetos.Dom.DefaultConcepts
             SqlUtility.Identifier(info.Entity.Name + "_AtTime"));
         }
 
-        private static string CreateHistoryOnUpdateSnippet(EntityHistoryExInfo info)
+        private static string DenyAllActionsOnFullHistorySnippet(EntityHistoryInfo info)
+        {
+            return string.Format(
+@"			throw new Rhetos.UserException(""Full history does not allow changes."");
+
+");
+        }
+
+        private static string CreateHistoryOnUpdateSnippet(EntityHistoryInfo info)
         {
             return string.Format(
 @"			if (insertedNew.Count() > 0 || updatedNew.Count() > 0)
@@ -99,11 +109,11 @@ namespace Rhetos.Dom.DefaultConcepts
 					    .ToArray();
 					
 				    _domRepository.{0}.{1}_History.Insert(
-					    createHistory.Select(oldItem =>
+					    createHistory.Select(olditem =>
 						    new {0}.{1}_History
 						    {{
                                 ID = Guid.NewGuid(),
-							    EntityID = oldItem.ID{2}
+							    EntityID = olditem.ID{2}
 						    }}).ToArray());
 			    }}
             }}
@@ -114,13 +124,12 @@ namespace Rhetos.Dom.DefaultConcepts
             ClonePropertiesTag.Evaluate(info.Entity));
         }
 
-        private static string VerifyHistoryEntityTimeSnippet(EntityHistoryExInfo info)
+        private static string VerifyHistoryEntityTimeSnippet(EntityHistoryInfo info)
         {
             return string.Format(
 @"			if (insertedNew.Count() > 0 || updatedNew.Count() > 0)
             {{
                 var nowFull = SqlUtility.GetDatabaseTime(_executionContext.SqlExecuter);
-                var now = new DateTime(nowFull.Year, nowFull.Month, nowFull.Day, nowFull.Hour, nowFull.Minute, nowFull.Second); // Rounding for NHibernate compatibility
                 
                 foreach (var newItem in insertedNew.Concat(updatedNew))
                     if (newItem.ActiveSince > nowFull)

@@ -88,7 +88,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                         throw new DslSyntaxException(this, "Value is not an datetime.");
                     break;
                 default:
-                    throw new DslSyntaxException(this, "MinValue can only be used on Integer, Decimal, Money, Date or DateTime.");
+                    throw new DslSyntaxException(this, "MaxValue can only be used on Integer, Decimal, Money, Date or DateTime.");
             }
            
         }

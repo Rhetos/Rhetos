@@ -30,8 +30,8 @@ using Rhetos.Extensibility;
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
     [Export(typeof(IConceptDatabaseDefinition))]
-    [ExportMetadata(MefProvider.Implements, typeof(EntityHistoryExInfo))]
-    public class EntityHistoryExDatabaseDefinition : IConceptDatabaseDefinition
+    [ExportMetadata(MefProvider.Implements, typeof(EntityHistoryInfo))]
+    public class EntityHistoryDatabaseDefinition : IConceptDatabaseDefinition
     {
         public static readonly DataStructureTag SelectHistoryProperties =
             new DataStructureTag(TagType.Appendable, "/*EntityHistory SelectHistoryProperties {0}.{1}*/");
@@ -39,14 +39,16 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         public static readonly DataStructureTag SelectEntityProperties =
             new DataStructureTag(TagType.Appendable, "/*EntityHistory SelectEntityProperties {0}.{1}*/");
 
-        protected string SqlCreate(EntityHistoryExInfo info)
+        protected string SqlCreate(EntityHistoryInfo info)
         {
             return string.Format(
-@"CREATE VIEW {0}.{4}
+@"
+CREATE VIEW {0}.{4}
 AS
     SELECT
         ID = entity.ID,
-        EntityID = entity.ID{7}
+        EntityID = entity.ID,
+        ActiveUntil = CAST(NULL AS DateTime){7}
     FROM
         {0}.{1} entity
 
@@ -54,9 +56,11 @@ AS
 
     SELECT
         ID = history.ID,
-        EntityID = history.EntityID{6}
+        EntityID = history.EntityID,
+        au.ActiveUntil{6}
     FROM
         {0}.{3} history
+        LEFT JOIN {0}.{3}_ActiveUntil au ON au.ID = history.ID
 
 {5}
 
@@ -66,6 +70,7 @@ AS
 RETURN
 	SELECT
         ID = history.EntityID,
+        ActiveUntil,
         EntityID = history.EntityID{6}
     FROM
         {0}.{4} history
@@ -89,13 +94,13 @@ RETURN
 
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
-            var info = (EntityHistoryExInfo)conceptInfo;
+            var info = (EntityHistoryInfo)conceptInfo;
             return SqlCreate(info);
         }
 
         public string RemoveDatabaseStructure(IConceptInfo conceptInfo)
         {
-            var info = (EntityHistoryExInfo)conceptInfo;
+            var info = (EntityHistoryInfo)conceptInfo;
 
             return string.Format(
 @"DROP FUNCTION {0}.{1};

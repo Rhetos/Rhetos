@@ -61,6 +61,7 @@ namespace DeployPackages
             builder.RegisterModule(new LoggingConfiguration());
             builder.RegisterModule(new SecurityModuleConfiguration());
             builder.RegisterModule(new RestGeneratorModuleConfiguration());
+            builder.RegisterModule(new GeneratorModuleConfiguration());
 
             builder.RegisterType<DataMigration>();
             builder.RegisterType<DatabaseCleaner>();

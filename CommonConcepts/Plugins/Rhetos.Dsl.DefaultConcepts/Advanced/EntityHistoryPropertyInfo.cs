@@ -27,27 +27,38 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("History")]
-    public class EntityHistoryPropertyInfo : IMacroConcept
+    public class EntityHistoryPropertyInfo : IMacroConcept, IAlternativeInitializationConcept
     {
         [ConceptKey]
         public PropertyInfo Property { get; set; }
+
+        public EntityHistoryInfo EntityHistory { get; set; }
+
+        public IEnumerable<string> DeclareNonparsableProperties()
+        {
+            return new[] { "EntityHistory" };
+        }
+
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            if (!(Property.DataStructure is EntityInfo))
+                throw new DslSyntaxException(this, "History concept may only be used on entity or its property.");
+            EntityHistory = new EntityHistoryInfo { Entity = (EntityInfo)this.Property.DataStructure };
+            createdConcepts = new IConceptInfo[] { EntityHistory };
+        }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();
 
-            var entityHistory = existingConcepts.OfType<EntityHistoryInfo>().Where(eh => eh.Entity == Property.DataStructure).SingleOrDefault();
-            if (entityHistory == null)
-            {
-                entityHistory = new EntityHistoryInfo { Entity = (EntityInfo)Property.DataStructure };
-                newConcepts.Add(entityHistory);
-            }
-
-            var entityHistoryEx = existingConcepts.OfType<EntityHistoryExInfo>().Where(eh => eh.Entity == Property.DataStructure).SingleOrDefault();
-            if (entityHistoryEx != null)
-                newConcepts.Add(new EntityHistoryPropertyExInfo { Property = Property, EntityHistory = entityHistoryEx });
+            newConcepts.AddRange(new IConceptInfo[] {
+                new SqlDependsOnPropertyInfo { Dependent = EntityHistory, DependsOn = Property },
+                new SqlDependsOnDataStructureInfo { Dependent = EntityHistory, DependsOn = EntityHistory.HistoryEntity },
+                new PropertyFromInfo { Destination = EntityHistory.HistoryEntity, Source = Property }
+            });
 
             return newConcepts;
         }
+
     }
 }

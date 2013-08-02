@@ -30,8 +30,8 @@ using Rhetos.Extensibility;
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
     [Export(typeof(IConceptDatabaseDefinition))]
-    [ExportMetadata(MefProvider.Implements, typeof(EntityHistoryPropertyExInfo))]
-    public class EntityHistoryPropertyExDatabaseDefinition : IConceptDatabaseDefinitionExtension
+    [ExportMetadata(MefProvider.Implements, typeof(EntityHistoryPropertyInfo))]
+    public class EntityHistoryPropertyDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
@@ -45,16 +45,16 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
         public void ExtendDatabaseStructure(IConceptInfo conceptInfo, ICodeBuilder codeBuilder, out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
         {
-            var info = (EntityHistoryPropertyExInfo)conceptInfo;
+            var info = (EntityHistoryPropertyInfo)conceptInfo;
             createdDependencies = null;
 
             var columnName = GetColumnName(info.Property);
 
             codeBuilder.InsertCode(string.Format(",\r\n        {0} = history.{0}", columnName),
-                EntityHistoryExDatabaseDefinition.SelectHistoryProperties, info.Property.DataStructure);
+                EntityHistoryDatabaseDefinition.SelectHistoryProperties, info.Property.DataStructure);
 
             codeBuilder.InsertCode(string.Format(",\r\n        {0} = entity.{0}", columnName),
-                EntityHistoryExDatabaseDefinition.SelectEntityProperties, info.Property.DataStructure);
+                EntityHistoryDatabaseDefinition.SelectEntityProperties, info.Property.DataStructure);
         }
 
         private static string GetColumnName(PropertyInfo property)

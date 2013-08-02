@@ -10,6 +10,7 @@ FOR /F "delims=" %%i IN ('dir obj /s/b/ad') DO DEL /F/S/Q "%%i" && RD /S/Q "%%i"
 REM Delete packages' bineries and their copy in Rhetos folder:
 DEL /F/Q "*.zip"
 DEL /F/S/Q "CommonConcepts\Plugins\ForDeployment\*"
+DEL /F/S/Q "MvcModelGenerator\Plugins\ForDeployment\*"
 DEL /F/S/Q "Source\Rhetos\bin\Plugins"
 DEL /F/S/Q "Source\Rhetos\DataMigration"
 DEL /F/S/Q "Source\Rhetos\DslScripts"

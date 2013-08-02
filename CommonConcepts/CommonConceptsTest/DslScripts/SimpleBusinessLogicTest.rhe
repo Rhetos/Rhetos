@@ -167,6 +167,11 @@ Module TestRegex
     {      
         ShortString StringFrom200To249 { RegExMatch "2[0-4][0-9]"; }
     }
+    
+    Entity SimpleRequired 
+    {      
+        ShortString StringFrom200To249 { Required; RegExMatch "2[0-4][0-9]"; }
+    }
 }
 
 Module TestMinValue
@@ -222,5 +227,14 @@ Module TestMaxValue
     Entity SimpleDateTime
     {
         DateTime Value { MaxValue "05.07.2013 12:34:00"; }
+    }
+}
+
+Module TestDeactivatable
+{
+    Entity BasicEnt
+    {
+        Deactivatable;
+        ShortString Name;
     }
 }

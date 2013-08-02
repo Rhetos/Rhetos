@@ -50,7 +50,30 @@ namespace CommonConcepts.Test
                 repository.TestRegex.Simple.Insert(new[] { entity });
             }
         }
-        
+
+        [TestMethod]
+        public void EmptyValuesAreAllowed()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var repository = new Common.DomRepository(executionContext);
+                var entity = new Simple { StringFrom200To249 = null };
+                repository.TestRegex.Simple.Insert(new[] { entity });
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Rhetos.UserException))]
+        public void EmptyValuesAreNotAllowedIfRequiredSet()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var repository = new Common.DomRepository(executionContext);
+                var entity = new SimpleRequired { StringFrom200To249 = null };
+                repository.TestRegex.SimpleRequired.Insert(new[] { entity });
+            }
+        }
+
         [TestMethod]
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnUpdate()

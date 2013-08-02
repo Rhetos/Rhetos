@@ -16,23 +16,12 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.ComponentModel.Composition;
-using Rhetos.Utilities;
+using Rhetos.Compiler;
+using Rhetos.Dsl;
 
-namespace Rhetos.Dsl.DefaultConcepts
+namespace Rhetos.MvcModelGenerator
 {
-    [Export(typeof(IConceptInfo))]
-    public class EntityHistoryExInfo : IConceptInfo
-   {
-        // TODO: Remove this concept atfer implementing alternative constructors.
-
-        [ConceptKey]
-        public EntityInfo Entity { get; set; }
-
-        public EntityInfo HistoryEntity { get; set; }
+    public interface IMvcModelGeneratorPlugin : IConceptCodeGenerator
+    {
     }
 }

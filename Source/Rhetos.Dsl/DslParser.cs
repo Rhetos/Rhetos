@@ -211,13 +211,9 @@ namespace Rhetos.Dsl
         {
             var newConcets = new List<IConceptInfo>();
             foreach (var alternativeInitializationConcept in parsedConcepts.OfType<IAlternativeInitializationConcept>())
-            {
-                IEnumerable<IConceptInfo> createdConcepts;
-                alternativeInitializationConcept.InitializeNonparsableProperties(out createdConcepts);
-                if (createdConcepts != null)
-                    newConcets.AddRange(createdConcepts);
-            }
+                newConcets.AddRange(AlternativeInitialization.InitializeNonparsablePropertiesRecursive(alternativeInitializationConcept));
             return newConcets;
         }
+
     }
 }

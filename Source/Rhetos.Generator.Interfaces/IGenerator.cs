@@ -20,25 +20,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
-using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl;
-using Rhetos.Compiler;
-using Rhetos.Utilities;
+using System.Threading.Tasks;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Generator
 {
-    [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(EntityHistoryPropertyExInfo))]
-    public class EntityHistoryPropertyExCodeGenerator : IConceptCodeGenerator
+    public interface IGenerator
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
-        {
-            var info = (EntityHistoryPropertyExInfo)conceptInfo;
-            codeBuilder.InsertCode(string.Format(",\r\n							{0} = oldItem.{0}", info.Property.Name),
-                EntityHistoryExCodeGenerator.ClonePropertiesTag, info.EntityHistory.Entity);
-        }
+        IEnumerable<string> Dependencies { get; }
+
+        void Generate();
     }
 }
