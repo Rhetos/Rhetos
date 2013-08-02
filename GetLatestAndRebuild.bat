@@ -9,7 +9,7 @@ git pull || echo CANNOT AUTOMATICALLY GET LATEST VERSION. IT IS POSSIBLE THAT A 
 
 ECHO.
 ECHO ================================================
-ECHO CLEAN
+ECHO CLEAN || GOTO ErrorBuild
 CALL Clean.bat
 
 ECHO.

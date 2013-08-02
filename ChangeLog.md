@@ -1,3 +1,17 @@
+0.9.7 (2013-08-02)
+------------------
+
+New features:
+
+* New DSL package: **MvcModelGenerator** generates model classes with DataAnnotations attributes for ASP.NET MVC. It creates MvcModel.cs/dll/pdb.
+* New concept: **Deactivatable** allows records to be deactivated instead of deleted.
+* Improved **History** concept: *ActiveUntil* property computed for each history record. FullHistory available through REST interface. Better validations.
+
+Internal improvements:
+
+* Added ability to extend Rhetos with custom file generators.
+* Removed end-of-line normalization of git repository.
+
 0.9.6 (2013-07-12)
 ------------------
 

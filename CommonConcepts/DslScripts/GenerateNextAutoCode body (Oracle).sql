@@ -83,8 +83,8 @@ BEGIN
         AND ( ' || Filter || ' )' ELSE '' END
       || '
     ORDER BY
-        1 DESC, -- Traži najveæu brojèanu vrijednost sufiksa.
-        2 DESC -- Ako ih ima više sa istom brojèanom vrijednosti, uzima najdulju šifru (bez nekog posebnog razloga).
+        1 DESC, -- Find maximal numeric suffix.
+        2 DESC -- If there are more than one suffixes with same value, take the longest code.
   )
     WHERE ROWNUM <= 1';
   

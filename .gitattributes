@@ -1,26 +1,2 @@
-# Declare files that will always have CRLF line endings on checkout.
-*.sln text eol=crlf
-*.cs eol=crlf
-*.sql eol=crlf
-*.txt eol=crlf
-*.md eol=crlf
-*.csproj eol=crlf
-*.bat eol=crlf
-*.config eol=crlf
-*.resx eol=crlf
-*.xml eol=crlf
-*.js eol=crlf
-*.user eol=crlf
-*.css eol=crlf
-*.xsd eol=crlf
-*.settings eol=crlf
-*.testsettings eol=crlf
-*.linq eol=crlf
-*.aspx eol=crlf
-*.xss eol=crlf
-*.xsc eol=crlf
-*.asax eol=crlf
-*.vsmdi eol=crlf
-*.svc eol=crlf
-*.Master eol=crlf
-*.rhe eol=crlf
+# No end-of-line normalization
+* -text
