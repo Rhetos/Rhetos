@@ -24,7 +24,8 @@ using System.Diagnostics.Contracts;
 namespace Rhetos.MvcModelGenerator
 {
     /// <summary>
-    /// Specific IDslSource must be registered separately.
+    /// Specific IConceptInfo must be registered separately.
+    /// IMvcModelGeneratorPlugin are code generator which transform specific IConceptInfo into MvcModel definition classes.
     /// </summary>
     [Export(typeof(Module))]
     public class MvcModelGeneratorModuleConfiguration : Module

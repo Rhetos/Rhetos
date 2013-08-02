@@ -107,8 +107,7 @@ namespace DeployPackages
                 Console.WriteLine("Done.");
 
                 Console.Write("Executing custom generators... ");
-                container.Resolve<Rhetos.Generator.GeneratorProcessor>().ProcessGenerators();
-                Console.WriteLine("Done.");
+                Console.WriteLine(container.Resolve<Rhetos.Generator.GeneratorProcessor>().ProcessGenerators());
 
                 Console.Write("Preparing Rhetos database ... ");
                 DeploymentUtility.PrepareRhetosDatabase(container.Resolve<ISqlExecuter>());

@@ -17,29 +17,41 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Globalization;
-using System.Xml;
+using System.Linq;
+using System.Text;
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
-using Rhetos.MvcModelGenerator;
 
-namespace Rhetos.MvcModelGenerator.DefaultConcepts
+namespace Rhetos.Dom.DefaultConcepts
 {
-    [Export(typeof(IMvcModelGeneratorPlugin))]
-    [ExportMetadata(MefProvider.Implements, typeof(ReferencePropertyInfo))]
-    public class ReferencePropertyCodeGenerator : IMvcModelGeneratorPlugin
+    [Export(typeof(IConceptCodeGenerator))]
+    [ExportMetadata(MefProvider.Implements, typeof(DeactivatableInfo))]
+    public class DeactivatableCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            ReferencePropertyInfo info = (ReferencePropertyInfo)conceptInfo;
-            if (DataStructureCodeGenerator.IsTypeSupported(info.DataStructure))
-            {
-                MvcPropertyHelper.GenerateCodeForType(info, codeBuilder, "Guid?", "ID");
-            }
+            var info = (DeactivatableInfo)conceptInfo;
+
+            codeBuilder.InsertCode(DefaultSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Entity);
         }
 
+
+        private static string DefaultSnippet(DeactivatableInfo info)
+        {
+            return string.Format(
+@"			    foreach (var newItem in insertedNew)
+                if (newItem.Active == null)
+                    newItem.Active = true;
+
+            foreach (var change in updatedNew.Zip(updated, (newItem, oldItem) => new {{ newItem, oldItem }}))
+                if (change.newItem.Active == null)
+                    change.newItem.Active = change.oldItem.Active ?? true;
+
+");
+        }
     }
 }

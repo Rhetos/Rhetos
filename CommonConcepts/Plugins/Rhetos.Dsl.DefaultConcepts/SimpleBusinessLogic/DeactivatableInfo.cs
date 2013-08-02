@@ -22,7 +22,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Deactivatable")]
-    public class DeactivateableInfo : IConceptInfo, IMacroConcept
+    public class DeactivatableInfo : IConceptInfo, IMacroConcept
     {
         [ConceptKey]
         public EntityInfo Entity { get; set; }
@@ -34,35 +34,21 @@ namespace Rhetos.Dsl.DefaultConcepts
                 DataStructure = Entity,
                 Name = "Active"
             };
-            var requiredPropertyInfo = new RequiredPropertyInfo
+            // TODO: SystemRequired concept
+            var composableFilterActiveAndThis = new ComposableFilterByInfo
             {
-                Property = activePropertyInfo
-            };
-            var justActiveItems = new ItemFilterInfo
-            {
-                Expression = "item => item.Active.Value",
-                FilterName = "ActiveItems",
-                Source = Entity
-            };
-            var parameterForActiveOrThisFilter = new ParameterInfo
-            {
-                Module = Entity.Module,
-                Name = Entity.Name + "_ThisAndActiveItems"
-            };
-            var parameterIdPropertyInfo = new ReferencePropertyInfo
-            {
-                Name = "Item",
-                Referenced = Entity,
-                DataStructure = parameterForActiveOrThisFilter
-            };
-            var composableFilterActiveOrThis = new ComposableFilterByInfo
-            {
-                Expression = @"(items, repository, filterParameter) => items.Where(item => (!item.Active.HasValue || item.Active.Value) || item == filterParameter.Item)",
-                Parameter = Entity.Name + "_ThisAndActiveItems",
+                Expression = @"(items, repository, filterParameter) =>
+                    {
+                        if (filterParameter != null && filterParameter.ItemID.HasValue)
+                            return items.Where(item => item.Active == null || item.Active.Value || item.ID == filterParameter.ItemID.Value);
+                        else
+                            return items.Where(item => item.Active == null || item.Active.Value);
+                    }",
+                Parameter = "Rhetos.Dom.DefaultConcepts.ActiveItems",
                 Source = Entity
             };
 
-            var concepts = new IConceptInfo[] { activePropertyInfo, requiredPropertyInfo, justActiveItems, parameterForActiveOrThisFilter, parameterIdPropertyInfo, composableFilterActiveOrThis };
+            var concepts = new IConceptInfo[] { activePropertyInfo, composableFilterActiveAndThis };
             return concepts;
         }
     }

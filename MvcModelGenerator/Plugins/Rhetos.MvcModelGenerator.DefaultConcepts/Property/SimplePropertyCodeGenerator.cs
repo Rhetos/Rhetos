@@ -29,15 +29,29 @@ using Rhetos.MvcModelGenerator;
 namespace Rhetos.MvcModelGenerator.DefaultConcepts
 {
     [Export(typeof(IMvcModelGeneratorPlugin))]
-    [ExportMetadata(MefProvider.Implements, typeof(ReferencePropertyInfo))]
-    public class ReferencePropertyCodeGenerator : IMvcModelGeneratorPlugin
+    [ExportMetadata(MefProvider.Implements, typeof(PropertyInfo))]
+    public class SimplePropertyCodeGenerator : IMvcModelGeneratorPlugin
     {
+
+        private static string GetPropertyType(PropertyInfo conceptInfo)
+        {
+            if (conceptInfo is IntegerPropertyInfo) return "int?";
+            if (conceptInfo is BinaryPropertyInfo) return "byte[]";
+            if (conceptInfo is BoolPropertyInfo) return "bool?";
+            if (conceptInfo is DatePropertyInfo || conceptInfo is DateTimePropertyInfo) return "DateTime?";
+            if (conceptInfo is MoneyPropertyInfo || conceptInfo is DecimalPropertyInfo) return "decimal?";
+            if (conceptInfo is GuidPropertyInfo) return "Guid?";
+            if (conceptInfo is ShortStringPropertyInfo || conceptInfo is LongStringPropertyInfo) return "string";
+            return null;
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            ReferencePropertyInfo info = (ReferencePropertyInfo)conceptInfo;
-            if (DataStructureCodeGenerator.IsTypeSupported(info.DataStructure))
+            PropertyInfo info = (PropertyInfo)conceptInfo;
+            string propertyType = GetPropertyType(info);
+            if (!String.IsNullOrEmpty(propertyType) && DataStructureCodeGenerator.IsTypeSupported(info.DataStructure))
             {
-                MvcPropertyHelper.GenerateCodeForType(info, codeBuilder, "Guid?", "ID");
+                MvcPropertyHelper.GenerateCodeForType(info, codeBuilder, propertyType);
             }
         }
 

@@ -64,20 +64,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Property\BoolPropertyCodeGenerator.cs" />
-    <Compile Include="Property\BinaryPropertyCodeGenerator.cs" />
-    <Compile Include="Property\DatePropertyCodeGenerator.cs" />
+    <Compile Include="MvcPropertyHelper.cs" />
     <Compile Include="Property\ReferencePropertyCodeGenerator.cs" />
-    <Compile Include="Property\GuidPropertyCodeGenerator.cs" />
     <Compile Include="Tags\RegExTagCodeGenerator.cs" />
     <Compile Include="Tags\MinValueTagCodeGenerator.cs" />
     <Compile Include="Tags\MaxValueTagCodeGenerator.cs" />
     <Compile Include="Tags\MaxLengthTagCodeGenerator.cs" />
     <Compile Include="Tags\MinLengthTagCodeGenerator.cs" />
     <Compile Include="Tags\RequiredTagCodeGenerator.cs" />
-    <Compile Include="Property\DecimalPropertyCodeGenerator.cs" />
-    <Compile Include="Property\IntegerPropertyCodeGenerator.cs" />
-    <Compile Include="Property\StringPropertyCodeGenerator.cs" />
+    <Compile Include="Property\SimplePropertyCodeGenerator.cs" />
     <Compile Include="DataStructureCodeGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -23,7 +23,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Rhetos.Utilities;
 using Rhetos.Extensibility;
-using Rhetos.Generator.Interfaces;
 
 namespace Rhetos.Generator
 {
@@ -36,29 +35,27 @@ namespace Rhetos.Generator
             this._generators = generators;
         }
 
-        public static void SortByGivenOrder<TItem, TKey>(TItem[] items, TKey[] expectedKeyOrder, Func<TItem, TKey> itemKeySelector)
-        {
-            var expectedIndex = expectedKeyOrder.Select((key, index) => new { key, index }).ToDictionary(item => item.key, item => item.index);
-
-            string cannotFindKeyError = "Given array expectedKeyOrder does not contain key '{0}' that is present in given items (" + typeof(TItem).FullName + ").";
-            var itemsOrder = items.Select(item => expectedIndex.GetValue(itemKeySelector(item), cannotFindKeyError)).ToArray();
-
-            Array.Sort(itemsOrder, items);
-        }
-
-        public void ProcessGenerators()
+        public string ProcessGenerators()
         {
             var genNames = _generators.Select(gen => gen.GetType().FullName).ToList();
             var genDependencies = _generators.SelectMany(gen => gen.Dependencies.Select(x => Tuple.Create(x, gen.GetType().FullName)));
             Rhetos.Utilities.DirectedGraph.TopologicalSort(genNames, genDependencies);
 
             var sortedGenerators = _generators.ToArray();
-            SortByGivenOrder(sortedGenerators, genNames.ToArray(), gen => gen.GetType().FullName);
+            DirectedGraph.SortByGivenOrder(sortedGenerators, genNames.ToArray(), gen => gen.GetType().FullName);
 
             foreach (var generator in sortedGenerators)
             {
-                generator.Generate();
+                try
+                {
+                    generator.Generate();
+                }
+                catch (Exception ex) {
+                    throw new FrameworkException("Error in processing generator " + generator.GetType().Name + ".", ex);
+                }
             }
+
+            return "Generated " + string.Join(", ", sortedGenerators.Select(gen => gen.GetType().Name)) + ".";
         }
     }
 }

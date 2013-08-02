@@ -26,10 +26,7 @@ namespace Rhetos.MvcModelGenerator
     public static class MvcModelGeneratorTags
     {
         public const string Using = "/*using*/";
-        public const string InterfaceMembers = "/*declaration*/";
-        public const string ImplementationMembers = "/*implementation*/";
-        public const string ImplementationPropertyMembers = "/*implementationProperties_ENTITY*/";
-        public const string ImplementationPropertyAttributeMembers = "/*implementationProperties_PROPERTY_ATTRIBUTE*/";
+        public const string ModuleMembers = "/*implementation*/";
         public const string NamespaceMembers = "/*body*/";
     }
 }

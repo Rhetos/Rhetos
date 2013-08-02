@@ -32,50 +32,27 @@ namespace Rhetos.MvcModelGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(MinValueInfo))]
     public class MinValueTagCodeGenerator : IMvcModelGeneratorPlugin
     {
-        public class MinValueTag : Tag<MinValueInfo>
-        {
-            public MinValueTag(TagType tagType, string tagFormat, string nextTagFormat = null, string firstEvaluationContext = null, string nextEvaluationContext = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format, info.Property.DataStructure.Module.Name, info.Property.DataStructure.Name, info.Property.Name, "Required"), nextTagFormat, firstEvaluationContext, nextEvaluationContext)
-            { }
-        }
-
         private static string ImplementationCodeSnippet(MinValueInfo info)
         {
             var typeRange = (info.Property is IntegerPropertyInfo) ? "Integer" :
                 (info.Property is MoneyPropertyInfo || info.Property is DecimalPropertyInfo) ? "Decimal" :
                 (info.Property is DatePropertyInfo || info.Property is DateTimePropertyInfo) ? "Date" : "";
 
-            return string.Format(@"[Rhetos.Mvc.Model.MinValue{0}(MinValue = ""{1}"", ErrorMessage = ""Value for {2} must be greater than or equal to {1}."")]
-            ", typeRange, info.Value.ToString(), info.Property.Name);
-        }
-
-        private static bool _isInitialCallMade;
-
-        public static bool IsTypeSupported(MinValueInfo conceptInfo)
-        {
-            return conceptInfo is MinValueInfo;
+            return string.Format(@"[Rhetos.Mvc.MinValue{0}(MinValue = ""{1}"", ErrorMessage = ""Value for {2} must be greater than or equal to {1}."")]
+        ", typeRange, info.Value.ToString(), info.Property.Name);
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            MinValueInfo info = (MinValueInfo)conceptInfo;
-
-            if (IsTypeSupported(info) && DataStructureCodeGenerator.IsTypeSupported(info.Property.DataStructure))
+            if (conceptInfo is MinValueInfo)
             {
-                GenerateInitialCode(codeBuilder);
-                try
-                {
-                    codeBuilder.InsertCode(ImplementationCodeSnippet(info), MvcModelGeneratorTags.ImplementationPropertyAttributeMembers.Replace("PROPERTY_ATTRIBUTE", info.Property.DataStructure.Module.Name + "_" + info.Property.DataStructure.Name + "_" + info.Property.Name));
-                }
-                catch { }
-            }
-        }
+                MinValueInfo info = (MinValueInfo)conceptInfo;
 
-        private static void GenerateInitialCode(ICodeBuilder codeBuilder)
-        {
-            if (_isInitialCallMade)
-                return;
-            _isInitialCallMade = true;
+                if (DataStructureCodeGenerator.IsTypeSupported(info.Property.DataStructure))
+                {
+                    codeBuilder.InsertCode(ImplementationCodeSnippet((MinValueInfo)info), MvcPropertyHelper.AttributeTag, info.Property);
+                }
+            }
         }
     }
 }

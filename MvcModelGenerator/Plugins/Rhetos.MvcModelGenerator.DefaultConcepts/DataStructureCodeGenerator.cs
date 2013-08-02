@@ -32,6 +32,9 @@ namespace Rhetos.MvcModelGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(DataStructureInfo))]
     public class DataStructureCodeGenerator : IMvcModelGeneratorPlugin
     {
+        public static readonly DataStructureCodeGenerator.DataStructureTag ClonePropertiesTag =
+            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*MvcModel.CloneProperties {0}.{1}*/");
+
         public class DataStructureTag : Tag<DataStructureInfo>
         {
             public DataStructureTag(TagType tagType, string tagFormat, string nextTagFormat = null, string firstEvaluationContext = null, string nextEvaluationContext = null)
@@ -42,16 +45,18 @@ namespace Rhetos.MvcModelGenerator.DefaultConcepts
         private static string ImplementationCodeSnippet(DataStructureInfo info)
         {
             return string.Format(@"
-    namespace {0} 
-    {{ 
-        public partial class {1} : Rhetos.Mvc.Model.BaseMvcModel
-        {{
-            " + MvcModelGeneratorTags.ImplementationPropertyMembers.Replace("ENTITY", info.Module.Name + "_" + info.Name) + @"
-        }}
+namespace {0} 
+{{ 
+    public partial class {1} : Rhetos.Mvc.BaseMvcModel
+    {{
+        {2}
     }}
+}}
 
     ",
-                info.Module.Name, info.Name);
+                info.Module.Name, 
+                info.Name, 
+                ClonePropertiesTag.Evaluate(info));
         }
 
         private static bool _isInitialCallMade;
@@ -74,7 +79,7 @@ namespace Rhetos.MvcModelGenerator.DefaultConcepts
             {
                 GenerateInitialCode(codeBuilder);
 
-                codeBuilder.InsertCode(ImplementationCodeSnippet(info), MvcModelGeneratorTags.ImplementationMembers);
+                codeBuilder.InsertCode(ImplementationCodeSnippet(info), MvcModelGeneratorTags.ModuleMembers);
             }
         }
 

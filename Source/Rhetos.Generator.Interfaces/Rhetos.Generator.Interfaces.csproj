@@ -7,7 +7,7 @@
     <ProjectGuid>{F0440CF2-2C1A-49E1-A818-3AD978D6D4BC}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Rhetos.Generator.Interfaces</RootNamespace>
+    <RootNamespace>Rhetos.Generator</RootNamespace>
     <AssemblyName>Rhetos.Generator.Interfaces</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

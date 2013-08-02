@@ -92,11 +92,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActiveItems.cs" />
     <Compile Include="DatabaseExtensionFunctions.cs" />
     <Compile Include="FilterCriteria.cs" />
     <Compile Include="IActionRepository.cs" />
     <Compile Include="IFilterRepository.cs" />
     <Compile Include="IReportRepository.cs" />
+    <Compile Include="OlderThanHistoryEntries.cs" />
     <Compile Include="ReportFile.cs" />
     <Compile Include="IEntity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

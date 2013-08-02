@@ -130,7 +130,6 @@ namespace Rhetos.Dom.DefaultConcepts
 @"			if (insertedNew.Count() > 0 || updatedNew.Count() > 0)
             {{
                 var nowFull = SqlUtility.GetDatabaseTime(_executionContext.SqlExecuter);
-                var now = new DateTime(nowFull.Year, nowFull.Month, nowFull.Day, nowFull.Hour, nowFull.Minute, nowFull.Second); // Rounding for NHibernate compatibility
                 
                 foreach (var newItem in insertedNew.Concat(updatedNew))
                     if (newItem.ActiveSince > nowFull)

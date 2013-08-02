@@ -56,7 +56,7 @@ using System.Web.Mvc;
     }
 
 */
-namespace Rhetos.Mvc.Model
+namespace Rhetos.Mvc
 {
 
     public class BaseMvcModel
@@ -126,14 +126,9 @@ namespace Rhetos.Mvc.Model
         }
     }
 
-
-	public interface IModel
-	{
-    " + MvcModelGeneratorTags.InterfaceMembers + @"
-	}
 }
 
-    " + MvcModelGeneratorTags.ImplementationMembers + @"
+    " + MvcModelGeneratorTags.ModuleMembers + @"
 
 ";
 
@@ -147,6 +142,5 @@ namespace Rhetos.Mvc.Model
             codeBuilder.AddReferencesFromDependency(typeof(System.Web.Mvc.ModelValidator));
         }
 
-        private static readonly string _rootPath = AppDomain.CurrentDomain.BaseDirectory;
     }
 }

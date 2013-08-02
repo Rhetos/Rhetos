@@ -32,46 +32,23 @@ namespace Rhetos.MvcModelGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(MaxLengthInfo))]
     public class MaxLengthTagCodeGenerator : IMvcModelGeneratorPlugin
     {
-        public class MaxLengthTag : Tag<MaxLengthInfo>
-        {
-            public MaxLengthTag(TagType tagType, string tagFormat, string nextTagFormat = null, string firstEvaluationContext = null, string nextEvaluationContext = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format, info.Property.DataStructure.Module.Name, info.Property.DataStructure.Name, info.Property.Name, "Required"), nextTagFormat, firstEvaluationContext, nextEvaluationContext)
-            { }
-        }
-
         private static string ImplementationCodeSnippet(MaxLengthInfo info)
         {
             return string.Format(@"[MaxLength({0})]
-            ", info.Length);
-        }
-
-        private static bool _isInitialCallMade;
-
-        public static bool IsTypeSupported(MaxLengthInfo conceptInfo)
-        {
-            return conceptInfo is MaxLengthInfo;
+        ", info.Length);
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            MaxLengthInfo info = (MaxLengthInfo)conceptInfo;
-
-            if (IsTypeSupported(info) && DataStructureCodeGenerator.IsTypeSupported(info.Property.DataStructure))
+            if (conceptInfo is MaxLengthInfo)
             {
-                GenerateInitialCode(codeBuilder);
-                try
-                {
-                    codeBuilder.InsertCode(ImplementationCodeSnippet(info), MvcModelGeneratorTags.ImplementationPropertyAttributeMembers.Replace("PROPERTY_ATTRIBUTE", info.Property.DataStructure.Module.Name + "_" + info.Property.DataStructure.Name + "_" + info.Property.Name));
-                }
-                catch { }
-            }
-        }
+                MaxLengthInfo info = (MaxLengthInfo)conceptInfo;
 
-        private static void GenerateInitialCode(ICodeBuilder codeBuilder)
-        {
-            if (_isInitialCallMade)
-                return;
-            _isInitialCallMade = true;
+                if (DataStructureCodeGenerator.IsTypeSupported(info.Property.DataStructure))
+                {
+                    codeBuilder.InsertCode(ImplementationCodeSnippet(info), MvcPropertyHelper.AttributeTag, info.Property);
+                }
+            }
         }
     }
 }

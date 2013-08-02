@@ -43,26 +43,12 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             return string.Format(
 @"
-CREATE VIEW {0}.{3}_ActiveUntil
-AS
-SELECT
-	history.ID,
-	ActiveUntil = COALESCE(MIN(newerVersion.ActiveSince), MIN(currentItem.ActiveSince)) 
-FROM {0}.{1}_History history
-	LEFT JOIN {0}.{1}_History newerVersion ON 
-				newerVersion.EntityID = history.EntityID AND 
-				newerVersion.ActiveSince > history.ActiveSince
-	INNER JOIN {0}.{1} currentItem ON currentItem.ID = history.EntityID
-GROUP BY history.ID
-
-{5}
-
 CREATE VIEW {0}.{4}
 AS
     SELECT
         ID = entity.ID,
-        ActiveUntil = CAST(NULL AS DateTime),
-        EntityID = entity.ID{7}
+        EntityID = entity.ID,
+        ActiveUntil = CAST(NULL AS DateTime){7}
     FROM
         {0}.{1} entity
 
@@ -70,11 +56,11 @@ AS
 
     SELECT
         ID = history.ID,
-        au.ActiveUntil,
-        EntityID = history.EntityID{6}
+        EntityID = history.EntityID,
+        au.ActiveUntil{6}
     FROM
         {0}.{3} history
-        INNER JOIN {0}.{3}_ActiveUntil au ON au.ID = history.ID
+        LEFT JOIN {0}.{3}_ActiveUntil au ON au.ID = history.ID
 
 {5}
 
@@ -118,12 +104,10 @@ RETURN
 
             return string.Format(
 @"DROP FUNCTION {0}.{1};
-DROP VIEW {0}.{3};
 DROP VIEW {0}.{2};",
                 SqlUtility.Identifier(info.Entity.Module.Name),
                 SqlUtility.Identifier(info.Entity.Name + "_AtTime"),
-                SqlUtility.Identifier(info.Entity.Name + "_FullHistory"),
-                SqlUtility.Identifier(info.Entity.Name + "_History_ActiveUntil"));
+                SqlUtility.Identifier(info.Entity.Name + "_FullHistory"));
         }
     }
 }

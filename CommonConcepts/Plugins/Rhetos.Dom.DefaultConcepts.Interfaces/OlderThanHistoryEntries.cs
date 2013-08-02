@@ -20,14 +20,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Rhetos.Generator
+namespace Rhetos.Dom.DefaultConcepts
 {
-    public interface IGenerator
+    public class OlderThanHistoryEntries
     {
-        IEnumerable<string> Dependencies { get; }
-
-        void Generate();
     }
 }

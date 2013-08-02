@@ -18,7 +18,7 @@
 */
 using Rhetos.Compiler;
 using Rhetos.Extensibility;
-using Rhetos.Generator.Interfaces;
+using Rhetos.Generator;
 using Rhetos.Logging;
 using System;
 using System.CodeDom.Compiler;
@@ -42,7 +42,6 @@ namespace Rhetos.MvcModelGenerator
         private readonly ILogger _sourceLogger;
         private string assemblyName = "MvcModel";
 
-        [ImportingConstructor]
         public MvcModelGenerator(
             IPluginsContainer<IMvcModelGeneratorPlugin> plugins,
             ICodeGenerator codeGenerator,
@@ -63,8 +62,6 @@ namespace Rhetos.MvcModelGenerator
             IAssemblySource assemblySource = _codeGenerator.ExecutePlugins(_plugins, "/*", "*/", new InitialCodeGenerator());
             _logger.Trace("References: " + string.Join(", ", assemblySource.RegisteredReferences));
             _sourceLogger.Trace(assemblySource.GeneratedCode);
-            Console.WriteLine("");
-            Console.Write("    Mvc model generator ... ");
             CompilerParameters parameters = new CompilerParameters
             {
                 GenerateExecutable = false,
@@ -73,7 +70,6 @@ namespace Rhetos.MvcModelGenerator
                 IncludeDebugInformation = true,
                 CompilerOptions = "/optimize"
             };
-            Console.Write("finished.");
             _assemblyGenerator.Generate(assemblySource, parameters);
         }
 

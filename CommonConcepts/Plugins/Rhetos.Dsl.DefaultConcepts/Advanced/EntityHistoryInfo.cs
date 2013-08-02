@@ -34,10 +34,11 @@ namespace Rhetos.Dsl.DefaultConcepts
         
         public EntityInfo HistoryEntity { get; set; }
         public LegacyEntityInfo FullHistoryEntity { get; set; }
+        public SqlQueryableInfo ActiveUntilSqlQueryable { get; set; }
 
         public IEnumerable<string> DeclareNonparsableProperties()
         {
-            return new string[] { "HistoryEntity", "FullHistoryEntity" };
+            return new string[] { "HistoryEntity", "FullHistoryEntity", "ActiveUntilSqlQueryable" };
         }
 
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
@@ -50,7 +51,23 @@ namespace Rhetos.Dsl.DefaultConcepts
                 Table = this.Entity.Module + "." + this.Entity.Name + "_FullHistory",
                 View = this.Entity.Module + "." + this.Entity.Name + "_FullHistory"
             };
-            createdConcepts = new IConceptInfo[] { HistoryEntity, FullHistoryEntity };
+            ActiveUntilSqlQueryable = new SqlQueryableInfo
+            {
+                Module = this.Entity.Module,
+                Name = this.Entity.Name + "_History_ActiveUntil",
+                SqlSource = string.Format(@"
+SELECT
+	history.ID,
+	ActiveUntil = COALESCE(MIN(newerVersion.ActiveSince), MIN(currentItem.ActiveSince)) 
+FROM {0}.{1}_History history
+	LEFT JOIN {0}.{1}_History newerVersion ON 
+				newerVersion.EntityID = history.EntityID AND 
+				newerVersion.ActiveSince > history.ActiveSince
+	INNER JOIN {0}.{1} currentItem ON currentItem.ID = history.EntityID
+GROUP BY history.ID
+", this.Entity.Module.Name, this.Entity.Name)
+            };
+            createdConcepts = new IConceptInfo[] { HistoryEntity, FullHistoryEntity, ActiveUntilSqlQueryable };
         }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
@@ -63,15 +80,17 @@ namespace Rhetos.Dsl.DefaultConcepts
             newConcepts.AddRange(new IConceptInfo[] { activeSinceProperty, activeSinceHistory });
 
             // DenySave for base entity: it is not allowed to save with ActiveSince older than last one used in History
-            var denyFilter = new ItemFilterInfo { 
-                FilterName = Entity.Name + "OlderThanHistoryEntries", 
+            var denyFilter = new ComposableFilterByInfo {
+                Parameter = "Rhetos.Dom.DefaultConcepts.OlderThanHistoryEntries", 
                 Source = Entity,
-                Expression = String.Format("item => repository.{0}.{1}_History.Query().Where(his => his.ActiveSince > item.ActiveSince && his.Entity == item).Count() > 0", 
+                Expression = String.Format(
+                    @"(items, repository, parameter) => items.Where(item => 
+                                repository.{0}.{1}_History.Query().Where(his => his.ActiveSince >= item.ActiveSince && his.Entity == item).Count() > 0)", 
                                 Entity.Module.Name, 
                                 Entity.Name) 
             };
             var denySaveValidation = new DenySaveForPropertyInfo { 
-                FilterType = Entity.Name + "OlderThanHistoryEntries", 
+                FilterType = "OlderThanHistoryEntries", 
                 Source = Entity, 
                 Title = "ActiveSince is not allowed to be older than last entry in history.", 
                 DependedProperties = activeSinceProperty 
@@ -102,24 +121,27 @@ namespace Rhetos.Dsl.DefaultConcepts
             newConcepts.AddRange(new IConceptInfo[] { fullHistoryActiveUntilPropertyInfo, propertiesForLegacyEntity });
 
             // Creates extension on history data (for ActiveUntil):
-            var legacyEntityForActiveUntil = new LegacyEntityInfo
-            {
-                Module = this.Entity.Module,
-                Name = this.Entity.Name + "_History_ActiveUntil",
-                Table = this.Entity.Module + "." + this.Entity.Name + "_History_ActiveUntil",
-                View = this.Entity.Module + "." + this.Entity.Name + "_History_ActiveUntil"
-            };
             var historyActiveUntilProperty = new DateTimePropertyInfo
             {
-                DataStructure = legacyEntityForActiveUntil,
+                DataStructure = ActiveUntilSqlQueryable,
                 Name = "ActiveUntil"
+            };
+            var dependsOnHistory = new SqlDependsOnDataStructureInfo
+            {
+                Dependent = ActiveUntilSqlQueryable,
+                DependsOn = HistoryEntity
+            };
+            var dependsOnBase = new SqlDependsOnDataStructureInfo
+            {
+                Dependent = ActiveUntilSqlQueryable,
+                DependsOn = this.Entity
             };
             var historyActiveUntilEx = new DataStructureExtendsInfo
             {
-                Base = (DataStructureInfo)existingConcepts.Where<IConceptInfo>(t => t is DataStructureInfo).Where(t => ((DataStructureInfo)t).Module.Name == this.Entity.Module.Name && ((DataStructureInfo)t).Name == this.Entity.Name + "_History").Single(),
-                Extension = legacyEntityForActiveUntil
+                Base = HistoryEntity,
+                Extension = ActiveUntilSqlQueryable
             };
-            newConcepts.AddRange(new IConceptInfo[] { legacyEntityForActiveUntil, historyActiveUntilProperty, historyActiveUntilEx });
+            newConcepts.AddRange(new IConceptInfo[] { historyActiveUntilProperty, dependsOnHistory, dependsOnBase, historyActiveUntilEx });
 
             return newConcepts;
         }

@@ -19,7 +19,6 @@
 using Autofac;
 using Rhetos.Dsl;
 using Rhetos.Generator;
-using Rhetos.Generator.Interfaces;
 using System.ComponentModel.Composition;
 using System.Diagnostics.Contracts;
 

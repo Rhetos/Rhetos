@@ -32,46 +32,23 @@ namespace Rhetos.MvcModelGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(RegExMatchInfo))]
     public class RegExTagCodeGenerator : IMvcModelGeneratorPlugin
     {
-        public class RegExTag : Tag<RegExMatchInfo>
-        {
-            public RegExTag(TagType tagType, string tagFormat, string nextTagFormat = null, string firstEvaluationContext = null, string nextEvaluationContext = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format, info.Property.DataStructure.Module.Name, info.Property.DataStructure.Name, info.Property.Name, "Required"), nextTagFormat, firstEvaluationContext, nextEvaluationContext)
-            { }
-        }
-
         private static string ImplementationCodeSnippet(RegExMatchInfo info)
         {
             return string.Format(@"[RegularExpression(@""{1}"", ErrorMessage = ""Property {0} doesn't match required format."")]
-            ", info.Property.Name, info.Regex2);
-        }
-
-        private static bool _isInitialCallMade;
-
-        public static bool IsTypeSupported(RegExMatchInfo conceptInfo)
-        {
-            return conceptInfo is RegExMatchInfo;
+        ", info.Property.Name, info.Regex2);
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            RegExMatchInfo info = (RegExMatchInfo)conceptInfo;
-
-            if (IsTypeSupported(info) && DataStructureCodeGenerator.IsTypeSupported(info.Property.DataStructure))
+            if (conceptInfo is RegExMatchInfo)
             {
-                GenerateInitialCode(codeBuilder);
-                try
-                {
-                    codeBuilder.InsertCode(ImplementationCodeSnippet(info), MvcModelGeneratorTags.ImplementationPropertyAttributeMembers.Replace("PROPERTY_ATTRIBUTE", info.Property.DataStructure.Module.Name + "_" + info.Property.DataStructure.Name + "_" + info.Property.Name));
-                }
-                catch { }
-            }
-        }
+                RegExMatchInfo info = (RegExMatchInfo)conceptInfo;
 
-        private static void GenerateInitialCode(ICodeBuilder codeBuilder)
-        {
-            if (_isInitialCallMade)
-                return;
-            _isInitialCallMade = true;
+                if (DataStructureCodeGenerator.IsTypeSupported(info.Property.DataStructure))
+                {
+                    codeBuilder.InsertCode(ImplementationCodeSnippet((RegExMatchInfo)info), MvcPropertyHelper.AttributeTag, info.Property);
+                }
+            }
         }
     }
 }
