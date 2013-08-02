@@ -93,9 +93,9 @@
         + ISNULL( '
             AND ( ' + @Filter + ' )', '' ) + '
         ORDER BY
-            -- Traži najveæu brojèanu vrijednost sufiksa:
+            -- Find maximal numeric suffix:
             CONVERT( INT, SUBSTRING( ['+@ColumnName+'], LEN( '+@QueryizedPrefix+' )+1, 256 ) ) DESC,
-            -- Ako ih ima više sa istom brojèanom vrijednosti, uzima najdulju šifru (bez nekog posebnog razloga):
+            -- If there are more than one suffixes with same value, take the longest code:
             LEN( ['+@ColumnName+'] ) - LEN( '+@QueryizedPrefix+' ) DESC'
 
 
