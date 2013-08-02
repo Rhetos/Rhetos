@@ -36,7 +36,7 @@ namespace Rhetos.DatabaseGenerator.Test
     [TestClass]
     public class DatabaseGeneratorTest
     {
-        #region Pomoćne klase
+        #region Helper classes
 
         public class SimpleConceptImplementation : IConceptDatabaseDefinition
         {
