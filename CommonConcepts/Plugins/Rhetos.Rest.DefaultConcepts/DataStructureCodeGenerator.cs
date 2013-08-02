@@ -43,6 +43,8 @@ namespace Rhetos.Rest.DefaultConcepts
             { }
         }
 
+        public static readonly DataStructureTag FilterTypesTag = new DataStructureTag(TagType.Appendable, "/*DataStructure.FilterTypes {0}.{1}*/");
+
         private static string DeclarationCodeSnippet(DataStructureInfo info)
         {
             return string.Format(@"        [OperationContract]
@@ -59,7 +61,14 @@ namespace Rhetos.Rest.DefaultConcepts
 
         private static string ImplementationCodeSnippet(DataStructureInfo info)
         {
-            return string.Format(@"        public QueryResult<{0}.{1}> Get{0}{1}(string filter, string fparam, string genericfilter, int page, int psize, string sort)
+            return string.Format(@"        private static readonly IDictionary<string, Type[]> {0}{1}FilterTypes = new List<Tuple<string, Type>>
+            {{
+                " + FilterTypesTag.Evaluate(info) + @"
+            }}
+            .GroupBy(typeName => typeName.Item1)
+            .ToDictionary(g => g.Key, g => g.Select(typeName => typeName.Item2).Distinct().ToArray());
+
+        public QueryResult<{0}.{1}> Get{0}{1}(string filter, string fparam, string genericfilter, int page, int psize, string sort)
         {{
             FilterCriteria[] genericFilterInstance = null;
             if (!string.IsNullOrEmpty(genericfilter))
@@ -71,7 +80,15 @@ namespace Rhetos.Rest.DefaultConcepts
             Type filterType = null;
             if (!string.IsNullOrEmpty(filter))
             {{
-                filterType = Type.GetType(filter);
+                Type[] filterTypes = null;
+                {0}{1}FilterTypes.TryGetValue(filter, out filterTypes);
+                if (filterTypes != null && filterTypes.Count() > 1)
+                    throw new Rhetos.UserException(""Filter type '"" + filter + ""' is ambiguous ("" + filterTypes[0].FullName + "", "" + filterTypes[1].FullName +"")."");
+                if (filterTypes != null && filterTypes.Count() == 1)
+                    filterType = filterTypes[0];
+
+                if (filterType == null)    
+                    filterType = Type.GetType(filter);
 
                 if (filterType == null && Rhetos.Utilities.XmlUtility.Dom != null)
                     filterType = Rhetos.Utilities.XmlUtility.Dom.GetType(filter);

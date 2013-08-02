@@ -113,8 +113,7 @@ namespace Rhetos.Dsl
                     var alternativeInitializationCreatedConcepts = new List<IConceptInfo>();
                     foreach (var macroCreatedAlternativeInitializationConcept in macroCreatedConcepts.OfType<IAlternativeInitializationConcept>())
                     {
-                        IEnumerable<IConceptInfo> aicc;
-                        macroCreatedAlternativeInitializationConcept.InitializeNonparsableProperties(out aicc);
+                        IEnumerable<IConceptInfo> aicc = AlternativeInitialization.InitializeNonparsablePropertiesRecursive(macroCreatedAlternativeInitializationConcept);
                         if (aicc != null)
                             alternativeInitializationCreatedConcepts.AddRange(aicc);
                     }

@@ -39,7 +39,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             // Expand the base entity:
             var itemFilterRegExMatchProperty = new ItemFilterInfo
             {
-                Expression = String.Format(@"item => !(new System.Text.RegularExpressions.Regex(""{1}"")).IsMatch(item.{0})", Property.Name, Regex2),
+                Expression = String.Format(@"item => !String.IsNullOrEmpty(item.{0}) && !(new System.Text.RegularExpressions.Regex(""{1}"")).IsMatch(item.{0})", Property.Name, Regex2),
                 FilterName = Property.Name + "_RegExMatchFilter",
                 Source = Property.DataStructure
             };

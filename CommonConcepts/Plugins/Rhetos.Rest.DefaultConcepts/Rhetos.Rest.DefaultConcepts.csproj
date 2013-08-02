@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActionCodeGenerator.cs" />
+    <Compile Include="FilterByCodeGenerator.cs" />
     <Compile Include="DataStructureCodeGenerator.cs" />
     <Compile Include="ModuleExternalReferenceCodeGenerator.cs" />
     <Compile Include="WritableOrmDataStructureCodeGenerator.cs" />
