@@ -126,7 +126,6 @@
     <Compile Include="EntityHistoryDatabaseDefinition.cs" />
     <Compile Include="EntityHistoryPropertyDatabaseDefinition.cs" />
     <Compile Include="ModificationTimeOfDatabaseDefinition.cs" />
-    <Compile Include="CreationTimeDatabaseDefinition.cs" />
     <Compile Include="SqlDependsOnSqlObjectDatabaseDefinition.cs" />
     <Compile Include="SqlObjectDatabaseDefinition.cs" />
     <Compile Include="Sql.cs" />
