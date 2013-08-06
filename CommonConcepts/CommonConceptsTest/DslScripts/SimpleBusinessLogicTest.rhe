@@ -238,3 +238,17 @@ Module TestDeactivatable
         ShortString Name;
     }
 }
+
+Module TestSystemRequired
+{
+	Entity Parent
+	{
+		ShortString Name { SystemRequired; }
+	}
+
+    Entity Child
+    {
+        ShortString Name;
+		Reference Parent TestSystemRequired.Parent { SystemRequired; }
+    }
+}

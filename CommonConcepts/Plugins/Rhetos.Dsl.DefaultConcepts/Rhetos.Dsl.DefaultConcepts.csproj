@@ -203,6 +203,7 @@
     <Compile Include="SimpleBusinessLogic\CustomClaimInfo.cs" />
     <Compile Include="SimpleBusinessLogic\BrowseTakePropertyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\SimpleReferencePropertyInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\SystemRequiredInfo.cs" />
     <Compile Include="SimpleBusinessLogic\UniqueMultiplePropertyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\UniqueMultiplePropertiesInfo.cs" />
     <Compile Include="SimpleBusinessLogic\UniqueProperties3Info.cs" />

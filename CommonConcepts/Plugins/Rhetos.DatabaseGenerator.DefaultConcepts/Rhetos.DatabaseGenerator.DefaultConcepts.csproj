@@ -158,6 +158,7 @@
     <Compile Include="ModuleDatabaseDefinition.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ColumnTypes\ShortStringPropertyDatabaseDefinition.cs" />
+    <Compile Include="SystemRequiredDetabaseDefinition.cs" />
   </ItemGroup>
   <ItemGroup>
     <CodeAnalysisDictionary Include="..\..\..\CodeAnalysisDictionary.xml">
