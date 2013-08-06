@@ -74,6 +74,7 @@
     <Compile Include="Computations\LockItemsCodeGenerator.cs" />
     <Compile Include="Computations\FilterUseExecutionContextCodeGenerator.cs" />
     <Compile Include="Computations\ReportDataCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\CreationTimeCodeGenerator.cs" />
     <Compile Include="DataStructure\ComputedCodeGenerator.cs" />
     <Compile Include="DataStructure\ClaimLoaderCodeGenerator.cs" />
     <Compile Include="DataStructure\PermissionLoaderCodeGenerator.cs" />

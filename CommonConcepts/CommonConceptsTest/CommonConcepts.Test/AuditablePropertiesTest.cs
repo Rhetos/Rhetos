@@ -77,24 +77,6 @@ namespace CommonConcepts.Test
             }
         }
 
-        [TestMethod]
-        public void CreationTime_Database()
-        {
-            using (var executionContext = new CommonTestExecutionContext())
-            {
-                var start = MsSqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
-                executionContext.SqlExecuter.ExecuteSql(new[]
-                    {
-                        "DELETE FROM TestAuditable.Simple",
-                        "INSERT INTO TestAuditable.Simple (Name, Started) VALUES ('db', NULL)"
-                    });
-                var finish = MsSqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
-                var repository = new Common.DomRepository(executionContext);
-
-                CheckCreatedDate(executionContext, start, finish);
-            }
-        }
-
         private static Guid parentID1 = Guid.NewGuid();
         private static Guid parentID2 = Guid.NewGuid();
         private static DateTime oldTime1 = new DateTime(2001, 2, 3, 4, 5, 6);
