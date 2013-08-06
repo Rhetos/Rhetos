@@ -41,7 +41,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
         private static string GetConstraintName(SystemRequiredInfo info)
         {
-            return "CK_" + info.Property.Name + "_NOTNULL";
+            return "CK_" + info.Property.DataStructure.Name + "_" + info.Property.Name + "_NOTNULL";
         }
 
         private static string GetColumnName(SystemRequiredInfo info)
