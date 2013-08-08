@@ -156,6 +156,7 @@ Module Test11
 		'(IQueryable<Test11.Source> source, Common.DomRepository repository) =>
 			source.Select(item => new Test11.QE
 				{
+                    ID = item.ID,
 					Base = item,
 					Info = item.Name + "x"
 				})'
@@ -167,6 +168,7 @@ Module Test11
 		'(IQueryable<Test11.Source> source, Common.DomRepository repository, Common.ExecutionContext executionContext) =>
 			source.Select(item => new Test11.QEContext
 				{
+                    ID = item.ID,
 					Base = item,
 					UserInfo = item.Name + " " + executionContext.UserInfo.UserName
 				})'

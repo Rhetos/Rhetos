@@ -33,46 +33,29 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(LinkedItemsInfo))]
     public class LinkedItemsCodeGenerator : IConceptCodeGenerator
     {
-        public class LinkedItemsTag : Tag<LinkedItemsInfo>
+        private static string OrmMappingOnSaveSnippet(LinkedItemsInfo info)
         {
-            public LinkedItemsTag(TagType tagType, string tagFormat)
-                : base(tagType, tagFormat, (info, format) =>
-                    string.Format(CultureInfo.InvariantCulture,
-                        format,
-                            info.DataStructure.Module.Name,
-                            info.DataStructure.Name,
-                            info.Name,
-                            info.ReferenceProperty.Name))
-            { }
-        }
-
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
-        {
-            var info = (LinkedItemsInfo)conceptInfo;
-            PropertyHelper.GenerateCodeForType(
-                info, 
-                codeBuilder, 
-                string.Format(CultureInfo.InvariantCulture,
-                    "IList<{0}.{1}>",  
-                        info.ReferenceProperty.DataStructure.Module.Name,
-                        info.ReferenceProperty.DataStructure.Name),
-                false);
-            codeBuilder.InsertCode(
-                string.Format(CultureInfo.InvariantCulture,
-                    " = new List<{0}.{1}>()",
-                        info.ReferenceProperty.DataStructure.Module.Name,
-                        info.ReferenceProperty.DataStructure.Name),
-                PropertyHelper.DefaultValueTag,
-                info);
-            codeBuilder.InsertCode(
-                string.Format(CultureInfo.InvariantCulture, 
+            return string.Format(
 @"            foreach(var item in insertedNew)
                 item.{0} = _executionContext.NHibernateSession.Query<{1}.{2}>().Where(it => it.{3} == item).ToList();
             foreach(var item in updatedNew)
                 item.{0} = _executionContext.NHibernateSession.Query<{1}.{2}>().Where(it => it.{3} == item).ToList();
 
-", info.Name, info.ReferenceProperty.DataStructure.Module.Name, info.ReferenceProperty.DataStructure.Name, info.ReferenceProperty.Name),
-                WritableOrmDataStructureCodeGenerator.InitializationTag.Evaluate(info.DataStructure));
+",
+                info.Name,
+                info.ReferenceProperty.DataStructure.Module.Name,
+                info.ReferenceProperty.DataStructure.Name,
+                info.ReferenceProperty.Name);
+        }
+
+        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        {
+            var info = (LinkedItemsInfo)conceptInfo;
+
+            string propertyType = string.Format("IList<{0}.{1}>", info.ReferenceProperty.DataStructure.Module.Name, info.ReferenceProperty.DataStructure.Name);
+            PropertyHelper.GenerateCodeForType(info, codeBuilder, propertyType, false);
+
+            codeBuilder.InsertCode(OrmMappingOnSaveSnippet(info), WritableOrmDataStructureCodeGenerator.InitializationTag, info.DataStructure);
         }
     }
 }

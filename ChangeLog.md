@@ -1,3 +1,10 @@
+0.9.8 (to be released)
+------------------
+
+Breaking changes:
+* The C# code snippet in QueryableExtension must assign both ID and Base property of the created instance. Previously it was enough to assign only the Base property in certain situations.
+
+
 0.9.7 (2013-08-02)
 ------------------
 
