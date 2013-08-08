@@ -94,6 +94,9 @@ namespace Rhetos.Dom.DefaultConcepts
             if (updatedNew == null) updatedNew = new {0}[] {{ }};
             if (deletedIds == null) deletedIds = new {0}[] {{ }};
 
+            if (insertedNew.Count() == 0 && updatedNew.Count() == 0 && deletedIds.Count() == 0)
+                return;
+
             foreach(var item in insertedNew)
                 if(item.ID == Guid.Empty)
                     item.ID = Guid.NewGuid();
