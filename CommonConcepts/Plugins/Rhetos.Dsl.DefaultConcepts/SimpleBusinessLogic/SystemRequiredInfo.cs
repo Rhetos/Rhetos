@@ -28,9 +28,31 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SystemRequired")]
-    public class SystemRequiredInfo : IConceptInfo
+    public class SystemRequiredInfo : IMacroConcept
     {
         [ConceptKey]
         public PropertyInfo Property { get; set; }
+
+        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        {
+            string filterName = "SystemRequired" + Property.Name;
+
+            var filter = new ItemFilterInfo
+            {
+                Source = Property.DataStructure,
+                FilterName = filterName,
+                Expression = "item => item." + Property.Name + " == null"
+            };
+
+            var denySave = new DenySaveForPropertyInfo
+            {
+                Source = Property.DataStructure,
+                FilterType = filterName,
+                Title = "System required property " +  Property.GetUserDescription() + " is not set.",
+                DependedProperties = Property
+            };
+
+            return new IConceptInfo[] { filter, denySave };
+        }
     }
 }

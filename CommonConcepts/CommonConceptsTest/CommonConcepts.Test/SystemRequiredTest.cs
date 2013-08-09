@@ -45,7 +45,7 @@ namespace CommonConcepts.Test
                 TestUtility.ShouldFail(
                     () => repository.TestSystemRequired.Parent.Insert(new[] { new TestSystemRequired.Parent { Name = null } }),
                     "Insert null value",
-                    "Parent", "Name", "CK_Name_NOTNULL");
+                    "Parent", "Name", "System required");
             }
         }
 
@@ -68,7 +68,7 @@ namespace CommonConcepts.Test
                 TestUtility.ShouldFail(
                     () => repository.TestSystemRequired.Parent.Update(new[] { parent }),
                     "Update null value",
-                    "Parent", "Name", "CK_Name_NOTNULL");
+                    "Parent", "Name", "System required");
             }
         }
 
@@ -91,7 +91,7 @@ namespace CommonConcepts.Test
                 TestUtility.ShouldFail(
                     () => repository.TestSystemRequired.Child.Insert(new[] { new TestSystemRequired.Child { ParentID = null, Name = "Test3" } }),
                     "Insert null reference value",
-                    "Child", "CK_Parent_NOTNULL");
+                    "Child", "System required");
             }
         }
     }
