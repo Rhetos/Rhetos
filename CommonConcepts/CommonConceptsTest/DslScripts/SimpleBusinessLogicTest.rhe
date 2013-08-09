@@ -239,6 +239,20 @@ Module TestDeactivatable
     }
 }
 
+Module TestSystemRequired
+{
+	Entity Parent
+	{
+		ShortString Name { SystemRequired; }
+	}
+
+    Entity Child
+    {
+        ShortString Name;
+		Reference Parent TestSystemRequired.Parent { SystemRequired; }
+    }
+}
+
 Module TestDenyUserEdit
 {
     Entity Parent
