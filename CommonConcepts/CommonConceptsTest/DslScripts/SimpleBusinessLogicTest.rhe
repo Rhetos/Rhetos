@@ -238,3 +238,18 @@ Module TestDeactivatable
         ShortString Name;
     }
 }
+
+Module TestDenyUserEdit
+{
+    Entity Parent
+    {
+        ShortString Name { Required; }
+    }
+    
+    Entity Simple
+    {
+        ShortString Editable;
+        ShortString NonEditable { DenyUserEdit; }
+        Reference NonEditableReference TestDenyUserEdit.Parent { DenyUserEdit; }
+    }
+}

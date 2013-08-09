@@ -20,11 +20,22 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.ComponentModel.Composition;
+using Rhetos.Utilities;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Dsl.DefaultConcepts
 {
-    public interface IWritableRepository
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("DenyUserEdit")]
+    public class DenyUserEditInfo : IValidationConcept
     {
-        void Save(IEnumerable<object> insertedNew, IEnumerable<object> updatedNew, IEnumerable<object> deletedIds, bool checkUserPermissions = false);
+        [ConceptKey]
+        public PropertyInfo Property { get; set; }
+
+        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        {
+            if (!(Property.DataStructure is IWritableOrmDataStructure))
+                throw new DslSyntaxException(this, this.GetKeywordOrTypeName() + " may only be used on a writeable data structure, such as an Entity.");
+        }
     }
 }

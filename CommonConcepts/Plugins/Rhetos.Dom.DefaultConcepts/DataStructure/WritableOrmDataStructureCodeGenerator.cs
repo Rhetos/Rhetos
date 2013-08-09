@@ -65,12 +65,13 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string MemberFunctionsSnippet(DataStructureInfo info)
         {
             return string.Format(
-@"        void Rhetos.Dom.DefaultConcepts.IWritableRepository.Save(IEnumerable<object> insertedNew, IEnumerable<object> updatedNew, IEnumerable<object> deletedIds)
+@"        void Rhetos.Dom.DefaultConcepts.IWritableRepository.Save(IEnumerable<object> insertedNew, IEnumerable<object> updatedNew, IEnumerable<object> deletedIds, bool checkUserPermissions = false)
         {{
             Save(
                 insertedNew != null ? insertedNew.Cast<{0}>() : null,
                 updatedNew != null ? updatedNew.Cast<{0}>() : null,
-                deletedIds != null ? deletedIds.Cast<{0}>() : null);
+                deletedIds != null ? deletedIds.Cast<{0}>() : null,
+                checkUserPermissions);
         }}
 
         public void Insert(IEnumerable<object> items)
@@ -88,7 +89,7 @@ namespace Rhetos.Dom.DefaultConcepts
             Save(null, null, items.Cast<{0}>());
         }}
 
-        public void Save(IEnumerable<{0}> insertedNew, IEnumerable<{0}> updatedNew, IEnumerable<{0}> deletedIds)
+        public void Save(IEnumerable<{0}> insertedNew, IEnumerable<{0}> updatedNew, IEnumerable<{0}> deletedIds, bool checkUserPermissions = false)
         {{
             if (insertedNew == null) insertedNew = new {0}[] {{ }};
             if (updatedNew == null) updatedNew = new {0}[] {{ }};

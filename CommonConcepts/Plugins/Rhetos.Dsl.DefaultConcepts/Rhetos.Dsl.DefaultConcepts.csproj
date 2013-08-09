@@ -183,6 +183,7 @@
     <Compile Include="DataStructure\Properties\DateTimePropertyInfo.cs" />
     <Compile Include="DataStructure\Properties\LongStringPropertyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\BrowseTakeNamedPropertyInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\DenyUserEditInfo.cs" />
     <Compile Include="SimpleBusinessLogic\DeactivatableInfo.cs" />
     <Compile Include="SimpleBusinessLogic\DateTimeRangeInfo.cs" />
     <Compile Include="SimpleBusinessLogic\MaxValueInfo.cs" />
