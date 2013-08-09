@@ -37,52 +37,23 @@ namespace Rhetos.Dom.DefaultConcepts
             { }
         }
 
-        public static readonly PropertyTag PropertyTypeTag = new PropertyTag(TagType.Single, "/*property type {0}.{1}.{2}*/");
         public static readonly PropertyTag AttributeTag = new PropertyTag(TagType.Appendable, "/*property attribute {0}.{1}.{2}*/");
-        public static readonly PropertyTag BeforeGetPropertyTag = new PropertyTag(TagType.Appendable, "/*get property {0}.{1}.{2}*/");
-        public static readonly PropertyTag BeforeSetPropertyTag = new PropertyTag(TagType.Appendable, "/*set property {0}.{1}.{2}*/");
-        public static readonly PropertyTag DefaultValueTag = new PropertyTag(TagType.Single, "/*default value {0}.{1}.{2}*/");
 
-        private static readonly PropertyTag PropertyWithFieldSnippet = new PropertyTag(TagType.CodeSnippet,
-@"
-        private " + PropertyTypeTag + @" _{2} " + DefaultValueTag + @";
-        " + AttributeTag + @"
-        public virtual " + PropertyTypeTag + @" {2}
-        {{
-            get
-            {{
-                " + BeforeGetPropertyTag + @"
-                return _{2};
-            }}
-            set
-            {{
-                " + BeforeSetPropertyTag + @"
-                _{2} = value;
-            }}
-        }}
-");
-
-        private static readonly PropertyTag PropertyWithoutFieldSnippet = new PropertyTag(TagType.CodeSnippet,
-@"
-        " + AttributeTag + @"
-        public virtual " + PropertyTypeTag + @" {2}
-        {{
-            get
-            {{
-                " + BeforeGetPropertyTag + @"
-            }}
-            set
-            {{
-                " + BeforeSetPropertyTag + @"
-            }}
-        }}
-");
-
-        public static void GenerateCodeForType(PropertyInfo info, ICodeBuilder codeBuilder, string type, bool serializable, bool addField = true)
+        private static string PropertySnippet(PropertyInfo info, string propertyType)
         {
-            var codeSnippet = addField ? PropertyWithFieldSnippet : PropertyWithoutFieldSnippet;
-            codeBuilder.InsertCode(codeSnippet.Evaluate(info), DataStructureCodeGenerator.BodyTag, info.DataStructure);
-            codeBuilder.InsertCode(type, PropertyTypeTag, info);
+            return string.Format(
+@"
+        {2}
+        public virtual {1} {0} {{ get; set; }}
+",
+            info.Name,
+            propertyType,
+            AttributeTag.Evaluate(info));
+        }
+
+        public static void GenerateCodeForType(PropertyInfo info, ICodeBuilder codeBuilder, string propertyType, bool serializable)
+        {
+            codeBuilder.InsertCode(PropertySnippet(info, propertyType), DataStructureCodeGenerator.BodyTag, info.DataStructure);
             if (serializable)
                 codeBuilder.InsertCode("[DataMember]", AttributeTag, info);
         }

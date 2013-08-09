@@ -183,6 +183,7 @@
     <Compile Include="DataStructure\Properties\DateTimePropertyInfo.cs" />
     <Compile Include="DataStructure\Properties\LongStringPropertyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\BrowseTakeNamedPropertyInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\DenyUserEditInfo.cs" />
     <Compile Include="SimpleBusinessLogic\DeactivatableInfo.cs" />
     <Compile Include="SimpleBusinessLogic\DateTimeRangeInfo.cs" />
     <Compile Include="SimpleBusinessLogic\MaxValueInfo.cs" />
@@ -203,6 +204,7 @@
     <Compile Include="SimpleBusinessLogic\CustomClaimInfo.cs" />
     <Compile Include="SimpleBusinessLogic\BrowseTakePropertyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\SimpleReferencePropertyInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\SystemRequiredInfo.cs" />
     <Compile Include="SimpleBusinessLogic\UniqueMultiplePropertyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\UniqueMultiplePropertiesInfo.cs" />
     <Compile Include="SimpleBusinessLogic\UniqueProperties3Info.cs" />

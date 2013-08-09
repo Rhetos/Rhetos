@@ -18,25 +18,24 @@
 */
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
-using Rhetos.Compiler;
-using Rhetos.Dsl;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
+using System.ComponentModel.Composition;
+using Rhetos.Utilities;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Dsl.DefaultConcepts
 {
-    [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(EntityInfo))]
-    public class EntityCodeGenerator : IConceptCodeGenerator
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("DenyUserEdit")]
+    public class DenyUserEditInfo : IValidationConcept
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        [ConceptKey]
+        public PropertyInfo Property { get; set; }
+
+        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
-            var info = (EntityInfo)conceptInfo;
-            PropertyInfo idProperty = new PropertyInfo { DataStructure = info, Name = "ID" };
-            codeBuilder.InsertCode("= Guid.NewGuid()", PropertyHelper.DefaultValueTag, idProperty);
+            if (!(Property.DataStructure is IWritableOrmDataStructure))
+                throw new DslSyntaxException(this, this.GetKeywordOrTypeName() + " may only be used on a writeable data structure, such as an Entity.");
         }
     }
 }

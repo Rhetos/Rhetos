@@ -48,20 +48,20 @@ namespace Rhetos.Dom.DefaultConcepts
         public override int GetHashCode()
         {{
             " + GetHashCodeTag + @"
-            return _ID.GetHashCode();
+            return ID.GetHashCode();
         }}
 
         public override bool Equals(object o)
         {{
             " + EqualsBaseTag + @"
             var other = o as {1};
-            return other != null && other._ID == _ID;
+            return other != null && other.ID == ID;
         }}
 
         bool System.IEquatable<{1}>.Equals({1} other)
         {{
             " + EqualsInterfaceTag + @"
-            return other != null && other._ID == _ID;
+            return other != null && other.ID == ID;
         }}
 ");
 

@@ -25,6 +25,6 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     public interface IWritableRepository
     {
-        void Save(IEnumerable<object> insertedNew, IEnumerable<object> updatedNew, IEnumerable<object> deletedIds);
+        void Save(IEnumerable<object> insertedNew, IEnumerable<object> updatedNew, IEnumerable<object> deletedIds, bool checkUserPermissions = false);
     }
 }

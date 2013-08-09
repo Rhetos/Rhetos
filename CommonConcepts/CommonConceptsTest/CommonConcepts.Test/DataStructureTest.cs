@@ -65,25 +65,6 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void ShortStringPropertyBasicRhetosTypeValidation()
-        {
-            TestDataStructure.SimpleDataStructure2 item = new TestDataStructure.SimpleDataStructure2();
-
-            string value = new string('x', 257);
-            string exceptionMessage = null;
-            try
-            {
-                item.SimpleShortString = value;
-            }
-            catch (Exception ex)
-            {
-                exceptionMessage = ex.Message;
-            }
-            Assert.IsNotNull(exceptionMessage);
-            TestUtility.AssertContains(exceptionMessage, "256");
-        }
-
-        [TestMethod]
         public void Serialization()
         {
             var item = new TestDataStructure.SimpleDataStructure2 { SimpleShortString = "abc" };

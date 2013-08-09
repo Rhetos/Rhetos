@@ -33,18 +33,6 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(DataStructureExtendsInfo))]
     public class DataStructureExtendsCodeGenerator : IConceptCodeGenerator
     {
-        public class DataStructureExtendsTag : Tag<DataStructureExtendsInfo>
-        {
-            public DataStructureExtendsTag(TagType tagType, string tagFormat, string nextTagFormat = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format, 
-                    info.Extension.Module.Name, //{0}
-                    info.Extension.Name, //{1}
-                    info.Base.Module.Name, //{2}
-                    info.Base.Name //{3}
-                ), nextTagFormat)
-            { }
-        }
-
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             DataStructureExtendsInfo info = (DataStructureExtendsInfo)conceptInfo;
@@ -52,7 +40,6 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 PropertyInfo referenceInfo = new PropertyInfo { DataStructure = info.Extension, Name = "Base" };
                 PropertyHelper.GenerateCodeForType(referenceInfo, codeBuilder, info.Base.Module.Name + "." + info.Base.Name, false);
-                codeBuilder.InsertCode("if (ID == Guid.Empty && value != null) ID = value.ID;\r\n                ", PropertyHelper.BeforeSetPropertyTag, referenceInfo);
             }
 
             if (info.Extension is IWritableOrmDataStructure && info.Base is IOrmDataStructure)

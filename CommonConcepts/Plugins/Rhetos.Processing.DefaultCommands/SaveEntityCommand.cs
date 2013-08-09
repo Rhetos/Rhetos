@@ -51,7 +51,7 @@ namespace Rhetos.Processing.DefaultCommands
                 return CommandResult.Fail("CommandInfo does not implement SaveEntityCommandInfo");
 
             var repository = _writableRepositories[saveInfo.Entity];
-            repository.Save(saveInfo.DataToInsert, saveInfo.DataToUpdate, saveInfo.DataToDelete);
+            repository.Save(saveInfo.DataToInsert, saveInfo.DataToUpdate, saveInfo.DataToDelete, true);
 
             return new CommandResult
             {
