@@ -32,6 +32,6 @@ namespace Rhetos.Dsl
         /// <summary>
         /// Throws exception if the instance of IConceptInfo has invalid data.
         /// </summary>
-        void CheckSemantics(IEnumerable<IConceptInfo> concepts);
+        void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts);
     }
 }
