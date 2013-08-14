@@ -1,10 +1,16 @@
 Module TestAction
 {
 	Action ThrowException
-	'
-		(TestAction.ThrowException parameters, Common.DomRepository repository, IUserInfo userInfo) => { throw new ApplicationException("TestAction exception " + parameters.Message); }
-	'
+        '(TestAction.ThrowException parameters, Common.DomRepository repository, IUserInfo userInfo) =>
+            { throw new ApplicationException("TestAction exception " + parameters.Message); }'
 	{
 		ShortString Message;
+	}
+    
+    Action UEC
+        '(parameters, repository, userInfo, executionContext) =>
+            { throw new ApplicationException("User " + executionContext.UserInfo.UserName); }'
+	{
+        UseExecutionContext;
 	}
 }

@@ -21,6 +21,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.TestCommon;
 
 namespace CommonConcepts.Test
 {
@@ -28,22 +29,27 @@ namespace CommonConcepts.Test
     public class ActionTest
     {
         [TestMethod]
-        [ExpectedException(typeof(ApplicationException))]
         public void ThrowException()
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
                 var repository = new Common.DomRepository(executionContext);
-                try
-                {
-                    repository.TestAction.ThrowException.Execute(new TestAction.ThrowException { Message = "abcd" });
-                }
-                catch (ApplicationException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                    Assert.IsTrue(ex.Message.Contains("abcd"));
-                    throw;
-                }
+                TestUtility.ShouldFail(
+                    () => repository.TestAction.ThrowException.Execute(new TestAction.ThrowException { Message = "abcd" }),
+                    "", "abcd");
+            }
+        }
+
+        [TestMethod]
+        public void UseExecutionContext()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                Assert.IsTrue(executionContext.UserInfo.UserName.Length > 0);
+                var repository = new Common.DomRepository(executionContext);
+                TestUtility.ShouldFail(
+                    () => repository.TestAction.UEC.Execute(new TestAction.UEC { }),
+                    "", "User " + executionContext.UserInfo.UserName);
             }
         }
     }
