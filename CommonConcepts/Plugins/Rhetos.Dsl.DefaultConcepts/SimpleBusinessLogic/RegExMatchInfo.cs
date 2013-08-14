@@ -45,7 +45,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             };
             var denySaveRegExMatchProperty = new DenySaveForPropertyInfo
             {
-                DependedProperties = Property,
+                DependedProperty = Property,
                 FilterType = itemFilterRegExMatchProperty.FilterName,
                 Title = String.Format("{0} has to match {1}.", Property.Name, Regex2),
                 Source = Property.DataStructure

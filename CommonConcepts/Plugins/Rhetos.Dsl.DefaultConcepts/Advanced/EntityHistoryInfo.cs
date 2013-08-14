@@ -93,7 +93,7 @@ GROUP BY history.ID
                 FilterType = "OlderThanHistoryEntries", 
                 Source = Entity, 
                 Title = "ActiveSince is not allowed to be older than last entry in history.", 
-                DependedProperties = activeSinceProperty 
+                DependedProperty = activeSinceProperty 
             };
             newConcepts.AddRange(new IConceptInfo[] { denyFilter, denySaveValidation });
 

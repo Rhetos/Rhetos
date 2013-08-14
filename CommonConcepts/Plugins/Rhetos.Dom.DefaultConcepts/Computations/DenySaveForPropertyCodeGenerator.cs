@@ -42,7 +42,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string AdditionalInvalidMessageSnippet(DenySaveForPropertyInfo info)
         {
-            return string.Format(@"+"",Property:{0}""", info.DependedProperties.Name);
+            return string.Format(@"+"",Property:{0}""", info.DependedProperty.Name);
         }
     }
 }

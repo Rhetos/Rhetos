@@ -49,7 +49,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                     Source = Property.DataStructure 
             };
             var denySaveMinValueProperty = new DenySaveForPropertyInfo { 
-                    DependedProperties = Property,
+                    DependedProperty = Property,
                     FilterType = itemFilterMinValueProperty.FilterName,
                     Title = String.Format("Maximum value of {0} is {1}.", Property.Name, Value), 
                     Source = Property.DataStructure 
