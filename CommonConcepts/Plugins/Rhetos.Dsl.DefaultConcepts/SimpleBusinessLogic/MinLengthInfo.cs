@@ -37,16 +37,18 @@ namespace Rhetos.Dsl.DefaultConcepts
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
             // Expand the base entity:
-            var itemFilterMinLengthProperty = new ItemFilterInfo { 
-                    Expression = String.Format("item => item.{0} != null && item.{0}.Length < {1}", Property.Name, Length),
-                    FilterName = Property.Name + "_MinLengthFilter", 
-                    Source = Property.DataStructure 
+            var itemFilterMinLengthProperty = new ItemFilterInfo
+            {
+                Expression = String.Format("item => !String.IsNullOrEmpty(item.{0}) && item.{0}.Length < {1}", Property.Name, Length),
+                FilterName = Property.Name + "_MinLengthFilter", 
+                Source = Property.DataStructure 
             };
-            var denySaveMinLengthProperty = new DenySaveForPropertyInfo { 
-                    DependedProperties = Property, 
-                    FilterType = itemFilterMinLengthProperty.FilterName, 
-                    Title = String.Format("Minimum allowed length of {0} is {1} characters.", Property.Name, Length), 
-                    Source = Property.DataStructure 
+            var denySaveMinLengthProperty = new DenySaveForPropertyInfo
+            {
+                DependedProperties = Property, 
+                FilterType = itemFilterMinLengthProperty.FilterName, 
+                Title = String.Format("Minimum allowed length of {0} is {1} characters.", Property.Name, Length), 
+                Source = Property.DataStructure 
             };
             return new IConceptInfo[] { itemFilterMinLengthProperty, denySaveMinLengthProperty };
         }
