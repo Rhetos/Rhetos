@@ -101,6 +101,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataStructureTag.cs" />
+    <Compile Include="Mappings\LargePropertyMappingGenerator.cs" />
     <Compile Include="Mappings\LegacyPropertyReadOnlyMappingGenerator.cs" />
     <Compile Include="Mappings\DataStructureExtendsMappingGenerator.cs" />
     <Compile Include="Mappings\LinkedItemsMappingGenerator.cs" />

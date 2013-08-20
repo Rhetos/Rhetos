@@ -105,6 +105,11 @@ Module TestEntity
 		ShortString Name { From 'Name'; }
 		ShortString ParentName { From 'Parent.Name'; }
 	}
+    
+    Entity Large
+    {
+        LongString Text;
+    }
 }
 
 Module TestBrowse

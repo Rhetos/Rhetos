@@ -378,5 +378,22 @@ namespace CommonConcepts.Test
                     "Principal", "Name", "256");
             }
         }
+
+        [TestMethod]
+        public void LargeText()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestEntity.Large" });
+                var repository = new Common.DomRepository(executionContext);
+
+                var item = new TestEntity.Large { Text = new string('x', 1024 * 1024) };
+                repository.TestEntity.Large.Insert(new[] { item });
+
+                var loaded = repository.TestEntity.Large.All().Single().Text;
+                Assert.AreEqual(item.Text.Length, loaded.Length);
+                Assert.AreEqual(item.Text.GetHashCode(), loaded.GetHashCode());
+            }
+        }
     }
 }

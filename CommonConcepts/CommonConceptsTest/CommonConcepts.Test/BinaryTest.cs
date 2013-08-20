@@ -33,27 +33,44 @@ namespace CommonConcepts.Test
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
-                    {
-                        "DELETE FROM TestBinary.E;",
-                    });
-
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestBinary.E;" });
+                var repository = new Common.DomRepository(executionContext);
 
                 var rnd = new Random();
-                var b = new Byte[10];
-                rnd.NextBytes(b);
+                var blob = new Byte[10];
+                rnd.NextBytes(blob);
 
-                var repository = new Common.DomRepository(executionContext);
-                var entity = new TestBinary.E() { ID=Guid.NewGuid(), Blob = b};
+                var entity = new TestBinary.E() { ID = Guid.NewGuid(), Blob = blob };
                 repository.TestBinary.E.Insert(new[] { entity });
 
                 executionContext.NHibernateSession.Flush();
                 executionContext.NHibernateSession.Clear();
 
-                var e = repository.TestBinary.E.Query().Where(item => item.ID == entity.ID).Single();
-                Assert.IsNotNull(e);
-                Assert.IsNotNull(e.Blob);
-                Assert.IsTrue(Enumerable.SequenceEqual(b, e.Blob));
+                var loaded = repository.TestBinary.E.Query().Where(item => item.ID == entity.ID).Single().Blob;
+                Assert.IsTrue(Enumerable.SequenceEqual(blob, loaded));
+            }
+        }
+
+        [TestMethod]
+        public void LargeBinary()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestBinary.E;" });
+                var repository = new Common.DomRepository(executionContext);
+
+                var rnd = new Random();
+                var blob = new Byte[1000000];
+                rnd.NextBytes(blob);
+
+                var entity = new TestBinary.E() { ID = Guid.NewGuid(), Blob = blob };
+                repository.TestBinary.E.Insert(new[] { entity });
+
+                executionContext.NHibernateSession.Flush();
+                executionContext.NHibernateSession.Clear();
+
+                var loaded = repository.TestBinary.E.Query().Where(item => item.ID == entity.ID).Single().Blob;
+                Assert.IsTrue(Enumerable.SequenceEqual(blob, loaded));
             }
         }
     }

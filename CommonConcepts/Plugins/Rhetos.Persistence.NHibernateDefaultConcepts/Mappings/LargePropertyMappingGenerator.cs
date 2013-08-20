@@ -28,32 +28,33 @@ using Rhetos.Dsl;
 using Rhetos.Persistence;
 using Rhetos.Compiler;
 using Rhetos.Persistence.NHibernate;
+using Rhetos.Utilities;
 
 namespace Rhetos.Persistence.NHibernateDefaultConcepts
 {
     [Export(typeof(IConceptMappingCodeGenerator))]
     [ExportMetadata(MefProvider.Implements, typeof(PropertyInfo))]
-    public class SimplePropertyMappingGenerator : IConceptMappingCodeGenerator
+    public class LargePropertyMappingGenerator : IConceptMappingCodeGenerator
     {
-        public static readonly PropertyTag AttributesTag = new PropertyTag(TagType.Appendable, "<!-- property attributes {0}.{1}.{2} -->");
+        const int MaxBlobSize = 1024*1024*1024; // If not defined, NHibernate would default to 8000.
 
         private static string CodeSnippet(PropertyInfo info)
         {
-            return @"        <property " + NhUtility.PropertyAndColumnNameMapping(info.Name) + " " + AttributesTag.Evaluate(info) + @"/>
-";
+            return string.Format(
+@"        <property {0} {1}>
+            <column name=""{2}"" length=""{3}"" />
+        </property>
+",
+                NhUtility.PropertyAndColumnNameMapping(info.Name),
+                SimplePropertyMappingGenerator.AttributesTag.Evaluate(info),
+                SqlUtility.Identifier(info.Name),
+                MaxBlobSize);
         }
 
-        private static IEnumerable<Type> simplePropertyTypes = new[]
+        private static IEnumerable<Type> largePropertyTypes = new[]
         {
-            typeof(ShortStringPropertyInfo),
-            typeof(BoolPropertyInfo),
-            typeof(DatePropertyInfo),
-            typeof(DateTimePropertyInfo),
-            typeof(DecimalPropertyInfo),
-            typeof(GuidPropertyInfo),
-            typeof(IntegerPropertyInfo),
-            typeof(MoneyPropertyInfo),
-            typeof(ShortStringPropertyInfo)
+            typeof(LongStringPropertyInfo),
+            typeof(BinaryPropertyInfo)
         };
 
         public static bool IsSupported(PropertyInfo info)
@@ -61,12 +62,12 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
             if (!(info.DataStructure is IOrmDataStructure))
                 return false;
 
-            return simplePropertyTypes.Any(supportedType => supportedType.IsAssignableFrom(info.GetType()));
+            return largePropertyTypes.Any(supportedType => supportedType.IsAssignableFrom(info.GetType()));
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (PropertyInfo) conceptInfo;
+            var info = (PropertyInfo)conceptInfo;
             if (IsSupported(info))
                 codeBuilder.InsertCode(CodeSnippet(info), OrmDataStructureMappingGenerator.MembersTag, info.DataStructure);
         }
