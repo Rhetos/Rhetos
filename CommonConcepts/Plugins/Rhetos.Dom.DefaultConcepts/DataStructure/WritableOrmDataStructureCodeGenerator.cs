@@ -119,38 +119,30 @@ namespace Rhetos.Dom.DefaultConcepts
 
 {2}
 
-            try
-            {{
-                // Using new data:
-                {0}[] inserted = insertedNew.Select(item => ({0})_executionContext.NHibernateSession.Merge(item)).ToArray();
-                updated = updatedNew.Select(item => ({0})_executionContext.NHibernateSession.Merge(item)).ToArray();
-                foreach (var item in deleted)
-                    _executionContext.NHibernateSession.Delete(item);
-                deleted = null;
+            // Using new data:
+            {0}[] inserted = insertedNew.Select(item => ({0})_executionContext.NHibernateSession.Merge(item)).ToArray();
+            updated = updatedNew.Select(item => ({0})_executionContext.NHibernateSession.Merge(item)).ToArray();
+            foreach (var item in deleted)
+                _executionContext.NHibernateSession.Delete(item);
+            deleted = null;
 
 {3}
 
-                try
-                {{
-                    _executionContext.NHibernateSession.Flush();
-                }}
-                catch (NHibernate.Exceptions.GenericADOException nhException)
-                {{
-                    var newException = Rhetos.Utilities.MsSqlUtility.ProcessSqlException(nhException.InnerException);
-                    if (newException != null)
-                        throw newException;
-                    throw;
-                }}
+            try
+            {{
+                _executionContext.NHibernateSession.Flush();
+            }}
+            catch (NHibernate.Exceptions.GenericADOException nhException)
+            {{
+                var newException = Rhetos.Utilities.MsSqlUtility.ProcessSqlException(nhException.InnerException);
+                if (newException != null)
+                    throw newException;
+                throw;
+            }}
 
 {4}
 
 {5}
-            }}
-            catch
-            {{
-                _executionContext.NHibernateSession.Clear();
-                throw;
-            }}
         }}
 
 ",

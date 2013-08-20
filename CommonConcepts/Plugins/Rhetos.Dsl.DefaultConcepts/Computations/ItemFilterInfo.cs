@@ -38,21 +38,29 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            DataStructureInfo filterParameter;
+            var newConcepts = new List<IConceptInfo>();
+
+            ParameterInfo filterParameter;
             var filterNameElements = FilterName.Split('.');
             if (filterNameElements.Count() == 2)
-                filterParameter = new DataStructureInfo { Module = new ModuleInfo { Name = filterNameElements[0] }, Name = filterNameElements[1] };
+                filterParameter = new ParameterInfo { Module = new ModuleInfo { Name = filterNameElements[0] }, Name = filterNameElements[1] };
             else
-                filterParameter = new DataStructureInfo { Module = Source.Module, Name = FilterName };
+                filterParameter = new ParameterInfo { Module = Source.Module, Name = FilterName };
 
-            var composableFilter = new ComposableFilterByInfo 
+            if (!existingConcepts.OfType<DataStructureInfo>() // Existing filter parameter does not have to be a ParameterInfo. Any DataStructureInfo is allowed.
+                .Any(item => item.Module.Name == filterParameter.Module.Name && item.Name == filterParameter.Name))
+                    newConcepts.Add(filterParameter);
+
+            var composableFilter = new ComposableFilterByInfo
             { 
                 Source = Source, 
                 Parameter = filterParameter.GetKeyProperties(),
                 Expression = "(source, repository, parameter) => source.Where(" + Expression + ")"
             };
 
-            return new IConceptInfo[] { filterParameter, composableFilter };
+            newConcepts.Add(composableFilter);
+
+            return newConcepts;
         }
     }
 }
