@@ -78,8 +78,7 @@ namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
 
         private string CheckSavedItemsSnippet(UniqueMultiplePropertiesInfo info)
         {
-            return string.Format(@"
-            {{
+            return string.Format(@"            {{
                 const string sql = @""SELECT source.*
                     FROM {0}.{1} source
                     INNER JOIN (SELECT {2} FROM {0}.{1} GROUP BY {2} HAVING COUNT(*) > 1) doubles
