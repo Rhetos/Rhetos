@@ -194,5 +194,55 @@ namespace CommonConcepts.Test
                     "Simple", "NonEditableReference", "not allowed");
             }
         }
+
+        [TestMethod]
+        public void HardcodedEntity_Insert()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var repository = new Common.DomRepository(executionContext);
+
+                TestUtility.ShouldFail(
+                    () => repository.TestDenyUserEdit.Hardcoded.Save(new[] { new TestDenyUserEdit.Hardcoded { Name = "abc" } }, null, null, true),
+                    "", "It is not allowed to directly modify TestDenyUserEdit.Hardcoded.");
+            }
+        }
+
+        [TestMethod]
+        public void HardcodedEntity_Delete()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                executionContext.SqlExecuter.ExecuteSql(new[] {
+                    "DELETE FROM TestDenyUserEdit.Hardcoded",
+                    "INSERT INTO TestDenyUserEdit.Hardcoded (Name) VALUES ('abc')" });
+                var repository = new Common.DomRepository(executionContext);
+
+                var item = repository.TestDenyUserEdit.Hardcoded.All().Single();
+                Assert.AreEqual("abc", item.Name);
+                TestUtility.ShouldFail(
+                    () => repository.TestDenyUserEdit.Hardcoded.Save(null, null, new[] { item }, true),
+                    "", "It is not allowed to directly modify TestDenyUserEdit.Hardcoded.");
+            }
+        }
+
+        [TestMethod]
+        public void HardcodedEntity_Update()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                executionContext.SqlExecuter.ExecuteSql(new[] {
+                    "DELETE FROM TestDenyUserEdit.Hardcoded",
+                    "INSERT INTO TestDenyUserEdit.Hardcoded (Name) VALUES ('abc')" });
+                var repository = new Common.DomRepository(executionContext);
+
+                var item = repository.TestDenyUserEdit.Hardcoded.All().Single();
+                Assert.AreEqual("abc", item.Name);
+                item.Name += "x";
+                TestUtility.ShouldFail(
+                    () => repository.TestDenyUserEdit.Hardcoded.Save(null, new[] { item }, null, true),
+                    "", "It is not allowed to directly modify TestDenyUserEdit.Hardcoded.");
+            }
+        }
     }
 }

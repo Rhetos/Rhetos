@@ -86,6 +86,7 @@
     <Compile Include="Computations\ComputeForNewBaseItemsCodeGenerator.cs" />
     <Compile Include="Computations\QueryableExtensionCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ActionCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\DenyUserEditDataStructureCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\DenyUserEditCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\CreationTimeCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\DeactivatableCodeGenerator.cs" />

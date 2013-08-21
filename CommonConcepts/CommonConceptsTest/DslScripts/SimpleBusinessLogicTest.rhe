@@ -266,4 +266,10 @@ Module TestDenyUserEdit
         ShortString NonEditable { DenyUserEdit; }
         Reference NonEditableReference TestDenyUserEdit.Parent { DenyUserEdit; }
     }
+    
+    Entity Hardcoded
+    {
+        DenyUserEdit;
+        ShortString Name;
+    }
 }
