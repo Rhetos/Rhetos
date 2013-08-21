@@ -136,7 +136,8 @@ namespace Rhetos.Rest.DefaultConcepts
                 || conceptInfo is LegacyEntityInfo
                 || conceptInfo is LegacyEntityWithAutoCreatedViewInfo
                 || conceptInfo is SqlQueryableInfo
-                || conceptInfo is QueryableExtensionInfo;
+                || conceptInfo is QueryableExtensionInfo
+                || conceptInfo is ComputedInfo;
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)

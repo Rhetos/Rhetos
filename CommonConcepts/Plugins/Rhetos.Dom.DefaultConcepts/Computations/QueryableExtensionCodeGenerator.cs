@@ -80,8 +80,7 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string QuerySnippet(QueryableExtensionInfo info)
         {
             return string.Format(
-@"            return Compute(_domRepository.{0}.{1}.Query(), _domRepository{2});
-",
+                @"return Compute(_domRepository.{0}.{1}.Query(), _domRepository{2});",
                 info.Base.Module.Name, info.Base.Name, DomUtility.ComputationAdditionalParametersArgumentTag.Evaluate(info));
         }
 

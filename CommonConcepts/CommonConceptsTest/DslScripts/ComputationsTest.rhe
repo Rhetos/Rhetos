@@ -400,8 +400,6 @@ Module TestComputedFrom
     {
         ShortString Name;
         Integer Code;
-        
-        FilterBy 'IEnumerable<Guid>' '(repository, paremeter) => repository.TestComputedFrom.Source.All().Where(item => paremeter.Contains(item.ID)).ToArray()';
     }
     
     Entity PersistAll

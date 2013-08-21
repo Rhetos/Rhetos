@@ -68,8 +68,7 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string QuerySnippet(DataStructureInfo info)
         {
             return string.Format(
-@"            return _executionContext.NHibernateSession.Query<global::{0}.{1}>();
-",
+                @"return _executionContext.NHibernateSession.Query<global::{0}.{1}>();",
                 info.Module.Name, info.Name);
         }
 

@@ -116,8 +116,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public IQueryable<global::{0}> Query()
         {{
-{1}
-{2}
+            {1}
+            {2}
         }}
 
         Rhetos.Processing.DefaultCommands.QueryDataSourceCommandResult Rhetos.Processing.DefaultCommands.IQueryDataSourceCommandImplementation.QueryData(Rhetos.Processing.DefaultCommands.QueryDataSourceCommandInfo commandInfo)
@@ -188,6 +188,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
             codeBuilder.AddReferencesFromDependency(typeof(IQueryDataSourceCommandImplementation));
             codeBuilder.AddReferencesFromDependency(typeof(ICommandInfo));
+            codeBuilder.AddReferencesFromDependency(typeof(GenericFilterWithPagingUtility));
+            codeBuilder.AddReferencesFromDependency(typeof(QueryDataSourceCommandResult));
         }
     }
 }

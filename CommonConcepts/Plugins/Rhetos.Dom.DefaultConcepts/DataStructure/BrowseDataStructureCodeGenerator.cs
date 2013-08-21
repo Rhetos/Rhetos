@@ -72,8 +72,7 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string QuerySnippet(BrowseDataStructureInfo info)
         {
             return string.Format(
-@"            return Compute(_domRepository.{0}.{1}.Query());
-",
+                @"return Compute(_domRepository.{0}.{1}.Query());",
                 info.Source.Module.Name, info.Source.Name);
         }
 
@@ -88,10 +87,6 @@ namespace Rhetos.Dom.DefaultConcepts
             RepositoryHelper.GenerateRepository(info, codeBuilder);
             RepositoryHelper.GenerateQueryableRepositoryFunctions(info, codeBuilder, QuerySnippet(info));
             codeBuilder.InsertCode(RepositoryFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info);
-
-            codeBuilder.AddReferencesFromDependency(typeof(IQueryDataSourceCommandImplementation));
-            codeBuilder.AddReferencesFromDependency(typeof(GenericFilterWithPagingUtility));
-            codeBuilder.AddReferencesFromDependency(typeof(QueryDataSourceCommandResult));
         }
     }
 }
