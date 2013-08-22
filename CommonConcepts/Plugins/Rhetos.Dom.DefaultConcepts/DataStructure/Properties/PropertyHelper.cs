@@ -30,14 +30,7 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     public static class PropertyHelper
     {
-        public class PropertyTag : Tag<PropertyInfo>
-        {
-            public PropertyTag(TagType tagType, string tagFormat, string nextTagFormat = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format, info.DataStructure.Module.Name, info.DataStructure.Name, info.Name), nextTagFormat)
-            { }
-        }
-
-        public static readonly PropertyTag AttributeTag = new PropertyTag(TagType.Appendable, "/*property attribute {0}.{1}.{2}*/");
+        public static readonly CsTag<PropertyInfo> AttributeTag = "Attribute";
 
         private static string PropertySnippet(PropertyInfo info, string propertyType)
         {

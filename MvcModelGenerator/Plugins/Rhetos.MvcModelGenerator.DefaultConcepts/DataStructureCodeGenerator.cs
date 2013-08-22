@@ -32,15 +32,7 @@ namespace Rhetos.MvcModelGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(DataStructureInfo))]
     public class DataStructureCodeGenerator : IMvcModelGeneratorPlugin
     {
-        public static readonly DataStructureCodeGenerator.DataStructureTag ClonePropertiesTag =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*MvcModel.CloneProperties {0}.{1}*/");
-
-        public class DataStructureTag : Tag<DataStructureInfo>
-        {
-            public DataStructureTag(TagType tagType, string tagFormat, string nextTagFormat = null, string firstEvaluationContext = null, string nextEvaluationContext = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format, info.Module.Name, info.Name), nextTagFormat, firstEvaluationContext, nextEvaluationContext)
-            { }
-        }
+        public static readonly CsTag<DataStructureInfo> ClonePropertiesTag = "CloneProperties";
 
         private static string ImplementationCodeSnippet(DataStructureInfo info)
         {
@@ -68,7 +60,8 @@ namespace {0}
                 || conceptInfo is LegacyEntityInfo
                 || conceptInfo is LegacyEntityWithAutoCreatedViewInfo
                 || conceptInfo is SqlQueryableInfo
-                || conceptInfo is QueryableExtensionInfo;
+                || conceptInfo is QueryableExtensionInfo
+                || conceptInfo is ComputedInfo;
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)

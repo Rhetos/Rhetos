@@ -36,36 +36,34 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(QueryableExtensionInfo))]
     public class QueryableExtensionCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly DataStructureCodeGenerator.DataStructureTag GetHashCodeTag =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*get hash code {0}.{1}*/");
+        public static readonly CsTag<QueryableExtensionInfo> GetHashCodeTag = "GetHashCode";
+        public static readonly CsTag<QueryableExtensionInfo> EqualsBaseTag = "EqualsBase";
+        public static readonly CsTag<QueryableExtensionInfo> EqualsInterfaceTag = "EqualsInterface";
 
-        public static readonly DataStructureCodeGenerator.DataStructureTag EqualsBaseTag =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*equals base {0}.{1}*/");
-
-        public static readonly DataStructureCodeGenerator.DataStructureTag EqualsInterfaceTag =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*equals interface {0}.{1}*/");
-
-        protected static readonly DataStructureCodeGenerator.DataStructureTag CodeSnippet = new DataStructureCodeGenerator.DataStructureTag(TagType.CodeSnippet,
+        protected static string CodeSnippet(QueryableExtensionInfo info)
+        {
+            return
 @"
         public override int GetHashCode()
-        {{
-            " + GetHashCodeTag + @"
+        {
+            " + GetHashCodeTag.Evaluate(info) + @"
             return ID.GetHashCode();
-        }}
+        }
 
         public override bool Equals(object o)
-        {{
-            " + EqualsBaseTag + @"
-            var other = o as {1};
+        {
+            " + EqualsBaseTag.Evaluate(info) + @"
+            var other = o as " + info.Name + @";
             return other != null && other.ID == ID;
-        }}
+        }
 
-        bool System.IEquatable<{1}>.Equals({1} other)
-        {{
-            " + EqualsInterfaceTag + @"
+        bool System.IEquatable<" + info.Name + @">.Equals(" + info.Name + @" other)
+        {
+            " + EqualsInterfaceTag.Evaluate(info) + @"
             return other != null && other.ID == ID;
-        }}
-");
+        }
+";
+        }
 
         protected static string RepositoryFunctionsSnippet(QueryableExtensionInfo info)
         {
@@ -88,7 +86,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (QueryableExtensionInfo)conceptInfo;
 
-            codeBuilder.InsertCode(CodeSnippet.Evaluate(info), DataStructureCodeGenerator.BodyTag, info);
+            codeBuilder.InsertCode(CodeSnippet(info), DataStructureCodeGenerator.BodyTag, info);
             codeBuilder.AddInterfaceAndReference(string.Format("System.IEquatable<{0}>", info.Name), typeof(IEquatable<>), info);
 
             PropertyInfo idProperty = new PropertyInfo { DataStructure = info, Name = "ID" };

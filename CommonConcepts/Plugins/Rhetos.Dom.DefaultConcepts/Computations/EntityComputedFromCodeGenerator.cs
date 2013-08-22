@@ -34,16 +34,9 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(EntityComputedFromInfo))]
     public class EntityComputedFromCodeGenerator : IConceptCodeGenerator
     {
-        public class EntityComputedFromTag : Tag<EntityComputedFromInfo>
-        {
-            public EntityComputedFromTag(TagType tagType, string tagFormat, string nextTagFormat = null, string firstEvaluationContext = null, string nextEvaluationContext = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format, info.Target.Module.Name, info.Target.Name, info.Source.Module.Name, info.Source.Name), nextTagFormat, firstEvaluationContext, nextEvaluationContext)
-            { }
-        }
-
-        public static readonly EntityComputedFromTag ComparePropertyTag = new EntityComputedFromTag(TagType.Appendable, "/*EntityComputedFromCodeGenerator CompareProperty {0}.{1}.{2}.{3}*/");
-        public static readonly EntityComputedFromTag ClonePropertyTag = new EntityComputedFromTag(TagType.Appendable, "/*EntityComputedFromCodeGenerator CloneProperty {0}.{1}.{2}.{3}*/");
-        public static readonly EntityComputedFromTag AssignPropertyTag = new EntityComputedFromTag(TagType.Appendable, "/*EntityComputedFromCodeGenerator AssignProperty {0}.{1}.{2}.{3}*/");
+        public static readonly CsTag<EntityComputedFromInfo> ComparePropertyTag = "CompareProperty";
+        public static readonly CsTag<EntityComputedFromInfo> ClonePropertyTag = "CloneProperty";
+        public static readonly CsTag<EntityComputedFromInfo> AssignPropertyTag = "AssignProperty";
 
         protected static string CodeSnippet(EntityComputedFromInfo info)
         {

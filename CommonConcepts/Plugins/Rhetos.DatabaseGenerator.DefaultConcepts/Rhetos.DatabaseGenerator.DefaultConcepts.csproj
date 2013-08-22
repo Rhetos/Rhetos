@@ -137,7 +137,6 @@
     <Compile Include="LegacyPropertyReadOnlyDatabaseDefinition.cs" />
     <Compile Include="LegacyPropertyReferenceDatabaseDefinition.cs" />
     <Compile Include="DataStructureExtendsDatabaseDefinition.cs" />
-    <Compile Include="DataStructureTag.cs" />
     <Compile Include="LegacyEntityWithAutoCreatedViewDatabaseDefinition.cs" />
     <Compile Include="LegacyPropertySimpleDatabaseDefinition.cs" />
     <Compile Include="SqlQueryableDatabaseDefinition.cs" />

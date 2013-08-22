@@ -35,28 +35,10 @@ namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
     [ExportMetadata(MefProvider.Implements, typeof(UniqueMultiplePropertiesInfo))]
     public class UniqueMultiplePropertiesCodeGenerator : IConceptCodeGenerator
     {
-        public class UniqueMultipleTag : Tag<UniqueMultiplePropertiesInfo>
-        {
-            public UniqueMultipleTag(TagType tagType, string tagFormat, string nextTagFormat = null, string firstEvaluationContext = null, string nextEvaluationContext = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format,
-                    info.DataStructure.Module.Name, // {0}
-                    info.DataStructure.Name, // {1}
-                    CsUtility.TextToIdentifier(info.PropertyNames)), // {2}
-                    nextTagFormat, firstEvaluationContext, nextEvaluationContext)
-            { }
-        }
-
-        public static readonly UniqueMultipleTag ColumnListTag = new UniqueMultipleTag(TagType.Appendable,
-            "/*UniqueMultiple.ColumnList {0}.{1}.{2}*/", "/*next UniqueMultiple.ColumnList {0}.{1}.{2}*/", "{0}", ", {0}");
-
-        public static readonly UniqueMultipleTag ColumnJoinTag = new UniqueMultipleTag(TagType.Appendable,
-            "/*UniqueMultiple.ColumnJoin {0}.{1}.{2}*/", "/*next UniqueMultiple.ColumnJoin {0}.{1}.{2}*/", "{0}", " AND {0}");
-
-        public static readonly UniqueMultipleTag PropertyListTag = new UniqueMultipleTag(TagType.Appendable,
-            "/*UniqueMultiple.PropertyList {0}.{1}.{2}*/", "/*next UniqueMultiple.PropertyList {0}.{1}.{2}*/", "{0}", " + \", \" + {0}");
-
-        public static readonly UniqueMultipleTag PropertyValuesTag = new UniqueMultipleTag(TagType.Appendable,
-            "/*UniqueMultiple.PropertyValues {0}.{1}.{2}*/", "/*next UniqueMultiple.PropertyValues {0}.{1}.{2}*/", "{0}", " + \", \" + {0}");
+        public static readonly CsTag<UniqueMultiplePropertiesInfo> ColumnListTag = new CsTag<UniqueMultiplePropertiesInfo>("ColumnList", TagType.Appendable, "{0}", ", {0}");
+        public static readonly CsTag<UniqueMultiplePropertiesInfo> ColumnJoinTag = new CsTag<UniqueMultiplePropertiesInfo>("ColumnJoin", TagType.Appendable, "{0}", " AND {0}");
+        public static readonly CsTag<UniqueMultiplePropertiesInfo> PropertyListTag = new CsTag<UniqueMultiplePropertiesInfo>("PropertyList", TagType.Appendable, "{0}", " + \", \" + {0}");
+        public static readonly CsTag<UniqueMultiplePropertiesInfo> PropertyValuesTag = new CsTag<UniqueMultiplePropertiesInfo>("PropertyValues", TagType.Appendable, "{0}", " + \", \" + {0}");
 
 
         public static bool IsSupported(UniqueMultiplePropertiesInfo info)

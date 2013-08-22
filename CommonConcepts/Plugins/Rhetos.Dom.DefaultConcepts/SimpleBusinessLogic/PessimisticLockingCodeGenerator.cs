@@ -33,8 +33,7 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(PessimisticLockingInfo))]
     public class PessimisticLockingCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly DataStructureCodeGenerator.DataStructureTag AdditionalLocksTag =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*PessimisticLocking AdditionalLocks {0}.{1}*/");
+        public static readonly CsTag<PessimisticLockingInfo> AdditionalLocksTag = "AdditionalLocks";
 
         private string CheckLocksCodeSnippet(PessimisticLockingInfo info)
         {
@@ -83,7 +82,7 @@ namespace Rhetos.Dom.DefaultConcepts
 ",
                 info.Resource.Module.Name,
                 info.Resource.Name,
-                AdditionalLocksTag.Evaluate(info.Resource));
+                AdditionalLocksTag.Evaluate(info));
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)

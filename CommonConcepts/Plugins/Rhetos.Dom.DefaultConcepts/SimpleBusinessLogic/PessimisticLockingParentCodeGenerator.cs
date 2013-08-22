@@ -72,7 +72,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (PessimisticLockingParentInfo)conceptInfo;
-            codeBuilder.InsertCode(CodeSnippet(info), PessimisticLockingCodeGenerator.AdditionalLocksTag, info.Detail.Resource);
+            codeBuilder.InsertCode(CodeSnippet(info), PessimisticLockingCodeGenerator.AdditionalLocksTag, info.Detail);
         }
     }
 }

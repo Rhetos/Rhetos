@@ -156,8 +156,8 @@ namespace Rhetos.Dsl.DefaultConcepts
                 SqlUtility.Identifier(Entity.Name),
                 SqlUtility.Identifier(HistoryEntity.Name),
                 SqlUtility.Identifier(Entity.Name + "_History_ActiveUntil"),
-                SelectHistoryProperties.Evaluate(this),
-                SelectEntityProperties.Evaluate(this));
+                SelectHistoryPropertiesTag.Evaluate(this),
+                SelectEntityPropertiesTag.Evaluate(this));
         }
 
         private string AtTimeSqlSnippet()
@@ -181,20 +181,10 @@ namespace Rhetos.Dsl.DefaultConcepts
                         ) last ON last.EntityID = history.EntityID AND last.Max_ActiveSince = history.ActiveSince",
                     SqlUtility.Identifier(Entity.Module.Name),
                     SqlUtility.Identifier(Entity.Name + "_FullHistory"),
-                    SelectHistoryProperties.Evaluate(this));
+                    SelectHistoryPropertiesTag.Evaluate(this));
         }
 
-        public static readonly EntityHistoryTag SelectHistoryProperties =
-            new EntityHistoryTag(TagType.Appendable, "/*EntityHistory SelectHistoryProperties {0}.{1}*/");
-
-        public static readonly EntityHistoryTag SelectEntityProperties =
-            new EntityHistoryTag(TagType.Appendable, "/*EntityHistory SelectEntityProperties {0}.{1}*/");
-
-        public class EntityHistoryTag : Tag<EntityHistoryInfo>
-        {
-            public EntityHistoryTag(TagType tagType, string tagFormat, string nextTagFormat = null, string firstEvaluationContext = null, string nextEvaluationContext = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format, info.Entity.Module.Name, info.Entity.Name), nextTagFormat, firstEvaluationContext, nextEvaluationContext)
-            { }
-        }
+        public static readonly SqlTag<EntityHistoryInfo> SelectHistoryPropertiesTag = "SelectHistoryProperties";
+        public static readonly SqlTag<EntityHistoryInfo> SelectEntityPropertiesTag = "SelectEntityProperties";
     }
 }

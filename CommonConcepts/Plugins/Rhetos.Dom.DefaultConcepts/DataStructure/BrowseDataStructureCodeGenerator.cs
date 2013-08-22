@@ -38,18 +38,7 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(BrowseDataStructureInfo))]
     public class BrowseDataStructureCodeGenerator : IConceptCodeGenerator
     {
-        public class BrowseTag : Tag<BrowseDataStructureInfo>
-        {
-            public BrowseTag(TagType tagType, string tagFormat)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format,
-                    info.Module.Name,
-                    info.Name,
-                    info.Source.Name))
-            {
-            }
-        }
-
-        public static readonly BrowseTag BrowsePropertiesTag = new BrowseTag(TagType.Appendable, "/*browse properties {0}.{1}*/");
+        public static readonly CsTag<BrowseDataStructureInfo> BrowsePropertiesTag = "properties";
 
         protected static string RepositoryFunctionsSnippet(BrowseDataStructureInfo info)
         {
@@ -62,7 +51,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 {{
                     ID = item.ID,
                     Base = item,
-                    " + BrowsePropertiesTag + @"
+                    " + BrowsePropertiesTag.Evaluate(info) + @"
                 }};
         }}
 

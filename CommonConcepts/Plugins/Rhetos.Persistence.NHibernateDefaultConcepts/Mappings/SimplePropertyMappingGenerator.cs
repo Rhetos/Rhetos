@@ -35,7 +35,7 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(PropertyInfo))]
     public class SimplePropertyMappingGenerator : IConceptMappingCodeGenerator
     {
-        public static readonly PropertyTag AttributesTag = new PropertyTag(TagType.Appendable, "<!-- property attributes {0}.{1}.{2} -->");
+        public static readonly XmlTag<PropertyInfo> AttributesTag = "Attributes";
 
         private static string CodeSnippet(PropertyInfo info)
         {

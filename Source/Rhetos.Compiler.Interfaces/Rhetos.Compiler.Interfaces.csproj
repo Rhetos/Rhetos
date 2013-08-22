@@ -87,7 +87,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Tag2.cs" />
+    <Compile Include="SqlTag.cs" />
+    <Compile Include="XmlTag.cs" />
     <Compile Include="CsTag.cs" />
     <Compile Include="IAssemblyGenerator.cs" />
     <Compile Include="IAssemblySource.cs" />

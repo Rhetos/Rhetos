@@ -100,7 +100,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataStructureTag.cs" />
     <Compile Include="Mappings\LargePropertyMappingGenerator.cs" />
     <Compile Include="Mappings\LegacyPropertyReadOnlyMappingGenerator.cs" />
     <Compile Include="Mappings\DataStructureExtendsMappingGenerator.cs" />
@@ -112,7 +111,6 @@
     <Compile Include="NhUtility.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Mappings\ReferencePropertyMappingGenerator.cs" />
-    <Compile Include="PropertyTag.cs" />
   </ItemGroup>
   <ItemGroup>
     <CodeAnalysisDictionary Include="..\..\..\CodeAnalysisDictionary.xml">

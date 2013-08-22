@@ -36,14 +36,7 @@ namespace Rhetos.Rest.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(DataStructureInfo))]
     public class DataStructureCodeGenerator : IRestGeneratorPlugin
     {
-        public class DataStructureTag : Tag<DataStructureInfo>
-        {
-            public DataStructureTag(TagType tagType, string tagFormat, string nextTagFormat = null, string firstEvaluationContext = null, string nextEvaluationContext = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format, info.Module.Name, info.Name), nextTagFormat, firstEvaluationContext, nextEvaluationContext)
-            { }
-        }
-
-        public static readonly DataStructureTag FilterTypesTag = new DataStructureTag(TagType.Appendable, "/*DataStructure.FilterTypes {0}.{1}*/");
+        public static readonly CsTag<DataStructureInfo> FilterTypesTag = "FilterTypes";
 
         private static string DeclarationCodeSnippet(DataStructureInfo info)
         {

@@ -16,20 +16,28 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+using Rhetos.Dsl;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using Rhetos.Compiler;
-using Rhetos.Dsl.DefaultConcepts;
 
-namespace Rhetos.Persistence.NHibernateDefaultConcepts
+namespace Rhetos.Compiler
 {
-    public class PropertyTag : Tag<PropertyInfo>
+    public class SqlTag<T> : Tag<T>
+        where T : IConceptInfo
     {
-        public PropertyTag(TagType tagType, string tagFormat, string nextTagFormat = null, string firstEvaluationContext = null, string nextEvaluationContext = null)
-            : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format, info.DataStructure.Module.Name, info.DataStructure.Name, info.Name), nextTagFormat, firstEvaluationContext, nextEvaluationContext)
-        { }
+        public SqlTag(string key, TagType tagType = TagType.Appendable, string firstEvaluationContext = null, string nextEvaluationContext = null)
+            : base(key, tagType, firstEvaluationContext, nextEvaluationContext, "/*", "*/")
+        {
+        }
+
+        public static implicit operator SqlTag<T>(string key)
+        {
+            if (key == null)
+                throw new FrameworkException("Cannot create SqlTag, the 'key' argument value is null. Hint: Try reordering static tag members in their parent class.");
+            return new SqlTag<T>(key);
+        }
     }
 }

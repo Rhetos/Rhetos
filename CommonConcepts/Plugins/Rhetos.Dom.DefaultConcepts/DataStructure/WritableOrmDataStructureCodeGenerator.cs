@@ -35,31 +35,26 @@ namespace Rhetos.Dom.DefaultConcepts
     public class WritableOrmDataStructureCodeGenerator : IConceptCodeGenerator
     {
         /// <summary>Inserted code can use enumerables "insertedNew", "updatedNew" and "deletedIds" but without navigation properties because they are not binded to ORM.</summary>
-        public static readonly DataStructureCodeGenerator.DataStructureTag InitializationTag =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*WritableOrm.Initialization {0}.{1}*/");
+        public static readonly CsTag<DataStructureInfo> InitializationTag = "WritableOrm Initialization";
 
         /// <summary>Arrays "updated" and "deleted" contain OLD data.
         /// Enumerables "insertedNew", "updatedNew" and "deletedIds" are not binded to ORM (do not use navigation properties).
         /// Sample usage: 1. Verify that locked items are not goind to be updated or deleted, 2. Cascade delete.</summary>
-        public static readonly DataStructureCodeGenerator.DataStructureTag OldDataLoadedTag =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*WritableOrm.OldDataLoaded {0}.{1}*/");
+        public static readonly CsTag<DataStructureInfo> OldDataLoadedTag = "WritableOrm OldDataLoaded";
 
         /// <summary>Arrays "inserted" and "updated" contain NEW data.
         /// Data is not yet saved to database so SQL validations and computations can NOT be used).</summary>
-        public static readonly DataStructureCodeGenerator.DataStructureTag NewDataLoadedTag =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*WritableOrm.NewDataLoaded {0}.{1}*/");
+        public static readonly CsTag<DataStructureInfo> NewDataLoadedTag = "WritableOrm NewDataLoaded";
 
         /// <summary> Recomended usage: Recompute items that depend on changes items.
         /// Arrays "inserted" and "updated" contain NEW data.
         /// Data is saved to the database (but the SQL transaction has not yet been commited) so SQL validations and computations CAN be used.</summary>
-        public static readonly DataStructureCodeGenerator.DataStructureTag OnSaveTag1 =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*WritableOrm.OnSaveTag1 {0}.{1}*/");
+        public static readonly CsTag<DataStructureInfo> OnSaveTag1 = "WritableOrm OnSaveTag1";
 
         /// <summary>Recomended usage: Verify that invalid items are not going to be inserted or updated.
         /// Arrays "inserted" and "updated" contain NEW data.
         /// Data is saved to the database (but the SQL transaction has not yet been commited) so SQL validations and computations CAN be used.</summary>
-        public static readonly DataStructureCodeGenerator.DataStructureTag OnSaveTag2 =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*WritableOrm.OnSaveTag2 {0}.{1}*/");
+        public static readonly CsTag<DataStructureInfo> OnSaveTag2 = "WritableOrm OnSaveTag2";
 
 
         protected static string MemberFunctionsSnippet(DataStructureInfo info)

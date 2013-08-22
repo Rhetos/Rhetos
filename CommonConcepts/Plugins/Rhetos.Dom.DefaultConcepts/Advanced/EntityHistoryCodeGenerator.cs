@@ -34,8 +34,7 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(EntityHistoryInfo))]
     public class EntityHistoryCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly DataStructureCodeGenerator.DataStructureTag ClonePropertiesTag =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*EntityHistory.CloneProperties {0}.{1}*/");
+        public static readonly CsTag<EntityHistoryInfo> ClonePropertiesTag = "CloneProperties";
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
@@ -111,7 +110,7 @@ namespace Rhetos.Dom.DefaultConcepts
 ",
             info.Entity.Module.Name,
             info.Entity.Name,
-            ClonePropertiesTag.Evaluate(info.Entity));
+            ClonePropertiesTag.Evaluate(info));
         }
 
         private static string VerifyHistoryEntityTimeSnippet(EntityHistoryInfo info)
