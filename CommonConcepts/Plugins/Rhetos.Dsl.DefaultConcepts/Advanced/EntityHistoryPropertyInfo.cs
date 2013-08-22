@@ -49,15 +49,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            var newConcepts = new List<IConceptInfo>();
-
-            newConcepts.AddRange(new IConceptInfo[] {
-                new SqlDependsOnPropertyInfo { Dependent = EntityHistory, DependsOn = Property },
-                new SqlDependsOnDataStructureInfo { Dependent = EntityHistory, DependsOn = EntityHistory.HistoryEntity },
-                new PropertyFromInfo { Destination = EntityHistory.HistoryEntity, Source = Property }
-            });
-
-            return newConcepts;
+            return new [] { new PropertyFromInfo { Destination = EntityHistory.HistoryEntity, Source = Property } };
         }
 
     }

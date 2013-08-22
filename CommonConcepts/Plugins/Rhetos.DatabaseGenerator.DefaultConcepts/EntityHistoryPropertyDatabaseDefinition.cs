@@ -51,10 +51,10 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             var columnName = GetColumnName(info.Property);
 
             codeBuilder.InsertCode(string.Format(",\r\n        {0} = history.{0}", columnName),
-                EntityHistoryDatabaseDefinition.SelectHistoryProperties, info.Property.DataStructure);
+                EntityHistoryInfo.SelectHistoryProperties, info.EntityHistory);
 
             codeBuilder.InsertCode(string.Format(",\r\n        {0} = entity.{0}", columnName),
-                EntityHistoryDatabaseDefinition.SelectEntityProperties, info.Property.DataStructure);
+                EntityHistoryInfo.SelectEntityProperties, info.EntityHistory);
         }
 
         private static string GetColumnName(PropertyInfo property)

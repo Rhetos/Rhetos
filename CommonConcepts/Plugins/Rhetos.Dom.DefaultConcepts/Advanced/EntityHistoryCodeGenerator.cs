@@ -44,8 +44,6 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode(FilterImplementationSnippet(info), RepositoryHelper.RepositoryMembers, info.HistoryEntity);
             codeBuilder.InsertCode(CreateHistoryOnUpdateSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Entity);
             codeBuilder.InsertCode(VerifyHistoryEntityTimeSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.HistoryEntity);
-
-            codeBuilder.InsertCode(DenyAllActionsOnFullHistorySnippet(info), WritableOrmDataStructureCodeGenerator.InitializationTag, info.FullHistoryEntity);        
         }
 
         private static string FilterInterfaceSnippet(EntityHistoryInfo info)
@@ -75,14 +73,6 @@ namespace Rhetos.Dom.DefaultConcepts
             info.HistoryEntity.Name,
             SqlUtility.Identifier(info.Entity.Module.Name),
             SqlUtility.Identifier(info.Entity.Name + "_AtTime"));
-        }
-
-        private static string DenyAllActionsOnFullHistorySnippet(EntityHistoryInfo info)
-        {
-            return string.Format(
-@"			throw new Rhetos.UserException(""Full history does not allow changes."");
-
-");
         }
 
         private static string CreateHistoryOnUpdateSnippet(EntityHistoryInfo info)
