@@ -35,17 +35,10 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(ModuleInfo))]
     public class ModuleCodeGenerator : IConceptCodeGenerator
     {
-        public class ModuleTag : Tag<ModuleInfo>
-        {
-            public ModuleTag(TagType tagType, string tagFormat, string nextTagFormat = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format, info.Name), nextTagFormat)
-            { }
-        }
-
-        public static readonly ModuleTag UsingTag = new ModuleTag(TagType.Appendable, "/*Module.Using {0}*/");
-        public static readonly ModuleTag NamespaceMembersTag = new ModuleTag(TagType.Appendable, "/*Module.Body {0}*/");
-        public static readonly ModuleTag RepositoryMembersTag = new ModuleTag(TagType.Appendable, "/*Module.RepositoryMembers {0}*/");
-        public static readonly ModuleTag HelperNamespaceMembersTag = new ModuleTag(TagType.Appendable, "/*Module.HelperNamespaceMembers {0}*/");
+        public static readonly CsTag<ModuleInfo> UsingTag = "Using";
+        public static readonly CsTag<ModuleInfo> NamespaceMembersTag = "Body";
+        public static readonly CsTag<ModuleInfo> RepositoryMembersTag = "RepositoryMembers";
+        public static readonly CsTag<ModuleInfo> HelperNamespaceMembersTag = "HelperNamespaceMembers";
 
         private const string StandardNamespacesSnippet =
 @"using System;

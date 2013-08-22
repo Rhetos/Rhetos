@@ -103,6 +103,10 @@
     <Compile Include="TypeFactoryBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Rhetos.Dsl.Interfaces\Rhetos.Dsl.Interfaces.csproj">
+      <Project>{f4acd412-2782-4191-8708-c7ae99b0cee9}</Project>
+      <Name>Rhetos.Dsl.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj">
       <Project>{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}</Project>
       <Name>Rhetos.Utilities</Name>

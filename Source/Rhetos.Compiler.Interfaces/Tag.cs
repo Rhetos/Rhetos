@@ -33,14 +33,15 @@ namespace Rhetos.Compiler
         CodeSnippet
     };
 
+    [Obsolete("Use CsTag or any other derivation of Tag2.")]
     public class Tag<T>
     {
-        public TagType TagType { get; private set; }
-        public string Format { get; private set; }
-        public Func<T, string, string> TagFormatter { get; private set; }
-        public string NextFormat { get; private set; }
-        public string FirstEvaluationContext { get; private set; }
-        public string NextEvaluationContext { get; private set; }
+        public TagType TagType { get; protected set; }
+        public string Format { get; protected set; }
+        public Func<T, string, string> TagFormatter { get; protected set; }
+        public string NextFormat { get; protected set; }
+        public string FirstEvaluationContext { get; protected set; }
+        public string NextEvaluationContext { get; protected set; }
 
         public Tag(TagType tagType, string tagFormat, Func<T, string, string> tagFormatter, string nextTagFormat = null, string firstEvaluationContext = null, string nextEvaluationContext = null)
         {
@@ -62,6 +63,7 @@ namespace Rhetos.Compiler
             return TagFormatter(info, Format);
         }
 
+        [Obsolete("Used with TagType.CodeSnippet")]
         public static implicit operator string(Tag<T> tag)
         {
             if (tag == null)
