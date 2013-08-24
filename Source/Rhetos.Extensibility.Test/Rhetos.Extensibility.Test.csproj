@@ -57,6 +57,7 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PluginsContainerAccessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PluginsContainerTest.cs" />
   </ItemGroup>
@@ -68,6 +69,10 @@
     <ProjectReference Include="..\Rhetos.Extensibility\Rhetos.Extensibility.csproj">
       <Project>{7eaf15bd-39c9-44ab-8834-ec0ae013a8a2}</Project>
       <Name>Rhetos.Extensibility</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.TestCommon\Rhetos.TestCommon.csproj">
+      <Project>{43ba178b-7642-473c-a43a-dbf58294635a}</Project>
+      <Name>Rhetos.TestCommon</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

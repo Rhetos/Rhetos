@@ -39,7 +39,9 @@ namespace Rhetos.Configuration.Autofac
             builder.RegisterInstance(ci).As<IComponentInterceptorRegistrator>();
             builder.RegisterModule(new ComponentInterceptionModule(ci));
 
-            builder.RegisterGeneric(typeof(PluginsContainer<>)).As(typeof(IPluginsContainer<>)).SingleInstance();
+            builder.RegisterGeneric(typeof(PluginsContainer<>)).As(typeof(IPluginsContainer<>))
+                //.SingleInstance(); // TODO: Fix IPersistenceTransaction usage and swith to InstancePerLifetimeScope.
+                .InstancePerLifetimeScope();
 
             base.Load(builder);
         }

@@ -55,7 +55,9 @@ namespace Rhetos.Generator
                 }
             }
 
-            return "Generated " + string.Join(", ", sortedGenerators.Select(gen => gen.GetType().Name)) + ".";
+            if (sortedGenerators.Length > 0)
+                return "Generated " + string.Join(", ", sortedGenerators.Select(gen => gen.GetType().Name)) + ".";
+            return "No generators.";
         }
     }
 }

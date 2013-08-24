@@ -21,31 +21,16 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Autofac.Features.Metadata;
+using Rhetos.TestCommon;
 
 namespace Rhetos.Extensibility.Test
 {
-    public class PluginsContainerAccessor<TPlugin> : PluginsContainer<TPlugin>
-    {
-        public PluginsContainerAccessor() : base(new Meta<TPlugin>[] {})
-        {
-        }
-
-        public static List<Type> Access_GetTypeHierarchy(Type type)
-        {
-            return GetTypeHierarchy(type);
-        }
-    }
-
     [TestClass]
     public class PluginsContainerTest
     {
-        class BaseClass
-        {
-        }
+        class BaseClass { public string Name; }
 
-        class DerivedClass : BaseClass
-        {
-        }
+        class DerivedClass : BaseClass { }
 
         [TestMethod]
         public void GetTypeHierarchyTest()
@@ -59,6 +44,25 @@ namespace Rhetos.Extensibility.Test
             expected = "";
             actual = string.Join("-", PluginsContainerAccessor<object>.Access_GetTypeHierarchy(o.GetType()).Select(type => type.Name));
             Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void Scope()
+        {
+            var context = "1";
+
+            var plugins = new PluginsContainer<BaseClass>(new[]
+            {
+                new Meta<Func<BaseClass>>(() => new BaseClass { Name = "base" + context }, new Dictionary<string, object> { { MefProvider.Implements, typeof(int) } }),
+                new Meta<Func<BaseClass>>(() => new DerivedClass { Name = "derived" + context }, new Dictionary<string, object> { { MefProvider.Implements, typeof(int) } })
+            });
+
+            Assert.AreEqual("base1, derived1", TestUtility.DumpSorted(plugins.GetPlugins(), p => p.Name));
+            Assert.AreEqual("base1, derived1", TestUtility.DumpSorted(plugins.GetImplementations(typeof(int)), p => p.Name));
+
+            context = "2";
+            Assert.AreEqual("base2, derived2", TestUtility.DumpSorted(plugins.GetPlugins(), p => p.Name));
+            Assert.AreEqual("base2, derived2", TestUtility.DumpSorted(plugins.GetImplementations(typeof(int)), p => p.Name));
         }
     }
 }

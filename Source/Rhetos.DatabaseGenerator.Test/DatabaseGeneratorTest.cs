@@ -246,9 +246,9 @@ namespace Rhetos.DatabaseGenerator.Test
 
             var plugins = new PluginsContainer<IConceptDatabaseDefinition>(new []
             {
-                new Meta<IConceptDatabaseDefinition>(new NullImplementation(), new Dictionary<string, object> { }),
-                new Meta<IConceptDatabaseDefinition>(new SimpleConceptImplementation(), new Dictionary<string, object> { }),
-                new Meta<IConceptDatabaseDefinition>(new DependentConceptImplementation(), new Dictionary<string, object> { })
+                new Meta<Func<IConceptDatabaseDefinition>>(new Func<IConceptDatabaseDefinition>(() => new NullImplementation()), new Dictionary<string, object> { }),
+                new Meta<Func<IConceptDatabaseDefinition>>(new Func<IConceptDatabaseDefinition>(() => new SimpleConceptImplementation()), new Dictionary<string, object> { }),
+                new Meta<Func<IConceptDatabaseDefinition>>(new Func<IConceptDatabaseDefinition>(() => new DependentConceptImplementation()), new Dictionary<string, object> { })
             });
             var databaseGenerator = new DatabaseGenerator_Accessor(null, plugins);
 
@@ -581,11 +581,11 @@ namespace Rhetos.DatabaseGenerator.Test
 
             var dslModel = new MockDslModel(new[] { ci1, ci2, ci3 });
 
-            var plugins = new PluginsContainer<IConceptDatabaseDefinition>(new Meta<IConceptDatabaseDefinition>[]
+            var plugins = new PluginsContainer<IConceptDatabaseDefinition>(new[]
                 {
-                    new Meta<IConceptDatabaseDefinition>(new NullImplementation(), new Dictionary<string, object> { }),
-                    new Meta<IConceptDatabaseDefinition>(new SimpleConceptImplementation(), new Dictionary<string, object> { { "Implements", typeof(SimpleCi) } }),
-                    new Meta<IConceptDatabaseDefinition>(new ExtendingConceptImplementation(), new Dictionary<string, object> { { "Implements", typeof(SimpleCi3) } })
+                    new Meta<Func<IConceptDatabaseDefinition>>(new Func<IConceptDatabaseDefinition>(() => new NullImplementation()), new Dictionary<string, object> { }),
+                    new Meta<Func<IConceptDatabaseDefinition>>(new Func<IConceptDatabaseDefinition>(() => new SimpleConceptImplementation()), new Dictionary<string, object> { { "Implements", typeof(SimpleCi) } }),
+                    new Meta<Func<IConceptDatabaseDefinition>>(new Func<IConceptDatabaseDefinition>(() => new ExtendingConceptImplementation()), new Dictionary<string, object> { { "Implements", typeof(SimpleCi3) } })
                 });
 
             DatabaseGenerator_Accessor databaseGenerator = new DatabaseGenerator_Accessor(dslModel, plugins);

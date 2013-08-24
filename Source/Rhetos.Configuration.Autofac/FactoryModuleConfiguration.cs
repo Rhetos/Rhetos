@@ -40,12 +40,7 @@ namespace Rhetos.Configuration.Autofac
             builder.RegisterType<TypeFactoryBuilder>().As<ITypeFactoryBuilder>();
             builder.RegisterGeneric(typeof(InterceptionFactory<>)).As(typeof(IInterceptionFactory<>)).SingleInstance();
 
-            // Allow DSL packages and other plugins to register their own specific types to Autofac:
-
-            var assemblyCatalogs = PluginsUtility.ListPluginsAssemblies().Select(a => new AssemblyCatalog(a));
-            var container = new CompositionContainer(new AggregateCatalog(assemblyCatalogs));
-            foreach (var pluginModule in container.GetExports<Module>())
-                builder.RegisterModule(pluginModule.Value);
+            PluginsUtility.RegisterPluginModules(builder);
 
             base.Load(builder);
         }
