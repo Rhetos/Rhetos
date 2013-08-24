@@ -78,6 +78,10 @@
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Autofac, Version=2.5.2.830, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\External\Autofac\Autofac.dll</HintPath>
+    </Reference>
     <Reference Include="NHibernate">
       <HintPath>..\..\External\NHibernate\NHibernate.dll</HintPath>
     </Reference>

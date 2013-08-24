@@ -43,30 +43,26 @@ namespace Rhetos.Persistence.NHibernate
 {
     public class NHibernatePersistenceEngine : IPersistenceEngine
     {
-        private readonly NHibernatePersistenceTransaction.Factory _transactionFactory;
-        private readonly IAspectFactory _aspectFactory;
         private readonly ILogger _performanceLogger;
         private readonly INHibernateMapping _nHibernateMapping;
         private readonly IDomainObjectModel _domainObjectModel;
         private readonly ConnectionString _connectionString;
         private readonly IEnumerable<INHibernateConfigurationExtension> _nHibernateConfigurationExtensions;
+        private readonly ILogProvider _logProvider;
 
         public NHibernatePersistenceEngine(
-            NHibernatePersistenceTransaction.Factory transactionFactory,
-            IAspectFactory aspectFactory,
             ILogProvider logProvider,
             INHibernateMapping nHibernateMapping,
             IDomainObjectModel domainObjectModel,
             ConnectionString connectionString,
             IEnumerable<INHibernateConfigurationExtension> nHibernateConfigurationExtensions)
         {
-            _transactionFactory = transactionFactory;
-            _aspectFactory = aspectFactory;
             _performanceLogger = logProvider.GetLogger("Performance");
             _nHibernateMapping = nHibernateMapping;
             _domainObjectModel = domainObjectModel;
             _connectionString = connectionString;
             _nHibernateConfigurationExtensions = nHibernateConfigurationExtensions;
+            _logProvider = logProvider;
         }
 
         private ISessionFactory _sessionFactory;
@@ -93,7 +89,8 @@ namespace Rhetos.Persistence.NHibernate
                     throw new FrameworkException(DatabaseLanguageError);
             }
 
-            return _aspectFactory.CreateProxy<IPersistenceTransaction>(_transactionFactory(session, transaction));
+            return
+                new NHibernatePersistenceTransaction(session, transaction, _logProvider);
         }
 
         private static void ExecuteSqlInSession(ISession session, string sql)

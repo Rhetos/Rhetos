@@ -27,6 +27,10 @@ namespace Rhetos.Persistence
     {
         ISession NHibernateSession { get; }
 
+        /// <summary>
+        /// This function is used for more robust error handling of the IPersistenceTransaction instance lifetime.
+        /// </summary>
+        void Initialize();
         void ApplyChanges();
         void DiscardChanges();
     }

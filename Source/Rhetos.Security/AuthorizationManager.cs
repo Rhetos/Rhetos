@@ -38,34 +38,44 @@ namespace Rhetos.Security
     public class AuthorizationManager : IAuthorizationManager
     {
         private readonly IPrincipalProvider _principalProvider;
-        private readonly ITypeFactory _typeFactory;
         private readonly IDomainObjectModel _domainObjectModel;
-        private readonly IPersistenceEngine _persistenceEngine;
+        private readonly Func<IPersistenceTransaction> _persistenceTransactionFactory;
         private readonly IPluginsContainer<IClaimProvider> _contextPermissionsRepository;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
         private readonly bool _allowBuiltinAdminOverride;
         private readonly Lazy<Type> _claimType;
+        private readonly Func<IPermissionLoader> _permissionLoaderFactory; // TODO: Can this work without Func?
 
         public AuthorizationManager(
             IPluginsContainer<IClaimProvider> contextPermissionsRepository, 
             IPrincipalProvider principalProvider,
-            ITypeFactory typeFactory, 
             ILogProvider logProvider,
             IDomainObjectModel domainObjectModel,
-            IPersistenceEngine persistenceEngine)
+            Func<IPersistenceTransaction> persistenceTransactionFactory,
+            Func<IPermissionLoader> permissionLoaderFactory)
         {
             _principalProvider = principalProvider;
-            _typeFactory = typeFactory;
             _domainObjectModel = domainObjectModel;
-            _persistenceEngine = persistenceEngine;
+            _persistenceTransactionFactory = persistenceTransactionFactory;
             _contextPermissionsRepository = contextPermissionsRepository;
             _logger = logProvider.GetLogger("AuthorizationManager");
             _performanceLogger = logProvider.GetLogger("Performance");
+            _permissionLoaderFactory = permissionLoaderFactory;
 
             _allowBuiltinAdminOverride = FromConfigallowBuiltinAdminOverride();
 
-            _claimType = new Lazy<Type>(() => domainObjectModel.ResolveType("Common.Claim"));
+            _claimType = new Lazy<Type>(() =>
+            {
+                try
+                {
+                    return domainObjectModel.ResolveType("Common.Claim");
+                }
+                catch (Exception ex)
+                {
+                    throw new FrameworkException(ex.Message + " Probably missing package CommonConcepts.", ex);
+                }
+            });
         }
 
         private static bool FromConfigallowBuiltinAdminOverride()
@@ -117,15 +127,14 @@ namespace Rhetos.Security
             // Force-register the object model to TypeFactory.
             var objectModel = _domainObjectModel.ObjectModel;
 
-            using (var tran = _persistenceEngine.BeginTransaction(new NullUserInfo()))
-            using (var inner = _typeFactory.CreateInnerTypeFactory())
+            using (var tran = _persistenceTransactionFactory())
             {
-                inner.RegisterInstance(tran.NHibernateSession);
-                inner.RegisterInstance<IUserInfo>(new NullUserInfo());
-                inner.RegisterInstance<ISqlExecuter>(new NullSqlExecuter());
-                inner.RegisterInstance(inner);
+                tran.Initialize();
 
-                IPermission[] rawData = inner.Resolve<IPermissionLoader>().LoadPermissions(requiredClaims, membership);
+                //inner.RegisterInstance<IUserInfo>(new NullUserInfo());
+                //inner.RegisterInstance<ISqlExecuter>(new NullSqlExecuter());
+
+                IPermission[] rawData = _permissionLoaderFactory().LoadPermissions(requiredClaims, membership);
 
                 HashSet<string> claimsWithRight = new HashSet<string>();
                 foreach (IPermission permission in rawData)
@@ -155,7 +164,7 @@ namespace Rhetos.Security
 
         private IClaim CreateClaim(string resource, string claimRight)
         {
-            IClaim claim = _typeFactory.CreateInstance<IClaim>(_claimType.Value);
+            IClaim claim = (IClaim)Activator.CreateInstance(_claimType.Value);
             claim.ClaimResource = resource;
             claim.ClaimRight = claimRight;
 

@@ -40,7 +40,6 @@ namespace Rhetos
         private readonly ILogger _commandResultsLogger;
         private readonly ILogger _performanceLogger;
         private readonly IAuthorizationManager _authorizationManager;
-        private readonly Func<WcfUserInfo> _wcfUserInfoFactory;
         private readonly IDomainObjectModel _domainObjectModel;
 
         public RhetosService(
@@ -48,7 +47,6 @@ namespace Rhetos
             IEnumerable<ICommandInfo> commands,
             ILogProvider logProvider,
             IAuthorizationManager authorizationManager,
-            Func<WcfUserInfo> wcfUserInfoFactory,
             IDomainObjectModel domainObjectModel)
         {
             _processingEngine = processingEngine;
@@ -58,7 +56,6 @@ namespace Rhetos
             _commandResultsLogger = logProvider.GetLogger("IServerApplication CommandResults");
             _performanceLogger = logProvider.GetLogger("Performance");
             _authorizationManager = authorizationManager;
-            _wcfUserInfoFactory = wcfUserInfoFactory;
             _domainObjectModel = domainObjectModel;
         }
 
@@ -117,7 +114,7 @@ namespace Rhetos
 
             _performanceLogger.Write(stopwatch, "RhetosService.ExecuteInner: Commands authorized.");
 
-            var result = _processingEngine.Execute(processingCommands, _wcfUserInfoFactory());
+            var result = _processingEngine.Execute(processingCommands);
 
             _performanceLogger.Write(stopwatch, "RhetosService.ExecuteInner: Commands executed.");
 

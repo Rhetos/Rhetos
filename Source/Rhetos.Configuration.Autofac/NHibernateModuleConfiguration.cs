@@ -33,6 +33,7 @@ using Rhetos.Extensibility;
 using Autofac.Builder;
 using Autofac.Core;
 using Rhetos.Dom;
+using NHibernate;
 
 namespace Rhetos.Configuration.Autofac
 {
@@ -56,11 +57,12 @@ namespace Rhetos.Configuration.Autofac
             else
                 builder.RegisterType<NHibernateMappingLoader>().WithParameter("nHibernateMappingFile", _loadNhMappingFromFile).As<INHibernateMapping>().SingleInstance();
 
-            builder.RegisterType<NHibernatePersistenceTransaction>();
-            builder.RegisterGeneratedFactory<NHibernatePersistenceTransaction.Factory>();
             builder.RegisterType<NHibernatePersistenceEngine>().As<IPersistenceEngine>().SingleInstance();
             PluginsUtility.RegisterPlugins<IConceptMappingCodeGenerator>(builder);
             PluginsUtility.RegisterPlugins<INHibernateConfigurationExtension>(builder);
+
+            builder.Register<IPersistenceTransaction>(c => c.Resolve<IPersistenceEngine>().BeginTransaction(c.Resolve<IUserInfo>())).InstancePerLifetimeScope();
+            builder.Register<ISession>(c => c.Resolve<IPersistenceTransaction>().NHibernateSession).InstancePerLifetimeScope();
 
             base.Load(builder);
         }

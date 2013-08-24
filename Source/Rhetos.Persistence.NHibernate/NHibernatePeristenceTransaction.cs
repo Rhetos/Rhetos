@@ -22,6 +22,7 @@ using NHibernate.Linq;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using Rhetos.Logging;
+using Rhetos.Utilities;
 
 namespace Rhetos.Persistence.NHibernate
 {
@@ -30,7 +31,6 @@ namespace Rhetos.Persistence.NHibernate
         private ISession _session;
         private ITransaction _transaction;
         private ILogger _logger;
-        public delegate NHibernatePersistenceTransaction Factory(ISession session, ITransaction transaction); // TODO: This might be unnecessary when Autofac offers Func<ISession, ITransaction, IPersistenceTransaction>.
 
         enum TransactionState { Active, Submitted, Rollbacked }
         private TransactionState _state;
@@ -43,13 +43,43 @@ namespace Rhetos.Persistence.NHibernate
             _state = TransactionState.Active;
         }
 
+        private bool _initialized;
+        private bool _disposed;
+
+        /// <summary>
+        /// This function is used for more robust error handling of the IPersistenceTransaction instance lifetime.
+        /// </summary>
+        public void Initialize()
+        {
+            if (_disposed)
+                throw new FrameworkException("Trying to initialize already disposed NHibernatePersistenceTransaction.");
+            if (_initialized)
+                throw new FrameworkException("Trying to initialize already initialized NHibernatePersistenceTransaction.");
+            
+            _initialized = true;
+        }
+
+        private void CheckIfInstanceIsActive(string context)
+        {
+            if (_disposed)
+                throw new FrameworkException("Trying to " + context + " using disposed NHibernatePersistenceTransaction.");
+            if (!_initialized)
+                throw new FrameworkException("Trying to " + context + " using uninitialized NHibernatePersistenceTransaction.");
+        }
+
         public ISession NHibernateSession
         {
-            get { return _session; }
+            get
+            {
+                CheckIfInstanceIsActive("get ISession");
+                return _session;
+            }
         }
 
         public void ApplyChanges()
         {
+            CheckIfInstanceIsActive("apply changes");
+
             if (_state != TransactionState.Active)
                 throw new FrameworkException(string.Format("Cannot apply changes. Transaction is already {0}.", _state));
 
@@ -60,6 +90,8 @@ namespace Rhetos.Persistence.NHibernate
 
         public void DiscardChanges()
         {
+            CheckIfInstanceIsActive("discard changes");
+
             if (_state == TransactionState.Rollbacked) // It is acceptable for DiscardChanges to be called multiple time during the error handlinga process.
                 return;
             if (_state != TransactionState.Active)
@@ -78,10 +110,11 @@ namespace Rhetos.Persistence.NHibernate
 
         public void Dispose()
         {
+            _disposed = true;
             FreeResources();
         }
 
-        public void FreeResources()
+        private void FreeResources()
         {
             if (_transaction != null)
             {
