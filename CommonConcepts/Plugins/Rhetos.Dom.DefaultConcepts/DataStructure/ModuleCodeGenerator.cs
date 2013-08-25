@@ -136,6 +136,7 @@ namespace {0}._Helper
             // Other classes used in domain object model:
             codeBuilder.AddReferencesFromDependency(typeof(NHibernate.Linq.LinqExtensionMethods)); // Includes reference to NHibernate.dll.
             codeBuilder.AddReferencesFromDependency(typeof(System.Runtime.Serialization.DataContractAttribute)); // Includes reference to System.Runtime.Serialization.dll.
+            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.IPersistenceTransaction));
 
             codeBuilder.InsertCode(ModuleRepositoryInCommonRepositorySnippet(info), CommonDomRepositoryMembersTag);
         }
@@ -172,8 +173,8 @@ namespace {0}._Helper
 
     public class ExecutionContext
     {{
-        protected Lazy<NHibernate.ISession> _nHibernateSession;
-        public NHibernate.ISession NHibernateSession {{ get {{ return _nHibernateSession.Value; }} }}
+        protected Lazy<Rhetos.Persistence.IPersistenceTransaction> _persistenceTransaction;
+        public NHibernate.ISession NHibernateSession {{ get {{ return _persistenceTransaction.Value.NHibernateSession; }} }}
 
         protected Lazy<Rhetos.Utilities.IUserInfo> _userInfo;
         public Rhetos.Utilities.IUserInfo UserInfo {{ get {{ return _userInfo.Value; }} }}
@@ -190,13 +191,13 @@ namespace {0}._Helper
 
         // This constructor is used for automatic parameter injection with autofac.
         public ExecutionContext(
-            Lazy<NHibernate.ISession> nHibernateSession,
+            Lazy<Rhetos.Persistence.IPersistenceTransaction> persistenceTransaction,
             Lazy<Rhetos.Utilities.IUserInfo> userInfo,
             Lazy<Rhetos.Utilities.ISqlExecuter> sqlExecuter,
             Lazy<Rhetos.Security.IAuthorizationManager> authorizationManager,
             Lazy<Rhetos.Utilities.ResourcesFolder> resourcesFolder{5})
         {{
-            _nHibernateSession = nHibernateSession;
+            _persistenceTransaction = persistenceTransaction;
             _userInfo = userInfo;
             _sqlExecuter = sqlExecuter;
             _authorizationManager = authorizationManager;

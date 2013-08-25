@@ -23,14 +23,6 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Linq;
 using System.Linq.Expressions;
-using NHibernate.Cfg;
-using NHibernate;
-using NHibernate.Cfg.Loquacious;
-using NHibernate.Hql.Ast;
-using NHibernate.Linq;
-using NHibernate.Linq.Functions;
-using NHibernate.Linq.Visitors;
-using NHibernate.Tool.hbm2ddl;
 using Rhetos.Extensibility;
 using Rhetos.Factory;
 using Rhetos.Utilities;
@@ -38,6 +30,9 @@ using Rhetos.Dom;
 using Rhetos.Logging;
 using Oracle.DataAccess.Client;
 using Oracle.DataAccess.Types;
+using NHibernate;
+using NHibernate.Cfg;
+using NHibernate.Tool.hbm2ddl;
 
 namespace Rhetos.Persistence.NHibernate
 {
@@ -48,27 +43,28 @@ namespace Rhetos.Persistence.NHibernate
         private readonly IDomainObjectModel _domainObjectModel;
         private readonly ConnectionString _connectionString;
         private readonly IEnumerable<INHibernateConfigurationExtension> _nHibernateConfigurationExtensions;
-        private readonly ILogProvider _logProvider;
+        private readonly Func<IUserInfo> _userInfoFactory;
 
         public NHibernatePersistenceEngine(
             ILogProvider logProvider,
             INHibernateMapping nHibernateMapping,
             IDomainObjectModel domainObjectModel,
             ConnectionString connectionString,
-            IEnumerable<INHibernateConfigurationExtension> nHibernateConfigurationExtensions)
+            IEnumerable<INHibernateConfigurationExtension> nHibernateConfigurationExtensions,
+            Func<IUserInfo> userInfoFactory)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _nHibernateMapping = nHibernateMapping;
             _domainObjectModel = domainObjectModel;
             _connectionString = connectionString;
             _nHibernateConfigurationExtensions = nHibernateConfigurationExtensions;
-            _logProvider = logProvider;
+            _userInfoFactory = userInfoFactory;
         }
 
         private ISessionFactory _sessionFactory;
         private readonly object _sessionFactoryLock = new object();
 
-        public IPersistenceTransaction BeginTransaction(IUserInfo userInfo)
+        public Tuple<ISession, ITransaction> BeginTransaction()
         {
             if (_sessionFactory == null)
                 _sessionFactory = PrepareNHSessionFactory();
@@ -76,6 +72,7 @@ namespace Rhetos.Persistence.NHibernate
             ISession session = _sessionFactory.OpenSession();
             ITransaction transaction = session.BeginTransaction();
 
+            IUserInfo userInfo = _userInfoFactory();
             if (userInfo.IsUserRecognized)
             {
                 if (SqlUtility.DatabaseLanguage == "MsSql")
@@ -89,8 +86,7 @@ namespace Rhetos.Persistence.NHibernate
                     throw new FrameworkException(DatabaseLanguageError);
             }
 
-            return
-                new NHibernatePersistenceTransaction(session, transaction, _logProvider);
+            return Tuple.Create(session, transaction);
         }
 
         private static void ExecuteSqlInSession(ISession session, string sql)

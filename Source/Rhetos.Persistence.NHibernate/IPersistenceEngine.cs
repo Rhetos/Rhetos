@@ -22,11 +22,12 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics.Contracts;
 using Rhetos.Utilities;
+using NHibernate;
 
-namespace Rhetos.Persistence
+namespace Rhetos.Persistence.NHibernate
 {
     public interface IPersistenceEngine
     {
-        IPersistenceTransaction BeginTransaction(IUserInfo userInfo);
+        Tuple<ISession, ITransaction> BeginTransaction();
     }
 }

@@ -28,35 +28,40 @@ namespace Rhetos.Persistence.NHibernate
 {
     public class NHibernatePersistenceTransaction : IPersistenceTransaction
     {
+        private readonly IPersistenceEngine _persistenceEngine;
+        private readonly ILogger _logger;
+
         private ISession _session;
         private ITransaction _transaction;
-        private ILogger _logger;
-
+        private bool _initialized;
+        private bool _disposed;
         enum TransactionState { Active, Submitted, Rollbacked }
         private TransactionState _state;
 
-        public NHibernatePersistenceTransaction(ISession session, ITransaction transaction, ILogProvider logProvider)
+        public NHibernatePersistenceTransaction(IPersistenceEngine persistenceEngine, ILogProvider logProvider)
         {
-            _session = session;
-            _transaction = transaction;
+            _persistenceEngine = persistenceEngine;
             _logger = logProvider.GetLogger("NHibernatePersistenceTransaction");
             _state = TransactionState.Active;
         }
 
-        private bool _initialized;
-        private bool _disposed;
-
         /// <summary>
-        /// This function is used for more robust error handling of the IPersistenceTransaction instance lifetime.
+        /// It is allowed to reinitialized a disposed NHibernatePersistenceTransaction.
+        /// Initilization is separated from constructor to allow manual control over transaction lifetime (see ProcessingEngine).
+        /// Rhetos uses IoC container to provide IPersistenceTransaction to its components (such as entity repositories); all components
+        /// use the same instance, but only one at a time controls it's initialization and disposal.
         /// </summary>
         public void Initialize()
         {
-            if (_disposed)
-                throw new FrameworkException("Trying to initialize already disposed NHibernatePersistenceTransaction.");
-            if (_initialized)
-                throw new FrameworkException("Trying to initialize already initialized NHibernatePersistenceTransaction.");
-            
+            if (_initialized && !_disposed)
+                throw new FrameworkException("Trying to initialize NHibernatePersistenceTransaction that is already initialized and not disposed.");
+
+            var newTran = _persistenceEngine.BeginTransaction();
+            _session = newTran.Item1;
+            _transaction = newTran.Item2;
             _initialized = true;
+            _disposed = false;
+            _state = TransactionState.Active;
         }
 
         private void CheckIfInstanceIsActive(string context)
