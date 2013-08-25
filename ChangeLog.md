@@ -2,8 +2,10 @@
 ------------------
 
 Breaking changes:
-* The C# code snippet in QueryableExtension must assign both ID and Base property of the created instance. Previously it was enough to assign only the Base property in certain situations.
 
+* The C# code snippet in QueryableExtension must assign both ID and Base property of the created instance. Previously it was enough to assign only the Base property in certain situations.
+* Uninitialized ShortString property has null value, previously it was empty string. Uninitialized Guid property is Guid.Empty, previously it was Guid.NewGuid(). Note that when saving an entity, the ID value will still be automatically generated if it was not set in advance.
+* Modified interface of Tag class (used by code generator plugins).
 
 0.9.7 (2013-08-02)
 ------------------
