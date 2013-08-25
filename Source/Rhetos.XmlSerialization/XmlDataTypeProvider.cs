@@ -49,7 +49,7 @@ namespace Rhetos.XmlSerialization
 
         public IDataArray CreateDomainDataArray(string domainType) 
         {
-            var type = DomainObjectModel.ResolveType(domainType);
+            var type = DomainObjectModel.GetType(domainType);
             return new XmlDataArray(type);
         }
     }

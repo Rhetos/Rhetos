@@ -30,7 +30,6 @@ using Rhetos.Utilities;
 using Rhetos.DatabaseGenerator;
 using Rhetos.Deployment;
 using Rhetos.Dom;
-using Rhetos.Factory;
 using Rhetos.Logging;
 using Rhetos.Persistence.NHibernate;
 using Rhetos.RestGenerator;

@@ -27,7 +27,6 @@ using Rhetos.Extensibility;
 using Rhetos.Dsl;
 using Rhetos.Compiler;
 using System.Diagnostics.Contracts;
-using Rhetos.Factory;
 using Rhetos.Dom;
 using Rhetos.Persistence;
 using Rhetos.Processing.DefaultCommands;

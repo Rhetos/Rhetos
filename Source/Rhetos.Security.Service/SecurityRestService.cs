@@ -24,7 +24,6 @@ using System.ServiceModel;
 using System.ServiceModel.Web;
 using System.Net;
 using Rhetos;
-using Rhetos.Factory;
 using Rhetos.Processing.DefaultCommands;
 using Rhetos.Utilities;
 using Rhetos.Dom.DefaultConcepts;
@@ -36,9 +35,9 @@ namespace Rhetos.Security.Service
     {
         private readonly RestImpl _restImpl;
 
-        public SecurityRestService(ITypeFactory typeFactory, IDomainObjectModel domainObjectModel)
+        public SecurityRestService(IDomainObjectModel domainObjectModel)
         {
-            _restImpl = new RestImpl(typeFactory, domainObjectModel);
+            _restImpl = new RestImpl(domainObjectModel);
         }
 
         [OperationBehavior(Impersonation = ImpersonationOption.Required)]

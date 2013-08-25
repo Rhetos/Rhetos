@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Rhetos.Compiler;
-using Rhetos.Factory;
 using Rhetos.Dsl;
 using Autofac;
 using Rhetos.Utilities;

@@ -24,7 +24,6 @@ using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using System.Globalization;
 using Rhetos.Utilities;
-using Rhetos.Factory;
 using Rhetos.Compiler;
 using Rhetos.Logging;
 
@@ -276,18 +275,6 @@ namespace Rhetos.DatabaseGenerator
                            {
                                DependsOn = application1, Dependent = applications2ByConceptInfoKey[application1.ConceptInfoKey]
                            });
-        }
-
-        public static IConceptDatabaseDefinition CreateDatabasePluginInstance(ITypeFactory typeFactory, Type databaseGeneratorPluginType)
-        {
-            var pluginInstance = typeFactory.CreateInstance(databaseGeneratorPluginType) as IConceptDatabaseDefinition;
-            if (pluginInstance == null)
-                throw new FrameworkException(string.Format(CultureInfo.InvariantCulture,
-                    "Could not create instance of \"{0}\" from type \"{1}\". Make sure that this type implements {2} interface compatible with currently used {2} interface.",
-                    typeof(IConceptDatabaseDefinition).AssemblyQualifiedName,
-                    databaseGeneratorPluginType.AssemblyQualifiedName,
-                    typeof(IConceptDatabaseDefinition).Name));
-            return pluginInstance;
         }
 
         protected void ComputeCreateAndRemoveQuery(List<NewConceptApplication> newConceptApplications, IEnumerable<IConceptInfo> allConceptInfos)

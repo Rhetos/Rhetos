@@ -98,10 +98,6 @@
       <Project>{ddc73f5f-bb0e-4944-92cc-4ac937398499}</Project>
       <Name>Rhetos.Extensibility.Interfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Source\Rhetos.Factory.Interfaces\Rhetos.Factory.Interfaces.csproj">
-      <Project>{b5a06d77-e076-4fd6-acc5-dbe6bfed49d8}</Project>
-      <Name>Rhetos.Factory.Interfaces</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\Source\Rhetos.Persistence.Interfaces\Rhetos.Persistence.Interfaces.csproj">
       <Project>{5e3bbd83-91cb-4fba-81b2-79a81ec94d70}</Project>
       <Name>Rhetos.Persistence.Interfaces</Name>

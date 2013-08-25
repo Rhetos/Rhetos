@@ -24,7 +24,6 @@ using System.Collections.Generic;
 using Rhetos.Dsl;
 using System.Linq;
 using Rhetos.Extensibility;
-using Rhetos.Factory;
 using Rhetos.Logging;
 using Rhetos.TestCommon;
 using Rhetos.DatabaseGenerator;

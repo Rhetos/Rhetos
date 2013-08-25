@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Rhetos.Dom;
-using Rhetos.Factory;
 using Rhetos.Processing;
 using Rhetos.Utilities;
 using Rhetos.Extensibility;

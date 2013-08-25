@@ -22,7 +22,6 @@ using System.Linq;
 using System.Text;
 using Rhetos.Utilities;
 using Rhetos.Persistence;
-using Rhetos.Factory;
 using System.Diagnostics;
 using System.Globalization;
 using Rhetos.Extensibility;

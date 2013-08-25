@@ -27,19 +27,17 @@ using Rhetos.Compiler;
 using System.Reflection;
 using Rhetos.Extensibility;
 using Rhetos.Utilities;
-using Rhetos.Factory;
 using Rhetos.Logging;
 using ICodeGenerator = Rhetos.Compiler.ICodeGenerator;
 
 namespace Rhetos.Dom
 {
-    public class DomGenerator : DomProvider, IDomGenerator
+    public class DomGenerator : IDomainObjectModel, IDomGenerator
     {
         private readonly IPluginsContainer<IConceptCodeGenerator> _pluginRepository;
         private Assembly _objectModel;
         private readonly ICodeGenerator _codeGenerator; //********????***********/
         private readonly ILogProvider _log;
-        private readonly ITypeFactory _typeFactory;
         private readonly IAssemblyGenerator _assemblyGenerator;
         private readonly string _assemblyName;
 
@@ -51,7 +49,6 @@ namespace Rhetos.Dom
             IPluginsContainer<IConceptCodeGenerator> plugins,
             ICodeGenerator codeGenerator,
             ILogProvider logProvider,
-            ITypeFactory typeFactory,
             IAssemblyGenerator assemblyGenerator,
             string assemblyName)
         {
@@ -59,11 +56,10 @@ namespace Rhetos.Dom
             _pluginRepository = plugins;
             _codeGenerator = codeGenerator;
             _log = logProvider;
-            _typeFactory = typeFactory;
             _assemblyGenerator = assemblyGenerator;
         }
 
-        public override Assembly ObjectModel
+        public Assembly ObjectModel
         {
             get
             {
@@ -89,9 +85,6 @@ namespace Rhetos.Dom
             };
 
             _objectModel = _assemblyGenerator.Generate(assemblySource, parameters);
-
-            RegisterTypes(_objectModel, _typeFactory);
         }
-
     }
 }

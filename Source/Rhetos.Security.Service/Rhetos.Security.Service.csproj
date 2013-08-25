@@ -84,10 +84,6 @@
       <Project>{91bdf488-0921-4969-8a53-32169338d8db}</Project>
       <Name>Rhetos.Dom.Interfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Factory.Interfaces\Rhetos.Factory.Interfaces.csproj">
-      <Project>{b5a06d77-e076-4fd6-acc5-dbe6bfed49d8}</Project>
-      <Name>Rhetos.Factory.Interfaces</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Processing.Interfaces\Rhetos.Processing.Interfaces.csproj">
       <Project>{4D2FCD7F-D9BB-4E55-B9C6-FDF352F6DCF3}</Project>
       <Name>Rhetos.Processing.Interfaces</Name>

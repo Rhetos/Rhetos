@@ -24,7 +24,6 @@ using Rhetos.Dom;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
-using Rhetos.Factory;
 using Rhetos.Logging;
 using Rhetos.Persistence;
 using System.Linq;
@@ -60,7 +59,7 @@ namespace Rhetos.Security
                 {
                     try
                     {
-                        return domainObjectModel.ResolveType("Common.Claim");
+                        return domainObjectModel.GetType("Common.Claim");
                     }
                     catch (Exception ex)
                     {

@@ -26,9 +26,9 @@ using Rhetos.Extensibility;
 
 namespace Rhetos.Dom
 {
+    // TODO: Same as IDomainObjectModel
     public interface IDomGenerator
     {
         Assembly ObjectModel { get; }
     }
-
 }

@@ -50,7 +50,6 @@ namespace Rhetos
             builder.RegisterModule(new ExtensibilityModuleConfiguration());
             builder.RegisterModule(new DslModuleConfiguration());
             builder.RegisterModule(new CompilerConfiguration());
-            builder.RegisterModule(new FactoryModuleConfiguration());
             builder.RegisterModule(new DomModuleConfiguration(_domAssemblyName, DomAssemblyUsage.Load));
             builder.RegisterModule(new NHibernateModuleConfiguration(Path.Combine(_rootPath, _nHibernateMappingFile)));
             builder.RegisterModule(new ProcessingModuleConfiguration());

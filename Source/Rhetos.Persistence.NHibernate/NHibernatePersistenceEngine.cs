@@ -24,7 +24,6 @@ using System.Reflection;
 using System.Linq;
 using System.Linq.Expressions;
 using Rhetos.Extensibility;
-using Rhetos.Factory;
 using Rhetos.Utilities;
 using Rhetos.Dom;
 using Rhetos.Logging;

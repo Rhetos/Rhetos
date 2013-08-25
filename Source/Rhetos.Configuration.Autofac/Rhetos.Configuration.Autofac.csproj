@@ -111,7 +111,6 @@
     <Compile Include="DomModuleConfiguration.cs" />
     <Compile Include="DslModuleConfiguration.cs" />
     <Compile Include="ExtensibilityModuleConfiguration.cs" />
-    <Compile Include="FactoryModuleConfiguration.cs" />
     <Compile Include="NHibernateModuleConfiguration.cs" />
     <Compile Include="ProcessingModuleConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -166,14 +165,6 @@
     <ProjectReference Include="..\Rhetos.Extensibility\Rhetos.Extensibility.csproj">
       <Project>{7eaf15bd-39c9-44ab-8834-ec0ae013a8a2}</Project>
       <Name>Rhetos.Extensibility</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Factory.Interfaces\Rhetos.Factory.Interfaces.csproj">
-      <Project>{b5a06d77-e076-4fd6-acc5-dbe6bfed49d8}</Project>
-      <Name>Rhetos.Factory.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Factory\Rhetos.Factory.csproj">
-      <Project>{89615e35-a3c7-48ac-b8bc-dd5bfefbda2c}</Project>
-      <Name>Rhetos.Factory</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rhetos.Generator.Interfaces\Rhetos.Generator.Interfaces.csproj">
       <Project>{f0440cf2-2c1a-49e1-a818-3ad978d6d4bc}</Project>

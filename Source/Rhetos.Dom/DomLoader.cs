@@ -22,32 +22,28 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Rhetos.Factory;
 using Rhetos.Logging;
 
 namespace Rhetos.Dom
 {
-    public class DomLoader : DomProvider
+    public class DomLoader : IDomainObjectModel
     {
         private Assembly _objectModel;
 
-        private readonly ITypeFactory _typeFactory;
         private readonly string _assemblyName;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
 
         public DomLoader(
-            ITypeFactory typeFactory,
             string assemblyName,
             ILogProvider logProvider)
         {
             _assemblyName = assemblyName;
-            _typeFactory = typeFactory;
             _logger = logProvider.GetLogger("DomLoader");
             _performanceLogger = logProvider.GetLogger("Performance");
         }
 
-        public override Assembly ObjectModel
+        public Assembly ObjectModel
         {
             get
             {

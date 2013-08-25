@@ -29,7 +29,6 @@ using Rhetos.Extensibility;
 using System.Collections.Generic;
 using Rhetos.TestCommon;
 using System.Text.RegularExpressions;
-using Rhetos.Factory;
 
 namespace Rhetos.DatabaseGenerator.Test
 {
@@ -79,39 +78,6 @@ namespace Rhetos.DatabaseGenerator.Test
         public IDictionary<string, IConceptInfo> UnresolvedConceptReferencesByKey
         {
             get { throw new NotImplementedException(); }
-        }
-    }
-
-    class MockTypeFactory : ITypeFactory
-    {
-        public object CreateInstance(Type type)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool IsRegistered(Type type)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ITypeFactory CreateInnerTypeFactory()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Register(ITypeFactoryBuilder typeFactoryBuilder)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Dispose()
-        {
-            throw new NotImplementedException();
-        }
-
-        public T CreateInstanceKeyed<T>(object key)
-        {
-            throw new NotImplementedException();
         }
     }
 
