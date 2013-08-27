@@ -42,7 +42,7 @@ namespace Rhetos
             builder.RegisterInstance(new ResourcesFolder(ConfigurationManager.AppSettings["ResourcesDirectory"]));
 
             builder.RegisterType<WcfUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
-            builder.RegisterType<RhetosService>().InstancePerDependency().As<RhetosService>().As<IServerApplication>();
+            builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
             builder.RegisterInstance<IDslSource>(new DiskDslScriptProvider(_dslScriptsFolder));
             builder.RegisterType<GlobalErrorHandler>();
 
@@ -58,6 +58,5 @@ namespace Rhetos
 
             base.Load(builder);
         }
-
     }
 }

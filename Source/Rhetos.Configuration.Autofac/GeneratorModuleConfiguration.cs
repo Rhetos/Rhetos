@@ -29,7 +29,7 @@ namespace Rhetos.Configuration.Autofac
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<GeneratorProcessor>().SingleInstance();
+            builder.RegisterType<GeneratorProcessor>();
 
             Rhetos.Extensibility.PluginsUtility.RegisterPlugins<IGenerator>(builder);
 

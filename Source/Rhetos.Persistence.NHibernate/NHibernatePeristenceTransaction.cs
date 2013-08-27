@@ -30,6 +30,7 @@ namespace Rhetos.Persistence.NHibernate
     {
         private readonly IPersistenceEngine _persistenceEngine;
         private readonly ILogger _logger;
+        private readonly IUserInfo _userInfo;
 
         private ISession _session;
         private ITransaction _transaction;
@@ -38,10 +39,11 @@ namespace Rhetos.Persistence.NHibernate
         enum TransactionState { Active, Submitted, Rollbacked }
         private TransactionState _state;
 
-        public NHibernatePersistenceTransaction(IPersistenceEngine persistenceEngine, ILogProvider logProvider)
+        public NHibernatePersistenceTransaction(IPersistenceEngine persistenceEngine, ILogProvider logProvider, IUserInfo userInfo)
         {
             _persistenceEngine = persistenceEngine;
             _logger = logProvider.GetLogger("NHibernatePersistenceTransaction");
+            _userInfo = userInfo;
             _state = TransactionState.Active;
         }
 
@@ -56,7 +58,7 @@ namespace Rhetos.Persistence.NHibernate
             if (_initialized && !_disposed)
                 throw new FrameworkException("Trying to initialize NHibernatePersistenceTransaction that is already initialized and not disposed.");
 
-            var newTran = _persistenceEngine.BeginTransaction();
+            var newTran = _persistenceEngine.BeginTransaction(_userInfo);
             _session = newTran.Item1;
             _transaction = newTran.Item2;
             _initialized = true;

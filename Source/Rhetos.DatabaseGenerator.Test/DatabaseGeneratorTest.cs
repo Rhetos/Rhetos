@@ -29,6 +29,7 @@ using Rhetos.TestCommon;
 using Rhetos.DatabaseGenerator;
 using Autofac.Features.Metadata;
 using System.Text;
+using Autofac.Features.Indexed;
 
 namespace Rhetos.DatabaseGenerator.Test
 {
@@ -236,19 +237,68 @@ namespace Rhetos.DatabaseGenerator.Test
             }
         }
 
+        public class PluginsMetadataList : List<Tuple<IConceptDatabaseDefinition, Dictionary<string, object>>>
+        {
+            public void Add(IConceptDatabaseDefinition plugin, Dictionary<string, object> metadata)
+            {
+                this.Add(Tuple.Create(plugin, metadata));
+            }
+
+            public void Add(IConceptDatabaseDefinition plugin)
+            {
+                this.Add(Tuple.Create(plugin, new Dictionary<string, object> { }));
+            }
+        }
+
+        public class StubIndex : IIndex<Type, IEnumerable<IConceptDatabaseDefinition>>
+        {
+            private PluginsMetadataList pluginsWithMedata;
+
+            public StubIndex(PluginsMetadataList pluginsWithMedata)
+            {
+                this.pluginsWithMedata = pluginsWithMedata;
+            }
+            public bool TryGetValue(Type key, out IEnumerable<IConceptDatabaseDefinition> value)
+            {
+                value = this[key];
+                return true;
+            }
+            public IEnumerable<IConceptDatabaseDefinition> this[Type key]
+            {
+                get
+                {
+                    return pluginsWithMedata
+                        .Where(pm => pm.Item2.Any(metadata => metadata.Key == MefProvider.Implements && (Type)metadata.Value == key))
+                        .Select(pm => pm.Item1)
+                        .ToArray();
+                }
+            }
+        }
+
+        public static PluginsContainer<IConceptDatabaseDefinition> CreatePluginsContainer(PluginsMetadataList pluginsWithMedata)
+        {
+            Lazy<IEnumerable<IConceptDatabaseDefinition>> plugins = new Lazy<IEnumerable<IConceptDatabaseDefinition>>(() =>
+                pluginsWithMedata.Select(pm => pm.Item1));
+            Lazy<IEnumerable<Meta<IConceptDatabaseDefinition>>> pluginsWithMetadata = new Lazy<IEnumerable<Meta<IConceptDatabaseDefinition>>>(() =>
+                pluginsWithMedata.Select(pm => new Meta<IConceptDatabaseDefinition>(pm.Item1, pm.Item2)));
+            Lazy<IIndex<Type, IEnumerable<IConceptDatabaseDefinition>>> pluginsByImplementation = new Lazy<IIndex<Type,IEnumerable<IConceptDatabaseDefinition>>>(() =>
+                new StubIndex(pluginsWithMedata));
+
+            return new PluginsContainer<IConceptDatabaseDefinition>(plugins, pluginsWithMetadata, pluginsByImplementation);
+        }
+
         private static void TestDatabaseGenerator(
             IEnumerable<ConceptApplication> oldApplications,
             IEnumerable<NewConceptApplication> newApplications,
             out List<ConceptApplication> toBeRemoved,
             out List<NewConceptApplication> toBeInserted)
         {
-
-            var plugins = new PluginsContainer<IConceptDatabaseDefinition>(new []
-            {
-                new Meta<Func<IConceptDatabaseDefinition>>(new Func<IConceptDatabaseDefinition>(() => new NullImplementation()), new Dictionary<string, object> { }),
-                new Meta<Func<IConceptDatabaseDefinition>>(new Func<IConceptDatabaseDefinition>(() => new SimpleConceptImplementation()), new Dictionary<string, object> { }),
-                new Meta<Func<IConceptDatabaseDefinition>>(new Func<IConceptDatabaseDefinition>(() => new DependentConceptImplementation()), new Dictionary<string, object> { })
-            });
+            var plugins = CreatePluginsContainer(new PluginsMetadataList
+                {
+                    new NullImplementation(),
+                    new SimpleConceptImplementation(),
+                    new DependentConceptImplementation()
+                });
             var databaseGenerator = new DatabaseGenerator_Accessor(null, plugins);
 
             databaseGenerator.ComputeDependsOn(oldApplications.Cast<NewConceptApplication>());
@@ -580,12 +630,12 @@ namespace Rhetos.DatabaseGenerator.Test
 
             var dslModel = new MockDslModel(new[] { ci1, ci2, ci3 });
 
-            var plugins = new PluginsContainer<IConceptDatabaseDefinition>(new[]
-                {
-                    new Meta<Func<IConceptDatabaseDefinition>>(new Func<IConceptDatabaseDefinition>(() => new NullImplementation()), new Dictionary<string, object> { }),
-                    new Meta<Func<IConceptDatabaseDefinition>>(new Func<IConceptDatabaseDefinition>(() => new SimpleConceptImplementation()), new Dictionary<string, object> { { "Implements", typeof(SimpleCi) } }),
-                    new Meta<Func<IConceptDatabaseDefinition>>(new Func<IConceptDatabaseDefinition>(() => new ExtendingConceptImplementation()), new Dictionary<string, object> { { "Implements", typeof(SimpleCi3) } })
-                });
+            var plugins = CreatePluginsContainer(new PluginsMetadataList
+            {
+                new NullImplementation(),
+                { new SimpleConceptImplementation(), new Dictionary<string, object> { { "Implements", typeof(SimpleCi) } } },
+                { new ExtendingConceptImplementation(), new Dictionary<string, object> { { "Implements", typeof(SimpleCi3) } } }
+            });
 
             DatabaseGenerator_Accessor databaseGenerator = new DatabaseGenerator_Accessor(dslModel, plugins);
             var createdApplications = databaseGenerator.CreateNewApplications();

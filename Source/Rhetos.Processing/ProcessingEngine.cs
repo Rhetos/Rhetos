@@ -36,30 +36,30 @@ namespace Rhetos.Processing
         private readonly IPluginsContainer<ICommandImplementation> CommandRepository;
         private readonly ILogger Logger;
         private readonly ILogger PerformanceLogger;
-        private readonly Func<IPersistenceTransaction> _persistenceTransactionFactory;
+        private readonly Lazy<IPersistenceTransaction> _persistenceTransactionLazy;
 
         public ProcessingEngine(
             IPluginsContainer<ICommandImplementation> commandRepository,
             ILogProvider logProvider,
-            Func<IPersistenceTransaction> persistenceTransactionFactory)
+            Lazy<IPersistenceTransaction> persistenceTransactionLazy)
         {
             CommandRepository = commandRepository;
             Logger = logProvider.GetLogger("ProcessingEngine");
             PerformanceLogger = logProvider.GetLogger("Performance");
-            _persistenceTransactionFactory = persistenceTransactionFactory;
+            _persistenceTransactionLazy = persistenceTransactionLazy;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public ProcessingResult Execute(IEnumerable<ICommandInfo> commands)
         {
-            using (var _persistenceTransaction = _persistenceTransactionFactory())
+            using (var persistenceTransaction = _persistenceTransactionLazy.Value)
             {
                 var commandResults = new List<CommandResult>();
                 int commandCount = 0;
 
                 try
                 {
-                    _persistenceTransaction.Initialize();
+                    persistenceTransaction.Initialize();
 
                     foreach (var commandInfo in commands)
                     {
@@ -92,14 +92,14 @@ namespace Rhetos.Processing
 
                         if (!commandResult.Success)
                         {
-                            _persistenceTransaction.DiscardChanges();
+                            persistenceTransaction.DiscardChanges();
 
                             var systemMessage = String.Format(CultureInfo.InvariantCulture, "Command failed. {0} {1} {2}", commandInfo.GetType().Name, commandInfo, commandImplementation.GetType().Name);
                             return LogResultsReturnError(commandResults, systemMessage + " " + commandResult.Message, commandCount, systemMessage, commandResult.Message);
                         }
                     }
 
-                    _persistenceTransaction.ApplyChanges();
+                    persistenceTransaction.ApplyChanges();
 
                     return new ProcessingResult
                     {
@@ -120,7 +120,7 @@ namespace Rhetos.Processing
                         };
                     }
 
-                    _persistenceTransaction.DiscardChanges();
+                    persistenceTransaction.DiscardChanges();
                     string userMessage = null;
                     string systemMessage = null;
                     if (ex is UserException) {

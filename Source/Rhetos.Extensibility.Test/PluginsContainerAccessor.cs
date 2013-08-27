@@ -9,7 +9,7 @@ namespace Rhetos.Extensibility.Test
     public class PluginsContainerAccessor<TPlugin> : PluginsContainer<TPlugin>
     {
         public PluginsContainerAccessor()
-            : base(new Meta<Func<TPlugin>>[] { })
+            : base(new Lazy<IEnumerable<TPlugin>> { }, new Lazy<IEnumerable<Meta<TPlugin>>> { }, new Lazy<Autofac.Features.Indexed.IIndex<Type, IEnumerable<TPlugin>>> { })
         {
         }
 

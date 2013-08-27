@@ -38,29 +38,29 @@ namespace Rhetos.Security
     {
         private readonly IPrincipalProvider _principalProvider;
         private readonly IDomainObjectModel _domainObjectModel;
-        private readonly Func<IPersistenceTransaction> _persistenceTransactionFactory;
+        private readonly Lazy<IPersistenceTransaction> _persistenceTransactionLazy;
         private readonly IPluginsContainer<IClaimProvider> _contextPermissionsRepository;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
         private readonly bool _allowBuiltinAdminOverride;
         private readonly Lazy<Type> _claimType;
-        private readonly Func<IPermissionLoader> _permissionLoaderFactory; // TODO: Can this work without Func?
+        private readonly Lazy<IPermissionLoader> _permissionLoader;
 
         public AuthorizationManager(
             IPluginsContainer<IClaimProvider> contextPermissionsRepository, 
             IPrincipalProvider principalProvider,
             ILogProvider logProvider,
             IDomainObjectModel domainObjectModel,
-            Func<IPersistenceTransaction> persistenceTransactionFactory,
-            Func<IPermissionLoader> permissionLoaderFactory)
+            Lazy<IPersistenceTransaction> persistenceTransactionLazy,
+            Lazy<IPermissionLoader> permissionLoader)
         {
             _principalProvider = principalProvider;
             _domainObjectModel = domainObjectModel;
-            _persistenceTransactionFactory = persistenceTransactionFactory;
+            _persistenceTransactionLazy = persistenceTransactionLazy;
             _contextPermissionsRepository = contextPermissionsRepository;
             _logger = logProvider.GetLogger("AuthorizationManager");
             _performanceLogger = logProvider.GetLogger("Performance");
-            _permissionLoaderFactory = permissionLoaderFactory;
+            _permissionLoader = permissionLoader;
 
             _allowBuiltinAdminOverride = FromConfigallowBuiltinAdminOverride();
 
@@ -123,17 +123,14 @@ namespace Rhetos.Security
 
             IEnumerable<string> membership = _principalProvider.GetIdentityMembership();
 
-            // Force-register the object model to TypeFactory.
+            // Force-load domain object model:
             var objectModel = _domainObjectModel.ObjectModel;
 
-            using (var tran = _persistenceTransactionFactory())
+            using (var persistenceTransaction = _persistenceTransactionLazy.Value)
             {
-                tran.Initialize();
+                persistenceTransaction.Initialize();
 
-                //inner.RegisterInstance<IUserInfo>(new NullUserInfo());
-                //inner.RegisterInstance<ISqlExecuter>(new NullSqlExecuter());
-
-                IPermission[] rawData = _permissionLoaderFactory().LoadPermissions(requiredClaims, membership);
+                IPermission[] rawData = _permissionLoader.Value.LoadPermissions(requiredClaims, membership);
 
                 HashSet<string> claimsWithRight = new HashSet<string>();
                 foreach (IPermission permission in rawData)
@@ -145,6 +142,8 @@ namespace Rhetos.Security
 
                 var authorizations = requiredClaims.Select(requiredClaim => claimsWithRight.Contains(requiredClaim.ClaimResource + "." + requiredClaim.ClaimRight)).ToArray();
                 _performanceLogger.Write(sw, "AuthorizationManager.GetAuthorizations");
+
+                persistenceTransaction.ApplyChanges();
                 return authorizations;
             }
         }

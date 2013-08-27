@@ -28,6 +28,6 @@ namespace Rhetos.Persistence.NHibernate
 {
     public interface IPersistenceEngine
     {
-        Tuple<ISession, ITransaction> BeginTransaction();
+        Tuple<ISession, ITransaction> BeginTransaction(IUserInfo userInfo);
     }
 }

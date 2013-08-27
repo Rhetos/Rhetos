@@ -42,28 +42,25 @@ namespace Rhetos.Persistence.NHibernate
         private readonly IDomainObjectModel _domainObjectModel;
         private readonly ConnectionString _connectionString;
         private readonly IEnumerable<INHibernateConfigurationExtension> _nHibernateConfigurationExtensions;
-        private readonly Func<IUserInfo> _userInfoFactory;
 
         public NHibernatePersistenceEngine(
             ILogProvider logProvider,
             INHibernateMapping nHibernateMapping,
             IDomainObjectModel domainObjectModel,
             ConnectionString connectionString,
-            IEnumerable<INHibernateConfigurationExtension> nHibernateConfigurationExtensions,
-            Func<IUserInfo> userInfoFactory)
+            IEnumerable<INHibernateConfigurationExtension> nHibernateConfigurationExtensions)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _nHibernateMapping = nHibernateMapping;
             _domainObjectModel = domainObjectModel;
             _connectionString = connectionString;
             _nHibernateConfigurationExtensions = nHibernateConfigurationExtensions;
-            _userInfoFactory = userInfoFactory;
         }
 
         private ISessionFactory _sessionFactory;
         private readonly object _sessionFactoryLock = new object();
 
-        public Tuple<ISession, ITransaction> BeginTransaction()
+        public Tuple<ISession, ITransaction> BeginTransaction(IUserInfo userInfo)
         {
             if (_sessionFactory == null)
                 _sessionFactory = PrepareNHSessionFactory();
@@ -71,7 +68,6 @@ namespace Rhetos.Persistence.NHibernate
             ISession session = _sessionFactory.OpenSession();
             ITransaction transaction = session.BeginTransaction();
 
-            IUserInfo userInfo = _userInfoFactory();
             if (userInfo.IsUserRecognized)
             {
                 if (SqlUtility.DatabaseLanguage == "MsSql")
@@ -115,6 +111,7 @@ namespace Rhetos.Persistence.NHibernate
 
                 var sw = Stopwatch.StartNew();
 
+                var forceLoadObjectModel = _domainObjectModel.ObjectModel; // This is needed for "new Configuration()".
                 var configuration = new Configuration();
                 configuration.SetProperty("connection.provider", "NHibernate.Connection.DriverConnectionProvider");
                 configuration.SetProperty("connection.connection_string", _connectionString);

@@ -27,7 +27,7 @@ namespace Rhetos.Configuration.Autofac
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<ConceptApplicationRepository>();
-            builder.RegisterType<DatabaseGenerator.DatabaseGenerator>().As<IDatabaseGenerator>().SingleInstance();
+            builder.RegisterType<DatabaseGenerator.DatabaseGenerator>().As<IDatabaseGenerator>();
             PluginsUtility.RegisterPlugins<IConceptDatabaseDefinition>(builder);
             builder.RegisterType<NullImplementation>().As<IConceptDatabaseDefinition>();
 

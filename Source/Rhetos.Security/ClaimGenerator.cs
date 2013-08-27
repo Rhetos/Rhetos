@@ -40,18 +40,18 @@ namespace Rhetos.Security
         private readonly IsGeneratedToken _isGeneratedToken = new IsGeneratedToken();
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
-        private readonly Func<IPersistenceTransaction> _persistenceTransactionFactory;
-        private readonly Func<IClaimLoader> _claimLoaderFactory; // TODO: Can this work without Func?
-        private readonly Func<IIndex<string, IWritableRepository>> _writableRepositories; // TODO: Can this work without Func?
+        private readonly Lazy<IPersistenceTransaction> _persistenceTransactionLazy;
+        private readonly Lazy<IClaimLoader> _claimLoader;
+        private readonly IIndex<string, IWritableRepository> _writableRepositories;
 
         public ClaimGenerator(
             IPluginsContainer<IClaimProvider> contextPermissionsRepository,
             IDslModel dslModel,
             IDomainObjectModel domainObjectModel,
             ILogProvider logProvider,
-            Func<IPersistenceTransaction> persistenceTransactionFactory,
-            Func<IClaimLoader> claimLoaderFactory,
-            Func<IIndex<string, IWritableRepository>> writableRepositories)
+            Lazy<IPersistenceTransaction> persistenceTransactionLazy,
+            Lazy<IClaimLoader> claimLoader,
+            IIndex<string, IWritableRepository> writableRepositories)
         {
             _contextPermissionsRepository = contextPermissionsRepository;
             _dslModel = dslModel;
@@ -68,8 +68,8 @@ namespace Rhetos.Security
                 });
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("ClaimGenerator");
-            _persistenceTransactionFactory = persistenceTransactionFactory;
-            _claimLoaderFactory = claimLoaderFactory;
+            _persistenceTransactionLazy = persistenceTransactionLazy;
+            _claimLoader = claimLoader;
             _writableRepositories = writableRepositories;
         }
 
@@ -88,12 +88,12 @@ namespace Rhetos.Security
                 _isGeneratedToken.IsGenerated = true;
                 var stopwatch = Stopwatch.StartNew();
 
-                using (var tran = _persistenceTransactionFactory())
+                using (var persistenceTransaction = _persistenceTransactionLazy.Value)
                 {
-                    tran.Initialize();
+                    persistenceTransaction.Initialize();
 
                     var newClaims = CreateClaims();
-                    var oldClaims = _claimLoaderFactory().LoadClaims();
+                    var oldClaims = _claimLoader.Value.LoadClaims();
 
                     IEqualityComparer<IClaim> comparer = new ClaimComparer();
 
@@ -105,10 +105,10 @@ namespace Rhetos.Security
                     if (insert.Any())
                         _logger.Info(() => "Inserting claims: " + string.Join(", ", insert.Select(claim => claim.ClaimResource + "." + claim.ClaimRight)) + ".");
 
-                    IWritableRepository claimRepository = _writableRepositories()["Common.Claim"];
+                    IWritableRepository claimRepository = _writableRepositories["Common.Claim"];
                     claimRepository.Save(insert, null, delete);
 
-                    tran.ApplyChanges();
+                    persistenceTransaction.ApplyChanges();
                 }
 
                 _performanceLogger.Write(stopwatch, "ClaimGenerator.GenerateClaims");

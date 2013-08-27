@@ -120,7 +120,11 @@ namespace Rhetos.Extensibility
                 {
                     var registration = builder.RegisterType(generatorImplementation.Item1).As(new[] { pluginType });
                     foreach (var metadataElement in generatorImplementation.Item2)
+                    {
                         registration = registration.WithMetadata(metadataElement.Key, metadataElement.Value);
+                        if (metadataElement.Key == MefProvider.Implements)
+                            registration = registration.Keyed(metadataElement.Value, pluginType);
+                    }
                 }
 
                 if (!_registeredPluginsFromAssemblies.ContainsKey(pluginType))

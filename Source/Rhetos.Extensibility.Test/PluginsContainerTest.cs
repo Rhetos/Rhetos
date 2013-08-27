@@ -45,24 +45,5 @@ namespace Rhetos.Extensibility.Test
             actual = string.Join("-", PluginsContainerAccessor<object>.Access_GetTypeHierarchy(o.GetType()).Select(type => type.Name));
             Assert.AreEqual(expected, actual);
         }
-
-        [TestMethod]
-        public void Scope()
-        {
-            var context = "1";
-
-            var plugins = new PluginsContainer<BaseClass>(new[]
-            {
-                new Meta<Func<BaseClass>>(() => new BaseClass { Name = "base" + context }, new Dictionary<string, object> { { MefProvider.Implements, typeof(int) } }),
-                new Meta<Func<BaseClass>>(() => new DerivedClass { Name = "derived" + context }, new Dictionary<string, object> { { MefProvider.Implements, typeof(int) } })
-            });
-
-            Assert.AreEqual("base1, derived1", TestUtility.DumpSorted(plugins.GetPlugins(), p => p.Name));
-            Assert.AreEqual("base1, derived1", TestUtility.DumpSorted(plugins.GetImplementations(typeof(int)), p => p.Name));
-
-            context = "2";
-            Assert.AreEqual("base2, derived2", TestUtility.DumpSorted(plugins.GetPlugins(), p => p.Name));
-            Assert.AreEqual("base2, derived2", TestUtility.DumpSorted(plugins.GetImplementations(typeof(int)), p => p.Name));
-        }
     }
 }
