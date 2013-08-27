@@ -29,28 +29,17 @@ namespace Rhetos.Extensibility
     public class PluginsContainer<TPlugin> : IPluginsContainer<TPlugin>
     {
         Lazy<IEnumerable<TPlugin>> _plugins;
-        Lazy<IEnumerable<Meta<TPlugin>>> _pluginsWithMetadata;
         Lazy<IIndex<Type, IEnumerable<TPlugin>>> _pluginsByImplementation;
-
-        static Dictionary<Type, IDictionary<string, object>> _metadataByPluginType;
-        static object _metadataByPluginTypeLock = new object();
-        
-        static Dictionary<Type, Type[]> _sortedImplementations = new Dictionary<Type, Type[]>();
-        static object _sortedImplementationsLock = new object();
+        PluginsMetadataCache<TPlugin> _cache;
 
         public PluginsContainer(
             Lazy<IEnumerable<TPlugin>> plugins,
-            Lazy<IEnumerable<Meta<TPlugin>>> pluginsWithMetadata,
-            Lazy<IIndex<Type, IEnumerable<TPlugin>>> pluginsByImplementation)
+            Lazy<IIndex<Type, IEnumerable<TPlugin>>> pluginsByImplementation,
+            PluginsMetadataCache<TPlugin> cache)
         {
             _plugins = plugins;
-            _pluginsWithMetadata = pluginsWithMetadata;
             _pluginsByImplementation = pluginsByImplementation;
-
-            if (_metadataByPluginType == null)
-                lock (_metadataByPluginTypeLock)
-                    if (_metadataByPluginType == null)
-                        _metadataByPluginType = pluginsWithMetadata.Value.ToDictionary(pm => pm.Value.GetType(), pm => pm.Metadata);
+            _cache = cache;
         }
 
         public IEnumerable<TPlugin> GetPlugins()
@@ -61,34 +50,13 @@ namespace Rhetos.Extensibility
         /// <param name="metadataKey">Use one of the constants from the Rhetos.Extensibility.MefProvider class.</param>
         public Type GetMetadata(TPlugin plugin, string metadataKey)
         {
-            return GetMetadata(plugin.GetType(), metadataKey);
+            return _cache.GetMetadata(plugin.GetType(), metadataKey);
         }
 
         /// <param name="metadataKey">Use one of the constants from the Rhetos.Extensibility.MefProvider class.</param>
         public Type GetMetadata(Type pluginType, string metadataKey)
         {
-            IDictionary<string, object> metadata;
-            if (!_metadataByPluginType.TryGetValue(pluginType, out metadata))
-                throw new FrameworkException(string.Format(
-                    "There is no plugin {0} registered for {1}.",
-                    pluginType.FullName, typeof(TPlugin).FullName));
-
-            if (metadata == null)
-                return null;
-
-            object value;
-            metadata.TryGetValue(metadataKey, out value);
-            if (value == null)
-                return null;
-
-            if (!(value is Type))
-                throw new FrameworkException(string.Format(
-                    "Value of ExportMetadata attribute for '{2}' must be a Type (use typeof). Rhetos plugin {0} has '{2}' metadata value of type {1}.",
-                    pluginType.FullName,
-                    value.GetType().FullName,
-                    metadataKey));
-
-            return (Type)value;
+            return _cache.GetMetadata(pluginType, metadataKey);
         }
 
         public IEnumerable<TPlugin> GetImplementations(Type implements)
@@ -96,26 +64,7 @@ namespace Rhetos.Extensibility
             var typeHierarchy = GetTypeHierarchy(implements);
             var allImplementations = typeHierarchy.SelectMany(type => _pluginsByImplementation.Value[type]).ToArray();
 
-            Type[] pluginTypesSorted;
-
-            lock (_sortedImplementationsLock)
-            {
-                if (!_sortedImplementations.TryGetValue(implements, out pluginTypesSorted))
-                {
-                    var dependencies = allImplementations
-                        .Select(plugin => Tuple.Create(GetMetadata(plugin, MefProvider.DependsOn), plugin.GetType()))
-                        .Where(dependency => dependency.Item1 != null)
-                        .ToArray();
-
-                    List<Type> pluginTypesSortedList = allImplementations.Select(plugin => plugin.GetType()).ToList();
-                    DirectedGraph.TopologicalSort(pluginTypesSortedList, dependencies);
-
-                    pluginTypesSorted = pluginTypesSortedList.ToArray();
-                    _sortedImplementations.Add(implements, pluginTypesSorted);
-                }
-            }
-
-            DirectedGraph.SortByGivenOrder(allImplementations, pluginTypesSorted.ToArray(), plugin => plugin.GetType());
+            _cache.SortByMetadataDependsOn(implements, allImplementations);
 
             return allImplementations;
         }

@@ -284,7 +284,7 @@ namespace Rhetos.DatabaseGenerator.Test
             Lazy<IIndex<Type, IEnumerable<IConceptDatabaseDefinition>>> pluginsByImplementation = new Lazy<IIndex<Type,IEnumerable<IConceptDatabaseDefinition>>>(() =>
                 new StubIndex(pluginsWithMedata));
 
-            return new PluginsContainer<IConceptDatabaseDefinition>(plugins, pluginsWithMetadata, pluginsByImplementation);
+            return new PluginsContainer<IConceptDatabaseDefinition>(plugins, pluginsByImplementation, new PluginsMetadataCache<IConceptDatabaseDefinition>(pluginsWithMetadata));
         }
 
         private static void TestDatabaseGenerator(
