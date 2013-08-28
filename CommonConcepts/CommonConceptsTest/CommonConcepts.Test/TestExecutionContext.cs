@@ -33,54 +33,53 @@ using Rhetos.Security;
 using Rhetos.TestCommon;
 using System.Reflection;
 using Oracle.DataAccess.Client;
+using Rhetos.Dom;
+using Rhetos.Persistence.NHibernateDefaultConcepts;
 
 namespace CommonConcepts.Test
 {
     public class TestExecutionContext : Common.ExecutionContext, IDisposable
     {
         private readonly bool _commitChanges;
-        private readonly string _nHibernateMappingFolder;
+        private static string _rhetosServerPath;
 
         public TestExecutionContext(bool commitChanges = false, string rhetosServerPath = "")
         {
-            InitializeConnectionStringConfig(rhetosServerPath);
-            RegisterPluginsFolderAssembies(rhetosServerPath);
-
             _commitChanges = commitChanges;
-            _nHibernateMappingFolder = Path.Combine(rhetosServerPath, "bin");
+
+            if (_rhetosServerPath == null)
+                _rhetosServerPath = rhetosServerPath;
+            else
+                if (_rhetosServerPath != rhetosServerPath)
+                    throw new ApplicationException(string.Format(
+                        "Cannot use different rhetosServerPath in same session.\r\nOld:'{0}'\r\nNew:'{1}'",
+                        _rhetosServerPath, rhetosServerPath));
+
+            Initialize();
 
             // Standard members of ExecutionContext:
-            _persistenceTransaction = new Lazy<IPersistenceTransaction>(() => CreateNHPT());
             _userInfo = new Lazy<IUserInfo>(() => new TestUserInfo());
+            _persistenceTransaction = new Lazy<IPersistenceTransaction>(() => new NHibernatePersistenceTransaction(NHPE.Value, new ConsoleLogProvider(), _userInfo.Value));
             _sqlExecuter = new Lazy<ISqlExecuter>(() => new MsSqlExecuter(ConnectionString.Value, new ConsoleLogProvider(), UserInfo));
             _authorizationManager = new Lazy<IAuthorizationManager>(() => { throw new NotImplementedException(); });
             _resourcesFolder = new Lazy<ResourcesFolder>(() => Path.Combine(rhetosServerPath, "Resources"));
         }
 
-        private static string _initializedConnectionStringApplicationPath = null;
-        private static void InitializeConnectionStringConfig(string rhetosServerPath)
+        private static bool _initialized;
+        private static void Initialize()
         {
-            if (_initializedConnectionStringApplicationPath == null)
+            if (!_initialized)
             {
-                var configFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, rhetosServerPath, @"bin\ConnectionStrings.config");
-                SqlUtility.LoadSpecificConnectionString(configFile);
-                _initializedConnectionStringApplicationPath = rhetosServerPath;
-            }
-            else if (_initializedConnectionStringApplicationPath != rhetosServerPath)
-                throw new ApplicationException(string.Format(
-                    "Cannot use different rhetosServerPath in same session.\r\nOld:'{0}'\r\nNew:'{1}'",
-                    _initializedConnectionStringApplicationPath, rhetosServerPath));
-        }
+                _initialized = true;
 
-        private static HashSet<string> _registeredAssemblyResolverForRhetosServerPlugins = new HashSet<string>();
-        private static void RegisterPluginsFolderAssembies(string rhetosServerPath)
-        {
-            if (!_registeredAssemblyResolverForRhetosServerPlugins.Contains(rhetosServerPath))
-            {
-                _registeredAssemblyResolverForRhetosServerPlugins.Add(rhetosServerPath);
+                // Initialize connection string:
+                var configFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _rhetosServerPath, @"bin\ConnectionStrings.config");
+                SqlUtility.LoadSpecificConnectionString(configFile);
+
+                // Register plugins folder assemblies:
                 AppDomain.CurrentDomain.AssemblyResolve += (object sender, ResolveEventArgs args) =>
                 {
-                    string pluginsFolder = Path.Combine(rhetosServerPath, @"bin\Plugins\");
+                    string pluginsFolder = Path.Combine(_rhetosServerPath, @"bin\Plugins\");
                     string pluginAssembly = Path.Combine(pluginsFolder, new AssemblyName(args.Name).Name + ".dll");
                     if (File.Exists(pluginAssembly) == false) return null;
                     Assembly assembly = Assembly.LoadFrom(pluginAssembly);
@@ -89,22 +88,15 @@ namespace CommonConcepts.Test
             }
         }
 
-        private Lazy<string> ConnectionString = new Lazy<string>(() => SqlUtility.ConnectionString);
+        private static Lazy<string> ConnectionString = new Lazy<string>(() => SqlUtility.ConnectionString);
 
-        private Lazy<NHibernatePersistenceEngine> NHPE = new Lazy<NHibernatePersistenceEngine>(
-            () => new NHibernatePersistenceEngine(
+        private static Lazy<NHibernatePersistenceEngine> NHPE = new Lazy<NHibernatePersistenceEngine>(() =>
+            new NHibernatePersistenceEngine(
                 new ConsoleLogProvider(),
-                new NHibernateMappingLoader(,
-                ,
+                new NHibernateMappingLoader(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _rhetosServerPath, "bin", "ServerDomNHibernateMapping.xml")),
+                new TestDomainObjectModel(),
                 ConnectionString.Value,
-                ,
-                new NullUserInfo());
-
-        private IPersistenceTransaction CreateNHPT()
-        {
-            return new NHibernatePersistenceTransaction(
-                
-        }
+                new[] { new CommonConceptsNHibernateConfigurationExtension() }));
 
         ~TestExecutionContext()
         {
@@ -113,8 +105,20 @@ namespace CommonConcepts.Test
 
         public void Dispose()
         {
-            if (_persistenceTransaction.IsValueCreated)
+            if (_persistenceTransaction != null && _persistenceTransaction.IsValueCreated)
+            {
+                if (!_commitChanges)
+                    _persistenceTransaction.Value.DiscardChanges();
                 _persistenceTransaction.Value.Dispose();
+            }
+        }
+
+        class TestDomainObjectModel : IDomainObjectModel
+        {
+            public Assembly ObjectModel
+            {
+                get { return Assembly.GetAssembly(typeof(Common.ExecutionContext)) ; }
+            }
         }
     }
 }

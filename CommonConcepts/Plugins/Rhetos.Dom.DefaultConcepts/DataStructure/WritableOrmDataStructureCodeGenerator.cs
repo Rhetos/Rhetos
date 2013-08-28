@@ -135,9 +135,17 @@ namespace Rhetos.Dom.DefaultConcepts
                 throw;
             }}
 
+            try
+            {{
 {4}
 
 {5}
+            }}
+            catch
+            {{
+                _executionContext.PersistenceTransaction.DiscardChanges();
+                throw;
+            }}
         }}
 
 ",

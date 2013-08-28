@@ -38,14 +38,13 @@ namespace Rhetos
         private readonly ILogger _commandsLogger;
         private readonly ILogger _commandResultsLogger;
         private readonly ILogger _performanceLogger;
-        private readonly IAuthorizationManager _authorizationManager;
+        
         private readonly IDomainObjectModel _domainObjectModel;
 
         public RhetosService(
             IProcessingEngine processingEngine,
             IEnumerable<ICommandInfo> commands,
             ILogProvider logProvider,
-            IAuthorizationManager authorizationManager,
             IDomainObjectModel domainObjectModel)
         {
             _processingEngine = processingEngine;
@@ -54,7 +53,6 @@ namespace Rhetos
             _commandsLogger = logProvider.GetLogger("IServerApplication Commands");
             _commandResultsLogger = logProvider.GetLogger("IServerApplication CommandResults");
             _performanceLogger = logProvider.GetLogger("Performance");
-            _authorizationManager = authorizationManager;
             _domainObjectModel = domainObjectModel;
         }
 
@@ -101,18 +99,6 @@ namespace Rhetos
 
             _performanceLogger.Write(stopwatch, "RhetosService.ExecuteInner: Commands deserialized.");
             
-            var authorizationMessage = _authorizationManager.Authorize(processingCommands);
-
-            if (!String.IsNullOrEmpty(authorizationMessage))
-                return new ServerProcessingResult
-                    {
-                        Success = false,
-                        SystemMessage = authorizationMessage,
-                        UserMessage = authorizationMessage
-                    };
-
-            _performanceLogger.Write(stopwatch, "RhetosService.ExecuteInner: Commands authorized.");
-
             var result = _processingEngine.Execute(processingCommands);
 
             _performanceLogger.Write(stopwatch, "RhetosService.ExecuteInner: Commands executed.");

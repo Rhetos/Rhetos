@@ -28,10 +28,8 @@ namespace Rhetos.Persistence
         ISession NHibernateSession { get; }
 
         /// <summary>
-        /// This function is used for more robust error handling of the IPersistenceTransaction instance lifetime.
+        /// DiscardChanges marks the transaction as invalid. The changes will be descarded (rollbacked) on Dispose.
         /// </summary>
-        void Initialize();
-        void ApplyChanges();
         void DiscardChanges();
     }
 }

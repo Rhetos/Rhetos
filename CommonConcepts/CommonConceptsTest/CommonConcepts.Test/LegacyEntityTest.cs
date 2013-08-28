@@ -127,18 +127,18 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ReadOnlyProperty()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            try
             {
-                var repository = new Common.DomRepository(executionContext);
-                try
+                using (var executionContext = new CommonTestExecutionContext())
                 {
+                    var repository = new Common.DomRepository(executionContext);
                     executionContext.SqlExecuter.ExecuteSql(new[]
-                    {
-                        "DELETE FROM Test13.Old3;",
-                        "ALTER TABLE Test13.Old3 DROP COLUMN Num;",
-                        "ALTER TABLE Test13.Old3 ADD Num INTEGER IDENTITY(123, 1);",
-                        "INSERT INTO Test13.Old3 (ID, Text) SELECT NEWID(), 'abc'"
-                    });
+                {
+                    "DELETE FROM Test13.Old3;",
+                    "ALTER TABLE Test13.Old3 DROP COLUMN Num;",
+                    "ALTER TABLE Test13.Old3 ADD Num INTEGER IDENTITY(123, 1);",
+                    "INSERT INTO Test13.Old3 (ID, Text) SELECT NEWID(), 'abc'"
+                });
 
                     var leg = repository.Test13.Legacy3.Query().Single();
                     Assert.AreEqual(123, leg.NumNew);
@@ -161,20 +161,16 @@ namespace CommonConcepts.Test
 
                     Console.WriteLine(leg.TextNew);
                 }
-                finally
-                {
-                    if (executionContext.NHibernateSession.IsOpen)
-                    {
-                        executionContext.NHibernateSession.Clear();
-                        executionContext.NHibernateSession.Close();
-                    }
+            }
+            finally
+            {
+                using (var executionContext = new CommonTestExecutionContext())
                     executionContext.SqlExecuter.ExecuteSql(new[]
                     {
                         "DELETE FROM Test13.Old3;",
                         "ALTER TABLE Test13.Old3 DROP COLUMN Num;",
                         "ALTER TABLE Test13.Old3 ADD Num INTEGER;"
                     });
-                }
             }
         }
 

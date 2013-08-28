@@ -38,7 +38,6 @@ namespace Rhetos.Security
     {
         private readonly IPrincipalProvider _principalProvider;
         private readonly IDomainObjectModel _domainObjectModel;
-        private readonly Lazy<IPersistenceTransaction> _persistenceTransactionLazy;
         private readonly IPluginsContainer<IClaimProvider> _contextPermissionsRepository;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
@@ -51,12 +50,10 @@ namespace Rhetos.Security
             IPrincipalProvider principalProvider,
             ILogProvider logProvider,
             IDomainObjectModel domainObjectModel,
-            Lazy<IPersistenceTransaction> persistenceTransactionLazy,
             Lazy<IPermissionLoader> permissionLoader)
         {
             _principalProvider = principalProvider;
             _domainObjectModel = domainObjectModel;
-            _persistenceTransactionLazy = persistenceTransactionLazy;
             _contextPermissionsRepository = contextPermissionsRepository;
             _logger = logProvider.GetLogger("AuthorizationManager");
             _performanceLogger = logProvider.GetLogger("Performance");
@@ -126,26 +123,20 @@ namespace Rhetos.Security
             // Force-load domain object model:
             var objectModel = _domainObjectModel.ObjectModel;
 
-            using (var persistenceTransaction = _persistenceTransactionLazy.Value)
-            {
-                persistenceTransaction.Initialize();
+            IPermission[] rawData = _permissionLoader.Value.LoadPermissions(requiredClaims, membership);
 
-                IPermission[] rawData = _permissionLoader.Value.LoadPermissions(requiredClaims, membership);
+            HashSet<string> claimsWithRight = new HashSet<string>();
+            foreach (IPermission permission in rawData)
+                if (permission.IsAuthorized.Value)
+                    claimsWithRight.Add(permission.ClaimResource + "." + permission.ClaimRight);
+            foreach (IPermission permission in rawData)
+                if (!permission.IsAuthorized.Value && claimsWithRight.Contains(permission.ClaimResource + "." + permission.ClaimRight)) 
+                    claimsWithRight.Remove(permission.ClaimResource + "." + permission.ClaimRight);
 
-                HashSet<string> claimsWithRight = new HashSet<string>();
-                foreach (IPermission permission in rawData)
-                    if (permission.IsAuthorized.Value)
-                        claimsWithRight.Add(permission.ClaimResource + "." + permission.ClaimRight);
-                foreach (IPermission permission in rawData)
-                    if (!permission.IsAuthorized.Value && claimsWithRight.Contains(permission.ClaimResource + "." + permission.ClaimRight)) 
-                        claimsWithRight.Remove(permission.ClaimResource + "." + permission.ClaimRight);
+            var authorizations = requiredClaims.Select(requiredClaim => claimsWithRight.Contains(requiredClaim.ClaimResource + "." + requiredClaim.ClaimRight)).ToArray();
+            _performanceLogger.Write(sw, "AuthorizationManager.GetAuthorizations");
 
-                var authorizations = requiredClaims.Select(requiredClaim => claimsWithRight.Contains(requiredClaim.ClaimResource + "." + requiredClaim.ClaimRight)).ToArray();
-                _performanceLogger.Write(sw, "AuthorizationManager.GetAuthorizations");
-
-                persistenceTransaction.ApplyChanges();
-                return authorizations;
-            }
+            return authorizations;
         }
 
         private IEnumerable<IClaim> GetRequiredClaims(IEnumerable<ICommandInfo> commandInfos)

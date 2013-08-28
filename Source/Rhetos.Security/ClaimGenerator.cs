@@ -40,7 +40,6 @@ namespace Rhetos.Security
         private readonly IsGeneratedToken _isGeneratedToken = new IsGeneratedToken();
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
-        private readonly Lazy<IPersistenceTransaction> _persistenceTransactionLazy;
         private readonly Lazy<IClaimLoader> _claimLoader;
         private readonly IIndex<string, IWritableRepository> _writableRepositories;
 
@@ -49,7 +48,6 @@ namespace Rhetos.Security
             IDslModel dslModel,
             IDomainObjectModel domainObjectModel,
             ILogProvider logProvider,
-            Lazy<IPersistenceTransaction> persistenceTransactionLazy,
             Lazy<IClaimLoader> claimLoader,
             IIndex<string, IWritableRepository> writableRepositories)
         {
@@ -68,7 +66,6 @@ namespace Rhetos.Security
                 });
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("ClaimGenerator");
-            _persistenceTransactionLazy = persistenceTransactionLazy;
             _claimLoader = claimLoader;
             _writableRepositories = writableRepositories;
         }
@@ -88,28 +85,21 @@ namespace Rhetos.Security
                 _isGeneratedToken.IsGenerated = true;
                 var stopwatch = Stopwatch.StartNew();
 
-                using (var persistenceTransaction = _persistenceTransactionLazy.Value)
-                {
-                    persistenceTransaction.Initialize();
+                var newClaims = CreateClaims();
+                var oldClaims = _claimLoader.Value.LoadClaims();
 
-                    var newClaims = CreateClaims();
-                    var oldClaims = _claimLoader.Value.LoadClaims();
+                IEqualityComparer<IClaim> comparer = new ClaimComparer();
 
-                    IEqualityComparer<IClaim> comparer = new ClaimComparer();
+                IEnumerable<IClaim> delete = oldClaims.Except(newClaims, comparer);
+                IEnumerable<IClaim> insert = newClaims.Except(oldClaims, comparer);
 
-                    IEnumerable<IClaim> delete = oldClaims.Except(newClaims, comparer);
-                    IEnumerable<IClaim> insert = newClaims.Except(oldClaims, comparer);
+                if (delete.Any())
+                    _logger.Info(() => "Deleting claims: " + string.Join(", ", delete.Select(claim => claim.ClaimResource + "." + claim.ClaimRight)) + ".");
+                if (insert.Any())
+                    _logger.Info(() => "Inserting claims: " + string.Join(", ", insert.Select(claim => claim.ClaimResource + "." + claim.ClaimRight)) + ".");
 
-                    if (delete.Any())
-                        _logger.Info(() => "Deleting claims: " + string.Join(", ", delete.Select(claim => claim.ClaimResource + "." + claim.ClaimRight)) + ".");
-                    if (insert.Any())
-                        _logger.Info(() => "Inserting claims: " + string.Join(", ", insert.Select(claim => claim.ClaimResource + "." + claim.ClaimRight)) + ".");
-
-                    IWritableRepository claimRepository = _writableRepositories["Common.Claim"];
-                    claimRepository.Save(insert, null, delete);
-
-                    persistenceTransaction.ApplyChanges();
-                }
+                IWritableRepository claimRepository = _writableRepositories["Common.Claim"];
+                claimRepository.Save(insert, null, delete);
 
                 _performanceLogger.Write(stopwatch, "ClaimGenerator.GenerateClaims");
             }

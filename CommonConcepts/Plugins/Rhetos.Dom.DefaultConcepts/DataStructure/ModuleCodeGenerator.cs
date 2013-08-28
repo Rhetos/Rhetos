@@ -176,6 +176,8 @@ namespace {0}._Helper
         protected Lazy<Rhetos.Persistence.IPersistenceTransaction> _persistenceTransaction;
         public NHibernate.ISession NHibernateSession {{ get {{ return _persistenceTransaction.Value.NHibernateSession; }} }}
 
+        public Rhetos.Persistence.IPersistenceTransaction PersistenceTransaction {{ get {{ return _persistenceTransaction.Value; }} }}
+
         protected Lazy<Rhetos.Utilities.IUserInfo> _userInfo;
         public Rhetos.Utilities.IUserInfo UserInfo {{ get {{ return _userInfo.Value; }} }}
 
