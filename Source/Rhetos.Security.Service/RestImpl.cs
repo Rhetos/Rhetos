@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using Rhetos.Dom;
 using Rhetos.Dom.DefaultConcepts;
-using Rhetos.Factory;
 using Rhetos.Processing.DefaultCommands;
 using System.Linq;
 using Rhetos.Utilities;
@@ -29,7 +28,6 @@ namespace Rhetos.Security.Service
 {
     public class RestImpl
     {
-        private readonly ITypeFactory _typeFactory;
         private readonly IDomainObjectModel _domainObjectModel;
 
         private const string _eClaim = "Common.Claim";
@@ -39,10 +37,8 @@ namespace Rhetos.Security.Service
         private readonly RhetosServerProxy _rhetosServerProxy;
         
         public RestImpl(            
-            ITypeFactory typeFactory,
             IDomainObjectModel domainObjectModel)
         {
-            _typeFactory = typeFactory;
             _domainObjectModel = domainObjectModel;
             _rhetosServerProxy = new RhetosServerProxy(domainObjectModel);
         }
@@ -205,8 +201,8 @@ namespace Rhetos.Security.Service
 
         private dynamic CreateEntity(string typeName)
         {
-            var t = _domainObjectModel.ResolveType(typeName);
-            return _typeFactory.CreateInstance(t);
+            var t = _domainObjectModel.GetType(typeName);
+            return Activator.CreateInstance(t);
         }
 
         private static bool? ConvertIsAuthorized(string isAuthorized)

@@ -55,19 +55,19 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                 Sql.Format("PropertyLoggingDefinition_GenericPropertyLogging",
                     column,
                     propertyToString),
-                EntityLoggingDefinition.LogPropertyTag, info.EntityLogging.Entity);
+                EntityLoggingDefinition.LogPropertyTag, info.EntityLogging);
 
             createdDependencies = new[] { Tuple.Create<IConceptInfo, IConceptInfo>(info.Property, info.EntityLogging) }; // Entity's property (table column) must be created before entity's logging trigger is created.
         }
 
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
-            return "";
+            return null;
         }
 
         public string RemoveDatabaseStructure(IConceptInfo conceptInfo)
         {
-            return "";
+            return null;
         }
     }
 }

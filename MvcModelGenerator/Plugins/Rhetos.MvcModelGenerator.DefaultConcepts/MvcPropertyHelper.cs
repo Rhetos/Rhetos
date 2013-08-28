@@ -11,14 +11,7 @@ namespace Rhetos.MvcModelGenerator.DefaultConcepts
 
     public static class MvcPropertyHelper
     {
-        public class PropertyTag : Tag<PropertyInfo>
-        {
-            public PropertyTag(TagType tagType, string tagFormat, string nextTagFormat = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format, info.DataStructure.Module.Name, info.DataStructure.Name, info.Name), nextTagFormat)
-            { }
-        }
-
-        public static readonly PropertyTag AttributeTag = new PropertyTag(TagType.Appendable, "/*property attribute {0}.{1}.{2}*/");
+        public static readonly CsTag<PropertyInfo> AttributeTag = "Attribute";
 
         private static string ImplementationCodeSnippet(PropertyInfo info, string type, string nameSuffix)
         {

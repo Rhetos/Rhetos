@@ -22,7 +22,6 @@ using System.Linq;
 using System.Text;
 using System.ComponentModel.Composition;
 using Autofac.Features.Indexed;
-using Rhetos.Factory;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Extensibility;
 using Rhetos.Dom;

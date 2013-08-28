@@ -91,7 +91,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IConceptMappingCodeGenerator.cs" />
-    <Compile Include="IPersistenceEngine.cs" />
     <Compile Include="IPersistenceTransaction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

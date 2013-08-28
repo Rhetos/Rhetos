@@ -41,8 +41,8 @@ namespace Rhetos
             builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));
             builder.RegisterInstance(new ResourcesFolder(ConfigurationManager.AppSettings["ResourcesDirectory"]));
 
-            builder.RegisterType<WcfUserInfo>().As<IUserInfo>().As<WcfUserInfo>().InstancePerLifetimeScope();
-            builder.RegisterType<RhetosService>().InstancePerDependency().As<RhetosService>().As<IServerApplication>();
+            builder.RegisterType<WcfUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
+            builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
             builder.RegisterInstance<IDslSource>(new DiskDslScriptProvider(_dslScriptsFolder));
             builder.RegisterType<GlobalErrorHandler>();
 
@@ -50,7 +50,6 @@ namespace Rhetos
             builder.RegisterModule(new ExtensibilityModuleConfiguration());
             builder.RegisterModule(new DslModuleConfiguration());
             builder.RegisterModule(new CompilerConfiguration());
-            builder.RegisterModule(new FactoryModuleConfiguration());
             builder.RegisterModule(new DomModuleConfiguration(_domAssemblyName, DomAssemblyUsage.Load));
             builder.RegisterModule(new NHibernateModuleConfiguration(Path.Combine(_rootPath, _nHibernateMappingFile)));
             builder.RegisterModule(new ProcessingModuleConfiguration());
@@ -59,6 +58,5 @@ namespace Rhetos
 
             base.Load(builder);
         }
-
     }
 }

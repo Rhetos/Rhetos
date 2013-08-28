@@ -32,8 +32,7 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(ReportDataInfo))]
     public class ReportDataCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly DataStructureCodeGenerator.DataStructureTag GetReportDataTag =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*ReportData.GetReportData {0}.{1}*/");
+        public static readonly CsTag<ReportDataInfo> GetReportDataTag = "GetReportData";
 
         private static string RepositoryFunctionsSnippet(ReportDataInfo info)
         {

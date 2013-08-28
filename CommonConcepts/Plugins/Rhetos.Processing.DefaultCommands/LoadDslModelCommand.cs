@@ -22,7 +22,6 @@ using System.Linq;
 using System.Text;
 using Rhetos.Persistence;
 using System.ComponentModel.Composition;
-using Rhetos.Factory;
 using Rhetos.Utilities;
 using Rhetos.Extensibility;
 using System.Diagnostics.Contracts;
@@ -36,16 +35,13 @@ namespace Rhetos.Processing.DefaultCommands
     [ExportMetadata(MefProvider.Implements, typeof(LoadDslModelCommandInfo))]
     public class LoadDslModelCommand : ICommandImplementation
     {
-        private readonly ITypeFactory TypeFactory;
         private readonly IDslSource DslSource;
         private readonly IDataTypeProvider DataTypeProvider;
 
         public LoadDslModelCommand(
-            ITypeFactory typeFactory,
             IDslSource dslSource,
             IDataTypeProvider dataTypeProvider)
         {
-            this.TypeFactory = typeFactory;
             this.DslSource = dslSource;
             this.DataTypeProvider = dataTypeProvider;
         }

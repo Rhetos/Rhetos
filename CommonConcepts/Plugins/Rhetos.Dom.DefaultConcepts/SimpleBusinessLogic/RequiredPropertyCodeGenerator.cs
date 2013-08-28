@@ -36,7 +36,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private string CheckDataSnippet(RequiredPropertyInfo info)
         {
             return string.Format(
-@"          {{ 
+@"            {{ 
                 var invalid = inserted.Concat(updated).FirstOrDefault(item => item.{2} == null);
                 if (invalid != null)
                     throw new Rhetos.UserException(""It is not allowed to enter {0}.{1} because the required property {2} is not set."", ""DataStructure:{0}.{1},ID:"" + invalid.ID.ToString() + "",Property:{2}"");

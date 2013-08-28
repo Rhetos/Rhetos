@@ -35,11 +35,11 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string RepositoryFunctionsSnippet(ActionInfo info)
         {
             return string.Format(
-@"        private static readonly Action<{0}.{1}, Common.DomRepository, IUserInfo> _action = {2};
+@"        private static readonly Action<{0}.{1}, Common.DomRepository, IUserInfo{3}> _action = {2};
 
         public void Execute({0}.{1} parameters)
         {{
-            _action(parameters, _domRepository, _executionContext.UserInfo);
+            _action(parameters, _domRepository, _executionContext.UserInfo{4});
         }}
 
         void IActionRepository.Execute(object parameters)
@@ -47,7 +47,12 @@ namespace Rhetos.Dom.DefaultConcepts
             Execute(({0}.{1}) parameters);
         }}
 
-", info.Module.Name, info.Name, info.Script);
+",
+             info.Module.Name,
+             info.Name,
+             info.Script,
+             DomUtility.ComputationAdditionalParametersTypeTag.Evaluate(info),
+             DomUtility.ComputationAdditionalParametersArgumentTag.Evaluate(info));
         }
 
         public static string RegisterRepository(ActionInfo info)

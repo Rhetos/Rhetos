@@ -18,25 +18,37 @@
 */
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
-using Rhetos.Compiler;
-using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
+using System.Globalization;
+using System.ComponentModel.Composition;
 using Rhetos.Extensibility;
+using Rhetos.Dsl;
+using Rhetos.Compiler;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(EntityInfo))]
-    public class EntityCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(DenyUserEditDataStructureInfo))]
+    public class DenyUserEditDataStructureCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (EntityInfo)conceptInfo;
-            PropertyInfo idProperty = new PropertyInfo { DataStructure = info, Name = "ID" };
-            codeBuilder.InsertCode("= Guid.NewGuid()", PropertyHelper.DefaultValueTag, idProperty);
+            var info = (DenyUserEditDataStructureInfo)conceptInfo;
+            codeBuilder.InsertCode(CheckChangesSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.DataStructure);
+            codeBuilder.AddReferencesFromDependency(typeof(UserException));
+        }
+
+        private static string CheckChangesSnippet(DenyUserEditDataStructureInfo info)
+        {
+            return string.Format(
+@"            if (checkUserPermissions)
+                throw new Rhetos.UserException(
+                    ""It is not allowed to directly modify {0}.{1}."");
+",
+                info.DataStructure.Module.Name,
+                info.DataStructure.Name);
         }
     }
 }

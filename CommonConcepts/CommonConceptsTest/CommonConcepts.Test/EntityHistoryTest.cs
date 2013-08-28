@@ -405,64 +405,6 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void SimpleFullHistoryUpdate()
-        {
-            using (var executionContext = new CommonTestExecutionContext())
-            {
-                var id1 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
-                    "DELETE FROM TestHistory.Simple",
-                    "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'Test', '2001-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
-
-                var m1 = repository.TestHistory.Simple_FullHistory.All().Single();
-                m1.ActiveSince = null;
-                m1.Code = 11;
-                TestUtility.ShouldFail(() => repository.TestHistory.Simple_FullHistory.Update(new[] { m1 }), "Directly update full history", "Full history does not allow changes.");
-            }
-        }
-
-        [TestMethod]
-        public void SimpleFullHistoryDelete()
-        {
-            using (var executionContext = new CommonTestExecutionContext())
-            {
-                var id1 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
-                    "DELETE FROM TestHistory.Simple",
-                    "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'Test', '2001-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
-
-                var m1 = repository.TestHistory.Simple_FullHistory.All().Single();
-                TestUtility.ShouldFail(() => repository.TestHistory.Simple_FullHistory.Delete(new[] { m1 }), "Directly delete from full history not allowed", "Full history does not allow changes.");
-            }
-        }
-
-        [TestMethod]
-        public void SimpleFullHistoryInsert()
-        {
-            using (var executionContext = new CommonTestExecutionContext())
-            {
-                var id1 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
-                    "DELETE FROM TestHistory.Simple",
-                    "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'Test', '2001-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
-                
-                var m1 = repository.TestHistory.Simple.All().Single();
-
-                TestUtility.ShouldFail(() => repository.TestHistory.Simple_FullHistory.Insert(new[] { 
-                    new TestHistory.Simple_FullHistory {
-                        ActiveSince = DateTime.Now,
-                        Code = 1,
-                        ID = Guid.NewGuid(),
-                        EntityID = m1.ID
-                    }
-                }), "Directly insert into full history not allowed", "Full history does not allow changes.");
-            }
-        }
-
-        [TestMethod]
         public void CrudWithExplicitTime()
         {
             using (var executionContext = new CommonTestExecutionContext())

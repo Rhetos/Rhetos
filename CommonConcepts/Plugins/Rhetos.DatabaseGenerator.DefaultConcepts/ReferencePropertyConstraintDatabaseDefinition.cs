@@ -39,19 +39,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.DependsOn, typeof(ReferencePropertyDatabaseDefinition))]
     public class ReferencePropertyConstraintDatabaseDefinition : IConceptDatabaseDefinition
     {
-        public class ReferenceTag : Tag<ReferencePropertyInfo>
-        {
-            public ReferenceTag(TagType tagType, string tagFormat, string nextTagFormat = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format,
-                        info.DataStructure.Module.Name, // {0}
-                        info.DataStructure.Name, // {1}
-                        info.Name), // {2}
-                    nextTagFormat)
-            { }
-        }
-
-        public static readonly ReferenceTag ForeignKeyConstraintOptions = new ReferenceTag(TagType.Appendable,
-            "/*ReferencePropertyConstraintDatabaseDefinition FK options {0}.{1}.{2}*/");
+        public static readonly SqlTag<ReferencePropertyInfo> ForeignKeyConstraintOptions = "FK options";
 
         public static string GetConstraintName(ReferencePropertyInfo info)
         {

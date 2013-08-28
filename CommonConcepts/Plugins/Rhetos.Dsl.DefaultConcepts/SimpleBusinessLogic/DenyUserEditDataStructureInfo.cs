@@ -20,15 +20,22 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Reflection;
-using Castle.DynamicProxy;
+using System.ComponentModel.Composition;
+using Rhetos.Utilities;
 
-namespace Rhetos.Extensibility
+namespace Rhetos.Dsl.DefaultConcepts
 {
-    public interface IAspect
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("DenyUserEdit")]
+    public class DenyUserEditDataStructureInfo : IValidationConcept
     {
-        int Priority { get; }
-        Func<Type, MethodInfo, bool> IsValidForMethod { get; }
-        IInterceptor Advice { get; }
+        [ConceptKey]
+        public DataStructureInfo DataStructure { get; set; }
+
+        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        {
+            if (!(DataStructure is IWritableOrmDataStructure))
+                throw new DslSyntaxException(this, this.GetKeywordOrTypeName() + " may only be used on a writeable data structure, such as an Entity.");
+        }
     }
 }

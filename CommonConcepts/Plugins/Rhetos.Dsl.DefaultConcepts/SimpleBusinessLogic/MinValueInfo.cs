@@ -44,7 +44,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                                       (this.Property is DateTimePropertyInfo) ? String.Format(@"DateTime.Parse(""{0}"")", Value) : "";
             // Expand the base entity:
             var itemFilterMinValueProperty = new ItemFilterInfo {
-                    Expression = String.Format(@"item => item.{0} < {1}", Property.Name, propertyPrepared),
+                    Expression = String.Format(@"item => item.{0} != null && item.{0} < {1}", Property.Name, propertyPrepared),
                     FilterName = Property.Name + "_MinValueFilter", 
                     Source = Property.DataStructure 
             };
@@ -61,36 +61,36 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
-
-            switch (this.Property.GetType().Name)
+            if (this.Property is IntegerPropertyInfo)
             {
-                case "IntegerPropertyInfo":
-                    int i;
-                    if (!Int32.TryParse(this.Value, out i))
-                        throw new DslSyntaxException(this, "Value is not an integer.");
-                    break;
-                case "DecimalPropertyInfo":
-                    if (!DecimalChecker.IsMatch(this.Value))
-                        throw new DslSyntaxException(this, "Value is not an valid decimal (use period as decimal separator).");
-                    break;
-                case "MoneyPropertyInfo":
-                    if (!DecimalChecker.IsMatch(this.Value))
-                        throw new DslSyntaxException(this, "Value is not an valid decimal (use period as decimal separator).");
-                    break;
-                case "DatePropertyInfo":
-                    DateTime i3;
-                    if (!DateTime.TryParse(this.Value, out i3))
-                        throw new DslSyntaxException(this, "Value is not an date.");
-                    break;
-                case "DateTimePropertyInfo":
-                    DateTime i4;
-                    if (!DateTime.TryParse(this.Value, out i4))
-                        throw new DslSyntaxException(this, "Value is not an datetime.");
-                    break;
-                default:
-                    throw new DslSyntaxException(this, "MinValue can only be used on Integer, Decimal, Money, Date or DateTime.");
+                int i;
+                if (!Int32.TryParse(this.Value, out i))
+                    throw new DslSyntaxException(this, "Value is not an integer.");
             }
-           
+            else if (this.Property is DecimalPropertyInfo)
+            {
+                if (!DecimalChecker.IsMatch(this.Value))
+                    throw new DslSyntaxException(this, "Value is not an valid decimal (use period as decimal separator).");
+            }
+            else if (this.Property is MoneyPropertyInfo)
+            {
+                if (!DecimalChecker.IsMatch(this.Value))
+                    throw new DslSyntaxException(this, "Value is not an valid decimal (use period as decimal separator).");
+            }
+            else if (this.Property is DatePropertyInfo)
+            {
+                DateTime i3;
+                if (!DateTime.TryParse(this.Value, out i3))
+                    throw new DslSyntaxException(this, "Value is not an date.");
+            }
+            else if (this.Property is DateTimePropertyInfo)
+            {
+                DateTime i4;
+                if (!DateTime.TryParse(this.Value, out i4))
+                    throw new DslSyntaxException(this, "Value is not an datetime.");
+            }
+            else
+                throw new DslSyntaxException(this, "MinValue can only be used on Integer, Decimal, Money, Date or DateTime.");
         }
     }
 }

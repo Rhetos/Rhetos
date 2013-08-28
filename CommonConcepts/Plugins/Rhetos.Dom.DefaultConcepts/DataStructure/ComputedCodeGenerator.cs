@@ -42,10 +42,10 @@ namespace Rhetos.Dom.DefaultConcepts
                 info.Module.Name, info.Name, DomUtility.ComputationAdditionalParametersTypeTag.Evaluate(info), info.Expression);
         }
 
-        protected static string ReadFunctionBodySnippet(ComputedInfo info)
+        protected static string QueryFunctionBodySnippet(ComputedInfo info)
         {
-            return string.Format(@"return Compute(_domRepository{0});
-            ",
+            return string.Format(
+                @"return Compute(_domRepository{0}).AsQueryable();",
                 DomUtility.ComputationAdditionalParametersArgumentTag.Evaluate(info));
         }
 
@@ -57,9 +57,8 @@ namespace Rhetos.Dom.DefaultConcepts
             PropertyHelper.GenerateCodeForType(idProperty, codeBuilder, "Guid", true);
             codeBuilder.AddInterfaceAndReference(typeof(IEntity), info);
 
-
             RepositoryHelper.GenerateRepository(info, codeBuilder);
-            RepositoryHelper.GenerateReadableRepositoryFunctions(info, codeBuilder, ReadFunctionBodySnippet(info));
+            RepositoryHelper.GenerateQueryableRepositoryFunctions(info, codeBuilder, QueryFunctionBodySnippet(info));
             codeBuilder.InsertCode(RepositoryFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info);
         }
     }

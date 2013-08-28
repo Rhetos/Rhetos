@@ -35,7 +35,7 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(PropertyInfo))]
     public class SimplePropertyMappingGenerator : IConceptMappingCodeGenerator
     {
-        public static readonly PropertyTag AttributesTag = new PropertyTag(TagType.Appendable, "<!-- property attributes {0}.{1}.{2} -->");
+        public static readonly XmlTag<PropertyInfo> AttributesTag = "Attributes";
 
         private static string CodeSnippet(PropertyInfo info)
         {
@@ -46,14 +46,12 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
         private static IEnumerable<Type> simplePropertyTypes = new[]
         {
             typeof(ShortStringPropertyInfo),
-            typeof(BinaryPropertyInfo),
             typeof(BoolPropertyInfo),
             typeof(DatePropertyInfo),
             typeof(DateTimePropertyInfo),
             typeof(DecimalPropertyInfo),
             typeof(GuidPropertyInfo),
             typeof(IntegerPropertyInfo),
-            typeof(LongStringPropertyInfo),
             typeof(MoneyPropertyInfo),
             typeof(ShortStringPropertyInfo)
         };
@@ -63,12 +61,7 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
             if (!(info.DataStructure is IOrmDataStructure))
                 return false;
 
-            var currentPropertyType = info.GetType();
-            foreach (var simplePropertyType in simplePropertyTypes)
-                if (simplePropertyType.IsAssignableFrom(currentPropertyType))
-                    return true;
-                
-            return false;
+            return simplePropertyTypes.Any(supportedType => supportedType.IsAssignableFrom(info.GetType()));
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)

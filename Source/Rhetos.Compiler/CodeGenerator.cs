@@ -21,7 +21,6 @@ using System.Diagnostics;
 using Rhetos.Dsl;
 using System.Diagnostics.Contracts;
 using Rhetos.Extensibility;
-using Rhetos.Factory;
 using Rhetos.Logging;
 
 namespace Rhetos.Compiler

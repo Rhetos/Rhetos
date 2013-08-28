@@ -20,23 +20,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Reflection;
-using System.Linq.Expressions;
 using System.Diagnostics.Contracts;
+using Rhetos.Utilities;
+using NHibernate;
 
-namespace Rhetos.Extensibility
+namespace Rhetos.Persistence.NHibernate
 {
-    public static class StrongReflection
+    public interface IPersistenceEngine
     {
-        public static MethodInfo GetMethodInfo(LambdaExpression expression)
-        {
-            Contract.Requires(expression != null);
-
-            var member = expression.Body as MethodCallExpression;
-            if (member != null)
-                return member.Method;
-
-            return null;
-        }
+        Tuple<ISession, ITransaction> BeginTransaction(IUserInfo userInfo);
     }
 }

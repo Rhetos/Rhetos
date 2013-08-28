@@ -23,6 +23,5 @@ namespace Rhetos.Security
     public interface IClaimGenerator
     {
         void GenerateClaims();
-        void Reset();
     }
 }

@@ -35,18 +35,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(DataStructureExtendsInfo))]
     public class DataStructureExtendsDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
-        public class DataStructureExtendsTag : Tag<DataStructureExtendsInfo>
-        {
-            public DataStructureExtendsTag(TagType tagType, string tagFormat, string nextTagFormat = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format,
-                        info.Extension.Module.Name, // {0}
-                        info.Extension.Name), // {1}
-                    nextTagFormat)
-            { }
-        }
-
-        public static readonly DataStructureExtendsTag ForeignKeyConstraintOptions = new DataStructureExtendsTag(TagType.Appendable,
-            "/*DataStructureExtends FK options {0}.{1}*/");
+        public static readonly SqlTag<DataStructureExtendsInfo> ForeignKeyConstraintOptions = "FK options";
 
         public static string GetConstraintName(DataStructureExtendsInfo info)
         {

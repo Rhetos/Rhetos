@@ -20,27 +20,22 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Castle.DynamicProxy;
-using System.Reflection;
+using System.ComponentModel.Composition;
+using Rhetos.Utilities;
 
-namespace Rhetos.Extensibility
+namespace Rhetos.Dsl.DefaultConcepts
 {
-    public class AspectPointcuts : IAspectPointcuts, IInterceptorSelector
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("DenyUserEdit")]
+    public class DenyUserEditInfo : IValidationConcept
     {
-        private readonly List<IAspect> AspectWithPointcuts = new List<IAspect>();
+        [ConceptKey]
+        public PropertyInfo Property { get; set; }
 
-        public IInterceptor[] SelectInterceptors(Type type, System.Reflection.MethodInfo method, IInterceptor[] interceptors)
+        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
-            return (from p in AspectWithPointcuts
-                    where p.IsValidForMethod(type, method)
-                    orderby p.Priority
-                    select p.Advice as IInterceptor).ToArray();             
-        }
-
-        public void RegisterAspect(IAspect aspect)
-        {
-            if (!AspectWithPointcuts.Contains(aspect))
-                AspectWithPointcuts.Add(aspect);
+            if (!(Property.DataStructure is IWritableOrmDataStructure))
+                throw new DslSyntaxException(this, this.GetKeywordOrTypeName() + " may only be used on a writeable data structure, such as an Entity.");
         }
     }
 }

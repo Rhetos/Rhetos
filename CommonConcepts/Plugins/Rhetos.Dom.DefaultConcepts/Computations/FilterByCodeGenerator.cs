@@ -34,19 +34,8 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(FilterByInfo))]
     public class FilterByCodeGenerator : IConceptCodeGenerator
     {
-        public class FilterByTag : Tag<FilterByInfo>
-        {
-            public FilterByTag(TagType tagType, string tagFormat, string nextTagFormat = null, string firstEvaluationContext = null, string nextEvaluationContext = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format,
-                    info.Source.Module.Name, // {0}
-                    info.Source.Name, // {1}
-                    CsUtility.TextToIdentifier(info.Parameter)), // {2}
-                nextTagFormat, firstEvaluationContext, nextEvaluationContext)
-            { }
-        }
-
-        public static readonly FilterByTag AdditionalParametersTypeTag = new FilterByTag(TagType.Appendable, "/*FilterBy.AdditionalParametersType {0}.{1}.{2}*/");
-        public static readonly FilterByTag AdditionalParametersArgumentTag = new FilterByTag(TagType.Appendable, "/*FilterBy.AdditionalParametersArgument {0}.{1}.{2}*/");
+        public static readonly CsTag<FilterByInfo> AdditionalParametersTypeTag = "AdditionalParametersType";
+        public static readonly CsTag<FilterByInfo> AdditionalParametersArgumentTag = "AdditionalParametersArgument";
 
         private static string FilterExpressionPropertyName(FilterByInfo info)
         {

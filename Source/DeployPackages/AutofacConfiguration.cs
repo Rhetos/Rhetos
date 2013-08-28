@@ -55,7 +55,6 @@ namespace DeployPackages
             builder.RegisterInstance<IDslSource>(new DiskDslScriptProvider(DslScriptsFolder));
             builder.RegisterModule(new CompilerConfiguration());
             builder.RegisterModule(new DatabaseGeneratorModuleConfiguration());
-            builder.RegisterModule(new FactoryModuleConfiguration());
             builder.RegisterModule(new DomModuleConfiguration(DomAssemblyName, DomAssemblyUsage.Generate));
             builder.RegisterModule(new NHibernateModuleConfiguration(null));
             builder.RegisterModule(new LoggingConfiguration());

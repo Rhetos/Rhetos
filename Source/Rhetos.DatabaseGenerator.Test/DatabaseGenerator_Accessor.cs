@@ -19,7 +19,6 @@
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
-using Rhetos.Factory;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;

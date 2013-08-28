@@ -33,7 +33,7 @@ namespace Rhetos.Configuration.Autofac
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<CodeBuilder>().As<ICodeBuilder>();
-            builder.RegisterType<CodeGenerator>().As<ICodeGenerator>().SingleInstance();
+            builder.RegisterType<CodeGenerator>().As<ICodeGenerator>();
             builder.RegisterType<AssemblyGenerator>().As<IAssemblyGenerator>();
             PluginsUtility.RegisterPlugins<IConceptCodeGenerator>(builder);
 

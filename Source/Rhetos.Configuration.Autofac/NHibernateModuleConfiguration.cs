@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Rhetos.Compiler;
-using Rhetos.Factory;
 using Rhetos.Dsl;
 using Autofac;
 using Rhetos.Utilities;
@@ -56,11 +55,11 @@ namespace Rhetos.Configuration.Autofac
             else
                 builder.RegisterType<NHibernateMappingLoader>().WithParameter("nHibernateMappingFile", _loadNhMappingFromFile).As<INHibernateMapping>().SingleInstance();
 
-            builder.RegisterType<NHibernatePersistenceTransaction>();
-            builder.RegisterGeneratedFactory<NHibernatePersistenceTransaction.Factory>();
             builder.RegisterType<NHibernatePersistenceEngine>().As<IPersistenceEngine>().SingleInstance();
             PluginsUtility.RegisterPlugins<IConceptMappingCodeGenerator>(builder);
             PluginsUtility.RegisterPlugins<INHibernateConfigurationExtension>(builder);
+
+            builder.RegisterType<NHibernatePersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope();
 
             base.Load(builder);
         }

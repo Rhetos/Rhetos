@@ -35,11 +35,10 @@ namespace Rhetos.Configuration.Autofac
         {
             Contract.Requires(builder != null);
 
-            var ci = new ComponentInterceptor();
-            builder.RegisterInstance(ci).As<IComponentInterceptorRegistrator>();
-            builder.RegisterModule(new ComponentInterceptionModule(ci));
+            builder.RegisterGeneric(typeof(PluginsMetadataCache<>)).SingleInstance();
+            builder.RegisterGeneric(typeof(PluginsContainer<>)).As(typeof(IPluginsContainer<>)).InstancePerLifetimeScope();
 
-            builder.RegisterGeneric(typeof(PluginsContainer<>)).As(typeof(IPluginsContainer<>)).SingleInstance();
+            PluginsUtility.RegisterPluginModules(builder);
 
             base.Load(builder);
         }

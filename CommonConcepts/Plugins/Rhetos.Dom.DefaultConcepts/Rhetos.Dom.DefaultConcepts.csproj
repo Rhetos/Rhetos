@@ -43,9 +43,6 @@
       <HintPath>..\..\..\External\Autofac\Autofac.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="Castle.Core">
-      <HintPath>..\..\..\External\Castle\Castle.Core.dll</HintPath>
-    </Reference>
     <Reference Include="NHibernate, Version=3.3.1.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
       <HintPath>..\..\..\External\NHibernate\NHibernate.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
@@ -86,6 +83,8 @@
     <Compile Include="Computations\ComputeForNewBaseItemsCodeGenerator.cs" />
     <Compile Include="Computations\QueryableExtensionCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ActionCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\DenyUserEditDataStructureCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\DenyUserEditCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\CreationTimeCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\DeactivatableCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ReferenceCascadeDeleteCodeGenerator.cs" />
@@ -93,7 +92,6 @@
     <Compile Include="DataStructure\LinkedItemsCodeGenerator.cs" />
     <Compile Include="Computations\PersistedDataStructureCodeGenerator.cs" />
     <Compile Include="Computations\PropertyComputedFromCodeGenerator.cs" />
-    <Compile Include="DataStructure\EntityCodeGenerator.cs" />
     <Compile Include="DataStructure\OrmDataStructureCodeGenerator.cs" />
     <Compile Include="DataStructure\DataStructureCodeGenerator.cs" />
     <Compile Include="DataStructure\ModuleCodeGenerator.cs" />
@@ -148,10 +146,6 @@
     <ProjectReference Include="..\..\..\Source\Rhetos.Extensibility.Interfaces\Rhetos.Extensibility.Interfaces.csproj">
       <Project>{ddc73f5f-bb0e-4944-92cc-4ac937398499}</Project>
       <Name>Rhetos.Extensibility.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Source\Rhetos.Factory.Interfaces\Rhetos.Factory.Interfaces.csproj">
-      <Project>{b5a06d77-e076-4fd6-acc5-dbe6bfed49d8}</Project>
-      <Name>Rhetos.Factory.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Source\Rhetos.Persistence.Interfaces\Rhetos.Persistence.Interfaces.csproj">
       <Project>{5e3bbd83-91cb-4fba-81b2-79a81ec94d70}</Project>

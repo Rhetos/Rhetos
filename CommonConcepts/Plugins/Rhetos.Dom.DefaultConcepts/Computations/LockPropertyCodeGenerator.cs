@@ -34,13 +34,6 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(LockPropertyInfo))]
     public class LockPropertyCodeGenerator : IConceptCodeGenerator
     {
-        public class LockPropertyTag : Tag<LockPropertyInfo>
-        {
-            public LockPropertyTag(TagType tagType, string tagFormat, string nextTagFormat = null, string firstEvaluationContext = null, string nextEvaluationContext = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format, info.Source.DataStructure.Module.Name, info.Source.Name, info.FilterType), nextTagFormat, firstEvaluationContext, nextEvaluationContext)
-            { }
-        }
-
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (LockPropertyInfo)conceptInfo;

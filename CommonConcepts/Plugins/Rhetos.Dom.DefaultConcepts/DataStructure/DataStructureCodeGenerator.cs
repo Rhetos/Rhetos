@@ -34,30 +34,25 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(DataStructureInfo))]
     public class DataStructureCodeGenerator : IConceptCodeGenerator
     {
-        public class DataStructureTag : Tag<DataStructureInfo>
+        public static readonly CsTag<DataStructureInfo> AttributesTag = "ClassAttributes";
+        public static readonly CsTag<DataStructureInfo> InterfaceTag = new CsTag<DataStructureInfo>("ClassInterace", TagType.Appendable, " : {0}", ", {0}");
+        public static readonly CsTag<DataStructureInfo> BodyTag = "ClassBody";
+
+        protected static string CodeSnippet(DataStructureInfo info)
         {
-            public DataStructureTag(TagType tagType, string tagFormat, string nextTagFormat = null, string firstEvaluationContext = null, string nextEvaluationContext = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format, info.Module.Name, info.Name), nextTagFormat, firstEvaluationContext, nextEvaluationContext)
-            { }
+            return @"
+    " + AttributesTag.Evaluate(info) + @"
+    public partial class " + info.Name + InterfaceTag.Evaluate(info) + @"
+    {
+        " + BodyTag.Evaluate(info) + @"
+    }
+";
         }
-
-        public static readonly DataStructureTag AttributesTag = new DataStructureTag(TagType.Appendable, "/*class attribute {0}.{1}*/");
-        public static readonly DataStructureTag InterfaceTag = new DataStructureTag(TagType.Appendable, "/*first interface {0}.{1}*/", "/*next interface {0}.{1}*/", " : {0}", ", {0}");
-        public static readonly DataStructureTag BodyTag = new DataStructureTag(TagType.Appendable, "/*class body {0}.{1}*/");
-
-        protected static readonly DataStructureTag CodeSnippet = new DataStructureTag(TagType.CodeSnippet, 
-@"
-    " + AttributesTag + @"
-    public partial class {1}" + InterfaceTag + @"
-    {{
-        " + BodyTag + @"
-    }}
-");
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             DataStructureInfo info = (DataStructureInfo)conceptInfo;
-            codeBuilder.InsertCode(CodeSnippet.Evaluate(info), ModuleCodeGenerator.NamespaceMembersTag, info.Module);
+            codeBuilder.InsertCode(CodeSnippet(info), ModuleCodeGenerator.NamespaceMembersTag, info.Module);
             codeBuilder.InsertCode("[DataContract]", AttributesTag, info);
         }
     }

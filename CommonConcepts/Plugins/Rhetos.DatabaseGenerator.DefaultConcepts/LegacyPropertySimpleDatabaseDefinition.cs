@@ -49,16 +49,16 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             createdDependencies = null;
 
             codeBuilder.InsertCode(Sql.Format("LegacyPropertySimpleDatabaseDefinition_ExtendViewSelect", SqlUtility.Identifier(info.Property.Name), SqlUtility.Identifier(info.Column)),
-                LegacyEntityWithAutoCreatedViewDatabaseDefinition.ViewSelectPartTag, info.Property.DataStructure);
+                LegacyEntityWithAutoCreatedViewDatabaseDefinition.ViewSelectPartTag, info.LegacyEntityWithAutoCreatedView);
 
             codeBuilder.InsertCode(Sql.Format("LegacyPropertySimpleDatabaseDefinition_ExtendTriggerInsert", SqlUtility.Identifier(info.Column)),
-                LegacyEntityWithAutoCreatedViewDatabaseDefinition.TriggerInsertPartTag, info.Property.DataStructure);
+                LegacyEntityWithAutoCreatedViewDatabaseDefinition.TriggerInsertPartTag, info.LegacyEntityWithAutoCreatedView);
 
             codeBuilder.InsertCode(Sql.Format("LegacyPropertySimpleDatabaseDefinition_ExtendTriggerSelectForInsert", SqlUtility.Identifier(info.Column), SqlUtility.Identifier(info.Property.Name)),
-                LegacyEntityWithAutoCreatedViewDatabaseDefinition.TriggerSelectForInsertPartTag, info.Property.DataStructure);
+                LegacyEntityWithAutoCreatedViewDatabaseDefinition.TriggerSelectForInsertPartTag, info.LegacyEntityWithAutoCreatedView);
 
             codeBuilder.InsertCode(Sql.Format("LegacyPropertySimpleDatabaseDefinition_ExtendTriggerSelectForUpdate", SqlUtility.Identifier(info.Column), SqlUtility.Identifier(info.Property.Name)),
-                LegacyEntityWithAutoCreatedViewDatabaseDefinition.TriggerSelectForUpdatePartTag, info.Property.DataStructure);
+                LegacyEntityWithAutoCreatedViewDatabaseDefinition.TriggerSelectForUpdatePartTag, info.LegacyEntityWithAutoCreatedView);
 
         }
     }

@@ -31,8 +31,8 @@ namespace Rhetos.Configuration.Autofac
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<DslModel>().As<IDslModel>().SingleInstance();
-            builder.RegisterType<DslParser>().As<IDslParser>().SingleInstance();
-            builder.RegisterType<DslContainer>().As<IDslContainer>().InstancePerDependency();
+            builder.RegisterType<DslParser>().As<IDslParser>();
+            builder.RegisterType<DslContainer>().As<IDslContainer>();
             PluginsUtility.RegisterPlugins<IConceptInfo>(builder);
 
             base.Load(builder);

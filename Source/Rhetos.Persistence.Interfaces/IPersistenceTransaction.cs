@@ -27,7 +27,9 @@ namespace Rhetos.Persistence
     {
         ISession NHibernateSession { get; }
 
-        void ApplyChanges();
+        /// <summary>
+        /// DiscardChanges marks the transaction as invalid. The changes will be descarded (rollbacked) on Dispose.
+        /// </summary>
         void DiscardChanges();
     }
 }

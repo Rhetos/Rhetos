@@ -33,7 +33,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ConceptImplementationVersion(2, 0)]
     public class EntityLoggingDefinition : IConceptDatabaseDefinitionExtension
     {
-        public static readonly DataStructureTag LogPropertyTag = new DataStructureTag(TagType.Appendable, "/*Logging.LogProperty {0}.{1}*/");
+        public static readonly SqlTag<EntityLoggingInfo> LogPropertyTag = "LogProperty";
 
         public static string GetTriggerNameInsert(EntityLoggingInfo conceptInfo)
         {
@@ -70,7 +70,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                 GetTriggerNameUpdate(info),
                 GetTriggerNameDelete(info),
                 SqlUtility.ScriptSplitter,
-                LogPropertyTag.Evaluate(info.Entity));
+                LogPropertyTag.Evaluate(info));
         }
 
         public string RemoveDatabaseStructure(IConceptInfo conceptInfo)

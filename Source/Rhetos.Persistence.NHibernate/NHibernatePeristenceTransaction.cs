@@ -22,90 +22,93 @@ using NHibernate.Linq;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using Rhetos.Logging;
+using Rhetos.Utilities;
 
 namespace Rhetos.Persistence.NHibernate
 {
     public class NHibernatePersistenceTransaction : IPersistenceTransaction
     {
+        private readonly IPersistenceEngine _persistenceEngine;
+        private readonly ILogger _logger;
+        private readonly IUserInfo _userInfo;
+
         private ISession _session;
         private ITransaction _transaction;
-        private ILogger _logger;
-        public delegate NHibernatePersistenceTransaction Factory(ISession session, ITransaction transaction); // TODO: This might be unnecessary when Autofac offers Func<ISession, ITransaction, IPersistenceTransaction>.
+        private bool _initialized;
+        private bool _disposed;
+        private bool _discard;
 
-        enum TransactionState { Active, Submitted, Rollbacked }
-        private TransactionState _state;
-
-        public NHibernatePersistenceTransaction(ISession session, ITransaction transaction, ILogProvider logProvider)
+        public NHibernatePersistenceTransaction(IPersistenceEngine persistenceEngine, ILogProvider logProvider, IUserInfo userInfo)
         {
-            _session = session;
-            _transaction = transaction;
+            _persistenceEngine = persistenceEngine;
             _logger = logProvider.GetLogger("NHibernatePersistenceTransaction");
-            _state = TransactionState.Active;
+            _userInfo = userInfo;
         }
 
         public ISession NHibernateSession
         {
-            get { return _session; }
+            get
+            {
+                Initialize();
+                return _session;
+            }
         }
 
-        public void ApplyChanges()
+        private void Initialize()
         {
-            if (_state != TransactionState.Active)
-                throw new FrameworkException(string.Format("Cannot apply changes. Transaction is already {0}.", _state));
+            if (_disposed)
+                throw new FrameworkException("Trying to initialize NHibernatePersistenceTransaction that is already disposed.");
 
-            _transaction.Commit();
-            _state = TransactionState.Submitted;
-            FreeResources();
+            if (!_initialized)
+            {
+                var newTran = _persistenceEngine.BeginTransaction(_userInfo);
+                _session = newTran.Item1;
+                _transaction = newTran.Item2;
+                _initialized = true;
+            }
         }
 
         public void DiscardChanges()
         {
-            if (_state == TransactionState.Rollbacked) // It is acceptable for DiscardChanges to be called multiple time during the error handlinga process.
-                return;
-            if (_state != TransactionState.Active)
-                throw new FrameworkException(string.Format("Cannot discard changes. Transaction is already {0}.", _state));
-
-            try
-            {
-                _transaction.Rollback();
-            }
-            catch(TransactionException)
-            {
-            }
-            _state = TransactionState.Rollbacked;
-            FreeResources();
+            _discard = true;
         }
 
         public void Dispose()
         {
+            if (_initialized && !_disposed)
+            {
+                if (_discard)
+                    Rollback();
+                else
+                    Commit();
+            }
+
+            _disposed = true;
             FreeResources();
         }
 
-        public void FreeResources()
+        private void Commit()
+        {
+            if (_transaction != null)
+                _transaction.Commit();
+        }
+
+        private void Rollback()
+        {
+            try
+            {
+                if (_transaction != null)
+                    _transaction.Rollback();
+            }
+            catch(TransactionException)
+            {
+            }
+        }
+
+        private void FreeResources()
         {
             if (_transaction != null)
             {
-                try
-                {
-                    if (_state == TransactionState.Active)
-                    {
-                        _transaction.Rollback();
-                        _state = TransactionState.Rollbacked;
-                        try
-                        {
-                            // Unexpected open transaction while releaseing resources is logged, but the exception is not thrown,
-                            // because that exception would mask the original exception that caused the resources to be released.
-                            // It would make debugging very difficult.
-                            _logger.Error("The transaction was not closed a regular way (ApplyChanges or DiscardChanges). It is automatically rollbacked while disposing NHibernatePersistenceTransaction.");
-                        }
-                        catch
-                        {
-                        }
-                    }
-                }
-                catch
-                {
-                }
                 _transaction.Dispose();
                 _transaction = null;
             }

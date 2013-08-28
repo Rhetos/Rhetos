@@ -33,23 +33,12 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(LegacyEntityWithAutoCreatedViewInfo))]
     public class LegacyEntityWithAutoCreatedViewDatabaseDefinition : IConceptDatabaseDefinition
     {
-        public static readonly DataStructureTag ViewSelectPartTag =
-            new DataStructureTag(TagType.Appendable, "/*LegacyEntityWithAutoCreatedView ViewSelectPart {0}.{1}*/");
-
-        public static readonly DataStructureTag ViewFromPartTag =
-            new DataStructureTag(TagType.Appendable, "/*LegacyEntityWithAutoCreatedView ViewFromPart {0}.{1}*/");
-
-        public static readonly DataStructureTag TriggerInsertPartTag =
-            new DataStructureTag(TagType.Appendable, "/*LegacyEntityWithAutoCreatedView TriggerInsertPart {0}.{1}*/");
-
-        public static readonly DataStructureTag TriggerSelectForInsertPartTag =
-            new DataStructureTag(TagType.Appendable, "/*LegacyEntityWithAutoCreatedView TriggerSelectForInsertPartTag {0}.{1}*/");
-
-        public static readonly DataStructureTag TriggerSelectForUpdatePartTag =
-            new DataStructureTag(TagType.Appendable, "/*LegacyEntityWithAutoCreatedView TriggerSelectForUpdatePartTag {0}.{1}*/");
-
-        public static readonly DataStructureTag TriggerFromPartTag =
-            new DataStructureTag(TagType.Appendable, "/*LegacyEntityWithAutoCreatedView TriggerFromPart {0}.{1}*/");
+        public static readonly SqlTag<LegacyEntityWithAutoCreatedViewInfo> ViewSelectPartTag = "ViewSelectPart";
+        public static readonly SqlTag<LegacyEntityWithAutoCreatedViewInfo> ViewFromPartTag = "ViewFromPart";
+        public static readonly SqlTag<LegacyEntityWithAutoCreatedViewInfo> TriggerInsertPartTag = "TriggerInsertPart";
+        public static readonly SqlTag<LegacyEntityWithAutoCreatedViewInfo> TriggerSelectForInsertPartTag = "TriggerSelectForInsertPartTag";
+        public static readonly SqlTag<LegacyEntityWithAutoCreatedViewInfo> TriggerSelectForUpdatePartTag = "TriggerSelectForUpdatePartTag";
+        public static readonly SqlTag<LegacyEntityWithAutoCreatedViewInfo> TriggerFromPartTag = "TriggerFromPart";
 
         protected string InsertTriggerName(LegacyEntityWithAutoCreatedViewInfo info)
         {

@@ -27,7 +27,17 @@ namespace Rhetos.Dom
 {
     public interface IDomainObjectModel
     {
-        Type ResolveType(string name);
         Assembly ObjectModel { get; }
+    }
+
+    public static class DomainObjectModelHelper
+    {
+        public static Type GetType(this IDomainObjectModel dom, string typeName)
+        {
+            var type = dom.ObjectModel.GetType(typeName);
+            if (type == null)
+                throw new Exception("DomainObjectModel does not contain type " + typeName + ".");
+            return type;
+        }
     }
 }

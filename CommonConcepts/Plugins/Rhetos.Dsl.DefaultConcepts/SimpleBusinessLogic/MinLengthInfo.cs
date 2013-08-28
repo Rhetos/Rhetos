@@ -37,8 +37,9 @@ namespace Rhetos.Dsl.DefaultConcepts
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
             // Expand the base entity:
-            var itemFilterMinLengthProperty = new ItemFilterInfo { 
-                    Expression = String.Format("item => item.{0}.Length < {1}", Property.Name, Length),
+            var itemFilterMinLengthProperty = new ItemFilterInfo
+            {
+                Expression = String.Format("item => !String.IsNullOrEmpty(item.{0}) && item.{0}.Length < {1}", Property.Name, Length),
                     FilterName = Property.Name + "_MinLengthFilter", 
                     Source = Property.DataStructure 
             };

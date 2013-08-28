@@ -66,21 +66,10 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ConceptImplementationVersion(2, 0)]
     public class AutoCodeDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
-        public class PropertyTag : Tag<PropertyInfo>
-        {
-            public PropertyTag(TagType tagType, string tagFormat, string nextTagFormat = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format,
-                        info.DataStructure.Module.Name, // {0}
-                        info.DataStructure.Name, // {1}
-                        info.Name), // {2}
-                    nextTagFormat)
-            { }
-        }
-
-        public static readonly PropertyTag BeforeCursorTag = new PropertyTag(TagType.Appendable, "/*AutoCode.BeforeCursor {0}.{1}.{2}*/");
-        public static readonly PropertyTag CursorSelectTag = new PropertyTag(TagType.Appendable, "/*AutoCode.CursorSelect {0}.{1}.{2}*/");
-        public static readonly PropertyTag CursorFetchTag = new PropertyTag(TagType.Appendable, "/*AutoCode.CursorFetch {0}.{1}.{2}*/");
-        public static readonly PropertyTag BeforeGenerateTag = new PropertyTag(TagType.Appendable, "/*AutoCode.BeforeGenerate {0}.{1}.{2}*/");
+        public static readonly SqlTag<AutoCodePropertyInfo> BeforeCursorTag = "BeforeCursor";
+        public static readonly SqlTag<AutoCodePropertyInfo> CursorSelectTag = "CursorSelect";
+        public static readonly SqlTag<AutoCodePropertyInfo> CursorFetchTag = "CursorFetch";
+        public static readonly SqlTag<AutoCodePropertyInfo> BeforeGenerateTag = "BeforeGenerate";
 
         public static string TriggerName(PropertyInfo propertyInfo)
         {
@@ -96,18 +85,18 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             throw new FrameworkException("AutoCode is not supported on the given data structure type: " + propertyInfo.DataStructure.GetUserDescription());
         }
 
-        public static string TriggerSnippet(PropertyInfo propertyInfo)
+        public static string TriggerSnippet(AutoCodePropertyInfo info)
         {
             return Sql.Format("AutoCodeDatabaseDefinition_TriggerSnippet",
-                SqlUtility.Identifier(propertyInfo.DataStructure.Module.Name),
-                TableName(propertyInfo),
-                SqlUtility.Identifier(propertyInfo.Name),
-                TriggerName(propertyInfo),
+                SqlUtility.Identifier(info.Property.DataStructure.Module.Name),
+                TableName(info.Property),
+                SqlUtility.Identifier(info.Property.Name),
+                TriggerName(info.Property),
                 ShortStringPropertyInfo.MaxLength,
-                BeforeCursorTag.Evaluate(propertyInfo),
-                CursorSelectTag.Evaluate(propertyInfo),
-                CursorFetchTag.Evaluate(propertyInfo),
-                BeforeGenerateTag.Evaluate(propertyInfo));
+                BeforeCursorTag.Evaluate(info),
+                CursorSelectTag.Evaluate(info),
+                CursorFetchTag.Evaluate(info),
+                BeforeGenerateTag.Evaluate(info));
         }
 
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
@@ -115,7 +104,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             var info = (AutoCodePropertyInfo) conceptInfo;
 
             if (IsSupported(info.Property))
-                return TriggerSnippet(info.Property);
+                return TriggerSnippet(info);
             return null;
         }
 

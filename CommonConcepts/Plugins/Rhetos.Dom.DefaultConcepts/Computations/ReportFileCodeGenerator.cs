@@ -33,14 +33,9 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(ReportFileInfo))]
     public class ReportFileCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly DataStructureCodeGenerator.DataStructureTag BeforePrepareDataTag =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*ReportFile.BeforePrepareData {0}.{1}*/");
-
-        public static readonly DataStructureCodeGenerator.DataStructureTag BeforeGenerateReportTag =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*ReportFile.BeforeGenerateReport {0}.{1}*/");
-
-        public static readonly DataStructureCodeGenerator.DataStructureTag AfterGenerateReportTag =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*ReportFile.AfterGenerateReport {0}.{1}*/");
+        public static readonly CsTag<ReportFileInfo> BeforePrepareDataTag = "BeforePrepareData";
+        public static readonly CsTag<ReportFileInfo> BeforeGenerateReportTag = "BeforeGenerateReport";
+        public static readonly CsTag<ReportFileInfo> AfterGenerateReportTag = "AfterGenerateReport";
 
         private static string RepositoryFunctionsSnippet(ReportFileInfo info)
         {

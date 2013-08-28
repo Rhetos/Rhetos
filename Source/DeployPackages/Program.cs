@@ -30,13 +30,13 @@ using Rhetos.Utilities;
 using Rhetos.DatabaseGenerator;
 using Rhetos.Deployment;
 using Rhetos.Dom;
-using Rhetos.Factory;
 using Rhetos.Logging;
 using Rhetos.Persistence.NHibernate;
 using Rhetos.RestGenerator;
 using Rhetos.Security;
 using Rhetos.Dsl;
 using System.Collections.Generic;
+using Rhetos.Extensibility;
 
 namespace DeployPackages
 {
@@ -152,12 +152,15 @@ namespace DeployPackages
 
                 if (parameters.GeneratePermissionClaims)
                 {
+                    PluginsUtility.DeployPackagesAdditionalAssemblies.AddRange(new[] { @"bin\ServerDom.dll", @"ServerDom.dll" }); // TODO: Remove this hack after ServerDom.dll is moved to the bin\Plugins subfolder and every IGenerator has a Cleanup() function.
+                    PluginsUtility.DetectAndRegisterNewModulesAndPlugins(container);
+
                     Console.Write("Generating claims ... ");
                     container.Resolve<IClaimGenerator>().GenerateClaims();
                     Console.WriteLine("Done.");
                 }
                 else
-                    Console.WriteLine("Generating claims skipped. ");
+                    Console.WriteLine("Generating claims skipped.");
 
                 var configFile = new FileInfo(AutofacConfiguration.RhetosServerWebConfigPath);
                 if (configFile.Exists)
