@@ -29,6 +29,7 @@ using Rhetos.Security;
 
 namespace Rhetos
 {
+    [System.ServiceModel.Activation.AspNetCompatibilityRequirements(RequirementsMode = System.ServiceModel.Activation.AspNetCompatibilityRequirementsMode.Allowed)]
     public class RhetosService : IServerApplication
     {
         private readonly IProcessingEngine _processingEngine;

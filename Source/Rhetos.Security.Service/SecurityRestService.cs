@@ -31,6 +31,7 @@ using Rhetos.Dom;
 
 namespace Rhetos.Security.Service
 {
+    [System.ServiceModel.Activation.AspNetCompatibilityRequirements(RequirementsMode = System.ServiceModel.Activation.AspNetCompatibilityRequirementsMode.Allowed)]
     public class SecurityRestService : ISecurityRestService
     {
         private readonly RestImpl _restImpl;

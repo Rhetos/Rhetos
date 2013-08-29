@@ -76,6 +76,7 @@ namespace Rhetos
         }
     } 
 
+    [System.ServiceModel.Activation.AspNetCompatibilityRequirements(RequirementsMode = System.ServiceModel.Activation.AspNetCompatibilityRequirementsMode.Allowed)]
 	public class DomainService : IDomainService
 	{
 
