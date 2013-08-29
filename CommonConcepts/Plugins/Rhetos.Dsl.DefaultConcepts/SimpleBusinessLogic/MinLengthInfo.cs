@@ -45,7 +45,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             };
             var denySaveMinLengthProperty = new DenySaveForPropertyInfo
             {
-                DependedProperties = Property, 
+                    DependedProperty = Property, 
                 FilterType = itemFilterMinLengthProperty.FilterName, 
                 Title = String.Format("Minimum allowed length of {0} is {1} characters.", Property.Name, Length), 
                 Source = Property.DataStructure 
