@@ -63,7 +63,7 @@ Module TestExtension
 	SqlQueryable InvalidExtension 'SELECT ID, Data = 1/0 FROM TestExtension.SimpleBase' { Extends TestExtension.SimpleBase; Integer Data; }
 }
 
-Module Test8
+Module TestEntity
 {
 	Entity Principal
 	{
@@ -78,8 +78,8 @@ Module Test8
 	
 	Entity Permission
 	{
-		Reference Principal Test8.Principal { CascadeDelete; }
-		Reference Claim Test8.Claim { CascadeDelete; }
+		Reference Principal TestEntity.Principal { CascadeDelete; }
+		Reference Claim TestEntity.Claim { CascadeDelete; }
 		Bool IsAuthorized;
 	}
 
@@ -90,21 +90,26 @@ Module Test8
 
 	Entity Extension
 	{
-		Extends Test8.BaseEntity;
+		Extends TestEntity.BaseEntity;
 		ShortString Title;
 	}
 	
 	Entity Child
 	{
 		ShortString Name;
-		Reference Parent Test8.BaseEntity { Detail; }
+		Reference Parent TestEntity.BaseEntity { Detail; }
 	}
 	
-	Browse ChildBrowse Test8.Child
+	Browse ChildBrowse TestEntity.Child
 	{
 		ShortString Name { From 'Name'; }
 		ShortString ParentName { From 'Parent.Name'; }
 	}
+    
+    Entity Large
+    {
+        LongString Text;
+    }
 }
 
 Module TestBrowse

@@ -23,28 +23,20 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Linq;
 using System.Linq.Expressions;
-using NHibernate.Cfg;
-using NHibernate;
-using NHibernate.Cfg.Loquacious;
-using NHibernate.Hql.Ast;
-using NHibernate.Linq;
-using NHibernate.Linq.Functions;
-using NHibernate.Linq.Visitors;
-using NHibernate.Tool.hbm2ddl;
 using Rhetos.Extensibility;
-using Rhetos.Factory;
 using Rhetos.Utilities;
 using Rhetos.Dom;
 using Rhetos.Logging;
 using Oracle.DataAccess.Client;
 using Oracle.DataAccess.Types;
+using NHibernate;
+using NHibernate.Cfg;
+using NHibernate.Tool.hbm2ddl;
 
 namespace Rhetos.Persistence.NHibernate
 {
     public class NHibernatePersistenceEngine : IPersistenceEngine
     {
-        private readonly NHibernatePersistenceTransaction.Factory _transactionFactory;
-        private readonly IAspectFactory _aspectFactory;
         private readonly ILogger _performanceLogger;
         private readonly INHibernateMapping _nHibernateMapping;
         private readonly IDomainObjectModel _domainObjectModel;
@@ -52,16 +44,12 @@ namespace Rhetos.Persistence.NHibernate
         private readonly IEnumerable<INHibernateConfigurationExtension> _nHibernateConfigurationExtensions;
 
         public NHibernatePersistenceEngine(
-            NHibernatePersistenceTransaction.Factory transactionFactory,
-            IAspectFactory aspectFactory,
             ILogProvider logProvider,
             INHibernateMapping nHibernateMapping,
             IDomainObjectModel domainObjectModel,
             ConnectionString connectionString,
             IEnumerable<INHibernateConfigurationExtension> nHibernateConfigurationExtensions)
         {
-            _transactionFactory = transactionFactory;
-            _aspectFactory = aspectFactory;
             _performanceLogger = logProvider.GetLogger("Performance");
             _nHibernateMapping = nHibernateMapping;
             _domainObjectModel = domainObjectModel;
@@ -72,7 +60,7 @@ namespace Rhetos.Persistence.NHibernate
         private ISessionFactory _sessionFactory;
         private readonly object _sessionFactoryLock = new object();
 
-        public IPersistenceTransaction BeginTransaction(IUserInfo userInfo)
+        public Tuple<ISession, ITransaction> BeginTransaction(IUserInfo userInfo)
         {
             if (_sessionFactory == null)
                 _sessionFactory = PrepareNHSessionFactory();
@@ -93,7 +81,7 @@ namespace Rhetos.Persistence.NHibernate
                     throw new FrameworkException(DatabaseLanguageError);
             }
 
-            return _aspectFactory.CreateProxy<IPersistenceTransaction>(_transactionFactory(session, transaction));
+            return Tuple.Create(session, transaction);
         }
 
         private static void ExecuteSqlInSession(ISession session, string sql)
@@ -123,6 +111,7 @@ namespace Rhetos.Persistence.NHibernate
 
                 var sw = Stopwatch.StartNew();
 
+                var forceLoadObjectModel = _domainObjectModel.ObjectModel; // This is needed for "new Configuration()".
                 var configuration = new Configuration();
                 configuration.SetProperty("connection.provider", "NHibernate.Connection.DriverConnectionProvider");
                 configuration.SetProperty("connection.connection_string", _connectionString);

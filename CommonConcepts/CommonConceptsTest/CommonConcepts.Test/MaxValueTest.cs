@@ -158,5 +158,17 @@ namespace CommonConcepts.Test
                 repository.TestMaxValue.SimpleDateTime.Insert(new[] { entity });
             }
         }
+
+        [TestMethod]
+        public void NullValue()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var repository = new Common.DomRepository(executionContext);
+                var entity = new SimpleInteger { ID = Guid.NewGuid(), Value = null };
+                repository.TestMaxValue.SimpleInteger.Insert(new[] { entity });
+                Assert.IsNull(repository.TestMaxValue.SimpleInteger.Filter(new[] { entity.ID }).Single().Value);
+            }
+        }
     }
 }

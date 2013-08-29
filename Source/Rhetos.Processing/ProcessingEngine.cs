@@ -22,142 +22,132 @@ using System.Linq;
 using System.Text;
 using Rhetos.Utilities;
 using Rhetos.Persistence;
-using Rhetos.Factory;
 using System.Diagnostics;
 using System.Globalization;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using System.Data.SqlClient;
+using Autofac.Features.OwnedInstances;
+using Rhetos.Security;
 
 namespace Rhetos.Processing
 {
     public class ProcessingEngine : IProcessingEngine
     {
-        private readonly ITypeFactory TypeFactory;
-        private readonly IPersistenceEngine PersistenceEngine;
-        private readonly IPluginsContainer<ICommandImplementation> CommandRepository;
-        private readonly Func<IUserInfo, ISqlExecuter> _sqlExecuterProvider;
-        private readonly ILogger Logger;
-        private readonly ILogger PerformanceLogger;
+        private readonly IPluginsContainer<ICommandImplementation> _commandRepository;
+        private readonly ILogger _logger;
+        private readonly ILogger _performanceLogger;
+        private readonly IPersistenceTransaction _persistenceTransaction;
+        private readonly IAuthorizationManager _authorizationManager;
 
         public ProcessingEngine(
-            ITypeFactory typeFactory,
-            IPersistenceEngine persistenceEngine,
             IPluginsContainer<ICommandImplementation> commandRepository,
             ILogProvider logProvider,
-            Func<IUserInfo, ISqlExecuter> sqlExecuterProvider)
+            IPersistenceTransaction persistenceTransaction,
+            IAuthorizationManager authorizationManager)
         {
-            TypeFactory = typeFactory;
-            PersistenceEngine = persistenceEngine;
-            CommandRepository = commandRepository;
-            _sqlExecuterProvider = sqlExecuterProvider;
-            Logger = logProvider.GetLogger("ProcessingEngine");
-            PerformanceLogger = logProvider.GetLogger("Performance");
+            _commandRepository = commandRepository;
+            _logger = logProvider.GetLogger("ProcessingEngine");
+            _performanceLogger = logProvider.GetLogger("Performance");
+            _persistenceTransaction = persistenceTransaction;
+            _authorizationManager = authorizationManager;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
-        public ProcessingResult Execute(IEnumerable<ICommandInfo> commands, IUserInfo userInfo)
+        public ProcessingResult Execute(IEnumerable<ICommandInfo> commands)
         {
+            var authorizationMessage = _authorizationManager.Authorize(commands);
+
+            if (!String.IsNullOrEmpty(authorizationMessage))
+                return new ProcessingResult
+                {
+                    UserMessage = authorizationMessage,
+                    SystemMessage = authorizationMessage,
+                    Success = false
+                };
+
+            var commandResults = new List<CommandResult>();
+            int commandCount = 0;
+
             try
             {
-                using (var tran = PersistenceEngine.BeginTransaction(userInfo))
-                using (var inner = TypeFactory.CreateInnerTypeFactory())
+                foreach (var commandInfo in commands)
                 {
-                    inner.RegisterInstance(inner);
+                    commandCount++;
 
-                    // Register execution context:
-                    inner.RegisterInstance(tran.NHibernateSession);
-                    inner.RegisterInstance(userInfo);
-                    inner.RegisterInstance(_sqlExecuterProvider(userInfo));
-                    // TODO: Register IUserInfo and ISqlExecuter outside PersistanceEngine only once for the user. Carefully configure instance lifetime.
-					
-                    var commandResults = new List<CommandResult>();
-                    int commandCount = 0;
-                    try
+                    _logger.Trace("Executing command {0}: {1}.", commandInfo.GetType().Name, commandInfo);
+
+                    var implementations = _commandRepository.GetImplementations(commandInfo.GetType());
+
+                    if (implementations.Count() == 0)
+                        throw new FrameworkException(string.Format(CultureInfo.InvariantCulture,
+                            "Cannot execute command \"{0}\". There are no command implementations loaded that implement the command.", commandInfo));
+
+                    if (implementations.Count() > 1)
+                        throw new FrameworkException(string.Format(CultureInfo.InvariantCulture, 
+                            "Cannot execute command \"{0}\". It has more than one implementation registered: {1}.", commandInfo, String.Join(", ", implementations.Select(i => i.GetType().Name))));
+
+                    var commandImplementation = implementations.Single();
+                    _logger.Trace("Executing implementation {0}.", commandImplementation.GetType().Name);
+
+                    var swCommand = Stopwatch.StartNew();
+
+                    var commandResult = commandImplementation.Execute(commandInfo);
+
+                    swCommand.Stop();
+                    _logger.Trace("Execution result message: {0}", commandResult.Message);
+                    _performanceLogger.Write(swCommand, "ProcessingEngine: Command executed.");
+
+                    commandResults.Add(commandResult);
+
+                    if (!commandResult.Success)
                     {
-                        foreach (var commandInfo in commands)
-                        {
-                            commandCount++;
+                        _persistenceTransaction.DiscardChanges();
 
-                            Logger.Trace("Executing command {0}: {1}.", commandInfo.GetType().Name, commandInfo);
-
-                            var implementations = CommandRepository.GetImplementations(commandInfo.GetType());
-
-                            if (implementations.Count() == 0)
-                                throw new FrameworkException(string.Format(CultureInfo.InvariantCulture,
-                                    "Cannot execute command \"{0}\". There are no command implementations loaded that implement the command.", commandInfo));
-
-                            if (implementations.Count() > 1)
-                                throw new FrameworkException(string.Format(CultureInfo.InvariantCulture, 
-                                    "Cannot execute command \"{0}\". It has more than one implementation registered: {1}.", commandInfo, String.Join(", ", implementations.Select(i => i.GetType().Name))));
-
-                            var commandImplementation = implementations.Single();
-                            Logger.Trace("Executing implementation {0}.", commandImplementation.GetType().Name);
-
-                            var swCommand = Stopwatch.StartNew();
-
-                            inner.RegisterType(commandImplementation.GetType());
-                            commandImplementation = (ICommandImplementation)inner.CreateInstance(commandImplementation.GetType());
-
-                            var commandResult = commandImplementation.Execute(commandInfo);
-
-                            swCommand.Stop();
-                            Logger.Trace("Execution result message: {0}", commandResult.Message);
-                            PerformanceLogger.Write(swCommand, "ProcessingEngine: Command executed.");
-
-                            commandResults.Add(commandResult);
-
-                            if (!commandResult.Success)
-                            {
-                                tran.DiscardChanges();
-
-                                var systemMessage = String.Format(CultureInfo.InvariantCulture, "Command failed. {0} {1} {2}", commandInfo.GetType().Name, commandInfo, commandImplementation.GetType().Name);
-                                return LogResultsReturnError(commandResults, systemMessage + " " + commandResult.Message, commandCount, systemMessage, commandResult.Message);
-                            }
-                        }
-
-                        tran.ApplyChanges();
-
-                        return new ProcessingResult
-                        {
-                            CommandResults = commandResults.ToArray(),
-                            Success = true,
-                            SystemMessage = null
-                        };
-                    }
-                    catch (Exception ex)
-                    {
-                        tran.DiscardChanges();
-
-                        string userMessage = null;
-                        string systemMessage = null;
-                        if (ex is UserException) {
-                            userMessage = ex.Message;
-                            systemMessage = (ex as UserException).SystemMessage;
-                        }
-                        if (userMessage == null)
-                            userMessage = TryParseSqlException(ex);
-
-                        if (userMessage == null && systemMessage == null)
-                            systemMessage = ex.GetType().Name + ". For details see RhetosServer.log.";
-
-                        return LogResultsReturnError(
-                            commandResults,
-                            "Exception in command execution or ApplyChanges. " + ex,
-                            commandCount,
-                            systemMessage,
-                            userMessage);
+                        var systemMessage = String.Format(CultureInfo.InvariantCulture, "Command failed. {0} {1} {2}", commandInfo.GetType().Name, commandInfo, commandImplementation.GetType().Name);
+                        return LogResultsReturnError(commandResults, systemMessage + " " + commandResult.Message, commandCount, systemMessage, commandResult.Message);
                     }
                 }
+
+                return new ProcessingResult
+                {
+                    CommandResults = commandResults.ToArray(),
+                    Success = true,
+                    SystemMessage = null
+                };
             }
             catch (Exception ex)
             {
-                Logger.Error("Processing engine exception. {0}", ex);
-                return new ProcessingResult
+                _persistenceTransaction.DiscardChanges();
+
+                if (commandCount == 0)
+                {
+                    _logger.Error("Processing engine exception. {0}", ex);
+                    return new ProcessingResult
                     {
                         SystemMessage = "Server exception." + Environment.NewLine + ex,
                         Success = false
                     };
+                }
+
+                string userMessage = null;
+                string systemMessage = null;
+                if (ex is UserException) {
+                    userMessage = ex.Message;
+                    systemMessage = (ex as UserException).SystemMessage;
+                }
+                if (userMessage == null)
+                    userMessage = TryParseSqlException(ex);
+
+                if (userMessage == null && systemMessage == null)
+                    systemMessage = ex.GetType().Name + ". For details see RhetosServer.log.";
+
+                return LogResultsReturnError(
+                    commandResults,
+                    "Exception in command execution or ApplyChanges. " + ex,
+                    commandCount,
+                    systemMessage,
+                    userMessage);
             }
         }
 
@@ -199,8 +189,8 @@ namespace Rhetos.Processing
 
         private ProcessingResult LogResultsReturnError(List<CommandResult> commandResults, string logError, int commandCount, string systemMessage, string userMessage)
         {
-            Logger.Error(logError);
-            Logger.Trace(XmlUtility.SerializeArrayToXml(commandResults.ToArray()));
+            _logger.Error(logError);
+            _logger.Trace(XmlUtility.SerializeArrayToXml(commandResults.ToArray()));
             return new ProcessingResult
                 {
                     Success = false,

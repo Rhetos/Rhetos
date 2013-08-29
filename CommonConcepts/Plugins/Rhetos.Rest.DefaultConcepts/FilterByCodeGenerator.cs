@@ -36,7 +36,7 @@ namespace Rhetos.Rest.DefaultConcepts
         private static string CodeSnippet(FilterByInfo info)
         {
             var fullTypeName = info.Parameter;
-            if (!fullTypeName.Contains('.'))
+            if (System.CodeDom.Compiler.CodeGenerator.IsValidLanguageIndependentIdentifier(fullTypeName))
                 fullTypeName = info.Source.Module.Name + "." + fullTypeName;
 
             string result = String.Format(

@@ -35,14 +35,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public string Name { get; set; }
 
-        public class HierarchyTag : Tag<HierarchyInfo>
-        {
-            public HierarchyTag(TagType tagType, string tagFormat, string nextTagFormat = null, string firstEvaluationContext = null, string nextEvaluationContext = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format, info.DataStructure.Module.Name, info.DataStructure.Name, info.Name), nextTagFormat, firstEvaluationContext, nextEvaluationContext)
-            { }
-        }
-
-        public static readonly HierarchyTag BeforeRecomputeTag = new HierarchyTag(TagType.Appendable, "/*Hierarchy.BeforeRecompute {0}.{1}.{2}*/");
+        public static readonly CsTag<HierarchyInfo> BeforeRecomputeTag = "BeforeRecompute";
 
         public ComputedInfo GetComputedDataStructure()
         {

@@ -36,7 +36,7 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(DataStructureExtendsInfo))]
     public class DataStructureExtendsMappingGenerator : IConceptMappingCodeGenerator
     {
-        public static readonly DataStructureTag MappingTagOnExtension = new DataStructureTag(TagType.Appendable, "<!-- DataStructureExtendsMappingGenerator.MappingTagOnExtension {0}.{1} -->");
+        public static readonly XmlTag<DataStructureExtendsInfo> MappingTagOnExtension = "MappingTagOnExtension";
 
         private static string BasePropertyOnExtension(DataStructureExtendsInfo info)
         {
@@ -45,10 +45,10 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
 ",
                 info.Base.GetKeyProperties(),
                 NHibernateMappingGenerator.AssemblyTag,
-                MappingTagOnExtension.Evaluate(info.Extension));
+                MappingTagOnExtension.Evaluate(info));
         }
 
-        public static readonly DataStructureTag MappingTagOnBase = new DataStructureTag(TagType.Appendable, "<!-- DataStructureExtendsMappingGenerator.MappingTagOnBase {0}.{1} -->");
+        public static readonly XmlTag<DataStructureExtendsInfo> MappingTagOnBase = "MappingTagOnBase";
 
         private static string ExtensionPropertyOnBase(DataStructureExtendsInfo info)
         {
@@ -58,7 +58,7 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
                 DataStructureExtendsCodeGenerator.ExtensionPropertyName(info),
                 info.Extension.GetKeyProperties(),
                 NHibernateMappingGenerator.AssemblyTag,
-                MappingTagOnBase.Evaluate(info.Base));
+                MappingTagOnBase.Evaluate(info));
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)

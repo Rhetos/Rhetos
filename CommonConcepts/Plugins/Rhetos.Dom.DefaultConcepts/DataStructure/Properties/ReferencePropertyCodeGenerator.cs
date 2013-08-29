@@ -33,37 +33,42 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(ReferencePropertyInfo))]
     public class ReferencePropertyCodeGenerator : IConceptCodeGenerator
     {
-        public class ReferenceTag : Tag<ReferencePropertyInfo>
+        private static string ReferenceIDSnippet(ReferencePropertyInfo info, PropertyInfo referenceGuid)
         {
-            public ReferenceTag(TagType tagType, string tagFormat, string nextTagFormat = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format, info.DataStructure.Module.Name, info.DataStructure.Name, info.Name, info.Referenced.Module.Name, info.Referenced.Name), nextTagFormat)
-            { }
-        }
-
-        protected static readonly ReferenceTag ReferenceIDGet = new ReferenceTag(TagType.CodeSnippet,
+            return string.Format(
 @"
-                if ({2} != null)
-                    return {2}.ID;
+        {3}
+        public virtual Guid? {0}ID
+        {{
+            get
+            {{
+                if ({0} != null)
+                    return {0}.ID;
                 return null;
-");
-
-        protected static readonly ReferenceTag ReferenceIDSet = new ReferenceTag(TagType.CodeSnippet,
-@"
+            }}
+            set
+            {{
                 if(value == null)
-                    {2} = null;
+                    {0} = null;
                 else
-                    {2} = new {3}.{4}{{ ID = value.Value }};
-");
+                    {0} = new {1}.{2} {{ ID = value.Value }};
+            }}
+        }}
+",
+            info.Name,
+            info.Referenced.Module.Name,
+            info.Referenced.Name,
+            PropertyHelper.AttributeTag.Evaluate(referenceGuid));
+        }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             ReferencePropertyInfo info = (ReferencePropertyInfo)conceptInfo;
             PropertyHelper.GenerateCodeForType(info, codeBuilder, info.Referenced.Module.Name + "." + info.Referenced.Name, false);
 
-            PropertyInfo referenceIDInfo = new PropertyInfo { DataStructure = info.DataStructure, Name = info.Name + "ID" };
-            PropertyHelper.GenerateCodeForType(referenceIDInfo, codeBuilder, "Guid?", true, false);
-            codeBuilder.InsertCode(ReferenceIDGet.Evaluate(info), PropertyHelper.BeforeGetPropertyTag, referenceIDInfo);
-            codeBuilder.InsertCode(ReferenceIDSet.Evaluate(info), PropertyHelper.BeforeSetPropertyTag, referenceIDInfo);
+            var referenceGuid = new PropertyInfo { DataStructure = info.DataStructure, Name = info.Name + "ID" };
+            codeBuilder.InsertCode(ReferenceIDSnippet(info, referenceGuid), DataStructureCodeGenerator.BodyTag, info.DataStructure);
+            codeBuilder.InsertCode("[DataMember]", PropertyHelper.AttributeTag, referenceGuid);
 
             if (info.DataStructure is IWritableOrmDataStructure)
             {

@@ -30,14 +30,9 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     public static class RepositoryHelper
     {
-        public static readonly DataStructureCodeGenerator.DataStructureTag RepositoryAttributes =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*RepositoryHelper attributes {0}.{1}*/");
-
-        public static readonly DataStructureCodeGenerator.DataStructureTag RepositoryInterfaces =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*RepositoryHelper first interface {0}.{1}*/", "/*RepositoryHelper next interface {0}.{1}*/", ":\r\n        {0}", ",\r\n        {0}");
-
-        public static readonly DataStructureCodeGenerator.DataStructureTag RepositoryMembers =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*RepositoryHelper members {0}.{1}*/");
+        public static readonly CsTag<DataStructureInfo> RepositoryAttributes = "RepositoryAttributes";
+        public static readonly CsTag<DataStructureInfo> RepositoryInterfaces = new CsTag<DataStructureInfo>("RepositoryInterface", TagType.Appendable, ":\r\n        {0}", ",\r\n        {0}");
+        public static readonly CsTag<DataStructureInfo> RepositoryMembers = "RepositoryMembers";
 
         private static string RepositorySnippet(DataStructureInfo info)
         {
@@ -77,8 +72,7 @@ namespace Rhetos.Dom.DefaultConcepts
         
         //==============================================================
 
-        public static readonly DataStructureCodeGenerator.DataStructureTag BeforeQueryTag =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*before query {0}.{1}*/");
+        public static readonly CsTag<DataStructureInfo> BeforeQueryTag = "RepositoryBeforeQuery";
 
         private static string RepositoryReadFunctionsSnippet(DataStructureInfo info, string readFunctionBody)
         {
@@ -116,8 +110,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public IQueryable<global::{0}> Query()
         {{
-{1}
-{2}
+            {1}
+            {2}
         }}
 
         Rhetos.Processing.DefaultCommands.QueryDataSourceCommandResult Rhetos.Processing.DefaultCommands.IQueryDataSourceCommandImplementation.QueryData(Rhetos.Processing.DefaultCommands.QueryDataSourceCommandInfo commandInfo)
@@ -188,6 +182,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
             codeBuilder.AddReferencesFromDependency(typeof(IQueryDataSourceCommandImplementation));
             codeBuilder.AddReferencesFromDependency(typeof(ICommandInfo));
+            codeBuilder.AddReferencesFromDependency(typeof(GenericFilterWithPagingUtility));
+            codeBuilder.AddReferencesFromDependency(typeof(QueryDataSourceCommandResult));
         }
     }
 }

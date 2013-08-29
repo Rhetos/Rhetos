@@ -39,13 +39,13 @@ namespace Rhetos.Dsl.DefaultConcepts
             // Expand the base entity:
             var itemFilterMinLengthProperty = new ItemFilterInfo
             {
-                Expression = String.Format("item => item.{0}.Length > {1}", Property.Name, Length),
+                Expression = String.Format("item => !String.IsNullOrEmpty(item.{0}) && item.{0}.Length > {1}", Property.Name, Length),
                 FilterName = Property.Name + "_MaxLengthFilter",
                 Source = Property.DataStructure
             };
             var denySaveMinLengthProperty = new DenySaveForPropertyInfo
             {
-                DependedProperties = Property,
+                DependedProperty = Property,
                 FilterType = itemFilterMinLengthProperty.FilterName,
                 Title = String.Format("Maximum allowed length of {0} is {1} characters.", Property.Name, Length),
                 Source = Property.DataStructure

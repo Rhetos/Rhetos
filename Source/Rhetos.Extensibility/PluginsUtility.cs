@@ -32,7 +32,9 @@ namespace Rhetos.Extensibility
     {
         private static readonly string _rootPath = AppDomain.CurrentDomain.BaseDirectory;
 
-        public static IEnumerable<string> ListPluginsAssemblies()
+        public static List<string> DeployPackagesAdditionalAssemblies = new List<string>(); // TODO: Remove this hack after ServerDom.dll is moved to the bin\Plugins subfolder and every IGenerator has a Cleanup() function.
+
+        public static string[] ListPluginsAssemblies()
         {
             List<string> pluginsAssemblies = new List<string>();
             if (ConfigurationManager.AppSettings["PluginsDirectory"] != null)
@@ -55,21 +57,57 @@ namespace Rhetos.Extensibility
 
                 pluginsAssemblies.AddRange(pluginsFiles);
             }
-            return pluginsAssemblies;
+
+            var additionalAssemblies = DeployPackagesAdditionalAssemblies
+                .Select(path => Path.Combine(_rootPath, path))
+                .Where(path => File.Exists(path))
+                .ToArray();
+
+            return pluginsAssemblies.Concat(additionalAssemblies).Distinct().ToArray();
         }
 
+        private static List<string> _registeredModulesFromAssemblies = new List<string>();
+
+        /// <summary>
+        /// Allows DSL packages and other plugins to register their own specific types to Autofac.
+        /// </summary>
+        public static void RegisterPluginModules(ContainerBuilder builder, IEnumerable<string> ignoreAssemblies = null)
+        {
+            string[] assemblies = ListPluginsAssemblies();
+            if (ignoreAssemblies != null)
+                assemblies = assemblies.Except(ignoreAssemblies).ToArray();
+
+            var assemblyCatalogs = assemblies.Select(a => new AssemblyCatalog(a));
+            var container = new CompositionContainer(new AggregateCatalog(assemblyCatalogs));
+            foreach (var pluginModule in container.GetExports<Module>())
+                builder.RegisterModule(pluginModule.Value);
+
+            _registeredModulesFromAssemblies.AddRange(assemblies);
+        }
+
+        private static Dictionary<Type, List<string>> _registeredPluginsFromAssemblies = new Dictionary<Type, List<string>>();
+
         public static void RegisterPlugins<T>(ContainerBuilder builder)
+        {
+            RegisterPlugins(builder, typeof(T));
+        }
+
+        private static void RegisterPlugins(ContainerBuilder builder, Type pluginType, IEnumerable<string> ignoreAssemblies = null)
         {
             try
             {
                 // Enumerate plugins using MEF:
 
-                var assemblyCatalogs = ListPluginsAssemblies().Select(a => new AssemblyCatalog(a));
+                string[] assemblies = ListPluginsAssemblies();
+                if (ignoreAssemblies != null)
+                    assemblies = assemblies.Except(ignoreAssemblies).ToArray();
+
+                var assemblyCatalogs = assemblies.Select(a => new AssemblyCatalog(a));
                 var container = new CompositionContainer(new AggregateCatalog(assemblyCatalogs));
 
                 Tuple<Type, IDictionary<string, object>>[] generatorImplementations = container.Catalog.Parts
                     .SelectMany(part => part.ExportDefinitions.Select(ped => new { part, ped }))
-                    .Where(partEd => partEd.ped.ContractName == typeof(T).FullName)
+                    .Where(partEd => partEd.ped.ContractName == pluginType.FullName)
                     .Select(partEd => Tuple.Create(
                                 ReflectionModelServices.GetPartType(partEd.part).Value,
                                 partEd.ped.Metadata
@@ -80,16 +118,36 @@ namespace Rhetos.Extensibility
  
                 foreach (var generatorImplementation in generatorImplementations)
                 {
-                    var registration = builder.RegisterType(generatorImplementation.Item1).As<T>();
+                    var registration = builder.RegisterType(generatorImplementation.Item1).As(new[] { pluginType });
                     foreach (var metadataElement in generatorImplementation.Item2)
+                    {
                         registration = registration.WithMetadata(metadataElement.Key, metadataElement.Value);
+                        if (metadataElement.Key == MefProvider.Implements)
+                            registration = registration.Keyed(metadataElement.Value, pluginType);
+                    }
                 }
+
+                if (!_registeredPluginsFromAssemblies.ContainsKey(pluginType))
+                    _registeredPluginsFromAssemblies.Add(pluginType, new List<string>());
+                _registeredPluginsFromAssemblies[pluginType].AddRange(assemblies);
             }
             catch (System.Reflection.ReflectionTypeLoadException rtle)
             {
                 var firstFive = rtle.LoaderExceptions.Take(5).Select(it => Environment.NewLine + it.Message);
                 throw new FrameworkException("Can't find MEF plugin dependencies:" + string.Concat(firstFive), rtle);
             }
+        }
+
+        public static void DetectAndRegisterNewModulesAndPlugins(IContainer container)
+        {
+            var newBuilder = new ContainerBuilder();
+
+            RegisterPluginModules(newBuilder, _registeredModulesFromAssemblies);
+
+            foreach (var registeredPlugins in _registeredPluginsFromAssemblies)
+                RegisterPlugins(newBuilder, registeredPlugins.Key, registeredPlugins.Value);
+
+            newBuilder.Update(container);
         }
     }
 }

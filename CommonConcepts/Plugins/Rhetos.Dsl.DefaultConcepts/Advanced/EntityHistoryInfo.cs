@@ -22,6 +22,8 @@ using System.Linq;
 using System.Text;
 using System.ComponentModel.Composition;
 using Rhetos.Utilities;
+using Rhetos.Compiler;
+using System.Globalization;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -31,43 +33,23 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         [ConceptKey]
         public EntityInfo Entity { get; set; }
-        
+
+        // EntityHistory's CodeGenerator and DatabaseGenerator implementations depend on this concepts:
         public EntityInfo HistoryEntity { get; set; }
-        public LegacyEntityInfo FullHistoryEntity { get; set; }
-        public SqlQueryableInfo ActiveUntilSqlQueryable { get; set; }
+        public SqlQueryableInfo FullHistorySqlQueryable { get; set; }
+        public SqlFunctionInfo AtTimeSqlFunction { get; set; }
 
         public IEnumerable<string> DeclareNonparsableProperties()
         {
-            return new string[] { "HistoryEntity", "FullHistoryEntity", "ActiveUntilSqlQueryable" };
+            return new string[] { "HistoryEntity", "FullHistorySqlQueryable", "AtTimeSqlFunction" };
         }
 
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
             HistoryEntity = new EntityInfo { Module = Entity.Module, Name = Entity.Name + "_History" };
-            FullHistoryEntity = new LegacyEntityInfo
-            {
-                Module = this.Entity.Module,
-                Name = this.Entity.Name + "_FullHistory",
-                Table = this.Entity.Module + "." + this.Entity.Name + "_FullHistory",
-                View = this.Entity.Module + "." + this.Entity.Name + "_FullHistory"
-            };
-            ActiveUntilSqlQueryable = new SqlQueryableInfo
-            {
-                Module = this.Entity.Module,
-                Name = this.Entity.Name + "_History_ActiveUntil",
-                SqlSource = string.Format(@"
-SELECT
-	history.ID,
-	ActiveUntil = COALESCE(MIN(newerVersion.ActiveSince), MIN(currentItem.ActiveSince)) 
-FROM {0}.{1}_History history
-	LEFT JOIN {0}.{1}_History newerVersion ON 
-				newerVersion.EntityID = history.EntityID AND 
-				newerVersion.ActiveSince > history.ActiveSince
-	INNER JOIN {0}.{1} currentItem ON currentItem.ID = history.EntityID
-GROUP BY history.ID
-", this.Entity.Module.Name, this.Entity.Name)
-            };
-            createdConcepts = new IConceptInfo[] { HistoryEntity, FullHistoryEntity, ActiveUntilSqlQueryable };
+            FullHistorySqlQueryable = new SqlQueryableInfo { Module = Entity.Module, Name = Entity.Name + "_FullHistory", SqlSource = FullHistorySqlSnippet() };
+            AtTimeSqlFunction = new SqlFunctionInfo { Module = Entity.Module, Name = Entity.Name + "_AtTime", Arguments = "@ContextTime DATETIME", Source = AtTimeSqlSnippet() };
+            createdConcepts = new IConceptInfo[] { HistoryEntity, FullHistorySqlQueryable, AtTimeSqlFunction };
         }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
@@ -93,58 +75,116 @@ GROUP BY history.ID
                 FilterType = "OlderThanHistoryEntries", 
                 Source = Entity, 
                 Title = "ActiveSince is not allowed to be older than last entry in history.", 
-                DependedProperties = activeSinceProperty 
+                DependedProperty = activeSinceProperty 
             };
             newConcepts.AddRange(new IConceptInfo[] { denyFilter, denySaveValidation });
 
             // Create a new entity for history data:
             var currentProperty = new ReferencePropertyInfo { DataStructure = HistoryEntity, Name = "Entity", Referenced = Entity };
-            var currentDetail = new ReferenceDetailInfo { Reference = currentProperty };
-            var currentRequired = new RequiredPropertyInfo { Property = currentProperty }; // TODO: SystemRequired
-            var cloneActiveSincePropertyWithRelatedFeatures = new PropertyFromInfo { Destination = HistoryEntity, Source = activeSinceProperty };
             var historyActiveSinceProperty = new DateTimePropertyInfo { DataStructure = HistoryEntity, Name = activeSinceProperty.Name };
-            var unique = new UniquePropertiesInfo { DataStructure = HistoryEntity, Property1 = currentProperty, Property2 = historyActiveSinceProperty };
-            newConcepts.AddRange(new IConceptInfo[] { currentProperty, currentDetail, currentRequired, historyActiveSinceProperty, unique, cloneActiveSincePropertyWithRelatedFeatures });
+            newConcepts.AddRange(new IConceptInfo[] {
+                currentProperty,
+                new ReferenceDetailInfo { Reference = currentProperty },
+                new RequiredPropertyInfo { Property = currentProperty }, // TODO: SystemRequired
+                new PropertyFromInfo { Destination = HistoryEntity, Source = activeSinceProperty },
+                historyActiveSinceProperty,
+                new UniquePropertiesInfo { DataStructure = HistoryEntity, Property1 = currentProperty, Property2 = historyActiveSinceProperty }
+            });
 
-            // Creates properties of FullHistoryEntity
-            var fullHistoryActiveUntilPropertyInfo = new DateTimePropertyInfo
-            {
-                DataStructure = FullHistoryEntity,
-                Name = "ActiveUntil"
-            };
-            var propertiesForLegacyEntity = new AllPropertiesFromInfo
-            {
-                Source = this.HistoryEntity,
-                Destination = FullHistoryEntity
-            };
+            // Create ActiveUntil SqlQueryable:
+            var activeUntilSqlQueryable = new SqlQueryableInfo { Module = Entity.Module, Name = Entity.Name + "_History_ActiveUntil", SqlSource = ActiveUntilSqlSnippet() };
+            newConcepts.AddRange(new IConceptInfo[] {
+                activeUntilSqlQueryable,
+                new DateTimePropertyInfo { DataStructure = activeUntilSqlQueryable, Name = "ActiveUntil" },
+                new SqlDependsOnDataStructureInfo { Dependent = activeUntilSqlQueryable, DependsOn = HistoryEntity },
+                new SqlDependsOnDataStructureInfo { Dependent = activeUntilSqlQueryable, DependsOn = Entity },
+                new DataStructureExtendsInfo { Base = HistoryEntity, Extension = activeUntilSqlQueryable }
+            });
 
-            newConcepts.AddRange(new IConceptInfo[] { fullHistoryActiveUntilPropertyInfo, propertiesForLegacyEntity });
+            // Configure FullHistory SqlQueryable:
+            newConcepts.AddRange(new IConceptInfo[] {
+                new SqlDependsOnDataStructureInfo { Dependent = FullHistorySqlQueryable, DependsOn = Entity },
+                new SqlDependsOnDataStructureInfo { Dependent = FullHistorySqlQueryable, DependsOn = HistoryEntity },
+                new SqlDependsOnDataStructureInfo { Dependent = FullHistorySqlQueryable, DependsOn = activeUntilSqlQueryable },
+                new DateTimePropertyInfo { DataStructure = FullHistorySqlQueryable, Name = "ActiveUntil" },
+                new AllPropertiesFromInfo { Source = HistoryEntity, Destination = FullHistorySqlQueryable }
+            });
 
-            // Creates extension on history data (for ActiveUntil):
-            var historyActiveUntilProperty = new DateTimePropertyInfo
-            {
-                DataStructure = ActiveUntilSqlQueryable,
-                Name = "ActiveUntil"
-            };
-            var dependsOnHistory = new SqlDependsOnDataStructureInfo
-            {
-                Dependent = ActiveUntilSqlQueryable,
-                DependsOn = HistoryEntity
-            };
-            var dependsOnBase = new SqlDependsOnDataStructureInfo
-            {
-                Dependent = ActiveUntilSqlQueryable,
-                DependsOn = this.Entity
-            };
-            var historyActiveUntilEx = new DataStructureExtendsInfo
-            {
-                Base = HistoryEntity,
-                Extension = ActiveUntilSqlQueryable
-            };
-            newConcepts.AddRange(new IConceptInfo[] { historyActiveUntilProperty, dependsOnHistory, dependsOnBase, historyActiveUntilEx });
+            // Configure AtTime SqlFunction:
+            newConcepts.Add(new SqlDependsOnDataStructureInfo { Dependent = AtTimeSqlFunction, DependsOn = FullHistorySqlQueryable });
 
             return newConcepts;
         }
 
+        private string ActiveUntilSqlSnippet()
+        {
+            return string.Format(
+                @"SELECT
+	                history.ID,
+	                ActiveUntil = COALESCE(MIN(newerVersion.ActiveSince), MIN(currentItem.ActiveSince)) 
+                FROM {0}.{2} history
+	                LEFT JOIN {0}.{2} newerVersion ON 
+				                newerVersion.EntityID = history.EntityID AND 
+				                newerVersion.ActiveSince > history.ActiveSince
+	                INNER JOIN {0}.{1} currentItem ON currentItem.ID = history.EntityID
+                GROUP BY history.ID",
+                    SqlUtility.Identifier(Entity.Module.Name),
+                    SqlUtility.Identifier(Entity.Name),
+                    SqlUtility.Identifier(HistoryEntity.Name));
+        }
+
+        private string FullHistorySqlSnippet()
+        {
+            return string.Format(
+                @"SELECT
+                    ID = entity.ID,
+                    EntityID = entity.ID,
+                    ActiveUntil = CAST(NULL AS DateTime){5}
+                FROM
+                    {0}.{1} entity
+
+                UNION ALL
+
+                SELECT
+                    ID = history.ID,
+                    EntityID = history.EntityID,
+                    au.ActiveUntil{4}
+                FROM
+                    {0}.{2} history
+                    LEFT JOIN {0}.{3} au ON au.ID = history.ID",
+                SqlUtility.Identifier(Entity.Module.Name),
+                SqlUtility.Identifier(Entity.Name),
+                SqlUtility.Identifier(HistoryEntity.Name),
+                SqlUtility.Identifier(Entity.Name + "_History_ActiveUntil"),
+                SelectHistoryPropertiesTag.Evaluate(this),
+                SelectEntityPropertiesTag.Evaluate(this));
+        }
+
+        private string AtTimeSqlSnippet()
+        {
+            return string.Format(
+                @"RETURNS TABLE
+                AS
+                RETURN
+	                SELECT
+                        ID = history.EntityID,
+                        ActiveUntil,
+                        EntityID = history.EntityID{2}
+                    FROM
+                        {0}.{1} history
+                        INNER JOIN
+                        (
+                            SELECT EntityID, Max_ActiveSince = MAX(ActiveSince)
+                            FROM {0}.{1}
+                            WHERE ActiveSince <= @ContextTime
+                            GROUP BY EntityID
+                        ) last ON last.EntityID = history.EntityID AND last.Max_ActiveSince = history.ActiveSince",
+                    SqlUtility.Identifier(Entity.Module.Name),
+                    SqlUtility.Identifier(Entity.Name + "_FullHistory"),
+                    SelectHistoryPropertiesTag.Evaluate(this));
+        }
+
+        public static readonly SqlTag<EntityHistoryInfo> SelectHistoryPropertiesTag = "SelectHistoryProperties";
+        public static readonly SqlTag<EntityHistoryInfo> SelectEntityPropertiesTag = "SelectEntityProperties";
     }
 }

@@ -29,7 +29,6 @@ using System.Globalization;
 using Rhetos.Compiler;
 using System.Reflection;
 using System.IO;
-using Rhetos.Factory;
 using Rhetos.Utilities;
 using System.Linq.Expressions;
 using System.Diagnostics.Contracts;

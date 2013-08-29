@@ -52,7 +52,7 @@ namespace Rhetos
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<DomainService>().InstancePerDependency();
+            builder.RegisterType<DomainService>();
             base.Load(builder);
         }
     }

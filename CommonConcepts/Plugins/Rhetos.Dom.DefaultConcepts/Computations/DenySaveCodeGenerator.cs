@@ -34,14 +34,7 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(DenySaveInfo))]
     public class DenySaveCodeGenerator : IConceptCodeGenerator
     {
-        public class DenySaveTag : Tag<DenySaveInfo>
-        {
-            public DenySaveTag(TagType tagType, string tagFormat, string nextTagFormat = null, string firstEvaluationContext = null, string nextEvaluationContext = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format, info.Source.Module.Name, info.Source.Name, info.FilterType), nextTagFormat, firstEvaluationContext, nextEvaluationContext)
-            { }
-        }
-
-        public static readonly DenySaveTag UserMessageAppend = new DenySaveTag(TagType.Appendable, "/*DenySave {0}.{1}.{2}*/");
+        public static readonly CsTag<DenySaveInfo> UserMessageAppend = "UserMessage";
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {

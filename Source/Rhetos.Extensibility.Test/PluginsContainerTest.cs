@@ -21,31 +21,16 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Autofac.Features.Metadata;
+using Rhetos.TestCommon;
 
 namespace Rhetos.Extensibility.Test
 {
-    public class PluginsContainerAccessor<TPlugin> : PluginsContainer<TPlugin>
-    {
-        public PluginsContainerAccessor() : base(new Meta<TPlugin>[] {})
-        {
-        }
-
-        public static List<Type> Access_GetTypeHierarchy(Type type)
-        {
-            return GetTypeHierarchy(type);
-        }
-    }
-
     [TestClass]
     public class PluginsContainerTest
     {
-        class BaseClass
-        {
-        }
+        class BaseClass { public string Name; }
 
-        class DerivedClass : BaseClass
-        {
-        }
+        class DerivedClass : BaseClass { }
 
         [TestMethod]
         public void GetTypeHierarchyTest()

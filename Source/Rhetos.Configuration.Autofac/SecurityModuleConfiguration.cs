@@ -27,7 +27,7 @@ namespace Rhetos.Configuration.Autofac
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<AuthorizationManager>().As<IAuthorizationManager>().InstancePerLifetimeScope();
-            builder.RegisterType<ClaimGenerator>().As<IClaimGenerator>().SingleInstance();
+            builder.RegisterType<ClaimGenerator>().As<IClaimGenerator>();
             builder.RegisterType<DomainPrincipalProvider>().As<IPrincipalProvider>().InstancePerLifetimeScope();
             PluginsUtility.RegisterPlugins<IClaimProvider>(builder);
 

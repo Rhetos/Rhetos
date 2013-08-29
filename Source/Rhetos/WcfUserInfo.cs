@@ -32,26 +32,31 @@ namespace Rhetos
     /// </summary>
     public class WcfUserInfo : IUserInfo
     {
-        private readonly bool _isUserRecognized;
-        private readonly string _userName;
-        private readonly string _workstation;
-		private readonly ILogger _logger;
+        private ILogger _logger;
+        private bool _initialized;
+        private bool _isUserRecognized;
+        private string _userName;
+        private string _workstation;
 
-        public bool IsUserRecognized { get { return _isUserRecognized; } }
-        public string UserName { get { return _userName; } }
-        public string Workstation { get { return _workstation; } }
+        public bool IsUserRecognized { get { if (!_initialized) Initialize();  return _isUserRecognized; } }
+        public string UserName { get { if (!_initialized) Initialize(); return _userName; } }
+        public string Workstation { get { if (!_initialized) Initialize(); return _workstation; } }
 
         public WcfUserInfo(ILogProvider logProvider)
         {
             _logger = logProvider.GetLogger("WcfUserInfo");
+        }
 
+        private void Initialize()
+        {
             if (ServiceSecurityContext.Current != null)
             {
                 _userName = ServiceSecurityContext.Current.WindowsIdentity.Name;
                 _workstation = GetClientHostName();
-
                 _logger.Trace(() => "SQL connection context: user '" + _userName + "', workstation '" + _workstation + "'.");
+
                 _isUserRecognized = true;
+                _initialized = true;
             }
             else
             {

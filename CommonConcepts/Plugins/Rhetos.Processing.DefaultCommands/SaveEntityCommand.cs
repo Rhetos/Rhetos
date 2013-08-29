@@ -22,7 +22,6 @@ using System.Linq;
 using System.Text;
 using Autofac.Features.Indexed;
 using Rhetos.Persistence;
-using Rhetos.Factory;
 using Rhetos.Utilities;
 using System.Diagnostics.Contracts;
 using Rhetos.Dom;
@@ -51,7 +50,7 @@ namespace Rhetos.Processing.DefaultCommands
                 return CommandResult.Fail("CommandInfo does not implement SaveEntityCommandInfo");
 
             var repository = _writableRepositories[saveInfo.Entity];
-            repository.Save(saveInfo.DataToInsert, saveInfo.DataToUpdate, saveInfo.DataToDelete);
+            repository.Save(saveInfo.DataToInsert, saveInfo.DataToUpdate, saveInfo.DataToDelete, true);
 
             return new CommandResult
             {

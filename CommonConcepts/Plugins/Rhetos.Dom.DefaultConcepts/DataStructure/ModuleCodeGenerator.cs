@@ -35,17 +35,10 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(ModuleInfo))]
     public class ModuleCodeGenerator : IConceptCodeGenerator
     {
-        public class ModuleTag : Tag<ModuleInfo>
-        {
-            public ModuleTag(TagType tagType, string tagFormat, string nextTagFormat = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format, info.Name), nextTagFormat)
-            { }
-        }
-
-        public static readonly ModuleTag UsingTag = new ModuleTag(TagType.Appendable, "/*Module.Using {0}*/");
-        public static readonly ModuleTag NamespaceMembersTag = new ModuleTag(TagType.Appendable, "/*Module.Body {0}*/");
-        public static readonly ModuleTag RepositoryMembersTag = new ModuleTag(TagType.Appendable, "/*Module.RepositoryMembers {0}*/");
-        public static readonly ModuleTag HelperNamespaceMembersTag = new ModuleTag(TagType.Appendable, "/*Module.HelperNamespaceMembers {0}*/");
+        public static readonly CsTag<ModuleInfo> UsingTag = "Using";
+        public static readonly CsTag<ModuleInfo> NamespaceMembersTag = "Body";
+        public static readonly CsTag<ModuleInfo> RepositoryMembersTag = "RepositoryMembers";
+        public static readonly CsTag<ModuleInfo> HelperNamespaceMembersTag = "HelperNamespaceMembers";
 
         private const string StandardNamespacesSnippet =
 @"using System;
@@ -143,6 +136,7 @@ namespace {0}._Helper
             // Other classes used in domain object model:
             codeBuilder.AddReferencesFromDependency(typeof(NHibernate.Linq.LinqExtensionMethods)); // Includes reference to NHibernate.dll.
             codeBuilder.AddReferencesFromDependency(typeof(System.Runtime.Serialization.DataContractAttribute)); // Includes reference to System.Runtime.Serialization.dll.
+            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.IPersistenceTransaction));
 
             codeBuilder.InsertCode(ModuleRepositoryInCommonRepositorySnippet(info), CommonDomRepositoryMembersTag);
         }
@@ -179,8 +173,10 @@ namespace {0}._Helper
 
     public class ExecutionContext
     {{
-        protected Lazy<NHibernate.ISession> _nHibernateSession;
-        public NHibernate.ISession NHibernateSession {{ get {{ return _nHibernateSession.Value; }} }}
+        protected Lazy<Rhetos.Persistence.IPersistenceTransaction> _persistenceTransaction;
+        public NHibernate.ISession NHibernateSession {{ get {{ return _persistenceTransaction.Value.NHibernateSession; }} }}
+
+        public Rhetos.Persistence.IPersistenceTransaction PersistenceTransaction {{ get {{ return _persistenceTransaction.Value; }} }}
 
         protected Lazy<Rhetos.Utilities.IUserInfo> _userInfo;
         public Rhetos.Utilities.IUserInfo UserInfo {{ get {{ return _userInfo.Value; }} }}
@@ -197,13 +193,13 @@ namespace {0}._Helper
 
         // This constructor is used for automatic parameter injection with autofac.
         public ExecutionContext(
-            Lazy<NHibernate.ISession> nHibernateSession,
+            Lazy<Rhetos.Persistence.IPersistenceTransaction> persistenceTransaction,
             Lazy<Rhetos.Utilities.IUserInfo> userInfo,
             Lazy<Rhetos.Utilities.ISqlExecuter> sqlExecuter,
             Lazy<Rhetos.Security.IAuthorizationManager> authorizationManager,
             Lazy<Rhetos.Utilities.ResourcesFolder> resourcesFolder{5})
         {{
-            _nHibernateSession = nHibernateSession;
+            _persistenceTransaction = persistenceTransaction;
             _userInfo = userInfo;
             _sqlExecuter = sqlExecuter;
             _authorizationManager = authorizationManager;

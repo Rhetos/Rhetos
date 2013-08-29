@@ -46,7 +46,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             };
             var denySaveRange = new DenySaveForPropertyInfo
             {
-                DependedProperties = PropertyFrom,
+                DependedProperty = PropertyFrom,
                 FilterType = itemFilterRange.FilterName,
                 Title = String.Format("Value of {0} has to be less than or equal to {1}.", PropertyFrom.Name, PropertyTo.Name),
                 Source = PropertyFrom.DataStructure

@@ -26,7 +26,6 @@ using Rhetos.Utilities;
 using Rhetos.Dom;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Extensibility;
-using Rhetos.Factory;
 using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.Processing;
@@ -38,34 +37,41 @@ namespace Rhetos.Security
     public class AuthorizationManager : IAuthorizationManager
     {
         private readonly IPrincipalProvider _principalProvider;
-        private readonly ITypeFactory _typeFactory;
         private readonly IDomainObjectModel _domainObjectModel;
-        private readonly IPersistenceEngine _persistenceEngine;
         private readonly IPluginsContainer<IClaimProvider> _contextPermissionsRepository;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
         private readonly bool _allowBuiltinAdminOverride;
         private readonly Lazy<Type> _claimType;
+        private readonly Lazy<IPermissionLoader> _permissionLoader;
 
         public AuthorizationManager(
             IPluginsContainer<IClaimProvider> contextPermissionsRepository, 
             IPrincipalProvider principalProvider,
-            ITypeFactory typeFactory, 
             ILogProvider logProvider,
             IDomainObjectModel domainObjectModel,
-            IPersistenceEngine persistenceEngine)
+            Lazy<IPermissionLoader> permissionLoader)
         {
             _principalProvider = principalProvider;
-            _typeFactory = typeFactory;
             _domainObjectModel = domainObjectModel;
-            _persistenceEngine = persistenceEngine;
             _contextPermissionsRepository = contextPermissionsRepository;
             _logger = logProvider.GetLogger("AuthorizationManager");
             _performanceLogger = logProvider.GetLogger("Performance");
+            _permissionLoader = permissionLoader;
 
             _allowBuiltinAdminOverride = FromConfigallowBuiltinAdminOverride();
 
-            _claimType = new Lazy<Type>(() => domainObjectModel.ResolveType("Common.Claim"));
+            _claimType = new Lazy<Type>(() =>
+            {
+                try
+                {
+                    return domainObjectModel.GetType("Common.Claim");
+                }
+                catch (Exception ex)
+                {
+                    throw new FrameworkException(ex.Message + " Probably missing package CommonConcepts.", ex);
+                }
+            });
         }
 
         private static bool FromConfigallowBuiltinAdminOverride()
@@ -114,31 +120,23 @@ namespace Rhetos.Security
 
             IEnumerable<string> membership = _principalProvider.GetIdentityMembership();
 
-            // Force-register the object model to TypeFactory.
+            // Force-load domain object model:
             var objectModel = _domainObjectModel.ObjectModel;
 
-            using (var tran = _persistenceEngine.BeginTransaction(new NullUserInfo()))
-            using (var inner = _typeFactory.CreateInnerTypeFactory())
-            {
-                inner.RegisterInstance(tran.NHibernateSession);
-                inner.RegisterInstance<IUserInfo>(new NullUserInfo());
-                inner.RegisterInstance<ISqlExecuter>(new NullSqlExecuter());
-                inner.RegisterInstance(inner);
+            IPermission[] rawData = _permissionLoader.Value.LoadPermissions(requiredClaims, membership);
 
-                IPermission[] rawData = inner.Resolve<IPermissionLoader>().LoadPermissions(requiredClaims, membership);
+            HashSet<string> claimsWithRight = new HashSet<string>();
+            foreach (IPermission permission in rawData)
+                if (permission.IsAuthorized.Value)
+                    claimsWithRight.Add(permission.ClaimResource + "." + permission.ClaimRight);
+            foreach (IPermission permission in rawData)
+                if (!permission.IsAuthorized.Value && claimsWithRight.Contains(permission.ClaimResource + "." + permission.ClaimRight)) 
+                    claimsWithRight.Remove(permission.ClaimResource + "." + permission.ClaimRight);
 
-                HashSet<string> claimsWithRight = new HashSet<string>();
-                foreach (IPermission permission in rawData)
-                    if (permission.IsAuthorized.Value)
-                        claimsWithRight.Add(permission.ClaimResource + "." + permission.ClaimRight);
-                foreach (IPermission permission in rawData)
-                    if (!permission.IsAuthorized.Value && claimsWithRight.Contains(permission.ClaimResource + "." + permission.ClaimRight)) 
-                        claimsWithRight.Remove(permission.ClaimResource + "." + permission.ClaimRight);
+            var authorizations = requiredClaims.Select(requiredClaim => claimsWithRight.Contains(requiredClaim.ClaimResource + "." + requiredClaim.ClaimRight)).ToArray();
+            _performanceLogger.Write(sw, "AuthorizationManager.GetAuthorizations");
 
-                var authorizations = requiredClaims.Select(requiredClaim => claimsWithRight.Contains(requiredClaim.ClaimResource + "." + requiredClaim.ClaimRight)).ToArray();
-                _performanceLogger.Write(sw, "AuthorizationManager.GetAuthorizations");
-                return authorizations;
-            }
+            return authorizations;
         }
 
         private IEnumerable<IClaim> GetRequiredClaims(IEnumerable<ICommandInfo> commandInfos)
@@ -155,7 +153,7 @@ namespace Rhetos.Security
 
         private IClaim CreateClaim(string resource, string claimRight)
         {
-            IClaim claim = _typeFactory.CreateInstance<IClaim>(_claimType.Value);
+            IClaim claim = (IClaim)Activator.CreateInstance(_claimType.Value);
             claim.ClaimResource = resource;
             claim.ClaimRight = claimRight;
 

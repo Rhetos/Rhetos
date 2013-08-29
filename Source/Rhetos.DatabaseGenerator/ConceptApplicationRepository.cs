@@ -25,7 +25,6 @@ using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using System.Text;
-using Rhetos.Factory;
 
 namespace Rhetos.DatabaseGenerator
 {

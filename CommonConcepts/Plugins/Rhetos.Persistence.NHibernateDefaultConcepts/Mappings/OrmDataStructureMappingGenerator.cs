@@ -36,15 +36,19 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(DataStructureInfo))]
     public class OrmDataStructureMappingGenerator : IConceptMappingCodeGenerator
     {
-        public static readonly DataStructureTag MembersTag = new DataStructureTag(TagType.Appendable, "<!-- members {0}.{1} -->");
+        public static readonly XmlTag<DataStructureInfo> MembersTag = "Orm Members";
 
-        private static readonly string GenerateMapping =
+        private string GenerateMapping(DataStructureInfo info)
+        {
+            return
 @"
     <class name=""{0}.{1}, " + NHibernateMappingGenerator.AssemblyTag + @""" schema=""{2}"" table=""{3}"">
         <id name=""ID"" />
-" + MembersTag + @"
+" + MembersTag.Evaluate(info) + @"
     </class>
 ";
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             if (conceptInfo is IOrmDataStructure)
@@ -52,7 +56,7 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
                 var info = (DataStructureInfo)conceptInfo;
                 var orm = (IOrmDataStructure)conceptInfo;
                 codeBuilder.InsertCode(
-                    string.Format(CultureInfo.InvariantCulture, GenerateMapping,
+                    string.Format(CultureInfo.InvariantCulture, GenerateMapping(info),
                         info.Module.Name,
                         info.Name,
                         SqlUtility.Identifier(orm.GetOrmSchema()),

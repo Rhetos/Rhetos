@@ -34,8 +34,7 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(EntityHistoryInfo))]
     public class EntityHistoryCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly DataStructureCodeGenerator.DataStructureTag ClonePropertiesTag =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*EntityHistory.CloneProperties {0}.{1}*/");
+        public static readonly CsTag<EntityHistoryInfo> ClonePropertiesTag = "CloneProperties";
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
@@ -44,8 +43,6 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode(FilterImplementationSnippet(info), RepositoryHelper.RepositoryMembers, info.HistoryEntity);
             codeBuilder.InsertCode(CreateHistoryOnUpdateSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Entity);
             codeBuilder.InsertCode(VerifyHistoryEntityTimeSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.HistoryEntity);
-
-            codeBuilder.InsertCode(DenyAllActionsOnFullHistorySnippet(info), WritableOrmDataStructureCodeGenerator.InitializationTag, info.FullHistoryEntity);        
         }
 
         private static string FilterInterfaceSnippet(EntityHistoryInfo info)
@@ -75,14 +72,6 @@ namespace Rhetos.Dom.DefaultConcepts
             info.HistoryEntity.Name,
             SqlUtility.Identifier(info.Entity.Module.Name),
             SqlUtility.Identifier(info.Entity.Name + "_AtTime"));
-        }
-
-        private static string DenyAllActionsOnFullHistorySnippet(EntityHistoryInfo info)
-        {
-            return string.Format(
-@"			throw new Rhetos.UserException(""Full history does not allow changes."");
-
-");
         }
 
         private static string CreateHistoryOnUpdateSnippet(EntityHistoryInfo info)
@@ -121,7 +110,7 @@ namespace Rhetos.Dom.DefaultConcepts
 ",
             info.Entity.Module.Name,
             info.Entity.Name,
-            ClonePropertiesTag.Evaluate(info.Entity));
+            ClonePropertiesTag.Evaluate(info));
         }
 
         private static string VerifyHistoryEntityTimeSnippet(EntityHistoryInfo info)

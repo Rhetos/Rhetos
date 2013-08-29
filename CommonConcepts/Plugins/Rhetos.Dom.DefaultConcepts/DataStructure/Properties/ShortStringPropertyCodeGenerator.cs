@@ -38,12 +38,25 @@ namespace Rhetos.Dom.DefaultConcepts
             PropertyInfo info = (PropertyInfo)conceptInfo;
             PropertyHelper.GenerateCodeForType(info, codeBuilder, "string", true);
 
-            codeBuilder.InsertCode(@"
-            if (value != null && value.Length > " + ShortStringPropertyInfo.MaxLength + @")
-                throw new System.ApplicationException(""Maximum length of property " + info.Name + @" is " + ShortStringPropertyInfo.MaxLength + @"."");
-",                PropertyHelper.BeforeSetPropertyTag, info);
+            if (info.DataStructure is IWritableOrmDataStructure)
+                codeBuilder.InsertCode(LimitStringLengthOnSaveSnippet(info), WritableOrmDataStructureCodeGenerator.InitializationTag, info.DataStructure);
 
-            codeBuilder.InsertCode(" = string.Empty", PropertyHelper.DefaultValueTag, info);
+            // TODO: Implement error handling of the maximum length for filter parameters and any other data (sent from client) that is used in a way other than Save function.
+        }
+
+        private string LimitStringLengthOnSaveSnippet(PropertyInfo info)
+        {
+            return string.Format(@"
+            {{
+                var invalidItem = insertedNew.Concat(updatedNew).Where(newItem => newItem.{2} != null && newItem.{2}.Length > {3}).FirstOrDefault();
+                if (invalidItem != null)
+                    throw new Rhetos.UserException(""Maximum length of property {1}.{2} is {3}."", ""DataStructure:{0}.{1},ID:"" + invalidItem.ID.ToString() + "",Property:{2}"");
+            }}
+",
+                    info.DataStructure.Module.Name,
+                    info.DataStructure.Name,
+                    info.Name,
+                    ShortStringPropertyInfo.MaxLength);
         }
     }
 }

@@ -27,7 +27,6 @@ using System.ComponentModel.Composition;
 using Rhetos.Extensibility;
 using Rhetos.Dsl;
 using Rhetos.Compiler;
-using Rhetos.Factory;
 using Rhetos.Processing;
 
 namespace Rhetos.Dom.DefaultConcepts

@@ -25,10 +25,24 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class LegacyPropertyInfo : IValidationConcept
+    public class LegacyPropertyInfo : IValidationConcept, IAlternativeInitializationConcept
     {
         [ConceptKey]
         public PropertyInfo Property { get; set; }
+
+        /// <summary>Nonparsable (reference to a dependency).</summary>
+        public LegacyEntityWithAutoCreatedViewInfo LegacyEntityWithAutoCreatedView { get; set; }
+
+        public IEnumerable<string> DeclareNonparsableProperties()
+        {
+            return new[] { "LegacyEntityWithAutoCreatedView" };
+        }
+
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            LegacyEntityWithAutoCreatedView = new LegacyEntityWithAutoCreatedViewInfo { Module = Property.DataStructure.Module, Name = Property.DataStructure.Name };
+            createdConcepts = null;
+        }
 
         public override string ToString()
         {

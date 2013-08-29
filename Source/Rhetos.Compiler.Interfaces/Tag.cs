@@ -17,8 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Text;
+using Rhetos.Dsl;
 
 namespace Rhetos.Compiler
 {
@@ -27,58 +30,59 @@ namespace Rhetos.Compiler
         /// <summary>Code can be inserted at the tag position only once.</summary>
         Single,
         /// <summary>Code can be inserted at the tag position multiple times. New code is inserted <b>after</b> the previously inserted code.</summary>
-        Appendable,
-        /// <summary>Not a tag. Used only for manual format evaluation.</summary>
-        [Obsolete("Create a 'private static string SomethingSnippet(SomeConceptInfo info)' with string.Format instead of a Tag the generate code snippet.")]
-        CodeSnippet
+        Appendable
     };
 
     public class Tag<T>
+        where T : IConceptInfo
     {
-        public TagType TagType { get; private set; }
-        public string Format { get; private set; }
-        public Func<T, string, string> TagFormatter { get; private set; }
-        public string NextFormat { get; private set; }
-        public string FirstEvaluationContext { get; private set; }
-        public string NextEvaluationContext { get; private set; }
+        public string Key { get; protected set; }
+        public TagType TagType { get; protected set; }
+        public string FirstEvaluationContext { get; protected set; }
+        public string NextEvaluationContext { get; protected set; }
+        public string TagOpen { get; protected set; }
+        public string TagClose { get; protected set; }
 
-        public Tag(TagType tagType, string tagFormat, Func<T, string, string> tagFormatter, string nextTagFormat = null, string firstEvaluationContext = null, string nextEvaluationContext = null)
+        public string Format { get; protected set; }
+        public string NextFormat { get; protected set; }
+
+        public Tag(string key, TagType tagType, string firstEvaluationContext, string nextEvaluationContext, string tagOpen, string tagClose)
         {
-            if (nextTagFormat != null && new[] { TagType.Single, TagType.CodeSnippet }.Contains(tagType))
+            Key = key;
+            TagType = tagType;
+            FirstEvaluationContext = firstEvaluationContext;
+            NextEvaluationContext = nextEvaluationContext;
+            TagOpen = tagOpen;
+            TagClose = tagClose;
+
+            Format = TagOpen + typeof(T).Name + " " + key + " {0}" + TagClose;
+            if (nextEvaluationContext != null)
+                NextFormat = TagOpen + "Next " + typeof(T).Name + " " + key + " {0}" + TagClose;
+
+            if (nextEvaluationContext != null && tagType == TagType.Single)
                 throw new FrameworkException(string.Format(
-                    "IncrementalTagFormat is not applicable if TagType is {0}. TagFormat=\"{1}\", IncrementalTagFormat=\"{2}\"",
-                    tagType.ToString(), tagFormat, nextTagFormat));
-
-            this.TagType = tagType;
-            this.Format = tagFormat;
-            this.NextFormat = nextTagFormat;
-            this.TagFormatter = tagFormatter;
-            this.FirstEvaluationContext = firstEvaluationContext;
-            this.NextEvaluationContext = nextEvaluationContext;
+                    "Incremental formatting (using nextEvaluationContext) is not applicable if TagType is {0}. Invalid {1} for concept {2}, key=\"{3}\", nextEvaluationContext=\"{4}\".",
+                    TagType, GetType().Name, typeof(T).Name, Key, NextEvaluationContext));
         }
 
-        public string Evaluate(T info)
+        public string Evaluate(T conceptInfo)
         {
-            return TagFormatter(info, Format);
+            return string.Format(CultureInfo.InvariantCulture, Format, conceptInfo.GetKeyProperties());
         }
 
-        public static implicit operator string(Tag<T> tag)
+        public override string ToString()
         {
-            if (tag == null)
-                throw new FrameworkException("Cannot use uninitialized (null) tag. Hint: Try reordering static tag members in their parent class.");
-            return tag.Format;
+            throw new FrameworkException(string.Format(
+                "Tag must be evaluated using Evaluate() function instead of being used directly as a string. Invalid use of {1} for concept {2}, key=\"{3}\", nextEvaluationContext=\"{4}\".",
+                TagType, GetType().Name, typeof(T).Name, Key, NextEvaluationContext));
         }
     }
 
     public static class TagCodeBuilder
     {
-        public static void InsertCode<T>(this ICodeBuilder codeBuilder, string code, Tag<T> tag, T tagConceptInfo)
+        public static void InsertCode<T>(this ICodeBuilder codeBuilder, string code, Tag<T> tag, T conceptInfo)
+            where T : IConceptInfo
         {
-            if (tag.TagType == TagType.CodeSnippet)
-                throw new FrameworkException(string.Format(
-                    "If TagType is {0}, the tag can only be used for manual format evaluation. Use Evaluate() function. TagFormat=\"{1}\"",
-                    tag.TagType.ToString(), tag.Format));
-
             string code1 = code;
             string code2 = code;
             if (!string.IsNullOrEmpty(tag.FirstEvaluationContext))
@@ -86,15 +90,16 @@ namespace Rhetos.Compiler
             if (!string.IsNullOrEmpty(tag.NextEvaluationContext))
                 code2 = string.Format(CultureInfo.InvariantCulture, tag.NextEvaluationContext, code);
 
-            string tagPattern = tag.TagFormatter(tagConceptInfo, tag.Format);
+            var conceptInfoKeyProperties = conceptInfo.GetKeyProperties();
+            string tagPattern = string.Format(CultureInfo.InvariantCulture, tag.Format, conceptInfoKeyProperties);
 
             if (tag.TagType == TagType.Single)
                 codeBuilder.ReplaceCode(code1, tagPattern);
-            else if (tag.NextFormat == null || tag.NextFormat == tag.Format)
+            else if (tag.NextFormat == null)
                 codeBuilder.InsertCode(code1, tagPattern);
             else
             {
-                string nextTagPattern = tag.TagFormatter(tagConceptInfo, tag.NextFormat);
+                string nextTagPattern = string.Format(CultureInfo.InvariantCulture, tag.NextFormat, conceptInfoKeyProperties);
                 codeBuilder.InsertCode(code1, code2, tagPattern, nextTagPattern);
             }
         }

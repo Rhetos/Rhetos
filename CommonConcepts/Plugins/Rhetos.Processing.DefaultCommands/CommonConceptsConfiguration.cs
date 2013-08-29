@@ -19,7 +19,6 @@
 using System.ComponentModel.Composition;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Extensibility;
-using Rhetos.Factory;
 using Autofac;
 
 namespace Rhetos.Processing.DefaultCommands

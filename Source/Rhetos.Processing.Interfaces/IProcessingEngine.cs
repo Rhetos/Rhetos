@@ -23,6 +23,6 @@ namespace Rhetos.Processing
 {
     public interface IProcessingEngine
     {
-        ProcessingResult Execute(IEnumerable<ICommandInfo> commands, IUserInfo userInfo);
+        ProcessingResult Execute(IEnumerable<ICommandInfo> commands);
     }
 }

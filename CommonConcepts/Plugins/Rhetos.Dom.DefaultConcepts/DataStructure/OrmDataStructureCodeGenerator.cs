@@ -35,41 +35,39 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.DependsOn, typeof(DataStructureCodeGenerator))]
     public class OrmDataStructureCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly DataStructureCodeGenerator.DataStructureTag GetHashCodeTag =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*get hash code {0}.{1}*/");
-        public static readonly DataStructureCodeGenerator.DataStructureTag EqualsBaseTag =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*equals base {0}.{1}*/");
-        public static readonly DataStructureCodeGenerator.DataStructureTag EqualsInterfaceTag =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*equals interface {0}.{1}*/");
+        public static readonly CsTag<DataStructureInfo> GetHashCodeTag = "Orm GetHashCode";
+        public static readonly CsTag<DataStructureInfo> EqualsBaseTag = "Orm EqualsBase";
+        public static readonly CsTag<DataStructureInfo> EqualsInterfaceTag = "Orm EqualsInterface";
 
-
-        protected static readonly DataStructureCodeGenerator.DataStructureTag CodeSnippet = new DataStructureCodeGenerator.DataStructureTag(TagType.CodeSnippet,
+        protected static string CodeSnippet(DataStructureInfo info)
+        {
+            return
 @"
         public override int GetHashCode()
-        {{
-            " + GetHashCodeTag + @"
-            return _ID.GetHashCode();
-        }}
+        {
+            " + GetHashCodeTag.Evaluate(info) + @"
+            return ID.GetHashCode();
+        }
 
         public override bool Equals(object o)
-        {{
-            " + EqualsBaseTag + @"
-            var other = o as {1};
-            return other != null && other._ID == _ID;
-        }}
+        {
+            " + EqualsBaseTag.Evaluate(info) + @"
+            var other = o as " + info.Name + @";
+            return other != null && other.ID == ID;
+        }
 
-        bool System.IEquatable<{1}>.Equals({1} other)
-        {{
-            " + EqualsInterfaceTag + @"
-            return other != null && other._ID == _ID;
-        }}
-");
+        bool System.IEquatable<" + info.Name + @">.Equals(" + info.Name + @" other)
+        {
+            " + EqualsInterfaceTag.Evaluate(info) + @"
+            return other != null && other.ID == ID;
+        }
+";
+        }
 
         protected static string QuerySnippet(DataStructureInfo info)
         {
             return string.Format(
-@"            return _executionContext.NHibernateSession.Query<global::{0}.{1}>();
-",
+                @"return _executionContext.NHibernateSession.Query<global::{0}.{1}>();",
                 info.Module.Name, info.Name);
         }
 
@@ -79,7 +77,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (info is IOrmDataStructure)
             {
-                codeBuilder.InsertCode(CodeSnippet.Evaluate(info), DataStructureCodeGenerator.BodyTag, info);
+                codeBuilder.InsertCode(CodeSnippet(info), DataStructureCodeGenerator.BodyTag, info);
                 codeBuilder.AddInterfaceAndReference(string.Format("System.IEquatable<{0}>", info.Name), typeof (System.IEquatable<>), info);
 
                 PropertyInfo idProperty = new PropertyInfo {DataStructure = info, Name = "ID"};

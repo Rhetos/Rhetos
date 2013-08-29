@@ -34,14 +34,7 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(LockItemsInfo))]
     public class LockItemsCodeGenerator : IConceptCodeGenerator
     {
-        public class LockItemsTag : Tag<LockItemsInfo>
-        {
-            public LockItemsTag(TagType tagType, string tagFormat, string nextTagFormat = null, string firstEvaluationContext = null, string nextEvaluationContext = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format, info.Source.Module.Name, info.Source.Name, info.FilterType), nextTagFormat, firstEvaluationContext, nextEvaluationContext)
-            { }
-        }
-
-        public static readonly LockItemsTag UserMessageAppend = new LockItemsTag(TagType.Appendable, "/*LockItems {0}.{1}.{2}*/");
+        public static readonly CsTag<LockItemsInfo> UserMessageAppend = "UserMessage";
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {

@@ -35,29 +35,18 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ConceptImplementationVersion(2, 0)]
     public class SqlIndexMultipleDatabaseDefinition : IConceptDatabaseDefinition
     {
-        public class SqlIndexMultipleTag : Tag<SqlIndexMultipleInfo>
-        {
-            public SqlIndexMultipleTag(TagType tagType, string tagFormat, string nextTagFormat = null, string firstEvaluationContext = null, string nextEvaluationContext = null)
-                : base(tagType, tagFormat, (info, format) => string.Format(CultureInfo.InvariantCulture, format, 
-                    info.Entity.Module.Name, // {0}
-                    info.Entity.Name, // {1}
-                    CsUtility.TextToIdentifier(info.PropertyNames)), // {2}
-                    nextTagFormat, firstEvaluationContext, nextEvaluationContext)
-            { }
-        }
-
         /// <summary>
         /// Options inserted between CREATE and INDEX
         /// </summary>
-        public static readonly SqlIndexMultipleTag Options1Tag = new SqlIndexMultipleTag(TagType.Appendable, "/*SqlIndexMultiple.Options1 {0}.{1}.{2}*/");
+        public static readonly SqlTag<SqlIndexMultipleInfo> Options1Tag = "Options1";
         /// <summary>
         /// Options inserted at the end of the CREATE INDEX query.
         /// </summary>
-        public static readonly SqlIndexMultipleTag Options2Tag = new SqlIndexMultipleTag(TagType.Appendable, "/*SqlIndexMultiple.Options2 {0}.{1}.{2}*/");
+        public static readonly SqlTag<SqlIndexMultipleInfo> Options2Tag = "Options2";
         /// <summary>
         /// Options inserted after each column name in the CREATE INDEX query.
         /// </summary>
-        public static readonly SqlIndexMultipleTag ColumnsTag = new SqlIndexMultipleTag(TagType.Appendable, "/*SqlIndexMultiple.Columns {0}.{1}.{2}*/", "/*next SqlIndexMultiple.Columns {0}.{1}.{2}*/", "{0}", ", {0}");
+        public static readonly SqlTag<SqlIndexMultipleInfo> ColumnsTag = new SqlTag<SqlIndexMultipleInfo>("Columns", TagType.Appendable, "{0}", ", {0}");
 
 
         private static string ConstraintName(SqlIndexMultipleInfo info)

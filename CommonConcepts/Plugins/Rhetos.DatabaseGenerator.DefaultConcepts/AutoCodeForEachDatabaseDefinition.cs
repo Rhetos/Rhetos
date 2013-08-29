@@ -50,17 +50,17 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             if (AutoCodeDatabaseDefinition.IsSupported(info.Property))
             {
                 codeBuilder.InsertCode(Sql.Format("AutoCodeForEachDatabaseDefinition_ExtendBeforeCursor", ShortStringPropertyInfo.MaxLength),
-                    AutoCodeDatabaseDefinition.BeforeCursorTag, info.Property);
+                    AutoCodeDatabaseDefinition.BeforeCursorTag, info);
 
                 string resourceName = GetResourceNameForCursorSelectSnippet(info.Group);
                 codeBuilder.InsertCode(Sql.Format(resourceName, GetColumnName(info.Group), ShortStringPropertyInfo.MaxLength),
-                    AutoCodeDatabaseDefinition.CursorSelectTag, info.Property);
+                    AutoCodeDatabaseDefinition.CursorSelectTag, info);
 
                 codeBuilder.InsertCode(Sql.Format("AutoCodeForEachDatabaseDefinition_ExtendCursorFetch", GetColumnName(info.Group), ShortStringPropertyInfo.MaxLength),
-                    AutoCodeDatabaseDefinition.CursorFetchTag, info.Property);
+                    AutoCodeDatabaseDefinition.CursorFetchTag, info);
 
                 codeBuilder.InsertCode(Sql.Format("AutoCodeForEachDatabaseDefinition_ExtendBeforeGenerate", GetColumnName(info.Group), ShortStringPropertyInfo.MaxLength),
-                    AutoCodeDatabaseDefinition.BeforeGenerateTag, info.Property);
+                    AutoCodeDatabaseDefinition.BeforeGenerateTag, info);
             }
         }
 

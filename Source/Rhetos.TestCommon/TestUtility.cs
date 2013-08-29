@@ -33,6 +33,7 @@ namespace Rhetos.TestCommon
         public static Exception ShouldFail(Action action, string reason, params string[] expectedErrorContent)
         {
             Exception exception = null;
+            string message = null;
             try
             {
                 action();
@@ -40,10 +41,14 @@ namespace Rhetos.TestCommon
             catch (Exception ex)
             {
                 exception = ex;
-                Console.WriteLine("[" + ex.GetType().Name + "] " + ex.Message);
+                message = ex.Message;
+                if (ex is UserException && ((UserException)ex).SystemMessage != null)
+                    message += "\r\n    SystemMessage: " + ((UserException)ex).SystemMessage;
+
+                Console.WriteLine("[" + ex.GetType().Name + "] " + message);
             }
             Assert.IsNotNull(exception, "Exception did not happen. " + reason);
-            AssertContains(exception.Message, expectedErrorContent, "Exception message does not contain the pattern. " + reason);
+            AssertContains(message, expectedErrorContent, "Exception message does not contain the pattern. " + reason);
             return exception;
         }
 

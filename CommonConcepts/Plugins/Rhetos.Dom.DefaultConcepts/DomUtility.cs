@@ -21,15 +21,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Rhetos.Compiler;
+using Rhetos.Dsl.DefaultConcepts;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     public static class DomUtility
     {
-        public static readonly DataStructureCodeGenerator.DataStructureTag ComputationAdditionalParametersTypeTag =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*DataStructure.AdditionalParametersType {0}.{1}*/");
-
-        public static readonly DataStructureCodeGenerator.DataStructureTag ComputationAdditionalParametersArgumentTag =
-            new DataStructureCodeGenerator.DataStructureTag(TagType.Appendable, "/*DataStructure.AdditionalParametersArgument {0}.{1}*/");
+        public static readonly CsTag<DataStructureInfo> ComputationAdditionalParametersTypeTag = "AdditionalParametersType";
+        public static readonly CsTag<DataStructureInfo> ComputationAdditionalParametersArgumentTag = "AdditionalParametersArgument";
     }
 }
