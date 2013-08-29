@@ -40,14 +40,15 @@ namespace Rhetos.Dsl.DefaultConcepts
             var itemFilterMinLengthProperty = new ItemFilterInfo
             {
                 Expression = String.Format("item => !String.IsNullOrEmpty(item.{0}) && item.{0}.Length < {1}", Property.Name, Length),
-                    FilterName = Property.Name + "_MinLengthFilter", 
-                    Source = Property.DataStructure 
+                FilterName = Property.Name + "_MinLengthFilter", 
+                Source = Property.DataStructure 
             };
-            var denySaveMinLengthProperty = new DenySaveForPropertyInfo { 
+            var denySaveMinLengthProperty = new DenySaveForPropertyInfo
+            {
                     DependedProperty = Property, 
-                    FilterType = itemFilterMinLengthProperty.FilterName, 
-                    Title = String.Format("Minimum allowed length of {0} is {1} characters.", Property.Name, Length), 
-                    Source = Property.DataStructure 
+                FilterType = itemFilterMinLengthProperty.FilterName, 
+                Title = String.Format("Minimum allowed length of {0} is {1} characters.", Property.Name, Length), 
+                Source = Property.DataStructure 
             };
             return new IConceptInfo[] { itemFilterMinLengthProperty, denySaveMinLengthProperty };
         }
