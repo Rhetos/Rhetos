@@ -15,12 +15,6 @@ CALL CommonConcepts\CopyPlugins.bat CommonConcepts\Plugins\ForDeployment\ %Confi
 Source\CreatePackage\bin\%Config%\CreatePackage.exe CommonConcepts
 RD /S /Q CommonConcepts\Plugins\ForDeployment\
 
-IF NOT EXIST MvcModelGenerator\Plugins\ForDeployment\ MD MvcModelGenerator\Plugins\ForDeployment\
-DEL /F /S /Q MvcModelGenerator\Plugins\ForDeployment\* || EXIT /B 1
-CALL MvcModelGenerator\CopyPlugins.bat MvcModelGenerator\Plugins\ForDeployment\ %Config%
-Source\CreatePackage\bin\%Config%\CreatePackage.exe MvcModelGenerator
-RD /S /Q MvcModelGenerator\Plugins\ForDeployment\
-
 MOVE *.zip Install\
 
 MD Install\Rhetos
