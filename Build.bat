@@ -14,7 +14,6 @@ IF "%VS110COMNTOOLS%" NEQ "" SET VSTOOLS=%VS110COMNTOOLS%
 CALL "%VSTOOLS%\..\..\VC\vcvarsall.bat" x86 2>> %LogFile%
 
 CALL:BUILD Rhetos.sln
-CALL:BUILD MvcModelGenerator\Plugins\Rhetos.MvcModelGenerator.sln
 
 ECHO. >> %LogFile%
 DATE /T >> %LogFile%
