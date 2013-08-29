@@ -49,7 +49,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 Source = Property.DataStructure,
                 FilterType = filterName,
                 Title = "System required property " +  Property.GetUserDescription() + " is not set.",
-                DependedProperties = Property
+                DependedProperty = Property
             };
 
             return new IConceptInfo[] { filter, denySave };

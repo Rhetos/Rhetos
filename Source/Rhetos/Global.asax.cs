@@ -30,6 +30,8 @@ using System.IO;
 using Autofac.Configuration;
 using Rhetos.Logging;
 using System.Diagnostics;
+using System.ServiceModel;
+using System.ServiceModel.Description;
 
 namespace Rhetos
 {
@@ -44,6 +46,12 @@ namespace Rhetos
             AutofacServiceHostFactory.Container = builder.Build();
 
             ErrorLogger = AutofacServiceHostFactory.Container.Resolve<ILogProvider>().GetLogger("Unhandled exception");
+            
+            foreach (var service in AutofacServiceHostFactory.Container.Resolve<IEnumerable<IService>>())
+            {
+                service.Initialize();
+                ErrorLogger.Trace("Service " + service.GetType().FullName + " initialized.");
+            }
         }
 
         protected void Session_Start(object sender, EventArgs e)
