@@ -26,6 +26,7 @@ using Rhetos.Configuration.Autofac;
 using System.Configuration;
 using System.IO;
 using Rhetos.Dsl;
+using Rhetos.Extensibility;
 
 namespace Rhetos
 {
@@ -45,6 +46,8 @@ namespace Rhetos
             builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
             builder.RegisterInstance<IDslSource>(new DiskDslScriptProvider(_dslScriptsFolder));
             builder.RegisterType<GlobalErrorHandler>();
+            
+            PluginsUtility.RegisterPlugins<IService>(builder);
 
             builder.RegisterModule(new CommonModuleConfiguration());
             builder.RegisterModule(new ExtensibilityModuleConfiguration());

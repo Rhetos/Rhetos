@@ -16,27 +16,16 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-using Autofac.Features.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ServiceModel;
 using System.Text;
 
-namespace Rhetos.Extensibility.Test
+namespace Rhetos
 {
-    public class PluginsContainerAccessor<TPlugin> : PluginsContainer<TPlugin>
+    public interface IService
     {
-        public PluginsContainerAccessor()
-            : base (
-                new Lazy<IEnumerable<TPlugin>> { },
-                new Lazy<Autofac.Features.Indexed.IIndex<Type, IEnumerable<TPlugin>>> { },
-                new PluginsMetadataCache<TPlugin>(new Lazy<IEnumerable<Meta<TPlugin>>> { }))
-        {
-        }
-
-        public static List<Type> Access_GetTypeHierarchy(Type type)
-        {
-            return GetTypeHierarchy(type);
-        }
+        void Initialize();
     }
 }
