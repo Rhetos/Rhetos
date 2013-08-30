@@ -1,4 +1,4 @@
-0.9.8 (to be released)
+0.9.8 (2013-08-30)
 ------------------
 
 Breaking changes:
