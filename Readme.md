@@ -16,6 +16,13 @@ Rhetos is based on Microsoft .NET technology stack.
 
 See [rhetos.org](http://www.rhetos.org/) for more information.
 
+Recommended Rhetos DSL packages
+-------------------------------
+
+* CommonPackage (placed inside the Rhetos repository) contains basic concepts for building applications.  
+* [MvcModelGenerator](https://github.com/Rhetos/MvcModelGenerator) automatically generates ASP.NET MVC model for all entities and other queryable data structures that are defined in a Rhetos application.
+* [ODataGenerator](https://github.com/Rhetos/ODataGenerator) automatically generates OData interface (Open Data Protocol) for all entities and other queryable data structures that are defined in a Rhetos application.
+
 Installation
 ============
 

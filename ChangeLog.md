@@ -9,7 +9,6 @@ Breaking changes:
 
 New features:
 
-* New DSL package: **ODataGenerator** generates a simple OData interface (Open Data Protocol) for all queryable data structures in object model. The interface is currently read-only and it does not support reference expanstion for security reasons.     
 * New concept: **SystemRequired**, for a property that must be computed by the server. Note that the existing **Required** concept should be used to enforce a business rule when a user must enter the property's value. 
 * New concept: **DenyUserEdit**, for a property that may only be changed by the server, not by a client Save request. It may also be applyed to an entity with hardcoded system data.
 
@@ -17,6 +16,7 @@ Internal improvements:
 
 * Helper classes *CsTag*, *SqlTag* and *XmlTag* provied a simplifyed creation of code tags (for code generator plugins).
 * Bugfix: **LongString** and **Binary** properties were limited to 8000 bytes.
+* DSL packages may contain custom web service registration.
 * Implicit transactions with NHibernatePeristenceTransaction allow late query evaluation that is required for OData service.
 * Removed *TypeFactory*, *AspectFactory*, *InterceptorFactory* and *DynamicProxyFactory*. TypeFactory was a wrapper around Autofac, but it did not provide a useful abstraction layer. Other components were planned for AOP, but they were not used in practice. AOP principles are already fully supported by code generators for the final application. These features were not used for internal framework compoments.
 * More flexible plugins registration using *PluginsUtility* and *PluginsContainer*.
@@ -27,13 +27,12 @@ Internal improvements:
 * Enabled use of **UseExecutionContext** concept on **Action**.
 * Bugfix: Recursive updates with KeepSynchronized could cause infinite loop even if there is nothing to update.
 * **CreationTime** implementation moved from database to object model (data import should not change the migrated creation time even if the value is not specified).
-
+ 
 0.9.7 (2013-08-02)
 ------------------
 
 New features:
 
-* New DSL package: **MvcModelGenerator** generates model classes with DataAnnotations attributes for ASP.NET MVC. It creates MvcModel.cs/dll/pdb.
 * New concept: **Deactivatable** allows records to be deactivated instead of deleted.
 * Improved **History** concept: *ActiveUntil* property computed for each history record. FullHistory available through REST interface. Better validations.
 
