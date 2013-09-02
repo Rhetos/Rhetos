@@ -79,9 +79,9 @@ namespace Rhetos.Deployment.Test
                     action(reader);
             }
 
-            Regex DropColumn = new Regex(@"^ALTER TABLE (\w+).(\w+) DROP COLUMN (\w+)$");
-            Regex DropTable = new Regex(@"^DROP TABLE (\w+).(\w+)$");
-            Regex DropSchema = new Regex(@"^DROP SCHEMA (\w+)$");
+            Regex DropColumn = new Regex(@"^ALTER TABLE \[(\w+)\].\[(\w+)\] DROP COLUMN \[(\w+)\]$");
+            Regex DropTable = new Regex(@"^DROP TABLE \[(\w+)\].\[(\w+)\]$");
+            Regex DropSchema = new Regex(@"^DROP SCHEMA \[(\w+)\]$");
 
             public List<string> DroppedColumns = new List<string>();
             public List<string> DroppedTables = new List<string>();
@@ -162,7 +162,7 @@ namespace Rhetos.Deployment.Test
 
             TestCleanupRedundantOldData("All columns redundant",
                 "_s.t.ID, _s.t.c1, _s.t.c2, s.t.ID, s.t.c1, s.t.c2", "_s.t", "_s",
-                "_s.t.c1, _s.t.c2", "_s.t", "_s");
+                "", "_s.t", "_s");
         }
 
         public void TestCleanupOldData(string description,

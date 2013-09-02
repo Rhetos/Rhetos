@@ -61,5 +61,15 @@ namespace Rhetos.Deployment
             var sqlScripts = sql.Split(new[] {"\r\nGO\r\n"}, StringSplitOptions.RemoveEmptyEntries).Where(s => !String.IsNullOrWhiteSpace(s));
             sqlExecuter.ExecuteSql(sqlScripts);
         }
+
+        public static string QuoteSqlIdentifier(string sqlIdentifier)
+        {
+            if (SqlUtility.DatabaseLanguage == "MsSql")
+            {
+                sqlIdentifier = sqlIdentifier.Replace("]", "]]");
+                return "[" + sqlIdentifier + "]";
+            }
+            throw new FrameworkException("Database language " + SqlUtility.DatabaseLanguage + " not supported.");
+        }
     }
 }

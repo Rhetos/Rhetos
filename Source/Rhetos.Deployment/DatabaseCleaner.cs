@@ -83,10 +83,13 @@ namespace Rhetos.Deployment
             var remainingMigrationSchemasIndex = new HashSet<string>(remainingMigrationColumns.Select(c => c.SchemaName).Distinct());
             var emptyMigrationSchemas = migrationSchemas.Where(s => !remainingMigrationSchemasIndex.Contains(s)).ToList();
 
+            var emptyMigrationTablesIndex = new HashSet<string>(emptyMigrationTables.Select(t => t.Key));
+            var deleteMigrationColumns = redundantMigrationColumns.Where(c => c.ColumnName != "ID").ToList(); // If any data migration column remains in a table, the ID column must also remain in the table.
+            var deleteMigrationColumnsOptimized = deleteMigrationColumns.Where(c => !emptyMigrationTablesIndex.Contains(c.KeyTable)).ToList(); // Deleting a table will automatically delete all the columns. This is also needed to remove a table that does not contain ID property.
+
             // Drop database objects:
 
-            var deleteMigrationColumns = redundantMigrationColumns.Where(c => c.ColumnName != "ID").ToList();
-            DeleteDatabaseObjects(deleteMigrationColumns, emptyMigrationTables, emptyMigrationSchemas);
+            DeleteDatabaseObjects(deleteMigrationColumnsOptimized, emptyMigrationTables, emptyMigrationSchemas);
 
             var report = "Deleted " + deleteMigrationColumns.Count() + " columns in data migration schemas, " + remainingMigrationColumns.Count() + " remaining.";
             _logger.Info(report);
@@ -157,24 +160,24 @@ namespace Rhetos.Deployment
         {
             return string.Format(
                 "ALTER TABLE {0}.{1} DROP COLUMN {2}",
-                SqlUtility.CheckIdentifier(column.SchemaName),
-                SqlUtility.CheckIdentifier(column.TableName),
-                SqlUtility.CheckIdentifier(column.ColumnName));
+                DeploymentUtility.QuoteSqlIdentifier(column.SchemaName),
+                DeploymentUtility.QuoteSqlIdentifier(column.TableName),
+                DeploymentUtility.QuoteSqlIdentifier(column.ColumnName));
         }
 
         private string DropTable(TableInfo table)
         {
             return string.Format(
                 "DROP TABLE {0}.{1}",
-                SqlUtility.CheckIdentifier(table.SchemaName),
-                SqlUtility.CheckIdentifier(table.TableName));
+                DeploymentUtility.QuoteSqlIdentifier(table.SchemaName),
+                DeploymentUtility.QuoteSqlIdentifier(table.TableName));
         }
 
         private string DropSchema(string schema)
         {
             return string.Format(
                 "DROP SCHEMA {0}",
-                SqlUtility.CheckIdentifier(schema));
+                DeploymentUtility.QuoteSqlIdentifier(schema));
         }
     }
 
