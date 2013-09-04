@@ -34,28 +34,6 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.DependsOn, typeof(OrmDataStructureCodeGenerator))]
     public class WriteCodeGenerator : IConceptCodeGenerator
     {
-        /// <summary>Inserted code can use enumerables "insertedNew", "updatedNew" and "deletedIds" but without navigation properties because they are not binded to ORM.</summary>
-        public static readonly CsTag<DataStructureInfo> InitializationTag = "Write Initialization";
-
-        /// <summary>Arrays "updated" and "deleted" contain OLD data.
-        /// Enumerables "insertedNew", "updatedNew" and "deletedIds" are not binded to ORM (do not use navigation properties).
-        /// Sample usage: 1. Verify that locked items are not goind to be updated or deleted, 2. Cascade delete.</summary>
-        public static readonly CsTag<DataStructureInfo> OldDataLoadedTag = "Write OldDataLoaded";
-
-        /// <summary>Arrays "inserted" and "updated" contain NEW data.
-        /// Data is not yet saved to database so SQL validations and computations can NOT be used).</summary>
-        public static readonly CsTag<DataStructureInfo> NewDataLoadedTag = "Write NewDataLoaded";
-
-        /// <summary> Recomended usage: Recompute items that depend on changes items.
-        /// Arrays "inserted" and "updated" contain NEW data.
-        /// Data is saved to the database (but the SQL transaction has not yet been commited) so SQL validations and computations CAN be used.</summary>
-        public static readonly CsTag<DataStructureInfo> OnSaveTag1 = "Write OnSaveTag1";
-
-        /// <summary>Recomended usage: Verify that invalid items are not going to be inserted or updated.
-        /// Arrays "inserted" and "updated" contain NEW data.
-        /// Data is saved to the database (but the SQL transaction has not yet been commited) so SQL validations and computations CAN be used.</summary>
-        public static readonly CsTag<DataStructureInfo> OnSaveTag2 = "Write OnSaveTag2";
-
 
         protected static string MemberFunctionsSnippet(WriteInfo info)
         {
