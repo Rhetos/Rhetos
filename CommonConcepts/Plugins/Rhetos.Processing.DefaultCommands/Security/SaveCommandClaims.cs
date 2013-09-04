@@ -52,12 +52,9 @@ namespace Rhetos.Processing.DefaultCommands
         {
             var writableDataStructures = dslModel.Concepts.OfType<DataStructureInfo>()
                     .Where(dataStructure => dataStructure is IWritableOrmDataStructure)
-                    .ToArray()
                     .Union(
                         dslModel.Concepts.OfType<WriteInfo>()
-                        .Select(x => x.DataStructure)
-                        .ToArray()
-                    );
+                        .Select(x => x.DataStructure)).ToArray();
 
             return writableDataStructures.SelectMany(dataStructure => new IClaim[]
                 {

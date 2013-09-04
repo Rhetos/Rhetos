@@ -54,104 +54,87 @@ namespace Rhetos.Dsl.DefaultConcepts
             AtTimeSqlFunction = new SqlFunctionInfo { Module = Entity.Module, Name = Entity.Name + "_AtTime", Arguments = "@ContextTime DATETIME", Source = AtTimeSqlSnippet() };
             Write = new WriteInfo {
                     DataStructure = FullHistorySqlQueryable,
-                    SaveImplementation = String.Format(@"            
-                if (insertedNew == null) insertedNew = new {0}_FullHistory[] {{ }};
-                if (updatedNew == null) updatedNew = new {0}_FullHistory[] {{ }};
-                if (deletedIds == null) deletedIds = new {0}_FullHistory[] {{ }};
+                    SaveImplementation = String.Format(@"var updateEnt = new List<{0}_FullHistory>();
+            var deletedEnt = new List<{0}_FullHistory>();
 
-                if (insertedNew.Count() == 0 && updatedNew.Count() == 0 && deletedIds.Count() == 0)
-                    return;
+            var updateHist = new List<{0}_FullHistory>();
+            var deletedHist = new List<{0}_FullHistory>();
+            var insertedHist = new List<{0}_FullHistory>();
 
-                var updateEnt = new List<{0}_FullHistory>();
-                var deletedEnt = new List<{0}_FullHistory>();
+            foreach(var item in insertedNew)
+                if(item.EntityID == Guid.Empty)
+                    throw new Rhetos.UserException(""Inserting into FullHistory is not allowed because property EntityID is not set."");
 
-                var updateHist = new List<{0}_FullHistory>();
-                var deletedHist = new List<{0}_FullHistory>();
-                var insertedHist = new List<{0}_FullHistory>();
-
-                foreach(var item in insertedNew)
-                {{
-                    if(item.EntityID == Guid.Empty)
-                        throw new Rhetos.FrameworkException(""Inserting into FullHistory of unexisted entity is not allowed. EntityID cannot be null."");
-                    if(item.ID == Guid.Empty)
-                        item.ID = Guid.NewGuid();
-                }}
-
-                var distinctEntityIDs = insertedNew.Union(updatedNew).Select(x => x.EntityID.Value).Distinct().ToArray();
-                var existingEntities = _domRepository.{1}.{0}.Filter(distinctEntityIDs).Select(x => x.ID).ToArray();
-                if (distinctEntityIDs.Count() != existingEntities.Count()) 
-                    throw new Rhetos.FrameworkException(""Inserting or update in FullHistory of unexisted entity is not allowed. There is no entity with ID: "" + distinctEntityIDs.Where(x => !existingEntities.Contains(x)).Single().ToString());
+            _executionContext.NHibernateSession.Clear(); // Updating a modified persistent object could break old-data validations such as checking for locked items.
             
-                _executionContext.NHibernateSession.Clear(); // Updating a modified persistent object could break old-data validations such as checking for locked items.
+            Guid[] distinctEntityIDs = insertedNew.Union(updatedNew).Select(x => x.EntityID.Value).Distinct().ToArray();
+            Guid[] existingEntities = _domRepository.{1}.{0}.Filter(distinctEntityIDs).Select(x => x.ID).ToArray();
+            var nonExistentEntity = distinctEntityIDs.Except(existingEntities).FirstOrDefault();
+            if (nonExistentEntity != default(Guid))
+                throw new Rhetos.UserException(""Inserting or update in FullHistory of unexisted entity is not allowed. There is no entity with ID: "" + nonExistentEntity.ToString());
             
-                if (insertedNew.Where(newItem => _domRepository.{1}.{0}_FullHistory.Query().Any(fh => fh.Entity.ID == newItem.EntityID && fh.ActiveSince == newItem.ActiveSince)).ToArray().Count() > 0)
-                    throw new Rhetos.FrameworkException(""Inserting new history record with same ActiveSince and EntityID, but different ID is not allowed."");
+            // INSERT
+            updateEnt.AddRange(insertedNew
+                .Where(newItem => _domRepository.{1}.{0}.Filter(new[]{{newItem.EntityID.Value}}).SingleOrDefault().ActiveSince < newItem.ActiveSince)
+                .ToArray());
+            insertedHist.AddRange(insertedNew
+                .Where(newItem => _domRepository.{1}.{0}.Filter(new[]{{newItem.EntityID.Value}}).SingleOrDefault().ActiveSince >= newItem.ActiveSince)
+                .ToArray());
 
-                // INSERT
-                updateEnt.AddRange(insertedNew
-                    .Where(newItem => _domRepository.{1}.{0}.Filter(new[]{{newItem.EntityID.Value}}).SingleOrDefault().ActiveSince < newItem.ActiveSince)
-                    .ToArray());
-                insertedHist.AddRange(insertedNew
-                    .Where(newItem => _domRepository.{1}.{0}.Filter(new[]{{newItem.EntityID.Value}}).SingleOrDefault().ActiveSince > newItem.ActiveSince)
-                    .ToArray());
-
-                // UPDATE
-                updateEnt.AddRange(updatedNew
-                    .Where(item => _domRepository.{1}.{0}.Filter(new[]{{item.ID}}).Count() > 0)
-                    .ToArray());
+            // UPDATE
+            updateEnt.AddRange(updatedNew
+                .Where(item => item.ID == item.EntityID)
+                .ToArray());
                 
-                if (updatedNew.Any(item => _domRepository.{1}.{0}.Query().Any(ent => ent.ID != item.ID && ent.ID == item.EntityID.Value && ent.ActiveSince < item.ActiveSince)))
-                    throw new Rhetos.FrameworkException(""History entry is not allowed to be newer than current entry."");
-
-                updateHist.AddRange(updatedNew
-                    .Where(item => _domRepository.{1}.{0}_History.Filter(new[]{{item.ID}}).Count() > 0)
-                    .ToArray());
+            updateHist.AddRange(updatedNew
+                .Where(item => item.ID != item.EntityID)
+                .ToArray());
                 
-                // DELETE
-                deletedHist.AddRange(deletedIds
-                    .Where(item => _domRepository.{1}.{0}_History.Filter(new[]{{item.ID}}).Count() > 0)
-                    .ToArray());
+            // DELETE
+            deletedHist.AddRange(deletedIds
+                .Where(item => _domRepository.{1}.{0}_History.Filter(new[]{{item.ID}}).Any())
+                .ToArray());
                 
-                var deletingHistIds = deletedHist.Select(hist => hist.ID).ToArray();
-                deletedEnt.AddRange(deletedIds
-                    .Where(item => _domRepository.{1}.{0}.Filter(new[]{{item.ID}}).Count() > 0)
-                    .Where(item => !(_domRepository.{1}.{0}_History.Query().Any(hist => hist.Entity.ID == item.ID && !deletingHistIds.Contains(hist.ID))))
-                    .ToArray());
+            var deletingHistIds = deletedHist.Select(hist => hist.ID).ToArray();
+            deletedEnt.AddRange(deletedIds
+                .Where(item => _domRepository.{1}.{0}.Filter(new[]{{item.ID}}).Any())
+                .Where(item => !(_domRepository.{1}.{0}_History.Query().Any(hist => hist.Entity.ID == item.ID && !deletingHistIds.Contains(hist.ID))))
+                .ToArray());
 
-                var histBackup = deletedIds
-                    .Where(item => _domRepository.{1}.{0}.Filter(new[]{{item.ID}}).Count() > 0)
-                    .Where(item => _domRepository.{1}.{0}_History.Query().Any(hist => hist.Entity.ID == item.ID && !deletingHistIds.Contains(hist.ID)))
-                    .Select(item => _domRepository.{1}.{0}_FullHistory.Query()
-                            .Where(fh => fh.Entity.ID == item.ID && fh.ID != item.ID && !deletingHistIds.Contains(fh.ID))
-                            .OrderByDescending(fh => fh.ActiveSince)
-                            .Take(1).Single())
-                    .ToArray();
+            var histBackup = deletedIds
+                .Where(item => _domRepository.{1}.{0}.Filter(new[]{{item.ID}}).Any())
+                .Where(item => _domRepository.{1}.{0}_History.Query().Any(hist => hist.Entity.ID == item.ID && !deletingHistIds.Contains(hist.ID)))
+                .Select(item => _domRepository.{1}.{0}_FullHistory.Query()
+                        .Where(fh => fh.Entity.ID == item.ID && fh.ID != item.ID && !deletingHistIds.Contains(fh.ID))
+                        .OrderByDescending(fh => fh.ActiveSince)
+                        .Take(1).Single())
+                .ToArray();
                 
-                updateEnt.AddRange(histBackup);
-                deletedHist.AddRange(histBackup);
+            updateEnt.AddRange(histBackup);
+            deletedHist.AddRange(histBackup);
 
-                // SAVE IN BASE AND HISTORY
-                _domRepository.{1}.{0}_History.Save(
-                        insertedHist.Select(item => {{
-                            var ret = new {0}_History();
-                            ret.ID = item.ID;
-                            ret.EntityID = item.EntityID;{2}
-                            return ret;
-                        }}).ToArray()
-                        ,updateHist.Select(item => {{
-                            var ret = _domRepository.{1}.{0}_History.Filter(new [] {{item.ID}}).Single();{2}
-                            return ret;
-                        }}).ToArray()
-                        , _domRepository.{1}.{0}_History.Filter(deletedHist.Select(de => de.ID).ToArray()));
+            // SAVE IN BASE AND HISTORY
+            _domRepository.{1}.{0}_History.Save(
+                    insertedHist.Select(item => {{
+                        var ret = new {0}_History();
+                        ret.ID = item.ID;
+                        ret.EntityID = item.EntityID;{2}
+                        return ret;
+                    }}).ToArray()
+                    ,updateHist.Select(item => {{
+                        var ret = _domRepository.{1}.{0}_History.Filter(new [] {{item.ID}}).Single();{2}
+                        return ret;
+                    }}).ToArray()
+                    , _domRepository.{1}.{0}_History.Filter(deletedHist.Select(de => de.ID).ToArray()));
 
-                _domRepository.{1}.{0}.Save(null
-                    , updateEnt.Select(item => {{
-                            var ret = _domRepository.{1}.{0}.Filter(new [] {{item.EntityID.Value}}).Single();{2}
-                            return ret;
-                        }}).ToArray()
-                    , _domRepository.{1}.{0}.Filter(deletedEnt.Select(de => de.Entity.ID).ToArray()));
+            _domRepository.{1}.{0}.Save(null
+                , updateEnt.Select(item => {{
+                        var ret = _domRepository.{1}.{0}.Filter(new [] {{item.EntityID.Value}}).Single();{2}
+                        return ret;
+                    }}).ToArray()
+                , deletedEnt.Select(de => new {1}.{0} {{ ID = de.EntityID.Value }}).ToArray());
 
-                ", Entity.Name
+            ", Entity.Name
                         , Entity.Module.Name
                         , ClonePropertiesTag.Evaluate(this)
                         )
@@ -171,7 +154,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             // DenySave for base entity: it is not allowed to save with ActiveSince older than last one used in History
             var denyFilter = new ComposableFilterByInfo {
-                Parameter = "Rhetos.Dom.DefaultConcepts.OlderThanHistoryEntries", 
+                Parameter = "Common.OlderThanHistoryEntries",
                 Source = Entity,
                 Expression = String.Format(
                     @"(items, repository, parameter) => items.Where(item => 
@@ -179,13 +162,13 @@ namespace Rhetos.Dsl.DefaultConcepts
                                 Entity.Module.Name, 
                                 Entity.Name) 
             };
-            var denySaveValidation = new DenySaveForPropertyInfo { 
-                FilterType = "OlderThanHistoryEntries", 
+            var denySaveValidation = new DenySaveForPropertyInfo {
+                FilterType = "Common.OlderThanHistoryEntries", 
                 Source = Entity, 
                 Title = "ActiveSince is not allowed to be older than last entry in history.", 
                 DependedProperty = activeSinceProperty 
             };
-            newConcepts.AddRange(new IConceptInfo[] { denyFilter, denySaveValidation });
+            newConcepts.AddRange(new IConceptInfo[] { denyFilter, denySaveValidation, new ParameterInfo { Module = new ModuleInfo { Name = "Common" }, Name = "OlderThanHistoryEntries" } });
 
             // Create a new entity for history data:
             var currentProperty = new ReferencePropertyInfo { DataStructure = HistoryEntity, Name = "Entity", Referenced = Entity };
@@ -198,6 +181,22 @@ namespace Rhetos.Dsl.DefaultConcepts
                 historyActiveSinceProperty,
                 new UniquePropertiesInfo { DataStructure = HistoryEntity, Property1 = currentProperty, Property2 = historyActiveSinceProperty }
             });
+
+            // DenySave for history entity: it is not allowed to save with ActiveSince newer than current entity
+            var denyFilterHistory = new ComposableFilterByInfo
+            {
+                Parameter = "Common.NewerThanCurrentEntry",
+                Source = HistoryEntity,
+                Expression = @"(items, repository, parameter) => items.Where(item => item.ActiveSince > item.Entity.ActiveSince)"
+            };
+            var denySaveValidationHistory = new DenySaveForPropertyInfo
+            {
+                FilterType = "Common.NewerThanCurrentEntry",
+                Source = HistoryEntity,
+                Title = "ActiveSince of history entry is not allowed to be newer than current entry.",
+                DependedProperty = historyActiveSinceProperty
+            };
+            newConcepts.AddRange(new IConceptInfo[] { denyFilterHistory, denySaveValidationHistory, new ParameterInfo { Module = new ModuleInfo { Name = "Common" }, Name = "NewerThanCurrentEntry" } });
 
             // Create ActiveUntil SqlQueryable:
             var activeUntilSqlQueryable = new SqlQueryableInfo { Module = Entity.Module, Name = Entity.Name + "_History_ActiveUntil", SqlSource = ActiveUntilSqlSnippet() };

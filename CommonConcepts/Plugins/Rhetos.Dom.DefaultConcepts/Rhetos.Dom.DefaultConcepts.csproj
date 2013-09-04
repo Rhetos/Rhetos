@@ -58,7 +58,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Advanced\WriteCodeGenerator.cs" />
+    <Compile Include="DataStructure\WriteCodeGenerator.cs" />
     <Compile Include="Advanced\EntityHistoryAllPropertiesCodeGenerator.cs" />
     <Compile Include="Advanced\EntityHistoryPropertyCodeGenerator.cs" />
     <Compile Include="Advanced\EntityHistoryCodeGenerator.cs" />

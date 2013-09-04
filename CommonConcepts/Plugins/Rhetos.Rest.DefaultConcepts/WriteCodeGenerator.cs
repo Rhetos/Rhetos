@@ -78,6 +78,8 @@ namespace Rhetos.Rest.DefaultConcepts
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
+            WritableOrmDataStructureCodeGenerator.GenerateInitialCode(codeBuilder);
+
             WriteInfo info = (WriteInfo)conceptInfo;
 
             codeBuilder.InsertCode(

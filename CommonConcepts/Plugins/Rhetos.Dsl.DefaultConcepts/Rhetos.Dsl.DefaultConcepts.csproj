@@ -109,7 +109,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Advanced\WriteInfo.cs" />
+    <Compile Include="DataStructure\WriteInfo.cs" />
     <Compile Include="Advanced\EntityHistoryAllPropertiesInfo.cs" />
     <Compile Include="Advanced\EntityHistoryPropertyInfo.cs" />
     <Compile Include="Advanced\EntityHistoryInfo.cs" />

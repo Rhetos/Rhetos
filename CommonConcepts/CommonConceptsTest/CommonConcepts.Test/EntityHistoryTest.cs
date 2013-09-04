@@ -1221,7 +1221,7 @@ namespace CommonConcepts.Test
                 var h1 = repository.TestHistory.Simple_FullHistory.Query().OrderBy(x => x.ActiveSince).Take(1).Single();
                 h1.Code = 3;
                 h1.ActiveSince = new DateTime(2012, 1, 1);
-                TestUtility.ShouldFail(() => repository.TestHistory.Simple_FullHistory.Update(new[] { h1 }), "History item moved to far in future", "History entry is not allowed to be newer than current entry.");
+                TestUtility.ShouldFail(() => repository.TestHistory.Simple_FullHistory.Update(new[] { h1 }), "History item moved to far in future", "ActiveSince of history entry is not allowed to be newer than current entry.");
             }
         }
 

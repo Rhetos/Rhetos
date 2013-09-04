@@ -64,12 +64,32 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public void Save(IEnumerable<{0}> insertedNew, IEnumerable<{0}> updatedNew, IEnumerable<{0}> deletedIds, bool checkUserPermissions = false)
         {{
+            if (insertedNew == null) insertedNew = new {0}[] {{ }};
+            if (updatedNew == null) updatedNew = new {0}[] {{ }};
+            if (deletedIds == null) deletedIds = new {0}[] {{ }};
+
+            if (insertedNew.Count() == 0 && updatedNew.Count() == 0 && deletedIds.Count() == 0)
+                return;
+
+            foreach(var item in insertedNew)
+                if(item.ID == Guid.Empty)
+                    item.ID = Guid.NewGuid();
+
+            {2}
+
             {1}
+
+            {3}
+
+            {4}
         }}
 
 ",
                 info.DataStructure.GetKeyProperties(),
-                info.SaveImplementation);
+                info.SaveImplementation,
+                WritableOrmDataStructureCodeGenerator.InitializationTag.Evaluate(info.DataStructure),
+                WritableOrmDataStructureCodeGenerator.OnSaveTag1.Evaluate(info.DataStructure),
+                WritableOrmDataStructureCodeGenerator.OnSaveTag2.Evaluate(info.DataStructure));
         }
 
         protected static string RegisterRepository(DataStructureInfo info)

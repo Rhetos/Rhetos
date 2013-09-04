@@ -96,7 +96,7 @@ namespace Rhetos.Rest.DefaultConcepts
 
         private static bool _isInitialCallMade;
 
-        private static void GenerateInitialCode(ICodeBuilder codeBuilder)
+        public static void GenerateInitialCode(ICodeBuilder codeBuilder)
         {
             if (_isInitialCallMade)
                 return;
