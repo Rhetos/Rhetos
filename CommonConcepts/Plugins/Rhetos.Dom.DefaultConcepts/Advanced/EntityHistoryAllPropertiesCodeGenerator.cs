@@ -48,7 +48,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         /// <summary>
         /// Creates a DateTime filter that returns the entity records that were active at the time.
-        /// History concept creates a similar filter on the "Entity"_History repository, but this filter on the base entity class
+        /// History concept creates a similar filter on the "Entity"_Changes repository, but this filter on the base entity class
         /// can only be created of all properties are selected for history tracking, therefore it is implemented in EntityHistoryAllPropertiesInfo.
         /// </summary>
         private static string FilterImplementationSnippet(EntityHistoryAllPropertiesInfo info)

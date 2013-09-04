@@ -46,7 +46,7 @@ namespace CommonConcepts.Test
             return TestUtility.DumpSorted(items, item => item.Code + " " + item.Name);
         }
 
-        private static string Dump(IEnumerable<TestHistory.BasicAutocode_History> items)
+        private static string Dump(IEnumerable<TestHistory.BasicAutocode_Changes> items)
         {
             return TestUtility.DumpSorted(items, item => item.Code + " " + item.Name);
         }
@@ -61,12 +61,12 @@ namespace CommonConcepts.Test
             return TestUtility.DumpSorted(items, item => item.Code + " " + item.Name + " " + Dump(item.ActiveSince));
         }
 
-        private static string Dump(IEnumerable<TestHistory.Simple_History> items)
+        private static string Dump(IEnumerable<TestHistory.Simple_Changes> items)
         {
             return TestUtility.DumpSorted(items, item => item.Code);
         }
 
-        private static string DumpFull(IEnumerable<TestHistory.Simple_History> items)
+        private static string DumpFull(IEnumerable<TestHistory.Simple_Changes> items)
         {
             return TestUtility.DumpSorted(items, item => item.Code + " " + Dump(item.ActiveSince));
         }
@@ -105,7 +105,7 @@ namespace CommonConcepts.Test
                 var repository = new Common.DomRepository(executionContext);
 
                 Assert.AreEqual(0, repository.TestHistory.Minimal.All().Count());
-                Assert.AreEqual(0, repository.TestHistory.Minimal_History.All().Count());
+                Assert.AreEqual(0, repository.TestHistory.Minimal_Changes.All().Count());
 
                 var m1 = new TestHistory.Minimal { Code = 1 };
                 var m2 = new TestHistory.Minimal { Code = 2 };
@@ -115,8 +115,8 @@ namespace CommonConcepts.Test
                 var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
 
                 Assert.AreEqual("1, 2", TestUtility.DumpSorted(repository.TestHistory.Minimal.All(), item => item.Code.ToString()));
-                Assert.AreEqual(0, repository.TestHistory.Minimal_History.All().Count());
-                Assert.AreEqual(2, repository.TestHistory.Minimal_FullHistory.All().Count());
+                Assert.AreEqual(0, repository.TestHistory.Minimal_Changes.All().Count());
+                Assert.AreEqual(2, repository.TestHistory.Minimal_History.All().Count());
                 foreach (var item in repository.TestHistory.Minimal.All())
                     AssertIsRecently(item.ActiveSince, now);
             }
@@ -141,7 +141,7 @@ namespace CommonConcepts.Test
                 executionContext.NHibernateSession.Clear();
                 var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
 
-                var h = repository.TestHistory.Minimal_History.All().Single();
+                var h = repository.TestHistory.Minimal_Changes.All().Single();
 
                 Assert.AreEqual(11, h.Entity.Code);
                 AssertIsRecently(h.Entity.ActiveSince, now);
@@ -168,7 +168,7 @@ namespace CommonConcepts.Test
                 executionContext.NHibernateSession.Clear();
                 var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
 
-                var h = repository.TestHistory.Minimal_FullHistory.All().OrderBy(t => t.ActiveSince).FirstOrDefault();
+                var h = repository.TestHistory.Minimal_History.All().OrderBy(t => t.ActiveSince).FirstOrDefault();
                 var m = repository.TestHistory.Minimal.All().Single();
 
                 Assert.AreEqual(h.ActiveUntil, m.ActiveSince);
@@ -184,7 +184,7 @@ namespace CommonConcepts.Test
                 executionContext.SqlExecuter.ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Minimal",
                     "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2012-01-01')",
-                    "INSERT INTO TestHistory.Minimal_History (ID, EntityID, ActiveSince) VALUES ('"+Guid.NewGuid().ToString()+"'," + SqlUtility.QuoteGuid(id1) + ", '2000-01-01')"                    
+                    "INSERT INTO TestHistory.Minimal_Changes (ID, EntityID, ActiveSince) VALUES ('"+Guid.NewGuid().ToString()+"'," + SqlUtility.QuoteGuid(id1) + ", '2000-01-01')"                    
                 });
                 var repository = new Common.DomRepository(executionContext);
 
@@ -195,7 +195,7 @@ namespace CommonConcepts.Test
                 executionContext.NHibernateSession.Clear();
                 var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
 
-                var h = repository.TestHistory.Minimal_FullHistory.All().OrderBy(t => t.ActiveSince).ToList();
+                var h = repository.TestHistory.Minimal_History.All().OrderBy(t => t.ActiveSince).ToList();
                 var m = repository.TestHistory.Minimal.All().Single();
 
                 Assert.AreEqual(h[0].ActiveUntil, h[1].ActiveSince);
@@ -222,15 +222,15 @@ namespace CommonConcepts.Test
                 executionContext.NHibernateSession.Clear();
                 var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
 
-                var hist = repository.TestHistory.Minimal_History.Query().Where(item => item.Entity == m1).Single();
+                var hist = repository.TestHistory.Minimal_Changes.Query().Where(item => item.Entity == m1).Single();
                 var m = repository.TestHistory.Minimal.All().Single();
 
-                Assert.AreEqual(hist.Extension_Minimal_History_ActiveUntil.ActiveUntil, m.ActiveSince);
+                Assert.AreEqual(hist.Extension_Minimal_ChangesActiveUntil.ActiveUntil, m.ActiveSince);
             }
         }
 
         [TestMethod]
-        public void ActiveUntilInFullHistory()
+        public void ActiveUntilInHistory()
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
@@ -248,7 +248,7 @@ namespace CommonConcepts.Test
                 executionContext.NHibernateSession.Clear();
                 var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
 
-                var fullh = repository.TestHistory.Minimal_FullHistory.Query().Where(item => item.Entity == m1).OrderBy(item => item.ActiveSince).Select(item => item).ToList();
+                var fullh = repository.TestHistory.Minimal_History.Query().Where(item => item.Entity == m1).OrderBy(item => item.ActiveSince).Select(item => item).ToList();
 
                 Assert.AreEqual(fullh[0].ActiveUntil, fullh[1].ActiveSince);
                 Assert.IsNull(fullh[1].ActiveUntil);
@@ -289,7 +289,7 @@ namespace CommonConcepts.Test
                 Guid rcID = Guid.NewGuid();
 
                 executionContext.SqlExecuter.ExecuteSql(new[] { 
-                    "DELETE FROM TestHistory.ReferenceClean_History;",
+                    "DELETE FROM TestHistory.ReferenceClean_Changes;",
                     "DELETE FROM TestHistory.ReferenceClean;",
                     "DELETE FROM TestHistory.Clean;",
                     "INSERT INTO TestHistory.Clean (ID, Name) VALUES ('" + c1ID.ToString() + "', 'c1');",
@@ -322,7 +322,7 @@ namespace CommonConcepts.Test
                 Guid rcID = Guid.NewGuid();
 
                 executionContext.SqlExecuter.ExecuteSql(new[] { 
-                    "DELETE FROM TestHistory.BasicAutocode_History;",
+                    "DELETE FROM TestHistory.BasicAutocode_Changes;",
                     "DELETE FROM TestHistory.BasicAutocode;",
                     "INSERT INTO TestHistory.BasicAutocode (ID, Name, Code) VALUES ('" + c1ID.ToString() + "', 'c1', '+');",
                     "INSERT INTO TestHistory.BasicAutocode (ID, Name, Code) VALUES ('" + c2ID.ToString() + "', 'c2', '+');",
@@ -338,7 +338,7 @@ namespace CommonConcepts.Test
                 cleanRepos.Update(new[] { c1, c2 });
                 
                 string v1 = "1 c1, 2 c2";
-                Assert.AreEqual(v1, Dump(repository.TestHistory.BasicAutocode_History.All()));
+                Assert.AreEqual(v1, Dump(repository.TestHistory.BasicAutocode_Changes.All()));
             }
         }
 
@@ -352,13 +352,13 @@ namespace CommonConcepts.Test
                 Guid c3ID = Guid.NewGuid();
 
                 executionContext.SqlExecuter.ExecuteSql(new[] { 
-                    "DELETE FROM TestHistory.BasicUnique_History;",
+                    "DELETE FROM TestHistory.BasicUnique_Changes;",
                     "DELETE FROM TestHistory.BasicUnique;",
                     "INSERT INTO TestHistory.BasicUnique (ID, Name, ActiveSince) VALUES ('" + c1ID.ToString() + "', 'c1', '2013-01-01');",
                     "INSERT INTO TestHistory.BasicUnique (ID, Name, ActiveSince) VALUES ('" + c2ID.ToString() + "', 'c2', '2013-01-01');",
                     "INSERT INTO TestHistory.BasicUnique (ID, Name, ActiveSince) VALUES ('" + c3ID.ToString() + "', 'c3', '2013-01-01');",
-                    "INSERT INTO TestHistory.BasicUnique_History (ID, EntityID, Name, ActiveSince) VALUES ('" + Guid.NewGuid().ToString() + "', '" + c1ID.ToString() + "', 'oldc1', '2012-01-01');",
-                    "INSERT INTO TestHistory.BasicUnique_History (ID, EntityID, Name, ActiveSince) VALUES ('" + Guid.NewGuid().ToString() + "', '" + c2ID.ToString() + "', 'c3', '2012-01-01');"
+                    "INSERT INTO TestHistory.BasicUnique_Changes (ID, EntityID, Name, ActiveSince) VALUES ('" + Guid.NewGuid().ToString() + "', '" + c1ID.ToString() + "', 'oldc1', '2012-01-01');",
+                    "INSERT INTO TestHistory.BasicUnique_Changes (ID, EntityID, Name, ActiveSince) VALUES ('" + Guid.NewGuid().ToString() + "', '" + c2ID.ToString() + "', 'c3', '2012-01-01');"
                 });
                 var repository = new Common.DomRepository(executionContext);
                 var cleanRepos = repository.TestHistory.BasicUnique;
@@ -393,7 +393,7 @@ namespace CommonConcepts.Test
                 executionContext.SqlExecuter.ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Minimal",
                     "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2013-01-01')",
-                    "INSERT INTO TestHistory.Minimal_History (ID, EntityID, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(Guid.NewGuid()) + ", " + SqlUtility.QuoteGuid(id1) + ", '2012-12-30')"});
+                    "INSERT INTO TestHistory.Minimal_Changes (ID, EntityID, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(Guid.NewGuid()) + ", " + SqlUtility.QuoteGuid(id1) + ", '2012-12-30')"});
                 var repository = new Common.DomRepository(executionContext);
 
                 var m1 = repository.TestHistory.Minimal.All().Single();
@@ -415,11 +415,11 @@ namespace CommonConcepts.Test
                 // Insert:
                 var s = new TestHistory.Simple { ID = Guid.NewGuid(), Code = 1, ActiveSince = Day(1), Name = "a" };
                 repository.TestHistory.Simple.Insert(new[] { s });
-                Assert.AreEqual(1, repository.TestHistory.Simple_FullHistory.All().Count());
+                Assert.AreEqual(1, repository.TestHistory.Simple_History.All().Count());
 
                 executionContext.NHibernateSession.Clear();
                 Assert.AreEqual("1 a 2001-01-01T00:00:00", DumpFull(repository.TestHistory.Simple.All()));
-                Assert.AreEqual("", DumpFull(repository.TestHistory.Simple_History.All()));
+                Assert.AreEqual("", DumpFull(repository.TestHistory.Simple_Changes.All()));
 
                 // Update:
                 s.Code = 2;
@@ -429,8 +429,8 @@ namespace CommonConcepts.Test
 
                 executionContext.NHibernateSession.Clear();
                 Assert.AreEqual("2 b 2001-01-02T00:00:00", DumpFull(repository.TestHistory.Simple.All()));
-                Assert.AreEqual("1 2001-01-01T00:00:00", DumpFull(repository.TestHistory.Simple_History.All()));
-                Assert.AreEqual(2, repository.TestHistory.Simple_FullHistory.All().Count());
+                Assert.AreEqual("1 2001-01-01T00:00:00", DumpFull(repository.TestHistory.Simple_Changes.All()));
+                Assert.AreEqual(2, repository.TestHistory.Simple_History.All().Count());
 
                 // Another update:
                 s.Code = 3;
@@ -440,15 +440,15 @@ namespace CommonConcepts.Test
 
                 executionContext.NHibernateSession.Clear();
                 Assert.AreEqual("3 c 2001-01-03T00:00:00", DumpFull(repository.TestHistory.Simple.All()));
-                Assert.AreEqual("1 2001-01-01T00:00:00, 2 2001-01-02T00:00:00", DumpFull(repository.TestHistory.Simple_History.All()));
-                Assert.AreEqual(3, repository.TestHistory.Simple_FullHistory.All().Count());
+                Assert.AreEqual("1 2001-01-01T00:00:00, 2 2001-01-02T00:00:00", DumpFull(repository.TestHistory.Simple_Changes.All()));
+                Assert.AreEqual(3, repository.TestHistory.Simple_History.All().Count());
 
                 // Delete:
                 repository.TestHistory.Simple.Delete(new[] { s });
 
                 executionContext.NHibernateSession.Clear();
                 Assert.AreEqual("", DumpFull(repository.TestHistory.Simple.All()));
-                Assert.AreEqual("", DumpFull(repository.TestHistory.Simple_History.All()));
+                Assert.AreEqual("", DumpFull(repository.TestHistory.Simple_Changes.All()));
             }
         }
 
@@ -498,11 +498,11 @@ namespace CommonConcepts.Test
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 executionContext.SqlExecuter.ExecuteSql(new[] {
-                    "DELETE FROM TestHistory.Simple_History",
+                    "DELETE FROM TestHistory.Simple_Changes",
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'Test1', '2001-01-01')",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id2) + ", 1, 'Test2', '2013-12-12')",
-                    "INSERT INTO TestHistory.Simple_History (EntityID, Code, ActiveSince, ID) VALUES (" + SqlUtility.QuoteGuid(id2) + ", 1, '2013-10-10', '"+(Guid.NewGuid()).ToString()+"')"});
+                    "INSERT INTO TestHistory.Simple_Changes (EntityID, Code, ActiveSince, ID) VALUES (" + SqlUtility.QuoteGuid(id2) + ", 1, '2013-10-10', '"+(Guid.NewGuid()).ToString()+"')"});
                 var repository = new Common.DomRepository(executionContext);
 
                 var m1 = repository.TestHistory.Simple.Query().Where(t => t.ID == id1).SingleOrDefault();
@@ -585,7 +585,7 @@ namespace CommonConcepts.Test
                 }
                 sw.Stop();
 
-                var h = repository.TestHistory.Simple_History.Query().OrderBy(item => item.ActiveSince).ToArray();
+                var h = repository.TestHistory.Simple_Changes.Query().OrderBy(item => item.ActiveSince).ToArray();
                 Console.WriteLine(DumpFull(h));
                 string msg = string.Format(
                     "Number of history records ({0}) is expected to be around the number of elapsed seconds ({1}).",
@@ -648,7 +648,7 @@ namespace CommonConcepts.Test
                 executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
                 var repository = new Common.DomRepository(executionContext);
                 var er = repository.TestHistory.Simple;
-                var hr = repository.TestHistory.Simple_History;
+                var hr = repository.TestHistory.Simple_Changes;
 
                 var e = new TestHistory.Simple { Code = 1, Name = "a" };
                 er.Insert(new[] { e });
@@ -717,9 +717,9 @@ namespace CommonConcepts.Test
 
 //                var t1 = DateTime.Today.Add(new TimeSpan(1, 2, 3));
 //                var t2 = t1.AddSeconds(1);
-//                var h1 = new TestHistory.Simple_History { ActiveSince = t1, Code = 1, Name = "a", Birthday = new DateTime(2001, 2, 3, 4, 5, 6), Base = hBase };
-//                var h2 = new TestHistory.Simple_History { ActiveSince = t2, Code = 2, Name = "b", Birthday = new DateTime(2002, 2, 3, 4, 5, 6), Base = hBase };
-//                repository.TestHistory.Simple_History.Insert(new [] { h1, h2 });
+//                var h1 = new TestHistory.Simple_Changes { ActiveSince = t1, Code = 1, Name = "a", Birthday = new DateTime(2001, 2, 3, 4, 5, 6), Base = hBase };
+//                var h2 = new TestHistory.Simple_Changes { ActiveSince = t2, Code = 2, Name = "b", Birthday = new DateTime(2002, 2, 3, 4, 5, 6), Base = hBase };
+//                repository.TestHistory.Simple_Changes.Insert(new [] { h1, h2 });
 
 //                const string v1 = "1 a 2001-02-03T04:05:06";
 //                const string v2 = "2 b 2002-02-03T04:05:06";
@@ -750,9 +750,9 @@ namespace CommonConcepts.Test
                 var future = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter).AddMinutes(1);
 
                 TestUtility.ShouldFail(
-                    () => repository.TestHistory.Simple_History.Insert(new[] { new TestHistory.Simple_History { Entity = e, ActiveSince = future } }),
+                    () => repository.TestHistory.Simple_Changes.Insert(new[] { new TestHistory.Simple_Changes { Entity = e, ActiveSince = future } }),
                     "insert with future time",
-                    "ActiveSince", "TestHistory.Simple_History", "future");
+                    "ActiveSince", "TestHistory.Simple_Changes", "future");
             }
         }
 
@@ -767,16 +767,16 @@ namespace CommonConcepts.Test
                 var s = new TestHistory.Simple { ID = Guid.NewGuid(), Code = 1, ActiveSince = Day(2) };
                 repository.TestHistory.Simple.Insert(new[] { s });
 
-                var h = new TestHistory.Simple_History { EntityID = s.ID, Code = 2, ActiveSince = Day(1) };
-                repository.TestHistory.Simple_History.Insert(new[] { h });
+                var h = new TestHistory.Simple_Changes { EntityID = s.ID, Code = 2, ActiveSince = Day(1) };
+                repository.TestHistory.Simple_Changes.Insert(new[] { h });
 
                 var future = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter).AddMinutes(1);
                 h.ActiveSince = future;
 
                 TestUtility.ShouldFail(
-                    () => repository.TestHistory.Simple_History.Update(new[] { h }),
+                    () => repository.TestHistory.Simple_Changes.Update(new[] { h }),
                     "insert with future time",
-                    "ActiveSince", "TestHistory.Simple_History", "future");
+                    "ActiveSince", "TestHistory.Simple_Changes", "future");
             }
         }
 
@@ -816,8 +816,8 @@ namespace CommonConcepts.Test
 //                repository.TestHistory.Complex_Base.Insert(new[] { complexBase });
 
 //                executionContext.NHibernateSession.Clear();
-//                TestUtility.ShouldFail(() => repository.TestHistory.Complex_History.Insert(new[] {
-//                    new TestHistory.Complex_History { Name = null, Code = "1", Other = other,
+//                TestUtility.ShouldFail(() => repository.TestHistory.Complex_Changes.Insert(new[] {
+//                    new TestHistory.Complex_Changes { Name = null, Code = "1", Other = other,
 //                        Base = complexBase, ActiveSince = DateTime.Now.AddDays(-1) }}),
 //                    "Required property", "required property", "Name");
 //            }
@@ -859,19 +859,19 @@ namespace CommonConcepts.Test
 //	INNER JOIN sys.index_columns ic ON ic.object_id = i.object_id AND ic.index_id = i.index_id
 //	INNER JOIN sys.columns c ON c.object_id = ic.object_id AND c.column_id = ic.column_id
 //WHERE
-//	i.object_id = OBJECT_ID('TestHistory.Complex_History')
+//	i.object_id = OBJECT_ID('TestHistory.Complex_Changes')
 //ORDER BY
 //	i.name, ic.key_ordinal";
 
 //                var expected =
-//@"IX_Complex_History_Base	BaseID
-//IX_Complex_History_Base_ActiveSince	BaseID
-//IX_Complex_History_Base_ActiveSince	ActiveSince
-//IX_Complex_History_Name	Name
-//IX_Complex_History_Other	OtherID
-//IX_Complex_History_Parent_Code	ParentID
-//IX_Complex_History_Parent_Code	Code
-//PK_Complex_History	ID
+//@"IX_Complex_Changes_Base	BaseID
+//IX_Complex_Changes_Base_ActiveSince	BaseID
+//IX_Complex_Changes_Base_ActiveSince	ActiveSince
+//IX_Complex_Changes_Name	Name
+//IX_Complex_Changes_Other	OtherID
+//IX_Complex_Changes_Parent_Code	ParentID
+//IX_Complex_Changes_Parent_Code	Code
+//PK_Complex_Changes	ID
 //";
 //                var actual = new StringBuilder();
 //                executionContext.SqlExecuter.ExecuteReader(sql, reader => actual.AppendLine(reader.GetString(0) + "\t" + reader.GetString(1)));
@@ -915,17 +915,17 @@ namespace CommonConcepts.Test
 //                repository.TestHistory.Complex_Base.Insert(new[] { b1, b2 });
 
 //                executionContext.NHibernateSession.Clear();
-//                var h1 = new TestHistory.Complex_History { Name = "abc", Code = "1", Other = other, BaseID = b1.ID, ActiveSince = Day(10) };
-//                var h1b = new TestHistory.Complex_History { Name = "abc", Code = "1", Other = other, BaseID = b1.ID, ActiveSince = Day(11) };
-//                repository.TestHistory.Complex_History.Insert(new[] { h1, h1b });
+//                var h1 = new TestHistory.Complex_Changes { Name = "abc", Code = "1", Other = other, BaseID = b1.ID, ActiveSince = Day(10) };
+//                var h1b = new TestHistory.Complex_Changes { Name = "abc", Code = "1", Other = other, BaseID = b1.ID, ActiveSince = Day(11) };
+//                repository.TestHistory.Complex_Changes.Insert(new[] { h1, h1b });
 
 //                executionContext.NHibernateSession.Clear();
-//                var h2 = new TestHistory.Complex_History { Name = "abc", Code = "2", Other = other, BaseID = b2.ID, ActiveSince = Day(1) };
-//                var h2b = new TestHistory.Complex_History { Name = "abcx", Code = "2", Other = other, BaseID = b2.ID, ActiveSince = Day(2) };
-//                repository.TestHistory.Complex_History.Insert(new[] { h2, h2b });
+//                var h2 = new TestHistory.Complex_Changes { Name = "abc", Code = "2", Other = other, BaseID = b2.ID, ActiveSince = Day(1) };
+//                var h2b = new TestHistory.Complex_Changes { Name = "abcx", Code = "2", Other = other, BaseID = b2.ID, ActiveSince = Day(2) };
+//                repository.TestHistory.Complex_Changes.Insert(new[] { h2, h2b });
 
 //                executionContext.NHibernateSession.Clear();
-//                TestUtility.ShouldFail(() => repository.TestHistory.Complex_History.Delete(new[] { h2b }),
+//                TestUtility.ShouldFail(() => repository.TestHistory.Complex_Changes.Delete(new[] { h2b }),
 //                    "Deleting history made the older record active", "duplicate record", "Name", "abc");
 //            }
 //        }
@@ -991,8 +991,8 @@ namespace CommonConcepts.Test
 //                repository.TestHistory.Complex_Base.Insert(new[] { b });
 
 //                executionContext.NHibernateSession.Clear();
-//                var h = new TestHistory.Complex_History { Base = b, Code = "44", Name = "h", ActiveSince = DateTime.Today };
-//                repository.TestHistory.Complex_History.Insert(new[] { h });
+//                var h = new TestHistory.Complex_Changes { Base = b, Code = "44", Name = "h", ActiveSince = DateTime.Today };
+//                repository.TestHistory.Complex_Changes.Insert(new[] { h });
 //                Assert.AreEqual("1, 1, 2, 3, 44", TestUtility.DumpSorted(repository.TestHistory.Complex.Query(), item => item.Code.ToString()));
 
 //                executionContext.NHibernateSession.Clear();
@@ -1071,9 +1071,9 @@ namespace CommonConcepts.Test
 //                Assert.AreEqual("1 a", TestUtility.DumpSorted(repository.TestHistory.Complex.Query(), item => item.Code + " " + item.Name));
 
 //                executionContext.NHibernateSession.Clear();
-//                var h = repository.TestHistory.Complex_History.All().Single();
+//                var h = repository.TestHistory.Complex_Changes.All().Single();
 //                h.ActiveSince = h.ActiveSince.Value.AddDays(-1);
-//                repository.TestHistory.Complex_History.Update(new[] { h });
+//                repository.TestHistory.Complex_Changes.Update(new[] { h });
 //                executionContext.NHibernateSession.Clear();
 
 //                c.Name += "x";
@@ -1087,7 +1087,7 @@ namespace CommonConcepts.Test
 //                    GetLog(repository, "[TestHistory].[Complex_Base]"));
 
 //                Assert.AreEqual(@"Delete: <PREVIOUS Name=""a""/>, Delete: <PREVIOUS Name=""ax""/>, Insert: , Insert: , Update: <PREVIOUS />",
-//                    GetLog(repository, "[TestHistory].[Complex_History]"));
+//                    GetLog(repository, "[TestHistory].[Complex_Changes]"));
 //            }
 //        }
 
@@ -1111,10 +1111,10 @@ namespace CommonConcepts.Test
 //                        "INSERT INTO TestHistory.Complex_Base (ID) SELECT '"+ids[1]+"'",
 //                        "INSERT INTO TestHistory.Complex_Base (ID) SELECT '"+ids[2]+"'",
 //                        "INSERT INTO TestHistory.Complex_Base (ID) SELECT '"+ids[3]+"'",
-//                        "INSERT INTO TestHistory.Complex_History (BaseID, Code, Name, ActiveSince) SELECT '"+ids[0]+"', '1', 'a', '2001-01-01'",
-//                        "INSERT INTO TestHistory.Complex_History (BaseID, Code, Name, ActiveSince) SELECT '"+ids[1]+"', '5', 'aaaaa', '2001-01-01'",
-//                        "INSERT INTO TestHistory.Complex_History (BaseID, Code, Name, ActiveSince) SELECT '"+ids[2]+"', '15', 'aaaaaaaaaaaaaaa', '2001-01-01'",
-//                        "INSERT INTO TestHistory.Complex_History (BaseID, Code, Name, ActiveSince) SELECT '"+ids[3]+"', '16', 'aaaaaaaaaaaaaaaa', '2001-01-01'"
+//                        "INSERT INTO TestHistory.Complex_Changes (BaseID, Code, Name, ActiveSince) SELECT '"+ids[0]+"', '1', 'a', '2001-01-01'",
+//                        "INSERT INTO TestHistory.Complex_Changes (BaseID, Code, Name, ActiveSince) SELECT '"+ids[1]+"', '5', 'aaaaa', '2001-01-01'",
+//                        "INSERT INTO TestHistory.Complex_Changes (BaseID, Code, Name, ActiveSince) SELECT '"+ids[2]+"', '15', 'aaaaaaaaaaaaaaa', '2001-01-01'",
+//                        "INSERT INTO TestHistory.Complex_Changes (BaseID, Code, Name, ActiveSince) SELECT '"+ids[3]+"', '16', 'aaaaaaaaaaaaaaaa', '2001-01-01'"
 //                    });
 //                var repository = new Common.DomRepository(executionContext);
 
@@ -1135,9 +1135,9 @@ namespace CommonConcepts.Test
 //                        "INSERT INTO TestHistory.Complex_Base (ID) SELECT '"+ids[0]+"'",
 //                        "INSERT INTO TestHistory.Complex_Base (ID) SELECT '"+ids[1]+"'",
 //                        "INSERT INTO TestHistory.Complex_Base (ID) SELECT '"+ids[2]+"'",
-//                        "INSERT INTO TestHistory.Complex_History (BaseID, Code, Name, ActiveSince) SELECT '"+ids[0]+"', '1', 'a', '2001-01-01'",
-//                        "INSERT INTO TestHistory.Complex_History (BaseID, Code, Name, ActiveSince) SELECT '"+ids[1]+"', '5', 'aaaaa', '2001-01-01'",
-//                        "INSERT INTO TestHistory.Complex_History (BaseID, Code, Name, ActiveSince) SELECT '"+ids[2]+"', '15', 'aaaaaaaaaaaaaaa', '2001-01-01'",
+//                        "INSERT INTO TestHistory.Complex_Changes (BaseID, Code, Name, ActiveSince) SELECT '"+ids[0]+"', '1', 'a', '2001-01-01'",
+//                        "INSERT INTO TestHistory.Complex_Changes (BaseID, Code, Name, ActiveSince) SELECT '"+ids[1]+"', '5', 'aaaaa', '2001-01-01'",
+//                        "INSERT INTO TestHistory.Complex_Changes (BaseID, Code, Name, ActiveSince) SELECT '"+ids[2]+"', '15', 'aaaaaaaaaaaaaaa', '2001-01-01'",
 //                    });
 //                var repository = new Common.DomRepository(executionContext);
 
@@ -1152,12 +1152,12 @@ namespace CommonConcepts.Test
 //                var b = new TestHistory.Complex_Base { ID = Guid.NewGuid() };
 //                repository.TestHistory.Complex_Base.Insert(new[] { b });
 //                executionContext.NHibernateSession.Clear();
-//                var h = new TestHistory.Complex_History { Base = b, Code = "12", Name = "hhhhhhhhhhhh", ActiveSince = DateTime.Today };
-//                TestUtility.ShouldFail(() => repository.TestHistory.Complex_History.Insert(new[] { h }), "Updating to invalid data", "Name too long");
+//                var h = new TestHistory.Complex_Changes { Base = b, Code = "12", Name = "hhhhhhhhhhhh", ActiveSince = DateTime.Today };
+//                TestUtility.ShouldFail(() => repository.TestHistory.Complex_Changes.Insert(new[] { h }), "Updating to invalid data", "Name too long");
 
 //                executionContext.NHibernateSession.Clear();
 //                h.Name = "h";
-//                repository.TestHistory.Complex_History.Insert(new[] { h });
+//                repository.TestHistory.Complex_Changes.Insert(new[] { h });
 //                executionContext.NHibernateSession.Clear();
 //                Assert.AreEqual("h", repository.TestHistory.Complex.Query().Where(item => item.Code == "12").Select(item => item.Name).Single());
 //            }
@@ -1178,7 +1178,7 @@ namespace CommonConcepts.Test
 //        }
 
         [TestMethod]
-        public void FullHistoryEditHistorySimple()
+        public void HistoryEditHistorySimple()
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
@@ -1187,25 +1187,25 @@ namespace CommonConcepts.Test
                 executionContext.SqlExecuter.ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
-                    "INSERT INTO TestHistory.Simple_History (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
+                    "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
                 var repository = new Common.DomRepository(executionContext);
 
                 // take entry in history table
-                var h1 = repository.TestHistory.Simple_FullHistory.Query().OrderBy(x => x.ActiveSince).Take(1).Single();
+                var h1 = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).Take(1).Single();
                 h1.Code = 3;
-                repository.TestHistory.Simple_FullHistory.Update(new[] { h1 });
+                repository.TestHistory.Simple_History.Update(new[] { h1 });
 
                 executionContext.NHibernateSession.Clear();
                 var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
 
-                var h = repository.TestHistory.Simple_FullHistory.Query().OrderBy(x => x.ActiveSince);
+                var h = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
 
                 Assert.AreEqual("3 2001-01-01T00:00:00,1 2011-01-01T00:00:00", h.Select(item => item.Code + " " + Dump(item.ActiveSince)).Aggregate((i1, i2) => i1 + "," + i2));
             }
         }
 
         [TestMethod]
-        public void FullHistoryEditHistoryActiveSinceNewerThanActiveItem()
+        public void HistoryEditHistoryActiveSinceNewerThanActiveItem()
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
@@ -1214,19 +1214,19 @@ namespace CommonConcepts.Test
                 executionContext.SqlExecuter.ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
-                    "INSERT INTO TestHistory.Simple_History (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
+                    "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
                 var repository = new Common.DomRepository(executionContext);
 
                 // take entry in history table
-                var h1 = repository.TestHistory.Simple_FullHistory.Query().OrderBy(x => x.ActiveSince).Take(1).Single();
+                var h1 = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).Take(1).Single();
                 h1.Code = 3;
                 h1.ActiveSince = new DateTime(2012, 1, 1);
-                TestUtility.ShouldFail(() => repository.TestHistory.Simple_FullHistory.Update(new[] { h1 }), "History item moved to far in future", "ActiveSince of history entry is not allowed to be newer than current entry.");
+                TestUtility.ShouldFail(() => repository.TestHistory.Simple_History.Update(new[] { h1 }), "History item moved to far in future", "ActiveSince of history entry is not allowed to be newer than current entry.");
             }
         }
 
         [TestMethod]
-        public void FullHistoryEditHistoryChangingActiveSinceOK()
+        public void HistoryEditHistoryChangingActiveSinceOK()
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
@@ -1235,26 +1235,26 @@ namespace CommonConcepts.Test
                 executionContext.SqlExecuter.ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
-                    "INSERT INTO TestHistory.Simple_History (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
+                    "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
                 var repository = new Common.DomRepository(executionContext);
 
                 // take entry in history table
-                var h1 = repository.TestHistory.Simple_FullHistory.Query().OrderBy(x => x.ActiveSince).Take(1).Single();
+                var h1 = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).Take(1).Single();
                 h1.Code = 3;
                 h1.ActiveSince = new DateTime(2010, 1, 1);
-                repository.TestHistory.Simple_FullHistory.Update(new[] { h1 });
+                repository.TestHistory.Simple_History.Update(new[] { h1 });
 
                 executionContext.NHibernateSession.Clear();
                 var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
 
-                var h = repository.TestHistory.Simple_FullHistory.Query().OrderBy(x => x.ActiveSince);
+                var h = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
 
                 Assert.AreEqual("3 2010-01-01T00:00:00,1 2011-01-01T00:00:00", h.Select(item => item.Code + " " + Dump(item.ActiveSince)).Aggregate((i1, i2) => i1 + "," + i2));
             }
         }
 
         [TestMethod]
-        public void FullHistoryUpdateActiveItemOK()
+        public void HistoryUpdateActiveItemOK()
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
@@ -1263,26 +1263,26 @@ namespace CommonConcepts.Test
                 executionContext.SqlExecuter.ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
-                    "INSERT INTO TestHistory.Simple_History (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
+                    "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
                 var repository = new Common.DomRepository(executionContext);
 
                 // take entry in history table
-                var a1 = repository.TestHistory.Simple_FullHistory.Query().OrderByDescending(x => x.ActiveSince).Take(1).Single();
+                var a1 = repository.TestHistory.Simple_History.Query().OrderByDescending(x => x.ActiveSince).Take(1).Single();
                 a1.Code = 3;
                 a1.ActiveSince = new DateTime(2010, 1, 1);
-                repository.TestHistory.Simple_FullHistory.Update(new[] { a1 });
+                repository.TestHistory.Simple_History.Update(new[] { a1 });
 
                 executionContext.NHibernateSession.Clear();
                 var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
 
-                var h = repository.TestHistory.Simple_FullHistory.Query().OrderBy(x => x.ActiveSince);
+                var h = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
 
                 Assert.AreEqual("2 2001-01-01T00:00:00,3 2010-01-01T00:00:00", h.Select(item => item.Code + " " + Dump(item.ActiveSince)).Aggregate((i1, i2) => i1 + "," + i2));
             }
         }
 
         [TestMethod]
-        public void FullHistoryUpdateActiveItemFailOlderThanLastInHistory()
+        public void HistoryUpdateActiveItemFailOlderThanLastInHistory()
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
@@ -1291,20 +1291,20 @@ namespace CommonConcepts.Test
                 executionContext.SqlExecuter.ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
-                    "INSERT INTO TestHistory.Simple_History (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
+                    "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
                 var repository = new Common.DomRepository(executionContext);
 
                 // take entry in history table
-                var a1 = repository.TestHistory.Simple_FullHistory.Query().OrderByDescending(x => x.ActiveSince).Take(1).Single();
+                var a1 = repository.TestHistory.Simple_History.Query().OrderByDescending(x => x.ActiveSince).Take(1).Single();
                 a1.Code = 3;
                 a1.ActiveSince = new DateTime(2000, 1, 1);
-                TestUtility.ShouldFail(() => repository.TestHistory.Simple_FullHistory.Update(new[] { a1 }), "Active item moved to far in history", "ActiveSince is not allowed to be older than last entry in history");
+                TestUtility.ShouldFail(() => repository.TestHistory.Simple_History.Update(new[] { a1 }), "Active item moved to far in history", "ActiveSince is not allowed to be older than last entry in history");
             }
         }
 
 
         [TestMethod]
-        public void FullHistoryDeleteActiveItemReplaceWithHistory()
+        public void HistoryDeleteActiveItemReplaceWithHistory()
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
@@ -1313,17 +1313,17 @@ namespace CommonConcepts.Test
                 executionContext.SqlExecuter.ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
-                    "INSERT INTO TestHistory.Simple_History (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
+                    "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
                 var repository = new Common.DomRepository(executionContext);
 
                 // take entry that is current
-                var a1 = repository.TestHistory.Simple_FullHistory.Query().OrderByDescending(x => x.ActiveSince).Take(1).Single();
-                repository.TestHistory.Simple_FullHistory.Delete(new[] { a1 });
+                var a1 = repository.TestHistory.Simple_History.Query().OrderByDescending(x => x.ActiveSince).Take(1).Single();
+                repository.TestHistory.Simple_History.Delete(new[] { a1 });
 
                 executionContext.NHibernateSession.Clear();
                 var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
 
-                var fh = repository.TestHistory.Simple_FullHistory.Query().OrderBy(x => x.ActiveSince);
+                var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(1, fh.Count());
                 var currentItem = repository.TestHistory.Simple.All();
 
@@ -1332,7 +1332,7 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void FullHistoryDeleteActiveItemOnlyItemInFullHistory()
+        public void HistoryDeleteActiveItemOnlyItemInHistory()
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
@@ -1343,19 +1343,19 @@ namespace CommonConcepts.Test
                 var repository = new Common.DomRepository(executionContext);
 
                 // take entry that is current
-                var a1 = repository.TestHistory.Simple_FullHistory.Query().OrderByDescending(x => x.ActiveSince).Take(1).Single();
-                repository.TestHistory.Simple_FullHistory.Delete(new[] { a1 });
+                var a1 = repository.TestHistory.Simple_History.Query().OrderByDescending(x => x.ActiveSince).Take(1).Single();
+                repository.TestHistory.Simple_History.Delete(new[] { a1 });
 
                 executionContext.NHibernateSession.Clear();
                 var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
 
-                var fh = repository.TestHistory.Simple_FullHistory.Query().OrderBy(x => x.ActiveSince);
+                var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(0, fh.Count());
             }
         }
 
         [TestMethod]
-        public void FullHistoryDeleteHistoryOnlyItemInHistory()
+        public void HistoryDeleteHistoryOnlyItemInHistory()
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
@@ -1364,20 +1364,20 @@ namespace CommonConcepts.Test
                 executionContext.SqlExecuter.ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
-                    "INSERT INTO TestHistory.Simple_History (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
+                    "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
                 var repository = new Common.DomRepository(executionContext);
 
                 // take entry that is only item in history table
-                var a2 = repository.TestHistory.Simple_FullHistory.Query().OrderBy(x => x.ActiveSince).Take(1).Single();
-                repository.TestHistory.Simple_FullHistory.Delete(new[] { a2 });
+                var a2 = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).Take(1).Single();
+                repository.TestHistory.Simple_History.Delete(new[] { a2 });
 
                 executionContext.NHibernateSession.Clear();
                 var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
 
-                var fh = repository.TestHistory.Simple_FullHistory.Query().OrderBy(x => x.ActiveSince);
+                var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(1, fh.Count());
 
-                var he = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
+                var he = repository.TestHistory.Simple_Changes.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(0, he.Count());
 
                 var ent = repository.TestHistory.Simple.Query().OrderBy(x => x.ActiveSince);
@@ -1388,7 +1388,7 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void FullHistoryDeleteHistoryMiddleInHistory()
+        public void HistoryDeleteHistoryMiddleInHistory()
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
@@ -1398,21 +1398,21 @@ namespace CommonConcepts.Test
                 executionContext.SqlExecuter.ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
-                    "INSERT INTO TestHistory.Simple_History (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')",
-                    "INSERT INTO TestHistory.Simple_History (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
+                    "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')",
+                    "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
                 var repository = new Common.DomRepository(executionContext);
 
                 // take entry that is in the middle of history
-                var a2 = repository.TestHistory.Simple_FullHistory.Query().OrderBy(x => x.ActiveSince).Skip(1).Take(1).Single();
-                repository.TestHistory.Simple_FullHistory.Delete(new[] { a2 });
+                var a2 = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).Skip(1).Take(1).Single();
+                repository.TestHistory.Simple_History.Delete(new[] { a2 });
 
                 executionContext.NHibernateSession.Clear();
                 var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
 
-                var fh = repository.TestHistory.Simple_FullHistory.Query().OrderBy(x => x.ActiveSince);
+                var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(2, fh.Count());
 
-                var he = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
+                var he = repository.TestHistory.Simple_Changes.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(1, he.Count());
 
                 var ent = repository.TestHistory.Simple.Query().OrderBy(x => x.ActiveSince);
@@ -1424,7 +1424,7 @@ namespace CommonConcepts.Test
 
 
         [TestMethod]
-        public void FullHistoryInsertAsActive()
+        public void HistoryInsertAsActive()
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
@@ -1434,13 +1434,13 @@ namespace CommonConcepts.Test
                 executionContext.SqlExecuter.ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
-                    "INSERT INTO TestHistory.Simple_History (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')",
-                    "INSERT INTO TestHistory.Simple_History (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
+                    "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')",
+                    "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
                 var repository = new Common.DomRepository(executionContext);
 
                 // take entry that is in the middle of history
-                var a2 = repository.TestHistory.Simple_FullHistory.Query().OrderBy(x => x.ActiveSince).Skip(1).Take(1).Single();
-                repository.TestHistory.Simple_FullHistory.Insert(new[] { new TestHistory.Simple_FullHistory() {
+                var a2 = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).Skip(1).Take(1).Single();
+                repository.TestHistory.Simple_History.Insert(new[] { new TestHistory.Simple_History() {
                     ActiveSince = new DateTime(2013, 1, 1),
                     Code = 4,
                     EntityID = id1
@@ -1449,7 +1449,7 @@ namespace CommonConcepts.Test
                 executionContext.NHibernateSession.Clear();
                 var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
 
-                var fh = repository.TestHistory.Simple_FullHistory.Query().OrderBy(x => x.ActiveSince);
+                var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(4, fh.Count());
 
                 var currentItem = repository.TestHistory.Simple.Query().OrderBy(x => x.ActiveSince);
@@ -1462,7 +1462,7 @@ namespace CommonConcepts.Test
 
 
         [TestMethod]
-        public void FullHistoryInsertAsHistory()
+        public void HistoryInsertAsHistory()
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
@@ -1472,13 +1472,13 @@ namespace CommonConcepts.Test
                 executionContext.SqlExecuter.ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
-                    "INSERT INTO TestHistory.Simple_History (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')",
-                    "INSERT INTO TestHistory.Simple_History (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
+                    "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')",
+                    "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
                 var repository = new Common.DomRepository(executionContext);
 
                 // take entry that is in the middle of history
-                var a2 = repository.TestHistory.Simple_FullHistory.Query().OrderBy(x => x.ActiveSince).Skip(1).Take(1).Single();
-                repository.TestHistory.Simple_FullHistory.Insert(new[] { new TestHistory.Simple_FullHistory() {
+                var a2 = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).Skip(1).Take(1).Single();
+                repository.TestHistory.Simple_History.Insert(new[] { new TestHistory.Simple_History() {
                     ActiveSince = new DateTime(2010, 1, 1),
                     Code = 4,
                     EntityID = id1
@@ -1487,7 +1487,7 @@ namespace CommonConcepts.Test
                 executionContext.NHibernateSession.Clear();
                 var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
 
-                var fh = repository.TestHistory.Simple_FullHistory.Query().OrderBy(x => x.ActiveSince);
+                var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(4, fh.Count());
 
                 var currentItem = repository.TestHistory.Simple.Query().OrderBy(x => x.ActiveSince);
@@ -1500,7 +1500,7 @@ namespace CommonConcepts.Test
 
 
         [TestMethod]
-        public void FullHistoryDeleteCurrentItemAndLastInHistory()
+        public void HistoryDeleteCurrentItemAndLastInHistory()
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
@@ -1510,21 +1510,21 @@ namespace CommonConcepts.Test
                 executionContext.SqlExecuter.ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
-                    "INSERT INTO TestHistory.Simple_History (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')",
-                    "INSERT INTO TestHistory.Simple_History (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
+                    "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')",
+                    "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
                 var repository = new Common.DomRepository(executionContext);
 
                 // take entry that is in the middle of history
-                var delEnt = repository.TestHistory.Simple_FullHistory.Query().OrderByDescending(x => x.ActiveSince).Take(2).ToArray();
-                repository.TestHistory.Simple_FullHistory.Delete(delEnt);
+                var delEnt = repository.TestHistory.Simple_History.Query().OrderByDescending(x => x.ActiveSince).Take(2).ToArray();
+                repository.TestHistory.Simple_History.Delete(delEnt);
 
                 executionContext.NHibernateSession.Clear();
                 var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
 
-                var fh = repository.TestHistory.Simple_FullHistory.Query().OrderBy(x => x.ActiveSince);
+                var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(1, fh.Count());
 
-                var he = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
+                var he = repository.TestHistory.Simple_Changes.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(0, he.Count());
 
                 var ent = repository.TestHistory.Simple.Query().OrderBy(x => x.ActiveSince);
@@ -1536,7 +1536,7 @@ namespace CommonConcepts.Test
 
 
         [TestMethod]
-        public void FullHistoryDeleteAllHistory()
+        public void HistoryDeleteAllHistory()
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
@@ -1546,18 +1546,18 @@ namespace CommonConcepts.Test
                 executionContext.SqlExecuter.ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
-                    "INSERT INTO TestHistory.Simple_History (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')",
-                    "INSERT INTO TestHistory.Simple_History (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
+                    "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')",
+                    "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
                 var repository = new Common.DomRepository(executionContext);
 
                 // take entry that is in the middle of history
-                var delEnt = repository.TestHistory.Simple_FullHistory.All().ToArray();
-                repository.TestHistory.Simple_FullHistory.Delete(delEnt);
+                var delEnt = repository.TestHistory.Simple_History.All().ToArray();
+                repository.TestHistory.Simple_History.Delete(delEnt);
 
                 executionContext.NHibernateSession.Clear();
                 var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
 
-                var fh = repository.TestHistory.Simple_FullHistory.Query().OrderBy(x => x.ActiveSince);
+                var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(0, fh.Count());
             }
         }

@@ -39,19 +39,19 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (EntityHistoryInfo)conceptInfo;
-            codeBuilder.InsertCode(FilterInterfaceSnippet(info), RepositoryHelper.RepositoryInterfaces, info.HistoryEntity);
-            codeBuilder.InsertCode(FilterImplementationSnippet(info), RepositoryHelper.RepositoryMembers, info.HistoryEntity);
+            codeBuilder.InsertCode(FilterInterfaceSnippet(info), RepositoryHelper.RepositoryInterfaces, info.ChangesEntity);
+            codeBuilder.InsertCode(FilterImplementationSnippet(info), RepositoryHelper.RepositoryMembers, info.ChangesEntity);
             codeBuilder.InsertCode(CreateHistoryOnUpdateSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Entity);
-            codeBuilder.InsertCode(VerifyHistoryEntityTimeSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.HistoryEntity);
+            codeBuilder.InsertCode(VerifyChangesEntityTimeSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.ChangesEntity);
         }
 
         private static string FilterInterfaceSnippet(EntityHistoryInfo info)
         {
-            return "IFilterRepository<System.DateTime, " + info.HistoryEntity.Module.Name + "." + info.HistoryEntity.Name + ">";
+            return "IFilterRepository<System.DateTime, " + info.ChangesEntity.Module.Name + "." + info.ChangesEntity.Name + ">";
         }
 
         /// <summary>
-        /// Creates a DateTime filter that returns the "Entity"_History records that were active at the time (including the current records in the base entity).
+        /// Creates a DateTime filter that returns the "Entity"_Changes records that were active at the time (including the current records in the base entity).
         /// AllProperties concept (EntityHistoryAllPropertiesInfo) creates a similar filter on the base Entity class.
         /// </summary>
         private static string FilterImplementationSnippet(EntityHistoryInfo info)
@@ -68,8 +68,8 @@ namespace Rhetos.Dom.DefaultConcepts
         }}
 
 ",
-            info.HistoryEntity.Module.Name,
-            info.HistoryEntity.Name,
+            info.ChangesEntity.Module.Name,
+            info.ChangesEntity.Name,
             SqlUtility.Identifier(info.Entity.Module.Name),
             SqlUtility.Identifier(info.Entity.Name + "_AtTime"));
         }
@@ -97,9 +97,9 @@ namespace Rhetos.Dom.DefaultConcepts
 					    .Select(change => change.oldItem)
 					    .ToArray();
 					
-				    _domRepository.{0}.{1}_History.Insert(
+				    _domRepository.{0}.{1}_Changes.Insert(
 					    createHistory.Select(olditem =>
-						    new {0}.{1}_History
+						    new {0}.{1}_Changes
 						    {{
                                 ID = Guid.NewGuid(),
 							    EntityID = olditem.ID{2}
@@ -113,7 +113,7 @@ namespace Rhetos.Dom.DefaultConcepts
             ClonePropertiesTag.Evaluate(info));
         }
 
-        private static string VerifyHistoryEntityTimeSnippet(EntityHistoryInfo info)
+        private static string VerifyChangesEntityTimeSnippet(EntityHistoryInfo info)
         {
             return string.Format(
 @"			if (insertedNew.Count() > 0 || updatedNew.Count() > 0)
@@ -128,8 +128,8 @@ namespace Rhetos.Dom.DefaultConcepts
             }}
 
 ",
-            info.HistoryEntity.Module.Name,
-            info.HistoryEntity.Name);
+            info.ChangesEntity.Module.Name,
+            info.ChangesEntity.Name);
         }
     }
 }

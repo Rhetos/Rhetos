@@ -49,7 +49,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return new [] { new PropertyFromInfo { Destination = EntityHistory.HistoryEntity, Source = Property } };
+            return new [] { new PropertyFromInfo { Destination = EntityHistory.ChangesEntity, Source = Property } };
         }
 
     }
