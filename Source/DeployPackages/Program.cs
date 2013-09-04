@@ -83,95 +83,97 @@ namespace DeployPackages
                 var builder = new ContainerBuilder();
                 string connectionString = SqlUtility.ConnectionString;
                 builder.RegisterModule(new AutofacConfiguration(connectionString));
-                var container = builder.Build();
-                logger = container.Resolve<ILogProvider>().GetLogger("DeployPackages");
-
-                Console.WriteLine("SQL connection string: " + SqlUtility.MaskPassword(connectionString));
-
-                Console.Write("Parsing DSL scripts ... ");
-                Console.WriteLine(container.Resolve<IDslModel>().Concepts.Count() + " features.");
-
-                Console.Write("Compiling DOM assembly ... ");
-                int generatedTypesCount = container.Resolve<IDomGenerator>().ObjectModel.GetTypes().Length;
-                if (generatedTypesCount == 0)
+                using (var container = builder.Build())
                 {
-                    string report = "WARNING: Empty assembly is generated.";
-                    DeploymentUtility.WriteError(report);
-                    logger.Error(report);
-                }
-                else
-                    Console.WriteLine("Generated " + generatedTypesCount + " types.");
+                    logger = container.Resolve<ILogProvider>().GetLogger("DeployPackages");
 
-                Console.Write("Generating Domain Service ... ");
-                container.Resolve<IRestGenerator>().Generate("DomainService");
-                Console.WriteLine("Done.");
+                    Console.WriteLine("SQL connection string: " + SqlUtility.MaskPassword(connectionString));
 
-                Console.Write("Executing custom generators... ");
-                Console.WriteLine(container.Resolve<Rhetos.Generator.GeneratorProcessor>().ProcessGenerators());
+                    Console.Write("Parsing DSL scripts ... ");
+                    Console.WriteLine(container.Resolve<IDslModel>().Concepts.Count() + " features.");
 
-                Console.Write("Preparing Rhetos database ... ");
-                DeploymentUtility.PrepareRhetosDatabase(container.Resolve<ISqlExecuter>());
-                Console.WriteLine("Done.");
+                    Console.Write("Compiling DOM assembly ... ");
+                    int generatedTypesCount = container.Resolve<IDomGenerator>().ObjectModel.GetTypes().Length;
+                    if (generatedTypesCount == 0)
+                    {
+                        string report = "WARNING: Empty assembly is generated.";
+                        DeploymentUtility.WriteError(report);
+                        logger.Error(report);
+                    }
+                    else
+                        Console.WriteLine("Generated " + generatedTypesCount + " types.");
 
-                if (parameters.CleanPreviousDeploymentData)
-                {
-                    Console.Write("Clean option is on, deleting old migration data ... ");
-                    var report = container.Resolve<DatabaseCleaner>().CleanupOldData();
-                    Console.WriteLine(report);
-                }
-
-                Console.Write("Executing data migration scripts ... ");
-                var dataMigration = container.Resolve<DataMigration>();
-                var dataMigrationReport = dataMigration.ExecuteDataMigrationScripts(AutofacConfiguration.DataMigrationScriptsFolder);
-                Console.WriteLine(dataMigrationReport);
-                undoDataMigrationScriptsOnError = delegate { dataMigration.UndoDataMigrationScripts(dataMigrationReport.CreatedTags); };
-
-                Console.Write("Upgrading database ... ");
-                var updateDatabaseReport = container.Resolve<IDatabaseGenerator>().UpdateDatabaseStructure();
-                Console.WriteLine(updateDatabaseReport);
-                undoDataMigrationScriptsOnError = null;
-
-                Console.Write("Deleting redundant migration data ... ");
-                var databaseCleanerReport = container.Resolve<DatabaseCleaner>().CleanupRedundantOldData();
-                Console.WriteLine(databaseCleanerReport);
-
-                Console.Write("Uploading DSL scripts ... ");
-                int dslScriptCount = DslScriptManager.UploadDslScriptsToServer(AutofacConfiguration.DslScriptsFolder, container.Resolve<ISqlExecuter>());
-                if (dslScriptCount == 0)
-                {
-                    string report = "WARNING: There are no DSL scripts in source folder " + AutofacConfiguration.DslScriptsFolder + ".";
-                    DeploymentUtility.WriteError(report);
-                    logger.Error(report);
-                }
-                else
-                    Console.WriteLine("Uploaded " + dslScriptCount + " DSL scripts to database.");
-
-                Console.Write("Generating NHibernate mapping ... ");
-                File.WriteAllText(AutofacConfiguration.NHibernateMappingFile, container.Resolve<INHibernateMapping>().GetMapping(), Encoding.Unicode);
-                Console.WriteLine("Done.");
-
-                if (parameters.GeneratePermissionClaims)
-                {
-                    PluginsUtility.DeployPackagesAdditionalAssemblies.AddRange(new[] { @"bin\ServerDom.dll", @"ServerDom.dll" }); // TODO: Remove this hack after ServerDom.dll is moved to the bin\Plugins subfolder and every IGenerator has a Cleanup() function.
-                    PluginsUtility.DetectAndRegisterNewModulesAndPlugins(container);
-
-                    Console.Write("Generating claims ... ");
-                    container.Resolve<IClaimGenerator>().GenerateClaims();
+                    Console.Write("Generating Domain Service ... ");
+                    container.Resolve<IRestGenerator>().Generate("DomainService");
                     Console.WriteLine("Done.");
-                }
-                else
-                    Console.WriteLine("Generating claims skipped.");
 
-                var configFile = new FileInfo(AutofacConfiguration.RhetosServerWebConfigPath);
-                if (configFile.Exists)
-                {
-                    DeploymentUtility.Touch(configFile);
-                    Console.WriteLine("Updated Web.config modification date to restart server.");
-                }
-                else
-                    Console.WriteLine("Web.config update skipped.");
+                    Console.Write("Executing custom generators... ");
+                    Console.WriteLine(container.Resolve<Rhetos.Generator.GeneratorProcessor>().ProcessGenerators());
 
-                return 0;
+                    Console.Write("Preparing Rhetos database ... ");
+                    DeploymentUtility.PrepareRhetosDatabase(container.Resolve<ISqlExecuter>());
+                    Console.WriteLine("Done.");
+
+                    if (parameters.CleanPreviousDeploymentData)
+                    {
+                        Console.Write("Clean option is on, deleting old migration data ... ");
+                        var report = container.Resolve<DatabaseCleaner>().CleanupOldData();
+                        Console.WriteLine(report);
+                    }
+
+                    Console.Write("Executing data migration scripts ... ");
+                    var dataMigration = container.Resolve<DataMigration>();
+                    var dataMigrationReport = dataMigration.ExecuteDataMigrationScripts(AutofacConfiguration.DataMigrationScriptsFolder);
+                    Console.WriteLine(dataMigrationReport);
+                    undoDataMigrationScriptsOnError = delegate { dataMigration.UndoDataMigrationScripts(dataMigrationReport.CreatedTags); };
+
+                    Console.Write("Upgrading database ... ");
+                    var updateDatabaseReport = container.Resolve<IDatabaseGenerator>().UpdateDatabaseStructure();
+                    Console.WriteLine(updateDatabaseReport);
+                    undoDataMigrationScriptsOnError = null;
+
+                    Console.Write("Deleting redundant migration data ... ");
+                    var databaseCleanerReport = container.Resolve<DatabaseCleaner>().CleanupRedundantOldData();
+                    Console.WriteLine(databaseCleanerReport);
+
+                    Console.Write("Uploading DSL scripts ... ");
+                    int dslScriptCount = DslScriptManager.UploadDslScriptsToServer(AutofacConfiguration.DslScriptsFolder, container.Resolve<ISqlExecuter>());
+                    if (dslScriptCount == 0)
+                    {
+                        string report = "WARNING: There are no DSL scripts in source folder " + AutofacConfiguration.DslScriptsFolder + ".";
+                        DeploymentUtility.WriteError(report);
+                        logger.Error(report);
+                    }
+                    else
+                        Console.WriteLine("Uploaded " + dslScriptCount + " DSL scripts to database.");
+
+                    Console.Write("Generating NHibernate mapping ... ");
+                    File.WriteAllText(AutofacConfiguration.NHibernateMappingFile, container.Resolve<INHibernateMapping>().GetMapping(), Encoding.Unicode);
+                    Console.WriteLine("Done.");
+
+                    if (parameters.GeneratePermissionClaims)
+                    {
+                        PluginsUtility.DeployPackagesAdditionalAssemblies.AddRange(new[] { @"bin\ServerDom.dll", @"ServerDom.dll" }); // TODO: Remove this hack after ServerDom.dll is moved to the bin\Plugins subfolder and every IGenerator has a Cleanup() function.
+                        PluginsUtility.DetectAndRegisterNewModulesAndPlugins(container);
+
+                        Console.Write("Generating claims ... ");
+                        container.Resolve<IClaimGenerator>().GenerateClaims();
+                        Console.WriteLine("Done.");
+                    }
+                    else
+                        Console.WriteLine("Generating claims skipped.");
+
+                    var configFile = new FileInfo(AutofacConfiguration.RhetosServerWebConfigPath);
+                    if (configFile.Exists)
+                    {
+                        DeploymentUtility.Touch(configFile);
+                        Console.WriteLine("Updated Web.config modification date to restart server.");
+                    }
+                    else
+                        Console.WriteLine("Web.config update skipped.");
+
+                    return 0;
+                }
             }
             catch (Exception ex)
             {

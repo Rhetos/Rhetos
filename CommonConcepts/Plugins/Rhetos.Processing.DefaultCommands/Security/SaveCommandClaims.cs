@@ -51,7 +51,13 @@ namespace Rhetos.Processing.DefaultCommands
         public IEnumerable<IClaim> GetAllClaims(IDslModel dslModel, Func<string, string, IClaim> newClaim)
         {
             var writableDataStructures = dslModel.Concepts.OfType<DataStructureInfo>()
-                    .Where(dataStructure => dataStructure is IWritableOrmDataStructure).ToArray();
+                    .Where(dataStructure => dataStructure is IWritableOrmDataStructure)
+                    .ToArray()
+                    .Union(
+                        dslModel.Concepts.OfType<WriteInfo>()
+                        .Select(x => x.DataStructure)
+                        .ToArray()
+                    );
 
             return writableDataStructures.SelectMany(dataStructure => new IClaim[]
                 {

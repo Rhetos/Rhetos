@@ -32,6 +32,7 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
     [ExportMetadata(MefProvider.Implements, typeof(EntityHistoryPropertyInfo))]
+    [ExportMetadata(MefProvider.DependsOn, typeof(WriteCodeGenerator))]
     public class EntityHistoryPropertyCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
@@ -39,6 +40,8 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (EntityHistoryPropertyInfo)conceptInfo;
             codeBuilder.InsertCode(string.Format(",\r\n							    {0} = olditem.{0}", info.Property.Name),
                 EntityHistoryCodeGenerator.ClonePropertiesTag, info.EntityHistory);
+            codeBuilder.InsertCode(string.Format("\r\n							ret.{0} = item.{0};", info.Property.Name),
+                EntityHistoryInfo.ClonePropertiesTag, info.EntityHistory);
         }
     }
 }
