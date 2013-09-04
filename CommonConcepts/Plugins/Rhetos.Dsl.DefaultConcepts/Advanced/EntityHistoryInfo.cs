@@ -38,10 +38,13 @@ namespace Rhetos.Dsl.DefaultConcepts
         public EntityInfo HistoryEntity { get; set; }
         public SqlQueryableInfo FullHistorySqlQueryable { get; set; }
         public SqlFunctionInfo AtTimeSqlFunction { get; set; }
+        public WriteInfo Write { get; set; }
+        
+        public static readonly CsTag<EntityHistoryInfo> ClonePropertiesTag = "ClonePropertiesRewrite";
 
         public IEnumerable<string> DeclareNonparsableProperties()
         {
-            return new string[] { "HistoryEntity", "FullHistorySqlQueryable", "AtTimeSqlFunction" };
+            return new string[] { "HistoryEntity", "FullHistorySqlQueryable", "AtTimeSqlFunction", "Write" };
         }
 
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
@@ -49,7 +52,116 @@ namespace Rhetos.Dsl.DefaultConcepts
             HistoryEntity = new EntityInfo { Module = Entity.Module, Name = Entity.Name + "_History" };
             FullHistorySqlQueryable = new SqlQueryableInfo { Module = Entity.Module, Name = Entity.Name + "_FullHistory", SqlSource = FullHistorySqlSnippet() };
             AtTimeSqlFunction = new SqlFunctionInfo { Module = Entity.Module, Name = Entity.Name + "_AtTime", Arguments = "@ContextTime DATETIME", Source = AtTimeSqlSnippet() };
-            createdConcepts = new IConceptInfo[] { HistoryEntity, FullHistorySqlQueryable, AtTimeSqlFunction };
+            Write = new WriteInfo {
+                    DataStructure = FullHistorySqlQueryable,
+                    SaveImplementation = String.Format(@"            
+                if (insertedNew == null) insertedNew = new {0}_FullHistory[] {{ }};
+                if (updatedNew == null) updatedNew = new {0}_FullHistory[] {{ }};
+                if (deletedIds == null) deletedIds = new {0}_FullHistory[] {{ }};
+
+                if (insertedNew.Count() == 0 && updatedNew.Count() == 0 && deletedIds.Count() == 0)
+                    return;
+
+                var updateEnt = new List<{0}_FullHistory>();
+                var deletedEnt = new List<{0}_FullHistory>();
+
+                var updateHist = new List<{0}_FullHistory>();
+                var deletedHist = new List<{0}_FullHistory>();
+                var insertedHist = new List<{0}_FullHistory>();
+
+                foreach(var item in insertedNew)
+                {{
+                    if(item.EntityID == Guid.Empty)
+                        throw new Rhetos.FrameworkException(""Inserting into FullHistory of unexisted entity is not allowed. EntityID cannot be null."");
+                    if(item.ID == Guid.Empty)
+                        item.ID = Guid.NewGuid();
+                }}
+
+                var distinctEntityIDs = insertedNew.Union(updatedNew).Select(x => x.EntityID.Value).Distinct().ToArray();
+                var existingEntities = _domRepository.{1}.{0}.Filter(distinctEntityIDs).Select(x => x.ID).ToArray();
+                if (distinctEntityIDs.Count() != existingEntities.Count()) 
+                    throw new Rhetos.FrameworkException(""Inserting or update in FullHistory of unexisted entity is not allowed. There is no entity with ID: "" + distinctEntityIDs.Where(x => !existingEntities.Contains(x)).Single().ToString());
+            
+                _executionContext.NHibernateSession.Clear(); // Updating a modified persistent object could break old-data validations such as checking for locked items.
+            
+                if (insertedNew.Where(newItem => _domRepository.{1}.{0}_FullHistory.Query().Any(fh => fh.Entity.ID == newItem.EntityID && fh.ActiveSince == newItem.ActiveSince)).ToArray().Count() > 0)
+                    throw new Rhetos.FrameworkException(""Inserting new history record with same ActiveSince and EntityID, but different ID is not allowed."");
+            
+                if (insertedNew.Count() > 0)
+                {{
+                    updateEnt.AddRange(insertedNew
+                        .Where(newItem => _domRepository.{1}.{0}.Filter(new[]{{newItem.EntityID.Value}}).SingleOrDefault().ActiveSince < newItem.ActiveSince)
+                        .ToArray());
+                    insertedHist.AddRange(insertedNew
+                        .Where(newItem => _domRepository.{1}.{0}.Filter(new[]{{newItem.EntityID.Value}}).SingleOrDefault().ActiveSince > newItem.ActiveSince)
+                        .ToArray());
+                }}
+            
+                if (updatedNew.Count() > 0)
+                {{
+                    updateEnt.AddRange(updatedNew
+                        .Where(item => _domRepository.{1}.{0}.Filter(new[]{{item.ID}}).Count() > 0)
+                        .ToArray());
+                
+                    if (updatedNew.Any(item => _domRepository.{1}.{0}.Query().Any(ent => ent.ID != item.ID && ent.ID == item.EntityID.Value && ent.ActiveSince < item.ActiveSince)))
+                        throw new Rhetos.FrameworkException(""History entry is not allowed to be newer than current entry."");
+
+                    updateHist.AddRange(updatedNew
+                        .Where(item => _domRepository.{1}.{0}_History.Filter(new[]{{item.ID}}).Count() > 0)
+                        .ToArray());
+                }}
+            
+                if (deletedIds.Count() > 0)
+                {{
+                    deletedHist.AddRange(deletedIds
+                        .Where(item => _domRepository.{1}.{0}_History.Filter(new[]{{item.ID}}).Count() > 0)
+                        .ToArray());
+                
+                    deletedEnt.AddRange(deletedIds
+                        .Where(item => _domRepository.{1}.{0}.Filter(new[]{{item.ID}}).Count() > 0)
+                        .Where(item => !(_domRepository.{1}.{0}_History.Query().Any(hist => hist.Entity.ID == item.ID)))
+                        .ToArray());
+
+                    var histBackup = deletedIds
+                        .Where(item => _domRepository.{1}.{0}.Filter(new[]{{item.ID}}).Count() > 0)
+                        .Where(item => _domRepository.{1}.{0}_History.Query().Any(hist => hist.Entity.ID == item.ID))
+                        .Select(item => _domRepository.{1}.{0}_FullHistory
+                                .Query().Where(fh => fh.Entity.ID == item.ID && fh.ID != item.ID)
+                                .OrderByDescending(fh => fh.ActiveSince)
+                                .Take(1).Single())
+                        .ToArray();
+                
+                    updateEnt.AddRange(histBackup);
+                    deletedHist.AddRange(histBackup);
+                }}
+
+                _domRepository.{1}.{0}_History.Save(
+                        insertedHist.Select(item => {{
+                            var ret = new {0}_History();
+                            ret.ID = item.ID;
+                            ret.EntityID = item.EntityID;{2}
+                            return ret;
+                        }}).ToArray()
+                        ,updateHist.Select(item => {{
+                            var ret = _domRepository.{1}.{0}_History.Filter(new [] {{item.ID}}).Single();{2}
+                            return ret;
+                        }}).ToArray()
+                        , _domRepository.{1}.{0}_History.Filter(deletedHist.Select(de => de.ID).ToArray()));
+
+                _domRepository.{1}.{0}.Save(null
+                    , updateEnt.Select(item => {{
+                            var ret = _domRepository.{1}.{0}.Filter(new [] {{item.EntityID.Value}}).Single();{2}
+                            return ret;
+                        }}).ToArray()
+                    , _domRepository.{1}.{0}.Filter(deletedEnt.Select(de => de.Entity.ID).ToArray()));
+
+                ", Entity.Name
+                        , Entity.Module.Name
+                        , ClonePropertiesTag.Evaluate(this)
+                        )
+                };
+
+            createdConcepts = new IConceptInfo[] { HistoryEntity, FullHistorySqlQueryable, AtTimeSqlFunction, Write };        
         }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
