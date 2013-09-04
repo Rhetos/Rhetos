@@ -1497,5 +1497,69 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("3 2000-01-01T00:00:00,2 2001-01-01T00:00:00,4 2010-01-01T00:00:00,1 2011-01-01T00:00:00", fh.Select(item => item.Code + " " + Dump(item.ActiveSince)).Aggregate((i1, i2) => i1 + "," + i2));
             }
         }
+
+
+        [TestMethod]
+        public void FullHistoryDeleteCurrentItemAndLastInHistory()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var id1 = Guid.NewGuid();
+                var id2 = Guid.NewGuid();
+                var id3 = Guid.NewGuid();
+                executionContext.SqlExecuter.ExecuteSql(new[] {
+                    "DELETE FROM TestHistory.Simple",
+                    "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
+                    "INSERT INTO TestHistory.Simple_History (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')",
+                    "INSERT INTO TestHistory.Simple_History (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
+                var repository = new Common.DomRepository(executionContext);
+
+                // take entry that is in the middle of history
+                var delEnt = repository.TestHistory.Simple_FullHistory.Query().OrderByDescending(x => x.ActiveSince).Take(2).ToArray();
+                repository.TestHistory.Simple_FullHistory.Delete(delEnt);
+
+                executionContext.NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+
+                var fh = repository.TestHistory.Simple_FullHistory.Query().OrderBy(x => x.ActiveSince);
+                Assert.AreEqual(1, fh.Count());
+
+                var he = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
+                Assert.AreEqual(0, he.Count());
+
+                var ent = repository.TestHistory.Simple.Query().OrderBy(x => x.ActiveSince);
+                Assert.AreEqual(1, ent.Count());
+
+                Assert.AreEqual("3 2000-01-01T00:00:00", fh.Select(item => item.Code + " " + Dump(item.ActiveSince)).Aggregate((i1, i2) => i1 + "," + i2));
+            }
+        }
+
+
+        [TestMethod]
+        public void FullHistoryDeleteAllHistory()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var id1 = Guid.NewGuid();
+                var id2 = Guid.NewGuid();
+                var id3 = Guid.NewGuid();
+                executionContext.SqlExecuter.ExecuteSql(new[] {
+                    "DELETE FROM TestHistory.Simple",
+                    "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
+                    "INSERT INTO TestHistory.Simple_History (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')",
+                    "INSERT INTO TestHistory.Simple_History (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
+                var repository = new Common.DomRepository(executionContext);
+
+                // take entry that is in the middle of history
+                var delEnt = repository.TestHistory.Simple_FullHistory.All().ToArray();
+                repository.TestHistory.Simple_FullHistory.Delete(delEnt);
+
+                executionContext.NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+
+                var fh = repository.TestHistory.Simple_FullHistory.Query().OrderBy(x => x.ActiveSince);
+                Assert.AreEqual(0, fh.Count());
+            }
+        }
     }
 }

@@ -117,16 +117,17 @@ namespace Rhetos.Dsl.DefaultConcepts
                         .Where(item => _domRepository.{1}.{0}_History.Filter(new[]{{item.ID}}).Count() > 0)
                         .ToArray());
                 
+                    var deletingHistIds = deletedHist.Select(hist => hist.ID).ToArray();
                     deletedEnt.AddRange(deletedIds
                         .Where(item => _domRepository.{1}.{0}.Filter(new[]{{item.ID}}).Count() > 0)
-                        .Where(item => !(_domRepository.{1}.{0}_History.Query().Any(hist => hist.Entity.ID == item.ID)))
+                        .Where(item => !(_domRepository.{1}.{0}_History.Query().Any(hist => hist.Entity.ID == item.ID && !deletingHistIds.Contains(hist.ID))))
                         .ToArray());
 
                     var histBackup = deletedIds
                         .Where(item => _domRepository.{1}.{0}.Filter(new[]{{item.ID}}).Count() > 0)
-                        .Where(item => _domRepository.{1}.{0}_History.Query().Any(hist => hist.Entity.ID == item.ID))
-                        .Select(item => _domRepository.{1}.{0}_FullHistory
-                                .Query().Where(fh => fh.Entity.ID == item.ID && fh.ID != item.ID)
+                        .Where(item => _domRepository.{1}.{0}_History.Query().Any(hist => hist.Entity.ID == item.ID && !deletingHistIds.Contains(hist.ID)))
+                        .Select(item => _domRepository.{1}.{0}_FullHistory.Query()
+                                .Where(fh => fh.Entity.ID == item.ID && fh.ID != item.ID && !deletingHistIds.Contains(fh.ID))
                                 .OrderByDescending(fh => fh.ActiveSince)
                                 .Take(1).Single())
                         .ToArray();
