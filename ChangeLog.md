@@ -1,3 +1,17 @@
+0.9.9 (2013-09-04)
+------------------
+
+New features:
+
+* Writeable **EntityHistory**. FullHistory data structure now allows insert/update/delete commands by automatically updating history entries and current entry.    
+ 
+Internal improvements:
+
+* New concept: **Write** allows creating a Save function and corresponding WEB methods for data structure that is not writeable by default. 
+* Bugfix: Trace log should be disabled by default for better performance.
+* Bugfix: DeployPackages did not generate claims for new entities. 
+* Bugfix: DeployPackages.exe and CleanupOldData.exe could not remove old tables and columns whose names are no longer supported by Rhetos (identifiers that need to be quoted).
+
 0.9.8 (2013-08-30)
 ------------------
 
