@@ -96,5 +96,63 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("User1 5, User10 6, User100 7, User11 6", TestUtility.Dump(result, item => item.Person.Name + " " + item.NameLength));
             }
         }
+
+        [TestMethod]
+        public void SqlDependsOnSqlIndex()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var features = new Dictionary<string, string>
+                {
+                    { "base", "DataStructureInfo TestSqlWorkarounds.DependencyBase" },
+                    { "baseA", "PropertyInfo TestSqlWorkarounds.DependencyBase.A" },
+                    { "baseB", "PropertyInfo TestSqlWorkarounds.DependencyBase.B" },
+                    { "baseBAIndex", "SqlIndexMultipleInfo TestSqlWorkarounds.DependencyBase.'B A'" },
+                    { "depA", "SqlObjectInfo TestSqlWorkarounds.DependencyA" },
+                    { "depB", "SqlObjectInfo TestSqlWorkarounds.DependencyB" },
+                    { "depAll", "SqlObjectInfo TestSqlWorkarounds.DependencyAll" }
+                };
+
+                Dictionary<Guid, string> featuresById = features
+                    .Select(f => new { Name = f.Key, Id = ReadConceptId(f.Value, executionContext) })
+                    .ToDictionary(fid => fid.Id, fid => fid.Name);
+
+                var deployedDependencies = ReadConceptDependencies(featuresById.Keys, executionContext)
+                    .Select(dep => featuresById[dep.Item1] + "-" + featuresById[dep.Item2]);
+
+                var expectedDependencies = // Second concept depends on first concept.
+                    "base-baseA, base-baseB," // Standard properties depend on their entity.
+                    + "base-baseBAIndex, baseA-baseBAIndex, baseB-baseBAIndex," // Standard index depends on its properties.
+                    + "baseA-depA,"
+                    + "baseB-depB, baseBAIndex-depB," // SqlDependsOnSqlIndex should be automatically included when depending on its first property.
+                    + "baseA-depAll, baseB-depAll,"
+                    + "baseBAIndex-depAll"; // SqlDependsOnSqlIndex should be automatically included when depending on its entity.
+
+                Assert.AreEqual(
+                    TestUtility.DumpSorted(expectedDependencies.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s))),
+                    TestUtility.DumpSorted(deployedDependencies));
+            }
+        }
+
+        private static Guid ReadConceptId(string conceptInfoKey, CommonTestExecutionContext executionContext)
+        {
+            Guid id = Guid.Empty;
+            executionContext.SqlExecuter.ExecuteReader(
+                "SELECT ID FROM Rhetos.AppliedConcept WHERE ConceptInfoKey = " + SqlUtility.QuoteText(conceptInfoKey),
+                reader => id = reader.GetGuid(0));
+            return id;
+        }
+
+        private static List<Tuple<Guid, Guid>> ReadConceptDependencies(IEnumerable<Guid> conceptsId, CommonTestExecutionContext executionContext)
+        {
+            var dependencies = new List<Tuple<Guid, Guid>>();
+            string ids = string.Join(", ", conceptsId.Select(id => SqlUtility.QuoteGuid(id)));
+            executionContext.SqlExecuter.ExecuteReader(
+                "SELECT DependsOnID, DependentID FROM Rhetos.AppliedConceptDependsOn"
+                + " WHERE DependentID IN (" + ids + ")"
+                + " AND DependsOnID IN (" + ids + ")",
+                reader => dependencies.Add(Tuple.Create(reader.GetGuid(0), reader.GetGuid(1))));
+            return dependencies;
+        }
     }
 }

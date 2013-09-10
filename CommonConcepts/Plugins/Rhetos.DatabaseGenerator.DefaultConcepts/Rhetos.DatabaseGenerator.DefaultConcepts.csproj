@@ -123,6 +123,7 @@
     <Compile Include="AutoCodeDatabaseDefinition.cs" />
     <Compile Include="ColumnTypes\PropertyDatabaseDefinition.cs" />
     <Compile Include="AutoCodeForEachDatabaseDefinition.cs" />
+    <Compile Include="SqlDependsOnSqlIndexDatabaseDefinition.cs" />
     <Compile Include="EntityHistoryPropertyDatabaseDefinition.cs" />
     <Compile Include="ModificationTimeOfDatabaseDefinition.cs" />
     <Compile Include="SqlDependsOnSqlObjectDatabaseDefinition.cs" />

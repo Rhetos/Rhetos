@@ -26,21 +26,29 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlDependsOn")]
-    public class SqlDependsOnPropertyInfo : IConceptInfo
+    public class SqlDependsOnPropertyInfo : IConceptInfo, IMacroConcept
     {
         [ConceptKey]
         public IConceptInfo Dependent { get; set; }
         [ConceptKey]
         public PropertyInfo DependsOn { get; set; }
 
-        public override string ToString()
+        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return Dependent + " depends on " + DependsOn;
+            return existingConcepts.OfType<SqlUniqueMultipleInfo>()
+                .Where(unique => unique.SqlIndex.Entity == DependsOn.DataStructure)
+                .Where(unique => IsFirstIdentifierInList(DependsOn.Name, unique.SqlIndex.PropertyNames))
+                .Select(unique => new SqlDependsOnSqlIndexInfo { Dependent = Dependent, DependsOn = unique.SqlIndex });
         }
 
-        public override int GetHashCode()
+        private static bool IsFirstIdentifierInList(string identifier, string list)
         {
-            return ToString().GetHashCode();
+            if (!list.StartsWith(identifier))
+                return false;
+            char next = list.Skip(identifier.Length).FirstOrDefault();
+            if (next >= 'a' && next <= 'z' || next >= 'A' && next <= 'Z' || next >= '0' && next <= '9' || next == '_')
+                return false;
+            return true;
         }
     }
 }

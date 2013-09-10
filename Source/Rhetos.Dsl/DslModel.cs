@@ -102,7 +102,7 @@ namespace Rhetos.Dsl
                 {
                     // Evaluate macro concept:
 
-                    var macroCreatedConcepts = macroConcept.CreateNewConcepts(_dslContainer.Concepts) ?? new IConceptInfo[] { };
+                    var macroCreatedConcepts = macroConcept.CreateNewConcepts(_dslContainer.Concepts).ToArray() ?? new IConceptInfo[] { };
                     createdConcepts.AddRange(macroCreatedConcepts);
 
                     var logConcept = macroConcept;

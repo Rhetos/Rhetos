@@ -80,4 +80,26 @@ Module TestSqlWorkarounds
 			UseExecutionContext;
 		}
 	}
+
+    Entity DependencyBase
+    {
+        Integer A;
+        Integer B;
+        UniqueMultiple 'B A';
+    }
+    
+    SqlObject DependencyA "PRINT 'Create'" "PRINT 'Remove'"
+    {
+        SqlDependsOn TestSqlWorkarounds.DependencyBase.A;
+    }
+    
+    SqlObject DependencyB "PRINT 'Create'" "PRINT 'Remove'"
+    {
+        SqlDependsOn TestSqlWorkarounds.DependencyBase.B;
+    }
+    
+    SqlObject DependencyAll "PRINT 'Create'" "PRINT 'Remove'"
+    {
+        SqlDependsOn TestSqlWorkarounds.DependencyBase;
+    }
 }
