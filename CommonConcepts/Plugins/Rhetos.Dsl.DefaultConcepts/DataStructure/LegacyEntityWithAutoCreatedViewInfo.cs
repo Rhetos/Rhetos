@@ -58,7 +58,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (errorReference != null)
                 throw new DslSyntaxException("Legacy reference property '" + errorReference.GetKeyProperties() +"' must have explicitly defined LegacyProperty with source columns (comma separated), referenced table and referenced columns.");
 
-            return propertiesWithoutLegacyPropertyInfo.Select(p => new LegacyPropertySimpleInfo { Property = p, Column = p.Name });
+            return propertiesWithoutLegacyPropertyInfo.Select(p => new LegacyPropertySimpleInfo { Property = p, Column = p.Name }).ToList();
         }
     }
 }

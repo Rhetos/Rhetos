@@ -37,7 +37,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             return existingConcepts.OfType<PropertyInfo>()
                 .Where(p => p.DataStructure == EntityHistory.Entity)
                 .Select(p => new EntityHistoryPropertyInfo { Property = p })
-                .ToArray();
+                .ToList();
         }
     }
 }

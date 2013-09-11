@@ -29,13 +29,13 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            var result = new List<IConceptInfo>
+            var newConcepts = new List<IConceptInfo>
                              {
                                  new RequiredPropertyInfo {Property = Property},
                                  new UniquePropertyInfo {Property = Property}
                              };
 
-            return result;
+            return newConcepts;
         }
     }
 }

@@ -38,7 +38,8 @@ namespace Rhetos.Dsl.DefaultConcepts
             return existingConcepts.OfType<SqlUniqueMultipleInfo>()
                 .Where(unique => unique.SqlIndex.Entity == DependsOn.DataStructure)
                 .Where(unique => IsFirstIdentifierInList(DependsOn.Name, unique.SqlIndex.PropertyNames))
-                .Select(unique => new SqlDependsOnSqlIndexInfo { Dependent = Dependent, DependsOn = unique.SqlIndex });
+                .Select(unique => new SqlDependsOnSqlIndexInfo { Dependent = Dependent, DependsOn = unique.SqlIndex })
+                .ToList();
         }
 
         private static bool IsFirstIdentifierInList(string identifier, string list)

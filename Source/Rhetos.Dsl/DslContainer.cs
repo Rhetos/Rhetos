@@ -101,8 +101,8 @@ namespace Rhetos.Dsl
                             {
                                 if (errorOnUnresolvedReference)
                                     throw new DslSyntaxException(string.Format(
-                                        "Concept info property '{0}.{1}' is not initialized. Check if the InitializeNonparsableProperties function on class {0} is implemented properly.",
-                                        ci.GetType().Name, member.Name));
+                                        "Error in concept info {0}: property '{1}' is not initialized. Check if the InitializeNonparsableProperties function on class {0} is implemented properly. Instance: {2}.",
+                                        ci.GetType().Name, member.Name, ci.GetErrorDescription()));
                                 else
                                 {
                                     resolved = false;

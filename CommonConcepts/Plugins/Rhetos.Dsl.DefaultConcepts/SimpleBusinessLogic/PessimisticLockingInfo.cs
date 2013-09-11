@@ -45,7 +45,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                     {
                         Detail = PessimisticLockingByDataStructureIndex[Resource.GetKey()],
                         Reference = reference
-                    });
+                    }).ToList();
         }
 
         public override string ToString()

@@ -30,14 +30,14 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            var result = new List<IConceptInfo>
+            var newConcepts = new List<IConceptInfo>
                              {
                                  new RequiredPropertyInfo {Property = Property},
                                  new UniquePropertiesInfo
                                      {DataStructure = Property.DataStructure, Property1 = Group, Property2 = Property}
                              };
 
-            return result;
+            return newConcepts;
         }
 
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)

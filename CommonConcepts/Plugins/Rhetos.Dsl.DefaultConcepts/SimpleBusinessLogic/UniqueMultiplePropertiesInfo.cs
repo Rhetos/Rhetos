@@ -45,25 +45,25 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            var result = new List<IConceptInfo>();
+            var newConcepts = new List<IConceptInfo>();
 
             CheckSemantics(existingConcepts);
 
             var sqlIndex = new SqlIndexMultipleInfo { Entity = DataStructure, PropertyNames = PropertyNames };
-            result.Add(sqlIndex);
+            newConcepts.Add(sqlIndex);
 
             if (SqlImplementation(this))
             {
                 var sqlUnique = new SqlUniqueMultipleInfo { SqlIndex = sqlIndex };
-                result.Add(sqlUnique);
+                newConcepts.Add(sqlUnique);
             }
 
             var properties = PropertyNames.Split(' ')
                 .Select(name => new PropertyInfo { DataStructure = DataStructure, Name = name })
                 .Select(property => new UniqueMultiplePropertyInfo { Unique = this, Property = property });
-            result.AddRange(properties);
+            newConcepts.AddRange(properties);
 
-            return result;
+            return newConcepts;
         }
     }
 }

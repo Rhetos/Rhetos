@@ -39,8 +39,8 @@ namespace CommonConcepts.Test
                     "DELETE FROM Test13.Old1;",
                     "INSERT INTO Test13.Old1 (ID, IDOld1, Name) SELECT '" + GuidA + "', 11, 'a';",
                     "INSERT INTO Test13.Old1 (ID, IDOld1, Name) SELECT '" + GuidB + "', 12, 'b';",
-                    "INSERT INTO Test13.Old2 (ID, IDOld2, Name, Old1ID) SELECT NEWID(), 21, 'ax', 11",
-                    "INSERT INTO Test13.Old2 (ID, IDOld2, Name, Old1ID) SELECT NEWID(), 22, 'ay', 11"
+                    "INSERT INTO Test13.Old2 (ID, IDOld2, Name, Old1ID, Same) SELECT NEWID(), 21, 'ax', 11, 'sx'",
+                    "INSERT INTO Test13.Old2 (ID, IDOld2, Name, Old1ID, Same) SELECT NEWID(), 22, 'ay', 11, 'sy'"
                 });
         }
 
@@ -58,7 +58,7 @@ namespace CommonConcepts.Test
             executionContext.NHibernateSession.Flush();
             executionContext.NHibernateSession.Clear();
 
-            var loaded = domRepository.Test13.Legacy2.Query().Select(l2 => l2.Leg1.Name + " " + l2.NameNew);
+            var loaded = domRepository.Test13.Legacy2.Query().Select(l2 => l2.Leg1.Name + " " + l2.NameNew + " " + l2.Same);
             return string.Join(", ", loaded.OrderBy(x => x));
         }
 
@@ -72,7 +72,7 @@ namespace CommonConcepts.Test
 
                 Assert.AreEqual("a, b", ReportLegacy1(executionContext, repository));
 
-                Assert.AreEqual("a ax, a ay", ReportLegacy2(executionContext, repository));
+                Assert.AreEqual("a ax sx, a ay sy", ReportLegacy2(executionContext, repository));
             }
         }
 
@@ -107,20 +107,21 @@ namespace CommonConcepts.Test
             {
                 var repository = new Common.DomRepository(executionContext);
                 InitializeData(executionContext);
-                Assert.AreEqual("a ax, a ay", ReportLegacy2(executionContext, repository), "initial");
+                Assert.AreEqual("a ax sx, a ay sy", ReportLegacy2(executionContext, repository), "initial");
 
-                repository.Test13.Legacy2.Insert(new[] { new Test13.Legacy2 { NameNew = "bnew", Leg1 = new Test13.Legacy1 { ID = GuidB } } });
-                Assert.AreEqual("a ax, a ay, b bnew", ReportLegacy2(executionContext, repository), "insert");
+                repository.Test13.Legacy2.Insert(new[] { new Test13.Legacy2 { NameNew = "bnew", Leg1 = new Test13.Legacy1 { ID = GuidB }, Same = "snew" } });
+                Assert.AreEqual("a ax sx, a ay sy, b bnew snew", ReportLegacy2(executionContext, repository), "insert");
 
                 var updated = repository.Test13.Legacy2.Query().Where(item => item.NameNew == "ax").Single();
                 executionContext.NHibernateSession.Evict(updated);
-                updated.NameNew = "bx";
+                updated.NameNew += "2";
                 updated.Leg1 = new Test13.Legacy1 { ID = GuidB };
+                updated.Same += "2";
                 repository.Test13.Legacy2.Update(new[] { updated });
-                Assert.AreEqual("a ay, b bnew, b bx", ReportLegacy2(executionContext, repository), "update");
+                Assert.AreEqual("a ay sy, b ax2 sx2, b bnew snew", ReportLegacy2(executionContext, repository), "update");
 
                 repository.Test13.Legacy2.Delete(repository.Test13.Legacy2.Query().Where(item => item.NameNew == "ay"));
-                Assert.AreEqual("b bnew, b bx", ReportLegacy2(executionContext, repository), "insert");
+                Assert.AreEqual("b ax2 sx2, b bnew snew", ReportLegacy2(executionContext, repository), "insert");
             }
         }
 

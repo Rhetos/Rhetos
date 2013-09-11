@@ -81,6 +81,7 @@ namespace Rhetos.Dsl
         }
 
         private const int MacroIterationLimit = 200;
+        private static readonly IConceptInfo[] emptyConceptsArray = new IConceptInfo[] { };
 
         private void ExpandMacroConcepts()
         {
@@ -102,7 +103,7 @@ namespace Rhetos.Dsl
                 {
                     // Evaluate macro concept:
 
-                    var macroCreatedConcepts = macroConcept.CreateNewConcepts(_dslContainer.Concepts).ToArray() ?? new IConceptInfo[] { };
+                    var macroCreatedConcepts = macroConcept.CreateNewConcepts(_dslContainer.Concepts) ?? emptyConceptsArray;
                     createdConcepts.AddRange(macroCreatedConcepts);
 
                     var logConcept = macroConcept;

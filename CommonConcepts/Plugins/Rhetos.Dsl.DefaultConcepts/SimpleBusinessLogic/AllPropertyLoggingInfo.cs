@@ -55,7 +55,8 @@ namespace Rhetos.Dsl.DefaultConcepts
                                     {
                                         EntityLogging = EntityLogging,
                                         Property = prop
-                                    });
+                                    })
+                .ToList();
 
         }
     }

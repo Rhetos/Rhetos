@@ -210,12 +210,14 @@ Module Test13
 		Integer IDOld2;
 		ShortString Name;
 		Integer Old1ID;
+        ShortString Same;
 	}
 	
 	LegacyEntity Legacy2 'Test13.Old2' // view is automatically generated
 	{
 		ShortString NameNew { LegacyProperty 'Name'; }
 		Reference Leg1 Test13.Legacy1 { LegacyProperty 'Old1ID' 'Test13.Old1' 'IDOld1'; }
+        ShortString Same;
 		
 		SqlDependsOn Test13.Old2;
 	}

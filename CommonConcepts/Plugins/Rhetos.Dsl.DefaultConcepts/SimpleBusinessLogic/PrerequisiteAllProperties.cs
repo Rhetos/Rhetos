@@ -49,7 +49,8 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var dependsOnProperties = existingConcepts.OfType<PropertyInfo>().Where(p => p.DataStructure == DependsOn);
             return dependsOnProperties
-                .Select(dependsOnProperty => new SqlDependsOnPropertyInfo { Dependent = this, DependsOn = dependsOnProperty });
+                .Select(dependsOnProperty => new SqlDependsOnPropertyInfo { Dependent = this, DependsOn = dependsOnProperty })
+                .ToList();
         }
     }
 }

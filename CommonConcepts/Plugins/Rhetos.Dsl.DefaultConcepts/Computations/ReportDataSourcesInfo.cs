@@ -58,7 +58,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                                           Report = Report,
                                           DataSource = source,
                                           Order = index.ToString("D" + digits)
-                                      });
+                                      }).ToList();
         }
     }
 }

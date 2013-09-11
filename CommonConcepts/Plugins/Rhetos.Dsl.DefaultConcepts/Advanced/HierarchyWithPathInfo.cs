@@ -42,7 +42,8 @@ namespace Rhetos.Dsl.DefaultConcepts
                 };
 
             return new IConceptInfo[] { pathProperty }
-                .Concat(base.CreateNewConcepts(existingConcepts));
+                .Concat(base.CreateNewConcepts(existingConcepts))
+                .ToList();
         }
 
         protected override string ComputedDataStructureExpression()

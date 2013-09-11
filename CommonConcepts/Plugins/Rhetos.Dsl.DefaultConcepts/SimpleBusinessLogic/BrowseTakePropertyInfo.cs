@@ -42,7 +42,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             return CreateNewConcepts(Browse, Path, Path.Replace(".", ""), existingConcepts, this);
         }
 
-        internal static IEnumerable<IConceptInfo> CreateNewConcepts(
+        internal static IList<IConceptInfo> CreateNewConcepts(
             BrowseDataStructureInfo browse, string path, string newPropertyName,
             IEnumerable<IConceptInfo> existingConcepts, IConceptInfo errorContext)
         {

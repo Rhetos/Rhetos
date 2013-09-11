@@ -35,15 +35,15 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            var result = new List<IConceptInfo>();
+            var newConcepts = new List<IConceptInfo>();
 
             CheckSemantics(existingConcepts);
 
-            result.AddRange(PropertyNames.Split(' ')
+            newConcepts.AddRange(PropertyNames.Split(' ')
                 .Select(name => new PropertyInfo { DataStructure = Entity, Name = name })
                 .Select(property => new SqlIndexMultiplePropertyInfo { SqlIndex = this, Property = property }));
 
-            return result;
+            return newConcepts;
         }
 
         public static bool IsSupported(DataStructureInfo dataStructure)

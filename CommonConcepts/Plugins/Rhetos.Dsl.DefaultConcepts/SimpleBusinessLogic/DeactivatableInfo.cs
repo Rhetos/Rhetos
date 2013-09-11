@@ -48,8 +48,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 Source = Entity
             };
 
-            var concepts = new IConceptInfo[] { activePropertyInfo, composableFilterActiveAndThis };
-            return concepts;
+            return new IConceptInfo[] { activePropertyInfo, composableFilterActiveAndThis };
         }
     }
 }
