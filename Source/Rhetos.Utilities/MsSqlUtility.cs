@@ -60,22 +60,13 @@ namespace Rhetos.Utilities
 
             var sqlException = (SqlException)ex;
 
-            /*if (sqlException != null)
-            {
-                if (sqlException.State == 101 || sqlException.State == 102)
-                    return new UserException(sqlException.Message);
-
-                return sqlException;
-            }
-            return null;*/
-
             SqlError[] errorArray = new SqlError[sqlException.Errors.Count];
             sqlException.Errors.CopyTo(errorArray, 0);
             var errors = from e in errorArray
                          orderby e.LineNumber
                          select e;
             foreach (var err in errors)
-                if (err.State == 101 || err.State == 102)
+                if (err.State == 101) // Our convention for an error raised in SQL that is intended as a message to the end user.
                     return new UserException(err.Message);
 
             return sqlException;

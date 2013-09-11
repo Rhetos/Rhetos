@@ -23,6 +23,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Utilities;
 using Rhetos.TestCommon;
+using Rhetos;
 
 namespace CommonConcepts.Test
 {
@@ -153,6 +154,21 @@ namespace CommonConcepts.Test
                 + " AND DependsOnID IN (" + ids + ")",
                 reader => dependencies.Add(Tuple.Create(reader.GetGuid(0), reader.GetGuid(1))));
             return dependencies;
+        }
+
+        [TestMethod]
+        public void SqlUserError()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var repository = new Common.DomRepository(executionContext);
+
+                var ex = TestUtility.ShouldFail(
+                    () => repository.TestSqlWorkarounds.SqlUserError.Insert(new[] { new TestSqlWorkarounds.SqlUserError() }),
+                    "", "custom user message");
+
+                Assert.AreEqual("UserException", ex.GetType().Name);
+            }
         }
     }
 }

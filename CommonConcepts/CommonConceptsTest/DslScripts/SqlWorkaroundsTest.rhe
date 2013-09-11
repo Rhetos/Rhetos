@@ -102,4 +102,9 @@ Module TestSqlWorkarounds
     {
         SqlDependsOn TestSqlWorkarounds.DependencyBase;
     }
+    
+    Entity SqlUserError
+    {
+        SqlTrigger CustomUserMessage "AFTER INSERT" "RAISERROR ('custom user message', 16, 101)";
+    }
 }
