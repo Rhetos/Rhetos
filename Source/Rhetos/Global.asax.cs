@@ -32,12 +32,14 @@ using Rhetos.Logging;
 using System.Diagnostics;
 using System.ServiceModel;
 using System.ServiceModel.Description;
+using System.Threading.Tasks;
 
 namespace Rhetos
 {
     public class Global : System.Web.HttpApplication
     {
-        private ILogger ErrorLogger;
+        private ILogger _logger;
+        private ILogger _performanceLogger;
 
         protected void Application_Start(object sender, EventArgs e)
         {
@@ -45,13 +47,26 @@ namespace Rhetos
             builder.RegisterModule(new ConfigurationSettingsReader("autofacComponents"));
             AutofacServiceHostFactory.Container = builder.Build();
 
-            ErrorLogger = AutofacServiceHostFactory.Container.Resolve<ILogProvider>().GetLogger("Unhandled exception");
-            
-            foreach (var service in AutofacServiceHostFactory.Container.Resolve<IEnumerable<IService>>())
+            _logger = AutofacServiceHostFactory.Container.Resolve<ILogProvider>().GetLogger("Global");
+            _performanceLogger = AutofacServiceHostFactory.Container.Resolve<ILogProvider>().GetLogger("Performance");
+
+            var totalStopwatch = Stopwatch.StartNew();
+
+            foreach(var service in AutofacServiceHostFactory.Container.Resolve<IEnumerable<IService>>())
             {
-                service.Initialize();
-                ErrorLogger.Trace("Service " + service.GetType().FullName + " initialized.");
+                try
+                {
+                    var stopwatch = Stopwatch.StartNew();
+                    service.Initialize();
+                    _performanceLogger.Write(stopwatch, service.GetType().FullName + " initialized.");
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex.ToString());
+                }
             }
+
+            _performanceLogger.Write(totalStopwatch, "All services initialized.");
         }
 
         protected void Session_Start(object sender, EventArgs e)
@@ -72,8 +87,8 @@ namespace Rhetos
         protected void Application_Error(object sender, EventArgs e)
         {
             var ex = Server.GetLastError();
-            if (ErrorLogger != null)
-                ErrorLogger.Error(ex.ToString());
+            if (_logger != null)
+                _logger.Error("Application error: " + ex.ToString());
         }
 
         protected void Session_End(object sender, EventArgs e)
