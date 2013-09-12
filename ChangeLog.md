@@ -1,3 +1,20 @@
+0.9.10 (2013-09-12)
+-------------------
+
+Breaking changes:
+
+* REST interface (DomainService.svc) is moved from Rhetos core to a separate repository: *LegacyRestGenerator*. A faster version of REST interface is implemented in *RestGenerator* repository.
+* Modified implementation of **History** concept: Generated `_FullHistory` data structure is renamed to `_History`, old `_History` to `_Changes` and `_History_ActiveUntil` to `_ChangesActiveUntil`.
+ 
+New features:
+
+* When using **SqlDependsOn** for property or entity, the concept will automatically add s dependency to the property's unique index if one exists.  
+
+Internal improvements:
+
+* Bugfix: Concept info property 'LegacyPropertySimpleInfo.LegacyEntityWithAutoCreatedView' is not initialized.
+* Bugfix: ArgumentNullException when loading Common.Claim or Common.Principal.
+
 0.9.9 (2013-09-04)
 ------------------
 
