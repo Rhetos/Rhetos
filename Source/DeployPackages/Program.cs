@@ -32,7 +32,6 @@ using Rhetos.Deployment;
 using Rhetos.Dom;
 using Rhetos.Logging;
 using Rhetos.Persistence.NHibernate;
-using Rhetos.RestGenerator;
 using Rhetos.Security;
 using Rhetos.Dsl;
 using System.Collections.Generic;
@@ -102,10 +101,6 @@ namespace DeployPackages
                     }
                     else
                         Console.WriteLine("Generated " + generatedTypesCount + " types.");
-
-                    Console.Write("Generating Domain Service ... ");
-                    container.Resolve<IRestGenerator>().Generate("DomainService");
-                    Console.WriteLine("Done.");
 
                     Console.Write("Executing custom generators... ");
                     Console.WriteLine(container.Resolve<Rhetos.Generator.GeneratorProcessor>().ProcessGenerators());

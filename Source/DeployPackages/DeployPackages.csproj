@@ -113,10 +113,6 @@
       <Project>{24238DA8-70C5-4BE5-85B3-359E60B40ACF}</Project>
       <Name>Rhetos.Persistence.NHibernate</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Source\Rhetos.RestGenerator.Interfaces\Rhetos.RestGenerator.Interfaces.csproj">
-      <Project>{1FB9D8BD-03E3-4EF8-80A4-1376AB271BEA}</Project>
-      <Name>Rhetos.RestGenerator.Interfaces</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Source\Rhetos.Security.Interfaces\Rhetos.Security.Interfaces.csproj">
       <Project>{8E1D4ACD-B1AA-433F-9E52-FA50D4A1C9DC}</Project>
       <Name>Rhetos.Security.Interfaces</Name>
