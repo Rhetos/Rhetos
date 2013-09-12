@@ -20,8 +20,10 @@ Recommended Rhetos DSL packages
 -------------------------------
 
 * CommonPackage (placed inside the Rhetos repository) contains basic concepts for building applications.  
+* [RestGenerator](https://github.com/Rhetos/RestGenerator) automatically generates REST API for all entities and other readable or writable data structures that are defined in a Rhetos application.
 * [MvcModelGenerator](https://github.com/Rhetos/MvcModelGenerator) automatically generates ASP.NET MVC model for all entities and other queryable data structures that are defined in a Rhetos application.
 * [ODataGenerator](https://github.com/Rhetos/ODataGenerator) automatically generates OData interface (Open Data Protocol) for all entities and other queryable data structures that are defined in a Rhetos application.
+* [LegacyRestGenerator](https://github.com/Rhetos/LegacyRestGenerator) old version of REST API, available for backward compatibility.
 
 Installation
 ============

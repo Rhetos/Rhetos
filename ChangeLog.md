@@ -14,6 +14,7 @@ Internal improvements:
 
 * Bugfix: Concept info property 'LegacyPropertySimpleInfo.LegacyEntityWithAutoCreatedView' is not initialized.
 * Bugfix: ArgumentNullException when loading Common.Claim or Common.Principal.
+* Bugfix: Genetared dlls moved to bin\Generated, to avoid locking during exection of DeployPackages.exe.
 
 0.9.9 (2013-09-04)
 ------------------
