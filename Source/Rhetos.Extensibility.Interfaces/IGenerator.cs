@@ -16,24 +16,18 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-using Autofac;
-using Rhetos.Dsl;
-using Rhetos.Generator;
-using System.ComponentModel.Composition;
-using System.Diagnostics.Contracts;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Rhetos.Configuration.Autofac
+namespace Rhetos.Extensibility
 {
-    [Export(typeof(Module))]
-    public class GeneratorModuleConfiguration : Module
+    public interface IGenerator
     {
-        protected override void Load(ContainerBuilder builder)
-        {
-            builder.RegisterType<GeneratorProcessor>();
+        IEnumerable<string> Dependencies { get; }
 
-            Rhetos.Extensibility.PluginsUtility.RegisterPlugins<IGenerator>(builder);
-
-            base.Load(builder);
-        }
+        void Generate();
     }
 }

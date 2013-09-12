@@ -105,7 +105,6 @@
   <ItemGroup>
     <Compile Include="CompilerConfiguration.cs" />
     <Compile Include="CommonModuleConfiguration.cs" />
-    <Compile Include="GeneratorModuleConfiguration.cs" />
     <Compile Include="LoggingConfiguration.cs" />
     <Compile Include="DatabaseGeneratorModuleConfiguration.cs" />
     <Compile Include="DomModuleConfiguration.cs" />
@@ -164,14 +163,6 @@
     <ProjectReference Include="..\Rhetos.Extensibility\Rhetos.Extensibility.csproj">
       <Project>{7eaf15bd-39c9-44ab-8834-ec0ae013a8a2}</Project>
       <Name>Rhetos.Extensibility</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Generator.Interfaces\Rhetos.Generator.Interfaces.csproj">
-      <Project>{f0440cf2-2c1a-49e1-a818-3ad978d6d4bc}</Project>
-      <Name>Rhetos.Generator.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Generator\Rhetos.Generator.csproj">
-      <Project>{85abaace-d759-4d36-977d-cc060f95338f}</Project>
-      <Name>Rhetos.Generator</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj">
       <Project>{bb7e5668-1b43-4fce-a832-444cc57fee80}</Project>

@@ -32,30 +32,25 @@ namespace Rhetos.Extensibility
     {
         private static readonly string _rootPath = AppDomain.CurrentDomain.BaseDirectory;
 
-        public static List<string> DeployPackagesAdditionalAssemblies = new List<string>(); // TODO: Remove this hack after ServerDom.dll is moved to the bin\Plugins subfolder and every IGenerator has a Cleanup() function.
+        public static List<string> DeployPackagesAdditionalAssemblies = new List<string>(); // TODO: Remove this hack after ServerDom.dll is moved to the bin\Generated subfolder.
 
         public static string[] ListPluginsAssemblies()
         {
             List<string> pluginsAssemblies = new List<string>();
-            if (ConfigurationManager.AppSettings["PluginsDirectory"] != null)
+            if (ConfigurationManager.AppSettings["PluginsSearch"] != null)
             {
-                string pluginsDirectory = Path.Combine(_rootPath, ConfigurationManager.AppSettings["PluginsDirectory"]);
-                if (!Directory.Exists(pluginsDirectory))
-                    throw new ApplicationException(String.Format("PluginsDirectory folder \"{0}\" does not exist.", pluginsDirectory));
+                IEnumerable<string> pluginsPath = ConfigurationManager.AppSettings["PluginsSearch"].Split(new[] { ',' })
+                    .Select(p => p.Trim())
+                    .Where(p => !string.IsNullOrEmpty(p))
+                    .Select(p => Path.Combine(_rootPath, p));
 
-                pluginsAssemblies.AddRange(Directory.EnumerateFiles(pluginsDirectory, "*.dll", SearchOption.AllDirectories));
-            }
-            if (ConfigurationManager.AppSettings["PluginsAssemblies"] != null)
-            {
-                IEnumerable<string> pluginsFiles = ConfigurationManager.AppSettings["PluginsAssemblies"].Split(new[] { ',' })
-                    .Select(pluginsFile => pluginsFile.Trim()).Where(pluginsFile => !string.IsNullOrEmpty(pluginsFile))
-                    .Select(pluginsFile => Path.Combine(_rootPath, pluginsFile));
-
-                var invalid = pluginsFiles.FirstOrDefault(pluginsFile => !File.Exists(pluginsFile));
-                if (invalid != null)
-                    throw new ApplicationException(String.Format("PluginsAssemblies file \"{0}\" does not exist.", invalid));
-
-                pluginsAssemblies.AddRange(pluginsFiles);
+                foreach (var path in pluginsPath)
+                    if (File.Exists(path))
+                        pluginsAssemblies.Add(path);
+                    else if (Directory.Exists(path))
+                        pluginsAssemblies.AddRange(Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories));
+                    else
+                        throw new FrameworkException(String.Format("PluginsSearch file or folder \"{0}\" does not exist.", path));
             }
 
             var additionalAssemblies = DeployPackagesAdditionalAssemblies

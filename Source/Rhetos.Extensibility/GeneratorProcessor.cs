@@ -22,9 +22,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Rhetos.Utilities;
-using Rhetos.Extensibility;
 
-namespace Rhetos.Generator
+namespace Rhetos.Extensibility
 {
     public class GeneratorProcessor
     {

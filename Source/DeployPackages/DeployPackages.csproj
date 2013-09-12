@@ -125,10 +125,6 @@
       <Project>{7eaf15bd-39c9-44ab-8834-ec0ae013a8a2}</Project>
       <Name>Rhetos.Extensibility</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Generator\Rhetos.Generator.csproj">
-      <Project>{85abaace-d759-4d36-977d-cc060f95338f}</Project>
-      <Name>Rhetos.Generator</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

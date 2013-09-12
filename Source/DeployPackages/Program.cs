@@ -80,6 +80,12 @@ namespace DeployPackages
             {
                 var parameters = new Paremeters(args);
 
+                string generatedDllsFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Generated");
+                if (!Directory.Exists(generatedDllsFolder))
+                    Directory.CreateDirectory(generatedDllsFolder);
+                foreach (var oldGeneratedFile in Directory.GetFiles(generatedDllsFolder, "*", SearchOption.AllDirectories))
+                    File.Delete(oldGeneratedFile);
+
                 var builder = new ContainerBuilder();
                 string connectionString = SqlUtility.ConnectionString;
                 builder.RegisterModule(new AutofacConfiguration(connectionString));
@@ -104,7 +110,7 @@ namespace DeployPackages
                         Console.WriteLine("Generated " + generatedTypesCount + " types.");
 
                     Console.Write("Executing custom generators... ");
-                    Console.WriteLine(container.Resolve<Rhetos.Generator.GeneratorProcessor>().ProcessGenerators());
+                    Console.WriteLine(container.Resolve<GeneratorProcessor>().ProcessGenerators());
 
                     Console.Write("Preparing Rhetos database ... ");
                     DeploymentUtility.PrepareRhetosDatabase(container.Resolve<ISqlExecuter>());
@@ -148,7 +154,7 @@ namespace DeployPackages
 
                     if (parameters.GeneratePermissionClaims)
                     {
-                        PluginsUtility.DeployPackagesAdditionalAssemblies.AddRange(new[] { @"bin\ServerDom.dll", @"ServerDom.dll" }); // TODO: Remove this hack after ServerDom.dll is moved to the bin\Plugins subfolder and every IGenerator has a Cleanup() function.
+                        PluginsUtility.DeployPackagesAdditionalAssemblies.AddRange(new[] { @"bin\ServerDom.dll", @"ServerDom.dll" }); // TODO: Remove this hack after ServerDom.dll is moved to the bin\Generated.
                         PluginsUtility.DetectAndRegisterNewModulesAndPlugins(container);
 
                         Console.Write("Generating claims ... ");
