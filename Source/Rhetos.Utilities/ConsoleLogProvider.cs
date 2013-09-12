@@ -35,10 +35,12 @@ namespace Rhetos.Utilities
     public class ConsoleLogger : ILogger
     {
         private readonly string _eventName;
+        private readonly ILogger _decoratedLogger;
 
-        public ConsoleLogger(string eventName = null)
+        public ConsoleLogger(string eventName = null, ILogger decoratedLogger = null)
         {
             _eventName = eventName;
+            _decoratedLogger = decoratedLogger;
         }
 
         public void Write(EventType eventType, Func<string> logMessage)
@@ -47,6 +49,9 @@ namespace Rhetos.Utilities
                 "[" + eventType + "] "
                 + (_eventName != null ? (_eventName + ": ") : "" )
                 + logMessage());
+
+            if (_decoratedLogger != null)
+                _decoratedLogger.Write(eventType, logMessage);
         }
     }
 }

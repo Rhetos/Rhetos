@@ -17,7 +17,5 @@ XCOPY /Y/D/R %ThisScriptFolder%Plugins\Rhetos.Processing.DefaultCommands\bin\%2\
 XCOPY /Y/D/R %ThisScriptFolder%Plugins\Rhetos.Processing.DefaultCommands\bin\%2\Rhetos.Processing.DefaultCommands.pdb %1 || EXIT /B 1
 XCOPY /Y/D/R %ThisScriptFolder%Plugins\Rhetos.Processing.DefaultCommands.Interfaces\bin\%2\Rhetos.Processing.DefaultCommands.Interfaces.dll %1 || EXIT /B 1
 XCOPY /Y/D/R %ThisScriptFolder%Plugins\Rhetos.Processing.DefaultCommands.Interfaces\bin\%2\Rhetos.Processing.DefaultCommands.Interfaces.pdb %1 || EXIT /B 1
-XCOPY /Y/D/R %ThisScriptFolder%Plugins\Rhetos.Rest.DefaultConcepts\bin\%2\Rhetos.Rest.DefaultConcepts.dll %1 || EXIT /B 1
-XCOPY /Y/D/R %ThisScriptFolder%Plugins\Rhetos.Rest.DefaultConcepts\bin\%2\Rhetos.Rest.DefaultConcepts.pdb %1 || EXIT /B 1
 
 EXIT /B 0

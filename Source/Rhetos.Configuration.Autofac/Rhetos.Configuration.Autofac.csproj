@@ -114,7 +114,6 @@
     <Compile Include="NHibernateModuleConfiguration.cs" />
     <Compile Include="ProcessingModuleConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RestGeneratorModuleConfiguration.cs" />
     <Compile Include="SecurityModuleConfiguration.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -193,14 +192,6 @@
     <ProjectReference Include="..\Rhetos.Processing\Rhetos.Processing.csproj">
       <Project>{eb4237c4-3d83-4632-b8c9-ac08c886720a}</Project>
       <Name>Rhetos.Processing</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rhetos.RestGenerator.Interfaces\Rhetos.RestGenerator.Interfaces.csproj">
-      <Project>{1FB9D8BD-03E3-4EF8-80A4-1376AB271BEA}</Project>
-      <Name>Rhetos.RestGenerator.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rhetos.RestGenerator\Rhetos.RestGenerator.csproj">
-      <Project>{72E0C1AB-1FAC-4FB3-8AAC-923BA4AE79CB}</Project>
-      <Name>Rhetos.RestGenerator</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rhetos.Security.Interfaces\Rhetos.Security.Interfaces.csproj">
       <Project>{8E1D4ACD-B1AA-433F-9E52-FA50D4A1C9DC}</Project>

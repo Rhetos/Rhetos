@@ -70,9 +70,10 @@ namespace DeployPackages
 
     class Program
     {
+        static ILogger _logger = new ConsoleLogger("DeployPackagesInitialization");
+
         static int Main(string[] args)
         {
-            ILogger logger = null;
             Action undoDataMigrationScriptsOnError = null;
 
             try
@@ -84,7 +85,7 @@ namespace DeployPackages
                 builder.RegisterModule(new AutofacConfiguration(connectionString));
                 using (var container = builder.Build())
                 {
-                    logger = container.Resolve<ILogProvider>().GetLogger("DeployPackages");
+                    _logger = new ConsoleLogger("DeployPackages", container.Resolve<ILogProvider>().GetLogger("DeployPackages"));
 
                     Console.WriteLine("SQL connection string: " + SqlUtility.MaskPassword(connectionString));
 
@@ -97,7 +98,7 @@ namespace DeployPackages
                     {
                         string report = "WARNING: Empty assembly is generated.";
                         DeploymentUtility.WriteError(report);
-                        logger.Error(report);
+                        _logger.Error(report);
                     }
                     else
                         Console.WriteLine("Generated " + generatedTypesCount + " types.");
@@ -136,8 +137,7 @@ namespace DeployPackages
                     if (dslScriptCount == 0)
                     {
                         string report = "WARNING: There are no DSL scripts in source folder " + AutofacConfiguration.DslScriptsFolder + ".";
-                        DeploymentUtility.WriteError(report);
-                        logger.Error(report);
+                        _logger.Info(report);
                     }
                     else
                         Console.WriteLine("Uploaded " + dslScriptCount + " DSL scripts to database.");
@@ -173,12 +173,16 @@ namespace DeployPackages
             catch (Exception ex)
             {
                 Console.WriteLine();
-                Console.WriteLine(ex);
+                _logger.Error(ex.ToString());
+
                 DeploymentUtility.WriteError(ex.GetType().Name + ": " + ex.Message);
                 Console.WriteLine("See DeployPackages.log for more information on error. Enable TraceLog in config file for even more details.");
 
-                if (logger != null)
-                    logger.Error(ex.ToString());
+                if (ex is ReflectionTypeLoadException)
+                {
+                    var loaderMessages = string.Join("\r\n", ((ReflectionTypeLoadException)ex).LoaderExceptions.Select(le => le.Message).Distinct());
+                    _logger.Error(loaderMessages);
+                }
 
                 if (undoDataMigrationScriptsOnError != null)
                     undoDataMigrationScriptsOnError();

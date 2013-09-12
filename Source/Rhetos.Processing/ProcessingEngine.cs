@@ -145,7 +145,7 @@ namespace Rhetos.Processing
 
                 return LogResultsReturnError(
                     commandResults,
-                    "Exception in command execution or ApplyChanges. " + ex,
+                    "Command execution error: " + ex,
                     commandCount,
                     systemMessage,
                     userMessage);

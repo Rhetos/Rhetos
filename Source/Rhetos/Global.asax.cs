@@ -43,6 +43,8 @@ namespace Rhetos
 
         protected void Application_Start(object sender, EventArgs e)
         {
+            var totalStopwatch = Stopwatch.StartNew();
+
             var builder = new ContainerBuilder();
             builder.RegisterModule(new ConfigurationSettingsReader("autofacComponents"));
             AutofacServiceHostFactory.Container = builder.Build();
@@ -50,7 +52,7 @@ namespace Rhetos
             _logger = AutofacServiceHostFactory.Container.Resolve<ILogProvider>().GetLogger("Global");
             _performanceLogger = AutofacServiceHostFactory.Container.Resolve<ILogProvider>().GetLogger("Performance");
 
-            var totalStopwatch = Stopwatch.StartNew();
+            _performanceLogger.Write(totalStopwatch, "Autofac initialized.");
 
             foreach(var service in AutofacServiceHostFactory.Container.Resolve<IEnumerable<IService>>())
             {
@@ -58,7 +60,7 @@ namespace Rhetos
                 {
                     var stopwatch = Stopwatch.StartNew();
                     service.Initialize();
-                    _performanceLogger.Write(stopwatch, service.GetType().FullName + " initialized.");
+                    _performanceLogger.Write(stopwatch, "Service " + service.GetType().FullName + " initialized.");
                 }
                 catch (Exception ex)
                 {
