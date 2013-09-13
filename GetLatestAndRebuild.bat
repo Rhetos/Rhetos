@@ -1,77 +1,22 @@
-@ECHO OFF
+@REM HINT: SET SECOND ARGUMENT TO /NOPAUSE WHEN AUTOMATING THE BUILD.
 
-SET Config=%1%
-IF [%1] == [] SET Config=Debug
+@SET Config=%1%
+@IF [%1] == [] SET Config=Debug
 
-SET StartTime=%Time%
+git pull || echo CANNOT AUTOMATICALLY GET LATEST VERSION. IT IS POSSIBLE THAT A MANUAL MERGE IS NEEDED. && GOTO Error0
+CALL Clean.bat || GOTO Error0
+CALL Build.bat %Config% /NOPAUSE || GOTO Error0
+CALL Test.bat %Config% /NOPAUSE || GOTO Error0
+CALL CreateInstallationPackage.bat %Config% || GOTO Error0
 
-git pull || echo CANNOT AUTOMATICALLY GET LATEST VERSION. IT IS POSSIBLE THAT A MANUAL MERGE IS NEEDED. && PAUSE && EXIT /B 1
+@REM ================================================
 
-ECHO.
-ECHO ================================================
-ECHO CLEAN || GOTO ErrorBuild
-CALL Clean.bat
+@ECHO.
+@ECHO %~nx0 SUCCESSFULLY COMPLETED.
+@EXIT /B 0
 
-ECHO.
-ECHO ================================================
-ECHO BUILD
-CALL Build.bat %Config% || GOTO ErrorBuild
-FOR /F "usebackq" %%A IN ('BuildErrors.log') DO SET Size=%%~zA
-IF 0%Size% GTR 0 GOTO ErrorBuild
-SET Size=
-
-ECHO.
-ECHO ================================================
-ECHO TEST
-CALL Test.bat %Config% || GOTO ErrorBuild
-FOR /F "usebackq" %%A IN ('TestErrors.log') DO SET Size=%%~zA
-IF 0%Size% GTR 0 GOTO ErrorTest
-SET Size=
-
-ECHO.
-ECHO ================================================
-ECHO CREATE PACKAGES
-CALL CreateInstallationPackage.bat %Config% || GOTO ErrorCreateInstallationPackage
-
-ECHO.
-ECHO ================================================
-ECHO Start: %StartTime%
-ECHO End:   %Time%
-ECHO.
-ECHO Build successful.
-PAUSE
-EXIT /b
-
-
-:ErrorBuild
-ECHO.
-ECHO.
-ECHO ================================================
-ECHO !!!!!!!!!!!!!!!! ERRORS IN BUILD !!!!!!!!!!!!!!!!!!!!
-TYPE BuildErrors.log
-ECHO !!!!!!!!!!!!!!!! ERRORS IN BUILD !!!!!!!!!!!!!!!!!!!!
-PAUSE
-START .
-EXIT /b
-
-
-:ErrorTest
-ECHO.
-ECHO.
-ECHO ================================================
-ECHO !!!!!!!!!!!!!!!! ERRORS IN UNIT TESTING !!!!!!!!!!!!!!!!!!!!
-TYPE TestErrors.log
-ECHO !!!!!!!!!!!!!!!! ERRORS IN UNIT TESTING !!!!!!!!!!!!!!!!!!!!
-PAUSE
-START .
-EXIT /b
-
-
-:ErrorCreateInstallationPackage
-ECHO.
-ECHO.
-ECHO ================================================
-ECHO !!!!!!!!!!!!!!!! CreateInstallationPackage.bat FAILED !!!!!!!!!!!!!!!!!!!!
-PAUSE
-START .
-EXIT /b
+:Error0
+@ECHO.
+@ECHO %~nx0 FAILED.
+@IF /I [%2] NEQ [/NOPAUSE] @PAUSE
+@EXIT /B 1

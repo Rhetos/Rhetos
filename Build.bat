@@ -1,35 +1,28 @@
-@ECHO OFF
+@REM HINT: SET SECOND ARGUMENT TO /NOPAUSE WHEN AUTOMATING THE BUILD.
 
-SET Config=%1%
-IF [%1] == [] SET Config=Debug
+@SET Config=%1%
+@IF [%1] == [] SET Config=Debug
 
-SET LogFile=Build.log
-IF EXIST %LogFile% DEL %LogFile%
-DATE /T >> %LogFile%
-TIME /T >> %LogFile%
+@IF DEFINED VisualStudioVersion GOTO SkipVcvarsall
+@SET VSTOOLS=
+@IF "%VS100COMNTOOLS%" NEQ "" SET VSTOOLS=%VS100COMNTOOLS%
+@IF "%VS110COMNTOOLS%" NEQ "" SET VSTOOLS=%VS110COMNTOOLS%
+CALL "%VSTOOLS%\..\..\VC\vcvarsall.bat" x86 || GOTO Error0
+:SkipVcvarsall
 
-SET VSTOOLS=
-IF "%VS100COMNTOOLS%" NEQ "" SET VSTOOLS=%VS100COMNTOOLS%
-IF "%VS110COMNTOOLS%" NEQ "" SET VSTOOLS=%VS110COMNTOOLS%
-CALL "%VSTOOLS%\..\..\VC\vcvarsall.bat" x86 2>> %LogFile%
+@ECHO ON
 
-CALL:BUILD Rhetos.sln
+IF EXIST Build.log DEL Build.log || GOTO Error0
+DevEnv.exe "Rhetos.sln" /build %Config% /out Build.log || TYPE Build.log && GOTO Error0
 
-ECHO. >> %LogFile%
-DATE /T >> %LogFile%
-TIME /T >> %LogFile%
+@REM ================================================
 
-REM Error analysis:
-FINDSTR /N /I /R "\<error\> \<errors\> \<fail\> \<failed\> \<skipped\>" %LogFile% | FINDSTR /I /R /V "\<0.error \<0.fail TestCaseManagement.QualityToolsPackage error.ico Warning:" > BuildErrors.log
+@ECHO.
+@ECHO %~nx0 SUCCESSFULLY COMPLETED.
+@EXIT /B 0
 
-EXIT /B 0
-
-
-:BUILD
-
-SET Title=BUILDING SOLUTION %1
-ECHO %Title%
-ECHO. >> %LogFile%
-ECHO %Title% >> %LogFile%
-
-DevEnv.exe "%1" /build %Config% /out %LogFile%
+:Error0
+@ECHO.
+@ECHO %~nx0 FAILED.
+@IF /I [%2] NEQ [/NOPAUSE] @PAUSE
+@EXIT /B 1

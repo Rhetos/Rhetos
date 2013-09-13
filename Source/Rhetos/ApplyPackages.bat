@@ -18,11 +18,11 @@ SET ResourcesFolder="%CD%\Resources"
 SET DslScriptsFolder="%CD%\DslScripts"
 SET DataMigrationFolder="%CD%\DataMigration"
 
-REM ======================== IF DB CONNECTION STRING ISN'T DEFINED, JUST EXIT ==============================
+@REM ======================== IF DB CONNECTION STRING ISN'T DEFINED, JUST EXIT ==============================
 
 IF NOT EXIST bin\ConnectionStrings.config ECHO ERROR: bin\ConnectionStrings.config does not exist. Cannot apply packages. & GOTO Error1
 
-REM ======================== CLEAR OLD PACKAGES ON RHETOS SERVER ==============================
+@REM ======================== CLEAR OLD PACKAGES ON RHETOS SERVER ==============================
 
 IF NOT EXIST %PluginsFolder% MD %PluginsFolder%
 DEL /F /S /Q %PluginsFolder%\*
@@ -40,7 +40,7 @@ RD /S /Q %DataMigrationFolder%
 IF NOT EXIST %DataMigrationFolder% MD %DataMigrationFolder%
 DEL /F /S /Q %DataMigrationFolder%\*
 
-REM ======================== FOR SELECTED PACKAGES COPY BUILD OUTPUT TO RHETOS SERVER ==============================
+@REM ======================== FOR SELECTED PACKAGES COPY BUILD OUTPUT TO RHETOS SERVER ==============================
 
 IF NOT EXIST ApplyPackages.txt ECHO ERROR: List of packages is not defined, won't apply packages. Each line in ApplyPackages.txt should contain relative path to a selected package folder, for example "..\..\CommonConcepts". & GOTO Error1
 
@@ -58,23 +58,23 @@ IF EXIST "%~1\DataMigration\" XCOPY /Y/D/R /S "%~1\DataMigration\*.sql" %DataMig
 EXIT /B
 
 :Continue1
-REM ======================== FIX ==============================
+@REM ======================== FIX ==============================
 
 REM Removing duplicate files - a temporary workaround until the reference from Rhetos core to CommonConcepts package is removed (using claims and permissions).
 DEL /F /Q %BinFolder%\Rhetos.Dom.DefaultConcepts.Interfaces.??? || GOTO Error1
 DEL /F /Q %BinFolder%\Rhetos.Processing.DefaultCommands.Interfaces.??? || GOTO Error1
 
 
-REM ======================== PRECOMPILED DOMAIN OBJECT MODEL ==============================
+@REM ======================== PRECOMPILED DOMAIN OBJECT MODEL ==============================
 
 DEL /F /S /Q ServerDom.??? || GOTO Error1
 PUSHD %BinFolder%
 DeployPackages.exe || GOTO Error2
 POPD
 
-REM ========================
-POPD
-EXIT /B 0
+@REM ========================
+@POPD
+@EXIT /B 0
 
 :Error2
 @POPD
