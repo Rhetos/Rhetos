@@ -243,6 +243,15 @@ namespace CommonConcepts.Test
             }
         }
 
+        void AssertInRange(DateTime value, DateTime start, DateTime end)
+        {
+            Assert.IsTrue(value >= start, value.ToString("o") + " should be greater than " + start.ToString("o"));
+            Assert.IsTrue(value <= end, value.ToString("o") + " should be less than " + end.ToString("o"));
+            Console.WriteLine(start.ToString("o") + " <= " + value.ToString("o") + " <= " + end.ToString("o"));
+        }
+
+        const int defaultLockMinutes = 15;
+
         [TestMethod]
         public void ActionSetLock_Basic()
         {
@@ -267,8 +276,9 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(article.ID, myLock.ResourceID);
                 Assert.AreEqual(executionContext.UserInfo.UserName, myLock.UserName);
                 Assert.AreEqual(executionContext.UserInfo.Workstation, myLock.Workstation);
-                Assert.IsTrue(DateTime.Now.Subtract(myLock.LockStart.Value).TotalSeconds < 0.1);
-                Assert.IsTrue(myLock.LockFinish.Value.Subtract(DateTime.Now).TotalSeconds > 5);
+                var now = DateTime.Now;
+                AssertInRange(myLock.LockStart.Value, now.AddSeconds(-1), now);
+                AssertInRange(myLock.LockFinish.Value, now.AddMinutes(defaultLockMinutes).AddSeconds(-1), now.AddMinutes(defaultLockMinutes));
             }
         }
 
@@ -341,8 +351,9 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(article.ID, myLock.ResourceID);
                 Assert.AreEqual(executionContext.UserInfo.UserName, myLock.UserName);
                 Assert.AreEqual(executionContext.UserInfo.Workstation, myLock.Workstation);
-                Assert.IsTrue(DateTime.Now.Subtract(myLock.LockStart.Value).TotalSeconds < 0.1);
-                Assert.IsTrue(myLock.LockFinish.Value.Subtract(DateTime.Now).TotalSeconds > 5);
+                var now = DateTime.Now;
+                AssertInRange(myLock.LockStart.Value, now.AddSeconds(-1), now);
+                AssertInRange(myLock.LockFinish.Value, now.AddMinutes(defaultLockMinutes).AddSeconds(-1), now.AddMinutes(defaultLockMinutes));
             }
         }
 
@@ -382,8 +393,9 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(article.ID, myLock.ResourceID);
                 Assert.AreEqual(executionContext.UserInfo.UserName, myLock.UserName);
                 Assert.AreEqual(executionContext.UserInfo.Workstation, myLock.Workstation);
-                Assert.IsTrue(DateTime.Now.Subtract(myLock.LockStart.Value).TotalSeconds < 0.1);
-                Assert.IsTrue(myLock.LockFinish.Value.Subtract(DateTime.Now).TotalSeconds > 5);
+                var now = DateTime.Now;
+                AssertInRange(myLock.LockStart.Value, now.AddSeconds(-1), now);
+                AssertInRange(myLock.LockFinish.Value, now.AddMinutes(defaultLockMinutes).AddSeconds(-1), now.AddMinutes(defaultLockMinutes));
             }
         }
 

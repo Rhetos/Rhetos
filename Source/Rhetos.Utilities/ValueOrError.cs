@@ -25,29 +25,6 @@ namespace Rhetos.Utilities
     }
 
     /// <summary>
-    /// This is a helper for returning an error without specifying a generic type.
-    /// It will be implicitly converted to a generic ValueOrError<> class.
-    /// </summary>
-    public class ValueOrError : IValueOrError
-    {
-        private readonly string _error;
-        public string Error
-        {
-            get { return _error; }
-        }
-
-        private ValueOrError(string error)
-        {
-            _error = error;
-        }
-
-        public static ValueOrError CreateError(string error)
-        {
-            return new ValueOrError(error);
-        }
-    }
-
-    /// <summary>
     /// Used as a replacement for exceptions in error handling. Exceptions can hinder performance
     /// in debug mode (about 100 exceptions per second can be processed).
     /// </summary>
@@ -98,7 +75,6 @@ namespace Rhetos.Utilities
             return "<null>";
         }
 
-
         protected ValueOrError(T value, string error)
         {
             if (value != null && error != null)
@@ -129,6 +105,29 @@ namespace Rhetos.Utilities
                     throw new Exception(string.Format("Cannot cast {0} to {1}.", typeof(T).Name, typeof(TNew).Name));
             }
             return new ValueOrError<TNew>(newValue, _error);
+        }
+    }
+
+    /// <summary>
+    /// This is a helper for returning an error without specifying a generic type.
+    /// It will be implicitly converted to a generic ValueOrError<> class.
+    /// </summary>
+    public class ValueOrError : IValueOrError
+    {
+        private readonly string _error;
+        public string Error
+        {
+            get { return _error; }
+        }
+
+        private ValueOrError(string error)
+        {
+            _error = error;
+        }
+
+        public static ValueOrError CreateError(string error)
+        {
+            return new ValueOrError(error);
         }
     }
 }
