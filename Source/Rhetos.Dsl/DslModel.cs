@@ -104,6 +104,7 @@ namespace Rhetos.Dsl
                     // Evaluate macro concept:
 
                     var macroCreatedConcepts = macroConcept.CreateNewConcepts(_dslContainer.Concepts) ?? emptyConceptsArray;
+                    macroCreatedConcepts = Materialize(macroCreatedConcepts);
                     createdConcepts.AddRange(macroCreatedConcepts);
 
                     var logConcept = macroConcept;
@@ -135,6 +136,13 @@ namespace Rhetos.Dsl
                         MacroIterationLimit,
                         createdConcepts.First().GetShortDescription()));
             }
+        }
+
+        private static IList<IConceptInfo> Materialize(IEnumerable<IConceptInfo> items)
+        {
+            if (items is IList<IConceptInfo>)
+                return (IList<IConceptInfo>)items;
+            return items.ToList();
         }
 
         private void CheckSemantics()
