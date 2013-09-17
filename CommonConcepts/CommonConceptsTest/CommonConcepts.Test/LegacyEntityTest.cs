@@ -196,5 +196,43 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("110, 20", TestUtility.DumpSorted(filtered, item => item.NumNew.ToString()));
             }
         }
+
+        [TestMethod]
+        public void MultipleKeyColumns()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var c1id = Guid.NewGuid();
+                var c2id = Guid.NewGuid();
+                var p1id = Guid.NewGuid();
+                var p2id = Guid.NewGuid();
+                executionContext.SqlExecuter.ExecuteSql(new[]
+                {
+                    "DELETE FROM Test13.OldMultiChild",
+                    "DELETE FROM Test13.OldMultiParent",
+                    "INSERT INTO Test13.OldMultiParent (ID, Key1, Key2, Name) SELECT '"+p1id+"', 123, 'abc', 'Parent123abc'",
+                    "INSERT INTO Test13.OldMultiParent (ID, Key1, Key2, Name) SELECT '"+p2id+"', 456, 'def', 'Parent456def'",
+                    "INSERT INTO Test13.OldMultiChild (ID, ParentKey1, ParentKey2, Name) SELECT '"+c1id+"', 123, 'abc', 'Child123abc'",
+                    "INSERT INTO Test13.OldMultiChild (ID, ParentKey1, ParentKey2, Name) SELECT '"+c2id+"', 456, 'def', 'Child456def'",
+                });
+
+                var repository = new Common.DomRepository(executionContext);
+
+                Assert.AreEqual(
+                    "Child123abc-Parent123abc, Child456def-Parent456def",
+                    TestUtility.DumpSorted(repository.Test13.LegacyMultiChild.Query(),
+                        child => child.Name + "-" + child.Parent.Name));
+
+                var c1 = repository.Test13.LegacyMultiChild.Filter(new[] { c1id }).Single();
+                c1.ParentID = p2id;
+                repository.Test13.LegacyMultiChild.Update(new[] { c1 });
+
+                executionContext.NHibernateSession.Clear();
+                Assert.AreEqual(
+                    "Child123abc-Parent456def, Child456def-Parent456def",
+                    TestUtility.DumpSorted(repository.Test13.LegacyMultiChild.Query(),
+                        child => child.Name + "-" + child.Parent.Name));
+            }
+        }
     }
 }

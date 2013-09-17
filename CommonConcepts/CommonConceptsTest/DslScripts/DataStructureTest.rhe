@@ -239,6 +239,20 @@ Module Test13
 	Parameter PatternFilter { ShortString Pattern; }
 	FilterBy Legacy3.'Test13.PatternFilter'
 		'(repos, filter) => repos.Test13.Legacy3.Query().Where(item => item.TextNew.Contains(filter.Pattern) || item.NumNew.CastToString().StartsWith(filter.Pattern)).ToArray()';
+        
+    Entity OldMultiParent { Integer Key1; ShortString Key2; ShortString Name; }
+    Entity OldMultiChild { Integer ParentKey1; ShortString ParentKey2; ShortString Name; }
+    LegacyEntity LegacyMultiParent 'Test13.OldMultiParent'
+    {
+        ShortString Name;
+        SqlDependsOn Test13.OldMultiParent;
+    }
+    LegacyEntity LegacyMultiChild 'Test13.OldMultiChild'
+    {
+        Reference Parent Test13.LegacyMultiParent { LegacyProperty 'ParentKey1, ParentKey2' 'Test13.OldMultiParent' 'Key1, Key2'; }
+        ShortString Name;
+        SqlDependsOn Test13.OldMultiChild;
+    }
 }
 
 Module TestBinary
