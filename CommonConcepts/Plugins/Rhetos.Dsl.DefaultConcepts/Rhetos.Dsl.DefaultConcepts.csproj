@@ -109,6 +109,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DatabaseWorkarounds\AutoSqlViewDependsOnInfo.cs" />
+    <Compile Include="DatabaseWorkarounds\AutoSqlFunctionDependsOnInfo.cs" />
+    <Compile Include="DatabaseWorkarounds\AutoSqlQueryableDependsOnInfo.cs" />
+    <Compile Include="DatabaseWorkarounds\AutoSqlTriggerDependsOnInfo.cs" />
+    <Compile Include="DatabaseWorkarounds\AutoLegacyEntityDependsOnInfo.cs" />
+    <Compile Include="DatabaseWorkarounds\AutoSqlProcedureDependsOnInfo.cs" />
+    <Compile Include="DatabaseWorkarounds\ModuleAutoSqlDependsOnInfo.cs" />
     <Compile Include="DataStructure\WriteInfo.cs" />
     <Compile Include="Advanced\EntityHistoryAllPropertiesInfo.cs" />
     <Compile Include="Advanced\EntityHistoryPropertyInfo.cs" />
@@ -247,6 +254,7 @@
     <Compile Include="DataStructure\Properties\ReferencePropertyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\RequiredPropertyInfo.cs" />
     <Compile Include="DataStructure\Properties\ShortStringPropertyInfo.cs" />
+    <Compile Include="SqlAnalysis.cs" />
   </ItemGroup>
   <ItemGroup>
     <CodeAnalysisDictionary Include="..\..\..\CodeAnalysisDictionary.xml">

@@ -22,6 +22,8 @@ Module TestDataStructure
 
 Module TestExtension
 {
+    AutoSqlDependsOn;
+    
 	SqlQueryable SqlQueryableBase1 "SELECT ID = '5D089327-97EF-418D-A7DF-783D3873A5B4', i = 1, s = 'a' UNION ALL SELECT 'DB97EA5F-FB8C-408F-B35B-AD6642C593D7', 2, 'b'"
 	{
 		Integer i;
@@ -40,7 +42,7 @@ Module TestExtension
 		ShortString s;
 	}
 	
-	SqlView Old1View 'SELECT * FROM TestExtension.Old1' { SqlDependsOn TestExtension.Old1; }
+	SqlView Old1View 'SELECT * FROM TestExtension.Old1';
 	
 	LegacyEntity Legacy1 'TestExtension.Old1' 'TestExtension.Old1View'
 	{
@@ -186,23 +188,21 @@ Module TestBrowse
 
 Module Test13
 {
+	AutoSqlDependsOn;
+
 	Entity Old1
 	{
 		Integer IDOld1;
 		ShortString Name;
 	}
 	
-	SqlView Old1View 'SELECT ID, Name FROM Test13.Old1'
-	{
-		SqlDependsOn Test13.Old1;
-	}
+	SqlView Old1View 'SELECT ID, Name FROM Test13.Old1';
 
 	LegacyEntity Legacy1 'Test13.Old2' 'Test13.Old1View'
 	{
 		ShortString Name;
 
 		SqlDependsOn Test13.Old2;
-		SqlDependsOnView Test13.Old1View;
 	}
 	
 	Entity Old2

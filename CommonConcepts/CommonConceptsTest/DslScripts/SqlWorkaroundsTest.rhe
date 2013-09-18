@@ -1,11 +1,9 @@
 
 Module TestSqlWorkarounds
 {
-	SqlFunction Fun2 '@a INTEGER' 'RETURNS TABLE AS RETURN SELECT * FROM TestSqlWorkarounds.Fun1(@a)'
-	{
-		SqlDependsOnFunction TestSqlWorkarounds.Fun1;
-	}
-
+    AutoSqlDependsOn;
+    
+	SqlFunction Fun2 '@a INTEGER' 'RETURNS TABLE AS RETURN SELECT * FROM TestSqlWorkarounds.Fun1(@a)';
 	SqlFunction Fun1 '@a INTEGER' 'RETURNS TABLE AS RETURN SELECT x = @a + 1';
 	
 	Entity E { Integer I; }
@@ -37,10 +35,7 @@ Module TestSqlWorkarounds
 			Name, NameLength = LEN(Name), PersonID = ID
 			FROM TestSqlWorkarounds.Person
 			WHERE Name LIKE @NamePattern
-			ORDER BY Name'
-	{
-		SqlDependsOn TestSqlWorkarounds.Person;
-	}
+			ORDER BY Name';
 	
 	Parameter PersonFilter
 	{
@@ -107,4 +102,10 @@ Module TestSqlWorkarounds
     {
         SqlTrigger CustomUserMessage "AFTER INSERT" "RAISERROR ('custom user message', 16, 101)";
     }
+    
+    SqlView AutoDependsOn1 "SELECT * FROM TestSqlWorkarounds.AutoDependsOn2";
+    SqlView AutoDependsOn2 "SELECT 'TestSqlWorkarounds.AutoDependsOn1'=1, * FROM /*TestSqlWorkarounds.AutoDependsOn1*/ --TestSqlWorkarounds.AutoDependsOn1
+        [TestSqlWorkarounds].[AutoDependsOn3]"; // Circular reference is avoided because TestSqlWorkarounds.AutoDependsOn1 is commented out in AutoDependsOn2.
+    SqlView AutoDependsOn3 "SELECT * FROM TestSqlWorkarounds.[AutoDependsOn4]";
+    SqlView AutoDependsOn4 "SELECT a=1";
 }

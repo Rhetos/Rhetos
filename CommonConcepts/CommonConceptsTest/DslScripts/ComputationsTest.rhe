@@ -50,6 +50,8 @@ Module Test6
 
 Module Test9
 {
+    AutoSqlDependsOn;
+
 	Entity Document
 	{
 		ShortString Name;
@@ -88,9 +90,6 @@ Module Test9
 		Extends Test9.Document;
 		Integer NumParts;
 		
-		SqlDependsOn Test9.Document;
-        SqlDependsOn Test9.Part;
-        
 		ChangesOnLinkedItems Test9.Part.Head;
 	}
 
@@ -112,9 +111,6 @@ Module Test9
 	{
 		Extends Test9.Document;
 		ShortString NameNumParts;
-		
-		SqlDependsOn Test9.Document;
-		SqlDependsOn Test9.Part;
 		
 		//ChangesOnChangedItems Test9.Document 'Guid[]' 'changedItems => changedItems.Select(document => document.ID).ToArray()';
 		ChangesOnBaseItem;
@@ -359,6 +355,8 @@ Module TestReport
 
 Module TestSqlFilter
 {
+    AutoSqlDependsOn;
+    
     Entity Simple
     {
         Integer Code;
@@ -369,10 +367,7 @@ Module TestSqlFilter
         AS RETURN
             SELECT ID = CONVERT(UNIQUEIDENTIFIER, '11111111-1111-1111-1111-111111111111'), Code = 1, Start = @start
             UNION ALL 
-            SELECT CONVERT(UNIQUEIDENTIFIER, '22222222-2222-2222-2222-222222222222'), 2, DATEADD(day, 1, @start)"
-    {
-        SqlDependsOn TestSqlFilter.Simple;
-    }
+            SELECT CONVERT(UNIQUEIDENTIFIER, '22222222-2222-2222-2222-222222222222'), 2, DATEADD(day, 1, @start)";
     
     Entity Ref
     {
@@ -384,10 +379,7 @@ Module TestSqlFilter
     SqlFunction GetRef '@start DATETIME' "RETURNS TABLE
         AS RETURN
             SELECT ID = s.ID, Name = 'name_' + CONVERT(NVARCHAR(256), s.Code), OtherID = s.ID, Finish = DATEADD(day, s.Code, @start)
-            FROM TestSqlFilter.Simple s"
-    {
-        SqlDependsOn TestSqlFilter.Simple;
-    }
+            FROM TestSqlFilter.Simple s";
 }
 
 Module TestComputedFrom

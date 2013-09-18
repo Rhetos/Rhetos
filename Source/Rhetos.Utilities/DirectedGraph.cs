@@ -70,14 +70,14 @@ namespace Rhetos.Utilities
         /// <param name="dependencies">Dependency: Item2 depends on Item1.</param>
         public static void TopologicalSort<T>(List<T> list, IEnumerable<Tuple<T, T>> dependencies)
         {
-            var dependenciesByDependant = new Dictionary<T, List<T>>();
+            var dependenciesByDependent = new Dictionary<T, List<T>>();
             foreach (var relation in dependencies)
             {
                 List<T> group;
-                if (!dependenciesByDependant.TryGetValue(relation.Item2, out group))
+                if (!dependenciesByDependent.TryGetValue(relation.Item2, out group))
                 {
                     group = new List<T>();
-                    dependenciesByDependant.Add(relation.Item2, group);
+                    dependenciesByDependent.Add(relation.Item2, group);
                 }
                 group.Add(relation.Item1);
             }
@@ -86,7 +86,7 @@ namespace Rhetos.Utilities
             var processed = new HashSet<T>();
             var analysisStarted = new List<T>();
             foreach (var element in list)
-                AddDependenciesBeforeElement(element, result, list, dependenciesByDependant, processed, analysisStarted);
+                AddDependenciesBeforeElement(element, result, list, dependenciesByDependent, processed, analysisStarted);
             list.Clear();
             list.AddRange(result);
         }
