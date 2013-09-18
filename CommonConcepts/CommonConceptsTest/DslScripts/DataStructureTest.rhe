@@ -22,7 +22,7 @@ Module TestDataStructure
 
 Module TestExtension
 {
-    AutoSqlDependsOn;
+    AutodetectSqlDependencies;
     
 	SqlQueryable SqlQueryableBase1 "SELECT ID = '5D089327-97EF-418D-A7DF-783D3873A5B4', i = 1, s = 'a' UNION ALL SELECT 'DB97EA5F-FB8C-408F-B35B-AD6642C593D7', 2, 'b'"
 	{
@@ -188,7 +188,7 @@ Module TestBrowse
 
 Module Test13
 {
-	AutoSqlDependsOn;
+	AutodetectSqlDependencies;
 
 	Entity Old1
 	{

@@ -25,7 +25,7 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("AutoSqlDependsOn")]
+    [ConceptKeyword("AutodetectSqlDependencies")]
     public class AutoLegacyEntityDependsOnInfo : IMacroConcept
     {
         [ConceptKey]

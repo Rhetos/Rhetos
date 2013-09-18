@@ -50,7 +50,7 @@ Module Test6
 
 Module Test9
 {
-    AutoSqlDependsOn;
+    AutodetectSqlDependencies;
 
 	Entity Document
 	{
@@ -355,7 +355,7 @@ Module TestReport
 
 Module TestSqlFilter
 {
-    AutoSqlDependsOn;
+    AutodetectSqlDependencies;
     
     Entity Simple
     {

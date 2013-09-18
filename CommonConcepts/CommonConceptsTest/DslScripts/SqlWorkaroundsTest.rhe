@@ -1,7 +1,7 @@
 
 Module TestSqlWorkarounds
 {
-    AutoSqlDependsOn;
+    AutodetectSqlDependencies;
     
 	SqlFunction Fun2 '@a INTEGER' 'RETURNS TABLE AS RETURN SELECT * FROM TestSqlWorkarounds.Fun1(@a)';
 	SqlFunction Fun1 '@a INTEGER' 'RETURNS TABLE AS RETURN SELECT x = @a + 1';
