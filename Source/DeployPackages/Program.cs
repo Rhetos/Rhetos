@@ -36,6 +36,7 @@ using Rhetos.Security;
 using Rhetos.Dsl;
 using System.Collections.Generic;
 using Rhetos.Extensibility;
+using System.Diagnostics;
 
 namespace DeployPackages
 {
@@ -71,6 +72,7 @@ namespace DeployPackages
     class Program
     {
         static ILogger _logger = new ConsoleLogger("DeployPackagesInitialization");
+        static ILogger _performanceLogger;
 
         static int Main(string[] args)
         {
@@ -92,6 +94,7 @@ namespace DeployPackages
                 using (var container = builder.Build())
                 {
                     _logger = new ConsoleLogger("DeployPackages", container.Resolve<ILogProvider>().GetLogger("DeployPackages"));
+                    _performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
 
                     Console.WriteLine("SQL connection string: " + SqlUtility.MaskPassword(connectionString));
 
@@ -152,13 +155,18 @@ namespace DeployPackages
                     File.WriteAllText(AutofacConfiguration.NHibernateMappingFile, container.Resolve<INHibernateMapping>().GetMapping(), Encoding.Unicode);
                     Console.WriteLine("Done.");
 
+
                     if (parameters.GeneratePermissionClaims)
                     {
+                        var stopwatch = Stopwatch.StartNew();
                         PluginsUtility.DeployPackagesAdditionalAssemblies.AddRange(new[] { @"bin\ServerDom.dll", @"ServerDom.dll" }); // TODO: Remove this hack after ServerDom.dll is moved to the bin\Generated.
+                        _performanceLogger.Write(stopwatch, "DeployPackages.GenerateClaims: Additional assemblies added.");
                         PluginsUtility.DetectAndRegisterNewModulesAndPlugins(container);
+                        _performanceLogger.Write(stopwatch, "DeployPackages.GenerateClaims: New modules and plugins registered.");
 
                         Console.Write("Generating claims ... ");
                         container.Resolve<IClaimGenerator>().GenerateClaims();
+                        _performanceLogger.Write(stopwatch, "DeployPackages.GenerateClaims: Claims generated.");
                         Console.WriteLine("Done.");
                     }
                     else

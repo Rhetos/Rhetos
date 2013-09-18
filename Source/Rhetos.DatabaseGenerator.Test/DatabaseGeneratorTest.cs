@@ -528,6 +528,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
             var ca1 = new NewConceptApplication(new BaseCi { Name = "ci1" }, new SimpleConceptImplementation())
             {
+                Id = Guid.NewGuid(),
                 CreateQuery = "sql",
                 DependsOn = new ConceptApplication[] { }
             };
@@ -537,6 +538,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
             var ca2 = new NewConceptApplication(new BaseCi { Name = "ci2" }, new SimpleConceptImplementation())
             {
+                Id = Guid.NewGuid(),
                 CreateQuery = "sql",
                 DependsOn = new ConceptApplication[] { }
             };
@@ -638,7 +640,7 @@ namespace Rhetos.DatabaseGenerator.Test
             });
 
             DatabaseGenerator_Accessor databaseGenerator = new DatabaseGenerator_Accessor(dslModel, plugins);
-            var createdApplications = databaseGenerator.CreateNewApplications();
+            var createdApplications = databaseGenerator.CreateNewApplications(new List<ConceptApplication>());
             tempConceptInfoDependencies = null;
 
             var ca1 = createdApplications.Where(ca => ca.ConceptInfo == ci1).Single();

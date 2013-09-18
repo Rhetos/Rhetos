@@ -29,7 +29,7 @@ namespace Rhetos.DatabaseGenerator
     {
         public NewConceptApplication(IConceptInfo conceptInfo, IConceptDatabaseDefinition conceptImplementation)
         {
-            Id = Guid.NewGuid();
+            Id = Guid.Empty;
             ConceptInfo = conceptInfo;
             ConceptInfoTypeName = conceptInfo.GetType().AssemblyQualifiedName;
             ConceptInfoKey = conceptInfo.GetKey();

@@ -74,7 +74,7 @@ namespace Rhetos.DatabaseGenerator
                 var oldApplications = _conceptApplicationRepository.Load();
                 _performanceLogger.Write(stopwatch, "DatabaseGenerator: Loaded old concept applications.");
 
-                var newApplications = CreateNewApplications();
+                var newApplications = CreateNewApplications(oldApplications);
                 _performanceLogger.Write(stopwatch, "DatabaseGenerator: Created new concept applications.");
                 ConceptApplicationRepository.CheckKeyUniqueness(newApplications, "created");
                 _performanceLogger.Write(stopwatch, "DatabaseGenerator: Verify new concept applications' integrity.");
@@ -98,6 +98,14 @@ namespace Rhetos.DatabaseGenerator
             }
         }
 
+        protected static void MatchAndComputeNewApplicationIds(List<ConceptApplication> oldApplications, List<NewConceptApplication> newApplications)
+        {
+            var oldApplicationIds = oldApplications.ToDictionary(oa => oa.GetConceptApplicationKey(), oa => oa.Id);
+            foreach (var newApp in newApplications) 
+                if (!oldApplicationIds.TryGetValue(newApp.GetConceptApplicationKey(), out newApp.Id))
+                    newApp.Id = Guid.NewGuid();
+        }
+
         protected List<NewConceptApplication> TrimEmptyApplications(List<NewConceptApplication> newApplications)
         {
             var emptyCreateQuery = newApplications.Where(ca => string.IsNullOrWhiteSpace(ca.CreateQuery)).ToList();
@@ -116,7 +124,7 @@ namespace Rhetos.DatabaseGenerator
             return newApplications.Except(removeLeaves).ToList();
         }
 
-        protected List<NewConceptApplication> CreateNewApplications()
+        protected List<NewConceptApplication> CreateNewApplications(List<ConceptApplication> oldApplications)
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -130,6 +138,7 @@ namespace Rhetos.DatabaseGenerator
 
                 conceptApplications.AddRange(implementations.Select(impl => new NewConceptApplication(conceptInfo, impl))); // DependsOn, CreateQuery and RemoveQuery will be set later.
             }
+            MatchAndComputeNewApplicationIds(oldApplications, conceptApplications);
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: Created concept applications from plugins.");
 
             ComputeDependsOn(conceptApplications);
@@ -143,11 +152,14 @@ namespace Rhetos.DatabaseGenerator
 
         protected void ComputeDependsOn(IEnumerable<NewConceptApplication> newConceptApplications)
         {
+            var stopwatch = Stopwatch.StartNew();
             foreach (var conceptApplication in newConceptApplications)
                 conceptApplication.DependsOn = new ConceptApplication[] {};
 
             var dependencies = ExtractDependencies(newConceptApplications);
+            _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: ExtractDependencies executed.");
             UpdateConceptApplicationsFromDependencyList(dependencies);
+            _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: UpdateConceptApplicationsFromDependencyList executed.");
         }
 
         /// <summary>
@@ -169,8 +181,18 @@ namespace Rhetos.DatabaseGenerator
 
         protected IEnumerable<Dependency> ExtractDependencies(IEnumerable<NewConceptApplication> newConceptApplications)
         {
-            return ExtractDependenciesFromConceptInfos(newConceptApplications)
-                    .Union(ExtractDependenciesFromMefPluginMetadata(_plugins, newConceptApplications)).ToList();
+            var stopwatch = Stopwatch.StartNew();
+            
+            var exFromConceptInfo = ExtractDependenciesFromConceptInfos(newConceptApplications).ToList();
+            _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: ExtractDependenciesFromConceptInfos executed.");
+            
+            var exFromMefPluginMetadata = ExtractDependenciesFromMefPluginMetadata(_plugins, newConceptApplications).ToList();
+            _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: ExtractDependenciesFromMefPluginMetadata executed.");
+            
+            var combined = exFromConceptInfo.Union(exFromMefPluginMetadata).ToList();
+            _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: Dependencies union executed.");
+            
+            return combined;
         }
 
         protected static IEnumerable<Dependency> ExtractDependenciesFromConceptInfos(IEnumerable<NewConceptApplication> newConceptApplications)
@@ -449,7 +471,7 @@ namespace Rhetos.DatabaseGenerator
             int reportRemovedCount = ApplyChangesToDatabase_Remove(allSql, toBeRemoved);
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Prepared SQL scripts for removing concept applications.");
 
-            ApplyChangesToDatabase_Unchanges(allSql, toBeInserted, newApplications);
+            ApplyChangesToDatabase_Unchanges(allSql, toBeInserted, newApplications, oldApplications);
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Prepared SQL scripts for updating unchanged concept applications' metadata.");
 
             int reportInsertedCount = ApplyChangesToDatabase_Insert(allSql, toBeInserted, newApplications);
@@ -501,18 +523,16 @@ namespace Rhetos.DatabaseGenerator
             return reportInsertedCount;
         }
 
-        protected void ApplyChangesToDatabase_Unchanges(List<string> allSql, List<NewConceptApplication> toBeInserted, List<NewConceptApplication> newApplications)
+        protected void ApplyChangesToDatabase_Unchanges(List<string> allSql, List<NewConceptApplication> toBeInserted, List<NewConceptApplication> newApplications, List<ConceptApplication> oldApplications)
         {
-            // Metadata must be updated for unchanges concept applications, not only those removed and inserted, because their IDs or dependencies could change:
-
-            allSql.Add(ConceptApplicationRepository.DeleteAllMetadataSql());
-
-            DirectedGraph.TopologicalSort(newApplications, GetDependencyPairs(newApplications));
-
             var indexInsertedConcepts = new HashSet<string>(toBeInserted.Select(ca => ca.GetConceptApplicationKey()));
-            allSql.AddRange(newApplications
-                .Where(ca => !indexInsertedConcepts.Contains(ca.GetConceptApplicationKey()))
-                .SelectMany(unchangedCa => ConceptApplicationRepository.InsertMetadataSql(unchangedCa)));
+            var unchangedApplications = newApplications
+                .Where(ca => !indexInsertedConcepts.Contains(ca.GetConceptApplicationKey()));
+
+            var oldApplicationsByKey = oldApplications.ToDictionary(oa => oa.GetConceptApplicationKey());
+
+            allSql.AddRange(unchangedApplications.SelectMany(unchangedApp =>
+                ConceptApplicationRepository.UpdateMetadataSql(unchangedApp, oldApplicationsByKey[unchangedApp.GetConceptApplicationKey()])));
         }
 
         protected static string[] SplitSqlScript(string script)

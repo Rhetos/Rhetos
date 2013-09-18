@@ -29,6 +29,10 @@ namespace Rhetos.DatabaseGenerator
             return other.DependsOn.GetConceptApplicationKey().Equals(DependsOn.GetConceptApplicationKey())
                    && other.Dependent.GetConceptApplicationKey().Equals(Dependent.GetConceptApplicationKey());
         }
+        public override int GetHashCode()
+        {
+            return DependsOn.Id.GetHashCode() ^ Dependent.Id.GetHashCode();
+        }
     }
 
 }
