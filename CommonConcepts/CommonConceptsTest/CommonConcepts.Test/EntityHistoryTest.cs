@@ -1561,5 +1561,31 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(0, fh.Count());
             }
         }
+
+        [TestMethod]
+        public void HistoryLockProperty()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var id1 = Guid.NewGuid();
+                var id2 = Guid.NewGuid();
+                var id3 = Guid.NewGuid();
+                executionContext.SqlExecuter.ExecuteSql(new[] {
+                    "DELETE FROM TestHistory.SimpleWithLock",
+                    "INSERT INTO TestHistory.SimpleWithLock (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'b', '2011-01-01')",
+                    "INSERT INTO TestHistory.SimpleWithLock_Changes (EntityID, ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, 'b', '2001-01-01')",
+                    "INSERT INTO TestHistory.SimpleWithLock_Changes (EntityID, ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, 'b', '2000-01-01')"});
+                var repository = new Common.DomRepository(executionContext);
+
+                // take entry that is in the middle of history
+                var editEnt = repository.TestHistory.SimpleWithLock.All().ToArray();
+                editEnt[0].Name = "buba";
+                repository.TestHistory.SimpleWithLock.Update(editEnt);
+
+                executionContext.NHibernateSession.Clear();
+
+                editEnt[0].Name = "bube";
+                TestUtility.ShouldFail(() => repository.TestHistory.SimpleWithLock.Update(editEnt), "Name locked with letter 'a'.", "Name is locked if contains letter 'a'.");            }
+        }
     }
 }

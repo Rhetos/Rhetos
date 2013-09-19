@@ -40,6 +40,15 @@ Module TestHistory
 		ShortString Name;
 	}
 	
+    Entity SimpleWithLock
+    {
+        Integer Code { History; }
+		ShortString Name { History; }
+        
+        ItemFilter NameWithLetterA 'item => item.Name.ToLower().Contains(''a'')';
+		LockProperty Name.NameWithLetterA 'Name is locked if contains letter ''a''.';
+    }
+    
 	Entity Standard
 	{
 		History { AllProperties; }

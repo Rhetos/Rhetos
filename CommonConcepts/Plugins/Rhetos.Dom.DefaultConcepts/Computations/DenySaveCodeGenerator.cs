@@ -52,6 +52,10 @@ namespace Rhetos.Dom.DefaultConcepts
                 var invalidItems = _domRepository.{0}.Filter(changedItems.AsQueryable(), new {1}());
                 if (invalidItems.Count() > 0)
                     throw new Rhetos.UserException({2}, ""DataStructure:{0},ID:"" + invalidItems.First().ID.ToString(){3});
+
+                // Workaround to restore NH proxies after using NHSession.Clear() when saving data in Recompute().
+                for (int i=0; i<inserted.Length; i++) inserted[i] = _executionContext.NHibernateSession.Load<{0}>(inserted[i].ID);
+                for (int i=0; i<updated.Length; i++) updated[i] = _executionContext.NHibernateSession.Load<{0}>(updated[i].ID);
             }}
 ",
                 info.Source.GetKeyProperties(),

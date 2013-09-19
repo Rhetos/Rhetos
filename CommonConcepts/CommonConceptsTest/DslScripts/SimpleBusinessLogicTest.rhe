@@ -273,3 +273,46 @@ Module TestDenyUserEdit
         ShortString Name;
     }
 }
+
+Module TestMultipleLock
+{
+    SqlQueryable SimpleChecks
+    "
+        SELECT
+            ID,
+            ContainsAlphabetic = CASE WHEN PatIndex('%[^a-z]%', Pass) > 0 THEN 1 ELSE 0 END,
+            ContainsNumeric = CASE WHEN PatIndex('%[^0-9]%', Pass) > 0 THEN 1 ELSE 0 END,
+            ContainsNonAlphaNumeric = CASE WHEN PatIndex('%[^a-z0-9]%', Pass) > 0 THEN 1 ELSE 0 END
+        FROM
+            TestMultipleLock.Simple
+    "
+    {
+        Extends TestMultipleLock.Simple;
+        SqlDependsOn TestMultipleLock.Simple;
+        
+        Bool ContainsAlphabetic;
+        Bool ContainsNumeric;
+        Bool ContainsNonAlphaNumeric;
+    }
+
+    Entity PassDependency
+    {
+        Integer MinPassLength;
+    }
+    
+    Entity Simple
+    {
+        ShortString Pass;
+        ShortString UserName;
+        Reference PassDependency;
+        
+        ItemFilter PassValidation 'item => !repository.TestMultipleLock.SimpleChecks.Filter(new[]{item.ID}).SingleOrDefault().ContainsAlphabetic.Value || !repository.TestMultipleLock.SimpleChecks.Filter(new[]{item.ID}).SingleOrDefault().ContainsNumeric.Value || !repository.TestMultipleLock.SimpleChecks.Filter(new[]{item.ID}).SingleOrDefault().ContainsNonAlphaNumeric.Value';
+        DenySave PassValidation 'Pass is not valid.';
+
+        ItemFilter PassContainsName 'item => item.Pass.Contains(item.UserName)';
+        DenySave PassContainsName 'Pass cannot contain UserName.';
+
+        ItemFilter PassTooShort 'item => item.Pass.Length < item.PassDependency.MinPassLength';
+        DenySave PassTooShort 'Pass is too short.';
+    }
+}
