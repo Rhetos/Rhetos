@@ -351,9 +351,11 @@ GO
 ALTER PROCEDURE Rhetos.HelpDataMigration
 	@SchemaName NVARCHAR(256), @TableName NVARCHAR(256)
 AS
+    SET NOCOUNT ON
+    
     IF LEFT(@SchemaName, 1) = '_'
-	BEGIN RAISERROR('User a regular table, not a data-migration table %s.%s.', 16, 10, @SchemaName, @TableName) RETURN 50000 END
-	
+      BEGIN RAISERROR('User a regular table, not a data-migration table %s.%s.', 16, 10, @SchemaName, @TableName) RETURN 50000 END
+    
     SELECT columnName = COLUMN_NAME, columnType = Rhetos.GetColumnType(TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME), sort = IDENTITY(INT)
         INTO #columns
         FROM INFORMATION_SCHEMA.COLUMNS
@@ -366,10 +368,12 @@ AS
     FROM #columns
     ORDER BY sort
     
-    SELECT
-        'EXEC Rhetos.DataMigrationUse ''' + @SchemaName + ''', ''' + @TableName + ''', ''' + columnName + ''', ''' + columnType + ''';'
-    FROM
-        #columns
+    SELECT '/*DATAMIGRATION ' + CAST(NEWID() AS VARCHAR(40)) + '*/ -- Don''t change this code when modifying the script.'
+    UNION ALL SELECT ''
+    UNION ALL SELECT '--EXEC Rhetos.HelpDataMigration ''' + @SchemaName + ''', ''' + @TableName + ''''
+    UNION ALL
+        SELECT 'EXEC Rhetos.DataMigrationUse ''' + @SchemaName + ''', ''' + @TableName + ''', ''' + columnName + ''', ''' + columnType + ''';'
+        FROM #columns
     UNION ALL SELECT 'GO'
     UNION ALL SELECT ''
     UNION ALL SELECT '... write migration queries here ...'
