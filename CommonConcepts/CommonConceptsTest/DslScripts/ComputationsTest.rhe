@@ -182,6 +182,19 @@ Module Test11
 
 Module TestFilter
 {
+    Entity CombinedFilters
+    {
+        ShortString Name;
+        Reference Simple;
+    }
+    
+    Entity Simple
+    {
+        ShortString Name;
+    }
+    
+	ComposableFilterBy CombinedFilters.'TestFilter.ComposableFilterByContains' '(source, repos, filter) => source.Where(s => s.Name.Contains(filter.Pattern))';
+	    
 	Entity Source
 	{
 		ShortString Name;

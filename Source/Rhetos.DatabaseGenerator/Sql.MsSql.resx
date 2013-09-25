@@ -134,4 +134,7 @@ VALUES ({0}, N{1}, N{2}, N{3}, N{4}, N{5}, N{6}, N{7})</value>
   <data name="ConceptApplicationRepository_InsertDependency" xml:space="preserve">
     <value>INSERT INTO Rhetos.AppliedConceptDependsOn (DependentID, DependsOnID) VALUES ({0}, {1})</value>
   </data>
+  <data name="ConceptApplicationRepository_DeleteDependency" xml:space="preserve">
+    <value>DELETE FROM Rhetos.AppliedConceptDependsOn WHERE DependentID = {0} AND DependsOnID = {1}</value>
+  </data>
 </root>

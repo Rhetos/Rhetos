@@ -70,9 +70,9 @@ namespace Rhetos.DatabaseGenerator.Test
             return DatabaseGenerator.GetDependencyPairs(conceptApplications);
         }
 
-        new public List<NewConceptApplication> CreateNewApplications()
+        new public List<NewConceptApplication> CreateNewApplications(List<ConceptApplication> oldApplications)
         {
-            return base.CreateNewApplications();
+            return base.CreateNewApplications(oldApplications);
         }
 
         new public static IEnumerable<Dependency> ExtractDependenciesFromConceptInfos(IEnumerable<NewConceptApplication> all)

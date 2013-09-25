@@ -23,6 +23,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
+using Rhetos.Processing.DefaultCommands;
 
 namespace CommonConcepts.Test
 {
@@ -261,6 +262,59 @@ namespace CommonConcepts.Test
 
                 var filteredMasterByDetail = repository.TestFilter.Source.Filter(new TestFilter.FilterDetail { Prefix = "C" });
                 Assert.AreEqual("A s1", TestUtility.DumpSorted(filteredMasterByDetail, item => item.Name));
+            }
+        }
+
+        [TestMethod]
+        public void SimpleComposableFilterCaseInsensitive()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters" });
+                var repository = new Common.DomRepository(executionContext);
+
+                var s1 = new TestFilter.CombinedFilters { Name = "Abeceda" };
+                var s2 = new TestFilter.CombinedFilters { Name = "abeceda" };
+                repository.TestFilter.CombinedFilters.Insert(new[] { s1, s2 });
+
+                var filteredByContainsJustComposable = (repository.TestFilter.CombinedFilters as IQueryDataSourceCommandImplementation).QueryData(new QueryDataSourceCommandInfo
+                {
+                    DataSource = "TestFilter.CombinedFilters",
+                    Filter = new TestFilter.ComposableFilterByContains { Pattern = "Abec" }
+                });
+
+                var filteredByContainsWithGenericFilter = (repository.TestFilter.CombinedFilters as IQueryDataSourceCommandImplementation).QueryData(new QueryDataSourceCommandInfo
+                {
+                    DataSource = "TestFilter.CombinedFilters",
+                    Filter = new TestFilter.ComposableFilterByContains { Pattern = "Abec" },
+                    GenericFilter = new FilterCriteria[] {new FilterCriteria {Property = "Name", Operation = "Contains", Value="Abec"}}
+                });
+                // filter doubled should return same results as just one Composable filter
+                Assert.AreEqual(filteredByContainsJustComposable.Records.Length, filteredByContainsWithGenericFilter.Records.Length);
+            }
+        }
+
+        [TestMethod]
+        public void SimpleComposableFilterGenericFilterReferenced()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters", "DELETE FROM TestFilter.Simple" });
+                var repository = new Common.DomRepository(executionContext);
+                var refEnt = new TestFilter.Simple {Name = "test"};
+                repository.TestFilter.Simple.Insert(new[] { refEnt });
+                var s1 = new TestFilter.CombinedFilters { Name = "Abeceda", Simple = refEnt };
+                var s2 = new TestFilter.CombinedFilters { Name = "abeceda" };
+                repository.TestFilter.CombinedFilters.Insert(new[] { s1, s2 });
+
+                // Containing "ece" and referenced object name contains "es"
+                var filteredByContainsWithGenericFilter = (repository.TestFilter.CombinedFilters as IQueryDataSourceCommandImplementation).QueryData(new QueryDataSourceCommandInfo
+                {
+                    DataSource = "TestFilter.CombinedFilters",
+                    Filter = new TestFilter.ComposableFilterByContains { Pattern = "ece" },
+                    GenericFilter = new FilterCriteria[] { new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "es" } }
+                });
+                Assert.AreEqual(1, filteredByContainsWithGenericFilter.Records.Length);
             }
         }
     }

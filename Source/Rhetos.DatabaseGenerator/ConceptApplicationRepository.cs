@@ -163,5 +163,44 @@ namespace Rhetos.DatabaseGenerator
             sql.Add(Sql.Get("ConceptApplicationRepository_InsertCommit"));
             return sql;
         }
+
+        public static IEnumerable<string> UpdateMetadataSql(NewConceptApplication ca, ConceptApplication oldApp)
+        {
+            var sql = new List<string>();
+            if (oldApp.ConceptInfoTypeName != ca.ConceptInfoTypeName ||
+                oldApp.ConceptInfoKey != ca.ConceptInfoKey ||
+                oldApp.ConceptImplementationTypeName != ca.ConceptImplementationTypeName ||
+                oldApp.CreateQuery != ca.CreateQuery ||
+                oldApp.RemoveQuery != ca.RemoveQuery)
+            {
+                sql.Add(Sql.Format("ConceptApplicationRepository_Insert",
+                    SqlUtility.QuoteGuid(ca.Id),
+                    SqlUtility.QuoteText(ca.ConceptInfoTypeName),
+                    SqlUtility.QuoteText(ca.ConceptInfoKey),
+                    SqlUtility.QuoteText(ca.ConceptImplementationTypeName),
+                    SqlUtility.QuoteText(XmlUtility.SerializeToXml(ca.ConceptInfo)),
+                    SqlUtility.QuoteText(ca.CreateQuery),
+                    SqlUtility.QuoteText(ca.RemoveQuery),
+                    SqlUtility.QuoteText(ca.ConceptImplementationVersion.ToString())));
+            }
+            
+            HashSet<Guid> oldDependsOn = new HashSet<Guid>(oldApp.DependsOn.Select(depOn => depOn.Id));
+            HashSet<Guid> newDependsOn = new HashSet<Guid>(ca.DependsOn.Select(depOn => depOn.Id));
+            foreach (var dependsOn in ca.DependsOn)
+                if (!oldDependsOn.Contains(dependsOn.Id))
+                    sql.Add(Sql.Format("ConceptApplicationRepository_InsertDependency",
+                        SqlUtility.QuoteGuid(ca.Id),
+                        SqlUtility.QuoteGuid(dependsOn.Id)));
+
+            foreach (var dependsOn in oldApp.DependsOn)
+                if (!newDependsOn.Contains(dependsOn.Id))
+                    sql.Add(Sql.Format("ConceptApplicationRepository_DeleteDependency",
+                        SqlUtility.QuoteGuid(ca.Id),
+                        SqlUtility.QuoteGuid(dependsOn.Id)));
+
+            if (sql.Count > 0)
+                sql.Add(Sql.Get("ConceptApplicationRepository_InsertCommit"));
+            return sql;
+        }
     }
 }
