@@ -63,7 +63,6 @@ namespace CommonConcepts.Test
                 var pd = repository.TestMultipleLock.PassDependency.All().SingleOrDefault();
                 var s1 = new TestMultipleLock.Simple { ID = Guid.NewGuid(), PassDependency = pd, UserName = "test", Pass = "123467" };
                 TestUtility.ShouldFail(() => repository.TestMultipleLock.Simple.Insert(new[] { s1 }), "Password contains only numeric", "Pass is not valid.");
-                executionContext.NHibernateSession.Clear();
             }
         }
 
@@ -82,7 +81,6 @@ namespace CommonConcepts.Test
                 var pd = repository.TestMultipleLock.PassDependency.All().SingleOrDefault();
                 var s1 = new TestMultipleLock.Simple { ID = Guid.NewGuid(), PassDependency = pd, UserName = "test", Pass = "123467..;aaaas" };
                 repository.TestMultipleLock.Simple.Insert(new[] { s1 });
-                executionContext.NHibernateSession.Clear();
             }
         }
 
@@ -101,7 +99,6 @@ namespace CommonConcepts.Test
                 var pd = repository.TestMultipleLock.PassDependency.All().SingleOrDefault();
                 var s1 = new TestMultipleLock.Simple { ID = Guid.NewGuid(), PassDependency = pd, UserName = "test", Pass = "123467..;atestaaas" };
                 TestUtility.ShouldFail(() => repository.TestMultipleLock.Simple.Insert(new[] { s1 }), "Pass cannot contain value of user.", "Pass cannot contain UserName.");
-                executionContext.NHibernateSession.Clear();
             }
         }
     }

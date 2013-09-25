@@ -1585,7 +1585,8 @@ namespace CommonConcepts.Test
                 executionContext.NHibernateSession.Clear();
 
                 editEnt[0].Name = "bube";
-                TestUtility.ShouldFail(() => repository.TestHistory.SimpleWithLock.Update(editEnt), "Name locked with letter 'a'.", "Name is locked if contains letter 'a'.");            }
+                TestUtility.ShouldFail(() => repository.TestHistory.SimpleWithLock.Update(editEnt), "Name locked with letter 'a'.", "Name is locked if contains letter 'a'.");
+            }
         }
     }
 }

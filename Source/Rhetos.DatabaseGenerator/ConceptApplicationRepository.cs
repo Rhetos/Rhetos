@@ -160,7 +160,7 @@ namespace Rhetos.DatabaseGenerator
                     SqlUtility.QuoteGuid(ca.Id),
                     SqlUtility.QuoteGuid(dependsOn.Id)));
 
-            sql.Add(Sql.Get("ConceptApplicationRepository_InsertCommit"));
+            sql.Add(Sql.Get("ConceptApplicationRepository_InsertCommit")); // Oracle must commit metadata changes before modifying next database object, to ensure metadata consistency if next DDL command fails (Oracle db automatically commits changes on DDL commands, so the previous DDL command has already been committed).
             return sql;
         }
 
@@ -173,33 +173,39 @@ namespace Rhetos.DatabaseGenerator
                 oldApp.CreateQuery != ca.CreateQuery ||
                 oldApp.RemoveQuery != ca.RemoveQuery)
             {
+                sql.Add(DeleteMetadataSql(ca));
+
                 sql.Add(Sql.Format("ConceptApplicationRepository_Insert",
                     SqlUtility.QuoteGuid(ca.Id),
                     SqlUtility.QuoteText(ca.ConceptInfoTypeName),
                     SqlUtility.QuoteText(ca.ConceptInfoKey),
                     SqlUtility.QuoteText(ca.ConceptImplementationTypeName),
-                    SqlUtility.QuoteText(XmlUtility.SerializeToXml(ca.ConceptInfo)),
+                    SqlUtility.QuoteText(XmlUtility.SerializeToXml(ca.ConceptInfo)), // Debug info
                     SqlUtility.QuoteText(ca.CreateQuery),
                     SqlUtility.QuoteText(ca.RemoveQuery),
-                    SqlUtility.QuoteText(ca.ConceptImplementationVersion.ToString())));
-            }
-            
-            HashSet<Guid> oldDependsOn = new HashSet<Guid>(oldApp.DependsOn.Select(depOn => depOn.Id));
-            HashSet<Guid> newDependsOn = new HashSet<Guid>(ca.DependsOn.Select(depOn => depOn.Id));
-            foreach (var dependsOn in ca.DependsOn)
-                if (!oldDependsOn.Contains(dependsOn.Id))
+                    SqlUtility.QuoteText(ca.ConceptImplementationVersion.ToString()))); // Debug info
+
+                foreach (var dependsOn in ca.DependsOn)
                     sql.Add(Sql.Format("ConceptApplicationRepository_InsertDependency",
                         SqlUtility.QuoteGuid(ca.Id),
                         SqlUtility.QuoteGuid(dependsOn.Id)));
+            }
+            else
+            {
+                HashSet<Guid> oldDependsOn = new HashSet<Guid>(oldApp.DependsOn.Select(depOn => depOn.Id));
+                HashSet<Guid> newDependsOn = new HashSet<Guid>(ca.DependsOn.Select(depOn => depOn.Id));
+                foreach (var dependsOn in ca.DependsOn)
+                    if (!oldDependsOn.Contains(dependsOn.Id))
+                        sql.Add(Sql.Format("ConceptApplicationRepository_InsertDependency",
+                            SqlUtility.QuoteGuid(ca.Id),
+                            SqlUtility.QuoteGuid(dependsOn.Id)));
 
-            foreach (var dependsOn in oldApp.DependsOn)
-                if (!newDependsOn.Contains(dependsOn.Id))
-                    sql.Add(Sql.Format("ConceptApplicationRepository_DeleteDependency",
-                        SqlUtility.QuoteGuid(ca.Id),
-                        SqlUtility.QuoteGuid(dependsOn.Id)));
-
-            if (sql.Count > 0)
-                sql.Add(Sql.Get("ConceptApplicationRepository_InsertCommit"));
+                foreach (var dependsOn in oldApp.DependsOn)
+                    if (!newDependsOn.Contains(dependsOn.Id))
+                        sql.Add(Sql.Format("ConceptApplicationRepository_DeleteDependency",
+                            SqlUtility.QuoteGuid(ca.Id),
+                            SqlUtility.QuoteGuid(dependsOn.Id)));
+            }
             return sql;
         }
     }
