@@ -301,7 +301,7 @@ namespace CommonConcepts.Test
             {
                 executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters", "DELETE FROM TestFilter.Simple" });
                 var repository = new Common.DomRepository(executionContext);
-                var refEnt = new TestFilter.Simple {Name = "test"};
+                var refEnt = new TestFilter.Simple { Name = "test" };
                 repository.TestFilter.Simple.Insert(new[] { refEnt });
                 var s1 = new TestFilter.CombinedFilters { Name = "Abeceda", Simple = refEnt };
                 var s2 = new TestFilter.CombinedFilters { Name = "abeceda" };
@@ -315,6 +315,125 @@ namespace CommonConcepts.Test
                     GenericFilter = new FilterCriteria[] { new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "es" } }
                 });
                 Assert.AreEqual(1, filteredByContainsWithGenericFilter.Records.Length);
+            }
+        }
+
+        private static string ReportFilteredBrowse(Common.DomRepository repository, QueryDataSourceCommandInfo queryDataSourceCommandInfo)
+        {
+            var queryRepository = (IQueryDataSourceCommandImplementation)repository.TestFilter.ComposableFilterBrowse;
+
+            queryDataSourceCommandInfo.DataSource = "TestFilter.ComposableFilterBrowse";
+
+            return TestUtility.DumpSorted(
+                queryRepository.QueryData(queryDataSourceCommandInfo).Records,
+                item =>
+                {
+                    var x = (TestFilter.ComposableFilterBrowse)item;
+                    if (x.Simple != null) return x.Name + " " + x.Simple.Name;
+                    return x.Name + " null";
+                });
+        }
+
+        [TestMethod]
+        public void ComposableFilterBrowse()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters", "DELETE FROM TestFilter.Simple" });
+                var repository = new Common.DomRepository(executionContext);
+
+                var parentA = new TestFilter.Simple { Name = "PA" };
+                var parentB = new TestFilter.Simple { Name = "PB" };
+                repository.TestFilter.Simple.Insert(new[] { parentA, parentB });
+
+                var childA = new TestFilter.CombinedFilters { Name = "CA", Simple = parentA };
+                var childB = new TestFilter.CombinedFilters { Name = "CB", Simple = parentB };
+                var childNull = new TestFilter.CombinedFilters { Name = "CN", Simple = null };
+                repository.TestFilter.CombinedFilters.Insert(new[] { childA, childB, childNull });
+
+                executionContext.NHibernateSession.Clear();
+
+                var queryRepository = (IQueryDataSourceCommandImplementation)repository.TestFilter.ComposableFilterBrowse;
+
+                Assert.AreEqual("CA PA", ReportFilteredBrowse(repository, new QueryDataSourceCommandInfo
+                {
+                    Filter = new TestFilter.SimpleNameA()
+                }));
+
+                Assert.AreEqual("CA PA", ReportFilteredBrowse(repository, new QueryDataSourceCommandInfo
+                {
+                    GenericFilter = new FilterCriteria[] { new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "a" } }
+                }));
+
+                Assert.AreEqual("CA PA", ReportFilteredBrowse(repository, new QueryDataSourceCommandInfo
+                {
+                    Filter = new TestFilter.SimpleNameA(),
+                    GenericFilter = new FilterCriteria[] { new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "a" } }
+                }));
+
+                Assert.AreEqual("CN null", ReportFilteredBrowse(repository, new QueryDataSourceCommandInfo
+                {
+                    GenericFilter = new FilterCriteria[] { new FilterCriteria { Property = "Name", Operation = "Contains", Value = "n" } }
+                }));
+
+                Assert.AreEqual("CN null", ReportFilteredBrowse(repository, new QueryDataSourceCommandInfo
+                {
+                    Filter = new TestFilter.NameN(),
+                }));
+
+                Assert.AreEqual("", ReportFilteredBrowse(repository, new QueryDataSourceCommandInfo
+                {
+                    Filter = new TestFilter.NameN(),
+                    GenericFilter = new FilterCriteria[] { new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "p" } }
+                }));
+
+                Assert.AreEqual("", ReportFilteredBrowse(repository, new QueryDataSourceCommandInfo
+                {
+                    Filter = new TestFilter.NameN(),
+                    GenericFilter = new FilterCriteria[] { new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "p" } }
+                }));
+
+                Assert.AreEqual("CA PA", ReportFilteredBrowse(repository, new QueryDataSourceCommandInfo
+                {
+                    Filter = new TestFilter.ComposableFilterBrowseFilter { Pattern = "a" },
+                }));
+            }
+        }
+
+        [TestMethod]
+        [Ignore]
+        public void ArrayFilterBrowse()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters", "DELETE FROM TestFilter.Simple" });
+                var repository = new Common.DomRepository(executionContext);
+
+                var parentA = new TestFilter.Simple { Name = "PA" };
+                var parentB = new TestFilter.Simple { Name = "PB" };
+                repository.TestFilter.Simple.Insert(new[] { parentA, parentB });
+
+                var childA = new TestFilter.CombinedFilters { Name = "CA", Simple = parentA };
+                var childB = new TestFilter.CombinedFilters { Name = "CB", Simple = parentB };
+                var childNull = new TestFilter.CombinedFilters { Name = "CN", Simple = null };
+                repository.TestFilter.CombinedFilters.Insert(new[] { childA, childB, childNull });
+
+                executionContext.NHibernateSession.Clear();
+
+                var queryRepository = (IQueryDataSourceCommandImplementation)repository.TestFilter.ComposableFilterBrowse;
+
+                Assert.AreEqual("CA PA", ReportFilteredBrowse(repository, new QueryDataSourceCommandInfo
+                {
+                    Filter = new TestFilter.ComposableFilterBrowseLoader { Pattern = "a" },
+                    GenericFilter = new FilterCriteria[] { new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "P" } } // TODO: "Contains" is executed in C#, so the value is case sensitive.
+                }));
+
+                // TODO: NullReferenceException because "Simple.Name" FilterCriteria is executed in C# instead of the database.
+                Assert.AreEqual("CA PA, CB PB", ReportFilteredBrowse(repository, new QueryDataSourceCommandInfo
+                {
+                    Filter = new TestFilter.ComposableFilterBrowseLoader { Pattern = "c" },
+                    GenericFilter = new FilterCriteria[] { new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "P" } } // TODO: "Contains" is executed in C#, so the value is case sensitive.
+                }));
             }
         }
     }

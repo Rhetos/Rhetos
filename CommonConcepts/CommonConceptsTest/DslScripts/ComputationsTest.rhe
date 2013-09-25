@@ -225,6 +225,16 @@ Module TestFilter
     Parameter FilterDetail { ShortString Prefix; }
 	FilterBy SourceDetail.'TestFilter.FilterDetail' '(repos, parameter) => repos.TestFilter.SourceDetail.Query().Where(s => s.Name2.StartsWith(parameter.Prefix)).ToArray()';
     FilterByLinkedItems Source.'TestFilter.FilterDetail' TestFilter.SourceDetail.Parent;
+    
+    Browse ComposableFilterBrowse TestFilter.CombinedFilters
+    {
+        Take Name;
+        Take Simple;
+        ItemFilter SimpleNameA 'item => item.Simple.Name.Contains("a")';
+        ItemFilter NameN 'item => item.Name.Contains("n")';
+        FilterBy ComposableFilterBrowseLoader '(repository, parameter) => repository.TestFilter.ComposableFilterBrowse.Query().Where(item => item.Name.Contains(parameter.Pattern)).ToArray()';
+    }
+    Parameter ComposableFilterBrowseLoader { ShortString Pattern; }
 }
 
 Module TestFilter2;

@@ -1,3 +1,19 @@
+0.9.11 (to be released)
+-------------------
+
+New features:
+
+* New concept **AutodetectSqlDependencies** automatically detects and generates dependencies (**SqlDependsOn**) for SqlQueryable, SqlView, SqlFunction, SqlProcedure, SqlTrigger and LegacyEntity view. It may be applied to any of those objects or to a whole module.
+
+Internal improvements:
+
+* Improved performance of `DeployPackaged.exe`. Optimized update of concepts' metadata in database generator.
+* Bugfix: **DenySave** that uses **SqlQueryable** sometimes caused an error "Could not initialize proxy" on save.
+* Bugfix: Web query that combines **ItemFilter** or **ComposableFilter** with *GenericFilter* somtimes caused case insensitive string filtering or NullReferenceException. Filter was executed in C# instead of the SQL.
+* Bugfix: Rhetos REST service bindings were not loaded from `web.config`.
+* Bugfix: On some systems the PUT method on Rhetos REST service caused HTTP error 405. Removed WebDAVModule. 
+* Improved error handling in build batch scripts. Use `/NOPAUSE` parameter for automated builds to avoid pause on error.
+
 0.9.10 (2013-09-12)
 -------------------
 
