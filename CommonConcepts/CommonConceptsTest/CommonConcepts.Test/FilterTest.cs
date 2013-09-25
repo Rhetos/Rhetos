@@ -395,7 +395,7 @@ namespace CommonConcepts.Test
 
                 Assert.AreEqual("CA PA", ReportFilteredBrowse(repository, new QueryDataSourceCommandInfo
                 {
-                    Filter = new TestFilter.ComposableFilterBrowseFilter { Pattern = "a" },
+                    Filter = new TestFilter.ComposableFilterBrowseLoader { Pattern = "a" },
                 }));
             }
         }

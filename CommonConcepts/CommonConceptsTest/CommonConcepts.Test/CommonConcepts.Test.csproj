@@ -79,10 +79,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Dsl.Interfaces.dll</HintPath>
     </Reference>
-    <Reference Include="Rhetos.Factory.Interfaces, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Factory.Interfaces.dll</HintPath>
-    </Reference>
     <Reference Include="Rhetos.Logging.Interfaces, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Logging.Interfaces.dll</HintPath>

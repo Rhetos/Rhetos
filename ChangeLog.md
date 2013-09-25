@@ -1,4 +1,4 @@
-0.9.11 (to be released)
+0.9.11 (2013-09-25)
 -------------------
 
 New features:
@@ -11,7 +11,8 @@ Internal improvements:
 * Bugfix: **DenySave** that uses **SqlQueryable** sometimes caused an error "Could not initialize proxy" on save.
 * Bugfix: Web query that combines **ItemFilter** or **ComposableFilter** with *GenericFilter* somtimes caused case insensitive string filtering or NullReferenceException. Filter was executed in C# instead of the SQL.
 * Bugfix: Rhetos REST service bindings were not loaded from `web.config`.
-* Bugfix: On some systems the PUT method on Rhetos REST service caused HTTP error 405. Removed WebDAVModule. 
+* Bugfix: On some systems the PUT method on Rhetos REST service caused HTTP error 405. Removed WebDAVModule.
+* Bugfix: InvalidCastException (OracleDataReader.GetInt32) on some systems while upgrading database. 
 * Improved error handling in build batch scripts. Use `/NOPAUSE` parameter for automated builds to avoid pause on error.
 
 0.9.10 (2013-09-12)
