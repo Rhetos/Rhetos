@@ -118,22 +118,29 @@ namespace Rhetos.Dom.DefaultConcepts
         {{
             var repository = _domRepository.{0};
 
-            {0}[] filteredResult = null;
+            IQueryable<{0}> filteredResult = null;
             if (commandInfo.Filter != null)
             {{
                 // Using reflection to execute function 'repository.Filter(commandInfo.Filter)'. The function is an implementation of the interface IFilterRepository<TFilter, TResult>.
                 Type filterRepositoryType = repository.GetType().FindInterfaces(System.Reflection.Module.FilterTypeName, typeof(IFilterRepository<,>).Name)
                     .Where(t => t.GetGenericArguments().First().IsAssignableFrom(commandInfo.Filter.GetType())).SingleOrDefault();
-                if (filterRepositoryType != null)
+
+                // If composable filter method exists, use it, and the result will be clean IQueryable
+                System.Reflection.MethodInfo composableFilterMethod = repository.GetType().GetMethod(""Filter"", new[] {{ typeof(IQueryable<{0}>), commandInfo.Filter.GetType() }});
+                if (composableFilterMethod != null)
+                {{
+                    filteredResult = (IQueryable<{0}>)composableFilterMethod.Invoke(repository, new [] {{_domRepository.{0}.Query(), commandInfo.Filter}});
+                }}
+                else if (filterRepositoryType != null)
                 {{
                     System.Reflection.MethodInfo filterMethod = filterRepositoryType.GetMethod(""Filter"", new[] {{ commandInfo.Filter.GetType() }});
-                    filteredResult = ({0}[]) filterMethod.Invoke(repository, new[] {{ commandInfo.Filter }});
+                    filteredResult = (({0}[]) filterMethod.Invoke(repository, new[] {{ commandInfo.Filter }})).AsQueryable();
                 }}
                 else
                     throw new Rhetos.FrameworkException(""Data stucture '{0}' does not have an implementation of the filter for type '"" + commandInfo.Filter.GetType().FullName + ""'."");
             }}
 
-            IQueryable<{0}> query = filteredResult != null ? filteredResult.AsQueryable() : _domRepository.{0}.Query();
+            IQueryable<{0}> query = filteredResult != null ? filteredResult : _domRepository.{0}.Query();
 
             if (commandInfo.GenericFilter != null)
                 query = Rhetos.Dom.DefaultConcepts.GenericFilterWithPagingUtility.Filter(query, commandInfo.GenericFilter);
