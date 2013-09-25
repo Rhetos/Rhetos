@@ -471,13 +471,13 @@ namespace Rhetos.DatabaseGenerator
             int reportRemovedCount = ApplyChangesToDatabase_Remove(allSql, toBeRemoved);
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Prepared SQL scripts for removing concept applications.");
 
-            ApplyChangesToDatabase_Unchanges(allSql, toBeInserted, newApplications, oldApplications);
+            ApplyChangesToDatabase_Unchanged(allSql, toBeInserted, newApplications, oldApplications);
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Prepared SQL scripts for updating unchanged concept applications' metadata.");
 
             int reportInsertedCount = ApplyChangesToDatabase_Insert(allSql, toBeInserted, newApplications);
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Prepared SQL scripts for inserting concept applications.");
 
-            _sqlExecuter.ExecuteSql(allSql);
+            _sqlExecuter.ExecuteSql(allSql.Where(sql => sql != "").ToList());
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Executed " + allSql.Count + " SQL scripts.");
 
             string report = "Removed " + reportRemovedCount + ", inserted " + reportInsertedCount + " concept applications.";
@@ -500,6 +500,8 @@ namespace Rhetos.DatabaseGenerator
                     reportRemovedCount++;
 
                 allSql.Add(ConceptApplicationRepository.DeleteMetadataSql(ca));
+
+                allSql.Add(Sql.Get("DatabaseGenerator_CommitAfterDDL")); // Oracle must commit metadata changes before modifying next database object, to ensure metadata consistency if next DDL command fails (Oracle db automatically commits changes on DDL commands, so the previous DDL command has already been committed).
             }
             return reportRemovedCount;
         }
@@ -519,11 +521,13 @@ namespace Rhetos.DatabaseGenerator
                     reportInsertedCount++;
 
                 allSql.AddRange(ConceptApplicationRepository.InsertMetadataSql(ca));
+
+                allSql.Add(Sql.Get("DatabaseGenerator_CommitAfterDDL")); // Oracle must commit metadata changes before modifying next database object, to ensure metadata consistency if next DDL command fails (Oracle db automatically commits changes on DDL commands, so the previous DDL command has already been committed).
             }
             return reportInsertedCount;
         }
 
-        protected void ApplyChangesToDatabase_Unchanges(List<string> allSql, List<NewConceptApplication> toBeInserted, List<NewConceptApplication> newApplications, List<ConceptApplication> oldApplications)
+        protected void ApplyChangesToDatabase_Unchanged(List<string> allSql, List<NewConceptApplication> toBeInserted, List<NewConceptApplication> newApplications, List<ConceptApplication> oldApplications)
         {
             var indexInsertedConcepts = new HashSet<string>(toBeInserted.Select(ca => ca.GetConceptApplicationKey()));
             var unchangedApplications = newApplications
@@ -531,8 +535,15 @@ namespace Rhetos.DatabaseGenerator
 
             var oldApplicationsByKey = oldApplications.ToDictionary(oa => oa.GetConceptApplicationKey());
 
-            allSql.AddRange(unchangedApplications.SelectMany(unchangedApp =>
-                ConceptApplicationRepository.UpdateMetadataSql(unchangedApp, oldApplicationsByKey[unchangedApp.GetConceptApplicationKey()])));
+            foreach (var ca in unchangedApplications)
+            {
+                var updateMetadataSql = ConceptApplicationRepository.UpdateMetadataSql(ca, oldApplicationsByKey[ca.GetConceptApplicationKey()]);
+                if (updateMetadataSql.Count() > 0)
+                {
+                    Log(ca, "Updating metadata");
+                    allSql.AddRange(updateMetadataSql);
+                }
+            }
         }
 
         protected static string[] SplitSqlScript(string script)
