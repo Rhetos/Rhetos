@@ -68,7 +68,7 @@ namespace Rhetos.DatabaseGenerator
                             ConceptImplementationTypeName = dataReader.GetString(3),
                             CreateQuery = SqlUtility.EmptyNullString(dataReader, 4),
                             RemoveQuery = SqlUtility.EmptyNullString(dataReader, 5),
-                            OldCreationOrder = dataReader.GetInt32(6)
+                            OldCreationOrder = SqlUtility.ReadInt(dataReader, 6)
                         });
                 });
 

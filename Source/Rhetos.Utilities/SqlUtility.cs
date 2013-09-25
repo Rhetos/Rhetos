@@ -82,6 +82,9 @@ namespace Rhetos.Utilities
             }
         }
 
+        private static Lazy<bool> DatabaseLanguageIsMsSql = new Lazy<bool>(() => string.Equals(DatabaseLanguage, "MsSql", StringComparison.Ordinal));
+        private static Lazy<bool> DatabaseLanguageIsOracle = new Lazy<bool>(() => string.Equals(DatabaseLanguage, "Oracle", StringComparison.Ordinal));
+
         public static string NationalLanguage
         {
             get
@@ -157,7 +160,7 @@ namespace Rhetos.Utilities
         {
             CheckIdentifier(name);
 
-            if (DatabaseLanguage == "Oracle")
+            if (DatabaseLanguageIsOracle.Value)
                 name = OracleSqlUtility.LimitIdentifierLength(name);
 
             return name;
@@ -198,9 +201,9 @@ namespace Rhetos.Utilities
         {
             int dotPosition = fullObjectName.IndexOf('.');
             if (dotPosition == -1)
-                if (DatabaseLanguage == "MsSql")
+                if (DatabaseLanguageIsMsSql.Value)
                     return "dbo";
-                else if (DatabaseLanguage == "Oracle")
+                else if (DatabaseLanguageIsOracle.Value)
                     throw new FrameworkException("Missing schema name for database object '" + fullObjectName + "'.");
                 else
                     throw new FrameworkException(UnsupportedLanguageError);
@@ -240,21 +243,37 @@ namespace Rhetos.Utilities
             }
         }
 
+        /// <summary>
+        /// Vendor-independent database reader.
+        /// </summary>
         public static Guid ReadGuid(DbDataReader dataReader, int column)
         {
-            if (string.Equals(DatabaseLanguage, "MsSql", StringComparison.Ordinal))
+            if (DatabaseLanguageIsMsSql.Value)
                 return dataReader.GetGuid(column);
-            else if (string.Equals(DatabaseLanguage, "Oracle", StringComparison.Ordinal))
-                return new Guid(((OracleDataReader)dataReader).GetOracleBinary(0).Value);
+            else if (DatabaseLanguageIsOracle.Value)
+                return new Guid(((OracleDataReader)dataReader).GetOracleBinary(column).Value);
+            else
+                throw new FrameworkException(UnsupportedLanguageError);
+        }
+
+        /// <summary>
+        /// Vendor-independent database reader.
+        /// </summary>
+        public static int ReadInt(DbDataReader dataReader, int column)
+        {
+            if (DatabaseLanguageIsMsSql.Value)
+                return dataReader.GetInt32(column);
+            else if (DatabaseLanguageIsOracle.Value)
+                return Convert.ToInt32(dataReader.GetInt64(column)); // On some systems, reading from NUMERIC(10) column will return Int64, and GetInt32 would fail.
             else
                 throw new FrameworkException(UnsupportedLanguageError);
         }
 
         public static Guid StringToGuid(string guid)
         {
-            if (string.Equals(DatabaseLanguage, "MsSql", StringComparison.Ordinal))
+            if (DatabaseLanguageIsMsSql.Value)
                 return Guid.Parse(guid);
-            else if (string.Equals(DatabaseLanguage, "Oracle", StringComparison.Ordinal))
+            else if (DatabaseLanguageIsOracle.Value)
                 return new Guid(StringToByteArray(guid));
             else
                 throw new FrameworkException(UnsupportedLanguageError);
@@ -267,9 +286,9 @@ namespace Rhetos.Utilities
 
         public static string GuidToString(Guid guid)
         {
-            if (string.Equals(DatabaseLanguage, "MsSql", StringComparison.Ordinal))
+            if (DatabaseLanguageIsMsSql.Value)
                 return guid.ToString().ToUpper();
-            else if (string.Equals(DatabaseLanguage, "Oracle", StringComparison.Ordinal))
+            else if (DatabaseLanguageIsOracle.Value)
                 return ByteArrayToString(guid.ToByteArray());
             else
                 throw new FrameworkException(UnsupportedLanguageError);
@@ -300,9 +319,9 @@ namespace Rhetos.Utilities
         /// </summary>
         public static string EmptyNullString(DbDataReader dataReader, int column)
         {
-            if (string.Equals(DatabaseLanguage, "MsSql", StringComparison.Ordinal))
+            if (DatabaseLanguageIsMsSql.Value)
                 return dataReader.GetString(column) ?? "";
-            else if (string.Equals(DatabaseLanguage, "Oracle", StringComparison.Ordinal))
+            else if (DatabaseLanguageIsOracle.Value)
             {
                 var s = ((OracleDataReader)dataReader).GetOracleString(column);
                 return !s.IsNull ? s.Value : "";
@@ -341,9 +360,9 @@ namespace Rhetos.Utilities
 
         public static DateTime GetDatabaseTime(ISqlExecuter sqlExecuter)
         {
-            if (DatabaseLanguage == "MsSql")
+            if (DatabaseLanguageIsMsSql.Value)
                 return MsSqlUtility.GetDatabaseTime(sqlExecuter);
-            else if (DatabaseLanguage == "Oracle")
+            else if (DatabaseLanguageIsOracle.Value)
                 throw new FrameworkException("GetDatabaseTime function is not yet supported in Rhetos for Oracle database.");
             else
                 throw new FrameworkException(UnsupportedLanguageError);
