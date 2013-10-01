@@ -1585,7 +1585,36 @@ namespace CommonConcepts.Test
                 executionContext.NHibernateSession.Clear();
 
                 editEnt[0].Name = "bube";
-                TestUtility.ShouldFail(() => repository.TestHistory.SimpleWithLock.Update(editEnt), "Name locked with letter 'a'.", "Name is locked if contains letter 'a'.");
+                TestUtility.ShouldFail(() => repository.TestHistory.SimpleWithLock.Update(editEnt), "Name locked with letter 'a'.", "Name is locked if NameNew contains word 'atest'.");
+            }
+        }
+
+        [TestMethod]
+        public void HistoryLockPropertyAndDenySave()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var id1 = Guid.NewGuid();
+                var id2 = Guid.NewGuid();
+                var id3 = Guid.NewGuid();
+                executionContext.SqlExecuter.ExecuteSql(new[] {
+                    "DELETE FROM TestHistory.SimpleWithLockAndDeny",
+                    "INSERT INTO TestHistory.SimpleWithLockAndDeny (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'b', '2011-01-01')",
+                    "INSERT INTO TestHistory.SimpleWithLockAndDenyAdd (ID, NameNew) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 'btest')",
+                    "INSERT INTO TestHistory.SimpleWithLockAndDeny_Changes (EntityID, ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, 'b', '2001-01-01')",
+                    "INSERT INTO TestHistory.SimpleWithLockAndDeny_Changes (EntityID, ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, 'b', '2000-01-01')"});
+                var repository = new Common.DomRepository(executionContext);
+
+                // take entry that is in the middle of history
+                var editEnt = repository.TestHistory.SimpleWithLockAndDeny.All().ToArray();
+                editEnt[0].Name = "a";
+                editEnt[0].ActiveSince = null;
+                repository.TestHistory.SimpleWithLockAndDeny.Update(editEnt);
+
+
+                executionContext.NHibernateSession.Clear();
+                editEnt[0].Name = "be";
+                TestUtility.ShouldFail(() => repository.TestHistory.SimpleWithLockAndDeny.Update(editEnt), "Name locked with letter 'a'.", "Name is locked if NameNew contains word 'atest'.");
             }
         }
     }

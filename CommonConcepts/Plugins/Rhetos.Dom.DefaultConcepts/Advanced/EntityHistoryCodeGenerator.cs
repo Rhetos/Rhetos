@@ -105,6 +105,10 @@ namespace Rhetos.Dom.DefaultConcepts
 							    EntityID = olditem.ID{2}
 						    }}).ToArray());
 			    }}
+
+                // Workaround to restore NH proxies if NHSession.Clear() is called inside filter.
+                for (int i=0; i<updated.Length; i++) updated[i] = _executionContext.NHibernateSession.Load<{0}.{1}>(updated[i].ID);
+                for (int i=0; i<deleted.Length; i++) deleted[i] = _executionContext.NHibernateSession.Load<{0}.{1}>(deleted[i].ID);
             }}
 
 ",
