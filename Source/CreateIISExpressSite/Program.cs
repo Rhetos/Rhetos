@@ -123,7 +123,7 @@ namespace CreateIISExpressSite
             Console.Write("Setting RhetosService.svc location in web.config ...");
             FileReplaceHelper.ReplaceWithRegex(@"..\web.config"
                 , @"<endpoint address=""http(.|\n)*?/RhetosService.svc(.|\n)*?endpoint>"
-                , @"<endpoint address=""http://localhost:" + port.ToString() + @"/RhetosService.svc"" binding=""basicHttpBinding"" contract=""Rhetos.IServerApplication""></endpoint>"
+                , @"<endpoint address=""http://localhost:" + port.ToString() + @"/RhetosService.svc"" binding=""basicHttpBinding"" bindingConfiguration=""rhetosBasicHttpBinding"" contract=""Rhetos.IServerApplication""></endpoint>"
                 , "Not valid web.config file.");
             Console.WriteLine("DONE");
         }
