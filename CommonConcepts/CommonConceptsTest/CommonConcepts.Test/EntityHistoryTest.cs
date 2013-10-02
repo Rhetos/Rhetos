@@ -1282,6 +1282,33 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
+        public void HistoryUpdateActiveItemActiveSince()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var id1 = Guid.NewGuid();
+                var id2 = Guid.NewGuid();
+                executionContext.SqlExecuter.ExecuteSql(new[] {
+                    "DELETE FROM TestHistory.Simple",
+                    "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
+                    "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
+                var repository = new Common.DomRepository(executionContext);
+
+                // take entry in history table
+                var a1 = repository.TestHistory.Simple_History.Query().OrderByDescending(x => x.ActiveSince).Take(1).Single();
+                a1.ActiveSince = new DateTime(2012, 1, 1);
+                repository.TestHistory.Simple_History.Update(new[] { a1 });
+
+                executionContext.NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+
+                var h = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
+
+                Assert.AreEqual("2 2001-01-01T00:00:00,1 2012-01-01T00:00:00", h.Select(item => item.Code + " " + Dump(item.ActiveSince)).Aggregate((i1, i2) => i1 + "," + i2));
+            }
+        }
+
+        [TestMethod]
         public void HistoryUpdateActiveItemFailOlderThanLastInHistory()
         {
             using (var executionContext = new CommonTestExecutionContext())

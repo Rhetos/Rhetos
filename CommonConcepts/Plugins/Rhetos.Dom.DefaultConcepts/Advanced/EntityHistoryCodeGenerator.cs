@@ -41,6 +41,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (EntityHistoryInfo)conceptInfo;
             codeBuilder.InsertCode(FilterInterfaceSnippet(info), RepositoryHelper.RepositoryInterfaces, info.ChangesEntity);
             codeBuilder.InsertCode(FilterImplementationSnippet(info), RepositoryHelper.RepositoryMembers, info.ChangesEntity);
+            codeBuilder.InsertCode(AdditionalParameterSnippet(info), DataStructureCodeGenerator.BodyTag, info.Entity);
             codeBuilder.InsertCode(CreateHistoryOnUpdateSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Entity);
             codeBuilder.InsertCode(VerifyChangesEntityTimeSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.ChangesEntity);
         }
@@ -74,6 +75,20 @@ namespace Rhetos.Dom.DefaultConcepts
             SqlUtility.Identifier(info.Entity.Name + "_AtTime"));
         }
 
+        /// <summary>
+        /// Additional parameter _createChangesEntryOnEdit. It is used in History update.
+        /// If active item is edited through history, it should not create new entry in Changes table.
+        /// </summary>
+        private static string AdditionalParameterSnippet(EntityHistoryInfo info)
+        {
+            return
+@"        private bool _createChangesEntryOnEdit = true;
+          public virtual void SetCreateChangesEntryOnEdit(bool value) { this._createChangesEntryOnEdit = value; }
+          public virtual bool GetCreateChangesEntryOnEdit() { return this._createChangesEntryOnEdit; }
+
+";
+        }
+
         private static string CreateHistoryOnUpdateSnippet(EntityHistoryInfo info)
         {
             return string.Format(
@@ -93,7 +108,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (updatedNew.Count() > 0)
 			    {{
 				    var createHistory = updatedNew.Zip(updated, (newItem, oldItem) => new {{ newItem, oldItem }})
-					    .Where(change => change.oldItem.ActiveSince == null || change.newItem.ActiveSince > change.oldItem.ActiveSince)
+					    .Where(change => (change.oldItem.ActiveSince == null || change.newItem.ActiveSince > change.oldItem.ActiveSince) && change.newItem.GetCreateChangesEntryOnEdit())
 					    .Select(change => change.oldItem)
 					    .ToArray();
 					
