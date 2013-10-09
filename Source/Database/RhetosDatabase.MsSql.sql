@@ -368,7 +368,7 @@ AS
     FROM #columns
     ORDER BY sort
     
-    SELECT '/*DATAMIGRATION ' + CAST(NEWID() AS VARCHAR(40)) + '*/ -- Don''t change this code when modifying the script.'
+    SELECT '/*DATAMIGRATION ' + CAST(NEWID() AS VARCHAR(40)) + '*/ -- Change this code only if the script needs to be executed again.'
     UNION ALL SELECT ''
     UNION ALL SELECT '--EXEC Rhetos.HelpDataMigration ''' + @SchemaName + ''', ''' + @TableName + ''''
     UNION ALL
