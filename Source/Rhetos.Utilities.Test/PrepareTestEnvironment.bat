@@ -7,7 +7,7 @@ SET Config=%1%
 IF [%1] == [] SET Config=Debug
 
 REM Set current working folder to folder where this script is, to ensure that the relative paths in this script are valid.
-SET ThisScriptFolder=%~dp0
+SET ThisScriptFolder="%~dp0"
 PUSHD %ThisScriptFolder%
 
 SET BinFolder="%CD%\bin\%Config%"
