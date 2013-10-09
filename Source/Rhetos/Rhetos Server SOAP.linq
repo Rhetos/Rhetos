@@ -31,7 +31,7 @@ void Main()
 {
 	const string rhetosServerAddress = @"http://localhost/Rhetos/RhetosService.svc";
 	var server = ServerProxy.Create(rhetosServerAddress);
-
+    
 	// READ FIRST 3 RECORDS FROM Common.Claim:
 	
 	Console.WriteLine("READ FIRST 3 RECORDS FROM Common.Claim:");
@@ -42,13 +42,45 @@ void Main()
 		RecordsPerPage = 3,
 		OrderByProperty = "ClaimResource"
 	});
-	//serverResponse.Dump();
+	Short(serverResponse).Dump();
 	ParseResponse<QueryDataSourceCommandResult>(serverResponse).Dump();
+    
+    // CREATE A PRINCIPAL:
+    
+	Console.WriteLine("CREATE A Common.Principal:");
+    var newPrincipal = new Common.Principal { ID = Guid.NewGuid(), Name = "TempLinqPadTest" };
+	serverResponse = server.Execute(new SaveEntityCommandInfo()
+	{
+		Entity = "Common.Principal",
+        DataToInsert = new[] { newPrincipal }
+	});
+	Short(serverResponse).Dump();
+    
+    // DELETE A PRINCIPAL:
+    
+	Console.WriteLine("DELETE A Common.Principal:");
+	serverResponse = server.Execute(new SaveEntityCommandInfo()
+	{
+		Entity = "Common.Principal",
+        DataToDelete = new[] { newPrincipal }
+	});
+	Short(serverResponse).Dump();
 }
 
 
 //=================================================
 // HELPER FUNCTIONS AND CLASSES:
+
+        private static string Short(ServerProcessingResult response)
+        {
+            var sb = new StringBuilder();
+            sb.Append(response.Success ? "Success" : "Failed");
+            if (response.UserMessage != null)
+                sb.Append("\r\nUserMessage: " + response.UserMessage);
+            if (response.SystemMessage != null)
+                sb.Append("\r\nSystemMessage: " + response.SystemMessage);
+            return sb.ToString();
+        }
 
         private static T ParseResponse<T>(ServerProcessingResult response)
         {
