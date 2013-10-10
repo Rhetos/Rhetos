@@ -465,10 +465,10 @@ namespace Rhetos.DatabaseGenerator
         {
             var stopwatch = Stopwatch.StartNew();
 
-            int estimatedNumberOfQueries = Math.Max(oldApplications.Count, newApplications.Count) * 3;
+            int estimatedNumberOfQueries = (toBeRemoved.Count() + toBeInserted.Count()) * 3;
             var allSql = new List<string>(estimatedNumberOfQueries);
 
-            int reportRemovedCount = ApplyChangesToDatabase_Remove(allSql, toBeRemoved);
+            int reportRemovedCount = ApplyChangesToDatabase_Remove(allSql, toBeRemoved, oldApplications);
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Prepared SQL scripts for removing concept applications.");
 
             ApplyChangesToDatabase_Unchanged(allSql, toBeInserted, newApplications, oldApplications);
@@ -485,9 +485,11 @@ namespace Rhetos.DatabaseGenerator
             return report;
         }
 
-        protected int ApplyChangesToDatabase_Remove(List<string> allSql, List<ConceptApplication> toBeRemoved)
+        protected int ApplyChangesToDatabase_Remove(List<string> allSql, List<ConceptApplication> toBeRemoved, List<ConceptApplication> oldApplications)
         {
-            toBeRemoved.Sort((ca1, ca2) => ca2.OldCreationOrder - ca1.OldCreationOrder);
+            toBeRemoved.Sort((ca1, ca2) => ca1.OldCreationOrder - ca2.OldCreationOrder); // TopologicalSort is stable sort, so it will keep this (original) order unless current dependencies direct otherwise.
+            DirectedGraph.TopologicalSort(toBeRemoved, GetDependencyPairs(oldApplications)); // Concept's dependencies might have changed, without dropping and recreating the concept. It is important to compute up-to-date remove order, otherwise FK constraint FK_AppliedConceptDependsOn_DependsOn might fail.
+            toBeRemoved.Reverse();
 
             int reportRemovedCount = 0;
             foreach (var ca in toBeRemoved)
