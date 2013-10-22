@@ -291,6 +291,7 @@ namespace CommonConcepts.Test
                 });
                 // filter doubled should return same results as just one Composable filter
                 Assert.AreEqual(filteredByContainsJustComposable.Records.Length, filteredByContainsWithGenericFilter.Records.Length);
+                Assert.AreEqual(2, filteredByContainsWithGenericFilter.Records.Length);
             }
         }
 

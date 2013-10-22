@@ -215,6 +215,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             return String.Format(@"var updateEnt = new List<{0}_History>();
             var deletedEnt = new List<{0}_History>();
+            var insertedEnt = new List<{0}_History>();
 
             var updateHist = new List<{0}_History>();
             var deletedHist = new List<{0}_History>();
@@ -233,7 +234,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 throw new Rhetos.UserException(""Insert or update of History is not allowed because there is no entity with EntityID: "" + nonExistentEntity.ToString());
             
             // INSERT
-            updateEnt.AddRange(insertedNew
+            insertedEnt.AddRange(insertedNew
                 .Where(newItem => _domRepository.{1}.{0}.Filter(new[]{{newItem.EntityID.Value}}).SingleOrDefault().ActiveSince < newItem.ActiveSince)
                 .ToArray());
             insertedHist.AddRange(insertedNew
@@ -287,10 +288,16 @@ namespace Rhetos.Dsl.DefaultConcepts
                     , _domRepository.{1}.{0}_Changes.Filter(deletedHist.Select(de => de.ID).ToArray()));
 
             _domRepository.{1}.{0}.Save(null
-                , updateEnt.Select(item => {{
+                , insertedEnt.Select(item => {{
                         var ret = _domRepository.{1}.{0}.Filter(new [] {{item.EntityID.Value}}).Single();{2}
                         return ret;
-                    }}).ToArray()
+                    }}).ToArray().Concat(
+                        updateEnt.Select(item => {{
+                            var ret = _domRepository.{1}.{0}.Filter(new [] {{item.EntityID.Value}}).Single();
+                            ret.SetCreateChangesEntryOnEdit(false);{2}
+                            return ret;
+                        }}).ToArray()
+                    )
                 , deletedEnt.Select(de => new {1}.{0} {{ ID = de.EntityID.Value }}).ToArray());
 
             ",

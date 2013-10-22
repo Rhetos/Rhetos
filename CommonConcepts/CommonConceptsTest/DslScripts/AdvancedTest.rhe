@@ -40,13 +40,66 @@ Module TestHistory
 		ShortString Name;
 	}
 	
+    SqlQueryable SimpleWithLockAdd
+    "
+        SELECT
+            ID,
+            NameNew = Name + 'test'
+        FROM TestHistory.SimpleWithLock
+    "
+    {
+        Extends TestHistory.SimpleWithLock;
+        SqlDependsOn TestHistory.SimpleWithLock;
+        
+        ShortString NameNew;
+    }
+    
     Entity SimpleWithLock
     {
         Integer Code { History; }
 		ShortString Name { History; }
         
-        ItemFilter NameWithLetterA 'item => item.Name.ToLower().Contains(''a'')';
-		LockProperty Name.NameWithLetterA 'Name is locked if contains letter ''a''.';
+        ItemFilter NameNewWithLetterAtest 'item => item.Extension_SimpleWithLockAdd.NameNew.ToLower().Contains("atest")';
+		LockProperty Name.NameNewWithLetterAtest 'Name is locked if NameNew contains word ''atest''.';
+    }
+    
+    Persisted SimpleWithLockAndDenyAdd TestHistory.ComputeSimpleWithLockAndDenyAdd
+    {
+        AllProperties;
+        KeepSynchronized;
+    }
+    
+    SqlQueryable ComputeSimpleWithLockAndDenyAdd
+    "
+        SELECT
+            ID,
+            NameNew = Name + 'test'
+        FROM TestHistory.SimpleWithLockAndDeny
+    "
+    {
+        Extends TestHistory.SimpleWithLockAndDeny;
+        ChangesOnChangedItems TestHistory.SimpleWithLockAndDeny 'Guid[]' 'changedItems => changedItems.Select(item => item.ID).ToArray()';
+        SqlDependsOn TestHistory.SimpleWithLockAndDeny;
+        
+        ShortString NameNew;
+    }
+    
+    Entity SimpleWithLockAndDeny
+    {
+        Integer Code { History; }
+		ShortString Name { History; }
+        
+        ItemFilter NameNewWithLetterAtest 'item => item.Extension_SimpleWithLockAndDenyAdd.NameNew.ToLower().Contains("atest")';
+		LockProperty Name.NameNewWithLetterAtest 'Name is locked if NameNew contains word ''atest''.';
+        
+        ItemFilter TooLongNameNew 'item => item.Extension_SimpleWithLockAndDenyAdd.NameNew.Length > 7';
+		DenySave TooLongNameNew 'NameNew too long.';
+
+        ItemFilter TooTooLongNameNew 'item => item.Extension_SimpleWithLockAndDenyAdd.NameNew.Length > 9';
+		DenySave TooTooLongNameNew 'NameNew tootoo long.';
+
+        ItemFilter FarTooLongNameNew 'item => item.Extension_SimpleWithLockAndDenyAdd.NameNew.Length > 11';
+		DenySave FarTooLongNameNew 'NameNew fartoo long.';
     }
     
 	Entity Standard

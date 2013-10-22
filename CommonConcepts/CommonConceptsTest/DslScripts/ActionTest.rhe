@@ -13,4 +13,51 @@ Module TestAction
 	{
         UseExecutionContext;
 	}
+    
+    SqlQueryable ComputeNameContainsA
+    "
+        SELECT
+            ID,
+            ContainsA = CASE WHEN Name LIKE '%A%' THEN 1 ELSE 0 END
+        FROM 
+            TestAction.Simple
+    "
+    {
+        Extends TestAction.Simple;
+        ChangesOnChangedItems TestAction.Simple 'Guid[]' 'changedItems => changedItems.Select(item => item.ID).ToArray()';
+        Bool ContainsA;
+    }
+    
+    Persisted NameContainsA TestAction.ComputeNameContainsA
+    {
+        AllProperties;
+        KeepSynchronized;
+    }
+    
+    Entity Simple
+    {
+        ShortString Name;
+        
+        ItemFilter NameHasLessThanThreeChars 'item => item.Name.Length < 3';
+        DenySave NameHasLessThanThreeChars 'Name have to be longer than 2 chars.';
+        
+    }
+    
+    Action RemoveAFromAllSimpleEntities
+        '(parameters, repository, userInfo, executionContext) =>
+            { 
+                var testLoad = repository.TestAction.ComputeNameContainsA.All();
+                var simpleEntities = repository.TestAction.Simple.Query().Where(item => item.Name.Length > 0).ToList();
+                foreach(var entity in simpleEntities)
+                {
+                    if (entity.Extension_NameContainsA.ContainsA.Value)
+                        entity.Name = entity.Name.Replace("A", "");
+                }
+                
+                repository.TestAction.Simple.Update(simpleEntities);
+            }'
+	{
+        UseExecutionContext;
+	}
+    
 }

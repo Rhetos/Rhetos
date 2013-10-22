@@ -52,5 +52,27 @@ namespace CommonConcepts.Test
                     "", "User " + executionContext.UserInfo.UserName);
             }
         }
+
+        [TestMethod]
+        public void UseObjectsWithCalculatedExtension()
+        {
+            using (var executionContext = new CommonTestExecutionContext(true))
+            {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestAction.Simple" });
+                var repository = new Common.DomRepository(executionContext);
+
+                var itemA = new TestAction.Simple { Name = "testA" };
+                var itemB = new TestAction.Simple { Name = "testB" };
+                repository.TestAction.Simple.Insert(new[] { itemA, itemB });
+                executionContext.NHibernateSession.Clear();
+                repository.TestAction.RemoveAFromAllSimpleEntities.Execute(new TestAction.RemoveAFromAllSimpleEntities { });
+
+                executionContext.NHibernateSession.Clear();
+
+                repository.TestAction.Simple.Insert(new[] { new TestAction.Simple { Name = "testA" } });
+                executionContext.NHibernateSession.Clear();
+                repository.TestAction.RemoveAFromAllSimpleEntities.Execute(new TestAction.RemoveAFromAllSimpleEntities { });
+            }
+        }
     }
 }

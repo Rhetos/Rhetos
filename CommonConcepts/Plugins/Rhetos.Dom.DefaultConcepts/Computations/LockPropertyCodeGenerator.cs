@@ -58,6 +58,10 @@ namespace Rhetos.Dom.DefaultConcepts
                 var lockedItems = _domRepository.{0}.Filter(changedItems.AsQueryable(), new {1}());
                 if (lockedItems.Count() > 0)
                     throw new Rhetos.UserException({2}, ""DataStructure:{0},ID:"" + lockedItems.First().ID.ToString() + "",Property:{3}"");
+
+                // Workaround to restore NH proxies if NHSession.Clear() is called inside filter.
+                for (int i=0; i<updated.Length; i++) updated[i] = _executionContext.NHibernateSession.Load<{0}>(updated[i].ID);
+                for (int i=0; i<deleted.Length; i++) deleted[i] = _executionContext.NHibernateSession.Load<{0}>(deleted[i].ID);
             }}
 ",
                 info.Source.DataStructure.GetKeyProperties(),
