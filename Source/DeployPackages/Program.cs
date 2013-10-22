@@ -42,19 +42,16 @@ namespace DeployPackages
 {
     class Paremeters
     {
-        public readonly bool CleanPreviousDeploymentData;
         public readonly bool GeneratePermissionClaims;
 
         public Paremeters(string[] args)
         {
             var readArgs = args.ToList();
 
-            CleanPreviousDeploymentData = ReadSwitch(readArgs, "clean");
             GeneratePermissionClaims = !ReadSwitch(readArgs, "skipclaims"); // TODO: Remove this switch when security claims from Common package are separated from Framework. Currently the server cannot be deployed without common package because of the dependency.
 
             if (readArgs.Count() != 0)
                 throw new ApplicationException(@"DeployPackages.exe command-line arguments:
-/clean        Old data-migration tables will be deleted before the upgrade. Do not use this option when recovering from previous unwanted or failed deployment.
 /skipclaims  Skips generating permission claims. Will be removed in future versions.");
         }
 
@@ -112,17 +109,18 @@ namespace DeployPackages
                     else
                         Console.WriteLine("Generated " + generatedTypesCount + " types.");
 
-                    Console.Write("Executing custom generators... ");
+                    Console.Write("Executing custom generators ... ");
                     Console.WriteLine(container.Resolve<GeneratorProcessor>().ProcessGenerators());
 
                     Console.Write("Preparing Rhetos database ... ");
                     DeploymentUtility.PrepareRhetosDatabase(container.Resolve<ISqlExecuter>());
                     Console.WriteLine("Done.");
 
-                    if (parameters.CleanPreviousDeploymentData)
+                    Console.Write("Cleaning old migration data ... ");
+                    var databaseCleaner = container.Resolve<DatabaseCleaner>();
                     {
-                        Console.Write("Clean option is on, deleting old migration data ... ");
-                        var report = container.Resolve<DatabaseCleaner>().CleanupOldData();
+                        string report = databaseCleaner.RemoveRedundantMigrationColumns();
+                        databaseCleaner.RefreshDataMigrationRows();
                         Console.WriteLine(report);
                     }
 
@@ -138,8 +136,11 @@ namespace DeployPackages
                     undoDataMigrationScriptsOnError = null;
 
                     Console.Write("Deleting redundant migration data ... ");
-                    var databaseCleanerReport = container.Resolve<DatabaseCleaner>().CleanupRedundantOldData();
-                    Console.WriteLine(databaseCleanerReport);
+                    {
+                        var report = databaseCleaner.RemoveRedundantMigrationColumns();
+                        databaseCleaner.RefreshDataMigrationRows();
+                        Console.WriteLine(report);
+                    }
 
                     Console.Write("Uploading DSL scripts ... ");
                     int dslScriptCount = DslScriptManager.UploadDslScriptsToServer(AutofacConfiguration.DslScriptsFolder, container.Resolve<ISqlExecuter>());

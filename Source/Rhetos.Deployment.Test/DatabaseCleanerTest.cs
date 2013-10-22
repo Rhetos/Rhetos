@@ -126,7 +126,7 @@ namespace Rhetos.Deployment.Test
         {
             var mockSqlExecuter = new MockSqlExecuter(oldColumns, oldTables, oldSchemas);
             var databaseCleaner = new DatabaseCleaner(new ConsoleLogProvider(), mockSqlExecuter);
-            Console.WriteLine("Report: " + databaseCleaner.CleanupRedundantOldData());
+            Console.WriteLine("Report: " + databaseCleaner.RemoveRedundantMigrationColumns());
 
             Assert.AreEqual(expectedDeletedColumns, TestUtility.DumpSorted(mockSqlExecuter.DroppedColumns), description + ": Deleted columns.");
             Assert.AreEqual(expectedDeletedTables, TestUtility.DumpSorted(mockSqlExecuter.DroppedTables), description + ": Deleted tables.");
@@ -171,7 +171,7 @@ namespace Rhetos.Deployment.Test
         {
             var mockSqlExecuter = new MockSqlExecuter("", oldTables, oldSchemas);
             var databaseCleaner = new DatabaseCleaner(new ConsoleLogProvider(), mockSqlExecuter);
-            Console.WriteLine("Report: " + databaseCleaner.CleanupOldData());
+            Console.WriteLine("Report: " + databaseCleaner.DeleteAllMigrationData());
 
             Assert.AreEqual("", TestUtility.DumpSorted(mockSqlExecuter.DroppedColumns), description + ": Deleted columns.");
             Assert.AreEqual(expectedDeletedTables, TestUtility.DumpSorted(mockSqlExecuter.DroppedTables), description + ": Deleted tables.");

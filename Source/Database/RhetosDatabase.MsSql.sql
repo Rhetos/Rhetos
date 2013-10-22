@@ -121,8 +121,6 @@ END
 
 GO
 
-
-
 IF OBJECT_ID('Rhetos.GetColumnType') IS NULL
 EXEC ('CREATE FUNCTION Rhetos.GetColumnType
     (@SchemaName NVARCHAR(256), @TableName NVARCHAR(256), @ColumnName NVARCHAR(256))
@@ -145,124 +143,13 @@ RETURN
         TABLE_SCHEMA = @SchemaName AND TABLE_NAME = @TableName AND COLUMN_NAME = @ColumnName)
 END')
 
-IF OBJECT_ID('Rhetos.DataMigrationUse') IS NULL
-	EXEC ( 'CREATE PROCEDURE Rhetos.DataMigrationUse AS SET NOCOUNT ON RAISERROR (''Procedure creation has not finished.'', 16, 62)')
-GO
-ALTER PROCEDURE Rhetos.DataMigrationUse
-	@SchemaName NVARCHAR(256), @TableName NVARCHAR(256), @ColumnName NVARCHAR(256), @ColumnType NVARCHAR(256)
-AS
-	-- Data-migration SQL scrtipts must provide a valid @ColumnType argument (use Rhetos.HelpDataMigration for help).
-	-- @ColumnType may be null (autodetect) only when the procedure is called by server application during automatic column backup/restore process.
-    
-	-- Standard error-handling header (a bit obsolete)
-	DECLARE @InitialTranCount INT
-	SET @InitialTranCount = @@TRANCOUNT
-	DECLARE @TranName VARCHAR(38)
-	SET @TranName = NEWID()
-	IF @InitialTranCount = 0 BEGIN TRANSACTION @TranName
-	ELSE SAVE TRANSACTION @TranName
-	DECLARE @Error INT
-	SET @Error = 0
-
-	IF CHARINDEX(']', @SchemaName) > 0 OR CHARINDEX('''', @SchemaName) > 0
-	BEGIN ROLLBACK TRANSACTION @TranName RAISERROR('Invalid character in @SchemaName %s', 16, 10, @SchemaName) RETURN 50000 END
-
-	IF CHARINDEX(']', @TableName) > 0 OR CHARINDEX('''', @TableName) > 0
-	BEGIN ROLLBACK TRANSACTION @TranName RAISERROR('Invalid character in @TableName %s', 16, 10, @TableName) RETURN 50000 END
-
-	IF CHARINDEX(']', @ColumnName) > 0 OR CHARINDEX('''', @ColumnName) > 0
-	BEGIN ROLLBACK TRANSACTION @TranName RAISERROR('Invalid character in @ColumnName %s', 16, 10, @ColumnName) RETURN 50000 END
-    
-	DECLARE @MigrationSchemaName NVARCHAR(256)
-	SET @MigrationSchemaName = '_' + @SchemaName
-    
-    DECLARE @ExistingMigrationColumnType NVARCHAR(256)
-    SET @ExistingMigrationColumnType = Rhetos.GetColumnType(@MigrationSchemaName, @TableName, @ColumnName)
-    
-    DECLARE @OriginalType NVARCHAR(256)
-    SET @OriginalType = Rhetos.GetColumnType(@SchemaName, @TableName, @ColumnName)
-    
-    IF @ColumnName = 'ID' AND @ExistingMigrationColumnType IS NULL
-    BEGIN
-        
-        IF @ColumnType <> 'UNIQUEIDENTIFIER'
-        BEGIN ROLLBACK TRANSACTION @TranName RAISERROR('Column "ID" must have ColumnType "UNIQUEIDENTIFIER".', 16, 10) RETURN 50000 END
-
-        IF NOT EXISTS(SELECT * FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = @MigrationSchemaName)
-            EXEC ('CREATE  SCHEMA [' + @MigrationSchemaName + ']');
-        SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
-
-        EXEC ('CREATE TABLE [' + @MigrationSchemaName + '].[' + @TableName + '] (ID UNIQUEIDENTIFIER NOT NULL CONSTRAINT [PK_' + @TableName + '] PRIMARY KEY NONCLUSTERED)');
-        SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
-    
-        IF @OriginalType IS NOT NULL
-        BEGIN
-            EXEC ('
-                INSERT INTO
-                    [' + @MigrationSchemaName + '].[' + @TableName + '] (ID)
-                SELECT
-                    ID
-                FROM
-                    [' + @SchemaName + '].[' + @TableName + ']
-                WHERE
-                    ID NOT IN (SELECT ID FROM [' + @MigrationSchemaName + '].[' + @TableName + '])');
-            SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
-        END
-
-    END
-	ELSE IF @ColumnName <> 'ID'
-	BEGIN
-    
-        IF @ColumnType IS NULL AND @OriginalType IS NULL
-            BEGIN ROLLBACK TRANSACTION @TranName RAISERROR('Column type must be explicitly defined when executing DataMigrationUse. There is no column %s.%s.%s.', 16, 10, @SchemaName, @TableName, @ColumnName) RETURN 50000 END
-        
-        IF @ExistingMigrationColumnType IS NULL
-        BEGIN
-            EXEC @Error = Rhetos.DataMigrationUse @SchemaName, @TableName, 'ID', 'UNIQUEIDENTIFIER';
-            SET @Error = ISNULL(NULLIF(@Error, 0), @@ERROR) IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RAISERROR('Error executing DataMigrationUse ID.',16,10) RETURN @Error END
-            
-            DECLARE @CreateType NVARCHAR(256)
-            SET @CreateType = COALESCE(@OriginalType, @ColumnType)
-
-            EXEC ('ALTER TABLE [' + @MigrationSchemaName + '].[' + @TableName + '] ADD [' + @ColumnName + '] ' + @CreateType);
-            SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
-            
-            SET @ExistingMigrationColumnType = @CreateType
-        
-            IF @OriginalType IS NOT NULL
-            BEGIN
-                EXEC ('
-                    UPDATE
-                        migration
-                    SET
-                        [' + @ColumnName + '] = original.[' + @ColumnName + ']
-                    FROM
-                        [' + @MigrationSchemaName + '].[' + @TableName + '] migration
-                        LEFT JOIN [' + @SchemaName + '].[' + @TableName + '] original ON original.ID = migration.ID');
-                SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
-            END
-        END
-        
-        IF @ColumnType <> @ExistingMigrationColumnType
-        BEGIN
-            PRINT 'Automatically changing data-migration column type from ' + @ExistingMigrationColumnType + ' to ' + @ColumnType + ' for column ' + @SchemaName + '.' + @TableName + '.'  + @ColumnName+ '.'
-            EXEC ('ALTER TABLE [' + @MigrationSchemaName + '].[' + @TableName + '] ALTER COLUMN [' + @ColumnName + '] ' + @ColumnType);
-            SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
-        END
-        
-	END
-
-	IF @InitialTranCount = 0 COMMIT TRANSACTION @TranName
-	RETURN 0
-GO
-
 IF OBJECT_ID('Rhetos.DataMigrationApply') IS NULL
-	EXEC ( 'CREATE PROCEDURE Rhetos.DataMigrationApply AS SET NOCOUNT ON RAISERROR (''Procedure creation has not finished.'', 16, 62)')
+	EXEC ('CREATE PROCEDURE Rhetos.DataMigrationApply AS SET NOCOUNT ON RAISERROR (''Procedure creation has not finished.'', 16, 62)')
 GO
 ALTER PROCEDURE Rhetos.DataMigrationApply
 	@SchemaName NVARCHAR(256), @TableName NVARCHAR(256), @ColumnName NVARCHAR(256)
 AS
-	-- Standard error-handling header (a bit obsolete)
+	-- Standard error-handling header
 	DECLARE @InitialTranCount INT
 	SET @InitialTranCount = @@TRANCOUNT
 	DECLARE @TranName VARCHAR(38)
@@ -341,12 +228,13 @@ AS
         
 	END
 
+	-- Standard error-handling footer
 	IF @InitialTranCount = 0 COMMIT TRANSACTION @TranName
 	RETURN 0
 GO
 
 IF OBJECT_ID('Rhetos.HelpDataMigration') IS NULL
-	EXEC ( 'CREATE PROCEDURE Rhetos.HelpDataMigration AS SET NOCOUNT ON RAISERROR (''Procedure creation has not finished.'', 16, 62)')
+	EXEC ('CREATE PROCEDURE Rhetos.HelpDataMigration AS SET NOCOUNT ON RAISERROR (''Procedure creation has not finished.'', 16, 62)')
 GO
 ALTER PROCEDURE Rhetos.HelpDataMigration
 	@SchemaName NVARCHAR(256), @TableName NVARCHAR(256)
@@ -382,12 +270,12 @@ AS
 GO
 
 IF OBJECT_ID('Rhetos.DataMigrationApplyMultiple') IS NULL
-	EXEC ( 'CREATE PROCEDURE Rhetos.DataMigrationApplyMultiple AS SET NOCOUNT ON RAISERROR (''Procedure creation has not finished.'', 16, 62)')
+	EXEC ('CREATE PROCEDURE Rhetos.DataMigrationApplyMultiple AS SET NOCOUNT ON RAISERROR (''Procedure creation has not finished.'', 16, 62)')
 GO
 ALTER PROCEDURE Rhetos.DataMigrationApplyMultiple
 	@SchemaName NVARCHAR(256), @TableName NVARCHAR(256), @ColumnNames NVARCHAR(MAX)
 AS
-	-- Standard error-handling header (a bit obsolete)
+	-- Standard error-handling header
 	DECLARE @InitialTranCount INT
 	SET @InitialTranCount = @@TRANCOUNT
 	DECLARE @TranName VARCHAR(38)
@@ -525,6 +413,7 @@ AS
         
 	END
 
+	-- Standard error-handling footer
 	IF @InitialTranCount = 0 COMMIT TRANSACTION @TranName
 	RETURN 0
 GO
@@ -558,7 +447,7 @@ BEGIN
 				DependsOn <> ''''
 		) acXml
 		CROSS APPLY
-		( 
+		(
 			SELECT fdata.dependsOnElement.value(''.'',''uniqueidentifier'') as dependsOnValue
 			FROM acXml.xmlList.nodes(''X'') as fdata(dependsOnElement)
 		) acSplit
@@ -588,3 +477,214 @@ BEGIN
 	ALTER TABLE Rhetos.AppliedConcept
 		DROP CONSTRAINT DF_AppliedConcept_ConceptInfoKey;
 END
+
+IF OBJECT_ID('Rhetos.DataMigrationFreshRows') IS NULL
+CREATE TABLE Rhetos.DataMigrationFreshRows
+(
+	ID UNIQUEIDENTIFIER NOT NULL
+		CONSTRAINT PK_DataMigrationFreshRows PRIMARY KEY NONCLUSTERED
+		CONSTRAINT DF_DataMigrationFreshRows_ID DEFAULT (NEWID()),
+	OriginalSchemaName NVARCHAR(256) NOT NULL,
+	TableName NVARCHAR(256) NOT NULL,
+	CONSTRAINT UQ_DataMigrationFreshRows_Table UNIQUE (OriginalSchemaName, TableName)
+);
+
+IF OBJECT_ID('Rhetos.DataMigrationInitializeRows') IS NULL
+	EXEC ('CREATE PROCEDURE Rhetos.DataMigrationInitializeRows AS SET NOCOUNT ON RAISERROR (''Procedure creation has not finished.'', 16, 62)')
+GO
+ALTER PROCEDURE Rhetos.DataMigrationInitializeRows (@OriginalSchemaName NVARCHAR(256), @TableName NVARCHAR(256))
+AS
+	-- Standard error-handling header
+	DECLARE @InitialTranCount INT
+	SET @InitialTranCount = @@TRANCOUNT
+	DECLARE @TranName VARCHAR(38)
+	SET @TranName = NEWID()
+	IF @InitialTranCount = 0 BEGIN TRANSACTION @TranName
+	ELSE SAVE TRANSACTION @TranName
+	DECLARE @Error INT
+	SET @Error = 0
+
+	IF CHARINDEX(']', @OriginalSchemaName) > 0 OR CHARINDEX('''', @OriginalSchemaName) > 0
+	BEGIN ROLLBACK TRANSACTION @TranName RAISERROR('Invalid character in @@OriginalSchemaName %s', 16, 10, @OriginalSchemaName) RETURN 50000 END
+
+	IF CHARINDEX(']', @TableName) > 0 OR CHARINDEX('''', @TableName) > 0
+	BEGIN ROLLBACK TRANSACTION @TranName RAISERROR('Invalid character in @TableName %s', 16, 10, @TableName) RETURN 50000 END
+
+	IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @OriginalSchemaName AND TABLE_NAME = @TableName AND COLUMN_NAME = 'ID')
+		AND EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '_' + @OriginalSchemaName AND TABLE_NAME = @TableName AND COLUMN_NAME = 'ID')
+		AND NOT EXISTS(SELECT * FROM Rhetos.DataMigrationFreshRows WHERE OriginalSchemaName = @OriginalSchemaName AND TableName = @TableName)
+	BEGIN
+		DECLARE @commonColumns NVARCHAR(max);
+		SET @commonColumns = 'ID';
+
+		SELECT
+			@commonColumns = @commonColumns + N', ' + QUOTENAME(mig.COLUMN_NAME)
+		FROM
+			INFORMATION_SCHEMA.COLUMNS orig
+			INNER JOIN INFORMATION_SCHEMA.COLUMNS mig
+				ON mig.TABLE_SCHEMA = '_' + orig.TABLE_SCHEMA
+				AND mig.TABLE_NAME = orig.TABLE_NAME
+				AND mig.COLUMN_NAME = orig.COLUMN_NAME
+		WHERE
+			mig.COLUMN_NAME <> 'ID'
+			AND orig.TABLE_SCHEMA = @OriginalSchemaName
+			AND orig.TABLE_NAME = @TableName
+		ORDER BY
+			mig.TABLE_SCHEMA, mig.TABLE_NAME, mig.ORDINAL_POSITION;
+
+		DECLARE @sql NVARCHAR(max);
+
+		SET @sql = N'DELETE FROM ' + QUOTENAME(N'_' + @OriginalSchemaName) + N'.' + QUOTENAME(@TableName) + N'
+WHERE ID NOT IN (SELECT ID FROM ' + QUOTENAME(@OriginalSchemaName) + N'.' + QUOTENAME(@TableName) + N');
+
+INSERT INTO ' + QUOTENAME(N'_' + @OriginalSchemaName) + N'.' + QUOTENAME(@TableName) + N' (' + @commonColumns + N')
+SELECT ' + @commonColumns + N' FROM ' + QUOTENAME(@OriginalSchemaName) + N'.' + QUOTENAME(@TableName) + N'
+WHERE ' + QUOTENAME(@OriginalSchemaName) + N'.' + QUOTENAME(@TableName) + N'.ID NOT IN (SELECT ID FROM ' + QUOTENAME(N'_' + @OriginalSchemaName) + N'.' + QUOTENAME(@TableName) + N');
+
+INSERT INTO Rhetos.DataMigrationFreshRows (OriginalSchemaName, TableName) VALUES (''' + @OriginalSchemaName + ''', ''' + @TableName + ''')';
+
+		IF @commonColumns <> 'ID'
+		BEGIN
+			DECLARE @commonColumnsAssignment NVARCHAR(max);
+			SET @commonColumnsAssignment = NULL;
+
+			SELECT
+				@commonColumnsAssignment = ISNULL(@commonColumnsAssignment + N', ', '')
+					+ QUOTENAME(mig.COLUMN_NAME) + N' = orig.' + QUOTENAME(mig.COLUMN_NAME)
+			FROM
+				INFORMATION_SCHEMA.COLUMNS orig
+				INNER JOIN INFORMATION_SCHEMA.COLUMNS mig
+					ON mig.TABLE_SCHEMA = '_' + orig.TABLE_SCHEMA
+					AND mig.TABLE_NAME = orig.TABLE_NAME
+					AND mig.COLUMN_NAME = orig.COLUMN_NAME
+			WHERE
+				mig.COLUMN_NAME <> 'ID'
+				AND orig.TABLE_SCHEMA = @OriginalSchemaName
+				AND orig.TABLE_NAME = @TableName
+			ORDER BY
+				mig.TABLE_SCHEMA, mig.TABLE_NAME, mig.ORDINAL_POSITION;
+
+			SET @sql = @sql + N'
+
+UPDATE mig
+SET ' + @commonColumnsAssignment + N'
+FROM ' + QUOTENAME(@OriginalSchemaName) + N'.' + QUOTENAME(@TableName) + N' orig
+	INNER JOIN ' + QUOTENAME(N'_' + @OriginalSchemaName) + N'.' + QUOTENAME(@TableName) + N' mig ON orig.ID = mig.ID';
+
+		END
+	
+		PRINT @sql;
+		EXEC (@sql);
+		SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
+	END
+
+	-- Standard error-handling footer
+	IF @InitialTranCount = 0 COMMIT TRANSACTION @TranName
+	RETURN 0
+GO
+
+IF OBJECT_ID('Rhetos.DataMigrationUse') IS NULL
+	EXEC ('CREATE PROCEDURE Rhetos.DataMigrationUse AS SET NOCOUNT ON RAISERROR (''Procedure creation has not finished.'', 16, 62)')
+GO
+ALTER PROCEDURE Rhetos.DataMigrationUse
+	@SchemaName NVARCHAR(256), @TableName NVARCHAR(256), @ColumnName NVARCHAR(256), @ColumnType NVARCHAR(256)
+AS
+	-- Data-migration SQL scrtipts must provide a valid @ColumnType argument (use Rhetos.HelpDataMigration for help).
+	-- @ColumnType may be null (autodetect) only when the procedure is called by server application during automatic column backup/restore process.
+    
+	-- Standard error-handling header
+	DECLARE @InitialTranCount INT
+	SET @InitialTranCount = @@TRANCOUNT
+	DECLARE @TranName VARCHAR(38)
+	SET @TranName = NEWID()
+	IF @InitialTranCount = 0 BEGIN TRANSACTION @TranName
+	ELSE SAVE TRANSACTION @TranName
+	DECLARE @Error INT
+	SET @Error = 0
+
+	IF CHARINDEX(']', @SchemaName) > 0 OR CHARINDEX('''', @SchemaName) > 0
+	BEGIN ROLLBACK TRANSACTION @TranName RAISERROR('Invalid character in @SchemaName %s', 16, 10, @SchemaName) RETURN 50000 END
+
+	IF CHARINDEX(']', @TableName) > 0 OR CHARINDEX('''', @TableName) > 0
+	BEGIN ROLLBACK TRANSACTION @TranName RAISERROR('Invalid character in @TableName %s', 16, 10, @TableName) RETURN 50000 END
+
+	IF CHARINDEX(']', @ColumnName) > 0 OR CHARINDEX('''', @ColumnName) > 0
+	BEGIN ROLLBACK TRANSACTION @TranName RAISERROR('Invalid character in @ColumnName %s', 16, 10, @ColumnName) RETURN 50000 END
+    
+	DECLARE @MigrationSchemaName NVARCHAR(256)
+	SET @MigrationSchemaName = '_' + @SchemaName
+    
+    DECLARE @ExistingMigrationColumnType NVARCHAR(256)
+    SET @ExistingMigrationColumnType = Rhetos.GetColumnType(@MigrationSchemaName, @TableName, @ColumnName)
+    
+    DECLARE @OriginalType NVARCHAR(256)
+    SET @OriginalType = Rhetos.GetColumnType(@SchemaName, @TableName, @ColumnName)
+    
+    IF @ColumnName = 'ID'
+    BEGIN
+
+		IF @ExistingMigrationColumnType IS NULL
+		BEGIN
+        
+			IF @ColumnType <> 'UNIQUEIDENTIFIER'
+			BEGIN ROLLBACK TRANSACTION @TranName RAISERROR('Column "ID" must have ColumnType "UNIQUEIDENTIFIER".', 16, 10) RETURN 50000 END
+
+			IF NOT EXISTS(SELECT * FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = @MigrationSchemaName)
+				EXEC ('CREATE SCHEMA [' + @MigrationSchemaName + ']');
+			SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
+
+			EXEC ('CREATE TABLE [' + @MigrationSchemaName + '].[' + @TableName + '] (ID UNIQUEIDENTIFIER NOT NULL CONSTRAINT [PK_' + @TableName + '] PRIMARY KEY NONCLUSTERED)');
+			SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
+
+		END
+
+		EXEC @Error = Rhetos.DataMigrationInitializeRows @SchemaName, @TableName;
+		SET @Error = ISNULL(NULLIF(@Error, 0), @@ERROR) IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RAISERROR('Error executing DataMigrationInitializeRows.',16,10) RETURN @Error END
+
+    END
+	ELSE IF @ColumnName <> 'ID'
+	BEGIN
+    
+        IF @ColumnType IS NULL AND @OriginalType IS NULL
+            BEGIN ROLLBACK TRANSACTION @TranName RAISERROR('Column type must be explicitly defined when executing DataMigrationUse. There is no column %s.%s.%s.', 16, 10, @SchemaName, @TableName, @ColumnName) RETURN 50000 END
+
+        EXEC @Error = Rhetos.DataMigrationUse @SchemaName, @TableName, 'ID', 'UNIQUEIDENTIFIER';
+        SET @Error = ISNULL(NULLIF(@Error, 0), @@ERROR) IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RAISERROR('Error executing DataMigrationUse ID.',16,10) RETURN @Error END
+        
+        IF @ExistingMigrationColumnType IS NULL
+        BEGIN
+            DECLARE @CreateType NVARCHAR(256)
+            SET @CreateType = COALESCE(@OriginalType, @ColumnType)
+
+            EXEC ('ALTER TABLE [' + @MigrationSchemaName + '].[' + @TableName + '] ADD [' + @ColumnName + '] ' + @CreateType);
+            SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
+            
+            SET @ExistingMigrationColumnType = @CreateType
+        
+            IF @OriginalType IS NOT NULL
+            BEGIN
+                EXEC ('
+                    UPDATE
+                        migration
+                    SET
+                        [' + @ColumnName + '] = original.[' + @ColumnName + ']
+                    FROM
+                        [' + @MigrationSchemaName + '].[' + @TableName + '] migration
+                        LEFT JOIN [' + @SchemaName + '].[' + @TableName + '] original ON original.ID = migration.ID');
+                SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
+            END
+        END
+    
+        IF @ColumnType <> @ExistingMigrationColumnType
+        BEGIN
+            PRINT 'Automatically changing data-migration column type from ' + @ExistingMigrationColumnType + ' to ' + @ColumnType + ' for column ' + @SchemaName + '.' + @TableName + '.'  + @ColumnName+ '.'
+            EXEC ('ALTER TABLE [' + @MigrationSchemaName + '].[' + @TableName + '] ALTER COLUMN [' + @ColumnName + '] ' + @ColumnType);
+            SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
+        END
+        
+	END
+
+	-- Standard error-handling footer
+	IF @InitialTranCount = 0 COMMIT TRANSACTION @TranName
+	RETURN 0
+GO

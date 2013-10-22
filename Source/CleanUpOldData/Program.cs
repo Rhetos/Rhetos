@@ -37,7 +37,7 @@ namespace CleanupOldData
                 var sqlExecuter = GetSqlExecuterImplementation(connectionString);
 
                 var databaseCleaner = new DatabaseCleaner(new ConsoleLogProvider(), sqlExecuter);
-                databaseCleaner.CleanupOldData();
+                databaseCleaner.DeleteAllMigrationData();
                 return 0;
             }
             catch (Exception ex)

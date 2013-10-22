@@ -38,11 +38,11 @@ namespace Rhetos.Deployment
             _sqlExecuter = sqlExecuter;
         }
 
-        public string CleanupOldData()
+        public string DeleteAllMigrationData()
         {
             if (SqlUtility.DatabaseLanguage != "MsSql")
             {
-                var reportSkip = "Skipped DatabaseCleaner.CleanupOldData (DatabaseLanguage=" + SqlUtility.DatabaseLanguage + ").";
+                var reportSkip = "Skipped DatabaseCleaner.DeleteAllMigrationData (DatabaseLanguage=" + SqlUtility.DatabaseLanguage + ").";
                 _logger.Info(reportSkip);
                 return reportSkip;
             }
@@ -56,11 +56,24 @@ namespace Rhetos.Deployment
             return report;
         }
 
-        public string CleanupRedundantOldData()
+        public string RefreshDataMigrationRows()
         {
             if (SqlUtility.DatabaseLanguage != "MsSql")
             {
-                var reportSkip = "Skipped DatabaseCleaner.CleanupOldData (DatabaseLanguage=" + SqlUtility.DatabaseLanguage + ").";
+                var reportSkip = "Skipped DatabaseCleaner.RefreshDataMigrationRows (DatabaseLanguage=" + SqlUtility.DatabaseLanguage + ").";
+                _logger.Info(reportSkip);
+                return reportSkip;
+            }
+
+            _sqlExecuter.ExecuteSql(new[] { "DELETE FROM Rhetos.DataMigrationFreshRows;" });
+            return null;
+        }
+
+        public string RemoveRedundantMigrationColumns()
+        {
+            if (SqlUtility.DatabaseLanguage != "MsSql")
+            {
+                var reportSkip = "Skipped DatabaseCleaner.RemoveRedundantMigrationColumns (DatabaseLanguage=" + SqlUtility.DatabaseLanguage + ").";
                 _logger.Info(reportSkip);
                 return reportSkip;
             }
