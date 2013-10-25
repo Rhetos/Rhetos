@@ -56,6 +56,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlAnalysisTest.cs" />
+    <Compile Include="LoggingUtilityTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Source\Rhetos.Dsl.Interfaces\Rhetos.Dsl.Interfaces.csproj">
@@ -69,6 +70,10 @@
     <ProjectReference Include="..\..\..\Source\Rhetos.Utilities\Rhetos.Utilities.csproj">
       <Project>{71e63722-57bc-41df-9ff5-57ecc67e4bc1}</Project>
       <Name>Rhetos.Utilities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Dom.DefaultConcepts\Rhetos.Dom.DefaultConcepts.csproj">
+      <Project>{6fa98d51-a0b6-4e5f-8c78-0d369ddd6dcc}</Project>
+      <Name>Rhetos.Dom.DefaultConcepts</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rhetos.Dsl.DefaultConcepts\Rhetos.Dsl.DefaultConcepts.csproj">
       <Project>{24bc6b74-703a-4aaf-99c3-b5cd760f3d22}</Project>

@@ -1,4 +1,5 @@
-﻿/*
+﻿using Rhetos.Utilities;
+/*
     Copyright (C) 2013 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -19,12 +20,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Linq;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Log")]
-    public class PropertyLoggingInfo : IConceptInfo, IValidationConcept
+    public class PropertyLoggingInfo : IConceptInfo, IValidationConcept, IMacroConcept
     {
         [ConceptKey]
         public EntityLoggingInfo EntityLogging { get; set; }
@@ -32,14 +34,26 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public PropertyInfo Property { get; set; }
 
-        public override string ToString()
+        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return "Property Logging: " + Property;
-        }
+            var newConcepts = new List<IConceptInfo>();
 
-        public override int GetHashCode()
-        {
-            return Property.GetHashCode();
+            var reference = Property as ReferencePropertyInfo;
+
+            if (reference != null
+                && existingConcepts.OfType<ReferenceDetailInfo>().Where(d => d.Reference == reference).Any()
+                && existingConcepts.OfType<EntityLoggingInfo>().Where(l => l.Entity == reference.Referenced).Any())
+            {
+                newConcepts.Add(new LoggingRelatedItemInfo
+                    {
+                        Logging = EntityLogging,
+                        Table = SqlUtility.Identifier(reference.Referenced.Module.Name) + "." + SqlUtility.Identifier(reference.Referenced.Name),
+                        Column = reference.Name + "ID",
+                        Relation = "Detail"
+                    });
+            }
+
+            return newConcepts;
         }
 
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)

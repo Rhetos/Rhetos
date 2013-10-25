@@ -1,10 +1,10 @@
 <Query Kind="Program">
-  <Reference Relative="bin\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces.dll</Reference>
-  <Reference Relative="bin\Rhetos.Interfaces.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Interfaces.dll</Reference>
-  <Reference Relative="bin\Plugins\Rhetos.Processing.DefaultCommands.Interfaces.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Processing.DefaultCommands.Interfaces.dll</Reference>
-  <Reference Relative="bin\Rhetos.Processing.Interfaces.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Processing.Interfaces.dll</Reference>
-  <Reference Relative="bin\Rhetos.Security.Interfaces.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Security.Interfaces.dll</Reference>
-  <Reference Relative="bin\ServerDom.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\ServerDom.dll</Reference>
+  <Reference Relative="bin\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces.dll</Reference>
+  <Reference Relative="bin\Rhetos.Interfaces.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Interfaces.dll</Reference>
+  <Reference Relative="bin\Plugins\Rhetos.Processing.DefaultCommands.Interfaces.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Processing.DefaultCommands.Interfaces.dll</Reference>
+  <Reference Relative="bin\Rhetos.Processing.Interfaces.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Processing.Interfaces.dll</Reference>
+  <Reference Relative="bin\Rhetos.Security.Interfaces.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Security.Interfaces.dll</Reference>
+  <Reference Relative="bin\ServerDom.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\ServerDom.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.DirectoryServices.AccountManagement.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.DirectoryServices.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.Runtime.Serialization.dll</Reference>
@@ -31,11 +31,12 @@ void Main()
 {
 	const string rhetosServerAddress = @"http://localhost/Rhetos/RhetosService.svc";
 	var server = ServerProxy.Create(rhetosServerAddress);
+    ServerProcessingResult serverResponse;
     
 	// READ FIRST 3 RECORDS FROM Common.Claim:
 	
 	Console.WriteLine("READ FIRST 3 RECORDS FROM Common.Claim:");
-	var serverResponse = server.Execute(new QueryDataSourceCommandInfo
+	serverResponse = server.Execute(new QueryDataSourceCommandInfo
 	{
 		DataSource = "Common.Claim",
 		PageNumber = 1,

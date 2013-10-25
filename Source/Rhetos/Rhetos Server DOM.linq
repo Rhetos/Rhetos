@@ -1,21 +1,21 @@
 <Query Kind="Program">
-  <Reference Relative="bin\Iesi.Collections.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\Iesi.Collections.dll</Reference>
-  <Reference Relative="bin\NHibernate.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\NHibernate.dll</Reference>
-  <Reference Relative="bin\NLog.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\NLog.dll</Reference>
-  <Reference Relative="bin\Oracle.DataAccess.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\Oracle.DataAccess.dll</Reference>
-  <Reference Relative="bin\Plugins\Rhetos.Dom.DefaultConcepts.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Dom.DefaultConcepts.dll</Reference>
-  <Reference Relative="bin\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces.dll</Reference>
-  <Reference Relative="bin\Rhetos.Dom.Interfaces.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Dom.Interfaces.dll</Reference>
-  <Reference Relative="bin\Rhetos.Interfaces.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Interfaces.dll</Reference>
-  <Reference Relative="bin\Rhetos.Logging.Interfaces.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Logging.Interfaces.dll</Reference>
-  <Reference Relative="bin\Rhetos.Persistence.Interfaces.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Persistence.Interfaces.dll</Reference>
-  <Reference Relative="bin\Rhetos.Persistence.NHibernate.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Persistence.NHibernate.dll</Reference>
-  <Reference Relative="bin\Plugins\Rhetos.Persistence.NHibernateDefaultConcepts.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Persistence.NHibernateDefaultConcepts.dll</Reference>
-  <Reference Relative="bin\Plugins\Rhetos.Processing.DefaultCommands.Interfaces.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Processing.DefaultCommands.Interfaces.dll</Reference>
-  <Reference Relative="bin\Rhetos.Processing.Interfaces.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Processing.Interfaces.dll</Reference>
-  <Reference Relative="bin\Rhetos.Security.Interfaces.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Security.Interfaces.dll</Reference>
-  <Reference Relative="bin\Rhetos.Utilities.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Utilities.dll</Reference>
-  <Reference Relative="bin\ServerDom.dll">C:\Projects\Core\Rhetos\Source\Rhetos\bin\ServerDom.dll</Reference>
+  <Reference Relative="bin\Iesi.Collections.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Iesi.Collections.dll</Reference>
+  <Reference Relative="bin\NHibernate.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\NHibernate.dll</Reference>
+  <Reference Relative="bin\NLog.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\NLog.dll</Reference>
+  <Reference Relative="bin\Oracle.DataAccess.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Oracle.DataAccess.dll</Reference>
+  <Reference Relative="bin\Plugins\Rhetos.Dom.DefaultConcepts.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Dom.DefaultConcepts.dll</Reference>
+  <Reference Relative="bin\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces.dll</Reference>
+  <Reference Relative="bin\Rhetos.Dom.Interfaces.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Dom.Interfaces.dll</Reference>
+  <Reference Relative="bin\Rhetos.Interfaces.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Interfaces.dll</Reference>
+  <Reference Relative="bin\Rhetos.Logging.Interfaces.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Logging.Interfaces.dll</Reference>
+  <Reference Relative="bin\Rhetos.Persistence.Interfaces.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Persistence.Interfaces.dll</Reference>
+  <Reference Relative="bin\Rhetos.Persistence.NHibernate.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Persistence.NHibernate.dll</Reference>
+  <Reference Relative="bin\Plugins\Rhetos.Persistence.NHibernateDefaultConcepts.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Persistence.NHibernateDefaultConcepts.dll</Reference>
+  <Reference Relative="bin\Plugins\Rhetos.Processing.DefaultCommands.Interfaces.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Processing.DefaultCommands.Interfaces.dll</Reference>
+  <Reference Relative="bin\Rhetos.Processing.Interfaces.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Processing.Interfaces.dll</Reference>
+  <Reference Relative="bin\Rhetos.Security.Interfaces.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Security.Interfaces.dll</Reference>
+  <Reference Relative="bin\Rhetos.Utilities.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Utilities.dll</Reference>
+  <Reference Relative="bin\ServerDom.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\ServerDom.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.DirectoryServices.AccountManagement.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.DirectoryServices.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.Runtime.Serialization.dll</Reference>
@@ -64,7 +64,9 @@ void Main()
 		repository.Common.Log.Query()
 			.Where(log => log.TableName == "Common.Principal")
 			.OrderByDescending(log => log.Created)
-			.Take(5).Dump();
+			.Take(5)
+            .Select(log => new { log.Created, log.UserName, log.Workstation, log.Action, log.TableName, log.ItemId, log.Description })
+            .Dump();
 	}
 }
 

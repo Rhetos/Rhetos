@@ -34,6 +34,11 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     public class EntityLoggingDefinition : IConceptDatabaseDefinitionExtension
     {
         public static readonly SqlTag<EntityLoggingInfo> LogPropertyTag = "LogProperty";
+        public static readonly SqlTag<EntityLoggingInfo> TempColumnDefinitionTag = "TempColumnDefinition";
+        public static readonly SqlTag<EntityLoggingInfo> TempColumnListTag = "TempColumnList";
+        public static readonly SqlTag<EntityLoggingInfo> TempColumnSelectTag = "TempColumnSelect";
+        public static readonly SqlTag<EntityLoggingInfo> TempFromTag = "TempFrom";
+        public static readonly SqlTag<EntityLoggingInfo> AfterInsertLogTag = "AfterInsertLog";
 
         public static string GetTriggerNameInsert(EntityLoggingInfo conceptInfo)
         {
@@ -70,7 +75,12 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                 GetTriggerNameUpdate(info),
                 GetTriggerNameDelete(info),
                 SqlUtility.ScriptSplitter,
-                LogPropertyTag.Evaluate(info));
+                LogPropertyTag.Evaluate(info),
+                TempColumnDefinitionTag.Evaluate(info),
+                TempColumnListTag.Evaluate(info),
+                TempColumnSelectTag.Evaluate(info),
+                TempFromTag.Evaluate(info),
+                AfterInsertLogTag.Evaluate(info));
         }
 
         public string RemoveDatabaseStructure(IConceptInfo conceptInfo)

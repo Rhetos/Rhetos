@@ -56,7 +56,11 @@ Module TestLogging
 	
 	Entity Complex
 	{
-		Logging { AllProperties; }
+		Logging
+        {
+            AllProperties;
+            RelatedItem 'TestLogging.Simple' 'r2ID' 'SomeReference';
+        }
 		Binary bi;
 		Bool bo;
 		Date da;
@@ -67,7 +71,22 @@ Module TestLogging
 		LongString ls;
 		Money m;
 		Reference r TestLogging.Simple { Detail; }
+        Reference r2 TestLogging.Simple;
+        Reference r3 TestLogging.Simple;
 	}
+    
+    Entity Base
+    {
+        Logging { AllProperties; }
+        ShortString Name;
+    }
+    
+    Entity Extension
+    {
+        Logging { AllProperties; }
+        Extends TestLogging.Base;
+        ShortString Name;
+    }
 }
 
 Module TestPessimisticLocking

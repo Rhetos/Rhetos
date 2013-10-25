@@ -6,6 +6,13 @@
 		AllPropertiesFrom Common.Log;
 		SqlDependsOn Common.Log;
 	}
+    
+	// Recomended for reading the Log without locking the other server transactions. Data will include transations that are not yet committed.
+	SqlQueryable LogRelatedItemReader <LogRelatedItemReader.sql>
+	{
+		AllPropertiesFrom Common.LogRelatedItem;
+		SqlDependsOn Common.LogRelatedItem;
+	}
 
 	Entity Log
 	{
@@ -15,9 +22,94 @@
 		ShortString ContextInfo { SqlDefault <Log.ContextInfo default.sql>; }
 		ShortString Action { Required; }
 		ShortString TableName;
-		Guid ItemId;
+		Guid ItemId { SqlIndex; }
 		LongString Description;
 		
 		PrerequisiteAllProperties; // Internal use for functionality that depends on this table being fully created.
 	}
+    
+    Entity LogRelatedItem
+    {
+        Reference Log { Detail; Required; }
+        ShortString TableName;
+		Guid ItemId { SqlIndex; }
+        ShortString Relation; // Describes what is the referenced Log.ItemId to the LogRelatedItems.ItemId.
+        
+        PrerequisiteAllProperties; // Internal use for functionality that depends on this table being fully created.
+    }
+    
+    SqlQueryable RelatedEventsSource <RelatedEvents.sql>
+    {
+        AllPropertiesFrom Common.Log;
+        
+        Reference Log;        
+        ShortString Relation;
+        ShortString RelatedToTable;
+        Guid RelatedToItem;
+        
+		SqlDependsOn Common.LogReader;
+        SqlDependsOn Common.LogRelatedItemReader;
+    }
+    
+	Computed RelatedEvents 'repository => { throw new Rhetos.UserException("Reading Common.RelatedEvents without filter is not permitted. Use filter by Common.LoggedItem."); } '
+	{
+        Reference Log;
+		DateTime Created;
+		ShortString Action;
+		ShortString TableName;
+		Guid ItemId;
+		LongString Description;
+        
+		ShortString ClientUserName; // The user that used web interface. If the event is logged without web context provided, ClientUserName will be the same as SqlUserName.
+		ShortString ClientWorkstation; // The computer name of the user that used web interface. If the event is logged without web context provided, ClientWorkstation will be the same as SqlWorkstation.
+        
+        ShortString Relation;
+        ShortString Summary;
+        
+        FilterBy LoggedItem '(repository, parameter) =>
+        {
+            /*RelatedEvents LoggedItem Begin*/
+            
+            return repository.Common.RelatedEventsSource.Query()
+                .Where(item => item.RelatedToTable == parameter.TableName && item.RelatedToItem == parameter.ItemId)
+                .OrderByDescending(item => item.Created)
+                .ThenBy(item => item.Relation)
+                .ThenBy(item => item.TableName)
+                .ToList()
+                .Select(item =>
+                {
+                    var clientInfo = LoggingUtility.ExtractUserInfo(item.ContextInfo);
+                    
+                    var relatedEvent = new Common.RelatedEvents
+                    {
+                        ID = item.ID,
+                        LogID = item.LogID,
+                        Created = item.Created,
+                        Action = item.Action,
+                        TableName = item.TableName,
+                        ItemId = item.ItemId,
+                        Description = item.Description,
+                        
+                        ClientUserName = clientInfo.UserName ?? item.UserName,
+                        ClientWorkstation = clientInfo.Workstation ?? item.Workstation,
+                        
+                        Relation = item.Relation,
+                        Summary = LoggingUtility.GetSummary(item.Action, item.Description)
+                    };
+                    
+                    /*RelatedEvents LoggedItem ProcessEvent*/                    
+                    return relatedEvent;
+                })
+                .ToArray();
+        }';
+	}
+    
+    ExternalReference 'Rhetos.Dom.DefaultConcepts.LoggingUtility, Rhetos.Dom.DefaultConcepts';
+    ExternalReference 'Rhetos.Utilities.IUserInfo, Rhetos.Utilities';
+    
+    Parameter LoggedItem
+    {
+        ShortString TableName;
+		Guid ItemId;
+    }
 }

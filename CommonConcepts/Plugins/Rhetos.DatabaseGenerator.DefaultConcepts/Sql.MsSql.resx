@@ -245,14 +245,23 @@ BEGIN
 SET NOCOUNT ON
 IF NOT EXISTS (SELECT TOP 1 1 FROM inserted UNION ALL SELECT TOP 1 1 FROM deleted) RETURN
 
+CREATE TABLE #log
+(
+    ID uniqueidentifier NOT NULL,
+    Action nvarchar(256),
+    TableName nvarchar(256),
+    ItemId uniqueidentifier,
+    Description nvarchar(max){7}
+);
+
 INSERT INTO
-    Common.Log
+    #log
     (
         ID,
         Action,
         TableName,
         ItemId,
-        Description
+        Description{8}
     )
 SELECT
     ID = newid(),
@@ -268,11 +277,18 @@ SELECT
         ELSE '&lt;PREVIOUS'
 			{6}
             + ' /&gt;'
-    END
+    END{9}
 FROM
     inserted
     FULL OUTER JOIN deleted ON inserted.ID = deleted.ID
+    {10}
 
+INSERT INTO Common.Log (ID, Action, TableName, ItemId, Description)
+SELECT ID, Action, TableName, ItemId, Description
+FROM #log;
+
+{11}
+DROP TABLE #log;
 END</value>
   </data>
   <data name="EntityLoggingDefinition_Remove" xml:space="preserve">
@@ -621,6 +637,51 @@ BEGIN
     OR inserted.{3} IS NULL AND deleted.{3} IS NOT NULL
     OR inserted.{3} IS NOT NULL AND deleted.{3} IS NULL
 END
+</value>
+  </data>
+  <data name="LoggingRelatedItemDatabaseDefinition_TempColumnDefinition" xml:space="preserve">
+    <value>,
+    {0} uniqueidentifier,
+    {1} uniqueidentifier</value>
+  </data>
+  <data name="LoggingRelatedItemDatabaseDefinition_TempColumnList" xml:space="preserve">
+    <value>,
+        {0},
+        {1}</value>
+  </data>
+  <data name="LoggingRelatedItemDatabaseDefinition_TempColumnSelect" xml:space="preserve">
+    <value>,
+    {0} = deleted.{3},
+    {1} = inserted.{3}</value>
+  </data>
+  <data name="LoggingRelatedItemDatabaseDefinition_AfterInsertLog" xml:space="preserve">
+    <value>INSERT INTO
+    Common.LogRelatedItem (ID, LogID, TableName, ItemId, Relation)
+SELECT
+    ID = NEWID(),
+    LogID = ID,
+    TableName = '{2}',
+    ItemId = {0},
+    Relation = {4}
+FROM
+    #log
+WHERE
+    {0} IS NOT NULL;
+
+INSERT INTO
+    Common.LogRelatedItem (ID, LogID, TableName, ItemId, Relation)
+SELECT
+    ID = NEWID(),
+    LogID = ID,
+    TableName = '{2}',
+    ItemId = {1},
+    Relation = {4}
+FROM
+    #log
+WHERE
+    {1} IS NOT NULL
+    AND ({1} &lt;&gt; {0} OR {0} IS NULL);
+
 </value>
   </data>
 </root>

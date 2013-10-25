@@ -143,6 +143,9 @@ namespace Rhetos.Utilities
             }
         }
 
+        /// <summary>
+        /// <see cref="LoggingUtility.ExtractUserInfo"/>
+        /// </summary>
         public static string UserContextInfoText(IUserInfo userInfo)
         {
             if (!userInfo.IsUserRecognized)
