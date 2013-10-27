@@ -63,7 +63,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var sql = ""SELECT * FROM {2}.{3}(:dateTime)"";
             var result = _executionContext.NHibernateSession.CreateSQLQuery(sql)
                 .AddEntity(typeof({0}.{1}))
-                .SetDateTime(""dateTime"", parameter)
+                .SetTimestamp(""dateTime"", parameter)
                 .List<{0}.{1}>();
             return result.ToArray();
         }}
@@ -94,21 +94,23 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format(
 @"			if (insertedNew.Count() > 0 || updatedNew.Count() > 0)
             {{
-                var nowFull = SqlUtility.GetDatabaseTime(_executionContext.SqlExecuter);
-                var now = new DateTime(nowFull.Year, nowFull.Month, nowFull.Day, nowFull.Hour, nowFull.Minute, nowFull.Second); // Rounding for NHibernate compatibility
+                var now = SqlUtility.GetDatabaseTime(_executionContext.SqlExecuter);
+
+                const double errorMarginSeconds = 0.01; // Including database DataTime type imprecision.
                 
                 foreach (var newItem in insertedNew.Concat(updatedNew))
                     if (newItem.ActiveSince == null)
                         newItem.ActiveSince = now;
-                    else if (newItem.ActiveSince > nowFull)
+                    else if (newItem.ActiveSince > now.AddSeconds(errorMarginSeconds))
                         throw new Rhetos.UserException(string.Format(
                             ""It is not allowed to enter a future time in {0}.{1}.ActiveSince ({{0}}). Set the property value to NULL to automatically use current time ({{1}})."",
-                            newItem.ActiveSince, nowFull));
+                            newItem.ActiveSince, now));
 
                 if (updatedNew.Count() > 0)
 			    {{
 				    var createHistory = updatedNew.Zip(updated, (newItem, oldItem) => new {{ newItem, oldItem }})
-					    .Where(change => (change.oldItem.ActiveSince == null || change.newItem.ActiveSince > change.oldItem.ActiveSince) && change.newItem.GetCreateChangesEntryOnEdit())
+					    .Where(change => (change.oldItem.ActiveSince == null || change.newItem.ActiveSince > change.oldItem.ActiveSince.Value.AddSeconds(errorMarginSeconds))
+                            && change.newItem.GetCreateChangesEntryOnEdit())
 					    .Select(change => change.oldItem)
 					    .ToArray();
 					
@@ -137,13 +139,13 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format(
 @"			if (insertedNew.Count() > 0 || updatedNew.Count() > 0)
             {{
-                var nowFull = SqlUtility.GetDatabaseTime(_executionContext.SqlExecuter);
+                var now = SqlUtility.GetDatabaseTime(_executionContext.SqlExecuter);
                 
                 foreach (var newItem in insertedNew.Concat(updatedNew))
-                    if (newItem.ActiveSince > nowFull)
+                    if (newItem.ActiveSince > now)
                         throw new Rhetos.UserException(string.Format(
                             ""It is not allowed to enter a future time in {0}.{1}.ActiveSince ({{0}}). Current server time is {{1}}."",
-                            newItem.ActiveSince, nowFull));
+                            newItem.ActiveSince, now));
             }}
 
 ",

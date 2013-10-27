@@ -84,7 +84,7 @@ namespace CommonConcepts.Test
         private static DateTime GetServerTime(CommonTestExecutionContext executionContext)
         {
             var serverTime = MsSqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
-            Console.WriteLine("Server time: " + serverTime.ToString("s") + ". Local time: " + DateTime.Now.ToString("s") + ".");
+            Console.WriteLine("Server time: " + serverTime.ToString("o") + ". Local time: " + DateTime.Now.ToString("o") + ".");
             return serverTime;
         }
 
@@ -573,9 +573,11 @@ namespace CommonConcepts.Test
                 int lastCode = 1;
                 var s1Array = new[] { s1 };
                 const bool SlowTest = false;
-                for (int i = 0; i < 5 * (SlowTest ? 20 : 1); i++)
+                const int tests1 = 5 * (SlowTest ? 10 : 1);
+                const int tests2 = 3 * (SlowTest ? 10 : 1);
+                for (int i = 0; i < tests1; i++)
                 {
-                    for (int j = 0; j < 3 * (SlowTest ? 20 : 1); j++)
+                    for (int j = 0; j < tests2; j++)
                     {
                         s1.ActiveSince = null;
                         s1.Code = ++lastCode;
@@ -588,10 +590,10 @@ namespace CommonConcepts.Test
                 var h = repository.TestHistory.Simple_Changes.Query().OrderBy(item => item.ActiveSince).ToArray();
                 Console.WriteLine(DumpFull(h));
                 string msg = string.Format(
-                    "Number of history records ({0}) is expected to be around the number of elapsed seconds ({1}).",
-                    h.Count(), sw.Elapsed.TotalSeconds);
+                    "Number of history records ({0}) is expected to be between the number of elapsed seconds ({1}) and the number of updates ({2}), depending on the DateTime precision.",
+                    h.Count(), Math.Floor(sw.Elapsed.TotalSeconds), tests1 * tests2);
                 Console.WriteLine(msg);
-                Assert.IsTrue(sw.Elapsed.TotalSeconds-1 < h.Count() && h.Count() < sw.Elapsed.TotalSeconds+1, msg);
+                Assert.IsTrue(Math.Floor(sw.Elapsed.TotalSeconds) <= h.Count() && h.Count() <= tests1 * tests2, msg);
             }
         }
 

@@ -35,8 +35,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return string.Format(
 @"            {{ 
-                var nowFull = SqlUtility.GetDatabaseTime(_executionContext.SqlExecuter);
-                var now = new DateTime(nowFull.Year, nowFull.Month, nowFull.Day, nowFull.Hour, nowFull.Minute, nowFull.Second); // Rounding for NHibernate compatibility
+                var now = SqlUtility.GetDatabaseTime(_executionContext.SqlExecuter);
 
                 foreach (var newItem in insertedNew)
                     if(newItem.{0} == null)

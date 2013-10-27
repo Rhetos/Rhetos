@@ -395,5 +395,43 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(item.Text.GetHashCode(), loaded.GetHashCode());
             }
         }
+
+        const double ExpectedDateTimePrecisionSeconds = 0.01;
+
+        static void AssertIsNear(DateTime expected, DateTime actual)
+        {
+            DateTime start = expected.AddSeconds(-ExpectedDateTimePrecisionSeconds);
+            DateTime end = expected.AddSeconds(ExpectedDateTimePrecisionSeconds);
+
+            var failMessage = new Lazy<string>(() => "Given value " + actual.ToString("o") + " is not near " + expected.ToString("o") + " within +/- " + ExpectedDateTimePrecisionSeconds + " seconds.");
+            var passMessage = new Lazy<string>(() => "Given value " + actual.ToString("o") + " is near " + expected.ToString("o") + " within +/- " + ExpectedDateTimePrecisionSeconds + " seconds.");
+
+            Assert.IsTrue(actual >= start, failMessage.Value);
+            Assert.IsTrue(actual <= end, failMessage.Value);
+            Console.WriteLine(passMessage.Value);
+        }
+
+        [TestMethod]
+        public void DateTimeTest()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestTypes.Simple" });
+                var repository = new Common.DomRepository(executionContext);
+
+                for (int i = 0; i < 7; i++)
+                {
+                    DateTime testTime = new DateTime(2013, 10, 27, 10, 45, 54, i * 1000 / 7);
+
+                    var item = new TestTypes.Simple { Start = testTime };
+                    repository.TestTypes.Simple.Insert(new[] { item });
+
+                    var loaded = repository.TestTypes.Reader.All().Single();
+                    AssertIsNear(testTime, loaded.Start.Value);
+
+                    repository.TestTypes.Simple.Delete(new[] { item });
+                }
+            }
+        }
     }
 }

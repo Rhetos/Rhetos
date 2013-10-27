@@ -59,7 +59,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var sql = ""SELECT * FROM {2}.{3}(:dateTime)"";
             var result = _executionContext.NHibernateSession.CreateSQLQuery(sql)
                 .AddEntity(typeof({0}.{1}))
-                .SetDateTime(""dateTime"", parameter)
+                .SetTimestamp(""dateTime"", parameter)
                 .List<{0}.{1}>();
             return result.ToArray();
         }}

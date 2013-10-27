@@ -263,6 +263,20 @@ Module TestBinary
 	}
 }
 
+Module TestTypes
+{
+    Entity Simple
+    {
+        DateTime Start;
+    }
+    
+    // TestTypes.Reader is used to avoid TestTypes.Simple caching side effects.
+    SqlQueryable Reader 'SELECT * FROM TestTypes.Simple'
+    {
+        AllPropertiesFrom TestTypes.Simple;
+    }
+}
+
 Module TestUnique
 {
 	Entity R

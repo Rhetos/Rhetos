@@ -243,7 +243,7 @@ namespace CommonConcepts.Test
             }
         }
 
-        void AssertInRange(DateTime value, DateTime start, DateTime end)
+        static void AssertInRange(DateTime value, DateTime start, DateTime end)
         {
             Assert.IsTrue(value >= start, value.ToString("o") + " should be greater than " + start.ToString("o"));
             Assert.IsTrue(value <= end, value.ToString("o") + " should be less than " + end.ToString("o"));
