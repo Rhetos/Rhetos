@@ -23,6 +23,7 @@ using System;
 using Rhetos.TestCommon;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Rhetos.Utilities.Test
 {
@@ -146,6 +147,28 @@ namespace Rhetos.Utilities.Test
                 Assert.AreEqual(tests[i, 1], SqlUtility.MaskPassword(tests[i, 0]));
                 Console.WriteLine("OK: " + tests[i, 1]);
             }
+        }
+
+        [TestMethod]
+        [DeploymentItem("ConnectionStrings.config")]
+        public void GetDatabaseTimeTest()
+        {
+            TestUtility.CheckDatabaseAvailability("MsSql");
+
+            var sqlExecuter = new MsSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), new NullUserInfo());
+
+            SqlUtility.GetDatabaseTime(sqlExecuter); // First run, might not be cached.
+
+            var getNonCachedTime = typeof(SqlUtility).GetMethod("GetDatabaseTimeFromDatabase", BindingFlags.NonPublic | BindingFlags.Static );
+            Assert.IsNotNull(getNonCachedTime);
+            var notCachedDatabaseTime = (DateTime)getNonCachedTime.Invoke(null, new[] { sqlExecuter });
+            var cachedTime = SqlUtility.GetDatabaseTime(sqlExecuter);
+
+            Console.WriteLine(notCachedDatabaseTime.ToString("o"));
+            Console.WriteLine(cachedTime.ToString("o"));
+
+            Assert.IsTrue(notCachedDatabaseTime - cachedTime <= TimeSpan.FromSeconds(0.01));
+            Assert.IsTrue(cachedTime - notCachedDatabaseTime <= TimeSpan.FromSeconds(0.01));
         }
     }
 }

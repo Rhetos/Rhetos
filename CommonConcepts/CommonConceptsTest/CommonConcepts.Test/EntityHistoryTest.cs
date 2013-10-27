@@ -266,11 +266,10 @@ namespace CommonConcepts.Test
 
                 var e = new TestHistory.Standard { Code = 1, Name = "a", Birthday = new DateTime(2001, 2, 3, 4, 5, 6) };
                 standardRepos.Insert(new[] { e });
-                DateTime t1 = GetServerTime(executionContext);
                 string v1 = "1 a 2001-02-03T04:05:06";
                 Assert.AreEqual(v1, Dump(standardRepos.All()));
 
-                System.Threading.Thread.Sleep(TimeSpan.FromSeconds(1));
+                System.Threading.Thread.Sleep(DatabaseDateTimeImprecision + DatabaseDateTimeImprecision);
                 e.Code = 2;
                 e.Name = "baaaaaaaaaaaaaaaaaaaa";
                 e.ActiveSince = null;
@@ -597,6 +596,8 @@ namespace CommonConcepts.Test
             }
         }
 
+        private static TimeSpan DatabaseDateTimeImprecision = TimeSpan.FromSeconds(0.01);
+
         [TestMethod]
         public void HistoryAtTime()
         {
@@ -612,33 +613,36 @@ namespace CommonConcepts.Test
                 string v1 = "1 a 2001-02-03T04:05:06";
                 Assert.AreEqual(v1, Dump(standardRepos.All()));
 
-                System.Threading.Thread.Sleep(TimeSpan.FromSeconds(1));
+                System.Threading.Thread.Sleep(DatabaseDateTimeImprecision + DatabaseDateTimeImprecision);
 
                 e.Code = 2;
                 e.Name = "b";
-                e.ActiveSince = null; // TODO: Should we change the behaveour to automatically reset ActiveSince if the developer does not use it.
+                e.ActiveSince = null;
                 e.Birthday = new DateTime(2011, 12, 13, 14, 15, 16);
                 standardRepos.Update(new[] { e });
                 DateTime t2 = GetServerTime(executionContext);
                 string v2 = "2 b 2011-12-13T14:15:16";
                 Assert.AreEqual(v2, Dump(standardRepos.All()));
 
-                System.Threading.Thread.Sleep(TimeSpan.FromSeconds(1));
+                System.Threading.Thread.Sleep(DatabaseDateTimeImprecision + DatabaseDateTimeImprecision);
 
                 e.Code = 3;
                 e.Name = "c";
-                e.ActiveSince = null; // TODO: Should we change the behaveour to automatically reset ActiveSince if the developer does not use it.
+                e.ActiveSince = null;
                 standardRepos.Update(new[] { e });
                 DateTime t3 = GetServerTime(executionContext);
                 string v3 = "3 c 2011-12-13T14:15:16";
                 Assert.AreEqual(v3, Dump(standardRepos.All()));
 
-                executionContext.NHibernateSession.Clear(); // TODO: Turn off NHibernate caching to have a more robust reading without Clear(). The problem is disabling caching but keeping the reference evaluation enabled (Entity Framework?).
-                Assert.AreEqual(v1, Dump(standardRepos.Filter(t1)), "At time 1");
+                Console.WriteLine("t1: " + t1.ToString("o"));
+                Console.WriteLine("t2: " + t2.ToString("o"));
+                Console.WriteLine("t3: " + t3.ToString("o"));
                 executionContext.NHibernateSession.Clear();
-                Assert.AreEqual(v2, Dump(standardRepos.Filter(t2)), "At time 2");
+                Assert.AreEqual(v1, Dump(standardRepos.Filter(t1.Add(DatabaseDateTimeImprecision))), "At time 1");
                 executionContext.NHibernateSession.Clear();
-                Assert.AreEqual(v3, Dump(standardRepos.Filter(t3)), "At time 3");
+                Assert.AreEqual(v2, Dump(standardRepos.Filter(t2.Add(DatabaseDateTimeImprecision))), "At time 2");
+                executionContext.NHibernateSession.Clear();
+                Assert.AreEqual(v3, Dump(standardRepos.Filter(t3.Add(DatabaseDateTimeImprecision))), "At time 3");
             }
         }
 
@@ -657,30 +661,34 @@ namespace CommonConcepts.Test
                 DateTime t1 = GetServerTime(executionContext);
                 Assert.AreEqual("1 a", Dump(er.All()));
 
-                System.Threading.Thread.Sleep(TimeSpan.FromSeconds(1));
+                System.Threading.Thread.Sleep(DatabaseDateTimeImprecision + DatabaseDateTimeImprecision);
 
                 e.Code = 2;
                 e.Name = "b";
-                e.ActiveSince = null; // TODO: Should we change the behaveour to automatically reset ActiveSince if the developer does not use it.
+                e.ActiveSince = null;
                 er.Update(new[] { e });
                 DateTime t2 = GetServerTime(executionContext);
                 Assert.AreEqual("2 b", Dump(er.All()));
 
-                System.Threading.Thread.Sleep(TimeSpan.FromSeconds(1));
+                System.Threading.Thread.Sleep(DatabaseDateTimeImprecision + DatabaseDateTimeImprecision);
 
                 e.Code = 3;
                 e.Name = "c";
-                e.ActiveSince = null; // TODO: Should we change the behaveour to automatically reset ActiveSince if the developer does not use it.
+                e.ActiveSince = null;
                 er.Update(new[] { e });
                 DateTime t3 = GetServerTime(executionContext);
                 Assert.AreEqual("3 c", Dump(er.All()));
 
-                executionContext.NHibernateSession.Clear(); // TODO: Turn off NHibernate caching to have a more robust reading without Clear(). The problem is disabling caching but keeping the reference evaluation enabled (Entity Framework?).
-                Assert.AreEqual("1", Dump(hr.Filter(t1)), "At time 1");
+                Console.WriteLine("t1: " + t1.ToString("o"));
+                Console.WriteLine("t2: " + t2.ToString("o"));
+                Console.WriteLine("t3: " + t3.ToString("o"));
+
                 executionContext.NHibernateSession.Clear();
-                Assert.AreEqual("2", Dump(hr.Filter(t2)), "At time 2");
+                Assert.AreEqual("1", Dump(hr.Filter(t1.Add(DatabaseDateTimeImprecision))), "At time 1");
                 executionContext.NHibernateSession.Clear();
-                Assert.AreEqual("3", Dump(hr.Filter(t3)), "At time 3");
+                Assert.AreEqual("2", Dump(hr.Filter(t2.Add(DatabaseDateTimeImprecision))), "At time 2");
+                executionContext.NHibernateSession.Clear();
+                Assert.AreEqual("3", Dump(hr.Filter(t3.Add(DatabaseDateTimeImprecision))), "At time 3");
             }
         }
 
@@ -693,14 +701,19 @@ namespace CommonConcepts.Test
                 var repository = new Common.DomRepository(executionContext);
                 var er = repository.TestHistory.Standard;
 
-                var e = new TestHistory.Standard { Code = 1, Name = "a", Birthday = new DateTime(2001, 2, 3, 4, 5, 6) };
-                er.Insert(new[] { e });
-                const string v1 = "1 a 2001-02-03T04:05:06";
-                DateTime t1 = GetServerTime(executionContext);
-                Assert.AreEqual(v1, Dump(er.All()));
-                Assert.AreEqual(v1, Dump(er.Filter(t1)));
 
-                TestHistory.Standard[] loaded = er.Filter(t1.AddSeconds(-5));
+                var e = new TestHistory.Standard { Code = 1, Name = "a", Birthday = new DateTime(2001, 2, 3, 4, 5, 6) };
+                DateTime t0 = GetServerTime(executionContext);
+                Console.WriteLine("t0: " + t0.ToString("o"));
+                er.Insert(new[] { e });
+                DateTime t1 = GetServerTime(executionContext);
+                Console.WriteLine("t1: " + t1.ToString("o"));
+
+                const string v1 = "1 a 2001-02-03T04:05:06";
+                Assert.AreEqual(v1, Dump(er.All()));
+                Assert.AreEqual(v1, Dump(er.Filter(t1.Add(DatabaseDateTimeImprecision))));
+
+                TestHistory.Standard[] loaded = er.Filter(t0.Subtract(DatabaseDateTimeImprecision));
                 Assert.AreEqual(0, loaded.Length);
             }
         }
