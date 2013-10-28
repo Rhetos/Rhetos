@@ -274,7 +274,7 @@ SELECT
     ItemId = COALESCE(inserted.ID, deleted.ID),
     Description = CASE WHEN inserted.ID IS NOT NULL AND deleted.ID IS NULL
         THEN ''	--When inserting, Description is not available (there is no previous state)
-        ELSE '&lt;PREVIOUS'
+        ELSE N'&lt;PREVIOUS'
 			{6}
             + ' /&gt;'
     END{9}
@@ -683,5 +683,29 @@ WHERE
     AND ({1} &lt;&gt; {0} OR {0} IS NULL);
 
 </value>
+  </data>
+  <data name="EntityLoggingDefinition_CommonLogDescriptionName" xml:space="preserve">
+    <value>{1}_CommonLogDescription</value>
+  </data>
+  <data name="EntityLoggingDefinition_CommonLogDescriptionCreate" xml:space="preserve">
+    <value>CREATE VIEW {0}.{2}
+AS
+SELECT
+    ID,
+    Description = N'&lt;PREVIOUS'
+        {3}
+        + ' /&gt;'
+FROM
+    {0}.{1} deleted
+</value>
+  </data>
+  <data name="EntityLoggingDefinition_CommonLogDescriptionRemove" xml:space="preserve">
+    <value>DROP VIEW {0}.{2}</value>
+  </data>
+  <data name="EntityLoggingDefinition_CommonLogDescriptionProperty" xml:space="preserve">
+    <value>+ CASE WHEN deleted.{0} IS NOT NULL
+                THEN ' {0}="' + REPLACE(REPLACE(REPLACE(REPLACE(ISNULL({1}, ''), '&amp;', '&amp;amp;'), '&lt;', '&amp;lt;'), '&gt;', '&amp;gt;'), '"', '&amp;quot;') + '"'
+                ELSE '' END
+        </value>
   </data>
 </root>

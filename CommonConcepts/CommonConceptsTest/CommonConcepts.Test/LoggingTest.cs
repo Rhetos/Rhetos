@@ -290,7 +290,7 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void LogRelatedItems_Detail()
+        public void AuditRelatedEvents_Detail()
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
@@ -322,24 +322,25 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(
                     "TestLogging.Complex c1 Update Detail, TestLogging.Complex c2 Insert Detail, TestLogging.Simple p2 Insert ",
                     TestUtility.Dump(
-                        repository.Common.RelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Simple", ItemId = parent2.ID }),
+                        repository.Common.AuditRelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Simple", ItemId = parent2.ID }),
                         log => log.TableName + " " + names[log.ItemId] + " " + log.Action + " " + log.Relation));
 
                 Assert.AreEqual(
                     "TestLogging.Complex c1 Update Detail, TestLogging.Complex c1 Insert Detail, TestLogging.Simple p1 Insert ",
                     TestUtility.Dump(
-                        repository.Common.RelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Simple", ItemId = parent1.ID }),
+                        repository.Common.AuditRelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Simple", ItemId = parent1.ID }),
                         log => log.TableName + " " + names[log.ItemId] + " " + log.Action + " " + log.Relation));
 
                 Assert.AreEqual(
                     "TestLogging.Complex c1 Update , TestLogging.Complex c1 Insert ",
                     TestUtility.Dump(
-                        repository.Common.RelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Complex", ItemId = child1.ID }),
+                        repository.Common.AuditRelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Complex", ItemId = child1.ID }),
                         log => log.TableName + " " + names[log.ItemId] + " " + log.Action + " " + log.Relation));
             }
         }
+
         [TestMethod]
-        public void LogRelatedItems_DetailMultiple()
+        public void AuditRelatedEvents_DetailMultiple()
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
@@ -382,25 +383,25 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(
                     "\r\nc1 Update: r2ID. SomeReference, c1 Update: rID. Detail, c1 Update: rID. SomeReference, c1 Insert. Detail, c1 Insert. SomeReference, p1 Insert. ",
                     "\r\n" + TestUtility.Dump(
-                        repository.Common.RelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Simple", ItemId = parent1.ID }),
+                        repository.Common.AuditRelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Simple", ItemId = parent1.ID }),
                         log => names[log.ItemId] + " " + log.Summary + " " + log.Relation));
 
                 Assert.AreEqual(
                     "\r\nc1 Update: r3ID. Detail, c1 Update: r3ID. SomeReference, c1 Update: r2ID. Detail, c1 Update: r2ID. SomeReference, c1 Update: rID. Detail, c2 Insert. Detail, c2 Insert. SomeReference, p2 Insert. ",
                     "\r\n" + TestUtility.Dump(
-                        repository.Common.RelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Simple", ItemId = parent2.ID }),
+                        repository.Common.AuditRelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Simple", ItemId = parent2.ID }),
                         log => names[log.ItemId] + " " + log.Summary + " " + log.Relation));
 
                 Assert.AreEqual(
                     "\r\nc1 Update: r3ID. , c1 Update: r2ID. , c1 Update: rID. , c1 Insert. ",
                     "\r\n" + TestUtility.Dump(
-                        repository.Common.RelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Complex", ItemId = child1.ID }),
+                        repository.Common.AuditRelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Complex", ItemId = child1.ID }),
                         log => names[log.ItemId] + " " + log.Summary + " " + log.Relation));
             }
         }
 
         [TestMethod]
-        public void LogRelatedItems_Extension()
+        public void AuditRelatedEvents_Extension()
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
@@ -430,25 +431,25 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(
                     "TestLogging.Extension b2 Update Extension, TestLogging.Extension b2 Insert Extension, TestLogging.Base b2 Insert ",
                     TestUtility.Dump(
-                        repository.Common.RelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Base", ItemId = b2.ID }),
+                        repository.Common.AuditRelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Base", ItemId = b2.ID }),
                         log => log.TableName + " " + names[log.ItemId] + " " + log.Action + " " + log.Relation));
 
                 Assert.AreEqual(
                     "TestLogging.Extension b1 Insert Extension, TestLogging.Base b1 Insert ",
                     TestUtility.Dump(
-                        repository.Common.RelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Base", ItemId = b1.ID }),
+                        repository.Common.AuditRelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Base", ItemId = b1.ID }),
                         log => log.TableName + " " + names[log.ItemId] + " " + log.Action + " " + log.Relation));
 
                 Assert.AreEqual(
                     "TestLogging.Extension b2 Update , TestLogging.Extension b2 Insert ",
                     TestUtility.Dump(
-                        repository.Common.RelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Extension", ItemId = e2.ID }),
+                        repository.Common.AuditRelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Extension", ItemId = e2.ID }),
                         log => log.TableName + " " + names[log.ItemId] + " " + log.Action + " " + log.Relation));
             }
         }
 
         [TestMethod]
-        public void LogRelatedItems_Summary()
+        public void AuditRelatedEvents_Summary()
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
@@ -475,8 +476,221 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(
                     "Update: Count, Name., Update: Count, Name., Update: Name., Insert.",
                     TestUtility.Dump(
-                        repository.Common.RelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Simple", ItemId = b1.ID }),
+                        repository.Common.AuditRelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Simple", ItemId = b1.ID }),
                         log => log.Summary));
+            }
+        }
+
+        [TestMethod]
+        public void AuditDataModifications_All()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var repository = new Common.DomRepository(executionContext);
+                TestUtility.ShouldFail(
+                    () => repository.Common.AuditDataModifications.All(),
+                    "", "without filter is not permitted");
+            }
+        }
+
+        private static string EmptyDash(string s)
+        {
+            if (s == null)
+                return "null";
+            if (s == "")
+                return "-";
+            if (string.IsNullOrWhiteSpace(s))
+                return "__";
+            return s;
+        }
+
+        private static string Report(IEnumerable<Common.AuditDataModifications> items)
+        {
+            var result = new StringBuilder();
+            Guid lastLogId = Guid.Empty;
+            foreach (var item in items)
+            {
+                if (lastLogId != Guid.Empty)
+                {
+                    result.Append(",");
+                    if (item.LogID == lastLogId)
+                        result.Append(" ");
+                    else
+                        result.AppendLine();
+                }
+                result.Append(item.Property + " " + EmptyDash(item.OldValue) + " " + EmptyDash(item.NewValue) + " " + item.Modified);
+                lastLogId = item.LogID.Value;
+            }
+            Console.WriteLine(items.Count() + " property events:");
+            if (result.Length < 10000)
+                Console.WriteLine(result.ToString());
+            else
+                Console.WriteLine("<text length " + result.Length + ">");
+            return result.ToString();
+        }
+
+        private static Regex ClearTextPrefix = new Regex(@"^\s+", RegexOptions.Multiline);
+        private static string ClearText(string text)
+        {
+            return ClearTextPrefix.Replace(text, "").Trim();
+        }
+
+        [TestMethod]
+        public void AuditDataModifications_LoggedItem()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log" });
+                var repository = new Common.DomRepository(executionContext);
+
+                var s1 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "s1", Count = 1 };
+                repository.TestLogging.Simple.Insert(new[] { s1 });
+
+                System.Threading.Thread.Sleep(10);
+                s1.Name = "s11";
+                repository.TestLogging.Simple.Update(new[] { s1 });
+
+                System.Threading.Thread.Sleep(10);
+                s1.Name = null;
+                s1.Count = null;
+                repository.TestLogging.Simple.Update(new[] { s1 });
+
+                System.Threading.Thread.Sleep(10);
+                s1.Count = 111;
+                repository.TestLogging.Simple.Update(new[] { s1 });
+
+                var result = repository.Common.AuditDataModifications.Filter(
+                    new Common.LoggedItem { TableName = "TestLogging.Simple", ItemId = s1.ID });
+
+                string expected = @"
+                    Count - 111 True, Name - - False,
+                    Count 1 - True, Name s11 - True,
+                    Count 1 1 False, Name s1 s11 True,
+                    Count - 1 True, Name - s1 True";
+
+                TestUtility.AssertAreEqualByLine(ClearText(expected), ClearText(Report(result)));
+                Assert.AreEqual(4, result.Select(item => item.LogID.Value).Distinct().Count());
+                Assert.AreEqual(8, result.Select(item => item.ID).Distinct().Count());
+
+                executionContext.NHibernateSession.Clear();
+
+                System.Threading.Thread.Sleep(10);
+                repository.TestLogging.Simple.Delete(new[] { s1 });
+
+                result = repository.Common.AuditDataModifications.Filter(
+                    new Common.LoggedItem { TableName = "TestLogging.Simple", ItemId = s1.ID });
+
+                expected = @"
+                    Count 111 - True, Name - - False,
+                    Count - 111 True, Name - - False,
+                    Count 1 - True, Name s11 - True,
+                    Count 1 1 False, Name s1 s11 True,
+                    Count - 1 True, Name - s1 True";
+
+                TestUtility.AssertAreEqualByLine(ClearText(expected), ClearText(Report(result)));
+                Assert.AreEqual(5, result.Select(item => item.LogID.Value).Distinct().Count());
+                Assert.AreEqual(10, result.Select(item => item.ID).Distinct().Count());
+            }
+        }
+
+        [TestMethod]
+        public void AuditDataModifications_JustCreated()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log" });
+                var repository = new Common.DomRepository(executionContext);
+
+                var s1 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "s1", Count = 1 };
+                repository.TestLogging.Simple.Insert(new[] { s1 });
+
+                executionContext.NHibernateSession.Clear();
+
+                var result = repository.Common.AuditDataModifications.Filter(
+                    new Common.LoggedItem { TableName = "TestLogging.Simple", ItemId = s1.ID });
+
+                string expected = "Count - 1 True, Name - s1 True";
+                TestUtility.AssertAreEqualByLine(ClearText(expected), ClearText(Report(result)));
+            }
+        }
+
+        [TestMethod]
+        public void AuditDataModifications_LogId()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log" });
+                var repository = new Common.DomRepository(executionContext);
+
+                var s1 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "s1", Count = 1 };
+                repository.TestLogging.Simple.Insert(new[] { s1 });
+
+                System.Threading.Thread.Sleep(10);
+                s1.Name = "s11";
+                repository.TestLogging.Simple.Update(new[] { s1 });
+
+                System.Threading.Thread.Sleep(10);
+                s1.Name = null;
+                s1.Count = null;
+                repository.TestLogging.Simple.Update(new[] { s1 });
+
+                var logEntries = repository.Common.LogReader.Query().Where(log => log.ItemId == s1.ID).OrderBy(log => log.Created).ToList();
+                Assert.AreEqual(3, logEntries.Count());
+
+                for (int i=0; i<3; i++)
+                    Console.WriteLine(i.ToString() + ": " + logEntries[i].Description);
+
+                var result = repository.Common.AuditDataModifications.Filter(new Common.Log { ID = logEntries[1].ID });
+                TestUtility.AssertAreEqualByLine("Count 1 1 False, Name s1 s11 True", ClearText(Report(result)));
+            }
+        }
+
+        [TestMethod]
+        public void AuditDataModifications_LargeData()
+        {
+            const int size = 600*1024;
+            string value1 = new string('1', size);
+            string value2 = new string('1', size-1) + '2';
+
+            Console.WriteLine(value1.Length);
+            Console.WriteLine(value2.Length);
+            Console.WriteLine(value1.Substring(0, 20));
+            Console.WriteLine(value2.Substring(0, 20));
+            Console.WriteLine(value1 == value2);
+
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log" });
+                var repository = new Common.DomRepository(executionContext);
+
+                // Test 1: insert, current value is large:
+
+                var c1 = new TestLogging.Complex { ID = Guid.NewGuid(), ls = value1 };
+                repository.TestLogging.Complex.Insert(new[] { c1 });
+
+                executionContext.NHibernateSession.Clear();
+
+                var result = repository.Common.AuditDataModifications.Filter(
+                    new Common.LoggedItem { TableName = "TestLogging.Complex", ItemId = c1.ID });
+
+                string expected = "ls - " + value1 + " True";
+
+                TestUtility.AssertAreEqualByLine(ClearText(expected), ClearText(Report(result)));
+
+                // Test 2: insert + update, value in log is large:
+
+                System.Threading.Thread.Sleep(10);
+                c1.ls = value2;
+                repository.TestLogging.Complex.Update(new[] { c1 });
+
+                executionContext.NHibernateSession.Clear();
+
+                result = repository.Common.AuditDataModifications.Filter(
+                    new Common.LoggedItem { TableName = "TestLogging.Complex", ItemId = c1.ID });
+
+                expected = "ls " + value1 + " " + value2 + " True," + Environment.NewLine + "ls - " + value1 + " True";
+
+                TestUtility.AssertAreEqualByLine(ClearText(expected), ClearText(Report(result)));
             }
         }
     }

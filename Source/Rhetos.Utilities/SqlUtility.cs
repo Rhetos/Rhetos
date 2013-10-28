@@ -211,7 +211,8 @@ namespace Rhetos.Utilities
                 else
                     throw new FrameworkException(UnsupportedLanguageError);
 
-            return fullObjectName.Substring(0, dotPosition);
+            var schema = fullObjectName.Substring(0, dotPosition);
+            return SqlUtility.Identifier(schema);
         }
 
         public static string GetShortName(string fullObjectName)
@@ -225,15 +226,13 @@ namespace Rhetos.Utilities
             int secondDot = shortName.IndexOf('.');
             if (secondDot != -1 || string.IsNullOrEmpty(shortName))
                 throw new FrameworkException("Invalid database object name: '" + fullObjectName + "'. Expected format is 'schema.name' or 'name'.");
-            return shortName;
+            return SqlUtility.Identifier(shortName);
         }
 
         public static string GetFullName(string objectName)
         {
             var schema = SqlUtility.GetSchemaName(objectName);
             var name = SqlUtility.GetShortName(objectName);
-            SqlUtility.CheckIdentifier(schema);
-            SqlUtility.CheckIdentifier(name);
             return schema + "." + name;
         }
 

@@ -113,6 +113,21 @@ namespace Rhetos.TestCommon
                 Assert.Fail("Text should not contain pattern '" + pattern + "'. " + message ?? "");
         }
 
+        /// <summary>
+        /// Useful for comparing long texts. Reports first line that doesn't match.
+        /// </summary>
+        public static void AssertAreEqualByLine(string expected, string actual, string message = null)
+        {
+            var expectedLines = expected.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            var actualLines = actual.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+
+            for (int line = 0; line < Math.Min(expectedLines.Length, actualLines.Length); line++)
+                Assert.AreEqual(expectedLines[line], actualLines[line], "Line " + (line + 1) + "." + (message != null ? " " + message : ""));
+
+            if (actualLines.Length != expectedLines.Length)
+                Assert.Fail("Given text has " + actualLines.Length + " lines instead of " + expectedLines.Length + ".");
+        }
+
         public static string DumpSorted<T>(IEnumerable<T> list, Func<T, object> selector = null)
         {
             if (selector == null)

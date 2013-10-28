@@ -1,41 +1,41 @@
 ﻿Module Common
 {
-	// Recomended for reading the Log without locking the other server transactions. Data will include transations that are not yet committed.
-	SqlQueryable LogReader <LogReader.sql>
-	{
-		AllPropertiesFrom Common.Log;
-		SqlDependsOn Common.Log;
-	}
+    // Recomended for reading the Log without locking the other server transactions. Data will include transations that are not yet committed.
+    SqlQueryable LogReader <LogReader.sql>
+    {
+        AllPropertiesFrom Common.Log;
+        SqlDependsOn Common.Log;
+    }
     
-	// Recomended for reading the Log without locking the other server transactions. Data will include transations that are not yet committed.
-	SqlQueryable LogRelatedItemReader <LogRelatedItemReader.sql>
-	{
-		AllPropertiesFrom Common.LogRelatedItem;
-		SqlDependsOn Common.LogRelatedItem;
-	}
+    // Recomended for reading the Log without locking the other server transactions. Data will include transations that are not yet committed.
+    SqlQueryable LogRelatedItemReader <LogRelatedItemReader.sql>
+    {
+        AllPropertiesFrom Common.LogRelatedItem;
+        SqlDependsOn Common.LogRelatedItem;
+    }
 
-	Entity Log
-	{
-		DateTime Created { SqlDefault <Log.Created default.sql>; Required; }
-		ShortString UserName { SqlDefault <Log.UserName default.sql>; Required; }
-		ShortString Workstation { SqlDefault <Log.Workstation default.sql>; Required; }
-		ShortString ContextInfo { SqlDefault <Log.ContextInfo default.sql>; }
-		ShortString Action { Required; }
-		ShortString TableName;
-		Guid ItemId { SqlIndex; }
-		LongString Description;
-		
-		PrerequisiteAllProperties; // Internal use for functionality that depends on this table being fully created.
-	}
+    Entity Log
+    {
+        DateTime Created { SqlDefault <Log.Created default.sql>; Required; }
+        ShortString UserName { SqlDefault <Log.UserName default.sql>; Required; }
+        ShortString Workstation { SqlDefault <Log.Workstation default.sql>; Required; }
+        ShortString ContextInfo { SqlDefault <Log.ContextInfo default.sql>; }
+        ShortString Action { Required; }
+        ShortString TableName;
+        Guid ItemId { SqlIndex; }
+        LongString Description;
+        
+        PrerequisiteAllProperties;
+    }
     
     Entity LogRelatedItem
     {
         Reference Log { Detail; Required; }
         ShortString TableName;
-		Guid ItemId { SqlIndex; }
+        Guid ItemId { SqlIndex; }
         ShortString Relation; // Describes what is the referenced Log.ItemId to the LogRelatedItems.ItemId.
         
-        PrerequisiteAllProperties; // Internal use for functionality that depends on this table being fully created.
+        PrerequisiteAllProperties;
     }
     
     SqlQueryable RelatedEventsSource <RelatedEvents.sql>
@@ -47,40 +47,43 @@
         ShortString RelatedToTable;
         Guid RelatedToItem;
         
-		SqlDependsOn Common.LogReader;
+        SqlDependsOn Common.LogReader;
         SqlDependsOn Common.LogRelatedItemReader;
     }
     
-	Computed RelatedEvents 'repository => { throw new Rhetos.UserException("Reading Common.RelatedEvents without filter is not permitted. Use filter by Common.LoggedItem."); } '
-	{
+    Parameter LoggedItem
+    {
+        ShortString TableName;
+        Guid ItemId;
+    }
+    
+    Computed AuditRelatedEvents 'repository => { throw new Rhetos.UserException("Reading Common.AuditRelatedEvents without filter is not permitted. Use filter by Common.LoggedItem."); }'
+    {
         Reference Log;
-		DateTime Created;
-		ShortString Action;
-		ShortString TableName;
-		Guid ItemId;
-		LongString Description;
+        DateTime Created;
+        ShortString Action;
+        ShortString TableName;
+        Guid ItemId;
+        LongString Description;
         
-		ShortString ClientUserName; // The user that used web interface. If the event is logged without web context provided, ClientUserName will be the same as SqlUserName.
-		ShortString ClientWorkstation; // The computer name of the user that used web interface. If the event is logged without web context provided, ClientWorkstation will be the same as SqlWorkstation.
+        ShortString ClientUserName; // The user that used web interface. If the event is logged without web context provided, ClientUserName will be the same as SqlUserName.
+        ShortString ClientWorkstation; // The computer name of the user that used web interface. If the event is logged without web context provided, ClientWorkstation will be the same as SqlWorkstation.
         
         ShortString Relation;
-        ShortString Summary;
+        LongString Summary;
         
         FilterBy LoggedItem '(repository, parameter) =>
         {
-            /*RelatedEvents LoggedItem Begin*/
+            /*AuditRelatedEvents LoggedItem Begin*/
             
             return repository.Common.RelatedEventsSource.Query()
                 .Where(item => item.RelatedToTable == parameter.TableName && item.RelatedToItem == parameter.ItemId)
-                .OrderByDescending(item => item.Created)
-                .ThenBy(item => item.Relation)
-                .ThenBy(item => item.TableName)
                 .ToList()
                 .Select(item =>
                 {
-                    var clientInfo = LoggingUtility.ExtractUserInfo(item.ContextInfo);
+                    IUserInfo clientInfo = LoggingUtility.ExtractUserInfo(item.ContextInfo);
                     
-                    var relatedEvent = new Common.RelatedEvents
+                    var relatedEvent = new Common.AuditRelatedEvents
                     {
                         ID = item.ID,
                         LogID = item.LogID,
@@ -97,19 +100,71 @@
                         Summary = LoggingUtility.GetSummary(item.Action, item.Description)
                     };
                     
-                    /*RelatedEvents LoggedItem ProcessEvent*/                    
+                    /*AuditRelatedEvents LoggedItem ProcessEvent*/
                     return relatedEvent;
                 })
+                .OrderByDescending(item => item.Created)
+                .ThenBy(item => item.Relation)
+                .ThenBy(item => item.TableName)
                 .ToArray();
         }';
-	}
+    }
     
     ExternalReference 'Rhetos.Dom.DefaultConcepts.LoggingUtility, Rhetos.Dom.DefaultConcepts';
     ExternalReference 'Rhetos.Utilities.IUserInfo, Rhetos.Utilities';
     
-    Parameter LoggedItem
+    Computed AuditDataModifications 'repository => { throw new Rhetos.UserException("Reading Common.AuditDataModifications without filter is not permitted. Use filter by Common.LoggedItem or Common.Log."); }'
     {
-        ShortString TableName;
-		Guid ItemId;
+        Reference Log;
+        ShortString Property;
+        LongString OldValue;
+        LongString NewValue;
+        Bool Modified;
+        
+        FilterBy LoggedItem '(repository, parameter, executionContext) =>
+        {
+            var eventDescriptions = repository.Common.LogReader.Query()
+                .Where(item => item.TableName == parameter.TableName && item.ItemId == parameter.ItemId)
+                .Select(item => new { item.ID, item.Action, item.Description, item.Created })
+                .ToList()
+                .Where(item => item.Action == "Update" || item.Action == "Insert" || item.Action == "Delete")
+                .OrderByDescending(item => item.Created)
+                .ThenBy(item => item.ID)
+                .Select(item => new LoggingUtility.EventDescription { LogID = item.ID, Action = item.Action, Description = item.Description })
+                .ToList();
+                
+            var sql = "SELECT Description FROM " + SqlUtility.GetFullName(parameter.TableName + "_CommonLogDescription") + " WHERE ID = :id";
+            var currentItemDescription = executionContext.NHibernateSession.CreateSQLQuery(sql)
+                .AddScalar("Description", NHibernate.NHibernateUtil.String)
+                .SetString("id", SqlUtility.GuidToString(parameter.ItemId.Value))
+                .List<string>()
+                .SingleOrDefault();
+            
+            var result = LoggingUtility.ReconstructDataModifications(eventDescriptions, currentItemDescription);
+            return result.Select(item => new Common.AuditDataModifications
+                {
+                    ID = Guid.NewGuid(),
+                    LogID = item.LogID,
+                    Property = item.Property,
+                    OldValue = item.OldValue,
+                    NewValue = item.NewValue,
+                    Modified = item.Modified
+                }).ToArray();
+        }'
+        {
+            UseExecutionContext;
+        }
+        
+        // Provide only ID property of the Log instance for the filter parameter.
+        FilterBy Log '(repository, parameter) =>
+        {
+            var log = repository.Common.LogReader.Filter(new[] { parameter.ID }).SingleOrDefault();
+            if (log == null)
+                throw new Rhetos.UserException("There is no record in Common.Log with ID " + SqlUtility.GuidToString(parameter.ID) + ".");
+            var modifications = repository.Common.AuditDataModifications.Filter(new LoggedItem { TableName = log.TableName, ItemId = log.ItemId });
+            return modifications.Where(m => m.LogID == parameter.ID).ToArray();
+        }';
     }
+    
+    ExternalReference 'NHibernate.NHibernateUtil, NHibernate';
 }
