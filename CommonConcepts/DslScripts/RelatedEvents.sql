@@ -13,8 +13,8 @@ SELECT
     lri.TableName AS RelatedToTable,
     lri.ItemId AS RelatedToItem
 FROM
-    Common.LogRelatedItemReader lri
-    INNER JOIN Common.LogReader l ON l.ID = lri.LogID
+    Common.LogRelatedItemNoLock lri
+    INNER JOIN Common.LogNoLock l ON l.ID = lri.LogID
 
 UNION ALL
 
@@ -33,4 +33,4 @@ SELECT
     l.TableName AS RelatedToTable,
     l.ItemId AS RelatedToItem
 FROM
-    Common.LogReader l
+    Common.LogNoLock l

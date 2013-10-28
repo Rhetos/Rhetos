@@ -634,7 +634,7 @@ namespace CommonConcepts.Test
                 s1.Count = null;
                 repository.TestLogging.Simple.Update(new[] { s1 });
 
-                var logEntries = repository.Common.LogReader.Query().Where(log => log.ItemId == s1.ID).OrderBy(log => log.Created).ToList();
+                var logEntries = repository.Common.LogNoLock.Query().Where(log => log.ItemId == s1.ID).OrderBy(log => log.Created).ToList();
                 Assert.AreEqual(3, logEntries.Count());
 
                 for (int i=0; i<3; i++)

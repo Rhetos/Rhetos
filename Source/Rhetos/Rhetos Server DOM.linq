@@ -54,18 +54,23 @@ void Main()
 		// PRINT 3 CLAIMS:
 		var claimsAll = repository.Common.Claim.Query();
 		claimsAll.Take(3).Dump();
-		
+        
+        // PRINT CLAIM RESOURCES FROM COMMON MODULE, THAT HAVE 'New' CLAIM RIGHT:
+        string.Join(", ", claimsAll.Where(c => c.ClaimResource.StartsWith("Common.") && c.ClaimRight == "New").Select(c => c.ClaimResource)).Dump();
+        
 		// ADD AND REMOVE A PRINCIPAL:
 		var testUser = new Common.Principal { Name = "Test123ABC", ID = Guid.NewGuid() };
 		repository.Common.Principal.Insert(new[] { testUser });
 		repository.Common.Principal.Delete(new[] { testUser });
 	
-		// PRINT LAST 5 RECORDS IN SYSTEM LOG OF Common.Principal:
-		repository.Common.Log.Query()
-			.Where(log => log.TableName == "Common.Principal")
-			.OrderByDescending(log => log.Created)
-			.Take(5)
-            .Select(log => new { log.Created, log.UserName, log.Workstation, log.Action, log.TableName, log.ItemId, log.Description })
+		// PRINT EVENT LOG RECORDS OF Common.Principal, USING AuditRelatedEvents DATA SOURCE WITH FILTER:
+        var events = repository.Common.AuditRelatedEvents.Filter(new Common.LoggedItem { TableName = "Common.Principal", ItemId = testUser.ID })
+            .Select(ev => new { ev.Created, ev.Action, ev.ClientUserName, ev.ClientWorkstation, ev.Summary, ev.Relation, ev.TableName, ev.Description, ev.LogID })
+            .Dump();
+            
+        // DETAILED INFO ON THE LAST EVENT:
+        repository.Common.AuditDataModifications.Filter(new Common.Log { ID = events.First().LogID.Value })
+            .Select(info => new { info.Property, info.OldValue, info.NewValue, info.Modified, info.LogID })
             .Dump();
 	}
 }
