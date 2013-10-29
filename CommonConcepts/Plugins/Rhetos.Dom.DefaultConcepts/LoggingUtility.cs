@@ -102,9 +102,16 @@ namespace Rhetos.Dom.DefaultConcepts
                     {
                         if (string.IsNullOrWhiteSpace(e.Description))
                             return new Dictionary<string, string>();
+
+                        const string errorDescription = "Error: ";
+                        if (e.Description.StartsWith(errorDescription))
+                            return ValueOrError.CreateError(e.Description.Substring(errorDescription.Length));
+
                         var xml = XElement.Parse(e.Description);
+
                         if (xml.Name.LocalName != "PREVIOUS")
                             return ValueOrError.CreateError("Invalid event Description format"); // TODO: Log the error (ILogger needs to be added to ExecutionContext).
+
                         return xml.Attributes().ToDictionary(a => a.Name.LocalName, a => a.Value);
                     }
                     catch
@@ -126,6 +133,11 @@ namespace Rhetos.Dom.DefaultConcepts
                     eventsChanges[i] = lastEventProperties.Where(lep => lep.Value != "").ToDictionary(lep => lep.Key, lep => "");
                 else if (eventsChanges[i].IsError)
                     eventsChanges[i] = allProperties.ToDictionary(p => p, p => "<" + eventsChanges[i].Error + ">");
+
+                if (allEvents[i].Action == "Delete")
+                    foreach (var p in lastEventProperties.Keys.ToArray())
+                        if (lastEventProperties[p].StartsWith("<"))
+                            lastEventProperties[p] = "";
 
                 var eventProperties = new Dictionary<string, string>(lastEventProperties);
 

@@ -37,7 +37,6 @@ namespace CommonConcepts.Test
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log;" });
                 var repository = new Common.DomRepository(executionContext);
 
                 var newItem = new TestLogging.Simple { ID = Guid.NewGuid(), Count = -2, Name = "abc", Created = DateTime.Now };
@@ -87,7 +86,6 @@ namespace CommonConcepts.Test
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log;" });
                 var repository = new Common.DomRepository(executionContext);
 
                 var newItem = new TestLogging.Simple { ID = Guid.NewGuid(), Name = @"<>'""&;[]\\//()čćšđžČĆŠĐŽ]]>" };
@@ -117,7 +115,6 @@ namespace CommonConcepts.Test
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log;" });
                 var repository = new Common.DomRepository(executionContext);
 
                 var newItem = new TestLogging.Simple { ID = Guid.NewGuid(), Count = null, Name = null, Created = null };
@@ -157,7 +154,6 @@ namespace CommonConcepts.Test
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log;" });
                 var repository = new Common.DomRepository(executionContext);
 
                 var newItem = new TestLogging.Simple { ID = Guid.NewGuid(), Count = null, Name = null, Created = null };
@@ -193,26 +189,30 @@ namespace CommonConcepts.Test
             {
                 var repository = new Common.DomRepository(executionContext);
 
-                var id1 = new Guid("11111111-1111-1111-1111-111111111111");
-                var id2 = new Guid("22222222-2222-2222-2222-222222222222");
+                var id1 = Guid.NewGuid();
+                var id2 = Guid.NewGuid();
 
                 executionContext.SqlExecuter.ExecuteSql(new[]
                     {
                         "DELETE FROM TestLogging.Complex",
                         "DELETE FROM TestLogging.Simple",
-                        "DELETE FROM Common.Log",
                         "INSERT INTO TestLogging.Simple (ID, Name) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 'abc')",
                         "UPDATE TestLogging.Simple SET ID = " + SqlUtility.QuoteGuid(id2)
                     });
 
-                var logRecords = repository.Common.Log.All();
-                var report = TestUtility.DumpSorted(logRecords, log => log.ItemId.ToString() + " " + log.Action + " " + log.Description.Contains("abc"));
+                var actual = repository.Common.Log.Query().Where(log => new Guid?[] { id1, id2 }.Contains(log.ItemId)).ToArray();
 
-                Assert.AreEqual(
-                    "11111111-1111-1111-1111-111111111111 Delete True, "
-                        + "11111111-1111-1111-1111-111111111111 Insert False, "
-                        + "22222222-2222-2222-2222-222222222222 Insert False",
-                    report);
+                var expected = new[]
+                {
+                    new Common.Log { ItemId = id1, Action = "Delete", Description = "...abc..." },
+                    new Common.Log { ItemId = id1, Action = "Insert", Description = "..." },
+                    new Common.Log { ItemId = id2, Action = "Insert", Description = "..." },
+                };
+
+                Func<Common.Log[], string> report = logRecords =>
+                    TestUtility.DumpSorted(logRecords, log => log.ItemId.ToString() + " " + log.Action + " " + log.Description.Contains("abc"));
+
+                Assert.AreEqual(report(expected), report(actual));
             }
         }
 
@@ -225,7 +225,6 @@ namespace CommonConcepts.Test
                     {
                         "DELETE FROM TestLogging.Complex",
                         "DELETE FROM TestLogging.Simple",
-                        "DELETE FROM Common.Log",
                     });
                 var repository = new Common.DomRepository(executionContext);
                 var id = Guid.NewGuid();
@@ -250,9 +249,11 @@ namespace CommonConcepts.Test
                 repository.TestLogging.Complex.Update(new[] { complex });
                 repository.TestLogging.Complex.Delete(new[] { complex });
 
-                var ins = repository.Common.Log.Query().Where(log => log.TableName == "TestLogging.Complex" && log.Action == "Insert").Single();
-                var upd = repository.Common.Log.Query().Where(log => log.TableName == "TestLogging.Complex" && log.Action == "Update").Single();
-                var del = repository.Common.Log.Query().Where(log => log.TableName == "TestLogging.Complex" && log.Action == "Delete").Single();
+                var ids = new Guid?[] { simple.ID, complex.ID };
+
+                var ins = repository.Common.Log.Query().Where(log => log.TableName == "TestLogging.Complex" && log.Action == "Insert" && ids.Contains(log.ItemId)).Single();
+                var upd = repository.Common.Log.Query().Where(log => log.TableName == "TestLogging.Complex" && log.Action == "Update" && ids.Contains(log.ItemId)).Single();
+                var del = repository.Common.Log.Query().Where(log => log.TableName == "TestLogging.Complex" && log.Action == "Delete" && ids.Contains(log.ItemId)).Single();
 
                 Assert.AreEqual("", ins.Description);
                 Assert.AreEqual(@"<PREVIOUS ls=""abc"" />", upd.Description);
@@ -277,7 +278,6 @@ namespace CommonConcepts.Test
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log" });
                 var repository = new Common.DomRepository(executionContext);
 
                 var parent1 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "p1" };
@@ -306,7 +306,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(
                     @"Simple p2x Update <PREVIOUS Name=""p2"" />, Simple p2x Insert ",
                     TestUtility.Dump(
-                        repository.Common.LogNoLock.Filter(new Common.LoggedItem { TableName = "TestLogging.Simple", ItemId = parent2.ID }),
+                        repository.Common.LogReader.Filter(new Common.LoggedItem { TableName = "TestLogging.Simple", ItemId = parent2.ID }),
                         log => SqlUtility.GetShortName(log.TableName) + " " + names[log.ItemId] + " " + log.Action + " " + log.Description));
             }
         }
@@ -317,18 +317,17 @@ namespace CommonConcepts.Test
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log" });
                 var repository = new Common.DomRepository(executionContext);
 
-                var b1 = new TestLogging.Base { ID = Guid.NewGuid(), Name = "b1" };
+                var b1 = new TestLogging.Base { ID = Guid.NewGuid(), Name = Guid.NewGuid().ToString() };
                 repository.TestLogging.Base.Insert(new[] { b1 });
 
-                var s1 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "s1", Count = 1 };
-                var s2 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "s2", Count = 1 };
+                var s1 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = Guid.NewGuid().ToString(), Count = 1 };
+                var s2 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = Guid.NewGuid().ToString(), Count = 1 };
                 repository.TestLogging.Simple.Insert(new[] { s1, s2 });
 
-                var c1 = new TestLogging.Complex { ID = Guid.NewGuid(), ls = "c1", r = s1 };
-                var c2 = new TestLogging.Complex { ID = Guid.NewGuid(), ls = "c2", r = s2 };
+                var c1 = new TestLogging.Complex { ID = Guid.NewGuid(), ls = Guid.NewGuid().ToString(), r = s1 };
+                var c2 = new TestLogging.Complex { ID = Guid.NewGuid(), ls = Guid.NewGuid().ToString(), r = s2 };
                 repository.TestLogging.Complex.Insert(new[] { c1, c2 });
 
                 System.Threading.Thread.Sleep(10);
@@ -338,12 +337,12 @@ namespace CommonConcepts.Test
 
                 executionContext.NHibernateSession.Clear();
 
-                var names = new Dictionary<Guid, string> { { b1.ID, b1.Name }, { s1.ID, s1.Name }, { s2.ID, s2.Name }, { c1.ID, c1.ls }, { c2.ID, c2.ls } };
+                string report = TestUtility.DumpSorted(
+                    repository.Common.LogReader.Filter(new Common.DeletedItems { TableName = "TestLogging.Simple" }),
+                    log => log.TableName + " " + log.ItemId + " " + log.Description);
 
-                var result = repository.Common.LogNoLock.Filter(new Common.DeletedItems { TableName = "TestLogging.Simple" });
-                TestUtility.AssertAreEqualByLine(
-                    @"Simple s1, Simple s2",
-                    TestUtility.DumpSorted(result, item => SqlUtility.GetShortName(item.TableName) + " " + names[item.ItemId.Value]));
+                TestUtility.AssertContains(report, new[] { s1.ID.ToString(), s1.Name, s2.ID.ToString(), s2.Name });
+                TestUtility.AssertNotContains(report, new[] { b1.ID.ToString(), b1.Name, c1.ID.ToString(), c1.ls, c2.ID.ToString(), c2.ls });
             }
         }
 
@@ -352,7 +351,6 @@ namespace CommonConcepts.Test
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log" });
                 var repository = new Common.DomRepository(executionContext);
 
                 var parent1 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "p1" };
@@ -401,7 +399,6 @@ namespace CommonConcepts.Test
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log" });
                 var repository = new Common.DomRepository(executionContext);
 
                 var parent1 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "p1" };
@@ -461,7 +458,6 @@ namespace CommonConcepts.Test
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log" });
                 var repository = new Common.DomRepository(executionContext);
 
                 var b1 = new TestLogging.Base { ID = Guid.NewGuid(), Name = "b1" };
@@ -508,7 +504,6 @@ namespace CommonConcepts.Test
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log" });
                 var repository = new Common.DomRepository(executionContext);
 
                 var b1 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "b1", Count = 1 };
@@ -542,18 +537,17 @@ namespace CommonConcepts.Test
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log" });
                 var repository = new Common.DomRepository(executionContext);
 
-                var b1 = new TestLogging.Base { ID = Guid.NewGuid(), Name = "b1" };
+                var b1 = new TestLogging.Base { ID = Guid.NewGuid(), Name = Guid.NewGuid().ToString() };
                 repository.TestLogging.Base.Insert(new[] { b1 });
 
-                var s1 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "s1", Count = 1 };
-                var s2 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "s2", Count = 1 };
+                var s1 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = Guid.NewGuid().ToString(), Count = 1 };
+                var s2 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = Guid.NewGuid().ToString(), Count = 1 };
                 repository.TestLogging.Simple.Insert(new[] { s1, s2 });
 
-                var c1 = new TestLogging.Complex { ID = Guid.NewGuid(), ls = "c1", r = s1 };
-                var c2 = new TestLogging.Complex { ID = Guid.NewGuid(), ls = "c2", r = s2 };
+                var c1 = new TestLogging.Complex { ID = Guid.NewGuid(), ls = Guid.NewGuid().ToString(), r = s1 };
+                var c2 = new TestLogging.Complex { ID = Guid.NewGuid(), ls = Guid.NewGuid().ToString(), r = s2 };
                 repository.TestLogging.Complex.Insert(new[] { c1, c2 });
 
                 System.Threading.Thread.Sleep(10);
@@ -563,12 +557,12 @@ namespace CommonConcepts.Test
 
                 executionContext.NHibernateSession.Clear();
 
-                var names = new Dictionary<Guid, string> { { b1.ID, b1.Name }, { s1.ID, s1.Name }, { s2.ID, s2.Name }, {c1.ID, c1.ls }, { c2.ID, c2.ls } };
+                var report = TestUtility.DumpSorted(
+                    repository.Common.AuditRelatedEvents.Filter(new Common.DeletedItems { TableName = "TestLogging.Simple" }),
+                    log => log.TableName + " " + log.ItemId + " " + log.Description);
 
-                var result = repository.Common.AuditRelatedEvents.Filter(new Common.DeletedItems { TableName = "TestLogging.Simple" });
-                TestUtility.AssertAreEqualByLine(
-                    @"Complex c1, Complex c2, Simple s1, Simple s2",
-                    TestUtility.DumpSorted(result, item => SqlUtility.GetShortName(item.TableName) + " " + names[item.ItemId.Value]));
+                TestUtility.AssertContains(report, new[] { s1.ID.ToString(), s1.Name, s2.ID.ToString(), s2.Name, c1.ID.ToString(), c1.ls, c2.ID.ToString(), c2.ls });
+                TestUtility.AssertNotContains(report, new[] { b1.ID.ToString(), b1.Name });
             }
         }
 
@@ -631,7 +625,6 @@ namespace CommonConcepts.Test
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log" });
                 var repository = new Common.DomRepository(executionContext);
 
                 var s1 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "s1", Count = 1 };
@@ -689,7 +682,6 @@ namespace CommonConcepts.Test
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log" });
                 var repository = new Common.DomRepository(executionContext);
 
                 var s1 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "s1", Count = 1 };
@@ -710,7 +702,6 @@ namespace CommonConcepts.Test
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log" });
                 var repository = new Common.DomRepository(executionContext);
 
                 var s1 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "s1", Count = 1 };
@@ -725,7 +716,7 @@ namespace CommonConcepts.Test
                 s1.Count = null;
                 repository.TestLogging.Simple.Update(new[] { s1 });
 
-                var logEntries = repository.Common.LogNoLock.Query().Where(log => log.ItemId == s1.ID).OrderBy(log => log.Created).ToList();
+                var logEntries = repository.Common.LogReader.Query().Where(log => log.ItemId == s1.ID).OrderBy(log => log.Created).ToList();
                 Assert.AreEqual(3, logEntries.Count());
 
                 for (int i=0; i<3; i++)
@@ -739,9 +730,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AuditDataModifications_LargeData()
         {
-            const int size = 600*1024;
+            const int size = 600 * 1024;
             string value1 = new string('1', size);
-            string value2 = new string('1', size-1) + '2';
+            string value2 = new string('1', size - 1) + '2';
 
             Console.WriteLine(value1.Length);
             Console.WriteLine(value2.Length);
@@ -751,7 +742,6 @@ namespace CommonConcepts.Test
 
             using (var executionContext = new CommonTestExecutionContext())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log" });
                 var repository = new Common.DomRepository(executionContext);
 
                 // Test 1: insert, current value is large:
@@ -781,6 +771,38 @@ namespace CommonConcepts.Test
 
                 expected = "ls " + value1 + " " + value2 + " True," + Environment.NewLine + "ls - " + value1 + " True";
 
+                TestUtility.AssertAreEqualByLine(ClearText(expected), ClearText(Report(result)));
+            }
+        }
+
+        [TestMethod]
+        public void AuditDataModifications_OldDataStructure()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                Guid itemId1 = Guid.NewGuid();
+                Guid itemId2 = Guid.NewGuid();
+                string tableName = "NonExistant.Table";
+
+                executionContext.SqlExecuter.ExecuteSql(new[]
+                {
+                    "INSERT INTO Common.Log (Action, TableName, ItemId, Description) VALUES ('Insert', " + SqlUtility.QuoteText(tableName) + ", " + SqlUtility.QuoteGuid(itemId1) + ", '<PREVIOUS />')",
+                    "INSERT INTO Common.Log (Action, TableName, ItemId, Description) VALUES ('Update', " + SqlUtility.QuoteText(tableName) + ", " + SqlUtility.QuoteGuid(itemId1) + ", '<PREVIOUS Code=\"c1\" />')",
+                    "INSERT INTO Common.Log (Action, TableName, ItemId, Description) VALUES ('Insert', " + SqlUtility.QuoteText(tableName) + ", " + SqlUtility.QuoteGuid(itemId2) + ", '<PREVIOUS />')",
+                    "INSERT INTO Common.Log (Action, TableName, ItemId, Description) VALUES ('Delete', " + SqlUtility.QuoteText(tableName) + ", " + SqlUtility.QuoteGuid(itemId2) + ", '<PREVIOUS Code=\"c2\" />')",
+                });
+                var repository = new Common.DomRepository(executionContext);
+
+                var result = repository.Common.AuditDataModifications.Filter(new Common.LoggedItem { TableName = tableName, ItemId = itemId1 });
+                var expected = @"
+                    Code c1 <Unknown> True,
+                    Code - c1 True";
+                TestUtility.AssertAreEqualByLine(ClearText(expected), ClearText(Report(result)));
+
+                result = repository.Common.AuditDataModifications.Filter(new Common.LoggedItem { TableName = tableName, ItemId = itemId2 });
+                expected = @"
+                    Code c2 - True,
+                    Code - c2 True";
                 TestUtility.AssertAreEqualByLine(ClearText(expected), ClearText(Report(result)));
             }
         }

@@ -1,34 +1,24 @@
 ﻿Module Common
 {
     // Recomended for reading the Log table without locking the other server transactions. Data will include transations that are not yet committed.
-    SqlQueryable LogNoLock <LogNoLock.sql>
+    SqlQueryable LogReader <LogReader.sql>
     {
         AllPropertiesFrom Common.Log;
         SqlDependsOn Common.Log;
         
-        FilterBy LoggedItem '(repository, parameter) =>
-        {
-            return repository.Common.LogNoLock.Query()
-                .Where(item => item.TableName == parameter.TableName && item.ItemId == parameter.ItemId)
-                .ToList()
-                .OrderByDescending(item => item.Created)
-                .ThenBy(item => item.ID)
-                .ToArray();
-        }';
+        ComposableFilterBy LoggedItem '(items, repository, parameter) => items
+            .Where(item => item.TableName == parameter.TableName && item.ItemId == parameter.ItemId)
+            .OrderByDescending(item => item.Created)
+            .ThenBy(item => item.ID)';
         
-        FilterBy DeletedItems '(repository, parameter) =>
-        {
-            return repository.Common.LogNoLock.Query()
-                .Where(item => item.TableName == parameter.TableName && item.Action == "Delete")
-                .ToList()
-                .OrderByDescending(item => item.Created)
-                .ThenBy(item => item.ID)
-                .ToArray();
-        }';        
+        ComposableFilterBy DeletedItems '(items, repository, parameter) => items
+            .Where(item => item.TableName == parameter.TableName && item.Action == "Delete")
+            .OrderByDescending(item => item.Created)
+            .ThenBy(item => item.ID)';
     }
     
     // Recomended for reading the LogRelatedItem table without locking the other server transactions. Data will include transations that are not yet committed.
-    SqlQueryable LogRelatedItemNoLock <LogRelatedItemNoLock.sql>
+    SqlQueryable LogRelatedItemReader <LogRelatedItemReader.sql>
     {
         AllPropertiesFrom Common.LogRelatedItem;
         SqlDependsOn Common.LogRelatedItem;
@@ -45,13 +35,14 @@
         Guid ItemId { SqlIndex; }
         LongString Description;
         
+        SqlIndexMultiple 'TableName Action';
         PrerequisiteAllProperties;
     }
     
     Entity LogRelatedItem
     {
         Reference Log { Detail; Required; }
-        ShortString TableName;
+        ShortString TableName { SqlIndex; }
         Guid ItemId { SqlIndex; }
         ShortString Relation; // Describes what is the referenced Log.ItemId to the LogRelatedItems.ItemId.
         
@@ -67,8 +58,8 @@
         ShortString RelatedToTable;
         Guid RelatedToItem;
         
-        SqlDependsOn Common.LogNoLock;
-        SqlDependsOn Common.LogRelatedItemNoLock;
+        SqlDependsOn Common.LogReader;
+        SqlDependsOn Common.LogRelatedItemReader;
     }
     
     Parameter LoggedItem
@@ -190,7 +181,7 @@
         
         FilterBy LoggedItem '(repository, parameter, executionContext) =>
         {
-            var eventDescriptions = repository.Common.LogNoLock.Query()
+            var eventDescriptions = repository.Common.LogReader.Query()
                 .Where(item => item.TableName == parameter.TableName && item.ItemId == parameter.ItemId)
                 .Select(item => new { item.ID, item.Action, item.Description, item.Created })
                 .ToList()
@@ -200,12 +191,20 @@
                 .Select(item => new LoggingUtility.EventDescription { LogID = item.ID, Action = item.Action, Description = item.Description })
                 .ToList();
                 
-            var sql = "SELECT Description FROM " + SqlUtility.GetFullName(parameter.TableName + "_CommonLogDescription") + " WHERE ID = :id";
-            var currentItemDescription = executionContext.NHibernateSession.CreateSQLQuery(sql)
-                .AddScalar("Description", NHibernate.NHibernateUtil.String)
-                .SetString("id", SqlUtility.GuidToString(parameter.ItemId.Value))
-                .List<string>()
-                .SingleOrDefault();
+            string sql = "SELECT Description FROM " + SqlUtility.GetFullName(parameter.TableName + "_CommonLogDescription") + " WHERE ID = :id";
+            string currentItemDescription;
+            try
+            {
+                currentItemDescription = executionContext.NHibernateSession.CreateSQLQuery(sql)
+                    .AddScalar("Description", NHibernate.NHibernateUtil.String)
+                    .SetString("id", SqlUtility.GuidToString(parameter.ItemId.Value))
+                    .List<string>()
+                    .SingleOrDefault();
+            }
+            catch
+            {
+                currentItemDescription = "Error: Unknown";
+            }
             
             var result = LoggingUtility.ReconstructDataModifications(eventDescriptions, currentItemDescription);
             return result.Select(item => new Common.AuditDataModifications
@@ -225,7 +224,7 @@
         // Provide only ID property of the Log instance for the filter parameter.
         FilterBy LogEntry '(repository, parameter) =>
         {
-            var log = repository.Common.LogNoLock.Filter(new[] { parameter.LogID.Value }).SingleOrDefault();
+            var log = repository.Common.LogReader.Filter(new[] { parameter.LogID.Value }).SingleOrDefault();
             if (log == null)
                 throw new Rhetos.UserException("There is no record in Common.Log with ID " + SqlUtility.GuidToString(parameter.LogID.Value) + ".");
             var modifications = repository.Common.AuditDataModifications.Filter(new LoggedItem { TableName = log.TableName, ItemId = log.ItemId });

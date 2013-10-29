@@ -56,7 +56,7 @@ void Main()
 		claimsAll.Take(3).Dump();
         
         // PRINT CLAIM RESOURCES FROM COMMON MODULE, THAT HAVE 'New' CLAIM RIGHT:
-        string.Join(", ", claimsAll.Where(c => c.ClaimResource.StartsWith("Common.") && c.ClaimRight == "New").Select(c => c.ClaimResource)).Dump();
+        string.Join(", ", claimsAll.Where(c => c.ClaimResource.StartsWith("Common.") && c.ClaimRight == "New").Select(c => c.ClaimResource)).Dump("Claim resources:");
         
 		// ADD AND REMOVE A PRINCIPAL:
 		var testUser = new Common.Principal { Name = "Test123ABC", ID = Guid.NewGuid() };
@@ -69,7 +69,7 @@ void Main()
             .Dump();
             
         // DETAILED INFO ON THE LAST EVENT:
-        repository.Common.AuditDataModifications.Filter(new Common.Log { ID = events.First().LogID.Value })
+        repository.Common.AuditDataModifications.Filter(new Common.LogEntry { LogID = events.First().LogID.Value })
             .Select(info => new { info.Property, info.OldValue, info.NewValue, info.Modified, info.LogID })
             .Dump();
 	}
