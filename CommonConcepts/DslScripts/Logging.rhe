@@ -1,13 +1,33 @@
 ﻿Module Common
 {
-    // Recomended for reading the Log without locking the other server transactions. Data will include transations that are not yet committed.
+    // Recomended for reading the Log table without locking the other server transactions. Data will include transations that are not yet committed.
     SqlQueryable LogNoLock <LogNoLock.sql>
     {
         AllPropertiesFrom Common.Log;
         SqlDependsOn Common.Log;
+        
+        FilterBy LoggedItem '(repository, parameter) =>
+        {
+            return repository.Common.LogNoLock.Query()
+                .Where(item => item.TableName == parameter.TableName && item.ItemId == parameter.ItemId)
+                .ToList()
+                .OrderByDescending(item => item.Created)
+                .ThenBy(item => item.ID)
+                .ToArray();
+        }';
+        
+        FilterBy DeletedItems '(repository, parameter) =>
+        {
+            return repository.Common.LogNoLock.Query()
+                .Where(item => item.TableName == parameter.TableName && item.Action == "Delete")
+                .ToList()
+                .OrderByDescending(item => item.Created)
+                .ThenBy(item => item.ID)
+                .ToArray();
+        }';        
     }
     
-    // Recomended for reading the Log without locking the other server transactions. Data will include transations that are not yet committed.
+    // Recomended for reading the LogRelatedItem table without locking the other server transactions. Data will include transations that are not yet committed.
     SqlQueryable LogRelatedItemNoLock <LogRelatedItemNoLock.sql>
     {
         AllPropertiesFrom Common.LogRelatedItem;
@@ -57,6 +77,16 @@
         Guid ItemId;
     }
     
+    Parameter DeletedItems
+    {
+        ShortString TableName;
+    }
+    
+    Parameter LogEntry
+    {
+        Guid LogID;
+    }
+    
     Computed AuditRelatedEvents 'repository => { throw new Rhetos.UserException("Reading Common.AuditRelatedEvents without filter is not permitted. Use filter by Common.LoggedItem."); }'
     {
         Reference Log;
@@ -74,7 +104,7 @@
         
         FilterBy LoggedItem '(repository, parameter) =>
         {
-            /*AuditRelatedEvents LoggedItem Begin*/
+            /*AuditRelatedEvents Load Begin*/
             
             return repository.Common.RelatedEventsSource.Query()
                 .Where(item => item.RelatedToTable == parameter.TableName && item.RelatedToItem == parameter.ItemId)
@@ -100,7 +130,44 @@
                         Summary = LoggingUtility.GetSummary(item.Action, item.Description)
                     };
                     
-                    /*AuditRelatedEvents LoggedItem ProcessEvent*/
+                    /*AuditRelatedEvents Load ProcessEvent*/
+                    return relatedEvent;
+                })
+                .OrderByDescending(item => item.Created)
+                .ThenBy(item => item.Relation)
+                .ThenBy(item => item.TableName)
+                .ToArray();
+        }';
+        
+        FilterBy DeletedItems '(repository, parameter) =>
+        {
+            /*AuditRelatedEvents Load Begin*/
+            
+            return repository.Common.RelatedEventsSource.Query()
+                .Where(item => item.RelatedToTable == parameter.TableName && item.Action == "Delete")
+                .ToList()
+                .Select(item =>
+                {
+                    IUserInfo clientInfo = LoggingUtility.ExtractUserInfo(item.ContextInfo);
+                    
+                    var relatedEvent = new Common.AuditRelatedEvents
+                    {
+                        ID = item.ID,
+                        LogID = item.LogID,
+                        Created = item.Created,
+                        Action = item.Action,
+                        TableName = item.TableName,
+                        ItemId = item.ItemId,
+                        Description = item.Description,
+                        
+                        ClientUserName = clientInfo.UserName ?? item.UserName,
+                        ClientWorkstation = clientInfo.Workstation ?? item.Workstation,
+                        
+                        Relation = item.Relation,
+                        Summary = LoggingUtility.GetSummary(item.Action, item.Description)
+                    };
+                    
+                    /*AuditRelatedEvents Load ProcessEvent*/
                     return relatedEvent;
                 })
                 .OrderByDescending(item => item.Created)
@@ -156,13 +223,13 @@
         }
         
         // Provide only ID property of the Log instance for the filter parameter.
-        FilterBy Log '(repository, parameter) =>
+        FilterBy LogEntry '(repository, parameter) =>
         {
-            var log = repository.Common.LogNoLock.Filter(new[] { parameter.ID }).SingleOrDefault();
+            var log = repository.Common.LogNoLock.Filter(new[] { parameter.LogID.Value }).SingleOrDefault();
             if (log == null)
-                throw new Rhetos.UserException("There is no record in Common.Log with ID " + SqlUtility.GuidToString(parameter.ID) + ".");
+                throw new Rhetos.UserException("There is no record in Common.Log with ID " + SqlUtility.GuidToString(parameter.LogID.Value) + ".");
             var modifications = repository.Common.AuditDataModifications.Filter(new LoggedItem { TableName = log.TableName, ItemId = log.ItemId });
-            return modifications.Where(m => m.LogID == parameter.ID).ToArray();
+            return modifications.Where(m => m.LogID == parameter.LogID.Value).ToArray();
         }';
     }
     

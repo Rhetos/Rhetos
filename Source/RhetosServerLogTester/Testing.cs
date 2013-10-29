@@ -53,14 +53,14 @@ namespace RhetosServerLogTester
         public List<ServerCommandInfo[]> Commands;
         public List<ServerProcessingResult> Results;
 
-        private static LogEntry DeserializeLogEntry(string xml)
+        private static ServerCallInfo DeserializeServerCallInfo(string xml)
         {
             using (var sr = new StringReader(xml))
             using (var xmlReader = XmlReader.Create(sr))
             using (var xmlDict = XmlDictionaryReader.CreateDictionaryReader(xmlReader))
             {
-                var serializer = new DataContractSerializer(typeof(LogEntry), new[] { typeof(ServerCommandInfo[]), typeof(ServerProcessingResult) });
-                return serializer.ReadObject(xmlDict, false) as LogEntry;
+                var serializer = new DataContractSerializer(typeof(ServerCallInfo), new[] { typeof(ServerCommandInfo[]), typeof(ServerProcessingResult) });
+                return serializer.ReadObject(xmlDict, false) as ServerCallInfo;
             }
         }
 
@@ -71,10 +71,10 @@ namespace RhetosServerLogTester
 
             // There are two log formats ..
             var logEntries = XDocument.Descendants()
-                .Where(el => el.Name.LocalName == typeof (LogEntry).Name)
-                .Select(el => DeserializeLogEntry(el.ToString())).ToList();
+                .Where(el => el.Name.LocalName == typeof (ServerCallInfo).Name)
+                .Select(el => DeserializeServerCallInfo(el.ToString())).ToList();
             if (logEntries.Any())
-            // RhetosClient creates LogEntry nodes with ServerCallID to match commands and responses ..
+            // RhetosClient creates ServerCallInfo nodes with ServerCallID to match commands and responses ..
             {
                 var commandLogEntries = logEntries.Where(e => e.Entry is ServerCommandInfo[]);
                 Commands = commandLogEntries.Select(e => e.Entry as ServerCommandInfo[]).ToList();

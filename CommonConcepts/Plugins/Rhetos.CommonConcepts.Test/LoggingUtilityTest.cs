@@ -16,16 +16,16 @@ namespace Rhetos.CommonConcepts.Test
         [TestMethod]
         public void GetSummaryTest()
         {
-            Assert.AreEqual("Insert.", LoggingUtility.GetSummary("Insert", @"<PREVIOUS IDPredmeta=""201684"" IDPriloga=""-1"" TehnickaJedinicaID=""72894D9C-DC35-44F5-B4FE-2CA32CBD3DF1"" />"));
+            Assert.AreEqual("", LoggingUtility.GetSummary("Insert", @"<PREVIOUS IDPredmeta=""201684"" IDPriloga=""-1"" TehnickaJedinicaID=""72894D9C-DC35-44F5-B4FE-2CA32CBD3DF1"" />"));
 
-            Assert.AreEqual("Update: IDPredmeta, IDPriloga, TehnickaJedinicaID.", LoggingUtility.GetSummary("Update", @"<PREVIOUS IDPredmeta=""201684"" IDPriloga=""-1"" TehnickaJedinicaID=""72894D9C-DC35-44F5-B4FE-2CA32CBD3DF1"" />"));
-            Assert.AreEqual("Update.", LoggingUtility.GetSummary("Update", @"<PREVIOUS />"));
-            Assert.AreEqual("Update.", LoggingUtility.GetSummary("Update", @"<PREVIOUS  />"));
-            Assert.AreEqual("Update.", LoggingUtility.GetSummary("Update", @""));
-            Assert.AreEqual("Update.", LoggingUtility.GetSummary("Update", null));
-            Assert.AreEqual("Update: IDPredmeta, IDPriloga, TehnickaJedinicaID.", LoggingUtility.GetSummary("Update", @"<PREVIOUS IDPredmeta=""201684"" IDPriloga=""-1"" TehnickaJedinicaID=""72894D"));
-            Assert.AreEqual("Update: IDPredmeta, IDPriloga.", LoggingUtility.GetSummary("Update", @"<PREVIOUS IDPredmeta=""201684"" IDPriloga=""-1"""));
-            Assert.AreEqual("Update: IDPredmeta.", LoggingUtility.GetSummary("Update", @"<PREVIOUS IDPredmeta=""201684"" IDPriloga="));
+            Assert.AreEqual("IDPredmeta, IDPriloga, TehnickaJedinicaID", LoggingUtility.GetSummary("Update", @"<PREVIOUS IDPredmeta=""201684"" IDPriloga=""-1"" TehnickaJedinicaID=""72894D9C-DC35-44F5-B4FE-2CA32CBD3DF1"" />"));
+            Assert.AreEqual("", LoggingUtility.GetSummary("Update", @"<PREVIOUS />"));
+            Assert.AreEqual("", LoggingUtility.GetSummary("Update", @"<PREVIOUS  />"));
+            Assert.AreEqual("", LoggingUtility.GetSummary("Update", @""));
+            Assert.AreEqual("", LoggingUtility.GetSummary("Update", null));
+            Assert.AreEqual("IDPredmeta, IDPriloga, TehnickaJedinicaID", LoggingUtility.GetSummary("Update", @"<PREVIOUS IDPredmeta=""201684"" IDPriloga=""-1"" TehnickaJedinicaID=""72894D"));
+            Assert.AreEqual("IDPredmeta, IDPriloga", LoggingUtility.GetSummary("Update", @"<PREVIOUS IDPredmeta=""201684"" IDPriloga=""-1"""));
+            Assert.AreEqual("IDPredmeta", LoggingUtility.GetSummary("Update", @"<PREVIOUS IDPredmeta=""201684"" IDPriloga="));
         }
 
         [TestMethod]

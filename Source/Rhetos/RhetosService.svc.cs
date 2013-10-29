@@ -62,11 +62,11 @@ namespace Rhetos
             var stopwatch = Stopwatch.StartNew();
 
             var serverCallID = Guid.NewGuid();
-            _commandsLogger.Trace(() => XmlUtility.SerializeLogElementToXml(commands, serverCallID));
+            _commandsLogger.Trace(() => XmlUtility.SerializeServerCallInfoToXml(commands, serverCallID));
 
             var result = ExecuteInner(commands);
 
-            _commandResultsLogger.Trace(() => XmlUtility.SerializeLogElementToXml(result, serverCallID));
+            _commandResultsLogger.Trace(() => XmlUtility.SerializeServerCallInfoToXml(result, serverCallID));
             _performanceLogger.Write(stopwatch, "RhetosService: Executed " + string.Join(",", commands.Select(c => c.CommandName)) + ".");
 
             return result;

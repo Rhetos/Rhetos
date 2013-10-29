@@ -14,17 +14,15 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static string GetSummary(string action, string description)
         {
-            string summary = action;
+            string summary = "";
             if (action == "Update" && description != null)
             {
                 var columns = new List<string>();
                 foreach (var columnCapture in ColumnNamesRegex.Match(description).Groups[2].Captures)
                     columns.Add(((System.Text.RegularExpressions.Capture)columnCapture).Value);
                 if (columns.Count() > 0)
-                    summary += ": " + string.Join(", ", columns) + ".";
+                    summary = string.Join(", ", columns);
             }
-            if (summary.Length > 0 && summary.Last() != '.')
-                summary += ".";
             return summary;
         }
 

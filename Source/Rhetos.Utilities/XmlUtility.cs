@@ -93,7 +93,7 @@ namespace Rhetos.Utilities
             return DeserializeFromXml(element.MakeArrayType(), xml);
         }
 
-        public static string SerializeLogElementToXml<T>(T obj, Guid serverCallID)
+        public static string SerializeServerCallInfoToXml<T>(T obj, Guid serverCallID)
         {
             var sb = new StringBuilder();
             using (var xmlWriter = XmlWriter.Create(sb, new XmlWriterSettings
@@ -104,8 +104,8 @@ namespace Rhetos.Utilities
             }))
             using (var xmlDict = XmlDictionaryWriter.CreateDictionaryWriter(xmlWriter))
             {
-                var serializer = new DataContractSerializer(typeof(LogEntry), new [] {typeof(T)});
-                serializer.WriteObject(xmlDict, new LogEntry { Entry = obj, ServerCallID = serverCallID });
+                var serializer = new DataContractSerializer(typeof(ServerCallInfo), new [] {typeof(T)});
+                serializer.WriteObject(xmlDict, new ServerCallInfo { Entry = obj, ServerCallID = serverCallID });
                 xmlWriter.Flush();
                 return sb.ToString();
             }
@@ -113,7 +113,7 @@ namespace Rhetos.Utilities
     }
 
     [DataContract]
-    public class LogEntry
+    public class ServerCallInfo
     {
         [DataMember]
         public object Entry;

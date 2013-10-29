@@ -37,12 +37,8 @@ namespace CommonConcepts.Test
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log;" });
                 var repository = new Common.DomRepository(executionContext);
-
-                executionContext.SqlExecuter.ExecuteSql(new[]
-                    {
-                        "DELETE FROM Common.Log;"
-                    });
 
                 var newItem = new TestLogging.Simple { ID = Guid.NewGuid(), Count = -2, Name = "abc", Created = DateTime.Now };
                 repository.TestLogging.Simple.Insert(new[] { newItem });
@@ -91,12 +87,8 @@ namespace CommonConcepts.Test
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log;" });
                 var repository = new Common.DomRepository(executionContext);
-
-                executionContext.SqlExecuter.ExecuteSql(new[]
-                    {
-                        "DELETE FROM Common.Log;"
-                    });
 
                 var newItem = new TestLogging.Simple { ID = Guid.NewGuid(), Name = @"<>'""&;[]\\//()čćšđžČĆŠĐŽ]]>" };
                 repository.TestLogging.Simple.Insert(new[] { newItem });
@@ -125,12 +117,8 @@ namespace CommonConcepts.Test
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log;" });
                 var repository = new Common.DomRepository(executionContext);
-
-                executionContext.SqlExecuter.ExecuteSql(new[]
-                    {
-                        "DELETE FROM Common.Log;"
-                    });
 
                 var newItem = new TestLogging.Simple { ID = Guid.NewGuid(), Count = null, Name = null, Created = null };
                 repository.TestLogging.Simple.Insert(new[] { newItem });
@@ -169,12 +157,8 @@ namespace CommonConcepts.Test
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log;" });
                 var repository = new Common.DomRepository(executionContext);
-
-                executionContext.SqlExecuter.ExecuteSql(new[]
-                    {
-                        "DELETE FROM Common.Log;"
-                    });
 
                 var newItem = new TestLogging.Simple { ID = Guid.NewGuid(), Count = null, Name = null, Created = null };
                 repository.TestLogging.Simple.Insert(new[] { newItem });
@@ -243,7 +227,6 @@ namespace CommonConcepts.Test
                         "DELETE FROM TestLogging.Simple",
                         "DELETE FROM Common.Log",
                     });
-
                 var repository = new Common.DomRepository(executionContext);
                 var id = Guid.NewGuid();
 
@@ -290,25 +273,99 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void AuditRelatedEvents_Detail()
+        public void Log_LoggedItem()
         {
             using (var executionContext = new CommonTestExecutionContext())
             {
                 executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log" });
-
                 var repository = new Common.DomRepository(executionContext);
 
                 var parent1 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "p1" };
                 var parent2 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "p2" };
                 repository.TestLogging.Simple.Insert(new[] { parent1, parent2 });
 
-                System.Threading.Thread.Sleep(100);
+                System.Threading.Thread.Sleep(10);
 
                 var child1 = new TestLogging.Complex { ls = "c1", r = parent1 };
                 var child2 = new TestLogging.Complex { ls = "c2", r = parent2 };
                 repository.TestLogging.Complex.Insert(new[] { child1, child2 });
 
-                System.Threading.Thread.Sleep(100);
+                System.Threading.Thread.Sleep(10);
+
+                parent2.Name = "p2x";
+                repository.TestLogging.Simple.Update(new[] { parent2 });
+
+                executionContext.NHibernateSession.Clear();
+
+                var names = new Dictionary<Guid?, string> {
+                    { parent1.ID, parent1.Name },
+                    { parent2.ID, parent2.Name },
+                    { child1.ID, child1.ls },
+                    { child2.ID, child2.ls } };
+
+                Assert.AreEqual(
+                    @"Simple p2x Update <PREVIOUS Name=""p2"" />, Simple p2x Insert ",
+                    TestUtility.Dump(
+                        repository.Common.LogNoLock.Filter(new Common.LoggedItem { TableName = "TestLogging.Simple", ItemId = parent2.ID }),
+                        log => SqlUtility.GetShortName(log.TableName) + " " + names[log.ItemId] + " " + log.Action + " " + log.Description));
+            }
+        }
+
+
+        [TestMethod]
+        public void Log_DeletedItems()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log" });
+                var repository = new Common.DomRepository(executionContext);
+
+                var b1 = new TestLogging.Base { ID = Guid.NewGuid(), Name = "b1" };
+                repository.TestLogging.Base.Insert(new[] { b1 });
+
+                var s1 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "s1", Count = 1 };
+                var s2 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "s2", Count = 1 };
+                repository.TestLogging.Simple.Insert(new[] { s1, s2 });
+
+                var c1 = new TestLogging.Complex { ID = Guid.NewGuid(), ls = "c1", r = s1 };
+                var c2 = new TestLogging.Complex { ID = Guid.NewGuid(), ls = "c2", r = s2 };
+                repository.TestLogging.Complex.Insert(new[] { c1, c2 });
+
+                System.Threading.Thread.Sleep(10);
+
+                repository.TestLogging.Base.Delete(new[] { b1 });
+                repository.TestLogging.Simple.Delete(new[] { s1, s2 });
+
+                executionContext.NHibernateSession.Clear();
+
+                var names = new Dictionary<Guid, string> { { b1.ID, b1.Name }, { s1.ID, s1.Name }, { s2.ID, s2.Name }, { c1.ID, c1.ls }, { c2.ID, c2.ls } };
+
+                var result = repository.Common.LogNoLock.Filter(new Common.DeletedItems { TableName = "TestLogging.Simple" });
+                TestUtility.AssertAreEqualByLine(
+                    @"Simple s1, Simple s2",
+                    TestUtility.DumpSorted(result, item => SqlUtility.GetShortName(item.TableName) + " " + names[item.ItemId.Value]));
+            }
+        }
+
+        [TestMethod]
+        public void AuditRelatedEvents_Detail()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log" });
+                var repository = new Common.DomRepository(executionContext);
+
+                var parent1 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "p1" };
+                var parent2 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "p2" };
+                repository.TestLogging.Simple.Insert(new[] { parent1, parent2 });
+
+                System.Threading.Thread.Sleep(10);
+
+                var child1 = new TestLogging.Complex { ls = "c1", r = parent1 };
+                var child2 = new TestLogging.Complex { ls = "c2", r = parent2 };
+                repository.TestLogging.Complex.Insert(new[] { child1, child2 });
+
+                System.Threading.Thread.Sleep(10);
 
                 child1.r = parent2;
                 repository.TestLogging.Complex.Update(new[] { child1 });
@@ -345,30 +402,29 @@ namespace CommonConcepts.Test
             using (var executionContext = new CommonTestExecutionContext())
             {
                 executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log" });
-
                 var repository = new Common.DomRepository(executionContext);
 
                 var parent1 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "p1" };
                 var parent2 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "p2" };
                 repository.TestLogging.Simple.Insert(new[] { parent1, parent2 });
 
-                System.Threading.Thread.Sleep(100);
+                System.Threading.Thread.Sleep(10);
 
                 var child1 = new TestLogging.Complex { ls = "c1", r = parent1, r2 = parent1, r3 = parent1 };
                 var child2 = new TestLogging.Complex { ls = "c2", r = parent2, r2 = parent2, r3 = parent2 };
                 repository.TestLogging.Complex.Insert(new[] { child1, child2 });
 
-                System.Threading.Thread.Sleep(100);
+                System.Threading.Thread.Sleep(10);
 
                 child1.r = parent2;
                 repository.TestLogging.Complex.Update(new[] { child1 });
 
-                System.Threading.Thread.Sleep(100);
+                System.Threading.Thread.Sleep(10);
 
                 child1.r2 = parent2;
                 repository.TestLogging.Complex.Update(new[] { child1 });
 
-                System.Threading.Thread.Sleep(100);
+                System.Threading.Thread.Sleep(10);
 
                 child1.r3 = parent2;
                 repository.TestLogging.Complex.Update(new[] { child1 });
@@ -381,22 +437,22 @@ namespace CommonConcepts.Test
 
                 // c1 has multiple references to it's parent, so it will show multiple times in its log: as a Detail (by r) and as a SomeReferece (by r2).
                 Assert.AreEqual(
-                    "\r\nc1 Update: r2ID. SomeReference, c1 Update: rID. Detail, c1 Update: rID. SomeReference, c1 Insert. Detail, c1 Insert. SomeReference, p1 Insert. ",
+                    "\r\nc1 Update r2ID SomeReference, c1 Update rID Detail, c1 Update rID SomeReference, c1 Insert  Detail, c1 Insert  SomeReference, p1 Insert  ",
                     "\r\n" + TestUtility.Dump(
                         repository.Common.AuditRelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Simple", ItemId = parent1.ID }),
-                        log => names[log.ItemId] + " " + log.Summary + " " + log.Relation));
+                        log => names[log.ItemId] + " " + log.Action + " " + log.Summary + " " + log.Relation));
 
                 Assert.AreEqual(
-                    "\r\nc1 Update: r3ID. Detail, c1 Update: r3ID. SomeReference, c1 Update: r2ID. Detail, c1 Update: r2ID. SomeReference, c1 Update: rID. Detail, c2 Insert. Detail, c2 Insert. SomeReference, p2 Insert. ",
+                    "\r\nc1 Update r3ID Detail, c1 Update r3ID SomeReference, c1 Update r2ID Detail, c1 Update r2ID SomeReference, c1 Update rID Detail, c2 Insert  Detail, c2 Insert  SomeReference, p2 Insert  ",
                     "\r\n" + TestUtility.Dump(
                         repository.Common.AuditRelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Simple", ItemId = parent2.ID }),
-                        log => names[log.ItemId] + " " + log.Summary + " " + log.Relation));
+                        log => names[log.ItemId] + " " + log.Action + " " + log.Summary + " " + log.Relation));
 
                 Assert.AreEqual(
-                    "\r\nc1 Update: r3ID. , c1 Update: r2ID. , c1 Update: rID. , c1 Insert. ",
+                    "\r\nc1 Update r3ID , c1 Update r2ID , c1 Update rID , c1 Insert  ",
                     "\r\n" + TestUtility.Dump(
                         repository.Common.AuditRelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Complex", ItemId = child1.ID }),
-                        log => names[log.ItemId] + " " + log.Summary + " " + log.Relation));
+                        log => names[log.ItemId] + " " + log.Action + " " + log.Summary + " " + log.Relation));
             }
         }
 
@@ -406,20 +462,19 @@ namespace CommonConcepts.Test
             using (var executionContext = new CommonTestExecutionContext())
             {
                 executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log" });
-
                 var repository = new Common.DomRepository(executionContext);
 
                 var b1 = new TestLogging.Base { ID = Guid.NewGuid(), Name = "b1" };
                 var b2 = new TestLogging.Base { ID = Guid.NewGuid(), Name = "b2" };
                 repository.TestLogging.Base.Insert(new[] { b1, b2 });
 
-                System.Threading.Thread.Sleep(100);
+                System.Threading.Thread.Sleep(10);
 
                 var e1 = new TestLogging.Extension { ID = b1.ID, Name = "e1" };
                 var e2 = new TestLogging.Extension { ID = b2.ID, Name = "e2" };
                 repository.TestLogging.Extension.Insert(new[] { e1, e2 });
 
-                System.Threading.Thread.Sleep(100);
+                System.Threading.Thread.Sleep(10);
 
                 e2.Name = e2.Name + "x";
                 repository.TestLogging.Extension.Update(new[] { e2 });
@@ -454,30 +509,66 @@ namespace CommonConcepts.Test
             using (var executionContext = new CommonTestExecutionContext())
             {
                 executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log" });
-
                 var repository = new Common.DomRepository(executionContext);
 
                 var b1 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "b1", Count = 1 };
                 repository.TestLogging.Simple.Insert(new[] { b1 });
 
-                System.Threading.Thread.Sleep(100);
+                System.Threading.Thread.Sleep(10);
 
                 b1.Name = "bb1";
                 repository.TestLogging.Simple.Update(new[] { b1 });
 
+                System.Threading.Thread.Sleep(10);
                 b1.Name = null;
                 b1.Count = null;
                 repository.TestLogging.Simple.Update(new[] { b1 });
 
+                System.Threading.Thread.Sleep(10);
                 b1.Name = "bbbb1";
                 b1.Count = 111;
                 repository.TestLogging.Simple.Update(new[] { b1 });
 
                 Assert.AreEqual(
-                    "Update: Count, Name., Update: Count, Name., Update: Name., Insert.",
+                    "Update: Count, Name., Update: Count, Name., Update: Name., Insert: .",
                     TestUtility.Dump(
                         repository.Common.AuditRelatedEvents.Filter(new Common.LoggedItem { TableName = "TestLogging.Simple", ItemId = b1.ID }),
-                        log => log.Summary));
+                        log => log.Action + ": " + log.Summary + "."));
+            }
+        }
+
+        [TestMethod]
+        public void AuditRelatedEvents_DeletedItems()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Common.Log" });
+                var repository = new Common.DomRepository(executionContext);
+
+                var b1 = new TestLogging.Base { ID = Guid.NewGuid(), Name = "b1" };
+                repository.TestLogging.Base.Insert(new[] { b1 });
+
+                var s1 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "s1", Count = 1 };
+                var s2 = new TestLogging.Simple { ID = Guid.NewGuid(), Name = "s2", Count = 1 };
+                repository.TestLogging.Simple.Insert(new[] { s1, s2 });
+
+                var c1 = new TestLogging.Complex { ID = Guid.NewGuid(), ls = "c1", r = s1 };
+                var c2 = new TestLogging.Complex { ID = Guid.NewGuid(), ls = "c2", r = s2 };
+                repository.TestLogging.Complex.Insert(new[] { c1, c2 });
+
+                System.Threading.Thread.Sleep(10);
+
+                repository.TestLogging.Base.Delete(new[] { b1 });
+                repository.TestLogging.Simple.Delete(new[] { s1, s2 });
+
+                executionContext.NHibernateSession.Clear();
+
+                var names = new Dictionary<Guid, string> { { b1.ID, b1.Name }, { s1.ID, s1.Name }, { s2.ID, s2.Name }, {c1.ID, c1.ls }, { c2.ID, c2.ls } };
+
+                var result = repository.Common.AuditRelatedEvents.Filter(new Common.DeletedItems { TableName = "TestLogging.Simple" });
+                TestUtility.AssertAreEqualByLine(
+                    @"Complex c1, Complex c2, Simple s1, Simple s2",
+                    TestUtility.DumpSorted(result, item => SqlUtility.GetShortName(item.TableName) + " " + names[item.ItemId.Value]));
             }
         }
 
@@ -640,7 +731,7 @@ namespace CommonConcepts.Test
                 for (int i=0; i<3; i++)
                     Console.WriteLine(i.ToString() + ": " + logEntries[i].Description);
 
-                var result = repository.Common.AuditDataModifications.Filter(new Common.Log { ID = logEntries[1].ID });
+                var result = repository.Common.AuditDataModifications.Filter(new Common.LogEntry { LogID = logEntries[1].ID });
                 TestUtility.AssertAreEqualByLine("Count 1 1 False, Name s1 s11 True", ClearText(Report(result)));
             }
         }
