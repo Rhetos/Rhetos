@@ -784,13 +784,19 @@ namespace CommonConcepts.Test
                 Guid itemId2 = Guid.NewGuid();
                 string tableName = "NonExistant.Table";
 
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                var sqlInsertValues = new[]
                 {
-                    "INSERT INTO Common.Log (Action, TableName, ItemId, Description) VALUES ('Insert', " + SqlUtility.QuoteText(tableName) + ", " + SqlUtility.QuoteGuid(itemId1) + ", '<PREVIOUS />')",
-                    "INSERT INTO Common.Log (Action, TableName, ItemId, Description) VALUES ('Update', " + SqlUtility.QuoteText(tableName) + ", " + SqlUtility.QuoteGuid(itemId1) + ", '<PREVIOUS Code=\"c1\" />')",
-                    "INSERT INTO Common.Log (Action, TableName, ItemId, Description) VALUES ('Insert', " + SqlUtility.QuoteText(tableName) + ", " + SqlUtility.QuoteGuid(itemId2) + ", '<PREVIOUS />')",
-                    "INSERT INTO Common.Log (Action, TableName, ItemId, Description) VALUES ('Delete', " + SqlUtility.QuoteText(tableName) + ", " + SqlUtility.QuoteGuid(itemId2) + ", '<PREVIOUS Code=\"c2\" />')",
-                });
+                    "'Insert', " + SqlUtility.QuoteText(tableName) + ", " + SqlUtility.QuoteGuid(itemId1) + ", '<PREVIOUS />')",
+                    "'Update', " + SqlUtility.QuoteText(tableName) + ", " + SqlUtility.QuoteGuid(itemId1) + ", '<PREVIOUS Code=\"c1\" />')",
+                    "'Insert', " + SqlUtility.QuoteText(tableName) + ", " + SqlUtility.QuoteGuid(itemId2) + ", '<PREVIOUS />')",
+                    "'Delete', " + SqlUtility.QuoteText(tableName) + ", " + SqlUtility.QuoteGuid(itemId2) + ", '<PREVIOUS Code=\"c2\" />')",
+                };
+                foreach (var sql in sqlInsertValues)
+                {
+                    executionContext.SqlExecuter.ExecuteSql(new[] { "INSERT INTO Common.Log (Action, TableName, ItemId, Description) VALUES (" + sql });
+                    System.Threading.Thread.Sleep(10);
+                }
+
                 var repository = new Common.DomRepository(executionContext);
 
                 var result = repository.Common.AuditDataModifications.Filter(new Common.LoggedItem { TableName = tableName, ItemId = itemId1 });
@@ -803,6 +809,45 @@ namespace CommonConcepts.Test
                 expected = @"
                     Code c2 - True,
                     Code - c2 True";
+                TestUtility.AssertAreEqualByLine(ClearText(expected), ClearText(Report(result)));
+            }
+        }
+
+        [TestMethod]
+        public void AuditDataModifications_MissingInstance()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                Guid itemId1 = Guid.NewGuid();
+                Guid itemId2 = Guid.NewGuid();
+                string tableName = "TestLogging.Simple";
+
+                var sqlInsertValues = new[]
+                {
+                    "'Insert', " + SqlUtility.QuoteText(tableName) + ", " + SqlUtility.QuoteGuid(itemId1) + ", '<PREVIOUS />')",
+                    "'Update', " + SqlUtility.QuoteText(tableName) + ", " + SqlUtility.QuoteGuid(itemId1) + ", '<PREVIOUS Name=\"c1\" />')",
+                    "'Insert', " + SqlUtility.QuoteText(tableName) + ", " + SqlUtility.QuoteGuid(itemId2) + ", '<PREVIOUS />')",
+                    "'Delete', " + SqlUtility.QuoteText(tableName) + ", " + SqlUtility.QuoteGuid(itemId2) + ", '<PREVIOUS Name=\"c2\" />')",
+                };
+                foreach (var sql in sqlInsertValues)
+                {
+                    executionContext.SqlExecuter.ExecuteSql(new[] { "INSERT INTO Common.Log (Action, TableName, ItemId, Description) VALUES (" + sql });
+                    System.Threading.Thread.Sleep(10);
+                }
+
+                var repository = new Common.DomRepository(executionContext);
+
+                var result = repository.Common.AuditDataModifications.Filter(new Common.LoggedItem { TableName = tableName, ItemId = itemId1 });
+                // If the entity's instance is not found in the current table, it does not mean that the instance was deleted at the last log event (unless the action was "Delete").
+                var expected = @"
+                    Name c1 <Unknown> True,
+                    Name - c1 True";
+                TestUtility.AssertAreEqualByLine(ClearText(expected), ClearText(Report(result)));
+
+                result = repository.Common.AuditDataModifications.Filter(new Common.LoggedItem { TableName = tableName, ItemId = itemId2 });
+                expected = @"
+                    Name c2 - True,
+                    Name - c2 True";
                 TestUtility.AssertAreEqualByLine(ClearText(expected), ClearText(Report(result)));
             }
         }

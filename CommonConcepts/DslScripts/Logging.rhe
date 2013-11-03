@@ -199,7 +199,7 @@
                     .AddScalar("Description", NHibernate.NHibernateUtil.String)
                     .SetString("id", SqlUtility.GuidToString(parameter.ItemId.Value))
                     .List<string>()
-                    .SingleOrDefault();
+                    .Single();
             }
             catch
             {
