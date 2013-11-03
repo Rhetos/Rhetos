@@ -36,7 +36,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (DatePropertyInfo)conceptInfo;
             if (info.DataStructure is EntityInfo)
-                return PropertyDatabaseDefinition.AddColumn((EntityInfo) info.DataStructure, SqlUtility.Identifier(info.Name), Sql.Get("DatePropertyDatabaseDefinition_DataType"));
+                return PropertyDatabaseDefinition.AddColumn(info, SqlUtility.Identifier(info.Name), Sql.Get("DatePropertyDatabaseDefinition_DataType"));
             return "";
         }
 
@@ -44,7 +44,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (DatePropertyInfo)conceptInfo;
             if (info.DataStructure is EntityInfo)
-                return PropertyDatabaseDefinition.RemoveColumn((EntityInfo)info.DataStructure, SqlUtility.Identifier(info.Name));
+                return PropertyDatabaseDefinition.RemoveColumn(info, SqlUtility.Identifier(info.Name));
             return "";
         }
     }

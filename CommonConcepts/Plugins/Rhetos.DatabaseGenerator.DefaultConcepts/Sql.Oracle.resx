@@ -175,7 +175,7 @@ END;</value>
     <value>NVARCHAR2({0})</value>
   </data>
   <data name="PropertyDatabaseDefinition_AddColumn" xml:space="preserve">
-    <value>ALTER TABLE {0}.{1} ADD {2} {3} {4}</value>
+    <value>ALTER TABLE {0}.{1} ADD {2} {3} {4} {5} {6}</value>
   </data>
   <data name="PropertyDatabaseDefinition_RemoveColumn" xml:space="preserve">
     <value>ALTER TABLE {0}.{1} DROP COLUMN {2}</value>

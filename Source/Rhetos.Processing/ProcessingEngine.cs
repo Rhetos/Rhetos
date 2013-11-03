@@ -162,19 +162,19 @@ namespace Rhetos.Processing
                 return sqlException.Message;
 
             if (sqlException.Message.StartsWith("Cannot insert duplicate key"))
-                return "It not allowed to enter a duplicate record."; // TODO: Internationalization.
+                return "It is not allowed to enter a duplicate record."; // TODO: Internationalization.
 
             if (sqlException.Message.StartsWith("The DELETE statement conflicted with the REFERENCE constraint"))
-                return "It not allowed to delete a record that is referenced by other records."; // TODO: Internationalization.
+                return "It is not allowed to delete a record that is referenced by other records."; // TODO: Internationalization.
 
             if (sqlException.Message.StartsWith("The DELETE statement conflicted with the SAME TABLE REFERENCE constraint"))
-                return "It not allowed to delete a record that is referenced by other records."; // TODO: Internationalization.
+                return "It is not allowed to delete a record that is referenced by other records."; // TODO: Internationalization.
 
             if (sqlException.Message.StartsWith("The INSERT statement conflicted with the FOREIGN KEY constraint"))
-                return "It not allowed to enter the record. An entered value references nonexistent record."; // TODO: Internationalization.
+                return "It is not allowed to enter the record. An entered value references nonexistent record."; // TODO: Internationalization.
 
             if (sqlException.Message.StartsWith("The UPDATE statement conflicted with the FOREIGN KEY constraint"))
-                return "It not allowed to edit the record. An entered value references nonexistent record."; // TODO: Internationalization.
+                return "It is not allowed to edit the record. An entered value references nonexistent record."; // TODO: Internationalization.
 
             return null;
         }

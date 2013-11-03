@@ -38,7 +38,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (ShortStringPropertyInfo)conceptInfo;
             if (info.DataStructure is EntityInfo)
-                return PropertyDatabaseDefinition.AddColumn((EntityInfo)info.DataStructure, SqlUtility.Identifier(info.Name),
+                return PropertyDatabaseDefinition.AddColumn(info, SqlUtility.Identifier(info.Name),
                     Sql.Format("ShortStringPropertyDatabaseDefinition_DataType", ShortStringPropertyInfo.MaxLength));
             return "";
         }
@@ -47,7 +47,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (ShortStringPropertyInfo)conceptInfo;
             if (info.DataStructure is EntityInfo)
-                return PropertyDatabaseDefinition.RemoveColumn((EntityInfo)info.DataStructure, SqlUtility.Identifier(info.Name));
+                return PropertyDatabaseDefinition.RemoveColumn(info, SqlUtility.Identifier(info.Name));
 
             return "";
         }

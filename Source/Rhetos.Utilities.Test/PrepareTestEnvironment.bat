@@ -1,5 +1,5 @@
 REM ========================
-REM This script is used to prepare testing environment for CommonConcepts.Test.
+REM This script is used to prepare testing environment.
 REM This script is executed automatically in post build event, while build the Visual Studio project.
 REM ========================
 

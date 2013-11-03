@@ -45,7 +45,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (ReferencePropertyInfo)conceptInfo;
             if (IsSupported(info))
-                return PropertyDatabaseDefinition.AddColumn((EntityInfo) info.DataStructure, info.GetColumnName(), Sql.Get("ReferencePropertyDatabaseDefinition_DataType"));
+                return PropertyDatabaseDefinition.AddColumn(info, info.GetColumnName(), Sql.Get("ReferencePropertyDatabaseDefinition_DataType"));
             return "";
         }
 
@@ -53,7 +53,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (ReferencePropertyInfo)conceptInfo;
             if (IsSupported(info))
-                return PropertyDatabaseDefinition.RemoveColumn((EntityInfo)info.DataStructure, info.GetColumnName());
+                return PropertyDatabaseDefinition.RemoveColumn(info, info.GetColumnName());
             return "";
         }
     }

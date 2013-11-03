@@ -46,7 +46,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             SqlUtility.Identifier(info.Name);
 
             if (info.DataStructure is EntityInfo)
-                return PropertyDatabaseDefinition.AddColumn((EntityInfo)info.DataStructure, SqlUtility.Identifier(info.Name), Sql.Get("MoneyPropertyDatabaseDefinition_DataType"),
+                return PropertyDatabaseDefinition.AddColumn(info, SqlUtility.Identifier(info.Name), Sql.Get("MoneyPropertyDatabaseDefinition_DataType"),
                     Sql.Format("MoneyPropertyDatabaseDefinition_CreateCheckConstraint", ConstraintName(info), SqlUtility.Identifier(info.Name)));
             return "";
         }
@@ -61,7 +61,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                         SqlUtility.Identifier(info.DataStructure.Name),
                         ConstraintName(info))
                     + Environment.NewLine
-                    + PropertyDatabaseDefinition.RemoveColumn((EntityInfo)info.DataStructure, SqlUtility.Identifier(info.Name));
+                    + PropertyDatabaseDefinition.RemoveColumn(info, SqlUtility.Identifier(info.Name));
             return "";
         }
     }

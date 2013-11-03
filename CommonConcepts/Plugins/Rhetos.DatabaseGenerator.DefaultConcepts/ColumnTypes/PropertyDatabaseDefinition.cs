@@ -35,21 +35,28 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     /// </summary>
     public static class PropertyDatabaseDefinition
     {
-        public static string AddColumn(EntityInfo entityInfo, string columnName, string type, string options = "")
+        /// <summary>Ordering of options may be important./summary>
+        public static readonly SqlTag<PropertyInfo> Options1Tag = "Options1";
+        /// <summary>Ordering of options may be important./summary>
+        public static readonly SqlTag<PropertyInfo> Options2Tag = "Options2";
+
+        public static string AddColumn(PropertyInfo property, string columnName, string type, string options = "")
         {
             return Sql.Format("PropertyDatabaseDefinition_AddColumn",
-                SqlUtility.Identifier(entityInfo.Module.Name),
-                SqlUtility.Identifier(entityInfo.Name),
+                SqlUtility.Identifier(property.DataStructure.Module.Name),
+                SqlUtility.Identifier(property.DataStructure.Name),
                 SqlUtility.CheckIdentifier(columnName),
                 type,
-                options);
+                options,
+                Options1Tag.Evaluate(property),
+                Options2Tag.Evaluate(property));
         }
 
-        public static string RemoveColumn(EntityInfo entityInfo, string columnName)
+        public static string RemoveColumn(PropertyInfo property, string columnName)
         {
-            return Sql.Format("PropertyDatabaseDefinition_RemoveColumn", 
-                SqlUtility.Identifier(entityInfo.Module.Name),
-                SqlUtility.Identifier(entityInfo.Name),
+            return Sql.Format("PropertyDatabaseDefinition_RemoveColumn",
+                SqlUtility.Identifier(property.DataStructure.Module.Name),
+                SqlUtility.Identifier(property.DataStructure.Name),
                 SqlUtility.CheckIdentifier(columnName));
         }
     }
