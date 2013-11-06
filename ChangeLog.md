@@ -1,9 +1,27 @@
+0.9.12 (2013-11-06)
+-------------------
+
+New features:
+
+* Implemented tracking of related events on *Common.Log*: *AuditRelatedEvents* data structure can be used to get all logged events of a given entity, including events of its detail entities and extensions. *DeletedItems* filter will retrieve deleted instances.
+* *AuditDataModifications* data structure reconstructs old values of a given entity from *Common.Log* for reporting.
+ 
+Internal improvements:
+
+* Bugfix: Saving an entity with Lock or History concept sometimes resulted with an NHibernate.LazyInitializationException error.
+* Bugfix: Updating ActiveItem in history should not create new entry in Changes table.
+* Bugfix: DeployPackages sometimes uses old migration data in DataMigrationRestore.
+* Bugfix: FK_AppliedConceptDependsOn_DependsOn error on DeployPackages.
+* NHibernate updated to version 3.3.3 SP1 (HqlTreeBuilder.Constant IList<X> issue).
+* Improved ORM DateTime precision from seconds to milliseconds.
+
+
 0.9.11 (2013-09-25)
 -------------------
 
 New features:
 
-* New concept **AutodetectSqlDependencies** automatically detects and generates dependencies (**SqlDependsOn**) for SqlQueryable, SqlView, SqlFunction, SqlProcedure, SqlTrigger and LegacyEntity view. It may be applied to any of those objects or to a whole module.
+* New concept: **AutodetectSqlDependencies** automatically detects and generates dependencies (**SqlDependsOn**) for SqlQueryable, SqlView, SqlFunction, SqlProcedure, SqlTrigger and LegacyEntity view. It may be applied to any of those objects or to a whole module.
 
 Internal improvements:
 
