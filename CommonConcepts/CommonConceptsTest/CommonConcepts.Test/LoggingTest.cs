@@ -573,8 +573,7 @@ namespace CommonConcepts.Test
             {
                 var repository = new Common.DomRepository(executionContext);
                 TestUtility.ShouldFail(
-                    () => repository.Common.AuditDataModifications.All(),
-                    "", "without filter is not permitted");
+                    () => repository.Common.AuditDataModifications.All(), "without filter is not permitted");
             }
         }
 

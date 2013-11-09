@@ -91,7 +91,7 @@ namespace CommonConcepts.Test
                     "INSERT INTO TestSqlWorkarounds.Person (Name) VALUES ('User" + x.ToString() +"')"));
 
                 var repository = new Common.DomRepository(executionContext);
-                TestUtility.ShouldFail(() => repository.TestSqlWorkarounds.PersonInfo.All(), "Filter must be used", "filter", "PersonFilter", "must be used");
+                TestUtility.ShouldFail(() => repository.TestSqlWorkarounds.PersonInfo.All(), "filter", "PersonFilter", "must be used");
 
                 var result = repository.TestSqlWorkarounds.PersonInfo.Filter(new TestSqlWorkarounds.PersonFilter { NamePattern = "%1%", LimitResultCount = 4 });
                 Assert.AreEqual("User1 5, User10 6, User100 7, User11 6", TestUtility.Dump(result, item => item.Person.Name + " " + item.NameLength));
@@ -165,7 +165,7 @@ namespace CommonConcepts.Test
 
                 var ex = TestUtility.ShouldFail(
                     () => repository.TestSqlWorkarounds.SqlUserError.Insert(new[] { new TestSqlWorkarounds.SqlUserError() }),
-                    "", "custom user message");
+                    "custom user message");
 
                 Assert.AreEqual("UserException", ex.GetType().Name);
             }

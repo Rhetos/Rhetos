@@ -236,12 +236,12 @@ namespace Rhetos.DatabaseGenerator.Test
         {
             var concepts = new[] { MockSqlExecuter.ConceptApplication3 };
 
+            // ConceptApplication3 references DependencyCa2, which is not provided to the repository
             TestUtility.ShouldFail(() =>
                 {
                     var conceptApplicationRepository = TestConceptApplicationRepository(concepts);
                     var appliedConcepts = conceptApplicationRepository.Load();
                 },
-                "ConceptApplication3 references DependencyCa2, which is not provided to the repository.",
                 MockSqlExecuter.DependencyCa2.Id.ToString());
         }
 

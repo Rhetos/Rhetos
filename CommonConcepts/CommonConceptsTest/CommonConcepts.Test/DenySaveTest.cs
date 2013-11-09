@@ -49,7 +49,7 @@ namespace CommonConcepts.Test
                 repository.TestDenySave.Simple.Insert(CreateSimple(3));
                 AssertData(repository, "s3");
 
-                TestUtility.ShouldFail(() => repository.TestDenySave.Simple.Insert(CreateSimple(300)), "insert invalid data", "larger than 100");
+                TestUtility.ShouldFail(() => repository.TestDenySave.Simple.Insert(CreateSimple(300)), "larger than 100");
             }
         }
 
@@ -61,7 +61,7 @@ namespace CommonConcepts.Test
                 executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestDenySave.Simple;" });
                 var repository = new Common.DomRepository(executionContext);
 
-                TestUtility.ShouldFail(() => repository.TestDenySave.Simple.Insert(CreateSimple(3, 300)), "insert valid and invalid data", "larger than 100");
+                TestUtility.ShouldFail(() => repository.TestDenySave.Simple.Insert(CreateSimple(3, 300)), "larger than 100");
             }
         }
 
@@ -83,7 +83,7 @@ namespace CommonConcepts.Test
                 AssertData(repository, "s3b");
                 s3.Name = "s3c";
                 s3.Count = 300;
-                TestUtility.ShouldFail(() => repository.TestDenySave.Simple.Update(new[] { s3 }), "update invalid data", "larger than 100");
+                TestUtility.ShouldFail(() => repository.TestDenySave.Simple.Update(new[] { s3 }), "larger than 100");
             }
         }
 
@@ -107,7 +107,7 @@ namespace CommonConcepts.Test
                 AssertData(repository, "s2, s3b");
                 s3.Name = "s3d";
                 s3.Count = 333;
-                TestUtility.ShouldFail(() => repository.TestDenySave.Simple.Save(CreateSimple(5), new[] { s3 }, new[] { s2 }), "update invalid data with valid insert and delete", "larger than 100");
+                TestUtility.ShouldFail(() => repository.TestDenySave.Simple.Save(CreateSimple(5), new[] { s3 }, new[] { s2 }), "larger than 100");
             }
         }
 
@@ -131,7 +131,7 @@ namespace CommonConcepts.Test
                 AssertData(repository, "s2, s3b");
                 s3.Name = "s3e";
                 s3.Count = 33;
-                TestUtility.ShouldFail(() => repository.TestDenySave.Simple.Save(CreateSimple(555), new[] { s3 }, new[] { s2 }), "insert invalid data with valid update and delete", "larger than 100");
+                TestUtility.ShouldFail(() => repository.TestDenySave.Simple.Save(CreateSimple(555), new[] { s3 }, new[] { s2 }), "larger than 100");
             }
         }
     }

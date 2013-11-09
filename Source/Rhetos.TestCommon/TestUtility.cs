@@ -30,7 +30,7 @@ namespace Rhetos.TestCommon
 {
     public static class TestUtility
     {
-        public static Exception ShouldFail(Action action, string reason, params string[] expectedErrorContent)
+        public static Exception ShouldFail(Action action, params string[] expectedErrorContent)
         {
             Exception exception = null;
             string message = null;
@@ -49,8 +49,8 @@ namespace Rhetos.TestCommon
 
                 message = ex.GetType().Name + ": " + message;
             }
-            Assert.IsNotNull(exception, "Exception did not happen. " + reason);
-            AssertContains(message, expectedErrorContent, "Exception message does not contain the pattern. " + reason);
+            Assert.IsNotNull(exception, "Expected exception did not happen.");
+            AssertContains(message, expectedErrorContent, "Exception message text is incorrect.");
             return exception;
         }
 
@@ -59,6 +59,9 @@ namespace Rhetos.TestCommon
         /// </summary>
         public static void AssertContains(string text, string[] patterns, string message = null)
         {
+            if (patterns.Any(string.IsNullOrEmpty))
+                throw new ArgumentException("Given list of patterns contains an empty string.");
+
             Console.WriteLine("[AssertContains] Text: '" + text + "'.");
 
             foreach (var pattern in patterns)

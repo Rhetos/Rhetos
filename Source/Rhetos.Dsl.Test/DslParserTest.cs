@@ -302,16 +302,16 @@ namespace Rhetos.Dsl.Test
         {
             DslParserParse("simple a b;");
 
-            TestUtility.ShouldFail(() => DslParserParse("simple a"), "missing second parameter",
+            TestUtility.ShouldFail(() => DslParserParse("simple a"), // missing second parameter
                 "simple", "end of the DSL script", TestDslSource.TestScriptName, "line 1", "column 1", "Cannot read the value of Data");
 
-            TestUtility.ShouldFail(() => DslParserParse("simple a;"), "missing second parameter",
+            TestUtility.ShouldFail(() => DslParserParse("simple a;"), // missing second parameter
                 "simple", "unexpected", "';'", TestDslSource.TestScriptName, "line 1", "column 1", "Cannot read the value of Data");
 
-            TestUtility.ShouldFail(() => DslParserParse("{"), "invalid syntax",
+            TestUtility.ShouldFail(() => DslParserParse("{"), // invalid syntax
                 TestDslSource.TestScriptName, "line 1", "column 1");
 
-            TestUtility.ShouldFail(() => DslParserParse("simple a b"), "missing semicolon",
+            TestUtility.ShouldFail(() => DslParserParse("simple a b"), // missing semicolon
                 "simple", "Expected \";\" or \"{\"", TestDslSource.TestScriptName, "line 1", "column 11");
         }
 
@@ -436,9 +436,10 @@ namespace Rhetos.Dsl.Test
         {
             string dsl = "alterror1;";
             var grammar = new IConceptInfo[] { new AlternativeError1() };
+            
+            // Parsing a concept with invalid DeclareNonparsableProperties
             TestUtility.ShouldFail(
                 () => { var concepts = new TestDslParser(dsl, grammar).ParsedConcepts; },
-                "Parsing a concept with invalid DeclareNonparsableProperties",
                 "AlternativeError1", "invalid implementation", "Names", "does not exist", "DeclareNonparsableProperties");
         }
     }

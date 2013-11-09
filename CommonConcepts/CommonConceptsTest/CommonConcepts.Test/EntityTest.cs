@@ -374,7 +374,6 @@ namespace CommonConcepts.Test
                         item.Name = new string('x', 257);
                         repository.TestEntity.Principal.Update(new[] { item });
                     },
-                    "too long",
                     "Principal", "Name", "256");
             }
         }

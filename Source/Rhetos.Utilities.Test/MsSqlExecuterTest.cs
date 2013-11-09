@@ -86,7 +86,6 @@ namespace Rhetos.Utilities.Test
         public void ExecuteSql_SimpleSqlError()
         {
             TestUtility.ShouldFail(() => GetSqlExecuter().ExecuteSql(new[] { "raiserror('aaa', 16, 100)" }),
-                "Manually raised error",
                 "aaa", "16", "100");
         }
 
@@ -114,7 +113,7 @@ raiserror('fff', 18, 118)"
 
             var expectedStrings = new[] { "aaa", "bbb", "ccc", "ddd", "eee", "fff", "101", "116", "117", "118" }; // Error of severity 0 and 10 (states "100" and "110") do not require detailed error message.
 
-            TestUtility.ShouldFail(() => sqlExecuter.ExecuteSql(commands), "Multiple info messages and errors", expectedStrings);
+            TestUtility.ShouldFail(() => sqlExecuter.ExecuteSql(commands), expectedStrings);
         }
 
         [TestMethod()]
@@ -129,7 +128,6 @@ raiserror('fff', 18, 118)"
 
             MsSqlExecuter sqlExecuter = new MsSqlExecuter(nonexistentDatabaseConnectionString, new ConsoleLogProvider(), new NullUserInfo());
             TestUtility.ShouldFail(() => sqlExecuter.ExecuteSql(new[] { "print 123" }),
-                "Connecting to invalid database name.",
                 connectionStringBuilder.DataSource, connectionStringBuilder.InitialCatalog, Environment.UserName);
         }
 

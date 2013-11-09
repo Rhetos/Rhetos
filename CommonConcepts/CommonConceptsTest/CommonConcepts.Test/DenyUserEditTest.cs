@@ -74,8 +74,7 @@ namespace CommonConcepts.Test
 
                 var simple = new TestDenyUserEdit.Simple { Editable = "a", NonEditable = "x" };
                 TestUtility.ShouldFail(() => repository.TestDenyUserEdit.Simple.Save(new[] { simple }, null, null, true),
-                    "insert noneditable",
-                    "Simple", "NonEditable", "not allowed");
+					"Simple", "NonEditable", "not allowed");
             }
         }
 
@@ -102,8 +101,7 @@ namespace CommonConcepts.Test
 
                 simple.NonEditable = "y";
                 TestUtility.ShouldFail(() => repository.TestDenyUserEdit.Simple.Save(null, new[] { simple }, null, true),
-                    "update noneditable",
-                    "Simple", "NonEditable", "not allowed");
+					"Simple", "NonEditable", "not allowed");
             }
         }
 
@@ -124,8 +122,7 @@ namespace CommonConcepts.Test
 
                 var simple = new TestDenyUserEdit.Simple { ID = simpleID, Editable = "a", NonEditable = null };
                 TestUtility.ShouldFail(() => repository.TestDenyUserEdit.Simple.Save(null, new[] { simple }, null, true),
-                    "update noneditable",
-                    "Simple", "NonEditable", "not allowed");
+					"Simple", "NonEditable", "not allowed");
             }
         }
 
@@ -146,8 +143,7 @@ namespace CommonConcepts.Test
 
                 var simple = new TestDenyUserEdit.Simple { ID = simpleID, Editable = "a", NonEditable = "x" };
                 TestUtility.ShouldFail(() => repository.TestDenyUserEdit.Simple.Save(null, new[] { simple }, null, true),
-                    "update noneditable",
-                    "Simple", "NonEditable", "not allowed");
+					"Simple", "NonEditable", "not allowed");
             }
         }
 
@@ -168,8 +164,7 @@ namespace CommonConcepts.Test
 
                 var simple = new TestDenyUserEdit.Simple { Editable = "a", NonEditableReference = parent };
                 TestUtility.ShouldFail(() => repository.TestDenyUserEdit.Simple.Save(new[] { simple }, null, null, true),
-                    "insert noneditable reference",
-                    "Simple", "NonEditableReference", "not allowed");
+					"Simple", "NonEditableReference", "not allowed");
             }
         }
 
@@ -190,8 +185,7 @@ namespace CommonConcepts.Test
 
                 var simple = new TestDenyUserEdit.Simple { Editable = "a", NonEditableReferenceID = parent.ID };
                 TestUtility.ShouldFail(() => repository.TestDenyUserEdit.Simple.Save(new[] { simple }, null, null, true),
-                    "insert noneditable reference",
-                    "Simple", "NonEditableReference", "not allowed");
+					"Simple", "NonEditableReference", "not allowed");
             }
         }
 
@@ -204,7 +198,7 @@ namespace CommonConcepts.Test
 
                 TestUtility.ShouldFail(
                     () => repository.TestDenyUserEdit.Hardcoded.Save(new[] { new TestDenyUserEdit.Hardcoded { Name = "abc" } }, null, null, true),
-                    "", "It is not allowed to directly modify TestDenyUserEdit.Hardcoded.");
+                    "It is not allowed to directly modify TestDenyUserEdit.Hardcoded.");
             }
         }
 
@@ -222,7 +216,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("abc", item.Name);
                 TestUtility.ShouldFail(
                     () => repository.TestDenyUserEdit.Hardcoded.Save(null, null, new[] { item }, true),
-                    "", "It is not allowed to directly modify TestDenyUserEdit.Hardcoded.");
+                    "It is not allowed to directly modify TestDenyUserEdit.Hardcoded.");
             }
         }
 
@@ -241,7 +235,7 @@ namespace CommonConcepts.Test
                 item.Name += "x";
                 TestUtility.ShouldFail(
                     () => repository.TestDenyUserEdit.Hardcoded.Save(null, new[] { item }, null, true),
-                    "", "It is not allowed to directly modify TestDenyUserEdit.Hardcoded.");
+                    "It is not allowed to directly modify TestDenyUserEdit.Hardcoded.");
             }
         }
     }

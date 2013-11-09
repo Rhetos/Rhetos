@@ -69,12 +69,12 @@ namespace CommonConcepts.Test
                         LockFinish = DateTime.Now.AddSeconds(10)
                     };
                 lockRepos.Insert(new[] { myLock });
-                TestUtility.ShouldFail(() => articleRepos.Update(articles), "updating item locked by other user", id2.ToString(), "OtherUser");
+                TestUtility.ShouldFail(() => articleRepos.Update(articles), id2.ToString(), "OtherUser");
 
                 myLock.UserName = executionContext.UserInfo.UserName;
                 myLock.Workstation = "OtherWorkstation";
                 lockRepos.Update(new[] { myLock });
-                TestUtility.ShouldFail(() => articleRepos.Update(articles), "updating item locked at other workstation", id2.ToString(), "OtherWorkstation");
+                TestUtility.ShouldFail(() => articleRepos.Update(articles), id2.ToString(), "OtherWorkstation");
 
                 myLock.Workstation = executionContext.UserInfo.Workstation;
                 lockRepos.Update(new[] { myLock });
@@ -132,12 +132,12 @@ namespace CommonConcepts.Test
                     LockFinish = DateTime.Now.AddSeconds(10)
                 };
                 lockRepos.Insert(new[] { myLock });
-                TestUtility.ShouldFail(() => articleRepos.Update(articles), "Updating item where PARENT is locked by other user", parentId0.ToString(), "OtherUser");
+                TestUtility.ShouldFail(() => articleRepos.Update(articles), parentId0.ToString(), "OtherUser");
 
                 myLock.UserName = executionContext.UserInfo.UserName;
                 myLock.Workstation = "OtherWorkstation";
                 lockRepos.Update(new[] { myLock });
-                TestUtility.ShouldFail(() => articleRepos.Update(articles), "Updating item where PARENT is locked by other user", parentId0.ToString(), "OtherWorkstation");
+                TestUtility.ShouldFail(() => articleRepos.Update(articles), parentId0.ToString(), "OtherWorkstation");
 
                 myLock.UserName = executionContext.UserInfo.UserName;
                 myLock.Workstation = executionContext.UserInfo.Workstation;
@@ -152,9 +152,9 @@ namespace CommonConcepts.Test
                 articles[0].Parent = groups[1];
 
                 Assert.IsTrue(articles.All(item => item.Parent.ID != myLock.ResourceID), "New values do not contain locked parents, but old values do");
-                TestUtility.ShouldFail(() => articleRepos.Update(articles), "Updating item where OLD parent is locked", parentId0.ToString(), "OtherUser");
+                TestUtility.ShouldFail(() => articleRepos.Update(articles), parentId0.ToString(), "OtherUser");
 
-                TestUtility.ShouldFail(() => articleRepos.Delete(new[] { articles[0] }), "Deleting item where OLD parent is locked", parentId0.ToString(), "OtherUser");
+                TestUtility.ShouldFail(() => articleRepos.Delete(new[] { articles[0] }), parentId0.ToString(), "OtherUser");
 
                 myLock.UserName = executionContext.UserInfo.UserName;
                 lockRepos.Update(new[] { myLock });
@@ -166,7 +166,7 @@ namespace CommonConcepts.Test
                 myLock.UserName = "OtherUser";
                 lockRepos.Update(new[] { myLock });
                 var newArticle = new TestPessimisticLocking.Article { ID = Guid.NewGuid(), Name = "ccc", Parent = groups[0] };
-                TestUtility.ShouldFail(() => articleRepos.Insert(new[] { newArticle }), "Inserting item where NEW parent is locked", parentId0.ToString(), "OtherUser");
+                TestUtility.ShouldFail(() => articleRepos.Insert(new[] { newArticle }), parentId0.ToString(), "OtherUser");
 
                 myLock.UserName = executionContext.UserInfo.UserName;
                 lockRepos.Update(new[] { myLock });
@@ -213,7 +213,7 @@ namespace CommonConcepts.Test
                 };
                 lockRepos.Insert(new[] { myLock });
                 article.Name = article.Name + "1";
-                TestUtility.ShouldFail(() => articleRepos.Update(new[] { article }), "Active lock", article.ID.ToString(), "OtherUser");
+                TestUtility.ShouldFail(() => articleRepos.Update(new[] { article }), article.ID.ToString(), "OtherUser");
 
                 myLock.LockFinish = DateTime.Now.AddSeconds(-10);
                 lockRepos.Update(new[] { myLock });
@@ -233,7 +233,7 @@ namespace CommonConcepts.Test
                 };
                 lockRepos.Insert(new[] { myLock });
                 article.Name = article.Name + "2";
-                TestUtility.ShouldFail(() => articleRepos.Update(new[] { article }), "Active parent lock", group.ID.ToString(), "OtherUser");
+                TestUtility.ShouldFail(() => articleRepos.Update(new[] { article }), group.ID.ToString(), "OtherUser");
 
                 myLock.LockFinish = DateTime.Now.AddSeconds(-10);
                 lockRepos.Update(new[] { myLock });
@@ -312,7 +312,7 @@ namespace CommonConcepts.Test
                 repository.Common.ExclusiveLock.Insert(new[] { oldLock });
 
                 TestUtility.ShouldFail(() => TestSetLock(new Common.SetLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = article.ID }, repository, executionContext.UserInfo),
-                    "Lock by other user already exists", "OtherUser", article.ID.ToString());
+                    "OtherUser", article.ID.ToString());
             }
         }
 

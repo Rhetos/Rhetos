@@ -134,7 +134,7 @@ PK_Clone3.ID
                 Assert.AreEqual("c b p", readClone3());
 
                 c.Name = null;
-                TestUtility.ShouldFail(() => repository.TestCloning.Clone3.Update(new[] { c }), "Updating Name property to null", "required", "Name");
+                TestUtility.ShouldFail(() => repository.TestCloning.Clone3.Update(new[] { c }), "required", "Name");
             }
         }
     }

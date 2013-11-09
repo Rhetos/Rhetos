@@ -45,7 +45,7 @@ namespace CommonConcepts.Test
                 var pd = repository.TestMultipleLock.PassDependency.All().SingleOrDefault();
                 var s1 = new TestMultipleLock.Simple { ID = Guid.NewGuid(), PassDependency = pd, UserName = "test", Pass = "1.a" };
 
-                TestUtility.ShouldFail(() => repository.TestMultipleLock.Simple.Insert(new[] { s1 }), "Password length", "Pass is too short.");
+                TestUtility.ShouldFail(() => repository.TestMultipleLock.Simple.Insert(new[] { s1 }), "Pass is too short.");
             }
         }
 
@@ -62,7 +62,7 @@ namespace CommonConcepts.Test
                 var repository = new Common.DomRepository(executionContext);
                 var pd = repository.TestMultipleLock.PassDependency.All().SingleOrDefault();
                 var s1 = new TestMultipleLock.Simple { ID = Guid.NewGuid(), PassDependency = pd, UserName = "test", Pass = "123467" };
-                TestUtility.ShouldFail(() => repository.TestMultipleLock.Simple.Insert(new[] { s1 }), "Password contains only numeric", "Pass is not valid.");
+                TestUtility.ShouldFail(() => repository.TestMultipleLock.Simple.Insert(new[] { s1 }), "Pass is not valid.");
             }
         }
 
@@ -98,7 +98,7 @@ namespace CommonConcepts.Test
                 var repository = new Common.DomRepository(executionContext);
                 var pd = repository.TestMultipleLock.PassDependency.All().SingleOrDefault();
                 var s1 = new TestMultipleLock.Simple { ID = Guid.NewGuid(), PassDependency = pd, UserName = "test", Pass = "123467..;atestaaas" };
-                TestUtility.ShouldFail(() => repository.TestMultipleLock.Simple.Insert(new[] { s1 }), "Pass cannot contain value of user.", "Pass cannot contain UserName.");
+                TestUtility.ShouldFail(() => repository.TestMultipleLock.Simple.Insert(new[] { s1 }), "Pass cannot contain UserName.");
             }
         }
     }

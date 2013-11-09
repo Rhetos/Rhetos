@@ -159,11 +159,11 @@ namespace CommonConcepts.Test
 
                 var documents = repository.Test9.Document;
 
-                TestUtility.ShouldFail(() => documents.Insert(new[] { new Test9.Document { ID = d1ID, Name = "d1" } }), "Inserting already inserted document.", "existing");
+                TestUtility.ShouldFail(() => documents.Insert(new[] { new Test9.Document { ID = d1ID, Name = "d1" } }), "existing");
                 Assert.AreEqual("d1:1, d2:2", ReportDocumentCreationInfo(repository), "creation info of previously inserted documents shoud not be changed");
 
                 // TODO: Instead of using the wrapper 'Save' function to check data validations, we should handle insert/update/delete events (NHibernate event listener) for faster and more reliable validations.
-                TestUtility.ShouldFail(() => documents.Update(new[] { new Test9.Document { ID = Guid.NewGuid(), Name = "d3" } }), "Updating nonexisting document.");
+                TestUtility.ShouldFail(() => documents.Update(new[] { new Test9.Document { ID = Guid.NewGuid(), Name = "d3" } }));
                 Assert.AreEqual("d1:1, d2:2", ReportDocumentCreationInfo(repository), "creation info of previously inserted documents shoud not be changed");
             }
         }

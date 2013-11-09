@@ -163,7 +163,7 @@ namespace CommonConcepts.Test
                 var h2 = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "h2", Parent2 = null };
 
                 TestUtility.ShouldFail(() => repository.TestHierarchy.Simple2.Insert(new[] { h1, h2 }),
-                    "two roots", "root record", "TestHierarchy.Simple2", "Parent2");
+                    "root record", "TestHierarchy.Simple2", "Parent2");
             }
         }
 
@@ -212,7 +212,7 @@ namespace CommonConcepts.Test
                 var leaf = repository.TestHierarchy.Simple.Query().Where(item => item.Name == "b").Single();
                 root.Parent = leaf;
 
-                TestUtility.ShouldFail(() => repository.TestHierarchy.Simple.Update(new[] { root }), "circular reference", "not allowed", "circular dependency");
+                TestUtility.ShouldFail(() => repository.TestHierarchy.Simple.Update(new[] { root }), "not allowed", "circular dependency");
             }
         }
 
@@ -229,7 +229,7 @@ namespace CommonConcepts.Test
                 var leaf = repository.TestHierarchy.Simple.Query().Where(item => item.Name == "d").Single();
                 root.Parent = leaf;
 
-                TestUtility.ShouldFail(() => repository.TestHierarchy.Simple.Update(new[] { root }), "circular reference", "not allowed", "circular dependency");
+                TestUtility.ShouldFail(() => repository.TestHierarchy.Simple.Update(new[] { root }), "not allowed", "circular dependency");
             }
         }
 

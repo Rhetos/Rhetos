@@ -510,7 +510,7 @@ namespace Rhetos.Dsl.Test
                 // simple parent { enclosed1; enclosed2; }
                 var context = new Stack<IConceptInfo>(new[] { parent });
                 var parser = new GenericParserHelper<EnclosedSingleProperty2>("enclosed2");
-                TestUtility.ShouldFail(() => parser.QuickParse("enclosed2", context), "enclosed2 is not enclosed within SimpleConceptInfo",
+                TestUtility.ShouldFail(() => parser.QuickParse("enclosed2", context),
                     "EnclosedSingleProperty2 must be enclosed within the referenced parent concept EnclosedSingleProperty1");
             }
 
@@ -518,7 +518,7 @@ namespace Rhetos.Dsl.Test
                 // simple parent { enclosed1; } enclosed2 parent;
                 var context = new Stack<IConceptInfo>();
                 var parser = new GenericParserHelper<EnclosedSingleProperty2>("enclosed2");
-                TestUtility.ShouldFail(() => parser.QuickParse("enclosed2 parent", context), "enclosed2 is in root",
+                TestUtility.ShouldFail(() => parser.QuickParse("enclosed2 parent", context),
                     "EnclosedSingleProperty2 must be enclosed within the referenced parent concept EnclosedSingleProperty1");
             }
         }

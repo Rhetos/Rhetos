@@ -274,7 +274,7 @@ namespace CommonConcepts.Test
                 e.Name = "baaaaaaaaaaaaaaaaaaaa";
                 e.ActiveSince = null;
                 e.Birthday = new DateTime(2011, 12, 13, 14, 15, 16);
-                TestUtility.ShouldFail(() => standardRepos.Update(new[] { e }), "Name TooLong deny save.");
+                TestUtility.ShouldFail(() => standardRepos.Update(new[] { e }));
             }
         }
 
@@ -307,7 +307,7 @@ namespace CommonConcepts.Test
                 rc.Clean = c2;
                 refCleanRepos.Update(new[] { rc });
 
-                TestUtility.ShouldFail(() => cleanRepos.Delete(new[] { c1 }), "History still references that object.");
+                TestUtility.ShouldFail(() => cleanRepos.Delete(new[] { c1 }));
             }
         }
 
@@ -379,7 +379,7 @@ namespace CommonConcepts.Test
 
                 var c2 = repository.TestHistory.BasicUnique.Query().Where(item => item.ID == c2ID).SingleOrDefault();
                 c2.Name = "c3";
-                TestUtility.ShouldFail(() => cleanRepos.Update(new[] { c2 }), "Simply test basic unique funcionality on base item.");
+                TestUtility.ShouldFail(() => cleanRepos.Update(new[] { c2 }));
             }
         }
 
@@ -399,7 +399,7 @@ namespace CommonConcepts.Test
                 m1.ActiveSince = new DateTime(2012, 12, 25);
                 m1.Code = 11;
                 // Should fail
-                TestUtility.ShouldFail(() => repository.TestHistory.Minimal.Update(new[] { m1 }), "ActiveSince set older than last history entry");
+                TestUtility.ShouldFail(() => repository.TestHistory.Minimal.Update(new[] { m1 }));
             }
         }
 
@@ -463,7 +463,6 @@ namespace CommonConcepts.Test
 
                 TestUtility.ShouldFail(
                     () => repository.TestHistory.Simple.Insert(new[] { new TestHistory.Simple { ActiveSince = future } }),
-                    "insert with future time",
                     "ActiveSince", "TestHistory.Simple", "future");
             }
         }
@@ -484,7 +483,6 @@ namespace CommonConcepts.Test
 
                 TestUtility.ShouldFail(
                     () => repository.TestHistory.Simple.Update(new[] { s }),
-                    "insert with future time",
                     "ActiveSince", "TestHistory.Simple", "future");
             }
         }
@@ -766,7 +764,6 @@ namespace CommonConcepts.Test
 
                 TestUtility.ShouldFail(
                     () => repository.TestHistory.Simple_Changes.Insert(new[] { new TestHistory.Simple_Changes { Entity = e, ActiveSince = future } }),
-                    "insert with future time",
                     "ActiveSince", "TestHistory.Simple_Changes", "future");
             }
         }
@@ -790,7 +787,6 @@ namespace CommonConcepts.Test
 
                 TestUtility.ShouldFail(
                     () => repository.TestHistory.Simple_Changes.Update(new[] { h }),
-                    "insert with future time",
                     "ActiveSince", "TestHistory.Simple_Changes", "future");
             }
         }
@@ -812,7 +808,7 @@ namespace CommonConcepts.Test
 //                executionContext.NHibernateSession.Clear();
 //                TestUtility.ShouldFail(() => repository.TestHistory.Complex.Insert(new[] { 
 //                    new TestHistory.Complex { Name = null, Code = "1", Other = other }}),
-//                    "Required property", "required property", "Name");
+//                    "required property", "Name");
 //            }
 //        }
 
@@ -834,7 +830,7 @@ namespace CommonConcepts.Test
 //                TestUtility.ShouldFail(() => repository.TestHistory.Complex_Changes.Insert(new[] {
 //                    new TestHistory.Complex_Changes { Name = null, Code = "1", Other = other,
 //                        Base = complexBase, ActiveSince = DateTime.Now.AddDays(-1) }}),
-//                    "Required property", "required property", "Name");
+//                    "required property", "Name");
 //            }
 //        }
 
@@ -909,7 +905,7 @@ namespace CommonConcepts.Test
 //                var c1 = new TestHistory.Complex { Name = "abc", Code = "1", Other = other };
 //                var c2 = new TestHistory.Complex { Name = "abc", Code = "2", Other = other };
 //                TestUtility.ShouldFail(() => repository.TestHistory.Complex.Insert(new[] { c1, c2 }),
-//                    "Unique fail on multiple insert", "duplicate record", "Name", "abc");
+//                    "duplicate record", "Name", "abc");
 //            }
 //        }
 
@@ -941,7 +937,7 @@ namespace CommonConcepts.Test
 
 //                executionContext.NHibernateSession.Clear();
 //                TestUtility.ShouldFail(() => repository.TestHistory.Complex_Changes.Delete(new[] { h2b }),
-//                    "Deleting history made the older record active", "duplicate record", "Name", "abc");
+//                    "duplicate record", "Name", "abc");
 //            }
 //        }
 
@@ -964,14 +960,12 @@ namespace CommonConcepts.Test
 
 //                executionContext.NHibernateSession.Clear();
 //                TestUtility.ShouldFail(() => repository.TestHistory.Complex.Insert(new[] { complex2b }),
-//                    "Inserting duplicate value.",
 //                    "not allowed", "duplicate record",
 //                    "Parent", complex2b.Parent.ID.ToString(),
 //                    "Code", complex2b.Code.ToString());
 
 //                executionContext.NHibernateSession.Clear();
 //                TestUtility.ShouldFail(() => repository.TestHistory.Complex.Insert(new[] { complex1b }),
-//                    "Inserting duplicate value with null.",
 //                    "not allowed", "duplicate record",
 //                    "Parent", "<null>",
 //                    "Code", complex1b.Code.ToString());
@@ -1161,14 +1155,14 @@ namespace CommonConcepts.Test
 //                c.Name = "bbbbbbbbbbbbb";
 
 //                executionContext.NHibernateSession.Clear();
-//                TestUtility.ShouldFail(() => repository.TestHistory.Complex.Update(new[] { c }), "Updating to invalid data", "Name too long");
+//                TestUtility.ShouldFail(() => repository.TestHistory.Complex.Update(new[] { c }), "Name too long");
 
 //                executionContext.NHibernateSession.Clear();
 //                var b = new TestHistory.Complex_Base { ID = Guid.NewGuid() };
 //                repository.TestHistory.Complex_Base.Insert(new[] { b });
 //                executionContext.NHibernateSession.Clear();
 //                var h = new TestHistory.Complex_Changes { Base = b, Code = "12", Name = "hhhhhhhhhhhh", ActiveSince = DateTime.Today };
-//                TestUtility.ShouldFail(() => repository.TestHistory.Complex_Changes.Insert(new[] { h }), "Updating to invalid data", "Name too long");
+//                TestUtility.ShouldFail(() => repository.TestHistory.Complex_Changes.Insert(new[] { h }), "Name too long");
 
 //                executionContext.NHibernateSession.Clear();
 //                h.Name = "h";
@@ -1236,7 +1230,7 @@ namespace CommonConcepts.Test
                 var h1 = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).Take(1).Single();
                 h1.Code = 3;
                 h1.ActiveSince = new DateTime(2012, 1, 1);
-                TestUtility.ShouldFail(() => repository.TestHistory.Simple_History.Update(new[] { h1 }), "History item moved to far in future", "ActiveSince of history entry is not allowed to be newer than current entry.");
+                TestUtility.ShouldFail(() => repository.TestHistory.Simple_History.Update(new[] { h1 }), "ActiveSince of history entry is not allowed to be newer than current entry.");
             }
         }
 
@@ -1340,7 +1334,7 @@ namespace CommonConcepts.Test
                 var a1 = repository.TestHistory.Simple_History.Query().OrderByDescending(x => x.ActiveSince).Take(1).Single();
                 a1.Code = 3;
                 a1.ActiveSince = new DateTime(2000, 1, 1);
-                TestUtility.ShouldFail(() => repository.TestHistory.Simple_History.Update(new[] { a1 }), "Active item moved to far in history", "ActiveSince is not allowed to be older than last entry in history");
+                TestUtility.ShouldFail(() => repository.TestHistory.Simple_History.Update(new[] { a1 }), "ActiveSince is not allowed to be older than last entry in history");
             }
         }
 
@@ -1627,7 +1621,7 @@ namespace CommonConcepts.Test
                 executionContext.NHibernateSession.Clear();
 
                 editEnt[0].Name = "bube";
-                TestUtility.ShouldFail(() => repository.TestHistory.SimpleWithLock.Update(editEnt), "Name locked with letter 'a'.", "Name is locked if NameNew contains word 'atest'.");
+                TestUtility.ShouldFail(() => repository.TestHistory.SimpleWithLock.Update(editEnt), "Name is locked if NameNew contains word 'atest'.");
             }
         }
 
@@ -1656,7 +1650,7 @@ namespace CommonConcepts.Test
 
                 executionContext.NHibernateSession.Clear();
                 editEnt[0].Name = "be";
-                TestUtility.ShouldFail(() => repository.TestHistory.SimpleWithLockAndDeny.Update(editEnt), "Name locked with letter 'a'.", "Name is locked if NameNew contains word 'atest'.");
+                TestUtility.ShouldFail(() => repository.TestHistory.SimpleWithLockAndDeny.Update(editEnt), "Name is locked if NameNew contains word 'atest'.");
             }
         }
     }

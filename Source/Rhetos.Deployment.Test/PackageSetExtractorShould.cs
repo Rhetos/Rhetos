@@ -110,8 +110,9 @@ namespace Rhetos.Deployment.Test
             target = Path.GetFullPath(target);
             Console.WriteLine(target);
 
+            // same file plugin file in two packages
             TestUtility.ShouldFail(() => PackageSetExtractor.ExtractAndCombinePackages(packages, target),
-                "same file plugin file in two packages", "file2.bin");
+                "file2.bin");
         }
 
         [TestMethod]
@@ -126,8 +127,9 @@ namespace Rhetos.Deployment.Test
             target = Path.GetFullPath(target);
             Console.WriteLine(target);
 
+            // PackageInfo.xml contains reference to nonexisting package
             TestUtility.ShouldFail(() => PackageSetExtractor.ExtractAndCombinePackages(packages, target),
-                "PackageInfo.xml contains reference to nonexisting package", "NonExistingPackage");
+                "NonExistingPackage");
         }
     }
 }

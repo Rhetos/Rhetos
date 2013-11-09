@@ -36,7 +36,7 @@ namespace CommonConcepts.Test
                 var repository = new Common.DomRepository(executionContext);
                 TestUtility.ShouldFail(
                     () => repository.TestAction.ThrowException.Execute(new TestAction.ThrowException { Message = "abcd" }),
-                    "", "abcd");
+                    "abcd");
             }
         }
 
@@ -49,7 +49,7 @@ namespace CommonConcepts.Test
                 var repository = new Common.DomRepository(executionContext);
                 TestUtility.ShouldFail(
                     () => repository.TestAction.UEC.Execute(new TestAction.UEC { }),
-                    "", "User " + executionContext.UserInfo.UserName);
+                    "User " + executionContext.UserInfo.UserName);
             }
         }
 

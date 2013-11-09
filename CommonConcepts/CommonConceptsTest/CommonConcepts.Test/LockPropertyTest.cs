@@ -56,9 +56,9 @@ namespace CommonConcepts.Test
                     e.Name = e.Name + "x";
                 AssertData("s1, s2", repository);
 
-                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s1 }), "update locked", "Name is locked if count negative.");
-                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s2, s1 }), "update unlocked and locked", "Name is locked if count negative.");
-                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s1, s2 }), "update locked and unlocked", "Name is locked if count negative.");
+                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s1 }), "Name is locked if count negative.");
+                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s2, s1 }), "Name is locked if count negative.");
+                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s1, s2 }), "Name is locked if count negative.");
                 AssertData("s1, s2", repository);
 
                 repository.TestLockItems.Simple.Update(new[] { s2 });
@@ -82,7 +82,7 @@ namespace CommonConcepts.Test
                 s1.Count = 1;
                 AssertData("s1", repository);
 
-                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s1 }), "update old locked", "Name is locked if count negative.");
+                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s1 }), "Name is locked if count negative.");
                 AssertData("s1", repository);
             }
         }
@@ -136,9 +136,9 @@ namespace CommonConcepts.Test
                 foreach (var e in new[] { t1, t2 })
                     e.TestReference = s2;
 
-                TestUtility.ShouldFail(() => repository.TestLockItems.Simple2.Update(new[] { t1 }), "update locked", "TestReference is locked if count negative.");
-                TestUtility.ShouldFail(() => repository.TestLockItems.Simple2.Update(new[] { t2, t1 }), "update unlocked and locked", "TestReference is locked if count negative.");
-                TestUtility.ShouldFail(() => repository.TestLockItems.Simple2.Update(new[] { t1, t2 }), "update locked and unlocked", "TestReference is locked if count negative.");
+                TestUtility.ShouldFail(() => repository.TestLockItems.Simple2.Update(new[] { t1 }), "TestReference is locked if count negative.");
+                TestUtility.ShouldFail(() => repository.TestLockItems.Simple2.Update(new[] { t2, t1 }), "TestReference is locked if count negative.");
+                TestUtility.ShouldFail(() => repository.TestLockItems.Simple2.Update(new[] { t1, t2 }), "TestReference is locked if count negative.");
                 AssertDataSimple2("t1, t2", repository);
 
                 repository.TestLockItems.Simple2.Update(new[] { t2 });

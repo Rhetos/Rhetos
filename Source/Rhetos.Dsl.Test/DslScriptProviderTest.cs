@@ -48,17 +48,17 @@ namespace Rhetos.Dsl.Test
         {
             var dslScriptProvider = new MockDslScriptProvider();
 
-            TestUtility.ShouldFail(() => dslScriptProvider.ReportError(-1), "Index too low", "out of range", "-1");
+            TestUtility.ShouldFail(() => dslScriptProvider.ReportError(-1), "out of range", "-1"); // Index too low
             TestUtility.AssertContains(dslScriptProvider.ReportError(0), "before: \"abc\"", "name1");
             TestUtility.AssertContains(dslScriptProvider.ReportError(1), "before: \"bc\"", "name1");
             TestUtility.AssertContains(dslScriptProvider.ReportError(2), "before: \"c\"", "name1");
             TestUtility.AssertContains(dslScriptProvider.ReportError(3), "before: \"\"", "name1");
-            TestUtility.ShouldFail(() => dslScriptProvider.ReportError(4), "Invalid position not in any script", "not within a script", "4");
+            TestUtility.ShouldFail(() => dslScriptProvider.ReportError(4), "not within a script", "4"); // Invalid position not in any script
             TestUtility.AssertContains(dslScriptProvider.ReportError(5), "before: \"123\"", "name2");
             TestUtility.AssertContains(dslScriptProvider.ReportError(6), "before: \"23\"", "name2");
             TestUtility.AssertContains(dslScriptProvider.ReportError(7), "before: \"3", "name2");
             TestUtility.AssertContains(dslScriptProvider.ReportError(8), "before: \"\"", "name2");
-            TestUtility.ShouldFail(() => dslScriptProvider.ReportError(9), "Index too high", "out of range", "9");
+            TestUtility.ShouldFail(() => dslScriptProvider.ReportError(9), "out of range", "9"); // Index too high
         }
     }
 }

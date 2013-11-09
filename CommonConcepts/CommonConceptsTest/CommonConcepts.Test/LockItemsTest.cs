@@ -48,9 +48,9 @@ namespace CommonConcepts.Test
                 repository.TestLockItems.Simple.Insert(new[] { s1, s2, s3Lock, s4 });
                 AssertData("s1, s2, s3_lock, s4", repository);
 
-                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Delete(new[] { s3Lock }), "delete locked", "Name contains lock mark.");
-                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Delete(new[] { s1, s3Lock }), "delete unlocked and locked", "Name contains lock mark.");
-                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Delete(new[] { s3Lock, s4 }), "delete locked and unlocked", "Name contains lock mark.");
+                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Delete(new[] { s3Lock }), "Name contains lock mark.");
+                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Delete(new[] { s1, s3Lock }), "Name contains lock mark.");
+                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Delete(new[] { s3Lock, s4 }), "Name contains lock mark.");
                 AssertData("s1, s2, s3_lock, s4", repository);
 
                 repository.TestLockItems.Simple.Delete(new[] { s1 });
@@ -77,9 +77,9 @@ namespace CommonConcepts.Test
                     e.Name = e.Name + "x";
                 AssertData("s1, s2, s3_lock, s4", repository);
 
-                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s3Lock }), "update locked", "Name contains lock mark.");
-                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s1, s3Lock }), "update unlocked and locked", "Name contains lock mark.");
-                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s3Lock, s4 }), "update locked and unlocked", "Name contains lock mark.");
+                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s3Lock }), "Name contains lock mark.");
+                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s1, s3Lock }), "Name contains lock mark.");
+                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s3Lock, s4 }), "Name contains lock mark.");
                 AssertData("s1, s2, s3_lock, s4", repository);
 
                 repository.TestLockItems.Simple.Update(new[] { s1 });
@@ -102,7 +102,7 @@ namespace CommonConcepts.Test
                 s3Lock.Name = "abc";
                 AssertData("s3_lock", repository);
 
-                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s3Lock }), "update old locked", "Name contains lock mark.");
+                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s3Lock }), "Name contains lock mark.");
                 AssertData("s3_lock", repository);
             }
         }
@@ -124,7 +124,7 @@ namespace CommonConcepts.Test
                 {
                     var s3Persistent = repository.TestLockItems.Simple.All().Single();
                     s3Persistent.Name = "abc";
-                    TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s3Persistent }), "update locked persistent object",
+                    TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s3Persistent }),
                         "Name contains lock mark");
                     AssertData("s3_lock", repository);
                 }
@@ -151,7 +151,7 @@ namespace CommonConcepts.Test
                 {
                     var s3Persistent = repository.TestLockItems.Simple.All().Single();
                     s3Persistent.Name = "abc";
-                    TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Delete(new[] { s3Persistent }), "delete modified locked persistent object",
+                    TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Delete(new[] { s3Persistent }),
                         "Name contains lock mark");
 
                     AssertData("s3_lock", repository);
@@ -218,17 +218,17 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("abc locked", s1.Name);
                 s1.Name = "def";
 
-                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s1 }), "change locked item", "Name contains lock mark");
+                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s1 }), "Name contains lock mark");
 
                 Assert.AreEqual("def", s1.Name);
                 Assert.AreEqual("abc locked", repository.TestLockItems.Simple.All().Single().Name);
 
-                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s1 }), "change locked item", "Name contains lock mark");
+                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s1 }), "Name contains lock mark");
 
                 Assert.AreEqual("def", s1.Name);
                 Assert.AreEqual("abc locked", repository.TestLockItems.Simple.All().Single().Name);
 
-                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Insert(new[] { s1 }), "insert existing item instead of update", "Inserting already existing object");
+                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Insert(new[] { s1 }), "Inserting already existing object");
 
                 Assert.AreEqual("def", s1.Name);
                 Assert.AreEqual("abc locked", repository.TestLockItems.Simple.All().Single().Name);

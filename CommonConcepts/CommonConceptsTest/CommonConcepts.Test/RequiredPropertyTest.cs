@@ -50,7 +50,7 @@ namespace CommonConcepts.Test
                 executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestRequired.Simple" });
                 var repository = new Common.DomRepository(executionContext);
 
-                TestUtility.ShouldFail(() => repository.TestRequired.Simple.Insert(new[] { new TestRequired.Simple { Count = null, Name = "test3" } }), "Missing required integer", "required", "Count");
+                TestUtility.ShouldFail(() => repository.TestRequired.Simple.Insert(new[] { new TestRequired.Simple { Count = null, Name = "test3" } }), "required", "Count");
             }
         }
 
@@ -62,7 +62,7 @@ namespace CommonConcepts.Test
                 executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestRequired.Simple" });
                 var repository = new Common.DomRepository(executionContext);
 
-                TestUtility.ShouldFail(() => repository.TestRequired.Simple.Insert(new[] { new TestRequired.Simple { Count = 4, Name = null } }), "Missing required string", "required", "Name");
+                TestUtility.ShouldFail(() => repository.TestRequired.Simple.Insert(new[] { new TestRequired.Simple { Count = 4, Name = null } }), "required", "Name");
             }
         }
 
@@ -74,7 +74,7 @@ namespace CommonConcepts.Test
                 executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestRequired.Simple" });
                 var repository = new Common.DomRepository(executionContext);
 
-                TestUtility.ShouldFail(() => repository.TestRequired.Simple.Insert(new[] { new TestRequired.Simple { Count = 5, Name = "" } }), "Empty required string", "required", "Name");
+                TestUtility.ShouldFail(() => repository.TestRequired.Simple.Insert(new[] { new TestRequired.Simple { Count = 5, Name = "" } }), "required", "Name");
             }
         }
     }

@@ -103,7 +103,7 @@ end;" });
         {
             TestUtility.ShouldFail(
                 () => GetSqlExecuter().ExecuteSql(new[] { @"SELECT 2/0 FROM DUAL" }),
-                "Simple error", "divisor is equal to zero");
+                "divisor is equal to zero");
         }
 
         [TestMethod()]
@@ -111,7 +111,6 @@ end;" });
         {
             TestUtility.ShouldFail(
                 () => GetSqlExecuter().ExecuteSql(new[] { @"SELECT 1/0 FROM DUAL" }),
-                     "forced error",
                      "divisor is equal to zero", "1476");
             /*
                 Error starting at line 1 in command:
@@ -132,7 +131,6 @@ end;" });
 @"BEGIN
   RAISE_APPLICATION_ERROR(-20000, 'abc', TRUE);
 END;" }),
-                    "custom error message",
                     "abc", "20000", "line 2");
             /*
                 Error starting at line 1 in command:
@@ -159,7 +157,7 @@ END;" }),
             string connectionString = @"User Id=" + userId + ";Password=" + password + ";Data Source=" + dataSource + ";";
 
             OracleSqlExecuter sqlExecuter = new OracleSqlExecuter(connectionString, new ConsoleLogProvider(), new NullUserInfo());
-            var ex = TestUtility.ShouldFail(() => sqlExecuter.ExecuteSql(new[] { "SELECT 123 FROM DUAL" }), "invalid user", userId, dataSource);
+            var ex = TestUtility.ShouldFail(() => sqlExecuter.ExecuteSql(new[] { "SELECT 123 FROM DUAL" }), userId, dataSource);
             Assert.IsFalse(ex.ToString().Contains(password));
         }
 
@@ -189,7 +187,7 @@ END;" }),
                 () => GetSqlExecuter().ExecuteSql(new[] {
                     "INSERT INTO " + table + " VALUES (123)",
                     "INSERT INTO " + table + " VALUES ('xxx')" }),
-                "forced error", "invalid number");
+                "invalid number");
 
             var sw = Stopwatch.StartNew();
             AssertRowCount(0, table, "after failed insert");
@@ -235,7 +233,7 @@ END;" }),
                     "ROLLBACK",
                     "INSERT INTO " + table + " VALUES (456)",
                     "INSERT INTO " + table + " VALUES ('xxx')" }),
-                "forced error", "invalid number");
+                "invalid number");
 
             AssertRowCount(0, table, "Rollback in the middle of a commands array should not break atomicity of the whole commands array.");
         }

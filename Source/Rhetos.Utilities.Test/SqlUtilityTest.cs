@@ -40,8 +40,8 @@ namespace Rhetos.Utilities.Test
             };
 
             string[] invalidNames = new[] {
-                "", null,
                 "0", "2asdasd", "123", "1_",
+                null, "",
                 " abc", "abc ", " ",
                 "!", "@", "#", "a!", "a@", "a#",
                 "ač", "č",
@@ -51,7 +51,10 @@ namespace Rhetos.Utilities.Test
                 SqlUtility.CheckIdentifier(name);
 
             foreach (string name in invalidNames)
-                TestUtility.ShouldFail(() => SqlUtility.CheckIdentifier(name), "Testing invalid name '" + name + "'.", "database object name", name ?? "null");
+            {
+                Console.WriteLine("Testing invalid name '" + name + "'.");
+                TestUtility.ShouldFail(() => SqlUtility.CheckIdentifier(name), "database object name", name != null ? "'" + name + "'"  : "null");
+            }
         }
 
         [TestMethod]
@@ -93,8 +96,8 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual("someschema", SqlUtility.GetSchemaName("someschema.someview"));
             Assert.AreEqual("someview", SqlUtility.GetShortName("someschema.someview"));
 
-            TestUtility.ShouldFail(() => SqlUtility.GetShortName("a.b.c"), "unexpected format");
-            TestUtility.ShouldFail(() => SqlUtility.GetShortName("a."), "invalid object name");
+            TestUtility.ShouldFail(() => SqlUtility.GetShortName("a.b.c"), "Invalid database object name");
+            TestUtility.ShouldFail(() => SqlUtility.GetShortName("a."), "Invalid database object name");
         }
 
         [TestMethod]
@@ -113,7 +116,7 @@ namespace Rhetos.Utilities.Test
         {
             TestUtility.CheckDatabaseAvailability("Oracle");
 
-            TestUtility.ShouldFail(() => SqlUtility.GetSchemaName("someview"), "missing schema");
+            TestUtility.ShouldFail(() => SqlUtility.GetSchemaName("someview"), "Missing schema");
             Assert.AreEqual("someview", SqlUtility.GetShortName("someview"));
         }
 

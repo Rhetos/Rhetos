@@ -271,26 +271,26 @@ namespace CommonConcepts.Test
                 FilterStart(repository, "2012-3-1", "6");
 
                 // Error handling:
-                TestUtility.ShouldFail(() => FilterStart(repository, "123", ""), "invalid format", "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "12345", ""), "invalid format", "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "1234-", ""), "invalid format", "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "1234-123", ""), "invalid format", "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "1234-1-", ""), "invalid format", "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "1234-12-", ""), "invalid format", "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "1234-11-11-", ""), "invalid format", "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "1234-11-11-11", ""), "invalid format", "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "1234-1-1-1", ""), "invalid format", "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "1234-234-12", ""), "invalid format", "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "1234-12-234", ""), "invalid format", "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "12345-1", ""), "invalid format", "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "12345-11", ""), "invalid format", "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "12345-1-1", ""), "invalid format", "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "12345-11-11", ""), "invalid format", "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "11-11-11", ""), "invalid format", "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "11-11-1112", ""), "invalid format", "format");
+                TestUtility.ShouldFail(() => FilterStart(repository, "123", ""), "format");
+                TestUtility.ShouldFail(() => FilterStart(repository, "12345", ""), "format");
+                TestUtility.ShouldFail(() => FilterStart(repository, "1234-", ""), "format");
+                TestUtility.ShouldFail(() => FilterStart(repository, "1234-123", ""), "format");
+                TestUtility.ShouldFail(() => FilterStart(repository, "1234-1-", ""), "format");
+                TestUtility.ShouldFail(() => FilterStart(repository, "1234-12-", ""), "format");
+                TestUtility.ShouldFail(() => FilterStart(repository, "1234-11-11-", ""), "format");
+                TestUtility.ShouldFail(() => FilterStart(repository, "1234-11-11-11", ""), "format");
+                TestUtility.ShouldFail(() => FilterStart(repository, "1234-1-1-1", ""), "format");
+                TestUtility.ShouldFail(() => FilterStart(repository, "1234-234-12", ""), "format");
+                TestUtility.ShouldFail(() => FilterStart(repository, "1234-12-234", ""), "format");
+                TestUtility.ShouldFail(() => FilterStart(repository, "12345-1", ""), "format");
+                TestUtility.ShouldFail(() => FilterStart(repository, "12345-11", ""), "format");
+                TestUtility.ShouldFail(() => FilterStart(repository, "12345-1-1", ""), "format");
+                TestUtility.ShouldFail(() => FilterStart(repository, "12345-11-11", ""), "format");
+                TestUtility.ShouldFail(() => FilterStart(repository, "11-11-11", ""), "format");
+                TestUtility.ShouldFail(() => FilterStart(repository, "11-11-1112", ""), "format");
 
-                TestUtility.ShouldFail(() => FilterStart(repository, "2011-02-29", ""), "invalid date");
-                TestUtility.ShouldFail(() => FilterStart(repository, "2011-13-01", ""), "invalid month");
+                TestUtility.ShouldFail(() => FilterStart(repository, "2011-02-29", ""));
+                TestUtility.ShouldFail(() => FilterStart(repository, "2011-13-01", ""));
             }
         }
     }

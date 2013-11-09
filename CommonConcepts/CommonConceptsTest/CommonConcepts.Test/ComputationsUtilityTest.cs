@@ -78,7 +78,7 @@ namespace CommonConcepts.Test
             };
 
             TestUtility.ShouldFail(() => DirectedGraph.SortByGivenOrder(items, expectedOrder, item => item.Reference),
-                "Using item with a key that does not exist in given expectedOrder.", "SomeEntity", "ComputationsUtilityTest", id2.ToString());
+                "SomeEntity", "ComputationsUtilityTest", id2.ToString());
         }
     }
 }
