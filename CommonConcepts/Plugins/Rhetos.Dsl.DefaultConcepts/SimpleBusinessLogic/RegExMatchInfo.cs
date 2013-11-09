@@ -22,24 +22,28 @@ using System.Linq;
 using System.Text;
 using System.ComponentModel.Composition;
 using Rhetos.Utilities;
+using System.Text.RegularExpressions;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RegExMatch")]
-    public class RegExMatchInfo : IMacroConcept
+    public class RegExMatchInfo : IMacroConcept, IValidationConcept
     {
         [ConceptKey]
         public PropertyInfo Property { get; set; }
 
-        public string Regex2 { get; set; }
+        public string RegularExpression { get; set; }
+
+        public string ErrorMessage { get; set; }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            // Expand the base entity:
             var itemFilterRegExMatchProperty = new ItemFilterInfo
             {
-                Expression = String.Format(@"item => !String.IsNullOrEmpty(item.{0}) && !(new System.Text.RegularExpressions.Regex(""{1}"")).IsMatch(item.{0})", Property.Name, Regex2),
+                Expression = String.Format(@"item => !String.IsNullOrEmpty(item.{0}) && !(new System.Text.RegularExpressions.Regex({1})).IsMatch(item.{0})",
+                    Property.Name,
+                    CsUtility.QuotedString("^" + RegularExpression + "$")),
                 FilterName = Property.Name + "_RegExMatchFilter",
                 Source = Property.DataStructure
             };
@@ -47,10 +51,23 @@ namespace Rhetos.Dsl.DefaultConcepts
             {
                 DependedProperty = Property,
                 FilterType = itemFilterRegExMatchProperty.FilterName,
-                Title = String.Format("{0} has to match {1}.", Property.Name, Regex2),
+                ErrorMessage = ErrorMessage,
                 Source = Property.DataStructure
             };
             return new IConceptInfo[] { itemFilterRegExMatchProperty, denySaveRegExMatchProperty };
+        }
+
+        public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
+        {
+            try
+            {
+                new Regex(RegularExpression);
+            }
+            catch (Exception ex)
+            {
+                var msg = "Invalid format of the regular expression.";
+                throw new DslSyntaxException(this, msg, ex);
+            }
         }
     }
 }

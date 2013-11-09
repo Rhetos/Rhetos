@@ -1,4 +1,4 @@
-Module TestMaxLength
+﻿Module TestMaxLength
 {
 	Entity Old1
 	{
@@ -184,12 +184,16 @@ Module TestRegex
 {
     Entity Simple 
     {      
-        ShortString StringFrom200To249 { RegExMatch "2[0-4][0-9]"; }
+        ShortString StringFrom200To249 { RegExMatch "2[0-4][0-9]" "StringFrom200To249 must be between 200 and 249."; }
+        ShortString UnicodeTest { RegExMatch "čćČĆテスト" "UnicodeTest must match unicode regex."; }
+        ShortString WhitespaceTest { RegExMatch "a\r\nb\tc" "WhitespaceTest must match whitespace regex."; }
+        ShortString SpecialCharTest { RegExMatch "a\!\@\#\$\%\^\&\*\(\)_\+\-\=\[\]\\\{\}\|\;\'\:\""\,\.\/\<\>\?" "SpecialCharTest must match special character regex."; }
+        ShortString DefaultErrorMessageTest { RegExMatch "123"; }
     }
     
     Entity SimpleRequired 
     {      
-        ShortString StringFrom200To249 { Required; RegExMatch "2[0-4][0-9]"; }
+        ShortString StringFrom200To249 { Required; RegExMatch "2[0-4][0-9]" "Value must be between 200 and 249."; }
     }
 }
 

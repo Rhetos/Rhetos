@@ -60,7 +60,7 @@ namespace Rhetos.Dom.DefaultConcepts
 ",
                 info.Source.GetKeyProperties(),
                 info.FilterType,
-                CsUtility.QuotedString(info.Title),
+                CsUtility.QuotedString(info.ErrorMessage),
                 UserMessageAppend.Evaluate(info));
         }
     }

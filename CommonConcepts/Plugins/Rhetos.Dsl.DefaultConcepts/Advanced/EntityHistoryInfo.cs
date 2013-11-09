@@ -82,7 +82,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             var denySaveValidation = new DenySaveForPropertyInfo {
                 FilterType = "Common.OlderThanHistoryEntries", 
                 Source = Entity, 
-                Title = "ActiveSince is not allowed to be older than last entry in history.", 
+                ErrorMessage = "ActiveSince is not allowed to be older than last entry in history.", 
                 DependedProperty = activeSinceProperty 
             };
             newConcepts.AddRange(new IConceptInfo[] { denyFilter, denySaveValidation, new ParameterInfo { Module = new ModuleInfo { Name = "Common" }, Name = "OlderThanHistoryEntries" } });
@@ -110,7 +110,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             {
                 FilterType = "Common.NewerThanCurrentEntry",
                 Source = ChangesEntity,
-                Title = "ActiveSince of history entry is not allowed to be newer than current entry.",
+                ErrorMessage = "ActiveSince of history entry is not allowed to be newer than current entry.",
                 DependedProperty = historyActiveSinceProperty
             };
             newConcepts.AddRange(new IConceptInfo[] { denyFilterHistory, denySaveValidationHistory, new ParameterInfo { Module = new ModuleInfo { Name = "Common" }, Name = "NewerThanCurrentEntry" } });

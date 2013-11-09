@@ -48,7 +48,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             {
                 Source = Property.DataStructure,
                 FilterType = filterName,
-                Title = "System required property " +  Property.GetUserDescription() + " is not set.",
+                ErrorMessage = "System required property " +  Property.GetUserDescription() + " is not set.",
                 DependedProperty = Property
             };
 

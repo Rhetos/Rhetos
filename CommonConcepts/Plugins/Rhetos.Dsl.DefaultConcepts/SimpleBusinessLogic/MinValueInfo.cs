@@ -51,7 +51,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             var denySaveMinValueProperty = new DenySaveForPropertyInfo { 
                     DependedProperty = Property,
                     FilterType = itemFilterMinValueProperty.FilterName,
-                    Title = String.Format("Minimum value of {0} is {1}.", Property.Name, Value), 
+                    ErrorMessage = String.Format("Minimum value of {0} is {1}.", Property.Name, Value), 
                     Source = Property.DataStructure 
             };
             return new IConceptInfo[] { itemFilterMinValueProperty, denySaveMinValueProperty };

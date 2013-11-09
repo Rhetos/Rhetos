@@ -46,6 +46,8 @@ namespace Rhetos.TestCommon
                     message += "\r\n    SystemMessage: " + ((UserException)ex).SystemMessage;
 
                 Console.WriteLine("[" + ex.GetType().Name + "] " + message);
+
+                message = ex.GetType().Name + ": " + message;
             }
             Assert.IsNotNull(exception, "Exception did not happen. " + reason);
             AssertContains(message, expectedErrorContent, "Exception message does not contain the pattern. " + reason);

@@ -18,22 +18,27 @@
 */
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
+using System.ComponentModel.Composition;
+using Rhetos.Utilities;
+using System.Text.RegularExpressions;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("DenySave")]
-    public class DenySaveInfo : IConceptInfo
+    [ConceptKeyword("RegExMatch")]
+    public class RegExMatchDefaultMessageInfo : RegExMatchInfo, IAlternativeInitializationConcept
     {
-        [ConceptKey]
-        public DataStructureInfo Source { get; set; }
+        public IEnumerable<string> DeclareNonparsableProperties()
+        {
+            return new[] { "ErrorMessage" };
+        }
 
-        [ConceptKey]
-        public string FilterType { get; set; }
-
-        public string ErrorMessage { get; set; }
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            ErrorMessage = "Property " + Property.Name + " does not match required format.";
+            createdConcepts = null;
+        }
     }
 }
