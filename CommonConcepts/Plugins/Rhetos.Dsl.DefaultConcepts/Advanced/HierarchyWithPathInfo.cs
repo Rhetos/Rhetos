@@ -22,6 +22,7 @@ using System.Linq;
 using System.Text;
 using Rhetos.Dsl;
 using System.ComponentModel.Composition;
+using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -82,14 +83,8 @@ namespace Rhetos.Dsl.DefaultConcepts
                Name,
                PathName,
                GeneratePathFrom,
-               CsQuoted(PathSeparator),
+               CsUtility.QuotedString(PathSeparator),
                BeforeRecomputeTag.Evaluate(this));
-        }
-
-        private static string CsQuoted(string text)
-        {
-            text = text.Replace("\"", "\"\"");
-            return "@\"" + text + "\"";
         }
     }
 }

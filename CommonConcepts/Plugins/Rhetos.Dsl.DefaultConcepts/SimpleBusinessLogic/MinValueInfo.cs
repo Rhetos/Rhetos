@@ -40,8 +40,8 @@ namespace Rhetos.Dsl.DefaultConcepts
             string propertyPrepared = (this.Property is IntegerPropertyInfo) ? Value :
                                       (this.Property is DecimalPropertyInfo) ? "(decimal)" + Value :
                                       (this.Property is MoneyPropertyInfo) ? "(decimal)" + Value :
-                                      (this.Property is DatePropertyInfo) ? String.Format(@"DateTime.Parse(""{0}"")", Value) :
-                                      (this.Property is DateTimePropertyInfo) ? String.Format(@"DateTime.Parse(""{0}"")", Value) : "";
+                                      (this.Property is DatePropertyInfo) ? String.Format(@"DateTime.Parse({0})", CsUtility.QuotedString(Value)) :
+                                      (this.Property is DateTimePropertyInfo) ? String.Format(@"DateTime.Parse({0})", CsUtility.QuotedString(Value)) : "";
             // Expand the base entity:
             var itemFilterMinValueProperty = new ItemFilterInfo {
                     Expression = String.Format(@"item => item.{0} != null && item.{0} < {1}", Property.Name, propertyPrepared),
