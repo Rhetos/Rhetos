@@ -99,7 +99,8 @@ namespace Rhetos.Security
                     _logger.Info(() => "Inserting claims: " + string.Join(", ", insert.Select(claim => claim.ClaimResource + "." + claim.ClaimRight)) + ".");
 
                 IWritableRepository claimRepository = _writableRepositories["Common.Claim"];
-                claimRepository.Save(insert, null, delete);
+                claimRepository.Save(null, null, delete); // Delete must be completed before insert, ORM engine does not enforce it. This avoids error with the unique index when renamed resource has different letter case.
+                claimRepository.Save(insert, null, null);
 
                 _performanceLogger.Write(stopwatch, "ClaimGenerator.GenerateClaims");
             }
