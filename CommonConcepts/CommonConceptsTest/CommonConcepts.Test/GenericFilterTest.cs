@@ -366,5 +366,20 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("n2", TestUtility.DumpSorted(filterSimple("Code", "equal", null), item => item.Name));
             }
         }
+
+        [TestMethod]
+        public void InvalidPropertyNameError()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var repository = new Common.DomRepository(executionContext);
+                var childQuery = repository.TestGenericFilter.Child.Query();
+                FilterCriteria filter;
+
+                filter = new FilterCriteria { Property = "Parentt", Operation = "equal", Value = null };
+                TestUtility.ShouldFail(() => GenericFilterWithPagingUtility.Filter(childQuery, new[] { filter }).ToList(),
+                    "generic filter", "property 'Parentt'", "Type 'TestGenericFilter.Child'", "UserException");
+            }
+        }
     }
 }

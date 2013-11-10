@@ -50,7 +50,12 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 Expression memberAccess = null;
                 foreach (var property in criteria.Property.Split('.'))
-                    memberAccess = Expression.Property(memberAccess ?? (Expression)parameter, property);
+                {
+                    var parentExpression = memberAccess ?? (Expression)parameter;
+                    if (parentExpression.Type.GetProperty(property) == null)
+                        throw new UserException("Invalid generic filter parameter: Type '" + parentExpression.Type.FullName + "' does not have property '" + property + "'.");
+                    memberAccess = Expression.Property(parentExpression, property);
+                }
 
                 // Change the type of the parameter 'value'. it is necessary for comparisons (specially for booleans)
 
