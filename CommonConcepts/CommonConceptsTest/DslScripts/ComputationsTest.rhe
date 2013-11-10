@@ -247,6 +247,12 @@ Module TestGenericFilter
 		ShortString Name;
 		DateTime Start;
 	}
+    
+    Entity Child
+	{
+		ShortString Name;
+		Reference Parent TestGenericFilter.Simple { Detail; }
+	}
 }
 
 Module TestDenySave

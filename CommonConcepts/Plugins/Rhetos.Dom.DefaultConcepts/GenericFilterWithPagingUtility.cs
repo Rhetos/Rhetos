@@ -31,7 +31,7 @@ using Rhetos.Processing.DefaultCommands;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public static class GenericFilterWithPagingUtility // TODO: Better unit tests
+    public static class GenericFilterWithPagingUtility
     {
         public static Expression<Func<T, bool>> ToExpression<T>(IEnumerable<FilterCriteria> filterCriterias)
         {
@@ -48,13 +48,14 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (string.IsNullOrEmpty(criteria.Property))
                     continue;
 
-                MemberExpression memberAccess = null;
+                Expression memberAccess = null;
                 foreach (var property in criteria.Property.Split('.'))
                     memberAccess = Expression.Property(memberAccess ?? (Expression)parameter, property);
 
                 // Change the type of the parameter 'value'. it is necessary for comparisons (specially for booleans)
-                Type basicType = (memberAccess.Type.IsGenericType && memberAccess.Type.GetGenericTypeDefinition() == typeof(Nullable<>))
-                    ? memberAccess.Type.GetGenericArguments().Single() : memberAccess.Type;
+
+                bool memberIsNullableValueType = memberAccess.Type.IsGenericType && memberAccess.Type.GetGenericTypeDefinition() == typeof(Nullable<>);
+                Type basicType = memberIsNullableValueType ? memberAccess.Type.GetGenericArguments().Single() : memberAccess.Type;
 
                 ConstantExpression constant;
                 if (new[] { "equal", "notequal", "greater", "greaterequal", "less", "lessequal" }.Contains(criteria.Operation.ToLower()))
@@ -86,6 +87,12 @@ namespace Rhetos.Dom.DefaultConcepts
                         throw new FrameworkException("Invalid JSON format of " + basicType.Name + " propery '" + criteria.Property + "'. Numeric value should not be passed as a string in JSON serialized object.");
                     else
                         convertedValue = Convert.ChangeType(criteria.Value, basicType);
+
+                    if (convertedValue == null && memberAccess.Type.IsValueType && !memberIsNullableValueType)
+                    {
+                        Type nullableMemberType = typeof(Nullable<>).MakeGenericType(memberAccess.Type);
+                        memberAccess = Expression.Convert(memberAccess, nullableMemberType);
+                    }
 
                     constant = Expression.Constant(convertedValue, memberAccess.Type);
                 }

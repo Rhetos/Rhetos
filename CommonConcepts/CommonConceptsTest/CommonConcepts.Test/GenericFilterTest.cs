@@ -29,8 +29,6 @@ namespace CommonConcepts.Test
     [TestClass]
     public class GenericFilterTest
     {
-        // TODO: Better unit tests.
-
         class TestClaim
         {
             public virtual string ClaimResource { get; set; }
@@ -291,6 +289,81 @@ namespace CommonConcepts.Test
 
                 TestUtility.ShouldFail(() => FilterStart(repository, "2011-02-29", ""));
                 TestUtility.ShouldFail(() => FilterStart(repository, "2011-13-01", ""));
+            }
+        }
+
+        [TestMethod]
+        public void FilterNullValues()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                var parentId = Guid.NewGuid();
+                executionContext.SqlExecuter.ExecuteSql(new[]
+                    {
+                        "DELETE FROM TestGenericFilter.Child",
+                        "DELETE FROM TestGenericFilter.Simple",
+
+                        // Null and empty string:
+                        "INSERT INTO TestGenericFilter.Simple (ID, Code, Name) SELECT '" + parentId + "', -1, 'a'",
+                        "INSERT INTO TestGenericFilter.Simple (Code, Name) SELECT -2, ''",
+                        "INSERT INTO TestGenericFilter.Simple (Code, Name) SELECT -3, null",
+
+                        // Null datetime:
+                        "INSERT INTO TestGenericFilter.Simple (Code, Start) SELECT 1, '2013-02-01'",
+                        "INSERT INTO TestGenericFilter.Simple (Code, Start) SELECT 2, null",
+
+                        // Null reference:
+                        "INSERT INTO TestGenericFilter.Child (Name, ParentID) SELECT 'c1', '" + parentId + "'",
+                        "INSERT INTO TestGenericFilter.Child (Name, ParentID) SELECT 'c2', null",
+
+                        // Null int:
+                        "INSERT INTO TestGenericFilter.Simple (Code, Name) SELECT 0, 'n1'",
+                        "INSERT INTO TestGenericFilter.Simple (Code, Name) SELECT null, 'n2'",
+                    });
+
+                var repository = new Common.DomRepository(executionContext);
+                var simple = repository.TestGenericFilter.Simple.Query();
+                var child = repository.TestGenericFilter.Child.Query();
+
+                // Null and empty string:
+
+                Func<string, string, object, IQueryable<TestGenericFilter.Simple>> filter1 = (property, operation, value) =>
+                    GenericFilterWithPagingUtility.Filter(simple, new[] {
+                        new FilterCriteria { Property = property, Operation = operation, Value = value },
+                        new FilterCriteria { Property = "Code", Operation = "less", Value = 0 }});
+
+                Assert.AreEqual("-1", TestUtility.DumpSorted(filter1("Name", "equal", "a"), item => item.Code));
+                Assert.AreEqual("-2", TestUtility.DumpSorted(filter1("Name", "equal", ""), item => item.Code));
+                Assert.AreEqual("-3", TestUtility.DumpSorted(filter1("Name", "equal", null), item => item.Code));
+                Assert.AreEqual("-1, -2", TestUtility.DumpSorted(filter1("Name", "less", "b"), item => item.Code));
+
+                // Null datetime:
+
+                Func<string, string, object, IQueryable<TestGenericFilter.Simple>> filter2 = (property, operation, value) =>
+                    GenericFilterWithPagingUtility.Filter(simple, new[] {
+                        new FilterCriteria { Property = property, Operation = operation, Value = value },
+                        new FilterCriteria { Property = "Code", Operation = "greater", Value = 0 }});
+
+                Assert.AreEqual("1", TestUtility.DumpSorted(filter2("Start", "equal", new DateTime(2013, 2, 1)), item => item.Code));
+                Assert.AreEqual("2", TestUtility.DumpSorted(filter2("Start", "equal", null), item => item.Code));
+
+                // Null reference:
+
+                Func<string, string, object, IQueryable<TestGenericFilter.Child>> filterChild = (property, operation, value) =>
+                    GenericFilterWithPagingUtility.Filter(child, new[] {
+                        new FilterCriteria { Property = property, Operation = operation, Value = value }});
+
+                Assert.AreEqual("c1", TestUtility.DumpSorted(filterChild("Parent.ID", "equal", parentId), item => item.Name));
+                Assert.AreEqual("c2", TestUtility.DumpSorted(filterChild("Parent.ID", "equal", null), item => item.Name));
+
+                // Null int:
+
+                Func<string, string, object, IQueryable<TestGenericFilter.Simple>> filterSimple = (property, operation, value) =>
+                    GenericFilterWithPagingUtility.Filter(simple, new[] {
+                        new FilterCriteria { Property = property, Operation = operation, Value = value }});
+
+                Assert.AreEqual("n1", TestUtility.DumpSorted(filterSimple("Code", "equal", 0), item => item.Name));
+                Assert.AreEqual("n2", TestUtility.DumpSorted(filterSimple("Code", "equal", null), item => item.Name));
             }
         }
     }
