@@ -268,6 +268,7 @@ Module TestTypes
     Entity Simple
     {
         DateTime Start;
+        Decimal Length;
     }
     
     // TestTypes.Reader is used to avoid TestTypes.Simple caching side effects.

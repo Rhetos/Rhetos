@@ -432,5 +432,40 @@ namespace CommonConcepts.Test
                 }
             }
         }
+
+        [TestMethod]
+        public void DecimalSizeTest()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestTypes.Simple" });
+                var repository = new Common.DomRepository(executionContext);
+
+                var s = new TestTypes.Simple { Length = 1234567890123456789012345678m };
+                Assert.AreEqual("1234567890123456789012345678", s.Length.Value.ToString());
+                Assert.Inconclusive("NHibernate's limit");
+                repository.TestTypes.Simple.Insert(new[] { s });
+
+                var loaded = repository.TestTypes.Reader.All().Single();
+                Assert.AreEqual(s.Length, loaded.Length);
+            }
+        }
+
+        [TestMethod]
+        public void DecimalPrecisionTest()
+        {
+            using (var executionContext = new CommonTestExecutionContext())
+            {
+                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestTypes.Simple" });
+                var repository = new Common.DomRepository(executionContext);
+
+                var s = new TestTypes.Simple { Length = 0.0123456789m };
+                Assert.AreEqual("0.0123456789", s.Length.Value.ToString("F10", System.Globalization.CultureInfo.InvariantCulture));
+                repository.TestTypes.Simple.Insert(new[] { s });
+
+                var loaded = repository.TestTypes.Reader.All().Single();
+                Assert.AreEqual(s.Length, loaded.Length);
+            }
+        }
     }
 }

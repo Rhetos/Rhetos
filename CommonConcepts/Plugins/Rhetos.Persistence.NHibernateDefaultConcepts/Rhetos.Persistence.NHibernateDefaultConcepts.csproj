@@ -96,6 +96,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Mappings\DecimalPropertyMappingGenerator.cs" />
     <Compile Include="Mappings\LargePropertyMappingGenerator.cs" />
     <Compile Include="Mappings\LegacyPropertyReadOnlyMappingGenerator.cs" />
     <Compile Include="Mappings\DateTimePropertyMappingGenerator.cs" />
