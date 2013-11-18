@@ -294,7 +294,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                     }}).ToArray().Concat(
                         updateEnt.Select(item => {{
                             var ret = _domRepository.{1}.{0}.Filter(new [] {{item.EntityID.Value}}).Single();
-                            ret.SetCreateChangesEntryOnEdit(false);{2}
+                            ret.SetOverwriteCurrentRecordOnUpdate(true);{2}
                             return ret;
                         }}).ToArray()
                     )

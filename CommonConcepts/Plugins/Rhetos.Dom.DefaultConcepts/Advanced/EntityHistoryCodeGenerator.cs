@@ -82,10 +82,10 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string AdditionalParameterSnippet(EntityHistoryInfo info)
         {
             return
-@"        private bool _createChangesEntryOnEdit = true;
-          public virtual void SetCreateChangesEntryOnEdit(bool value) { this._createChangesEntryOnEdit = value; }
-          public virtual bool GetCreateChangesEntryOnEdit() { return this._createChangesEntryOnEdit; }
-
+@"
+        private bool _overwriteCurrentRecordOnUpdate;
+        public virtual void SetOverwriteCurrentRecordOnUpdate(bool value) { this._overwriteCurrentRecordOnUpdate = value; }
+        public virtual bool GetOverwriteCurrentRecordOnUpdate() { return this._overwriteCurrentRecordOnUpdate; }
 ";
         }
 
@@ -110,7 +110,7 @@ namespace Rhetos.Dom.DefaultConcepts
 			    {{
 				    var createHistory = updatedNew.Zip(updated, (newItem, oldItem) => new {{ newItem, oldItem }})
 					    .Where(change => (change.oldItem.ActiveSince == null || change.newItem.ActiveSince > change.oldItem.ActiveSince.Value.AddSeconds(errorMarginSeconds))
-                            && change.newItem.GetCreateChangesEntryOnEdit())
+                            && !change.newItem.GetOverwriteCurrentRecordOnUpdate())
 					    .Select(change => change.oldItem)
 					    .ToArray();
 					
