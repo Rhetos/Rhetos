@@ -42,43 +42,58 @@ namespace Rhetos.Security
             _logger = logProvider.GetLogger("DomainPrincipalProvider");
             _performanceLogger = logProvider.GetLogger("Performance");
 
-            if (ServiceSecurityContext.Current != null)
+            var id = GetIdentity(_logger);
+            Identity = id.Item1;
+            _windowsIdentity = id.Item2;
+        }
+
+        private static Tuple<string, WindowsIdentity> GetIdentity(ILogger logger)
+        {
+            if (ServiceSecurityContext.Current == null)
             {
-                var serviceSecurityContextIdentity = ServiceSecurityContext.Current.WindowsIdentity;
-                Identity = serviceSecurityContextIdentity.Name;
+                logger.Trace(() => "Identity not provided, ServiceSecurityContext.Current == null.");
+                return Tuple.Create<string, WindowsIdentity>("<not provided>", null);
+            }
 
-                _logger.Trace(() => "ServiceSecurityContext.Current.WindowsIdentity: " + Report(serviceSecurityContextIdentity));
+            var serviceSecurityContextIdentity = ServiceSecurityContext.Current.WindowsIdentity;
+            var identityName = serviceSecurityContextIdentity.Name;
 
-                // WindowsIdentity.GetCurrent() and ServiceSecurityContext.Current.WindowsIdentity in some scenarios
-				// return the same UserName, but different number of system claims. The first one returns if the current user (running the process)
-				// is an admin, the other one sometimes doesn't (even if UAC is turned off). Could not find the underlying rules, but it
-				// seams running the application from Visual Studio affets the behavior (among other factors).
-				// The first function always returns AuthenticationType=Kerebros, the other always returns Negotiation.
-				
-				// Fix the Identity when a Windows domain is used.
-                if (Identity.StartsWith(Environment.UserDomainName + @"\", StringComparison.OrdinalIgnoreCase))
+            logger.Trace(() => "ServiceSecurityContext.Current.WindowsIdentity: " + Report(serviceSecurityContextIdentity));
+
+            // WindowsIdentity.GetCurrent() and ServiceSecurityContext.Current.WindowsIdentity in some scenarios
+            // return the same UserName, but different number of system claims. The first one returns if the current user (running the process)
+            // is an admin, the other one sometimes doesn't (even if UAC is turned off). Could not find the underlying rules, but it
+            // seems that running the application from Visual Studio affects the behavior (among other factors).
+            // The first function always returns AuthenticationType=Kerebros, the other always returns Negotiation.
+
+            // Fix the Identity when a Windows domain is used.
+            if (identityName.StartsWith(Environment.UserDomainName + @"\", StringComparison.OrdinalIgnoreCase))
+            {
+                try
                 {
-                    string name = Identity.Substring(Identity.IndexOf(@"\") + 1);
-                    _windowsIdentity = new WindowsIdentity(name);
-                    _logger.Trace(() => "Using new WindowsIdentity(name): " + Report(_windowsIdentity));
+                    string userName = identityName.Substring(identityName.IndexOf(@"\") + 1);
+                    var windowsIdentity = new WindowsIdentity(userName); // This will throw an exception if the active directory server is not accessable.
+                    logger.Trace(() => "Using new WindowsIdentity(name): " + Report(windowsIdentity));
+                    return Tuple.Create(identityName, windowsIdentity);
                 }
-                // Fix the Identity when a developer runs the server using its own account (with or without a Windows domain).
-                else if (Identity == WindowsIdentity.GetCurrent().Name)
+                catch (Exception ex)
                 {
-                    _windowsIdentity = WindowsIdentity.GetCurrent();
-                    _logger.Trace(() => "Using WindowsIdentity.GetCurrent: " + Report(_windowsIdentity));
-                }
-                else
-                {
-                    _windowsIdentity = serviceSecurityContextIdentity;
-                    _logger.Trace(() => "Using ServiceSecurityContext.Current.WindowsIdentity.");
+                    logger.Trace(() => ex.ToString());
                 }
             }
-            else
+
+            // Fix the Identity when a developer runs the server using its own account (with or without a Windows domain).
+            if (identityName == WindowsIdentity.GetCurrent().Name)
             {
-                _windowsIdentity = null;
-                Identity = "<not provided>";
-                _logger.Trace(() => "Identity not provided, ServiceSecurityContext.Current == null.");
+                var windowsIdentity = WindowsIdentity.GetCurrent();
+                logger.Trace(() => "Using WindowsIdentity.GetCurrent: " + Report(windowsIdentity));
+                return Tuple.Create(identityName, windowsIdentity);
+            }
+
+            {
+                var windowsIdentity = serviceSecurityContextIdentity;
+                logger.Trace(() => "Using ServiceSecurityContext.Current.WindowsIdentity.");
+                return Tuple.Create(identityName, windowsIdentity);
             }
         }
 
