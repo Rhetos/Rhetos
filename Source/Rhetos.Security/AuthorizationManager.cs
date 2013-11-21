@@ -36,7 +36,7 @@ namespace Rhetos.Security
 {
     public class AuthorizationManager : IAuthorizationManager
     {
-        private readonly IPrincipalProvider _principalProvider;
+        private readonly IUserInfo _userInfo;
         private readonly IDomainObjectModel _domainObjectModel;
         private readonly IPluginsContainer<IClaimProvider> _contextPermissionsRepository;
         private readonly ILogger _logger;
@@ -47,12 +47,12 @@ namespace Rhetos.Security
 
         public AuthorizationManager(
             IPluginsContainer<IClaimProvider> contextPermissionsRepository, 
-            IPrincipalProvider principalProvider,
+            IUserInfo userInfo,
             ILogProvider logProvider,
             IDomainObjectModel domainObjectModel,
             Lazy<IPermissionLoader> permissionLoader)
         {
-            _principalProvider = principalProvider;
+            _userInfo = userInfo;
             _domainObjectModel = domainObjectModel;
             _contextPermissionsRepository = contextPermissionsRepository;
             _logger = logProvider.GetLogger("AuthorizationManager");
@@ -99,11 +99,11 @@ namespace Rhetos.Security
 
             if (unauthorized != null)
             {
-                _logger.Trace(() => string.Format("User {0} does not posses claim {1}.{2}.", _principalProvider.Identity, unauthorized.claim.ClaimResource, unauthorized.claim.ClaimRight));
+                _logger.Trace(() => string.Format("User {0} does not posses claim {1}.{2}.", _userInfo.UserName, unauthorized.claim.ClaimResource, unauthorized.claim.ClaimRight));
 
                 return string.Format(
                     "You are not authorized for '{0}' on resource '{1}'. User '{2}'.",
-                    unauthorized.claim.ClaimRight, unauthorized.claim.ClaimResource, _principalProvider.Identity);
+                    unauthorized.claim.ClaimRight, unauthorized.claim.ClaimResource, _userInfo.UserName);
             }
 
             return null;
@@ -112,13 +112,15 @@ namespace Rhetos.Security
         public bool[] GetAuthorizations(IEnumerable<IClaim> requiredClaims)
         {
             var sw = Stopwatch.StartNew();
-            if (_allowBuiltinAdminOverride && _principalProvider.IsBuiltInAdministrator())
+
+            if (_allowBuiltinAdminOverride && _userInfo is WcfWindowsUserInfo && ((WcfWindowsUserInfo)_userInfo).IsBuiltInAdministrator())
             {
-                _logger.Trace(() => string.Format("User {0} has builtin administrator privileges.", _principalProvider.Identity));
+                _logger.Trace(() => string.Format("User {0} has builtin administrator privileges.", _userInfo.UserName));
                 return Enumerable.Repeat(true, requiredClaims.Count()).ToArray();
             }
 
-            IEnumerable<string> membership = _principalProvider.GetIdentityMembership();
+            // TODO: Move to a plugin "SimpleWindowsAuthorizationProvider"
+            IEnumerable<string> membership = ((WcfWindowsUserInfo)_userInfo).GetIdentityMembership();
 
             // Force-load domain object model:
             var objectModel = _domainObjectModel.ObjectModel;

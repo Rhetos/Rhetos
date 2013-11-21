@@ -18,10 +18,16 @@
 */
 namespace Rhetos.Utilities
 {
+    /// <summary>
+    /// Implementation of this interface is a security principal provider.
+    /// </summary>
     public interface IUserInfo
     {
         bool IsUserRecognized { get; }
         string UserName { get; }
+        /// <summary>
+        /// Client host name or address.
+        /// </summary>
         string Workstation { get; }
     }
 

@@ -44,8 +44,8 @@ namespace Rhetos.Security.Service
             if (!result.Success)
             {
                 if (!string.IsNullOrEmpty(result.UserMessage))
-                    throw new ApplicationException(result.UserMessage, new InvalidOperationException(result.SystemMessage));
-                throw new InvalidOperationException("Command execution failed:" + Environment.NewLine + result.SystemMessage);
+                    throw new UserException(result.UserMessage, result.SystemMessage);
+                throw new FrameworkException("Command execution failed:" + Environment.NewLine + result.SystemMessage);
             }
 
             return result;

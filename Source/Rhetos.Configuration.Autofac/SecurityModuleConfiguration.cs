@@ -19,6 +19,7 @@
 using Autofac;
 using Rhetos.Extensibility;
 using Rhetos.Security;
+using Rhetos.Utilities;
 
 namespace Rhetos.Configuration.Autofac
 {
@@ -28,7 +29,7 @@ namespace Rhetos.Configuration.Autofac
         {
             builder.RegisterType<AuthorizationManager>().As<IAuthorizationManager>().InstancePerLifetimeScope();
             builder.RegisterType<ClaimGenerator>().As<IClaimGenerator>();
-            builder.RegisterType<DomainPrincipalProvider>().As<IPrincipalProvider>().InstancePerLifetimeScope();
+            builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
             PluginsUtility.RegisterPlugins<IClaimProvider>(builder);
 
             base.Load(builder);

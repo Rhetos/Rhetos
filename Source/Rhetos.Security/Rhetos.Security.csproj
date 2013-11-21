@@ -62,8 +62,8 @@
   <ItemGroup>
     <Compile Include="ClaimGenerator.cs" />
     <Compile Include="AuthorizationManager.cs" />
-    <Compile Include="DomainPrincipalProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WcfWindowsUserInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\CommonConcepts\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces\Rhetos.Dom.DefaultConcepts.Interfaces.csproj">
