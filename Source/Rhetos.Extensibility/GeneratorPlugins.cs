@@ -25,38 +25,24 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Extensibility
 {
-    public class GeneratorProcessor
+    public class GeneratorPlugins
     {
         private IEnumerable<IGenerator> _generators;
 
-        public GeneratorProcessor(IEnumerable<IGenerator> generators)
+        public GeneratorPlugins(IEnumerable<IGenerator> generators)
         {
             this._generators = generators;
         }
 
-        public string ProcessGenerators()
+        public IList<IGenerator> GetGenerators()
         {
             var genNames = _generators.Select(gen => gen.GetType().FullName).ToList();
-            var genDependencies = _generators.SelectMany(gen => gen.Dependencies.Select(x => Tuple.Create(x, gen.GetType().FullName)));
+            var genDependencies = _generators.SelectMany(gen => (gen.Dependencies ?? new string[0]).Select(x => Tuple.Create(x, gen.GetType().FullName)));
             Rhetos.Utilities.DirectedGraph.TopologicalSort(genNames, genDependencies);
 
             var sortedGenerators = _generators.ToArray();
             DirectedGraph.SortByGivenOrder(sortedGenerators, genNames.ToArray(), gen => gen.GetType().FullName);
-
-            foreach (var generator in sortedGenerators)
-            {
-                try
-                {
-                    generator.Generate();
-                }
-                catch (Exception ex) {
-                    throw new FrameworkException("Error in processing generator " + generator.GetType().Name + ".", ex);
-                }
-            }
-
-            if (sortedGenerators.Length > 0)
-                return "Generated " + string.Join(", ", sortedGenerators.Select(gen => gen.GetType().Name)) + ".";
-            return "No generators.";
+            return sortedGenerators;
         }
     }
 }

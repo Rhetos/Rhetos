@@ -8,7 +8,7 @@
 
 	Entity Claim
 	{
-		Implements 'Rhetos.Security.IClaim, Rhetos.Security.Interfaces';
+		Implements 'Rhetos.Dom.DefaultConcepts.ICommonClaim, Rhetos.Dom.DefaultConcepts.Interfaces';
 		
 		ShortString ClaimResource { Required; }
 		ShortString ClaimRight { Required; }
@@ -30,7 +30,7 @@
 	
 	Browse PermissionBrowse Common.Permission	
 	{
-		Implements 'Rhetos.Security.IPermission, Rhetos.Security.Interfaces';
+		Implements 'Rhetos.Dom.DefaultConcepts.IPermission, Rhetos.Dom.DefaultConcepts.Interfaces';
 		
 		ShortString ClaimResource {From 'Claim.ClaimResource';}
 		ShortString ClaimRight {From 'Claim.ClaimRight';}
@@ -57,7 +57,8 @@
 		
 		FilterBy 'IEnumerable<Common.Claim>' '(repository, claims, executionContext) =>
 			{
-                var authorizations = executionContext.AuthorizationManager.GetAuthorizations(claims);
+                var securityClaims = claims.Select(c => new Rhetos.Security.Claim(c.ClaimResource, c.ClaimRight)).ToList();
+                var authorizations = executionContext.AuthorizationManager.GetAuthorizations(securityClaims);
 			
                 return claims.Zip(authorizations, (claim, authorized) => new Common.MyClaim {
                         Base = claim,

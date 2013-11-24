@@ -1,4 +1,5 @@
-﻿/*
+﻿using Rhetos.Utilities;
+/*
     Copyright (C) 2013 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -23,8 +24,8 @@ using System.Text;
 
 namespace Rhetos.Security
 {
-    public interface IPermissionLoader
+    public interface IAuthorizationProvider
     {
-        IPermission[] LoadPermissions(IEnumerable<IClaim> claims, IEnumerable<string> principals);
+        IList<bool> GetAuthorizations(IUserInfo userInfo, IList<Claim> requiredClaims);
     }
 }

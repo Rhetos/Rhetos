@@ -32,16 +32,16 @@ namespace Rhetos.Processing.DefaultCommands
     [ExportMetadata(MefProvider.Implements, typeof(ExecuteActionCommandInfo))]
     public class ExecuteActionCommandClaims : IClaimProvider
     {
-        public IEnumerable<IClaim> GetRequiredClaims(ICommandInfo info, Func<string, string, IClaim> newClaim)
+        public IList<Claim> GetRequiredClaims(ICommandInfo info)
         {
             var commandInfo = (ExecuteActionCommandInfo)info;
-            return new[] { newClaim(commandInfo.Action.GetType().FullName, "Execute") };
+            return new[] { new Claim(commandInfo.Action.GetType().FullName, "Execute") };
         }
 
-        public IEnumerable<IClaim> GetAllClaims(IDslModel dslModel, Func<string, string, IClaim> newClaim)
+        public IList<Claim> GetAllClaims(IDslModel dslModel)
         {
             return dslModel.Concepts.OfType<ActionInfo>()
-                .Select(actionInfo => newClaim(actionInfo.Module.Name + "." + actionInfo.Name, "Execute"));
+                .Select(actionInfo => new Claim(actionInfo.Module.Name + "." + actionInfo.Name, "Execute")).ToList();
         }
     }
 }

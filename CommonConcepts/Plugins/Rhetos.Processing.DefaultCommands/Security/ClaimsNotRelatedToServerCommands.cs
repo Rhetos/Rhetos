@@ -31,17 +31,17 @@ namespace Rhetos.Processing.DefaultCommands
     [ExportMetadata(MefProvider.Implements, typeof(DummyCommandInfo))]
     public class ClaimsNotRelatedToServerCommands : IClaimProvider
     {
-        public IEnumerable<IClaim> GetRequiredClaims(ICommandInfo info, Func<string, string, IClaim> newClaim)
+        public IList<Claim> GetRequiredClaims(ICommandInfo info)
         {
             throw new FrameworkException("Unexpected method call. This class is not based on an executable server command.");
         }
 
-        public IEnumerable<IClaim> GetAllClaims(IDslModel dslModel, Func<string, string, IClaim> newClaim)
+        public IList<Claim> GetAllClaims(IDslModel dslModel)
         {
-            var claims = new List<IClaim>();
+            var claims = new List<Claim>();
 
             claims.AddRange(dslModel.Concepts.OfType<CustomClaimInfo>()
-                .Select(item => newClaim(item.ClaimResource, item.ClaimRight)));
+                .Select(item => new Claim(item.ClaimResource, item.ClaimRight)));
 
             return claims;
         }

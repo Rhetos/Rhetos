@@ -18,25 +18,13 @@
 */
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-namespace Rhetos.Security
+namespace Rhetos.Dom.DefaultConcepts
 {
-    public interface IClaim
+    public interface IPermissionLoader
     {
-        string ClaimResource { get; set; }
-        string ClaimRight { get; set; }
-    }
-
-    public class ClaimComparer : IEqualityComparer<IClaim>
-    {
-        public bool Equals(IClaim x, IClaim y)
-        {
-            return x.ClaimResource == y.ClaimResource && x.ClaimRight == y.ClaimRight;
-        }
-
-        public int GetHashCode(IClaim obj)
-        {
-            return (obj.ClaimResource + obj.ClaimRight).GetHashCode();
-        }
+        IList<IPermission> LoadPermissions(IList<Rhetos.Security.Claim> claims, IList<string> principals);
     }
 }

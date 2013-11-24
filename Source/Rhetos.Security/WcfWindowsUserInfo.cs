@@ -236,7 +236,7 @@ namespace Rhetos.Security
             return principal.IsInRole(WindowsBuiltInRole.Administrator);
         }
 
-        public IEnumerable<string> GetIdentityMembership()
+        public IList<string> GetIdentityMembership()
         {
             CheckIfUserRecognized();
             var stopwatch = Stopwatch.StartNew();

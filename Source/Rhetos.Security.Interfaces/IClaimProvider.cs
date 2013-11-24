@@ -25,7 +25,7 @@ namespace Rhetos.Security
 {
     public interface IClaimProvider
     {
-        IEnumerable<IClaim> GetRequiredClaims(ICommandInfo info, Func<string, string, IClaim> newClaim);
-        IEnumerable<IClaim> GetAllClaims(IDslModel dslModel, Func<string, string, IClaim> newClaim);
+        IList<Claim> GetRequiredClaims(ICommandInfo info);
+        IList<Claim> GetAllClaims(IDslModel dslModel);
     }
 }

@@ -96,7 +96,11 @@
     <Compile Include="DatabaseExtensionFunctions.cs" />
     <Compile Include="FilterCriteria.cs" />
     <Compile Include="IActionRepository.cs" />
+    <Compile Include="IClaimRepository.cs" />
+    <Compile Include="ICommonClaim.cs" />
     <Compile Include="IFilterRepository.cs" />
+    <Compile Include="IPermission.cs" />
+    <Compile Include="IPermissionLoader.cs" />
     <Compile Include="IReportRepository.cs" />
     <Compile Include="ReportFile.cs" />
     <Compile Include="IEntity.cs" />

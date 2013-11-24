@@ -48,15 +48,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IPermissionLoader.cs" />
+    <Compile Include="IAuthorizationProvider.cs" />
     <Compile Include="IAuthorizationManager.cs" />
-    <Compile Include="IClaim.cs" />
-    <Compile Include="IClaimGenerator.cs" />
-    <Compile Include="IClaimLoader.cs" />
+    <Compile Include="Claim.cs" />
     <Compile Include="IClaimProvider.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="IPermission.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -67,6 +64,10 @@
     <ProjectReference Include="..\Rhetos.Processing.Interfaces\Rhetos.Processing.Interfaces.csproj">
       <Project>{4D2FCD7F-D9BB-4E55-B9C6-FDF352F6DCF3}</Project>
       <Name>Rhetos.Processing.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj">
+      <Project>{71e63722-57bc-41df-9ff5-57ecc67e4bc1}</Project>
+      <Name>Rhetos.Utilities</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

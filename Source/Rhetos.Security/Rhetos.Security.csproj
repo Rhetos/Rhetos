@@ -60,20 +60,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ClaimGenerator.cs" />
     <Compile Include="AuthorizationManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WcfWindowsUserInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\CommonConcepts\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces\Rhetos.Dom.DefaultConcepts.Interfaces.csproj">
-      <Project>{32D57085-6113-43F9-A505-D8B311BD6204}</Project>
-      <Name>Rhetos.Dom.DefaultConcepts.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\CommonConcepts\Plugins\Rhetos.Processing.DefaultCommands.Interfaces\Rhetos.Processing.DefaultCommands.Interfaces.csproj">
-      <Project>{98f36936-5842-49cf-bacf-61119ac7bf3e}</Project>
-      <Name>Rhetos.Processing.DefaultCommands.Interfaces</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj">
       <Project>{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}</Project>
       <Name>Rhetos.Utilities</Name>

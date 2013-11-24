@@ -34,23 +34,20 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.DependsOn, typeof(BrowseDataStructureCodeGenerator))]
     public class PermissionLoaderCodeGenerator : IConceptCodeGenerator
     {
-        protected static string MemberFunctionsSnippet(DataStructureInfo info)
+        const string MemberFunctionsSnippet =
+@"        public IList<IPermission> LoadPermissions(IList<Rhetos.Security.Claim> claims, IList<string> principals)
         {
-            return string.Format(
-@"        public Rhetos.Security.IPermission[] LoadPermissions(IEnumerable<Rhetos.Security.IClaim> claims, IEnumerable<string> principals)
-        {{
-            var claimNames = claims.Select(claim => claim.ClaimResource + ""."" + claim.ClaimRight).ToArray();
+            var claimNames = claims.Select(claim => claim.Resource + ""."" + claim.Right).ToArray();
             return Query()
-                .Where(permission => claimNames.Contains(permission.ClaimResource+"".""+permission.ClaimRight) && principals.Contains(permission.Principal))
-                .Cast<Rhetos.Security.IPermission>().ToArray();
-        }}
-
-", info.Module.Name, info.Name);
+                .Where(permission => claimNames.Contains(permission.ClaimResource + ""."" + permission.ClaimRight) && principals.Contains(permission.Principal))
+                .Cast<Rhetos.Dom.DefaultConcepts.IPermission>().ToList();
         }
+
+";
 
         protected static string RegisterRepository(DataStructureInfo info)
         {
-            return string.Format(@"builder.RegisterType<{0}._Helper.{1}_Repository>().As<Rhetos.Security.IPermissionLoader>();
+            return string.Format(@"builder.RegisterType<{0}._Helper.{1}_Repository>().As<Rhetos.Dom.DefaultConcepts.IPermissionLoader>();
             ", info.Module.Name, info.Name);
         }
 
@@ -60,11 +57,11 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (info.Module.Name == "Common" && info.Name == "PermissionBrowse")
             {
-                codeBuilder.InsertCode("Rhetos.Security.IPermissionLoader", RepositoryHelper.RepositoryInterfaces, info);
-                codeBuilder.InsertCode(MemberFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info);
+                codeBuilder.InsertCode("Rhetos.Dom.DefaultConcepts.IPermissionLoader", RepositoryHelper.RepositoryInterfaces, info);
+                codeBuilder.InsertCode(MemberFunctionsSnippet, RepositoryHelper.RepositoryMembers, info);
                 codeBuilder.InsertCode(RegisterRepository(info), ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
-                codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Security.IPermissionLoader));
-                codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Security.IClaim));
+                codeBuilder.AddReferencesFromDependency(typeof(IPermissionLoader));
+                codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Security.Claim));
             }
         }
     }

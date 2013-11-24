@@ -24,12 +24,10 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using Rhetos.Utilities;
 using Rhetos.Dom;
-using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.Processing;
-using Rhetos.Processing.DefaultCommands;
 using Autofac.Features.Indexed;
 
 namespace Rhetos.Security
@@ -37,44 +35,29 @@ namespace Rhetos.Security
     public class AuthorizationManager : IAuthorizationManager
     {
         private readonly IUserInfo _userInfo;
-        private readonly IDomainObjectModel _domainObjectModel;
-        private readonly IPluginsContainer<IClaimProvider> _contextPermissionsRepository;
+        private readonly IPluginsContainer<IClaimProvider> _claimProviders;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
         private readonly bool _allowBuiltinAdminOverride;
-        private readonly Lazy<Type> _claimType;
-        private readonly Lazy<IPermissionLoader> _permissionLoader;
+        private readonly IAuthorizationProvider _authorizationProvider;
 
         public AuthorizationManager(
-            IPluginsContainer<IClaimProvider> contextPermissionsRepository, 
+            IPluginsContainer<IClaimProvider> claimProviders,
             IUserInfo userInfo,
             ILogProvider logProvider,
-            IDomainObjectModel domainObjectModel,
-            Lazy<IPermissionLoader> permissionLoader)
+            IAuthorizationProvider authorizationProvider)
         {
             _userInfo = userInfo;
-            _domainObjectModel = domainObjectModel;
-            _contextPermissionsRepository = contextPermissionsRepository;
+            _claimProviders = claimProviders;
+            _authorizationProvider = authorizationProvider;
+
             _logger = logProvider.GetLogger("AuthorizationManager");
             _performanceLogger = logProvider.GetLogger("Performance");
-            _permissionLoader = permissionLoader;
 
-            _allowBuiltinAdminOverride = FromConfigallowBuiltinAdminOverride();
-
-            _claimType = new Lazy<Type>(() =>
-            {
-                try
-                {
-                    return domainObjectModel.GetType("Common.Claim");
-                }
-                catch (Exception ex)
-                {
-                    throw new FrameworkException(ex.Message + " Probably missing package CommonConcepts.", ex);
-                }
-            });
+            _allowBuiltinAdminOverride = FromConfigAllowBuiltinAdminOverride();
         }
 
-        private static bool FromConfigallowBuiltinAdminOverride()
+        private static bool FromConfigAllowBuiltinAdminOverride()
         {
             if (ConfigurationManager.AppSettings["BuiltinAdminOverride"] != null)
             {
@@ -87,29 +70,7 @@ namespace Rhetos.Security
             return false;
         }
 
-        public string Authorize(IEnumerable<ICommandInfo> commandInfos)
-        {
-            var sw = Stopwatch.StartNew();
-            IEnumerable<IClaim> requiredClaims = GetRequiredClaims(commandInfos);
-            _performanceLogger.Write(sw, "AuthorizationManager.Authorize requiredClaims");
-
-            var claimsAuthorization = requiredClaims.Zip(GetAuthorizations(requiredClaims), (claim, authorized) => new { claim, authorized });
-            var unauthorized = claimsAuthorization.FirstOrDefault(ca => ca.authorized == false);
-            _performanceLogger.Write(sw, "AuthorizationManager.Authorize unauthorizedClaim");
-
-            if (unauthorized != null)
-            {
-                _logger.Trace(() => string.Format("User {0} does not posses claim {1}.{2}.", _userInfo.UserName, unauthorized.claim.ClaimResource, unauthorized.claim.ClaimRight));
-
-                return string.Format(
-                    "You are not authorized for '{0}' on resource '{1}'. User '{2}'.",
-                    unauthorized.claim.ClaimRight, unauthorized.claim.ClaimResource, _userInfo.UserName);
-            }
-
-            return null;
-        }
-
-        public bool[] GetAuthorizations(IEnumerable<IClaim> requiredClaims)
+        public IList<bool> GetAuthorizations(IList<Claim> requiredClaims)
         {
             var sw = Stopwatch.StartNew();
 
@@ -119,47 +80,44 @@ namespace Rhetos.Security
                 return Enumerable.Repeat(true, requiredClaims.Count()).ToArray();
             }
 
-            // TODO: Move to a plugin "SimpleWindowsAuthorizationProvider"
-            IEnumerable<string> membership = ((WcfWindowsUserInfo)_userInfo).GetIdentityMembership();
-
-            // Force-load domain object model:
-            var objectModel = _domainObjectModel.ObjectModel;
-
-            IPermission[] rawData = _permissionLoader.Value.LoadPermissions(requiredClaims, membership);
-
-            HashSet<string> claimsWithRight = new HashSet<string>();
-            foreach (IPermission permission in rawData)
-                if (permission.IsAuthorized.Value)
-                    claimsWithRight.Add(permission.ClaimResource + "." + permission.ClaimRight);
-            foreach (IPermission permission in rawData)
-                if (!permission.IsAuthorized.Value && claimsWithRight.Contains(permission.ClaimResource + "." + permission.ClaimRight)) 
-                    claimsWithRight.Remove(permission.ClaimResource + "." + permission.ClaimRight);
-
-            var authorizations = requiredClaims.Select(requiredClaim => claimsWithRight.Contains(requiredClaim.ClaimResource + "." + requiredClaim.ClaimRight)).ToArray();
+            var authorizations = _authorizationProvider.GetAuthorizations(_userInfo, requiredClaims);
             _performanceLogger.Write(sw, "AuthorizationManager.GetAuthorizations");
-
             return authorizations;
         }
 
-        private IEnumerable<IClaim> GetRequiredClaims(IEnumerable<ICommandInfo> commandInfos)
+        public string Authorize(IList<ICommandInfo> commandInfos)
         {
-            List<IClaim> requiredPermissions = new List<IClaim>();
-            foreach (ICommandInfo commandInfo in commandInfos)
+            var sw = Stopwatch.StartNew();
+
+            IList<Claim> requiredClaims = GetRequiredClaims(commandInfos);
+            _performanceLogger.Write(sw, "AuthorizationManager.Authorize requiredClaims");
+
+            var claimsAuthorization = requiredClaims.Zip(GetAuthorizations(requiredClaims), (claim, authorized) => new { claim, authorized });
+            var unauthorized = claimsAuthorization.FirstOrDefault(ca => ca.authorized == false);
+            _performanceLogger.Write(sw, "AuthorizationManager.Authorize unauthorizedClaim");
+
+            if (unauthorized != null)
             {
-                var providers = _contextPermissionsRepository.GetImplementations(commandInfo.GetType());
-                foreach (var provider in providers)
-                    requiredPermissions.AddRange(provider.GetRequiredClaims(commandInfo, CreateClaim));
+                _logger.Trace(() => string.Format("User {0} does not posses claim {1}.", _userInfo.UserName, unauthorized.claim.FullName));
+
+                return string.Format(
+                    "You are not authorized for '{0}' on resource '{1}'. User '{2}'.",
+                    unauthorized.claim.Right, unauthorized.claim.Resource, _userInfo.UserName);
             }
-            return requiredPermissions;
+
+            return null;
         }
 
-        private IClaim CreateClaim(string resource, string claimRight)
+        private IList<Claim> GetRequiredClaims(IEnumerable<ICommandInfo> commandInfos)
         {
-            IClaim claim = (IClaim)Activator.CreateInstance(_claimType.Value);
-            claim.ClaimResource = resource;
-            claim.ClaimRight = claimRight;
-
-            return claim;
+            List<Claim> requiredClaims = new List<Claim>();
+            foreach (ICommandInfo commandInfo in commandInfos)
+            {
+                var providers = _claimProviders.GetImplementations(commandInfo.GetType());
+                foreach (var provider in providers)
+                    requiredClaims.AddRange(provider.GetRequiredClaims(commandInfo));
+            }
+            return requiredClaims;
         }
     }
 }

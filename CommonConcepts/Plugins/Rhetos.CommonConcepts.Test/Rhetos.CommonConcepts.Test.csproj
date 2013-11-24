@@ -54,14 +54,31 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="ClaimsTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlAnalysisTest.cs" />
     <Compile Include="LoggingUtilityTest.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Dom.Interfaces\Rhetos.Dom.Interfaces.csproj">
+      <Project>{91bdf488-0921-4969-8a53-32169338d8db}</Project>
+      <Name>Rhetos.Dom.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Source\Rhetos.Dsl.Interfaces\Rhetos.Dsl.Interfaces.csproj">
       <Project>{f4acd412-2782-4191-8708-c7ae99b0cee9}</Project>
       <Name>Rhetos.Dsl.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Extensibility.Interfaces\Rhetos.Extensibility.Interfaces.csproj">
+      <Project>{ddc73f5f-bb0e-4944-92cc-4ac937398499}</Project>
+      <Name>Rhetos.Extensibility.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj">
+      <Project>{bb7e5668-1b43-4fce-a832-444cc57fee80}</Project>
+      <Name>Rhetos.Logging.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Security.Interfaces\Rhetos.Security.Interfaces.csproj">
+      <Project>{8e1d4acd-b1aa-433f-9e52-fa50d4a1c9dc}</Project>
+      <Name>Rhetos.Security.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Source\Rhetos.TestCommon\Rhetos.TestCommon.csproj">
       <Project>{43ba178b-7642-473c-a43a-dbf58294635a}</Project>
@@ -70,6 +87,10 @@
     <ProjectReference Include="..\..\..\Source\Rhetos.Utilities\Rhetos.Utilities.csproj">
       <Project>{71e63722-57bc-41df-9ff5-57ecc67e4bc1}</Project>
       <Name>Rhetos.Utilities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Dom.DefaultConcepts.Interfaces\Rhetos.Dom.DefaultConcepts.Interfaces.csproj">
+      <Project>{32d57085-6113-43f9-a505-d8b311bd6204}</Project>
+      <Name>Rhetos.Dom.DefaultConcepts.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rhetos.Dom.DefaultConcepts\Rhetos.Dom.DefaultConcepts.csproj">
       <Project>{6fa98d51-a0b6-4e5f-8c78-0d369ddd6dcc}</Project>

@@ -91,6 +91,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IServerInitializer.cs" />
     <Compile Include="IGenerator.cs" />
     <Compile Include="IPluginsContainer.cs" />
     <Compile Include="MefProvider.cs" />

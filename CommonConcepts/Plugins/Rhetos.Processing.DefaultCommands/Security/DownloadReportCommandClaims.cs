@@ -39,7 +39,7 @@ namespace Rhetos.Processing.DefaultCommands
             _dslModel = dslModel;
         }
 
-        public IEnumerable<IClaim> GetRequiredClaims(ICommandInfo commandInfo, Func<string, string, IClaim> newClaim)
+        public IList<Claim> GetRequiredClaims(ICommandInfo commandInfo)
         {
             var info = (DownloadReportCommandInfo)commandInfo;
 
@@ -51,19 +51,19 @@ namespace Rhetos.Processing.DefaultCommands
                 .Where(ds => ds.Report == reportConceptInfo)
                 .Select(ds => ds.DataSource));
 
-            List<IClaim> claims = dataSources
+            List<Claim> claims = dataSources
                 .Select(ds => ds.Module.Name + "." + ds.Name).Distinct()
-                .Select(resource => newClaim(resource, "Read")).ToList();
+                .Select(resource => new Claim(resource, "Read")).ToList();
 
-            claims.Add(newClaim(info.Report.GetType().FullName, "DownloadReport"));
+            claims.Add(new Claim(info.Report.GetType().FullName, "DownloadReport"));
 
             return claims;
         }
 
-        public IEnumerable<IClaim> GetAllClaims(IDslModel dslModel, Func<string, string, IClaim> newClaim)
+        public IList<Claim> GetAllClaims(IDslModel dslModel)
         {
             var allReports = dslModel.Concepts.OfType<ReportDataInfo>(); // TODO: Change ReportDataInfo to ReportFileInfo, after modifying TemplaterReportInfo to inherit ReportFileInfo.
-            return allReports.Select(report => newClaim(report.Module.Name + "." + report.Name, "DownloadReport")).ToArray();
+            return allReports.Select(report => new Claim(report.Module.Name + "." + report.Name, "DownloadReport")).ToArray();
         }
     }
 }

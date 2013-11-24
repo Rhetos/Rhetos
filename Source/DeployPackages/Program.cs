@@ -40,32 +40,6 @@ using System.Diagnostics;
 
 namespace DeployPackages
 {
-    class Paremeters
-    {
-        public readonly bool GeneratePermissionClaims;
-
-        public Paremeters(string[] args)
-        {
-            var readArgs = args.ToList();
-
-            GeneratePermissionClaims = !ReadSwitch(readArgs, "skipclaims"); // TODO: Remove this switch when security claims from Common package are separated from Framework. Currently the server cannot be deployed without common package because of the dependency.
-
-            if (readArgs.Count() != 0)
-                throw new ApplicationException(@"DeployPackages.exe command-line arguments:
-/skipclaims  Skips generating permission claims. Will be removed in future versions.");
-        }
-
-        private static bool ReadSwitch(List<string> readArgs, string switchName)
-        {
-            if (readArgs.Any(arg => arg.Equals("/" + switchName, StringComparison.OrdinalIgnoreCase)))
-            {
-                readArgs.RemoveAll(arg => arg.Equals("/" + switchName, StringComparison.OrdinalIgnoreCase));
-                return true;
-            }
-            return false;
-        }
-    }
-
     class Program
     {
         static ILogger _logger = new ConsoleLogger("DeployPackagesInitialization");
@@ -77,8 +51,6 @@ namespace DeployPackages
 
             try
             {
-                var parameters = new Paremeters(args);
-
                 string generatedDllsFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Generated");
                 if (!Directory.Exists(generatedDllsFolder))
                     Directory.CreateDirectory(generatedDllsFolder);
@@ -96,7 +68,7 @@ namespace DeployPackages
                     Console.WriteLine("SQL connection string: " + SqlUtility.MaskPassword(connectionString));
 
                     Console.Write("Parsing DSL scripts ... ");
-                    Console.WriteLine(container.Resolve<IDslModel>().Concepts.Count() + " features.");
+                    Console.WriteLine(container.Resolve<IDslModel>().Concepts.Count() + " statements.");
 
                     Console.Write("Compiling DOM assembly ... ");
                     int generatedTypesCount = container.Resolve<IDomGenerator>().ObjectModel.GetTypes().Length;
@@ -109,8 +81,15 @@ namespace DeployPackages
                     else
                         Console.WriteLine("Generated " + generatedTypesCount + " types.");
 
-                    Console.Write("Executing custom generators ... ");
-                    Console.WriteLine(container.Resolve<GeneratorProcessor>().ProcessGenerators());
+                    var generators = container.Resolve<GeneratorPlugins>().GetGenerators();
+                    foreach (var generator in generators)
+                    {
+                        Console.Write("Executing " + generator.GetType().Name + " ... ");
+                        generator.Generate();
+                        Console.WriteLine("Done.");
+                    }
+                    if (!generators.Any())
+                        Console.WriteLine("No additional generators.");
 
                     Console.Write("Preparing Rhetos database ... ");
                     DeploymentUtility.PrepareRhetosDatabase(container.Resolve<ISqlExecuter>());
@@ -156,22 +135,25 @@ namespace DeployPackages
                     File.WriteAllText(AutofacConfiguration.NHibernateMappingFile, container.Resolve<INHibernateMapping>().GetMapping(), Encoding.Unicode);
                     Console.WriteLine("Done.");
 
-
-                    if (parameters.GeneratePermissionClaims)
                     {
+                        Console.Write("Loading generated plugins ... ");
                         var stopwatch = Stopwatch.StartNew();
                         PluginsUtility.DeployPackagesAdditionalAssemblies.AddRange(new[] { @"bin\ServerDom.dll", @"ServerDom.dll" }); // TODO: Remove this hack after ServerDom.dll is moved to the bin\Generated.
-                        _performanceLogger.Write(stopwatch, "DeployPackages.GenerateClaims: Additional assemblies added.");
+                        _performanceLogger.Write(stopwatch, "DeployPackages.ServerInitialization: Additional assemblies added.");
                         PluginsUtility.DetectAndRegisterNewModulesAndPlugins(container);
-                        _performanceLogger.Write(stopwatch, "DeployPackages.GenerateClaims: New modules and plugins registered.");
-
-                        Console.Write("Generating claims ... ");
-                        container.Resolve<IClaimGenerator>().GenerateClaims();
-                        _performanceLogger.Write(stopwatch, "DeployPackages.GenerateClaims: Claims generated.");
+                        _performanceLogger.Write(stopwatch, "DeployPackages.ServerInitialization: New modules and plugins registered.");
                         Console.WriteLine("Done.");
+
+                        var initializers = container.Resolve<ServerInitializationPlugins>().GetInitializers();
+                        foreach (var initializer in initializers)
+                        {
+                            Console.Write("Initialization: " + initializer.GetType().Name + " ... ");
+                            initializer.Initialize();
+                            Console.WriteLine("Done.");
+                        }
+                        if (!initializers.Any())
+                            Console.WriteLine("No server initialization plugins.");
                     }
-                    else
-                        Console.WriteLine("Generating claims skipped.");
 
                     var configFile = new FileInfo(AutofacConfiguration.RhetosServerWebConfigPath);
                     if (configFile.Exists)

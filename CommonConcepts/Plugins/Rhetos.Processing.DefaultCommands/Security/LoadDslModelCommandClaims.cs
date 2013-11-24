@@ -29,14 +29,14 @@ namespace Rhetos.Processing.DefaultCommands
     [ExportMetadata(MefProvider.Implements, typeof(LoadDslModelCommandInfo))]
     public class LoadDslModelCommandClaims : IClaimProvider
     {
-        public IEnumerable<IClaim> GetRequiredClaims(ICommandInfo info, Func<string, string, IClaim> newClaim)
+        public IList<Claim> GetRequiredClaims(ICommandInfo info)
         {
-            return new IClaim[] { };
+            return new Claim[] { };
         }
 
-        public IEnumerable<IClaim> GetAllClaims(IDslModel dslModel, Func<string, string, IClaim> newClaim)
+        public IList<Claim> GetAllClaims(IDslModel dslModel)
         {
-            return new IClaim[] { };
+            return new Claim[] { };
         }
     }
 }

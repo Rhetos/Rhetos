@@ -32,22 +32,27 @@ namespace Rhetos.Dom.DefaultConcepts
     [Export(typeof(IConceptCodeGenerator))]
     [ExportMetadata(MefProvider.Implements, typeof(DataStructureInfo))]
     [ExportMetadata(MefProvider.DependsOn, typeof(OrmDataStructureCodeGenerator))]
-    public class ClaimLoaderCodeGenerator : IConceptCodeGenerator
+    public class ClaimRepositoryCodeGenerator : IConceptCodeGenerator
     {
-        protected static string MemberFunctionsSnippet(DataStructureInfo info)
+        const string MemberFunctionsSnippet =
+@"        public IList<ICommonClaim> LoadClaims()
         {
-            return string.Format(
-@"        Rhetos.Security.IClaim[] Rhetos.Security.IClaimLoader.LoadClaims()
-        {{
-            return Query().Cast<Rhetos.Security.IClaim>().ToArray();
-        }}
-
-", info.Module.Name, info.Name);
+            return All();
         }
+
+        public void SaveClaims(IList<Rhetos.Security.Claim> insert, IList<ICommonClaim> update, IList<ICommonClaim> delete)
+        {
+            Save(
+                insert.Select(i => new Common.Claim { ClaimResource = i.Resource, ClaimRight = i.Right }).ToList(),
+                update.Cast<Common.Claim>().ToList(),
+                delete.Cast<Common.Claim>().ToList());
+        }
+
+";
 
         protected static string RegisterRepository(DataStructureInfo info)
         {
-            return string.Format(@"builder.RegisterType<{0}._Helper.{1}_Repository>().As<Rhetos.Security.IClaimLoader>();
+            return string.Format(@"builder.RegisterType<{0}._Helper.{1}_Repository>().As<Rhetos.Dom.DefaultConcepts.IClaimRepository>();
             ", info.Module.Name, info.Name);
         }
 
@@ -57,10 +62,10 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (info.Module.Name == "Common" && info.Name == "Claim")
             {
-                codeBuilder.InsertCode("Rhetos.Security.IClaimLoader", RepositoryHelper.RepositoryInterfaces, info);
-                codeBuilder.InsertCode(MemberFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info);
+                codeBuilder.InsertCode("Rhetos.Dom.DefaultConcepts.IClaimRepository", RepositoryHelper.RepositoryInterfaces, info);
+                codeBuilder.InsertCode(MemberFunctionsSnippet, RepositoryHelper.RepositoryMembers, info);
                 codeBuilder.InsertCode(RegisterRepository(info), ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
-                codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Security.IClaimLoader));
+                codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.IClaimRepository));
             }
         }
     }

@@ -31,24 +31,24 @@ namespace Rhetos.Processing.DefaultCommands
     [ExportMetadata(MefProvider.Implements, typeof(SaveEntityCommandInfo))]
     public class SaveCommandClaims : IClaimProvider
     {
-        public IEnumerable<IClaim> GetRequiredClaims(ICommandInfo info, Func<string, string, IClaim> newClaim)
+        public IList<Claim> GetRequiredClaims(ICommandInfo info)
         {
             SaveEntityCommandInfo commandInfo = (SaveEntityCommandInfo) info;
-            List<IClaim> claims = new List<IClaim>();
+            List<Claim> claims = new List<Claim>();
 
             if (commandInfo.DataToInsert != null && commandInfo.DataToInsert.Length > 0)
-                claims.Add(newClaim(commandInfo.Entity, "New"));
+                claims.Add(new Claim(commandInfo.Entity, "New"));
 
             if (commandInfo.DataToUpdate != null && commandInfo.DataToUpdate.Length > 0)
-                claims.Add(newClaim(commandInfo.Entity, "Edit"));
+                claims.Add(new Claim(commandInfo.Entity, "Edit"));
 
             if (commandInfo.DataToDelete != null && commandInfo.DataToDelete.Length > 0)
-                claims.Add(newClaim(commandInfo.Entity, "Remove"));
+                claims.Add(new Claim(commandInfo.Entity, "Remove"));
 
             return claims;
         }
 
-        public IEnumerable<IClaim> GetAllClaims(IDslModel dslModel, Func<string, string, IClaim> newClaim)
+        public IList<Claim> GetAllClaims(IDslModel dslModel)
         {
             var writableDataStructures = dslModel.Concepts.OfType<DataStructureInfo>()
                     .Where(dataStructure => dataStructure is IWritableOrmDataStructure)
@@ -56,12 +56,12 @@ namespace Rhetos.Processing.DefaultCommands
                         dslModel.Concepts.OfType<WriteInfo>()
                         .Select(x => x.DataStructure)).ToArray();
 
-            return writableDataStructures.SelectMany(dataStructure => new IClaim[]
+            return writableDataStructures.SelectMany(dataStructure => new Claim[]
                 {
-                    newClaim(dataStructure.GetKeyProperties(), "New"),
-                    newClaim(dataStructure.GetKeyProperties(), "Edit"),
-                    newClaim(dataStructure.GetKeyProperties(), "Remove")
-                });
+                    new Claim(dataStructure.GetKeyProperties(), "New"),
+                    new Claim(dataStructure.GetKeyProperties(), "Edit"),
+                    new Claim(dataStructure.GetKeyProperties(), "Remove")
+                }).ToList();
         }
     }
 }

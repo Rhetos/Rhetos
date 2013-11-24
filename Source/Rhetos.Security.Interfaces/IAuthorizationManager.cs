@@ -24,7 +24,7 @@ namespace Rhetos.Security
 {
     public interface IAuthorizationManager
     {
-        string Authorize(IEnumerable<ICommandInfo> commandInfos);
-        bool[] GetAuthorizations(IEnumerable<IClaim> requiredClaims);
+        string Authorize(IList<ICommandInfo> commandInfos);
+        IList<bool> GetAuthorizations(IList<Claim> requiredClaims);
     }
 }

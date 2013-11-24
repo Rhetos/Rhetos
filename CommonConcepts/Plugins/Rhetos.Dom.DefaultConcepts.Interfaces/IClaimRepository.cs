@@ -16,13 +16,17 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+using Rhetos.Security;
+using System;
 using System.Collections.Generic;
-using Rhetos.Utilities;
+using System.Linq;
+using System.Text;
 
-namespace Rhetos.Processing
+namespace Rhetos.Dom.DefaultConcepts
 {
-    public interface IProcessingEngine
+    public interface IClaimRepository
     {
-        ProcessingResult Execute(IList<ICommandInfo> commands);
+        IList<ICommonClaim> LoadClaims();
+        void SaveClaims(IList<Claim> insert, IList<ICommonClaim> update, IList<ICommonClaim> delete);
     }
 }

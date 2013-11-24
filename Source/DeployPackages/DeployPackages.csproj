@@ -121,6 +121,10 @@
       <Project>{A7328BFA-A009-4F1E-B9A1-B51B2020F45C}</Project>
       <Name>Rhetos.Deployment</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Extensibility.Interfaces\Rhetos.Extensibility.Interfaces.csproj">
+      <Project>{ddc73f5f-bb0e-4944-92cc-4ac937398499}</Project>
+      <Name>Rhetos.Extensibility.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Extensibility\Rhetos.Extensibility.csproj">
       <Project>{7eaf15bd-39c9-44ab-8834-ec0ae013a8a2}</Project>
       <Name>Rhetos.Extensibility</Name>

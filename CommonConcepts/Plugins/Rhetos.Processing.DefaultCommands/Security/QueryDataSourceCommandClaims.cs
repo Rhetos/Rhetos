@@ -31,19 +31,19 @@ namespace Rhetos.Processing.DefaultCommands
     [ExportMetadata(MefProvider.Implements, typeof(QueryDataSourceCommandInfo))]
     public class QueryDataSourceCommandClaims : IClaimProvider
     {
-        public IEnumerable<IClaim> GetRequiredClaims(ICommandInfo info, Func<string, string, IClaim> newClaim)
+        public IList<Claim> GetRequiredClaims(ICommandInfo info)
         {
             QueryDataSourceCommandInfo commandInfo = (QueryDataSourceCommandInfo) info;
-            return new[] { newClaim(commandInfo.DataSource, "Read") };
+            return new[] { new Claim(commandInfo.DataSource, "Read") };
         }
 
-        public IEnumerable<IClaim> GetAllClaims(IDslModel dslModel, Func<string, string, IClaim> newClaim)
+        public IList<Claim> GetAllClaims(IDslModel dslModel)
         {
-            List<IClaim> allClaims =
+            List<Claim> allClaims =
                 (from c in dslModel.Concepts
                  let dataStructure = c as DataStructureInfo
                  where dataStructure != null
-                 select newClaim(dataStructure.Module.Name + "." + dataStructure.Name, "Read")).ToList();
+                 select new Claim(dataStructure.Module.Name + "." + dataStructure.Name, "Read")).ToList();
 
             return allClaims;
         }

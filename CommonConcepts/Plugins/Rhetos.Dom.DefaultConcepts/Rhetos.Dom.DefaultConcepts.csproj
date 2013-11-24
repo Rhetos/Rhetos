@@ -58,6 +58,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClaimGenerator.cs" />
     <Compile Include="DataStructure\WriteCodeGenerator.cs" />
     <Compile Include="Advanced\EntityHistoryAllPropertiesCodeGenerator.cs" />
     <Compile Include="Advanced\EntityHistoryPropertyCodeGenerator.cs" />
@@ -73,7 +74,7 @@
     <Compile Include="Computations\FilterUseExecutionContextCodeGenerator.cs" />
     <Compile Include="Computations\ReportDataCodeGenerator.cs" />
     <Compile Include="DataStructure\ComputedCodeGenerator.cs" />
-    <Compile Include="DataStructure\ClaimLoaderCodeGenerator.cs" />
+    <Compile Include="DataStructure\ClaimRepositoryCodeGenerator.cs" />
     <Compile Include="DataStructure\PermissionLoaderCodeGenerator.cs" />
     <Compile Include="DomUtility.cs" />
     <Compile Include="Computations\ComposableFilterByCodeGenerator.cs" />
@@ -127,8 +128,17 @@
     <Compile Include="SimpleBusinessLogic\ImplementsInterfaceCodeGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\PessimisticLockingCodeGenerator.cs" />
+    <Compile Include="SimpleWindowsAuthorizationProvider.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj">
+      <Project>{bb7e5668-1b43-4fce-a832-444cc57fee80}</Project>
+      <Name>Rhetos.Logging.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Security\Rhetos.Security.csproj">
+      <Project>{f3480d1e-1c20-448d-b2f6-133472ceeb93}</Project>
+      <Name>Rhetos.Security</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Source\Rhetos.Utilities\Rhetos.Utilities.csproj">
       <Project>{71e63722-57bc-41df-9ff5-57ecc67e4bc1}</Project>
       <Name>Rhetos.Utilities</Name>

@@ -54,7 +54,7 @@ namespace Rhetos.Processing
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
-        public ProcessingResult Execute(IEnumerable<ICommandInfo> commands)
+        public ProcessingResult Execute(IList<ICommandInfo> commands)
         {
             var authorizationMessage = _authorizationManager.Authorize(commands);
             _persistenceTransaction.NHibernateSession.Clear(); // NHibernate cached data from AuthorizationManager may cause problems later with serializing arrays that mix cached proxies with POCO instance.

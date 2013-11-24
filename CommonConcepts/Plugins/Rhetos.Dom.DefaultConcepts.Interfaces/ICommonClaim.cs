@@ -16,13 +16,16 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-namespace Rhetos.Security
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace Rhetos.Dom.DefaultConcepts
 {
-    public interface IPermission
+    public interface ICommonClaim
     {
-        string Principal { get; }
-        string ClaimResource { get; }
-        string ClaimRight { get; }
-        bool? IsAuthorized { get; }
+        string ClaimResource { get; set; }
+        string ClaimRight { get; set; }
     }
 }

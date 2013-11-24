@@ -46,8 +46,6 @@ namespace Rhetos.Compiler
         {
             var stopwatch = Stopwatch.StartNew();
 
-            _performanceLogger.Write(stopwatch, "CodeGenerator: Plugins registered.");
-
             var codeBuilder = new CodeBuilder(tagOpen, tagClose);
 
             if (initialCodeGenerator != null)
