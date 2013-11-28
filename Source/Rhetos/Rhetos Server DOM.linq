@@ -62,15 +62,11 @@ void Main()
 		var testUser = new Common.Principal { Name = "Test123ABC", ID = Guid.NewGuid() };
 		repository.Common.Principal.Insert(new[] { testUser });
 		repository.Common.Principal.Delete(new[] { testUser });
-	
-		// PRINT EVENT LOG RECORDS OF Common.Principal, USING AuditRelatedEvents DATA SOURCE WITH FILTER:
-        var events = repository.Common.AuditRelatedEvents.Filter(new Common.LoggedItem { TableName = "Common.Principal", ItemId = testUser.ID })
-            .Select(ev => new { ev.Created, ev.Action, ev.ClientUserName, ev.ClientWorkstation, ev.Summary, ev.Relation, ev.TableName, ev.Description, ev.LogID })
-            .Dump();
-            
-        // DETAILED INFO ON THE LAST EVENT:
-        repository.Common.AuditDataModifications.Filter(new Common.LogEntry { LogID = events.First().LogID.Value })
-            .Select(info => new { info.Property, info.OldValue, info.NewValue, info.Modified, info.LogID })
+        
+        // PRINT LOGGED EVENTS FOR THE 'Common.Principal' INSTANCE:
+        repository.Common.LogReader.Query()
+            .Where(log => log.TableName == "Common.Principal" && log.ItemId == testUser.ID)
+            .Select(log => new { log.Created, log.Action, Client = SqlUtility.ExtractUserInfo(log.ContextInfo).UserName, log.Description })
             .Dump();
 	}
 }

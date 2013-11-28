@@ -3,8 +3,7 @@
 
 New features:
 
-* Implemented tracking of related events on *Common.Log*: *AuditRelatedEvents* data structure can be used to get all logged events of a given entity, including events of its detail entities and extensions. *DeletedItems* filter will retrieve deleted instances.
-* *AuditDataModifications* data structure reconstructs old values of a given entity from *Common.Log* for reporting.
+* Tracking of related items for *Common.Log* allows searching for all logged events of a given entity, including events of its detail entities and extensions.
  
 Internal improvements:
 

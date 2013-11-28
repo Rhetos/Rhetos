@@ -173,5 +173,43 @@ namespace Rhetos.Utilities.Test
             Assert.IsTrue(notCachedDatabaseTime - cachedTime <= TimeSpan.FromSeconds(0.01));
             Assert.IsTrue(cachedTime - notCachedDatabaseTime <= TimeSpan.FromSeconds(0.01));
         }
+
+        [TestMethod]
+        public void ExtractUserInfoTestFormat()
+        {
+            var initialUserInfo = new TestUserInfo("os\ab", "cd.ef", true);
+            var processedUserInfo = SqlUtility.ExtractUserInfo(SqlUtility.UserContextInfoText(initialUserInfo));
+            Assert.AreEqual(
+                initialUserInfo.UserName + "|" + initialUserInfo.Workstation,
+                processedUserInfo.UserName + "|" + processedUserInfo.Workstation);
+        }
+
+        [TestMethod]
+        public void ExtractUserInfoTest()
+        {
+            var tests = new Dictionary<string, string>
+            {
+                { @"Alpha:OS\aa,bb-cc.hr", @"OS\aa|bb-cc.hr" },
+                { @"Rhetos:Bob,Some workstation", @"Bob|Some workstation" },
+                { @"Rhetos:OS\aa,192.168.113.108 port 49271", @"OS\aa|192.168.113.108 port 49271" },
+                { @"Rhetos:aa,b.c", @"aa|b.c" },
+                { @"Rhetos:verylongdomainname\extremelylongusernamenotcompl", @"verylongdomainname\extremelylongusernamenotcompl|null" },
+                { @"Rhetos:asdf", @"asdf|null" },
+                { @"Rhetos:1,2,3", @"1|2,3" },
+                { @"Rhetos:1 1 , 2 2 ", @"1 1|2 2" },
+                { "<null>", @"null|null" },
+                { @"", @"null|null" },
+                { @"Rhetos:", @"null|null" },
+                { @"Rhetos:   ", @"null|null" },
+                { @"Rhetos:  , ", @"null|null" },
+                { @"1:2,3", @"null|null" }
+            };
+
+            foreach (var test in tests)
+            {
+                var result = SqlUtility.ExtractUserInfo(test.Key == "<null>" ? null : test.Key);
+                Assert.AreEqual(test.Value, (result.UserName ?? "null") + "|" + (result.Workstation ?? "null"), "Input: " + test.Key);
+            }
+        }
     }
 }
