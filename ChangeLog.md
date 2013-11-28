@@ -1,3 +1,18 @@
+0.9.13 (2013-11-28)
+-------------------
+
+Internal improvements:
+
+* Bugfix: **RegExMatch** did not escape C# special characters when generating object model. Matching values are now tested for exact match, not substring match.
+* Added custom error message property to **RegExMatch**.
+* Bugfix: Without a network access to the Active Directory server, every command throws an exception (even with BuiltinAdminOverride).
+* Bugfix: GenericFilter throws an exception when filtering for null reference value.
+* Bugfix: **Decimal** precision was limited to 5 instead of 10 for decimal(28,10).
+* Bugfix: Editing an entity with **History** does not create a new history record when using web API.
+* Bugfix: Escaping special characters in C# string in **HierarchyWithPathInfo**, **MinValueInfo** and **MaxValueInfo**.
+* Bugfix: Renaming a claim resource by changing letter case would cause an exception at DeployPackages.
+* Bugfix: Removed a reference from core framework (Rhetos.Security) to CommonConcepts package. 
+
 0.9.12 (2013-11-06)
 -------------------
 
