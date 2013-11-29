@@ -58,12 +58,6 @@ IF EXIST "%~1\DataMigration\" XCOPY /Y/D/R /S "%~1\DataMigration\*.sql" %DataMig
 EXIT /B
 
 :Continue1
-@REM ======================== FIX ==============================
-
-REM Removing duplicate files - a temporary workaround until the reference from Rhetos core to CommonConcepts package is removed (using claims and permissions).
-DEL /F /Q %BinFolder%\Rhetos.Dom.DefaultConcepts.Interfaces.??? || GOTO Error1
-DEL /F /Q %BinFolder%\Rhetos.Processing.DefaultCommands.Interfaces.??? || GOTO Error1
-
 
 @REM ======================== PRECOMPILED DOMAIN OBJECT MODEL ==============================
 

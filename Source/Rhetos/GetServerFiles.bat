@@ -12,7 +12,7 @@ SET DslScriptsFolder="%CD%\DslScripts"
 
 REM ======================== REST SERVICE ==============================
 
-XCOPY /Y/D/R ..\..\Source\Rhetos.Security.Service\bin\%Config%\*.dll %BinFolder% || EXIT /B 1
+XCOPY /Y/D/R ..\..\SimpleWindowsAuth\Plugins\Rhetos.Security.Service\bin\%Config%\*.dll %BinFolder% || EXIT /B 1
 
 REM ======================== DEPLOYMENT TOOLS ==============================
 

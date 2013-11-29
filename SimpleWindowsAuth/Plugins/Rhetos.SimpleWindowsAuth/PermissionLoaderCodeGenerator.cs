@@ -26,8 +26,9 @@ using System.ComponentModel.Composition;
 using Rhetos.Compiler;
 using Rhetos.Extensibility;
 using Rhetos.Dsl;
+using Rhetos.Dom.DefaultConcepts;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.SimpleWindowsAuth
 {
     [Export(typeof(IConceptCodeGenerator))]
     [ExportMetadata(MefProvider.Implements, typeof(BrowseDataStructureInfo))]
@@ -35,19 +36,19 @@ namespace Rhetos.Dom.DefaultConcepts
     public class PermissionLoaderCodeGenerator : IConceptCodeGenerator
     {
         const string MemberFunctionsSnippet =
-@"        public IList<IPermission> LoadPermissions(IList<Rhetos.Security.Claim> claims, IList<string> principals)
+@"        public IList<Rhetos.SimpleWindowsAuth.IPermission> LoadPermissions(IList<Rhetos.Security.Claim> claims, IList<string> principals)
         {
             var claimNames = claims.Select(claim => claim.Resource + ""."" + claim.Right).ToArray();
             return Query()
                 .Where(permission => claimNames.Contains(permission.ClaimResource + ""."" + permission.ClaimRight) && principals.Contains(permission.Principal))
-                .Cast<Rhetos.Dom.DefaultConcepts.IPermission>().ToList();
+                .Cast<Rhetos.SimpleWindowsAuth.IPermission>().ToList();
         }
 
 ";
 
         protected static string RegisterRepository(DataStructureInfo info)
         {
-            return string.Format(@"builder.RegisterType<{0}._Helper.{1}_Repository>().As<Rhetos.Dom.DefaultConcepts.IPermissionLoader>();
+            return string.Format(@"builder.RegisterType<{0}._Helper.{1}_Repository>().As<Rhetos.SimpleWindowsAuth.IPermissionLoader>();
             ", info.Module.Name, info.Name);
         }
 
@@ -57,7 +58,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (info.Module.Name == "Common" && info.Name == "PermissionBrowse")
             {
-                codeBuilder.InsertCode("Rhetos.Dom.DefaultConcepts.IPermissionLoader", RepositoryHelper.RepositoryInterfaces, info);
+                codeBuilder.InsertCode("Rhetos.SimpleWindowsAuth.IPermissionLoader", RepositoryHelper.RepositoryInterfaces, info);
                 codeBuilder.InsertCode(MemberFunctionsSnippet, RepositoryHelper.RepositoryMembers, info);
                 codeBuilder.InsertCode(RegisterRepository(info), ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
                 codeBuilder.AddReferencesFromDependency(typeof(IPermissionLoader));

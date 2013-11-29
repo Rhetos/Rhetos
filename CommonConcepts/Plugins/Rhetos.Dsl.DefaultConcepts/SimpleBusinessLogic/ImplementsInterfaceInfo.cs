@@ -26,7 +26,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Implements")]
-    public class ImplementsInterfaceInfo : IConceptInfo
+    public class ImplementsInterfaceInfo : IMacroConcept
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }
@@ -41,6 +41,11 @@ namespace Rhetos.Dsl.DefaultConcepts
         public override int GetHashCode()
         {
             return InterfaceType.GetHashCode();
+        }
+
+        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        {
+            return new[] { new ModuleExternalReferenceInfo { Module = DataStructure.Module, TypeOrAssembly = InterfaceType } };
         }
     }
 }

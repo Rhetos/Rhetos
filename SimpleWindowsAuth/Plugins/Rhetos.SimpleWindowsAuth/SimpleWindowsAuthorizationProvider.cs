@@ -25,7 +25,7 @@ using System.Linq;
 using System.Text;
 using Rhetos.Security;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.SimpleWindowsAuth
 {
     [Export(typeof(IAuthorizationProvider))]
     public class SimpleWindowsAuthorizationProvider : IAuthorizationProvider

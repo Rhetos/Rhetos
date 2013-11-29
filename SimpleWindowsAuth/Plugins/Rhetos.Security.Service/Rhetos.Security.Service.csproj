@@ -39,9 +39,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Autofac, Version=2.5.2.830, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\External\Autofac\Autofac.dll</HintPath>
+    <Reference Include="Autofac">
+      <HintPath>..\..\..\External\Autofac\Autofac.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -64,31 +63,31 @@
     <Compile Include="SecurityRestService.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\CommonConcepts\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces\Rhetos.Dom.DefaultConcepts.Interfaces.csproj">
+    <ProjectReference Include="..\..\..\CommonConcepts\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces\Rhetos.Dom.DefaultConcepts.Interfaces.csproj">
       <Project>{32D57085-6113-43F9-A505-D8B311BD6204}</Project>
       <Name>Rhetos.Dom.DefaultConcepts.Interfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\CommonConcepts\Plugins\Rhetos.Processing.DefaultCommands.Interfaces\Rhetos.Processing.DefaultCommands.Interfaces.csproj">
+    <ProjectReference Include="..\..\..\CommonConcepts\Plugins\Rhetos.Processing.DefaultCommands.Interfaces\Rhetos.Processing.DefaultCommands.Interfaces.csproj">
       <Project>{98F36936-5842-49CF-BACF-61119AC7BF3E}</Project>
       <Name>Rhetos.Processing.DefaultCommands.Interfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Interfaces\Rhetos.Interfaces.csproj">
+    <ProjectReference Include="..\..\..\Source\Rhetos.Interfaces\Rhetos.Interfaces.csproj">
       <Project>{52B9E0EB-F4D1-4CA5-9239-93917DC76E2B}</Project>
       <Name>Rhetos.Interfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj">
+    <ProjectReference Include="..\..\..\Source\Rhetos.Utilities\Rhetos.Utilities.csproj">
       <Project>{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}</Project>
       <Name>Rhetos.Utilities</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Dom.Interfaces\Rhetos.Dom.Interfaces.csproj">
+    <ProjectReference Include="..\..\..\Source\Rhetos.Dom.Interfaces\Rhetos.Dom.Interfaces.csproj">
       <Project>{91bdf488-0921-4969-8a53-32169338d8db}</Project>
       <Name>Rhetos.Dom.Interfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Processing.Interfaces\Rhetos.Processing.Interfaces.csproj">
+    <ProjectReference Include="..\..\..\Source\Rhetos.Processing.Interfaces\Rhetos.Processing.Interfaces.csproj">
       <Project>{4D2FCD7F-D9BB-4E55-B9C6-FDF352F6DCF3}</Project>
       <Name>Rhetos.Processing.Interfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Rhetos.XmlSerialization\Rhetos.XmlSerialization.csproj">
+    <ProjectReference Include="..\..\..\Source\Rhetos.XmlSerialization\Rhetos.XmlSerialization.csproj">
       <Project>{726ca0fb-70e7-44f3-9fca-e703598bfc7e}</Project>
       <Name>Rhetos.XmlSerialization</Name>
     </ProjectReference>

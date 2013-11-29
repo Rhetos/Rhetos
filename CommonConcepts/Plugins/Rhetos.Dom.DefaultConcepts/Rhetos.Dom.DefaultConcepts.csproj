@@ -75,7 +75,6 @@
     <Compile Include="Computations\ReportDataCodeGenerator.cs" />
     <Compile Include="DataStructure\ComputedCodeGenerator.cs" />
     <Compile Include="DataStructure\ClaimRepositoryCodeGenerator.cs" />
-    <Compile Include="DataStructure\PermissionLoaderCodeGenerator.cs" />
     <Compile Include="DomUtility.cs" />
     <Compile Include="Computations\ComposableFilterByCodeGenerator.cs" />
     <Compile Include="Computations\ComputationUseExecutionContextCodeGenerator.cs" />
@@ -127,7 +126,6 @@
     <Compile Include="SimpleBusinessLogic\ImplementsInterfaceCodeGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\PessimisticLockingCodeGenerator.cs" />
-    <Compile Include="SimpleWindowsAuthorizationProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Source\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj">
