@@ -15,6 +15,18 @@ CALL CommonConcepts\CopyPlugins.bat CommonConcepts\Plugins\ForDeployment\ %Confi
 Source\CreatePackage\bin\%Config%\CreatePackage.exe CommonConcepts
 RD /S /Q CommonConcepts\Plugins\ForDeployment\
 
+IF NOT EXIST SimpleWindowsAuth\Plugins\ForDeployment\ MD SimpleWindowsAuth\Plugins\ForDeployment\
+DEL /F /S /Q SimpleWindowsAuth\Plugins\ForDeployment\* || EXIT /B 1
+CALL SimpleWindowsAuth\CopyPlugins.bat SimpleWindowsAuth\Plugins\ForDeployment\ %Config%
+Source\CreatePackage\bin\%Config%\CreatePackage.exe SimpleWindowsAuth
+RD /S /Q SimpleWindowsAuth\Plugins\ForDeployment\
+
+IF NOT EXIST AspNetFormsAuth\Plugins\ForDeployment\ MD AspNetFormsAuth\Plugins\ForDeployment\
+DEL /F /S /Q AspNetFormsAuth\Plugins\ForDeployment\* || EXIT /B 1
+CALL AspNetFormsAuth\CopyPlugins.bat AspNetFormsAuth\Plugins\ForDeployment\ %Config%
+Source\CreatePackage\bin\%Config%\CreatePackage.exe AspNetFormsAuth
+RD /S /Q AspNetFormsAuth\Plugins\ForDeployment\
+
 MOVE *.zip Install\
 
 MD Install\Rhetos
@@ -25,9 +37,6 @@ XCOPY /Y/D/R Source\Rhetos\bin\*.pdb Install\Rhetos\bin
 XCOPY /Y/D/R Source\Rhetos\bin\*.exe Install\Rhetos\bin
 XCOPY /Y/D/R Source\Rhetos\bin\*.config Install\Rhetos\bin
 DEL /F /Q Install\Rhetos\bin\ConnectionStrings.config
-
-REM Workaround until design issue is resolved: Rhetos framework references CommonConcepts package (Common.Claim)
-DEL /F /Q Install\Rhetos\bin\*.Default*.???
 
 XCOPY /S/I /Y/D/R Source\Rhetos\Css Install\Rhetos\Css
 XCOPY /S/I /Y/D/R Source\Rhetos\Img Install\Rhetos\Img
