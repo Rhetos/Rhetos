@@ -186,6 +186,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.SimpleWindowsAuth", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Security.Service", "SimpleWindowsAuth\Plugins\Rhetos.Security.Service\Rhetos.Security.Service.csproj", "{9985B38B-F5D3-4312-992E-7D3F98B31A85}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.AspNetFormsAuth", "AspNetFormsAuth\Plugins\Rhetos.AspNetFormsAuth\Rhetos.AspNetFormsAuth.csproj", "{8CE0595E-B553-48D0-8848-9ECB254B2973}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.AspNetFormsAuth.Test", "AspNetFormsAuth\Plugins\Rhetos.AspNetFormsAuth.Test\Rhetos.AspNetFormsAuth.Test.csproj", "{70A73C78-6D2C-4948-B1A1-980284CE5800}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Rhetos.vsmdi
@@ -905,6 +909,36 @@ Global
 		{9985B38B-F5D3-4312-992E-7D3F98B31A85}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{9985B38B-F5D3-4312-992E-7D3F98B31A85}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{9985B38B-F5D3-4312-992E-7D3F98B31A85}.Release|x86.ActiveCfg = Release|Any CPU
+		{8CE0595E-B553-48D0-8848-9ECB254B2973}.CodeAnalysis|Any CPU.ActiveCfg = Release|Any CPU
+		{8CE0595E-B553-48D0-8848-9ECB254B2973}.CodeAnalysis|Any CPU.Build.0 = Release|Any CPU
+		{8CE0595E-B553-48D0-8848-9ECB254B2973}.CodeAnalysis|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{8CE0595E-B553-48D0-8848-9ECB254B2973}.CodeAnalysis|Mixed Platforms.Build.0 = Release|Any CPU
+		{8CE0595E-B553-48D0-8848-9ECB254B2973}.CodeAnalysis|x86.ActiveCfg = Release|Any CPU
+		{8CE0595E-B553-48D0-8848-9ECB254B2973}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8CE0595E-B553-48D0-8848-9ECB254B2973}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8CE0595E-B553-48D0-8848-9ECB254B2973}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{8CE0595E-B553-48D0-8848-9ECB254B2973}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{8CE0595E-B553-48D0-8848-9ECB254B2973}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8CE0595E-B553-48D0-8848-9ECB254B2973}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8CE0595E-B553-48D0-8848-9ECB254B2973}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8CE0595E-B553-48D0-8848-9ECB254B2973}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{8CE0595E-B553-48D0-8848-9ECB254B2973}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{8CE0595E-B553-48D0-8848-9ECB254B2973}.Release|x86.ActiveCfg = Release|Any CPU
+		{70A73C78-6D2C-4948-B1A1-980284CE5800}.CodeAnalysis|Any CPU.ActiveCfg = Release|Any CPU
+		{70A73C78-6D2C-4948-B1A1-980284CE5800}.CodeAnalysis|Any CPU.Build.0 = Release|Any CPU
+		{70A73C78-6D2C-4948-B1A1-980284CE5800}.CodeAnalysis|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{70A73C78-6D2C-4948-B1A1-980284CE5800}.CodeAnalysis|Mixed Platforms.Build.0 = Release|Any CPU
+		{70A73C78-6D2C-4948-B1A1-980284CE5800}.CodeAnalysis|x86.ActiveCfg = Release|Any CPU
+		{70A73C78-6D2C-4948-B1A1-980284CE5800}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70A73C78-6D2C-4948-B1A1-980284CE5800}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70A73C78-6D2C-4948-B1A1-980284CE5800}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{70A73C78-6D2C-4948-B1A1-980284CE5800}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{70A73C78-6D2C-4948-B1A1-980284CE5800}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{70A73C78-6D2C-4948-B1A1-980284CE5800}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70A73C78-6D2C-4948-B1A1-980284CE5800}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70A73C78-6D2C-4948-B1A1-980284CE5800}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{70A73C78-6D2C-4948-B1A1-980284CE5800}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{70A73C78-6D2C-4948-B1A1-980284CE5800}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -958,5 +992,7 @@ Global
 		{6059035E-D06A-439E-AE7B-D8299DE1CD44} = {0124322E-2731-48E8-910C-957E37181628}
 		{3B32F187-F203-4147-9983-814A2A1045E5} = {EA83F423-2486-4154-B0CE-7590EB65D40A}
 		{9985B38B-F5D3-4312-992E-7D3F98B31A85} = {EA83F423-2486-4154-B0CE-7590EB65D40A}
+		{8CE0595E-B553-48D0-8848-9ECB254B2973} = {EA83F423-2486-4154-B0CE-7590EB65D40A}
+		{70A73C78-6D2C-4948-B1A1-980284CE5800} = {EA83F423-2486-4154-B0CE-7590EB65D40A}
 	EndGlobalSection
 EndGlobal

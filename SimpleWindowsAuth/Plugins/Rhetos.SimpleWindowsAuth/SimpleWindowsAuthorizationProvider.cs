@@ -30,31 +30,24 @@ namespace Rhetos.SimpleWindowsAuth
     [Export(typeof(IAuthorizationProvider))]
     public class SimpleWindowsAuthorizationProvider : IAuthorizationProvider
     {
-        private readonly IDomainObjectModel _domainObjectModel;
         private readonly Lazy<IPermissionLoader> _permissionLoader;
 
         public SimpleWindowsAuthorizationProvider(
-            IDomainObjectModel domainObjectModel,
             Lazy<IPermissionLoader> permissionLoader)
         {
-            _domainObjectModel = domainObjectModel;
             _permissionLoader = permissionLoader;
         }
 
         public IList<bool> GetAuthorizations(IUserInfo userInfo, IList<Claim> requiredClaims)
         {
-            IList<string> membership = ((WcfWindowsUserInfo)userInfo).GetIdentityMembership();
-
-            // Force-load domain object model:
-            var objectModel = _domainObjectModel.ObjectModel;
-
-            IList<IPermission> permissions = _permissionLoader.Value.LoadPermissions(requiredClaims, membership);
+            IList<string> userMembership = ((WcfWindowsUserInfo)userInfo).GetIdentityMembership();
+            IList<IPermission> userPermissions = _permissionLoader.Value.LoadPermissions(requiredClaims, userMembership);
 
             HashSet<string> hasClaims = new HashSet<string>();
-            foreach (IPermission permission in permissions)
+            foreach (IPermission permission in userPermissions)
                 if (permission.IsAuthorized.Value)
                     hasClaims.Add(permission.ClaimResource + "." + permission.ClaimRight);
-            foreach (IPermission permission in permissions)
+            foreach (IPermission permission in userPermissions)
                 if (!permission.IsAuthorized.Value)
                     hasClaims.Remove(permission.ClaimResource + "." + permission.ClaimRight);
 

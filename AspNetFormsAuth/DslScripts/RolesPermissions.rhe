@@ -1,0 +1,51 @@
+﻿Module Common
+{
+    // Principal is a user, a client application or any other actor that can be authenticated.
+	Entity Principal
+	{
+		ShortString Name { Required; Unique; }
+        
+        Implements 'Rhetos.AspNetFormsAuth.IPrincipal, Rhetos.AspNetFormsAuth' { RegisteredQueryableRepository; }
+		Logging { AllProperties; }
+	}
+    
+    Entity PrincipalHasRole
+    {
+        Reference Principal { Required; Detail; }
+        Reference Role { Required; }
+        
+        Implements 'Rhetos.AspNetFormsAuth.IPrincipalHasRole, Rhetos.AspNetFormsAuth' { RegisteredQueryableRepository; }
+        UniqueMultiple 'Principal Role';
+        Logging { AllProperties; }
+    }
+    
+    // Role is a set of permissions.
+	Entity Role
+	{
+		ShortString Name { Required; Unique; }
+        
+		Logging { AllProperties; }
+	}
+    
+    // "Derived" role inherits all permissions from the "InheritsFrom" role.
+    Entity RoleInheritsRole
+    {
+        Reference Derived Common.Role { Required; Detail; }
+        Reference InheritsFrom Common.Role { Required; }
+        
+        Implements 'Rhetos.AspNetFormsAuth.IRoleInheritsRole, Rhetos.AspNetFormsAuth' { RegisteredQueryableRepository; }
+        UniqueMultiple 'Derived InheritsFrom';
+        Logging { AllProperties; }
+    }
+
+	Entity Permission
+	{
+		Reference Role { Required; Detail; }
+		Reference Claim { Required; }
+		Bool IsAuthorized { Required; } // If IsAuthorized is false then autorization is explicitly denied.
+        
+        Implements 'Rhetos.AspNetFormsAuth.IPermission, Rhetos.AspNetFormsAuth' { RegisteredQueryableRepository; }
+		UniqueMultiple 'Role Claim';
+		Logging { AllProperties; }
+	}
+}
