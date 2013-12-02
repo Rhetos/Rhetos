@@ -20,26 +20,34 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
 using System.Globalization;
 using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl;
+using Microsoft.CSharp.RuntimeBinder;
+using Rhetos.Utilities;
 using Rhetos.Compiler;
-using System.IO;
-using System.Reflection;
-using System.Diagnostics.Contracts;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Dsl;
+using Rhetos.Extensibility;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(ImplementsInterfaceInfo))]
-    public class ImplementsInterfaceCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(RegisteredQueryableRepositoryInfo))]
+    public class RegisteredQueryableRepositoryCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            ImplementsInterfaceInfo info = (ImplementsInterfaceInfo)conceptInfo;
-            codeBuilder.AddInterfaceAndReference(info.GetInterfaceType(), info.DataStructure);
+            var info = (RegisteredQueryableRepositoryInfo)conceptInfo;
+
+            codeBuilder.InsertCode(
+                RegisterRepository(info.ImplementsInterface.DataStructure, info.ImplementsInterface.GetInterfaceType()),
+                ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
+        }
+
+        protected static string RegisterRepository(DataStructureInfo info, Type type)
+        {
+            return string.Format(@"builder.RegisterType<{0}._Helper.{1}_Repository>().As<IQueryableRepository<{2}>>();
+            ", info.Module.Name, info.Name, type.FullName);
         }
     }
 }

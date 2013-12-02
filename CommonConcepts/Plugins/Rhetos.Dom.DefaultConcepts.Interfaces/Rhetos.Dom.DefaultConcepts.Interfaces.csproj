@@ -99,6 +99,7 @@
     <Compile Include="IClaimRepository.cs" />
     <Compile Include="ICommonClaim.cs" />
     <Compile Include="IFilterRepository.cs" />
+    <Compile Include="IQueryableRepository.cs" />
     <Compile Include="IReportRepository.cs" />
     <Compile Include="ReportFile.cs" />
     <Compile Include="IEntity.cs" />

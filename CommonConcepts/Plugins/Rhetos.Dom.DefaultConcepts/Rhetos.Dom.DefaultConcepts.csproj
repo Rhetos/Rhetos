@@ -59,6 +59,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClaimGenerator.cs" />
+    <Compile Include="DataStructure\ImplementsInterfacePropertyCodeGenerator.cs" />
+    <Compile Include="DataStructure\RegisteredQueryableRepositoryCodeGenerator.cs" />
     <Compile Include="DataStructure\WriteCodeGenerator.cs" />
     <Compile Include="Advanced\EntityHistoryAllPropertiesCodeGenerator.cs" />
     <Compile Include="Advanced\EntityHistoryPropertyCodeGenerator.cs" />

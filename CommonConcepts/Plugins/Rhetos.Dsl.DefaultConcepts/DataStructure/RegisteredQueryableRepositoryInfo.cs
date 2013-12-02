@@ -20,26 +20,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
-using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
 using Rhetos.Dsl;
-using Rhetos.Compiler;
-using System.IO;
-using System.Reflection;
-using System.Diagnostics.Contracts;
+using System.ComponentModel.Composition;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Dsl.DefaultConcepts
 {
-    [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(ImplementsInterfaceInfo))]
-    public class ImplementsInterfaceCodeGenerator : IConceptCodeGenerator
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("RegisteredQueryableRepository")]
+    public class RegisteredQueryableRepositoryInfo : IConceptInfo
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
-        {
-            ImplementsInterfaceInfo info = (ImplementsInterfaceInfo)conceptInfo;
-            codeBuilder.AddInterfaceAndReference(info.GetInterfaceType(), info.DataStructure);
-        }
+        [ConceptKey]
+        public ImplementsInterfaceInfo ImplementsInterface { get; set; }
     }
 }

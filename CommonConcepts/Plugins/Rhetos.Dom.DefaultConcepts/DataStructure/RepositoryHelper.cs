@@ -183,6 +183,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             GenerateReadableRepositoryFunctions(info, codeBuilder, "return Query().ToArray();\r\n            ");
             codeBuilder.InsertCode(RepositoryQueryFunctionsSnippet(info, queryFunctionBody), RepositoryMembers, info);
+            codeBuilder.InsertCode("IQueryableRepository<" + info.Module.Name + "." + info.Name + ">", RepositoryInterfaces, info);
             codeBuilder.InsertCode("IFilterRepository<IEnumerable<Guid>, " + info.Module.Name + "." + info.Name + ">", RepositoryInterfaces, info);
             codeBuilder.InsertCode("Rhetos.Processing.DefaultCommands.IQueryDataSourceCommandImplementation", RepositoryInterfaces, info);
             codeBuilder.InsertCode(RegisterQueryDataSourceCommandImplementation(info), ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);

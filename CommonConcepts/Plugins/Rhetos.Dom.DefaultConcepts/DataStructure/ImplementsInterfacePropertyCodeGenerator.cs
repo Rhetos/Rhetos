@@ -20,26 +20,36 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
 using System.Globalization;
 using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl;
+using Microsoft.CSharp.RuntimeBinder;
+using Rhetos.Utilities;
 using Rhetos.Compiler;
-using System.IO;
-using System.Reflection;
-using System.Diagnostics.Contracts;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Dsl;
+using Rhetos.Extensibility;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(ImplementsInterfaceInfo))]
-    public class ImplementsInterfaceCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(ImplementsInterfacePropertyInfo))]
+    public class ImplementsInterfacePropertyCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            ImplementsInterfaceInfo info = (ImplementsInterfaceInfo)conceptInfo;
-            codeBuilder.AddInterfaceAndReference(info.GetInterfaceType(), info.DataStructure);
+            var info = (ImplementsInterfacePropertyInfo)conceptInfo;
+
+            codeBuilder.InsertCode(ExplicitPropertyImplemenetation(info), DataStructureCodeGenerator.BodyTag, info.Property.DataStructure);
+        }
+
+        protected static string ExplicitPropertyImplemenetation(ImplementsInterfacePropertyInfo info)
+        {
+            return string.Format(@"
+        {0} {1}.{2} {{ get {{ return {2}; }} }}
+",
+                info.PropertyInterfaceTypeName,
+                info.ImplementsInterface.GetInterfaceType().FullName,
+                info.Property.Name);
         }
     }
 }

@@ -26,26 +26,51 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Implements")]
-    public class ImplementsInterfaceInfo : IMacroConcept
+    public class ImplementsInterfaceInfo : IMacroConcept, IValidationConcept
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }
+
         [ConceptKey]
         public string InterfaceType { get; set; }
 
-        public override string ToString()
-        {
-            return DataStructure.ToString() + " Implements " + InterfaceType;
-        }
-
-        public override int GetHashCode()
-        {
-            return InterfaceType.GetHashCode();
-        }
-
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return new[] { new ModuleExternalReferenceInfo { Module = DataStructure.Module, TypeOrAssembly = InterfaceType } };
+            var newConcepts = new List<IConceptInfo>();
+            newConcepts.Add(new ModuleExternalReferenceInfo { Module = DataStructure.Module, TypeOrAssembly = InterfaceType });
+
+            var interfaceProperties = GetInterfaceType().GetProperties();
+            var interfacePropertiesIndex = interfaceProperties.ToDictionary(ip => ip.Name);
+
+            foreach (var property in existingConcepts.OfType<PropertyInfo>().Where(p => p.DataStructure == DataStructure))
+            {
+                System.Reflection.PropertyInfo interfaceProperty;
+                if (interfacePropertiesIndex.TryGetValue(property.Name, out interfaceProperty))
+                {
+                    if (interfaceProperty.PropertyType.IsInterface)
+                        newConcepts.Add(new ImplementsInterfacePropertyInfo
+                            {
+                                ImplementsInterface = this,
+                                Property = property,
+                                PropertyInterfaceTypeName = interfaceProperty.PropertyType.FullName
+                            });
+                }
+            }
+
+            return newConcepts;
+        }
+
+        public Type GetInterfaceType()
+        {
+            Type type = Type.GetType(InterfaceType);
+            if (type == null)
+                throw new DslSyntaxException(this, "Could not find type \"" + InterfaceType + "\"");
+            return type;
+        }
+
+        public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
+        {
+            GetInterfaceType();
         }
     }
 }

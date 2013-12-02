@@ -116,6 +116,8 @@
     <Compile Include="DatabaseWorkarounds\AutoLegacyEntityDependsOnInfo.cs" />
     <Compile Include="DatabaseWorkarounds\AutoSqlProcedureDependsOnInfo.cs" />
     <Compile Include="DatabaseWorkarounds\ModuleAutoSqlDependsOnInfo.cs" />
+    <Compile Include="DataStructure\RegisteredQueryableRepositoryInfo.cs" />
+    <Compile Include="DataStructure\ImplementsInterfacePropertyInfo.cs" />
     <Compile Include="DataStructure\WriteInfo.cs" />
     <Compile Include="Advanced\EntityHistoryAllPropertiesInfo.cs" />
     <Compile Include="Advanced\EntityHistoryPropertyInfo.cs" />
