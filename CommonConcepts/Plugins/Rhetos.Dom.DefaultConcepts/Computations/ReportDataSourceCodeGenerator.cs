@@ -33,6 +33,13 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(ReportDataSourceInfo))]
     public class ReportDataSourceCodeGenerator : IConceptCodeGenerator
     {
+        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        {
+            var info = (ReportDataSourceInfo)conceptInfo;
+            codeBuilder.InsertCode(GetReportDataSnippet(info), ReportDataCodeGenerator.GetReportDataTag, info.Report);
+            codeBuilder.InsertCode(DataSourceNameSnippet(info), ReportDataCodeGenerator.DataSourceNameTag, info.Report);
+        }
+
         private static string GetReportDataSnippet(ReportDataSourceInfo info)
         {
             return string.Format(@"
@@ -51,10 +58,9 @@ namespace Rhetos.Dom.DefaultConcepts
             CsUtility.QuotedString(info.Order));
         }
 
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        private static string DataSourceNameSnippet(ReportDataSourceInfo info)
         {
-            var info = (ReportDataSourceInfo)conceptInfo;
-            codeBuilder.InsertCode(GetReportDataSnippet(info), ReportDataCodeGenerator.GetReportDataTag, info.Report);
+            return CsUtility.QuotedString(info.DataSource.GetKeyProperties()) + @", ";
         }
     }
 }

@@ -31,5 +31,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Set convertFormat to null to get the original report template file format (docx or xls, for example).
         /// </summary>
         ReportFile GenerateReport(object parameters, string convertFormat);
+
+        IList<string> DataSourcesNames { get; }
     }
 }

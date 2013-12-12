@@ -25,6 +25,8 @@ using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
 using Rhetos.Security;
+using Rhetos.Dom.DefaultConcepts;
+using Autofac.Features.Indexed;
 
 namespace Rhetos.Processing.DefaultCommands
 {
@@ -32,30 +34,25 @@ namespace Rhetos.Processing.DefaultCommands
     [ExportMetadata(MefProvider.Implements, typeof(DownloadReportCommandInfo))]
     public class DownloadReportCommandClaims : IClaimProvider
     {
-        private readonly IDslModel _dslModel;
+        private readonly IIndex<string, IReportRepository> _reportIndex;
 
-        public DownloadReportCommandClaims(IDslModel dslModel)
+        public DownloadReportCommandClaims(IIndex<string, IReportRepository> reportIndex)
         {
-            _dslModel = dslModel;
+            _reportIndex = reportIndex;
         }
 
         public IList<Claim> GetRequiredClaims(ICommandInfo commandInfo)
         {
             var info = (DownloadReportCommandInfo)commandInfo;
 
-            var reportName = (info.Report.GetType().FullName).Split('.');
-            var reportConceptInfo = _dslModel.FindByKey(new ReportDataInfo { Module = new ModuleInfo { Name = reportName[0] }, Name = reportName[1] }.GetKey());
+            var claims = new List<Claim>();
 
-            var dataSources = new List<DataStructureInfo>();
-            dataSources.AddRange(_dslModel.Concepts.OfType<ReportDataSourceInfo>()
-                .Where(ds => ds.Report == reportConceptInfo)
-                .Select(ds => ds.DataSource));
+            string reportName = info.Report.GetType().FullName;
+            claims.Add(new Claim(reportName, "DownloadReport"));
 
-            List<Claim> claims = dataSources
-                .Select(ds => ds.Module.Name + "." + ds.Name).Distinct()
-                .Select(resource => new Claim(resource, "Read")).ToList();
-
-            claims.Add(new Claim(info.Report.GetType().FullName, "DownloadReport"));
+            IReportRepository reportRepository = _reportIndex[reportName];
+            claims.AddRange(reportRepository.DataSourcesNames
+                .Select(dataSourceName => new Claim(dataSourceName, "Read")));
 
             return claims;
         }

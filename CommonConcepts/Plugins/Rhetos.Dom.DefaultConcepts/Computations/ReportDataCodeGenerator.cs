@@ -33,6 +33,7 @@ namespace Rhetos.Dom.DefaultConcepts
     public class ReportDataCodeGenerator : IConceptCodeGenerator
     {
         public static readonly CsTag<ReportDataInfo> GetReportDataTag = "GetReportData";
+        public static readonly CsTag<ReportDataInfo> DataSourceNameTag = "DataSourceName";
 
         private static string RepositoryFunctionsSnippet(ReportDataInfo info)
         {
@@ -45,10 +46,14 @@ namespace Rhetos.Dom.DefaultConcepts
 	        return reportData.OrderBy(i => i.Key).Select(i => i.Value).ToArray();
         }}
 
+        public IList<string> DataSourcesNames {{ get {{ return _dataSourcesNames; }} }}
+        private readonly static string[] _dataSourcesNames = new string[] {{ {3} }};
+
 ",
             info.Module.Name,
             info.Name,
-            GetReportDataTag.Evaluate(info));
+            GetReportDataTag.Evaluate(info),
+            DataSourceNameTag.Evaluate(info));
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
