@@ -57,7 +57,7 @@ namespace Rhetos.Security
 
             _isUserRecognized = new Lazy<bool>(() => InitIsUserRecognized());
             _userName = new Lazy<string>(() => InitUserName());
-            _workstation = new Lazy<string>(() => InitClientWorkstation());
+            _workstation = new Lazy<string>(() => WcfUtility.InitClientWorkstation(_logger));
             _windowsIdentity = new Lazy<WindowsIdentity>(() => InitWindowsIdentity());
             _accountName = new Lazy<string>(() => InitAccountName());
         }
@@ -90,70 +90,6 @@ namespace Rhetos.Security
             return name;
         }
 
-        private string InitClientWorkstation()
-        {
-            RemoteEndpointMessageProperty endpointInfo;
-            try
-            {
-                endpointInfo = OperationContext.Current.IncomingMessageProperties[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error("Cannot obtain client host address: " + ex);
-                return "Cannot obtain client host address";
-            }
-
-            if (endpointInfo == null)
-            {
-                _logger.Error("Cannot obtain client host address: RemoteEndpointMessageProperty is null.");
-                return "Cannot obtain client host address";
-            }
-
-            _logger.Trace(() => "RemoteEndpointMessageProperty: address " + endpointInfo.Address + ", port " + endpointInfo.Port);
-
-            string name = GetNameFromAddress(endpointInfo.Address, endpointInfo.Port);
-
-            if (string.IsNullOrEmpty(name))
-            {
-                string ipv4 = IPv4FromIPv6.Match(endpointInfo.Address).Groups[1].Value;
-                if (!string.IsNullOrEmpty(ipv4))
-                {
-                    _logger.Trace(() => "Extracted IPv4 address: " + ipv4);
-                    name = GetNameFromAddress(ipv4);
-                }
-            }
-
-            if (string.IsNullOrEmpty(name))
-                name = endpointInfo.Address + " port " + endpointInfo.Port;
-
-            _logger.Trace(() => "Workstation: " + name + ".");
-            return name;
-        }
-
-        private static readonly Regex IPv4FromIPv6 = new Regex(@":(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$", RegexOptions.Compiled);
-
-        private string GetNameFromAddress(string address, int? port = null)
-		{
-			try
-			{
-				var clientAddress = IPAddress.Parse(address);
-                    var dnsEntry = Dns.GetHostEntry(clientAddress);
-                    if (IPAddress.IsLoopback(clientAddress) || dnsEntry.AddressList.Contains(clientAddress))
-                        return dnsEntry.HostName;
-
-                        // It seems that "nbtstat.exe -A <ipaddress>" can return up to date values while 'nslookup.exe <ipaddress>' and Dns.GetHostEntry(ipaddress) return old values.
-				_logger.Trace("Cannot obtain client host name. DSN lookup returned a DSN entry that does not match given IP address. Check if 'nslookup.exe " + clientAddress + "' returns up-to-date values.");
-				if (port.HasValue)
-					return address + " port " + port;
-				return address;
-                    }
-            catch (Exception ex)
-            {
-				_logger.Trace("Cannot obtain client host name for " + address + ". " + ex);
-				return null;
-            }
-        }
-		
         private WindowsIdentity InitWindowsIdentity()
         {
             _logger.Trace(() => "ServiceSecurityContext.Current.WindowsIdentity: " + Report(ServiceSecurityContext.Current.WindowsIdentity));

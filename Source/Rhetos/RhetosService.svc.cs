@@ -26,10 +26,11 @@ using Rhetos.Utilities;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Security;
+using System.ServiceModel.Activation;
 
 namespace Rhetos
 {
-    [System.ServiceModel.Activation.AspNetCompatibilityRequirements(RequirementsMode = System.ServiceModel.Activation.AspNetCompatibilityRequirementsMode.Allowed)]
+    [AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed)]
     public class RhetosService : IServerApplication
     {
         private readonly IProcessingEngine _processingEngine;

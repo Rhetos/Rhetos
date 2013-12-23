@@ -497,7 +497,7 @@ AS
 ON {0}.{2} {3}
 AS
 IF (NOT EXISTS(SELECT * FROM inserted))
-	AND (NOT EXISTS(SELECT * FROM deleted)) RETURN
+	AND (NOT EXISTS(SELECT * FROM deleted)) RETURN;
 {4}</value>
   </data>
   <data name="SqlTriggerDatabaseDefinition_Remove" xml:space="preserve">

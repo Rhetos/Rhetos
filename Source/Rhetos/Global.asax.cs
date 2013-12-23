@@ -38,12 +38,13 @@ namespace Rhetos
 {
     public class Global : System.Web.HttpApplication
     {
-        private ILogger _logger;
-        private ILogger _performanceLogger;
+        private static ILogger _logger;
+        private static ILogger _performanceLogger;
+        private static IEnumerable<IService> _pluginServices;
 
         protected void Application_Start(object sender, EventArgs e)
         {
-            var totalStopwatch = Stopwatch.StartNew();
+            var stopwatch = Stopwatch.StartNew();
 
             var builder = new ContainerBuilder();
             builder.RegisterModule(new ConfigurationSettingsReader("autofacComponents"));
@@ -51,24 +52,48 @@ namespace Rhetos
 
             _logger = AutofacServiceHostFactory.Container.Resolve<ILogProvider>().GetLogger("Global");
             _performanceLogger = AutofacServiceHostFactory.Container.Resolve<ILogProvider>().GetLogger("Performance");
+            _pluginServices = AutofacServiceHostFactory.Container.Resolve<IEnumerable<IService>>();
 
-            _performanceLogger.Write(totalStopwatch, "Autofac initialized.");
+            _performanceLogger.Write(stopwatch, "Autofac initialized.");
 
-            foreach(var service in AutofacServiceHostFactory.Container.Resolve<IEnumerable<IService>>())
+            foreach (var service in _pluginServices)
             {
                 try
                 {
-                    var stopwatch = Stopwatch.StartNew();
                     service.Initialize();
-                    _performanceLogger.Write(stopwatch, "Service " + service.GetType().FullName + " initialized.");
+                    _performanceLogger.Write(stopwatch, "Service " + service.GetType().FullName + ".Initialize");
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex.ToString());
+                    if (_logger != null)
+                        _logger.Error(ex.ToString());
+                    throw;
                 }
             }
 
-            _performanceLogger.Write(totalStopwatch, "All services initialized.");
+            _performanceLogger.Write(stopwatch, "All services initialized.");
+        }
+
+        public override void Init()
+        {
+            base.Init();
+
+            if (_pluginServices != null)
+                foreach (var service in _pluginServices)
+                {
+                    try
+                    {
+                        var stopwatch = Stopwatch.StartNew();
+                        service.InitializeApplicationInstance(this);
+                        _performanceLogger.Write(stopwatch, "Service " + service.GetType().FullName + ".InitializeApplicationInstance");
+                    }
+                    catch (Exception ex)
+                    {
+                        if (_logger != null)
+                            _logger.Error(ex.ToString());
+                        throw;
+                    }
+                }
         }
 
         protected void Session_Start(object sender, EventArgs e)

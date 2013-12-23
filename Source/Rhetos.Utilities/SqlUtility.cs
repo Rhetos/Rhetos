@@ -112,6 +112,19 @@ namespace Rhetos.Utilities
             }
         }
 
+        public static string ProviderName
+        {
+            get
+            {
+                if (DatabaseLanguageIsMsSql.Value)
+                    return "System.Data.SqlClient";
+                else if (DatabaseLanguageIsOracle.Value)
+                    return "Oracle.DataAccess.Client";
+                else
+                    throw new FrameworkException(UnsupportedLanguageError);
+            }
+        }
+
         private static ConnectionStringSettings GetConnectionStringConfiguration()
         {
             var connectionStringConfiguration = ConfigurationManager.ConnectionStrings["ServerConnectionString"];
