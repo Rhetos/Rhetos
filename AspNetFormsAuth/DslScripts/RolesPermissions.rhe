@@ -1,13 +1,14 @@
 ﻿Module Common
 {
     // Principal is a user, a client application or any other actor that can be authenticated.
-	Entity Principal
-	{
-		ShortString Name { Required; Unique; }
+    Entity Principal
+    {
+        ShortString Name { Required; Unique; }
+        Integer AspNetUserId { Required; Unique; }
         
         Implements 'Rhetos.AspNetFormsAuth.IPrincipal, Rhetos.AspNetFormsAuth' { RegisteredQueryableRepository; }
-		Logging { AllProperties; }
-	}
+        Logging { AllProperties; }
+    }
     
     Entity PrincipalHasRole
     {
@@ -20,12 +21,12 @@
     }
     
     // Role is a set of permissions.
-	Entity Role
-	{
-		ShortString Name { Required; Unique; }
+    Entity Role
+    {
+        ShortString Name { Required; Unique; }
         
-		Logging { AllProperties; }
-	}
+        Logging { AllProperties; }
+    }
     
     // "Derived" role inherits all permissions from the "InheritsFrom" role.
     Entity RoleInheritsRole
@@ -38,14 +39,50 @@
         Logging { AllProperties; }
     }
 
-	Entity Permission
-	{
-		Reference Role { Required; Detail; }
-		Reference Claim { Required; }
-		Bool IsAuthorized { Required; } // If IsAuthorized is false then autorization is explicitly denied.
+    Entity Permission
+    {
+        Reference Role { Required; Detail; }
+        Reference Claim { Required; }
+        Bool IsAuthorized { Required; } // If IsAuthorized is false then autorization is explicitly denied.
         
         Implements 'Rhetos.AspNetFormsAuth.IPermission, Rhetos.AspNetFormsAuth' { RegisteredQueryableRepository; }
-		UniqueMultiple 'Role Claim';
-		Logging { AllProperties; }
-	}
+        UniqueMultiple 'Role Claim';
+        Logging { AllProperties; }
+    }
+    
+    //===================================================
+    // SQL objects for ASP.NET SimpleMembershipProvider:
+    
+    SqlObject aspnet_Principal // SimpleMembershipProvider requires the user table to be in the default schema
+        'CREATE VIEW dbo.aspnet_Principal AS SELECT * FROM Common.Principal'
+        'DROP VIEW dbo.aspnet_Principal'
+    {
+        SqlDependsOn Common.Principal;
+    }
+    
+    SqlTrigger Principal.'GenerateAspNetUserId' 'INSTEAD OF INSERT'
+        'DECLARE @Error INT;
+        
+        SELECT * INTO #t FROM inserted;
+
+        INSERT INTO Common.Principal SELECT * FROM #t WHERE AspNetUserId IS NOT NULL;
+        SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION RETURN END
+
+        DELETE FROM #t WHERE AspNetUserId IS NOT NULL;
+
+        DECLARE @lastId INTEGER;
+        SELECT @lastId = ISNULL(MAX(AspNetUserId), 0) FROM Common.Principal;
+
+        SELECT ID, GeneratedId = @lastId + ROW_NUMBER() OVER (ORDER BY Name)
+        INTO #PrincipalNewId
+        FROM #t WHERE AspNetUserId IS NULL;
+
+        UPDATE #t
+        SET AspNetUserId = pni.GeneratedId
+        FROM #t
+        INNER JOIN #PrincipalNewId pni ON pni.ID = #t.ID
+        WHERE #t.AspNetUserId IS NULL;
+
+        INSERT INTO Common.Principal SELECT * FROM #t;
+        SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION RETURN END';
 }

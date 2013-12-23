@@ -67,7 +67,8 @@ namespace Rhetos.AspNetFormsAuth
 
         private IList<Guid> GetUsersRoles(IUserInfo userInfo)
         {
-            IList<Guid> userDirectRoles = _principalRolesRepository.Value.Query().Where(pr => pr.Principal.Name == userInfo.UserName).Select(pr => pr.Role.ID).ToList();
+            string userName = userInfo.UserName;
+            IList<Guid> userDirectRoles = _principalRolesRepository.Value.Query().Where(pr => pr.Principal.Name == userName).Select(pr => pr.Role.ID).ToList();
             if (userDirectRoles.Count() == 0)
                 ValidateUser(userInfo);
             IList<Tuple<Guid, Guid>> roleInheritsRole = _roleRolesRepository.Value.Query().Select(rr => Tuple.Create(rr.Derived.ID, rr.InheritsFrom.ID)).ToList();
