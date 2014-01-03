@@ -94,7 +94,7 @@ namespace Rhetos.AspNetFormsAuth
         /// "PersistCookie" parameter may be represented to users as the "Remember me" checkbox.
         /// </summary>
         [OperationContract]
-        [WebInvoke(Method = "POST", UriTemplate = "", BodyStyle = WebMessageBodyStyle.Bare, RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        [WebInvoke(Method = "POST", UriTemplate = "/Login", BodyStyle = WebMessageBodyStyle.Bare, RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         public bool Login(LoginData loginData)
         {
             // TODO: Validate password (length, ...)
