@@ -20,28 +20,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Autofac;
-using Rhetos.Processing;
-using System.Diagnostics.Contracts;
-using Rhetos.XmlSerialization;
-using Rhetos.Extensibility;
 
-namespace Rhetos.Configuration.Autofac
+namespace Rhetos.Processing
 {
-    public class ProcessingModuleConfiguration : Module
+    public interface ICommandObserver
     {
-        protected override void Load(ContainerBuilder builder)
-        {
-            Contract.Requires(builder != null);
-
-            builder.RegisterType<XmlDataTypeProvider>().As<IDataTypeProvider>().SingleInstance();
-            builder.RegisterType<ProcessingEngine>().As<IProcessingEngine>();
-            PluginsUtility.RegisterPlugins<ICommandData>(builder);
-            PluginsUtility.RegisterPlugins<ICommandImplementation>(builder);
-            PluginsUtility.RegisterPlugins<ICommandObserver>(builder);
-            PluginsUtility.RegisterPlugins<ICommandInfo>(builder);
-
-            base.Load(builder);
-        }
+        void BeforeExecute(ICommandInfo commandInfo);
+        void AfterExecute(ICommandInfo commandInfo, CommandResult commandResult);
     }
 }
