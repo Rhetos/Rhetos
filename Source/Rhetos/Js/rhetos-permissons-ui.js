@@ -38,7 +38,7 @@
                 successCallback(data);
             },
             error: function (jqXHR, textStatus, errorThrown) {
-                alert('Error (ajaxGet): ' + jqXHR.statusText);
+                alert('ERROR:\n\n' + jqXHR.responseText);
             }
         });
     }
@@ -53,7 +53,7 @@
             data: data,
             success: successCallback,
             error: function (jqXHR, textStatus, errorThrown) {
-                alert('Error (ajaxPost): ' + jqXHR.statusText);
+                alert('ERROR:\n\n' + jqXHR.responseText);
             }
         });
     }

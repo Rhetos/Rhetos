@@ -25,6 +25,6 @@ namespace Rhetos.SimpleWindowsAuth
 {
     public interface IPermissionLoader
     {
-        IList<IPermission> LoadPermissions(IList<Rhetos.Security.Claim> claims, IList<string> principals);
+        IList<IPermissionBrowse> LoadPermissions(IList<Rhetos.Security.Claim> claims, IList<string> principals);
     }
 }

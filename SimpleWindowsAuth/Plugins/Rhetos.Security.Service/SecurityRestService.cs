@@ -36,89 +36,44 @@ namespace Rhetos.Security.Service
     {
         private readonly RestImpl _restImpl;
 
-        public SecurityRestService(IDomainObjectModel domainObjectModel)
+        public SecurityRestService(RestImpl restImpl)
         {
-            _restImpl = new RestImpl(domainObjectModel);
+            _restImpl = restImpl;
         }
 
-        [OperationBehavior(Impersonation = ImpersonationOption.Required)]
         public List<Principal> GetPrincipalsJson()
         {
-            return GetPrincipals();
+            return _restImpl.GetPrincipals();
         }
 
-        [OperationBehavior(Impersonation = ImpersonationOption.Required)]
-        public List<Principal> GetPrincipalsXml()
-        {
-            return GetPrincipals();
-        }
-
-        [OperationBehavior(Impersonation = ImpersonationOption.Required)]
         public void AddPrincipal(string name)
         {
             _restImpl.CreatePrincipal(name);
         }
 
-        [OperationBehavior(Impersonation = ImpersonationOption.Required)]
         public void UpdatePrincipalName(string id, string name)
         {
             _restImpl.UpdatePrincipalName(new Guid(id), name);
         }
 
-        [OperationBehavior(Impersonation = ImpersonationOption.Required)]
         public void DeletePrincipal(string id)
         {
             _restImpl.DeletePrincipal(new Guid(id));
         }
 
-        [OperationBehavior(Impersonation = ImpersonationOption.Required)]
         public List<Claim> GetClaimsJson()
-        {
-            return GetClaims();
-        }
-
-        [OperationBehavior(Impersonation = ImpersonationOption.Required)]
-        public List<Claim> GetClaimsXml()
-        {
-            return GetClaims();
-        }
-
-        [OperationBehavior(Impersonation = ImpersonationOption.Required)]
-        public List<Permission> GetPrincipalsPermissionsJson(string id)
-        {
-            return GetPrincipalsPermissions(id);
-        }
-
-        [OperationBehavior(Impersonation = ImpersonationOption.Required)]
-        public List<Permission> GetPrincipalsPermissionsXml(string id)
-        {
-            return GetPrincipalsPermissions(id);
-        }
-
-        [OperationBehavior(Impersonation = ImpersonationOption.Required)]
-        public void ApplyPrincipalPermission(string principalId, string claimId, string isAuthorized)
-        {
-            _restImpl.ApplyPermissionChange(new Guid(principalId), new Guid(claimId), isAuthorized);
-        }
-
-        [OperationBehavior(Impersonation = ImpersonationOption.Required)]
-        private List<Principal> GetPrincipals()
-        {
-            return _restImpl.GetPrincipals();
-        }
-
-        [OperationBehavior(Impersonation = ImpersonationOption.Required)]
-        private List<Claim> GetClaims()
         {
             return _restImpl.GetClaims();
         }
 
-        [OperationBehavior(Impersonation = ImpersonationOption.Required)]
-        private List<Permission> GetPrincipalsPermissions(string id)
+        public List<Permission> GetPrincipalsPermissionsJson(string id)
         {
-            var pr = _restImpl.GetPermissions(new Guid(id));
+            return _restImpl.GetPermissions(new Guid(id));
+        }
 
-            return pr;
+        public void ApplyPrincipalPermission(string principalId, string claimId, string isAuthorized)
+        {
+            _restImpl.ApplyPermissionChange(new Guid(principalId), new Guid(claimId), isAuthorized);
         }
     }
 }

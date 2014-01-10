@@ -33,10 +33,6 @@ namespace Rhetos.Security.Service
         List<Principal> GetPrincipalsJson();
 
         [OperationContract]
-        [WebGet(UriTemplate = "/principals?format=xml", ResponseFormat = WebMessageFormat.Xml)]
-        List<Principal> GetPrincipalsXml();
-
-        [OperationContract]
         [WebInvoke(Method = "POST", UriTemplate = "/principals/create", BodyStyle = WebMessageBodyStyle.Wrapped, RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void AddPrincipal(string name);
 
@@ -53,16 +49,8 @@ namespace Rhetos.Security.Service
         List<Claim> GetClaimsJson();
 
         [OperationContract]
-        [WebGet(UriTemplate = "/claims?format=xml", ResponseFormat = WebMessageFormat.Xml)]
-        List<Claim> GetClaimsXml();
-
-        [OperationContract]
         [WebGet(UriTemplate = "/principals/{id}/permissions?format=json", ResponseFormat = WebMessageFormat.Json)]
         List<Permission> GetPrincipalsPermissionsJson(string id);
-
-        [OperationContract]
-        [WebGet(UriTemplate = "/principals/{id}/permissions?format=xml", ResponseFormat = WebMessageFormat.Xml)]
-        List<Permission> GetPrincipalsPermissionsXml(string id);
 
         [OperationContract]
         [WebInvoke(Method = "POST", UriTemplate = "/principals/{principalId}/permissions", BodyStyle = WebMessageBodyStyle.Wrapped, RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]

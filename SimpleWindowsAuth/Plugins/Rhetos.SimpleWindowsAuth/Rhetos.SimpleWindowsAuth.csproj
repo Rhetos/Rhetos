@@ -40,7 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IPermission.cs" />
+    <Compile Include="IPermissionBrowse.cs" />
     <Compile Include="IPermissionLoader.cs" />
     <Compile Include="PermissionLoaderCodeGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

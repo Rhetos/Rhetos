@@ -28,6 +28,7 @@ namespace Rhetos.Security.Service
     {
         protected override void Load(ContainerBuilder builder)
         {
+            builder.RegisterType<RestImpl>();
             builder.RegisterType<SecurityRestService>();
             base.Load(builder);        
         }

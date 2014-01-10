@@ -23,29 +23,58 @@ using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Processing.DefaultCommands;
 using System.Linq;
 using Rhetos.Utilities;
+using Rhetos.Processing;
 
 namespace Rhetos.Security.Service
 {
     public class RestImpl
     {
+        private readonly IProcessingEngine _processingEngine;
         private readonly IDomainObjectModel _domainObjectModel;
 
         private const string _eClaim = "Common.Claim";
         private const string _ePermission = "Common.Permission";
         private const string _ePrincipal = "Common.Principal";
 
-        private readonly RhetosServerProxy _rhetosServerProxy;
-        
-        public RestImpl(            
-            IDomainObjectModel domainObjectModel)
+        public RestImpl(IProcessingEngine processingEngine, IDomainObjectModel domainObjectModel)
         {
+            _processingEngine = processingEngine;
             _domainObjectModel = domainObjectModel;
-            _rhetosServerProxy = new RhetosServerProxy(domainObjectModel);
+        }
+
+        private object[] ReadEntity(string dataSource, FilterCriteria[] genericFilter = null)
+        {
+            var processingResult = _processingEngine.Execute(new[] {
+                new QueryDataSourceCommandInfo
+                {
+                    DataSource = dataSource,
+                    GenericFilter = genericFilter
+                }});
+
+            ThrowExceptionOnError(processingResult);
+
+            var queryResult = (Rhetos.XmlSerialization.XmlBasicData<QueryDataSourceCommandResult>)processingResult.CommandResults[0].Data;
+            return queryResult.Data.Records;
+        }
+
+        private void SaveEntity(SaveEntityCommandInfo commandInfo)
+        {
+            var processingResult = _processingEngine.Execute(new[] { commandInfo });
+            ThrowExceptionOnError(processingResult);
+        }
+
+        private void ThrowExceptionOnError(ProcessingResult processingResult)
+        {
+            if (!processingResult.Success)
+                if (processingResult.UserMessage != null)
+                    throw new UserException(processingResult.UserMessage, processingResult.SystemMessage);
+                else
+                    throw new FrameworkException(processingResult.SystemMessage);
         }
 
         public List<Principal> GetPrincipals()
         {
-            var rawData = _rhetosServerProxy.ReadData(_ePrincipal);
+            var rawData = ReadEntity(_ePrincipal);
 
             List<Principal> items = new List<Principal>();
 
@@ -69,7 +98,7 @@ namespace Rhetos.Security.Service
             principal.Name = name;
             commandInfo.DataToUpdate = new IEntity[] { principal };
 
-            _rhetosServerProxy.Execute(commandInfo);
+            SaveEntity(commandInfo);
         }
 
         public void CreatePrincipal(string name)
@@ -81,7 +110,7 @@ namespace Rhetos.Security.Service
             principal.Name = name;
             commandInfo.DataToInsert = new IEntity[] { principal };
 
-            _rhetosServerProxy.Execute(commandInfo);
+            SaveEntity(commandInfo);
         }
 
         public void DeletePrincipal(Guid id)
@@ -92,12 +121,12 @@ namespace Rhetos.Security.Service
             principal.ID = id;
             commandInfo.DataToDelete = new IEntity[] { principal };
 
-            _rhetosServerProxy.Execute(commandInfo);
+            SaveEntity(commandInfo);
         }
 
         public List<Claim> GetClaims()
         {
-            var rawData = _rhetosServerProxy.ReadData(_eClaim);
+            var rawData = ReadEntity(_eClaim);
 
             List<Claim> items = new List<Claim>();
 
@@ -128,7 +157,7 @@ namespace Rhetos.Security.Service
 
         public List<Permission> GetPermissions(Guid principalID)
         {
-            var rawData = _rhetosServerProxy.ReadData(
+            var rawData = ReadEntity(
                 _ePermission,
                 new[] { new FilterCriteria { Property = "Principal.ID", Operation = "Equal", Value = principalID.ToString() } });
 
@@ -174,7 +203,7 @@ namespace Rhetos.Security.Service
                     commandInfo.DataToUpdate = new IEntity[] { permission };
                 }
 
-                _rhetosServerProxy.Execute(commandInfo);
+                SaveEntity(commandInfo);
             }
         }
 
@@ -187,12 +216,12 @@ namespace Rhetos.Security.Service
             SaveEntityCommandInfo commandInfo = new SaveEntityCommandInfo();
             commandInfo.Entity = _ePermission;
             commandInfo.DataToDelete = new IEntity[] { permission };
-            _rhetosServerProxy.Execute(commandInfo);
+            SaveEntity(commandInfo);
         }
 
         private dynamic FindPermission(Guid principalID, Guid claimID)
         {
-            return _rhetosServerProxy.ReadData(_ePermission, new[]
+            return ReadEntity(_ePermission, new[]
                 {
                         new FilterCriteria { Property = "Principal.ID", Operation = "Equal", Value = principalID.ToString() },
                         new FilterCriteria { Property = "Claim.ID", Operation = "Equal", Value = claimID.ToString() }

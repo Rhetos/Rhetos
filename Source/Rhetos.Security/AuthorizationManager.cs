@@ -101,7 +101,7 @@ namespace Rhetos.Security
                 _logger.Trace(() => string.Format("User {0} does not posses claim {1}.", _userInfo.UserName, unauthorized.claim.FullName));
 
                 return string.Format(
-                    "You are not authorized for '{0}' on resource '{1}', user '{2}'.",
+                    "You are not authorized for action '{0}' on resource '{1}', user '{2}'.",
                     unauthorized.claim.Right, unauthorized.claim.Resource, _userInfo.UserName);
             }
 

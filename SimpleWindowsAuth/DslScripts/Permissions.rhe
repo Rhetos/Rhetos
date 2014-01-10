@@ -21,7 +21,7 @@
 	
 	Browse PermissionBrowse Common.Permission	
 	{
-		Implements 'Rhetos.SimpleWindowsAuth.IPermission, Rhetos.SimpleWindowsAuth';
+		Implements 'Rhetos.SimpleWindowsAuth.IPermissionBrowse, Rhetos.SimpleWindowsAuth';
 		
 		ShortString ClaimResource {From 'Claim.ClaimResource';}
 		ShortString ClaimRight {From 'Claim.ClaimRight';}

@@ -18,7 +18,7 @@
 */
 namespace Rhetos.SimpleWindowsAuth
 {
-    public interface IPermission
+    public interface IPermissionBrowse
     {
         string Principal { get; }
         string ClaimResource { get; }

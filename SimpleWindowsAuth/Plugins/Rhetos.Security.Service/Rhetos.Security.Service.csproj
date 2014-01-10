@@ -54,7 +54,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="RhetosServerProxy.cs" />
     <Compile Include="DataObjectModel.cs" />
     <Compile Include="DefaultAutofacConfiguration.cs" />
     <Compile Include="ISecurityRestService.cs" />

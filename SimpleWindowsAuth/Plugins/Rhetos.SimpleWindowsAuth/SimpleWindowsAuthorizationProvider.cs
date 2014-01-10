@@ -41,13 +41,13 @@ namespace Rhetos.SimpleWindowsAuth
         public IList<bool> GetAuthorizations(IUserInfo userInfo, IList<Claim> requiredClaims)
         {
             IList<string> userMembership = ((WcfWindowsUserInfo)userInfo).GetIdentityMembership();
-            IList<IPermission> userPermissions = _permissionLoader.Value.LoadPermissions(requiredClaims, userMembership);
+            IList<IPermissionBrowse> userPermissions = _permissionLoader.Value.LoadPermissions(requiredClaims, userMembership);
 
             HashSet<string> hasClaims = new HashSet<string>();
-            foreach (IPermission permission in userPermissions)
+            foreach (IPermissionBrowse permission in userPermissions)
                 if (permission.IsAuthorized.Value)
                     hasClaims.Add(permission.ClaimResource + "." + permission.ClaimRight);
-            foreach (IPermission permission in userPermissions)
+            foreach (IPermissionBrowse permission in userPermissions)
                 if (!permission.IsAuthorized.Value)
                     hasClaims.Remove(permission.ClaimResource + "." + permission.ClaimRight);
 
