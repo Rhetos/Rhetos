@@ -1,4 +1,4 @@
-/*DATAMIGRATION E800503D-5BBC-482F-AEFF-DF7F57338C1B*/ -- Change this code only if the script needs to be executed again.
+/*DATAMIGRATION 2ABDA524-0285-4128-9FF4-8ABB2A1C0821*/ -- Change this code only if the script needs to be executed again.
 
 --EXEC Rhetos.HelpDataMigration 'Common', 'Permission'
 EXEC Rhetos.DataMigrationUse 'Common', 'Permission', 'ID', 'uniqueidentifier';
@@ -18,34 +18,44 @@ EXEC Rhetos.DataMigrationUse 'Common', 'PrincipalHasRole', 'PrincipalID', 'uniqu
 EXEC Rhetos.DataMigrationUse 'Common', 'PrincipalHasRole', 'RoleID', 'uniqueidentifier';
 GO
 
-IF EXISTS (SELECT TOP 1 1 FROM _Common.Permission WHERE RoleID IS NULL AND PrincipalID IS NOT NULL)
-	AND NOT EXISTS (SELECT TOP 1 1 FROM _Common.Role)
+IF EXISTS (SELECT TOP 1 1 FROM _Common.Permission WHERE RoleID IS NOT NULL AND PrincipalID IS NULL)
 BEGIN
-	INSERT INTO
-		_Common.Role (ID, Name)
+
 	SELECT
-		NEWID(), pri.Name + ' role'
+		RoleID = rol.ID, PrincipalID = NEWID(), PrincipalName = CASE WHEN RIGHT(rol.Name, 5) = ' role' THEN SUBSTRING(rol.Name, 1, LEN(rol.Name) - 5) ELSE rol.Name END
+	INTO
+		#roleToPrincipal
 	FROM
-		_Common.Principal pri
-		INNER JOIN (SELECT DISTINCT PrincipalID FROM _Common.Permission) per ON per.PrincipalID = pri.ID;
+		_Common.Role rol;
+
+	UPDATE
+		rtp
+	SET
+		PrincipalID = pri.ID
+	FROM	
+		#roleToPrincipal rtp
+		INNER JOIN _Common.Principal pri ON pri.Name = rtp.PrincipalName;
 
 	INSERT INTO
-		_Common.PrincipalHasRole (ID, PrincipalID, RoleID)
+		_Common.Principal (ID, Name)
 	SELECT
-		NEWID(), pri.ID, r.ID
+		rtp.PrincipalID, rtp.PrincipalName
 	FROM
-		_Common.Principal pri
-		INNER JOIN _Common.Role r ON r.Name = pri.Name + ' role';
+		#roleToPrincipal rtp
+		LEFT JOIN _Common.Principal pri ON pri.Name = rtp.PrincipalName
+	WHERE
+		pri.ID IS NULL;
 
 	UPDATE
 		per
 	SET
-		RoleID = phr.RoleID
+		PrincipalID = rtp.PrincipalID
 	FROM
 		_Common.Permission per
-		INNER JOIN _Common.PrincipalHasRole phr ON phr.PrincipalID = per.PrincipalID;
+		INNER JOIN #roleToPrincipal rtp ON rtp.RoleID = per.RoleID;
+
+	DROP TABLE #roleToPrincipal;
 END
 
-EXEC Rhetos.DataMigrationApplyMultiple 'Common', 'Role', 'ID, Name';
-EXEC Rhetos.DataMigrationApplyMultiple 'Common', 'PrincipalHasRole', 'ID, PrincipalID, RoleID';
-EXEC Rhetos.DataMigrationApplyMultiple 'Common', 'Permission', 'ID, RoleID';
+EXEC Rhetos.DataMigrationApplyMultiple 'Common', 'Principal', 'ID, Name';
+EXEC Rhetos.DataMigrationApplyMultiple 'Common', 'Permission', 'ID, PrincipalID';
