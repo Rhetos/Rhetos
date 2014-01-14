@@ -49,7 +49,7 @@ namespace DeployPackages
             builder.RegisterInstance(new ConnectionString(_connectionString));
             builder.RegisterInstance(new ResourcesFolder(""));
             builder.RegisterType<NullUserInfo>().As<IUserInfo>();
-            builder.RegisterModule(new CommonModuleConfiguration());
+            builder.RegisterModule(new UtilitiesModuleConfiguration());
             builder.RegisterModule(new ExtensibilityModuleConfiguration());
             builder.RegisterModule(new DslModuleConfiguration());
             builder.RegisterInstance<IDslSource>(new DiskDslScriptProvider(DslScriptsFolder));

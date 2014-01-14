@@ -47,7 +47,7 @@ namespace Rhetos
             builder.RegisterType<GlobalErrorHandler>();
 
             builder.RegisterModule(new SecurityModuleConfiguration());
-            builder.RegisterModule(new CommonModuleConfiguration());
+            builder.RegisterModule(new UtilitiesModuleConfiguration());
             builder.RegisterModule(new DslModuleConfiguration());
             builder.RegisterModule(new CompilerConfiguration());
             builder.RegisterModule(new DomModuleConfiguration(_domAssemblyName, DomAssemblyUsage.Load));

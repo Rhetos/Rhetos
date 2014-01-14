@@ -26,7 +26,7 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Configuration.Autofac
 {
-    public class CommonModuleConfiguration : Module
+    public class UtilitiesModuleConfiguration : Module
     {
         protected override void Load(ContainerBuilder builder)
         {

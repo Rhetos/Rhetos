@@ -21,16 +21,18 @@ using Autofac;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Security.Service
 {
+    [Export(typeof(Module))]
     public class DefaultAutofacConfiguration : Module
     {
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<RestImpl>();
             builder.RegisterType<SecurityRestService>();
-            base.Load(builder);        
+            base.Load(builder);
         }
     }
 }

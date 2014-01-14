@@ -104,7 +104,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CompilerConfiguration.cs" />
-    <Compile Include="CommonModuleConfiguration.cs" />
+    <Compile Include="UtilitiesModuleConfiguration.cs" />
     <Compile Include="LoggingConfiguration.cs" />
     <Compile Include="DatabaseGeneratorModuleConfiguration.cs" />
     <Compile Include="DomModuleConfiguration.cs" />
