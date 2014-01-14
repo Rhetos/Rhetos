@@ -42,12 +42,17 @@
     <Reference Include="Autofac">
       <HintPath>..\..\..\External\Autofac\Autofac.dll</HintPath>
     </Reference>
+    <Reference Include="Autofac.Integration.Wcf">
+      <HintPath>..\..\..\External\Autofac\Autofac.Integration.Wcf.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.ServiceModel.Activation" />
     <Reference Include="System.ServiceModel.Web" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -55,9 +60,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SecurityRestServiceInitializer.cs" />
     <Compile Include="DataObjectModel.cs" />
     <Compile Include="DefaultAutofacConfiguration.cs" />
-    <Compile Include="ISecurityRestService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RestImpl.cs" />
     <Compile Include="SecurityRestService.cs" />
@@ -90,6 +95,10 @@
     <ProjectReference Include="..\..\..\Source\Rhetos.XmlSerialization\Rhetos.XmlSerialization.csproj">
       <Project>{726ca0fb-70e7-44f3-9fca-e703598bfc7e}</Project>
       <Name>Rhetos.XmlSerialization</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos\Rhetos.csproj">
+      <Project>{f395c923-6001-478d-9eff-f28a51f62be4}</Project>
+      <Name>Rhetos</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

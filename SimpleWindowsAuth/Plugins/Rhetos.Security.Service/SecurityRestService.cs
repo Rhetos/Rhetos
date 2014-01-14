@@ -28,11 +28,13 @@ using Rhetos.Processing.DefaultCommands;
 using Rhetos.Utilities;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Dom;
+using System.ServiceModel.Activation;
 
 namespace Rhetos.Security.Service
 {
-    [System.ServiceModel.Activation.AspNetCompatibilityRequirements(RequirementsMode = System.ServiceModel.Activation.AspNetCompatibilityRequirementsMode.Allowed)]
-    public class SecurityRestService : ISecurityRestService
+    [AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed)]
+    [ServiceContract]
+    public class SecurityRestService
     {
         private readonly RestImpl _restImpl;
 
@@ -41,36 +43,50 @@ namespace Rhetos.Security.Service
             _restImpl = restImpl;
         }
 
+        [OperationContract]
+        [WebGet(UriTemplate = "/principals?format=json", ResponseFormat = WebMessageFormat.Json)]
         public List<Principal> GetPrincipalsJson()
         {
             return _restImpl.GetPrincipals();
         }
 
+        [OperationContract]
+        [WebInvoke(Method = "POST", UriTemplate = "/principals/create", BodyStyle = WebMessageBodyStyle.Wrapped, RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         public void AddPrincipal(string name)
         {
             _restImpl.CreatePrincipal(name);
         }
 
+        [OperationContract]
+        [WebInvoke(Method = "POST", UriTemplate = "/principals/{id}/update", BodyStyle = WebMessageBodyStyle.Wrapped, RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         public void UpdatePrincipalName(string id, string name)
         {
             _restImpl.UpdatePrincipalName(new Guid(id), name);
         }
 
+        [OperationContract]
+        [WebInvoke(Method = "POST", UriTemplate = "/principals/{id}/delete")]
         public void DeletePrincipal(string id)
         {
             _restImpl.DeletePrincipal(new Guid(id));
         }
 
+        [OperationContract]
+        [WebGet(UriTemplate = "/claims?format=json", ResponseFormat = WebMessageFormat.Json)]
         public List<Claim> GetClaimsJson()
         {
             return _restImpl.GetClaims();
         }
 
+        [OperationContract]
+        [WebGet(UriTemplate = "/principals/{id}/permissions?format=json", ResponseFormat = WebMessageFormat.Json)]
         public List<Permission> GetPrincipalsPermissionsJson(string id)
         {
             return _restImpl.GetPermissions(new Guid(id));
         }
 
+        [OperationContract]
+        [WebInvoke(Method = "POST", UriTemplate = "/principals/{principalId}/permissions", BodyStyle = WebMessageBodyStyle.Wrapped, RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         public void ApplyPrincipalPermission(string principalId, string claimId, string isAuthorized)
         {
             _restImpl.ApplyPermissionChange(new Guid(principalId), new Guid(claimId), isAuthorized);
