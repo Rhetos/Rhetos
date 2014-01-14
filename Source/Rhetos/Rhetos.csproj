@@ -86,36 +86,9 @@
     <CodeAnalysisDictionary Include="..\..\CodeAnalysisDictionary.xml">
       <Link>CodeAnalysisDictionary.xml</Link>
     </CodeAnalysisDictionary>
-    <Content Include="Css\rhetos-permissons-ui.css" />
-    <Content Include="Css\style.css" />
-    <Content Include="Css\ui-lightness\images\ui-bg_diagonals-thick_18_b81900_40x40.png" />
-    <Content Include="Css\ui-lightness\images\ui-bg_diagonals-thick_20_666666_40x40.png" />
-    <Content Include="Css\ui-lightness\images\ui-bg_flat_10_000000_40x100.png" />
-    <Content Include="Css\ui-lightness\images\ui-bg_glass_100_f6f6f6_1x400.png" />
-    <Content Include="Css\ui-lightness\images\ui-bg_glass_100_fdf5ce_1x400.png" />
-    <Content Include="Css\ui-lightness\images\ui-bg_glass_65_ffffff_1x400.png" />
-    <Content Include="Css\ui-lightness\images\ui-bg_gloss-wave_35_f6a828_500x100.png" />
-    <Content Include="Css\ui-lightness\images\ui-bg_highlight-soft_100_eeeeee_1x100.png" />
-    <Content Include="Css\ui-lightness\images\ui-bg_highlight-soft_75_ffe45c_1x100.png" />
-    <Content Include="Css\ui-lightness\images\ui-icons_222222_256x240.png" />
-    <Content Include="Css\ui-lightness\images\ui-icons_228ef1_256x240.png" />
-    <Content Include="Css\ui-lightness\images\ui-icons_ef8c08_256x240.png" />
-    <Content Include="Css\ui-lightness\images\ui-icons_ffd27a_256x240.png" />
-    <Content Include="Css\ui-lightness\images\ui-icons_ffffff_256x240.png" />
-    <Content Include="Css\ui-lightness\jquery-ui-1.8.16.custom.css" />
     <Content Include="Default.aspx" />
     <Content Include="Global.asax" />
-    <Content Include="Img\checked_highlighted.gif" />
-    <Content Include="Img\intermediate_highlighted.gif" />
-    <Content Include="Img\lock.png" />
-    <Content Include="Img\unchecked_highlighted.gif" />
     <Content Include="RhetosService.svc" />
-    <Content Include="Js\rhetos-permissons-ui.js" />
-    <Content Include="Js\rhetos-tri-state-checkbox.js" />
-    <Content Include="Js\jquery-1.7.min.js" />
-    <Content Include="Js\jquery-ui-1.8.16.custom.min.js" />
-    <Content Include="Js\jquery.tablesorter.min.js" />
-    <Content Include="Js\json2.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -148,13 +121,6 @@
       <DependentUpon>RhetosService.svc</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Site.Master.cs">
-      <DependentUpon>Site.Master</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Site.Master.designer.cs">
-      <DependentUpon>Site.Master</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -224,7 +190,6 @@
   <ItemGroup>
     <None Include="ApplyPackages.bat" />
     <None Include="GetServerFiles.bat" />
-    <Content Include="Site.Master" />
     <Content Include="Template.ConnectionStrings.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
