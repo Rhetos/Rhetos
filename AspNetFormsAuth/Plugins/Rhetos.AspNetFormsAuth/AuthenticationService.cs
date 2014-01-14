@@ -16,69 +16,18 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-using Rhetos.Utilities;
+using Rhetos.Logging;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
-using System.ServiceModel.Description;
 using System.ServiceModel.Web;
 using System.Text;
-using System.Web;
-using System.Web.Routing;
 using WebMatrix.WebData;
 
 namespace Rhetos.AspNetFormsAuth
 {
-    [Export(typeof(Rhetos.IService))]
-    public class AuthenticationServiceInitializer : Rhetos.IService
-    {
-        private static IHttpModule _cancelUnauthorizedClientRedirectionModule = new CancelUnauthorizedClientRedirection();
-
-        public void Initialize()
-        {
-            WebSecurity.InitializeDatabaseConnection(SqlUtility.ConnectionString, SqlUtility.ProviderName, "aspnet_Principal", "AspNetUserId", "Name", autoCreateTables: true);
-            RouteTable.Routes.Add(new ServiceRoute("Authentication", new AuthenticationServiceHostFactory(), typeof(AuthenticationService)));
-        }
-
-        public void InitializeApplicationInstance(HttpApplication context)
-        {
-            _cancelUnauthorizedClientRedirectionModule.Init(context);
-        }
-    }
-
-    public class AuthenticationServiceHostFactory : Autofac.Integration.Wcf.AutofacServiceHostFactory
-    {
-        protected override ServiceHost CreateServiceHost(Type serviceType, Uri[] baseAddresses)
-        {
-            return new AuthenticationServiceHost(serviceType, baseAddresses);
-        }
-    }
-
-    public class AuthenticationServiceHost : ServiceHost
-    {
-        private Type _serviceType;
-
-        public AuthenticationServiceHost(Type serviceType, Uri[] baseAddresses)
-            : base(serviceType, baseAddresses)
-        {
-            _serviceType = serviceType;
-        }
-
-        protected override void OnOpening()
-        {
-            base.OnOpening();
-
-            this.AddServiceEndpoint(_serviceType, new WebHttpBinding("rhetosWebHttpBinding"), string.Empty);
-            ((ServiceEndpoint)(Description.Endpoints.Where(e => e.Binding is WebHttpBinding).Single())).Behaviors.Add(new WebHttpBehavior());
-
-            if (Description.Behaviors.Find<Rhetos.JsonErrorServiceBehavior>() == null)
-                Description.Behaviors.Add(new Rhetos.JsonErrorServiceBehavior());
-        }
-    }
-
     public class LoginData
     {
         public string UserName { get; set; }
@@ -90,6 +39,13 @@ namespace Rhetos.AspNetFormsAuth
     [AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Required)]
     public class AuthenticationService
     {
+        private readonly ILogger _logger;
+
+        public AuthenticationService(ILogProvider logProvider)
+        {
+            _logger = logProvider.GetLogger("AspNetFormsAuth.AuthenticationService");
+        }
+
         /// <summary>
         /// "PersistCookie" parameter may be represented to users as the "Remember me" checkbox.
         /// </summary>
@@ -97,9 +53,12 @@ namespace Rhetos.AspNetFormsAuth
         [WebInvoke(Method = "POST", UriTemplate = "/Login", BodyStyle = WebMessageBodyStyle.Bare, RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         public bool Login(LoginData loginData)
         {
-            // TODO: Validate password (length, ...)
+            // TODO: Check password policy (length, strength, ...)
 
-            return WebSecurity.Login(loginData.UserName, loginData.Password, loginData.PersistCookie);
+            bool success = WebSecurity.Login(loginData.UserName, loginData.Password, loginData.PersistCookie);
+
+            _logger.Trace(() => "User '" + loginData.UserName + "' login " + (success ? "successful." : "failed."));
+            return success;
         }
     }
 }

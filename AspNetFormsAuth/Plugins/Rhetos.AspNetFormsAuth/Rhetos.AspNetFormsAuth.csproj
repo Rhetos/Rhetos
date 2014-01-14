@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AspNetUserInfo.cs" />
+    <Compile Include="AuthenticationServiceInitializer.cs" />
     <Compile Include="CancelUnauthorizedClientRedirection.cs" />
     <Compile Include="IPermission.cs" />
     <Compile Include="IPrincipal.cs" />
