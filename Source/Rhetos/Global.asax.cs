@@ -42,6 +42,7 @@ namespace Rhetos
         private static ILogger _performanceLogger;
         private static IEnumerable<IService> _pluginServices;
 
+        // Called only once.
         protected void Application_Start(object sender, EventArgs e)
         {
             var stopwatch = Stopwatch.StartNew();
@@ -74,6 +75,7 @@ namespace Rhetos
             _performanceLogger.Write(stopwatch, "All services initialized.");
         }
 
+        // Called once for each application instance.
         public override void Init()
         {
             base.Init();

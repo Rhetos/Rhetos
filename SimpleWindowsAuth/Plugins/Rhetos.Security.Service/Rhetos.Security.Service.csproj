@@ -60,6 +60,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PermissionsHomePageSnippet.cs" />
     <Compile Include="SecurityRestServiceInitializer.cs" />
     <Compile Include="DataObjectModel.cs" />
     <Compile Include="DefaultAutofacConfiguration.cs" />

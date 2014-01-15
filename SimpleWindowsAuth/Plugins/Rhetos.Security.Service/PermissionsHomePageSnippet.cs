@@ -18,19 +18,20 @@
 */
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
-using System.ServiceModel;
 using System.Text;
-using System.Web;
 
-namespace Rhetos
+namespace Rhetos.Security.Service
 {
-    public interface IService
+    [Export(typeof(Rhetos.IHomePageSnippet))]
+    public class PermissionsHomePageSnippet : Rhetos.IHomePageSnippet
     {
-        // Called only once.
-        void Initialize();
-
-        // Called once for each application instance.
-        void InitializeApplicationInstance(HttpApplication context);
+        public string Html
+        {
+            get
+            {
+                return @"<p><a href=""Resources/SimpleWindowsAuth/Permissions.html"">Configure permissions for windows users and groups (SimpleWindowsAuth)</a></p>"; }
+        }
     }
 }

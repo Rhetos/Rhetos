@@ -19,18 +19,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.ServiceModel;
 using System.Text;
-using System.Web;
 
 namespace Rhetos
 {
-    public interface IService
+    public interface IHomePageSnippet
     {
-        // Called only once.
-        void Initialize();
-
-        // Called once for each application instance.
-        void InitializeApplicationInstance(HttpApplication context);
+        string Html { get; }
     }
 }

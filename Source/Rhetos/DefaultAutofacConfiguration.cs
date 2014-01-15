@@ -56,6 +56,8 @@ namespace Rhetos
             builder.RegisterModule(new LoggingConfiguration());
 
             PluginsUtility.RegisterPlugins<IService>(builder);
+            PluginsUtility.RegisterPlugins<IHomePageSnippet>(builder);
+
             builder.RegisterModule(new ExtensibilityModuleConfiguration());
 
             base.Load(builder);
