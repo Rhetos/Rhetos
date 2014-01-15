@@ -1,2 +1,2 @@
 ..\..\CommonConcepts
-..\..\CommonConcepts\CommonConceptsTest
+..\..\SimpleWindowsAuth
