@@ -37,7 +37,7 @@ namespace Rhetos.AspNetFormsAuth
         public void Initialize()
         {
             WebSecurity.InitializeDatabaseConnection(SqlUtility.ConnectionString, SqlUtility.ProviderName, "aspnet_Principal", "AspNetUserId", "Name", autoCreateTables: true);
-            RouteTable.Routes.Add(new ServiceRoute("Authentication", new AuthenticationServiceHostFactory(), typeof(AuthenticationService)));
+            RouteTable.Routes.Add(new ServiceRoute("Resources/AspNetFormsAuth/Authentication", new AuthenticationServiceHostFactory(), typeof(AuthenticationService)));
         }
 
         private static IHttpModule _cancelUnauthorizedClientRedirectionModule = new CancelUnauthorizedClientRedirection();

@@ -28,10 +28,8 @@ namespace Rhetos.Configuration.Autofac
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<AuthorizationManager>().As<IAuthorizationManager>().InstancePerLifetimeScope();
-
             builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
             PluginsUtility.RegisterPlugins<IUserInfo>(builder); // Allow custom IUserInfo plugin implementation (overriding WcfWindowsUserInfo).
-
             PluginsUtility.RegisterPlugins<IAuthorizationProvider>(builder);
             PluginsUtility.RegisterPlugins<IClaimProvider>(builder);
 

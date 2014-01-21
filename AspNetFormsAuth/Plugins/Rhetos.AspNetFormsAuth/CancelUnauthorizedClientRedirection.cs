@@ -42,14 +42,24 @@ namespace Rhetos.AspNetFormsAuth
         {
             HttpApplication app = (HttpApplication)sender;
 
+            string defaultRedirectLocation = app.Request.ApplicationPath + "/login.aspx"; // Unless explicitly specified in web.config.
+
             if (app.Response.StatusCode == 302 // Redirect to Login web page
                 && app.Response.IsRequestBeingRedirected
-                && app.Response.RedirectLocation.StartsWith(@"/Rhetos/login.aspx")) 
+                && app.Response.RedirectLocation.StartsWith(defaultRedirectLocation))
             {
-                app.Response.ClearHeaders();
-                app.Response.ClearContent();
-
-                app.Response.StatusCode = 401; // Unauthorized
+                if (app.Request.AppRelativeCurrentExecutionFilePath == "~/" || app.Request.AppRelativeCurrentExecutionFilePath == "~")
+                {
+                    // Accessing home page, redirect to login page.
+                    app.Response.RedirectLocation = app.Request.ApplicationPath + @"/Resources/AspNetFormsAuth/Login.html" + app.Response.RedirectLocation.Substring(defaultRedirectLocation.Length);
+                }
+                else
+                {
+                    // Return the unauthorized HTTP status code.
+                    app.Response.ClearHeaders();
+                    app.Response.ClearContent();
+                    app.Response.StatusCode = 401;
+                }
             }
         }
     }

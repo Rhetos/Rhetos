@@ -60,6 +60,7 @@
     <Compile Include="AspNetUserInfo.cs" />
     <Compile Include="AuthenticationServiceInitializer.cs" />
     <Compile Include="CancelUnauthorizedClientRedirection.cs" />
+    <Compile Include="HomePageSnippet.cs" />
     <Compile Include="IPermission.cs" />
     <Compile Include="IPrincipal.cs" />
     <Compile Include="IPrincipalHasRole.cs" />

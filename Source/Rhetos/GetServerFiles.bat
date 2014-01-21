@@ -10,10 +10,6 @@ SET PluginsFolder="%CD%\Plugins"
 SET ResourcesFolder="%CD%\Resources"
 SET DslScriptsFolder="%CD%\DslScripts"
 
-REM ======================== REST SERVICE ==============================
-
-XCOPY /Y/D/R ..\..\SimpleWindowsAuth\Plugins\Rhetos.Security.Service\bin\%Config%\Rhetos.Security.Service.??? %BinFolder% || EXIT /B 1
-
 REM ======================== DEPLOYMENT TOOLS ==============================
 
 XCOPY /Y/D/R ..\..\Source\DeployPackages\bin\%Config%\DeployPackages.??? %BinFolder% || EXIT /B 1

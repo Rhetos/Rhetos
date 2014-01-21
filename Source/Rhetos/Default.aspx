@@ -6,13 +6,12 @@
 </head>
 <body>
     <h1>Rhetos</h1>
-    <p>
-        <%
-            var snippets = Autofac.ResolutionExtensions.Resolve<IEnumerable<Rhetos.IHomePageSnippet>>(Autofac.Integration.Wcf.AutofacServiceHostFactory.Container);
-            foreach (var snippet in snippets)
-                Response.Write(snippet.Html);
-        %>
-    </p>
+    <div>
+<%
+    var snippets = Autofac.ResolutionExtensions.Resolve<IEnumerable<Rhetos.IHomePageSnippet>>(Autofac.Integration.Wcf.AutofacServiceHostFactory.Container);
+    foreach (var snippet in snippets)
+        Response.Write(snippet.Html);
+%>    </div>
     <h2>Server status</h2>
     <p>
         Local server time: <%=DateTime.Now %><br />

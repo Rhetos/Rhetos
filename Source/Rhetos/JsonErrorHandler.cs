@@ -51,11 +51,21 @@ namespace Rhetos
             if (error is WebFaultException)
                 return;
 
-            object responseData = error.GetType().Name + ": " + error.Message;
-            var responseStatusCode = error is UserException ? HttpStatusCode.BadRequest : HttpStatusCode.InternalServerError;
+            object responseMessage;
+            HttpStatusCode responseStatusCode;
+            if (error is UserException)
+            {
+                responseStatusCode = HttpStatusCode.BadRequest;
+                responseMessage = error.Message;
+            }
+            else
+            {
+                responseStatusCode = HttpStatusCode.InternalServerError;
+                responseMessage = error.GetType().Name + ": " + error.Message;
+            }
 
-            fault = Message.CreateMessage(version, "", responseData,
-                new System.Runtime.Serialization.Json.DataContractJsonSerializer(responseData.GetType()));
+            fault = Message.CreateMessage(version, "", responseMessage,
+                new System.Runtime.Serialization.Json.DataContractJsonSerializer(responseMessage.GetType()));
 
             fault.Properties.Add(WebBodyFormatMessageProperty.Name,
                 new WebBodyFormatMessageProperty(WebContentFormat.Json));

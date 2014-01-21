@@ -22,18 +22,18 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 
-namespace Rhetos.Security.Service
+namespace Rhetos.AspNetFormsAuth
 {
-    [Export(typeof(Rhetos.IHomePageSnippet))]
-    public class PermissionsHomePageSnippet : Rhetos.IHomePageSnippet
+    [Export(typeof(IHomePageSnippet))]
+    public class HomePageSnippet : IHomePageSnippet
     {
         public string Html
         {
             get
             {
                 return
-@"        <h2>SimpleWindowsAuth</h2>
-        <p><a href=""Resources/SimpleWindowsAuth/Permissions.html"">Configure permissions for Windows users and groups</a></p>
+@"        <h2>AspNetFormsAuth</h2>
+        <p><a href=""Resources/AspNetFormsAuth/Login.html"">Log In</a></p>
 ";
             }
         }

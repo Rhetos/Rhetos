@@ -19,11 +19,14 @@
 using Rhetos.Logging;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 using System.Text;
+using System.Web;
 using WebMatrix.WebData;
 
 namespace Rhetos.AspNetFormsAuth
@@ -53,7 +56,11 @@ namespace Rhetos.AspNetFormsAuth
         [WebInvoke(Method = "POST", UriTemplate = "/Login", BodyStyle = WebMessageBodyStyle.Bare, RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         public bool Login(LoginData loginData)
         {
-            // TODO: Check password policy (length, strength, ...)
+            if (string.IsNullOrWhiteSpace(loginData.UserName))
+                throw new UserException("Empty username is not allowed.");
+
+            if (string.IsNullOrWhiteSpace(loginData.Password))
+                throw new UserException("Empty password is not allowed.");
 
             bool success = WebSecurity.Login(loginData.UserName, loginData.Password, loginData.PersistCookie);
 
