@@ -16,6 +16,8 @@ EXEC Rhetos.DataMigrationUse 'Common', 'Role', 'Name', 'nvarchar(256)';
 EXEC Rhetos.DataMigrationUse 'Common', 'PrincipalHasRole', 'ID', 'uniqueidentifier';
 EXEC Rhetos.DataMigrationUse 'Common', 'PrincipalHasRole', 'PrincipalID', 'uniqueidentifier';
 EXEC Rhetos.DataMigrationUse 'Common', 'PrincipalHasRole', 'RoleID', 'uniqueidentifier';
+--EXEC Rhetos.HelpDataMigration 'Common', 'Claim'
+EXEC Rhetos.DataMigrationUse 'Common', 'Claim', 'ID', 'uniqueidentifier';
 GO
 
 IF EXISTS (SELECT TOP 1 1 FROM _Common.Permission WHERE RoleID IS NULL AND PrincipalID IS NOT NULL)
@@ -45,6 +47,8 @@ BEGIN
 		_Common.Permission per
 		INNER JOIN _Common.PrincipalHasRole phr ON phr.PrincipalID = per.PrincipalID;
 END
+
+DELETE p FROM _Common.Permission p LEFT JOIN _Common.Claim c ON c.ID = p.ClaimID WHERE c.ID IS NULL;
 
 EXEC Rhetos.DataMigrationApplyMultiple 'Common', 'Role', 'ID, Name';
 EXEC Rhetos.DataMigrationApplyMultiple 'Common', 'PrincipalHasRole', 'ID, PrincipalID, RoleID';

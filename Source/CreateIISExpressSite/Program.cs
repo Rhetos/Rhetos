@@ -79,53 +79,53 @@ namespace CreateIISExpressSite
 
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
-            if (args.Length < 2 || args.Length > 3)
+            try
             {
-                Console.WriteLine("Usage: CreateIISExpressSite <IISSite> <Port> [RhetosAlternativeAppPath]");
-                Console.WriteLine("   Port has to be between 1024 and 65535");
-                return;
+                if (args.Length < 2 || args.Length > 3)
+                {
+                    Console.WriteLine("Usage: CreateIISExpressSite <IISSite> <Port> [RhetosAlternativeAppPath]");
+                    Console.WriteLine("   Port has to be between 1024 and 65535");
+                    return 1;
+                }
+                string appRoot = Directory.GetCurrentDirectory().Substring(0, Directory.GetCurrentDirectory().Length - 4);
+                if (args.Length == 3)
+                    appRoot = args[2];
+
+                int port = 0;
+                if (!Int32.TryParse(args[1], out port))
+                    throw new ArgumentException("Port has to be valid integer less than 65536.");
+                if (port > 65535)
+                    throw new ArgumentException("Port has to be valid integer less than 65536.");
+
+                if (!File.Exists(@"..\IISExpress.config"))
+                    File.Copy(@"Template.IISExpress.config", @"..\IISExpress.config");
+                Console.Write("Preparing local IISExpress.config ... ");
+                FileReplaceHelper.ReplaceWithRegex(@"..\IISExpress.config"
+                    , @"<site name(.|\n)*?</site>"
+                    , @"<site name=""" + args[0] + @""" id=""1"" serverAutoStart=""true"">
+                    <application path=""/"">
+                        <virtualDirectory path=""/"" physicalPath=""" + appRoot + @""" />
+                    </application>
+                    <bindings>
+                        <binding protocol=""http"" bindingInformation="":" + port.ToString() + @":localhost"" />
+                    </bindings>
+                </site>"
+                    , "Not valid IISExpress.config file.");
+                FileReplaceHelper.ReplaceWithRegex(@"..\IISExpress.config"
+                    , @"<!-- AuthenticationPart-->(.|\n)*?<location path=""(.|\n)*?"">"
+                    , @"<!-- AuthenticationPart-->" + Environment.NewLine + @"    <location path=""" + args[0] + @""">"
+                    , "Not valid IISExpress.config file.");
+                Console.WriteLine("DONE");
             }
-            string appRoot = Directory.GetCurrentDirectory().Substring(0, Directory.GetCurrentDirectory().Length - 4);
-            if (args.Length == 3)
-                appRoot = args[2];
-
-            int port = 0;
-            if (!Int32.TryParse(args[1], out port))
-                throw new ArgumentException("Port has to be valid integer less than 65536.");
-            if (port > 65535)
-                throw new ArgumentException("Port has to be valid integer less than 65536.");
-
-            string pathToIISExpress = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "IISExpress");
-            if (!Directory.Exists(pathToIISExpress))
-                throw new Exception("IIS Express is not installed or enabled for current user.");
-
-            if (!File.Exists(@"..\IISExpress.config"))
-                File.Copy(@"Template.IISExpress.config", @"..\IISExpress.config");
-            Console.Write("Preparing local IISExpress.config ... ");
-            FileReplaceHelper.ReplaceWithRegex(@"..\IISExpress.config"
-                , @"<site name(.|\n)*?</site>"
-                , @"<site name=""" + args[0] + @""" id=""1"" serverAutoStart=""true"">
-                <application path=""/"">
-                    <virtualDirectory path=""/"" physicalPath=""" + appRoot + @""" />
-                </application>
-                <bindings>
-                    <binding protocol=""http"" bindingInformation="":" + port.ToString() + @":localhost"" />
-                </bindings>
-            </site>"
-                , "Not valid IISExpress.config file.");
-            FileReplaceHelper.ReplaceWithRegex(@"..\IISExpress.config"
-                , @"<!-- AuthenticationPart-->(.|\n)*?<location path=""(.|\n)*?"">"
-                , @"<!-- AuthenticationPart-->" + Environment.NewLine + @"    <location path=""" + args[0] + @""">"
-                , "Not valid IISExpress.config file.");
-            Console.WriteLine("DONE");
-            Console.Write("Setting RhetosService.svc location in web.config ...");
-            FileReplaceHelper.ReplaceWithRegex(@"..\web.config"
-                , @"<endpoint address=""http(.|\n)*?/RhetosService.svc(.|\n)*?endpoint>"
-                , @"<endpoint address=""http://localhost:" + port.ToString() + @"/RhetosService.svc"" binding=""basicHttpBinding"" bindingConfiguration=""rhetosBasicHttpBinding"" contract=""Rhetos.IServerApplication""></endpoint>"
-                , "Not valid web.config file.");
-            Console.WriteLine("DONE");
+            catch (Exception ex)
+            {
+                Console.WriteLine("ERROR:");
+                Console.WriteLine(ex);
+                return 1;
+            }
+            return 0;
         }
     }
 }

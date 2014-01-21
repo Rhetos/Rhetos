@@ -33,14 +33,22 @@ POPD
 @echo ---- Finished ----
 @echo.
 
+@SET IISPF=C:\Program Files
+@IF "%ProgramFiles%" NEQ "" SET IISPF=%ProgramFiles%
+@IF "%ProgramFiles(x86)%" NEQ "" SET IISPF=%ProgramFiles(x86)%
+
 @echo You can start Rhetos application on IIS Express with following command.
-@echo CALL "<Program Files>\IIS Express\IISExpress.exe" /config:IISExpress.config
+@echo CALL "%IISPF%\IIS Express\IISExpress.exe" /config:IISExpress.config
 
 EXIT /B 0
 
 :usage
-@echo Usage: %0 ^<IISWebSiteName^> ^<IISWebSitePort^> ^<SQLServer^> ^<DatabaseName^> 
-@echo     ^<IISWebSiteName^> - irrelevant - description name for web site on IIS Express
+@echo Usage: %0 ^<WebsiteName^> ^<Port^> ^<SqlServer^> ^<DatabaseName^>
+@echo     ^<WebsiteName^> - name of website in IISExpress config (choose any name)
+@echo     ^<Port^> - port that Rhetos web service will be listening to if using IIS Express (1234, for example)
+@echo     ^<SqlServer^> - Microsoft SQL Server on which there is/will be database for Rhetos server
+@echo     ^<DatabaseName^> - name of database that will Rhetos use, script will create database if it doesn't exist.
+
 EXIT /B 1
 
 :Error1

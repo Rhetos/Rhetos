@@ -61,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AuthorizationManager.cs" />
+    <Compile Include="NullAuthorizationProvider.cs" />
     <Compile Include="WcfUtility.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WcfWindowsUserInfo.cs" />
