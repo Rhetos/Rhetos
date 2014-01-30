@@ -63,6 +63,8 @@ namespace DeployPackages
             builder.RegisterType<DataMigration>();
             builder.RegisterType<DatabaseCleaner>();
 
+            SecurityModuleConfiguration.ForceWindowsUserAuthentication(builder);
+
             base.Load(builder);
         }
     }

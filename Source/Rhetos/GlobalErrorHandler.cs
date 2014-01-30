@@ -38,7 +38,10 @@ namespace Rhetos
 
         public bool HandleError(Exception error)
         {
-            Logger.Error(() => error.ToString());
+            if (error is UserException)
+                Logger.Info(() => error.ToString());
+            else
+                Logger.Error(() => error.ToString());
             return false;
         }
 

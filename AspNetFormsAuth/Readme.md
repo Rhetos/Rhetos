@@ -12,19 +12,19 @@ Features
 #### Authentication
 
 * For developers and administrators, a simple web form is provided in order to login to the site: `/Resources/AspNetFormsAuth/Login.html`.
-* Other web applications and services may log in by sending a POST request to URI `/Resources/AspNetFormsAuth/Authentication/Login` with JSON serialized login information (UserName string, Password string, PersistCookie boolean).
-  * Example of the request data: {"UserName":"myusername","Password":"mypassword","PersistCookie":false}.
+* Other web applications and services may log in by sending a POST request to URI `/Resources/AspNetFormsAuth/Authentication/Login` with JSON serialized login information (UserName, Password, PersistCookie).
+  * Example of the request data: `{"UserName":"myusername","Password":"mypassword","PersistCookie":false}`.
   * The server response will contain the standard authentication cookie, and the client browser will automatically use the cookie for following requests.
-* See the installation notes below for securing the site and sharing the authentication across multiple web applications. 
+* See the installation notes below for securing the site and sharing the authentication across multiple web applications.
 
-#### Authorization 
+#### Authorization
 
 Authorization is implemented internally using claim-based permissions system.
 The users' permissions may be configured for each action or data query, using Rhetos entities: `Principal`, `Role`, `Permission` and `Claim`.
 
-Technical notes
----------------
+#### Technical notes
 
+* AspNetFormsAuth packages will automatically import all principals and permissions form SimpleWindowsAuth package, if used before. Note that roles cannot be automatically imported because SimpleWindowsAuth depends on Active Directory user groups.
 * Authentication is implemented using Microsoft's `SimpleMembershipProvider` (WebMatrix).
 * The log in form and service allow anonymous access (it is a standard forms authentication feature).
 
@@ -36,8 +36,8 @@ Before or after deploying the AspNetFormsAuth packages, please make the followin
 #### Modify Web.config
 
 1. Comment out (or delete) the `security mode="TransportCredentialOnly` elements in all bindings.
-2. Remove the `<authentication mode="Windows" />` element. 
-3. Inside the `system.web` element add the following:
+2. Remove the `<authentication mode="Windows" />` element.
+3. Inside the `<system.web>` element add the following:
 
 	    <authentication mode="Forms" />
 	    <roleManager enabled="true" />
@@ -56,10 +56,55 @@ Before or after deploying the AspNetFormsAuth packages, please make the followin
 1. Start IIS Manager -> Select the web site -> Open "Authentication" feature.
 2. On the Authentication page **enable** *Anonymous Authentication* and *Forms Authentication*, **disable** *Windows Authentication* and every other.
 
+#### AdminSetup
+
+`DeployPackages.exe`, when deploying the AspNetFormsAuth packages, creates the *admin* user account and *SecurityAdministrator* role, adds the account to the role and gives it permission for  *AspNetFormsAuth.AuthenticationService.SetPassword*.
+
+1. After deployment, **run the utility** `\bin\Plugins\AdminSetup.exe` to initialize the *admin* user account.
+
 #### Set up HTTPS
 
-HTTPS (or any other) secure transport protocol **must be used** on the Rhetos web site in order to assure safe forms authentication log-in process.
+HTTPS (or any other) secure transport protocol **should always be enforced** when using forms authentication.
+This is necessary because in forms authentication the password is submitted as a plain text.
+
 At least the services inside `/Resources/AspNetFormsAuth` path must use HTTPS to protect user's password.
+
+Uninstallation
+--------------
+
+When returning Rhetos server from Forms Authentication back to **Windows Authentication**, the following configuration changes should be done:
+
+#### Modify Web.config
+
+1. Add (or uncomment) the following element inside all `<binding ...>` elements:
+
+		<security mode="TransportCredentialOnly">
+			<transport clientCredentialType="Windows" />
+		</security>
+
+2. Inside `<system.web>` remove following elements:
+
+	    <authentication mode="Forms" />
+	    <roleManager enabled="true" />
+	    <membership defaultProvider="SimpleMembershipProvider">
+	      <providers>
+	        <clear />
+	        <add name="SimpleMembershipProvider" type="WebMatrix.WebData.SimpleMembershipProvider, WebMatrix.WebData" />
+	      </providers>
+	    </membership>
+	    <authorization>
+	      <deny users="?" />
+	    </authorization>
+
+3. Inside `<system.web>` add the `<authentication mode="Windows" />` element.
+
+#### Configure IIS
+
+1. Start IIS Manager -> Select the web site -> Open "Authentication" feature.
+2. On the Authentication page **disable** *Anonymous Authentication* and *Forms Authentication*, **enable** *Windows Authentication*.
+
+Advanced topics
+---------------
 
 #### Sharing the authentication across web applications
 

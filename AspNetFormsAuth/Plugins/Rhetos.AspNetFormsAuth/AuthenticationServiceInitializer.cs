@@ -16,6 +16,13 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+using Autofac.Features.Indexed;
+using Rhetos.Dom;
+using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Extensibility;
+using Rhetos.Logging;
+using Rhetos.Processing;
+using Rhetos.Security;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
@@ -34,9 +41,14 @@ namespace Rhetos.AspNetFormsAuth
     [Export(typeof(Rhetos.IService))]
     public class AuthenticationServiceInitializer : Rhetos.IService
     {
+        public static void InitializeDatabaseConnection(bool autoCreateTables)
+        {
+            WebSecurity.InitializeDatabaseConnection(SqlUtility.ConnectionString, SqlUtility.ProviderName, "aspnet_Principal", "AspNetUserId", "Name", autoCreateTables);
+        }
+
         public void Initialize()
         {
-            WebSecurity.InitializeDatabaseConnection(SqlUtility.ConnectionString, SqlUtility.ProviderName, "aspnet_Principal", "AspNetUserId", "Name", autoCreateTables: true);
+            InitializeDatabaseConnection(autoCreateTables: true);
             RouteTable.Routes.Add(new ServiceRoute("Resources/AspNetFormsAuth/Authentication", new AuthenticationServiceHostFactory(), typeof(AuthenticationService)));
         }
 
@@ -46,6 +58,88 @@ namespace Rhetos.AspNetFormsAuth
         {
             _cancelUnauthorizedClientRedirectionModule.Init(context);
         }
+    }
+
+	// Executes at deployment-time.
+    [Export(typeof(Rhetos.Extensibility.IServerInitializer))]
+    public class AuthenticationDatabaseInitializer : Rhetos.Extensibility.IServerInitializer
+    {
+        private readonly IIndex<string, IWritableRepository> _writableRepositories;
+        private readonly IDomainObjectModel _domainObjectModel;
+        private readonly IQueryableRepository<Rhetos.AspNetFormsAuth.IPrincipal> _principals;
+        private readonly IQueryableRepository<Rhetos.AspNetFormsAuth.IRole> _roles;
+        private readonly ILogger _logger;
+
+        public AuthenticationDatabaseInitializer(
+            IIndex<string, IWritableRepository> writableRepositories,
+            IDomainObjectModel domainObjectModel,
+            IQueryableRepository<Rhetos.AspNetFormsAuth.IPrincipal> principals,
+            IQueryableRepository<Rhetos.AspNetFormsAuth.IRole> roles,
+            ILogProvider logProvider)
+        {
+            _writableRepositories = writableRepositories;
+            _domainObjectModel = domainObjectModel;
+            _principals = principals;
+            _roles = roles;
+            _logger = logProvider.GetLogger("AuthenticationDatabaseInitializer");
+        }
+
+        const string adminUserName = "admin";
+        const string adminRoleName = "SecurityAdministrator";
+
+        public void Initialize()
+        {
+            Guid adminId = _principals.Query().Where(p => p.Name == adminUserName).Select(p => p.ID).SingleOrDefault();
+            if (adminId == default(Guid))
+            {
+                _logger.Trace(() => "Creating user '" + adminUserName + "'.");
+                adminId = Guid.NewGuid();
+
+                var adminPrincipal = CreateEntity("Common.Principal");
+                adminPrincipal.ID = adminId;
+                adminPrincipal.Name = adminUserName;
+
+                _writableRepositories["Common.Principal"].Save(new[] { adminPrincipal }, null, null);
+            }
+            else
+            {
+                _logger.Trace(() => "User '" + adminUserName + "' already exists.");
+            }
+
+            Guid adminRoleId = _roles.Query().
+        }
+
+        private dynamic CreateEntity(string typeName)
+        {
+            var t = _domainObjectModel.GetType(typeName);
+            return Activator.CreateInstance(t);
+        }
+
+        public IEnumerable<string> Dependencies
+        {
+            get { return null; }
+        }
+    }
+
+    [Export(typeof(IClaimProvider))]
+    [ExportMetadata(MefProvider.Implements, typeof(DummyCommandInfo))]
+    public class AuthenticationServiceClaims : IClaimProvider
+    {
+        public IList<Claim> GetRequiredClaims(ICommandInfo info)
+        {
+            return null;
+        }
+
+        public IList<Claim> GetAllClaims(Dsl.IDslModel dslModel)
+        {
+            return new[] { SetPasswordClaim };
+        }
+
+        public static readonly Claim SetPasswordClaim = new Claim("AspNetFormsAuth.AuthenticationService", "SetPassword");
+    }
+
+    public class DummyCommandInfo : ICommandInfo
+    {
     }
 
     public class AuthenticationServiceHostFactory : Autofac.Integration.Wcf.AutofacServiceHostFactory

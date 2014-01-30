@@ -25,12 +25,19 @@ using System.Web;
 
 namespace Rhetos
 {
+    /// <summary>
+    /// Initialize plugin web service. Called at run-time.
+    /// </summary>
     public interface IService
     {
-        // Called only once.
+        /// <summary>
+        /// Called only once when initializing the server process (see Global.asax: Application_Start).
+        /// </summary>
         void Initialize();
 
-        // Called once for each application instance.
+        /// <summary>
+        /// Called once for each System.Web.HttpApplication instance in the server process (see Global.asax: HttpApplication.Init).
+        /// </summary>
         void InitializeApplicationInstance(HttpApplication context);
     }
 }

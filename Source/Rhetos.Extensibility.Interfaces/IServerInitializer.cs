@@ -24,6 +24,10 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Extensibility
 {
+    /// <summary>
+    /// Called at deployment time (DeployPackages.exe), after the database is updated, all code generators are executed
+    /// and the generated object model is registered to IoC container.
+    /// </summary>
     public interface IServerInitializer
     {
         IEnumerable<string> Dependencies { get; }
