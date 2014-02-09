@@ -1,4 +1,5 @@
-﻿/*
+﻿using Rhetos.Dom.DefaultConcepts;
+/*
     Copyright (C) 2013 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -23,9 +24,8 @@ using System.Text;
 
 namespace Rhetos.AspNetFormsAuth
 {
-    public interface IPrincipal
+    public interface IPrincipal : IEntity
     {
-        Guid ID { get; }
-        string Name { get; }
+        string Name { get; set; }
     }
 }

@@ -1,3 +1,4 @@
+﻿using Rhetos.Dom.DefaultConcepts;
 /*
     Copyright (C) 2013 Omega software d.o.o.
 
@@ -17,28 +18,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 using System;
-using Rhetos.Dom.DefaultConcepts;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-namespace Rhetos.Security.Service
+namespace Rhetos.AspNetFormsAuth
 {
-    public class Principal : IEntity
+    public interface IRole : IEntity
     {
-        public Guid ID { get; set; }
-        public string Name { get; set; }
-    }
-
-    public class Claim : IEntity
-    {
-        public Guid ID { get; set; }
-        public string ClaimResource { get; set; }
-        public string ClaimRight { get; set; }
-    }
-
-    public class Permission : IEntity
-    {
-        public Guid ID { get; set; }
-        public Guid ClaimID { get; set; }
-        public Guid PrincipalID { get; set; }
-        public bool IsAuthorized { get; set; }
+        string Name { get; set; }
     }
 }

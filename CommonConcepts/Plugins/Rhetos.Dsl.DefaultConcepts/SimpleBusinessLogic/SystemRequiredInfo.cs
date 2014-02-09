@@ -52,7 +52,12 @@ namespace Rhetos.Dsl.DefaultConcepts
                 DependedProperty = Property
             };
 
-            return new IConceptInfo[] { filter, denySave };
+            var reloadBeforeValidations = new ReloadBeforeValidationsInfo
+            {
+                DataStructure = Property.DataStructure
+            };
+
+            return new IConceptInfo[] { filter, denySave, reloadBeforeValidations };
         }
     }
 }

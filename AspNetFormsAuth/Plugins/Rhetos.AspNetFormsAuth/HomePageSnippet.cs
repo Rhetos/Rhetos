@@ -33,7 +33,10 @@ namespace Rhetos.AspNetFormsAuth
             {
                 return
 @"        <h2>AspNetFormsAuth</h2>
-        <p><a href=""Resources/AspNetFormsAuth/Login.html"">Log In</a></p>
+        <p>
+            <a href=""Resources/AspNetFormsAuth/Login.html"">Log In</a><br>
+            <a href=""Resources/AspNetFormsAuth/Logout.html"">Log Out</a><br>
+        </p>
 ";
             }
         }

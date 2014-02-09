@@ -69,6 +69,8 @@ This is necessary because in forms authentication the password is submitted as a
 
 At least the services inside `/Resources/AspNetFormsAuth` path must use HTTPS to protect user's password.
 
+Consider using a [free SSL certificate](https://www.google.hr/search?q=free+SSL+certificate) (search the web for the providers) in development or QA environment.
+
 Uninstallation
 --------------
 

@@ -23,7 +23,7 @@ using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public interface ICommonClaim
+    public interface ICommonClaim : IEntity
     {
         string ClaimResource { get; set; }
         string ClaimRight { get; set; }

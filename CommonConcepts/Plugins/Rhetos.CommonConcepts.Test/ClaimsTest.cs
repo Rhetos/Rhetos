@@ -30,7 +30,8 @@ namespace Rhetos.CommonConcepts.Test
 {
     class CC : ICommonClaim
     {
-        public Guid ID = Guid.NewGuid();
+        public CC() { ID = Guid.NewGuid(); }
+        public Guid ID { get; set; }
         public string ClaimResource { get; set; }
         public string ClaimRight { get; set; }
     }

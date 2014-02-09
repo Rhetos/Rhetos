@@ -21,9 +21,9 @@ using Rhetos.Dom.DefaultConcepts;
 
 namespace Rhetos.AspNetFormsAuth
 {
-    public interface IRoleInheritsRole
+    public interface IRoleInheritsRole : IEntity
     {
-        IEntity Derived { get; }
-        IEntity InheritsFrom { get; }
+        IRole Derived { get; }
+        IRole InheritsFrom { get; }
     }
 }

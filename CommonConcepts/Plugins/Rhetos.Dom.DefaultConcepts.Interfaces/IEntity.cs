@@ -25,6 +25,6 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     public interface IEntity
     {
-        Guid ID { get; }
+        Guid ID { get; set; }
     }
 }

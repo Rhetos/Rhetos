@@ -1,4 +1,4 @@
-/*
+﻿/*
     Copyright (C) 2013 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -17,28 +17,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 using System;
-using Rhetos.Dom.DefaultConcepts;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.Linq;
+using System.Text;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
 
-namespace Rhetos.Security.Service
+namespace Rhetos.Dsl.DefaultConcepts
 {
-    public class Principal : IEntity
+    [Export(typeof(IConceptInfo))]
+    public class ReloadBeforeValidationsInfo : IConceptInfo
     {
-        public Guid ID { get; set; }
-        public string Name { get; set; }
-    }
-
-    public class Claim : IEntity
-    {
-        public Guid ID { get; set; }
-        public string ClaimResource { get; set; }
-        public string ClaimRight { get; set; }
-    }
-
-    public class Permission : IEntity
-    {
-        public Guid ID { get; set; }
-        public Guid ClaimID { get; set; }
-        public Guid PrincipalID { get; set; }
-        public bool IsAuthorized { get; set; }
+        [ConceptKey]
+        public DataStructureInfo DataStructure { get; set; }
     }
 }

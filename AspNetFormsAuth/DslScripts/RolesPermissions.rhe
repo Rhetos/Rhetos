@@ -25,6 +25,7 @@
     {
         ShortString Name { Required; Unique; }
         
+        Implements 'Rhetos.AspNetFormsAuth.IRole, Rhetos.AspNetFormsAuth' { RegisteredQueryableRepository; }
         Logging { AllProperties; }
     }
     

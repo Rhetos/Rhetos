@@ -24,10 +24,12 @@ using System.Text;
 
 namespace Rhetos.AspNetFormsAuth
 {
-    public interface IPermission
+    public interface IPermission : IEntity
     {
-        IEntity Role { get; }
+        IRole Role { get; }
         ICommonClaim Claim { get; }
-        bool? IsAuthorized { get; }
+        bool? IsAuthorized { get; set; }
+        Guid? RoleID { get; set; }
+        Guid? ClaimID { get; set; }
     }
 }

@@ -105,7 +105,10 @@ namespace Rhetos.Deployment
             DeleteDatabaseObjects(deleteMigrationColumnsOptimized, emptyMigrationTables, emptyMigrationSchemas);
 
             var report = "Deleted " + deleteMigrationColumns.Count() + " columns in data migration schemas, " + remainingMigrationColumns.Count() + " remaining.";
-            _logger.Info(report);
+            if (deleteMigrationColumns.Count() != 0)
+                _logger.Info(report);
+            else
+                _logger.Trace(report);
             return report;
         }
 

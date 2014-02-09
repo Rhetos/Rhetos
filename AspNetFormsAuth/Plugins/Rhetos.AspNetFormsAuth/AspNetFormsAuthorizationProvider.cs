@@ -59,7 +59,7 @@ namespace Rhetos.AspNetFormsAuth
             return GetUsersClaims(requiredClaims, userPermissions);
         }
 
-        class PermissionValue
+        private class PermissionValue
         {
             public Claim Claim;
             public bool IsAuthorized;

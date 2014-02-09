@@ -21,9 +21,11 @@ using Rhetos.Dom.DefaultConcepts;
 
 namespace Rhetos.AspNetFormsAuth
 {
-    public interface IPrincipalHasRole
+    public interface IPrincipalHasRole : IEntity
     {
         IPrincipal Principal { get; }
-        IEntity Role { get; }
+        IRole Role { get; }
+        Guid? PrincipalID { get; set; }
+        Guid? RoleID { get; set; }
     }
 }

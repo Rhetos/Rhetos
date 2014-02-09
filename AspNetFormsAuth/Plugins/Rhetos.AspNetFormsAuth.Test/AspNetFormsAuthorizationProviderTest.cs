@@ -50,30 +50,39 @@ namespace Rhetos.AspNetFormsAuth.Test
 
         class MockPrincipalHasRole : IPrincipalHasRole
         {
+            public Guid ID { get; set; }
             public IPrincipal Principal { get; set; }
-            public IEntity Role { get; set; }
+            public IRole Role { get; set; }
+            public Guid? PrincipalID { get; set; }
+            public Guid? RoleID { get; set; }
         }
 
         class MockRoleInheritsRole : IRoleInheritsRole
         {
-            public IEntity Derived { get; set; }
-            public IEntity InheritsFrom { get; set; }
+            public Guid ID { get; set; }
+            public IRole Derived { get; set; }
+            public IRole InheritsFrom { get; set; }
         }
 
         class MockPermission : IPermission
         {
-            public IEntity Role { get; set; }
+            public Guid ID { get; set; }
+            public IRole Role { get; set; }
             public ICommonClaim Claim { get; set; }
             public bool? IsAuthorized { get; set; }
+            public Guid? RoleID { get; set; }
+            public Guid? ClaimID { get; set; }
         }
 
-        class MockRole : IEntity
+        class MockRole : IRole
         {
             public Guid ID { get; set; }
+            public string Name { get; set; }
         }
 
         class MockClaim : ICommonClaim
         {
+            public Guid ID { get; set; }
             public string ClaimResource { get; set; }
             public string ClaimRight { get; set; }
         }
@@ -85,9 +94,9 @@ namespace Rhetos.AspNetFormsAuth.Test
                 new MockPrincipal { ID = Guid.NewGuid(), Name = "pr0" },
                 new MockPrincipal { ID = Guid.NewGuid(), Name = "pr1" } };
 
-            var roles = new IEntity[] {
-                new MockRole { ID = Guid.NewGuid() },
-                new MockRole { ID = Guid.NewGuid() } };
+            var roles = new IRole[] {
+                new MockRole { ID = Guid.NewGuid(), Name = "r0" },
+                new MockRole { ID = Guid.NewGuid(), Name = "r1" } };
 
             var principalRoles = new IPrincipalHasRole[] {
                 new MockPrincipalHasRole { Principal = principals[0], Role = roles[0] },
@@ -127,9 +136,9 @@ namespace Rhetos.AspNetFormsAuth.Test
                 new MockPrincipal { ID = Guid.NewGuid(), Name = "pr0" },
                 new MockPrincipal { ID = Guid.NewGuid(), Name = "pr1" } };
 
-            var roles = new IEntity[] {
-                new MockRole { ID = Guid.NewGuid() },
-                new MockRole { ID = Guid.NewGuid() } };
+            var roles = new IRole[] {
+                new MockRole { ID = Guid.NewGuid(), Name = "r0" },
+                new MockRole { ID = Guid.NewGuid(), Name = "r1" } };
 
             var principalRoles = new IPrincipalHasRole[] {
                 new MockPrincipalHasRole { Principal = principals[0], Role = roles[0] },
