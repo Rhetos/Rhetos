@@ -88,12 +88,52 @@ namespace Rhetos.AspNetFormsAuth
     public class AuthenticationService
     {
         private readonly ILogger _logger;
-        private readonly IAuthorizationManager _authorizationManager;
+        private readonly Lazy<IAuthorizationManager> _authorizationManager;
 
-        public AuthenticationService(ILogProvider logProvider, IAuthorizationManager authorizationManager)
+        public AuthenticationService(ILogProvider logProvider, Lazy<IAuthorizationManager> authorizationManager)
         {
             _logger = logProvider.GetLogger("AspNetFormsAuth.AuthenticationService");
             _authorizationManager = authorizationManager;
+        }
+
+        private void CheckPermissions(Claim claim)
+        {
+            bool allowed = _authorizationManager.Value.GetAuthorizations(new[] { claim }).Single();
+            if (!allowed)
+                throw new UserException(string.Format(
+                    "You are not authorized for action '{0}' on resource '{1}', user '{2}'.",
+                    claim.Right, claim.Resource, WebSecurity.CurrentUserName));
+        }
+
+        bool SafeExecute(Func<bool> action, string actionName, string context)
+        {
+            bool success;
+            try
+            {
+                success = action();
+                if (!success)
+                    _logger.Trace(() => actionName + " failed: " + context);
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                _logger.Info(() => actionName + " failed: " + context + ", " + ex);
+            }
+            return success;
+        }
+
+        bool SafeExecute(Action action, string actionName, string context)
+        {
+            try
+            {
+                action();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.Info(() => actionName + " failed: " + context + ", " + ex);
+                return false;
+            }
         }
 
         [OperationContract]
@@ -103,20 +143,9 @@ namespace Rhetos.AspNetFormsAuth
             _logger.Trace(() => "Login: " + loginData.UserName);
             loginData.Validate();
 
-            bool success;
-            try
-            {
-                success = WebSecurity.Login(loginData.UserName, loginData.Password, loginData.PersistCookie);
-            }
-            catch (Exception ex)
-            {
-                _logger.Info(() => "WebSecurity.Login for " + loginData.UserName + " failed: " + ex);
-                success = false;
-            }
-                
-            if (!success)
-                _logger.Trace(() => "Login failed: " + loginData.UserName);
-            return success;
+            return SafeExecute(
+                () => WebSecurity.Login(loginData.UserName, loginData.Password, loginData.PersistCookie),
+                "Login", loginData.UserName);
         }
 
         [OperationContract]
@@ -124,7 +153,8 @@ namespace Rhetos.AspNetFormsAuth
         public void Logout()
         {
             _logger.Trace(() => "Logout: " + WebSecurity.CurrentUserName);
-            WebSecurity.Logout();
+
+            SafeExecute(() => WebSecurity.Logout(), "Logout", WebSecurity.CurrentUserName);
         }
 
         [OperationContract]
@@ -132,13 +162,7 @@ namespace Rhetos.AspNetFormsAuth
         public void SetPassword(SetPasswordParameters setPasswordData)
         {
             _logger.Trace(() => "SetPassword: " + setPasswordData.UserName);
-
-            bool allowSetPassword = _authorizationManager.GetAuthorizations(new[] { AuthenticationServiceClaims.SetPasswordClaim }).Single();
-            if (!allowSetPassword)
-                throw new UserException(string.Format(
-                    "You are not authorized for action '{0}' on resource '{1}', user '{2}'.",
-                    AuthenticationServiceClaims.SetPasswordClaim.Right, AuthenticationServiceClaims.SetPasswordClaim.Resource, WebSecurity.CurrentUserName));
-
+            CheckPermissions(AuthenticationServiceClaims.SetPasswordClaim);
             setPasswordData.Validate();
 
             try
@@ -166,20 +190,10 @@ namespace Rhetos.AspNetFormsAuth
         {
             _logger.Trace(() => "ChangeMyPassword: " + WebSecurity.CurrentUserName);
             changeMyPasswordData.Validate();
-            bool success;
-            try
-            {
-                success = WebSecurity.ChangePassword(WebSecurity.CurrentUserName, changeMyPasswordData.OldPassword, changeMyPasswordData.NewPassword);
-                if (!success)
-                    _logger.Trace(() => "ChangeMyPassword failed: " + WebSecurity.CurrentUserName);
-            }
-            catch (Exception ex)
-            {
-                // ChangePassword will throw an exception rather than return false in certain failure scenarios.
-                _logger.Trace(() => "ChangeMyPassword failed: " + WebSecurity.CurrentUserName + ", " + ex);
-                success = false;
-            }
-            return success;
+
+            return SafeExecute(
+                () => WebSecurity.ChangePassword(WebSecurity.CurrentUserName, changeMyPasswordData.OldPassword, changeMyPasswordData.NewPassword),
+                "ChangeMyPassword", WebSecurity.CurrentUserName);
         }
     }
 }

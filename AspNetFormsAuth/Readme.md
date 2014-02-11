@@ -1,32 +1,57 @@
 AspNetFormsAuth
 ===============
 
-AspNetFormsAuth is a DSL package (a plugin module) for [Rhetos development platform](https://github.com/Rhetos/Rhetos).
-
-AspNetFormsAuth provides an implementation of **ASP.NET forms authentication** to Rhetos server applications.
-It can be useful to have same (compatible) authentication systems on application server and separate GUI application in the same domain, allowing the client to use shared authentication cookies between multiple server applications (see [MSDN: Forms Authentication Across Applications](http://msdn.microsoft.com/en-us/library/eb0zx8fc.aspx)).
+AspNetFormsAuth is a DSL package (a plugin module) for [Rhetos development platform](https://github.com/Rhetos/Rhetos). It provides an implementation of **ASP.NET forms authentication** to Rhetos server applications.
 
 Features
 --------
 
 #### Authentication
 
-* For developers and administrators, a simple web form is provided in order to login to the site: `/Resources/AspNetFormsAuth/Login.html`.
-* Other web applications and services may log in by sending a POST request to URI `/Resources/AspNetFormsAuth/Authentication/Login` with JSON serialized login information (UserName, Password, PersistCookie).
-  * Example of the request data: `{"UserName":"myusername","Password":"mypassword","PersistCookie":false}`.
-  * The server response will contain the standard authentication cookie, and the client browser will automatically use the cookie for following requests.
-* See the installation notes below for securing the site and sharing the authentication across multiple web applications.
+* For developers and administrators, a simple login and logout web forms are provided.
+  Links are available on the Rhetos server home page.
+* [Authentication service](#AuthenticationServiceApi) may be used in web applications
+  and other services to log in and log out users, and for other related actions. 
+* Forms authentication may be utilized for [sharing the authentication](#SharingAuthentication)
+  across multiple web applications.
 
 #### Authorization
 
-Authorization is implemented internally using claim-based permissions system.
-The users' permissions may be configured for each action or data query, using Rhetos entities: `Principal`, `Role`, `Permission` and `Claim`.
+* Authorization is implemented internally using claim-based permissions system. 
+  The users' permissions may be configured for each action or data query, using Rhetos entities: `Principal`, `Role`, `Permission` and `Claim`.
 
 #### Technical notes
 
-* AspNetFormsAuth packages will automatically import all principals and permissions form SimpleWindowsAuth package, if used before. Note that roles cannot be automatically imported because SimpleWindowsAuth depends on Active Directory user groups.
+* AspNetFormsAuth packages will automatically import all principals and permissions
+  form SimpleWindowsAuth package, if used before.
+  Note that roles cannot be automatically imported because SimpleWindowsAuth depends on Active Directory user groups.
 * Authentication is implemented using Microsoft's `SimpleMembershipProvider` (WebMatrix).
 * The log in form and service allow anonymous access (it is a standard forms authentication feature).
+
+<a name="AuthenticationServiceApi"></a>
+Authentication service API
+--------------------------
+
+The JSON service is available at URI `<rhetos server>/Resources/AspNetFormsAuth/Authentication`, with the following methods. 
+
+**`/Login`** (string UserName, string Password, bool PersistCookie) -> bool
+
+* Example of the request data: `{"UserName":"myusername","Password":"mypassword","PersistCookie":false}`.
+* On successful log in, the server response will contain the standard authentication cookie. The client browser will automatically use the cookie for following requests.
+* Response data is boolean "true" if the login is successful, "false" if login or password is invalid, or the standard Rhetos error response with HTTP error code in case of any other error.
+
+**`/Logout`**
+
+* No request data is needed, assuming standard authentication cookie is automatically provided. Respones is empty.
+
+**`/SetPassword`** (string UserName, string Password)
+
+* Sets or resets the given user's password.
+* Requires *AspNetFormsAuth.AuthenticationService.SetPassword* claim (*admin* user has it by default after [installation](#AdminSetup)). 
+
+**`/ChangeMyPassword`** (string OldPassword, string NewPassword)
+
+* Changes the current user's password.
 
 Installation
 ------------
@@ -56,9 +81,10 @@ Before or after deploying the AspNetFormsAuth packages, please make the followin
 1. Start IIS Manager -> Select the web site -> Open "Authentication" feature.
 2. On the Authentication page **enable** *Anonymous Authentication* and *Forms Authentication*, **disable** *Windows Authentication* and every other.
 
+<a name="AdminSetup"></a>
 #### AdminSetup
 
-`DeployPackages.exe`, when deploying the AspNetFormsAuth packages, creates the *admin* user account and *SecurityAdministrator* role, adds the account to the role and gives it permission for  *AspNetFormsAuth.AuthenticationService.SetPassword*.
+`DeployPackages.exe`, when deploying the AspNetFormsAuth packages, creates the *admin* user account and *SecurityAdministrator* role, adds the account to the role and gives it necessary permissions (claims) for all authentication service methods.
 
 1. After deployment, **run the utility** `\bin\Plugins\AdminSetup.exe` to initialize the *admin* user account.
 
@@ -108,6 +134,7 @@ When returning Rhetos server from Forms Authentication back to **Windows Authent
 Advanced topics
 ---------------
 
+<a name="SharingAuthentication"></a>
 #### Sharing the authentication across web applications
 
 Sharing the authentication cookie is useful when using separate web sites for web pages and application services, or when using multiple sites for load balancing.
@@ -126,7 +153,7 @@ The machine key in `web.config` may have the following format:
 		validation="HMACSHA256" />
 
 It is important to generate new validationKey and decryptionKey for every deployment.
-You may use the following C# code (hint: use LinqPad) to generate the keys:
+You may use the following C# code to generate the keys:
  
 	void Main()
 	{
@@ -139,3 +166,8 @@ You may use the following C# code (hint: use LinqPad) to generate the keys:
 	    sb.Append(string.Format("{0:X2}", buff[i]));
 	  sb.ToString().Dump();
 	}
+
+####Troubleshooting
+
+In case of a server error, additional information on the error may be found in the Rhetos server log (`RhetosServer.log` file, by default).
+If needed, more verbose logging may be switched on by uncommenting the `<logger name="*" minLevel="Trace" writeTo="TraceLog" />` element in Rhetos server's `web.config`. 

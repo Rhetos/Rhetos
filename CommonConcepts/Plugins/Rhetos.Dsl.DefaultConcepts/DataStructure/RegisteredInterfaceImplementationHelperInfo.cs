@@ -25,11 +25,25 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Registers the data structure (and it's repository) as the main implementation of the given interface.
+    /// This allows for type-safe code in external business layer class library to have simple access to
+    /// the generated data structure's class and the repository using predifined intefaces.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("RegisteredQueryableRepository")]
-    public class RegisteredQueryableRepositoryInfo : IConceptInfo
+    [ConceptKeyword("RegisteredImplementation")]
+    public class RegisteredInterfaceImplementationHelperInfo : IMacroConcept
     {
         [ConceptKey]
         public ImplementsInterfaceInfo ImplementsInterface { get; set; }
+
+        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        {
+            return new[] { new RegisteredInterfaceImplementationInfo
+            {
+                InterfaceAssemblyQualifiedName = ImplementsInterface.GetInterfaceType().AssemblyQualifiedName,
+                ImplementsInterface = ImplementsInterface
+            }};
+        }
     }
 }

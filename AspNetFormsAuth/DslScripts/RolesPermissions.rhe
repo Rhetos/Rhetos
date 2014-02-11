@@ -6,7 +6,7 @@
         ShortString Name { Required; Unique; }
         Integer AspNetUserId { SystemRequired; Unique; } // Automatically generated, see SqlTrigger GenerateAspNetUserId.
         
-        Implements 'Rhetos.AspNetFormsAuth.IPrincipal, Rhetos.AspNetFormsAuth' { RegisteredQueryableRepository; }
+        Implements 'Rhetos.AspNetFormsAuth.IPrincipal, Rhetos.AspNetFormsAuth' { RegisteredImplementation; }
         Logging { AllProperties; }
     }
     
@@ -15,7 +15,7 @@
         Reference Principal { Required; Detail; }
         Reference Role { Required; }
         
-        Implements 'Rhetos.AspNetFormsAuth.IPrincipalHasRole, Rhetos.AspNetFormsAuth' { RegisteredQueryableRepository; }
+        Implements 'Rhetos.AspNetFormsAuth.IPrincipalHasRole, Rhetos.AspNetFormsAuth' { RegisteredImplementation; }
         UniqueMultiple 'Principal Role';
         Logging { AllProperties; }
     }
@@ -25,7 +25,7 @@
     {
         ShortString Name { Required; Unique; }
         
-        Implements 'Rhetos.AspNetFormsAuth.IRole, Rhetos.AspNetFormsAuth' { RegisteredQueryableRepository; }
+        Implements 'Rhetos.AspNetFormsAuth.IRole, Rhetos.AspNetFormsAuth' { RegisteredImplementation; }
         Logging { AllProperties; }
     }
     
@@ -35,7 +35,7 @@
         Reference Derived Common.Role { Required; Detail; }
         Reference InheritsFrom Common.Role { Required; }
         
-        Implements 'Rhetos.AspNetFormsAuth.IRoleInheritsRole, Rhetos.AspNetFormsAuth' { RegisteredQueryableRepository; }
+        Implements 'Rhetos.AspNetFormsAuth.IRoleInheritsRole, Rhetos.AspNetFormsAuth' { RegisteredImplementation; }
         UniqueMultiple 'Derived InheritsFrom';
         Logging { AllProperties; }
     }
@@ -46,7 +46,7 @@
         Reference Claim { Required; }
         Bool IsAuthorized { Required; } // If IsAuthorized is false then autorization is explicitly denied.
         
-        Implements 'Rhetos.AspNetFormsAuth.IPermission, Rhetos.AspNetFormsAuth' { RegisteredQueryableRepository; }
+        Implements 'Rhetos.AspNetFormsAuth.IPermission, Rhetos.AspNetFormsAuth' { RegisteredImplementation; }
         UniqueMultiple 'Role Claim';
         Logging { AllProperties; }
     }

@@ -32,12 +32,12 @@ using Rhetos.Extensibility;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(RegisteredQueryableRepositoryInfo))]
-    public class RegisteredQueryableRepositoryCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(RegisteredInterfaceImplementationInfo))]
+    public class RegisteredInterfaceImplementationCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (RegisteredQueryableRepositoryInfo)conceptInfo;
+            var info = (RegisteredInterfaceImplementationInfo)conceptInfo;
 
             codeBuilder.InsertCode(
                 RegisterRepository(info.ImplementsInterface.DataStructure, info.ImplementsInterface.GetInterfaceType()),
