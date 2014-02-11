@@ -38,21 +38,23 @@ namespace Rhetos.Dom.DefaultConcepts
             return dataStructure is IWritableOrmDataStructure;
         }
 
-        private static string ReloadSnippet()
+        private static string ReloadSnippet(ReloadBeforeValidationsInfo info)
         {
-            return
+            return string.Format(
 @"                _executionContext.NHibernateSession.Clear();
-                for (int i=0; i<inserted.Length; i++) inserted[i] = _executionContext.NHibernateSession.Load<Common.Principal>(inserted[i].ID);
-                for (int i=0; i<updated.Length; i++) updated[i] = _executionContext.NHibernateSession.Load<Common.Principal>(updated[i].ID);
+                for (int i=0; i<inserted.Length; i++) inserted[i] = _executionContext.NHibernateSession.Load<{0}.{1}>(inserted[i].ID);
+                for (int i=0; i<updated.Length; i++) updated[i] = _executionContext.NHibernateSession.Load<{0}.{1}>(updated[i].ID);
 
-";
+",
+            info.DataStructure.Module.Name,
+            info.DataStructure.Name);
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (ReloadBeforeValidationsInfo)conceptInfo;
             if (IsSupported(info.DataStructure))
-                codeBuilder.InsertCode(ReloadSnippet(), WritableOrmDataStructureCodeGenerator.OnSaveTag1, info.DataStructure);
+                codeBuilder.InsertCode(ReloadSnippet(info), WritableOrmDataStructureCodeGenerator.OnSaveTag1, info.DataStructure);
         }
     }
 }

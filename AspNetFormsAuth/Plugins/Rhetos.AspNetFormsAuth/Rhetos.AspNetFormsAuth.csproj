@@ -62,6 +62,8 @@
     <Compile Include="AuthenticationDatabaseInitializer.cs" />
     <Compile Include="AuthenticationServiceInitializer.cs" />
     <Compile Include="CancelUnauthorizedClientRedirection.cs" />
+    <Compile Include="IPasswordAttemptsLimit.cs" />
+    <Compile Include="IPasswordStrength.cs" />
     <Compile Include="IRole.cs" />
     <Compile Include="HomePageSnippet.cs" />
     <Compile Include="IPermission.cs" />

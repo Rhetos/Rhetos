@@ -56,7 +56,7 @@ namespace Rhetos.AspNetFormsAuth
             InsertOrReadId(adminPrincipalHasRole,
                 item => item.Principal.ID == adminPrincipal.ID && item.Role.ID == adminRole.ID, item => item.PrincipalID.ToString() + "/" + item.RoleID.ToString());
 
-            foreach (var securityClaim in new[] { AuthenticationServiceClaims.SetPasswordClaim })
+            foreach (var securityClaim in AuthenticationServiceClaims.GetAdminClaims())
             {
                 var commonClaim = CreateEntity<ICommonClaim>();
                 commonClaim.ClaimResource = securityClaim.Resource;
@@ -189,10 +189,17 @@ namespace Rhetos.AspNetFormsAuth
 
         public IList<Claim> GetAllClaims(Dsl.IDslModel dslModel)
         {
-            return new[] { SetPasswordClaim };
+            return GetAdminClaims();
+        }
+
+        public static IList<Claim> GetAdminClaims()
+        {
+            return new[] { SetPasswordClaim, UnlockUserClaim, IgnorePasswordStrengthPolicyClaim };
         }
 
         public static readonly Claim SetPasswordClaim = new Claim("AspNetFormsAuth.AuthenticationService", "SetPassword");
+        public static readonly Claim UnlockUserClaim = new Claim("AspNetFormsAuth.AuthenticationService", "UnlockUser");
+        public static readonly Claim IgnorePasswordStrengthPolicyClaim = new Claim("AspNetFormsAuth.AuthenticationService", "IgnorePasswordStrengthPolicy");
     }
 
     public class DummyCommandInfo : ICommandInfo

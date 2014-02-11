@@ -1,0 +1,18 @@
+﻿Module Common
+{
+    Entity AspNetFormsAuthPasswordAttemptsLimit
+    {
+        Integer MaxInvalidPasswordAttempts { Required; SystemRequired; }
+        Integer TimeoutInSeconds; // Value 0 or null means that the account will not be automatically unlocked.
+        
+        Implements 'Rhetos.AspNetFormsAuth.IPasswordAttemptsLimit, Rhetos.AspNetFormsAuth' { RegisteredImplementation; }
+    }
+    
+    Entity AspNetFormsAuthPasswordStrength
+    {
+        ShortString RegularExpression;
+        ShortString RuleDescription; // Used as an error message to the user.
+        
+        Implements 'Rhetos.AspNetFormsAuth.IPasswordStrength, Rhetos.AspNetFormsAuth' { RegisteredImplementation; }
+    }
+}
