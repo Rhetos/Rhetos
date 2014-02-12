@@ -16,10 +16,10 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-using System.Diagnostics;
-using Rhetos.Utilities;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Diagnostics;
 
 namespace Rhetos.Utilities.Test
 {
@@ -477,7 +477,7 @@ namespace Rhetos.Utilities.Test
         public void PossiblyUnintuitiveBehaviour_NotAComment()
         {
             // Behaviour is different from standard C# or SQL comments:
-            // Tokens are recognised even if they are inside a string (token is not always a comment).
+            // Tokens are recognized even if they are inside a string (token is not always a comment).
             var fr = new FastReplacer("/*", "*/");
             fr.Append("PRINT 'Token starts with /* sequence'");
         }

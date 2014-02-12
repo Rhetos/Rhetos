@@ -30,8 +30,12 @@ namespace Rhetos.Utilities
     {
         private static readonly GenericDataContractResolver Resolver = new GenericDataContractResolver();
 
+        /// <summary>
+        /// Use Dom.GetType(string) along with Type.GetType(string) to find objects in the generate domain object model.
+        /// Since DOM assembly is not directly referenced from other dlls, Type.GetType will not find types in DOM
+        /// before the Dom.GetType is used. The problem usually manifests on the first server call after restarting the process.
+        /// </summary>
         public static Assembly Dom; // TODO: Find a solution better than "public static"
-        public static object DomLock = new object();
 
         public static string SerializeToXml<T>(T obj)
         {

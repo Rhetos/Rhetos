@@ -34,8 +34,14 @@ namespace Rhetos.AspNetFormsAuth
                 return
 @"        <h2>AspNetFormsAuth</h2>
         <p>
-            <a href=""Resources/AspNetFormsAuth/Login.html"">Log In</a><br>
-            <a href=""Resources/AspNetFormsAuth/Logout.html"">Log Out</a><br>
+            User authentication:
+            <a href=""Resources/AspNetFormsAuth/Login.html"">Log in</a>
+            <a href=""Resources/AspNetFormsAuth/Logout.html"">Log out</a>
+            <a href=""Resources/AspNetFormsAuth/ChangeMyPassword.html"">Change my password</a>
+        <br/>
+            Administration:
+            <a href=""Resources/AspNetFormsAuth/SetPassword.html"">Set password</a>
+            <a href=""Resources/AspNetFormsAuth/UnlockUser.html"">Unlock user</a>
         </p>
 ";
             }

@@ -16,14 +16,13 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.TestCommon;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using Rhetos.Logging;
-using Rhetos.TestCommon;
 using System.Data.SqlClient;
+using System.Linq;
 
 namespace Rhetos.Utilities.Test
 {
@@ -204,7 +203,7 @@ raiserror('fff', 18, 118)"
             }
             catch (Exception e)
             {
-                Assert.IsFalse(e.Message.Contains("abc"), "Change of transaction level is not recognised. Second query must not be executed.");
+                Assert.IsFalse(e.Message.Contains("abc"), "Change of transaction level is not recognized. Second query must not be executed.");
                 Assert.IsTrue(e.Message.ToLower().Contains("transaction"), "Error cause is not described.");
             }
         }

@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Rhetos Unlock user</title>
+        <script type="text/javascript" src="Js/jquery-1.7.min.js" ></script>
+        <script type="text/javascript">
+        $(document).ready(function () {
+                
+            $('#unlockuser').click(function() {
+
+                var data = JSON.stringify({ 'UserName': $('#username').val() });
+
+                $.ajax({
+                            url: 'Authentication/UnlockUser',
+                            type: 'POST',
+                            dataType: 'json',
+                            async: false,
+                            contentType: 'application/json; charset=utf-8',
+                            data: data,
+                            success: function (data) {
+                                if (data===null)
+                                    alert('User unlocked successfully.');
+                                else
+                                    alert('Unexpected server response: ' + data.toString());
+                            },
+                            error: function (jqXHR, textStatus, errorThrown) {
+                                var msg = jqXHR.responseText
+                                try { msg = JSON.parse(msg); } catch (e) {}
+                                if (errorThrown !== 'Bad Request')
+                                    msg = msg + '\n\n(' + textStatus + ' ' + errorThrown + ')';
+                                alert('ERROR:\n\n' + msg);
+                            }
+                        });
+            });
+         });
+        </script>
+    </head>
+    <body>
+        <h1>Unlock user</h1>
+        <div class="control-group">
+            <label class="control-label" for="username">Username:</label>
+            <div class="controls">
+                <input type="text" id="username" name="username" />
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <input type="submit" id="unlockuser"  name="unlockuser" value="Unlock user" />
+            </div>
+        </div>
+    </body>
+</html>

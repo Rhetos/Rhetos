@@ -16,23 +16,15 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+using Autofac;
+using Autofac.Configuration;
+using Autofac.Integration.Wcf;
+using Rhetos.Dom;
+using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Security;
-using System.Web.SessionState;
-using Autofac.Integration.Wcf;
-using Autofac;
-using Rhetos.Configuration.Autofac;
-using System.Configuration;
-using System.IO;
-using Autofac.Configuration;
-using Rhetos.Logging;
 using System.Diagnostics;
-using System.ServiceModel;
-using System.ServiceModel.Description;
-using System.Threading.Tasks;
 
 namespace Rhetos
 {
@@ -54,6 +46,7 @@ namespace Rhetos
             _logger = AutofacServiceHostFactory.Container.Resolve<ILogProvider>().GetLogger("Global");
             _performanceLogger = AutofacServiceHostFactory.Container.Resolve<ILogProvider>().GetLogger("Performance");
             _pluginServices = AutofacServiceHostFactory.Container.Resolve<IEnumerable<IService>>();
+            XmlUtility.Dom = AutofacServiceHostFactory.Container.Resolve<IDomainObjectModel>().ObjectModel;
 
             _performanceLogger.Write(stopwatch, "Autofac initialized.");
 

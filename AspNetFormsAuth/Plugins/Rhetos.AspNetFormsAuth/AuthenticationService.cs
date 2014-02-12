@@ -16,21 +16,18 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Logging;
 using Rhetos.Security;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.IO;
 using System.Linq;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Web;
 using System.Web.Security;
 using WebMatrix.WebData;
 
@@ -207,6 +204,9 @@ namespace Rhetos.AspNetFormsAuth
                 CheckPermissions(AuthenticationServiceClaims.IgnorePasswordStrengthPolicyClaim);
             else
                 CheckPasswordStrength(setPasswordData.Password);
+
+            if (!WebSecurity.UserExists(setPasswordData.UserName))
+                throw new UserException("User '" + setPasswordData.UserName + "' is not registered.");
 
             try
             {

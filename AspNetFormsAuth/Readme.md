@@ -28,7 +28,7 @@ Features
 * Authentication is implemented using Microsoft's `SimpleMembershipProvider` (WebMatrix).
 * The log in form and service allow anonymous access (it is a standard forms authentication feature).
 
-<a name="AuthenticationServiceApi"></a>
+<a id="AuthenticationServiceApi"></a>
 Authentication service API
 --------------------------
 
@@ -49,7 +49,7 @@ The JSON service is available at URI `<rhetos server>/Resources/AspNetFormsAuth/
 
 * No request data is needed, assuming standard authentication cookie is automatically provided. Respones is empty.
 
-<a name="SetPassword"></a>
+<a id="SetPassword"></a>
 **`/SetPassword`** (string UserName, string Password, bool IgnorePasswordStrengthPolicy)
 
 * Sets or resets the given user's password.
@@ -67,20 +67,24 @@ The JSON service is available at URI `<rhetos server>/Resources/AspNetFormsAuth/
   an error message (string) with HTTP error code 400 if the password does not match the password strength policy,
   or an error message with HTTP error code 4* or 5* in case of any other error.
 
-<a name="UnlockUser"></a>
+<a id="UnlockUser"></a>
 **`/UnlockUser`** (string UserName)
 
 * Reset the number of [failed login attempts](#FailedPasswordAttempts). Respones is empty.
 * Requires *UnlockUser* [claim](#Permissions).
 
-<a name="Permissions"></a>
+<a id="Permissions"></a>
 #### Permissions
 
-All claims related to the authentication service have resource "*AspNetFormsAuth.AuthenticationService*".
+All claims related to the authentication service have resource="*AspNetFormsAuth.AuthenticationService*".
 [Admin user](#AdminSetup) has all the necessary permissions (claims) for all authentication service methods.
 
 Installation
 ------------
+
+Prerequisites:
+
+1. AspNetFormsAuth cannot be deployed together with **SimpleWindowsAuth**.
 
 Before or after deploying the AspNetFormsAuth packages, please make the following changes to the web site configuration, in order for forms authentication to work.  
 
@@ -119,14 +123,14 @@ Consider using a [free SSL certificate](https://www.google.hr/search?q=free+SSL+
 Configuration
 -------------
 
-<a name="AdminSetup"></a>
+<a id="AdminSetup"></a>
 #### "admin" user
 
 `DeployPackages.exe`, when deploying the AspNetFormsAuth packages, automatically creates the *admin* user account and *SecurityAdministrator* role, adds the account to the role and gives it necessary permissions (claims) for all authentication service methods.
 
 1. After deployment, **run the utility** `\bin\Plugins\AdminSetup.exe` to initialize the *admin* user's password.
 
-<a name="FailedPasswordAttempts"></a>
+<a id="FailedPasswordAttempts"></a>
 #### Maximum failed password attempts
 
 Use entity *Commmon.AspNetFormsAuthPasswordAttemptsLimit* (*MaxInvalidPasswordAttempts*, *TimeoutInSeconds*) to configure automatic account locking when a number of failed password attempts is reached.
@@ -195,7 +199,7 @@ When returning Rhetos server from Forms Authentication back to **Windows Authent
 Advanced topics
 ---------------
 
-<a name="SharingAuthentication"></a>
+<a id="SharingAuthentication"></a>
 #### Sharing the authentication across web applications
 
 Sharing the authentication cookie is useful when using separate web sites for web pages and application services, or when using multiple sites for load balancing.

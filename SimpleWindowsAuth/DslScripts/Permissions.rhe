@@ -28,36 +28,4 @@
 		ShortString Principal {From 'Principal.Name';}
 		Bool IsAuthorized {From IsAuthorized;}
 	}
-    
-	QueryableExtension MyClaim Common.Claim '(IQueryable<Common.Claim> source, Common.DomRepository repository) =>
-		{ throw new Rhetos.UserException("Reading Common.MyClaim without filter is not permitted. Use filter by Common.Claim or Common.Claim[]."); }'
-	{
-		Bool Applies;
-		
-		FilterBy 'Common.Claim' '(repository, parameter, executionContext) =>
-			{
-				var claim = repository.Common.Claim.Query().Where(item => item.ClaimResource == parameter.ClaimResource && item.ClaimRight == parameter.ClaimRight).SingleOrDefault();
-				if (claim == null)
-					throw new Rhetos.UserException("Claim " + parameter.ClaimResource + "-" + parameter.ClaimRight + " does not exist.");
-				
-				return repository.Common.MyClaim.Filter(new[] { claim });
-			}'
-		{
-			UseExecutionContext;
-		}
-		
-		FilterBy 'IEnumerable<Common.Claim>' '(repository, claims, executionContext) =>
-			{
-                var securityClaims = claims.Select(c => new Rhetos.Security.Claim(c.ClaimResource, c.ClaimRight)).ToList();
-                var authorizations = executionContext.AuthorizationManager.GetAuthorizations(securityClaims);
-			
-                return claims.Zip(authorizations, (claim, authorized) => new Common.MyClaim {
-                        Base = claim,
-                        Applies = authorized
-                    }).ToArray();
-             }'
-		{
-			UseExecutionContext;
-		}
-	}
 }

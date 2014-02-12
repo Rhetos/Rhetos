@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>Rhetos Logout</title>
+        <title>Rhetos Log out</title>
         <script type="text/javascript" src="Js/jquery-1.7.min.js" ></script>
         <script type="text/javascript">
         $(document).ready(function () {
@@ -15,7 +15,7 @@
                         contentType: 'application/json; charset=utf-8',
                         data: '',
                         success: function (data) {
-                            if (data)
+                            if (data!==null)
                                 alert('Unexpected server response: ' + data.toString());
                         },
                         error: function (jqXHR, textStatus, errorThrown) {
@@ -30,7 +30,7 @@
         </script>
     </head>
     <body>
-        <h1>Logout</h1>
+        <h1>Log out</h1>
         <p>
             You are now logged out.
         </p>

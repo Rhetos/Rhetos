@@ -102,6 +102,12 @@ namespace Rhetos.Persistence.NHibernate
             }
         }
 
+        void ForceLoadObjectModel()
+        {
+            if (_domainObjectModel.ObjectModel == null)
+                throw new FrameworkException("Cannot load domain object model.");
+        }
+
         private ISessionFactory PrepareNHSessionFactory()
         {
             lock (_sessionFactoryLock)
@@ -111,7 +117,7 @@ namespace Rhetos.Persistence.NHibernate
 
                 var sw = Stopwatch.StartNew();
 
-                var forceLoadObjectModel = _domainObjectModel.ObjectModel; // This is needed for "new Configuration()".
+                ForceLoadObjectModel(); // This is needed for "new Configuration()".
                 var configuration = new Configuration();
                 configuration.SetProperty("connection.provider", "NHibernate.Connection.DriverConnectionProvider");
                 configuration.SetProperty("connection.connection_string", _connectionString);

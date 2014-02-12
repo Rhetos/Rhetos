@@ -127,7 +127,7 @@ namespace Rhetos.CommonConcepts.Test
     internal class ClaimGeneratorAccessor : ClaimGenerator
     {
         public ClaimGeneratorAccessor()
-            : base(null, null, null, new ConsoleLogProvider(), null)
+            : base(null, null, new ConsoleLogProvider(), null)
         {
         }
 

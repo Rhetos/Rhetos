@@ -40,14 +40,11 @@ namespace Rhetos
         private readonly ILogger _commandsLogger;
         private readonly ILogger _commandResultsLogger;
         private readonly ILogger _performanceLogger;
-        
-        private readonly IDomainObjectModel _domainObjectModel;
 
         public RhetosService(
             IProcessingEngine processingEngine,
             IEnumerable<ICommandInfo> commands,
-            ILogProvider logProvider,
-            IDomainObjectModel domainObjectModel)
+            ILogProvider logProvider)
         {
             _processingEngine = processingEngine;
             _commands = commands;
@@ -55,7 +52,6 @@ namespace Rhetos
             _commandsLogger = logProvider.GetLogger("IServerApplication Commands");
             _commandResultsLogger = logProvider.GetLogger("IServerApplication CommandResults");
             _performanceLogger = logProvider.GetLogger("Performance");
-            _domainObjectModel = domainObjectModel;
         }
 
         public ServerProcessingResult Execute(ServerCommandInfo[] commands)
@@ -82,11 +78,6 @@ namespace Rhetos
 
             if (commands == null || commands.Length == 0)
                 return new ServerProcessingResult { SystemMessage = "Commands missing", Success = false };
-
-            if (XmlUtility.Dom == null)
-                lock (XmlUtility.DomLock)
-                    if (XmlUtility.Dom == null)
-                        XmlUtility.Dom = _domainObjectModel.ObjectModel;
 
             _performanceLogger.Write(stopwatch, "RhetosService.ExecuteInner: Server initialization done.");
 

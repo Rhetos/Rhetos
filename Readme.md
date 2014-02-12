@@ -19,7 +19,8 @@ See [rhetos.org](http://www.rhetos.org/) for more information.
 Recommended Rhetos DSL packages
 -------------------------------
 
-* CommonPackage (placed inside the Rhetos repository) contains basic concepts for building applications.  
+* *CommonConcepts* (placed inside the Rhetos repository) contains basic concepts for building applications.
+* *SimpleWindowsAuth* or *AspNetFormsAuth* (placed inside the Rhetos repository) provides authentication and authorization features to Rhetos applications. Both packages cannot be used at the same time.
 * [RestGenerator](https://github.com/Rhetos/RestGenerator) automatically generates REST API for all entities and other readable or writable data structures that are defined in a Rhetos application.
 * [MvcModelGenerator](https://github.com/Rhetos/MvcModelGenerator) automatically generates ASP.NET MVC model for all entities and other queryable data structures that are defined in a Rhetos application.
 * [ODataGenerator](https://github.com/Rhetos/ODataGenerator) automatically generates OData interface (Open Data Protocol) for all entities and other queryable data structures that are defined in a Rhetos application.
@@ -132,7 +133,7 @@ If one wants to use different database it is defined in ConnectionStrings.config
    in Rhetos\Source\Rhetos\bin folder.
    
 Note that besides configuring IIS and Database, `SetupRhetosServer.bat` also
-deploys Common and user defined packages to that database. If one chooses
+deploys CommonConcepts and user defined packages to that database. If one chooses
 manual setup it is necessary to run ApplyPackages.bat in Rhetos\Source\Rhetos.
 
 Run Rhetos server

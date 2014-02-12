@@ -47,7 +47,6 @@ namespace Rhetos.Dom.DefaultConcepts
         public ClaimGenerator(
             IPluginsContainer<IClaimProvider> claimProviders,
             IDslModel dslModel,
-            IDomainObjectModel domainObjectModel,
             ILogProvider logProvider,
             IClaimRepository claimRepository)
         {
