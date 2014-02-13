@@ -129,6 +129,10 @@
       <Project>{7eaf15bd-39c9-44ab-8834-ec0ae013a8a2}</Project>
       <Name>Rhetos.Extensibility</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Security\Rhetos.Security.csproj">
+      <Project>{f3480d1e-1c20-448d-b2f6-133472ceeb93}</Project>
+      <Name>Rhetos.Security</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -112,7 +112,7 @@ After running this script and before running Rhetos server, you can manually
 configure `IISExpress.config`. It is template config for IIS Express site
 with modified `<sites>` section and added `<location>` part at the end of config.
 Those two defines which port on localhost Rhetos will be listening and that
-security used is based on WindowsAuthentication.
+security used is based on windows authentication.
 
 If one prefers to use IIS following steps are required:
 

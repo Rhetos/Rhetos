@@ -37,13 +37,5 @@ namespace Rhetos.Configuration.Autofac
 
             base.Load(builder);
         }
-
-        /// <summary>
-        /// Used for Rhetos system utilities (DeployPackages.exe, e.g.) to override web authentication plugins for the utility execution.
-        /// </summary>
-        public static void ForceWindowsUserAuthentication(ContainerBuilder builder)
-        {
-            builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
-        }
     }
 }

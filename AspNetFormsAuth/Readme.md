@@ -47,7 +47,7 @@ The JSON service is available at URI `<rhetos server>/Resources/AspNetFormsAuth/
 
 **`/Logout`**
 
-* No request data is needed, assuming standard authentication cookie is automatically provided. Respones is empty.
+* No request data is needed, assuming standard authentication cookie is automatically provided. Response is empty.
 
 <a id="SetPassword"></a>
 **`/SetPassword`** (string UserName, string Password, bool IgnorePasswordStrengthPolicy)
@@ -70,7 +70,7 @@ The JSON service is available at URI `<rhetos server>/Resources/AspNetFormsAuth/
 <a id="UnlockUser"></a>
 **`/UnlockUser`** (string UserName)
 
-* Reset the number of [failed login attempts](#FailedPasswordAttempts). Respones is empty.
+* Reset the number of [failed login attempts](#FailedPasswordAttempts). Response is empty.
 * Requires *UnlockUser* [claim](#Permissions).
 
 <a id="Permissions"></a>
@@ -149,7 +149,7 @@ Use entity *Common.AspNetFormsAuthPasswordStrength* (*RegularExpression*, *RuleD
 
 * A new password must pass all the rules in *Common.AspNetFormsAuthPasswordStrength*.
 * *RuleDescription* is uses as an error message to the user if the new password breaks the policy.
-* When administrator executes [SetPassword](#SetPassword) authorization service method, the propery *IgnorePasswordStrengthPolicy* may be used to avoid the policy.
+* When administrator executes [SetPassword](#SetPassword) authorization service method, the property *IgnorePasswordStrengthPolicy* may be used to avoid the policy.
 
 Examples:
 

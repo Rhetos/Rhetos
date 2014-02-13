@@ -24,6 +24,7 @@ using Rhetos.Utilities;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Deployment;
 using Rhetos.Dsl;
+using Rhetos.Security;
 
 namespace DeployPackages
 {
@@ -48,7 +49,6 @@ namespace DeployPackages
         {
             builder.RegisterInstance(new ConnectionString(_connectionString));
             builder.RegisterInstance(new ResourcesFolder(""));
-            builder.RegisterType<NullUserInfo>().As<IUserInfo>();
             builder.RegisterModule(new UtilitiesModuleConfiguration());
             builder.RegisterModule(new ExtensibilityModuleConfiguration());
             builder.RegisterModule(new DslModuleConfiguration());
@@ -63,7 +63,7 @@ namespace DeployPackages
             builder.RegisterType<DataMigration>();
             builder.RegisterType<DatabaseCleaner>();
 
-            SecurityModuleConfiguration.ForceWindowsUserAuthentication(builder);
+            builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
 
             base.Load(builder);
         }
