@@ -1,8 +1,22 @@
 AspNetFormsAuth
 ===============
 
-AspNetFormsAuth is a DSL package (a plugin module) for [Rhetos development platform](https://github.com/Rhetos/Rhetos). It provides an implementation of **ASP.NET forms authentication** to Rhetos server applications.
+AspNetFormsAuth is a DSL package (a plugin module) for [Rhetos development platform](https://github.com/Rhetos/Rhetos).
+It provides an implementation of **ASP.NET forms authentication** to Rhetos server applications.
 
+Table of contents
+-----------------
+
+1. [Features](#Features)
+2. [Authentication service API](#AuthenticationServiceApi)
+3. [Installation](#Installation)
+4. [Configuration](#Configuration)
+5. [Uninstallation](#Uninstallation)
+6. [Sharing the authentication across web applications](#SharingAuthentication)
+7. [Troubleshooting](#Troubleshooting)
+
+
+<a id="Features"></a>
 Features
 --------
 
@@ -27,6 +41,7 @@ Features
   Note that roles cannot be automatically imported because SimpleWindowsAuth depends on Active Directory user groups.
 * Authentication is implemented using Microsoft's `SimpleMembershipProvider` (WebMatrix).
 * The log in form and service allow anonymous access (it is a standard forms authentication feature).
+
 
 <a id="AuthenticationServiceApi"></a>
 Authentication service API
@@ -79,13 +94,14 @@ The JSON service is available at URI `<rhetos server>/Resources/AspNetFormsAuth/
 All claims related to the authentication service have resource="*AspNetFormsAuth.AuthenticationService*".
 [Admin user](#AdminSetup) has all the necessary permissions (claims) for all authentication service methods.
 
+
 <a id="Installation"></a>
 Installation
 ------------
 
 Prerequisites:
 
-1. AspNetFormsAuth cannot be deployed together with **SimpleWindowsAuth**.
+* AspNetFormsAuth cannot be deployed together with **SimpleWindowsAuth**.
 
 Before or after deploying the AspNetFormsAuth packages, please make the following changes to the web site configuration, in order for forms authentication to work.  
 
@@ -134,6 +150,8 @@ At least the services inside `/Resources/AspNetFormsAuth` path must use HTTPS to
 
 Consider using a [free SSL certificate](https://www.google.hr/search?q=free+SSL+certificate) (search the web for the providers) in development or QA environment.
 
+
+<a id="Configuration"></a>
 Configuration
 -------------
 
@@ -176,6 +194,7 @@ RegularExpression|RuleDescription
 `\W`             | The password must contain at least one special character (not a letter or a digit).
 
 
+<a id="Uninstallation"></a>
 Uninstallation
 --------------
 
@@ -210,11 +229,10 @@ When returning Rhetos server from Forms Authentication back to **Windows Authent
 1. Start IIS Manager -> Select the web site -> Open "Authentication" feature.
 2. On the Authentication page **disable** *Anonymous Authentication* and *Forms Authentication*, **enable** *Windows Authentication*.
 
-Advanced topics
----------------
 
 <a id="SharingAuthentication"></a>
-#### Sharing the authentication across web applications
+Sharing the authentication across web applications
+--------------------------------------------------
 
 Sharing the authentication cookie is useful when using separate web sites for web pages and application services, or when using multiple sites for load balancing.
 In these scenarios, sharing the forms authentication cookie between the sites will allow a single-point login for the user on any of the sites and seamless use of the cookie on any of the other sites.
@@ -246,7 +264,10 @@ You may use the following C# code to generate the keys:
 	  sb.ToString().Dump();
 	}
 
-####Troubleshooting
+    
+<a id="Troubleshooting"></a>
+Troubleshooting
+---------------
 
 **Issue**: Deployment results with error message "DslSyntaxException: Concept with same key is described twice with different values."<br>
 **Solution**: Please check if you have deployed both *SimpleWindowsAuth* package and *AspNetFormsAuth* package at the same time. Only one of the packages can be deployed on Rhetos server. Read the [installation](#Installation) instructions above for more information on the issue.
@@ -254,5 +275,8 @@ You may use the following C# code to generate the keys:
 **Issue**: Web service responds with error message "The Role Manager feature has not been enabled."<br>
 **Solution**: The error occurs when the necessary modifications of Web.config file are not done. Please check that you have followed the [installation](#Installation) instructions above.
 
-In case of a server error, additional information on the error may be found in the Rhetos server log (`RhetosServer.log` file, by default).
+**Issue**: I have accidentally deleted the *admin* user, *SecurityAdministrator* role, or some of its claims. How can I get it back?<br> 
+**Solution**: Execute `DeployPackages.exe` again. It will regenerate the default administration settings. See [admin user](#AdminSetup). 
+
+**Other:** In case of a server error, additional information on the error may be found in the Rhetos server log (`RhetosServer.log` file, by default).
 If needed, more verbose logging may be switched on by uncommenting the `<logger name="*" minLevel="Trace" writeTo="TraceLog" />` element in Rhetos server's `web.config`. 

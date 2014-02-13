@@ -75,7 +75,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         private static string GetFilterExpression(FilterByBaseInfo info, DataStructureInfo baseDataStructure)
         {
             return string.Format(@"(repository, parameter) =>
-	        {{
+            {{
                 var baseDataSourceRepositiory = repository.{3}.{4} as IFilterRepository<{2}, {3}.{4}>;
                 if (baseDataSourceRepositiory == null)
                 {{

@@ -60,7 +60,7 @@ namespace Rhetos.AspNetFormsAuth
 
         public void Initialize()
         {
-            InitializeDatabaseConnection(autoCreateTables: true);
+            InitializeDatabaseConnection(autoCreateTables: false);
             RouteTable.Routes.Add(new ServiceRoute("Resources/AspNetFormsAuth/Authentication", new AuthenticationServiceHostFactory(), typeof(AuthenticationService)));
         }
 

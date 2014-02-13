@@ -197,6 +197,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminSetup", "AspNetFormsAu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Web", "Source\Rhetos.Web\Rhetos.Web.csproj", "{A334FFFD-0400-4FEC-BC83-C044072C76A8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InitAspNetDatabase", "AspNetFormsAuth\Plugins\InitAspNetDatabase\InitAspNetDatabase.csproj", "{D0AA25A2-8D00-472A-9395-26003D89A702}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Rhetos.vsmdi
@@ -976,6 +978,21 @@ Global
 		{A334FFFD-0400-4FEC-BC83-C044072C76A8}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{A334FFFD-0400-4FEC-BC83-C044072C76A8}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{A334FFFD-0400-4FEC-BC83-C044072C76A8}.Release|x86.ActiveCfg = Release|Any CPU
+		{D0AA25A2-8D00-472A-9395-26003D89A702}.CodeAnalysis|Any CPU.ActiveCfg = Release|Any CPU
+		{D0AA25A2-8D00-472A-9395-26003D89A702}.CodeAnalysis|Any CPU.Build.0 = Release|Any CPU
+		{D0AA25A2-8D00-472A-9395-26003D89A702}.CodeAnalysis|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D0AA25A2-8D00-472A-9395-26003D89A702}.CodeAnalysis|Mixed Platforms.Build.0 = Release|Any CPU
+		{D0AA25A2-8D00-472A-9395-26003D89A702}.CodeAnalysis|x86.ActiveCfg = Release|Any CPU
+		{D0AA25A2-8D00-472A-9395-26003D89A702}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0AA25A2-8D00-472A-9395-26003D89A702}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0AA25A2-8D00-472A-9395-26003D89A702}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D0AA25A2-8D00-472A-9395-26003D89A702}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D0AA25A2-8D00-472A-9395-26003D89A702}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D0AA25A2-8D00-472A-9395-26003D89A702}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0AA25A2-8D00-472A-9395-26003D89A702}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0AA25A2-8D00-472A-9395-26003D89A702}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D0AA25A2-8D00-472A-9395-26003D89A702}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{D0AA25A2-8D00-472A-9395-26003D89A702}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1033,5 +1050,6 @@ Global
 		{8CE0595E-B553-48D0-8848-9ECB254B2973} = {EA83F423-2486-4154-B0CE-7590EB65D40A}
 		{70A73C78-6D2C-4948-B1A1-980284CE5800} = {EA83F423-2486-4154-B0CE-7590EB65D40A}
 		{9D5BEF32-A7D3-4580-AE84-0DC2A144231A} = {EA83F423-2486-4154-B0CE-7590EB65D40A}
+		{D0AA25A2-8D00-472A-9395-26003D89A702} = {EA83F423-2486-4154-B0CE-7590EB65D40A}
 	EndGlobalSection
 EndGlobal

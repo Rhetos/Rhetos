@@ -163,8 +163,6 @@ namespace DeployPackages
                     }
                     else
                         Console.WriteLine("Web.config update skipped.");
-
-                    return 0;
                 }
             }
             catch (Exception ex)
@@ -187,6 +185,8 @@ namespace DeployPackages
                 Thread.Sleep(3000);
                 return 1;
             }
+
+            return 0;
         }
     }
 }

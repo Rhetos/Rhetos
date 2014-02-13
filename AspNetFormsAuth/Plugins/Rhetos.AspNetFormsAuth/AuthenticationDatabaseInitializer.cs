@@ -27,6 +27,8 @@ using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.ServiceModel;
@@ -72,6 +74,8 @@ namespace Rhetos.AspNetFormsAuth
                 InsertOrUpdateReadId(permission, item => item.Role.ID == adminRole.ID && item.Claim.ID == commonClaim.ID,
                     item => adminRole.Name + " " + commonClaim.ClaimResource + "." + commonClaim.ClaimRight);
             }
+
+            InitializeAspNetDatabase();
         }
 
         public IEnumerable<string> Dependencies
@@ -175,6 +179,47 @@ namespace Rhetos.AspNetFormsAuth
                 else
                     _logger.Trace(() => "Already exists " + entityName + " '" + itemDescription(item) + "'.");
             }
+        }
+
+        /// <summary>
+        /// The initialization is placed in a separate application, because the SimpleMembershipProvider functions
+        /// require some configuration data in app.config file. The changes in app.config cannot be added as a plugin for
+        /// DeployPackages.exe.
+        /// </summary>
+        private void InitializeAspNetDatabase()
+        {
+            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Plugins\InitAspNetDatabase.exe");
+            ExecuteApplication(path);
+        }
+
+        private void ExecuteApplication(string path)
+        {
+            ProcessStartInfo start = new ProcessStartInfo(path)
+            {
+                Arguments = "/nopause",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+
+            string processOutput;
+            int processErrorCode;
+            using (Process process = Process.Start(start))
+            {
+                using (StreamReader reader = process.StandardOutput)
+                {
+                    processOutput = reader.ReadToEnd();
+                    processOutput = processOutput.Trim();
+                }
+                process.WaitForExit();
+                processErrorCode = process.ExitCode;
+            }
+
+            _logger.Trace(() => Path.GetFileName(path) + " error code: " + processErrorCode);
+            _logger.Trace(() => Path.GetFileName(path) + " output: " + processOutput);
+
+            if (processErrorCode != 0)
+                throw new FrameworkException(Path.GetFileName(path) + " returned an error: " + processOutput);
         }
     }
 
