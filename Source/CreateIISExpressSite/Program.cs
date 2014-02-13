@@ -54,13 +54,6 @@ namespace CreateIISExpressSite
             }
         }
 
-        public static bool MatchesRegex(string fileName, string regex) {
-            var replaceRegex = new Regex(regex, RegexOptions.Multiline);
-            var encoding = GetFileEncoding(fileName);
-            string fileText = File.ReadAllText(fileName, Encoding.Default);
-            return replaceRegex.Match(fileText).Success;
-        }
-
         public static void ReplaceWithRegex(string fileName, string regex, string value, string invalidMessage)
         {
             var replaceRegex = new Regex(regex, RegexOptions.Multiline);
@@ -74,6 +67,11 @@ namespace CreateIISExpressSite
                 throw new Exception("Invalid file. " + invalidMessage + "..." + regex + "...");
 
             File.WriteAllText(fileName, fileText, encoding);
+        }
+
+        public static void ConfigReplaceRegex(string regex, string value)
+        {
+            ReplaceWithRegex(@"..\IISExpress.config", regex, value, "Unexpected IISExpress.config file format. Copy Template.IISExpress.config.");
         }
     }
 
@@ -99,25 +97,44 @@ namespace CreateIISExpressSite
                 if (port > 65535)
                     throw new ArgumentException("Port has to be valid integer less than 65536.");
 
+                bool winAuth = DetectWindowsAuthenticationPlugin();
+
                 if (!File.Exists(@"..\IISExpress.config"))
                     File.Copy(@"Template.IISExpress.config", @"..\IISExpress.config");
                 Console.Write("Preparing local IISExpress.config ... ");
-                FileReplaceHelper.ReplaceWithRegex(@"..\IISExpress.config"
-                    , @"<site name(.|\n)*?</site>"
-                    , @"<site name=""" + args[0] + @""" id=""1"" serverAutoStart=""true"">
-                    <application path=""/"">
-                        <virtualDirectory path=""/"" physicalPath=""" + appRoot + @""" />
-                    </application>
-                    <bindings>
-                        <binding protocol=""http"" bindingInformation="":" + port.ToString() + @":localhost"" />
-                    </bindings>
-                </site>"
-                    , "Not valid IISExpress.config file.");
-                FileReplaceHelper.ReplaceWithRegex(@"..\IISExpress.config"
-                    , @"<!-- AuthenticationPart-->(.|\n)*?<location path=""(.|\n)*?"">"
-                    , @"<!-- AuthenticationPart-->" + Environment.NewLine + @"    <location path=""" + args[0] + @""">"
-                    , "Not valid IISExpress.config file.");
+
+
+                FileReplaceHelper.ConfigReplaceRegex(@"<site name(.|\n)*?</site>",
+         @"<site name=""" + args[0] + @""" id=""1"" serverAutoStart=""true"">
+                <application path=""/"">
+                    <virtualDirectory path=""/"" physicalPath=""" + appRoot + @""" />
+                </application>
+                <bindings>
+                    <binding protocol=""http"" bindingInformation="":" + port.ToString() + @":localhost"" />
+                </bindings>
+            </site>");
+
+
+                FileReplaceHelper.ConfigReplaceRegex(@"<!-- AuthenticationPart-->(.|\n)*?<location path(.|\n)*?</location>",
+ @"<!-- AuthenticationPart-->
+    <location path=""" + args[0] + @""">
+        <system.webServer>
+            <security>
+                <authentication>
+                    <anonymousAuthentication enabled=""" + (winAuth ? "false" : "true") + @""" />
+                    <windowsAuthentication enabled=""" + (winAuth ? "true" : "false") + @""" />
+                </authentication>
+            </security>
+        </system.webServer>
+    </location>");
+
+
                 Console.WriteLine("DONE");
+            }
+            catch (ApplicationException ex)
+            {
+                Console.WriteLine("ERROR: " + ex.Message);
+                return 1;
             }
             catch (Exception ex)
             {
@@ -126,6 +143,28 @@ namespace CreateIISExpressSite
                 return 1;
             }
             return 0;
+        }
+
+        private static bool DetectWindowsAuthenticationPlugin()
+        {
+            string pluginAspNetFormsAuth = ExpectedPluginPath<Rhetos.AspNetFormsAuth.AspNetFormsAuthorizationProvider>();
+            string pluginSimpleWindowsAuth = ExpectedPluginPath<Rhetos.SimpleWindowsAuth.SimpleWindowsAuthorizationProvider>();
+
+            if (File.Exists(pluginSimpleWindowsAuth))
+                return true;
+            if (File.Exists(pluginAspNetFormsAuth))
+                return false;
+            
+            Console.WriteLine("Looking for " + pluginAspNetFormsAuth);
+            Console.WriteLine("Looking for " + pluginSimpleWindowsAuth);
+            throw new ApplicationException("Cannot detect the authentication type. Please use SimpleWindowsAuth or AspNetFormsAuth Rhetos authentication packages.");
+        }
+
+        private static string ExpectedPluginPath<T>()
+        {
+            var dllPath = typeof(T).Assembly.Location;
+            var dllName = Path.GetFileName(dllPath);
+            return Path.Combine("Plugins", dllName);
         }
     }
 }

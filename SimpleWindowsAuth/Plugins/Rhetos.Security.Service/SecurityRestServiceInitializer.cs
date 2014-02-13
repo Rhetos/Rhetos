@@ -68,8 +68,8 @@ namespace Rhetos.Security.Service
             this.AddServiceEndpoint(_serviceType, new WebHttpBinding("rhetosWebHttpBinding"), string.Empty);
             ((ServiceEndpoint)(Description.Endpoints.Where(e => e.Binding is WebHttpBinding).Single())).Behaviors.Add(new WebHttpBehavior());
 
-            if (Description.Behaviors.Find<Rhetos.JsonErrorServiceBehavior>() == null)
-                Description.Behaviors.Add(new Rhetos.JsonErrorServiceBehavior());
+            if (Description.Behaviors.Find<Rhetos.Web.JsonErrorServiceBehavior>() == null)
+                Description.Behaviors.Add(new Rhetos.Web.JsonErrorServiceBehavior());
         }
     }
 }

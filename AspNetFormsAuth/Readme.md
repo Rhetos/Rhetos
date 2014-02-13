@@ -79,6 +79,7 @@ The JSON service is available at URI `<rhetos server>/Resources/AspNetFormsAuth/
 All claims related to the authentication service have resource="*AspNetFormsAuth.AuthenticationService*".
 [Admin user](#AdminSetup) has all the necessary permissions (claims) for all authentication service methods.
 
+<a id="Installation"></a>
 Installation
 ------------
 
@@ -88,7 +89,7 @@ Prerequisites:
 
 Before or after deploying the AspNetFormsAuth packages, please make the following changes to the web site configuration, in order for forms authentication to work.  
 
-#### Modify Web.config
+#### 1. Modify Web.config
 
 1. Comment out (or delete) the `security mode="TransportCredentialOnly` elements in all bindings.
 2. Remove the `<authentication mode="Windows" />` element.
@@ -106,12 +107,25 @@ Before or after deploying the AspNetFormsAuth packages, please make the followin
 	      <deny users="?" />
 	    </authorization>
 
-#### Configure IIS
+#### 2. Configure IIS
 
 1. Start IIS Manager -> Select the web site -> Open "Authentication" feature.
 2. On the Authentication page **enable** *Anonymous Authentication* and *Forms Authentication*, **disable** *Windows Authentication* and every other.
 
-#### Set up HTTPS
+#### 3. Configure IIS Express
+
+*(Only if using IIS Express instead of IIS server)*
+
+If using IIS Express, after adding AspNetFormsAuth package to `ApplyPackages.txt` execute `SetupRhetosServer.bat` utility in Rhetos server's folder to automatically configure `IISExpress.config`, or manually apply the following lines in IISExpress configuration file inside `system.webServer` element or inside `location / system.webServer` (usually at the end of the file):
+
+	<security>
+	    <authentication>
+	        <anonymousAuthentication enabled="false" />
+	        <windowsAuthentication enabled="true" />
+	    </authentication>
+	</security>
+
+#### 4. Set up HTTPS
 
 HTTPS (or any other) secure transport protocol **should always be enforced** when using forms authentication.
 This is necessary because in forms authentication the password is submitted as a plain text.
@@ -233,6 +247,12 @@ You may use the following C# code to generate the keys:
 	}
 
 ####Troubleshooting
+
+**Issue**: Deployment results with error message "DslSyntaxException: Concept with same key is described twice with different values."<br>
+**Solution**: Please check if you have deployed both *SimpleWindowsAuth* package and *AspNetFormsAuth* package at the same time. Only one of the packages can be deployed on Rhetos server. Read the [installation](#Installation) instructions above for more information on the issue.
+
+**Issue**: Web service responds with error message "The Role Manager feature has not been enabled."<br>
+**Solution**: The error occurs when the necessary modifications of Web.config file are not done. Please check that you have followed the [installation](#Installation) instructions above.
 
 In case of a server error, additional information on the error may be found in the Rhetos server log (`RhetosServer.log` file, by default).
 If needed, more verbose logging may be switched on by uncommenting the `<logger name="*" minLevel="Trace" writeTo="TraceLog" />` element in Rhetos server's `web.config`. 

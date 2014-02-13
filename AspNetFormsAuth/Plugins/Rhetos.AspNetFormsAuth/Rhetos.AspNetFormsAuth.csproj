@@ -128,9 +128,9 @@
       <Project>{71e63722-57bc-41df-9ff5-57ecc67e4bc1}</Project>
       <Name>Rhetos.Utilities</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Source\Rhetos\Rhetos.csproj">
-      <Project>{f395c923-6001-478d-9eff-f28a51f62be4}</Project>
-      <Name>Rhetos</Name>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Web\Rhetos.Web.csproj">
+      <Project>{a334fffd-0400-4fec-bc83-c044072c76a8}</Project>
+      <Name>Rhetos.Web</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

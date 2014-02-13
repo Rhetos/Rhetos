@@ -26,10 +26,16 @@ using System.Collections.ObjectModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Dispatcher;
 
-namespace Rhetos
+namespace Rhetos.Web
 {
-    public class JsonErrorServiceBehavior : IServiceBehavior
+    public class ErrorServiceBehavior : IServiceBehavior
     {
+        private readonly GlobalErrorHandler ErrorHandler;
+        public ErrorServiceBehavior(GlobalErrorHandler errorHandler)
+        {
+            this.ErrorHandler = errorHandler;
+        }
+
         public void AddBindingParameters(
             ServiceDescription serviceDescription, 
             ServiceHostBase serviceHostBase, 
@@ -43,7 +49,7 @@ namespace Rhetos
             ServiceHostBase serviceHostBase)
         {
             foreach (ChannelDispatcher disp in serviceHostBase.ChannelDispatchers)
-                disp.ErrorHandlers.Add(new JsonErrorHandler());
+                disp.ErrorHandlers.Add(ErrorHandler);
         }
 
         public void Validate(

@@ -30,7 +30,7 @@ using Rhetos.Logging;
 using System.ServiceModel.Description;
 using System.ServiceModel.Channels;
 
-namespace Rhetos
+namespace Rhetos.Web
 {
     /// <summary>
     /// Converts exceptions to a HTTP WEB response that contains JSON-serialized string error message.

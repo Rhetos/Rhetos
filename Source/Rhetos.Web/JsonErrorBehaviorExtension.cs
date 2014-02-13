@@ -24,7 +24,7 @@ using System.ServiceModel.Configuration;
 using Autofac.Integration.Wcf;
 using Autofac;
 
-namespace Rhetos
+namespace Rhetos.Web
 {
     public class JsonErrorBehaviorExtension : BehaviorExtensionElement
     {

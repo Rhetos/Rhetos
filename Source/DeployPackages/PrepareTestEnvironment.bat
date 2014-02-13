@@ -52,3 +52,5 @@ IF EXIST %ConnectionStringConfigPath% XCOPY /Y/D/R %ConnectionStringConfigPath% 
 
 REM ========================
 POPD
+
+ECHO Done.

@@ -43,8 +43,20 @@ namespace Rhetos.AspNetFormsAuth
     {
         public static void InitializeDatabaseConnection(bool autoCreateTables)
         {
-            WebSecurity.InitializeDatabaseConnection(SqlUtility.ConnectionString, SqlUtility.ProviderName, "aspnet_Principal", "AspNetUserId", "Name", autoCreateTables);
+            try
+            {
+                WebSecurity.InitializeDatabaseConnection(SqlUtility.ConnectionString, SqlUtility.ProviderName, "aspnet_Principal", "AspNetUserId", "Name", autoCreateTables);
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message == "The Role Manager feature has not been enabled.")
+                    throw new FrameworkException(installationErrorMessage + " Modify Web.config. (" + ex.GetType().Name + ": " + ex.Message + ")"); // Without internal message, so that developers can see the error.
+
+                throw new FrameworkException(installationErrorMessage, ex);
+            }
         }
+
+        const string installationErrorMessage = "Please completed the installation of AspNetFormsAuth package. Follow the installation instuctions in the Readme.md file inside AspNetFormsAuth package.";
 
         public void Initialize()
         {
@@ -85,8 +97,8 @@ namespace Rhetos.AspNetFormsAuth
             this.AddServiceEndpoint(_serviceType, new WebHttpBinding("rhetosWebHttpBinding"), string.Empty);
             ((ServiceEndpoint)(Description.Endpoints.Where(e => e.Binding is WebHttpBinding).Single())).Behaviors.Add(new WebHttpBehavior());
 
-            if (Description.Behaviors.Find<Rhetos.JsonErrorServiceBehavior>() == null)
-                Description.Behaviors.Add(new Rhetos.JsonErrorServiceBehavior());
+            if (Description.Behaviors.Find<Rhetos.Web.JsonErrorServiceBehavior>() == null)
+                Description.Behaviors.Add(new Rhetos.Web.JsonErrorServiceBehavior());
         }
     }
 }

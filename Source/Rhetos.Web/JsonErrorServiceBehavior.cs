@@ -20,35 +20,35 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using System.ServiceModel.Dispatcher;
-using Rhetos.Logging;
 using System.ServiceModel.Description;
+using System.ServiceModel;
+using System.Collections.ObjectModel;
 using System.ServiceModel.Channels;
+using System.ServiceModel.Dispatcher;
 
-namespace Rhetos
+namespace Rhetos.Web
 {
-    public class GlobalErrorHandler : IErrorHandler
+    public class JsonErrorServiceBehavior : IServiceBehavior
     {
-        private readonly ILogger Logger;
-
-        public GlobalErrorHandler(ILogProvider logProvider)
+        public void AddBindingParameters(
+            ServiceDescription serviceDescription, 
+            ServiceHostBase serviceHostBase, 
+            Collection<ServiceEndpoint> endpoints, 
+            BindingParameterCollection bindingParameters)
         {
-            this.Logger = logProvider.GetLogger("GlobalErrorHandler");
         }
 
-        public bool HandleError(Exception error)
+        public void ApplyDispatchBehavior(
+            ServiceDescription serviceDescription, 
+            ServiceHostBase serviceHostBase)
         {
-            if (error is UserException)
-                Logger.Info(() => error.ToString());
-            else
-                Logger.Error(() => error.ToString());
-            return false;
+            foreach (ChannelDispatcher disp in serviceHostBase.ChannelDispatchers)
+                disp.ErrorHandlers.Add(new JsonErrorHandler());
         }
 
-        public void ProvideFault(
-            Exception error, 
-            MessageVersion version, 
-            ref Message fault)
+        public void Validate(
+            ServiceDescription serviceDescription, 
+            ServiceHostBase serviceHostBase)
         {
         }
     }

@@ -51,6 +51,13 @@ namespace Rhetos.Deployment
                 zipFile.ParallelDeflateThreshold = -1; // Workaround for issue http://dotnetzip.codeplex.com/workitem/14252 "ZipFile.Save method get blocked into WaitOne()"
 
                 zipFile.AddFile(Path.Combine(packageRootFolder, PackageSetExtractor.PackageInfoFileName), ".");
+
+                foreach (string readmeFile in ReadmeFiles)
+                {
+                    string readmeFilePath = Path.Combine(packageRootFolder, readmeFile);
+                    if (File.Exists(readmeFilePath))
+                        zipFile.AddFile(readmeFilePath, ".");
+                }
                 
                 AddPluginsToZip(zipFile, packageRootFolder);
 
@@ -66,6 +73,8 @@ namespace Rhetos.Deployment
 
             return packageFileName;
         }
+
+        private static string[] ReadmeFiles = new[] { "Readme.md", "Readme.txt", "Readme.doc", "Readme.docx", "Readme.html" };
 
         private static void AddFolderToZip(ZipFile zipFile, string packageRootFolder, string addFolder)
         {

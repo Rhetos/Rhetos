@@ -44,7 +44,7 @@ namespace Rhetos
 
             builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
             builder.RegisterInstance<IDslSource>(new DiskDslScriptProvider(_dslScriptsFolder));
-            builder.RegisterType<GlobalErrorHandler>();
+            builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
 
             builder.RegisterModule(new SecurityModuleConfiguration());
             builder.RegisterModule(new UtilitiesModuleConfiguration());

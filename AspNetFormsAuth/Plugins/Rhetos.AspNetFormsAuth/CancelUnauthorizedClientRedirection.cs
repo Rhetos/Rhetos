@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Web;
 
 namespace Rhetos.AspNetFormsAuth
@@ -42,16 +43,19 @@ namespace Rhetos.AspNetFormsAuth
         {
             HttpApplication app = (HttpApplication)sender;
 
-            string defaultRedirectLocation = app.Request.ApplicationPath + "/login.aspx"; // Unless explicitly specified in web.config.
+            var defaultRedirectLocation = new Lazy<string>(() => CombineUrl(app.Request.ApplicationPath, "/login.aspx")); // Unless explicitly specified in web.config.
 
             if (app.Response.StatusCode == 302 // Redirect to Login web page
                 && app.Response.IsRequestBeingRedirected
-                && app.Response.RedirectLocation.StartsWith(defaultRedirectLocation))
+                && app.Response.RedirectLocation.StartsWith(defaultRedirectLocation.Value))
             {
                 if (app.Request.AppRelativeCurrentExecutionFilePath == "~/" || app.Request.AppRelativeCurrentExecutionFilePath == "~")
                 {
                     // Accessing home page, redirect to login page.
-                    app.Response.RedirectLocation = app.Request.ApplicationPath + @"/Resources/AspNetFormsAuth/Login.html" + app.Response.RedirectLocation.Substring(defaultRedirectLocation.Length);
+                    app.Response.RedirectLocation = CombineUrl(
+                        app.Request.ApplicationPath,
+                        "/Resources/AspNetFormsAuth/Login.html",
+                        app.Response.RedirectLocation.Substring(defaultRedirectLocation.Value.Length));
                 }
                 else
                 {
@@ -61,6 +65,20 @@ namespace Rhetos.AspNetFormsAuth
                     app.Response.StatusCode = 401;
                 }
             }
+        }
+
+        private string CombineUrl(params string[] parts)
+        {
+            var result = new StringBuilder();
+            for (int i = 0; i < parts.Count(); i++)
+            {
+                bool trimSlash = i >= 1 && parts[i - 1].EndsWith("/") && parts[i].StartsWith("/");
+                if (trimSlash)
+                    result.Append(parts[i].Substring(1));
+                else
+                    result.Append(parts[i]);
+            }
+            return result.ToString();
         }
     }
 }
