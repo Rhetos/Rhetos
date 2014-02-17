@@ -1,3 +1,8 @@
+NEXT (to be released)
+-------------------
+
+* Performance: First call of the *DownloadReport* server command sometime takes more time (building DslModel instance).
+
 0.9.13 (2013-11-28)
 -------------------
 

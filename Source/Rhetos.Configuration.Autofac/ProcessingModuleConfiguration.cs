@@ -38,6 +38,7 @@ namespace Rhetos.Configuration.Autofac
             builder.RegisterType<ProcessingEngine>().As<IProcessingEngine>();
             PluginsUtility.RegisterPlugins<ICommandData>(builder);
             PluginsUtility.RegisterPlugins<ICommandImplementation>(builder);
+            PluginsUtility.RegisterPlugins<ICommandObserver>(builder);
             PluginsUtility.RegisterPlugins<ICommandInfo>(builder);
 
             base.Load(builder);

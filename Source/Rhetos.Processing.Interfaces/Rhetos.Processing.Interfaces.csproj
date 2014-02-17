@@ -91,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommandResult.cs" />
+    <Compile Include="ICommandObserver.cs" />
     <Compile Include="DataType\IDomainData.cs" />
     <Compile Include="DataType\IBasicData.cs" />
     <Compile Include="DataType\IDataArray.cs" />

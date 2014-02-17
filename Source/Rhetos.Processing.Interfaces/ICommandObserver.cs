@@ -21,17 +21,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Processing
 {
-    public interface IReportRepository
+    public interface ICommandObserver
     {
-        /// <summary>
-        /// Returns generated binary file and suggested file name.
-        /// Set convertFormat to "pdf" to convert result to pdf.
-        /// Set convertFormat to null to get the original report template file format (docx or xls, for example).
-        /// </summary>
-        ReportFile GenerateReport(object parameters, string convertFormat);
-
-        IList<string> DataSourcesNames { get; }
+        void BeforeExecute(ICommandInfo commandInfo);
+        void AfterExecute(ICommandInfo commandInfo, CommandResult commandResult);
     }
 }
