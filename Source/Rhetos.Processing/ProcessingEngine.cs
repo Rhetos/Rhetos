@@ -35,6 +35,7 @@ namespace Rhetos.Processing
     public class ProcessingEngine : IProcessingEngine
     {
         private readonly IPluginsContainer<ICommandImplementation> _commandRepository;
+        private readonly IPluginsContainer<ICommandObserver> _commandObservers;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
         private readonly IPersistenceTransaction _persistenceTransaction;
@@ -42,11 +43,13 @@ namespace Rhetos.Processing
 
         public ProcessingEngine(
             IPluginsContainer<ICommandImplementation> commandRepository,
+            IPluginsContainer<ICommandObserver> commandObservers,
             ILogProvider logProvider,
             IPersistenceTransaction persistenceTransaction,
             IAuthorizationManager authorizationManager)
         {
             _commandRepository = commandRepository;
+            _commandObservers = commandObservers;
             _logger = logProvider.GetLogger("ProcessingEngine");
             _performanceLogger = logProvider.GetLogger("Performance");
             _persistenceTransaction = persistenceTransaction;
@@ -91,13 +94,26 @@ namespace Rhetos.Processing
                     var commandImplementation = implementations.Single();
                     _logger.Trace("Executing implementation {0}.", commandImplementation.GetType().Name);
 
-                    var swCommand = Stopwatch.StartNew();
+                    var commandObserversForThisCommand = _commandObservers.GetImplementations(commandInfo.GetType());
+                    var stopwatch = Stopwatch.StartNew();
+
+                    foreach (var commandObeserver in commandObserversForThisCommand)
+                    {
+                        commandObeserver.BeforeExecute(commandInfo);
+                        _performanceLogger.Write(stopwatch, () => "ProcessingEngine: CommandObeserver.BeforeExecute " + commandObeserver.GetType().FullName);
+                    }
 
                     var commandResult = commandImplementation.Execute(commandInfo);
 
-                    swCommand.Stop();
+                    _performanceLogger.Write(stopwatch, "ProcessingEngine: Command executed.");
                     _logger.Trace("Execution result message: {0}", commandResult.Message);
-                    _performanceLogger.Write(swCommand, "ProcessingEngine: Command executed.");
+
+                    if (commandResult.Success)
+                        foreach (var commandObeserver in commandObserversForThisCommand)
+                        {
+                            commandObeserver.AfterExecute(commandInfo, commandResult);
+                            _performanceLogger.Write(stopwatch, () => "ProcessingEngine: CommandObeserver.AfterExecute " + commandObeserver.GetType().FullName);
+                        }
 
                     commandResults.Add(commandResult);
 

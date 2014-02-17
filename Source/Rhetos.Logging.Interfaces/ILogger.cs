@@ -58,13 +58,23 @@ namespace Rhetos.Logging
 
         private static readonly TimeSpan slowEvent = TimeSpan.FromSeconds(10);
 
-        public static void Write(this ILogger performanceLogger, Stopwatch stopwatch, string message)
+        private static void PerformanceWrite(this ILogger performanceLogger, Stopwatch stopwatch, Func<string> fullMessage)
         {
             if (stopwatch.Elapsed >= slowEvent)
-                performanceLogger.Info(() => stopwatch.Elapsed + " " + message);
+                performanceLogger.Info(fullMessage);
             else
-                performanceLogger.Trace(() => stopwatch.Elapsed + " " + message);
+                performanceLogger.Trace(fullMessage);
             stopwatch.Restart();
+        }
+
+        public static void Write(this ILogger performanceLogger, Stopwatch stopwatch, Func<string> message)
+        {
+            PerformanceWrite(performanceLogger, stopwatch, () => stopwatch.Elapsed + " " + message());
+        }
+
+        public static void Write(this ILogger performanceLogger, Stopwatch stopwatch, string message)
+        {
+            PerformanceWrite(performanceLogger, stopwatch, () => stopwatch.Elapsed + " " + message);
         }
 
         public static void Error(this ILogger log, string eventData, params object[] eventDataParams)

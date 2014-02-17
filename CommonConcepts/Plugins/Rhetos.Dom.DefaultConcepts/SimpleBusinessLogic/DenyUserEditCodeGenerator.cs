@@ -36,11 +36,44 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (DenyUserEditInfo)conceptInfo;
-            codeBuilder.InsertCode(CheckChangesSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Property.DataStructure);
+            codeBuilder.InsertCode(CheckChangesOnInsertSnippet(info), WritableOrmDataStructureCodeGenerator.InitializationTag, info.Property.DataStructure);
+            codeBuilder.InsertCode(CheckChangesOnUpdateSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Property.DataStructure);
             codeBuilder.AddReferencesFromDependency(typeof(UserException));
         }
 
-        private static string CheckChangesSnippet(DenyUserEditInfo info)
+        private static string ThrowExceptionSnippet(DenyUserEditInfo info)
+        {
+            return string.Format(
+@"            if (invalidItem != null)
+                    throw new Rhetos.UserException(
+                        ""It is not allowed to directly enter {2} property of {0}.{1}."",
+                        ""DataStructure:{0}.{1},ID:"" + invalidItem.ID + "",Property:{2}"");
+",
+                info.Property.DataStructure.Module.Name,
+                info.Property.DataStructure.Name,
+                info.Property.Name,
+                GetComparedPropertyName(info.Property));
+        }
+
+
+        private static string CheckChangesOnInsertSnippet(DenyUserEditInfo info)
+        {
+            return string.Format(
+@"            if (checkUserPermissions)
+            {{
+                var invalidItem = insertedNew.Where(newItem => newItem.{3} != null).FirstOrDefault();
+                
+    {4}
+            }}
+",
+                info.Property.DataStructure.Module.Name,
+                info.Property.DataStructure.Name,
+                info.Property.Name,
+                GetComparedPropertyName(info.Property),
+                ThrowExceptionSnippet(info));
+        }
+
+        private static string CheckChangesOnUpdateSnippet(DenyUserEditInfo info)
         {
             return string.Format(
 @"            if (checkUserPermissions)
@@ -49,20 +82,15 @@ namespace Rhetos.Dom.DefaultConcepts
                     .Where(change => change.newItem.{3} != null && !change.newItem.{3}.Equals(change.oldItem.{3}) || change.newItem.{3} == null && change.oldItem.{3} != null)
                     .Select(change => change.newItem)
                     .FirstOrDefault();
-
-                if (invalidItem == null)
-                    invalidItem = insertedNew.Where(newItem => newItem.{3} != null).FirstOrDefault();
-
-                if (invalidItem != null)
-                    throw new Rhetos.UserException(
-                        ""It is not allowed to directly enter {2} property of {0}.{1}."",
-                        ""DataStructure:{0}.{1},ID:"" + invalidItem.ID + "",Property:{2}"");
+                    
+    {4}
             }}
 ",
                 info.Property.DataStructure.Module.Name,
                 info.Property.DataStructure.Name,
                 info.Property.Name,
-                GetComparedPropertyName(info.Property));
+                GetComparedPropertyName(info.Property),
+                ThrowExceptionSnippet(info));
         }
 
         private static string GetComparedPropertyName(PropertyInfo propertyInfo)
