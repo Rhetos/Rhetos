@@ -147,17 +147,20 @@ namespace CreateIISExpressSite
 
         private static bool DetectWindowsAuthenticationPlugin()
         {
-            string pluginAspNetFormsAuth = ExpectedPluginPath<Rhetos.AspNetFormsAuth.AspNetFormsAuthorizationProvider>();
-            string pluginSimpleWindowsAuth = ExpectedPluginPath<Rhetos.SimpleWindowsAuth.SimpleWindowsAuthorizationProvider>();
+            var authenticationPluginSupportsWindowsAuth = new[]
+            {
+                Tuple.Create("SimpleWindowsAuth", @"Plugins\Rhetos.SimpleWindowsAuth.dll", true),
+                Tuple.Create("AspNetFormsAuth", @"Plugins\Rhetos.AspNetFormsAuth.dll", false),
+            };
 
-            if (File.Exists(pluginSimpleWindowsAuth))
-                return true;
-            if (File.Exists(pluginAspNetFormsAuth))
-                return false;
-            
-            Console.WriteLine("Looking for " + pluginAspNetFormsAuth);
-            Console.WriteLine("Looking for " + pluginSimpleWindowsAuth);
-            throw new ApplicationException("Cannot detect the authentication type. Please use SimpleWindowsAuth or AspNetFormsAuth Rhetos authentication packages.");
+            foreach (var plugin in authenticationPluginSupportsWindowsAuth)
+                if (File.Exists(plugin.Item2))
+                    return plugin.Item3;
+
+            foreach (var plugin in authenticationPluginSupportsWindowsAuth)
+                Console.WriteLine("Looking for " + plugin.Item2);
+            throw new ApplicationException("Cannot detect the authentication type. Please use one of the following Rhetos authentication packages: "
+                + string.Join(", ", authenticationPluginSupportsWindowsAuth.Select(plugin => plugin.Item1)) + ".");
         }
 
         private static string ExpectedPluginPath<T>()

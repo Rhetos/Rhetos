@@ -52,14 +52,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\AspNetFormsAuth\Plugins\Rhetos.AspNetFormsAuth\Rhetos.AspNetFormsAuth.csproj">
-      <Project>{8ce0595e-b553-48d0-8848-9ecb254b2973}</Project>
-      <Name>Rhetos.AspNetFormsAuth</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\SimpleWindowsAuth\Plugins\Rhetos.SimpleWindowsAuth\Rhetos.SimpleWindowsAuth.csproj">
-      <Project>{3b32f187-f203-4147-9983-814a2a1045e5}</Project>
-      <Name>Rhetos.SimpleWindowsAuth</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Security.Interfaces\Rhetos.Security.Interfaces.csproj">
       <Project>{8e1d4acd-b1aa-433f-9e52-fa50d4a1c9dc}</Project>
       <Name>Rhetos.Security.Interfaces</Name>
