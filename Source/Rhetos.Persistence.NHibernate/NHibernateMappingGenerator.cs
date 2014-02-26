@@ -69,13 +69,18 @@ namespace Rhetos.Persistence.NHibernate
             return _mapping;
         }
 
+        const string detectLineTag = @"\n\s*<!--.*?-->\s*\r?\n";
+        const string detectTag = @"<!--.*?-->";
+
         private string GenerateMapping()
         {
             var sw = Stopwatch.StartNew();
 
             string innerXml = _codeGenerator.ExecutePlugins(_plugins, "<!--", "-->", null).GeneratedCode;
             innerXml = innerXml.Replace(AssemblyTag, _domainObjectModel.ObjectModel.FullName);
-            innerXml = Regex.Replace(innerXml, "<!--(.*)-->\\r?\\n?", string.Empty);
+            innerXml = Regex.Replace(innerXml, detectLineTag, "\n");
+            innerXml = Regex.Replace(innerXml, detectTag, "");
+            innerXml = innerXml.Trim();
 
             string xml =
 @"<?xml version=""1.0"" encoding=""utf-16"" ?>
