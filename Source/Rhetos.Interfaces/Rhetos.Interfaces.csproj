@@ -44,9 +44,11 @@
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IHomePageSnippet.cs" />
     <Compile Include="IService.cs" />
     <Compile Include="ServerCommandResult.cs" />
     <Compile Include="ServerProcessingResult.cs" />

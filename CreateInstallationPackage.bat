@@ -10,35 +10,51 @@ IF [%1] == [] SET Config=Debug
 DEL /F /Q *.zip || EXIT /B 1
 
 IF NOT EXIST CommonConcepts\Plugins\ForDeployment\ MD CommonConcepts\Plugins\ForDeployment\
-DEL /F /S /Q CommonConcepts\Plugins\ForDeployment\* || EXIT /B 1
-CALL CommonConcepts\CopyPlugins.bat CommonConcepts\Plugins\ForDeployment\ %Config%
-Source\CreatePackage\bin\%Config%\CreatePackage.exe CommonConcepts
+DEL /F /S /Q CommonConcepts\Plugins\ForDeployment\*  || GOTO Error0
+CALL CommonConcepts\CopyPlugins.bat CommonConcepts\Plugins\ForDeployment\ %Config%  || GOTO Error0
+Source\CreatePackage\bin\%Config%\CreatePackage.exe CommonConcepts  || GOTO Error0
 RD /S /Q CommonConcepts\Plugins\ForDeployment\
 
-MOVE *.zip Install\
+IF NOT EXIST SimpleWindowsAuth\Plugins\ForDeployment\ MD SimpleWindowsAuth\Plugins\ForDeployment\
+DEL /F /S /Q SimpleWindowsAuth\Plugins\ForDeployment\*  || GOTO Error0
+CALL SimpleWindowsAuth\CopyPlugins.bat SimpleWindowsAuth\Plugins\ForDeployment\ %Config% || GOTO Error0
+Source\CreatePackage\bin\%Config%\CreatePackage.exe SimpleWindowsAuth || GOTO Error0
+RD /S /Q SimpleWindowsAuth\Plugins\ForDeployment\
+
+IF NOT EXIST AspNetFormsAuth\Plugins\ForDeployment\ MD AspNetFormsAuth\Plugins\ForDeployment\
+DEL /F /S /Q AspNetFormsAuth\Plugins\ForDeployment\*  || GOTO Error0
+CALL AspNetFormsAuth\CopyPlugins.bat AspNetFormsAuth\Plugins\ForDeployment\ %Config% || GOTO Error0
+Source\CreatePackage\bin\%Config%\CreatePackage.exe AspNetFormsAuth || GOTO Error0
+RD /S /Q AspNetFormsAuth\Plugins\ForDeployment\
+
+MOVE *.zip Install\ || GOTO Error0
 
 MD Install\Rhetos
 MD Install\Rhetos\bin
 
-XCOPY /Y/D/R Source\Rhetos\bin\*.dll Install\Rhetos\bin
-XCOPY /Y/D/R Source\Rhetos\bin\*.pdb Install\Rhetos\bin
-XCOPY /Y/D/R Source\Rhetos\bin\*.exe Install\Rhetos\bin
-XCOPY /Y/D/R Source\Rhetos\bin\*.config Install\Rhetos\bin
+XCOPY /Y/D/R Source\Rhetos\bin\*.dll Install\Rhetos\bin || GOTO Error0
+XCOPY /Y/D/R Source\Rhetos\bin\*.pdb Install\Rhetos\bin || GOTO Error0
+XCOPY /Y/D/R Source\Rhetos\bin\*.exe Install\Rhetos\bin || GOTO Error0
+XCOPY /Y/D/R Source\Rhetos\bin\*.config Install\Rhetos\bin || GOTO Error0
 DEL /F /Q Install\Rhetos\bin\ConnectionStrings.config
 
-REM Workaround until design issue is resolved: Rhetos framework references CommonConcepts package (Common.Claim)
-DEL /F /Q Install\Rhetos\bin\*.Default*.???
+XCOPY /Y/D/R Source\Rhetos\*.aspx Install\Rhetos\ || GOTO Error0
+XCOPY /Y/D/R Source\Rhetos\*.asax Install\Rhetos\ || GOTO Error0
+XCOPY /Y/D/R Source\Rhetos\Web.config Install\Rhetos\ || GOTO Error0
+XCOPY /Y/D/R Source\Rhetos\*.linq Install\Rhetos\ || GOTO Error0
+XCOPY /Y/D/R Source\Rhetos\*.svc Install\Rhetos\ || GOTO Error0
 
-XCOPY /S/I /Y/D/R Source\Rhetos\Css Install\Rhetos\Css
-XCOPY /S/I /Y/D/R Source\Rhetos\Img Install\Rhetos\Img
-XCOPY /S/I /Y/D/R Source\Rhetos\Js Install\Rhetos\Js
+XCOPY /Y/D/R ChangeLog.md Install\Rhetos\ || GOTO Error0
+XCOPY /Y/D/R Readme.md Install\Rhetos\ || GOTO Error0
 
-XCOPY /Y/D/R Source\Rhetos\*.aspx Install\Rhetos\
-XCOPY /Y/D/R Source\Rhetos\*.asax Install\Rhetos\
-XCOPY /Y/D/R Source\Rhetos\Web.config Install\Rhetos\
-XCOPY /Y/D/R Source\Rhetos\*.linq Install\Rhetos\
-XCOPY /Y/D/R Source\Rhetos\*.svc Install\Rhetos\
-XCOPY /Y/D/R Source\Rhetos\Site.Master Install\Rhetos\
+@REM ================================================
 
-XCOPY /Y/D/R ChangeLog.md Install\Rhetos\
-XCOPY /Y/D/R Readme.md Install\Rhetos\
+@ECHO.
+@ECHO %~nx0 SUCCESSFULLY COMPLETED.
+@EXIT /B 0
+
+:Error0
+@ECHO.
+@ECHO %~nx0 FAILED.
+@IF /I [%2] NEQ [/NOPAUSE] @PAUSE
+@EXIT /B 1

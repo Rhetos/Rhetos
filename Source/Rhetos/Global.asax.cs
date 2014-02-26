@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2013 Omega software d.o.o.
+    Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
 
@@ -16,34 +16,29 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+using Autofac;
+using Autofac.Configuration;
+using Autofac.Integration.Wcf;
+using Rhetos.Dom;
+using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Security;
-using System.Web.SessionState;
-using Autofac.Integration.Wcf;
-using Autofac;
-using Rhetos.Configuration.Autofac;
-using System.Configuration;
-using System.IO;
-using Autofac.Configuration;
-using Rhetos.Logging;
 using System.Diagnostics;
-using System.ServiceModel;
-using System.ServiceModel.Description;
-using System.Threading.Tasks;
 
 namespace Rhetos
 {
     public class Global : System.Web.HttpApplication
     {
-        private ILogger _logger;
-        private ILogger _performanceLogger;
+        private static ILogger _logger;
+        private static ILogger _performanceLogger;
+        private static IEnumerable<IService> _pluginServices;
 
+        // Called only once.
         protected void Application_Start(object sender, EventArgs e)
         {
-            var totalStopwatch = Stopwatch.StartNew();
+            var stopwatch = Stopwatch.StartNew();
 
             var builder = new ContainerBuilder();
             builder.RegisterModule(new ConfigurationSettingsReader("autofacComponents"));
@@ -51,24 +46,50 @@ namespace Rhetos
 
             _logger = AutofacServiceHostFactory.Container.Resolve<ILogProvider>().GetLogger("Global");
             _performanceLogger = AutofacServiceHostFactory.Container.Resolve<ILogProvider>().GetLogger("Performance");
+            _pluginServices = AutofacServiceHostFactory.Container.Resolve<IEnumerable<IService>>();
+            XmlUtility.Dom = AutofacServiceHostFactory.Container.Resolve<IDomainObjectModel>().ObjectModel;
 
-            _performanceLogger.Write(totalStopwatch, "Autofac initialized.");
+            _performanceLogger.Write(stopwatch, "Autofac initialized.");
 
-            foreach(var service in AutofacServiceHostFactory.Container.Resolve<IEnumerable<IService>>())
+            foreach (var service in _pluginServices)
             {
                 try
                 {
-                    var stopwatch = Stopwatch.StartNew();
                     service.Initialize();
-                    _performanceLogger.Write(stopwatch, "Service " + service.GetType().FullName + " initialized.");
+                    _performanceLogger.Write(stopwatch, "Service " + service.GetType().FullName + ".Initialize");
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex.ToString());
+                    if (_logger != null)
+                        _logger.Error(ex.ToString());
+                    throw;
                 }
             }
 
-            _performanceLogger.Write(totalStopwatch, "All services initialized.");
+            _performanceLogger.Write(stopwatch, "All services initialized.");
+        }
+
+        // Called once for each application instance.
+        public override void Init()
+        {
+            base.Init();
+
+            if (_pluginServices != null)
+                foreach (var service in _pluginServices)
+                {
+                    try
+                    {
+                        var stopwatch = Stopwatch.StartNew();
+                        service.InitializeApplicationInstance(this);
+                        _performanceLogger.Write(stopwatch, "Service " + service.GetType().FullName + ".InitializeApplicationInstance");
+                    }
+                    catch (Exception ex)
+                    {
+                        if (_logger != null)
+                            _logger.Error(ex.ToString());
+                        throw;
+                    }
+                }
         }
 
         protected void Session_Start(object sender, EventArgs e)

@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2013 Omega software d.o.o.
+    Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
 
@@ -16,6 +16,7 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -54,13 +55,6 @@ namespace CreateIISExpressSite
             }
         }
 
-        public static bool MatchesRegex(string fileName, string regex) {
-            var replaceRegex = new Regex(regex, RegexOptions.Multiline);
-            var encoding = GetFileEncoding(fileName);
-            string fileText = File.ReadAllText(fileName, Encoding.Default);
-            return replaceRegex.Match(fileText).Success;
-        }
-
         public static void ReplaceWithRegex(string fileName, string regex, string value, string invalidMessage)
         {
             var replaceRegex = new Regex(regex, RegexOptions.Multiline);
@@ -75,57 +69,106 @@ namespace CreateIISExpressSite
 
             File.WriteAllText(fileName, fileText, encoding);
         }
+
+        public static void ConfigReplaceRegex(string regex, string value)
+        {
+            ReplaceWithRegex(@"..\IISExpress.config", regex, value, "Unexpected IISExpress.config file format. Copy Template.IISExpress.config.");
+        }
     }
 
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
-            if (args.Length < 2 || args.Length > 3)
+            try
             {
-                Console.WriteLine("Usage: CreateIISExpressSite <IISSite> <Port> [RhetosAlternativeAppPath]");
-                Console.WriteLine("   Port has to be between 1024 and 65535");
-                return;
-            }
-            string appRoot = Directory.GetCurrentDirectory().Substring(0, Directory.GetCurrentDirectory().Length - 4);
-            if (args.Length == 3)
-                appRoot = args[2];
+                if (args.Length < 2 || args.Length > 3)
+                {
+                    Console.WriteLine("Usage: CreateIISExpressSite <IISSite> <Port> [RhetosAlternativeAppPath]");
+                    Console.WriteLine("   Port has to be between 1024 and 65535");
+                    return 1;
+                }
+                string appRoot = Directory.GetCurrentDirectory().Substring(0, Directory.GetCurrentDirectory().Length - 4);
+                if (args.Length == 3)
+                    appRoot = args[2];
 
-            int port = 0;
-            if (!Int32.TryParse(args[1], out port))
-                throw new ArgumentException("Port has to be valid integer less than 65536.");
-            if (port > 65535)
-                throw new ArgumentException("Port has to be valid integer less than 65536.");
+                int port = 0;
+                if (!Int32.TryParse(args[1], out port))
+                    throw new ArgumentException("Port has to be valid integer less than 65536.");
+                if (port > 65535)
+                    throw new ArgumentException("Port has to be valid integer less than 65536.");
 
-            string pathToIISExpress = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "IISExpress");
-            if (!Directory.Exists(pathToIISExpress))
-                throw new Exception("IIS Express is not installed or enabled for current user.");
+                bool winAuth = DetectWindowsAuthenticationPlugin();
 
-            if (!File.Exists(@"..\IISExpress.config"))
-                File.Copy(@"Template.IISExpress.config", @"..\IISExpress.config");
-            Console.Write("Preparing local IISExpress.config ... ");
-            FileReplaceHelper.ReplaceWithRegex(@"..\IISExpress.config"
-                , @"<site name(.|\n)*?</site>"
-                , @"<site name=""" + args[0] + @""" id=""1"" serverAutoStart=""true"">
+                if (!File.Exists(@"..\IISExpress.config"))
+                    File.Copy(@"Template.IISExpress.config", @"..\IISExpress.config");
+                Console.Write("Preparing local IISExpress.config ... ");
+
+
+                FileReplaceHelper.ConfigReplaceRegex(@"<site name(.|\n)*?</site>",
+         @"<site name=""" + args[0] + @""" id=""1"" serverAutoStart=""true"">
                 <application path=""/"">
                     <virtualDirectory path=""/"" physicalPath=""" + appRoot + @""" />
                 </application>
                 <bindings>
                     <binding protocol=""http"" bindingInformation="":" + port.ToString() + @":localhost"" />
                 </bindings>
-            </site>"
-                , "Not valid IISExpress.config file.");
-            FileReplaceHelper.ReplaceWithRegex(@"..\IISExpress.config"
-                , @"<!-- AuthenticationPart-->(.|\n)*?<location path=""(.|\n)*?"">"
-                , @"<!-- AuthenticationPart-->" + Environment.NewLine + @"    <location path=""" + args[0] + @""">"
-                , "Not valid IISExpress.config file.");
-            Console.WriteLine("DONE");
-            Console.Write("Setting RhetosService.svc location in web.config ...");
-            FileReplaceHelper.ReplaceWithRegex(@"..\web.config"
-                , @"<endpoint address=""http(.|\n)*?/RhetosService.svc(.|\n)*?endpoint>"
-                , @"<endpoint address=""http://localhost:" + port.ToString() + @"/RhetosService.svc"" binding=""basicHttpBinding"" bindingConfiguration=""rhetosBasicHttpBinding"" contract=""Rhetos.IServerApplication""></endpoint>"
-                , "Not valid web.config file.");
-            Console.WriteLine("DONE");
+            </site>");
+
+
+                FileReplaceHelper.ConfigReplaceRegex(@"<!-- AuthenticationPart-->(.|\n)*?<location path(.|\n)*?</location>",
+ @"<!-- AuthenticationPart-->
+    <location path=""" + args[0] + @""">
+        <system.webServer>
+            <security>
+                <authentication>
+                    <anonymousAuthentication enabled=""" + (winAuth ? "false" : "true") + @""" />
+                    <windowsAuthentication enabled=""" + (winAuth ? "true" : "false") + @""" />
+                </authentication>
+            </security>
+        </system.webServer>
+    </location>");
+
+
+                Console.WriteLine("DONE");
+            }
+            catch (ApplicationException ex)
+            {
+                Console.WriteLine("ERROR: " + ex.Message);
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("ERROR:");
+                Console.WriteLine(ex);
+                return 1;
+            }
+            return 0;
+        }
+
+        private static bool DetectWindowsAuthenticationPlugin()
+        {
+            var authenticationPluginSupportsWindowsAuth = new[]
+            {
+                Tuple.Create("SimpleWindowsAuth", @"Plugins\Rhetos.SimpleWindowsAuth.dll", true),
+                Tuple.Create("AspNetFormsAuth", @"Plugins\Rhetos.AspNetFormsAuth.dll", false),
+            };
+
+            foreach (var plugin in authenticationPluginSupportsWindowsAuth)
+                if (File.Exists(plugin.Item2))
+                    return plugin.Item3;
+
+            foreach (var plugin in authenticationPluginSupportsWindowsAuth)
+                Console.WriteLine("Looking for " + plugin.Item2);
+            throw new ApplicationException("Cannot detect the authentication type. Please use one of the following Rhetos authentication packages: "
+                + string.Join(", ", authenticationPluginSupportsWindowsAuth.Select(plugin => plugin.Item1)) + ".");
+        }
+
+        private static string ExpectedPluginPath<T>()
+        {
+            var dllPath = typeof(T).Assembly.Location;
+            var dllName = Path.GetFileName(dllPath);
+            return Path.Combine("Plugins", dllName);
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2013 Omega software d.o.o.
+    Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
 
@@ -16,6 +16,7 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +31,8 @@ namespace Rhetos.CommonConcepts.Test
 {
     class CC : ICommonClaim
     {
-        public Guid ID = Guid.NewGuid();
+        public CC() { ID = Guid.NewGuid(); }
+        public Guid ID { get; set; }
         public string ClaimResource { get; set; }
         public string ClaimRight { get; set; }
     }
@@ -126,7 +128,7 @@ namespace Rhetos.CommonConcepts.Test
     internal class ClaimGeneratorAccessor : ClaimGenerator
     {
         public ClaimGeneratorAccessor()
-            : base(null, null, null, new ConsoleLogProvider(), null)
+            : base(null, null, new ConsoleLogProvider(), null)
         {
         }
 

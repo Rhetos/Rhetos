@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2013 Omega software d.o.o.
+    Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
 
@@ -16,6 +16,7 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using Autofac;
 using Rhetos.Extensibility;
 using Rhetos.Security;
@@ -28,10 +29,10 @@ namespace Rhetos.Configuration.Autofac
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<AuthorizationManager>().As<IAuthorizationManager>().InstancePerLifetimeScope();
+            builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope().PreserveExistingDefaults();
+            builder.RegisterType<NullAuthorizationProvider>().As<IAuthorizationProvider>().PreserveExistingDefaults();
 
-            builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
             PluginsUtility.RegisterPlugins<IUserInfo>(builder); // Allow custom IUserInfo plugin implementation (overriding WcfWindowsUserInfo).
-
             PluginsUtility.RegisterPlugins<IAuthorizationProvider>(builder);
             PluginsUtility.RegisterPlugins<IClaimProvider>(builder);
 

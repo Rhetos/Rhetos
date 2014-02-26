@@ -86,36 +86,9 @@
     <CodeAnalysisDictionary Include="..\..\CodeAnalysisDictionary.xml">
       <Link>CodeAnalysisDictionary.xml</Link>
     </CodeAnalysisDictionary>
-    <Content Include="Css\rhetos-permissons-ui.css" />
-    <Content Include="Css\style.css" />
-    <Content Include="Css\ui-lightness\images\ui-bg_diagonals-thick_18_b81900_40x40.png" />
-    <Content Include="Css\ui-lightness\images\ui-bg_diagonals-thick_20_666666_40x40.png" />
-    <Content Include="Css\ui-lightness\images\ui-bg_flat_10_000000_40x100.png" />
-    <Content Include="Css\ui-lightness\images\ui-bg_glass_100_f6f6f6_1x400.png" />
-    <Content Include="Css\ui-lightness\images\ui-bg_glass_100_fdf5ce_1x400.png" />
-    <Content Include="Css\ui-lightness\images\ui-bg_glass_65_ffffff_1x400.png" />
-    <Content Include="Css\ui-lightness\images\ui-bg_gloss-wave_35_f6a828_500x100.png" />
-    <Content Include="Css\ui-lightness\images\ui-bg_highlight-soft_100_eeeeee_1x100.png" />
-    <Content Include="Css\ui-lightness\images\ui-bg_highlight-soft_75_ffe45c_1x100.png" />
-    <Content Include="Css\ui-lightness\images\ui-icons_222222_256x240.png" />
-    <Content Include="Css\ui-lightness\images\ui-icons_228ef1_256x240.png" />
-    <Content Include="Css\ui-lightness\images\ui-icons_ef8c08_256x240.png" />
-    <Content Include="Css\ui-lightness\images\ui-icons_ffd27a_256x240.png" />
-    <Content Include="Css\ui-lightness\images\ui-icons_ffffff_256x240.png" />
-    <Content Include="Css\ui-lightness\jquery-ui-1.8.16.custom.css" />
     <Content Include="Default.aspx" />
     <Content Include="Global.asax" />
-    <Content Include="Img\checked_highlighted.gif" />
-    <Content Include="Img\intermediate_highlighted.gif" />
-    <Content Include="Img\lock.png" />
-    <Content Include="Img\unchecked_highlighted.gif" />
     <Content Include="RhetosService.svc" />
-    <Content Include="Js\rhetos-permissons-ui.js" />
-    <Content Include="Js\rhetos-tri-state-checkbox.js" />
-    <Content Include="Js\jquery-1.7.min.js" />
-    <Content Include="Js\jquery-ui-1.8.16.custom.min.js" />
-    <Content Include="Js\jquery.tablesorter.min.js" />
-    <Content Include="Js\json2.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -127,9 +100,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="JsonErrorBehaviorExtension.cs" />
-    <Compile Include="JsonErrorServiceBehavior.cs" />
-    <Compile Include="JsonErrorHandler.cs" />
     <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -138,36 +108,18 @@
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="DefaultAutofacConfiguration.cs" />
-    <Compile Include="ErrorHandlerBehavior.cs" />
-    <Compile Include="ErrorServiceBehavior.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="GlobalErrorHandler.cs" />
     <Compile Include="RhetosService.svc.cs">
       <DependentUpon>RhetosService.svc</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Site.Master.cs">
-      <DependentUpon>Site.Master</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Site.Master.designer.cs">
-      <DependentUpon>Site.Master</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CreateAndSetDatabase\CreateAndSetDatabase.csproj">
-      <Project>{e428537f-9221-4fd0-b8dc-35ff6f0aa4d7}</Project>
-      <Name>CreateAndSetDatabase</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CreateIISExpressSite\CreateIISExpressSite.csproj">
-      <Project>{db095801-e380-4caf-b5f4-6f658ed3e5be}</Project>
-      <Name>CreateIISExpressSite</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Extensibility\Rhetos.Extensibility.csproj">
       <Project>{7eaf15bd-39c9-44ab-8834-ec0ae013a8a2}</Project>
       <Name>Rhetos.Extensibility</Name>
@@ -216,6 +168,10 @@
       <Project>{8E1D4ACD-B1AA-433F-9E52-FA50D4A1C9DC}</Project>
       <Name>Rhetos.Security.Interfaces</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Web\Rhetos.Web.csproj">
+      <Project>{a334fffd-0400-4fec-bc83-c044072c76a8}</Project>
+      <Name>Rhetos.Web</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.XmlSerialization\Rhetos.XmlSerialization.csproj">
       <Project>{726ca0fb-70e7-44f3-9fca-e703598bfc7e}</Project>
       <Name>Rhetos.XmlSerialization</Name>
@@ -224,7 +180,6 @@
   <ItemGroup>
     <None Include="ApplyPackages.bat" />
     <None Include="GetServerFiles.bat" />
-    <Content Include="Site.Master" />
     <Content Include="Template.ConnectionStrings.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

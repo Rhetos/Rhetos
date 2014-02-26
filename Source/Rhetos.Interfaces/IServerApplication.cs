@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2013 Omega software d.o.o.
+    Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
 
@@ -16,26 +16,25 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+using System;
 using System.ServiceModel;
 using Rhetos.Processing;
 
 namespace Rhetos
 {
     [ServiceContract]
-    //[ServiceBehavior(InstanceContextMode=InstanceContextMode.PerCall)]
     public interface IServerApplication
     {
         [OperationContract]
         ServerProcessingResult Execute(ServerCommandInfo[] commands);
     }
 
+    [Obsolete]
     public static class ServerApplicationHelper
     {
         public static ServerProcessingResult Execute(this IServerApplication app, params ServerCommandInfo[] commands)
         {
-            if (commands == null || commands.Length == 0)
-                throw new System.ApplicationException("Missing commands to execute");
-
             return app.Execute(commands);
         }
     }

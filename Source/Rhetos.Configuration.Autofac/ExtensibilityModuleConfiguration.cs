@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2013 Omega software d.o.o.
+    Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
 
@@ -16,6 +16,7 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,13 +38,14 @@ namespace Rhetos.Configuration.Autofac
 
             builder.RegisterGeneric(typeof(PluginsMetadataCache<>)).SingleInstance();
             builder.RegisterGeneric(typeof(PluginsContainer<>)).As(typeof(IPluginsContainer<>)).InstancePerLifetimeScope();
-            PluginsUtility.RegisterPluginModules(builder);
 
             builder.RegisterType<GeneratorPlugins>();
             Rhetos.Extensibility.PluginsUtility.RegisterPlugins<IGenerator>(builder);
 
             builder.RegisterType<ServerInitializationPlugins>();
             Rhetos.Extensibility.PluginsUtility.RegisterPlugins<IServerInitializer>(builder);
+
+            PluginsUtility.RegisterPluginModules(builder);
 
             base.Load(builder);
         }

@@ -1,9 +1,7 @@
 REM     THIS SCRIPT SHOULD BE USED IN DEVELOPMENT ENVIRONMENT ONLY!
 REM     IN PRODUCTION ENVIRONMENT AND QA ENVIRONMENT USE DeployPackages.exe.
 
-
-REM     HINT: USE COMMAND LINE "ApplyPackages.bat || pause" TO PAUSE ON ERROR.
-
+@REM HINT: SET SECOND ARGUMENT TO /NOPAUSE WHEN AUTOMATING THE BUILD.
 
 SET Config=%1%
 IF [%1] == [] SET Config=Debug
@@ -52,33 +50,33 @@ ECHO === Copying package from %1 ===
 IF [%~nx1]==[] ECHO ERROR: Package path must not end with a backslash ('\'). Package patch: %1 & EXIT /B 1
 IF NOT EXIST "%~1" ECHO ERROR: Package directory does not exist: '%~dpnx1' & EXIT /B 1
 IF EXIST "%~1\CopyPlugins.bat" CALL "%~1\CopyPlugins.bat" %PluginsFolder% %Config% || EXIT /B 1
-IF EXIST "%~1\Resources\" XCOPY /Y/D/R "%~1\Resources\*.*" %ResourcesFolder%\%~nx1\ || EXIT /B 1
-IF EXIST "%~1\DslScripts\" XCOPY /Y/D/R /S "%~1\DslScripts\*.*" %DslScriptsFolder%\%~nx1\ || EXIT /B 1
-IF EXIST "%~1\DataMigration\" XCOPY /Y/D/R /S "%~1\DataMigration\*.sql" %DataMigrationFolder%\%~nx1\ || EXIT /B 1
+IF EXIST "%~1\Resources\" XCOPY /Y/D/R/S "%~1\Resources\*.*" %ResourcesFolder%\%~nx1\ || EXIT /B 1
+IF EXIST "%~1\DslScripts\" XCOPY /Y/D/R/S "%~1\DslScripts\*.*" %DslScriptsFolder%\%~nx1\ || EXIT /B 1
+IF EXIST "%~1\DataMigration\" XCOPY /Y/D/R/S "%~1\DataMigration\*.sql" %DataMigrationFolder%\%~nx1\ || EXIT /B 1
 EXIT /B
 
 :Continue1
-@REM ======================== FIX ==============================
-
-REM Removing duplicate files - a temporary workaround until the reference from Rhetos core to CommonConcepts package is removed (using claims and permissions).
-DEL /F /Q %BinFolder%\Rhetos.Dom.DefaultConcepts.Interfaces.??? || GOTO Error1
-DEL /F /Q %BinFolder%\Rhetos.Processing.DefaultCommands.Interfaces.??? || GOTO Error1
-
 
 @REM ======================== PRECOMPILED DOMAIN OBJECT MODEL ==============================
 
 DEL /F /S /Q ServerDom.??? || GOTO Error1
 PUSHD %BinFolder%
 DeployPackages.exe || GOTO Error2
-POPD
-
-@REM ========================
 @POPD
+@POPD
+
+@REM ================================================
+
+@ECHO.
+@ECHO %~nx0 SUCCESSFULLY COMPLETED.
 @EXIT /B 0
 
 :Error2
 @POPD
 :Error1
 @POPD
-@ECHO APPLYPACKAGES FAILED.
+:Error0
+@ECHO.
+@ECHO %~nx0 FAILED.
+@IF /I [%2] NEQ [/NOPAUSE] @PAUSE
 @EXIT /B 1

@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2013 Omega software d.o.o.
+    Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
 
@@ -16,6 +16,7 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -109,6 +110,19 @@ namespace Rhetos.Utilities
                         throw new FrameworkException("Empty 'ServerConnectionString' connection string in application configuration.");
                 }
                 return _connectionString;
+            }
+        }
+
+        public static string ProviderName
+        {
+            get
+            {
+                if (DatabaseLanguageIsMsSql.Value)
+                    return "System.Data.SqlClient";
+                else if (DatabaseLanguageIsOracle.Value)
+                    return "Oracle.DataAccess.Client";
+                else
+                    throw new FrameworkException(UnsupportedLanguageError);
             }
         }
 

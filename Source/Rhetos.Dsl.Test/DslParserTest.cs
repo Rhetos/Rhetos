@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2013 Omega software d.o.o.
+    Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
 
@@ -16,15 +16,13 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-using System.Text;
-using Rhetos.Utilities;
-using Rhetos.Dsl;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.TestCommon;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rhetos.Logging;
-using Rhetos.TestCommon;
 
 namespace Rhetos.Dsl.Test
 {
@@ -99,7 +97,7 @@ namespace Rhetos.Dsl.Test
         [TestMethod()]
         [DeploymentItem("Rhetos.Dsl.dll")]
         [ExpectedException(typeof(DslSyntaxException))]
-        public void ParseNextConcept_DontDescribeExceptionIfConceptNotRecognised()
+        public void ParseNextConcept_DontDescribeExceptionIfConceptNotRecognized()
         {
             string dsl = "a";
             List<IConceptParser> conceptParsers = new List<IConceptParser>() { new TestErrorParser("b") };

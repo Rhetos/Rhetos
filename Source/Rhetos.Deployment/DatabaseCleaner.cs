@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2013 Omega software d.o.o.
+    Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
 
@@ -16,6 +16,7 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -105,7 +106,10 @@ namespace Rhetos.Deployment
             DeleteDatabaseObjects(deleteMigrationColumnsOptimized, emptyMigrationTables, emptyMigrationSchemas);
 
             var report = "Deleted " + deleteMigrationColumns.Count() + " columns in data migration schemas, " + remainingMigrationColumns.Count() + " remaining.";
-            _logger.Info(report);
+            if (deleteMigrationColumns.Count() != 0)
+                _logger.Info(report);
+            else
+                _logger.Trace(report);
             return report;
         }
 

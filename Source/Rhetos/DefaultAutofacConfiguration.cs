@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2013 Omega software d.o.o.
+    Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
 
@@ -16,6 +16,7 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,19 +45,21 @@ namespace Rhetos
 
             builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
             builder.RegisterInstance<IDslSource>(new DiskDslScriptProvider(_dslScriptsFolder));
-            builder.RegisterType<GlobalErrorHandler>();
-            
-            PluginsUtility.RegisterPlugins<IService>(builder);
+            builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
 
-            builder.RegisterModule(new CommonModuleConfiguration());
-            builder.RegisterModule(new ExtensibilityModuleConfiguration());
+            builder.RegisterModule(new SecurityModuleConfiguration());
+            builder.RegisterModule(new UtilitiesModuleConfiguration());
             builder.RegisterModule(new DslModuleConfiguration());
             builder.RegisterModule(new CompilerConfiguration());
             builder.RegisterModule(new DomModuleConfiguration(_domAssemblyName, DomAssemblyUsage.Load));
             builder.RegisterModule(new NHibernateModuleConfiguration(Path.Combine(_rootPath, _nHibernateMappingFile)));
             builder.RegisterModule(new ProcessingModuleConfiguration());
             builder.RegisterModule(new LoggingConfiguration());
-            builder.RegisterModule(new SecurityModuleConfiguration());
+
+            PluginsUtility.RegisterPlugins<IService>(builder);
+            PluginsUtility.RegisterPlugins<IHomePageSnippet>(builder);
+
+            builder.RegisterModule(new ExtensibilityModuleConfiguration());
 
             base.Load(builder);
         }

@@ -19,7 +19,8 @@ See [rhetos.org](http://www.rhetos.org/) for more information.
 Recommended Rhetos DSL packages
 -------------------------------
 
-* CommonPackage (placed inside the Rhetos repository) contains basic concepts for building applications.  
+* *CommonConcepts* (placed inside the Rhetos repository) contains basic concepts for building applications.
+* *SimpleWindowsAuth* or *AspNetFormsAuth* (placed inside the Rhetos repository) provides authentication and authorization features to Rhetos applications. Both packages cannot be used at the same time.
 * [RestGenerator](https://github.com/Rhetos/RestGenerator) automatically generates REST API for all entities and other readable or writable data structures that are defined in a Rhetos application.
 * [MvcModelGenerator](https://github.com/Rhetos/MvcModelGenerator) automatically generates ASP.NET MVC model for all entities and other queryable data structures that are defined in a Rhetos application.
 * [ODataGenerator](https://github.com/Rhetos/ODataGenerator) automatically generates OData interface (Open Data Protocol) for all entities and other queryable data structures that are defined in a Rhetos application.
@@ -42,7 +43,7 @@ Basic information
 There are two important scripts in this project that enables Rhetos server and
 give you jump start. One of them is `Build.bat` that builds source and places
 some binaries in right place in directory hierarchy. Second one is 
-`SetupRhetosServer.bat` that will attempt to set up a development environment.
+`SetupRhetosServer.bat` that will set up web environment using IIS Express.
 It requires few parameters based on which it sets up database, configures 
 Rhetos server and sets up IIS Express local config which is enough to start Rhetos
 server and developing.
@@ -53,15 +54,15 @@ So, there are following steps to install and run Rhetos server:
     > CD Source\Rhetos
     > SetupRhetosServer.bat <WebsiteName> <Port> <SqlServer> <DatabaseName>
 
-SetupRhetosServer.bat arguments:
+SetupRhetosServer.bat command-line arguments:
 
-* WebsiteName - name of website in IISExpress config
-    (not directly related to URL of Rhetos web service)
-* Port - port that Rhetos web service will be listening to if using IIS Express
-    (1234, for example)
-* SqlServer - Rhetos requires database for data store, configuration, etc.
-* DatabaseName - name of database that will Rhetos use, script will create
-              database if it doesn't exist.               
+* *WebsiteName* - name of website in IISExpress config
+  (choose any name, it is not directly related to URL of Rhetos web service)
+* *Port* - port that Rhetos web service will be listening to if using IIS Express
+  (1234, for example)
+* *SqlServer* - Microsoft SQL Server instance on which there is/will be database for Rhetos server
+* *DatabaseName* - name of database that will Rhetos use, script will create
+  database if it doesn't exist.               
 
 Directory hierarchy
 -------------------
@@ -111,7 +112,7 @@ After running this script and before running Rhetos server, you can manually
 configure `IISExpress.config`. It is template config for IIS Express site
 with modified `<sites>` section and added `<location>` part at the end of config.
 Those two defines which port on localhost Rhetos will be listening and that
-security used is based on WindowsAuthentication.
+security used is based on windows authentication.
 
 If one prefers to use IIS following steps are required:
 
@@ -132,7 +133,7 @@ If one wants to use different database it is defined in ConnectionStrings.config
    in Rhetos\Source\Rhetos\bin folder.
    
 Note that besides configuring IIS and Database, `SetupRhetosServer.bat` also
-deploys Common and user defined packages to that database. If one chooses
+deploys CommonConcepts and user defined packages to that database. If one chooses
 manual setup it is necessary to run ApplyPackages.bat in Rhetos\Source\Rhetos.
 
 Run Rhetos server

@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2013 Omega software d.o.o.
+    Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
 
@@ -16,8 +16,9 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-using System.Collections.Generic;
+
 using Rhetos.Utilities;
+using System.Collections.Generic;
 
 namespace Rhetos.Dsl
 {
@@ -25,7 +26,7 @@ namespace Rhetos.Dsl
     {
         /// <summary>
         /// If the keyword is not recognized return empty error string.
-        /// If the keyword is recognised, but the syntax is wrong, return error description.
+        /// If the keyword is recognized, but the syntax is wrong, return error description.
         /// </summary>
         ValueOrError<IConceptInfo> Parse(ITokenReader tokenReader, Stack<IConceptInfo> context);
     }

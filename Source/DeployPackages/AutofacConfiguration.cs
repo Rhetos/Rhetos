@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2013 Omega software d.o.o.
+    Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
 
@@ -16,6 +16,7 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -24,6 +25,7 @@ using Rhetos.Utilities;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Deployment;
 using Rhetos.Dsl;
+using Rhetos.Security;
 
 namespace DeployPackages
 {
@@ -48,8 +50,7 @@ namespace DeployPackages
         {
             builder.RegisterInstance(new ConnectionString(_connectionString));
             builder.RegisterInstance(new ResourcesFolder(""));
-            builder.RegisterType<NullUserInfo>().As<IUserInfo>();
-            builder.RegisterModule(new CommonModuleConfiguration());
+            builder.RegisterModule(new UtilitiesModuleConfiguration());
             builder.RegisterModule(new ExtensibilityModuleConfiguration());
             builder.RegisterModule(new DslModuleConfiguration());
             builder.RegisterInstance<IDslSource>(new DiskDslScriptProvider(DslScriptsFolder));
@@ -62,6 +63,8 @@ namespace DeployPackages
 
             builder.RegisterType<DataMigration>();
             builder.RegisterType<DatabaseCleaner>();
+
+            builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
 
             base.Load(builder);
         }

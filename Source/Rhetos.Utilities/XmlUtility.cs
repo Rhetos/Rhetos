@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2013 Omega software d.o.o.
+    Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
 
@@ -16,6 +16,7 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -30,8 +31,12 @@ namespace Rhetos.Utilities
     {
         private static readonly GenericDataContractResolver Resolver = new GenericDataContractResolver();
 
+        /// <summary>
+        /// Use Dom.GetType(string) along with Type.GetType(string) to find objects in the generate domain object model.
+        /// Since DOM assembly is not directly referenced from other dlls, Type.GetType will not find types in DOM
+        /// before the Dom.GetType is used. The problem usually manifests on the first server call after restarting the process.
+        /// </summary>
         public static Assembly Dom; // TODO: Find a solution better than "public static"
-        public static object DomLock = new object();
 
         public static string SerializeToXml<T>(T obj)
         {

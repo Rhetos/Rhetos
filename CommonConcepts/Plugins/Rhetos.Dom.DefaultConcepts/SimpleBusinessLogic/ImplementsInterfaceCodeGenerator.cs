@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2013 Omega software d.o.o.
+    Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
 
@@ -16,6 +16,7 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,12 +26,10 @@ using System.Globalization;
 using System.ComponentModel.Composition;
 using Rhetos.Extensibility;
 using Rhetos.Dsl;
-////using Rhetos.Persistence.NHibernate;
 using Rhetos.Compiler;
 using System.IO;
 using System.Reflection;
 using System.Diagnostics.Contracts;
-////using Rhetos.Dom.DefaultConcepts;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -41,12 +40,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             ImplementsInterfaceInfo info = (ImplementsInterfaceInfo)conceptInfo;
-
-            Type type = Type.GetType(info.InterfaceType);
-            if (type == null)
-                throw new FrameworkException("Could not find type \"" + info.InterfaceType + "\"");
-
-            codeBuilder.AddInterfaceAndReference(type, info.DataStructure);
+            codeBuilder.AddInterfaceAndReference(info.GetInterfaceType(), info.DataStructure);
         }
     }
 }

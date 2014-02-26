@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2013 Omega software d.o.o.
+    Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
 
@@ -16,6 +16,7 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -101,7 +102,7 @@ namespace Rhetos.Security
                 _logger.Trace(() => string.Format("User {0} does not posses claim {1}.", _userInfo.UserName, unauthorized.claim.FullName));
 
                 return string.Format(
-                    "You are not authorized for '{0}' on resource '{1}'. User '{2}'.",
+                    "You are not authorized for action '{0}' on resource '{1}', user '{2}'.",
                     unauthorized.claim.Right, unauthorized.claim.Resource, _userInfo.UserName);
             }
 

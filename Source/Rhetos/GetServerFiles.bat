@@ -10,11 +10,17 @@ SET PluginsFolder="%CD%\Plugins"
 SET ResourcesFolder="%CD%\Resources"
 SET DslScriptsFolder="%CD%\DslScripts"
 
-REM ======================== REST SERVICE ==============================
-
-XCOPY /Y/D/R ..\..\Source\Rhetos.Security.Service\bin\%Config%\*.dll %BinFolder% || EXIT /B 1
-
 REM ======================== DEPLOYMENT TOOLS ==============================
+
+XCOPY /Y/D/R ..\..\Source\CreateIISExpressSite\bin\%Config%\CreateIISExpressSite.??? %BinFolder% || EXIT /B 1
+XCOPY /Y/D/R ..\..\Source\CreateIISExpressSite\bin\%Config%\CreateIISExpressSite.exe.config %BinFolder% || EXIT /B 1
+XCOPY /Y/D/R ..\..\Source\CreateIISExpressSite\bin\%Config%\*.dll %BinFolder% || EXIT /B 1
+XCOPY /Y/D/R ..\..\Source\CreateIISExpressSite\bin\%Config%\*.pdb %BinFolder%
+
+XCOPY /Y/D/R ..\..\Source\CreateAndSetDatabase\bin\%Config%\CreateAndSetDatabase.??? %BinFolder% || EXIT /B 1
+XCOPY /Y/D/R ..\..\Source\CreateAndSetDatabase\bin\%Config%\CreateAndSetDatabase.exe.config %BinFolder% || EXIT /B 1
+XCOPY /Y/D/R ..\..\Source\CreateAndSetDatabase\bin\%Config%\*.dll %BinFolder% || EXIT /B 1
+XCOPY /Y/D/R ..\..\Source\CreateAndSetDatabase\bin\%Config%\*.pdb %BinFolder%
 
 XCOPY /Y/D/R ..\..\Source\DeployPackages\bin\%Config%\DeployPackages.??? %BinFolder% || EXIT /B 1
 XCOPY /Y/D/R ..\..\Source\DeployPackages\bin\%Config%\DeployPackages.exe.config %BinFolder% || EXIT /B 1

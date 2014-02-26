@@ -1,25 +1,23 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true"
-    CodeBehind="Default.aspx.cs" Inherits="Rhetos.Default" %>
+﻿<%@ Page Language="C#" %>
 
-<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
-    <link type="text/css" rel="Stylesheet" href="Css/rhetos-permissons-ui.css" />
-    <script type="text/javascript" src="Js/rhetos-tri-state-checkbox.js"></script>
-    <script type="text/javascript" src="Js/rhetos-permissons-ui.js"></script>
-    <script type="text/javascript" src="Js/jquery.tablesorter.min.js"></script>
-    <script type="text/javascript">
-        $(window).keydown(function (event) {
-            if (event.keyCode == 13) {
-                event.preventDefault();
-                return false;
-            }
-        });
-
-        $(document).ready(function () {
-            $('#premissions-ui').rhetosPermissionsUI({ url: 'SecurityRestService.svc' });
-        });
-    </script>
-</asp:Content>
-<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
-    <div id="premissions-ui" class="ui-corner-all">
-    </div>
-</asp:Content>
+<html>
+<head>
+    <title>Rhetos</title>
+</head>
+<body>
+    <h1>Rhetos</h1>
+    <div>
+<%
+    var snippets = Autofac.ResolutionExtensions.Resolve<IEnumerable<Rhetos.IHomePageSnippet>>(Autofac.Integration.Wcf.AutofacServiceHostFactory.Container);
+    foreach (var snippet in snippets)
+        Response.Write(snippet.Html);
+%>    </div>
+    <h2>Server status</h2>
+    <p>
+        Local server time: <%=DateTime.Now %><br />
+        Process start time: <%=System.Diagnostics.Process.GetCurrentProcess().StartTime %><br />
+        User identity: <%=Context.User.Identity.Name %><br />
+        User authentication type: <%=Context.User.Identity.AuthenticationType %><br />
+    </p>
+</body>
+</html>

@@ -21,16 +21,22 @@ IF NOT EXIST %PluginsFolder% MD %PluginsFolder%
 DEL /F /S /Q %PluginsFolder%\* || EXIT /B 1
 
 CALL ..\..\CommonConcepts\CopyPlugins.bat %PluginsFolder% %Config% || EXIT /B 1
+CALL ..\..\SimpleWindowsAuth\CopyPlugins.bat %PluginsFolder% %Config% || EXIT /B 1
 
 REM ======================== DSL SCRIPTS ==============================
 
 IF NOT EXIST %DslScriptsFolder% MD %DslScriptsFolder%
-IF NOT EXIST %DslScriptsFolder%\CommonConcepts MD %DslScriptsFolder%\CommonConcepts
-IF NOT EXIST %DslScriptsFolder%\CommonConceptsTest MD %DslScriptsFolder%\CommonConceptsTest
 DEL /F /S /Q %DslScriptsFolder%\*
 
+IF NOT EXIST %DslScriptsFolder%\CommonConcepts MD %DslScriptsFolder%\CommonConcepts
 XCOPY /Y/D/R /S ..\..\CommonConcepts\DslScripts\* %DslScriptsFolder%\CommonConcepts || EXIT /B 1
+
+IF NOT EXIST %DslScriptsFolder%\CommonConceptsTest MD %DslScriptsFolder%\CommonConceptsTest
 XCOPY /Y/D/R /S ..\..\CommonConcepts\CommonConceptsTest\DslScripts\* %DslScriptsFolder%\CommonConceptsTest || EXIT /B 1
+
+IF NOT EXIST %DslScriptsFolder%\SimpleWindowsAuth MD %DslScriptsFolder%\SimpleWindowsAuth
+XCOPY /Y/D/R /S ..\..\SimpleWindowsAuth\DslScripts\* %DslScriptsFolder%\SimpleWindowsAuth || EXIT /B 1
+
 
 REM ======================== DATA MIGRATION SCRIPTS ==============================
 
@@ -46,3 +52,5 @@ IF EXIST %ConnectionStringConfigPath% XCOPY /Y/D/R %ConnectionStringConfigPath% 
 
 REM ========================
 POPD
+
+ECHO Done.

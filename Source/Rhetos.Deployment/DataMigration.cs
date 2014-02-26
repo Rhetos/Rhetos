@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2013 Omega software d.o.o.
+    Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
 
@@ -16,6 +16,7 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -100,13 +101,17 @@ namespace Rhetos.Deployment
             var oldScripts = LoadScriptsFromDatabase();
             LogScripts("Script in database", oldScripts);
 
-            var oldIndex = new HashSet<string>(oldScripts.Select(os => os.Tag));
+            var newIndex = new HashSet<string>(newScripts.Select(s => s.Tag));
+            var oldIndex = new HashSet<string>(oldScripts.Select(s => s.Tag));
+
             List<DataMigrationScript> skipped = SkipOlderScriptsInEachFolder(oldIndex, newScripts);
-            var toExecute = newScripts.Where(ns => !oldIndex.Contains(ns.Tag)).Except(skipped).ToList();
+            List<DataMigrationScript> toRemove = oldScripts.Where(os => !newIndex.Contains(os.Tag)).ToList();
+            List<DataMigrationScript> toExecute = newScripts.Where(ns => !oldIndex.Contains(ns.Tag)).Except(skipped).ToList();
             LogScripts("Skipped older script", skipped, EventType.Info);
+            LogScripts("Removed scripts", toRemove, EventType.Info);
             LogScripts("Executing script", toExecute, EventType.Info);
 
-            ApplyToDatabase(toExecute);
+            ApplyToDatabase(toRemove, toExecute);
 
             string report = string.Format("Executed {0} of {1} scripts.", toExecute.Count, newScripts.Count);
             if (skipped.Count > 0)
@@ -131,8 +136,10 @@ namespace Rhetos.Deployment
                  select script).ToList();
         }
 
-        protected void ApplyToDatabase(List<DataMigrationScript> toExecute)
+        protected void ApplyToDatabase(List<DataMigrationScript> toRemove, List<DataMigrationScript> toExecute)
         {
+            UndoDataMigrationScripts(toRemove.Select(s => s.Tag).ToList());
+
             var sql = new List<string>();
             foreach (var script in toExecute)
             {

@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2013 Omega software d.o.o.
+    Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
 
@@ -16,6 +16,7 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -183,6 +184,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             GenerateReadableRepositoryFunctions(info, codeBuilder, "return Query().ToArray();\r\n            ");
             codeBuilder.InsertCode(RepositoryQueryFunctionsSnippet(info, queryFunctionBody), RepositoryMembers, info);
+            codeBuilder.InsertCode("IQueryableRepository<" + info.Module.Name + "." + info.Name + ">", RepositoryInterfaces, info);
             codeBuilder.InsertCode("IFilterRepository<IEnumerable<Guid>, " + info.Module.Name + "." + info.Name + ">", RepositoryInterfaces, info);
             codeBuilder.InsertCode("Rhetos.Processing.DefaultCommands.IQueryDataSourceCommandImplementation", RepositoryInterfaces, info);
             codeBuilder.InsertCode(RegisterQueryDataSourceCommandImplementation(info), ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);

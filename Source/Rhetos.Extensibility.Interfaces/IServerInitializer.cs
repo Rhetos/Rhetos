@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2013 Omega software d.o.o.
+    Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
 
@@ -16,6 +16,7 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +25,10 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Extensibility
 {
+    /// <summary>
+    /// Called at deployment time (DeployPackages.exe), after the database is updated, all code generators are executed
+    /// and the generated object model is registered to IoC container.
+    /// </summary>
     public interface IServerInitializer
     {
         IEnumerable<string> Dependencies { get; }

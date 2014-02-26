@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2013 Omega software d.o.o.
+    Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
 
@@ -16,16 +16,29 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
 using System.Text;
+using System.Web;
 
 namespace Rhetos
 {
+    /// <summary>
+    /// Initialize plugin web service. Called at run-time.
+    /// </summary>
     public interface IService
     {
+        /// <summary>
+        /// Called only once when initializing the server process (see Global.asax: Application_Start).
+        /// </summary>
         void Initialize();
+
+        /// <summary>
+        /// Called once for each System.Web.HttpApplication instance in the server process (see Global.asax: HttpApplication.Init).
+        /// </summary>
+        void InitializeApplicationInstance(HttpApplication context);
     }
 }

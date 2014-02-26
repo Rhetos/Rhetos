@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{9985B38B-F5D3-4312-992E-7D3F98B31A85}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Rhetos.Security.Service</RootNamespace>
+    <AssemblyName>Rhetos.Security.Service</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Autofac">
+      <HintPath>..\..\..\External\Autofac\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac.Integration.Wcf">
+      <HintPath>..\..\..\External\Autofac\Autofac.Integration.Wcf.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.ServiceModel.Activation" />
+    <Reference Include="System.ServiceModel.Web" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="PermissionsHomePageSnippet.cs" />
+    <Compile Include="SecurityRestServiceInitializer.cs" />
+    <Compile Include="DataObjectModel.cs" />
+    <Compile Include="DefaultAutofacConfiguration.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RestImpl.cs" />
+    <Compile Include="SecurityRestService.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\CommonConcepts\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces\Rhetos.Dom.DefaultConcepts.Interfaces.csproj">
+      <Project>{32D57085-6113-43F9-A505-D8B311BD6204}</Project>
+      <Name>Rhetos.Dom.DefaultConcepts.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\CommonConcepts\Plugins\Rhetos.Processing.DefaultCommands.Interfaces\Rhetos.Processing.DefaultCommands.Interfaces.csproj">
+      <Project>{98F36936-5842-49CF-BACF-61119AC7BF3E}</Project>
+      <Name>Rhetos.Processing.DefaultCommands.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Interfaces\Rhetos.Interfaces.csproj">
+      <Project>{52B9E0EB-F4D1-4CA5-9239-93917DC76E2B}</Project>
+      <Name>Rhetos.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Utilities\Rhetos.Utilities.csproj">
+      <Project>{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}</Project>
+      <Name>Rhetos.Utilities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Dom.Interfaces\Rhetos.Dom.Interfaces.csproj">
+      <Project>{91bdf488-0921-4969-8a53-32169338d8db}</Project>
+      <Name>Rhetos.Dom.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Processing.Interfaces\Rhetos.Processing.Interfaces.csproj">
+      <Project>{4D2FCD7F-D9BB-4E55-B9C6-FDF352F6DCF3}</Project>
+      <Name>Rhetos.Processing.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Web\Rhetos.Web.csproj">
+      <Project>{a334fffd-0400-4fec-bc83-c044072c76a8}</Project>
+      <Name>Rhetos.Web</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.XmlSerialization\Rhetos.XmlSerialization.csproj">
+      <Project>{726ca0fb-70e7-44f3-9fca-e703598bfc7e}</Project>
+      <Name>Rhetos.XmlSerialization</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

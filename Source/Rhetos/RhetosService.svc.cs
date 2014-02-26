@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2013 Omega software d.o.o.
+    Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
 
@@ -16,6 +16,7 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -26,10 +27,11 @@ using Rhetos.Utilities;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Security;
+using System.ServiceModel.Activation;
 
 namespace Rhetos
 {
-    [System.ServiceModel.Activation.AspNetCompatibilityRequirements(RequirementsMode = System.ServiceModel.Activation.AspNetCompatibilityRequirementsMode.Allowed)]
+    [AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed)]
     public class RhetosService : IServerApplication
     {
         private readonly IProcessingEngine _processingEngine;
@@ -39,14 +41,11 @@ namespace Rhetos
         private readonly ILogger _commandsLogger;
         private readonly ILogger _commandResultsLogger;
         private readonly ILogger _performanceLogger;
-        
-        private readonly IDomainObjectModel _domainObjectModel;
 
         public RhetosService(
             IProcessingEngine processingEngine,
             IEnumerable<ICommandInfo> commands,
-            ILogProvider logProvider,
-            IDomainObjectModel domainObjectModel)
+            ILogProvider logProvider)
         {
             _processingEngine = processingEngine;
             _commands = commands;
@@ -54,7 +53,6 @@ namespace Rhetos
             _commandsLogger = logProvider.GetLogger("IServerApplication Commands");
             _commandResultsLogger = logProvider.GetLogger("IServerApplication CommandResults");
             _performanceLogger = logProvider.GetLogger("Performance");
-            _domainObjectModel = domainObjectModel;
         }
 
         public ServerProcessingResult Execute(ServerCommandInfo[] commands)
@@ -81,11 +79,6 @@ namespace Rhetos
 
             if (commands == null || commands.Length == 0)
                 return new ServerProcessingResult { SystemMessage = "Commands missing", Success = false };
-
-            if (XmlUtility.Dom == null)
-                lock (XmlUtility.DomLock)
-                    if (XmlUtility.Dom == null)
-                        XmlUtility.Dom = _domainObjectModel.ObjectModel;
 
             _performanceLogger.Write(stopwatch, "RhetosService.ExecuteInner: Server initialization done.");
 
