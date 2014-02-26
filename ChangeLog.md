@@ -1,7 +1,25 @@
-NEXT (to be released)
+0.9.14 (2014-02-26)
 -------------------
 
+New features:
+
+* New package: **AspNetFormsAuth**.
+  It provides an implementation of ASP.NET forms authentication to Rhetos server applications.
+  See [AspNetFormsAuth\Readme.md](AspNetFormsAuth\Readme.md) for more info on features and installation.
+* New package: **SimpleWindowsAuth**.
+  It contains the existing Windows authentication and authorization subsystem, extracted from Rhetos core framework and CommonConcepts package.
+* New concept: **RegisteredImplementation**,
+  for exposing repositories of an entity that implements a given interface.
+  It helps to keep algorithm implementations out of DSL scripts by providing statically-typed querying and saving of generated object model entities without referencing the generated assembly.
+
+Internal improvements:
+
+* Bugfix: Absolute URI (localhost Rhetos server) removed from *Web.config*.
+* Bugfix: **DenyUserEdit** and **SystemRequired** concepts denied saving valid data entries when using automatic value initialization.
+* Bugfix: `SetupRhetosServer.bat` sometimes reported incorrect error "IIS Express is not installed".
 * Performance: First call of the *DownloadReport* server command sometime takes more time (building DslModel instance).
+* New plugin type: *IHomePageSnippet*, for adding development and administration content to Rhetos homepage.
+* New plugin type: *ICommandObserver*, for extending server's command handling. 
 
 0.9.13 (2013-11-28)
 -------------------
