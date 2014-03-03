@@ -240,12 +240,13 @@ namespace Rhetos.AspNetFormsAuth
 
         public static IList<Claim> GetAdminClaims()
         {
-            return new[] { SetPasswordClaim, UnlockUserClaim, IgnorePasswordStrengthPolicyClaim };
+            return new[] { SetPasswordClaim, UnlockUserClaim, IgnorePasswordStrengthPolicyClaim, GeneratePasswordResetTokenClaim };
         }
 
         public static readonly Claim SetPasswordClaim = new Claim("AspNetFormsAuth.AuthenticationService", "SetPassword");
         public static readonly Claim UnlockUserClaim = new Claim("AspNetFormsAuth.AuthenticationService", "UnlockUser");
         public static readonly Claim IgnorePasswordStrengthPolicyClaim = new Claim("AspNetFormsAuth.AuthenticationService", "IgnorePasswordStrengthPolicy");
+        public static readonly Claim GeneratePasswordResetTokenClaim = new Claim("AspNetFormsAuth.AuthenticationService", "GeneratePasswordResetToken");
     }
 
     public class DummyCommandInfo : ICommandInfo

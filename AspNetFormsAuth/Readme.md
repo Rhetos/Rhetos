@@ -88,8 +88,23 @@ The JSON service is available at URI `<rhetos server>/Resources/AspNetFormsAuth/
 * Reset the number of [failed login attempts](#FailedPasswordAttempts). Response is empty.
 * Requires *UnlockUser* [claim](#Permissions).
 
+**`/GeneratePasswordResetToken`** (string UserName) -> string
+
+* Generates a password reset token that can be send to the user by email.
+* Use it to implement *forgot password* web page (see [MSDN](http://msdn.microsoft.com/en-us/library/webmatrix.webdata.websecurity.generatepasswordresettoken.aspx)) or to create a user account without initial password and let a user choose it.
+* Requires *GeneratePasswordResetToken* [claim](#Permissions).
+* The generated token will expire in 24 hours.
+
+**`/ResetPassword`** (string PasswordResetToken, string NewPassword) -> bool
+
+* Allows a user to set its password (initial password or forgotten).
+* See `GeneratePasswordResetToken` method for *PasswordResetToken*.   
+* Response data is boolean *true* if the password change is successful,
+  *false* if the token is invalid or expired,
+  or an error message (string) with HTTP error code 4* or 5* in case of any other error.
+
 <a id="Permissions"></a>
-#### Permissions
+#### Permissions and claims
 
 All claims related to the authentication service have resource="*AspNetFormsAuth.AuthenticationService*".
 [Admin user](#AdminSetup) has all the necessary permissions (claims) for all authentication service methods.
@@ -239,7 +254,7 @@ In these scenarios, sharing the forms authentication cookie between the sites wi
 
 * In most cases, for the sites to share the authentication cookie, it is enough to have **same** `machineKey` element configuration in the `web.config`.
 For more info, see [MSDN article: Forms Authentication Across Applications](http://msdn.microsoft.com/en-us/library/eb0zx8fc.aspx).
-
+* If your web application uses **.NET Framework 4.5 or later** (the Rhetos server uses v4.0), set the compatibilityMode attribute in machine key to `Framework20SP2`.
 * If you have multiple Rhetos applications on a server and do not want to share the authentication between them, make sure to set **different** `machineKey` configuration for each site.
 
 The machine key in `web.config` may have the following format:
@@ -247,7 +262,8 @@ The machine key in `web.config` may have the following format:
 	<machineKey
 		validationKey="4F579A4589E986E7AF4D11767160DFBCF15A733F285EEF31B6DD26C7D7E9A8D5"
 		decryptionKey="73080E3328B61DC59DE2E3F7FFCA11E2706D62F7BF162E5529728F2C448D8269"
-		validation="HMACSHA256" />
+		validation="HMACSHA256"
+		compatibilityMode="Framework20SP2" />
 
 It is important to generate new validationKey and decryptionKey for every deployment.
 You may use the following C# code to generate the keys:
