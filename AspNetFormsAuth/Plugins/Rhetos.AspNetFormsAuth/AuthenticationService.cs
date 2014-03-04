@@ -45,10 +45,10 @@ namespace Rhetos.AspNetFormsAuth
         public void Validate()
         {
             if (string.IsNullOrWhiteSpace(UserName))
-                throw new UserException("Empty username is not allowed.");
+                throw new UserException("Empty UserName is not allowed.");
 
             if (string.IsNullOrWhiteSpace(Password))
-                throw new UserException("Empty password is not allowed.");
+                throw new UserException("Empty Password is not allowed.");
         }
     }
 
@@ -61,10 +61,10 @@ namespace Rhetos.AspNetFormsAuth
         public void Validate()
         {
             if (string.IsNullOrWhiteSpace(UserName))
-                throw new UserException("Empty username is not allowed.");
+                throw new UserException("Empty UserName is not allowed.");
 
             if (string.IsNullOrWhiteSpace(Password))
-                throw new UserException("Empty password is not allowed.");
+                throw new UserException("Empty Password is not allowed.");
         }
     }
 
@@ -76,10 +76,10 @@ namespace Rhetos.AspNetFormsAuth
         public void Validate()
         {
             if (string.IsNullOrWhiteSpace(OldPassword))
-                throw new UserException("Empty old password is not allowed.");
+                throw new UserException("Empty OldPassword is not allowed.");
 
             if (string.IsNullOrWhiteSpace(NewPassword))
-                throw new UserException("Empty new password is not allowed.");
+                throw new UserException("Empty NewPassword is not allowed.");
         }
     }
 
@@ -90,7 +90,7 @@ namespace Rhetos.AspNetFormsAuth
         public void Validate()
         {
             if (string.IsNullOrWhiteSpace(UserName))
-                throw new UserException("Empty username is not allowed.");
+                throw new UserException("Empty UserName is not allowed.");
         }
     }
 
@@ -101,7 +101,7 @@ namespace Rhetos.AspNetFormsAuth
         public void Validate()
         {
             if (string.IsNullOrWhiteSpace(UserName))
-                throw new UserException("Empty username is not allowed.");
+                throw new UserException("Empty UserName is not allowed.");
         }
     }
 
@@ -112,8 +112,11 @@ namespace Rhetos.AspNetFormsAuth
 
         public void Validate()
         {
+            if (string.IsNullOrWhiteSpace(PasswordResetToken))
+                throw new UserException("Empty PasswordResetToken is not allowed.");
+
             if (string.IsNullOrWhiteSpace(NewPassword))
-                throw new UserException("Empty new password is not allowed.");
+                throw new UserException("Empty NewPassword is not allowed.");
         }
     }
 
@@ -327,9 +330,20 @@ namespace Rhetos.AspNetFormsAuth
             parameters.Validate();
             CheckPasswordStrength(parameters.NewPassword);
 
-            return SafeExecute(
+            int userId = WebSecurity.GetUserIdFromPasswordResetToken(parameters.PasswordResetToken);
+            SimpleMembershipProvider provider = (SimpleMembershipProvider)Membership.Provider;
+            string userName = provider.GetUserNameFromId(userId);
+
+            bool successfulReset = SafeExecute(
                 () => WebSecurity.ResetPassword(parameters.PasswordResetToken, parameters.NewPassword),
                 "ResetPassword", parameters.PasswordResetToken);
+
+            if (successfulReset && !string.IsNullOrEmpty(userName))
+                SafeExecute( // Login does not need to be successful for this function to return true.
+                    () => { Login(new LoginParameters { UserName = userName, Password = parameters.NewPassword, PersistCookie = false }); },
+                    "Login after ResetPassword", userName);
+
+            return successfulReset;
         }
 
         //==================================================

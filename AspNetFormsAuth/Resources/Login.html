@@ -6,6 +6,13 @@
         <title>Rhetos Log in</title>
         <script type="text/javascript" src="Js/jquery-1.7.min.js" ></script>
         <script type="text/javascript">
+        $(document).keypress(function(e) {
+            if(e.which == 13) {
+                e.preventDefault();
+                $('#login').click();
+            }
+        });
+
         $(document).ready(function () {
             var urlParams;
             (window.onpopstate = function () {
