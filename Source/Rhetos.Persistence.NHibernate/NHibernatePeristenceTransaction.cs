@@ -74,6 +74,23 @@ namespace Rhetos.Persistence.NHibernate
             _discard = true;
         }
 
+        /// <summary>
+        /// Drops the database connection and creates a new one to release the database locks.
+        /// This method should not be used during regular server run-time because it splits the unit of work
+        /// making it impossible to rollback the whole session in case of a need.
+        /// </summary>
+        public void CommitAndReconnect()
+        {
+            if (_disposed)
+                throw new FrameworkException("Trying to commit and reconnect NHibernatePersistenceTransaction that is already disposed.");
+            if (_discard)
+                throw new FrameworkException("Trying to commit and reconnect a discarded NHibernatePersistenceTransaction.");
+
+            Dispose();
+            _disposed = false;
+            _initialized = false;
+        }
+
         public void Dispose()
         {
             if (_initialized && !_disposed)

@@ -22,6 +22,8 @@ using Rhetos.Dom;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
+using Rhetos.Persistence;
+using Rhetos.Persistence.NHibernate;
 using Rhetos.Processing;
 using Rhetos.Security;
 using Rhetos.Utilities;
@@ -43,143 +45,58 @@ namespace Rhetos.AspNetFormsAuth
     [Export(typeof(Rhetos.Extensibility.IServerInitializer))]
     public class AuthenticationDatabaseInitializer : Rhetos.Extensibility.IServerInitializer
     {
+        private readonly GenericRepositories _repositories;
+        private readonly ILogger _logger;
+        private readonly IPersistenceTransaction _persistenceTransaction;
+
+        public AuthenticationDatabaseInitializer(
+            GenericRepositories repositories,
+            ILogProvider logProvider,
+            IPersistenceTransaction persistenceTransaction)
+        {
+            _repositories = repositories;
+            _logger = logProvider.GetLogger("AuthenticationDatabaseInitializer");
+            _persistenceTransaction = persistenceTransaction;
+        }
+
+        const string adminUserName = "admin";
+        const string adminRoleName = "SecurityAdministrator";
         public void Initialize()
         {
-            var adminPrincipal = CreateEntity<IPrincipal>();
+            var adminPrincipal = _repositories.CreateInstance<IPrincipal>();
             adminPrincipal.Name = adminUserName;
-            InsertOrReadId(adminPrincipal, item => item.Name == adminPrincipal.Name, item => item.Name);
+            _repositories.InsertOrReadId(adminPrincipal, item => item.Name);
 
-            var adminRole = CreateEntity<IRole>();
+            var adminRole = _repositories.CreateInstance<IRole>();
             adminRole.Name = adminRoleName;
-            InsertOrReadId(adminRole, item => item.Name == adminRole.Name, item => item.Name);
+            _repositories.InsertOrReadId(adminRole, item => item.Name);
 
-            var adminPrincipalHasRole = CreateEntity<IPrincipalHasRole>();
+            var adminPrincipalHasRole = _repositories.CreateInstance<IPrincipalHasRole>();
             adminPrincipalHasRole.PrincipalID = adminPrincipal.ID;
             adminPrincipalHasRole.RoleID = adminRole.ID;
-            InsertOrReadId(adminPrincipalHasRole,
-                item => item.Principal.ID == adminPrincipal.ID && item.Role.ID == adminRole.ID, item => item.PrincipalID.ToString() + "/" + item.RoleID.ToString());
+            _repositories.InsertOrReadId(adminPrincipalHasRole, item => new { PrincipalID = item.Principal.ID, RoleID = item.Role.ID });
 
             foreach (var securityClaim in AuthenticationServiceClaims.GetAdminClaims())
             {
-                var commonClaim = CreateEntity<ICommonClaim>();
+                var commonClaim = _repositories.CreateInstance<ICommonClaim>();
                 commonClaim.ClaimResource = securityClaim.Resource;
                 commonClaim.ClaimRight = securityClaim.Right;
-                InsertOrReadId(commonClaim,
-                    item => item.ClaimResource == commonClaim.ClaimResource && item.ClaimRight == commonClaim.ClaimRight,
-                    item => item.ClaimResource + "." + item.ClaimRight);
+                _repositories.InsertOrReadId(commonClaim, item => new { item.ClaimResource, item.ClaimRight });
 
-                var permission = CreateEntity<IPermission>();
+                var permission = _repositories.CreateInstance<IPermission>();
                 permission.RoleID = adminRole.ID;
                 permission.ClaimID = commonClaim.ID;
                 permission.IsAuthorized = true;
-                InsertOrUpdateReadId(permission, item => item.Role.ID == adminRole.ID && item.Claim.ID == commonClaim.ID,
-                    item => adminRole.Name + " " + commonClaim.ClaimResource + "." + commonClaim.ClaimRight);
+                _repositories.InsertOrUpdateReadId(permission, item => new { RoleID = item.Role.ID, ClaimID = item.Claim.ID }, item => item.IsAuthorized);
             }
 
+            ((NHibernatePersistenceTransaction)_persistenceTransaction).CommitAndReconnect();
             InitializeAspNetDatabase();
         }
 
         public IEnumerable<string> Dependencies
         {
             get { return null; }
-        }
-
-        private readonly IIndex<string, IWritableRepository> _writableRepositories;
-        private readonly IDomainObjectModel _domainObjectModel;
-        private readonly ILogger _logger;
-
-        public AuthenticationDatabaseInitializer(
-            IIndex<string, IWritableRepository> writableRepositories,
-            IDomainObjectModel domainObjectModel,
-            ILogProvider logProvider)
-        {
-            _writableRepositories = writableRepositories;
-            _domainObjectModel = domainObjectModel;
-            _logger = logProvider.GetLogger("AuthenticationDatabaseInitializer");
-        }
-
-        const string adminUserName = "admin";
-        const string adminRoleName = "SecurityAdministrator";
-
-        private static Dictionary<Type, string> EntityNameByInterface = new Dictionary<Type, string>
-        {
-            { typeof(IRole), "Common.Role" },
-            { typeof(IPrincipal), "Common.Principal" },
-            { typeof(IPrincipalHasRole), "Common.PrincipalHasRole" },
-            { typeof(ICommonClaim), "Common.Claim" },
-            { typeof(IPermission), "Common.Permission" },
-        };
-
-        private static string GetEntityName<TEntityInterface>()
-        {
-            string entityName;
-            if (!EntityNameByInterface.TryGetValue(typeof(TEntityInterface), out entityName))
-                throw new FrameworkException("Undefined type " + typeof(TEntityInterface).FullName + ".");
-            return entityName;
-        }
-
-        private TEntityInterface CreateEntity<TEntityInterface>()
-        {
-            Type entityType = _domainObjectModel.GetType(GetEntityName<TEntityInterface>());
-            return (TEntityInterface)Activator.CreateInstance(entityType);
-        }
-
-        private void InsertOrReadId<TEntityInterface>(
-            TEntityInterface item,
-            Expression<Func<TEntityInterface, bool>> itemFilter,
-            Func<TEntityInterface, string> itemDescription)
-            where TEntityInterface : IEntity
-        {
-            string entityName = GetEntityName<TEntityInterface>();
-            var writableRepos = _writableRepositories[entityName];
-            var queryableRepos = (IQueryableRepository<TEntityInterface>)writableRepos;
-
-            Guid id = queryableRepos.Query().Where(itemFilter).Select(e => e.ID).SingleOrDefault();
-            if (id == default(Guid))
-            {
-                _logger.Trace(() => "Creating " + entityName + " '" + itemDescription(item) + "'.");
-                writableRepos.Save(new[] { (object)item }, null, null);
-            }
-            else
-            {
-                _logger.Trace(() => "Already exists " + entityName + " '" + itemDescription(item) + "'.");
-                item.ID = id;
-            }
-        }
-
-        private void InsertOrUpdateReadId<TEntityInterface>(
-            TEntityInterface item,
-            Expression<Func<TEntityInterface, bool>> itemFilter,
-            Func<TEntityInterface, string> itemDescription)
-            where TEntityInterface : IEntity
-        {
-            string entityName = GetEntityName<TEntityInterface>();
-            var writableRepos = _writableRepositories[entityName];
-            var queryableRepos = (IQueryableRepository<TEntityInterface>)writableRepos;
-
-            TEntityInterface old = queryableRepos.Query().Where(itemFilter).ToList().SingleOrDefault();
-            if (old == null)
-            {
-                _logger.Trace(() => "Creating " + entityName + " '" + itemDescription(item) + "'.");
-                writableRepos.Save(new[] { (object)item }, null, null);
-            }
-            else
-            {
-                item.ID = old.ID;
-                bool same = true;
-                if (((IPermission)old).IsAuthorized != ((IPermission)item).IsAuthorized)
-                {
-                    ((IPermission)old).IsAuthorized = ((IPermission)item).IsAuthorized;
-                    same = false;
-                }
-                if (!same)
-                {
-                    writableRepos.Save(null, new[] { (object)old }, null);
-                    _logger.Trace(() => "Updating " + entityName + " '" + itemDescription(item) + "'.");
-                }
-                else
-                    _logger.Trace(() => "Already exists " + entityName + " '" + itemDescription(item) + "'.");
-            }
         }
 
         /// <summary>

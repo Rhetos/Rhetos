@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Dom.DefaultConcepts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +25,7 @@ using System.Text;
 
 namespace Rhetos.AspNetFormsAuth
 {
-    public interface IPasswordStrength
+    public interface IPasswordStrength : IEntity
     {
         string RegularExpression { get; set; }
         string RuleDescription { get; set; }
