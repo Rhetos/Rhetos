@@ -43,8 +43,7 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string CodeSnippet(DataStructureInfo info)
         {
             return
-@"
-        public override int GetHashCode()
+@"public override int GetHashCode()
         {
             " + GetHashCodeTag.Evaluate(info) + @"
             return ID.GetHashCode();
@@ -62,7 +61,8 @@ namespace Rhetos.Dom.DefaultConcepts
             " + EqualsInterfaceTag.Evaluate(info) + @"
             return other != null && other.ID == ID;
         }
-";
+
+        ";
         }
 
         protected static string QuerySnippet(DataStructureInfo info)

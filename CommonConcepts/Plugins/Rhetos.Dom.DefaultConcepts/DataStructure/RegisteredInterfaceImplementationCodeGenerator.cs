@@ -40,15 +40,30 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (RegisteredInterfaceImplementationInfo)conceptInfo;
 
-            codeBuilder.InsertCode(
-                RegisterRepository(info.ImplementsInterface.DataStructure, info.ImplementsInterface.GetInterfaceType()),
-                ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
+            codeBuilder.InsertCode(RegisterRepository(info), ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
+            codeBuilder.InsertCode(RegisterImplementationName(info), ModuleCodeGenerator.RegisteredInterfaceImplementationNameTag);
         }
 
-        protected static string RegisterRepository(DataStructureInfo info, Type type)
+        // TODO: Remove IQueryableRepository registration.  IQueryableRepository should be cast from repository object in Rhetos.Dom.DefaultConcepts.GenericRepositories class.
+        protected static string RegisterRepository(RegisteredInterfaceImplementationInfo info)
         {
-            return string.Format(@"builder.RegisterType<{0}._Helper.{1}_Repository>().As<IQueryableRepository<{2}>>();
-            ", info.Module.Name, info.Name, type.FullName);
+            return string.Format(
+            @"builder.RegisterType<{0}._Helper.{1}_Repository>().As<IQueryableRepository<{2}>>();
+            ",
+                info.ImplementsInterface.DataStructure.Module.Name,
+                info.ImplementsInterface.DataStructure.Name,
+                info.ImplementsInterface.GetInterfaceType().FullName);
+        }
+
+        protected static string RegisterImplementationName(RegisteredInterfaceImplementationInfo info)
+        {
+            return string.Format(
+            @"{{ typeof({0}), {1} }},
+            ",
+                info.ImplementsInterface.GetInterfaceType().FullName,
+                CsUtility.QuotedString(
+                    info.ImplementsInterface.DataStructure.Module.Name
+                    + "." + info.ImplementsInterface.DataStructure.Name));
         }
     }
 }

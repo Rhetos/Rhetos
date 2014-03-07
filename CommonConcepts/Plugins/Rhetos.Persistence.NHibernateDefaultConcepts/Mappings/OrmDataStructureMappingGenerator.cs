@@ -42,11 +42,11 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
         private string GenerateMapping(DataStructureInfo info)
         {
             return
-@"
-    <class name=""{0}.{1}, " + NHibernateMappingGenerator.AssemblyTag + @""" schema=""{2}"" table=""{3}"">
+@"    <class name=""{0}.{1}, " + NHibernateMappingGenerator.AssemblyTag + @""" schema=""{2}"" table=""{3}"">
         <id name=""ID"" />
 " + MembersTag.Evaluate(info) + @"
     </class>
+
 ";
         }
 

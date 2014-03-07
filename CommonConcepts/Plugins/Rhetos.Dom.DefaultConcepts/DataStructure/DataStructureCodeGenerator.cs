@@ -41,13 +41,13 @@ namespace Rhetos.Dom.DefaultConcepts
 
         protected static string CodeSnippet(DataStructureInfo info)
         {
-            return @"
-    " + AttributesTag.Evaluate(info) + @"
+            return AttributesTag.Evaluate(info) + @"
     public partial class " + info.Name + InterfaceTag.Evaluate(info) + @"
     {
         " + BodyTag.Evaluate(info) + @"
     }
-";
+
+    ";
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)

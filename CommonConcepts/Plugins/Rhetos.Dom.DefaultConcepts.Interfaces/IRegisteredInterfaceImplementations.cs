@@ -24,13 +24,7 @@ using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    /// <summary>
-    /// Every readable repository is expected to implement IFilterRepository for
-    /// patametar type FilterAll (the filter is expected to return all records from the repository)
-    /// and patametar type IEnumerable(Guid) (the filter is expected to return the records with given primary keys).
-    /// </summary>
-    public interface IFilterRepository<in TParameters, out TResult> : IRepository
+    public interface IRegisteredInterfaceImplementations : IDictionary<Type, string>
     {
-        TResult[] Filter(TParameters parameters);
     }
 }

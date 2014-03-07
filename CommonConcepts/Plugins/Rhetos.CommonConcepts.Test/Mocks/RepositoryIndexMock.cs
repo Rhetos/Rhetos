@@ -17,18 +17,30 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac.Features.Indexed;
+using Rhetos.Dom.DefaultConcepts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Rhetos.Compiler;
-using Rhetos.Dsl.DefaultConcepts;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.CommonConcepts.Test.Mocks
 {
-    public static class DomUtility
+    class RepositoryIndexMock : Dictionary<string, IRepository>, IIndex<string, IRepository>
     {
-        public static readonly CsTag<DataStructureInfo> ComputationAdditionalParametersTypeTag = "AdditionalParametersType";
-        public static readonly CsTag<DataStructureInfo> ComputationAdditionalParametersArgumentTag = "AdditionalParametersArgument";
+        public RepositoryIndexMock(Type entity, IRepository repository)
+        {
+            Add(entity.FullName, repository);
+        }
+    }
+
+    class RepositoryIndexMock<TEntityInterface, TEntity> : Dictionary<string, IRepository>, IIndex<string, IRepository>
+        where TEntityInterface : class, IEntity
+        where TEntity : TEntityInterface
+    {
+        public RepositoryIndexMock(IEnumerable<TEntity> items = null)
+        {
+            Add(typeof(TEntity).FullName, new RepositoryMock<TEntityInterface, TEntity>(items));
+        }
     }
 }

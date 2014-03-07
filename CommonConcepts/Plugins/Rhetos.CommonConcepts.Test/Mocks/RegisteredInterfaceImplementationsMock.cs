@@ -17,20 +17,23 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Dom.DefaultConcepts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.CommonConcepts.Test.Mocks
 {
-    /// <summary>
-    /// Every readable repository is expected to implement IFilterRepository for
-    /// patametar type FilterAll (the filter is expected to return all records from the repository)
-    /// and patametar type IEnumerable(Guid) (the filter is expected to return the records with given primary keys).
-    /// </summary>
-    public interface IFilterRepository<in TParameters, out TResult> : IRepository
+    class RegisteredInterfaceImplementationsMock : Dictionary<Type, string>, IRegisteredInterfaceImplementations
     {
-        TResult[] Filter(TParameters parameters);
+        public RegisteredInterfaceImplementationsMock()
+        {
+        }
+
+        public RegisteredInterfaceImplementationsMock(Type interfaceType, Type entityType)
+        {
+            Add(interfaceType, entityType.FullName);
+        }
     }
 }

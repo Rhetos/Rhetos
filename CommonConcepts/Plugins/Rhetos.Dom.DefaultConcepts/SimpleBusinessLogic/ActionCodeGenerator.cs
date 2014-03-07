@@ -52,8 +52,8 @@ namespace Rhetos.Dom.DefaultConcepts
              info.Module.Name,
              info.Name,
              info.Script,
-             DomUtility.ComputationAdditionalParametersTypeTag.Evaluate(info),
-             DomUtility.ComputationAdditionalParametersArgumentTag.Evaluate(info));
+             DataStructureUtility.ComputationAdditionalParametersTypeTag.Evaluate(info),
+             DataStructureUtility.ComputationAdditionalParametersArgumentTag.Evaluate(info));
         }
 
         public static string RegisterRepository(ActionInfo info)

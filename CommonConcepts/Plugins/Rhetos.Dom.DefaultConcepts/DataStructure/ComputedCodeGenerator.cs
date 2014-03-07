@@ -40,14 +40,14 @@ namespace Rhetos.Dom.DefaultConcepts
             {3};
 
 ",
-                info.Module.Name, info.Name, DomUtility.ComputationAdditionalParametersTypeTag.Evaluate(info), info.Expression);
+                info.Module.Name, info.Name, DataStructureUtility.ComputationAdditionalParametersTypeTag.Evaluate(info), info.Expression);
         }
 
         protected static string QueryFunctionBodySnippet(ComputedInfo info)
         {
             return string.Format(
                 @"return Compute(_domRepository{0}).AsQueryable();",
-                DomUtility.ComputationAdditionalParametersArgumentTag.Evaluate(info));
+                DataStructureUtility.ComputationAdditionalParametersArgumentTag.Evaluate(info));
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)

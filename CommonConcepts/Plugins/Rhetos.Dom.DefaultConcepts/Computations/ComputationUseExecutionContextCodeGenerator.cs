@@ -40,8 +40,8 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (ComputationUseExecutionContextInfo)conceptInfo;
 
-            codeBuilder.InsertCode(", Common.ExecutionContext", DomUtility.ComputationAdditionalParametersTypeTag, info.Computation);
-            codeBuilder.InsertCode(", _executionContext", DomUtility.ComputationAdditionalParametersArgumentTag, info.Computation);
+            codeBuilder.InsertCode(", Common.ExecutionContext", DataStructureUtility.ComputationAdditionalParametersTypeTag, info.Computation);
+            codeBuilder.InsertCode(", _executionContext", DataStructureUtility.ComputationAdditionalParametersArgumentTag, info.Computation);
         }
     }
 }

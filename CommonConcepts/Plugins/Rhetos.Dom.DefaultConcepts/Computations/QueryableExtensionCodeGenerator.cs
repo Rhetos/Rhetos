@@ -43,8 +43,7 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string CodeSnippet(QueryableExtensionInfo info)
         {
             return
-@"
-        public override int GetHashCode()
+@"public override int GetHashCode()
         {
             " + GetHashCodeTag.Evaluate(info) + @"
             return ID.GetHashCode();
@@ -62,7 +61,8 @@ namespace Rhetos.Dom.DefaultConcepts
             " + EqualsInterfaceTag.Evaluate(info) + @"
             return other != null && other.ID == ID;
         }
-";
+
+        ";
         }
 
         protected static string RepositoryFunctionsSnippet(QueryableExtensionInfo info)
@@ -72,14 +72,14 @@ namespace Rhetos.Dom.DefaultConcepts
             {5};
 
 ",
-                info.Module.Name, info.Name, info.Base.Module.Name, info.Base.Name, DomUtility.ComputationAdditionalParametersTypeTag.Evaluate(info), info.Expression);
+                info.Module.Name, info.Name, info.Base.Module.Name, info.Base.Name, DataStructureUtility.ComputationAdditionalParametersTypeTag.Evaluate(info), info.Expression);
         }
 
         protected static string QuerySnippet(QueryableExtensionInfo info)
         {
             return string.Format(
                 @"return Compute(_domRepository.{0}.{1}.Query(), _domRepository{2});",
-                info.Base.Module.Name, info.Base.Name, DomUtility.ComputationAdditionalParametersArgumentTag.Evaluate(info));
+                info.Base.Module.Name, info.Base.Name, DataStructureUtility.ComputationAdditionalParametersArgumentTag.Evaluate(info));
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)

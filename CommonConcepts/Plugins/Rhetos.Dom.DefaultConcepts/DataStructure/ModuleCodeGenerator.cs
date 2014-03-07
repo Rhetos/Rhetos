@@ -149,6 +149,7 @@ namespace {0}._Helper
         public const string ExecutionContextMemberTag = "/*ExecutionContextMember*/";
         public const string ExecutionContextConstructorArgumentTag = "/*ExecutionContextConstructorArgument*/";
         public const string ExecutionContextConstructorAssignmentTag = "/*ExecutionContextConstructorAssignment*/";
+        public const string RegisteredInterfaceImplementationNameTag = "/*RegisteredInterfaceImplementationName*/";
 
         private static string GenerateCommonClassesSnippet()
         {
@@ -168,6 +169,13 @@ namespace {0}._Helper
         {{
             _executionContext = executionContext;
         }}
+
+        public class RegisteredInterfaceImplementations : Dictionary<Type, string>, IRegisteredInterfaceImplementations {{ }}
+
+        public static RegisteredInterfaceImplementations RegisteredInterfaceImplementationName = new RegisteredInterfaceImplementations
+        {{
+            {7}
+        }};
 
         {2}
     }}
@@ -221,6 +229,7 @@ namespace {0}._Helper
         {{
             builder.RegisterType<DomRepository>().InstancePerLifetimeScope();
             builder.RegisterType<ExecutionContext>().InstancePerLifetimeScope();
+            builder.RegisterInstance(DomRepository.RegisteredInterfaceImplementationName).As<IRegisteredInterfaceImplementations>().ExternallyOwned();
             {3}
 
             base.Load(builder);
@@ -233,7 +242,8 @@ namespace {0}._Helper
             CommonAutofacConfigurationMembersTag,
             ExecutionContextMemberTag,
             ExecutionContextConstructorArgumentTag,
-            ExecutionContextConstructorAssignmentTag);
+            ExecutionContextConstructorAssignmentTag,
+            RegisteredInterfaceImplementationNameTag);
         }
     }
 }

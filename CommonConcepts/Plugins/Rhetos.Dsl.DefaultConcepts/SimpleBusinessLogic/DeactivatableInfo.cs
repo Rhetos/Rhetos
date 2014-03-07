@@ -35,7 +35,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 DataStructure = Entity,
                 Name = "Active"
             };
-            // TODO: SystemRequired concept
+            
             var composableFilterActiveAndThis = new ComposableFilterByInfo
             {
                 Expression = @"(items, repository, filterParameter) =>
@@ -49,7 +49,9 @@ namespace Rhetos.Dsl.DefaultConcepts
                 Source = Entity
             };
 
-            return new IConceptInfo[] { activePropertyInfo, composableFilterActiveAndThis };
+            var systemRequired = new SystemRequiredInfo { Property = activePropertyInfo };
+
+            return new IConceptInfo[] { activePropertyInfo, composableFilterActiveAndThis, systemRequired };
         }
     }
 }

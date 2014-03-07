@@ -24,7 +24,7 @@ using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public interface IReportRepository
+    public interface IReportRepository : IRepository
     {
         /// <summary>
         /// Returns generated binary file and suggested file name.

@@ -35,11 +35,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Autofac, Version=2.5.2.830, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\External\Autofac\Autofac.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="NHibernate, Version=3.3.1.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\External\NHibernate\NHibernate.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Data" />
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -55,8 +64,20 @@
   </Choose>
   <ItemGroup>
     <Compile Include="ClaimsTest.cs" />
+    <Compile Include="GenericRepositoryFilterTest.cs" />
+    <Compile Include="ExpressionHandlerTest.cs" />
+    <Compile Include="GenericRepositoryInstantiationTest.cs" />
+    <Compile Include="GenericRepositoryReadTest.cs" />
+    <Compile Include="Mocks\DomainObjectModelMock.cs" />
+    <Compile Include="Mocks\NHibernateSessionStub.cs" />
+    <Compile Include="Mocks\PersistenceTransactionStub.cs" />
+    <Compile Include="Mocks\RegisteredInterfaceImplementationsMock.cs" />
+    <Compile Include="Mocks\RepositoryIndexMock.cs" />
+    <Compile Include="Mocks\RepositoryMock.cs" />
+    <Compile Include="Mocks\TestGenericRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlAnalysisTest.cs" />
+    <Compile Include="GenericRepositoryWriteTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Source\Rhetos.Dom.Interfaces\Rhetos.Dom.Interfaces.csproj">
@@ -74,6 +95,10 @@
     <ProjectReference Include="..\..\..\Source\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj">
       <Project>{bb7e5668-1b43-4fce-a832-444cc57fee80}</Project>
       <Name>Rhetos.Logging.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Persistence.Interfaces\Rhetos.Persistence.Interfaces.csproj">
+      <Project>{5e3bbd83-91cb-4fba-81b2-79a81ec94d70}</Project>
+      <Name>Rhetos.Persistence.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Source\Rhetos.Security.Interfaces\Rhetos.Security.Interfaces.csproj">
       <Project>{8e1d4acd-b1aa-433f-9e52-fa50d4a1c9dc}</Project>

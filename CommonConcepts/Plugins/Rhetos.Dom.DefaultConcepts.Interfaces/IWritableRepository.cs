@@ -24,7 +24,7 @@ using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public interface IWritableRepository
+    public interface IWritableRepository : IRepository
     {
         void Save(IEnumerable<object> insertedNew, IEnumerable<object> updatedNew, IEnumerable<object> deletedIds, bool checkUserPermissions = false);
     }

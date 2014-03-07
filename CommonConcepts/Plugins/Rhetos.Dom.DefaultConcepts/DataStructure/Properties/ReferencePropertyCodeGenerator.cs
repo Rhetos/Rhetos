@@ -37,8 +37,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string ReferenceIDSnippet(ReferencePropertyInfo info, PropertyInfo referenceGuid)
         {
             return string.Format(
-@"
-        {3}
+@"{3}
         public virtual Guid? {0}ID
         {{
             get
@@ -55,7 +54,8 @@ namespace Rhetos.Dom.DefaultConcepts
                     {0} = new {1}.{2} {{ ID = value.Value }};
             }}
         }}
-",
+
+        ",
             info.Name,
             info.Referenced.Module.Name,
             info.Referenced.Name,

@@ -1,4 +1,4 @@
-﻿/*
+/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -17,20 +17,21 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.ComponentModel.Composition;
+using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Extensibility;
+using Autofac;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    /// <summary>
-    /// Every readable repository is expected to implement IFilterRepository for
-    /// patametar type FilterAll (the filter is expected to return all records from the repository)
-    /// and patametar type IEnumerable(Guid) (the filter is expected to return the records with given primary keys).
-    /// </summary>
-    public interface IFilterRepository<in TParameters, out TResult> : IRepository
+    [Export(typeof(Module))]
+    public class CommonConceptsConfiguration : Module
     {
-        TResult[] Filter(TParameters parameters);
+        protected override void Load(ContainerBuilder builder)
+        {
+            builder.RegisterType<GenericRepositories>();
+            builder.RegisterGeneric(typeof(GenericRepository<>));
+            base.Load(builder);
+        }
     }
 }

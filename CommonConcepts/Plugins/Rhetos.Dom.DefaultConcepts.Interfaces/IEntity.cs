@@ -24,6 +24,15 @@ using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
+    /// <summary>
+    /// The term "entity" here represents any data structure that has identifiable items.
+    /// </summary>
+    /// <remarks>
+    /// Not to be confused with the "Entity" DSL concept, which generates a common
+    /// IEntity implementation (database table + class + ORM mapping).
+    /// Other concepts, such as Browse, SqlQueryable and Computed also generate
+    /// some kind of IEntity implementation.
+    /// </remarks>
     public interface IEntity
     {
         Guid ID { get; set; }

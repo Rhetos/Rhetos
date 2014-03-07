@@ -24,7 +24,7 @@ using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public interface IActionRepository
+    public interface IActionRepository : IRepository
     {
         void Execute(object parameters);
     }

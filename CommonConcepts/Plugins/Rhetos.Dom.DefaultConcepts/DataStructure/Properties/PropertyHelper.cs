@@ -36,10 +36,10 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string PropertySnippet(PropertyInfo info, string propertyType)
         {
             return string.Format(
-@"
-        {2}
+@"{2}
         public virtual {1} {0} {{ get; set; }}
-",
+
+        ",
             info.Name,
             propertyType,
             AttributeTag.Evaluate(info));

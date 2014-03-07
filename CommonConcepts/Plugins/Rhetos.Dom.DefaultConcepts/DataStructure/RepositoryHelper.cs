@@ -32,14 +32,14 @@ namespace Rhetos.Dom.DefaultConcepts
     public static class RepositoryHelper
     {
         public static readonly CsTag<DataStructureInfo> RepositoryAttributes = "RepositoryAttributes";
-        public static readonly CsTag<DataStructureInfo> RepositoryInterfaces = new CsTag<DataStructureInfo>("RepositoryInterface", TagType.Appendable, ":\r\n        {0}", ",\r\n        {0}");
+        public static readonly CsTag<DataStructureInfo> RepositoryInterfaces = new CsTag<DataStructureInfo>("RepositoryInterface", TagType.Appendable, ",\r\n        {0}");
         public static readonly CsTag<DataStructureInfo> RepositoryMembers = "RepositoryMembers";
 
         private static string RepositorySnippet(DataStructureInfo info)
         {
             return string.Format(
 @"{1}
-    public class {0}_Repository {2}
+    public class {0}_Repository : IRepository{2}
     {{
         private readonly Common.DomRepository _domRepository;
         private readonly Common.ExecutionContext _executionContext;
@@ -65,10 +65,20 @@ namespace Rhetos.Dom.DefaultConcepts
 ", info.Name);
         }
 
+        private static string RegisterRepository(DataStructureInfo info)
+        {
+            return string.Format(
+            @"builder.RegisterType<{0}._Helper.{1}_Repository>().Keyed<IRepository>(""{0}.{1}"");
+            ",
+                info.Module.Name,
+                info.Name);
+        }
+
         public static void GenerateRepository(DataStructureInfo info, ICodeBuilder codeBuilder)
         {
             codeBuilder.InsertCode(RepositorySnippet(info), ModuleCodeGenerator.HelperNamespaceMembersTag, info.Module);
             codeBuilder.InsertCode(CallFromModuleRepostiorySnippet(info), ModuleCodeGenerator.RepositoryMembersTag, info.Module);
+            codeBuilder.InsertCode(RegisterRepository(info), ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
         }
         
         //==============================================================

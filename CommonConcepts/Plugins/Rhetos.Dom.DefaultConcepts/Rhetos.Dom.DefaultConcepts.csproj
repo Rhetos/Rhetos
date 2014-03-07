@@ -59,6 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClaimGenerator.cs" />
+    <Compile Include="CommonConceptsConfiguration.cs" />
     <Compile Include="DataStructure\ImplementsInterfacePropertyCodeGenerator.cs" />
     <Compile Include="DataStructure\RegisteredInterfaceImplementationCodeGenerator.cs" />
     <Compile Include="DataStructure\WriteCodeGenerator.cs" />
@@ -77,7 +78,7 @@
     <Compile Include="Computations\ReportDataCodeGenerator.cs" />
     <Compile Include="DataStructure\ComputedCodeGenerator.cs" />
     <Compile Include="DataStructure\ClaimRepositoryCodeGenerator.cs" />
-    <Compile Include="DomUtility.cs" />
+    <Compile Include="DataStructureUtility.cs" />
     <Compile Include="Computations\ComposableFilterByCodeGenerator.cs" />
     <Compile Include="Computations\ComputationUseExecutionContextCodeGenerator.cs" />
     <Compile Include="Computations\DenySaveCodeGenerator.cs" />
@@ -85,6 +86,10 @@
     <Compile Include="Computations\KeepSynchronizedOnChangedItemsCodeGenerator.cs" />
     <Compile Include="Computations\ComputeForNewBaseItemsCodeGenerator.cs" />
     <Compile Include="Computations\QueryableExtensionCodeGenerator.cs" />
+    <Compile Include="GenericRepository.cs" />
+    <Compile Include="GenericRepositories.cs" />
+    <Compile Include="ExpressionHelper.cs" />
+    <Compile Include="ReflectionHelper.cs" />
     <Compile Include="SimpleBusinessLogic\ActionCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ReloadBeforeValidationsCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\DenyUserEditDataStructureCodeGenerator.cs" />

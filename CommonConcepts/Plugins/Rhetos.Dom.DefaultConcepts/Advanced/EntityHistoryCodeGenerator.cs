@@ -83,10 +83,10 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string AdditionalParameterSnippet(EntityHistoryInfo info)
         {
             return
-@"
-        private bool _overwriteCurrentRecordOnUpdate;
+@"        private bool _overwriteCurrentRecordOnUpdate;
         public virtual void SetOverwriteCurrentRecordOnUpdate(bool value) { this._overwriteCurrentRecordOnUpdate = value; }
         public virtual bool GetOverwriteCurrentRecordOnUpdate() { return this._overwriteCurrentRecordOnUpdate; }
+
 ";
         }
 
