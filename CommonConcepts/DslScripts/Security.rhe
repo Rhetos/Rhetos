@@ -3,12 +3,13 @@
     // List of all available predefined resources and rights in the system.
 	Entity Claim
 	{
-		Implements 'Rhetos.Dom.DefaultConcepts.ICommonClaim, Rhetos.Dom.DefaultConcepts.Interfaces';
-		
 		ShortString ClaimResource { Required; }
 		ShortString ClaimRight { Required; }
 		Unique Common.Claim.ClaimResource Common.Claim.ClaimRight;
 		Logging { AllProperties; }
+        
+        Deactivatable; // Inactive claims are remains of deleted entities and other objects. They are kept as a backup, and simply hidden in admin GUI to reduce clutter.
+		Implements 'Rhetos.Dom.DefaultConcepts.ICommonClaim, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
 	}
     
     // For each claim, MyClaim determines whether the claim applies to the current user, i.e., whether user has the permission.

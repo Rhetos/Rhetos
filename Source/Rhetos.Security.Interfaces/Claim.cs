@@ -30,9 +30,19 @@ namespace Rhetos.Security
         public readonly string Resource;
         public readonly string Right;
 
-        /// <summary>
-        /// Resource and Right properties are case insensitive.
-        /// </summary>
+        public static int EquivalentComparer(string resource1, string right1, string resource2, string right2)
+        {
+            var result = string.Compare(resource1, resource2, StringComparison.OrdinalIgnoreCase);
+            if (result == 0)
+                result = string.Compare(right1, right2, StringComparison.OrdinalIgnoreCase);
+            return result;
+        }
+
+        public static int EquivalentHashCode(string resource, string right)
+        {
+            return resource.ToLower().GetHashCode() ^ right.ToLower().GetHashCode();
+        }
+
         public Claim(string resource, string right)
         {
             Resource = resource;
@@ -41,19 +51,17 @@ namespace Rhetos.Security
 
         public bool Equals(Claim other)
         {
-            return other.Resource.Equals(Resource, StringComparison.OrdinalIgnoreCase)
-                && other.Right.Equals(Right, StringComparison.OrdinalIgnoreCase);
+            return EquivalentComparer(Resource, Right, other.Resource, other.Right) == 0;
         }
 
         public override bool Equals(object obj)
         {
-            return obj is Claim && ((Claim)obj).Resource.Equals(Resource, StringComparison.OrdinalIgnoreCase)
-                && ((Claim)obj).Right.Equals(Right, StringComparison.OrdinalIgnoreCase);
+            return obj is Claim && Equals((Claim)obj);
         }
 
         public override int GetHashCode()
         {
-            return Resource.ToLower().GetHashCode() ^ Right.ToLower().GetHashCode();
+            return EquivalentHashCode(Resource, Right);
         }
 
         public string FullName
@@ -62,12 +70,6 @@ namespace Rhetos.Security
             {
                 return Resource + "." + Right;
             }
-        }
-
-        public bool Same(Claim other)
-        {
-            return other.Resource.Equals(Resource, StringComparison.Ordinal)
-                && other.Right.Equals(Right, StringComparison.Ordinal);
         }
     }
 }

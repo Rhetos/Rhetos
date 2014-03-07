@@ -35,6 +35,7 @@ namespace Rhetos.CommonConcepts.Test
         public Guid ID { get; set; }
         public string ClaimResource { get; set; }
         public string ClaimRight { get; set; }
+        public bool? Active { get; set; }
     }
 
     [TestClass]
@@ -51,19 +52,6 @@ namespace Rhetos.CommonConcepts.Test
         {
             var parts = claimInfo2.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
             return parts.Select(p => c(p)).ToArray();
-        }
-
-        private static CC cc(string claimInfo)
-        {
-            var parts = claimInfo.Split('/');
-            Assert.AreEqual(2, parts.Count());
-            return new CC { ClaimResource = parts[0], ClaimRight = parts[1] };
-        }
-
-        private static CC[] cca(string claimInfo2)
-        {
-            var parts = claimInfo2.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-            return parts.Select(p => cc(p)).ToArray();
         }
 
         [TestMethod]
@@ -91,50 +79,6 @@ namespace Rhetos.CommonConcepts.Test
 
             foreach (var test in notEquals.Select(t => ca(t)))
                 Assert.AreNotEqual(test[0], test[1]);
-        }
-
-        [TestMethod]
-        public void ClaimGeneratorDiff()
-        {
-            TestDiff("c/d e/f g/h", "a/b c/d E/F", "a/b", "E/F", "g/h");
-            TestUtility.ShouldFail(() => TestDiff("", "a.b/c a/b.c"), "DslSyntaxException", "Multiple");
-            TestUtility.ShouldFail(() => TestDiff("", "a.b/c A/B.C"), "DslSyntaxException", "Multiple");
-            TestUtility.ShouldFail(() => TestDiff("", "a.b.c/ A.B/C."), "DslSyntaxException", "Multiple");
-            TestDiff("a.b/c a/b.c", "", "", "", "a.b/c, a/b.c");
-            TestDiff("a.b/c a/b.c", "A.B/C", "", "A.B/C", "a/b.c");
-        }
-
-        private static void TestDiff(string oldClaimsInfo, string newClaimsInfo,
-            string insertExpected = null, string updateExpected = null, string deleteExpected = null)
-        {
-            Console.WriteLine("Old claims: " + oldClaimsInfo);
-            Console.WriteLine("New claims: " + newClaimsInfo);
-            IList<ICommonClaim> oldClaims = cca(oldClaimsInfo);
-            IList<Claim> newClaims = ca(newClaimsInfo);
-
-            IList<Claim> insert;
-            IList<ICommonClaim> update, delete;
-            new ClaimGeneratorAccessor().DiffClaims(oldClaims, newClaims, out insert, out update, out delete);
-
-            if (insertExpected != null || updateExpected != null || deleteExpected != null)
-            {
-                Assert.AreEqual(insertExpected, TestUtility.DumpSorted(insert, i => i.Resource + "/" + i.Right), "Inserted");
-                Assert.AreEqual(updateExpected, TestUtility.DumpSorted(update, i => i.ClaimResource + "/" + i.ClaimRight), "Updated");
-                Assert.AreEqual(deleteExpected, TestUtility.DumpSorted(delete, i => i.ClaimResource + "/" + i.ClaimRight), "Deleted");
-            }
-        }
-    }
-
-    internal class ClaimGeneratorAccessor : ClaimGenerator
-    {
-        public ClaimGeneratorAccessor()
-            : base(null, null, new ConsoleLogProvider(), null)
-        {
-        }
-
-        new public void DiffClaims(IList<ICommonClaim> oldClaims, IList<Claim> newClaims, out IList<Claim> insert, out IList<ICommonClaim> update, out IList<ICommonClaim> delete)
-        {
-            base.DiffClaims(oldClaims, newClaims, out insert, out update, out delete);
         }
     }
 }

@@ -24,10 +24,8 @@ using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public interface ICommonClaim : IEntity
+    public interface IDeactivatable : IEntity
     {
-        string ClaimResource { get; set; }
-        string ClaimRight { get; set; }
         bool? Active { get; set; }
     }
 }

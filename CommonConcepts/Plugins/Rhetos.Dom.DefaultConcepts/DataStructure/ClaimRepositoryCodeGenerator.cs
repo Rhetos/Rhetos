@@ -35,26 +35,24 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.DependsOn, typeof(OrmDataStructureCodeGenerator))]
     public class ClaimRepositoryCodeGenerator : IConceptCodeGenerator
     {
-        const string MemberFunctionsSnippet =
-@"        public IList<ICommonClaim> LoadClaims()
-        {
-            return All();
-        }
+        public static readonly CsTag<DataStructureInfo> DeactivateInsteadOfDeleteTag = "DeactivateInsteadOfDelete";
 
-        public void SaveClaims(IList<Rhetos.Security.Claim> insert, IList<ICommonClaim> update, IList<ICommonClaim> delete)
+        string RepositoryMemberSnippet(DataStructureInfo info)
         {
-            Save(
-                insert.Select(i => new Common.Claim { ClaimResource = i.Resource, ClaimRight = i.Right }).ToList(),
-                update.Cast<Common.Claim>().ToList(),
-                delete.Cast<Common.Claim>().ToList());
-        }
+            return string.Format(
+@"        // Claims in use should be deactivated instead of deleted.
+        public IEnumerable<Claim> Filter(IEnumerable<Claim> deleted, Rhetos.Dom.DefaultConcepts.DeactivateInsteadOfDelete parameter)
+        {{
+            var deactivateClaimsId = new List<Guid>();
+            var deletedClaimsId = new Lazy<List<Guid>>(() => deleted.Select(c => c.ID).ToList());
 
-";
+            {0}
 
-        protected static string RegisterRepository(DataStructureInfo info)
-        {
-            return string.Format(@"builder.RegisterType<{0}._Helper.{1}_Repository>().As<Rhetos.Dom.DefaultConcepts.IClaimRepository>();
-            ", info.Module.Name, info.Name);
+            var deactivateClaimsIdIndex = new HashSet<Guid>(deactivateClaimsId);
+            return deleted.Where(item => deactivateClaimsIdIndex.Contains(item.ID)).ToList();
+        }}
+
+", DeactivateInsteadOfDeleteTag.Evaluate(info));
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
@@ -62,12 +60,9 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (DataStructureInfo)conceptInfo;
 
             if (info.Module.Name == "Common" && info.Name == "Claim")
-            {
-                codeBuilder.InsertCode("Rhetos.Dom.DefaultConcepts.IClaimRepository", RepositoryHelper.RepositoryInterfaces, info);
-                codeBuilder.InsertCode(MemberFunctionsSnippet, RepositoryHelper.RepositoryMembers, info);
-                codeBuilder.InsertCode(RegisterRepository(info), ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
-                codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.IClaimRepository));
-            }
+                codeBuilder.InsertCode(RepositoryMemberSnippet(info), RepositoryHelper.RepositoryMembers, info);
+
+            codeBuilder.AddReferencesFromDependency(typeof(DeactivateInsteadOfDelete));
         }
     }
 }

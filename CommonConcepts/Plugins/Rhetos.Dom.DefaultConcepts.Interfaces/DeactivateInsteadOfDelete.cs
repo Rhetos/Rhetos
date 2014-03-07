@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Security;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,9 +24,11 @@ using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public interface IClaimRepository
+    /// <summary>
+    /// A Filter() function with this parameter on IDeactivatable entity's repository
+    /// must return the records that should be deactivated instead of deleted.
+    /// </summary>
+    public class DeactivateInsteadOfDelete
     {
-        IList<ICommonClaim> LoadClaims();
-        void SaveClaims(IList<Claim> insert, IList<ICommonClaim> update, IList<ICommonClaim> delete);
     }
 }

@@ -63,6 +63,7 @@
     <Compile Include="AuthenticationDatabaseInitializer.cs" />
     <Compile Include="AuthenticationServiceInitializer.cs" />
     <Compile Include="CancelUnauthorizedClientRedirection.cs" />
+    <Compile Include="DeactivateClaimsCodeGenerator.cs" />
     <Compile Include="IPasswordAttemptsLimit.cs" />
     <Compile Include="IPasswordStrength.cs" />
     <Compile Include="IRole.cs" />
@@ -112,6 +113,14 @@
     <ProjectReference Include="..\..\..\Source\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj">
       <Project>{bb7e5668-1b43-4fce-a832-444cc57fee80}</Project>
       <Name>Rhetos.Logging.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Persistence.Interfaces\Rhetos.Persistence.Interfaces.csproj">
+      <Project>{5e3bbd83-91cb-4fba-81b2-79a81ec94d70}</Project>
+      <Name>Rhetos.Persistence.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Persistence.NHibernate\Rhetos.Persistence.NHibernate.csproj">
+      <Project>{24238da8-70c5-4be5-85b3-359e60b40acf}</Project>
+      <Name>Rhetos.Persistence.NHibernate</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Source\Rhetos.Processing.Interfaces\Rhetos.Processing.Interfaces.csproj">
       <Project>{4d2fcd7f-d9bb-4e55-b9c6-fdf352f6dcf3}</Project>

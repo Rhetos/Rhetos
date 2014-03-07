@@ -38,8 +38,9 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (DeactivatableInfo)conceptInfo;
 
             codeBuilder.InsertCode(DefaultSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Entity);
+            codeBuilder.InsertCode("Rhetos.Dom.DefaultConcepts.IDeactivatable", DataStructureCodeGenerator.InterfaceTag, info.Entity);
+            codeBuilder.AddReferencesFromDependency(typeof(IDeactivatable));
         }
-
 
         private static string DefaultSnippet(DeactivatableInfo info)
         {

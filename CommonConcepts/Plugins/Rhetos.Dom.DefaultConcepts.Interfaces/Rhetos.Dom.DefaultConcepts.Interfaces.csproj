@@ -93,11 +93,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActiveItems.cs" />
+    <Compile Include="DeactivateInsteadOfDelete.cs" />
     <Compile Include="FilterAll.cs" />
+    <Compile Include="IDeactivatable.cs" />
     <Compile Include="DatabaseExtensionFunctions.cs" />
     <Compile Include="FilterCriteria.cs" />
     <Compile Include="IActionRepository.cs" />
-    <Compile Include="IClaimRepository.cs" />
     <Compile Include="ICommonClaim.cs" />
     <Compile Include="IFilterRepository.cs" />
     <Compile Include="IQueryableRepository.cs" />

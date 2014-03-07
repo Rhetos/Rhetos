@@ -127,7 +127,8 @@ namespace Rhetos.Security.Service
 
         public List<Claim> GetClaims()
         {
-            var rawData = ReadEntity(_eClaim);
+            var rawData = ReadEntity(_eClaim,
+                new[] { new FilterCriteria { Property = "Active", Operation = "Equal", Value = true } });
 
             List<Claim> items = new List<Claim>();
 
@@ -158,9 +159,12 @@ namespace Rhetos.Security.Service
 
         public List<Permission> GetPermissions(Guid principalID)
         {
-            var rawData = ReadEntity(
-                _ePermission,
-                new[] { new FilterCriteria { Property = "Principal.ID", Operation = "Equal", Value = principalID.ToString() } });
+            var rawData = ReadEntity(_ePermission,
+                new[]
+                {
+                    new FilterCriteria { Property = "Principal.ID", Operation = "Equal", Value = principalID.ToString() },
+                    new FilterCriteria { Property = "Claim.Active", Operation = "Equal", Value = true },
+                });
 
             List<Permission> items = new List<Permission>();
 

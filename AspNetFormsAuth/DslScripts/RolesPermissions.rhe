@@ -43,7 +43,7 @@
     Entity Permission
     {
         Reference Role { Required; Detail; }
-        Reference Claim { Required; }
+        Reference Claim { Required; Detail; }
         Bool IsAuthorized { Required; } // If IsAuthorized is false then autorization is explicitly denied.
         
         Implements 'Rhetos.AspNetFormsAuth.IPermission, Rhetos.AspNetFormsAuth' { RegisteredImplementation; }

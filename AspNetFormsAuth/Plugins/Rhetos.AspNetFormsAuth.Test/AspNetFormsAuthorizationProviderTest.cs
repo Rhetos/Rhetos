@@ -86,6 +86,7 @@ namespace Rhetos.AspNetFormsAuth.Test
             public Guid ID { get; set; }
             public string ClaimResource { get; set; }
             public string ClaimRight { get; set; }
+            public bool? Active { get; set; }
         }
 
         [TestMethod]

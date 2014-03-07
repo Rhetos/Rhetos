@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DeactivateClaimsCodeGenerator.cs" />
     <Compile Include="IPermissionBrowse.cs" />
     <Compile Include="IPermissionLoader.cs" />
     <Compile Include="PermissionLoaderCodeGenerator.cs" />
