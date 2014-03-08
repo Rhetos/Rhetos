@@ -1,10 +1,11 @@
 <Query Kind="Program">
-  <Reference Relative="bin\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces.dll</Reference>
-  <Reference Relative="bin\Rhetos.Interfaces.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Interfaces.dll</Reference>
-  <Reference Relative="bin\Plugins\Rhetos.Processing.DefaultCommands.Interfaces.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Processing.DefaultCommands.Interfaces.dll</Reference>
-  <Reference Relative="bin\Rhetos.Processing.Interfaces.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Processing.Interfaces.dll</Reference>
-  <Reference Relative="bin\Rhetos.Security.Interfaces.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\Rhetos.Security.Interfaces.dll</Reference>
-  <Reference Relative="bin\ServerDom.dll">C:\My Projects\Core\Rhetos\Source\Rhetos\bin\ServerDom.dll</Reference>
+  <Reference Relative="bin\Plugins\Rhetos.AspNetFormsAuth.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.AspNetFormsAuth.dll</Reference>
+  <Reference Relative="bin\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces.dll</Reference>
+  <Reference Relative="bin\Rhetos.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Interfaces.dll</Reference>
+  <Reference Relative="bin\Plugins\Rhetos.Processing.DefaultCommands.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Processing.DefaultCommands.Interfaces.dll</Reference>
+  <Reference Relative="bin\Rhetos.Processing.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Processing.Interfaces.dll</Reference>
+  <Reference Relative="bin\Rhetos.Security.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Security.Interfaces.dll</Reference>
+  <Reference Relative="bin\ServerDom.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\ServerDom.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.DirectoryServices.AccountManagement.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.DirectoryServices.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.Runtime.Serialization.dll</Reference>
@@ -117,7 +118,20 @@ void Main()
                     Data = SerializeToXml(commandInfo, commandInfo.GetType())
                 }).ToArray();
 
-                return Channel.Execute(serverCommands);
+                try
+                {
+                    return Channel.Execute(serverCommands);
+                }
+                catch (Exception ex)
+                {
+                    if (ex.Message.StartsWith("The HTTP request is unauthorized with client authentication scheme 'Negotiate'."))
+                    {
+                        // TODO: Implement forms authentication.
+                        throw new NotImplementedException("This script currently supports only Windows Authentication web security (SimpleWindowsAuth Rhetos package).");
+                    }
+                        
+                    throw;
+                }
             }
         }
 
