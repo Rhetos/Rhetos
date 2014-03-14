@@ -33,6 +33,17 @@ Module TestAutoCode
 		Reference Grouping TestAutoCode.Simple;
 		ShortString Code {  AutoCodeForEach TestAutoCode.ReferenceGroup.Grouping; }
 	}
+    
+    Entity Grouping
+	{
+		ShortString Code {  AutoCode; }
+	}
+	
+	Entity ShortReferenceGroup
+	{
+		Reference Grouping;
+		ShortString Code {  AutoCodeForEach TestAutoCode.ShortReferenceGroup.Grouping; }
+	}
 }
 
 Module TestRequired

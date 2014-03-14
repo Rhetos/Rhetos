@@ -53,8 +53,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                 codeBuilder.InsertCode(Sql.Format("AutoCodeForEachDatabaseDefinition_ExtendBeforeCursor", ShortStringPropertyInfo.MaxLength),
                     AutoCodeDatabaseDefinition.BeforeCursorTag, info);
 
-                string resourceName = GetResourceNameForCursorSelectSnippet(info.Group);
-                codeBuilder.InsertCode(Sql.Format(resourceName, GetColumnName(info.Group), ShortStringPropertyInfo.MaxLength),
+                string cursorSelectSnippet = GetResource_CursorSelectSnippetFormat(info);
+                codeBuilder.InsertCode(string.Format(cursorSelectSnippet, GetColumnName(info.Group), ShortStringPropertyInfo.MaxLength),
                     AutoCodeDatabaseDefinition.CursorSelectTag, info);
 
                 codeBuilder.InsertCode(Sql.Format("AutoCodeForEachDatabaseDefinition_ExtendCursorFetch", GetColumnName(info.Group), ShortStringPropertyInfo.MaxLength),
@@ -65,20 +65,34 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             }
         }
 
-        private static string GetResourceNameForCursorSelectSnippet(PropertyInfo groupProperty)
+        private static string GetResource_CursorSelectSnippetFormat(AutoCodeForEachInfo info)
         {
-            var resourceName = "AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_" + groupProperty.GetType().Name;
-            try
+            var resource = TryGetResourceByType("AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_{0}", info.Group.GetType());
+
+            if (resource == null)
+                throw new DslSyntaxException(info, string.Format(
+                    "Group property type '{0}' is not supported in {1}.",
+                    info.Group.GetType().Name, info.GetKeywordOrTypeName()));
+
+            return resource;
+        }
+
+        private static string TryGetResourceByType(string resourceNameFormat, Type implementationType)
+        {
+            string resource = null;
+            while (true)
             {
-                Sql.Get(resourceName);
+                string resourceName = string.Format(resourceNameFormat, implementationType.Name);
+                resource = Sql.TryGet(resourceName);
+
+                if (resource != null)
+                    return resource;
+
+                if (implementationType == typeof(object))
+                    return null;
+
+                implementationType = implementationType.BaseType;
             }
-            catch (Exception ex)
-            {
-                throw new FrameworkException(
-                    "Group property type '" + groupProperty.GetType().Name +
-                    "' is not supported in AutoCodeForEachDatabaseDefinition. " + ex.Message, ex);
-            }
-            return resourceName;
         }
 
         private static string GetColumnName(PropertyInfo property)

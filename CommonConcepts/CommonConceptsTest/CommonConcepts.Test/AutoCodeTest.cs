@@ -34,6 +34,7 @@ namespace CommonConcepts.Test
             executionContext.SqlExecuter.ExecuteSql(new[]
                 {
                     @"DELETE FROM TestAutoCode.ReferenceGroup;
+                    DELETE FROM TestAutoCode.ShortReferenceGroup;
                     DELETE FROM TestAutoCode.StringGroup;
                     DELETE FROM TestAutoCode.IntGroup;
                     DELETE FROM TestAutoCode.Simple;"
@@ -129,6 +130,16 @@ namespace CommonConcepts.Test
                 TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(executionContext, repository.TestAutoCode.ReferenceGroup, simple1, "+", "2");
                 TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(executionContext, repository.TestAutoCode.ReferenceGroup, simple2, "+", "1");
                 TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(executionContext, repository.TestAutoCode.ReferenceGroup, simple2, "A+", "A1");
+
+                var grouping1 = new TestAutoCode.Grouping { ID = Guid.NewGuid(), Code = "1" };
+                var grouping2 = new TestAutoCode.Grouping { ID = Guid.NewGuid(), Code = "2" };
+                repository.TestAutoCode.Grouping.Insert(new[] { grouping1, grouping2 });
+                executionContext.NHibernateSession.Flush();
+
+                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(executionContext, repository.TestAutoCode.ShortReferenceGroup, grouping1, "+", "1");
+                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(executionContext, repository.TestAutoCode.ShortReferenceGroup, grouping1, "+", "2");
+                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(executionContext, repository.TestAutoCode.ShortReferenceGroup, grouping2, "+", "1");
+                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(executionContext, repository.TestAutoCode.ShortReferenceGroup, grouping2, "A+", "A1");
             }
         }
 
