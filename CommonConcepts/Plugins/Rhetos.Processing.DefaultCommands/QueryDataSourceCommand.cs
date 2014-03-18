@@ -29,16 +29,17 @@ using Rhetos.Dom;
 
 namespace Rhetos.Processing.DefaultCommands
 {
+    // TODO: Rename to ReadCommand*
     [Export(typeof(ICommandImplementation))]
     [ExportMetadata(MefProvider.Implements, typeof(QueryDataSourceCommandInfo))]
     public class QueryDataSourceCommand : ICommandImplementation
     {
         private readonly IDataTypeProvider _dataTypeProvider;
-        private readonly IIndex<string, IQueryDataSourceCommandImplementation> _repositories;
+        private readonly GenericRepositories _repositories;
 
         public QueryDataSourceCommand(
             IDataTypeProvider dataTypeProvider,
-            IIndex<string, IQueryDataSourceCommandImplementation> repositories)
+            GenericRepositories repositories)
         {
             _dataTypeProvider = dataTypeProvider;
             _repositories = repositories;
@@ -48,8 +49,8 @@ namespace Rhetos.Processing.DefaultCommands
         {
             var info = (QueryDataSourceCommandInfo) commandInfo;
 
-            var repository = _repositories[info.DataSource];
-            var result = repository.QueryData(info);
+            var genericRepository = _repositories.GetGenericRepository(info.DataSource);
+            QueryDataSourceCommandResult result = genericRepository.ExecuteQueryDataSourceCommand(info);
 
             return new CommandResult
             {

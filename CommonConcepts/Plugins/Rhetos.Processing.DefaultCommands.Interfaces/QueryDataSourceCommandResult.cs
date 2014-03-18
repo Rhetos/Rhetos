@@ -24,6 +24,7 @@ using System.Text;
 
 namespace Rhetos.Processing.DefaultCommands
 {
+    // TODO: Rename to ReadCommand*
     public class QueryDataSourceCommandResult
     {
         public object[] Records { get; set; }

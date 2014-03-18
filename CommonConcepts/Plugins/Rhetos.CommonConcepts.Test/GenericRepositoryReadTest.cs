@@ -22,9 +22,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.CommonConcepts.Test.Mocks;
 using Rhetos.Dom;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Processing.DefaultCommands;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -53,6 +55,12 @@ namespace Rhetos.CommonConcepts.Test
             }
         }
 
+        class SimpleEntityList : List<SimpleEntity>
+        {
+            int idCounter = 0;
+            public void Add(string name) { Add(new SimpleEntity { Name = name, ID = new Guid(idCounter++, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) }); }
+        }
+
         GenericRepository<ISimpleEntity> NewRepos(IRepository repository)
         {
             return new GenericRepository<ISimpleEntity>(
@@ -75,12 +83,12 @@ namespace Rhetos.CommonConcepts.Test
             var repos = NewRepos(new NullRepository());
 
             TestUtility.ShouldFail(() => repos.Read(),
-                "no suitable functions",
+                "does not implement",
                 typeof(SimpleEntity).FullName,
                 typeof(FilterAll).FullName);
 
             TestUtility.ShouldFail(() => repos.Read(new[] { Guid.NewGuid() }),
-                "no suitable functions",
+                "does not implement",
                 typeof(SimpleEntity).FullName,
                 "System.Guid[]");
         }
@@ -99,17 +107,17 @@ namespace Rhetos.CommonConcepts.Test
             var repos = NewRepos(new FilterParameterRepository());
 
             TestUtility.ShouldFail(() => repos.Read(),
-                "no suitable functions",
+                "does not implement",
                 typeof(SimpleEntity).FullName,
                 typeof(FilterAll).FullName);
 
             TestUtility.ShouldFail(() => repos.Read(Guid.NewGuid()),
-                "no suitable functions",
+                "does not implement",
                 typeof(SimpleEntity).FullName,
                 "System.Guid");
 
             TestUtility.ShouldFail(() => repos.Read("a"), // Filter with a string parameter is a *private* function.
-                "no suitable functions",
+                "does not implement",
                 typeof(SimpleEntity).FullName,
                 "System.string");
 
@@ -138,7 +146,7 @@ namespace Rhetos.CommonConcepts.Test
             var repos = NewRepos(new FilterQueryRepository());
 
             TestUtility.ShouldFail(() => repos.Read(Guid.NewGuid()),
-                "no suitable functions",
+                "does not implement",
                 typeof(SimpleEntity).FullName,
                 "System.Guid");
 
@@ -240,6 +248,119 @@ namespace Rhetos.CommonConcepts.Test
             object o = new[] { 1, 2, 3 };
             Assert.AreEqual("ai", repos.Read(o, o.GetType()).Single().Name);
             Assert.AreEqual("ei", repos.Read(o, typeof(IEnumerable<int>)).Single().Name);
+        }
+
+        //===============================================
+
+        class ExplicitGenericPropertyFilterRepository : IRepository
+        {
+            public IEnumerable<SimpleEntity> Filter(IEnumerable<PropertyFilter> p) { return new[] { new SimpleEntity { Name = "exp" } }; }
+        }
+
+        class ExplicitGenericPropertyFilterRepository2 : IRepository
+        {
+            public IEnumerable<SimpleEntity> Filter(IQueryable<SimpleEntity> source, IEnumerable<PropertyFilter> p) { return new[] { new SimpleEntity { Name = "exp2" } }; }
+
+            public IQueryable<SimpleEntity> Query()
+            {
+                return new[] { "a1", "b1", "b2" }.Select(s => new SimpleEntity { Name = s }).AsQueryable();
+            }
+        }
+
+        class ImplicitGenericPropertyFilterRepository : IRepository
+        {
+            public int Counter = 0;
+
+            public IQueryable<SimpleEntity> Query()
+            {
+                return new[] { "a1", "b1", "b2" }.Select(s => { Counter++; return new SimpleEntity { Name = s }; }).AsQueryable();
+            }
+        }
+
+        [TestMethod]
+        public void ReadGenericFilter2()
+        {
+            var gf = new [] { new PropertyFilter { Property = "Name", Operation = "StartsWith", Value = "b" } };
+
+            var impRepos = new ImplicitGenericPropertyFilterRepository();
+
+            Assert.AreEqual(0, impRepos.Counter);
+
+            var exp = NewRepos(new ExplicitGenericPropertyFilterRepository()).Read(gf);
+            var exp2 = NewRepos(new ExplicitGenericPropertyFilterRepository2()).Read(gf);
+            var imp = NewRepos(impRepos).Read(gf);
+
+            Assert.AreEqual(3, impRepos.Counter);
+
+            Assert.AreEqual("exp", TestUtility.Dump(exp));
+            Assert.AreEqual("exp2", TestUtility.Dump(exp2));
+            Assert.AreEqual("b1, b2", TestUtility.Dump(imp));
+
+            Assert.AreEqual(3, impRepos.Counter);
+
+            Assert.AreEqual("True, True, True", TestUtility.Dump(new object[] { exp, exp2, imp }.Select(o => o is IList)));
+            Assert.AreEqual("False, False, False", TestUtility.Dump(new object[] { exp, exp2, imp }.Select(o => o is IQueryable)));
+
+            Assert.AreEqual(3, impRepos.Counter);
+
+            exp = NewRepos(new ExplicitGenericPropertyFilterRepository()).ReadNonMaterialized(gf);
+            exp2 = NewRepos(new ExplicitGenericPropertyFilterRepository2()).ReadNonMaterialized(gf);
+            imp = NewRepos(impRepos).ReadNonMaterialized(gf);
+
+            Assert.AreEqual(3, impRepos.Counter);
+
+            Assert.AreEqual("exp", TestUtility.Dump(exp));
+            Assert.AreEqual("exp2", TestUtility.Dump(exp2));
+            Assert.AreEqual("b1, b2", TestUtility.Dump(imp));
+
+            Assert.AreEqual(6, impRepos.Counter);
+
+            Assert.AreEqual("True, True, False", TestUtility.Dump(new object[] { exp, exp2, imp }.Select(o => o is IList)));
+            Assert.AreEqual("False, False, True", TestUtility.Dump(new object[] { exp, exp2, imp }.Select(o => o is IQueryable)));
+
+            TestUtility.ShouldFail(() => NewRepos(new NullRepository()).Read(gf), "SimpleEntity", "does not implement", "PropertyFilter");
+        }
+
+        //=======================================================
+
+        class ImplicitQueryDataSourceCommandRepository : IRepository
+        {
+            public IQueryable<SimpleEntity> Query()
+            {
+                return new SimpleEntityList { "a1", "b1", "b2", "b3", "b4", "b5" }.AsQueryable();
+            }
+        }
+
+        class ExplicitQueryDataSourceCommandRepository : IRepository
+        {
+            public QueryDataSourceCommandResult QueryData(QueryDataSourceCommandInfo commandInfo)
+            {
+                return new QueryDataSourceCommandResult
+                {
+                    Records = new SimpleEntityList { "a1", "b1", "b2" }.ToArray<object>(),
+                    TotalRecords = 10
+                };
+            }
+        }
+
+        string Dump(QueryDataSourceCommandResult commandResult)
+        {
+            return TestUtility.Dump(commandResult.Records) + " / " + commandResult.TotalRecords;
+        }
+
+        [TestMethod]
+        public void QueryDataSourceCommand()
+        {
+            var command = new QueryDataSourceCommandInfo
+            {
+                GenericFilter = new [] { new FilterCriteria { Property = "Name", Operation = "StartsWith", Value = "b" } },
+                OrderByProperty = "Name",
+                RecordsPerPage = 3,
+                PageNumber = 2
+            };
+
+            Assert.AreEqual("b4, b5 / 5", Dump(NewRepos(new ImplicitQueryDataSourceCommandRepository()).ExecuteQueryDataSourceCommand(command)));
+            Assert.AreEqual("a1, b1, b2 / 10", Dump(NewRepos(new ExplicitQueryDataSourceCommandRepository()).ExecuteQueryDataSourceCommand(command)));
         }
     }
 }

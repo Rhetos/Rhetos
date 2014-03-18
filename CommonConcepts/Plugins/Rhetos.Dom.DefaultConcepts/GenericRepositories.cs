@@ -70,6 +70,16 @@ namespace Rhetos.Dom.DefaultConcepts
                 _persistenceTransaction);
         }
 
+        public GenericRepository<IEntity> GetGenericRepository(string entityName)
+        {
+            return new GenericRepository<IEntity>(
+                _domainObjectModel,
+                _repositories,
+                entityName,
+                _logProvider,
+                _persistenceTransaction);
+        }
+
         public string GetEntityName<TEntityInterface>()
             where TEntityInterface : class, IEntity
         {
@@ -79,7 +89,12 @@ namespace Rhetos.Dom.DefaultConcepts
         public IRepository GetEntityRepository<TEntityInterface>()
             where TEntityInterface : class, IEntity
         {
-            return GetGenericRepository<TEntityInterface>().Repository;
+            return GetGenericRepository<TEntityInterface>().EntityRepository;
+        }
+
+        public IRepository GetEntityRepository(string entityName)
+        {
+            return GetGenericRepository(entityName).EntityRepository;
         }
 
         #endregion

@@ -100,6 +100,10 @@
       <Project>{5e3bbd83-91cb-4fba-81b2-79a81ec94d70}</Project>
       <Name>Rhetos.Persistence.Interfaces</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Processing.Interfaces\Rhetos.Processing.Interfaces.csproj">
+      <Project>{4d2fcd7f-d9bb-4e55-b9c6-fdf352f6dcf3}</Project>
+      <Name>Rhetos.Processing.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Source\Rhetos.Security.Interfaces\Rhetos.Security.Interfaces.csproj">
       <Project>{8e1d4acd-b1aa-433f-9e52-fa50d4a1c9dc}</Project>
       <Name>Rhetos.Security.Interfaces</Name>
@@ -123,6 +127,10 @@
     <ProjectReference Include="..\Rhetos.Dsl.DefaultConcepts\Rhetos.Dsl.DefaultConcepts.csproj">
       <Project>{24bc6b74-703a-4aaf-99c3-b5cd760f3d22}</Project>
       <Name>Rhetos.Dsl.DefaultConcepts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Processing.DefaultCommands.Interfaces\Rhetos.Processing.DefaultCommands.Interfaces.csproj">
+      <Project>{98f36936-5842-49cf-bacf-61119ac7bf3e}</Project>
+      <Name>Rhetos.Processing.DefaultCommands.Interfaces</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

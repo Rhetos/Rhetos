@@ -50,7 +50,7 @@ namespace Rhetos.CommonConcepts.Test.Mocks
         {
             get
             {
-                return (RepositoryMock<TEntityInterface, TEntity>)Repository;
+                return (RepositoryMock<TEntityInterface, TEntity>)EntityRepository;
             }
         }
     }

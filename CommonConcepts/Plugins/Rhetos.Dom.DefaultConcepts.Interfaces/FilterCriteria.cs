@@ -25,16 +25,15 @@ using System.Linq.Expressions;
 namespace Rhetos.Dom.DefaultConcepts
 {
     /// <summary>
-    /// IFilterRepository implementation of this filter is expected to have performance and memory EFFICIENT filtering.
-    /// For example, if a repository loads data from a relational database, the filtering condition should be propagated
-    /// to SQL so that only data that is already filtered will be loaded from database to application server.
+    /// FilterCriteria is a generic filter's element that defines a filter by property value or a specific filter call.
     /// 
-    /// It is possible for IFilterRepository implementation to fail with NotSupportedException if the given filter is
-    /// too complex to be efficiently computed. In such situations, a specific filter should be implemented and used.
+    /// If a data structure's repository implements a Query, Load or Filter function with IEnumerable&lt;FilterCriteria&gt; argument,
+    /// it will be used when reading data using QueryDataSourceCommand.
     /// </summary>
     public class FilterCriteria
     {
         public string Property { get; set; }
+        public string Filter { get; set; }
         public string Operation { get; set; }
         public object Value { get; set; }
     }

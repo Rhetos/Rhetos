@@ -26,6 +26,7 @@ using Rhetos.Dom.DefaultConcepts;
 
 namespace Rhetos.Processing.DefaultCommands
 {
+    // TODO: Rename to ReadCommand*
     [Export(typeof(ICommandInfo))]
     public class QueryDataSourceCommandInfo : ICommandInfo
     {

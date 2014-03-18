@@ -25,6 +25,7 @@ using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -55,7 +56,7 @@ namespace Rhetos.CommonConcepts.Test
 
         class SimpleEntityList : List<SimpleEntity>
         {
-            static int idCounter = 0;
+            int idCounter = 0;
             public void Add(string name) { Add(new SimpleEntity { Name = name, ID = new Guid(idCounter++, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) }); }
         }
 
@@ -84,7 +85,7 @@ namespace Rhetos.CommonConcepts.Test
             var repos = NewRepos(new NullRepository());
 
             TestUtility.ShouldFail(() => repos.Filter(EmptyArray, "abc"),
-                "no suitable functions",
+                "does not implement",
                 typeof(SimpleEntity).FullName,
                 "string");
         }
@@ -106,7 +107,7 @@ namespace Rhetos.CommonConcepts.Test
             var repos = NewRepos(new FilterQueryRepository());
 
             TestUtility.ShouldFail(() => repos.Filter(EmptyArray, Guid.NewGuid()),
-                "no suitable functions",
+                "does not implement",
                 typeof(SimpleEntity).FullName,
                 "System.Guid");
 
@@ -219,6 +220,83 @@ namespace Rhetos.CommonConcepts.Test
             object o = new[] { 1, 2, 3 };
             Assert.AreEqual("ai", repos.Filter(EmptyArray, o, o.GetType()).Single().Name);
             Assert.AreEqual("ei", repos.Filter(EmptyArray, o, typeof(IEnumerable<int>)).Single().Name);
+        }
+
+        //===============================================
+
+        class ExplicitGenericPropertyFilterRepository : IRepository
+        {
+            public IEnumerable<SimpleEntity> Filter(IEnumerable<PropertyFilter> p) { return new[] { new SimpleEntity { Name = "exp" } }; }
+        }
+
+        class ExplicitGenericPropertyFilterRepository2 : IRepository
+        {
+            public IEnumerable<SimpleEntity> Filter(IQueryable<SimpleEntity> source, IEnumerable<PropertyFilter> p) { return new[] { new SimpleEntity { Name = "exp2" } }; }
+
+            public IQueryable<SimpleEntity> Query()
+            {
+                return new[] { "a1", "b1", "b2" }.Select(s => new SimpleEntity { Name = s }).AsQueryable();
+            }
+        }
+
+        class ImplicitGenericPropertyFilterRepository : IRepository
+        {
+            public int Counter = 0;
+
+            public IQueryable<SimpleEntity> Query()
+            {
+                return new[] { "a1", "b1", "b2" }.Select(s => { Counter++; return new SimpleEntity { Name = s }; }).AsQueryable();
+            }
+        }
+
+        [TestMethod]
+        public void FilterGenericFilter2()
+        {
+            int sourceCounter = 0;
+            var source = new[] { "aa1", "bb1", "bb2" }.Select(s => { sourceCounter++; return new SimpleEntity { Name = s }; });
+            var gf = new[] { new PropertyFilter { Property = "Name", Operation = "StartsWith", Value = "b" } };
+
+            var impRepos = new ImplicitGenericPropertyFilterRepository();
+
+            Assert.AreEqual(0, impRepos.Counter);
+            Assert.AreEqual(0, sourceCounter);
+
+            var exp = NewRepos(new ExplicitGenericPropertyFilterRepository()).Filter(source, gf);
+            var exp2 = NewRepos(new ExplicitGenericPropertyFilterRepository2()).Filter(source, gf);
+            var imp = NewRepos(impRepos).Filter(source, gf);
+
+            Assert.AreEqual(0, impRepos.Counter);
+            Assert.AreEqual(6, sourceCounter);
+
+            Assert.AreEqual("bb1, bb2", TestUtility.Dump(exp));
+            Assert.AreEqual("exp2", TestUtility.Dump(exp2));
+            Assert.AreEqual("bb1, bb2", TestUtility.Dump(imp));
+
+            Assert.AreEqual(0, impRepos.Counter);
+            Assert.AreEqual(6, sourceCounter);
+
+            Assert.AreEqual("True, True, True", TestUtility.Dump(new object[] { exp, exp2, imp }.Select(o => o is IList)));
+            Assert.AreEqual("False, False, False", TestUtility.Dump(new object[] { exp, exp2, imp }.Select(o => o is IQueryable)));
+
+            Assert.AreEqual(0, impRepos.Counter);
+            Assert.AreEqual(6, sourceCounter);
+
+            exp = NewRepos(new ExplicitGenericPropertyFilterRepository()).FilterNonMaterialized(source, gf);
+            exp2 = NewRepos(new ExplicitGenericPropertyFilterRepository2()).FilterNonMaterialized(source, gf);
+            imp = NewRepos(impRepos).FilterNonMaterialized(source, gf);
+
+            Assert.AreEqual(0, impRepos.Counter);
+            Assert.AreEqual(6, sourceCounter);
+
+            Assert.AreEqual("bb1, bb2", TestUtility.Dump(exp));
+            Assert.AreEqual("exp2", TestUtility.Dump(exp2));
+            Assert.AreEqual("bb1, bb2", TestUtility.Dump(imp));
+
+            Assert.AreEqual(0, impRepos.Counter);
+            Assert.AreEqual(12, sourceCounter);
+
+            Assert.AreEqual("False, True, False", TestUtility.Dump(new object[] { exp, exp2, imp }.Select(o => o is IList)));
+            Assert.AreEqual("True, False, True", TestUtility.Dump(new object[] { exp, exp2, imp }.Select(o => o is IQueryable)));
         }
     }
 }

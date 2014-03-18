@@ -108,14 +108,14 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format(
 @"        public global::{0}[] Filter(IEnumerable<Guid> identifiers)
         {{
-			const int BufferSize = 1000;
-			int n = identifiers.Count();
-			var result = new List<{0}>(n);
-			for (int i = 0; i < (n+BufferSize-1) / BufferSize; i++) {{
-				Guid[] idBuffer = identifiers.Skip(i*BufferSize).Take(BufferSize).ToArray();
-				var itemBuffer = Query().Where(item => idBuffer.Contains(item.ID)).ToArray();
-				result.AddRange(itemBuffer);
-			}}
+            const int BufferSize = 1000;
+            int n = identifiers.Count();
+            var result = new List<{0}>(n);
+            for (int i = 0; i < (n+BufferSize-1) / BufferSize; i++) {{
+                Guid[] idBuffer = identifiers.Skip(i*BufferSize).Take(BufferSize).ToArray();
+                var itemBuffer = Query().Where(item => idBuffer.Contains(item.ID)).ToArray();
+                result.AddRange(itemBuffer);
+            }}
             return result.ToArray();
         }}
 
@@ -125,63 +125,10 @@ namespace Rhetos.Dom.DefaultConcepts
             {2}
         }}
 
-        Rhetos.Processing.DefaultCommands.QueryDataSourceCommandResult Rhetos.Processing.DefaultCommands.IQueryDataSourceCommandImplementation.QueryData(Rhetos.Processing.DefaultCommands.QueryDataSourceCommandInfo commandInfo)
-        {{
-            var repository = _domRepository.{0};
-
-            IQueryable<{0}> filteredResult = null;
-            if (commandInfo.Filter != null)
-            {{
-                // Using reflection to execute function 'repository.Filter(commandInfo.Filter)'. The function is an implementation of the interface IFilterRepository<TFilter, TResult>.
-                Type filterRepositoryType = repository.GetType().FindInterfaces(System.Reflection.Module.FilterTypeName, typeof(IFilterRepository<,>).Name)
-                    .Where(t => t.GetGenericArguments().First().IsAssignableFrom(commandInfo.Filter.GetType())).SingleOrDefault();
-
-                // If composable filter method exists, use it, and the result will be clean IQueryable
-                System.Reflection.MethodInfo composableFilterMethod = repository.GetType().GetMethod(""Filter"", new[] {{ typeof(IQueryable<{0}>), commandInfo.Filter.GetType() }});
-                if (composableFilterMethod != null)
-                {{
-                    filteredResult = (IQueryable<{0}>)composableFilterMethod.Invoke(repository, new [] {{_domRepository.{0}.Query(), commandInfo.Filter}});
-                }}
-                else if (filterRepositoryType != null)
-                {{
-                    System.Reflection.MethodInfo filterMethod = filterRepositoryType.GetMethod(""Filter"", new[] {{ commandInfo.Filter.GetType() }});
-                    filteredResult = (({0}[]) filterMethod.Invoke(repository, new[] {{ commandInfo.Filter }})).AsQueryable();
-                }}
-                else
-                    throw new Rhetos.FrameworkException(""Data stucture '{0}' does not have an implementation of the filter for type '"" + commandInfo.Filter.GetType().FullName + ""'."");
-            }}
-
-            IQueryable<{0}> query = filteredResult != null ? filteredResult : _domRepository.{0}.Query();
-
-            if (commandInfo.GenericFilter != null)
-                query = Rhetos.Dom.DefaultConcepts.GenericFilterWithPagingUtility.Filter(query, commandInfo.GenericFilter);
-
-            int totalCount = -1;
-            query = Rhetos.Dom.DefaultConcepts.GenericFilterWithPagingUtility.SortAndPaginate(query, commandInfo, ref totalCount);
-
-            var result = new Rhetos.Processing.DefaultCommands.QueryDataSourceCommandResult
-            {{
-                Records = query.ToArray(),
-                TotalRecords = totalCount
-            }};
-
-            if (result.TotalRecords == -1)
-                result.TotalRecords = result.Records.Count();
-
-            return result;
-        }}
-
 ",
                 info.GetKeyProperties(),
                 BeforeQueryTag.Evaluate(info),
                 queryFunctionBody);
-        }
-
-        private static string RegisterQueryDataSourceCommandImplementation(DataStructureInfo info)
-        {
-            return string.Format(@"builder.RegisterType<{0}._Helper.{1}_Repository>().Keyed<Rhetos.Processing.DefaultCommands.IQueryDataSourceCommandImplementation>(""{0}.{1}"");
-            ",
-                info.Module.Name, info.Name);
         }
 
         public static void GenerateReadableRepositoryFunctions(DataStructureInfo info, ICodeBuilder codeBuilder, string readFunctionBody)
@@ -196,13 +143,6 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode(RepositoryQueryFunctionsSnippet(info, queryFunctionBody), RepositoryMembers, info);
             codeBuilder.InsertCode("IQueryableRepository<" + info.Module.Name + "." + info.Name + ">", RepositoryInterfaces, info);
             codeBuilder.InsertCode("IFilterRepository<IEnumerable<Guid>, " + info.Module.Name + "." + info.Name + ">", RepositoryInterfaces, info);
-            codeBuilder.InsertCode("Rhetos.Processing.DefaultCommands.IQueryDataSourceCommandImplementation", RepositoryInterfaces, info);
-            codeBuilder.InsertCode(RegisterQueryDataSourceCommandImplementation(info), ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
-
-            codeBuilder.AddReferencesFromDependency(typeof(IQueryDataSourceCommandImplementation));
-            codeBuilder.AddReferencesFromDependency(typeof(ICommandInfo));
-            codeBuilder.AddReferencesFromDependency(typeof(GenericFilterWithPagingUtility));
-            codeBuilder.AddReferencesFromDependency(typeof(QueryDataSourceCommandResult));
         }
     }
 }

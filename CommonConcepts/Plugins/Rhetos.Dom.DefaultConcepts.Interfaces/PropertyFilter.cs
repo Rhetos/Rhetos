@@ -17,11 +17,21 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace Rhetos.Processing.DefaultCommands
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace Rhetos.Dom.DefaultConcepts
 {
-    // TODO: Rename to IReadDataCommandImplementation, ReadData
-    public interface IQueryDataSourceCommandImplementation
+    /// <summary>
+    /// If a data structure's repository implements a Query, Load or Filter function with IEnumerable&lt;PropertyFilter&gt; argument,
+    /// it will be used when reading data using QueryDataSourceCommand.
+    /// </summary>
+    public class PropertyFilter
     {
-        QueryDataSourceCommandResult QueryData(QueryDataSourceCommandInfo commandInfo);
+        public string Property { get; set; }
+        public string Operation { get; set; }
+        public object Value { get; set; }
     }
 }

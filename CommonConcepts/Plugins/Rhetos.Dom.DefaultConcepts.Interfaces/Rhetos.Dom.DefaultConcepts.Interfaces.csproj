@@ -105,6 +105,7 @@
     <Compile Include="IRegisteredInterfaceImplementations.cs" />
     <Compile Include="IReportRepository.cs" />
     <Compile Include="IRepository.cs" />
+    <Compile Include="PropertyFilter.cs" />
     <Compile Include="ReportFile.cs" />
     <Compile Include="IEntity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

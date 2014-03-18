@@ -34,7 +34,7 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     public static class GenericFilterWithPagingUtility
     {
-        public static Expression<Func<T, bool>> ToExpression<T>(IEnumerable<FilterCriteria> filterCriterias)
+        public static Expression<Func<T, bool>> ToExpression<T>(IEnumerable<PropertyFilter> filterCriterias)
         {
             if (filterCriterias == null || filterCriterias.Count() == 0)
                 return (t => true);
@@ -227,12 +227,12 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static readonly Regex DateRangeRegex = new Regex(@"^(?<y>\d{4})(-(?<m>\d{1,2}))?(-(?<d>\d{1,2}))?$");
 
-        public static IQueryable<T> Filter<T>(IQueryable<T> query, IEnumerable<FilterCriteria> filterCriterias)
+        public static IQueryable<T> Filter<T>(IQueryable<T> query, IEnumerable<PropertyFilter> filterCriterias)
         {
             return query.Where(ToExpression<T>(filterCriterias));
         }
 
-        public static IQueryable<T> SortAndPaginate<T>(IQueryable<T> query, QueryDataSourceCommandInfo parameters, ref int totalRecords)
+        public static IQueryable<T> SortAndPaginate<T>(IQueryable<T> query, QueryDataSourceCommandInfo parameters)
         {
             if (string.IsNullOrEmpty(parameters.OrderByProperty) && parameters.PageNumber > 0 && parameters.RecordsPerPage > 0)
                 throw new ArgumentException("OrderByProperty must be set when paging is used in QueryDataSourceCommand.");
@@ -241,10 +241,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 query = Sort(query, parameters.OrderByProperty, !parameters.OrderDescending);
 
             if (parameters.PageNumber > 0 && parameters.RecordsPerPage > 0)
-            {
-                totalRecords = query.Count();
                 query = query.Skip((parameters.PageNumber - 1) * parameters.RecordsPerPage).Take(parameters.RecordsPerPage);
-            }
 
             return query;
         }

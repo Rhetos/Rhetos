@@ -22,6 +22,7 @@ using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Logging;
 using Rhetos.Persistence;
+using Rhetos.Processing.DefaultCommands;
 using Rhetos.Utilities;
 using System;
 using System.Collections;
@@ -29,8 +30,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -46,20 +45,18 @@ namespace Rhetos.Dom.DefaultConcepts
         // ================================================================================
         #region Initialization
 
-        private readonly IDomainObjectModel _domainObjectModel;
-        private readonly Lazy<IIndex<string, IRepository>> _repositories;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
         private readonly IPersistenceTransaction _persistenceTransaction;
 
         private readonly string _repositoryName;
-        private readonly ReflectionHelper<TEntityInterface> _reflection;
         private readonly Lazy<IRepository> _repository;
-        private readonly Lazy<MethodInfo> _repositoryQueryMethod;
-        private readonly Lazy<MethodInfo> _repositorySaveMethod;
+        private readonly ReflectionHelper<TEntityInterface> _reflection;
+        private const string UnsupportedLoaderMessage = "{0} does not implement a loader or a filter with parameter {1}.";
+        private const string UnsupportedFilterMessage = "{0} does not implement a filter with parameter {1}.";
 
         public string EntityName { get; private set; }
-        public IRepository Repository { get { return _repository.Value; } }
+        public IRepository EntityRepository { get { return _repository.Value; } }
 
         public GenericRepository(
             IDomainObjectModel domainObjectModel,
@@ -67,50 +64,41 @@ namespace Rhetos.Dom.DefaultConcepts
             IRegisteredInterfaceImplementations registeredInterfaceImplementations,
             ILogProvider logProvider,
             IPersistenceTransaction persistenceTransaction)
+            : this(domainObjectModel, repositories, InitializeEntityName(registeredInterfaceImplementations), logProvider, persistenceTransaction)
         {
-            EntityName = registeredInterfaceImplementations.GetValue(typeof(TEntityInterface),
-                "There is no registered implementation of " + typeof(TEntityInterface).FullName + " in domain object model."
-                + " Try using " + new RegisteredInterfaceImplementationHelperInfo().GetKeyword() + " DSL concept.");
+        }
+
+        internal GenericRepository(
+            IDomainObjectModel domainObjectModel,
+            Lazy<IIndex<string, IRepository>> repositories,
+            string entityName,
+            ILogProvider logProvider,
+            IPersistenceTransaction persistenceTransaction)
+        {
+            EntityName = entityName;
             _repositoryName = "GenericRepository(" + EntityName + ")";
 
-            _domainObjectModel = domainObjectModel;
-            _repositories = repositories;
             _logger = logProvider.GetLogger(_repositoryName);
             _performanceLogger = logProvider.GetLogger("Performance");
             _persistenceTransaction = persistenceTransaction;
 
-
-            _reflection = new ReflectionHelper<TEntityInterface>(EntityName, domainObjectModel);
-
-            _repository = new Lazy<IRepository>(InitializeRepository);
-            _repositoryQueryMethod = new Lazy<MethodInfo>(InitializeRepositoryQueryMethod);
-            _repositorySaveMethod = new Lazy<MethodInfo>(InitializeRepositorySaveMethod);
+            _repository = new Lazy<IRepository>(() => InitializeRepository(repositories));
+            _reflection = new ReflectionHelper<TEntityInterface>(EntityName, domainObjectModel, _repository);
         }
 
-        private IRepository InitializeRepository()
+        private static string InitializeEntityName(IRegisteredInterfaceImplementations registeredInterfaceImplementations)
+        {
+            return registeredInterfaceImplementations.GetValue(typeof(TEntityInterface),
+                "There is no registered implementation of " + typeof(TEntityInterface).FullName + " in domain object model."
+                + " Try using " + new RegisteredInterfaceImplementationHelperInfo().GetKeyword() + " DSL concept.");
+        }
+
+        private IRepository InitializeRepository(Lazy<IIndex<string, IRepository>> repositories)
         {
             IRepository repository;
-            if (!_repositories.Value.TryGetValue(EntityName, out repository))
+            if (!repositories.Value.TryGetValue(EntityName, out repository))
                 throw new FrameworkException("There is no registered repository for " + EntityName + " in domain object model.");
             return repository;
-        }
-
-        private MethodInfo InitializeRepositoryQueryMethod()
-        {
-            Type reposType = _repository.Value.GetType();
-            var queryMethod = reposType.GetMethod("Query", new Type[] { });
-            if (queryMethod == null)
-                throw new FrameworkException(EntityName + "'s repostory does not implement the Query() method.");
-            return queryMethod;
-        }
-
-        private MethodInfo InitializeRepositorySaveMethod()
-        {
-            Type reposType = _repository.Value.GetType();
-            var saveMethod = reposType.GetMethod("Save", new Type[] { _reflection.EnumerableType, _reflection.EnumerableType, _reflection.EnumerableType, typeof(bool) });
-            if (saveMethod == null)
-                throw new FrameworkException(EntityName + "'s repostory does not implement the Save(IEnumerable<Entity>, ...) method.");
-            return saveMethod;
         }
 
         #endregion
@@ -180,7 +168,10 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public IQueryable<TEntityInterface> Query()
         {
-            return (IQueryable<TEntityInterface>)_repositoryQueryMethod.Value.Invoke(_repository.Value, new object[] { });
+            if (_reflection.RepositoryQueryMethod == null)
+                throw new FrameworkException(EntityName + "'s repostory does not implement the Query() method.");
+
+            return (IQueryable<TEntityInterface>)_reflection.RepositoryQueryMethod.Invoke(_repository.Value, new object[] { });
         }
 
         public IEnumerable<TEntityInterface> Read()
@@ -209,23 +200,28 @@ namespace Rhetos.Dom.DefaultConcepts
             return items;
         }
 
-        private IEnumerable<TEntityInterface> ReadNonMaterialized(object parameter, Type parameterType)
+        public IEnumerable<TEntityInterface> ReadNonMaterialized(object parameter)
+        {
+            return ReadNonMaterialized(parameter, parameter.GetType());
+        }
+
+        public IEnumerable<TEntityInterface> ReadNonMaterialized(object parameter, Type parameterType)
         {
             Type reposType = _repository.Value.GetType();
 
             // If exists use Filter(TParameter)
             {
-                var filterMethod = reposType.GetMethod("Filter", new Type[] { parameterType });
-                if (filterMethod != null)
-                    return (IEnumerable<TEntityInterface>)filterMethod.Invoke(_repository.Value, new object[] { parameter });
+                var loadMethod = _reflection.RepositoryLoadWithParameterMethod(parameterType);
+                if (loadMethod != null)
+                    return (IEnumerable<TEntityInterface>)loadMethod.Invoke(_repository.Value, new object[] { parameter });
             }
 
-            var queryMethod = reposType.GetMethod("Query", new Type[] { });
+            var queryMethod = _reflection.RepositoryQueryMethod;
 
             // If exists use Filter(Query(), TParameter)
             if (queryMethod != null)
             {
-                var filterMethod = reposType.GetMethod("Filter", new Type[] { _reflection.QueryableType, parameterType });
+                var filterMethod = _reflection.RepositoryQueryableFilterMethod(parameterType);
                 if (filterMethod != null)
                 {
                     var query = queryMethod.Invoke(_repository.Value, new object[] { });
@@ -236,7 +232,7 @@ namespace Rhetos.Dom.DefaultConcepts
             // For FilterAll, if exists use All() or Query(). Filter(FilterAll) does not exist, or it would have been used earlier.
             if (typeof(FilterAll).IsAssignableFrom(parameterType))
             {
-                var allMethod = reposType.GetMethod("All", new Type[] { });
+                var allMethod = _reflection.RepositoryLoadMethod;
                 if (allMethod != null)
                     return (IEnumerable<TEntityInterface>)allMethod.Invoke(_repository.Value, new object[] { });
 
@@ -253,16 +249,59 @@ namespace Rhetos.Dom.DefaultConcepts
                     return query.Where(filterExpression);
             }
 
-            // If the parameter is a generic filter, use GenericFilterWithPagingUtility.
-            if (queryMethod != null && typeof(IEnumerable<FilterCriteria>).IsAssignableFrom(parameterType))
+            // If the parameter is a generic property filter, use GenericFilterWithPagingUtility.
+            if (queryMethod != null && typeof(IEnumerable<PropertyFilter>).IsAssignableFrom(parameterType))
             {
                 var query = (IQueryable<TEntityInterface>)queryMethod.Invoke(_repository.Value, new object[] { });
-                return GenericFilterWithPagingUtility.Filter(query, (IEnumerable<FilterCriteria>)parameter);
+                return GenericFilterWithPagingUtility.Filter(query, (IEnumerable<PropertyFilter>)parameter);
             }
 
-            throw new FrameworkException(string.Format(
-                "There are no suitable functions for reading from {0}'s repository with filter parameter {1}.",
-                EntityName, parameterType.FullName));
+            // If the parameter is a generic filter, only property filters are currently supported.
+            if (typeof(IEnumerable<FilterCriteria>).IsAssignableFrom(parameterType))
+            {
+                var propertyFilter = ((IEnumerable<FilterCriteria>)parameter)
+                    .Select(fc => new PropertyFilter { Property = fc.Property, Operation = fc.Operation, Value = fc.Value })
+                    .ToList();
+                return ReadNonMaterialized(propertyFilter);
+            }
+
+            throw new FrameworkException(string.Format(UnsupportedLoaderMessage, EntityName, parameterType.FullName));
+        }
+
+        public QueryDataSourceCommandResult ExecuteQueryDataSourceCommand(QueryDataSourceCommandInfo commandInfo)
+        {
+            var specificMethod = _reflection.RepositoryQueryDataSourceCommandMethod;
+            if (specificMethod != null)
+                return (QueryDataSourceCommandResult)specificMethod.Invoke(_repository.Value, new object[] { commandInfo });
+
+            IQueryable<TEntityInterface> filtered;
+
+            if (commandInfo.Filter != null)
+                filtered = ReadNonMaterialized(commandInfo.Filter).AsQueryable();
+            else
+                filtered = Query();
+
+            if (commandInfo.GenericFilter != null)
+            {
+                var propertyFilter = commandInfo.GenericFilter.Select(fc => new PropertyFilter { Property = fc.Property, Operation = fc.Operation, Value = fc.Value }).ToList();
+                filtered = FilterNonMaterialized(filtered, propertyFilter).AsQueryable();
+            }
+
+            var resultRecords = GenericFilterWithPagingUtility.SortAndPaginate(filtered, commandInfo).ToArray();
+
+            int totalCount;
+            if (commandInfo.PageNumber > 0 && commandInfo.RecordsPerPage > 0)
+                totalCount = filtered.Count();
+            else
+                totalCount = resultRecords.Length;
+
+            var result = new QueryDataSourceCommandResult
+            {
+                Records = resultRecords,
+                TotalRecords = totalCount
+            };
+
+            return result;
         }
 
         #endregion
@@ -281,13 +320,18 @@ namespace Rhetos.Dom.DefaultConcepts
             return filteredItems;
         }
 
-        private IEnumerable<TEntityInterface> FilterNonMaterialized(IEnumerable<TEntityInterface> items, object parameter, Type parameterType)
+        public IEnumerable<TEntityInterface> FilterNonMaterialized(IEnumerable<TEntityInterface> items, object parameter)
+        {
+            return FilterNonMaterialized(items, parameter, parameter.GetType());
+        }
+
+        public IEnumerable<TEntityInterface> FilterNonMaterialized(IEnumerable<TEntityInterface> items, object parameter, Type parameterType)
         {
             Type reposType = _repository.Value.GetType();
 
             // If exists use Filter(IQueryable, TParameter)
             {
-                var filterMethod = reposType.GetMethod("Filter", new Type[] { _reflection.QueryableType, parameterType });
+                var filterMethod = _reflection.RepositoryQueryableFilterMethod(parameterType);
                 if (filterMethod != null)
                 {
                     var query = _reflection.AsQueryable(items);
@@ -317,15 +361,22 @@ namespace Rhetos.Dom.DefaultConcepts
             }
 
             // If the parameter is a generic filter, use GenericFilterWithPagingUtility.
-            if (typeof(IEnumerable<FilterCriteria>).IsAssignableFrom(parameterType))
+            if (typeof(IEnumerable<PropertyFilter>).IsAssignableFrom(parameterType))
             {
                 var query = items.AsQueryable();
-                return GenericFilterWithPagingUtility.Filter(query, (IEnumerable<FilterCriteria>)parameter);
+                return GenericFilterWithPagingUtility.Filter(query, (IEnumerable<PropertyFilter>)parameter);
             }
 
-            throw new FrameworkException(string.Format(
-                "There are no suitable functions for filtering from {0}'s repository with filter parameter {1}.",
-                EntityName, parameterType.FullName));
+            // If the parameter is a generic filter, only property filters are currently supported.
+            if (typeof(IEnumerable<FilterCriteria>).IsAssignableFrom(parameterType))
+            {
+                var propertyFilter = ((IEnumerable<FilterCriteria>)parameter)
+                    .Select(fc => new PropertyFilter { Property = fc.Property, Operation = fc.Operation, Value = fc.Value })
+                    .ToList();
+                return FilterNonMaterialized(items, propertyFilter, propertyFilter.GetType());
+            }
+
+            throw new FrameworkException(string.Format(UnsupportedFilterMessage, EntityName, parameterType.FullName));
         }
 
         #endregion
@@ -341,7 +392,10 @@ namespace Rhetos.Dom.DefaultConcepts
             MaterializeEntityList(ref updatedNew);
             MaterializeEntityList(ref deletedIds);
 
-            _repositorySaveMethod.Value.Invoke(_repository.Value, new object[] {
+            if (_reflection.RepositorySaveMethod == null)
+                throw new FrameworkException(EntityName + "'s repostory does not implement the Save(IEnumerable<Entity>, ...) method.");
+
+            _reflection.RepositorySaveMethod.Invoke(_repository.Value, new object[] {
                 insertedNew != null ? _reflection.CastEntity(insertedNew) : null,
                 updatedNew != null ? _reflection.CastEntity(updatedNew) : null,
                 deletedIds != null ? _reflection.CastEntity(deletedIds) : null,

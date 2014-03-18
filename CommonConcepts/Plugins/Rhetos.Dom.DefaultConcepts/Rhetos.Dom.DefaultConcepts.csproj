@@ -89,6 +89,7 @@
     <Compile Include="GenericRepository.cs" />
     <Compile Include="GenericRepositories.cs" />
     <Compile Include="ExpressionHelper.cs" />
+    <Compile Include="HierarchyItem.cs" />
     <Compile Include="ReflectionHelper.cs" />
     <Compile Include="SimpleBusinessLogic\ActionCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ReloadBeforeValidationsCodeGenerator.cs" />
@@ -123,7 +124,6 @@
     <Compile Include="DataStructure\BrowseDataStructureCodeGenerator.cs" />
     <Compile Include="GenericFilterWithPagingUtility.cs" />
     <Compile Include="HierarchyInfo.cs" />
-    <Compile Include="HierarchyItem.cs" />
     <Compile Include="SimpleBusinessLogic\ModuleExternalReferenceCodeGenerator.cs" />
     <Compile Include="DataStructure\BrowsePropertyCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\RequiredPropertyCodeGenerator.cs" />

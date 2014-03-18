@@ -87,10 +87,6 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 RepositoryHelper.GenerateRepository(info, codeBuilder);
                 RepositoryHelper.GenerateQueryableRepositoryFunctions(info, codeBuilder, QuerySnippet(info));
-
-                codeBuilder.AddReferencesFromDependency(typeof(IQueryDataSourceCommandImplementation));
-                codeBuilder.AddReferencesFromDependency(typeof(GenericFilterWithPagingUtility));
-                codeBuilder.AddReferencesFromDependency(typeof(QueryDataSourceCommandResult));
             }
         }
     }

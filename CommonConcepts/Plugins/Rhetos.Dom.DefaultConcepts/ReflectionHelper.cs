@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Processing.DefaultCommands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,11 +30,13 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         private readonly string _entityName;
         private readonly IDomainObjectModel _domainObjectModel;
+        private readonly Lazy<IRepository> _repository;
 
-        public ReflectionHelper(string entityName, IDomainObjectModel domainObjectModel)
+        public ReflectionHelper(string entityName, IDomainObjectModel domainObjectModel, Lazy<IRepository> repository)
         {
             _entityName = entityName;
             _domainObjectModel = domainObjectModel;
+            _repository = repository;
         }
 
         //===================================================
@@ -88,6 +91,18 @@ namespace Rhetos.Dom.DefaultConcepts
                 return _queryableType;
             }
         }
+
+        private Type _repositoryType = null;
+        public Type RepositoryType
+        {
+            get
+            {
+                if (_repositoryType == null)
+                    _repositoryType = _repository.Value.GetType();
+                return _repositoryType;
+            }
+        }
+
         #endregion
         //===================================================
         #region Methods
@@ -152,6 +167,94 @@ namespace Rhetos.Dom.DefaultConcepts
         public IEnumerable<TEntityInterface> ToListEntity(IEnumerable<TEntityInterface> items)
         {
             return (IEnumerable<TEntityInterface>)ToListEntityMethod.Invoke(null, new object[] { items });
+        }
+
+        #endregion
+        //===================================================
+        #region Repository methods
+
+        private MethodInfo _repositoryLoadMethod = null;
+        public MethodInfo RepositoryLoadMethod
+        {
+            get
+            {
+                if (_repositoryLoadMethod == null)
+                    _repositoryLoadMethod = RepositoryType.GetMethod("All", new Type[] { }); // TODO: Rename All to Load
+                return _repositoryLoadMethod;
+            }
+        }
+
+        private MethodInfo _repositoryQueryMethod = null;
+        public MethodInfo RepositoryQueryMethod
+        {
+            get
+            {
+                if (_repositoryQueryMethod == null)
+                    _repositoryQueryMethod = RepositoryType.GetMethod("Query", new Type[] { });
+                return _repositoryQueryMethod;
+            }
+        }
+
+        private Dictionary<Type, MethodInfo> _repositoryLoadWithParameterMethod = null;
+        public MethodInfo RepositoryLoadWithParameterMethod(Type parameterType)
+        {
+            MethodInfo method = null;
+            bool exists = false;
+
+            if (_repositoryLoadWithParameterMethod == null)
+                _repositoryLoadWithParameterMethod = new Dictionary<Type, MethodInfo>();
+            else
+                exists = _repositoryLoadWithParameterMethod.TryGetValue(parameterType, out method);
+
+            if (!exists)
+            {
+                method = RepositoryType.GetMethod("Filter", new Type[] { parameterType }); // TODO: Rename Filter to Load
+                _repositoryLoadWithParameterMethod.Add(parameterType, method);
+            }
+
+            return method;
+        }
+
+        private Dictionary<Type, MethodInfo> _repositoryQueryableFilterMethod = null;
+        public MethodInfo RepositoryQueryableFilterMethod(Type parameterType)
+        {
+            MethodInfo method = null;
+            bool exists = false;
+
+            if (_repositoryQueryableFilterMethod == null)
+                _repositoryQueryableFilterMethod = new Dictionary<Type, MethodInfo>();
+            else
+                exists = _repositoryQueryableFilterMethod.TryGetValue(parameterType, out method);
+
+            if (!exists)
+            {
+                method = RepositoryType.GetMethod("Filter", new Type[] { QueryableType, parameterType });
+                _repositoryQueryableFilterMethod.Add(parameterType, method);
+            }
+
+            return method;
+        }
+
+        private MethodInfo _repositorySaveMethod = null;
+        public MethodInfo RepositorySaveMethod
+        {
+            get
+            {
+                if (_repositorySaveMethod == null)
+                    _repositorySaveMethod = RepositoryType.GetMethod("Save", new Type[] { EnumerableType, EnumerableType, EnumerableType, typeof(bool) });
+                return _repositorySaveMethod;
+            }
+        }
+
+        private MethodInfo _repositoryQueryDataSourceCommandMethod = null;
+        public MethodInfo RepositoryQueryDataSourceCommandMethod
+        {
+            get
+            {
+                if (_repositoryQueryDataSourceCommandMethod == null)
+                    _repositoryQueryDataSourceCommandMethod = RepositoryType.GetMethod("QueryData", new Type[] { typeof(QueryDataSourceCommandInfo) });
+                return _repositoryQueryDataSourceCommandMethod;
+            }
         }
 
         #endregion

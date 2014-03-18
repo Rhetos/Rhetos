@@ -28,6 +28,7 @@ using Rhetos.Security;
 
 namespace Rhetos.Processing.DefaultCommands
 {
+    // TODO: Rename to ReadCommand*
     [Export(typeof(IClaimProvider))]
     [ExportMetadata(MefProvider.Implements, typeof(QueryDataSourceCommandInfo))]
     public class QueryDataSourceCommandClaims : IClaimProvider
