@@ -21,12 +21,14 @@ using Rhetos.Processing.DefaultCommands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     internal class ReflectionHelper<TEntityInterface>
+        where TEntityInterface : class, IEntity
     {
         private readonly string _entityName;
         private readonly IDomainObjectModel _domainObjectModel;
@@ -103,23 +105,58 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
+        public bool IsPredicateExpression(Type expressionType)
+        {
+            return IsPredicateExpression(expressionType, EntityType);
+        }
+
+        public static bool IsPredicateExpression(Type expressionType, Type acceptingArgument)
+        {
+            var parameterType = GetPredicateExpressionParameter(expressionType);
+            return parameterType != null && parameterType.IsAssignableFrom(acceptingArgument);
+        }
+
+        public static Type GetPredicateExpressionParameter(Type expressionType)
+        {
+            if (!expressionType.IsGenericType) return null;
+            if (expressionType.GetGenericTypeDefinition() != typeof(Expression<>)) return null;
+
+            var funcType = expressionType.GetGenericArguments().First();
+            if (!funcType.IsGenericType) return null;
+            if (funcType.GetGenericTypeDefinition() != typeof(Func<,>)) return null;
+
+            var funcArgs = funcType.GetGenericArguments();
+            if (funcArgs.Length != 2) return null;
+            if (funcArgs[1] != typeof(bool)) return null;
+            return funcArgs[0];
+        }
+
         #endregion
         //===================================================
         #region Methods
 
-        private MethodInfo _asQueryableMethod = null;
-        public MethodInfo AsQueryableMethod
+        /// <param name="predicateExpression">
+        /// Expression&lt;Func&lt;parameter, result&gt;&gt; does not support contravariant parameter type,
+        /// so a specific function type is needed for each parameter type.</param>
+        private MethodInfo _queryableWhereMethod = null;
+        public MethodInfo QueryableWhereMethod(Type parameterType)
         {
-            get
-            {
-                if (_asQueryableMethod == null)
-                    _asQueryableMethod = typeof(Queryable).GetMethod("AsQueryable", new[] { EnumerableType });
-                return _asQueryableMethod;
-            }
+            if (_queryableWhereMethod == null)
+                _queryableWhereMethod = typeof(Queryable).GetMethods()
+                    .Where(m => m.Name == "Where" && m.GetParameters()[1].ParameterType.GetGenericArguments()[0].GetGenericArguments().Count() == 2)
+                    .Single();
+
+            return _queryableWhereMethod.MakeGenericMethod(parameterType);
         }
-        public IQueryable<TEntityInterface> AsQueryable(IEnumerable<TEntityInterface> items)
+        /// <param name="predicateExpression">
+        /// Expression&lt;Func&lt;parameter, result&gt;&gt; does not support contravariant parameter type,
+        /// so the object is used for predicateExpression.</param>
+        public IQueryable<TEntityInterface> Where(IQueryable<TEntityInterface> items, object predicateExpression)
         {
-            return (IQueryable<TEntityInterface>)AsQueryableMethod.Invoke(null, new object[] { items });
+            Type predicateParameter = GetPredicateExpressionParameter(predicateExpression.GetType());
+            MethodInfo whereMethod = QueryableWhereMethod(predicateParameter);
+            object result = whereMethod.Invoke(null, new object[] { items, predicateExpression });
+            return (IQueryable<TEntityInterface>)result;
         }
 
         private MethodInfo _addRangeMethod = null;
@@ -137,36 +174,79 @@ namespace Rhetos.Dom.DefaultConcepts
             AddRangeMethod.Invoke(list, new object[] { items });
         }
 
-        private MethodInfo _castEntityMethod = null;
-        public MethodInfo CastEntityMethod
+        private MethodInfo _castAsEntityMethod = null;
+        public MethodInfo CastAsEntityMethod
         {
             get
             {
-                if (_castEntityMethod == null)
-                    _castEntityMethod = typeof(Enumerable).GetMethod("Cast", BindingFlags.Public | BindingFlags.Static)
+                if (_castAsEntityMethod == null)
+                    _castAsEntityMethod = typeof(Enumerable).GetMethod("Cast", BindingFlags.Public | BindingFlags.Static)
                         .MakeGenericMethod(new[] { EntityType });
-                return _castEntityMethod;
+                return _castAsEntityMethod;
             }
         }
-        public IEnumerable<TEntityInterface> CastEntity(IEnumerable<object> items)
+        public IEnumerable<TEntityInterface> CastAsEntity(IEnumerable<object> items)
         {
-            return (IEnumerable<TEntityInterface>)CastEntityMethod.Invoke(null, new object[] { items });
+            return (IEnumerable<TEntityInterface>)CastAsEntityMethod.Invoke(null, new object[] { items });
         }
 
-        private MethodInfo _toListEntityMethod = null;
-        public MethodInfo ToListEntityMethod
+        private MethodInfo _asQueryableMethod = null;
+        public MethodInfo AsQueryableMethod
         {
             get
             {
-                if (_toListEntityMethod == null)
-                    _toListEntityMethod = typeof(Enumerable).GetMethod("ToList", BindingFlags.Public | BindingFlags.Static)
-                        .MakeGenericMethod(new[] { EntityType });
-                return _toListEntityMethod;
+                if (_asQueryableMethod == null)
+                    _asQueryableMethod = typeof(Queryable).GetMethod("AsQueryable", new[] { EnumerableType });
+                return _asQueryableMethod;
             }
         }
-        public IEnumerable<TEntityInterface> ToListEntity(IEnumerable<TEntityInterface> items)
+        /// <summary>
+        /// Casts items to the entity type before calling AsQueryable.
+        /// </summary>
+        public IQueryable<TEntityInterface> AsQueryable(IEnumerable<TEntityInterface> items)
         {
-            return (IEnumerable<TEntityInterface>)ToListEntityMethod.Invoke(null, new object[] { items });
+            var castItems = CastAsEntity(items);
+            return (IQueryable<TEntityInterface>)AsQueryableMethod.Invoke(null, new object[] { castItems });
+        }
+
+        private MethodInfo _toListOfEntityMethod = null;
+        public MethodInfo ToListOfEntityMethod
+        {
+            get
+            {
+                if (_toListOfEntityMethod == null)
+                    _toListOfEntityMethod = typeof(Enumerable).GetMethod("ToList", BindingFlags.Public | BindingFlags.Static)
+                        .MakeGenericMethod(new[] { EntityType });
+                return _toListOfEntityMethod;
+            }
+        }
+        /// <summary>
+        /// Casts items to the entity type before calling ToList.
+        /// </summary>
+        public IEnumerable<TEntityInterface> ToListOfEntity(IEnumerable<TEntityInterface> items)
+        {
+            var castItems = CastAsEntity(items);
+            return (IEnumerable<TEntityInterface>)ToListOfEntityMethod.Invoke(null, new object[] { castItems });
+        }
+
+        private MethodInfo _toArrayOfEntityMethod = null;
+        public MethodInfo ToArrayOfEntityMethod
+        {
+            get
+            {
+                if (_toArrayOfEntityMethod == null)
+                    _toArrayOfEntityMethod = typeof(Enumerable).GetMethod("ToArray", BindingFlags.Public | BindingFlags.Static)
+                        .MakeGenericMethod(new[] { EntityType });
+                return _toArrayOfEntityMethod;
+            }
+        }
+        /// <summary>
+        /// Casts items to the entity type before calling ToArray.
+        /// </summary>
+        public IEnumerable<TEntityInterface> ToArrayOfEntity(IEnumerable<TEntityInterface> items)
+        {
+            var castItems = CastAsEntity(items);
+            return (IEnumerable<TEntityInterface>)ToArrayOfEntityMethod.Invoke(null, new object[] { castItems });
         }
 
         #endregion
@@ -208,8 +288,48 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (!exists)
             {
-                method = RepositoryType.GetMethod("Filter", new Type[] { parameterType }); // TODO: Rename Filter to Load
+                method = RepositoryType.GetMethod("Filter", new Type[] { parameterType }); // TODO: Rename Filter with a single argument to Load
                 _repositoryLoadWithParameterMethod.Add(parameterType, method);
+            }
+
+            return method;
+        }
+
+        private Dictionary<Type, MethodInfo> _repositoryQueryWithParameterMethod = null;
+        public MethodInfo RepositoryQueryWithParameterMethod(Type parameterType)
+        {
+            MethodInfo method = null;
+            bool exists = false;
+
+            if (_repositoryQueryWithParameterMethod == null)
+                _repositoryQueryWithParameterMethod = new Dictionary<Type, MethodInfo>();
+            else
+                exists = _repositoryQueryWithParameterMethod.TryGetValue(parameterType, out method);
+
+            if (!exists)
+            {
+                method = RepositoryType.GetMethod("Query", new Type[] { parameterType });
+                _repositoryQueryWithParameterMethod.Add(parameterType, method);
+            }
+
+            return method;
+        }
+
+        private Dictionary<Type, MethodInfo> _repositoryEnumerableFilterMethod = null;
+        public MethodInfo RepositoryEnumerableFilterMethod(Type parameterType)
+        {
+            MethodInfo method = null;
+            bool exists = false;
+
+            if (_repositoryEnumerableFilterMethod == null)
+                _repositoryEnumerableFilterMethod = new Dictionary<Type, MethodInfo>();
+            else
+                exists = _repositoryEnumerableFilterMethod.TryGetValue(parameterType, out method);
+
+            if (!exists)
+            {
+                method = RepositoryType.GetMethod("Filter", new Type[] { EnumerableType, parameterType });
+                _repositoryEnumerableFilterMethod.Add(parameterType, method);
             }
 
             return method;
@@ -229,6 +349,8 @@ namespace Rhetos.Dom.DefaultConcepts
             if (!exists)
             {
                 method = RepositoryType.GetMethod("Filter", new Type[] { QueryableType, parameterType });
+                if (method != null && method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() != typeof(IQueryable<>))
+                    method = null;
                 _repositoryQueryableFilterMethod.Add(parameterType, method);
             }
 

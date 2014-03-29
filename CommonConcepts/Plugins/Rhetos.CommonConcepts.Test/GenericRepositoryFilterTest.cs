@@ -38,15 +38,16 @@ namespace Rhetos.CommonConcepts.Test
     [TestClass]
     public class GenericRepositoryFilterTest
     {
-        interface ISimpleEntity : IEntity
+        public interface ISimpleEntity : IEntity
         {
             string Name { get; set; }
         }
 
-        class SimpleEntity : ISimpleEntity
+        public class SimpleEntity : ISimpleEntity
         {
             public Guid ID { get; set; }
             public string Name { get; set; }
+            public string Data { get; set; }
 
             public override string ToString()
             {
@@ -70,7 +71,8 @@ namespace Rhetos.CommonConcepts.Test
                 new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock(typeof(SimpleEntity), repository)),
                 new RegisteredInterfaceImplementationsMock(typeof(ISimpleEntity), typeof(SimpleEntity)),
                 new ConsoleLogProvider(),
-                null);
+                null,
+                new GenericFilterHelper(new DomainObjectModelMock()));
         }
 
         //=======================================================
@@ -116,6 +118,54 @@ namespace Rhetos.CommonConcepts.Test
             Assert.IsTrue(repos.Filter(EmptyArray, "a") is List<SimpleEntity>, "GenericRepository.Filter should always return materialized list instead of a query.");
         }
 
+        class FilterEnumQueryRepository : IRepository
+        {
+            public IEnumerable<SimpleEntity> Filter(IEnumerable<SimpleEntity> source, string parameter)
+            {
+                return new[] { new SimpleEntity { Name = "filter enumerable " + ((source is IList) ? "on materialized source" : "") } }
+                .AsQueryable().Where(item => true).Select(item => item);
+            }
+
+            public IQueryable<SimpleEntity> Filter(IQueryable<SimpleEntity> source, string parameter)
+            {
+                return new[] { new SimpleEntity { Name = "filter query " + ((source is IQueryable) ? "on queryable source" : "") } }
+                .AsQueryable().Where(item => true).Select(item => item);
+            }
+
+            public IEnumerable<SimpleEntity> Filter(IEnumerable<SimpleEntity> source, int parameter)
+            {
+                return new[] { new SimpleEntity { Name = "filter enumerable " + ((source is IList) ? "on materialized source" : "") } }
+                .AsQueryable().Where(item => true).Select(item => item);
+            }
+
+            public IQueryable<SimpleEntity> Filter(IQueryable<SimpleEntity> source, DateTime parameter)
+            {
+                return new[] { new SimpleEntity { Name = "filter query " + ((source is IQueryable) ? "on queryable source" : "") } }
+                .AsQueryable().Where(item => true).Select(item => item);
+            }
+        }
+
+        [TestMethod]
+        public void FilterEnumQuery()
+        {
+            var repos = NewRepos(new FilterEnumQueryRepository());
+
+            var enumSource = new SimpleEntity[] { };
+            var querySource = new SimpleEntity[] { }.AsQueryable();
+
+            // Both queryable and enumerable filters exist:
+            Assert.AreEqual("filter enumerable on materialized source", repos.FilterNonMaterialized(enumSource, "a").Single().Name);
+            Assert.AreEqual("filter query on queryable source", repos.FilterNonMaterialized(querySource, "a").Single().Name);
+
+            // Only enumerable filter exists:
+            Assert.AreEqual("filter enumerable on materialized source", repos.FilterNonMaterialized(enumSource, 1).Single().Name);
+            Assert.AreEqual("filter enumerable on materialized source", repos.FilterNonMaterialized(querySource, 1).Single().Name);
+
+            // Only queryable filter exists:
+            Assert.AreEqual("filter query on queryable source", repos.FilterNonMaterialized(enumSource, DateTime.MinValue).Single().Name);
+            Assert.AreEqual("filter query on queryable source", repos.FilterNonMaterialized(querySource, DateTime.MinValue).Single().Name);
+        }
+
         //===============================================
 
         class FilterAllRepository : IRepository
@@ -142,18 +192,6 @@ namespace Rhetos.CommonConcepts.Test
         }
 
         //===============================================
-
-        [TestMethod]
-        public void FilterGenericFilter()
-        {
-            var repos = NewRepos(new NullRepository());
-
-            var items = repos.Filter(
-                new SimpleEntityList { "a1", "a2", "b1" },
-                new[] { new FilterCriteria { Property = "Name", Operation = "startsWith", Value = "a" } });
-            Assert.AreEqual("a1, a2", string.Join(", ", items.Select(item => item.Name)));
-            Assert.IsTrue(items is List<SimpleEntity>, "GenericRepository.Filter should always return materialized list instead of a query.");
-        }
 
         [TestMethod]
         public void FilterExpression()
@@ -224,14 +262,26 @@ namespace Rhetos.CommonConcepts.Test
 
         //===============================================
 
+        [TestMethod]
+        public void FilterGenericFilter()
+        {
+            var repos = NewRepos(new NullRepository());
+
+            var items = repos.Filter(
+                new SimpleEntityList { "a1", "a2", "b1" },
+                new[] { new FilterCriteria { Property = "Name", Operation = "startsWith", Value = "a" } });
+            Assert.AreEqual("a1, a2", string.Join(", ", items.Select(item => item.Name)));
+            Assert.IsTrue(items is List<SimpleEntity>, "GenericRepository.Filter should always return materialized list instead of a query.");
+        }
+
         class ExplicitGenericPropertyFilterRepository : IRepository
         {
-            public IEnumerable<SimpleEntity> Filter(IEnumerable<PropertyFilter> p) { return new[] { new SimpleEntity { Name = "exp" } }; }
+            public IEnumerable<SimpleEntity> Filter(IEnumerable<FilterCriteria> p) { return new[] { new SimpleEntity { Name = "exp" } }; }
         }
 
         class ExplicitGenericPropertyFilterRepository2 : IRepository
         {
-            public IEnumerable<SimpleEntity> Filter(IQueryable<SimpleEntity> source, IEnumerable<PropertyFilter> p) { return new[] { new SimpleEntity { Name = "exp2" } }; }
+            public IEnumerable<SimpleEntity> Filter(IQueryable<SimpleEntity> source, IEnumerable<FilterCriteria> p) { return new[] { new SimpleEntity { Name = "exp2" } }; }
 
             public IQueryable<SimpleEntity> Query()
             {
@@ -254,7 +304,7 @@ namespace Rhetos.CommonConcepts.Test
         {
             int sourceCounter = 0;
             var source = new[] { "aa1", "bb1", "bb2" }.Select(s => { sourceCounter++; return new SimpleEntity { Name = s }; });
-            var gf = new[] { new PropertyFilter { Property = "Name", Operation = "StartsWith", Value = "b" } };
+            var gf = new[] { new FilterCriteria { Property = "Name", Operation = "StartsWith", Value = "b" } };
 
             var impRepos = new ImplicitGenericPropertyFilterRepository();
 
@@ -297,6 +347,394 @@ namespace Rhetos.CommonConcepts.Test
 
             Assert.AreEqual("False, True, False", TestUtility.Dump(new object[] { exp, exp2, imp }.Select(o => o is IList)));
             Assert.AreEqual("True, False, True", TestUtility.Dump(new object[] { exp, exp2, imp }.Select(o => o is IQueryable)));
+        }
+
+        public class NamedFilter { }
+
+        public class ContainsFilter { public string Pattern { get; set; } }
+
+        public class QueryLoaderFilter { }
+
+        public class LoaderParameter { }
+
+        public class EnumerableFilter { }
+
+        public class GenericFilterRepository : IRepository
+        {
+            public GenericFilterRepository()
+            {
+            }
+            public GenericFilterRepository(IEnumerable<SimpleEntity> items)
+            {
+                _items = items;
+            }
+            IEnumerable<SimpleEntity> _items = null;
+
+            public List<string> _log = new List<string>();
+            public string Log { get { return string.Join(", ", _log); } }
+
+            void AddLog(string message)
+            {
+                _log.Add(message);
+                Console.WriteLine(message);
+            }
+
+            public IQueryable<SimpleEntity> Query()
+            {
+                if (_items != null)
+                    return _items.AsQueryable();
+
+                AddLog("Q"); // Using query ...
+                return new[] { 1 }.SelectMany(x =>
+                {
+                    AddLog("X"); // Query executed!
+                    return new SimpleEntityList { "a1", "a2", "b1", "b2" };
+                }).AsQueryable();
+            }
+
+            public IQueryable<SimpleEntity> Filter(IQueryable<SimpleEntity> items, NamedFilter parameter)
+            {
+                AddLog("QF"); // Using queryable filter ...
+                return items.Where(i => i.Name.StartsWith("b"));
+            }
+
+            public IEnumerable<SimpleEntity> Filter(NamedFilter parameter)
+            {
+                AddLog("LP"); // Using loader with parameters ...
+                return new SimpleEntityList { "f1", "f2" };
+            }
+
+            public IQueryable<SimpleEntity> Filter(IQueryable<SimpleEntity> items, ContainsFilter parameter)
+            {
+                AddLog("QF"); // Using queryable filter ...
+                return items.Where(i => i.Name.Contains(parameter.Pattern));
+            }
+
+            public IEnumerable<SimpleEntity> Filter(QueryLoaderFilter parameter)
+            {
+                AddLog("LP"); // Using loader with parameters ...
+                return new SimpleEntityList { "ql1", "ql2" };
+            }
+
+            public IQueryable<SimpleEntity> Query(QueryLoaderFilter parameter)
+            {
+                AddLog("QP"); // Using query with parameters ...
+                return new SimpleEntityList { "ql1", "ql2" }.AsQueryable();
+            }
+
+            public IEnumerable<SimpleEntity> Filter(IEnumerable<SimpleEntity> items, QueryLoaderFilter parameter)
+            {
+                AddLog("EF"); // Using enumerable filter ...
+                return items.Select(item => new SimpleEntity { Name = item.Name + "_ef" });
+            }
+
+            public IQueryable<SimpleEntity> Filter(IQueryable<SimpleEntity> items, QueryLoaderFilter parameter)
+            {
+                AddLog("QF"); // Using queryable filter ...
+                return items.Select(item => new SimpleEntity { Name = item.Name + "_qf" });
+            }
+
+            public IEnumerable<SimpleEntity> Filter(LoaderParameter parameter)
+            {
+                AddLog("LP"); // Using loader with parameters ...
+                return new SimpleEntityList { "lp1", "lp2" };
+            }
+
+            public IEnumerable<SimpleEntity> Filter(IEnumerable<SimpleEntity> items, EnumerableFilter parameter)
+            {
+                AddLog("EF"); // Using enumerable filter ...
+                return items.Select(item => new SimpleEntity { Name = item.Name + "_ef" });
+            }
+        }
+
+        string TestIListIQueryable(IEnumerable items)
+        {
+            var s = new List<string>();
+            if (items is IList) s.Add("IL");
+            if (items is IQueryable) s.Add("IQ");
+            return string.Join("&", s);
+        }
+
+        [TestMethod]
+        public void FilterGenericFilter_NonMaterialized()
+        {
+            var gf = new[] { new FilterCriteria { Property = "Name", Operation = "StartsWith", Value = "b" } };
+            var entityRepos = new GenericFilterRepository();
+            var genericRepos = NewRepos(entityRepos);
+
+            Assert.AreEqual("", entityRepos.Log);
+
+            var items = genericRepos.Filter(genericRepos.Query(), gf);
+            Assert.AreEqual("Q, X", entityRepos.Log);
+
+            Assert.AreEqual("b1, b2", TestUtility.Dump(items));
+            Assert.AreEqual("IL", TestIListIQueryable(items));
+            Assert.AreEqual("Q, X", entityRepos.Log);
+
+            items = genericRepos.FilterNonMaterialized(genericRepos.Query(), gf);
+            Assert.AreEqual("Q, X, Q", entityRepos.Log);
+
+            Assert.AreEqual("b1, b2", TestUtility.Dump(items));
+            Assert.AreEqual("Q, X, Q, X", entityRepos.Log);
+
+            Assert.AreEqual("b1, b2", TestUtility.Dump(items));
+            Assert.AreEqual("Q, X, Q, X, X", entityRepos.Log);
+
+            Assert.AreEqual("IQ", TestIListIQueryable(items));
+            Assert.AreEqual("Q, X, Q, X, X", entityRepos.Log);
+        }
+
+        [TestMethod]
+        public void FilterGenericFilter_Empty()
+        {
+            var gf = new FilterCriteria[] { };
+            var entityRepos = new GenericFilterRepository();
+            var genericRepos = NewRepos(entityRepos);
+
+            Assert.AreEqual("", entityRepos.Log);
+
+            var items = genericRepos.Filter(genericRepos.Query(), gf);
+            Assert.AreEqual("Q, X", entityRepos.Log);
+
+            Assert.AreEqual("a1, a2, b1, b2", TestUtility.Dump(items));
+            Assert.AreEqual("IL", TestIListIQueryable(items));
+            Assert.AreEqual("Q, X", entityRepos.Log);
+
+            items = genericRepos.FilterNonMaterialized(genericRepos.Query(), gf);
+            Assert.AreEqual("Q, X, Q", entityRepos.Log);
+
+            Assert.AreEqual("a1, a2, b1, b2", TestUtility.Dump(items));
+            Assert.AreEqual("Q, X, Q, X", entityRepos.Log);
+
+            Assert.AreEqual("IQ", TestIListIQueryable(items));
+            Assert.AreEqual("Q, X, Q, X", entityRepos.Log);
+        }
+
+        [TestMethod]
+        public void FilterGenericFilter_NamedFilter()
+        {
+            var gf = new FilterCriteria[] { new FilterCriteria { Filter = typeof(NamedFilter).FullName } };
+            var entityRepos = new GenericFilterRepository();
+            var genericRepos = NewRepos(entityRepos);
+
+            Assert.AreEqual("", entityRepos.Log);
+
+            var items = genericRepos.Filter(genericRepos.Query(), gf);
+            Assert.AreEqual("IL", TestIListIQueryable(items));
+            Assert.AreEqual("Q, QF, X", entityRepos.Log);
+            Assert.AreEqual("b1, b2", TestUtility.Dump(items));
+            Assert.AreEqual("Q, QF, X", entityRepos.Log);
+
+            items = genericRepos.FilterNonMaterialized(genericRepos.Query(), gf);
+            Assert.AreEqual("IQ", TestIListIQueryable(items));
+            Assert.AreEqual("Q, QF, X, Q, QF", entityRepos.Log);
+            Assert.AreEqual("b1, b2", TestUtility.Dump(items));
+            Assert.AreEqual("Q, QF, X, Q, QF, X", entityRepos.Log);
+        }
+
+        [TestMethod]
+        public void FilterGenericFilter_FilterWithParameters()
+        {
+            var gf = new FilterCriteria[] { new FilterCriteria { Filter = typeof(ContainsFilter).FullName, Value = new ContainsFilter { Pattern = "a" } } };
+            var entityRepos = new GenericFilterRepository();
+            var genericRepos = NewRepos(entityRepos);
+
+            Assert.AreEqual("", entityRepos.Log);
+
+            var items = genericRepos.Filter(genericRepos.Query(), gf);
+            Assert.AreEqual("IL", TestIListIQueryable(items));
+            Assert.AreEqual("Q, QF, X", entityRepos.Log);
+            Assert.AreEqual("a1, a2", TestUtility.Dump(items));
+            Assert.AreEqual("Q, QF, X", entityRepos.Log);
+
+            items = genericRepos.FilterNonMaterialized(genericRepos.Query(), gf);
+            Assert.AreEqual("IQ", TestIListIQueryable(items));
+            Assert.AreEqual("Q, QF, X, Q, QF", entityRepos.Log);
+            Assert.AreEqual("a1, a2", TestUtility.Dump(items));
+            Assert.AreEqual("Q, QF, X, Q, QF, X", entityRepos.Log);
+        }
+
+        string TypeAndNames(IEnumerable<ISimpleEntity> items)
+        {
+            return TestIListIQueryable(items) + ": " + TestUtility.Dump(items);
+        }
+
+        [TestMethod]
+        public void FilterGenericFilter_CombinedFilters()
+        {
+            var entityRepos = new GenericFilterRepository();
+            var genericRepos = NewRepos(entityRepos);
+
+            Assert.AreEqual("IL: a1", TypeAndNames(genericRepos.Filter(genericRepos.Query(), new[] {
+                new FilterCriteria { Filter = typeof(ContainsFilter).FullName, Value = new ContainsFilter { Pattern = "a" } },
+                new FilterCriteria { Property = "Name", Operation = "Contains", Value = "1" } })));
+            Assert.AreEqual("Q, QF, X", entityRepos.Log); entityRepos._log.Clear();
+
+            Assert.AreEqual("IL: b1", TypeAndNames(genericRepos.Filter(genericRepos.Query(), new[] {
+                new FilterCriteria { Filter = typeof(NamedFilter).FullName },
+                new FilterCriteria { Property = "Name", Operation = "Contains", Value = "1" } })));
+            Assert.AreEqual("Q, QF, X", entityRepos.Log); entityRepos._log.Clear();
+
+            Assert.AreEqual("IL: b1, b2", TypeAndNames(genericRepos.Filter(genericRepos.Query().ToList(), new[] {
+                new FilterCriteria { Filter = typeof(NamedFilter).FullName } })));
+            Assert.AreEqual("Q, X, QF", entityRepos.Log); entityRepos._log.Clear();
+
+            Assert.AreEqual("IL: b2", TypeAndNames(genericRepos.Filter(genericRepos.Query(), new[] {
+                new FilterCriteria { Filter = typeof(NamedFilter).FullName },
+                new FilterCriteria { Filter = typeof(ContainsFilter).FullName, Value = new ContainsFilter { Pattern = "2" } } })));
+            Assert.AreEqual("Q, QF, QF, X", entityRepos.Log); entityRepos._log.Clear();
+
+            Assert.AreEqual("IL: b2", TypeAndNames(genericRepos.Filter(genericRepos.Query(), new[] {
+                new FilterCriteria { Filter = typeof(NamedFilter).FullName },
+                new FilterCriteria { Filter = typeof(ContainsFilter).FullName, Value = new ContainsFilter { Pattern = "2" } },
+                new FilterCriteria { Property = "Name", Operation = "Contains", Value = "2" } })));
+            Assert.AreEqual("Q, QF, QF, X", entityRepos.Log); entityRepos._log.Clear();
+
+            Assert.AreEqual("IL: ", TypeAndNames(genericRepos.Filter(genericRepos.Query(), new[] {
+                new FilterCriteria { Filter = typeof(NamedFilter).FullName },
+                new FilterCriteria { Filter = typeof(ContainsFilter).FullName, Value = new ContainsFilter { Pattern = "2" } },
+                new FilterCriteria { Property = "Name", Operation = "Contains", Value = "1" } })));
+            Assert.AreEqual("Q, QF, QF, X", entityRepos.Log); entityRepos._log.Clear();
+        }
+
+        [TestMethod]
+        public void FilterGenericFilter_QueryVsEnum()
+        {
+            var entityRepos = new GenericFilterRepository();
+            var genericRepos = NewRepos(entityRepos);
+
+            Assert.AreEqual("IQ: a1_qf, a2_qf, b1_qf, b2_qf", TypeAndNames(genericRepos.FilterNonMaterialized(genericRepos.Query(), new[] {
+                new FilterCriteria { Filter = typeof(QueryLoaderFilter).FullName } })));
+            Assert.AreEqual("Q, QF, X", entityRepos.Log); entityRepos._log.Clear();
+
+            Assert.AreEqual("IL: a1_qf, a2_qf, b1_qf, b2_qf", TypeAndNames(genericRepos.Filter(genericRepos.Query(), new[] {
+                new FilterCriteria { Filter = typeof(QueryLoaderFilter).FullName } })));
+            Assert.AreEqual("Q, QF, X", entityRepos.Log); entityRepos._log.Clear();
+
+            // Prefere queryable filter version of QueryLoaderFilter on queryable
+            Assert.AreEqual("IL: a1_qf, b1_qf", TypeAndNames(genericRepos.Filter(genericRepos.Query(), new[] {
+                new FilterCriteria { Filter = typeof(QueryLoaderFilter).FullName },
+                new FilterCriteria { Property = "Name", Operation = "Contains", Value = "1" } })));
+            Assert.AreEqual("Q, QF, X", entityRepos.Log); entityRepos._log.Clear();
+
+            Assert.AreEqual("IL: a1_qf, b1_qf", TypeAndNames(genericRepos.Filter(genericRepos.Query(), new[] {
+                new FilterCriteria { Property = "Name", Operation = "Contains", Value = "1" },
+                new FilterCriteria { Filter = typeof(QueryLoaderFilter).FullName }, })));
+            Assert.AreEqual("Q, QF, X", entityRepos.Log); entityRepos._log.Clear();
+
+            // Enumerable filter on queryable:
+            // Prefere enumerable filter version of QueryLoaderFilter on queryable
+            Assert.AreEqual("IL: a1_ef_ef, a2_ef_ef, b1_ef_ef, b2_ef_ef", TypeAndNames(genericRepos.Filter(genericRepos.Query(), new[] {
+                new FilterCriteria { Filter = typeof(EnumerableFilter).FullName },
+                new FilterCriteria { Filter = typeof(QueryLoaderFilter).FullName }, })));
+            Assert.AreEqual("Q, X, EF, EF", entityRepos.Log); entityRepos._log.Clear();
+
+            // Queryable filter (property filter) on enumerable filtered items:
+            Assert.AreEqual("IL: a1_ef_ef, b1_ef_ef", TypeAndNames(genericRepos.Filter(genericRepos.Query(), new[] {
+                new FilterCriteria { Filter = typeof(EnumerableFilter).FullName },
+                new FilterCriteria { Filter = typeof(QueryLoaderFilter).FullName },
+                new FilterCriteria { Property = "Name", Operation = "Contains", Value = "1" } })));
+            Assert.AreEqual("Q, X, EF, EF", entityRepos.Log); entityRepos._log.Clear();
+
+            // Trying to use a loader for filtering
+            TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] {
+                new FilterCriteria { Filter = typeof(LoaderParameter).FullName },
+                new FilterCriteria { Filter = typeof(QueryLoaderFilter).FullName } }),
+                "SimpleEntity", "does not implement a filter", "LoaderParameter");
+            entityRepos._log.Clear();
+
+            Assert.AreEqual("IL: a1_ef, a2_ef, b1_ef, b2_ef", TypeAndNames(genericRepos.Filter(genericRepos.Query(), new[] {
+                new FilterCriteria { Filter = typeof(EnumerableFilter).FullName }, })));
+            Assert.AreEqual("Q, X, EF", entityRepos.Log); entityRepos._log.Clear();
+
+            Assert.AreEqual("IL: a1_qf_ef, a2_qf_ef, b1_qf_ef, b2_qf_ef", TypeAndNames(genericRepos.Filter(genericRepos.Query(), new[] {
+                new FilterCriteria { Filter = typeof(QueryLoaderFilter).FullName },
+                new FilterCriteria { Filter = typeof(EnumerableFilter).FullName }, })));
+            Assert.AreEqual("Q, QF, X, EF", entityRepos.Log); entityRepos._log.Clear();
+        }
+
+        [TestMethod]
+        public void FilterGenericFilter_NotMatches()
+        {
+            Expression<Func<SimpleEntity, bool>> predicate = item => item.Name.StartsWith("a");
+
+            var entityRepos = new GenericFilterRepository();
+            var genericRepos = NewRepos(entityRepos);
+
+            Assert.AreEqual("IQ: a1, a2", TypeAndNames(genericRepos.FilterNonMaterialized(genericRepos.Query(),
+                new[] { new FilterCriteria { Filter = predicate.GetType().AssemblyQualifiedName, Operation = "Matches", Value = predicate } })));
+            Assert.AreEqual("Q, X", entityRepos.Log); entityRepos._log.Clear();
+
+            Assert.AreEqual("IQ: b1, b2", TypeAndNames(genericRepos.FilterNonMaterialized(genericRepos.Query(),
+                new[] { new FilterCriteria { Filter = predicate.GetType().AssemblyQualifiedName, Operation = "NotMatches", Value = predicate } })));
+            Assert.AreEqual("Q, X", entityRepos.Log); entityRepos._log.Clear();
+        }
+
+        [TestMethod]
+        public void FilterGenericFilter_NotLimitedToInterface()
+        {
+            var items = new[] {
+                new SimpleEntity { Name = "1", Data = "ax" },
+                new SimpleEntity { Name = "2", Data = "ay" },
+                new SimpleEntity { Name = "3", Data = "bx" },
+                new SimpleEntity { Name = "4", Data = "by" },
+                new SimpleEntity { Name = "11", Data = "ax0" },
+                new SimpleEntity { Name = "12", Data = "ay0" },
+                new SimpleEntity { Name = "13", Data = "bx0" },
+                new SimpleEntity { Name = "14", Data = "by0" },
+            };
+            var entityRepos = new GenericFilterRepository(items);
+            var genericRepos = NewRepos(entityRepos);
+
+            Expression<Func<SimpleEntity, bool>> expressionFilter = item => item.Data.Contains("y");
+            var propertyFilter = new FilterCriteria { Property = "Data", Operation = "Contains", Value = "a" };
+
+            var genericFilter = new[] { propertyFilter, new FilterCriteria { Filter = expressionFilter.GetType().AssemblyQualifiedName, Value = expressionFilter } };
+
+            Assert.AreEqual("IQ: 2, 12", TypeAndNames(genericRepos.FilterNonMaterialized(genericRepos.Query(), genericFilter)));
+        }
+
+        class StringFilterRepository : IRepository
+        {
+            public IQueryable<SimpleEntity> Query()
+            {
+                return new SimpleEntityList { "a", "b" }.AsQueryable();
+            }
+
+            public IQueryable<SimpleEntity> Filter(IQueryable<SimpleEntity> items, string parameter)
+            {
+                return items;
+            }
+
+            public IQueryable<SimpleEntity> Filter(IQueryable<SimpleEntity> items, DateTime parameter)
+            {
+                return null;
+            }
+
+            public IEnumerable<SimpleEntity> Filter(IEnumerable<SimpleEntity> items, Guid parameter)
+            {
+                return null;
+            }
+        }
+
+        [TestMethod]
+        public void FilterGenericFilter_Errors()
+        {
+            var entityRepos = new StringFilterRepository();
+            var genericRepos = NewRepos(entityRepos);
+
+            TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Operation = "x" } }), "both property filter and predefined filter are null");
+            TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Value = "x" } }), "both property filter and predefined filter are null");
+            TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { } }), "both property filter and predefined filter are null");
+            TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Filter = "xx", Property = "yy" } }), "both property filter and predefined filter are set", "xx", "yy");
+            
+            TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Filter = "System.String", Operation = "xxx" } }), "Filter", "System.String", "Operation", "xxx", "Matches", "NotMatches");
+            TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Filter = "System.String", Value = 123 } }), "System.String", "System.Int32");
+            TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Property = "Name", Operation = "xxx" } }), "Operation", "xxx");
+            TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Property = "Name", Value = "xxx" } }), "Property", "Name", "Operation");
+            
+            TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Filter = "System.DateTime" } }), "SimpleEntity", "System.DateTime", "null");
+            TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Filter = "System.Guid" } }), "SimpleEntity", "System.Guid", "null");
         }
     }
 }

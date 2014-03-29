@@ -25,12 +25,13 @@ using Autofac;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(Module))]
-    public class CommonConceptsConfiguration : Module
+    public class AutofacModuleConfiguration : Module
     {
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<GenericRepositories>();
             builder.RegisterGeneric(typeof(GenericRepository<>));
+            builder.RegisterType<GenericFilterHelper>();
             base.Load(builder);
         }
     }

@@ -42,7 +42,8 @@ namespace Rhetos.CommonConcepts.Test.Mocks
                 new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock<TEntityInterface, TEntity>(items)),
                 new RegisteredInterfaceImplementationsMock(typeof(TEntityInterface), typeof(TEntity)),
                 new ConsoleLogProvider(),
-                new PersistenceTransactionStub())
+                new PersistenceTransactionStub(),
+                new GenericFilterHelper(new DomainObjectModelMock()))
         {
         }
 

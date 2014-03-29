@@ -27,6 +27,7 @@ using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Processing;
 using Rhetos.Processing.DefaultCommands;
 using Rhetos.XmlSerialization;
+using CommonConcepts.Test.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -48,8 +49,9 @@ namespace CommonConcepts.Test
 
         private static string ReportCommandResult(Common.ExecutionContext executionContext, ICommandInfo info, bool sort = false)
         {
-            var repository = new Common.DomRepository(executionContext);
-            ICommandImplementation command = new QueryDataSourceCommand(new SimpleDataTypeProvider(), new SimpleRepositoryIndex(repository));
+            var repositories = Create.GenericRepositories(executionContext);
+
+            ICommandImplementation command = new QueryDataSourceCommand(new SimpleDataTypeProvider(), repositories);
             var result = (QueryDataSourceCommandResult)command.Execute(info).Data.Value;
             var items = ((IEnumerable<TestQueryDataStructureCommand.E>)result.Records).Select(item => item.Name);
             if (sort)
@@ -174,8 +176,7 @@ namespace CommonConcepts.Test
 
         private static string ReportCommandResult2(Common.ExecutionContext executionContext, ICommandInfo info, bool sort = false)
         {
-            var repository = new Common.DomRepository(executionContext);
-            ICommandImplementation command = new QueryDataSourceCommand(new SimpleDataTypeProvider(), new SimpleRepositoryIndex(repository));
+            ICommandImplementation command = new QueryDataSourceCommand(new SimpleDataTypeProvider(), Create.GenericRepositories(executionContext));
             var result = (QueryDataSourceCommandResult)command.Execute(info).Data.Value;
             var items = ((IEnumerable<TestQueryDataStructureCommand.Source>)result.Records).Select(item => item.Name);
             if (sort)
@@ -216,37 +217,6 @@ namespace CommonConcepts.Test
    }
 
     //====================================================================
-
-    public class SimpleRepositoryIndex : IIndex<string, IQueryDataSourceCommandImplementation>
-    {
-        private readonly Common.DomRepository _domRepository;
-
-        public SimpleRepositoryIndex(Common.DomRepository domRepository)
-        {
-            _domRepository = domRepository;
-        }
-
-        public bool TryGetValue(string key, out IQueryDataSourceCommandImplementation value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IQueryDataSourceCommandImplementation this[string key]
-        {
-            get
-            {
-                var path = key.Split('.');
-
-                var moduleProp = _domRepository.GetType().GetProperty(path[0]);
-                var moduleRepos = moduleProp.GetValue(_domRepository, null);
-
-                var dsProp = moduleRepos.GetType().GetProperty(path[1]);
-                var dsRepos = dsProp.GetValue(moduleRepos, null);
-
-                return (IQueryDataSourceCommandImplementation) dsRepos;
-            }
-        }
-    }
 
     class SimpleDataTypeProvider : IDataTypeProvider
     {

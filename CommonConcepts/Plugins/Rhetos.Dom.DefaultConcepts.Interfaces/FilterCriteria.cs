@@ -17,24 +17,37 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-
 namespace Rhetos.Dom.DefaultConcepts
 {
     /// <summary>
-    /// FilterCriteria is a generic filter's element that defines a filter by property value or a specific filter call.
+    /// FilterCriteria is a generic filter's element that defines a filter by property value or a predefined filter call.
     /// 
     /// If a data structure's repository implements a Query, Load or Filter function with IEnumerable&lt;FilterCriteria&gt; argument,
     /// it will be used when reading data using QueryDataSourceCommand.
     /// </summary>
     public class FilterCriteria
     {
+        /// <summary>
+        /// Property name.
+        /// Either "Property" or "Filter" should be set.
+        /// </summary>
         public string Property { get; set; }
+
+        /// <summary>
+        /// Predefined filter name (filter type). May be a data structure name form DSL script (Common.Principal, e.g.).
+        /// Either "Property" or "Filter" should be set.
+        /// </summary>
         public string Filter { get; set; }
+
+        /// <summary>
+        /// Optional when Filter is set.
+        /// </summary>
         public string Operation { get; set; }
+
+        /// <summary>
+        /// Filter parameter.
+        /// Optional when Filter is set.
+        /// </summary>
         public object Value { get; set; }
     }
 }

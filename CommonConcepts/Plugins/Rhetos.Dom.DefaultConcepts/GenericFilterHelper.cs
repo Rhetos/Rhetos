@@ -29,20 +29,31 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Text.RegularExpressions;
 using Rhetos.Processing.DefaultCommands;
+using Rhetos.Utilities;
+using System.Collections;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public static class GenericFilterWithPagingUtility
+    public class GenericFilterHelper
     {
-        public static Expression<Func<T, bool>> ToExpression<T>(IEnumerable<PropertyFilter> filterCriterias)
+        IDomainObjectModel _dom;
+
+        public GenericFilterHelper(IDomainObjectModel dom)
         {
+            _dom = dom;
+        }
+
+        //================================================================
+        #region Property filters
+
+        public LambdaExpression ToExpression(IEnumerable<PropertyFilter> filterCriterias, Type parameterType)
+        {
+            ParameterExpression parameter = Expression.Parameter(parameterType, "p");
+
             if (filterCriterias == null || filterCriterias.Count() == 0)
-                return (t => true);
+                return Expression.Lambda(Expression.Constant(true), parameter);
 
             Expression resultCondition = null;
-
-            // Create a member expression pointing to given type
-            ParameterExpression parameter = Expression.Parameter(typeof(T), "p");
 
             foreach (var criteria in filterCriterias)
             {
@@ -112,7 +123,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     constant = null;
                 }
                 else
-                    throw new FrameworkException("Unsupported generic filter operation '" + criteria.Operation + "'.");
+                    throw new FrameworkException("Unsupported generic filter operation '" + criteria.Operation + "' on property.");
 
                 Expression expression;
                 switch (criteria.Operation.ToLower())
@@ -216,23 +227,22 @@ namespace Rhetos.Dom.DefaultConcepts
                             break;
                         }
                     default:
-                        throw new FrameworkException("Unsupported generic filter operation '" + criteria.Operation + "' while generating expression.");
+                        throw new FrameworkException("Unsupported generic filter operation '" + criteria.Operation + "' on property (while generating expression).");
                 }
 
                 resultCondition = resultCondition != null ? Expression.AndAlso(resultCondition, expression) : expression;
             }
 
-            return Expression.Lambda<Func<T, bool>>(resultCondition, parameter);
+            return Expression.Lambda(resultCondition, parameter);
         }
 
         private static readonly Regex DateRangeRegex = new Regex(@"^(?<y>\d{4})(-(?<m>\d{1,2}))?(-(?<d>\d{1,2}))?$");
 
-        public static IQueryable<T> Filter<T>(IQueryable<T> query, IEnumerable<PropertyFilter> filterCriterias)
-        {
-            return query.Where(ToExpression<T>(filterCriterias));
-        }
+        #endregion
+        //================================================================
+        #region Sorting and paging
 
-        public static IQueryable<T> SortAndPaginate<T>(IQueryable<T> query, QueryDataSourceCommandInfo parameters)
+        public IQueryable<T> SortAndPaginate<T>(IQueryable<T> query, QueryDataSourceCommandInfo parameters)
         {
             if (string.IsNullOrEmpty(parameters.OrderByProperty) && parameters.PageNumber > 0 && parameters.RecordsPerPage > 0)
                 throw new ArgumentException("OrderByProperty must be set when paging is used in QueryDataSourceCommand.");
@@ -246,17 +256,19 @@ namespace Rhetos.Dom.DefaultConcepts
             return query;
         }
 
-        private static IQueryable<T> Sort<T>(IQueryable<T> source, string orderByProperty, bool ascending = true)
+        private IQueryable<T> Sort<T>(IQueryable<T> source, string orderByProperty, bool ascending = true)
         {
             if (string.IsNullOrEmpty(orderByProperty))
                 return source;
 
-            ParameterExpression parameter = Expression.Parameter(typeof(T), "posting");
+            Type itemType = source.GetType().GetGenericArguments().Single();
+
+            ParameterExpression parameter = Expression.Parameter(itemType, "posting");
             Expression property = Expression.Property(parameter, orderByProperty);
             LambdaExpression propertySelector = Expression.Lambda(property, new[] { parameter });
 
             MethodInfo orderMethod = ascending ? OrderByAscendingMethod : OrderByDescendingMethod;
-            MethodInfo genericOrderMethod = orderMethod.MakeGenericMethod(new[] { typeof(T), property.Type });
+            MethodInfo genericOrderMethod = orderMethod.MakeGenericMethod(new[] { itemType, property.Type });
 
             return (IQueryable<T>)genericOrderMethod.Invoke(null, new[] { (object)source, propertySelector });
         }
@@ -272,5 +284,134 @@ namespace Rhetos.Dom.DefaultConcepts
                 .Where(method => method.Name == "OrderByDescending")
                 .Where(method => method.GetParameters().Length == 2)
                 .Single();
+
+        #endregion
+        //================================================================
+        #region Generic filters (FilterCriteria)
+
+        public const string FilterOperationMatches = "Matches";
+        public const string FilterOperationNotMatches = "NotMatches";
+
+        private void ValidateAndPrepare(FilterCriteria filter)
+        {
+            if (!string.IsNullOrEmpty(filter.Property) && !string.IsNullOrEmpty(filter.Filter))
+                throw new UserException("Invalid generic filter criteria: both property filter and predefined filter are set. (Property = '" + filter.Property + "', Filter = '" + filter.Filter + "')");
+
+            if (string.IsNullOrEmpty(filter.Property) && string.IsNullOrEmpty(filter.Filter))
+                throw new UserException("Invalid generic filter criteria: both property filter and predefined filter are null.");
+
+            if (!string.IsNullOrEmpty(filter.Property))
+            {
+                // Property filter:
+
+                if (string.IsNullOrEmpty(filter.Operation))
+                    throw new UserException("Invalid generic filter criteria: Operation is not set. (Property = '" + filter.Property + "')");
+            }
+
+            if (!string.IsNullOrEmpty(filter.Filter))
+            {
+                // Specific filter:
+
+                if (string.IsNullOrEmpty(filter.Operation))
+                    filter.Operation = FilterOperationMatches;
+                
+                if (!string.Equals(filter.Operation, FilterOperationMatches, StringComparison.OrdinalIgnoreCase)
+                    && !string.Equals(filter.Operation, FilterOperationNotMatches, StringComparison.OrdinalIgnoreCase))
+                    throw new UserException(string.Format(
+                        "Invalid generic filter criteria: Supported predefined filter operations are '{0}' and '{1}'. (Filter = '{2}', Operation = '{3}')",
+                        FilterOperationMatches, FilterOperationNotMatches, filter.Filter, filter.Operation));
+
+                if (filter.Value == null)
+                    filter.Value = Activator.CreateInstance(GetSpecificFilterType(filter.Filter));
+            }
+        }
+
+        private Type GetSpecificFilterType(string filterName)
+        {
+            if (string.IsNullOrEmpty(filterName))
+                throw new ArgumentNullException("filterName");
+
+            Type filterType = null;
+
+            filterType = _dom.ObjectModel.GetType(filterName);
+
+            filterType = filterType ?? Type.GetType(filterName);
+
+            if (filterType == null)
+                throw new UserException(string.Format("Unknown filter type '{0}'.", filterName));
+
+            return filterType;
+        }
+
+        public class FilterObject { public Type FilterType; public object Parameter; }
+
+        public IList<FilterObject> ToFilterObjects(IEnumerable<FilterCriteria> genericFilter, Type parameterType)
+        {
+            if (!(genericFilter is IList))
+                genericFilter = genericFilter.ToList();
+
+            foreach (var filter in genericFilter)
+                ValidateAndPrepare(filter);
+
+            var filterObjects = new List<FilterObject>(genericFilter.Count());
+
+            bool handledPropertyFilter = false;
+
+            foreach (var filter in genericFilter)
+            {
+                if (IsPropertyFilter(filter))
+                {
+                    if (!handledPropertyFilter)
+                    {
+                        handledPropertyFilter = true;
+                        filterObjects.Add(CombinePropertyFilters(genericFilter, parameterType));
+                    }
+                }
+                else
+                {
+                    Type filterType = GetSpecificFilterType(filter.Filter);
+
+                    if (string.Equals(filter.Operation, FilterOperationNotMatches, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (ReflectionHelper<IEntity>.IsPredicateExpression(filterType, parameterType))
+                            filter.Value = Not((LambdaExpression)filter.Value);
+                        else
+                            throw new FrameworkException(FilterOperationNotMatches + " operation is only allowed on filter that is a lambda expression that accepts argument " +
+                                parameterType + " and returns bool.");
+                    }
+
+                    filterObjects.Add(new FilterObject { FilterType = filterType, Parameter = filter.Value });
+                }
+            }
+
+            return filterObjects;
+        }
+
+        private LambdaExpression Not(LambdaExpression expression)
+        {
+            return Expression.Lambda(Expression.Not(expression.Body), expression.Parameters);
+        }
+
+        private bool IsPropertyFilter(FilterCriteria filter)
+        {
+            return !string.IsNullOrEmpty(filter.Property);
+        }
+
+        private FilterObject CombinePropertyFilters(IEnumerable<FilterCriteria> genericFilter, Type parameterType)
+        {
+            var propertyFilters = genericFilter.Where(IsPropertyFilter)
+                .Select(fc => new PropertyFilter { Property = fc.Property, Operation = fc.Operation, Value = fc.Value })
+                .ToList();
+
+            var propertyFilterExpression = ToExpression(propertyFilters, parameterType);
+
+            return new FilterObject
+            {
+                Parameter = propertyFilterExpression,
+                FilterType = propertyFilterExpression.GetType()
+            };
+        }
+
+        #endregion
     }
 }

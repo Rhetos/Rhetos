@@ -59,7 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClaimGenerator.cs" />
-    <Compile Include="CommonConceptsConfiguration.cs" />
+    <Compile Include="AutofacModuleConfiguration.cs" />
     <Compile Include="DataStructure\ImplementsInterfacePropertyCodeGenerator.cs" />
     <Compile Include="DataStructure\RegisteredInterfaceImplementationCodeGenerator.cs" />
     <Compile Include="DataStructure\WriteCodeGenerator.cs" />
@@ -122,7 +122,7 @@
     <Compile Include="DataStructure\RepositoryHelper.cs" />
     <Compile Include="DataStructure\SqlQueryableCodeGenerator.cs" />
     <Compile Include="DataStructure\BrowseDataStructureCodeGenerator.cs" />
-    <Compile Include="GenericFilterWithPagingUtility.cs" />
+    <Compile Include="GenericFilterHelper.cs" />
     <Compile Include="HierarchyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\ModuleExternalReferenceCodeGenerator.cs" />
     <Compile Include="DataStructure\BrowsePropertyCodeGenerator.cs" />

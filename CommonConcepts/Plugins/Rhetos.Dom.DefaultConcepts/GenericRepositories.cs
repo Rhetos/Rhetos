@@ -44,19 +44,22 @@ namespace Rhetos.Dom.DefaultConcepts
         private readonly IRegisteredInterfaceImplementations _registeredInterfaceImplementations;
         private readonly ILogProvider _logProvider;
         private readonly IPersistenceTransaction _persistenceTransaction;
+        private readonly GenericFilterHelper _genericFilterHelper;
 
         public GenericRepositories(
             IDomainObjectModel domainObjectModel,
             Lazy<IIndex<string, IRepository>> repositories,
             IRegisteredInterfaceImplementations registeredInterfaceImplementations,
             ILogProvider logProvider,
-            IPersistenceTransaction persistenceTransaction)
+            IPersistenceTransaction persistenceTransaction,
+            GenericFilterHelper genericFilterHelper)
         {
             _domainObjectModel = domainObjectModel;
             _repositories = repositories;
             _registeredInterfaceImplementations = registeredInterfaceImplementations;
             _logProvider = logProvider;
             _persistenceTransaction = persistenceTransaction;
+            _genericFilterHelper = genericFilterHelper;
         }
 
         public GenericRepository<TEntityInterface> GetGenericRepository<TEntityInterface>()
@@ -67,7 +70,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 _repositories,
                 _registeredInterfaceImplementations,
                 _logProvider,
-                _persistenceTransaction);
+                _persistenceTransaction,
+                _genericFilterHelper);
         }
 
         public GenericRepository<IEntity> GetGenericRepository(string entityName)
@@ -77,7 +81,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 _repositories,
                 entityName,
                 _logProvider,
-                _persistenceTransaction);
+                _persistenceTransaction,
+                _genericFilterHelper);
         }
 
         public string GetEntityName<TEntityInterface>()
