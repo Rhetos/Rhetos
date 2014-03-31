@@ -25,11 +25,19 @@ using System.Reflection;
 using System.Text;
 using System.Runtime.Serialization;
 using System.Xml;
+using Rhetos.Dom;
 
 namespace Rhetos.Utilities
 {
     internal class GenericDataContractResolver : DataContractResolver
     {
+        public GenericDataContractResolver(IDomainObjectModel domainObjectModel)
+        {
+            _domainObjectModel = domainObjectModel;
+        }
+
+        private IDomainObjectModel _domainObjectModel;
+
         private static string Decode(string value)
         {
             StringBuilder sb = new StringBuilder();
@@ -65,10 +73,10 @@ namespace Rhetos.Utilities
             if (type != null)
                 return type;
 
-            if (XmlUtility.Dom != null)
+            if (_domainObjectModel != null)
             {
-                // Without explicit use of XmlUtility.Dom, there is a possibility that ServerDom.dll will not get in AppDomain.CurrentDomain.GetAssemblies(), so ResolveName will fail to resolve the type. Unexpectedly, the problem occured stochastically when the server was under heavy load.
-                type = XmlUtility.Dom.GetType(decodedTypeName);
+                // Without explicit use of IDomainObjectModel, there is a possibility that ServerDom.dll will not get in AppDomain.CurrentDomain.GetAssemblies(), so ResolveName will fail to resolve the type. Unexpectedly, the problem occured stochastically when the server was under heavy load.
+                type = _domainObjectModel.Assembly.GetType(decodedTypeName);
                 if (type != null)
                     return type;
             }

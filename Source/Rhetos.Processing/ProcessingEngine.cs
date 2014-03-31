@@ -41,13 +41,15 @@ namespace Rhetos.Processing
         private readonly ILogger _performanceLogger;
         private readonly IPersistenceTransaction _persistenceTransaction;
         private readonly IAuthorizationManager _authorizationManager;
+        private readonly XmlUtility _xmlUtility;
 
         public ProcessingEngine(
             IPluginsContainer<ICommandImplementation> commandRepository,
             IPluginsContainer<ICommandObserver> commandObservers,
             ILogProvider logProvider,
             IPersistenceTransaction persistenceTransaction,
-            IAuthorizationManager authorizationManager)
+            IAuthorizationManager authorizationManager,
+            XmlUtility xmlUtility)
         {
             _commandRepository = commandRepository;
             _commandObservers = commandObservers;
@@ -55,6 +57,7 @@ namespace Rhetos.Processing
             _performanceLogger = logProvider.GetLogger("Performance");
             _persistenceTransaction = persistenceTransaction;
             _authorizationManager = authorizationManager;
+            _xmlUtility = xmlUtility;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
@@ -208,7 +211,7 @@ namespace Rhetos.Processing
         private ProcessingResult LogResultsReturnError(List<CommandResult> commandResults, string logError, int commandCount, string systemMessage, string userMessage)
         {
             _logger.Error(logError);
-            _logger.Trace(XmlUtility.SerializeArrayToXml(commandResults.ToArray()));
+            _logger.Trace(_xmlUtility.SerializeArrayToXml(commandResults.ToArray()));
             return new ProcessingResult
                 {
                     Success = false,

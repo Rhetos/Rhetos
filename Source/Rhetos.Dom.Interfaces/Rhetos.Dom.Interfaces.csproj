@@ -52,16 +52,6 @@
     <Compile Include="IDomGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Rhetos.Compiler.Interfaces\Rhetos.Compiler.Interfaces.csproj">
-      <Project>{FCAD7F9A-4C31-4D5A-8699-C291AE09D006}</Project>
-      <Name>Rhetos.Compiler.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Extensibility.Interfaces\Rhetos.Extensibility.Interfaces.csproj">
-      <Project>{DDC73F5F-BB0E-4944-92CC-4AC937398499}</Project>
-      <Name>Rhetos.Extensibility.Interfaces</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

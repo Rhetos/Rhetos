@@ -235,7 +235,9 @@ namespace Rhetos.Security.Service
 
         private dynamic CreateEntity(string typeName)
         {
-            var t = _domainObjectModel.GetType(typeName);
+            var t = _domainObjectModel.Assembly.GetType(typeName);
+            if (t == null)
+                throw new Exception("DomainObjectModel does not contain type " + typeName + ".");
             return Activator.CreateInstance(t);
         }
 

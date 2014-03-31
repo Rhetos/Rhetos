@@ -26,13 +26,16 @@ using System.Text;
 
 namespace CommonConcepts.Test.Utilities
 {
+    /// <summary>
+    /// Use "Create.DomainObjectModel()" to get the real IDomainObjectModel for ServerDom.dll.
+    /// </summary>
     class DomainObjectModelMock : IDomainObjectModel
     {
-        public DomainObjectModelMock()
+        public DomainObjectModelMock(Assembly assembly)
         {
-            ObjectModel = typeof(Common.DomRepository).Assembly;
+            Assembly = assembly;
         }
 
-        public Assembly ObjectModel { get; private set; }
+        public Assembly Assembly { get; private set; }
     }
 }

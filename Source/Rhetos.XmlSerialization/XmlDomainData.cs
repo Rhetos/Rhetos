@@ -26,49 +26,50 @@ using System.Xml.Serialization;
 using System.Diagnostics.Contracts;
 using System.Runtime.Serialization;
 using Rhetos.Processing;
+using Rhetos.Dom;
 
 namespace Rhetos.XmlSerialization
 {
     [DataContract]
     public class XmlDomainData : IDomainData
     {
-        private object Data;
+        private object _data;
         private bool refreshXmlRequired = true;
-
         private string xmlData;
+        private Type _elementType;
+        private readonly XmlUtility _xmlUtility;
 
-        private Type ElementType;
-
-        public XmlDomainData(Type elementType)
+        public XmlDomainData(IDomainObjectModel domainObjectModel, Type elementType)
+            : this(domainObjectModel, elementType, null)
         {
-            this.ElementType = elementType;
         }
 
-        public XmlDomainData(Type elementType, object data)
+        public XmlDomainData(IDomainObjectModel domainObjectModel, Type elementType, object data)
         {
-            this.ElementType = elementType;
-            this.Data = data;
+            _xmlUtility = new XmlUtility(domainObjectModel);
+            _elementType = elementType;
+            _data = data;
         }
 
         public T GetData<T>(Type type) where T : class
         {
-            if (ElementType == null)
+            if (_elementType == null)
             {
-                ElementType = type;
-                Data = XmlUtility.DeserializeFromXml(ElementType, xmlData);
+                _elementType = type;
+                _data = _xmlUtility.DeserializeFromXml(_elementType, xmlData);
             }
 
-            return Data as T;
+            return _data as T;
         }
 
         public void SetData<T>(T data) where T : class
         {
-            this.Data = data;
+            this._data = data;
         }
 
-        public static XmlDomainData Create<T>(T data)
+        public static XmlDomainData Create<T>(IDomainObjectModel domainObjectModel, T data)
         {
-            return new XmlDomainData(typeof(T)) { Data = data };
+            return new XmlDomainData(domainObjectModel, typeof(T)) { _data = data };
         }
 
         [DataMember]
@@ -78,22 +79,22 @@ namespace Rhetos.XmlSerialization
             {
                 if (refreshXmlRequired)
                 {
-                    xmlData = XmlUtility.SerializeToXml(Data, ElementType);
+                    xmlData = _xmlUtility.SerializeToXml(_data, _elementType);
                     refreshXmlRequired = false;
                 }
                 return xmlData;
             }
             set
             {
-                if (ElementType != null)
-                    Data = XmlUtility.DeserializeFromXml(ElementType, value);
+                if (_elementType != null)
+                    _data = _xmlUtility.DeserializeFromXml(_elementType, value);
                 xmlData = value;
             }
         }
 
         object ICommandData.Value
         {
-            get { return Data; }
+            get { return _data; }
         }
 
     }

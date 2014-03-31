@@ -36,6 +36,7 @@ using System.Reflection;
 using Oracle.DataAccess.Client;
 using Rhetos.Dom;
 using Rhetos.Persistence.NHibernateDefaultConcepts;
+using CommonConcepts.Test.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -95,7 +96,7 @@ namespace CommonConcepts.Test
             new NHibernatePersistenceEngine(
                 new ConsoleLogProvider(),
                 new NHibernateMappingLoader(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _rhetosServerPath, "bin", "ServerDomNHibernateMapping.xml")),
-                new TestDomainObjectModel(),
+                Create.DomainObjectModel(),
                 ConnectionString.Value,
                 new[] { new CommonConceptsNHibernateConfigurationExtension() }));
 
@@ -111,14 +112,6 @@ namespace CommonConcepts.Test
                 if (!_commitChanges)
                     _persistenceTransaction.Value.DiscardChanges();
                 _persistenceTransaction.Value.Dispose();
-            }
-        }
-
-        class TestDomainObjectModel : IDomainObjectModel
-        {
-            public Assembly ObjectModel
-            {
-                get { return Assembly.GetAssembly(typeof(Common.ExecutionContext)) ; }
             }
         }
     }

@@ -93,6 +93,10 @@
       <Project>{C0DC3D80-A1FE-46FA-8B97-5B80962687FB}</Project>
       <Name>Rhetos.Compiler</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Dom.Interfaces\Rhetos.Dom.Interfaces.csproj">
+      <Project>{91bdf488-0921-4969-8a53-32169338d8db}</Project>
+      <Name>Rhetos.Dom.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Extensibility.Interfaces\Rhetos.Extensibility.Interfaces.csproj">
       <Project>{DDC73F5F-BB0E-4944-92CC-4AC937398499}</Project>
       <Name>Rhetos.Extensibility.Interfaces</Name>

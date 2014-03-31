@@ -28,11 +28,22 @@ using System.Xml.Linq;
 using Rhetos;
 using Rhetos.Utilities;
 using Rhetos.TestCommon;
+using Rhetos.Dom;
 
 namespace RhetosServerLogTester
 {
+    class DomainObjectModelMock : IDomainObjectModel
+    {
+        public System.Reflection.Assembly Assembly
+        {
+            get { return GetType().Assembly; }
+        }
+    }
+    
     public sealed class Testing
     {
+        static XmlUtility _xmlUtility = new XmlUtility(new DomainObjectModelMock());
+
         public Testing(string fileName)
         {
             FileName = fileName;
@@ -91,10 +102,10 @@ namespace RhetosServerLogTester
             {
                 Commands = XDocument.Descendants()
                     .Where(el => el.Name.LocalName == "ArrayOf" + typeof(ServerCommandInfo).Name)
-                    .Select(el => XmlUtility.DeserializeArrayFromXml<ServerCommandInfo>(el.ToString())).ToList();
+                    .Select(el => _xmlUtility.DeserializeArrayFromXml<ServerCommandInfo>(el.ToString())).ToList();
                 Results = XDocument.Descendants()
                     .Where(el => el.Name.LocalName == typeof (ServerProcessingResult).Name)
-                    .Select(el => XmlUtility.DeserializeFromXml<ServerProcessingResult>(el.ToString())).ToList();
+                    .Select(el => _xmlUtility.DeserializeFromXml<ServerProcessingResult>(el.ToString())).ToList();
                 
                 if (Results.Count != Commands.Count)
                     LogCorrupted(Results.Count, Commands.Count);
@@ -121,9 +132,9 @@ namespace RhetosServerLogTester
             if (root != null)
                 foreach (var cmd in Commands)
                 {
-                    root.Add(XElement.Parse(XmlUtility.SerializeArrayToXml(cmd)));
+                    root.Add(XElement.Parse(_xmlUtility.SerializeArrayToXml(cmd)));
                     textWriter.Write(".");
-                    root.Add(XElement.Parse(XmlUtility.SerializeToXml(serverApplication.Execute(cmd))));
+                    root.Add(XElement.Parse(_xmlUtility.SerializeToXml(serverApplication.Execute(cmd))));
                 }
 
             var newFileName = SuffixFileNameWith(FileName, "_New");
@@ -152,8 +163,8 @@ namespace RhetosServerLogTester
             if (root != null)
                 for (var i = 0; i < Commands.Count; i++)
                 {
-                    root.Add(XElement.Parse(XmlUtility.SerializeArrayToXml(Commands[i])));
-                    root.Add(XElement.Parse(XmlUtility.SerializeToXml(Results[i])));
+                    root.Add(XElement.Parse(_xmlUtility.SerializeArrayToXml(Commands[i])));
+                    root.Add(XElement.Parse(_xmlUtility.SerializeToXml(Results[i])));
                 }
 
             // Remove comments ..
@@ -185,7 +196,7 @@ namespace RhetosServerLogTester
 
         private static string ConvertDocx(string data)
         {
-            var binary = XmlUtility.DeserializeFromXml<byte[]>(data);
+            var binary = _xmlUtility.DeserializeFromXml<byte[]>(data);
             var txt = TestUtility.TextFromDocx(binary);
             return txt;
         }

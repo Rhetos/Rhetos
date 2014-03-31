@@ -29,13 +29,11 @@ namespace Rhetos.XmlSerialization
 {
     public class XmlDataTypeProvider : IDataTypeProvider
     {
-        private readonly IDomainObjectModel DomainObjectModel;
+        private readonly IDomainObjectModel _domainObjectModel;
 
         public XmlDataTypeProvider(IDomainObjectModel domainObjectModel)
         {
-            Contract.Requires(domainObjectModel != null);
-
-            this.DomainObjectModel = domainObjectModel;
+            _domainObjectModel = domainObjectModel;
         }
 
         public IBasicData<T> CreateBasicData<T>(T value)
@@ -45,13 +43,17 @@ namespace Rhetos.XmlSerialization
 
         public IDataArray CreateDataArray<T>(Type type, T[] data) where T : class
         {
-            return new XmlDataArray(type, data);
+            return new XmlDataArray(_domainObjectModel, type, data);
         }
 
         public IDataArray CreateDomainDataArray(string domainType) 
         {
-            var type = DomainObjectModel.GetType(domainType);
-            return new XmlDataArray(type);
+            var type = _domainObjectModel.Assembly.GetType(domainType);
+
+            if (type == null)
+                throw new Exception("DomainObjectModel does not contain type " + domainType + ".");
+
+            return new XmlDataArray(_domainObjectModel, type);
         }
     }
 }

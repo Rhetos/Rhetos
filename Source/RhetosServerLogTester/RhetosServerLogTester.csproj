@@ -80,6 +80,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Rhetos.Dom.Interfaces\Rhetos.Dom.Interfaces.csproj">
+      <Project>{91bdf488-0921-4969-8a53-32169338d8db}</Project>
+      <Name>Rhetos.Dom.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Interfaces\Rhetos.Interfaces.csproj">
       <Project>{52B9E0EB-F4D1-4CA5-9239-93917DC76E2B}</Project>
       <Name>Rhetos.Interfaces</Name>

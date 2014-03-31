@@ -32,12 +32,17 @@ namespace CommonConcepts.Test.Utilities
     {
         public static IDomainObjectModel DomainObjectModel()
         {
-            return new DomainObjectModelMock();
+            return new DomainObjectModelMock(typeof(Common.DomRepository).Assembly);
+        }
+
+        public static XmlUtility XmlUtility()
+        {
+            return new XmlUtility(DomainObjectModel());
         }
 
         public static GenericRepositories GenericRepositories(Common.ExecutionContext executionContext)
         {
-            var dom = new DomainObjectModelMock();
+            var dom = DomainObjectModel();
 
             return new GenericRepositories(
                 dom,
@@ -50,7 +55,7 @@ namespace CommonConcepts.Test.Utilities
 
         public static GenericFilterHelper GenericFilterHelper()
         {
-            var dom = new DomainObjectModelMock();
+            var dom = DomainObjectModel();
             return new GenericFilterHelper(dom);
         }
 

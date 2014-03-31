@@ -60,7 +60,7 @@ namespace Rhetos.Dom
             _assemblyGenerator = assemblyGenerator;
         }
 
-        public Assembly ObjectModel
+        public Assembly Assembly
         {
             get
             {

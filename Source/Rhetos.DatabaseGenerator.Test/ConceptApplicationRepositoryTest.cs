@@ -30,9 +30,18 @@ using Rhetos.Extensibility;
 using System.Collections.Generic;
 using Rhetos.TestCommon;
 using System.Text.RegularExpressions;
+using Rhetos.Dom;
 
 namespace Rhetos.DatabaseGenerator.Test
 {
+    class DomainObjectModelMock : IDomainObjectModel
+    {
+        public System.Reflection.Assembly Assembly
+        {
+            get { return GetType().Assembly; }
+        }
+    }
+
     public class TestConceptInfo : IConceptInfo
     {
         [ConceptKey]
@@ -218,7 +227,8 @@ namespace Rhetos.DatabaseGenerator.Test
         {
             return new ConceptApplicationRepository(
                 new MockSqlExecuter(conceptApplications),
-                new ConsoleLogProvider());
+                new ConsoleLogProvider(),
+                new XmlUtility(new DomainObjectModelMock()));
         }
 
         [TestMethod]

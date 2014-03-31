@@ -33,13 +33,16 @@ namespace Rhetos.DatabaseGenerator
     {
         private readonly ISqlExecuter _sqlExecuter;
         private readonly ILogger _logger;
+        private readonly XmlUtility _xmlUtility;
 
         public ConceptApplicationRepository(
             ISqlExecuter sqlExecuter,
-            ILogProvider logProvider)
+            ILogProvider logProvider,
+            XmlUtility xmlUtility)
         {
             _sqlExecuter = sqlExecuter;
             _logger = logProvider.GetLogger("ConceptApplicationRepository");
+            _xmlUtility = xmlUtility;
         }
 
         public List<ConceptApplication> Load()
@@ -137,12 +140,12 @@ namespace Rhetos.DatabaseGenerator
             return Sql.Get("ConceptApplicationRepository_DeleteAll");
         }
 
-        public static string DeleteMetadataSql(ConceptApplication ca)
+        public string DeleteMetadataSql(ConceptApplication ca)
         {
             return Sql.Format("ConceptApplicationRepository_Delete", SqlUtility.QuoteGuid(ca.Id));
         }
 
-        public static IEnumerable<string> InsertMetadataSql(NewConceptApplication ca)
+        public IEnumerable<string> InsertMetadataSql(NewConceptApplication ca)
         {
             var sql = new List<string>();
 
@@ -151,7 +154,7 @@ namespace Rhetos.DatabaseGenerator
                 SqlUtility.QuoteText(ca.ConceptInfoTypeName),
                 SqlUtility.QuoteText(ca.ConceptInfoKey),
                 SqlUtility.QuoteText(ca.ConceptImplementationTypeName),
-                SqlUtility.QuoteText(XmlUtility.SerializeToXml(ca.ConceptInfo)),
+                SqlUtility.QuoteText(_xmlUtility.SerializeToXml(ca.ConceptInfo)),
                 SqlUtility.QuoteText(ca.CreateQuery),
                 SqlUtility.QuoteText(ca.RemoveQuery),
                 SqlUtility.QuoteText(ca.ConceptImplementationVersion.ToString())));
@@ -164,7 +167,7 @@ namespace Rhetos.DatabaseGenerator
             return sql;
         }
 
-        public static List<string> UpdateMetadataSql(NewConceptApplication ca, ConceptApplication oldApp)
+        public List<string> UpdateMetadataSql(NewConceptApplication ca, ConceptApplication oldApp)
         {
             var sql = new List<string>();
             if (oldApp.RemoveQuery != ca.RemoveQuery)
@@ -173,7 +176,7 @@ namespace Rhetos.DatabaseGenerator
                     SqlUtility.QuoteText(ca.ConceptInfoTypeName),
                     SqlUtility.QuoteText(ca.ConceptInfoKey),
                     SqlUtility.QuoteText(ca.ConceptImplementationTypeName),
-                    SqlUtility.QuoteText(XmlUtility.SerializeToXml(ca.ConceptInfo)),
+                    SqlUtility.QuoteText(_xmlUtility.SerializeToXml(ca.ConceptInfo)),
                     SqlUtility.QuoteText(ca.CreateQuery),
                     SqlUtility.QuoteText(ca.RemoveQuery),
                     SqlUtility.QuoteText(ca.ConceptImplementationVersion.ToString())));

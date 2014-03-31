@@ -502,7 +502,7 @@ namespace Rhetos.DatabaseGenerator
                 if (removeSqlScripts.Length > 0)
                     reportRemovedCount++;
 
-                allSql.Add(ConceptApplicationRepository.DeleteMetadataSql(ca));
+                allSql.Add(_conceptApplicationRepository.DeleteMetadataSql(ca));
 
                 allSql.Add(Sql.Get("DatabaseGenerator_CommitAfterDDL")); // Oracle must commit metadata changes before modifying next database object, to ensure metadata consistency if next DDL command fails (Oracle db automatically commits changes on DDL commands, so the previous DDL command has already been committed).
             }
@@ -523,7 +523,7 @@ namespace Rhetos.DatabaseGenerator
                 if (createSqlScripts.Length > 0)
                     reportInsertedCount++;
 
-                allSql.AddRange(ConceptApplicationRepository.InsertMetadataSql(ca));
+                allSql.AddRange(_conceptApplicationRepository.InsertMetadataSql(ca));
 
                 allSql.Add(Sql.Get("DatabaseGenerator_CommitAfterDDL")); // Oracle must commit metadata changes before modifying next database object, to ensure metadata consistency if next DDL command fails (Oracle db automatically commits changes on DDL commands, so the previous DDL command has already been committed).
             }
@@ -540,7 +540,7 @@ namespace Rhetos.DatabaseGenerator
 
             foreach (var ca in unchangedApplications)
             {
-                var updateMetadataSql = ConceptApplicationRepository.UpdateMetadataSql(ca, oldApplicationsByKey[ca.GetConceptApplicationKey()]);
+                var updateMetadataSql = _conceptApplicationRepository.UpdateMetadataSql(ca, oldApplicationsByKey[ca.GetConceptApplicationKey()]);
                 if (updateMetadataSql.Count() > 0)
                 {
                     Log(ca, "Updating metadata");

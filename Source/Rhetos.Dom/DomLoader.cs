@@ -44,7 +44,7 @@ namespace Rhetos.Dom
             _performanceLogger = logProvider.GetLogger("Performance");
         }
 
-        public Assembly ObjectModel
+        public Assembly Assembly
         {
             get
             {

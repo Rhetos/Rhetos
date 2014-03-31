@@ -51,7 +51,11 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 if (_entityType == null)
                 {
-                    _entityType = _domainObjectModel.GetType(_entityName);
+                    _entityType = _domainObjectModel.Assembly.GetType(_entityName);
+
+                    if (_entityType == null)
+                        throw new Exception("DomainObjectModel does not contain type " + _entityName + ".");
+
                     if (!typeof(TEntityInterface).IsAssignableFrom(_entityType))
                         throw new FrameworkException(string.Format(
                             "The given data structure's type {0} does not implement {1} interface.",

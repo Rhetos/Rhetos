@@ -47,7 +47,6 @@ namespace Rhetos
             _logger = AutofacServiceHostFactory.Container.Resolve<ILogProvider>().GetLogger("Global");
             _performanceLogger = AutofacServiceHostFactory.Container.Resolve<ILogProvider>().GetLogger("Performance");
             _pluginServices = AutofacServiceHostFactory.Container.Resolve<IEnumerable<IService>>();
-            XmlUtility.Dom = AutofacServiceHostFactory.Container.Resolve<IDomainObjectModel>().ObjectModel;
 
             _performanceLogger.Write(stopwatch, "Autofac initialized.");
 

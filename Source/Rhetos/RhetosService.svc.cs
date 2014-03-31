@@ -41,11 +41,13 @@ namespace Rhetos
         private readonly ILogger _commandsLogger;
         private readonly ILogger _commandResultsLogger;
         private readonly ILogger _performanceLogger;
+        private readonly XmlUtility _xmlUtility;
 
         public RhetosService(
             IProcessingEngine processingEngine,
             IEnumerable<ICommandInfo> commands,
-            ILogProvider logProvider)
+            ILogProvider logProvider,
+            XmlUtility xmlUtility)
         {
             _processingEngine = processingEngine;
             _commands = commands;
@@ -53,6 +55,7 @@ namespace Rhetos
             _commandsLogger = logProvider.GetLogger("IServerApplication Commands");
             _commandResultsLogger = logProvider.GetLogger("IServerApplication CommandResults");
             _performanceLogger = logProvider.GetLogger("Performance");
+            _xmlUtility = xmlUtility;
         }
 
         public ServerProcessingResult Execute(ServerCommandInfo[] commands)
@@ -60,11 +63,11 @@ namespace Rhetos
             var stopwatch = Stopwatch.StartNew();
 
             var serverCallID = Guid.NewGuid();
-            _commandsLogger.Trace(() => XmlUtility.SerializeServerCallInfoToXml(commands, serverCallID));
+            _commandsLogger.Trace(() => _xmlUtility.SerializeServerCallInfoToXml(commands, serverCallID));
 
             var result = ExecuteInner(commands);
 
-            _commandResultsLogger.Trace(() => XmlUtility.SerializeServerCallInfoToXml(result, serverCallID));
+            _commandResultsLogger.Trace(() => _xmlUtility.SerializeServerCallInfoToXml(result, serverCallID));
             _performanceLogger.Write(stopwatch, "RhetosService: Executed " + string.Join(",", commands.Select(c => c.CommandName)) + ".");
 
             return result;
@@ -149,7 +152,7 @@ namespace Rhetos
             {
                 try
                 {
-                    var deserializedData = XmlUtility.DeserializeFromXml(cmd.Type, cmd.Command.Data);
+                    var deserializedData = _xmlUtility.DeserializeFromXml(cmd.Type, cmd.Command.Data);
                     if (deserializedData == null)
                         return ValueOrError.CreateError("Deserialization of " + cmd.Command.CommandName + " resulted in null value.");
 
@@ -168,7 +171,7 @@ namespace Rhetos
             return processingCommands;
         }
 
-        private static ServerProcessingResult ConvertResult(ProcessingResult result)
+        private ServerProcessingResult ConvertResult(ProcessingResult result)
         {
             return new ServerProcessingResult
             {
@@ -180,7 +183,7 @@ namespace Rhetos
                    select new ServerCommandResult
                    {
                        Message = c.Message,
-                       Data = c.Data != null && c.Data.Value != null ? XmlUtility.SerializeToXml(c.Data.Value) : null
+                       Data = c.Data != null && c.Data.Value != null ? _xmlUtility.SerializeToXml(c.Data.Value) : null
                    }).ToArray()
             };
         }

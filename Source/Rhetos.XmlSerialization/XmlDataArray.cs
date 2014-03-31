@@ -26,6 +26,7 @@ using System.Xml.Serialization;
 using System.Diagnostics.Contracts;
 using System.Runtime.Serialization;
 using Rhetos.Processing;
+using Rhetos.Dom;
 
 namespace Rhetos.XmlSerialization
 {
@@ -39,13 +40,16 @@ namespace Rhetos.XmlSerialization
 
         private Type ElementType;
 
-        public XmlDataArray(Type elementType)
+        private XmlUtility _xmlUtility;
+
+        public XmlDataArray(IDomainObjectModel domainObjectModel, Type elementType)
+            : this(domainObjectModel, elementType, null)
         {
-            this.ElementType = elementType;
         }
 
-        public XmlDataArray(Type elementType, object[] data)
+        public XmlDataArray(IDomainObjectModel domainObjectModel, Type elementType, object[] data)
         {
+            _xmlUtility = new XmlUtility(domainObjectModel);
             this.ElementType = elementType;
             this.Data = data;
         }
@@ -55,7 +59,7 @@ namespace Rhetos.XmlSerialization
             if (ElementType == null)
             {
                 ElementType = type;
-                Data = XmlUtility.DeserializeArrayFromXml(xmlData, ElementType) as object[];
+                Data = _xmlUtility.DeserializeArrayFromXml(xmlData, ElementType) as object[];
             }
 
             if (Data == null)
@@ -72,9 +76,9 @@ namespace Rhetos.XmlSerialization
                 Data = data;
         }
 
-        public static XmlDataArray Create<T>(IEnumerable<T> data) where T : class
+        public static XmlDataArray Create<T>(IDomainObjectModel domainObjectModel, IEnumerable<T> data) where T : class
         {
-            return new XmlDataArray(typeof(T))
+            return new XmlDataArray(domainObjectModel, typeof(T))
             {
                 Data = (data == null || data.Count() == 0) ? null : data.ToArray()
             };
@@ -87,7 +91,7 @@ namespace Rhetos.XmlSerialization
             {
                 if (refreshXmlRequired)
                 {
-                    xmlData = XmlUtility.SerializeArrayToXml(Data, ElementType);
+                    xmlData = _xmlUtility.SerializeArrayToXml(Data, ElementType);
                     refreshXmlRequired = false;
                 }
                 return xmlData;
@@ -95,7 +99,7 @@ namespace Rhetos.XmlSerialization
             set
             {
                 if (ElementType != null)
-                    Data = XmlUtility.DeserializeArrayFromXml(value, ElementType) as object[];
+                    Data = _xmlUtility.DeserializeArrayFromXml(value, ElementType) as object[];
                 xmlData = value;
             }
         }

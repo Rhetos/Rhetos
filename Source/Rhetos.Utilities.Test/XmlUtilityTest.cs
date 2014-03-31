@@ -24,12 +24,23 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Xml.Serialization;
 using System.Linq;
+using Rhetos.Dom;
 
 namespace Rhetos.Utilities.Test
 {
+    class DomainObjectModelMock : IDomainObjectModel
+    {
+        public System.Reflection.Assembly Assembly
+        {
+            get { return GetType().Assembly; }
+        }
+    }
+
     [TestClass()]
     public class XmlUtilityTest
     {
+        private static XmlUtility _xmlUtility = new XmlUtility(new DomainObjectModelMock());
+
         public class SimpleClass
         {
             public int a;
@@ -41,9 +52,9 @@ namespace Rhetos.Utilities.Test
 
         private static TCopy SerializeDeserialize<TCopy>(object orig)
         {
-            var data = XmlUtility.SerializeToXml(orig, orig.GetType());
+            var data = _xmlUtility.SerializeToXml(orig, orig.GetType());
             System.Diagnostics.Debug.WriteLine(data.ToString());
-            return XmlUtility.DeserializeFromXml<TCopy>(data);
+            return _xmlUtility.DeserializeFromXml<TCopy>(data);
         }
 
         [TestMethod()]
@@ -229,9 +240,9 @@ namespace Rhetos.Utilities.Test
             ITest t2 = new ClassWithInterface() { a = 2, b = 22 };
             var orig = new ITest[] { t1, t2 };
 
-            var data = XmlUtility.SerializeArrayToXml<ITest>(orig);
+            var data = _xmlUtility.SerializeArrayToXml<ITest>(orig);
             Console.WriteLine(data);
-            var copy = XmlUtility.DeserializeArrayFromXml<ITest>(data);
+            var copy = _xmlUtility.DeserializeArrayFromXml<ITest>(data);
 
             Assert.AreEqual(orig.Length, copy.Length);
             Assert.AreEqual(orig[0].a, copy[0].a);
@@ -244,8 +255,8 @@ namespace Rhetos.Utilities.Test
         public void SerializeToXml_Null()
         {
             SimpleClass orig = null;
-            var data = XmlUtility.SerializeToXml(orig);
-            SimpleClass copy = (SimpleClass)XmlUtility.DeserializeFromXml(typeof(SimpleClass), data);
+            var data = _xmlUtility.SerializeToXml(orig);
+            SimpleClass copy = (SimpleClass)_xmlUtility.DeserializeFromXml(typeof(SimpleClass), data);
             Assert.IsNull(copy);
         }
 
@@ -290,7 +301,7 @@ namespace Rhetos.Utilities.Test
                     </XmlUtilityTest.ClassWithInterface>
                 </ArrayOfUtilityTest.ClassWithInterface>";
 
-            var copy = XmlUtility.DeserializeArrayFromXml<ClassWithInterface>(data);
+            var copy = _xmlUtility.DeserializeArrayFromXml<ClassWithInterface>(data);
 
             string msg = "It should be possible to deserialize the old serialized concepts (in table Rhetos.AppliedConcept) with a new version of the class, if its interface is backward compatible.";
             Assert.AreEqual(orig.Length, copy.Length, msg);

@@ -24,26 +24,30 @@ using System.Text;
 using System.IO;
 using System.Xml;
 using System.Runtime.Serialization;
+using Rhetos.Dom;
 
 namespace Rhetos.Utilities
 {
-    public static class XmlUtility
+    public class XmlUtility
     {
-        private static readonly GenericDataContractResolver Resolver = new GenericDataContractResolver();
-
-        /// <summary>
-        /// Use Dom.GetType(string) along with Type.GetType(string) to find objects in the generate domain object model.
+        /// <param name="domainObjectModel">
+        /// Use of domainObjectModel.Assembly.GetType(string) is needed along with Type.GetType(string) to find objects in the generate domain object model.
         /// Since DOM assembly is not directly referenced from other dlls, Type.GetType will not find types in DOM
         /// before the Dom.GetType is used. The problem usually manifests on the first server call after restarting the process.
-        /// </summary>
-        public static Assembly Dom; // TODO: Find a solution better than "public static"
+        /// </param>
+        public XmlUtility(IDomainObjectModel domainObjectModel)
+        {
+            _resolver = new GenericDataContractResolver(domainObjectModel);
+        }
 
-        public static string SerializeToXml<T>(T obj)
+        private GenericDataContractResolver _resolver;
+
+        public string SerializeToXml<T>(T obj)
         {
             return SerializeToXml(obj, obj != null ? obj.GetType() : typeof(T));
         }
 
-        public static string SerializeToXml(object obj, Type type)
+        public string SerializeToXml(object obj, Type type)
         {
             var sb = new StringBuilder();
             var settings = new XmlWriterSettings
@@ -56,49 +60,49 @@ namespace Rhetos.Utilities
             using (var xmlDict = XmlDictionaryWriter.CreateDictionaryWriter(xmlWriter))
             {
                 var serializer = new DataContractSerializer(type);
-                serializer.WriteObject(xmlDict, obj, Resolver);
+                serializer.WriteObject(xmlDict, obj, _resolver);
                 xmlWriter.Flush();
                 return sb.ToString();
             }
         }
 
-        public static T DeserializeFromXml<T>(string xml)
+        public T DeserializeFromXml<T>(string xml)
         {
             return (T)DeserializeFromXml(typeof(T), xml);
         }
 
-        public static object DeserializeFromXml(Type type, string xml)
+        public object DeserializeFromXml(Type type, string xml)
         {
             using (var sr = new StringReader(xml))
             using (var xmlReader = XmlReader.Create(sr))
             using (var xmlDict = XmlDictionaryReader.CreateDictionaryReader(xmlReader))
             {
                 var serializer = new DataContractSerializer(type);
-                return serializer.ReadObject(xmlDict, false, Resolver);
+                return serializer.ReadObject(xmlDict, false, _resolver);
             }
         }
 
-        public static string SerializeArrayToXml<T>(T[] data)
+        public string SerializeArrayToXml<T>(T[] data)
         {
             return SerializeToXml(data, typeof(T[]));
         }
 
-        public static string SerializeArrayToXml(object data, Type element)
+        public string SerializeArrayToXml(object data, Type element)
         {
             return SerializeToXml(data, element.MakeArrayType());
         }
 
-        public static T[] DeserializeArrayFromXml<T>(string xml)
+        public T[] DeserializeArrayFromXml<T>(string xml)
         {
             return (T[]) DeserializeFromXml(typeof(T[]), xml);
         }
 
-        public static object DeserializeArrayFromXml(string xml, Type element)
+        public object DeserializeArrayFromXml(string xml, Type element)
         {
             return DeserializeFromXml(element.MakeArrayType(), xml);
         }
 
-        public static string SerializeServerCallInfoToXml<T>(T obj, Guid serverCallID)
+        public string SerializeServerCallInfoToXml<T>(T obj, Guid serverCallID)
         {
             var sb = new StringBuilder();
             using (var xmlWriter = XmlWriter.Create(sb, new XmlWriterSettings

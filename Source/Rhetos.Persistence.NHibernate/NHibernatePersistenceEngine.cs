@@ -105,7 +105,7 @@ namespace Rhetos.Persistence.NHibernate
 
         void ForceLoadObjectModel()
         {
-            if (_domainObjectModel.ObjectModel == null)
+            if (_domainObjectModel.Assembly == null)
                 throw new FrameworkException("Cannot load domain object model.");
         }
 
@@ -136,7 +136,7 @@ namespace Rhetos.Persistence.NHibernate
                 else
                     throw new FrameworkException(DatabaseLanguageError);
 
-                ResolveEventHandler resolveAssembly = (s, args) => _domainObjectModel.ObjectModel;
+                ResolveEventHandler resolveAssembly = (s, args) => _domainObjectModel.Assembly;
                 try
                 {
                     AppDomain.CurrentDomain.AssemblyResolve += resolveAssembly;

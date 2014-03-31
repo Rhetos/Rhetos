@@ -24,6 +24,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
+using CommonConcepts.Test.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -69,7 +70,7 @@ namespace CommonConcepts.Test
         public void Serialization()
         {
             var item = new TestDataStructure.SimpleDataStructure2 { SimpleShortString = "abc" };
-            string xml = XmlUtility.SerializeToXml(item);
+            string xml = Create.XmlUtility().SerializeToXml(item);
             Console.WriteLine(xml);
 
             TestUtility.AssertContains(xml, "TestDataStructure");
@@ -77,7 +78,7 @@ namespace CommonConcepts.Test
             TestUtility.AssertContains(xml, "SimpleShortString");
             TestUtility.AssertContains(xml, "abc");
 
-            var item2 = XmlUtility.DeserializeFromXml<TestDataStructure.SimpleDataStructure2>(xml);
+            var item2 = Create.XmlUtility().DeserializeFromXml<TestDataStructure.SimpleDataStructure2>(xml);
             Assert.IsNotNull(item2);
             Assert.AreEqual(item.SimpleShortString, item2.SimpleShortString);
         }
@@ -86,7 +87,7 @@ namespace CommonConcepts.Test
         public void SerializationMustNotDependOnClientOrServerDllName()
         {
             var item = new TestDataStructure.SimpleDataStructure2 { SimpleShortString = "abc" };
-            string xml = XmlUtility.SerializeToXml(item);
+            string xml = Create.XmlUtility().SerializeToXml(item);
             Console.WriteLine(xml);
 
             var type = typeof(TestDataStructure.SimpleDataStructure2);
@@ -104,10 +105,10 @@ namespace CommonConcepts.Test
         public void SerializationOfNull()
         {
             var item = new TestDataStructure.SimpleDataStructure2 { SimpleShortString = null };
-            string xml = XmlUtility.SerializeToXml(item);
+            string xml = Create.XmlUtility().SerializeToXml(item);
             Console.WriteLine(xml);
 
-            var item2 = XmlUtility.DeserializeFromXml<TestDataStructure.SimpleDataStructure2>(xml);
+            var item2 = Create.XmlUtility().DeserializeFromXml<TestDataStructure.SimpleDataStructure2>(xml);
             Assert.IsNotNull(item2);
             Assert.IsNull(item2.SimpleShortString);
         }
@@ -127,10 +128,10 @@ namespace CommonConcepts.Test
             foreach (string s in StringoviSaOstalimUnicodeZnakovima)
             {
                 var item = new TestDataStructure.SimpleDataStructure2 { SimpleShortString = s };
-                string xml = XmlUtility.SerializeToXml(item);
+                string xml = Create.XmlUtility().SerializeToXml(item);
                 Console.WriteLine(xml);
 
-                var item2 = XmlUtility.DeserializeFromXml<TestDataStructure.SimpleDataStructure2>(xml);
+                var item2 = Create.XmlUtility().DeserializeFromXml<TestDataStructure.SimpleDataStructure2>(xml);
                 Assert.IsNotNull(item2);
                 Assert.AreEqual(item.SimpleShortString, item2.SimpleShortString);
 

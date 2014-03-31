@@ -78,7 +78,7 @@ namespace Rhetos.Persistence.NHibernate
             var sw = Stopwatch.StartNew();
 
             string innerXml = _codeGenerator.ExecutePlugins(_plugins, "<!--", "-->", null).GeneratedCode;
-            innerXml = innerXml.Replace(AssemblyTag, _domainObjectModel.ObjectModel.FullName);
+            innerXml = innerXml.Replace(AssemblyTag, _domainObjectModel.Assembly.FullName);
             innerXml = Regex.Replace(innerXml, detectLineTag, "\n");
             innerXml = Regex.Replace(innerXml, detectTag, "");
             innerXml = innerXml.Trim();

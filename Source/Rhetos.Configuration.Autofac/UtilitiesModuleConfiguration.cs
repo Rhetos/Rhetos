@@ -31,6 +31,8 @@ namespace Rhetos.Configuration.Autofac
     {
         protected override void Load(ContainerBuilder builder)
         {
+            builder.RegisterType<XmlUtility>().SingleInstance();
+
             Type sqlExecuterType = GetSqlExecuterImplementation();
             builder.RegisterType(sqlExecuterType).As<ISqlExecuter>().InstancePerLifetimeScope();
 

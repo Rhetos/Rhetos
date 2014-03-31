@@ -72,7 +72,7 @@ namespace DeployPackages
                     Console.WriteLine(container.Resolve<IDslModel>().Concepts.Count() + " statements.");
 
                     Console.Write("Compiling DOM assembly ... ");
-                    int generatedTypesCount = container.Resolve<IDomGenerator>().ObjectModel.GetTypes().Length;
+                    int generatedTypesCount = container.Resolve<IDomGenerator>().Assembly.GetTypes().Length;
                     if (generatedTypesCount == 0)
                     {
                         string report = "WARNING: Empty assembly is generated.";

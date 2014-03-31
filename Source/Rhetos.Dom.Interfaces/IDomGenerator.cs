@@ -22,14 +22,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
-using Rhetos.Compiler;
-using Rhetos.Extensibility;
 
 namespace Rhetos.Dom
 {
-    // TODO: Same as IDomainObjectModel
+    // TODO: Remove. It is same as IDomainObjectModel.
     public interface IDomGenerator
     {
-        Assembly ObjectModel { get; }
+        Assembly Assembly { get; }
     }
 }
