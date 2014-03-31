@@ -28,7 +28,7 @@ using NHibernate.Transform;
 namespace CommonConcepts.Test
 {
     [TestClass]
-    public class SqlFilter
+    public class SqlFilterTest
     {
         [TestMethod]
         public void Spike1_SqlExecuteFunction()

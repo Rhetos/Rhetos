@@ -173,7 +173,7 @@
     <Compile Include="PersistedAllPropertiesTest.cs" />
     <Compile Include="DenySaveTest.cs" />
     <Compile Include="RequiredPropertyTest.cs" />
-    <Compile Include="SqlFilter.cs" />
+    <Compile Include="SqlFilterTest.cs" />
     <Compile Include="SqlWorkaroundsTest.cs" />
     <Compile Include="UniqueTest.cs" />
     <Compile Include="EntityTest.cs" />

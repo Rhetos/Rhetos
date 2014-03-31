@@ -104,6 +104,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CompilerConfiguration.cs" />
+    <Compile Include="DefaultAutofacConfiguration.cs" />
+    <Compile Include="Paths.cs" />
     <Compile Include="UtilitiesModuleConfiguration.cs" />
     <Compile Include="LoggingConfiguration.cs" />
     <Compile Include="DatabaseGeneratorModuleConfiguration.cs" />

@@ -29,7 +29,7 @@ namespace Rhetos
     /// <summary>
     /// Initialize plugin web service. Called at run-time.
     /// </summary>
-    public interface IService
+    public interface IService // TODO: Rename to IWebServiceInitialization. The name IService causes misunderstandings.
     {
         /// <summary>
         /// Called only once when initializing the server process (see Global.asax: Application_Start).

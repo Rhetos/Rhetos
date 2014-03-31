@@ -40,8 +40,8 @@ namespace Rhetos.Configuration.Autofac
         /// </summary>
         public DomModuleConfiguration(string assemblyName, DomAssemblyUsage domAssemblyUsage)
         {
-            _domAssemblyUsage = domAssemblyUsage;
             _assemblyName = assemblyName;
+            _domAssemblyUsage = domAssemblyUsage;
         }
 
         protected override void Load(ContainerBuilder builder)

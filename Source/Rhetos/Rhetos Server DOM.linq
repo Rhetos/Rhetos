@@ -161,7 +161,7 @@ void Main()
 
         class TestDomainObjectModel : IDomainObjectModel
         {
-            public Assembly ObjectModel
+            public Assembly Assembly
             {
                 get { return Assembly.GetAssembly(typeof(Common.ExecutionContext)) ; }
             }

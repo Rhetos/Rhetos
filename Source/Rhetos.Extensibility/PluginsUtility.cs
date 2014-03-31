@@ -56,7 +56,6 @@ namespace Rhetos.Extensibility
 
             var additionalAssemblies = DeployPackagesAdditionalAssemblies
                 .Select(path => Path.Combine(_rootPath, path))
-                .Where(path => File.Exists(path))
                 .ToArray();
 
             return pluginsAssemblies.Concat(additionalAssemblies).Distinct().ToArray();

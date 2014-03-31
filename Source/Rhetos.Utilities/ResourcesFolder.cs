@@ -28,9 +28,9 @@ namespace Rhetos.Utilities
     {
         private readonly string _value;
 
-        public ResourcesFolder(string connectionString)
+        public ResourcesFolder(string resourcesFolder)
         {
-            _value = connectionString;
+            _value = resourcesFolder;
         }
 
         public override string ToString()

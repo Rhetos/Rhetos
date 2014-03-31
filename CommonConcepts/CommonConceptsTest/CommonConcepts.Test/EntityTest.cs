@@ -231,10 +231,10 @@ namespace CommonConcepts.Test
                     });
 
                 var nhs = executionContext.NHibernateSession;
-				
-				// NH terminology: "Transient object" - a simple instance that is not bound to other references instances.
-				// NH terminology: "Persistent object" - an instance that is bound to its coresponding database record and other referenced instances in NH cache. Allows lazy evaluation of references and navigation by references.
-				
+                
+                // NH terminology: "Transient object" - a simple instance that is not bound to other references instances.
+                // NH terminology: "Persistent object" - an instance that is bound to its coresponding database record and other referenced instances in NH cache. Allows lazy evaluation of references and navigation by references.
+                
 
                 // ============= UPDATE:
 
@@ -271,7 +271,7 @@ namespace CommonConcepts.Test
 
                     // Save/Persist will instantly fail if that ID already exists in the NH session. Otherwise, Flush will fail if the record exists in the database.
                     nhs.Flush(); // If a reference does not exist in db nor memory, Save/Persist+Flush will first insert a record with NULL reference,
-					// expecting the referenced record to be inserted in the same session, and then update the reference. It will fail at that point if the reference is invalid.
+                    // expecting the referenced record to be inserted in the same session, and then update the reference. It will fail at that point if the reference is invalid.
 
                     var loadedPe3 = nhs.Load<TestEntity.Permission>(pe3id);
                     // Save/Persist does not generate a new proxy object!! It will keep in the 1st level cache the given instance (even if it's references are not bound), up until Clear/Refresh.
@@ -293,7 +293,7 @@ namespace CommonConcepts.Test
                     var pe4 = new TestEntity.Permission { ID = pe4id, Principal = pr1, Claim = cl1, IsAuthorized = true };
 
                     // MANUALLY CREATING PROXY OBJECT BY EXPLICITLY CALLING Load FOR ALL NAVIGATION PROPERTIES, THEN USING Persist FUNCTION
-					// IS FASTER THAN Merge, BECAUSE HN WILL NOT ONCE LOAD THE DATA FROM THE DATABASE.
+                    // IS FASTER THAN Merge, BECAUSE HN WILL NOT ONCE LOAD THE DATA FROM THE DATABASE.
                     // ON THE OTHER HAND, USING Merge FUNCTION IS MUSH EASIER BECAUSE IT AUTOMATICALLY CREATES THE PROXY OBJECT.
 
                     nhs.Persist(pe4);

@@ -31,39 +31,18 @@ namespace DeployPackages
 {
     public class AutofacConfiguration : Module
     {
-        private static readonly string _rootPath = AppDomain.CurrentDomain.BaseDirectory;
-
-        public static readonly string DslScriptsFolder = Path.Combine(_rootPath, "..\\DslScripts");
-        public static readonly string DataMigrationScriptsFolder = Path.Combine(_rootPath, "..\\DataMigration");
-        public static readonly string DomAssemblyName = "ServerDom";
-        public static readonly string NHibernateMappingFile = Path.Combine(_rootPath, "ServerDomNHibernateMapping.xml");
-        public static readonly string RhetosServerWebConfigPath = Path.Combine(_rootPath, "..\\Web.config");
-
-        private readonly string _connectionString;
-
-        public AutofacConfiguration(string connectionString)
-        {
-            _connectionString = connectionString;
-        }
-
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterInstance(new ConnectionString(_connectionString));
-            builder.RegisterInstance(new ResourcesFolder(""));
-            builder.RegisterModule(new UtilitiesModuleConfiguration());
-            builder.RegisterModule(new ExtensibilityModuleConfiguration());
-            builder.RegisterModule(new DslModuleConfiguration());
-            builder.RegisterInstance<IDslSource>(new DiskDslScriptProvider(DslScriptsFolder));
-            builder.RegisterModule(new CompilerConfiguration());
+            // Specific registrations:
             builder.RegisterModule(new DatabaseGeneratorModuleConfiguration());
-            builder.RegisterModule(new DomModuleConfiguration(DomAssemblyName, DomAssemblyUsage.Generate));
-            builder.RegisterModule(new NHibernateModuleConfiguration(null));
-            builder.RegisterModule(new LoggingConfiguration());
-            builder.RegisterModule(new SecurityModuleConfiguration());
-
             builder.RegisterType<DataMigration>();
             builder.RegisterType<DatabaseCleaner>();
 
+            // General registrations:
+            string rootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..");
+            builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(rootPath, generate: true));
+
+            // Specific registrations override:
             builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
 
             base.Load(builder);

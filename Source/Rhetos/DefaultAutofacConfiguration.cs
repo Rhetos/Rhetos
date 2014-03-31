@@ -33,33 +33,17 @@ namespace Rhetos
 {
     public class DefaultAutofacConfiguration : Module
     {
-        private static readonly string _rootPath = AppDomain.CurrentDomain.BaseDirectory;
-        private const string _domAssemblyName = "ServerDom";
-        private const string _nHibernateMappingFile = "bin\\ServerDomNHibernateMapping.xml";
-        private static readonly string _dslScriptsFolder = Path.Combine(_rootPath, "DslScripts");
-
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));
-            builder.RegisterInstance(new ResourcesFolder(ConfigurationManager.AppSettings["ResourcesDirectory"]));
-
+            // Specific registrations:
             builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
-            builder.RegisterInstance<IDslSource>(new DiskDslScriptProvider(_dslScriptsFolder));
             builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
-
-            builder.RegisterModule(new SecurityModuleConfiguration());
-            builder.RegisterModule(new UtilitiesModuleConfiguration());
-            builder.RegisterModule(new DslModuleConfiguration());
-            builder.RegisterModule(new CompilerConfiguration());
-            builder.RegisterModule(new DomModuleConfiguration(_domAssemblyName, DomAssemblyUsage.Load));
-            builder.RegisterModule(new NHibernateModuleConfiguration(Path.Combine(_rootPath, _nHibernateMappingFile)));
-            builder.RegisterModule(new ProcessingModuleConfiguration());
-            builder.RegisterModule(new LoggingConfiguration());
-
             PluginsUtility.RegisterPlugins<IService>(builder);
             PluginsUtility.RegisterPlugins<IHomePageSnippet>(builder);
 
-            builder.RegisterModule(new ExtensibilityModuleConfiguration());
+            // General registrations:
+            string rootPath = AppDomain.CurrentDomain.BaseDirectory;
+            builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(rootPath, generate: false));
 
             base.Load(builder);
         }
