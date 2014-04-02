@@ -121,6 +121,10 @@
     <Compile Include="PluginsUtility.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj">
+      <Project>{bb7e5668-1b43-4fce-a832-444cc57fee80}</Project>
+      <Name>Rhetos.Logging.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj">
       <Project>{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}</Project>
       <Name>Rhetos.Utilities</Name>

@@ -17,37 +17,29 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Configuration;
-using System.IO;
-using System.Reflection;
-using System.Text;
-using System.Threading;
-using System.Xml;
-using System.Linq;
 using Autofac;
-using Rhetos;
-using Rhetos.Utilities;
 using Rhetos.DatabaseGenerator;
 using Rhetos.Deployment;
 using Rhetos.Dom;
+using Rhetos.Dsl;
+using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Persistence.NHibernate;
-using Rhetos.Security;
-using Rhetos.Dsl;
-using System.Collections.Generic;
-using Rhetos.Extensibility;
+using Rhetos.Utilities;
+using System;
 using System.Diagnostics;
-using Rhetos.Configuration.Autofac;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading;
 
 namespace DeployPackages
 {
     class Program
     {
-        static ILogger _logger = new ConsoleLogger("DeployPackagesInitialization");
+        static ILogger _logger = new NLogger("DeployPackagesInitialization");
         static ILogger _performanceLogger;
-        static string _rootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..");
-        static Paths _paths = new Paths(_rootPath);
         static Action undoDataMigrationScriptsOnError = null;
         static string oldCurrentDirectory = null;
 
@@ -55,13 +47,17 @@ namespace DeployPackages
         {
             try
             {
+                Paths.InitializeRhetosServerRootPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".."));
+
                 oldCurrentDirectory = Directory.GetCurrentDirectory();
                 Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
-
-                if (!Directory.Exists(_paths.GeneratedFolder))
-                    Directory.CreateDirectory(_paths.GeneratedFolder);
-                foreach (var oldGeneratedFile in Directory.GetFiles(_paths.GeneratedFolder, "*", SearchOption.AllDirectories))
+                
+                if (!Directory.Exists(Paths.GeneratedFolder))
+                    Directory.CreateDirectory(Paths.GeneratedFolder);
+                foreach (var oldGeneratedFile in Directory.GetFiles(Paths.GeneratedFolder, "*", SearchOption.AllDirectories))
                     File.Delete(oldGeneratedFile);
+                if (File.Exists(Paths.DomAssemblyFile))
+                    File.Delete(Paths.DomAssemblyFile);
 
                 var builder = new ContainerBuilder();
                 builder.RegisterModule(new AutofacConfiguration());
@@ -142,7 +138,7 @@ namespace DeployPackages
 
             Console.Write("Executing data migration scripts ... ");
             var dataMigration = container.Resolve<DataMigration>();
-            var dataMigrationReport = dataMigration.ExecuteDataMigrationScripts(_paths.DataMigrationScriptsFolder);
+            var dataMigrationReport = dataMigration.ExecuteDataMigrationScripts(Paths.DataMigrationScriptsFolder);
             Console.WriteLine(dataMigrationReport);
             undoDataMigrationScriptsOnError = delegate { dataMigration.UndoDataMigrationScripts(dataMigrationReport.CreatedTags); };
 
@@ -159,24 +155,22 @@ namespace DeployPackages
             }
 
             Console.Write("Uploading DSL scripts ... ");
-            int dslScriptCount = DslScriptManager.UploadDslScriptsToServer(_paths.DslScriptsFolder, container.Resolve<ISqlExecuter>());
+            int dslScriptCount = DslScriptManager.UploadDslScriptsToServer(Paths.DslScriptsFolder, container.Resolve<ISqlExecuter>());
             if (dslScriptCount == 0)
             {
-                string report = "WARNING: There are no DSL scripts in source folder " + _paths.DslScriptsFolder + ".";
+                string report = "WARNING: There are no DSL scripts in source folder " + Paths.DslScriptsFolder + ".";
                 _logger.Info(report);
             }
             else
                 Console.WriteLine("Uploaded " + dslScriptCount + " DSL scripts to database.");
 
             Console.Write("Generating NHibernate mapping ... ");
-            File.WriteAllText(_paths.NHibernateMappingFile, container.Resolve<INHibernateMapping>().GetMapping(), Encoding.Unicode);
+            File.WriteAllText(Paths.NHibernateMappingFile, container.Resolve<INHibernateMapping>().GetMapping(), Encoding.Unicode);
             Console.WriteLine("Done.");
 
             {
                 Console.Write("Loading generated plugins ... ");
                 var stopwatch = Stopwatch.StartNew();
-                PluginsUtility.DeployPackagesAdditionalAssemblies.Add(_paths.DomAssemblyFile); // TODO: Remove this hack after ServerDom.dll is moved to the bin\Generated.
-                _performanceLogger.Write(stopwatch, "DeployPackages.ServerInitialization: Additional assemblies added.");
                 PluginsUtility.DetectAndRegisterNewModulesAndPlugins(container);
                 _performanceLogger.Write(stopwatch, "DeployPackages.ServerInitialization: New modules and plugins registered.");
                 Console.WriteLine("Done.");
@@ -192,7 +186,7 @@ namespace DeployPackages
                     Console.WriteLine("No server initialization plugins.");
             }
 
-            var configFile = new FileInfo(_paths.RhetosServerWebConfigFile);
+            var configFile = new FileInfo(Paths.RhetosServerWebConfigFile);
             if (configFile.Exists)
             {
                 DeploymentUtility.Touch(configFile);

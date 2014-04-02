@@ -17,17 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.ServiceModel;
 using Autofac;
-using Rhetos.Utilities;
-using Rhetos.Configuration.Autofac;
-using System.Configuration;
-using System.IO;
-using Rhetos.Dsl;
 using Rhetos.Extensibility;
+using Rhetos.Logging;
 
 namespace Rhetos
 {
@@ -35,15 +27,15 @@ namespace Rhetos
     {
         protected override void Load(ContainerBuilder builder)
         {
-            // Specific registrations:
+            // Specific registrations and initialization:
+            PluginsUtility.SetLogProvider(new NLogProvider());
             builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
             builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
             PluginsUtility.RegisterPlugins<IService>(builder);
             PluginsUtility.RegisterPlugins<IHomePageSnippet>(builder);
 
             // General registrations:
-            string rootPath = AppDomain.CurrentDomain.BaseDirectory;
-            builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(rootPath, generate: false));
+            builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(generate: false));
 
             base.Load(builder);
         }

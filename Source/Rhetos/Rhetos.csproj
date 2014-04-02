@@ -132,6 +132,10 @@
       <Project>{759CEA3C-1CD0-449C-977E-102CE308F4DE}</Project>
       <Name>Rhetos.Configuration.Autofac</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Logging\Rhetos.Logging.csproj">
+      <Project>{8c9f1c24-2d9c-420b-9787-3fcad96c5b3e}</Project>
+      <Name>Rhetos.Logging</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj">
       <Project>{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}</Project>
       <Name>Rhetos.Utilities</Name>

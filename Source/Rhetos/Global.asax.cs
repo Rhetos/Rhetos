@@ -20,7 +20,6 @@
 using Autofac;
 using Autofac.Configuration;
 using Autofac.Integration.Wcf;
-using Rhetos.Dom;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
@@ -39,6 +38,8 @@ namespace Rhetos
         protected void Application_Start(object sender, EventArgs e)
         {
             var stopwatch = Stopwatch.StartNew();
+
+            Paths.InitializeRhetosServerRootPath(AppDomain.CurrentDomain.BaseDirectory);
 
             var builder = new ContainerBuilder();
             builder.RegisterModule(new ConfigurationSettingsReader("autofacComponents"));

@@ -33,13 +33,11 @@ namespace Rhetos.Configuration.Autofac
 {
     public class DefaultAutofacConfiguration : Module
     {
-        public DefaultAutofacConfiguration(string rootPath, bool generate)
+        public DefaultAutofacConfiguration(bool generate)
         {
-            _paths = new Paths(rootPath);
             _generate = generate;
         }
 
-        private readonly Paths _paths;
         private readonly bool _generate;
 
         protected override void Load(ContainerBuilder builder)
@@ -53,13 +51,13 @@ namespace Rhetos.Configuration.Autofac
             else
             {
                 builder.RegisterModule(new DomModuleConfiguration(Paths.DomAssemblyName, DomAssemblyUsage.Load));
-                builder.RegisterModule(new NHibernateModuleConfiguration(_paths.NHibernateMappingFile));
+                builder.RegisterModule(new NHibernateModuleConfiguration(Paths.NHibernateMappingFile));
             }
 
             // General registrations:
             builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));
-            builder.RegisterInstance<IDslSource>(new DiskDslScriptProvider(_paths.DslScriptsFolder));
-            builder.RegisterInstance(new ResourcesFolder(_paths.ResourcesFolder));
+            builder.RegisterInstance<IDslSource>(new DiskDslScriptProvider(Paths.DslScriptsFolder));
+            builder.RegisterInstance(new ResourcesFolder(Paths.ResourcesFolder));
             builder.RegisterModule(new SecurityModuleConfiguration());
             builder.RegisterModule(new UtilitiesModuleConfiguration());
             builder.RegisterModule(new DslModuleConfiguration());

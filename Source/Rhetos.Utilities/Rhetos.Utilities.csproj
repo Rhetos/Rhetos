@@ -116,6 +116,7 @@
   <ItemGroup>
     <Compile Include="ConnectionString.cs" />
     <Compile Include="OracleSqlUtility.cs" />
+    <Compile Include="Paths.cs" />
     <Compile Include="ResourcesFolder.cs" />
     <Compile Include="CsUtility.cs" />
     <Compile Include="DirectedGraph.cs" />

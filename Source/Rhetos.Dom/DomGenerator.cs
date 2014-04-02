@@ -80,7 +80,7 @@ namespace Rhetos.Dom
             {
                 GenerateExecutable = false,
                 GenerateInMemory = string.IsNullOrEmpty(_assemblyName),
-                OutputAssembly = string.IsNullOrEmpty(_assemblyName) ? null : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _assemblyName + ".dll"),
+                OutputAssembly = string.IsNullOrEmpty(_assemblyName) ? null : Path.Combine(Paths.BinFolder, _assemblyName + ".dll"),
                 IncludeDebugInformation = true,
                 CompilerOptions = "/optimize"
             };

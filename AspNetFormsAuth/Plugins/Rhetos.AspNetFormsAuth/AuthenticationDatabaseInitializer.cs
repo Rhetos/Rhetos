@@ -106,7 +106,7 @@ namespace Rhetos.AspNetFormsAuth
         /// </summary>
         private void InitializeAspNetDatabase()
         {
-            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Plugins\InitAspNetDatabase.exe");
+            var path = Path.Combine(Paths.PluginsFolder, @"InitAspNetDatabase.exe");
             ExecuteApplication(path);
         }
 

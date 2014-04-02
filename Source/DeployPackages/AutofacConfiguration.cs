@@ -17,15 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using Autofac;
-using Rhetos.Utilities;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Deployment;
-using Rhetos.Dsl;
+using Rhetos.Extensibility;
+using Rhetos.Logging;
 using Rhetos.Security;
+using Rhetos.Utilities;
 
 namespace DeployPackages
 {
@@ -33,14 +31,14 @@ namespace DeployPackages
     {
         protected override void Load(ContainerBuilder builder)
         {
-            // Specific registrations:
+            // Specific registrations and initialization:
+            PluginsUtility.SetLogProvider(new NLogProvider());
             builder.RegisterModule(new DatabaseGeneratorModuleConfiguration());
             builder.RegisterType<DataMigration>();
             builder.RegisterType<DatabaseCleaner>();
 
             // General registrations:
-            string rootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..");
-            builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(rootPath, generate: true));
+            builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(generate: true));
 
             // Specific registrations override:
             builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();

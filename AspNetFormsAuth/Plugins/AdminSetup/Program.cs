@@ -37,7 +37,8 @@ namespace AdminSetup
     {
         static int Main(string[] args)
         {
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(FindAssemblyInParentBinFolder);
+            Paths.InitializeRhetosServerRootPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\.."));
+            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(FindAssemblyInBinFolder);
 
             string errorMessage = null;
             try
@@ -69,9 +70,12 @@ namespace AdminSetup
             return 0;
         }
 
-        private static System.Reflection.Assembly FindAssemblyInParentBinFolder(object sender, ResolveEventArgs args)
+        /// <summary>
+        /// This program is executed in bin\Plugins, so the assemblies from the parent (bin) folder must be loaded manually.
+        /// </summary>
+        private static System.Reflection.Assembly FindAssemblyInBinFolder(object sender, ResolveEventArgs args)
         {
-            string assemblyPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", new AssemblyName(args.Name).Name + ".dll"));
+            string assemblyPath = Path.GetFullPath(Path.Combine(Paths.BinFolder, new AssemblyName(args.Name).Name + ".dll"));
             if (File.Exists(assemblyPath) == false)
             {
                 Console.WriteLine("Guessed external assembly path '" + assemblyPath + "' for assembly name '" + args.Name + "'.");
@@ -86,7 +90,7 @@ namespace AdminSetup
         {
             CheckElevatedPrivileges();
 
-            SqlUtility.LoadSpecificConnectionString(BinFolderConnectionStringsFile());
+            SqlUtility.LoadSpecificConnectionString(Paths.ConnectionStringsFile);
             AuthenticationServiceInitializer.InitializeDatabaseConnection(autoCreateTables: true);
 
             int id = WebSecurity.GetUserId(adminUserName);
@@ -130,11 +134,6 @@ namespace AdminSetup
 
             if (!elevated)
                 throw new ApplicationException(System.Diagnostics.Process.GetCurrentProcess().ProcessName + " has to be executed with elevated privileges (as administator).");
-        }
-
-        private static string BinFolderConnectionStringsFile()
-        {
-            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\ConnectionStrings.config");
         }
 
         private static string InputPassword()
