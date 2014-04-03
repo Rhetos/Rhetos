@@ -29,15 +29,14 @@ using Rhetos.Dom;
 
 namespace Rhetos.Processing.DefaultCommands
 {
-    [Obsolete("Use ReadCommand")]
     [Export(typeof(ICommandImplementation))]
-    [ExportMetadata(MefProvider.Implements, typeof(QueryDataSourceCommandInfo))]
-    public class QueryDataSourceCommand : ICommandImplementation
+    [ExportMetadata(MefProvider.Implements, typeof(ReadCommandInfo))]
+    public class ReadCommand : ICommandImplementation
     {
         private readonly IDataTypeProvider _dataTypeProvider;
         private readonly GenericRepositories _repositories;
 
-        public QueryDataSourceCommand(
+        public ReadCommand(
             IDataTypeProvider dataTypeProvider,
             GenericRepositories repositories)
         {
@@ -47,18 +46,18 @@ namespace Rhetos.Processing.DefaultCommands
 
         public CommandResult Execute(ICommandInfo commandInfo)
         {
-            var info = (QueryDataSourceCommandInfo)commandInfo;
+            var info = (ReadCommandInfo)commandInfo;
+
+            if (info.DataSource == null)
+                throw new UserException("Invalid ReadCommand argument: Data source is not set.");
 
             var genericRepository = _repositories.GetGenericRepository(info.DataSource);
-            var readCommand = new ReadCommand(_dataTypeProvider, _repositories);
-            var readCommandInfo = info.ToReadCommandInfo();
-            ReadCommandResult readCommandResult = genericRepository.ExecuteReadCommand(readCommandInfo);
+            ReadCommandResult result = genericRepository.ExecuteReadCommand(info);
 
-            var result = QueryDataSourceCommandResult.FromReadCommandResult(readCommandResult);
             return new CommandResult
             {
                 Data = _dataTypeProvider.CreateBasicData(result),
-                Message = (result.Records != null ? result.Records.Length.ToString() : result.TotalRecords.ToString()) + " row(s) found",
+                Message = (result.Records != null ? result.Records.Length.ToString() : result.TotalCount.ToString()) + " row(s) found",
                 Success = true
             };
         }

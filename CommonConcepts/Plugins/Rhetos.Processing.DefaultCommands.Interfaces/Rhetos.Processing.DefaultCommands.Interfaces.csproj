@@ -85,6 +85,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ReadCommandResult.cs" />
+    <Compile Include="ReadCommandInfo.cs" />
     <Compile Include="ExecuteActionCommandInfo.cs" />
     <Compile Include="DownloadReportCommandInfo.cs" />
     <Compile Include="PingCommandInfo.cs" />

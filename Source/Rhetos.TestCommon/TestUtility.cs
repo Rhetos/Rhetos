@@ -51,14 +51,14 @@ namespace Rhetos.TestCommon
                 message = ex.GetType().Name + ": " + message;
             }
             Assert.IsNotNull(exception, "Expected exception did not happen.");
-            AssertContains(message, expectedErrorContent, "Exception message text is incorrect.");
+            AssertContains(message, expectedErrorContent, "Exception message text is incorrect. ", exception.ToString());
             return exception;
         }
 
         /// <summary>
         /// Case-insensitive comparison.
         /// </summary>
-        public static void AssertContains(string text, string[] patterns, string message = null)
+        public static void AssertContains(string text, string[] patterns, string message = null, string errorContext = null)
         {
             if (patterns.Any(string.IsNullOrEmpty))
                 throw new ArgumentException("Given list of patterns contains an empty string.");
@@ -74,6 +74,7 @@ namespace Rhetos.TestCommon
                 else
                 {
                     Console.WriteLine(" Not found.");
+                    Console.WriteLine(errorContext);
                     Assert.Fail("Text should contain pattern '" + pattern + "'. " + message ?? "");
                 }
             }

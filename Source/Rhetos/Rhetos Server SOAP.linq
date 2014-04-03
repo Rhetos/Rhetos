@@ -37,15 +37,15 @@ void Main()
 	// READ FIRST 3 RECORDS FROM Common.Claim:
 	
 	Console.WriteLine("READ FIRST 3 RECORDS FROM Common.Claim:");
-	serverResponse = server.Execute(new QueryDataSourceCommandInfo
+	serverResponse = server.Execute(new ReadCommandInfo
 	{
 		DataSource = "Common.Claim",
-		PageNumber = 1,
-		RecordsPerPage = 3,
-		OrderByProperty = "ClaimResource"
+		Top = 3,
+        OrderByProperties = new[] { new OrderByProperty { Property = "ClaimResource" } },
+        ReadRecords = true
 	});
 	Short(serverResponse).Dump();
-	ParseResponse<QueryDataSourceCommandResult>(serverResponse).Dump();
+	ParseResponse<ReadCommandResult>(serverResponse).Dump();
     
     // CREATE A PRINCIPAL:
     

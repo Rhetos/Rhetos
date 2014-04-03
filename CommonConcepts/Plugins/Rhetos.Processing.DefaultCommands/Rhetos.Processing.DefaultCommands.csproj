@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommonConceptsConfiguration.cs" />
+    <Compile Include="ReadCommand.cs" />
     <Compile Include="ExecuteActionCommand.cs" />
     <Compile Include="DownloadReportCommand.cs" />
     <Compile Include="PingCommand.cs" />
@@ -66,6 +67,7 @@
     <Compile Include="Security\DownloadReportCommandClaims.cs" />
     <Compile Include="Security\LoadDslModelCommandClaims.cs" />
     <Compile Include="Security\QueryDataSourceCommandClaims.cs" />
+    <Compile Include="Security\ReadCommandClaims.cs" />
     <Compile Include="Security\SaveCommandClaims.cs" />
   </ItemGroup>
   <ItemGroup>

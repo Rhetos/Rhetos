@@ -372,14 +372,14 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
-        private MethodInfo _repositoryQueryDataSourceCommandMethod = null;
-        public MethodInfo RepositoryQueryDataSourceCommandMethod
+        private MethodInfo _repositoryReadCommandMethod = null;
+        public MethodInfo RepositoryReadCommandMethod
         {
             get
             {
-                if (_repositoryQueryDataSourceCommandMethod == null)
-                    _repositoryQueryDataSourceCommandMethod = RepositoryType.GetMethod("QueryData", new Type[] { typeof(QueryDataSourceCommandInfo) });
-                return _repositoryQueryDataSourceCommandMethod;
+                if (_repositoryReadCommandMethod == null)
+                    _repositoryReadCommandMethod = RepositoryType.GetMethod("ReadCommand", new Type[] { typeof(ReadCommandInfo) });
+                return _repositoryReadCommandMethod;
             }
         }
 

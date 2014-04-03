@@ -26,7 +26,7 @@ using Rhetos.Dom.DefaultConcepts;
 
 namespace Rhetos.Processing.DefaultCommands
 {
-    // TODO: Rename to ReadCommand*
+    [Obsolete("Use ReadCommand")]
     [Export(typeof(ICommandInfo))]
     public class QueryDataSourceCommandInfo : ICommandInfo
     {
@@ -58,5 +58,29 @@ namespace Rhetos.Processing.DefaultCommands
         public string OrderByProperty { get; set; }
 
         public bool OrderDescending { get; set; }
+
+        public ReadCommandInfo ToReadCommandInfo()
+        {
+            var filters = new List<FilterCriteria>();
+            if (this.Filter != null)
+                filters.Add(new FilterCriteria { Filter = this.Filter.GetType().AssemblyQualifiedName, Value = this.Filter });
+            if (this.GenericFilter != null)
+                filters.AddRange(this.GenericFilter);
+
+            var order = new List<OrderByProperty>();
+            if (!string.IsNullOrEmpty(this.OrderByProperty))
+                order.Add(new OrderByProperty { Property = this.OrderByProperty, Descending = this.OrderDescending });
+
+            return new ReadCommandInfo
+            {
+                DataSource = this.DataSource,
+                Filters = filters.ToArray(),
+                ReadRecords = true,
+                ReadTotalCount = true,
+                Skip = this.PageNumber > 0 ? this.RecordsPerPage * (this.PageNumber - 1) : 0,
+                Top = this.RecordsPerPage,
+                OrderByProperties = order.ToArray()
+            };
+        }
     }
 }

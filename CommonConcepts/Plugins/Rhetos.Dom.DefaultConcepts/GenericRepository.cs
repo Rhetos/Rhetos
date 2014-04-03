@@ -205,9 +205,9 @@ namespace Rhetos.Dom.DefaultConcepts
             return items;
         }
 
-        public IEnumerable<TEntityInterface> ReadNonMaterialized(object parameter, bool preferQuery)
+        public IEnumerable<TEntityInterface> ReadNonMaterialized<TParameter>(TParameter parameter, bool preferQuery)
         {
-            return ReadNonMaterialized(parameter, parameter.GetType(), preferQuery);
+            return ReadNonMaterialized(parameter, typeof(TParameter), preferQuery);
         }
 
         private delegate Func<IEnumerable<TEntityInterface>> ReadingOption();
@@ -220,6 +220,9 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
+        /// <param name="parameterType">
+        /// It is usually <code>parameter.GetType()</code>, but be careful how to specify the filter if the parameter may be null.
+        /// </param>
         public IEnumerable<TEntityInterface> ReadNonMaterialized(object parameter, Type parameterType, bool preferQuery)
         {
             // Use Filter(parameter), Query(parameter) or Filter(Query(), parameter), if any option exists
@@ -363,36 +366,42 @@ namespace Rhetos.Dom.DefaultConcepts
             return items ?? ReadNonMaterialized(new FilterAll(), preferQuery: preferQuery);
         }
 
-        public QueryDataSourceCommandResult ExecuteQueryDataSourceCommand(QueryDataSourceCommandInfo commandInfo)
+        public ReadCommandResult ExecuteReadCommand(ReadCommandInfo commandInfo)
         {
-            var specificMethod = _reflection.RepositoryQueryDataSourceCommandMethod;
+            if (!commandInfo.ReadRecords && !commandInfo.ReadTotalCount)
+                throw new ArgumentException("Invalid ReadCommand argument: At least one of the properties ReadRecords or ReadTotalCount should be set to true.");
+
+            if (commandInfo.Top  < 0)
+                throw new ArgumentException("Invalid ReadCommand argument: Top parameter must not be negative.");
+
+            if (commandInfo.Skip < 0)
+                throw new ArgumentException("Invalid ReadCommand argument: Skip parameter must not be negative.");
+
+            var specificMethod = _reflection.RepositoryReadCommandMethod;
             if (specificMethod != null)
-                return (QueryDataSourceCommandResult)specificMethod.Invoke(_repository.Value, new object[] { commandInfo });
+                return (ReadCommandResult)specificMethod.Invoke(_repository.Value, new object[] { commandInfo });
 
-            var filters = new List<FilterCriteria>();
+            bool pagingIsUsed = commandInfo.Top > 0 || commandInfo.Skip > 0;
 
-            if (commandInfo.Filter != null)
-                filters.Add(new FilterCriteria { Filter = commandInfo.Filter.GetType().AssemblyQualifiedName, Value = commandInfo.Filter });
+            IEnumerable<TEntityInterface> filtered = ReadNonMaterialized(commandInfo.Filters ?? new FilterCriteria[] { }, preferQuery: pagingIsUsed || !commandInfo.ReadRecords);
 
-            if (commandInfo.GenericFilter != null)
-                filters.AddRange(commandInfo.GenericFilter);
+            object[] resultRecords = null;
+            int? totalCount = null;
 
-            IEnumerable<TEntityInterface> filtered = ReadNonMaterialized(filters, preferQuery: true); // preferQuery is set because of paging.
-            var resultRecords = (object[]) _reflection.ToArrayOfEntity(_genericFilterHelper.SortAndPaginate(_reflection.AsQueryable(filtered), commandInfo));
+            if (commandInfo.ReadRecords)
+                resultRecords = (object[])_reflection.ToArrayOfEntity(_genericFilterHelper.SortAndPaginate(_reflection.AsQueryable(filtered), commandInfo));
 
-            int totalCount;
-            if (commandInfo.PageNumber > 0 && commandInfo.RecordsPerPage > 0)
-                totalCount = filtered.Count();
-            else
-                totalCount = resultRecords.Length;
+            if (commandInfo.ReadTotalCount)
+                if (pagingIsUsed)
+                    totalCount = filtered.Count();
+                else
+                    totalCount = resultRecords != null ? resultRecords.Length : filtered.Count();
 
-            var result = new QueryDataSourceCommandResult
+            return new ReadCommandResult
             {
                 Records = resultRecords,
-                TotalRecords = totalCount
+                TotalCount = totalCount
             };
-
-            return result;
         }
 
         #endregion

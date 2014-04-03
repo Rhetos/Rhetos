@@ -1,4 +1,4 @@
-/*
+﻿/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -19,29 +19,20 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
-using Rhetos.Dsl;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
-using Rhetos.Security;
+using System.Text;
 
 namespace Rhetos.Processing.DefaultCommands
 {
-    [Obsolete("Use ReadCommand")]
-    [Export(typeof(IClaimProvider))]
-    [ExportMetadata(MefProvider.Implements, typeof(QueryDataSourceCommandInfo))]
-    public class QueryDataSourceCommandClaims : IClaimProvider
+    public class ReadCommandResult
     {
-        public IList<Claim> GetRequiredClaims(ICommandInfo info)
-        {
-            QueryDataSourceCommandInfo commandInfo = (QueryDataSourceCommandInfo) info;
-            return new[] { new Claim(commandInfo.DataSource, "Read") };
-        }
+        /// Returned only if ReadCommandInfo.ReadTotalCount is set, otherwise it will be null.
+        public object[] Records { get; set; }
 
-        public IList<Claim> GetAllClaims(IDslModel dslModel)
-        {
-            return new Claim[] { }; // ReadCommandClaims will generate Read claims.
-        }
+        /// <summary>
+        /// The total number of records that would be returned without paging (ReadCommandInfo.Top or Skip).
+        /// The value is returned only if ReadCommandInfo.ReadTotalCount is set.
+        /// </summary>
+        public int? TotalCount { get; set; }
     }
 }

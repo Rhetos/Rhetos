@@ -29,6 +29,7 @@ using Rhetos.Processing.DefaultCommands;
 using Rhetos.XmlSerialization;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
+using Rhetos.TestCommon;
 
 namespace CommonConcepts.Test
 {
@@ -124,17 +125,7 @@ namespace CommonConcepts.Test
                     PageNumber = 2
                 };
 
-                string exceptionMessage = "";
-                try
-                {
-                    ReportCommandResult(container, info);
-                }
-                catch (Exception ex)
-                {
-                    exceptionMessage = ex.Message;
-                    Console.WriteLine(exceptionMessage);
-                }
-                Assert.IsTrue(exceptionMessage.Contains("OrderByProperty"));
+                TestUtility.ShouldFail(() => ReportCommandResult(container, info), "Sort order must be set if paging is used");
             }
         }
 
@@ -213,6 +204,29 @@ namespace CommonConcepts.Test
 
                 info.GenericFilter = new[] { new FilterCriteria { Property = "Name", Operation = "Contains", Value = "1" } };
                 Assert.AreEqual("b1 /1", ReportCommandResult2(container, info));
+            }
+        }
+
+        [TestMethod]
+        public void NullGenericFilter()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var genericRepos = container.Resolve<GenericRepository<Common.Claim>>();
+
+                var readCommand = new ReadCommandInfo
+                {
+                    DataSource = "Common.Claim",
+                    Top = 3,
+                    OrderByProperties = new[] { new OrderByProperty { Property = "ClaimResource" } },
+                    ReadRecords = true,
+                    ReadTotalCount = true
+                };
+
+                var readResult = genericRepos.ExecuteReadCommand(readCommand);
+                Console.WriteLine("Records.Length: " + readResult.Records.Length);
+                Console.WriteLine("TotalCount: " + readResult.TotalCount);
+                Assert.IsTrue(readResult.Records.Length < readResult.TotalCount);
             }
         }
    }

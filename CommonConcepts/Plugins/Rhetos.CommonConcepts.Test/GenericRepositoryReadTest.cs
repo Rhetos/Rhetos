@@ -36,6 +36,19 @@ using System.Text;
 
 namespace Rhetos.CommonConcepts.Test
 {
+    static class LegacyExtension
+    {
+        public static QueryDataSourceCommandResult ExecuteQueryDataSourceCommand<T>(
+            this GenericRepository<T> genericRepository,
+            QueryDataSourceCommandInfo queryDataSourceCommandInfo)
+            where T : class, IEntity
+        {
+            var commandInfo = queryDataSourceCommandInfo.ToReadCommandInfo();
+            var commandResult = genericRepository.ExecuteReadCommand(commandInfo);
+            return QueryDataSourceCommandResult.FromReadCommandResult(commandResult);
+        }
+    }
+
     [TestClass]
     public class GenericRepositoryReadTest
     {
@@ -748,12 +761,12 @@ namespace Rhetos.CommonConcepts.Test
 
         class ExplicitQueryDataSourceCommandRepository : IRepository
         {
-            public QueryDataSourceCommandResult QueryData(QueryDataSourceCommandInfo commandInfo)
+            public ReadCommandResult ReadCommand(ReadCommandInfo commandInfo)
             {
-                return new QueryDataSourceCommandResult
+                return new ReadCommandResult
                 {
                     Records = new SimpleEntityList { "a1", "b1", "b2" }.ToArray<object>(),
-                    TotalRecords = 10
+                    TotalCount = 10
                 };
             }
         }

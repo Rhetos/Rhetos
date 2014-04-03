@@ -26,7 +26,7 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     /// <summary>
     /// If a data structure's repository implements a Query, Load or Filter function with IEnumerable&lt;PropertyFilter&gt; argument,
-    /// it will be used when reading data using QueryDataSourceCommand.
+    /// it will be used when reading data by GenericRepository or a server command.
     /// </summary>
     public class PropertyFilter
     {

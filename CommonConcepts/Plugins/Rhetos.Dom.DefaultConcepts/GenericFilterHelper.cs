@@ -242,16 +242,22 @@ namespace Rhetos.Dom.DefaultConcepts
         //================================================================
         #region Sorting and paging
 
-        public IQueryable<T> SortAndPaginate<T>(IQueryable<T> query, QueryDataSourceCommandInfo parameters)
+        public IQueryable<T> SortAndPaginate<T>(IQueryable<T> query, ReadCommandInfo commandInfo)
         {
-            if (string.IsNullOrEmpty(parameters.OrderByProperty) && parameters.PageNumber > 0 && parameters.RecordsPerPage > 0)
-                throw new ArgumentException("OrderByProperty must be set when paging is used in QueryDataSourceCommand.");
+            bool pagingIsUsed = commandInfo.Top > 0 || commandInfo.Skip > 0;
 
-            if (!string.IsNullOrEmpty(parameters.OrderByProperty))
-                query = Sort(query, parameters.OrderByProperty, !parameters.OrderDescending);
+            if (pagingIsUsed && (commandInfo.OrderByProperties == null || commandInfo.OrderByProperties.Length == 0))
+                throw new UserException("Invalid ReadCommand argument: Sort order must be set if paging is used (Top or Skip).");
 
-            if (parameters.PageNumber > 0 && parameters.RecordsPerPage > 0)
-                query = query.Skip((parameters.PageNumber - 1) * parameters.RecordsPerPage).Take(parameters.RecordsPerPage);
+            if (commandInfo.OrderByProperties != null)
+                foreach (var order in commandInfo.OrderByProperties)
+                    query = Sort(query, order.Property, ascending: !order.Descending);
+
+            if (commandInfo.Skip > 0)
+                query = query.Skip(commandInfo.Skip);
+
+            if (commandInfo.Top > 0)
+                query = query.Take(commandInfo.Top);
 
             return query;
         }

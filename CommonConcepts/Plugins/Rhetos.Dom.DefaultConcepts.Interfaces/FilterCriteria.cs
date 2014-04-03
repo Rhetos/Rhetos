@@ -23,7 +23,7 @@ namespace Rhetos.Dom.DefaultConcepts
     /// FilterCriteria is a generic filter's element that defines a filter by property value or a predefined filter call.
     /// 
     /// If a data structure's repository implements a Query, Load or Filter function with IEnumerable&lt;FilterCriteria&gt; argument,
-    /// it will be used when reading data using QueryDataSourceCommand.
+    /// it will be used when reading data by GenericRepository or a server command.
     /// </summary>
     public class FilterCriteria
     {
