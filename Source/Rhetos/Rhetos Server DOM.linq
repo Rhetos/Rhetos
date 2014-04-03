@@ -50,9 +50,9 @@
 void Main()
 {
     ConsoleLogger.MinLevel = EventType.Info;
-    using (var container = new RhetosTestContainer(
-        commitChanges: false,
-        rhetosServerFolder: null))
+    var rhetosServerPath = Path.GetDirectoryName(Util.CurrentQueryPath);
+    Directory.SetCurrentDirectory(rhetosServerPath);
+    using (var container = new RhetosTestContainer(commitChanges: false))
     {
         var repository = container.Resolve<Common.DomRepository>();
         

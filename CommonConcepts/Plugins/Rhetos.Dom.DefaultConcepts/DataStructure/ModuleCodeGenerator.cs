@@ -118,6 +118,7 @@ namespace {0}._Helper
                 codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Security.IAuthorizationManager));
                 codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.ResourcesFolder));
                 codeBuilder.AddReferencesFromDependency(typeof(System.ComponentModel.Composition.ExportAttribute));
+                codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.GenericRepositories));
 
                 CommonClassesCreated = true;
             }
@@ -198,6 +199,10 @@ namespace {0}._Helper
 
         protected Lazy<Rhetos.Utilities.ResourcesFolder> _resourcesFolder;
         public Rhetos.Utilities.ResourcesFolder ResourcesFolder {{ get {{ return _resourcesFolder.Value; }} }}
+
+        protected Lazy<Rhetos.Dom.DefaultConcepts.GenericRepositories> _genericRepositories;
+        public Rhetos.Dom.DefaultConcepts.GenericRepositories GenericRepositories {{ get {{ return _genericRepositories.Value; }} }}
+
         {4}
 
         // This constructor is used for automatic parameter injection with autofac.
@@ -206,13 +211,15 @@ namespace {0}._Helper
             Lazy<Rhetos.Utilities.IUserInfo> userInfo,
             Lazy<Rhetos.Utilities.ISqlExecuter> sqlExecuter,
             Lazy<Rhetos.Security.IAuthorizationManager> authorizationManager,
-            Lazy<Rhetos.Utilities.ResourcesFolder> resourcesFolder{5})
+            Lazy<Rhetos.Utilities.ResourcesFolder> resourcesFolder,
+            Lazy<Rhetos.Dom.DefaultConcepts.GenericRepositories> genericRepositories{5})
         {{
             _persistenceTransaction = persistenceTransaction;
             _userInfo = userInfo;
             _sqlExecuter = sqlExecuter;
             _authorizationManager = authorizationManager;
             _resourcesFolder = resourcesFolder;
+            _genericRepositories = genericRepositories;
             {6}
         }}
 
