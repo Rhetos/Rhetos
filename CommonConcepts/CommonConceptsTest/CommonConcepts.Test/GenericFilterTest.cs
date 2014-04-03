@@ -24,8 +24,9 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
-using CommonConcepts.Test.Utilities;
 using System.Linq.Expressions;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -92,8 +93,12 @@ namespace CommonConcepts.Test
 
         private static Expression<Func<TEntity, bool>> GenericFilterHelperToExpression<TEntity>(IEnumerable<PropertyFilter> propertyFilters)
         {
-            var expr = Create.GenericFilterHelper().ToExpression(propertyFilters, typeof(TEntity));
-            return (Expression<Func<TEntity, bool>>)expr;
+            using (var container = new RhetosTestContainer())
+            {
+                var gfh = container.Resolve<GenericFilterHelper>();
+                var expr = gfh.ToExpression(propertyFilters, typeof(TEntity));
+                return (Expression<Func<TEntity, bool>>)expr;
+            }
         }
 
         private static IQueryable<TEntity> GenericFilterHelperFilter<TEntity>(IQueryable<TEntity> items, IEnumerable<PropertyFilter> propertyFilters)
@@ -169,9 +174,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterStringOperations()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestGenericFilter.Simple;",
                         "INSERT INTO TestGenericFilter.Simple (Code, Name) SELECT 1, 'abc1';",
@@ -179,7 +184,7 @@ namespace CommonConcepts.Test
                         "INSERT INTO TestGenericFilter.Simple (Code, Name) SELECT 3, 'def3';",
                     });
 
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 FilterName(repository, "equal", "abc2", "2");
                 FilterName(repository, "notequal", "abc2", "1, 3");
                 FilterName(repository, "less", "abc2", "1");
@@ -205,9 +210,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterIntOperations()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestGenericFilter.Simple;",
                         "INSERT INTO TestGenericFilter.Simple (Code, Name) SELECT 1, 'abc1';",
@@ -215,7 +220,7 @@ namespace CommonConcepts.Test
                         "INSERT INTO TestGenericFilter.Simple (Code, Name) SELECT 3, 'def3';",
                     });
 
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 FilterCode(repository, "equal", "2", "2");
                 FilterCode(repository, "notequal", "2", "1, 3");
                 FilterCode(repository, "less", "2", "1");
@@ -242,9 +247,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterDateIn()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestGenericFilter.Simple;",
                         "INSERT INTO TestGenericFilter.Simple (Code, Start) SELECT 1, '2011-12-31';",
@@ -256,7 +261,7 @@ namespace CommonConcepts.Test
                         "INSERT INTO TestGenericFilter.Simple (Code, Start) SELECT 7, '2013-01-01';",
                     });
 
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 FilterStart(repository, "2010", "");
                 FilterStart(repository, "2011", "1");
@@ -310,10 +315,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterNullValues()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var parentId = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestGenericFilter.Child",
                         "DELETE FROM TestGenericFilter.Simple",
@@ -336,7 +341,7 @@ namespace CommonConcepts.Test
                         "INSERT INTO TestGenericFilter.Simple (Code, Name) SELECT null, 'n2'",
                     });
 
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var simple = repository.TestGenericFilter.Simple.Query();
                 var child = repository.TestGenericFilter.Child.Query();
 
@@ -385,9 +390,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InvalidPropertyNameError()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var childQuery = repository.TestGenericFilter.Child.Query();
                 PropertyFilter filter;
 

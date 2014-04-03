@@ -23,6 +23,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -32,9 +34,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ThrowException()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 TestUtility.ShouldFail(
                     () => repository.TestAction.ThrowException.Execute(new TestAction.ThrowException { Message = "abcd" }),
                     "abcd");
@@ -44,34 +46,35 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UseExecutionContext()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                Assert.IsTrue(executionContext.UserInfo.UserName.Length > 0);
-                var repository = new Common.DomRepository(executionContext);
+                var executionContext = container.Resolve<Common.ExecutionContext>();
+                Assert.IsTrue(container.Resolve<IUserInfo>().UserName.Length > 0);
+                var repository = container.Resolve<Common.DomRepository>();
                 TestUtility.ShouldFail(
                     () => repository.TestAction.UEC.Execute(new TestAction.UEC { }),
-                    "User " + executionContext.UserInfo.UserName);
+                    "User " + container.Resolve<IUserInfo>().UserName);
             }
         }
 
         [TestMethod]
         public void UseObjectsWithCalculatedExtension()
         {
-            using (var executionContext = new CommonTestExecutionContext(true))
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestAction.Simple" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestAction.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var itemA = new TestAction.Simple { Name = "testA" };
                 var itemB = new TestAction.Simple { Name = "testB" };
                 repository.TestAction.Simple.Insert(new[] { itemA, itemB });
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 repository.TestAction.RemoveAFromAllSimpleEntities.Execute(new TestAction.RemoveAFromAllSimpleEntities { });
 
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
                 repository.TestAction.Simple.Insert(new[] { new TestAction.Simple { Name = "testA" } });
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 repository.TestAction.RemoveAFromAllSimpleEntities.Execute(new TestAction.RemoveAFromAllSimpleEntities { });
             }
         }

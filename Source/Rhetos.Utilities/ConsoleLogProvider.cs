@@ -46,13 +46,22 @@ namespace Rhetos.Utilities
 
         public void Write(EventType eventType, Func<string> logMessage)
         {
-            Console.WriteLine(
-                "[" + eventType + "] "
-                + (_eventName != null ? (_eventName + ": ") : "" )
-                + logMessage());
+            if (eventType >= _minLevel)
+                Console.WriteLine(
+                    "[" + eventType + "] "
+                    + (_eventName != null ? (_eventName + ": ") : "")
+                    + logMessage());
 
             if (_decoratedLogger != null)
                 _decoratedLogger.Write(eventType, logMessage);
+        }
+
+        private static EventType _minLevel = 0;
+
+        public static EventType MinLevel
+        {
+            get { return _minLevel; }
+            set { _minLevel = value; }
         }
     }
 }

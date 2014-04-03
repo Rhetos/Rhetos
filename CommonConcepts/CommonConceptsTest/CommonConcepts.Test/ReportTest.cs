@@ -27,6 +27,8 @@ using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using TestReport;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -36,10 +38,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MultipleSources()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestReport.Document" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestReport.Document" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var d1 = new Document { ID = Guid.NewGuid(), Name = "d1" };
                 var d2 = new Document { ID = Guid.NewGuid(), Name = "d2" };
@@ -83,10 +85,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void CustomReportFile()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestReport.Document" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestReport.Document" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var d1 = new Document { ID = Guid.NewGuid(), Name = "d1" };
                 var d2 = new Document { ID = Guid.NewGuid(), Name = "d2" };

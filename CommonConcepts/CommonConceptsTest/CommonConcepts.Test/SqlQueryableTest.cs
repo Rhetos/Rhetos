@@ -22,6 +22,8 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -31,9 +33,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryableFromRepository()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var secondString = repository.TestDataStructure.SqlQueryable1.Query().Where(item => item.i == 2).Select(item => item.s).Single();
                 Assert.AreEqual("b", secondString);
@@ -48,11 +50,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NotCached()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestDataStructure.CachingTestEntity;" });
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDataStructure.CachingTestEntity;" });
                 Assert.AreEqual("", ReportCachingTestView(repository), "initial");
 
                 var entities = repository.TestDataStructure.CachingTestEntity;
@@ -71,10 +73,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NotCachedReference()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] {"DELETE FROM TestSqlQueryable.Document;"});
-                var documentRepository = new Common.DomRepository(executionContext).TestSqlQueryable.Document;
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {"DELETE FROM TestSqlQueryable.Document;"});
+                var documentRepository = container.Resolve<Common.DomRepository>().TestSqlQueryable.Document;
 
                 var doc = new TestSqlQueryable.Document { ID = Guid.NewGuid(), Name = "abc" };
                 documentRepository.Insert(new[] { doc });

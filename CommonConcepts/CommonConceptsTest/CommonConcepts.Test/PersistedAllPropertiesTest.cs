@@ -25,6 +25,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.TestCommon;
 using System.Text.RegularExpressions;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -43,12 +45,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryableFromRepository()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var createdConcepts = new List<string>();
                 var serializedInfo = new StringBuilder();
                 var createQuery = new StringBuilder();
-                executionContext.SqlExecuter.ExecuteReader(
+                container.Resolve<ISqlExecuter>().ExecuteReader(
                     "SELECT DISTINCT InfoType, SerializedInfo, CreateQuery FROM Rhetos.AppliedConcept WHERE SerializedInfo LIKE '%>TestAllPropertiesCopyAllFeatures<%'",
                     reader =>
                         {
@@ -82,11 +84,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void BrowseUsingImplicitlyCreatedProperties()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestAllProperties.Base;" });
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestAllProperties.Base;" });
 
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 repository.TestAllProperties.TestAllPropertiesCopyAllFeatures.Recompute();
                 Assert.AreEqual("", TestUtility.DumpSorted(

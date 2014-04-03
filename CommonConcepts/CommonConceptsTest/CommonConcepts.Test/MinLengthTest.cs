@@ -23,6 +23,8 @@ using System.Collections.Generic;
 using System.Linq;
 using TestLengthLimit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -33,9 +35,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnInsert()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleMinLength { StringMoreThan2Chars = "." };
                 repository.TestLengthLimit.SimpleMinLength.Insert(new[] { entity });
             }
@@ -44,9 +46,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldNotThrowUserExceptionOnInsert()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleMinLength { StringMoreThan2Chars = ".aaa" };
                 repository.TestLengthLimit.SimpleMinLength.Insert(new[] { entity });
             }
@@ -55,14 +57,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldInsertEntity()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestLengthLimit.SimpleMaxLength;",
                     });
 
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleMinLength { StringMoreThan2Chars = "abc" };
                 repository.TestLengthLimit.SimpleMinLength.Insert(new[] { entity });
             }
@@ -72,9 +74,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnUpdate()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleMinLength { StringMoreThan2Chars = "." };
                 repository.TestLengthLimit.SimpleMinLength.Update(new[] { entity });
             }

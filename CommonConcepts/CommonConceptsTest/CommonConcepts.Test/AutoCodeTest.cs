@@ -23,15 +23,17 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
     [TestClass]
     public class AutoCodeTest
     {
-        private static void DeleteOldData(Common.ExecutionContext executionContext)
+        private static void DeleteOldData(RhetosTestContainer container)
         {
-            executionContext.SqlExecuter.ExecuteSql(new[]
+            container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                 {
                     @"DELETE FROM TestAutoCode.ReferenceGroup;
                     DELETE FROM TestAutoCode.ShortReferenceGroup;
@@ -41,13 +43,13 @@ namespace CommonConcepts.Test
                 });
         }
 
-        private static void TestSimple(Common.ExecutionContext executionContext, Common.DomRepository repository, string format, string expectedCode)
+        private static void TestSimple(RhetosTestContainer container, Common.DomRepository repository, string format, string expectedCode)
         {
             Guid id = Guid.NewGuid();
             repository.TestAutoCode.Simple.Insert(new[] { new TestAutoCode.Simple { ID = id, Code = format } });
 
-            executionContext.NHibernateSession.Flush();
-            executionContext.NHibernateSession.Clear();
+            container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
+            container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
             string generatedCode = repository.TestAutoCode.Simple.Query().Where(item => item.ID == id).Select(item => item.Code).Single();
             Console.WriteLine(format + " => " + generatedCode);
@@ -57,29 +59,29 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Simple()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                DeleteOldData(executionContext);
-                var repository = new Common.DomRepository(executionContext);
+                DeleteOldData(container);
+                var repository = container.Resolve<Common.DomRepository>();
 
-                TestSimple(executionContext, repository, "+", "1");
-                TestSimple(executionContext, repository, "+", "2");
-                TestSimple(executionContext, repository, "+", "3");
-                TestSimple(executionContext, repository, "9", "9");
-                TestSimple(executionContext, repository, "+", "10");
-                TestSimple(executionContext, repository, "+", "11");
-                TestSimple(executionContext, repository, "AB+", "AB1");
-                TestSimple(executionContext, repository, "X", "X");
-                TestSimple(executionContext, repository, "X+", "X1");
-                TestSimple(executionContext, repository, "AB007", "AB007");
-                TestSimple(executionContext, repository, "AB+", "AB008");
-                TestSimple(executionContext, repository, "AB999", "AB999");
-                TestSimple(executionContext, repository, "AB+", "AB1000");
+                TestSimple(container, repository, "+", "1");
+                TestSimple(container, repository, "+", "2");
+                TestSimple(container, repository, "+", "3");
+                TestSimple(container, repository, "9", "9");
+                TestSimple(container, repository, "+", "10");
+                TestSimple(container, repository, "+", "11");
+                TestSimple(container, repository, "AB+", "AB1");
+                TestSimple(container, repository, "X", "X");
+                TestSimple(container, repository, "X+", "X1");
+                TestSimple(container, repository, "AB007", "AB007");
+                TestSimple(container, repository, "AB+", "AB008");
+                TestSimple(container, repository, "AB999", "AB999");
+                TestSimple(container, repository, "AB+", "AB1000");
             }
         }
 
         private static void TestGroup<TEntity, TGroup>(
-            Common.ExecutionContext executionContext, object entityRepository,
+            RhetosTestContainer container, object entityRepository,
             TGroup group, string format, string expectedCode)
                 where TEntity : new()
         {
@@ -92,8 +94,8 @@ namespace CommonConcepts.Test
             entity.Grouping = group;
             writeableRepository.Save(new[] { entity }, null, null);
 
-            executionContext.NHibernateSession.Flush();
-            executionContext.NHibernateSession.Clear();
+            container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
+            container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
             var filterRepository = (IFilterRepository<IEnumerable<Guid>, TEntity>)entityRepository;
             dynamic loaded = filterRepository.Filter(new[] {id}).Single();
@@ -106,54 +108,54 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Grouping()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                DeleteOldData(executionContext);
-                var repository = new Common.DomRepository(executionContext);
+                DeleteOldData(container);
+                var repository = container.Resolve<Common.DomRepository>();
 
-                TestGroup<TestAutoCode.IntGroup, int>(executionContext, repository.TestAutoCode.IntGroup, 500, "+", "1");
-                TestGroup<TestAutoCode.IntGroup, int>(executionContext, repository.TestAutoCode.IntGroup, 500, "+", "2");
-                TestGroup<TestAutoCode.IntGroup, int>(executionContext, repository.TestAutoCode.IntGroup, 600, "+", "1");
-                TestGroup<TestAutoCode.IntGroup, int>(executionContext, repository.TestAutoCode.IntGroup, 600, "A+", "A1");
+                TestGroup<TestAutoCode.IntGroup, int>(container, repository.TestAutoCode.IntGroup, 500, "+", "1");
+                TestGroup<TestAutoCode.IntGroup, int>(container, repository.TestAutoCode.IntGroup, 500, "+", "2");
+                TestGroup<TestAutoCode.IntGroup, int>(container, repository.TestAutoCode.IntGroup, 600, "+", "1");
+                TestGroup<TestAutoCode.IntGroup, int>(container, repository.TestAutoCode.IntGroup, 600, "A+", "A1");
 
-                TestGroup<TestAutoCode.StringGroup, string>(executionContext, repository.TestAutoCode.StringGroup, "x", "+", "1");
-                TestGroup<TestAutoCode.StringGroup, string>(executionContext, repository.TestAutoCode.StringGroup, "x", "+", "2");
-                TestGroup<TestAutoCode.StringGroup, string>(executionContext, repository.TestAutoCode.StringGroup, "y", "+", "1");
-                TestGroup<TestAutoCode.StringGroup, string>(executionContext, repository.TestAutoCode.StringGroup, "y", "A+", "A1");
+                TestGroup<TestAutoCode.StringGroup, string>(container, repository.TestAutoCode.StringGroup, "x", "+", "1");
+                TestGroup<TestAutoCode.StringGroup, string>(container, repository.TestAutoCode.StringGroup, "x", "+", "2");
+                TestGroup<TestAutoCode.StringGroup, string>(container, repository.TestAutoCode.StringGroup, "y", "+", "1");
+                TestGroup<TestAutoCode.StringGroup, string>(container, repository.TestAutoCode.StringGroup, "y", "A+", "A1");
 
                 var simple1 = new TestAutoCode.Simple { ID = Guid.NewGuid(), Code = "1" };
                 var simple2 = new TestAutoCode.Simple { ID = Guid.NewGuid(), Code = "2" };
                 repository.TestAutoCode.Simple.Insert(new[] { simple1, simple2 });
-                executionContext.NHibernateSession.Flush();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
 
-                TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(executionContext, repository.TestAutoCode.ReferenceGroup, simple1, "+", "1");
-                TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(executionContext, repository.TestAutoCode.ReferenceGroup, simple1, "+", "2");
-                TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(executionContext, repository.TestAutoCode.ReferenceGroup, simple2, "+", "1");
-                TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(executionContext, repository.TestAutoCode.ReferenceGroup, simple2, "A+", "A1");
+                TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(container, repository.TestAutoCode.ReferenceGroup, simple1, "+", "1");
+                TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(container, repository.TestAutoCode.ReferenceGroup, simple1, "+", "2");
+                TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(container, repository.TestAutoCode.ReferenceGroup, simple2, "+", "1");
+                TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(container, repository.TestAutoCode.ReferenceGroup, simple2, "A+", "A1");
 
                 var grouping1 = new TestAutoCode.Grouping { ID = Guid.NewGuid(), Code = "1" };
                 var grouping2 = new TestAutoCode.Grouping { ID = Guid.NewGuid(), Code = "2" };
                 repository.TestAutoCode.Grouping.Insert(new[] { grouping1, grouping2 });
-                executionContext.NHibernateSession.Flush();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
 
-                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(executionContext, repository.TestAutoCode.ShortReferenceGroup, grouping1, "+", "1");
-                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(executionContext, repository.TestAutoCode.ShortReferenceGroup, grouping1, "+", "2");
-                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(executionContext, repository.TestAutoCode.ShortReferenceGroup, grouping2, "+", "1");
-                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(executionContext, repository.TestAutoCode.ShortReferenceGroup, grouping2, "A+", "A1");
+                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(container, repository.TestAutoCode.ShortReferenceGroup, grouping1, "+", "1");
+                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(container, repository.TestAutoCode.ShortReferenceGroup, grouping1, "+", "2");
+                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(container, repository.TestAutoCode.ShortReferenceGroup, grouping2, "+", "1");
+                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(container, repository.TestAutoCode.ShortReferenceGroup, grouping2, "A+", "A1");
             }
         }
 
         [TestMethod]
         public void SqlTriggerHandlesNullValue()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                DeleteOldData(executionContext);
+                DeleteOldData(container);
 
                 Guid id = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] { "INSERT INTO TestAutoCode.Simple (ID, Code) VALUES ('" + id + "', NULL)" });
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "INSERT INTO TestAutoCode.Simple (ID, Code) VALUES ('" + id + "', NULL)" });
 
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var loaded = repository.TestAutoCode.Simple.Query().Where(item => item.ID == id).Single();
                 Assert.IsNull(loaded.Code);
             }

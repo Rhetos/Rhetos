@@ -26,6 +26,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
 using Test9._Helper;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -51,10 +53,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateCache()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM Test6.Pers;" });
+                var repository = container.Resolve<Common.DomRepository>();
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM Test6.Pers;" });
 
                 Assert.AreEqual("a1, b2, c3", ReportSource(repository), "source computation");
                 Assert.AreEqual("", ReportPersisted(repository), "initial");
@@ -102,12 +104,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ComputeForNewBaseItems()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var d1ID = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM Test9.Document;",
                         "DELETE FROM Test9.DocumentCreationInfo;",
@@ -139,13 +141,13 @@ namespace CommonConcepts.Test
         [Ignore]
         public void ComputeForNewBaseItems_InvalidCommand()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var d1ID = Guid.NewGuid();
                 var d2ID = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM Test9.Document;",
                         "DELETE FROM Test9.DocumentCreationInfo;",
@@ -188,58 +190,58 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void KeepSynchronizedSimple()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var doc1 = new Test9.Document { Name = "doc1" };
                 var doc2 = new Test9.Document { Name = "doc2" };
                 repository.Test9.Document.Insert(new[] { doc1, doc2 });
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
                 Assert.AreEqual(0, SimpleNumParts(repository, "doc1"), "initial");
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
                 var st1 = new Test9.Part { Head = doc1, Name = "st1" };
                 repository.Test9.Part.Insert(new[] { st1 });
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
                 Assert.AreEqual(1, SimpleNumParts(repository, "doc1"), "after insert detail");
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
                 var st2 = new Test9.Part { Head = doc1, Name = "st2" };
                 repository.Test9.Part.Insert(new[] { st2 });
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
                 Assert.AreEqual(2, SimpleNumParts(repository, "doc1"), "after insert detail 2");
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
                 st1.Head = doc2;
                 repository.Test9.Part.Update(new[] { st1 });
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
                 Assert.AreEqual(1, SimpleNumParts(repository, "doc1"), "after update detail");
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
                 repository.Test9.Part.Delete(new[] { st2 });
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
                 Assert.AreEqual(0, SimpleNumParts(repository, "doc1"), "after delete detail 2");
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
             }
         }
 
         [TestMethod]
         public void KeepSynchronized()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var d1ID = Guid.NewGuid();
                 var d2ID = Guid.NewGuid();
                 var s11ID = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM Test9.DocumentAggregates;",
                         "DELETE FROM Test9.Part;",

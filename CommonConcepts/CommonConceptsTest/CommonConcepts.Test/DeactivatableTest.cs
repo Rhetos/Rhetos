@@ -26,6 +26,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Utilities;
 using Rhetos.TestCommon;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Configuration.Autofac;
 
 namespace CommonConcepts.Test
 {
@@ -35,11 +36,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActivePropertyValueDoesNotHaveToBeDefinedOnInsert()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestDeactivatable.BasicEnt" });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new BasicEnt { Name = "ttt" };
                 repository.TestDeactivatable.BasicEnt.Insert(new[] { entity });
                 Assert.AreEqual(true, repository.TestDeactivatable.BasicEnt.All().Single().Active);
@@ -49,18 +50,18 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActivePropertyValueDoesNotHaveToBeDefinedOnUpdate()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestDeactivatable.BasicEnt",
                     "INSERT INTO TestDeactivatable.BasicEnt (ID, Name) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 'a')",
                     "INSERT INTO TestDeactivatable.BasicEnt (ID, Name, Active) VALUES (" + SqlUtility.QuoteGuid(id2) + ", 'b', 0)",
                     "INSERT INTO TestDeactivatable.BasicEnt (ID, Name) VALUES (" + SqlUtility.QuoteGuid(id3) + ", 'c')"
                 });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var e1 = new BasicEnt { ID = id1, Name = "a2", Active = false };
                 var e2 = new BasicEnt { ID = id2, Name = "b2" };
                 var e3 = new BasicEnt { ID = id3, Name = "c2" };
@@ -76,9 +77,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ItIsOkToInsertInactiveOrActiveItem()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new BasicEnt { Name = "ttt", Active = false };
                 var entity2 = new BasicEnt { Name = "ttt2", Active = true };
                 repository.TestDeactivatable.BasicEnt.Insert(new[] { entity, entity2 });
@@ -88,12 +89,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void TestForActiveItemsFilter()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { 
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { 
                     "DELETE FROM TestDeactivatable.BasicEnt;",
                 });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new BasicEnt { Name = "ttt", Active = false };
                 var entity2 = new BasicEnt { Name = "ttt2", Active = true };
                 
@@ -105,13 +106,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void TestForThisAndActiveItemsFilter()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { 
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { 
                     "DELETE FROM TestDeactivatable.BasicEnt;",
                 });
                 var e1ID = Guid.NewGuid();
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new BasicEnt { ID = e1ID, Name = "ttt", Active = false };
                 var entity2 = new BasicEnt { Name = "ttt2", Active = true };
                 var entity3 = new BasicEnt { Name = "ttt3", Active = false };

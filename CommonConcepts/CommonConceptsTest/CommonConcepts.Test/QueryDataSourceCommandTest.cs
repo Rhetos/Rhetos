@@ -27,16 +27,17 @@ using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Processing;
 using Rhetos.Processing.DefaultCommands;
 using Rhetos.XmlSerialization;
-using CommonConcepts.Test.Utilities;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
     [TestClass]
     public class QueryDataSourceCommandTest
     {
-        private static void InitializeData(Common.ExecutionContext executionContext)
+        private static void InitializeData(RhetosTestContainer container)
         {
-            executionContext.SqlExecuter.ExecuteSql(new[]
+            container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                 {
                     "DELETE FROM TestQueryDataStructureCommand.E;",
                     "INSERT INTO TestQueryDataStructureCommand.E(Name) SELECT 'a';",
@@ -47,9 +48,9 @@ namespace CommonConcepts.Test
                 });
         }
 
-        private static string ReportCommandResult(Common.ExecutionContext executionContext, ICommandInfo info, bool sort = false)
+        private static string ReportCommandResult(RhetosTestContainer container, ICommandInfo info, bool sort = false)
         {
-            var repositories = Create.GenericRepositories(executionContext);
+            var repositories = container.Resolve<GenericRepositories>();
 
             ICommandImplementation command = new QueryDataSourceCommand(new SimpleDataTypeProvider(), repositories);
             var result = (QueryDataSourceCommandResult)command.Execute(info).Data.Value;
@@ -64,21 +65,21 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Entity()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                InitializeData(executionContext);
+                InitializeData(container);
 
                 var info = new QueryDataSourceCommandInfo { DataSource = "TestQueryDataStructureCommand.E" };
-                Assert.AreEqual("a, b, c, d, e /5", ReportCommandResult(executionContext, info, true));
+                Assert.AreEqual("a, b, c, d, e /5", ReportCommandResult(container, info, true));
             }
         }
 
         [TestMethod]
         public void Ordering()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                InitializeData(executionContext);
+                InitializeData(container);
 
                 var info = new QueryDataSourceCommandInfo
                                {
@@ -86,16 +87,16 @@ namespace CommonConcepts.Test
                                    OrderByProperty = "Name",
                                    OrderDescending = true
                                };
-                Assert.AreEqual("e, d, c, b, a /5", ReportCommandResult(executionContext, info));
+                Assert.AreEqual("e, d, c, b, a /5", ReportCommandResult(container, info));
             }
         }
 
         [TestMethod]
         public void Paging()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                InitializeData(executionContext);
+                InitializeData(container);
 
                 var info = new QueryDataSourceCommandInfo
                 {
@@ -105,16 +106,16 @@ namespace CommonConcepts.Test
                     OrderByProperty = "Name",
                     OrderDescending = true
                 };
-                Assert.AreEqual("b, a /5", ReportCommandResult(executionContext, info));
+                Assert.AreEqual("b, a /5", ReportCommandResult(container, info));
             }
         }
 
         [TestMethod]
         public void PagingWithoutOrder()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                InitializeData(executionContext);
+                InitializeData(container);
 
                 var info = new QueryDataSourceCommandInfo
                 {
@@ -126,7 +127,7 @@ namespace CommonConcepts.Test
                 string exceptionMessage = "";
                 try
                 {
-                    ReportCommandResult(executionContext, info);
+                    ReportCommandResult(container, info);
                 }
                 catch (Exception ex)
                 {
@@ -140,25 +141,25 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void GenericFilter()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                InitializeData(executionContext);
+                InitializeData(container);
 
                 var info = new QueryDataSourceCommandInfo
                 {
                     DataSource = "TestQueryDataStructureCommand.E",
                     GenericFilter = new [] { new FilterCriteria { Property = "Name", Operation = "NotEqual", Value = "c" } }
                 };
-                Assert.AreEqual("a, b, d, e /4", ReportCommandResult(executionContext, info, true));
+                Assert.AreEqual("a, b, d, e /4", ReportCommandResult(container, info, true));
             }
         }
 
         [TestMethod]
         public void GenericFilterWithPaging()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                InitializeData(executionContext);
+                InitializeData(container);
 
                 var info = new QueryDataSourceCommandInfo
                 {
@@ -168,15 +169,15 @@ namespace CommonConcepts.Test
                     PageNumber = 2,
                     OrderByProperty = "Name"
                 };
-                Assert.AreEqual("d, e /4", ReportCommandResult(executionContext, info));
+                Assert.AreEqual("d, e /4", ReportCommandResult(container, info));
             }
         }
 
         //====================================================================
 
-        private static string ReportCommandResult2(Common.ExecutionContext executionContext, ICommandInfo info, bool sort = false)
+        private static string ReportCommandResult2(RhetosTestContainer container, ICommandInfo info, bool sort = false)
         {
-            ICommandImplementation command = new QueryDataSourceCommand(new SimpleDataTypeProvider(), Create.GenericRepositories(executionContext));
+            ICommandImplementation command = new QueryDataSourceCommand(new SimpleDataTypeProvider(), container.Resolve<GenericRepositories>());
             var result = (QueryDataSourceCommandResult)command.Execute(info).Data.Value;
             var items = ((IEnumerable<TestQueryDataStructureCommand.Source>)result.Records).Select(item => item.Name);
             if (sort)
@@ -190,28 +191,28 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Filter()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestQueryDataStructureCommand.Source;" });
-                executionContext.SqlExecuter.ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestQueryDataStructureCommand.Source;" });
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
                     .Select(name => "INSERT INTO TestQueryDataStructureCommand.Source (Name) SELECT N'" + name + "';"));
 
                 var info = new QueryDataSourceCommandInfo { DataSource = "TestQueryDataStructureCommand.Source" };
-                Assert.AreEqual("a1, b1, b2, c1 /4", ReportCommandResult2(executionContext, info, true));
+                Assert.AreEqual("a1, b1, b2, c1 /4", ReportCommandResult2(container, info, true));
 
                 info.Filter = new TestQueryDataStructureCommand.FilterByPrefix {  Prefix = "b"};
-                Assert.AreEqual("b1, b2 /2", ReportCommandResult2(executionContext, info, true));
+                Assert.AreEqual("b1, b2 /2", ReportCommandResult2(container, info, true));
 
                 info.OrderByProperty = "Name";
                 info.OrderDescending = true;
-                Assert.AreEqual("b2, b1 /2", ReportCommandResult2(executionContext, info));
+                Assert.AreEqual("b2, b1 /2", ReportCommandResult2(container, info));
 
                 info.PageNumber = 1;
                 info.RecordsPerPage = 1;
-                Assert.AreEqual("b2 /2", ReportCommandResult2(executionContext, info));
+                Assert.AreEqual("b2 /2", ReportCommandResult2(container, info));
 
                 info.GenericFilter = new[] { new FilterCriteria { Property = "Name", Operation = "Contains", Value = "1" } };
-                Assert.AreEqual("b1 /1", ReportCommandResult2(executionContext, info));
+                Assert.AreEqual("b1 /1", ReportCommandResult2(container, info));
             }
         }
    }

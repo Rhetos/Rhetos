@@ -23,6 +23,8 @@ using System.Collections.Generic;
 using System.Linq;
 using TestLengthLimit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -33,9 +35,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnInsert()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleMaxLength { StringLessThan10Chars = "More than 10 characters." };
                 repository.TestLengthLimit.SimpleMaxLength.Insert(new[] { entity });
             }
@@ -44,14 +46,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldInsertWithShortStringEntity()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestLengthLimit.SimpleMaxLength;",
                     });
 
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleMaxLength { StringLessThan10Chars = "abc" };
                 repository.TestLengthLimit.SimpleMaxLength.Insert(new[] { entity });
             }
@@ -60,14 +62,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldInsertEntity()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestLengthLimit.SimpleMaxLength;",
                     });
 
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleMaxLength { LongStringLessThan10Chars = "abc" };
                 repository.TestLengthLimit.SimpleMaxLength.Insert(new[] { entity });
             }
@@ -77,9 +79,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnUpdate()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleMaxLength { LongStringLessThan10Chars = "More than 10 characters." };
                 repository.TestLengthLimit.SimpleMaxLength.Update(new[] { entity });
             }

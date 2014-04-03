@@ -24,6 +24,8 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -35,10 +37,10 @@ namespace CommonConcepts.Test
             private readonly Common.ExecutionContext _executionContext;
             private readonly Common.DomRepository _repository;
 
-            public EntityHelper(Common.ExecutionContext executionContext, Common.DomRepository repository)
+            public EntityHelper(RhetosTestContainer container)
             {
-                _executionContext = executionContext;
-                _repository = repository;
+                _executionContext = container.Resolve<Common.ExecutionContext>();
+                _repository = container.Resolve<Common.DomRepository>();
             }
 
             public void Insert(string s, int i, TestUnique.R r, Guid? id = null)
@@ -87,16 +89,16 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Insert_Index3()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestUnique.E;",
                         "DELETE FROM TestUnique.R;"
                     });
 
-                var repository = new Common.DomRepository(executionContext);
-                var helper = new EntityHelper(executionContext, repository);
+                var repository = container.Resolve<Common.DomRepository>();
+                var helper = new EntityHelper(container);
 
                 var r1 = new TestUnique.R { S = "r1" };
                 var r2 = new TestUnique.R { S = "r2" };
@@ -113,16 +115,16 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Update_Index3()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestUnique.E;",
                         "DELETE FROM TestUnique.R;"
                     });
 
-                var repository = new Common.DomRepository(executionContext);
-                var helper = new EntityHelper(executionContext, repository);
+                var repository = container.Resolve<Common.DomRepository>();
+                var helper = new EntityHelper(container);
 
                 var r1 = new TestUnique.R { S = "r1" };
                 var r2 = new TestUnique.R { S = "r2" };
@@ -141,13 +143,11 @@ namespace CommonConcepts.Test
 
         private class EntityHelperMultiple
         {
-            private readonly Common.ExecutionContext _executionContext;
             private readonly Common.DomRepository _repository;
 
-            public EntityHelperMultiple(Common.ExecutionContext executionContext, Common.DomRepository repository)
+            public EntityHelperMultiple(RhetosTestContainer container, Common.DomRepository repository)
             {
-                _executionContext = executionContext;
-                _repository = repository;
+                _repository = container.Resolve<Common.DomRepository>();
             }
 
             public void Insert(string s, int i, TestUnique.R r, bool shouldFail = false)
@@ -176,16 +176,16 @@ namespace CommonConcepts.Test
 
         private void TestIndexMultipleInsert(string s, int i, int r, bool shouldFail = false)
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestUnique.Multi;",
                         "DELETE FROM TestUnique.R;"
                     });
 
-                var repository = new Common.DomRepository(executionContext);
-                var helper = new EntityHelperMultiple(executionContext, repository);
+                var repository = container.Resolve<Common.DomRepository>();
+                var helper = new EntityHelperMultiple(container, repository);
 
                 var r1 = new TestUnique.R { S = "r1" };
                 var r2 = new TestUnique.R { S = "r2" };

@@ -55,6 +55,17 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Source\Rhetos\bin\NHibernate.dll</HintPath>
     </Reference>
+    <Reference Include="Rhetos.Configuration.Autofac">
+      <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Configuration.Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Extensibility, Version=0.9.14.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Extensibility.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhetos.Security, Version=0.9.14.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Security.dll</HintPath>
+    </Reference>
     <Reference Include="Rhetos.Utilities, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Utilities.dll</HintPath>
@@ -144,13 +155,10 @@
     <Compile Include="ActionTest.cs" />
     <Compile Include="BinaryTest.cs" />
     <Compile Include="AutoCodeTest.cs" />
-    <Compile Include="CommonTestExecutionContext.cs" />
     <Compile Include="ComputationsUtilityTest.cs" />
     <Compile Include="ComputedTest.cs" />
     <Compile Include="AuditablePropertiesTest.cs" />
     <Compile Include="CloningTest.cs" />
-    <Compile Include="Utilities\Create.cs" />
-    <Compile Include="Utilities\DomainObjectModelMock.cs" />
     <Compile Include="MultipleValidationsTest.cs" />
     <Compile Include="SystemRequiredTest.cs" />
     <Compile Include="DenyUserEditTest.cs" />
@@ -188,10 +196,8 @@
     <Compile Include="QueryableExtensionTest.cs" />
     <Compile Include="QueryDataSourceCommandTest.cs" />
     <Compile Include="SqlQueryableTest.cs" />
-    <Compile Include="TestExecutionContext.cs" />
     <Compile Include="ModuleRepositioryTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utilities\AutofacRepositoryIndexMock.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="READ_ME.txt" />

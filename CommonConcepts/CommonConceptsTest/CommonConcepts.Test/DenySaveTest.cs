@@ -23,6 +23,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -42,10 +44,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertInvalidData()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestDenySave.Simple;" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDenySave.Simple;" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 repository.TestDenySave.Simple.Insert(CreateSimple(3));
                 AssertData(repository, "s3");
@@ -57,10 +59,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertValidAndInvalidData()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestDenySave.Simple;" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDenySave.Simple;" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 TestUtility.ShouldFail(() => repository.TestDenySave.Simple.Insert(CreateSimple(3, 300)), "larger than 100");
             }
@@ -69,10 +71,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateInvalidData()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestDenySave.Simple;" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDenySave.Simple;" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var s3 = CreateSimple(3).Single();
                 repository.TestDenySave.Simple.Insert(new[] { s3 });
@@ -91,10 +93,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateInvalidDataWithValidInsertAndDelete()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestDenySave.Simple;" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDenySave.Simple;" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var s1 = CreateSimple(1).Single();
                 var s2 = CreateSimple(2).Single();
@@ -115,10 +117,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertInvalidDataWithValidUpdateAndDelete()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestDenySave.Simple;" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDenySave.Simple;" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var s1 = CreateSimple(1).Single();
                 var s2 = CreateSimple(2).Single();

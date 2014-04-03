@@ -18,29 +18,31 @@
 */
 
 using System;
-using System.Text;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Configuration.Autofac;
+using Rhetos.Logging;
 
-namespace CommonConcepts.Test
+namespace Rhetos.Utilities.Test
 {
     [TestClass]
-    public class CustomClaimTest
+    public class EventTypeTest
     {
         [TestMethod]
-        public void QuerySimple()
+        public void Order()
         {
-            using (var container = new RhetosTestContainer())
+            var eventsOrderedByLevel = new[] { EventType.Trace, EventType.Info, EventType.Error };
+
+            Assert.AreEqual(
+                Enum.GetValues(typeof(EventType)).Length,
+                eventsOrderedByLevel.Length,
+                "This unit test should be updated with new enum values.");
+
+            for (int i = 0; i < eventsOrderedByLevel.Length - 1; i++)
             {
-                var repository = container.Resolve<Common.DomRepository>();
-
-                var testClaim = repository.Common.Claim.Query()
-                    .Where(claim => claim.ClaimResource == "TestCustomPermission.ClaimResource" && claim.ClaimRight == "TestClaimRight")
-                    .SingleOrDefault();
-
-                Assert.IsNotNull(testClaim);
+                Assert.IsTrue(eventsOrderedByLevel[i] < eventsOrderedByLevel[i + 1]);
+                Assert.IsTrue(eventsOrderedByLevel[i + 1] > eventsOrderedByLevel[i]);
             }
         }
     }

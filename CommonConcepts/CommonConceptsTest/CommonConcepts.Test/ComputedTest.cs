@@ -24,6 +24,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
+using Rhetos.Configuration.Autofac;
 
 namespace CommonConcepts.Test
 {
@@ -33,9 +34,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Read()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 {
                     var loaded = repository.TestComputed.Simple.All();
@@ -52,9 +53,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SpecialLoad()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var paremeter = new TestComputed.SpecialLoad { SpecialName = "spec" };
                 var loaded = repository.TestComputed.Simple.Filter(paremeter);

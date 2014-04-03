@@ -34,7 +34,6 @@ using NHibernate.Linq.Visitors;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Persistence.NHibernate;
 
-
 namespace Rhetos.Persistence.NHibernateDefaultConcepts
 {
     [Export(typeof(INHibernateConfigurationExtension))]

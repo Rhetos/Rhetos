@@ -4,6 +4,7 @@
   <Reference Relative="bin\NLog.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\NLog.dll</Reference>
   <Reference Relative="bin\Oracle.DataAccess.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Oracle.DataAccess.dll</Reference>
   <Reference Relative="bin\Plugins\Rhetos.AspNetFormsAuth.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.AspNetFormsAuth.dll</Reference>
+  <Reference Relative="bin\Rhetos.Configuration.Autofac.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Configuration.Autofac.dll</Reference>
   <Reference Relative="bin\Plugins\Rhetos.Dom.DefaultConcepts.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Dom.DefaultConcepts.dll</Reference>
   <Reference Relative="bin\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces.dll</Reference>
   <Reference Relative="bin\Rhetos.Dom.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Dom.Interfaces.dll</Reference>
@@ -24,8 +25,10 @@
   <Namespace>NHibernate.Cfg</Namespace>
   <Namespace>NHibernate.Tool.hbm2ddl</Namespace>
   <Namespace>Oracle.DataAccess.Client</Namespace>
+  <Namespace>Rhetos.Configuration.Autofac</Namespace>
   <Namespace>Rhetos.Dom</Namespace>
   <Namespace>Rhetos.Dom.DefaultConcepts</Namespace>
+  <Namespace>Rhetos.Logging</Namespace>
   <Namespace>Rhetos.Persistence</Namespace>
   <Namespace>Rhetos.Persistence.NHibernate</Namespace>
   <Namespace>Rhetos.Persistence.NHibernateDefaultConcepts</Namespace>
@@ -46,138 +49,35 @@
 
 void Main()
 {
-	bool commitChanges = false;
-	string rhetosServerPath = Path.GetDirectoryName(Util.CurrentQueryPath); // LinqPad script path
-	using (var executionContext = new TestExecutionContext(commitChanges, rhetosServerPath))
-	{
-		var repository = new Common.DomRepository(executionContext);
+    ConsoleLogger.MinLevel = EventType.Info;
+    using (var container = new RhetosTestContainer(
+        commitChanges: false,
+        rhetosServerFolder: null))
+    {
+        var repository = container.Resolve<Common.DomRepository>();
         
-		// PRINT 3 CLAIMS:
-		var claimsAll = repository.Common.Claim.Query();
-		claimsAll.Take(3).Dump();
+        // PRINT 3 CLAIMS:
+        var claimsAll = repository.Common.Claim.Query();
+        claimsAll.Take(3).Dump();
         
         // PRINT CLAIM RESOURCES FROM COMMON MODULE, THAT HAVE 'New' CLAIM RIGHT:
-        string.Join(", ", claimsAll.Where(c => c.ClaimResource.StartsWith("Common.") && c.ClaimRight == "New").Select(c => c.ClaimResource)).Dump("Claim resources:");
+        string.Join(", ", claimsAll
+            .Where(c => c.ClaimResource.StartsWith("Common.") && c.ClaimRight == "New")
+            .Select(c => c.ClaimResource)).Dump("Claim resources:");
         
-		// ADD AND REMOVE A PRINCIPAL:
-		var testUser = new Common.Principal { Name = "Test123ABC", ID = Guid.NewGuid() };
-		repository.Common.Principal.Insert(new[] { testUser });
-		repository.Common.Principal.Delete(new[] { testUser });
+        // ADD AND REMOVE A PRINCIPAL:
+        var testUser = new Common.Principal { Name = "Test123ABC", ID = Guid.NewGuid() };
+        repository.Common.Principal.Insert(new[] { testUser });
+        repository.Common.Principal.Delete(new[] { testUser });
         
         // PRINT LOGGED EVENTS FOR THE 'Common.Principal' INSTANCE:
         repository.Common.LogReader.Query()
             .Where(log => log.TableName == "Common.Principal" && log.ItemId == testUser.ID)
-            .Select(log => new { log.Created, log.Action, Client = SqlUtility.ExtractUserInfo(log.ContextInfo).UserName, log.Description })
-            .Dump();
-	}
+            /*.Select(log => new {
+                log.Created,
+                log.Action,
+                Client = SqlUtility.ExtractUserInfo(log.ContextInfo).UserName,
+                log.Description })*/
+            .ToList().Dump();
+    }
 }
-
-
-//=================================================
-// HELPER FUNCTIONS AND CLASSES:
-
-    public class TestExecutionContext : Common.ExecutionContext, IDisposable
-    {
-        private readonly bool _commitChanges;
-        private static string _rhetosServerPath;
-
-        public TestExecutionContext(bool commitChanges = false, string rhetosServerPath = "")
-        {
-            _commitChanges = commitChanges;
-
-            if (_rhetosServerPath == null)
-                _rhetosServerPath = rhetosServerPath;
-            else
-                if (_rhetosServerPath != rhetosServerPath)
-                    throw new ApplicationException(string.Format(
-                        "Cannot use different rhetosServerPath in same session.\r\nOld:'{0}'\r\nNew:'{1}'",
-                        _rhetosServerPath, rhetosServerPath));
-
-            Initialize();
-
-            // Standard members of ExecutionContext:
-            _userInfo = new Lazy<IUserInfo>(() => new TestUserInfo());
-            _persistenceTransaction = new Lazy<IPersistenceTransaction>(() => new NHibernatePersistenceTransaction(NHPE.Value, new ConsoleLogProvider(), _userInfo.Value));
-            _sqlExecuter = new Lazy<ISqlExecuter>(() => new MsSqlExecuter(ConnectionString.Value, new ConsoleLogProvider(), UserInfo));
-            _authorizationManager = new Lazy<IAuthorizationManager>(() => { throw new NotImplementedException(); });
-            _resourcesFolder = new Lazy<ResourcesFolder>(() => Path.Combine(rhetosServerPath, "Resources"));
-        }
-
-        private static bool _initialized;
-        private static void Initialize()
-        {
-            if (!_initialized)
-            {
-                _initialized = true;
-
-                // Initialize connection string:
-                var configFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _rhetosServerPath, @"bin\ConnectionStrings.config");
-                try
-                {
-                    SqlUtility.LoadSpecificConnectionString(configFile);
-                }
-                catch (Exception ex)
-                {
-                    if (!ex.Message.Contains("Connection string is already loaded"))
-                        throw;
-                }
-
-                // Register plugins folder assemblies:
-                AppDomain.CurrentDomain.AssemblyResolve += (object sender, ResolveEventArgs args) =>
-                {
-                    string pluginsFolder = Path.Combine(_rhetosServerPath, @"bin\Plugins\");
-                    string pluginAssembly = Path.Combine(pluginsFolder, new AssemblyName(args.Name).Name + ".dll");
-                    if (File.Exists(pluginAssembly) == false) return null;
-                    Assembly assembly = Assembly.LoadFrom(pluginAssembly);
-                    return assembly;
-                };
-            }
-        }
-
-        private static Lazy<string> ConnectionString = new Lazy<string>(() => SqlUtility.ConnectionString);
-
-        private static Lazy<NHibernatePersistenceEngine> NHPE = new Lazy<NHibernatePersistenceEngine>(() =>
-            new NHibernatePersistenceEngine(
-                new ConsoleLogProvider(),
-                new NHibernateMappingLoader(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _rhetosServerPath, "bin", "ServerDomNHibernateMapping.xml")),
-                new TestDomainObjectModel(),
-                ConnectionString.Value,
-                new[] { new CommonConceptsNHibernateConfigurationExtension() }));
-
-        ~TestExecutionContext()
-        {
-            Dispose();
-        }
-
-        public void Dispose()
-        {
-            if (_persistenceTransaction != null && _persistenceTransaction.IsValueCreated)
-            {
-                if (!_commitChanges)
-                    _persistenceTransaction.Value.DiscardChanges();
-                _persistenceTransaction.Value.Dispose();
-            }
-        }
-
-        class TestDomainObjectModel : IDomainObjectModel
-        {
-            public Assembly Assembly
-            {
-                get { return Assembly.GetAssembly(typeof(Common.ExecutionContext)) ; }
-            }
-        }
-    }
-	
-    public class TestUserInfo : IUserInfo
-    {
-        public TestUserInfo()
-        {
-            UserName = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
-            Workstation = System.Environment.MachineName;
-            IsUserRecognized = true;
-        }
-
-        public bool IsUserRecognized { get; private set; }
-        public string UserName { get; private set; }
-        public string Workstation { get; private set; }
-    }

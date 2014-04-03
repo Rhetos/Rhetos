@@ -23,6 +23,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -32,16 +34,16 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void CreatedColumns()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var sql = @"SELECT
-	                    OBJECT_NAME(object_id) + '.' + name
+                        OBJECT_NAME(object_id) + '.' + name
                     FROM
-	                    sys.columns
+                        sys.columns
                     WHERE
-	                    object_id IN (OBJECT_ID('TestCloning.Clone1'), OBJECT_ID('TestCloning.Clone2'), OBJECT_ID('TestCloning.Clone3'))
+                        object_id IN (OBJECT_ID('TestCloning.Clone1'), OBJECT_ID('TestCloning.Clone2'), OBJECT_ID('TestCloning.Clone3'))
                     ORDER BY
-	                    1";
+                        1";
 
                 var expected =
 @"Clone1.ID
@@ -57,7 +59,7 @@ Clone3.ParentID
 Clone3.Start
 ";
                 var actual = new StringBuilder();
-                executionContext.SqlExecuter.ExecuteReader(sql, reader => actual.AppendLine(reader.GetString(0)));
+                container.Resolve<ISqlExecuter>().ExecuteReader(sql, reader => actual.AppendLine(reader.GetString(0)));
 
                 Assert.AreEqual(expected, actual.ToString());
             }
@@ -66,18 +68,18 @@ Clone3.Start
         [TestMethod]
         public void CreatedIndexes()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var sql = @"SELECT
-	                    i.name + '.' + c.name
+                        i.name + '.' + c.name
                     FROM
-	                    sys.indexes i
-	                    INNER JOIN sys.index_columns ic ON ic.object_id = i.object_id AND ic.index_id = i.index_id
-	                    INNER JOIN sys.columns c ON c.object_id = ic.object_id AND c.column_id = ic.column_id
+                        sys.indexes i
+                        INNER JOIN sys.index_columns ic ON ic.object_id = i.object_id AND ic.index_id = i.index_id
+                        INNER JOIN sys.columns c ON c.object_id = ic.object_id AND c.column_id = ic.column_id
                     WHERE
-	                    c.object_id IN (OBJECT_ID('TestCloning.Clone1'), OBJECT_ID('TestCloning.Clone2'), OBJECT_ID('TestCloning.Clone3'))
+                        c.object_id IN (OBJECT_ID('TestCloning.Clone1'), OBJECT_ID('TestCloning.Clone2'), OBJECT_ID('TestCloning.Clone3'))
                     ORDER BY
-	                    i.name, ic.key_ordinal";
+                        i.name, ic.key_ordinal";
 
                 var expected =
 @"IX_Clone2_Parent.ParentID
@@ -92,7 +94,7 @@ PK_Clone2.ID
 PK_Clone3.ID
 ";
                 var actual = new StringBuilder();
-                executionContext.SqlExecuter.ExecuteReader(sql, reader => actual.AppendLine(reader.GetString(0)));
+                container.Resolve<ISqlExecuter>().ExecuteReader(sql, reader => actual.AppendLine(reader.GetString(0)));
 
                 Assert.AreEqual(expected, actual.ToString());
             }
@@ -101,15 +103,15 @@ PK_Clone3.ID
         [TestMethod]
         public void ClonesSimpleBusinessLogic()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestCloning.Source",
                         "DELETE FROM TestCloning.Parent",
                         "DELETE FROM TestCloning.Base"
                     });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var b = new TestCloning.Base { ID = Guid.NewGuid(), Name = "b" };
                 var b2 = new TestCloning.Base { ID = Guid.NewGuid(), Name = "b2" };
@@ -124,7 +126,7 @@ PK_Clone3.ID
                 repository.TestCloning.Parent.Insert(new[] { p, p2, p3 });
                 repository.TestCloning.Clone3.Insert(new[] { c, c2, c3 });
 
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Func<string> readClone3 = () => TestUtility.DumpSorted(repository.TestCloning.Clone3.Query()
                         .Select(item => item.Name + " " + item.Base.Name + " " + item.Parent.Name));
 

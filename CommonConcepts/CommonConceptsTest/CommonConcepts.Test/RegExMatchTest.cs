@@ -24,6 +24,7 @@ using System.Linq;
 using TestRegex;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
+using Rhetos.Configuration.Autofac;
 
 namespace CommonConcepts.Test
 {
@@ -33,9 +34,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldThowUserExceptionOnInsert()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { StringFrom200To249 = "." };
                 TestUtility.ShouldFail(
                     () => repository.TestRegex.Simple.Insert(new[] { entity }),
@@ -46,9 +47,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldNotThrowUserExceptionOnInsert()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { StringFrom200To249 = "205" };
                 repository.TestRegex.Simple.Insert(new[] { entity });
             }
@@ -57,9 +58,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void EmptyValuesAreAllowed()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { StringFrom200To249 = null };
                 repository.TestRegex.Simple.Insert(new[] { entity });
             }
@@ -68,9 +69,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void EmptyValuesAreNotAllowedIfRequiredSet()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleRequired { StringFrom200To249 = null };
                 TestUtility.ShouldFail(
                     () => repository.TestRegex.SimpleRequired.Insert(new[] { entity }),
@@ -81,9 +82,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldThowUserExceptionOnUpdate()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { StringFrom200To249 = "205" };
                 repository.TestRegex.Simple.Insert(new[] { entity });
 
@@ -97,9 +98,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ExactMatch()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { StringFrom200To249 = "a 205 a" };
 
                 TestUtility.ShouldFail(
@@ -111,9 +112,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ExactMatch2()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { StringFrom200To249 = " 205" };
 
                 TestUtility.ShouldFail(
@@ -125,9 +126,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ExactMatch3()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { StringFrom200To249 = "205 " };
 
                 TestUtility.ShouldFail(
@@ -139,9 +140,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UnicodeTest()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { UnicodeTest = "čćČĆテスト" };
                 repository.TestRegex.Simple.Insert(new[] { entity });
 
@@ -155,9 +156,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void WhitespaceTest()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { WhitespaceTest = "a\r\nb\tc" };
                 repository.TestRegex.Simple.Insert(new[] { entity });
 
@@ -171,9 +172,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SpecialCharTest()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { SpecialCharTest = @"a!@#$%^&*()_+-=[]\{}|;':"",./<>?" };
                 repository.TestRegex.Simple.Insert(new[] { entity });
 
@@ -187,9 +188,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DefaultErrorMessageTest()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { DefaultErrorMessageTest = "123" };
                 repository.TestRegex.Simple.Insert(new[] { entity });
 

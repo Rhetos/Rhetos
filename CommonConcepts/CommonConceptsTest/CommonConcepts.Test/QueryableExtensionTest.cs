@@ -23,6 +23,8 @@ using System.Linq;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -32,13 +34,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Simple()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM Test11.Source;",
                         "INSERT INTO Test11.Source (ID, Name) SELECT '" + id1 + "', 'a';",
@@ -65,11 +67,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryableFilterUsingBase()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM Test11.Source;",
                         "INSERT INTO Test11.Source (Name) SELECT 'a';",
@@ -85,11 +87,11 @@ namespace CommonConcepts.Test
         [Ignore] // TODO: Navigation from base to extension class seems to be working only for SQL objects, not for built queryes like QueryableExtension.
         public void QueryableFilterUsingExtension()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM Test11.Source;",
                         "INSERT INTO Test11.Source (Name) SELECT 'a';",
@@ -104,11 +106,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SelectUsingBase()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM Test11.Source;",
                         "INSERT INTO Test11.Source (Name) SELECT 'a';",
@@ -124,11 +126,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void BrowseUsingBase()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM Test11.Source;",
                         "INSERT INTO Test11.Source (Name) SELECT 'a';",
@@ -143,18 +145,23 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UseExecutionContext()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM Test11.Source;",
                         "INSERT INTO Test11.Source (Name) SELECT 'a';",
                         "INSERT INTO Test11.Source (Name) SELECT 'b';"
                     });
 
-                Assert.AreEqual("a Bob, b Bob", TestUtility.DumpSorted(repository.Test11.QEContext.All(), item => item.UserInfo));
+                var userInfo = container.Resolve<IUserInfo>();
+                Assert.IsFalse(string.IsNullOrEmpty(userInfo.UserName));
+                string expected = string.Format("a {0}, b {0}", userInfo.UserName);
+                Console.WriteLine(expected);
+
+                Assert.AreEqual(expected, TestUtility.DumpSorted(repository.Test11.QEContext.All(), item => item.UserInfo));
             }
         }
     }

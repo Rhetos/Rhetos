@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TestMinValue;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.Configuration.Autofac;
 
 namespace CommonConcepts.Test
 {
@@ -33,9 +34,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnInsertInteger()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleInteger { Value = 1 };
                 repository.TestMinValue.SimpleInteger.Insert(new[] { entity });
             }
@@ -44,9 +45,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NormallyInsertInteger()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleInteger { Value = 3 };
                 repository.TestMinValue.SimpleInteger.Insert(new[] { entity });
             }
@@ -56,9 +57,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnUpdate()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleInteger { Value = 10 };
                 repository.TestMinValue.SimpleInteger.Insert(new[] { entity });
 
@@ -71,9 +72,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnInsertDecimal()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleDecimal { Value = (decimal)2.33 };
                 repository.TestMinValue.SimpleDecimal.Insert(new[] { entity });
             }
@@ -82,9 +83,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NormallyInsertDecimal()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleDecimal { Value = (decimal)12.35 };
                 repository.TestMinValue.SimpleDecimal.Insert(new[] { entity });
             }
@@ -95,9 +96,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnInsertMoney()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleMoney { Value = (decimal)2.33 };
                 repository.TestMinValue.SimpleMoney.Insert(new[] { entity });
             }
@@ -106,9 +107,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NormallyInsertMoney()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleMoney { Value = (decimal)2.35 };
                 repository.TestMinValue.SimpleMoney.Insert(new[] { entity });
             }
@@ -118,9 +119,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnInsertDate()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleDate { Value = new DateTime(2013, 7, 4) };
                 repository.TestMinValue.SimpleDate.Insert(new[] { entity });
             }
@@ -129,9 +130,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NormallyInsertDate()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleDate { Value = new DateTime(2013, 7, 5) };
                 repository.TestMinValue.SimpleDate.Insert(new[] { entity });
             }
@@ -141,9 +142,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnInsertDateTime()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleDateTime { Value = new DateTime(2013, 7, 5, 12, 33, 59) };
                 repository.TestMinValue.SimpleDateTime.Insert(new[] { entity });
             }
@@ -152,9 +153,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NormallyInsertDateTime()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleDateTime { Value = new DateTime(2013, 7, 5, 12, 34, 1) };
                 repository.TestMinValue.SimpleDateTime.Insert(new[] { entity });
             }
@@ -163,9 +164,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NullValue()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleInteger { ID = Guid.NewGuid(), Value = null };
                 repository.TestMinValue.SimpleInteger.Insert(new[] { entity });
                 Assert.IsNull(repository.TestMinValue.SimpleInteger.Filter(new[] { entity.ID }).Single().Value);

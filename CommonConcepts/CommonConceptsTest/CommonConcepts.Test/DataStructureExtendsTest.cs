@@ -23,6 +23,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -32,9 +34,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryableExtenstionHasBase()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var secondDescription = repository.TestExtension.SqlQueryableExtenson1.Query().Where(item => item.Base.i == 2).Select(item => item.info).Single();
                 Assert.AreEqual("2-b", secondDescription);
@@ -44,9 +46,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void TableConstraints()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         @"DELETE FROM TestExtension.EntityExtension1",
                         @"DELETE FROM TestExtension.Old1",
@@ -55,7 +57,7 @@ namespace CommonConcepts.Test
                         @"INSERT INTO TestExtension.EntityExtension1 (ID, info) SELECT ID = '5D089327-97EF-418D-A7DF-783D3873A5B4', info = '1-a'",
                         @"INSERT INTO TestExtension.EntityExtension1 (ID, info) SELECT ID = 'DB97EA5F-FB8C-408F-B35B-AD6642C593D7', info = '2-b'"
                     });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 // Test querying:
                 var secondDescription = repository.TestExtension.EntityExtension1.Query().Where(item => item.Base.i == 2).Select(item => item.info).Single();
@@ -65,7 +67,7 @@ namespace CommonConcepts.Test
                 string error = null;
                 try
                 {
-                    executionContext.SqlExecuter.ExecuteSql(new[]
+                    container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                         {
                             @"INSERT INTO TestExtension.EntityExtension1 (ID, info) SELECT ID = NEWID(), info = '3-c'"
                         });
@@ -77,7 +79,7 @@ namespace CommonConcepts.Test
                 TestUtility.AssertContains(error, "Old1", "Foreign key should prevent inserting extension record without base record.");
 
                 // Test cascade delete:
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         @"DELETE FROM TestExtension.Old1 WHERE i = 2"
                     });
@@ -88,9 +90,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NavigationFromBaseToExtension_Query()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var secondBaseQuery = repository.TestExtension.SqlQueryableBase1.Query().Where(baseItem => baseItem.Extension_SqlQueryableExtenson1.info == "2-b");
                 var secondBaseItem = secondBaseQuery.Single();
@@ -101,9 +103,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NavigationFromBaseToExtension_LazyLoadReference()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var secondBaseItem = repository.TestExtension.SqlQueryableBase1.Query().Where(baseItem => baseItem.i == 2).Single();
                 Assert.AreEqual("2-b", secondBaseItem.Extension_SqlQueryableExtenson1.info);
@@ -113,17 +115,17 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MissingExtensionRecord()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestExtension.SimpleBase",
                     "INSERT INTO TestExtension.SimpleBase (ID, Name) VALUES ('" + id1 + "', 'b1')",
                     "INSERT INTO TestExtension.SimpleBase (ID, Name) VALUES ('" + id2 + "', 'b2missing')",
                     "INSERT INTO TestExtension.SimpleExtension (ID, Name) VALUES ('" + id1 + "', 'e1')"
                 });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual("b1 e1 b1Sql, b2missing <null> <null>", TestUtility.DumpSorted(
                     repository.TestExtension.SimpleBase.Query().Select(item => new
@@ -142,17 +144,17 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LazyLoadExtensions()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestExtension.SimpleBase",
                     "INSERT INTO TestExtension.SimpleBase (ID, Name) VALUES ('" + id1 + "', 'b1')",
                     "INSERT INTO TestExtension.SimpleBase (ID, Name) VALUES ('" + id2 + "', 'b2missing')",
                     "INSERT INTO TestExtension.SimpleExtension (ID, Name) VALUES ('" + id1 + "', 'e1')"
                 });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var all = repository.TestExtension.SimpleBase.All();
                 Assert.AreEqual("b1, b2missing", TestUtility.DumpSorted(all, item => item.Name),
@@ -164,7 +166,7 @@ namespace CommonConcepts.Test
                 repository.TestExtension.SimpleBase.Update(all);
                 repository.TestExtension.SimpleBase.Insert(new[] { new TestExtension.SimpleBase { Name = "b3" }});
 
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual("b1X, b2missingX, b3", TestUtility.DumpSorted(repository.TestExtension.SimpleBase.All(), item => item.Name),
                     "InvalidExtension should not fail because there is no need to load those records.");
 

@@ -94,7 +94,7 @@ namespace Rhetos.Extensibility
                             newAssemblies.AddRange(Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories));
                     // If the path does not exist, it may be generated later (see DetectAndRegisterNewModulesAndPlugins).
 
-                    newAssemblies = newAssemblies.Except(_loadedAssemblies).ToList();
+                    newAssemblies = newAssemblies.Except(_loadedAssemblies).OrderBy(name => name).ToList();
                     _loadedAssemblies.AddRange(newAssemblies);
 
                     foreach (var assembly in newAssemblies)

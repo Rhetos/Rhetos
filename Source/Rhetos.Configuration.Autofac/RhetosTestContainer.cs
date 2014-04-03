@@ -124,8 +124,7 @@ namespace Rhetos.Configuration.Autofac
             builder.RegisterModule(new DefaultAutofacConfiguration(generate: false));
 
             // Specific registrations override:
-            builder.RegisterType<ProcessUserInfo>().As<IUserInfo>(); // Override security provided by plugins (web forms authentication, e.g.). User is the proces owner.
-            builder.RegisterType<NullAuthorizationProvider>().As<IAuthorizationProvider>(); // Only built-in admin user is allowed (with web.config "BuiltinAdminOverride").
+            builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
             builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
 
             var sw = Stopwatch.StartNew();

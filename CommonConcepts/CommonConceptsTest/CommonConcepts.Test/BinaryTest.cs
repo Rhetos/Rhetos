@@ -23,6 +23,8 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -32,10 +34,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldUploadBinary()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestBinary.E;" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestBinary.E;" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var rnd = new Random();
                 var blob = new Byte[10];
@@ -44,8 +46,8 @@ namespace CommonConcepts.Test
                 var entity = new TestBinary.E() { ID = Guid.NewGuid(), Blob = blob };
                 repository.TestBinary.E.Insert(new[] { entity });
 
-                executionContext.NHibernateSession.Flush();
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
                 var loaded = repository.TestBinary.E.Query().Where(item => item.ID == entity.ID).Single().Blob;
                 Assert.IsTrue(Enumerable.SequenceEqual(blob, loaded));
@@ -55,10 +57,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LargeBinary()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestBinary.E;" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestBinary.E;" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var rnd = new Random();
                 var blob = new Byte[1000000];
@@ -67,8 +69,8 @@ namespace CommonConcepts.Test
                 var entity = new TestBinary.E() { ID = Guid.NewGuid(), Blob = blob };
                 repository.TestBinary.E.Insert(new[] { entity });
 
-                executionContext.NHibernateSession.Flush();
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
                 var loaded = repository.TestBinary.E.Query().Where(item => item.ID == entity.ID).Single().Blob;
                 Assert.IsTrue(Enumerable.SequenceEqual(blob, loaded));

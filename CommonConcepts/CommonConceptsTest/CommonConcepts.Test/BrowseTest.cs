@@ -23,6 +23,8 @@ using System.Linq;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test.OldConcepts
 {
@@ -34,12 +36,12 @@ namespace CommonConcepts.Test.OldConcepts
         [TestMethod]
         public void SimpleReference()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 Guid refID = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestBrowse.Source;",
                         "DELETE FROM TestBrowse.Other;",
@@ -59,12 +61,12 @@ namespace CommonConcepts.Test.OldConcepts
         [Ignore]
         public void NullReference()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 Guid refID = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestBrowse.Source;",
                         "DELETE FROM TestBrowse.Other;",
@@ -78,7 +80,7 @@ namespace CommonConcepts.Test.OldConcepts
                 Assert.IsNull(repository.TestBrowse.Source.Query().Select(item => item.Ref.Name).Single(), "all in one query");
 
                 // TODO: "'Separated loading' fails because LINQ2NH will handle nullable properies and null values differently than a simple LINQ query over materialized instances (Linq2Objects). Try to implement browse in a such way that it behaves the same in both scenarios without degrading performance (maybe generating SqlView).
-			
+            
                 Assert.IsNull(repository.TestBrowse.Source.Query().ToArray().Select(item => item.Ref.Name).Single(), "separated loading");
             }
         }
@@ -86,12 +88,12 @@ namespace CommonConcepts.Test.OldConcepts
         [TestMethod]
         public void ReuseableSourceFilter()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 Guid refID = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestBrowse.Source;",
                         "DELETE FROM TestBrowse.Other;",
@@ -134,12 +136,12 @@ namespace CommonConcepts.Test.OldConcepts
         [TestMethod]
         public void MultiplePropertiesSameSource()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 Guid refID = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestBrowse.Source",
                         "DELETE FROM TestBrowse.Other",
@@ -155,12 +157,12 @@ namespace CommonConcepts.Test.OldConcepts
         [TestMethod]
         public void TakeComplex()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 Guid parentID = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestBrowse.Complex",
                         "DELETE FROM TestBrowse.Parent",

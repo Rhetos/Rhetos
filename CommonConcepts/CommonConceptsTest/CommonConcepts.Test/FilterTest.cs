@@ -25,7 +25,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
 using Rhetos.Processing.DefaultCommands;
-using CommonConcepts.Test.Utilities;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -44,9 +45,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterAll()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 Assert.AreEqual("1a, 2b", ReportSource<FilterAll>(repository, null));
             }
         }
@@ -54,9 +55,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterByIdentities()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var source = repository.Test10.Source.All().OrderBy(item => item.i).ToArray();
                 Assert.AreEqual("2b", ReportSource(repository, new [] {source[1].ID}));
             }
@@ -82,7 +83,7 @@ namespace CommonConcepts.Test
 
         private static void FilterEntityByIdentifiers(int n)
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var guids = Enumerable.Range(0, n).Select(x => Guid.NewGuid()).ToList();
 
@@ -95,8 +96,8 @@ namespace CommonConcepts.Test
                         sql.AppendFormat("INSERT INTO Test10.Simple (ID, i) SELECT '{0}', {1};\r\n", guids[j*1000 + i], j*1000 + i);
                     commands.Add(sql.ToString());
                 }
-                executionContext.SqlExecuter.ExecuteSql(commands);
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(commands);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var loaded = repository.Test10.Simple.Filter(new[] { guids[0] });
                 Assert.AreEqual("0", TestUtility.DumpSorted(loaded, item => item.i.ToString()));
@@ -129,13 +130,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterBy()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
-                executionContext.SqlExecuter.ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
                     .Select(name => "INSERT INTO TestFilter.Source (Name) SELECT N'" + name + "';"));
 
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 IFilterRepository<TestFilter.FilterByPrefix, TestFilter.Source> filterRepository = repository.TestFilter.Source;
                 var loaded = filterRepository.Filter(new TestFilter.FilterByPrefix { Prefix = "b" });
@@ -148,13 +149,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ComposableFilterBy_CompositionOfTwoFilters()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
-                executionContext.SqlExecuter.ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
                     .Select(name => "INSERT INTO TestFilter.Source (Name) SELECT N'" + name + "';"));
 
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var q = repository.TestFilter.Source.Query();
                 q = repository.TestFilter.Source.Filter(q, new TestFilter.ComposableFilterByPrefix { Prefix = "b" });
@@ -168,13 +169,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ComposableFilterBy_StandardFilterInterface()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
-                executionContext.SqlExecuter.ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
                     .Select(name => "INSERT INTO TestFilter.Source (Name) SELECT N'" + name + "';"));
 
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 IFilterRepository<TestFilter.ComposableFilterByPrefix, TestFilter.Source> filterRepository = repository.TestFilter.Source;
                 var loaded = filterRepository.Filter(new TestFilter.ComposableFilterByPrefix { Prefix = "b" });
@@ -187,13 +188,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ItemFilter()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
-                executionContext.SqlExecuter.ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
                     .Select(name => "INSERT INTO TestFilter.Source (Name) SELECT N'" + name + "';"));
 
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var q = repository.TestFilter.Source.Query();
                 q = repository.TestFilter.Source.Filter(q, new TestFilter.ItemStartsWithB());
@@ -207,13 +208,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ItemFilter_ExplicitModuleName()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
-                executionContext.SqlExecuter.ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
                     .Select(name => "INSERT INTO TestFilter.Source (Name) SELECT N'" + name + "';"));
 
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var q = repository.TestFilter.Source.Query();
                 q = repository.TestFilter.Source.Filter(q, new TestFilter2.ItemStartsWithC());
@@ -228,10 +229,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterByBase()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestFilter.Source" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var s1 = new TestFilter.Source { ID = Guid.NewGuid(), Name = "A s1" };
                 var s2 = new TestFilter.Source { ID = Guid.NewGuid(), Name = "B s2" };
@@ -247,10 +248,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterByReferencedAndLinkedItems()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestFilter.Source" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var s1 = new TestFilter.Source { Name = "A s1" };
                 var s2 = new TestFilter.Source { Name = "B s2" };
@@ -270,16 +271,16 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleComposableFilterCaseInsensitive()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var s1 = new TestFilter.CombinedFilters { Name = "Abeceda" };
                 var s2 = new TestFilter.CombinedFilters { Name = "abeceda" };
                 repository.TestFilter.CombinedFilters.Insert(new[] { s1, s2 });
 
-                var genericRepositoryCombinedFilters = Create.GenericRepositories(executionContext).GetGenericRepository<TestFilter.CombinedFilters>();
+                var genericRepositoryCombinedFilters = container.Resolve<GenericRepositories>().GetGenericRepository<TestFilter.CombinedFilters>();
 
                 var filteredByContainsJustComposable = genericRepositoryCombinedFilters.ExecuteQueryDataSourceCommand(new QueryDataSourceCommandInfo
                 {
@@ -302,17 +303,17 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleComposableFilterGenericFilterReferenced()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters", "DELETE FROM TestFilter.Simple" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters", "DELETE FROM TestFilter.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
                 var refEnt = new TestFilter.Simple { Name = "test" };
                 repository.TestFilter.Simple.Insert(new[] { refEnt });
                 var s1 = new TestFilter.CombinedFilters { Name = "Abeceda", Simple = refEnt };
                 var s2 = new TestFilter.CombinedFilters { Name = "abeceda" };
                 repository.TestFilter.CombinedFilters.Insert(new[] { s1, s2 });
 
-                var genericRepositoryCombinedFilters = Create.GenericRepositories(executionContext).GetGenericRepository<TestFilter.CombinedFilters>();
+                var genericRepositoryCombinedFilters = container.Resolve<GenericRepositories>().GetGenericRepository<TestFilter.CombinedFilters>();
 
                 // Containing "ece" and referenced object name contains "es"
                 var filteredByContainsWithGenericFilter = genericRepositoryCombinedFilters.ExecuteQueryDataSourceCommand(new QueryDataSourceCommandInfo
@@ -325,9 +326,9 @@ namespace CommonConcepts.Test
             }
         }
 
-        private static string ReportFilteredBrowse(Common.ExecutionContext executionContext, QueryDataSourceCommandInfo queryDataSourceCommandInfo)
+        private static string ReportFilteredBrowse(RhetosTestContainer container, QueryDataSourceCommandInfo queryDataSourceCommandInfo)
         {
-            var genericRepositoryCombinedFilters = Create.GenericRepositories(executionContext).GetGenericRepository("TestFilter.ComposableFilterBrowse");
+            var genericRepositoryCombinedFilters = container.Resolve<GenericRepositories>().GetGenericRepository("TestFilter.ComposableFilterBrowse");
 
             queryDataSourceCommandInfo.DataSource = "TestFilter.ComposableFilterBrowse";
 
@@ -344,10 +345,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ComposableFilterBrowse()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters", "DELETE FROM TestFilter.Simple" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters", "DELETE FROM TestFilter.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var parentA = new TestFilter.Simple { Name = "PA" };
                 var parentB = new TestFilter.Simple { Name = "PB" };
@@ -358,47 +359,47 @@ namespace CommonConcepts.Test
                 var childNull = new TestFilter.CombinedFilters { Name = "CN", Simple = null };
                 repository.TestFilter.CombinedFilters.Insert(new[] { childA, childB, childNull });
 
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
-                Assert.AreEqual("CA PA", ReportFilteredBrowse(executionContext, new QueryDataSourceCommandInfo
+                Assert.AreEqual("CA PA", ReportFilteredBrowse(container, new QueryDataSourceCommandInfo
                 {
                     Filter = new TestFilter.SimpleNameA()
                 }));
 
-                Assert.AreEqual("CA PA", ReportFilteredBrowse(executionContext, new QueryDataSourceCommandInfo
+                Assert.AreEqual("CA PA", ReportFilteredBrowse(container, new QueryDataSourceCommandInfo
                 {
                     GenericFilter = new FilterCriteria[] { new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "a" } }
                 }));
 
-                Assert.AreEqual("CA PA", ReportFilteredBrowse(executionContext, new QueryDataSourceCommandInfo
+                Assert.AreEqual("CA PA", ReportFilteredBrowse(container, new QueryDataSourceCommandInfo
                 {
                     Filter = new TestFilter.SimpleNameA(),
                     GenericFilter = new FilterCriteria[] { new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "a" } }
                 }));
 
-                Assert.AreEqual("CN null", ReportFilteredBrowse(executionContext, new QueryDataSourceCommandInfo
+                Assert.AreEqual("CN null", ReportFilteredBrowse(container, new QueryDataSourceCommandInfo
                 {
                     GenericFilter = new FilterCriteria[] { new FilterCriteria { Property = "Name", Operation = "Contains", Value = "n" } }
                 }));
 
-                Assert.AreEqual("CN null", ReportFilteredBrowse(executionContext, new QueryDataSourceCommandInfo
+                Assert.AreEqual("CN null", ReportFilteredBrowse(container, new QueryDataSourceCommandInfo
                 {
                     Filter = new TestFilter.NameN(),
                 }));
 
-                Assert.AreEqual("", ReportFilteredBrowse(executionContext, new QueryDataSourceCommandInfo
-                {
-                    Filter = new TestFilter.NameN(),
-                    GenericFilter = new FilterCriteria[] { new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "p" } }
-                }));
-
-                Assert.AreEqual("", ReportFilteredBrowse(executionContext, new QueryDataSourceCommandInfo
+                Assert.AreEqual("", ReportFilteredBrowse(container, new QueryDataSourceCommandInfo
                 {
                     Filter = new TestFilter.NameN(),
                     GenericFilter = new FilterCriteria[] { new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "p" } }
                 }));
 
-                Assert.AreEqual("CA PA", ReportFilteredBrowse(executionContext, new QueryDataSourceCommandInfo
+                Assert.AreEqual("", ReportFilteredBrowse(container, new QueryDataSourceCommandInfo
+                {
+                    Filter = new TestFilter.NameN(),
+                    GenericFilter = new FilterCriteria[] { new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "p" } }
+                }));
+
+                Assert.AreEqual("CA PA", ReportFilteredBrowse(container, new QueryDataSourceCommandInfo
                 {
                     Filter = new TestFilter.ComposableFilterBrowseLoader { Pattern = "a" },
                 }));
@@ -409,10 +410,10 @@ namespace CommonConcepts.Test
         [Ignore]
         public void ArrayFilterBrowse()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters", "DELETE FROM TestFilter.Simple" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters", "DELETE FROM TestFilter.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var parentA = new TestFilter.Simple { Name = "PA" };
                 var parentB = new TestFilter.Simple { Name = "PB" };
@@ -423,16 +424,16 @@ namespace CommonConcepts.Test
                 var childNull = new TestFilter.CombinedFilters { Name = "CN", Simple = null };
                 repository.TestFilter.CombinedFilters.Insert(new[] { childA, childB, childNull });
 
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
-                Assert.AreEqual("CA PA", ReportFilteredBrowse(executionContext, new QueryDataSourceCommandInfo
+                Assert.AreEqual("CA PA", ReportFilteredBrowse(container, new QueryDataSourceCommandInfo
                 {
                     Filter = new TestFilter.ComposableFilterBrowseLoader { Pattern = "a" },
                     GenericFilter = new FilterCriteria[] { new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "P" } } // TODO: "Contains" is executed in C#, so the value is case sensitive.
                 }));
 
                 // TODO: NullReferenceException because "Simple.Name" FilterCriteria is executed in C# instead of the database.
-                Assert.AreEqual("CA PA, CB PB", ReportFilteredBrowse(executionContext, new QueryDataSourceCommandInfo
+                Assert.AreEqual("CA PA, CB PB", ReportFilteredBrowse(container, new QueryDataSourceCommandInfo
                 {
                     Filter = new TestFilter.ComposableFilterBrowseLoader { Pattern = "c" },
                     GenericFilter = new FilterCriteria[] { new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "P" } } // TODO: "Contains" is executed in C#, so the value is case sensitive.

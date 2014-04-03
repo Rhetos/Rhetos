@@ -25,18 +25,19 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System.Text.RegularExpressions;
+using Rhetos.Configuration.Autofac;
 
 namespace CommonConcepts.Test
 {
     [TestClass]
     public class AuditablePropertiesTest
     {
-        private static void CheckCreatedDate(CommonTestExecutionContext executionContext, DateTime start, DateTime finish)
+        private static void CheckCreatedDate(RhetosTestContainer container, DateTime start, DateTime finish)
         {
             start = new DateTime(start.Year, start.Month, start.Day, start.Hour, start.Minute, start.Second); // ORM may trim milliseconds.
 
-            executionContext.NHibernateSession.Clear();
-            var repository = new Common.DomRepository(executionContext);
+            container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+            var repository = container.Resolve<Common.DomRepository>();
             DateTime? generatedCreationTime = repository.TestAuditable.Simple.All().Single().Started;
             Assert.IsNotNull(generatedCreationTime, "Generated CreationTime is null.");
 
@@ -48,33 +49,33 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void CreationTime()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestAuditable.Simple" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestAuditable.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
 
-                var start = MsSqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                var start = MsSqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
                 repository.TestAuditable.Simple.Insert(new[] { new TestAuditable.Simple { Name = "app" } });
-                executionContext.NHibernateSession.Flush();
-                var finish = MsSqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
+                var finish = MsSqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
-                CheckCreatedDate(executionContext, start, finish);
+                CheckCreatedDate(container, start, finish);
             }
         }
 
         [TestMethod]
         public void CreationTime_Explicit()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestAuditable.Simple" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestAuditable.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var explicitDateTime = new DateTime(2001, 2, 3, 4, 5, 6);
                 repository.TestAuditable.Simple.Insert(new[] { new TestAuditable.Simple { Name = "exp", Started = explicitDateTime } });
-                executionContext.NHibernateSession.Flush();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
 
-                CheckCreatedDate(executionContext, explicitDateTime, explicitDateTime);
+                CheckCreatedDate(container, explicitDateTime, explicitDateTime);
             }
         }
 
@@ -114,21 +115,21 @@ namespace CommonConcepts.Test
 
         private static void TestModificationTimeOf(Func<TestAuditable.Simple, DateTime?> propertySelector, string insertData, string updateData, string testInfo)
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestAuditable.Simple",
                     "DELETE FROM TestAuditable.Parent",
                     "INSERT INTO TestAuditable.Parent (ID, Name) VALUES ('"+parentID1+"', 'par1')",
                     "INSERT INTO TestAuditable.Parent (ID, Name) VALUES ('"+parentID2+"', 'par2')" });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 {
-                    var start = MsSqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                    var start = MsSqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
                     repository.TestAuditable.Simple.Insert(new[] { ReadInstance(insertData) });
 
-                    executionContext.NHibernateSession.Flush();
-                    executionContext.NHibernateSession.Clear();
+                    container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
+                    container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                     DateTime? generatedModificationTime = propertySelector(repository.TestAuditable.Simple.All().Single());
                     Assert.IsNotNull(generatedModificationTime, testInfo + " Insert: Generated ModificationTime is null.");
 
@@ -140,11 +141,11 @@ namespace CommonConcepts.Test
                     return;
 
                 {
-                    var start = MsSqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                    var start = MsSqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
                     repository.TestAuditable.Simple.Update(new[] { ReadInstance(updateData) });
 
-                    executionContext.NHibernateSession.Flush();
-                    executionContext.NHibernateSession.Clear();
+                    container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
+                    container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                     DateTime? generatedModificationTime = propertySelector(repository.TestAuditable.Simple.All().Single());
                     Assert.IsNotNull(generatedModificationTime, testInfo + " Update: Generated ModificationTime is null.");
 
@@ -172,10 +173,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ModificationTimeOf_Database()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var start = MsSqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                var start = MsSqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestAuditable.Simple",
                         "DELETE FROM TestAuditable.Parent",
@@ -188,7 +189,7 @@ namespace CommonConcepts.Test
                         "INSERT INTO TestAuditable.Simple (Name, ParentID, ModifiedParentProperty) VALUES ('modifiedNameX', '" + parentID1 + "', '2001-2-3')",
                         "UPDATE TestAuditable.Simple SET Name = 'modifiedName' WHERE Name = 'modifiedNameX'"
                     });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 Func<string, DateTime?> actualModifiedTime = test => repository.TestAuditable.Simple.Query()
                     .Where(item => item.Name == test).Single().ModifiedParentProperty;

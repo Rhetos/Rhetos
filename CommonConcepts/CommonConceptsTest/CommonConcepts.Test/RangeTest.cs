@@ -23,6 +23,8 @@ using System.Collections.Generic;
 using System.Linq;
 using TestRange;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -33,9 +35,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnInsert()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleRange { FromValue = 1, ToValue = 0 };
                 repository.TestRange.SimpleRange.Insert(new[] { entity });
             }
@@ -44,9 +46,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldNotThrowUserExceptionOnInsert()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleRange { FromValue = (decimal)1.1, ToValue = (decimal)2.0 };
                 repository.TestRange.SimpleRange.Insert(new[] { entity });
             }
@@ -55,14 +57,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldInsertEntityWithoutRangeTo()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestRange.SimpleRange;",
                     });
 
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleRange { FromValue = 1 };
                 var entity2 = new SimpleRange { ToValue = 1 };
                 repository.TestRange.SimpleRange.Insert(new[] { entity, entity2 });
@@ -73,9 +75,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnUpdate()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleRange { FromValue = 1, ToValue = 5 };
                 repository.TestRange.SimpleRange.Insert(new[] { entity });
 
@@ -87,9 +89,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShoulInsertNormallyDate()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new DateRangeWithoutDef { FromDate = DateTime.Today, ToDate = DateTime.Today.AddDays(2) };
                 repository.TestRange.DateRangeWithoutDef.Insert(new[] { entity });
             }
@@ -98,9 +100,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShoulInsertNormallySameDates()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new DateRangeWithoutDef { FromDate = DateTime.Today, ToDate = DateTime.Today };
                 repository.TestRange.DateRangeWithoutDef.Insert(new[] { entity });
             }
@@ -110,9 +112,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnUpdateDate()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new DateRangeWithoutDef { FromDate = DateTime.Today, ToDate = DateTime.Today.AddDays(2) };
                 repository.TestRange.DateRangeWithoutDef.Insert(new[] { entity });
 
@@ -124,9 +126,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShoulInsertNormallySameDateTime()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new DateTimeRangeWithoutDef { FromDate = DateTime.Today, ToDate = DateTime.Today };
                 repository.TestRange.DateTimeRangeWithoutDef.Insert(new[] { entity });
             }
@@ -136,9 +138,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnUpdateDateTime()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new DateTimeRangeWithoutDef { FromDate = DateTime.Today, ToDate = DateTime.Today.AddDays(2) };
                 repository.TestRange.DateTimeRangeWithoutDef.Insert(new[] { entity });
 
@@ -150,9 +152,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldInsertNormallyJustOneDate()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new DateRangeWithoutDef { FromDate = DateTime.Today };
                 var entity2 = new DateRangeWithoutDef { ToDate = DateTime.Today };
                 repository.TestRange.DateRangeWithoutDef.Insert(new[] { entity, entity2 });
@@ -164,9 +166,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThrowExceptionIfNotSetRequired()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var entity = new DateRangeWithRequired { ToDate = DateTime.Today };
                 repository.TestRange.DateRangeWithRequired.Insert(new[] { entity });
             }

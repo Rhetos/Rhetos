@@ -24,6 +24,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
+using Rhetos.Configuration.Autofac;
 
 namespace CommonConcepts.Test
 {
@@ -42,14 +43,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void EditableProperty()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestDenyUserEdit.Simple",
                         "DELETE FROM TestDenyUserEdit.Parent"
                     });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var simple = new TestDenyUserEdit.Simple { Editable = "a" };
                 repository.TestDenyUserEdit.Simple.Save(new[] { simple }, null, null, true);
@@ -64,35 +65,35 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NonEditablePropertyInsert()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestDenyUserEdit.Simple",
                         "DELETE FROM TestDenyUserEdit.Parent"
                     });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var simple = new TestDenyUserEdit.Simple { Editable = "a", NonEditable = "x" };
                 TestUtility.ShouldFail(() => repository.TestDenyUserEdit.Simple.Save(new[] { simple }, null, null, true),
-					"Simple", "NonEditable", "not allowed");
+                    "Simple", "NonEditable", "not allowed");
             }
         }
 
         [TestMethod]
         public void NonEditablePropertyUpdate()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var simpleID = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestDenyUserEdit.Simple",
                         "DELETE FROM TestDenyUserEdit.Parent",
                         "INSERT INTO TestDenyUserEdit.Simple (ID, Editable, NonEditable) VALUES (" + SqlUtility.QuoteGuid(simpleID) + ", 'a', 'x')"
                     });
 
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual("a x null", DumpSimple(repository));
 
@@ -102,100 +103,100 @@ namespace CommonConcepts.Test
 
                 simple.NonEditable = "y";
                 TestUtility.ShouldFail(() => repository.TestDenyUserEdit.Simple.Save(null, new[] { simple }, null, true),
-					"Simple", "NonEditable", "not allowed");
+                    "Simple", "NonEditable", "not allowed");
             }
         }
 
         [TestMethod]
         public void NonEditablePropertyUpdateToNull()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var simpleID = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestDenyUserEdit.Simple",
                         "DELETE FROM TestDenyUserEdit.Parent",
                         "INSERT INTO TestDenyUserEdit.Simple (ID, Editable, NonEditable) VALUES (" + SqlUtility.QuoteGuid(simpleID) + ", 'a', 'x')"
                     });
 
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var simple = new TestDenyUserEdit.Simple { ID = simpleID, Editable = "a", NonEditable = null };
                 TestUtility.ShouldFail(() => repository.TestDenyUserEdit.Simple.Save(null, new[] { simple }, null, true),
-					"Simple", "NonEditable", "not allowed");
+                    "Simple", "NonEditable", "not allowed");
             }
         }
 
         [TestMethod]
         public void NonEditablePropertyUpdateFromNull()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var simpleID = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestDenyUserEdit.Simple",
                         "DELETE FROM TestDenyUserEdit.Parent",
                         "INSERT INTO TestDenyUserEdit.Simple (ID, Editable, NonEditable) VALUES (" + SqlUtility.QuoteGuid(simpleID) + ", 'a', NULL)"
                     });
 
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var simple = new TestDenyUserEdit.Simple { ID = simpleID, Editable = "a", NonEditable = "x" };
                 TestUtility.ShouldFail(() => repository.TestDenyUserEdit.Simple.Save(null, new[] { simple }, null, true),
-					"Simple", "NonEditable", "not allowed");
+                    "Simple", "NonEditable", "not allowed");
             }
         }
 
         [TestMethod]
         public void NonEditableRefereceInsert()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestDenyUserEdit.Simple",
                         "DELETE FROM TestDenyUserEdit.Parent"
                     });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var parent = new TestDenyUserEdit.Parent { Name = "p" };
                 repository.TestDenyUserEdit.Parent.Save(new[] { parent }, null, null, true);
 
                 var simple = new TestDenyUserEdit.Simple { Editable = "a", NonEditableReference = parent };
                 TestUtility.ShouldFail(() => repository.TestDenyUserEdit.Simple.Save(new[] { simple }, null, null, true),
-					"Simple", "NonEditableReference", "not allowed");
+                    "Simple", "NonEditableReference", "not allowed");
             }
         }
 
         [TestMethod]
         public void NonEditableRefereceInsertGuid()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestDenyUserEdit.Simple",
                         "DELETE FROM TestDenyUserEdit.Parent"
                     });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var parent = new TestDenyUserEdit.Parent { Name = "p" };
                 repository.TestDenyUserEdit.Parent.Save(new[] { parent }, null, null, true);
 
                 var simple = new TestDenyUserEdit.Simple { Editable = "a", NonEditableReferenceID = parent.ID };
                 TestUtility.ShouldFail(() => repository.TestDenyUserEdit.Simple.Save(new[] { simple }, null, null, true),
-					"Simple", "NonEditableReference", "not allowed");
+                    "Simple", "NonEditableReference", "not allowed");
             }
         }
 
         [TestMethod]
         public void HardcodedEntity_Insert()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 TestUtility.ShouldFail(
                     () => repository.TestDenyUserEdit.Hardcoded.Save(new[] { new TestDenyUserEdit.Hardcoded { Name = "abc" } }, null, null, true),
@@ -206,12 +207,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HardcodedEntity_Delete()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestDenyUserEdit.Hardcoded",
                     "INSERT INTO TestDenyUserEdit.Hardcoded (Name) VALUES ('abc')" });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var item = repository.TestDenyUserEdit.Hardcoded.All().Single();
                 Assert.AreEqual("abc", item.Name);
@@ -224,12 +225,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HardcodedEntity_Update()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestDenyUserEdit.Hardcoded",
                     "INSERT INTO TestDenyUserEdit.Hardcoded (Name) VALUES ('abc')" });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var item = repository.TestDenyUserEdit.Hardcoded.All().Single();
                 Assert.AreEqual("abc", item.Name);

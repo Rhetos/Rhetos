@@ -28,6 +28,7 @@ using Rhetos.Utilities;
 using NHibernate;
 using NHibernate.Transform;
 using System.Diagnostics;
+using Rhetos.Configuration.Autofac;
 
 namespace CommonConcepts.Test
 {
@@ -82,9 +83,9 @@ namespace CommonConcepts.Test
             return new DateTime(2001, 1, 1).AddDays(d-1);
         }
 
-        private static DateTime GetServerTime(CommonTestExecutionContext executionContext)
+        private static DateTime GetServerTime(RhetosTestContainer container)
         {
-            var serverTime = MsSqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+            var serverTime = MsSqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
             Console.WriteLine("Server time: " + serverTime.ToString("o") + ". Local time: " + DateTime.Now.ToString("o") + ".");
             return serverTime;
         }
@@ -100,10 +101,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MinimalHistoryInsert()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Minimal" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Minimal" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual(0, repository.TestHistory.Minimal.All().Count());
                 Assert.AreEqual(0, repository.TestHistory.Minimal_Changes.All().Count());
@@ -112,8 +113,8 @@ namespace CommonConcepts.Test
                 var m2 = new TestHistory.Minimal { Code = 2 };
                 repository.TestHistory.Minimal.Insert(new[] { m1, m2 });
 
-                executionContext.NHibernateSession.Clear();
-                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
                 Assert.AreEqual("1, 2", TestUtility.DumpSorted(repository.TestHistory.Minimal.All(), item => item.Code.ToString()));
                 Assert.AreEqual(0, repository.TestHistory.Minimal_Changes.All().Count());
@@ -126,21 +127,21 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MinimalHistoryUpdate()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Minimal",
                     "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2001-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var m1 = repository.TestHistory.Minimal.All().Single();
                 m1.ActiveSince = null;
                 m1.Code = 11;
                 repository.TestHistory.Minimal.Update(new[] { m1 });
 
-                executionContext.NHibernateSession.Clear();
-                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
                 var h = repository.TestHistory.Minimal_Changes.All().Single();
 
@@ -153,21 +154,21 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActiveUntilCheck()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Minimal",
                     "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2001-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var m1 = repository.TestHistory.Minimal.All().Single();
                 m1.ActiveSince = null;
                 m1.Code = 11;
                 repository.TestHistory.Minimal.Update(new[] { m1 });
 
-                executionContext.NHibernateSession.Clear();
-                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
                 var h = repository.TestHistory.Minimal_History.All().OrderBy(t => t.ActiveSince).FirstOrDefault();
                 var m = repository.TestHistory.Minimal.All().Single();
@@ -179,22 +180,22 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActiveUntilEditingCurrentVersionActiveFromCheck()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Minimal",
                     "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2012-01-01')",
                     "INSERT INTO TestHistory.Minimal_Changes (ID, EntityID, ActiveSince) VALUES ('"+Guid.NewGuid().ToString()+"'," + SqlUtility.QuoteGuid(id1) + ", '2000-01-01')"                    
                 });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var m1 = repository.TestHistory.Minimal.All().Single();
                 m1.ActiveSince = new DateTime(2012, 12, 25);
                 repository.TestHistory.Minimal.Update(new[] { m1 });
 
-                executionContext.NHibernateSession.Clear();
-                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
                 var h = repository.TestHistory.Minimal_History.All().OrderBy(t => t.ActiveSince).ToList();
                 var m = repository.TestHistory.Minimal.All().Single();
@@ -207,21 +208,21 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActiveUntilAsExtensionInHistory()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Minimal",
                     "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2001-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var m1 = repository.TestHistory.Minimal.All().Single();
                 m1.ActiveSince = null;
                 m1.Code = 11;
                 repository.TestHistory.Minimal.Update(new[] { m1 });
 
-                executionContext.NHibernateSession.Clear();
-                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
                 var hist = repository.TestHistory.Minimal_Changes.Query().Where(item => item.Entity == m1).Single();
                 var m = repository.TestHistory.Minimal.All().Single();
@@ -233,21 +234,21 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActiveUntilInHistory()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Minimal",
                     "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2001-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var m1 = repository.TestHistory.Minimal.All().Single();
                 m1.ActiveSince = null;
                 m1.Code = 11;
                 repository.TestHistory.Minimal.Update(new[] { m1 });
 
-                executionContext.NHibernateSession.Clear();
-                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
                 var fullh = repository.TestHistory.Minimal_History.Query().Where(item => item.Entity == m1).OrderBy(item => item.ActiveSince).Select(item => item).ToList();
 
@@ -259,10 +260,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryWithDenySave()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Standard" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Standard" });
+                var repository = container.Resolve<Common.DomRepository>();
                 var standardRepos = repository.TestHistory.Standard;
 
                 var e = new TestHistory.Standard { Code = 1, Name = "a", Birthday = new DateTime(2001, 2, 3, 4, 5, 6) };
@@ -282,13 +283,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryWithReference()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 Guid c1ID = Guid.NewGuid();
                 Guid c2ID = Guid.NewGuid();
                 Guid rcID = Guid.NewGuid();
 
-                executionContext.SqlExecuter.ExecuteSql(new[] { 
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { 
                     "DELETE FROM TestHistory.ReferenceClean_Changes;",
                     "DELETE FROM TestHistory.ReferenceClean;",
                     "DELETE FROM TestHistory.Clean;",
@@ -296,7 +297,7 @@ namespace CommonConcepts.Test
                     "INSERT INTO TestHistory.Clean (ID, Name) VALUES ('" + c2ID.ToString() + "', 'c1');",
                     "INSERT INTO TestHistory.ReferenceClean (ID, AddName, CleanID) VALUES ('" + rcID.ToString() + "', 'rc','" + c1ID.ToString() + "');"
                 });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var cleanRepos = repository.TestHistory.Clean;
 
                 var c1 = repository.TestHistory.Clean.Query().Where(item => item.ID == c1ID).SingleOrDefault();
@@ -315,19 +316,19 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryWithAutocode()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 Guid c1ID = Guid.NewGuid();
                 Guid c2ID = Guid.NewGuid();
                 Guid rcID = Guid.NewGuid();
 
-                executionContext.SqlExecuter.ExecuteSql(new[] { 
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { 
                     "DELETE FROM TestHistory.BasicAutocode_Changes;",
                     "DELETE FROM TestHistory.BasicAutocode;",
                     "INSERT INTO TestHistory.BasicAutocode (ID, Name, Code) VALUES ('" + c1ID.ToString() + "', 'c1', '+');",
                     "INSERT INTO TestHistory.BasicAutocode (ID, Name, Code) VALUES ('" + c2ID.ToString() + "', 'c2', '+');",
                 });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var cleanRepos = repository.TestHistory.BasicAutocode;
 
                 var c1 = repository.TestHistory.BasicAutocode.Query().Where(item => item.ID == c1ID).SingleOrDefault();
@@ -345,13 +346,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryWithUnique()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 Guid c1ID = Guid.NewGuid();
                 Guid c2ID = Guid.NewGuid();
                 Guid c3ID = Guid.NewGuid();
 
-                executionContext.SqlExecuter.ExecuteSql(new[] { 
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { 
                     "DELETE FROM TestHistory.BasicUnique_Changes;",
                     "DELETE FROM TestHistory.BasicUnique;",
                     "INSERT INTO TestHistory.BasicUnique (ID, Name, ActiveSince) VALUES ('" + c1ID.ToString() + "', 'c1', '2013-01-01');",
@@ -360,7 +361,7 @@ namespace CommonConcepts.Test
                     "INSERT INTO TestHistory.BasicUnique_Changes (ID, EntityID, Name, ActiveSince) VALUES ('" + Guid.NewGuid().ToString() + "', '" + c1ID.ToString() + "', 'oldc1', '2012-01-01');",
                     "INSERT INTO TestHistory.BasicUnique_Changes (ID, EntityID, Name, ActiveSince) VALUES ('" + Guid.NewGuid().ToString() + "', '" + c2ID.ToString() + "', 'c3', '2012-01-01');"
                 });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var cleanRepos = repository.TestHistory.BasicUnique;
 
                 var c1 = repository.TestHistory.BasicUnique.Query().Where(item => item.ID == c1ID).SingleOrDefault();
@@ -387,14 +388,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MinimalHistoryUpdateInvalidActiveSince()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Minimal",
                     "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2013-01-01')",
                     "INSERT INTO TestHistory.Minimal_Changes (ID, EntityID, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(Guid.NewGuid()) + ", " + SqlUtility.QuoteGuid(id1) + ", '2012-12-30')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var m1 = repository.TestHistory.Minimal.All().Single();
                 m1.ActiveSince = new DateTime(2012, 12, 25);
@@ -407,17 +408,17 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void CrudWithExplicitTime()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 // Insert:
                 var s = new TestHistory.Simple { ID = Guid.NewGuid(), Code = 1, ActiveSince = Day(1), Name = "a" };
                 repository.TestHistory.Simple.Insert(new[] { s });
                 Assert.AreEqual(1, repository.TestHistory.Simple_History.All().Count());
 
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual("1 a 2001-01-01T00:00:00", DumpFull(repository.TestHistory.Simple.All()));
                 Assert.AreEqual("", DumpFull(repository.TestHistory.Simple_Changes.All()));
 
@@ -427,7 +428,7 @@ namespace CommonConcepts.Test
                 s.ActiveSince = Day(2);
                 repository.TestHistory.Simple.Update(new[] { s });
 
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual("2 b 2001-01-02T00:00:00", DumpFull(repository.TestHistory.Simple.All()));
                 Assert.AreEqual("1 2001-01-01T00:00:00", DumpFull(repository.TestHistory.Simple_Changes.All()));
                 Assert.AreEqual(2, repository.TestHistory.Simple_History.All().Count());
@@ -438,7 +439,7 @@ namespace CommonConcepts.Test
                 s.ActiveSince = Day(3);
                 repository.TestHistory.Simple.Update(new[] { s });
 
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual("3 c 2001-01-03T00:00:00", DumpFull(repository.TestHistory.Simple.All()));
                 Assert.AreEqual("1 2001-01-01T00:00:00, 2 2001-01-02T00:00:00", DumpFull(repository.TestHistory.Simple_Changes.All()));
                 Assert.AreEqual(3, repository.TestHistory.Simple_History.All().Count());
@@ -446,7 +447,7 @@ namespace CommonConcepts.Test
                 // Delete:
                 repository.TestHistory.Simple.Delete(new[] { s });
 
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual("", DumpFull(repository.TestHistory.Simple.All()));
                 Assert.AreEqual("", DumpFull(repository.TestHistory.Simple_Changes.All()));
             }
@@ -455,12 +456,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertFuture()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
 
-                var future = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter).AddMinutes(1);
+                var future = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()).AddMinutes(1);
 
                 TestUtility.ShouldFail(
                     () => repository.TestHistory.Simple.Insert(new[] { new TestHistory.Simple { ActiveSince = future } }),
@@ -471,15 +472,15 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateFuture()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var s = new TestHistory.Simple { ID = Guid.NewGuid(), Code = 1 };
                 repository.TestHistory.Simple.Insert(new[] { s });
 
-                var future = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter).AddMinutes(1);
+                var future = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()).AddMinutes(1);
                 s.ActiveSince = future;
 
                 TestUtility.ShouldFail(
@@ -491,17 +492,17 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NormalUpdateIfExistsNewerHistoryEntryDiffBase()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple_Changes",
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'Test1', '2001-01-01')",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id2) + ", 1, 'Test2', '2013-12-12')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, Code, ActiveSince, ID) VALUES (" + SqlUtility.QuoteGuid(id2) + ", 1, '2013-10-10', '"+(Guid.NewGuid()).ToString()+"')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var m1 = repository.TestHistory.Simple.Query().Where(t => t.ID == id1).SingleOrDefault();
                 m1.ActiveSince = new DateTime(2013, 5, 5);
@@ -513,13 +514,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NormalUpdate()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'Test', '2001-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var m1 = repository.TestHistory.Simple.All().Single();
                 m1.ActiveSince = null;
@@ -531,12 +532,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateWithoutSettingActiveSince()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
 
-                var inPast = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter).AddMinutes(-1);
+                var inPast = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()).AddMinutes(-1);
                 var s = new TestHistory.Simple { ID = Guid.NewGuid(), Code = 1, ActiveSince = inPast };
                 repository.TestHistory.Simple.Insert(new[] { s });
 
@@ -555,10 +556,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FastUpdateNHibernate()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
                 var simpleRepos = repository.TestHistory.Simple;
 
                 Assert.AreEqual("", DumpFull(simpleRepos.All()));
@@ -600,15 +601,15 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryAtTime()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Standard" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Standard" });
+                var repository = container.Resolve<Common.DomRepository>();
                 var standardRepos = repository.TestHistory.Standard;
 
                 var e = new TestHistory.Standard { Code = 1, Name = "a", Birthday = new DateTime(2001, 2, 3, 4, 5, 6) };
                 standardRepos.Insert(new[] { e });
-                DateTime t1 = GetServerTime(executionContext);
+                DateTime t1 = GetServerTime(container);
                 string v1 = "1 a 2001-02-03T04:05:06";
                 Assert.AreEqual(v1, Dump(standardRepos.All()));
 
@@ -619,7 +620,7 @@ namespace CommonConcepts.Test
                 e.ActiveSince = null;
                 e.Birthday = new DateTime(2011, 12, 13, 14, 15, 16);
                 standardRepos.Update(new[] { e });
-                DateTime t2 = GetServerTime(executionContext);
+                DateTime t2 = GetServerTime(container);
                 string v2 = "2 b 2011-12-13T14:15:16";
                 Assert.AreEqual(v2, Dump(standardRepos.All()));
 
@@ -629,18 +630,18 @@ namespace CommonConcepts.Test
                 e.Name = "c";
                 e.ActiveSince = null;
                 standardRepos.Update(new[] { e });
-                DateTime t3 = GetServerTime(executionContext);
+                DateTime t3 = GetServerTime(container);
                 string v3 = "3 c 2011-12-13T14:15:16";
                 Assert.AreEqual(v3, Dump(standardRepos.All()));
 
                 Console.WriteLine("t1: " + t1.ToString("o"));
                 Console.WriteLine("t2: " + t2.ToString("o"));
                 Console.WriteLine("t3: " + t3.ToString("o"));
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual(v1, Dump(standardRepos.Filter(t1.Add(DatabaseDateTimeImprecision))), "At time 1");
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual(v2, Dump(standardRepos.Filter(t2.Add(DatabaseDateTimeImprecision))), "At time 2");
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual(v3, Dump(standardRepos.Filter(t3.Add(DatabaseDateTimeImprecision))), "At time 3");
             }
         }
@@ -648,16 +649,16 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void PartialHistoryAtTime()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
                 var er = repository.TestHistory.Simple;
                 var hr = repository.TestHistory.Simple_Changes;
 
                 var e = new TestHistory.Simple { Code = 1, Name = "a" };
                 er.Insert(new[] { e });
-                DateTime t1 = GetServerTime(executionContext);
+                DateTime t1 = GetServerTime(container);
                 Assert.AreEqual("1 a", Dump(er.All()));
 
                 System.Threading.Thread.Sleep(DatabaseDateTimeImprecision + DatabaseDateTimeImprecision);
@@ -666,7 +667,7 @@ namespace CommonConcepts.Test
                 e.Name = "b";
                 e.ActiveSince = null;
                 er.Update(new[] { e });
-                DateTime t2 = GetServerTime(executionContext);
+                DateTime t2 = GetServerTime(container);
                 Assert.AreEqual("2 b", Dump(er.All()));
 
                 System.Threading.Thread.Sleep(DatabaseDateTimeImprecision + DatabaseDateTimeImprecision);
@@ -675,18 +676,18 @@ namespace CommonConcepts.Test
                 e.Name = "c";
                 e.ActiveSince = null;
                 er.Update(new[] { e });
-                DateTime t3 = GetServerTime(executionContext);
+                DateTime t3 = GetServerTime(container);
                 Assert.AreEqual("3 c", Dump(er.All()));
 
                 Console.WriteLine("t1: " + t1.ToString("o"));
                 Console.WriteLine("t2: " + t2.ToString("o"));
                 Console.WriteLine("t3: " + t3.ToString("o"));
 
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual("1", Dump(hr.Filter(t1.Add(DatabaseDateTimeImprecision))), "At time 1");
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual("2", Dump(hr.Filter(t2.Add(DatabaseDateTimeImprecision))), "At time 2");
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual("3", Dump(hr.Filter(t3.Add(DatabaseDateTimeImprecision))), "At time 3");
             }
         }
@@ -694,18 +695,18 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryBeforeFirstRecord()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Standard" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Standard" });
+                var repository = container.Resolve<Common.DomRepository>();
                 var er = repository.TestHistory.Standard;
 
 
                 var e = new TestHistory.Standard { Code = 1, Name = "a", Birthday = new DateTime(2001, 2, 3, 4, 5, 6) };
-                DateTime t0 = GetServerTime(executionContext);
+                DateTime t0 = GetServerTime(container);
                 Console.WriteLine("t0: " + t0.ToString("o"));
                 er.Insert(new[] { e });
-                DateTime t1 = GetServerTime(executionContext);
+                DateTime t1 = GetServerTime(container);
                 Console.WriteLine("t1: " + t1.ToString("o"));
 
                 const string v1 = "1 a 2001-02-03T04:05:06";
@@ -720,10 +721,10 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void ManualHistoryManagement()
 //        {
-//            using (var executionContext = new CommonTestExecutionContext())
+//            using (var container = new RhetosTestContainer())
 //            {
-//                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Simple_Base" });
-//                var repository = new Common.DomRepository(executionContext);
+//                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple_Base" });
+//                var repository = container.Resolve<Common.DomRepository>();
 
 //                var id = Guid.NewGuid();
 //                var hBase = new TestHistory.Simple_Base { ID = id };
@@ -737,15 +738,15 @@ namespace CommonConcepts.Test
 
 //                const string v1 = "1 a 2001-02-03T04:05:06";
 //                const string v2 = "2 b 2002-02-03T04:05:06";
-//                executionContext.NHibernateSession.Clear(); // TODO: Turn off NHibernate caching to have a more robust reading without Clear(). The problem is disabling caching but keeping the reference evaluation enabled (Entity Framework?).
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear(); // TODO: Turn off NHibernate caching to have a more robust reading without Clear(). The problem is disabling caching but keeping the reference evaluation enabled (Entity Framework?).
 //                Assert.AreEqual(v1, DumpSorted(repository.TestHistory.Simple.Filter(t1)));
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                Assert.AreEqual(v2, DumpSorted(repository.TestHistory.Simple.Filter(t2)));
 
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                Assert.AreEqual(v2, DumpSorted(repository.TestHistory.Simple.All()));
 
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                Assert.AreEqual("", DumpSorted(repository.TestHistory.Simple.Filter(t1.AddSeconds(-1))));
 //            }
 //        }
@@ -753,15 +754,15 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertHistoryFuture()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var e = new TestHistory.Simple { Code = 1 };
                 repository.TestHistory.Simple.Insert(new[] { e });
 
-                var future = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter).AddMinutes(1);
+                var future = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()).AddMinutes(1);
 
                 TestUtility.ShouldFail(
                     () => repository.TestHistory.Simple_Changes.Insert(new[] { new TestHistory.Simple_Changes { Entity = e, ActiveSince = future } }),
@@ -772,10 +773,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateHistoryFuture()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var s = new TestHistory.Simple { ID = Guid.NewGuid(), Code = 1, ActiveSince = Day(2) };
                 repository.TestHistory.Simple.Insert(new[] { s });
@@ -783,7 +784,7 @@ namespace CommonConcepts.Test
                 var h = new TestHistory.Simple_Changes { EntityID = s.ID, Code = 2, ActiveSince = Day(1) };
                 repository.TestHistory.Simple_Changes.Insert(new[] { h });
 
-                var future = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter).AddMinutes(1);
+                var future = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()).AddMinutes(1);
                 h.ActiveSince = future;
 
                 TestUtility.ShouldFail(
@@ -798,15 +799,15 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void RequiredBase()
 //        {
-//            using (var executionContext = new CommonTestExecutionContext())
+//            using (var container = new RhetosTestContainer())
 //            {
-//                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
-//                var repository = new Common.DomRepository(executionContext);
+//                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
+//                var repository = container.Resolve<Common.DomRepository>();
 
 //                var other = new TestHistory.Other { ID = Guid.NewGuid() };
 //                repository.TestHistory.Other.Insert(new[] { other });
 
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                TestUtility.ShouldFail(() => repository.TestHistory.Complex.Insert(new[] { 
 //                    new TestHistory.Complex { Name = null, Code = "1", Other = other }}),
 //                    "required property", "Name");
@@ -816,10 +817,10 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void RequiredHistory()
 //        {
-//            using (var executionContext = new CommonTestExecutionContext())
+//            using (var container = new RhetosTestContainer())
 //            {
-//                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
-//                var repository = new Common.DomRepository(executionContext);
+//                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
+//                var repository = container.Resolve<Common.DomRepository>();
 
 //                var other = new TestHistory.Other { ID = Guid.NewGuid() };
 //                repository.TestHistory.Other.Insert(new[] { other });
@@ -827,7 +828,7 @@ namespace CommonConcepts.Test
 //                var complexBase = new TestHistory.Complex_Base { ID = Guid.NewGuid() };
 //                repository.TestHistory.Complex_Base.Insert(new[] { complexBase });
 
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                TestUtility.ShouldFail(() => repository.TestHistory.Complex_Changes.Insert(new[] {
 //                    new TestHistory.Complex_Changes { Name = null, Code = "1", Other = other,
 //                        Base = complexBase, ActiveSince = DateTime.Now.AddDays(-1) }}),
@@ -838,10 +839,10 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void Reference()
 //        {
-//            using (var executionContext = new CommonTestExecutionContext())
+//            using (var container = new RhetosTestContainer())
 //            {
-//                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
-//                var repository = new Common.DomRepository(executionContext);
+//                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
+//                var repository = container.Resolve<Common.DomRepository>();
 
 //                var other = new TestHistory.Other { ID = Guid.NewGuid() };
 //                repository.TestHistory.Other.Insert(new[] { other });
@@ -852,7 +853,7 @@ namespace CommonConcepts.Test
 //                var sub = new TestHistory.Sub { Complex = complex };
 //                repository.TestHistory.Sub.Insert(new[] { sub });
 
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                var query = repository.TestHistory.Sub.Query().Select(item => item.ID + " " + item.Complex.Name + " " + item.Complex.Other.ID).Single();
 //                Console.WriteLine(query);
 //                Assert.AreEqual(sub.ID + " a " + other.ID, query);
@@ -862,7 +863,7 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void SqlIndex()
 //        {
-//            using (var executionContext = new CommonTestExecutionContext())
+//            using (var container = new RhetosTestContainer())
 //            {
 //                var sql = @"SELECT
 //	i.name, c.name, ic.*
@@ -886,7 +887,7 @@ namespace CommonConcepts.Test
 //PK_Complex_Changes	ID
 //";
 //                var actual = new StringBuilder();
-//                executionContext.SqlExecuter.ExecuteReader(sql, reader => actual.AppendLine(reader.GetString(0) + "\t" + reader.GetString(1)));
+//                container.Resolve<ISqlExecuter>().ExecuteReader(sql, reader => actual.AppendLine(reader.GetString(0) + "\t" + reader.GetString(1)));
 
 //                Assert.AreEqual(expected, actual.ToString());
 //            }
@@ -895,10 +896,10 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void UniqueBase()
 //        {
-//            using (var executionContext = new CommonTestExecutionContext())
+//            using (var container = new RhetosTestContainer())
 //            {
-//                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
-//                var repository = new Common.DomRepository(executionContext);
+//                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
+//                var repository = container.Resolve<Common.DomRepository>();
 
 //                var other = new TestHistory.Other { ID = Guid.NewGuid() };
 //                repository.TestHistory.Other.Insert(new[] { other });
@@ -913,30 +914,30 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void UniqueHistory()
 //        {
-//            using (var executionContext = new CommonTestExecutionContext())
+//            using (var container = new RhetosTestContainer())
 //            {
-//                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
-//                var repository = new Common.DomRepository(executionContext);
+//                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
+//                var repository = container.Resolve<Common.DomRepository>();
 
 //                var other = new TestHistory.Other { ID = Guid.NewGuid() };
 //                repository.TestHistory.Other.Insert(new[] { other });
 
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                var b1 = new TestHistory.Complex_Base { ID = Guid.NewGuid() };
 //                var b2 = new TestHistory.Complex_Base { ID = Guid.NewGuid() };
 //                repository.TestHistory.Complex_Base.Insert(new[] { b1, b2 });
 
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                var h1 = new TestHistory.Complex_Changes { Name = "abc", Code = "1", Other = other, BaseID = b1.ID, ActiveSince = Day(10) };
 //                var h1b = new TestHistory.Complex_Changes { Name = "abc", Code = "1", Other = other, BaseID = b1.ID, ActiveSince = Day(11) };
 //                repository.TestHistory.Complex_Changes.Insert(new[] { h1, h1b });
 
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                var h2 = new TestHistory.Complex_Changes { Name = "abc", Code = "2", Other = other, BaseID = b2.ID, ActiveSince = Day(1) };
 //                var h2b = new TestHistory.Complex_Changes { Name = "abcx", Code = "2", Other = other, BaseID = b2.ID, ActiveSince = Day(2) };
 //                repository.TestHistory.Complex_Changes.Insert(new[] { h2, h2b });
 
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                TestUtility.ShouldFail(() => repository.TestHistory.Complex_Changes.Delete(new[] { h2b }),
 //                    "duplicate record", "Name", "abc");
 //            }
@@ -945,10 +946,10 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void UniqueMultiple()
 //        {
-//            using (var executionContext = new CommonTestExecutionContext())
+//            using (var container = new RhetosTestContainer())
 //            {
-//                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
-//                var repository = new Common.DomRepository(executionContext);
+//                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
+//                var repository = container.Resolve<Common.DomRepository>();
 
 //                var other = new TestHistory.Other { ID = Guid.NewGuid() };
 //                repository.TestHistory.Other.Insert(new[] { other });
@@ -959,13 +960,13 @@ namespace CommonConcepts.Test
 //                var complex2b = new TestHistory.Complex { ID = Guid.NewGuid(), Name = "complex2b", Code = "2", Other = other, Parent = complex1a };
 //                repository.TestHistory.Complex.Insert(new[] { complex1a, complex2a });
 
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                TestUtility.ShouldFail(() => repository.TestHistory.Complex.Insert(new[] { complex2b }),
 //                    "not allowed", "duplicate record",
 //                    "Parent", complex2b.Parent.ID.ToString(),
 //                    "Code", complex2b.Code.ToString());
 
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                TestUtility.ShouldFail(() => repository.TestHistory.Complex.Insert(new[] { complex1b }),
 //                    "not allowed", "duplicate record",
 //                    "Parent", "<null>",
@@ -976,40 +977,40 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void AutoCodeForEachBase()
 //        {
-//            using (var executionContext = new CommonTestExecutionContext())
+//            using (var container = new RhetosTestContainer())
 //            {
-//                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
-//                var repository = new Common.DomRepository(executionContext);
+//                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
+//                var repository = container.Resolve<Common.DomRepository>();
 
 //                repository.TestHistory.Complex.Insert(new[] {
 //                    new TestHistory.Complex { Name = "a", Code = "+" },
 //                    new TestHistory.Complex { Name = "b", Code = "+" }});
 //                Assert.AreEqual("1, 2", TestUtility.DumpSorted(repository.TestHistory.Complex.Query(), item => item.Code.ToString()));
 
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                var id = Guid.NewGuid();
 //                repository.TestHistory.Complex.Insert(new[] {
 //                    new TestHistory.Complex { ID = id, Name = "c", Code = "+" }});
 //                Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(repository.TestHistory.Complex.Query(), item => item.Code.ToString()));
 
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                repository.TestHistory.Complex.Insert(new[] { new TestHistory.Complex { Name = "d", Code = "+", Other = null, ParentID = id } });
 //                Assert.AreEqual("1, 1, 2, 3", TestUtility.DumpSorted(repository.TestHistory.Complex.Query(), item => item.Code.ToString()));
 
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                var b = new TestHistory.Complex_Base { ID = Guid.NewGuid() };
 //                repository.TestHistory.Complex_Base.Insert(new[] { b });
 
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                var h = new TestHistory.Complex_Changes { Base = b, Code = "44", Name = "h", ActiveSince = DateTime.Today };
 //                repository.TestHistory.Complex_Changes.Insert(new[] { h });
 //                Assert.AreEqual("1, 1, 2, 3, 44", TestUtility.DumpSorted(repository.TestHistory.Complex.Query(), item => item.Code.ToString()));
 
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                var hh = repository.TestHistory.Complex.Query().Where(item => item.Name == "h").Single();
 //                hh.Name = "hh";
 //                repository.TestHistory.Complex.Update(new[] { hh });
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                Assert.AreEqual("1 a, 1 d, 2 b, 3 c, 44 hh", TestUtility.DumpSorted(repository.TestHistory.Complex.Query(), item => item.Code + " " + item.Name));
 //            }
 //        }
@@ -1018,10 +1019,10 @@ namespace CommonConcepts.Test
 //        [Ignore] // Not yet implemented.
 //        public void Detail()
 //        {
-//            using (var executionContext = new CommonTestExecutionContext())
+//            using (var container = new RhetosTestContainer())
 //            {
-//                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
-//                var repository = new Common.DomRepository(executionContext);
+//                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
+//                var repository = container.Resolve<Common.DomRepository>();
 
 //                var other = new TestHistory.Other { ID = Guid.NewGuid() };
 //                repository.TestHistory.Other.Insert(new[] { other });
@@ -1037,10 +1038,10 @@ namespace CommonConcepts.Test
 //        [Ignore] // Not yet implemented.
 //        public void Detail2()
 //        {
-//            using (var executionContext = new CommonTestExecutionContext())
+//            using (var container = new RhetosTestContainer())
 //            {
-//                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
-//                var repository = new Common.DomRepository(executionContext);
+//                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
+//                var repository = container.Resolve<Common.DomRepository>();
 
 //                var complex = new TestHistory.Complex { Name = "a", Code = "1" };
 //                repository.TestHistory.Complex.Insert(new[] { complex });
@@ -1071,20 +1072,20 @@ namespace CommonConcepts.Test
 //        [Ignore] // Not yet implemented.
 //        public void Logging()
 //        {
-//            using (var executionContext = new CommonTestExecutionContext())
+//            using (var container = new RhetosTestContainer())
 //            {
-//                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "TRUNCATE TABLE Common.Log" });
-//                var repository = new Common.DomRepository(executionContext);
+//                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "TRUNCATE TABLE Common.Log" });
+//                var repository = container.Resolve<Common.DomRepository>();
 
 //                var c = new TestHistory.Complex { Code = "1", Name = "a" };
 //                repository.TestHistory.Complex.Insert(new[] { c });
 //                Assert.AreEqual("1 a", TestUtility.DumpSorted(repository.TestHistory.Complex.Query(), item => item.Code + " " + item.Name));
 
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                var h = repository.TestHistory.Complex_Changes.All().Single();
 //                h.ActiveSince = h.ActiveSince.Value.AddDays(-1);
 //                repository.TestHistory.Complex_Changes.Update(new[] { h });
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
 //                c.Name += "x";
 //                repository.TestHistory.Complex.Update(new[] { c });
@@ -1111,10 +1112,10 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void ItemFilter()
 //        {
-//            using (var executionContext = new CommonTestExecutionContext())
+//            using (var container = new RhetosTestContainer())
 //            {
 //                var ids = Enumerable.Range(1, 4).Select(x => Guid.NewGuid()).ToArray();
-//                executionContext.SqlExecuter.ExecuteSql(new[]
+//                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
 //                    {
 //                        "DELETE FROM TestHistory.Complex_Base",
 //                        "INSERT INTO TestHistory.Complex_Base (ID) SELECT '"+ids[0]+"'",
@@ -1126,7 +1127,7 @@ namespace CommonConcepts.Test
 //                        "INSERT INTO TestHistory.Complex_Changes (BaseID, Code, Name, ActiveSince) SELECT '"+ids[2]+"', '15', 'aaaaaaaaaaaaaaa', '2001-01-01'",
 //                        "INSERT INTO TestHistory.Complex_Changes (BaseID, Code, Name, ActiveSince) SELECT '"+ids[3]+"', '16', 'aaaaaaaaaaaaaaaa', '2001-01-01'"
 //                    });
-//                var repository = new Common.DomRepository(executionContext);
+//                var repository = container.Resolve<Common.DomRepository>();
 
 //                Assert.AreEqual("15, 16", TestUtility.DumpSorted(repository.TestHistory.Complex.Filter(new TestHistory.TooLong()), item => item.Code));
 //            }
@@ -1136,10 +1137,10 @@ namespace CommonConcepts.Test
 //        [Ignore] // Not yet implemented.
 //        public void DenySave()
 //        {
-//            using (var executionContext = new CommonTestExecutionContext())
+//            using (var container = new RhetosTestContainer())
 //            {
 //                var ids = Enumerable.Range(1, 3).Select(x => Guid.NewGuid()).ToArray();
-//                executionContext.SqlExecuter.ExecuteSql(new[]
+//                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
 //                    {
 //                        "DELETE FROM TestHistory.Complex_Base",
 //                        "INSERT INTO TestHistory.Complex_Base (ID) SELECT '"+ids[0]+"'",
@@ -1149,26 +1150,26 @@ namespace CommonConcepts.Test
 //                        "INSERT INTO TestHistory.Complex_Changes (BaseID, Code, Name, ActiveSince) SELECT '"+ids[1]+"', '5', 'aaaaa', '2001-01-01'",
 //                        "INSERT INTO TestHistory.Complex_Changes (BaseID, Code, Name, ActiveSince) SELECT '"+ids[2]+"', '15', 'aaaaaaaaaaaaaaa', '2001-01-01'",
 //                    });
-//                var repository = new Common.DomRepository(executionContext);
+//                var repository = container.Resolve<Common.DomRepository>();
 
 //                var c = new TestHistory.Complex { Code = "3", Name = "bbb" };
 //                repository.TestHistory.Complex.Insert(new[] { c });
 //                c.Name = "bbbbbbbbbbbbb";
 
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                TestUtility.ShouldFail(() => repository.TestHistory.Complex.Update(new[] { c }), "Name too long");
 
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                var b = new TestHistory.Complex_Base { ID = Guid.NewGuid() };
 //                repository.TestHistory.Complex_Base.Insert(new[] { b });
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                var h = new TestHistory.Complex_Changes { Base = b, Code = "12", Name = "hhhhhhhhhhhh", ActiveSince = DateTime.Today };
 //                TestUtility.ShouldFail(() => repository.TestHistory.Complex_Changes.Insert(new[] { h }), "Name too long");
 
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                h.Name = "h";
 //                repository.TestHistory.Complex_Changes.Insert(new[] { h });
-//                executionContext.NHibernateSession.Clear();
+//                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 //                Assert.AreEqual("h", repository.TestHistory.Complex.Query().Where(item => item.Code == "12").Select(item => item.Name).Single());
 //            }
 //        }
@@ -1190,23 +1191,23 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryEditHistorySimple()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 // take entry in history table
                 var h1 = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).Take(1).Single();
                 h1.Code = 3;
                 repository.TestHistory.Simple_History.Update(new[] { h1 });
 
-                executionContext.NHibernateSession.Clear();
-                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
                 var h = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
 
@@ -1217,15 +1218,15 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryEditHistoryActiveSinceNewerThanActiveItem()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 // take entry in history table
                 var h1 = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).Take(1).Single();
@@ -1238,15 +1239,15 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryEditHistoryChangingActiveSinceOK()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 // take entry in history table
                 var h1 = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).Take(1).Single();
@@ -1254,8 +1255,8 @@ namespace CommonConcepts.Test
                 h1.ActiveSince = new DateTime(2010, 1, 1);
                 repository.TestHistory.Simple_History.Update(new[] { h1 });
 
-                executionContext.NHibernateSession.Clear();
-                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
                 var h = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
 
@@ -1266,15 +1267,15 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryUpdateActiveItemOK()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 // take entry in history table
                 var a1 = repository.TestHistory.Simple_History.Query().OrderByDescending(x => x.ActiveSince).Take(1).Single();
@@ -1282,8 +1283,8 @@ namespace CommonConcepts.Test
                 a1.ActiveSince = new DateTime(2010, 1, 1);
                 repository.TestHistory.Simple_History.Update(new[] { a1 });
 
-                executionContext.NHibernateSession.Clear();
-                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
                 var h = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
 
@@ -1294,23 +1295,23 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryUpdateActiveItemActiveSince()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 // take entry in history table
                 var a1 = repository.TestHistory.Simple_History.Query().OrderByDescending(x => x.ActiveSince).Take(1).Single();
                 a1.ActiveSince = new DateTime(2012, 1, 1);
                 repository.TestHistory.Simple_History.Update(new[] { a1 });
 
-                executionContext.NHibernateSession.Clear();
-                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
                 var h = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
 
@@ -1321,15 +1322,15 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryUpdateActiveItemFailOlderThanLastInHistory()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 // take entry in history table
                 var a1 = repository.TestHistory.Simple_History.Query().OrderByDescending(x => x.ActiveSince).Take(1).Single();
@@ -1343,22 +1344,22 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryDeleteActiveItemReplaceWithHistory()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 // take entry that is current
                 var a1 = repository.TestHistory.Simple_History.Query().OrderByDescending(x => x.ActiveSince).Take(1).Single();
                 repository.TestHistory.Simple_History.Delete(new[] { a1 });
 
-                executionContext.NHibernateSession.Clear();
-                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
                 var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(1, fh.Count());
@@ -1371,20 +1372,20 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryDeleteActiveItemOnlyItemInHistory()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 // take entry that is current
                 var a1 = repository.TestHistory.Simple_History.Query().OrderByDescending(x => x.ActiveSince).Take(1).Single();
                 repository.TestHistory.Simple_History.Delete(new[] { a1 });
 
-                executionContext.NHibernateSession.Clear();
-                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
                 var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(0, fh.Count());
@@ -1394,22 +1395,22 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryDeleteHistoryOnlyItemInHistory()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 // take entry that is only item in history table
                 var a2 = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).Take(1).Single();
                 repository.TestHistory.Simple_History.Delete(new[] { a2 });
 
-                executionContext.NHibernateSession.Clear();
-                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
                 var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(1, fh.Count());
@@ -1427,24 +1428,24 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryDeleteHistoryMiddleInHistory()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 // take entry that is in the middle of history
                 var a2 = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).Skip(1).Take(1).Single();
                 repository.TestHistory.Simple_History.Delete(new[] { a2 });
 
-                executionContext.NHibernateSession.Clear();
-                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
                 var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(2, fh.Count());
@@ -1463,17 +1464,17 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryInsertAsActive()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 // take entry that is in the middle of history
                 var a2 = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).Skip(1).Take(1).Single();
@@ -1483,8 +1484,8 @@ namespace CommonConcepts.Test
                     EntityID = id1
                 } });
 
-                executionContext.NHibernateSession.Clear();
-                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
                 var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(4, fh.Count());
@@ -1501,17 +1502,17 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryInsertAsHistory()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 // take entry that is in the middle of history
                 var a2 = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).Skip(1).Take(1).Single();
@@ -1521,8 +1522,8 @@ namespace CommonConcepts.Test
                     EntityID = id1
                 } });
 
-                executionContext.NHibernateSession.Clear();
-                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
                 var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(4, fh.Count());
@@ -1539,24 +1540,24 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryDeleteCurrentItemAndLastInHistory()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 // take entry that is in the middle of history
                 var delEnt = repository.TestHistory.Simple_History.Query().OrderByDescending(x => x.ActiveSince).Take(2).ToArray();
                 repository.TestHistory.Simple_History.Delete(delEnt);
 
-                executionContext.NHibernateSession.Clear();
-                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
                 var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(1, fh.Count());
@@ -1575,24 +1576,24 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryDeleteAllHistory()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 // take entry that is in the middle of history
                 var delEnt = repository.TestHistory.Simple_History.All().ToArray();
                 repository.TestHistory.Simple_History.Delete(delEnt);
 
-                executionContext.NHibernateSession.Clear();
-                var now = SqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
                 var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(0, fh.Count());
@@ -1602,24 +1603,24 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryLockProperty()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.SimpleWithLock",
                     "INSERT INTO TestHistory.SimpleWithLock (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'b', '2011-01-01')",
                     "INSERT INTO TestHistory.SimpleWithLock_Changes (EntityID, ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, 'b', '2001-01-01')",
                     "INSERT INTO TestHistory.SimpleWithLock_Changes (EntityID, ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, 'b', '2000-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 // take entry that is in the middle of history
                 var editEnt = repository.TestHistory.SimpleWithLock.All().ToArray();
                 editEnt[0].Name = "buba";
                 repository.TestHistory.SimpleWithLock.Update(editEnt);
 
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
                 editEnt[0].Name = "bube";
                 TestUtility.ShouldFail(() => repository.TestHistory.SimpleWithLock.Update(editEnt), "Name is locked if NameNew contains word 'atest'.");
@@ -1629,18 +1630,18 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryLockPropertyAndDenySave()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[] {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.SimpleWithLockAndDeny",
                     "INSERT INTO TestHistory.SimpleWithLockAndDeny (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'b', '2011-01-01')",
                     "INSERT INTO TestHistory.SimpleWithLockAndDenyAdd (ID, NameNew) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 'btest')",
                     "INSERT INTO TestHistory.SimpleWithLockAndDeny_Changes (EntityID, ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, 'b', '2001-01-01')",
                     "INSERT INTO TestHistory.SimpleWithLockAndDeny_Changes (EntityID, ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, 'b', '2000-01-01')"});
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 // take entry that is in the middle of history
                 var editEnt = repository.TestHistory.SimpleWithLockAndDeny.All().ToArray();
@@ -1649,7 +1650,7 @@ namespace CommonConcepts.Test
                 repository.TestHistory.SimpleWithLockAndDeny.Update(editEnt);
 
 
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 editEnt[0].Name = "be";
                 TestUtility.ShouldFail(() => repository.TestHistory.SimpleWithLockAndDeny.Update(editEnt), "Name is locked if NameNew contains word 'atest'.");
             }

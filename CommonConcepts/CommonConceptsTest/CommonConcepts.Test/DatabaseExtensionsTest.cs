@@ -24,6 +24,8 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -56,17 +58,17 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LikeSql()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestDatabaseExtensions.Simple" });
-                executionContext.SqlExecuter.ExecuteSql(BasicNames.Select(name =>
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDatabaseExtensions.Simple" });
+                container.Resolve<ISqlExecuter>().ExecuteSql(BasicNames.Select(name =>
                         "INSERT INTO TestDatabaseExtensions.Simple (Name) SELECT '" + name + "'"));
 
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 foreach (var test in BasicTests)
                 {
-                    var loaded = repository.TestDatabaseExtensions.Simple.Query().Where(item => item.Name.Like(test[0]));
+                    var loaded = repository.TestDatabaseExtensions.Simple.Query().Where(item => item.Name.Like(test[0])).ToList();
                     Assert.AreEqual(test[1], TestUtility.DumpSorted(loaded, item => item.Name), "Pattern: '" + test[0] + "'");
                 }
             }

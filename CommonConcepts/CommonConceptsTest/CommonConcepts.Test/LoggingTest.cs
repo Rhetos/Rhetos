@@ -27,6 +27,7 @@ using Rhetos.Utilities;
 using Rhetos.TestCommon;
 using System.Security.Principal;
 using System.Text.RegularExpressions;
+using Rhetos.Configuration.Autofac;
 
 namespace CommonConcepts.Test
 {
@@ -36,9 +37,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DeleteIntegerStringDataTime()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var newItem = new TestLogging.Simple { ID = Guid.NewGuid(), Count = -2, Name = "abc", Created = DateTime.Now };
                 repository.TestLogging.Simple.Insert(new[] { newItem });
@@ -52,12 +53,12 @@ namespace CommonConcepts.Test
                 logRecord = repository.Common.Log.Query().Where(log => log.ItemId == newItem.ID && log.Action == "Delete").SingleOrDefault();
                 Assert.IsNotNull(logRecord, "There should be 'Delete' record in the log.");
 
-                Assert.AreEqual(SqlUtility.UserContextInfoText(executionContext.UserInfo), logRecord.ContextInfo);
-                Assert.IsTrue(executionContext.UserInfo.IsUserRecognized);
-                TestUtility.AssertContains(logRecord.ContextInfo, executionContext.UserInfo.UserName);
-                TestUtility.AssertContains(logRecord.ContextInfo, executionContext.UserInfo.Workstation);
+                Assert.AreEqual(SqlUtility.UserContextInfoText(container.Resolve<IUserInfo>()), logRecord.ContextInfo);
+                Assert.IsTrue(container.Resolve<IUserInfo>().IsUserRecognized);
+                TestUtility.AssertContains(logRecord.ContextInfo, container.Resolve<IUserInfo>().UserName);
+                TestUtility.AssertContains(logRecord.ContextInfo, container.Resolve<IUserInfo>().Workstation);
 
-                var now = MsSqlUtility.GetDatabaseTime(executionContext.SqlExecuter);
+                var now = MsSqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
                 Assert.IsTrue(logRecord.Created.Value.Subtract(now).TotalSeconds < 5);
 
                 Assert.AreEqual("TestLogging.Simple", logRecord.TableName);
@@ -85,9 +86,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SpecialCharacters()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var newItem = new TestLogging.Simple { ID = Guid.NewGuid(), Name = @"<>'""&;[]\\//()čćšđžČĆŠĐŽ]]>" };
                 repository.TestLogging.Simple.Insert(new[] { newItem });
@@ -114,9 +115,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdatedOldNullValues()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var newItem = new TestLogging.Simple { ID = Guid.NewGuid(), Count = null, Name = null, Created = null };
                 repository.TestLogging.Simple.Insert(new[] { newItem });
@@ -153,9 +154,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DeleteOldNullValues()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var newItem = new TestLogging.Simple { ID = Guid.NewGuid(), Count = null, Name = null, Created = null };
                 repository.TestLogging.Simple.Insert(new[] { newItem });
@@ -186,14 +187,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlChangeID()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
 
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestLogging.Complex",
                         "DELETE FROM TestLogging.Simple",
@@ -220,14 +221,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Complex()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestLogging.Complex",
                         "DELETE FROM TestLogging.Simple",
                     });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 var id = Guid.NewGuid();
 
                 var simple = new TestLogging.Simple { ID = Guid.NewGuid() };

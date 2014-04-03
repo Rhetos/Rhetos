@@ -23,6 +23,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -32,14 +34,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertSimple()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestSystemRequired.Parent",
                         "DELETE FROM TestSystemRequired.Child"
                     });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 repository.TestSystemRequired.Parent.Insert(new[] { new TestSystemRequired.Parent { Name = "Test" } });
 
@@ -52,14 +54,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateSimple()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestSystemRequired.Parent",
                         "DELETE FROM TestSystemRequired.Child"
                     });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var parent = new TestSystemRequired.Parent { ID = Guid.NewGuid(), Name = "Test" };
                 repository.TestSystemRequired.Parent.Insert(new[] { parent });
@@ -74,14 +76,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertReference()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestSystemRequired.Parent",
                         "DELETE FROM TestSystemRequired.Child"
                     });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var parentID = Guid.NewGuid();
                 repository.TestSystemRequired.Parent.Insert(new[] { new TestSystemRequired.Parent { ID = parentID, Name = "Test" } });

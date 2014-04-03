@@ -24,6 +24,8 @@ using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -32,9 +34,9 @@ namespace CommonConcepts.Test
     {
         private static readonly Guid GuidA = Guid.NewGuid();
         private static readonly Guid GuidB = Guid.NewGuid();
-        private static void InitializeData(Common.ExecutionContext executionContext)
+        private static void InitializeData(RhetosTestContainer container)
         {
-            executionContext.SqlExecuter.ExecuteSql(new[]
+            container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                 {
                     "DELETE FROM Test13.Old2;",
                     "DELETE FROM Test13.Old1;",
@@ -45,19 +47,19 @@ namespace CommonConcepts.Test
                 });
         }
 
-        static string ReportLegacy1(Common.ExecutionContext executionContext, Common.DomRepository domRepository)
+        static string ReportLegacy1(RhetosTestContainer container, Common.DomRepository domRepository)
         {
-            executionContext.NHibernateSession.Flush();
-            executionContext.NHibernateSession.Clear();
+            container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
+            container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
             var loaded = domRepository.Test13.Legacy1.Query().Select(l1 => l1.Name);
             return string.Join(", ", loaded.OrderBy(x => x));
         }
 
-        static string ReportLegacy2(Common.ExecutionContext executionContext, Common.DomRepository domRepository)
+        static string ReportLegacy2(RhetosTestContainer container, Common.DomRepository domRepository)
         {
-            executionContext.NHibernateSession.Flush();
-            executionContext.NHibernateSession.Clear();
+            container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
+            container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
             var loaded = domRepository.Test13.Legacy2.Query().Select(l2 => l2.Leg1.Name + " " + l2.NameNew + " " + l2.Same);
             return string.Join(", ", loaded.OrderBy(x => x));
@@ -66,63 +68,63 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Query()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
-                InitializeData(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
+                InitializeData(container);
 
-                Assert.AreEqual("a, b", ReportLegacy1(executionContext, repository));
+                Assert.AreEqual("a, b", ReportLegacy1(container, repository));
 
-                Assert.AreEqual("a ax sx, a ay sy", ReportLegacy2(executionContext, repository));
+                Assert.AreEqual("a ax sx, a ay sy", ReportLegacy2(container, repository));
             }
         }
 
         [TestMethod]
         public void WritableWithUpdateableView()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
-                InitializeData(executionContext);
-                Assert.AreEqual("a, b", ReportLegacy1(executionContext, repository), "initial");
+                var repository = container.Resolve<Common.DomRepository>();
+                InitializeData(container);
+                Assert.AreEqual("a, b", ReportLegacy1(container, repository), "initial");
 
                 repository.Test13.Legacy1.Insert(new[] { new Test13.Legacy1 { Name = "c" } });
-                Assert.AreEqual("a, b, c", ReportLegacy1(executionContext, repository), "insert");
+                Assert.AreEqual("a, b, c", ReportLegacy1(container, repository), "insert");
 
                 var updated = repository.Test13.Legacy1.Query().Where(item => item.Name == "a").Single();
-                executionContext.NHibernateSession.Evict(updated);
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Evict(updated);
                 updated.Name = "ax";
                 repository.Test13.Legacy1.Update(new[] { updated });
-                Assert.AreEqual("ax, b, c", ReportLegacy1(executionContext, repository), "update");
+                Assert.AreEqual("ax, b, c", ReportLegacy1(container, repository), "update");
 
                 var deleted = repository.Test13.Legacy1.Query().Where(item => item.Name == "b").Single();
                 repository.Test13.Legacy1.Delete(new[] { deleted });
-                Assert.AreEqual("ax, c", ReportLegacy1(executionContext, repository), "delete");
+                Assert.AreEqual("ax, c", ReportLegacy1(container, repository), "delete");
             }
         }
 
         [TestMethod]
         public void WritableWithInsteadOfTrigger()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
-                InitializeData(executionContext);
-                Assert.AreEqual("a ax sx, a ay sy", ReportLegacy2(executionContext, repository), "initial");
+                var repository = container.Resolve<Common.DomRepository>();
+                InitializeData(container);
+                Assert.AreEqual("a ax sx, a ay sy", ReportLegacy2(container, repository), "initial");
 
                 repository.Test13.Legacy2.Insert(new[] { new Test13.Legacy2 { NameNew = "bnew", Leg1 = new Test13.Legacy1 { ID = GuidB }, Same = "snew" } });
-                Assert.AreEqual("a ax sx, a ay sy, b bnew snew", ReportLegacy2(executionContext, repository), "insert");
+                Assert.AreEqual("a ax sx, a ay sy, b bnew snew", ReportLegacy2(container, repository), "insert");
 
                 var updated = repository.Test13.Legacy2.Query().Where(item => item.NameNew == "ax").Single();
-                executionContext.NHibernateSession.Evict(updated);
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Evict(updated);
                 updated.NameNew += "2";
                 updated.Leg1 = new Test13.Legacy1 { ID = GuidB };
                 updated.Same += "2";
                 repository.Test13.Legacy2.Update(new[] { updated });
-                Assert.AreEqual("a ay sy, b ax2 sx2, b bnew snew", ReportLegacy2(executionContext, repository), "update");
+                Assert.AreEqual("a ay sy, b ax2 sx2, b bnew snew", ReportLegacy2(container, repository), "update");
 
                 repository.Test13.Legacy2.Delete(repository.Test13.Legacy2.Query().Where(item => item.NameNew == "ay"));
-                Assert.AreEqual("b ax2 sx2, b bnew snew", ReportLegacy2(executionContext, repository), "insert");
+                Assert.AreEqual("b ax2 sx2, b bnew snew", ReportLegacy2(container, repository), "insert");
             }
         }
 
@@ -131,10 +133,10 @@ namespace CommonConcepts.Test
         {
             try
             {
-                using (var executionContext = new CommonTestExecutionContext())
+                using (var container = new RhetosTestContainer())
                 {
-                    var repository = new Common.DomRepository(executionContext);
-                    executionContext.SqlExecuter.ExecuteSql(new[]
+                    var repository = container.Resolve<Common.DomRepository>();
+                    container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                 {
                     "DELETE FROM Test13.Old3;",
                     "ALTER TABLE Test13.Old3 DROP COLUMN Num;",
@@ -150,14 +152,14 @@ namespace CommonConcepts.Test
                     try
                     {
                         repository.Test13.Legacy3.Update(new[] { leg });
-                        executionContext.NHibernateSession.Flush();
+                        container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine(ex.Message);
                     }
 
-                    executionContext.NHibernateSession.Clear();
+                    container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                     leg = repository.Test13.Legacy3.Query().Single();
                     Assert.AreEqual(123, leg.NumNew);
 
@@ -166,8 +168,8 @@ namespace CommonConcepts.Test
             }
             finally
             {
-                using (var executionContext = new CommonTestExecutionContext())
-                    executionContext.SqlExecuter.ExecuteSql(new[]
+                using (var container = new RhetosTestContainer())
+                    container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM Test13.Old3;",
                         "ALTER TABLE Test13.Old3 DROP COLUMN Num;",
@@ -179,10 +181,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Filter()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                var repository = container.Resolve<Common.DomRepository>();
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM Test13.Old3;",
                         "INSERT INTO Test13.Old3 (Num, Text) SELECT 10, 'a'",
@@ -201,13 +203,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MultipleKeyColumns()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var c1id = Guid.NewGuid();
                 var c2id = Guid.NewGuid();
                 var p1id = Guid.NewGuid();
                 var p2id = Guid.NewGuid();
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                 {
                     "DELETE FROM Test13.OldMultiChild",
                     "DELETE FROM Test13.OldMultiParent",
@@ -217,7 +219,7 @@ namespace CommonConcepts.Test
                     "INSERT INTO Test13.OldMultiChild (ID, ParentKey1, ParentKey2, Name) SELECT '"+c2id+"', 456, 'def', 'Child456def'",
                 });
 
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual(
                     "Child123abc-Parent123abc, Child456def-Parent456def",
@@ -228,7 +230,7 @@ namespace CommonConcepts.Test
                 c1.ParentID = p2id;
                 repository.Test13.LegacyMultiChild.Update(new[] { c1 });
 
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual(
                     "Child123abc-Parent456def, Child456def-Parent456def",
                     TestUtility.DumpSorted(repository.Test13.LegacyMultiChild.Query(),

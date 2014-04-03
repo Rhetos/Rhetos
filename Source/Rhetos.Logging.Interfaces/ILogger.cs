@@ -29,17 +29,17 @@ namespace Rhetos.Logging
     public enum EventType
     {
         /// <summary>
-        /// Error messages, which are normally sent to administrator in production environment.
+        /// Very detailed logs, which may include high-volume information such as protocol payloads. This log level is typically only enabled during development.
         /// </summary>
-        Error,
+        Trace,
         /// <summary>
         /// Information messages and warnings, which are normally enabled in production environment.
         /// </summary>
         Info,
         /// <summary>
-        /// Very detailed logs, which may include high-volume information such as protocol payloads. This log level is typically only enabled during development.
+        /// Error messages, which are normally sent to administrator in production environment.
         /// </summary>
-        Trace
+        Error
     };
 
     public interface ILogger

@@ -24,6 +24,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
+using Rhetos.Configuration.Autofac;
 
 namespace CommonConcepts.Test
 {
@@ -40,26 +41,26 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void PersistAll()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistAll" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistAll" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual("", TestUtility.DumpSorted(repository.TestComputedFrom.PersistAll.All(), Dump));
 
                 repository.TestComputedFrom.PersistAll.RecomputeFromSource(new Rhetos.Dom.DefaultConcepts.FilterAll(), items => items.Where(item => item.Code == 11));
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual("aa 11", TestUtility.DumpSorted(repository.TestComputedFrom.PersistAll.All(), Dump), "recompute all with SaveFilter to sync only Code 11 ");
 
                 repository.TestComputedFrom.PersistAll.RecomputeFromSource();
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual("aa 11, bb 22", TestUtility.DumpSorted(repository.TestComputedFrom.PersistAll.All(), Dump), "recompute all");
 
                 repository.TestComputedFrom.PersistAll.Delete(repository.TestComputedFrom.PersistAll.All());
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
                 repository.TestComputedFrom.PersistAll.RecomputeFromSource(new[] { repository.TestComputedFrom.Source.All().Where(item => item.Code == 22).Single().ID });
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual("bb 22", TestUtility.DumpSorted(repository.TestComputedFrom.PersistAll.All(), Dump), "recompute by ID (code 22)");
             }
         }
@@ -67,26 +68,26 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void PersistPartial()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistPartial" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistPartial" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual("", TestUtility.DumpSorted(repository.TestComputedFrom.PersistPartial.All(), Dump));
 
                 repository.TestComputedFrom.PersistPartial.RecomputeFromSource(new Rhetos.Dom.DefaultConcepts.FilterAll(), items => items.Where(item => item.Name == "aa"));
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual("aa", TestUtility.DumpSorted(repository.TestComputedFrom.PersistPartial.All(), Dump), "recompute all with SaveFilter to sync only Name aa ");
 
                 repository.TestComputedFrom.PersistPartial.RecomputeFromSource();
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual("aa, bb", TestUtility.DumpSorted(repository.TestComputedFrom.PersistPartial.All(), Dump), "recompute all");
 
                 repository.TestComputedFrom.PersistPartial.Delete(repository.TestComputedFrom.PersistPartial.All());
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
                 repository.TestComputedFrom.PersistPartial.RecomputeFromSource(new[] { repository.TestComputedFrom.Source.All().Where(item => item.Name == "bb").Single().ID });
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual("bb", TestUtility.DumpSorted(repository.TestComputedFrom.PersistPartial.All(), Dump), "recompute by ID (name bb)");
             }
         }
@@ -94,26 +95,26 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void PersistCustom()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistCustom" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistCustom" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual("", TestUtility.DumpSorted(repository.TestComputedFrom.PersistCustom.All(), Dump));
 
                 repository.TestComputedFrom.PersistCustom.RecomputeFromSource(new Rhetos.Dom.DefaultConcepts.FilterAll(), items => items.Where(item => item.Code == 11));
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual("aa 11", TestUtility.DumpSorted(repository.TestComputedFrom.PersistCustom.All(), Dump), "recompute all with SaveFilter to sync only Code 11 ");
 
                 repository.TestComputedFrom.PersistCustom.RecomputeFromSource();
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual("aa 11, bb 22", TestUtility.DumpSorted(repository.TestComputedFrom.PersistCustom.All(), Dump), "recompute all");
 
                 repository.TestComputedFrom.PersistCustom.Delete(repository.TestComputedFrom.PersistCustom.All());
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
                 repository.TestComputedFrom.PersistCustom.RecomputeFromSource(new[] { repository.TestComputedFrom.Source.All().Where(item => item.Code == 22).Single().ID });
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual("bb 22", TestUtility.DumpSorted(repository.TestComputedFrom.PersistCustom.All(), Dump), "recompute by ID (code 22)");
             }
         }
@@ -121,19 +122,19 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void PersistComplex()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistComplex" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistComplex" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual("", TestUtility.DumpSorted(repository.TestComputedFrom.PersistComplex.All(), Dump));
 
                 repository.TestComputedFrom.PersistComplex.RecomputeFromSource(new Rhetos.Dom.DefaultConcepts.FilterAll(), items => items.Where(item => item.Code == 11));
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual("aa  11", TestUtility.DumpSorted(repository.TestComputedFrom.PersistComplex.All(), Dump), "recompute Code 11 from Source");
 
                 repository.TestComputedFrom.PersistComplex.RecomputeFromSource2();
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual(" dd , aa cc 11", TestUtility.DumpSorted(repository.TestComputedFrom.PersistComplex.All(), Dump), "recompute from Source2");
             }
         }
@@ -153,45 +154,45 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MultiSync_InsertBase()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var deleteTables = new[] { "MultiSync", "Base1", "Base2" };
-                executionContext.SqlExecuter.ExecuteSql(deleteTables.Select(t => "DELETE FROM TestComputedFrom." + t));
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(deleteTables.Select(t => "DELETE FROM TestComputedFrom." + t));
+                var repository = container.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual("", TestUtility.DumpSorted(repository.TestComputedFrom.MultiSync.All(), Dump));
 
                 var b = new TestComputedFrom.Base1 { ID = Guid.NewGuid(), Name1 = "b1" };
                 repository.TestComputedFrom.Base1.Insert(new[] { b });
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual("b1 b1a b1b ", TestUtility.DumpSorted(repository.TestComputedFrom.MultiSync.All(), Dump));
 
                 var ms = repository.TestComputedFrom.MultiSync.All().Single();
-                AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(executionContext.SqlExecuter));
-                AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(executionContext.SqlExecuter));
+                AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()));
+                AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()));
 
                 ms.Start = new DateTime(2001, 2, 3);
                 ms.LastModifiedName1bx = new DateTime(2001, 2, 3);
                 repository.TestComputedFrom.MultiSync.Update(new[] { ms });
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 ms = repository.TestComputedFrom.MultiSync.All().Single();
-                AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(executionContext.SqlExecuter), false);
-                AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(executionContext.SqlExecuter), false);
+                AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()), false);
+                AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()), false);
 
                 b.Info = "xxx";
                 repository.TestComputedFrom.Base1.Update(new[] { b });
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 ms = repository.TestComputedFrom.MultiSync.All().Single();
-                AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(executionContext.SqlExecuter), false);
-                AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(executionContext.SqlExecuter), false);
+                AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()), false);
+                AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()), false);
 
                 b.Name1 = "b1new";
                 repository.TestComputedFrom.Base1.Update(new[] { b });
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual("b1new b1newa b1newb ", TestUtility.DumpSorted(repository.TestComputedFrom.MultiSync.All(), Dump));
                 ms = repository.TestComputedFrom.MultiSync.All().Single();
-                AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(executionContext.SqlExecuter), false);
-                AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(executionContext.SqlExecuter));
+                AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()), false);
+                AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()));
             }
         }
     }

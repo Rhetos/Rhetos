@@ -25,6 +25,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Utilities;
 using Rhetos.TestCommon;
 using Rhetos;
+using Rhetos.Configuration.Autofac;
 
 namespace CommonConcepts.Test
 {
@@ -48,25 +49,25 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlFunction()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                Assert.AreEqual("11", ReportSqlQueryResult(executionContext.SqlExecuter, "SELECT * FROM TestSqlWorkarounds.Fun2(10)"));
+                Assert.AreEqual("11", ReportSqlQueryResult(container.Resolve<ISqlExecuter>(), "SELECT * FROM TestSqlWorkarounds.Fun2(10)"));
             }
         }
 
         [TestMethod]
         public void SqlObject()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                 {
                     "DELETE FROM TestSqlWorkarounds.E",
                     "INSERT INTO TestSqlWorkarounds.E (I) VALUES (100)"
                 });
 
                 string report = "";
-                executionContext.SqlExecuter.ExecuteReader(
+                container.Resolve<ISqlExecuter>().ExecuteReader(
                     @"SELECT E.I, V1.I1, V2.I2
                         FROM TestSqlWorkarounds.E
                         INNER JOIN TestSqlWorkarounds.V1 ON V1.ID = E.ID
@@ -75,7 +76,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("100, 101, 102.", report);
 
                 report = "";
-                executionContext.SqlExecuter.ExecuteReader(
+                container.Resolve<ISqlExecuter>().ExecuteReader(
                     @"SELECT X FROM TestSqlWorkarounds.V3 ORDER BY X",
                     reader => report += reader.GetInt32(0) + ".");
                 Assert.AreEqual("101.102.", report);
@@ -85,13 +86,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ExecuteSqlProcedure()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestSqlWorkarounds.Person" });
-                executionContext.SqlExecuter.ExecuteSql(Enumerable.Range(1, 100).Select(x =>
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestSqlWorkarounds.Person" });
+                container.Resolve<ISqlExecuter>().ExecuteSql(Enumerable.Range(1, 100).Select(x =>
                     "INSERT INTO TestSqlWorkarounds.Person (Name) VALUES ('User" + x.ToString() +"')"));
 
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 TestUtility.ShouldFail(() => repository.TestSqlWorkarounds.PersonInfo.All(), "filter", "PersonFilter", "must be used");
 
                 var result = repository.TestSqlWorkarounds.PersonInfo.Filter(new TestSqlWorkarounds.PersonFilter { NamePattern = "%1%", LimitResultCount = 4 });
@@ -102,7 +103,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlDependsOnSqlIndex()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var features = new Dictionary<string, string>
                 {
@@ -116,10 +117,10 @@ namespace CommonConcepts.Test
                 };
 
                 Dictionary<Guid, string> featuresById = features
-                    .Select(f => new { Name = f.Key, Id = ReadConceptId(f.Value, executionContext) })
+                    .Select(f => new { Name = f.Key, Id = ReadConceptId(f.Value, container) })
                     .ToDictionary(fid => fid.Id, fid => fid.Name);
 
-                var deployedDependencies = ReadConceptDependencies(featuresById.Keys, executionContext)
+                var deployedDependencies = ReadConceptDependencies(featuresById.Keys, container)
                     .Select(dep => featuresById[dep.Item1] + "-" + featuresById[dep.Item2]);
 
                 var expectedDependencies = // Second concept depends on first concept.
@@ -136,20 +137,20 @@ namespace CommonConcepts.Test
             }
         }
 
-        private static Guid ReadConceptId(string conceptInfoKey, CommonTestExecutionContext executionContext)
+        private static Guid ReadConceptId(string conceptInfoKey, RhetosTestContainer container)
         {
             Guid id = Guid.Empty;
-            executionContext.SqlExecuter.ExecuteReader(
+            container.Resolve<ISqlExecuter>().ExecuteReader(
                 "SELECT ID FROM Rhetos.AppliedConcept WHERE ConceptInfoKey = " + SqlUtility.QuoteText(conceptInfoKey),
                 reader => id = reader.GetGuid(0));
             return id;
         }
 
-        private static List<Tuple<Guid, Guid>> ReadConceptDependencies(IEnumerable<Guid> conceptsId, CommonTestExecutionContext executionContext)
+        private static List<Tuple<Guid, Guid>> ReadConceptDependencies(IEnumerable<Guid> conceptsId, RhetosTestContainer container)
         {
             var dependencies = new List<Tuple<Guid, Guid>>();
             string ids = string.Join(", ", conceptsId.Select(id => SqlUtility.QuoteGuid(id)));
-            executionContext.SqlExecuter.ExecuteReader(
+            container.Resolve<ISqlExecuter>().ExecuteReader(
                 "SELECT DependsOnID, DependentID FROM Rhetos.AppliedConceptDependsOn"
                 + " WHERE DependentID IN (" + ids + ")"
                 + " AND DependsOnID IN (" + ids + ")",
@@ -160,9 +161,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlUserError()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var ex = TestUtility.ShouldFail(
                     () => repository.TestSqlWorkarounds.SqlUserError.Insert(new[] { new TestSqlWorkarounds.SqlUserError() }),

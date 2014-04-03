@@ -23,6 +23,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -68,10 +70,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleHierarchy()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 PrepareSimpleData(repository, "a");
                 Assert.AreEqual("a1/2", ReportSimple(repository));
@@ -92,10 +94,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Level()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 PrepareSimpleData(repository, "a, a-b, b-c");
                 Assert.AreEqual("c3/4", ReportSimple(repository.TestHierarchy.Simple.Filter(new TestHierarchy.Level2OrDeeper())));
@@ -108,10 +110,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HierarchyAncestorsDescendants()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var h = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "h", Parent2 = null };
                 var h1 = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "h1", Parent2 = h };
@@ -155,10 +157,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SingleRootConstraint()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple2" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple2" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var h1 = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "h1", Parent2 = null };
                 var h2 = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "h2", Parent2 = null };
@@ -171,10 +173,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MultipleRoots()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 PrepareSimpleData(repository, "a, b, b-c");
                 Assert.AreEqual("a1/2, b3/6, c4/5", ReportSimple(repository.TestHierarchy.Simple.All()));
@@ -184,10 +186,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DontFailOnEmpty()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 repository.TestHierarchy.SimpleParentHierarchy.Recompute();
                 Assert.AreEqual("", ReportSimple(repository), "Initially empty.");
@@ -203,10 +205,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorCircularReference2()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 PrepareSimpleData(repository, "a, a-b");
                 var root = repository.TestHierarchy.Simple.Query().Where(item => item.Name == "a").Single();
@@ -220,10 +222,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorCircularReference4()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 PrepareSimpleData(repository, "a, a-b, b-c, c-d");
                 var root = repository.TestHierarchy.Simple.Query().Where(item => item.Name == "a").Single();
@@ -237,10 +239,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Path()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestHierarchy.WithPath" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.WithPath" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var h1 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = "h1", Group = null };
                 var h11 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = "h11", Group = h1 };

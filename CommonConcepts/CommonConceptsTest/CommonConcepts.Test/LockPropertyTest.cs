@@ -23,6 +23,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -42,10 +44,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateLockedData()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var s1 = new TestLockItems.Simple { ID = Guid.NewGuid(), Name = "s1", Count = -1 };
                 var s2 = new TestLockItems.Simple { ID = Guid.NewGuid(), Name = "s2", Count = 1 };
@@ -70,10 +72,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateTryRemoveLock()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var s1 = new TestLockItems.Simple { ID = Guid.NewGuid(), Name = "s1", Count = -1 };
                 repository.TestLockItems.Simple.Insert(new[] { s1 });
@@ -91,10 +93,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateTrySetLock()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var s1 = new TestLockItems.Simple { ID = Guid.NewGuid(), Name = "s1", Count = 1 };
                 repository.TestLockItems.Simple.Insert(new[] { s1 });
@@ -113,10 +115,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateLockedDataReference()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
+                var repository = container.Resolve<Common.DomRepository>();
                 Guid[] guids = new Guid[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
                 var s1 = new TestLockItems.Simple { ID = guids[0], Name = "s1", Count = -1 };
                 var s2 = new TestLockItems.Simple { ID = guids[1], Name = "s2", Count = 1 };

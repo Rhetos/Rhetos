@@ -24,6 +24,8 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NHibernate;
 using NHibernate.Transform;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -33,10 +35,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Spike1_SqlExecuteFunction()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var report = new StringBuilder();
-                executionContext.SqlExecuter.ExecuteReader(
+                container.Resolve<ISqlExecuter>().ExecuteReader(
                     SqlGetSome(new DateTime(2001, 2, 3, 4, 5, 6)),
                     reader => report.AppendLine(reader["Code"].ToString() + ", " + reader.GetDateTime(2).ToString("s")));
 
@@ -55,10 +57,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Spike2_NHInitializationTime()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[] { "DELETE FROM TestSqlFilter.Simple" });
-                var repository = new Common.DomRepository(executionContext);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestSqlFilter.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
                 var result = repository.TestSqlFilter.Simple.All();
                 var report = string.Join("|", result.Select(item => item.Code + ", " + item.Start.Value.ToString("s")));
                 Assert.AreEqual("", report);
@@ -68,12 +70,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Spike3_NHExecuteFunction()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var sql = SqlGetSome(new DateTime(2001, 2, 3, 4, 5, 6));
                 Console.WriteLine(sql);
 
-                var nhSqlQuery = executionContext.NHibernateSession.CreateSQLQuery(sql)
+                var nhSqlQuery = container.Resolve<Common.ExecutionContext>().NHibernateSession.CreateSQLQuery(sql)
                     /*.AddScalar("ID", NHibernateUtil.Guid)
                     .AddScalar("Code", NHibernateUtil.Int32)
                     .AddScalar("Start", NHibernateUtil.DateTime)
@@ -98,11 +100,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Spike4_NHEntityReference()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = new Guid("11111111-1111-1111-1111-111111111111");
                 var id2 = new Guid("22222222-1111-1111-1111-111111111111");
-                executionContext.SqlExecuter.ExecuteSql(new[] 
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] 
                 {
                     "DELETE FROM TestSqlFilter.Simple",
                     "INSERT INTO TestSqlFilter.Simple (ID, Code, Start) VALUES ('" + id1 + "', 1, GETDATE())",
@@ -112,12 +114,12 @@ namespace CommonConcepts.Test
                 var sql = SqlGetRef(new DateTime(2001, 2, 3, 4, 5, 6));
                 Console.WriteLine(sql);
 
-                var nhSqlQuery = executionContext.NHibernateSession.CreateSQLQuery(sql)
+                var nhSqlQuery = container.Resolve<Common.ExecutionContext>().NHibernateSession.CreateSQLQuery(sql)
                     .SetResultTransformer(Transformers.AliasToBean(typeof(TestSqlFilter.Ref)));
 
                 var result = nhSqlQuery.List<TestSqlFilter.Ref>();
-                result[0].Other = executionContext.NHibernateSession.Load<TestSqlFilter.Simple>(result[0].Other.ID);
-                result[1].Other = executionContext.NHibernateSession.Load<TestSqlFilter.Simple>(result[1].Other.ID);
+                result[0].Other = container.Resolve<Common.ExecutionContext>().NHibernateSession.Load<TestSqlFilter.Simple>(result[0].Other.ID);
+                result[1].Other = container.Resolve<Common.ExecutionContext>().NHibernateSession.Load<TestSqlFilter.Simple>(result[1].Other.ID);
 
                 var report = string.Join("|", result.Select(item => item.Name + ", " + item.Other.Code + ", " + item.Finish.Value.Day));
                 Console.WriteLine(report);
@@ -128,11 +130,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Spike5_NHEntityReferenceBetter()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
                 var id1 = new Guid("11111111-1111-1111-1111-111111111111");
                 var id2 = new Guid("22222222-1111-1111-1111-111111111111");
-                executionContext.SqlExecuter.ExecuteSql(new[] 
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] 
                 {
                     "DELETE FROM TestSqlFilter.Simple",
                     "INSERT INTO TestSqlFilter.Simple (ID, Code, Start) VALUES ('" + id1 + "', 1, GETDATE())",
@@ -143,7 +145,7 @@ namespace CommonConcepts.Test
                 var sqlParameter = new DateTime(2001, 2, 3, 4, 5, 6);
                 Console.WriteLine(sql);
 
-                var nhSqlQuery = executionContext.NHibernateSession.CreateSQLQuery(sql)
+                var nhSqlQuery = container.Resolve<Common.ExecutionContext>().NHibernateSession.CreateSQLQuery(sql)
                     .AddEntity(typeof(TestSqlFilter.Ref))
                     .SetDateTime("dateTime", sqlParameter);
                 var result = nhSqlQuery.List<TestSqlFilter.Ref>();

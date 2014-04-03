@@ -22,6 +22,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.Configuration.Autofac;
 
 namespace CommonConcepts.Test
 {
@@ -31,9 +32,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DomRepositoryHasModuleRepositories()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
                 Assert.IsNotNull(repository.TestDataStructure);
             }
         }

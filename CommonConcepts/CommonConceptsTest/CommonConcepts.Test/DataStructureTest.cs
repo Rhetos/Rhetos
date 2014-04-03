@@ -24,7 +24,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
-using CommonConcepts.Test.Utilities;
+using Rhetos.Configuration.Autofac;
 
 namespace CommonConcepts.Test
 {
@@ -42,7 +42,7 @@ namespace CommonConcepts.Test
         public void ShortStringProperty()
         {
             TestDataStructure.SimpleDataStructure2 item = new TestDataStructure.SimpleDataStructure2();
-			// TODO: Uninitialized string should be null? Assert.IsNull(item.SimpleShortString);
+            // TODO: Uninitialized string should be null? Assert.IsNull(item.SimpleShortString);
 
             {
                 const string value = "";
@@ -69,48 +69,57 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Serialization()
         {
-            var item = new TestDataStructure.SimpleDataStructure2 { SimpleShortString = "abc" };
-            string xml = Create.XmlUtility().SerializeToXml(item);
-            Console.WriteLine(xml);
+            using (var container = new RhetosTestContainer())
+            {
+                var item = new TestDataStructure.SimpleDataStructure2 { SimpleShortString = "abc" };
+                string xml = container.Resolve<XmlUtility>().SerializeToXml(item);
+                Console.WriteLine(xml);
 
-            TestUtility.AssertContains(xml, "TestDataStructure");
-            TestUtility.AssertContains(xml, "SimpleDataStructure2");
-            TestUtility.AssertContains(xml, "SimpleShortString");
-            TestUtility.AssertContains(xml, "abc");
+                TestUtility.AssertContains(xml, "TestDataStructure");
+                TestUtility.AssertContains(xml, "SimpleDataStructure2");
+                TestUtility.AssertContains(xml, "SimpleShortString");
+                TestUtility.AssertContains(xml, "abc");
 
-            var item2 = Create.XmlUtility().DeserializeFromXml<TestDataStructure.SimpleDataStructure2>(xml);
-            Assert.IsNotNull(item2);
-            Assert.AreEqual(item.SimpleShortString, item2.SimpleShortString);
+                var item2 = container.Resolve<XmlUtility>().DeserializeFromXml<TestDataStructure.SimpleDataStructure2>(xml);
+                Assert.IsNotNull(item2);
+                Assert.AreEqual(item.SimpleShortString, item2.SimpleShortString);
+            }
         }
 
         [TestMethod]
         public void SerializationMustNotDependOnClientOrServerDllName()
         {
-            var item = new TestDataStructure.SimpleDataStructure2 { SimpleShortString = "abc" };
-            string xml = Create.XmlUtility().SerializeToXml(item);
-            Console.WriteLine(xml);
+            using (var container = new RhetosTestContainer())
+            {
+                var item = new TestDataStructure.SimpleDataStructure2 { SimpleShortString = "abc" };
+                string xml = container.Resolve<XmlUtility>().SerializeToXml(item);
+                Console.WriteLine(xml);
 
-            var type = typeof(TestDataStructure.SimpleDataStructure2);
-            Console.WriteLine();
-            Console.WriteLine(type.AssemblyQualifiedName);
-            TestUtility.AssertNotContains(xml, type.AssemblyQualifiedName);
+                var type = typeof(TestDataStructure.SimpleDataStructure2);
+                Console.WriteLine();
+                Console.WriteLine(type.AssemblyQualifiedName);
+                TestUtility.AssertNotContains(xml, type.AssemblyQualifiedName);
 
-            var dllName = type.Assembly.FullName.Split(',')[0];
-            Console.WriteLine();
-            Console.WriteLine("dll: \"" + dllName + "\"");
-            TestUtility.AssertNotContains(xml, dllName);
+                var dllName = type.Assembly.FullName.Split(',')[0];
+                Console.WriteLine();
+                Console.WriteLine("dll: \"" + dllName + "\"");
+                TestUtility.AssertNotContains(xml, dllName);
+            }
         }
 
         [TestMethod]
         public void SerializationOfNull()
         {
-            var item = new TestDataStructure.SimpleDataStructure2 { SimpleShortString = null };
-            string xml = Create.XmlUtility().SerializeToXml(item);
-            Console.WriteLine(xml);
+            using (var container = new RhetosTestContainer())
+            {
+                var item = new TestDataStructure.SimpleDataStructure2 { SimpleShortString = null };
+                string xml = container.Resolve<XmlUtility>().SerializeToXml(item);
+                Console.WriteLine(xml);
 
-            var item2 = Create.XmlUtility().DeserializeFromXml<TestDataStructure.SimpleDataStructure2>(xml);
-            Assert.IsNotNull(item2);
-            Assert.IsNull(item2.SimpleShortString);
+                var item2 = container.Resolve<XmlUtility>().DeserializeFromXml<TestDataStructure.SimpleDataStructure2>(xml);
+                Assert.IsNotNull(item2);
+                Assert.IsNull(item2.SimpleShortString);
+            }
         }
 
         private readonly List<string> StringoviSaOstalimUnicodeZnakovima =
@@ -125,31 +134,34 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SerializationCsStringEncoding()
         {
-            foreach (string s in StringoviSaOstalimUnicodeZnakovima)
+            using (var container = new RhetosTestContainer())
             {
-                var item = new TestDataStructure.SimpleDataStructure2 { SimpleShortString = s };
-                string xml = Create.XmlUtility().SerializeToXml(item);
-                Console.WriteLine(xml);
+                foreach (string s in StringoviSaOstalimUnicodeZnakovima)
+                {
+                    var item = new TestDataStructure.SimpleDataStructure2 { SimpleShortString = s };
+                    string xml = container.Resolve<XmlUtility>().SerializeToXml(item);
+                    Console.WriteLine(xml);
 
-                var item2 = Create.XmlUtility().DeserializeFromXml<TestDataStructure.SimpleDataStructure2>(xml);
-                Assert.IsNotNull(item2);
-                Assert.AreEqual(item.SimpleShortString, item2.SimpleShortString);
+                    var item2 = container.Resolve<XmlUtility>().DeserializeFromXml<TestDataStructure.SimpleDataStructure2>(xml);
+                    Assert.IsNotNull(item2);
+                    Assert.AreEqual(item.SimpleShortString, item2.SimpleShortString);
 
-                TestUtility.AssertContains(xml.ToLower(), "utf-16", "C# string is always in UTF-16 encoding.");
+                    TestUtility.AssertContains(xml.ToLower(), "utf-16", "C# string is always in UTF-16 encoding.");
+                }
             }
         }
 
         [TestMethod]
         public void SimpleReference()
         {
-            using (var executionContext = new CommonTestExecutionContext())
+            using (var container = new RhetosTestContainer())
             {
-                executionContext.SqlExecuter.ExecuteSql(new[]
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestDataStructure.Child",
                         "DELETE FROM TestDataStructure.Parent",
                     });
-                var repository = new Common.DomRepository(executionContext);
+                var repository = container.Resolve<Common.DomRepository>();
 
                 var parent = new TestDataStructure.Parent { ID = Guid.NewGuid() };
                 var child = new TestDataStructure.Child { ID = Guid.NewGuid(), Parent = parent };
@@ -157,12 +169,12 @@ namespace CommonConcepts.Test
                 repository.TestDataStructure.Parent.Insert(new[] { parent });
                 repository.TestDataStructure.Child.Insert(new[] { child });
 
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual(child.ID + " " + parent.ID, repository.TestDataStructure.Child.Query().Select(c => c.ID + " " + c.Parent.ID).Single(),
                     "Testing if the Reference concept was properly implemented while using late initialization of the Reference property.");
 
                 repository.TestDataStructure.Parent.Delete(new[] { parent });
-                executionContext.NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 Assert.AreEqual(0, repository.TestDataStructure.Child.Query().Count(),
                     "Testing if the CascadeDelete concept was properly implemented while using a Reference concept with late initialization of the Reference property.");
             }
