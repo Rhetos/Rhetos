@@ -1,3 +1,26 @@
+0.9.15 (to be released)
+-------------------
+
+New features:
+
+* Implemented `GenericRepository` class, a helper for server-side type-safe access to entity's repository (using interface the entity implements) without referencing the generated business layer object model.
+* *Generic filter* is extended to allow multiple predefined filters (along with property filters).
+* New server command: *ReadCommand* is a replacement for *QueryDataSourceCommand*.
+	* Improvements: ordering by multiple properties, more paging control with Top and Skip, reading records with paging without getting total count (this was a performance issue) and reading record count without reading records.
+	* *QueryDataSourceCommand* is obsolete, but still available for backward compatibility.
+
+Internal improvements:
+
+* Deactivating obsolete claims and permissions, instead of deleting them.
+* Unit tests and LinqPad scripts now use full Rhetos server context (RhetosTestContainer class). This allows using reports, authentication manager and other server components.
+* Added GenericRepositories in ExecutionContext.
+* AspNetFormsAuth: Implemented GeneratePasswordResetToken and ResetPassword web methods. Automatic user log in after ResetPassword.
+* Minor improvement in DeployPackages.exe performance (cached plugins scanning).
+* Bugfix: AutocodeForEach on a Reference with short syntax causes error "Group property type 'SimpleReferencePropertyInfo' is not supported".
+* Bugfix: NHibernate.Cfg.Configuration.LinqToHqlGeneratorsRegistry cannot be used in plugins.
+* Bugfix: Missing dll dependencies for AspNetFormsAuth.
+* Bugfix: Deploying AspNetFormsAuth to an empty database causes SQL connection timeout.
+
 0.9.14 (2014-02-26)
 -------------------
 
@@ -51,7 +74,6 @@ Internal improvements:
 * Bugfix: FK_AppliedConceptDependsOn_DependsOn error on DeployPackages.
 * NHibernate updated to version 3.3.3 SP1 (HqlTreeBuilder.Constant IList<X> issue).
 * Improved ORM DateTime precision from seconds to milliseconds.
-
 
 0.9.11 (2013-09-25)
 -------------------
