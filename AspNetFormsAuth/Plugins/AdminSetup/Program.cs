@@ -35,10 +35,11 @@ namespace AdminSetup
 {
     class Program
     {
+        static InitializeAssemblyResolver initializeAssemblyResolver = new InitializeAssemblyResolver();
+
         static int Main(string[] args)
         {
             Paths.InitializeRhetosServerRootPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\.."));
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(FindAssemblyInBinFolder);
 
             string errorMessage = null;
             try
@@ -68,20 +69,6 @@ namespace AdminSetup
             }
 
             return 0;
-        }
-
-        /// <summary>
-        /// This program is executed in bin\Plugins, so the assemblies from the parent (bin) folder must be loaded manually.
-        /// </summary>
-        private static System.Reflection.Assembly FindAssemblyInBinFolder(object sender, ResolveEventArgs args)
-        {
-            string assemblyPath = Path.GetFullPath(Path.Combine(Paths.BinFolder, new AssemblyName(args.Name).Name + ".dll"));
-            if (File.Exists(assemblyPath) == false)
-            {
-                Console.WriteLine("Guessed external assembly path '" + assemblyPath + "' for assembly name '" + args.Name + "'.");
-                return null;
-            }
-            return Assembly.LoadFrom(assemblyPath);
         }
 
         const string adminUserName = "admin";

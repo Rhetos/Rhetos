@@ -120,24 +120,32 @@ namespace Rhetos.AspNetFormsAuth
                 RedirectStandardError = true,
             };
 
-            string processOutput;
+            var processOutput = new StringBuilder();
             int processErrorCode;
             using (Process process = Process.Start(start))
             {
-                using (StreamReader reader = process.StandardOutput)
-                {
-                    processOutput = reader.ReadToEnd();
-                    processOutput = processOutput.Trim();
-                }
+                var outputs = new[] { process.StandardOutput, process.StandardError };
+                System.Threading.Tasks.Parallel.ForEach(outputs, output =>
+                    {
+                        using (StreamReader reader = output)
+                        {
+                            string line;
+                            while ((line = output.ReadLine()) != null)
+                                lock (processOutput)
+                                    processOutput.AppendLine(line.Trim());
+                        }
+                    });
+                
                 process.WaitForExit();
                 processErrorCode = process.ExitCode;
             }
 
-            _logger.Trace(() => Path.GetFileName(path) + " error code: " + processErrorCode);
-            _logger.Trace(() => Path.GetFileName(path) + " output: " + processOutput);
+            EventType logType = processErrorCode != 0 ? EventType.Error : EventType.Trace;
+            _logger.Write(logType, () => Path.GetFileName(path) + " error code: " + processErrorCode);
+            _logger.Write(logType, () => Path.GetFileName(path) + " output: " + processOutput.ToString());
 
             if (processErrorCode != 0)
-                throw new FrameworkException(Path.GetFileName(path) + " returned an error: " + processOutput);
+                throw new FrameworkException(Path.GetFileName(path) + " returned an error: " + processOutput.ToString());
         }
     }
 
