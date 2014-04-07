@@ -21,6 +21,11 @@ using NHibernate.Cfg;
 
 namespace Rhetos.Persistence.NHibernate
 {
+    /// <summary>
+    /// Instead of calling Configuration.LinqToHqlGeneratorsRegistry() function,
+    /// add the registry code using ModuleCodeGenerator.LinqToHqlGeneratorsRegistryTag.
+    /// NHibernate supports only one LinqToHqlGeneratorsRegistry, so it cannot be registered in more than one plugin.
+    /// </summary>
     public interface INHibernateConfigurationExtension
     {
         void ExtendConfiguration(Configuration configuration);

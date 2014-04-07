@@ -119,6 +119,9 @@ namespace {0}._Helper
                 codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.ResourcesFolder));
                 codeBuilder.AddReferencesFromDependency(typeof(System.ComponentModel.Composition.ExportAttribute));
                 codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.GenericRepositories));
+                codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.NHibernate.INHibernateConfigurationExtension));
+                codeBuilder.AddReferencesFromDependency(typeof(NHibernate.Cfg.Configuration));
+                codeBuilder.AddReferencesFromDependency(typeof(NHibernate.Linq.Functions.DefaultLinqToHqlGeneratorsRegistry));
 
                 CommonClassesCreated = true;
             }
@@ -151,6 +154,13 @@ namespace {0}._Helper
         public const string ExecutionContextConstructorArgumentTag = "/*ExecutionContextConstructorArgument*/";
         public const string ExecutionContextConstructorAssignmentTag = "/*ExecutionContextConstructorAssignment*/";
         public const string RegisteredInterfaceImplementationNameTag = "/*RegisteredInterfaceImplementationName*/";
+        /// <summary>
+        /// Instead of calling Configuration.LinqToHqlGeneratorsRegistry() function,
+        /// add the registry code using ModuleCodeGenerator.LinqToHqlGeneratorsRegistryTag.
+        /// NHibernate supports only one LinqToHqlGeneratorsRegistry, so it cannot be registered in more than one plugin.
+        /// </summary>
+        public const string NHibernateConfigurationExtensionTag = "/*NHibernateConfigurationExtension*/";
+        public const string LinqToHqlGeneratorsRegistryTag = "/*LinqToHqlGeneratorsRegistry*/";
 
         private static string GenerateCommonClassesSnippet()
         {
@@ -242,6 +252,33 @@ namespace {0}._Helper
             base.Load(builder);
         }}
     }}
+
+    namespace NHibernateConfiguration
+    {{
+        using NHibernate.Cfg;
+        using NHibernate.Hql.Ast;
+        using NHibernate.Linq;
+        using NHibernate.Linq.Functions;
+        using NHibernate.Linq.Visitors;
+
+        [System.ComponentModel.Composition.Export(typeof(Rhetos.Persistence.NHibernate.INHibernateConfigurationExtension))]
+        public sealed class NHibernateConfigurationExtension : Rhetos.Persistence.NHibernate.INHibernateConfigurationExtension
+        {{
+            public void ExtendConfiguration(NHibernate.Cfg.Configuration configuration)
+            {{
+                {8}
+                configuration.LinqToHqlGeneratorsRegistry<LinqToHqlGeneratorsRegistry>();
+            }}
+        }}
+
+        public sealed class LinqToHqlGeneratorsRegistry : NHibernate.Linq.Functions.DefaultLinqToHqlGeneratorsRegistry
+        {{
+            public LinqToHqlGeneratorsRegistry()
+            {{
+                {9}
+            }}
+        }}
+    }}
 }}",
             StandardNamespacesSnippet,
             CommonUsingTag,
@@ -250,7 +287,9 @@ namespace {0}._Helper
             ExecutionContextMemberTag,
             ExecutionContextConstructorArgumentTag,
             ExecutionContextConstructorAssignmentTag,
-            RegisteredInterfaceImplementationNameTag);
+            RegisteredInterfaceImplementationNameTag,
+            NHibernateConfigurationExtensionTag,
+            LinqToHqlGeneratorsRegistryTag);
         }
     }
 }

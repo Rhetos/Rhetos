@@ -17,52 +17,71 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Text;
-using NHibernate.Cfg;
-using NHibernate.Cfg.Loquacious;
 using NHibernate.Hql.Ast;
 using NHibernate.Linq;
 using NHibernate.Linq.Functions;
 using NHibernate.Linq.Visitors;
+using Rhetos.Compiler;
 using Rhetos.Dom.DefaultConcepts;
-using Rhetos.Persistence.NHibernate;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
+using System.Collections.ObjectModel;
+using System.ComponentModel.Composition;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Rhetos.Persistence.NHibernateDefaultConcepts
 {
-    [Export(typeof(INHibernateConfigurationExtension))]
-    public sealed class CommonConceptsNHibernateConfigurationExtension : INHibernateConfigurationExtension
+    [Export(typeof(IConceptCodeGenerator))]
+    [ExportMetadata(MefProvider.Implements, typeof(ModuleInfo))] // TODO: Initial code generator
+    [ExportMetadata(MefProvider.DependsOn, typeof(ModuleCodeGenerator))] // TODO: Initial code generator
+    public class CommonConceptsNHibernateConfigurationExtension : IConceptCodeGenerator
     {
-        public void ExtendConfiguration(Configuration configuration)
-        {
-            configuration.LinqToHqlGeneratorsRegistry<MyLinqToHqlGeneratorsRegistry>();
-        }
-    }
+        private static bool _initialized;
 
-    public sealed class MyLinqToHqlGeneratorsRegistry : DefaultLinqToHqlGeneratorsRegistry
-    {
-        private static int? _nullInt = 0;
-
-        public MyLinqToHqlGeneratorsRegistry()
+        public void GenerateCode(Dsl.IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            RegisterGenerator(ReflectionHelper.GetMethodDefinition(() => DatabaseExtensionFunctions.IsLessThen(null, null)), new StringIsLessThenGenerator());
-            RegisterGenerator(ReflectionHelper.GetMethodDefinition(() => DatabaseExtensionFunctions.IsLessThenOrEqual(null, null)), new StringIsLessThenOrEqualGenerator());
-            RegisterGenerator(ReflectionHelper.GetMethodDefinition(() => DatabaseExtensionFunctions.StartsWith(_nullInt, null)), new IntStartsWithGenerator());
-            RegisterGenerator(ReflectionHelper.GetMethodDefinition(() => DatabaseExtensionFunctions.Like(null, null)), new StringLikeGenerator());
-            RegisterGenerator(ReflectionHelper.GetMethodDefinition(() => DatabaseExtensionFunctions.CastToString(_nullInt)), new IntCastToStringGenerator());
+            if (_initialized)
+                return;
+            _initialized = true;
+
+            codeBuilder.InsertCode(
+
+            @"{
+                RegisterGenerator(ReflectionHelper.GetMethodDefinition(
+                    () => Rhetos.Dom.DefaultConcepts.DatabaseExtensionFunctions.IsLessThen(null, null)),
+                    new Rhetos.Persistence.NHibernateDefaultConcepts.StringIsLessThenGenerator());
+
+                RegisterGenerator(ReflectionHelper.GetMethodDefinition(
+                    () => Rhetos.Dom.DefaultConcepts.DatabaseExtensionFunctions.IsLessThenOrEqual(null, null)),
+                    new Rhetos.Persistence.NHibernateDefaultConcepts.StringIsLessThenOrEqualGenerator());
+
+                RegisterGenerator(ReflectionHelper.GetMethodDefinition(
+                    () => Rhetos.Dom.DefaultConcepts.DatabaseExtensionFunctions.Like(null, null)),
+                    new Rhetos.Persistence.NHibernateDefaultConcepts.StringLikeGenerator());
+
+                int? _nullInt = 0;
+
+                RegisterGenerator(ReflectionHelper.GetMethodDefinition(
+                    () => Rhetos.Dom.DefaultConcepts.DatabaseExtensionFunctions.StartsWith(_nullInt, null)),
+                    new Rhetos.Persistence.NHibernateDefaultConcepts.IntStartsWithGenerator());
+
+                RegisterGenerator(ReflectionHelper.GetMethodDefinition(
+                    () => Rhetos.Dom.DefaultConcepts.DatabaseExtensionFunctions.CastToString(_nullInt)),
+                    new Rhetos.Persistence.NHibernateDefaultConcepts.IntCastToStringGenerator());
+            }
+            ",
+                ModuleCodeGenerator.LinqToHqlGeneratorsRegistryTag);
+
+            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.DatabaseExtensionFunctions));
+            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.NHibernateDefaultConcepts.StringIsLessThenGenerator));
         }
     }
 
     /// <summary>
     /// LING2NH implementation of DatabaseExtensionFunctions.IsLessThen().
     /// </summary>
-    public class StringIsLessThenGenerator : BaseHqlGeneratorForMethod // TODO: Make internal if possible.
+    public class StringIsLessThenGenerator : BaseHqlGeneratorForMethod
     {
         public StringIsLessThenGenerator()
         {
@@ -79,7 +98,7 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
     /// <summary>
     /// LING2NH implementation of DatabaseExtensionFunctions.IsLessThenOrEqual().
     /// </summary>
-    public class StringIsLessThenOrEqualGenerator : BaseHqlGeneratorForMethod // TODO: Make internal if possible.
+    public class StringIsLessThenOrEqualGenerator : BaseHqlGeneratorForMethod
     {
         public StringIsLessThenOrEqualGenerator()
         {
@@ -96,7 +115,7 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
     /// <summary>
     /// LING2NH implementation of DatabaseExtensionFunctions.StartsWith().
     /// </summary>
-    public class IntStartsWithGenerator : BaseHqlGeneratorForMethod // TODO: Make internal if possible.
+    public class IntStartsWithGenerator : BaseHqlGeneratorForMethod
     {
         private static readonly int? _nullInt = 0;
 
@@ -117,7 +136,7 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
     /// <summary>
     /// LING2NH implementation of DatabaseExtensionFunctions.Like().
     /// </summary>
-    public class StringLikeGenerator : BaseHqlGeneratorForMethod // TODO: Make internal if possible.
+    public class StringLikeGenerator : BaseHqlGeneratorForMethod
     {
         public StringLikeGenerator()
         {
@@ -136,7 +155,7 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
     /// <summary>
     /// LING2NH implementation of DatabaseExtensionFunctions.CastToStringGenerator().
     /// </summary>
-    public class IntCastToStringGenerator : BaseHqlGeneratorForMethod // TODO: Make internal if possible.
+    public class IntCastToStringGenerator : BaseHqlGeneratorForMethod
     {
         private static readonly int? _nullInt = 0;
 
