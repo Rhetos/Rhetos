@@ -41,10 +41,10 @@ namespace Rhetos.Utilities
             {
                 if (_sqlCommandTimeout == -1)
                 {
-                    const string key = "SqlCommandTimeout";
-                    string value = ConfigurationManager.AppSettings[key];
+                    string value = ConfigUtility.GetAppSetting("SqlCommandTimeout");
+
                     if (!string.IsNullOrEmpty(value))
-                        _sqlCommandTimeout = int.Parse(ConfigurationManager.AppSettings[key]);
+                        _sqlCommandTimeout = int.Parse(value);
                     else
                         _sqlCommandTimeout = 30;
                 }
@@ -66,7 +66,7 @@ namespace Rhetos.Utilities
 
         private static string GetProviderNameFromConnectionString()
         {
-            var connectionStringProvider = GetConnectionStringConfiguration().ProviderName;
+            var connectionStringProvider = ConfigUtility.GetConnectionString().ProviderName;
             if (string.IsNullOrEmpty(connectionStringProvider))
                 throw new FrameworkException("Missing 'providerName' attribute in 'ServerConnectionString' connection string. Expected providerName format is 'Rhetos.<database language>' or 'Rhetos.<database language>.<natural language settings>', for example 'Rhetos.MsSql' or 'Rhetos.Oracle.XGERMAN_CI'.");
             return connectionStringProvider;
@@ -105,7 +105,7 @@ namespace Rhetos.Utilities
             {
                 if (_connectionString == null)
                 {
-                    _connectionString = GetConnectionStringConfiguration().ConnectionString;
+                    _connectionString = ConfigUtility.GetConnectionString().ConnectionString;
                     if (string.IsNullOrEmpty(_connectionString))
                         throw new FrameworkException("Empty 'ServerConnectionString' connection string in application configuration.");
                 }
@@ -123,37 +123,6 @@ namespace Rhetos.Utilities
                     return "Oracle.DataAccess.Client";
                 else
                     throw new FrameworkException(UnsupportedLanguageError);
-            }
-        }
-
-        private static ConnectionStringSettings GetConnectionStringConfiguration()
-        {
-            var connectionStringConfiguration = ConfigurationManager.ConnectionStrings["ServerConnectionString"];
-            if (connectionStringConfiguration == null)
-                throw new FrameworkException("Missing 'ServerConnectionString' connection string in application configuration.");
-            return connectionStringConfiguration;
-        }
-
-        /// <summary>
-        /// Use only for testing.
-        /// This function overrides ConnectionString that is normally read from application's configuration file.
-        /// </summary>
-        public static void LoadSpecificConnectionString(string configFilePath)
-        {
-            if (_connectionString != null)
-                throw new FrameworkException("Cannot execute LoadSpecificConnectionString: Connection string is already loaded.");
-
-            var xml = new XmlDocument();
-            xml.Load(configFilePath);
-            try
-            {
-                _connectionString = xml.SelectSingleNode("/connectionStrings/add[@name='ServerConnectionString']").Attributes["connectionString"].Value;
-                var providerName = xml.SelectSingleNode("/connectionStrings/add[@name='ServerConnectionString']").Attributes["providerName"].Value;
-                SetLanguageFromProviderName(providerName);
-            }
-            catch (NullReferenceException)
-            {
-                throw new ApplicationException("Config file " + configFilePath + " does not have a valid connection string format.");
             }
         }
 

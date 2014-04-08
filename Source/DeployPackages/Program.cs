@@ -47,6 +47,13 @@ namespace DeployPackages
         {
             try
             {
+                if (args.Contains("/StartPaused"))
+                {
+                    // Use for debugging (Attach to Process)
+                    Console.WriteLine("Press any key to continue . . .");
+                    Console.ReadKey(true);
+                }
+
                 Paths.InitializeRhetosServerRootPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".."));
 
                 oldCurrentDirectory = Directory.GetCurrentDirectory();

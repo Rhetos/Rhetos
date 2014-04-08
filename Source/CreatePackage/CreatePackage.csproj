@@ -11,7 +11,8 @@
     <RootNamespace>CreatePackage</RootNamespace>
     <AssemblyName>CreatePackage</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>
     </SccProjectName>
@@ -66,6 +67,9 @@
       <Project>{A7328BFA-A009-4F1E-B9A1-B51B2020F45C}</Project>
       <Name>Rhetos.Deployment</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

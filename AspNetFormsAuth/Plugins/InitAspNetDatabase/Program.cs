@@ -73,7 +73,6 @@ namespace InitAspNetDatabase
 
         private static void CreateMembershipProviderTables()
         {
-            SqlUtility.LoadSpecificConnectionString(Paths.ConnectionStringsFile);
             AuthenticationServiceInitializer.InitializeDatabaseConnection(autoCreateTables: true);
 
             // Force lazy database initialization.

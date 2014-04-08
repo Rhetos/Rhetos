@@ -35,7 +35,7 @@ namespace Rhetos.Security
     /// <summary>
     /// This is a security principal provider (IUserInfo) based on WCF and Windows authentication.
     /// </summary>
-    public class WcfWindowsUserInfo : IUserInfo
+    public class WcfWindowsUserInfo : IWindowsUserInfo
     {
         public bool IsUserRecognized { get { return _isUserRecognized.Value; } }
         public string UserName { get { CheckIfUserRecognized(); return _userName.Value; } }
@@ -162,15 +162,6 @@ namespace Rhetos.Security
             var name = _userName.Value.Substring(domainPrefix.Length);
             _logger.Trace(() => "Identity without domain: " + name);
             return name;
-        }
-
-        public bool IsBuiltInAdministrator()
-        {
-            // WARNING: When making any changes to this function, please make sure that it works correctly when the process is run on IIS with the "ApplicationPoolIdentity".
-            if (!_isUserRecognized.Value)
-                return false;
-            WindowsPrincipal principal = new WindowsPrincipal(_windowsIdentity.Value);
-            return principal.IsInRole(WindowsBuiltInRole.Administrator);
         }
 
         public IList<string> GetIdentityMembership()

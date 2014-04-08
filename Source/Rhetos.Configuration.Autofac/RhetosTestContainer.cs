@@ -116,8 +116,6 @@ namespace Rhetos.Configuration.Autofac
 
             // Specific registrations and initialization:
             PluginsUtility.SetLogProvider(new ConsoleLogProvider());
-            var configFile = Path.Combine(Paths.RhetosServerRootPath, @"bin\ConnectionStrings.config");
-            SqlUtility.LoadSpecificConnectionString(configFile);
 
             // Build the container:
             var builder = new ContainerBuilder();

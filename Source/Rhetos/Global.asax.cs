@@ -39,7 +39,7 @@ namespace Rhetos
         {
             var stopwatch = Stopwatch.StartNew();
 
-            Paths.InitializeRhetosServerRootPath(AppDomain.CurrentDomain.BaseDirectory);
+            Paths.InitializeRhetosServer();
 
             var builder = new ContainerBuilder();
             builder.RegisterModule(new ConfigurationSettingsReader("autofacComponents"));

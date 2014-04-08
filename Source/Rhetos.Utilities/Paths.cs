@@ -27,28 +27,72 @@ namespace Rhetos.Utilities
 {
     public static class Paths
     {
-        private static string _rhetosServerRootPath;
+        /// <summary>
+        /// Initialize Paths for the Rhetos server.
+        /// </summary>
+        public static void InitializeRhetosServer()
+        {
+            RhetosServerRootPath = AppDomain.CurrentDomain.BaseDirectory;
+            IsRhetosServer = true;
+        }
 
+        /// <summary>
+        /// Initialize Paths for any application other then Rhetos server.
+        /// </summary>
         public static void InitializeRhetosServerRootPath(string rhetosServerRootPath)
         {
-            if (_rhetosServerRootPath != null)
-                throw new FrameworkException(string.Format(
-                    "RhetosServerRootPath is already initialized. Old value = '', new value = ''.",
-                    _rhetosServerRootPath, rhetosServerRootPath));
-
-            if (rhetosServerRootPath == null)
-                throw new FrameworkException("RhetosServerRootPath is set to null.");
-
-            _rhetosServerRootPath = rhetosServerRootPath;
+            RhetosServerRootPath = rhetosServerRootPath;
+            IsRhetosServer = false;
         }
+
+        private static bool? _isRhetosServer = null;
+
+        public static bool IsRhetosServer
+        {
+            get
+            {
+                if (_isRhetosServer == null)
+                    throw new FrameworkException("Rhetos server is not initialized (Paths class).");
+
+                return _isRhetosServer.Value;
+            }
+
+            private set
+            {
+                if (_isRhetosServer != null && _isRhetosServer != value)
+                    throw new FrameworkException(string.Format(
+                        "IsRhetosServer is already initialized to a different value. Old value = '', new value = ''.",
+                        _isRhetosServer, value));
+
+                _isRhetosServer = value;
+            }
+        }
+
+        private static string _rhetosServerRootPath;
 
         public static string RhetosServerRootPath
         {
             get
             {
                 if (_rhetosServerRootPath == null)
-                    throw new FrameworkException("RhetosServerRootPath is not initialized.");
+                    throw new FrameworkException("Rhetos server is not initialized (Paths class).");
+
                 return _rhetosServerRootPath;
+            }
+
+            private set
+            {
+                if (value == null)
+                    throw new FrameworkException("RhetosServerRootPath is set to null.");
+
+                value = Path.GetFullPath(value);
+
+                if (_rhetosServerRootPath != null && _rhetosServerRootPath != value)
+                    throw new FrameworkException(string.Format(
+                        "RhetosServerRootPath is already initialized to a different value. Old value = '', new value = ''.",
+                        _rhetosServerRootPath, value));
+
+                _rhetosServerRootPath = value;
             }
         }
 

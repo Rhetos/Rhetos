@@ -30,6 +30,7 @@ using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.Processing;
 using Autofac.Features.Indexed;
+using System.Security.Principal;
 
 namespace Rhetos.Security
 {
@@ -60,10 +61,11 @@ namespace Rhetos.Security
 
         private static bool FromConfigAllowBuiltinAdminOverride()
         {
-            if (ConfigurationManager.AppSettings["BuiltinAdminOverride"] != null)
+            var setting = ConfigUtility.GetAppSetting("BuiltinAdminOverride");
+            if (setting != null)
             {
                 bool allow;
-                if (bool.TryParse(ConfigurationManager.AppSettings["BuiltinAdminOverride"], out allow))
+                if (bool.TryParse(setting, out allow))
                     return allow;
                 
                 throw new FrameworkException("Invalid setting of BuiltinAdminOverride in configuration file. Allowed values are True and False.");
@@ -75,7 +77,7 @@ namespace Rhetos.Security
         {
             var sw = Stopwatch.StartNew();
 
-            if (_allowBuiltinAdminOverride && _userInfo is WcfWindowsUserInfo && ((WcfWindowsUserInfo)_userInfo).IsBuiltInAdministrator())
+            if (_allowBuiltinAdminOverride &&  IsBuiltInAdministrator(_userInfo))
             {
                 _logger.Trace(() => string.Format("User {0} has builtin administrator privileges.", _userInfo.UserName));
                 return Enumerable.Repeat(true, requiredClaims.Count()).ToArray();
@@ -84,6 +86,23 @@ namespace Rhetos.Security
             var authorizations = _authorizationProvider.GetAuthorizations(_userInfo, requiredClaims);
             _performanceLogger.Write(sw, "AuthorizationManager.GetAuthorizations");
             return authorizations;
+        }
+
+        private bool IsBuiltInAdministrator(IUserInfo userInfo)
+        {
+            // WARNING: When making any changes to this function, please make sure that it works correctly when the process is run on IIS with the "ApplicationPoolIdentity".
+
+            var windowsUserInfo = userInfo as IWindowsUserInfo;
+            if (windowsUserInfo == null)
+                return false;
+
+            if (!windowsUserInfo.IsUserRecognized)
+                return false;
+
+            WindowsPrincipal principal = new WindowsPrincipal(windowsUserInfo.WindowsIdentity);
+
+            // Returns true if user is a local administrator AND the process is running under elevated privileges.
+            return principal.IsInRole(WindowsBuiltInRole.Administrator);
         }
 
         public string Authorize(IList<ICommandInfo> commandInfos)

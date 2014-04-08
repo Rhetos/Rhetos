@@ -26,7 +26,7 @@ namespace Rhetos.Security
     /// <summary>
     /// Used for Rhetos system utilities (DeployPackages.exe, e.g.) when web authentication is not applicable.
     /// </summary>
-    public class ProcessUserInfo : IUserInfo
+    public class ProcessUserInfo : IWindowsUserInfo
     {
         private Lazy<WindowsIdentity> _currentUser;
 
@@ -42,12 +42,23 @@ namespace Rhetos.Security
 
         public string UserName
         {
-            get { return _currentUser.Value.Name; }
+            get { CheckIfUserRecognized(); return _currentUser.Value.Name; }
         }
 
         public string Workstation
         {
-            get { return System.Environment.MachineName; }
+            get { CheckIfUserRecognized(); return System.Environment.MachineName; }
+        }
+
+        public WindowsIdentity WindowsIdentity
+        {
+            get { CheckIfUserRecognized(); return _currentUser.Value; }
+        }
+
+        private void CheckIfUserRecognized()
+        {
+            if (!IsUserRecognized)
+                throw new UserException("User is not authenticated.");
         }
     }
 }

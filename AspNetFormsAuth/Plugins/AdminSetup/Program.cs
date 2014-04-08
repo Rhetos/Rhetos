@@ -77,7 +77,6 @@ namespace AdminSetup
         {
             CheckElevatedPrivileges();
 
-            SqlUtility.LoadSpecificConnectionString(Paths.ConnectionStringsFile);
             AuthenticationServiceInitializer.InitializeDatabaseConnection(autoCreateTables: true);
 
             int id = WebSecurity.GetUserId(adminUserName);

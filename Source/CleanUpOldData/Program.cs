@@ -24,6 +24,7 @@ using Rhetos.Utilities;
 using Rhetos.Deployment;
 using System.Collections.Generic;
 using Rhetos;
+using System.IO;
 
 namespace CleanupOldData
 {
@@ -33,6 +34,8 @@ namespace CleanupOldData
         {
             try
             {
+                Paths.InitializeRhetosServerRootPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".."));
+
                 string connectionString = SqlUtility.ConnectionString;
                 Console.WriteLine("SQL connection string: " + SqlUtility.MaskPassword(connectionString));
                 var sqlExecuter = GetSqlExecuterImplementation(connectionString);

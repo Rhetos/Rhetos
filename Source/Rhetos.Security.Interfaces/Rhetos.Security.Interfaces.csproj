@@ -54,6 +54,7 @@
     <Compile Include="IClaimProvider.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="IWindowsUserInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
