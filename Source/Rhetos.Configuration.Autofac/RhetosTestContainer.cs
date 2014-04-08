@@ -91,23 +91,36 @@ namespace Rhetos.Configuration.Autofac
             }
         }
 
+        protected virtual bool IsValidRhetosServerDirectory(string path)
+        {
+            return
+                File.Exists(Path.Combine(path, @"web.config"))
+                && File.Exists(Path.Combine(path, @"bin\Rhetos.dll"));
+        }
+
         protected virtual string InitializeRhetosServerRootPath()
         {
             var folder = new DirectoryInfo(Environment.CurrentDirectory);
 
-            if (folder.Name == "Out") // Unit testing subfolder.
+            if (IsValidRhetosServerDirectory(folder.FullName))
+                return folder.FullName;
+
+            // Unit testing subfolder.
+            if (folder.Name == "Out")
                 folder = folder.Parent.Parent.Parent;
 
-            if (folder.Name == "Debug") // Unit testing at project level, not at solution level. It depends on the way the testing has been started.
+            // Unit testing at project level, not at solution level. It depends on the way the testing has been started.
+            if (folder.Name == "Debug")
                 folder = folder.Parent.Parent.Parent.Parent.Parent; // Climbing up CommonConcepts\CommonConceptsTest\CommonConcepts.Test\bin\Debug.
 
             if (folder.GetDirectories().Any(subDir => subDir.Name == "Source"))
                 folder = new DirectoryInfo(Path.Combine(folder.FullName, @".\Source\Rhetos\"));
 
-            if (folder.Name != "Rhetos")
-                throw new ApplicationException("Cannot locate Rhetos folder from '" + Environment.CurrentDirectory + "'. Unexpected folder '" + folder.Name + "'.");
+            // For unit tests, project's source folder name is ".\Source\Rhetos".
+            if (folder.Name == "Rhetos" && IsValidRhetosServerDirectory(folder.FullName))
+                return folder.FullName;
 
-            return folder.FullName;
+            throw new ApplicationException("Cannot locate a valid Rhetos server's folder from '" + Environment.CurrentDirectory + "'. Unexpected folder '" + folder.FullName + "'.");
         }
 
         private IContainer InitializeIocContainer()
