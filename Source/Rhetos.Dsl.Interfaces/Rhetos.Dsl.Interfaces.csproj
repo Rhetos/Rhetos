@@ -118,6 +118,7 @@
     <Compile Include="IConceptInfo.cs" />
     <Compile Include="IConceptParser.cs" />
     <Compile Include="IDslContainer.cs" />
+    <Compile Include="InitializationConceptInfo.cs" />
     <Compile Include="IValidationConcept.cs" />
     <Compile Include="IDslModel.cs" />
     <Compile Include="IDslSource.cs" />

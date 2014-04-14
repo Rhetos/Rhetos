@@ -50,12 +50,22 @@ namespace Rhetos.Dsl
                 IEnumerable<IConceptParser> parsers = CreateGenericParsers();
                 var parsedConcepts = ExtractConcepts(parsers);
                 var alternativeInitializationGeneratedReferences = ResolveAlternativeInitializationConcepts(parsedConcepts);
-                return parsedConcepts.Concat(alternativeInitializationGeneratedReferences).ToArray();
+                return new[] { CreateInitializationConcept() }
+                    .Concat(parsedConcepts)
+                    .Concat(alternativeInitializationGeneratedReferences)
+                    .ToArray();
             }
         }
 
         //=================================================================
 
+        private IConceptInfo CreateInitializationConcept()
+        {
+            return new InitializationConcept
+            {
+                RhetosVersion = GetType().Assembly.GetName().Version.ToString()
+            };
+        }
 
         protected IEnumerable<IConceptParser> CreateGenericParsers()
         {
