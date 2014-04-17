@@ -40,16 +40,16 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (EntityHistoryInfo)conceptInfo;
-            codeBuilder.InsertCode(FilterInterfaceSnippet(info), RepositoryHelper.RepositoryInterfaces, info.ChangesEntity);
-            codeBuilder.InsertCode(FilterImplementationSnippet(info), RepositoryHelper.RepositoryMembers, info.ChangesEntity);
+            codeBuilder.InsertCode(FilterInterfaceSnippet(info), RepositoryHelper.RepositoryInterfaces, info.Dependency_ChangesEntity);
+            codeBuilder.InsertCode(FilterImplementationSnippet(info), RepositoryHelper.RepositoryMembers, info.Dependency_ChangesEntity);
             codeBuilder.InsertCode(AdditionalParameterSnippet(info), DataStructureCodeGenerator.BodyTag, info.Entity);
             codeBuilder.InsertCode(CreateHistoryOnUpdateSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Entity);
-            codeBuilder.InsertCode(VerifyChangesEntityTimeSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.ChangesEntity);
+            codeBuilder.InsertCode(VerifyChangesEntityTimeSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Dependency_ChangesEntity);
         }
 
         private static string FilterInterfaceSnippet(EntityHistoryInfo info)
         {
-            return "IFilterRepository<System.DateTime, " + info.ChangesEntity.Module.Name + "." + info.ChangesEntity.Name + ">";
+            return "IFilterRepository<System.DateTime, " + info.Dependency_ChangesEntity.Module.Name + "." + info.Dependency_ChangesEntity.Name + ">";
         }
 
         /// <summary>
@@ -70,8 +70,8 @@ namespace Rhetos.Dom.DefaultConcepts
         }}
 
 ",
-            info.ChangesEntity.Module.Name,
-            info.ChangesEntity.Name,
+            info.Dependency_ChangesEntity.Module.Name,
+            info.Dependency_ChangesEntity.Name,
             SqlUtility.Identifier(info.Entity.Module.Name),
             SqlUtility.Identifier(info.Entity.Name + "_AtTime"));
         }
@@ -150,8 +150,8 @@ namespace Rhetos.Dom.DefaultConcepts
             }}
 
 ",
-            info.ChangesEntity.Module.Name,
-            info.ChangesEntity.Name);
+            info.Dependency_ChangesEntity.Module.Name,
+            info.Dependency_ChangesEntity.Name);
         }
     }
 }

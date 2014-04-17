@@ -37,24 +37,24 @@ namespace Rhetos.Dsl.DefaultConcepts
         /// <summary>May be empty.</summary>
         public string FilterSaveExpression { get; set; }
 
-        public DataStructureExtendsInfo Extends { get; set; }
+        public DataStructureExtendsInfo Dependency_Extends { get; set; }
 
         public IEnumerable<string> DeclareNonparsableProperties()
         {
-            return new[] { "Extends" };
+            return new[] { "Dependency_Extends" };
         }
 
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
-            Extends = new DataStructureExtendsInfo { Extension = EntityComputedFrom.Target };
+            Dependency_Extends = new DataStructureExtendsInfo { Extension = EntityComputedFrom.Target };
             createdConcepts = null;
         }
 
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
-            if (Extends.Extension != EntityComputedFrom.Target)
+            if (Dependency_Extends.Extension != EntityComputedFrom.Target)
                 throw new DslSyntaxException("Invalid use of " + this.GetUserDescription()
-                    + ": Extension '" + Extends.Extension.GetUserDescription()
+                    + ": Extension '" + Dependency_Extends.Extension.GetUserDescription()
                     + "' is not same as " + this.GetKeywordOrTypeName()
                     + " target '" + EntityComputedFrom.Target.GetUserDescription() + "'.");
         }

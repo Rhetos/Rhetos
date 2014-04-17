@@ -38,7 +38,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (ComputeForNewBaseItemsInfo) conceptInfo;
 
-            var baseDS = info.Extends.Base;
+            var baseDS = info.Dependency_Extends.Base;
             var persistedExtension = info.EntityComputedFrom.Target;
             var uniqueSuffix = GetUniqueSuffixWithinBase(info);
 
@@ -51,14 +51,14 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetUniqueSuffixWithinBase(ComputeForNewBaseItemsInfo info)
         {
-            var baseModule = info.Extends.Base.Module;
+            var baseModule = info.Dependency_Extends.Base.Module;
             return DslUtility.NameOptionalModule(info.EntityComputedFrom.Source, baseModule)
                 + DslUtility.NameOptionalModule(info.EntityComputedFrom.Target, baseModule);
         }
 
         private static string RecomputeForNewItemsSnippet(ComputeForNewBaseItemsInfo info, string uniqueSuffix)
         {
-            DataStructureInfo hookOnSave = info.Extends.Base;
+            DataStructureInfo hookOnSave = info.Dependency_Extends.Base;
             EntityInfo updatePersistedComputation = info.EntityComputedFrom.Target;
 
             return string.Format(
@@ -84,7 +84,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string HelperFunctionSnippet(ComputeForNewBaseItemsInfo info, string uniqueSuffix)
         {
-            DataStructureInfo hookOnSave = info.Extends.Base;
+            DataStructureInfo hookOnSave = info.Dependency_Extends.Base;
 
             return string.Format(
 @"        private static readonly Func<IEnumerable<{0}.{1}>, Guid[]> _filterComputeForNewBaseItems_{2} =
@@ -103,7 +103,7 @@ namespace Rhetos.Dom.DefaultConcepts
             {3};
 
 ",
-                info.Extends.Extension.Module.Name, info.Extends.Extension.Name, uniqueSuffix, info.FilterSaveExpression);
+                info.Dependency_Extends.Extension.Module.Name, info.Dependency_Extends.Extension.Name, uniqueSuffix, info.FilterSaveExpression);
         }
     }
 }

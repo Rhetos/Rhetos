@@ -31,17 +31,16 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public PropertyInfo Property { get; set; }
 
-        /// <summary>Nonparsable (reference to a dependency).</summary>
-        public LegacyEntityWithAutoCreatedViewInfo LegacyEntityWithAutoCreatedView { get; set; }
+        public LegacyEntityWithAutoCreatedViewInfo Dependency_LegacyEntityWithAutoCreatedView { get; set; }
 
         public IEnumerable<string> DeclareNonparsableProperties()
         {
-            return new[] { "LegacyEntityWithAutoCreatedView" };
+            return new[] { "Dependency_LegacyEntityWithAutoCreatedView" };
         }
 
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
-            LegacyEntityWithAutoCreatedView = new LegacyEntityWithAutoCreatedViewInfo { Module = Property.DataStructure.Module, Name = Property.DataStructure.Name };
+            Dependency_LegacyEntityWithAutoCreatedView = new LegacyEntityWithAutoCreatedViewInfo { Module = Property.DataStructure.Module, Name = Property.DataStructure.Name };
             createdConcepts = null;
         }
 

@@ -34,7 +34,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public PropertyInfo Source { get; set; }
 
-        public EntityComputedFromInfo EntityComputedFrom { get; set; }
+        public EntityComputedFromInfo Dependency_EntityComputedFrom { get; set; }
 
         public void InternalCheck()
         {
@@ -54,14 +54,14 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<string> DeclareNonparsableProperties()
         {
-            return new[] { "EntityComputedFrom" };
+            return new[] { "Dependency_EntityComputedFrom" };
         }
 
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
             InternalCheck();
-            EntityComputedFrom = new EntityComputedFromInfo { Target = (EntityInfo) Target.DataStructure, Source = Source.DataStructure };
-            createdConcepts = new[] { EntityComputedFrom };
+            Dependency_EntityComputedFrom = new EntityComputedFromInfo { Target = (EntityInfo) Target.DataStructure, Source = Source.DataStructure };
+            createdConcepts = new[] { Dependency_EntityComputedFrom };
         }
     }
 }

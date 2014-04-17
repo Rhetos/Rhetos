@@ -39,9 +39,9 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (EntityHistoryPropertyInfo)conceptInfo;
             codeBuilder.InsertCode(string.Format(",\r\n							    {0} = olditem.{0}", info.Property.Name),
-                EntityHistoryCodeGenerator.ClonePropertiesTag, info.EntityHistory);
+                EntityHistoryCodeGenerator.ClonePropertiesTag, info.Dependency_EntityHistory);
             codeBuilder.InsertCode(string.Format("\r\n                        ret.{0} = item.{0};", info.Property.Name),
-                EntityHistoryInfo.ClonePropertiesTag, info.EntityHistory);
+                EntityHistoryInfo.ClonePropertiesTag, info.Dependency_EntityHistory);
         }
     }
 }

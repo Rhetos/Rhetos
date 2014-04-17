@@ -43,7 +43,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             var existingComputedPropertiesSource = new HashSet<string>(
                 existingConcepts.OfType<PropertyComputedFromInfo>()
-                    .Where(comp => comp.EntityComputedFrom == EntityComputedFrom)
+                    .Where(comp => comp.Dependency_EntityComputedFrom == EntityComputedFrom)
                     .Select(comp => comp.Source.Name));
 
             var newSourceProperties = sourceProperties
@@ -75,7 +75,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                     {
                         Target = new PropertyInfo { DataStructure = EntityComputedFrom.Target, Name = sp.Name },
                         Source = sp,
-                        EntityComputedFrom = EntityComputedFrom
+                        Dependency_EntityComputedFrom = EntityComputedFrom
                     }));
 
             IConceptInfo extensionComputedFrom = existingConcepts.OfType<DataStructureExtendsInfo>()

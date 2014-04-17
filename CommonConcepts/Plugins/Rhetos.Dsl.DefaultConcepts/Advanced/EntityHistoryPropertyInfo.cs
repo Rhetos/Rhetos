@@ -33,24 +33,24 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public PropertyInfo Property { get; set; }
 
-        public EntityHistoryInfo EntityHistory { get; set; }
+        public EntityHistoryInfo Dependency_EntityHistory { get; set; }
 
         public IEnumerable<string> DeclareNonparsableProperties()
         {
-            return new[] { "EntityHistory" };
+            return new[] { "Dependency_EntityHistory" };
         }
 
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
             if (!(Property.DataStructure is EntityInfo))
                 throw new DslSyntaxException(this, "History concept may only be used on entity or its property.");
-            EntityHistory = new EntityHistoryInfo { Entity = (EntityInfo)this.Property.DataStructure };
-            createdConcepts = new IConceptInfo[] { EntityHistory };
+            Dependency_EntityHistory = new EntityHistoryInfo { Entity = (EntityInfo)this.Property.DataStructure };
+            createdConcepts = new IConceptInfo[] { Dependency_EntityHistory };
         }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return new [] { new PropertyFromInfo { Destination = EntityHistory.ChangesEntity, Source = Property } };
+            return new [] { new PropertyFromInfo { Destination = Dependency_EntityHistory.Dependency_ChangesEntity, Source = Property } };
         }
 
     }

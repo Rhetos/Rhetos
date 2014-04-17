@@ -51,7 +51,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
             codeBuilder.InsertCode(
                 Sql.Format("LegacyPropertyReadOnlyDatabaseDefinition_ViewSelect", SqlUtility.Identifier(info.Property.Name), SqlUtility.Identifier(info.Column)),
-                LegacyEntityWithAutoCreatedViewDatabaseDefinition.ViewSelectPartTag, info.LegacyEntityWithAutoCreatedView);
+                LegacyEntityWithAutoCreatedViewDatabaseDefinition.ViewSelectPartTag, info.Dependency_LegacyEntityWithAutoCreatedView);
         }
     }
 }

@@ -59,9 +59,9 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (PropertyComputedFromInfo) conceptInfo;
-            codeBuilder.InsertCode(ComparePropertySnippet(info), EntityComputedFromCodeGenerator.ComparePropertyTag, info.EntityComputedFrom);
-            codeBuilder.InsertCode(ClonePropertySnippet(info), EntityComputedFromCodeGenerator.ClonePropertyTag, info.EntityComputedFrom);
-            codeBuilder.InsertCode(AssignPropertySnippet(info), EntityComputedFromCodeGenerator.AssignPropertyTag, info.EntityComputedFrom);
+            codeBuilder.InsertCode(ComparePropertySnippet(info), EntityComputedFromCodeGenerator.ComparePropertyTag, info.Dependency_EntityComputedFrom);
+            codeBuilder.InsertCode(ClonePropertySnippet(info), EntityComputedFromCodeGenerator.ClonePropertyTag, info.Dependency_EntityComputedFrom);
+            codeBuilder.InsertCode(AssignPropertySnippet(info), EntityComputedFromCodeGenerator.AssignPropertyTag, info.Dependency_EntityComputedFrom);
         }
     }
 }
