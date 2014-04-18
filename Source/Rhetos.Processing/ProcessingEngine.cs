@@ -30,6 +30,7 @@ using Rhetos.Logging;
 using System.Data.SqlClient;
 using Autofac.Features.OwnedInstances;
 using Rhetos.Security;
+using System.Reflection;
 
 namespace Rhetos.Processing
 {
@@ -75,14 +76,11 @@ namespace Rhetos.Processing
                 };
 
             var commandResults = new List<CommandResult>();
-            int commandCount = 0;
 
             try
             {
                 foreach (var commandInfo in commands)
                 {
-                    commandCount++;
-
                     _logger.Trace("Executing command {0}: {1}.", commandInfo.GetType().Name, commandInfo);
 
                     var implementations = _commandRepository.GetImplementations(commandInfo.GetType());
@@ -126,7 +124,7 @@ namespace Rhetos.Processing
                         _persistenceTransaction.DiscardChanges();
 
                         var systemMessage = String.Format(CultureInfo.InvariantCulture, "Command failed. {0} {1} {2}", commandInfo.GetType().Name, commandInfo, commandImplementation.GetType().Name);
-                        return LogResultsReturnError(commandResults, systemMessage + " " + commandResult.Message, commandCount, systemMessage, commandResult.Message);
+                        return LogResultsReturnError(commandResults, systemMessage + " " + commandResult.Message, systemMessage, commandResult.Message);
                     }
                 }
 
@@ -141,14 +139,10 @@ namespace Rhetos.Processing
             {
                 _persistenceTransaction.DiscardChanges();
 
-                if (commandCount == 0)
+                if (ex is TargetInvocationException && ex.InnerException is RhetosException)
                 {
-                    _logger.Error("Processing engine exception. {0}", ex);
-                    return new ProcessingResult
-                    {
-                        SystemMessage = "Server exception." + Environment.NewLine + ex,
-                        Success = false
-                    };
+                    _logger.Error(() => "Unwrapping exception: " + ex.ToString());
+                    ex = ex.InnerException;
                 }
 
                 string userMessage = null;
@@ -166,7 +160,6 @@ namespace Rhetos.Processing
                 return LogResultsReturnError(
                     commandResults,
                     "Command execution error: " + ex,
-                    commandCount,
                     systemMessage,
                     userMessage);
             }
@@ -208,7 +201,7 @@ namespace Rhetos.Processing
             return null;
         }
 
-        private ProcessingResult LogResultsReturnError(List<CommandResult> commandResults, string logError, int commandCount, string systemMessage, string userMessage)
+        private ProcessingResult LogResultsReturnError(List<CommandResult> commandResults, string logError, string systemMessage, string userMessage)
         {
             _logger.Error(logError);
             _logger.Trace(_xmlUtility.SerializeArrayToXml(commandResults.ToArray()));

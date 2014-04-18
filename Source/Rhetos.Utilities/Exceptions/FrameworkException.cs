@@ -18,25 +18,22 @@
 */
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace Rhetos
 {
     [global::System.Serializable]
-    public class UserException : Exception
+    public class FrameworkException : RhetosException
     {
-        public string SystemMessage;
-        public UserException() { }
-        public UserException(string message) : base(message) { }
-        public UserException(string message, string systemMessage) : base(message) { SystemMessage = systemMessage; }
-        public UserException(string message, Exception inner) : base(message, inner) { }
-        public UserException(string message, string systemMessage, Exception inner) : base(message, inner) { SystemMessage = systemMessage; }
-        protected UserException(
+        public FrameworkException() { }
+        public FrameworkException(string message) : base(message) { }
+        public FrameworkException(string message, Exception inner) : base(message, inner) { }
+        protected FrameworkException(
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context)
             : base(info, context) { }
-        public override string ToString()
-        {
-            return base.ToString() + "\r\nSystemMessage: " + SystemMessage;
-        }
     }
+
 }
