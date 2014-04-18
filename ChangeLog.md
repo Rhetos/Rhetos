@@ -1,3 +1,11 @@
+0.9.16 (2014-04-18)
+-------------------
+
+Internal improvements:
+
+* New core DSL concept **InitializationConcept**, for singleton DSL implementation plugins.
+* Bugfix: LinqPad script cannot detect Rhetos server's folder it the folder's name is not "Rhetos".
+
 0.9.15 (2014-04-07)
 -------------------
 

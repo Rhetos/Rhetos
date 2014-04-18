@@ -254,7 +254,7 @@ In these scenarios, sharing the forms authentication cookie between the sites wi
 
 * In most cases, for the sites to share the authentication cookie, it is enough to have **same** `machineKey` element configuration in the `web.config`.
 For more info, see [MSDN article: Forms Authentication Across Applications](http://msdn.microsoft.com/en-us/library/eb0zx8fc.aspx).
-* If your web application uses **.NET Framework 4.5 or later** (the Rhetos server uses v4.0), set the compatibilityMode attribute in machine key to `Framework20SP2`.
+* If your web application uses **.NET Framework 4.5 or later** (the Rhetos server uses v4.0), set the `compatibilityMode` attribute in machine key to `Framework20SP2`.
 * If you have multiple Rhetos applications on a server and do not want to share the authentication between them, make sure to set **different** `machineKey` configuration for each site.
 
 The machine key in `web.config` may have the following format:
