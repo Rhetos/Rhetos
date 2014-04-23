@@ -88,12 +88,12 @@ The JSON service is available at URI `<rhetos server>/Resources/AspNetFormsAuth/
 * Reset the number of [failed login attempts](#FailedPasswordAttempts). Response is empty.
 * Requires *UnlockUser* [claim](#Permissions).
 
-**`/GeneratePasswordResetToken`** (string UserName) -> string
+**`/GeneratePasswordResetToken`** (string UserName, int TokenExpirationInMinutesFromNow) -> string
 
 * Generates a password reset token that can be send to the user by email.
 * Use it to implement *forgot password* web page (see [MSDN](http://msdn.microsoft.com/en-us/library/webmatrix.webdata.websecurity.generatepasswordresettoken.aspx)) or to create a user account without initial password and let a user choose it.
 * Requires *GeneratePasswordResetToken* [claim](#Permissions).
-* The generated token will expire in 24 hours.
+* If TokenExpirationInMinutesFromNow is not set (or set to 0), the token will expire in 24 hours.
 
 **`/ResetPassword`** (string PasswordResetToken, string NewPassword) -> bool
 

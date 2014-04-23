@@ -98,6 +98,13 @@ namespace Rhetos.AspNetFormsAuth
     {
         public string UserName { get; set; }
 
+        public const int DefaultTokenExpirationInMinutes = 1440;
+
+        /// <summary>
+        /// Optional. If not set (0 value), the DefaultTokenExpirationInMinutes will be used.
+        /// </summary>
+        public int TokenExpirationInMinutesFromNow { get; set; }
+
         public void Validate()
         {
             if (string.IsNullOrWhiteSpace(UserName))
@@ -313,8 +320,10 @@ namespace Rhetos.AspNetFormsAuth
                 _logger.Trace(() => "GeneratePasswordResetToken creating account: " + parameters.UserName);
                 WebSecurity.CreateAccount(parameters.UserName, Guid.NewGuid().ToString());
             }
-                
-            return WebSecurity.GeneratePasswordResetToken(parameters.UserName);
+
+            return parameters.TokenExpirationInMinutesFromNow != 0
+                ? WebSecurity.GeneratePasswordResetToken(parameters.UserName, parameters.TokenExpirationInMinutesFromNow)
+                : WebSecurity.GeneratePasswordResetToken(parameters.UserName, GeneratePasswordResetTokenParameters.DefaultTokenExpirationInMinutes);
         }
 
         /// <summary>
