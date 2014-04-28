@@ -48,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DomGeneratorOptions.cs" />
     <Compile Include="IDomainObjectModel.cs" />
     <Compile Include="IDomGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

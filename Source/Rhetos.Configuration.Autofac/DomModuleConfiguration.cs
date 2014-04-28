@@ -46,10 +46,12 @@ namespace Rhetos.Configuration.Autofac
 
         protected override void Load(ContainerBuilder builder)
         {
+            builder.RegisterInstance(new DomGeneratorOptions { AssemblyName = _assemblyName });
+
             if (_domAssemblyUsage == DomAssemblyUsage.Generate)
-                builder.RegisterType<DomGenerator>().WithParameter("assemblyName", _assemblyName).As<IDomGenerator>().As<IDomainObjectModel>().SingleInstance();
+                builder.RegisterType<DomGenerator>().As<IDomainObjectModel>().As<IDomGenerator>().SingleInstance();
             else
-                builder.RegisterType<DomLoader>().WithParameter("assemblyName", _assemblyName).As<IDomainObjectModel>().SingleInstance();
+                builder.RegisterType<DomLoader>().As<IDomainObjectModel>().SingleInstance();
 
             base.Load(builder);
         }

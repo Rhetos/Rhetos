@@ -31,15 +31,15 @@ namespace Rhetos.Dom
     {
         private Assembly _objectModel;
 
-        private readonly string _assemblyName;
+        private readonly DomGeneratorOptions _domGeneratorOptions;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
 
         public DomLoader(
-            string assemblyName,
+            DomGeneratorOptions domGeneratorOptions,
             ILogProvider logProvider)
         {
-            _assemblyName = assemblyName;
+            _domGeneratorOptions = domGeneratorOptions;
             _logger = logProvider.GetLogger("DomLoader");
             _performanceLogger = logProvider.GetLogger("Performance");
         }
@@ -58,8 +58,8 @@ namespace Rhetos.Dom
         {
             var sw = Stopwatch.StartNew();
 
-            _logger.Trace("Loading assembly by name \"" + _assemblyName + "\".");
-            _objectModel = Assembly.Load(new AssemblyName(_assemblyName));
+            _logger.Trace("Loading assembly by name \"" + _domGeneratorOptions.AssemblyName + "\".");
+            _objectModel = Assembly.Load(new AssemblyName(_domGeneratorOptions.AssemblyName));
             _logger.Trace("Loaded assembly " + _objectModel.FullName + " at " + _objectModel.Location + ".");
 
             _performanceLogger.Write(sw, "DomLoader.LoadObjectModel done.");

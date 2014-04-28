@@ -47,7 +47,11 @@ namespace DeployPackages
         {
             try
             {
-                if (args.Contains("/StartPaused"))
+                var arguments = new Arguments(args);
+                if (arguments.Help)
+                    return 1;
+
+                if (arguments.StartPaused)
                 {
                     // Use for debugging (Attach to Process)
                     Console.WriteLine("Press any key to continue . . .");
@@ -69,7 +73,12 @@ namespace DeployPackages
                 var builder = new ContainerBuilder();
                 builder.RegisterModule(new AutofacConfiguration());
                 using (var container = builder.Build())
+                {
+                    if (arguments.Debug)
+                        container.Resolve<DomGeneratorOptions>().Debug = true;
+
                     DeployPackages(container);
+                }
             }
             catch (Exception ex)
             {

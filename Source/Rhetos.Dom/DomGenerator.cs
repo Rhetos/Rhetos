@@ -40,7 +40,7 @@ namespace Rhetos.Dom
         private readonly ICodeGenerator _codeGenerator; //********????***********/
         private readonly ILogProvider _log;
         private readonly IAssemblyGenerator _assemblyGenerator;
-        private readonly string _assemblyName;
+        private readonly DomGeneratorOptions _domGeneratorOptions;
 
         /// <summary>
         /// If assemblyName is not null, the assembly will be saved on disk.
@@ -51,9 +51,9 @@ namespace Rhetos.Dom
             ICodeGenerator codeGenerator,
             ILogProvider logProvider,
             IAssemblyGenerator assemblyGenerator,
-            string assemblyName)
+            DomGeneratorOptions domGeneratorOptions)
         {
-            _assemblyName = assemblyName;
+            _domGeneratorOptions = domGeneratorOptions;
             _pluginRepository = plugins;
             _codeGenerator = codeGenerator;
             _log = logProvider;
@@ -79,10 +79,10 @@ namespace Rhetos.Dom
             CompilerParameters parameters = new CompilerParameters
             {
                 GenerateExecutable = false,
-                GenerateInMemory = string.IsNullOrEmpty(_assemblyName),
-                OutputAssembly = string.IsNullOrEmpty(_assemblyName) ? null : Path.Combine(Paths.BinFolder, _assemblyName + ".dll"),
+                GenerateInMemory = string.IsNullOrEmpty(_domGeneratorOptions.AssemblyName),
+                OutputAssembly = string.IsNullOrEmpty(_domGeneratorOptions.AssemblyName) ? null : Path.Combine(Paths.BinFolder, _domGeneratorOptions.AssemblyName + ".dll"),
                 IncludeDebugInformation = true,
-                CompilerOptions = "/optimize"
+                CompilerOptions = _domGeneratorOptions.Debug ? "" : "/optimize"
             };
 
             _objectModel = _assemblyGenerator.Generate(assemblySource, parameters);
