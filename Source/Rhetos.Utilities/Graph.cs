@@ -24,7 +24,7 @@ using System.Text;
 
 namespace Rhetos.Utilities
 {
-    public static class DirectedGraph
+    public static class Graph
     {
         /// <summary>
         /// Return a list that contains all elements from the given list and all elements that depend on them.
@@ -64,6 +64,8 @@ namespace Rhetos.Utilities
                         AddDependents(dependent, result, dependents, alreadyInserted);
                     }
         }
+
+        //==============================================================================
 
         /// <summary>
         /// Sorts a partially ordered set (directed acyclic graph).
@@ -115,6 +117,8 @@ namespace Rhetos.Utilities
             }
         }
 
+        //==============================================================================
+
         /// <summary>
         /// Returns a list of nodes (a subset of 'candidates') that can be safely removed in a way
         /// that no other remaining node depends (directly or inderectly) on removed nodes.
@@ -154,6 +158,8 @@ namespace Rhetos.Utilities
                 }
         }
 
+        //==============================================================================
+
         public static void SortByGivenOrder<TItem, TKey>(TItem[] items, TKey[] expectedKeyOrder, Func<TItem, TKey> itemKeySelector)
         {
             var expectedIndex = expectedKeyOrder.Select((key, index) => new { key, index }).ToDictionary(item => item.key, item => item.index);
@@ -162,6 +168,32 @@ namespace Rhetos.Utilities
             var itemsOrder = items.Select(item => expectedIndex.GetValue(itemKeySelector(item), cannotFindKeyError)).ToArray();
 
             Array.Sort(itemsOrder, items);
+        }
+
+        //==============================================================================
+
+        /// <summary>
+        /// Returns given direct relations and all the indirect relations that can be achieved by combining two or more direct relations.
+        /// See: reachability, transitive closure.
+        /// </summary>
+        public static List<Tuple<T, T>> GetIndirectRelations<T>(ICollection<Tuple<T, T>> directRelations)
+        {
+            var allItems = directRelations.Select(r => r.Item1).Concat(directRelations.Select(r => r.Item2)).Distinct();
+
+            var targetsBySource = new Dictionary<T, HashSet<T>>();
+            foreach (var item in allItems)
+                targetsBySource[item] = new HashSet<T>(new[] { item });
+
+            foreach (var relation in directRelations)
+                foreach (var targets in targetsBySource.Where(t => t.Value.Contains(relation.Item1)))
+                    targets.Value.UnionWith(targetsBySource[relation.Item2]);
+
+            var allRelations = targetsBySource
+                 .SelectMany(targets => targets.Value
+                     .Where(target => !(targets.Key.Equals(target)))
+                     .Select(target => Tuple.Create(targets.Key, target)))
+                 .ToList();
+            return allRelations;
         }
     }
 }

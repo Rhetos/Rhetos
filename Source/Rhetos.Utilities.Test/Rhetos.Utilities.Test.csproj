@@ -61,7 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="OracleSqlExecuterTest.cs" />
-    <Compile Include="DirectedGraphTest.cs" />
+    <Compile Include="GraphTest.cs" />
     <Compile Include="FastReplacerTest.cs" />
     <Compile Include="MsSqlExecuterTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

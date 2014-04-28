@@ -122,7 +122,7 @@
     <Compile Include="Paths.cs" />
     <Compile Include="ResourcesFolder.cs" />
     <Compile Include="CsUtility.cs" />
-    <Compile Include="DirectedGraph.cs" />
+    <Compile Include="Graph.cs" />
     <Compile Include="FastReplacer.cs" />
     <Compile Include="FastReplacerSnippet.cs" />
     <Compile Include="ISqlExecuter.cs" />

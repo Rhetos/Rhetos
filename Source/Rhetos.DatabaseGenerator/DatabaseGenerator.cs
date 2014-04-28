@@ -115,7 +115,7 @@ namespace Rhetos.DatabaseGenerator
                 throw new FrameworkException("A concept that does not create database objects (CreateDatabaseStructure) cannot remove them (RemoveDatabaseStructure): "
                     + emptyCreateHasRemove.GetConceptApplicationKey() + ".");
 
-            var removeLeaves = DirectedGraph.RemovableLeaves(emptyCreateQuery, GetDependencyPairs(newApplications));
+            var removeLeaves = Graph.RemovableLeaves(emptyCreateQuery, GetDependencyPairs(newApplications));
 
             foreach (var remove in removeLeaves)
             {
@@ -302,7 +302,7 @@ namespace Rhetos.DatabaseGenerator
 
         protected void ComputeCreateAndRemoveQuery(List<NewConceptApplication> newConceptApplications, IEnumerable<IConceptInfo> allConceptInfos)
         {
-            DirectedGraph.TopologicalSort(newConceptApplications, GetDependencyPairs(newConceptApplications));
+            Graph.TopologicalSort(newConceptApplications, GetDependencyPairs(newConceptApplications));
 
             var conceptInfosByKey = allConceptInfos.ToDictionary(ci => ci.GetKey());
 
@@ -441,11 +441,11 @@ namespace Rhetos.DatabaseGenerator
             // Find dependent concepts applications to be regenerated:
             var toBeRemovedKeys = directlyRemoved.Union(changedApplications).ToList();
             var oldDependencies = GetDependencyPairs(oldApplications).Select(dep => Tuple.Create(dep.Item1.GetConceptApplicationKey(), dep.Item2.GetConceptApplicationKey()));
-            var dependentRemovedApplications = DirectedGraph.IncludeDependents(toBeRemovedKeys, oldDependencies).Except(toBeRemovedKeys);
+            var dependentRemovedApplications = Graph.IncludeDependents(toBeRemovedKeys, oldDependencies).Except(toBeRemovedKeys);
 
             var toBeInsertedKeys = directlyInserted.Union(changedApplications).ToList();
             var newDependencies = GetDependencyPairs(newApplications).Select(dep => Tuple.Create(dep.Item1.GetConceptApplicationKey(), dep.Item2.GetConceptApplicationKey()));
-            var dependentInsertedApplications = DirectedGraph.IncludeDependents(toBeInsertedKeys, newDependencies).Except(toBeInsertedKeys);
+            var dependentInsertedApplications = Graph.IncludeDependents(toBeInsertedKeys, newDependencies).Except(toBeInsertedKeys);
 
             var refreshDependents = dependentRemovedApplications.Union(dependentInsertedApplications).ToList();
             toBeRemovedKeys.AddRange(refreshDependents.Intersect(oldApplicationsByKey.Keys));
@@ -489,7 +489,7 @@ namespace Rhetos.DatabaseGenerator
         protected int ApplyChangesToDatabase_Remove(List<string> allSql, List<ConceptApplication> toBeRemoved, List<ConceptApplication> oldApplications)
         {
             toBeRemoved.Sort((ca1, ca2) => ca1.OldCreationOrder - ca2.OldCreationOrder); // TopologicalSort is stable sort, so it will keep this (original) order unless current dependencies direct otherwise.
-            DirectedGraph.TopologicalSort(toBeRemoved, GetDependencyPairs(oldApplications)); // Concept's dependencies might have changed, without dropping and recreating the concept. It is important to compute up-to-date remove order, otherwise FK constraint FK_AppliedConceptDependsOn_DependsOn might fail.
+            Graph.TopologicalSort(toBeRemoved, GetDependencyPairs(oldApplications)); // Concept's dependencies might have changed, without dropping and recreating the concept. It is important to compute up-to-date remove order, otherwise FK constraint FK_AppliedConceptDependsOn_DependsOn might fail.
             toBeRemoved.Reverse();
 
             int reportRemovedCount = 0;
@@ -511,7 +511,7 @@ namespace Rhetos.DatabaseGenerator
 
         protected int ApplyChangesToDatabase_Insert(List<string> allSql, List<NewConceptApplication> toBeInserted, List<NewConceptApplication> newApplications)
         {
-            DirectedGraph.TopologicalSort(toBeInserted, GetDependencyPairs(newApplications));
+            Graph.TopologicalSort(toBeInserted, GetDependencyPairs(newApplications));
 
             int reportInsertedCount = 0;
             foreach (var ca in toBeInserted)

@@ -22,11 +22,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Rhetos.TestCommon;
 
 namespace Rhetos.Utilities.Test
 {
     [TestClass()]
-    public class DirectedGraphTest
+    public class GraphTest
     {
         [TestMethod()]
         public void IncludeDependenciesTest()
@@ -44,7 +45,7 @@ namespace Rhetos.Utilities.Test
 
             var expected = new[] {1, 2, 3, 4, 9, 10};
 
-            var actual = DirectedGraph.IncludeDependents(list, dependencies);
+            var actual = Graph.IncludeDependents(list, dependencies);
 
             Assert.AreEqual(DumpSet(expected), DumpSet(actual));
         }
@@ -61,7 +62,7 @@ namespace Rhetos.Utilities.Test
         private static void TestTopologicalSort(string list, string dependencies, string expected)
         {
             List<string> actual = list.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-            DirectedGraph.TopologicalSort(
+            Graph.TopologicalSort(
                 actual,
                 dependencies.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(pair => Tuple.Create(pair.Split('-')[0], pair.Split('-')[1])).ToList());
             Assert.AreEqual(expected, string.Join(" ", actual));
@@ -74,7 +75,7 @@ namespace Rhetos.Utilities.Test
             Exception exception = null;
             try
             {
-                DirectedGraph.TopologicalSort(
+                Graph.TopologicalSort(
                     actual,
                     dependencies.Split(' ').Select(pair => Tuple.Create(pair.Split('-')[0], pair.Split('-')[1])).ToList());
             }
@@ -141,7 +142,7 @@ namespace Rhetos.Utilities.Test
         private static void TestRemovableLeaves(string candidates, string dependencies, string expectedToBeRemovable)
         {
             Console.WriteLine("TEST: " + candidates + ", " + dependencies + ", " + expectedToBeRemovable + ".");
-            var actual = DirectedGraph.RemovableLeaves(
+            var actual = Graph.RemovableLeaves(
                 candidates.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
                 dependencies.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(pair => Tuple.Create(pair.Split('-')[0], pair.Split('-')[1])).ToList());
             Assert.AreEqual(expectedToBeRemovable, string.Join(" ", actual.OrderBy(x => x)));
@@ -193,6 +194,66 @@ namespace Rhetos.Utilities.Test
             TestRemovableLeaves("4 1 2", "1-2 2-3 3-1 1-4", "4");
             TestRemovableLeaves("1 2 3", "1-2 2-3 3-1 1-4", "");
             //TestRemovableLeaves("1 2 3 4", "1-2 2-3 3-1 1-4", "1 2 3 4"); This feature is not implemented. Current algorithm cannot detect all possible removable leaves in a case of circular dependencies.
+        }
+
+        //=======================================================================
+
+        void TestGetIndirectRelations(string directRelationsString, string expectedIndirectRelationsString)
+        {
+            var directRelations = directRelationsString.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(relation =>
+            {
+                var items = relation.Split('-');
+                return Tuple.Create(items[0], items[1]);
+            }).ToList();
+
+            Console.WriteLine("Parsed input: " + string.Join(" ",
+                directRelations.Select(relation => relation.Item1 + "-" + relation.Item2)));
+
+            var indirectRelations = Graph.GetIndirectRelations(directRelations);
+
+            string indirectRelationsReport = string.Join(" ",
+                indirectRelations.GroupBy(relation => relation.Item1).Select(
+                    group => group.Key + '-' + string.Join("", group.Select(relation => relation.Item2).OrderBy(x => x)))
+                    .OrderBy(x => x));
+
+            Console.WriteLine("Output: " + expectedIndirectRelationsString);
+            Assert.AreEqual(expectedIndirectRelationsString, indirectRelationsReport);
+        }
+
+        [TestMethod]
+        public void GetIndirectRelations_Simple()
+        {
+            TestGetIndirectRelations("a-b", "a-b");
+            TestGetIndirectRelations("a-b b-c", "a-bc b-c");
+            TestGetIndirectRelations("b-c a-b", "a-bc b-c");
+            TestGetIndirectRelations("a-b a-c", "a-bc");
+            TestGetIndirectRelations("a-c a-b", "a-bc");
+            TestGetIndirectRelations("b-a c-a", "b-a c-a");
+            TestGetIndirectRelations("c-a b-a", "b-a c-a");
+        }
+
+        [TestMethod]
+        public void GetIndirectRelations_Empty()
+        {
+            TestGetIndirectRelations("", "");
+        }
+
+        [TestMethod]
+        public void GetIndirectRelations_Cyclic()
+        {
+            TestGetIndirectRelations("a-a", "");
+            TestGetIndirectRelations("a-b b-c b-b a-a c-c", "a-bc b-c");
+            TestGetIndirectRelations("a-b b-a", "a-b b-a");
+            TestGetIndirectRelations("a-b b-c c-a", "a-bc b-ac c-ab");
+            TestGetIndirectRelations("a-b b-c c-a b-z", "a-bcz b-acz c-abz");
+            TestGetIndirectRelations("b-z a-b b-c c-a", "a-bcz b-acz c-abz");
+        }
+
+        [TestMethod]
+        public void GetIndirectRelations_Complex()
+        {
+            TestGetIndirectRelations("b-a a-b a-c b-d c-d d-e", "a-bcde b-acde c-de d-e");
+            TestGetIndirectRelations("d-e c-d b-d a-c a-b b-a", "a-bcde b-acde c-de d-e");
         }
     }
 }

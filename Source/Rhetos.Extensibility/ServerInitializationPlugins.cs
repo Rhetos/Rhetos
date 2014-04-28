@@ -39,10 +39,10 @@ namespace Rhetos.Extensibility
         {
             var initNames = _initializers.Select(init => init.GetType().FullName).ToList();
             var initDependencies = _initializers.SelectMany(init => (init.Dependencies ?? new string[0]).Select(x => Tuple.Create(x, init.GetType().FullName)));
-            Rhetos.Utilities.DirectedGraph.TopologicalSort(initNames, initDependencies);
+            Rhetos.Utilities.Graph.TopologicalSort(initNames, initDependencies);
 
             var sortedInitializers = _initializers.ToArray();
-            DirectedGraph.SortByGivenOrder(sortedInitializers, initNames.ToArray(), init => init.GetType().FullName);
+            Graph.SortByGivenOrder(sortedInitializers, initNames.ToArray(), init => init.GetType().FullName);
             return sortedInitializers;
         }
     }

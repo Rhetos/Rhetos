@@ -73,7 +73,7 @@ namespace Rhetos.AspNetFormsAuth
             if (userDirectRoles.Count() == 0)
                 ValidateUser(userInfo);
             IList<Tuple<Guid, Guid>> roleInheritsRole = _roleRolesRepository.Value.Query().Select(rr => Tuple.Create(rr.Derived.ID, rr.InheritsFrom.ID)).ToList();
-            IList<Guid> userAllRoles = DirectedGraph.IncludeDependents(userDirectRoles, roleInheritsRole);
+            IList<Guid> userAllRoles = Graph.IncludeDependents(userDirectRoles, roleInheritsRole);
             return userAllRoles;
         }
 

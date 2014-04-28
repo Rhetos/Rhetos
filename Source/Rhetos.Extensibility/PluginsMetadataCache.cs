@@ -64,14 +64,14 @@ namespace Rhetos.Extensibility
                         .ToArray();
 
                     List<Type> pluginTypesSortedList = plugins.Select(plugin => plugin.GetType()).ToList();
-                    DirectedGraph.TopologicalSort(pluginTypesSortedList, dependencies);
+                    Graph.TopologicalSort(pluginTypesSortedList, dependencies);
 
                     pluginTypesSorted = pluginTypesSortedList.ToArray();
                     SortedImplementations.Add(key, pluginTypesSorted);
                 }
             }
 
-            DirectedGraph.SortByGivenOrder(plugins, pluginTypesSorted.ToArray(), plugin => plugin.GetType());
+            Graph.SortByGivenOrder(plugins, pluginTypesSorted.ToArray(), plugin => plugin.GetType());
         }
 
         public Type GetMetadata(Type pluginType, string metadataKey)

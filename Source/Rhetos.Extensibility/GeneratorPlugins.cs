@@ -39,10 +39,10 @@ namespace Rhetos.Extensibility
         {
             var genNames = _generators.Select(gen => gen.GetType().FullName).ToList();
             var genDependencies = _generators.SelectMany(gen => (gen.Dependencies ?? new string[0]).Select(x => Tuple.Create(x, gen.GetType().FullName)));
-            Rhetos.Utilities.DirectedGraph.TopologicalSort(genNames, genDependencies);
+            Rhetos.Utilities.Graph.TopologicalSort(genNames, genDependencies);
 
             var sortedGenerators = _generators.ToArray();
-            DirectedGraph.SortByGivenOrder(sortedGenerators, genNames.ToArray(), gen => gen.GetType().FullName);
+            Graph.SortByGivenOrder(sortedGenerators, genNames.ToArray(), gen => gen.GetType().FullName);
             return sortedGenerators;
         }
     }

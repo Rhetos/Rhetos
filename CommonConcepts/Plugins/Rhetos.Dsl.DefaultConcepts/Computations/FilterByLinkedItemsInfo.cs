@@ -79,7 +79,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                     .Distinct().ToArray();
                 {0}.{1}[] result = repository.{0}.{1}.Filter(references);
 
-                Rhetos.Utilities.DirectedGraph.SortByGivenOrder(result, references, item => item.ID);
+                Rhetos.Utilities.Graph.SortByGivenOrder(result, references, item => item.ID);
                 return result;
             }}
 ",

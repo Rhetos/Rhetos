@@ -120,7 +120,7 @@ namespace Rhetos.Deployment
                     packagesByKey.GetValue(dependency.Identifier, "Package " + pckgInfo.Package.Identifier + " has depedency on nonexistent package {0} in " + PackageInfoFileName + "."),
                     pckgInfo)).ToList();
     
-            DirectedGraph.TopologicalSort(pckgInfos, packageDependencies);
+            Graph.TopologicalSort(pckgInfos, packageDependencies);
 
             return pckgInfos;
         }

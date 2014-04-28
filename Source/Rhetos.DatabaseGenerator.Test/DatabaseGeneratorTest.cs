@@ -309,9 +309,9 @@ namespace Rhetos.DatabaseGenerator.Test
                 oldApplications, newApplications,
                 out toBeRemoved, out toBeInserted,
                 new ConsoleLogger());
-            DirectedGraph.TopologicalSort(toBeRemoved, DatabaseGenerator_Accessor.GetDependencyPairs(oldApplications));
+            Graph.TopologicalSort(toBeRemoved, DatabaseGenerator_Accessor.GetDependencyPairs(oldApplications));
             toBeRemoved.Reverse();
-            DirectedGraph.TopologicalSort(toBeInserted, DatabaseGenerator_Accessor.GetDependencyPairs(newApplications));
+            Graph.TopologicalSort(toBeInserted, DatabaseGenerator_Accessor.GetDependencyPairs(newApplications));
         }
 
         #endregion
