@@ -65,6 +65,10 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public void Save(IEnumerable<{0}> insertedNew, IEnumerable<{0}> updatedNew, IEnumerable<{0}> deletedIds, bool checkUserPermissions = false)
         {{
+            if (insertedNew != null && !(insertedNew is System.Collections.IList)) insertedNew = insertedNew.ToList();
+            if (updatedNew != null && !(updatedNew is System.Collections.IList)) updatedNew = updatedNew.ToList();
+            if (deletedIds != null && !(deletedIds is System.Collections.IList)) deletedIds = deletedIds.ToList();
+
             if (insertedNew == null) insertedNew = new {0}[] {{ }};
             if (updatedNew == null) updatedNew = new {0}[] {{ }};
             if (deletedIds == null) deletedIds = new {0}[] {{ }};
@@ -72,8 +76,8 @@ namespace Rhetos.Dom.DefaultConcepts
             if (insertedNew.Count() == 0 && updatedNew.Count() == 0 && deletedIds.Count() == 0)
                 return;
 
-            foreach(var item in insertedNew)
-                if(item.ID == Guid.Empty)
+            foreach (var item in insertedNew)
+                if (item.ID == Guid.Empty)
                     item.ID = Guid.NewGuid();
 
             {2}

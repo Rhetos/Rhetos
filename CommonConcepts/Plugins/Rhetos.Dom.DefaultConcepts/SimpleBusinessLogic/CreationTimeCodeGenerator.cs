@@ -49,7 +49,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (CreationTimeInfo)conceptInfo;
 
-            codeBuilder.InsertCode(SetCreationTimeValue(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Property.DataStructure);
+            codeBuilder.InsertCode(SetCreationTimeValue(info), WritableOrmDataStructureCodeGenerator.InitializationTag, info.Property.DataStructure);
         }
     }
 }

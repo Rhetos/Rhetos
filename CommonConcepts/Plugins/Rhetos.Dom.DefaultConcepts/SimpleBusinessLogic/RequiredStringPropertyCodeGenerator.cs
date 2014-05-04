@@ -38,7 +38,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return string.Format(
 @"            {{ 
-                var invalid = inserted.Concat(updated).FirstOrDefault(item => string.IsNullOrWhiteSpace(item.{2}));
+                var invalid = insertedNew.Concat(updatedNew).FirstOrDefault(item => string.IsNullOrWhiteSpace(item.{2}));
                 if (invalid != null)
                     throw new Rhetos.UserException(""It is not allowed to enter {0}.{1} because the required property {2} is not set."", ""DataStructure:{0}.{1},ID:"" + invalid.ID.ToString() + "",Property:{2}"");
             }}
@@ -54,7 +54,7 @@ namespace Rhetos.Dom.DefaultConcepts
             if (RequiredPropertyCodeGenerator.IsSupported(info.Property)
                 && (info.Property is ShortStringPropertyInfo || info.Property is LongStringPropertyInfo))
             {
-                codeBuilder.InsertCode(CheckDataSnippet(info), WritableOrmDataStructureCodeGenerator.NewDataLoadedTag, info.Property.DataStructure);
+                codeBuilder.InsertCode(CheckDataSnippet(info), WritableOrmDataStructureCodeGenerator.ProcessedOldDataTag, info.Property.DataStructure);
                 codeBuilder.AddReferencesFromDependency(typeof(UserException));
             }
         }

@@ -50,7 +50,7 @@ namespace DeployPackages
             if (arguments.Count > 0)
             {
                 ShowHelp();
-                throw new ApplicationException("Unexpected comman-line argument: '" + arguments.First() + "'.");
+                throw new ApplicationException("Unexpected command-line argument: '" + arguments.First() + "'.");
             }
         }
 

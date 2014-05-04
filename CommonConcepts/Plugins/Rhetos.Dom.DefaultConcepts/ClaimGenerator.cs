@@ -82,12 +82,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     dest.Active = source.Active;
                 },
                 new DeactivateInsteadOfDelete(), // This is a filter on Common.Claim's repository, see ClaimRepositoryCodeGenerator.
-                (toInsert, toUpdate, toDelete) =>
-                {
-                    Report("Inserting claims", toInsert);
-                    Report("Updating claims", toUpdate);
-                    Report("Deleting claims", toDelete);
-                });
+                LogSummary);
             
             _performanceLogger.Write(stopwatch, "ClaimGenerator.Generate: Save claims.");
         }
@@ -120,8 +115,15 @@ namespace Rhetos.Dom.DefaultConcepts
                     duplicates.ElementAt(0).Resource, duplicates.ElementAt(0).Right,
                     duplicates.ElementAt(1).Resource, duplicates.ElementAt(1).Right));
         }
-        
-        void Report(string title, IEnumerable<ICommonClaim> claims)
+
+        private void LogSummary(ref IEnumerable<ICommonClaim> toInsert, ref IEnumerable<ICommonClaim> toUpdate, ref IEnumerable<ICommonClaim> toDelete)
+        {
+            Log("Inserting claims", toInsert);
+            Log("Updating claims", toUpdate);
+            Log("Deleting claims", toDelete);
+        }
+
+        private void Log(string title, IEnumerable<ICommonClaim> claims)
         {
             _logger.Write(
                 claims.Count() > 0 ? EventType.Info : EventType.Trace,

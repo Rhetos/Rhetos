@@ -121,7 +121,12 @@ Module Test9
 	Persisted DocumentAggregates Test9.ComputeDocumentAggregates
 	{
 		AllProperties;
-		KeepSynchronized 'documentAggregates => documentAggregates.Where(item => !item.Base.Name.Contains("locked"))';
+		KeepSynchronized '(documentAggregates, repository) =>
+        {
+            var ids = documentAggregates.Select(d => d.ID).ToList();
+            var lockedDocuments = new HashSet<Guid>(repository.Test9.Document.Filter(ids).Where(d => !d.Name.Contains("locked")).Select(d => d.ID));
+            return documentAggregates.Where(da => lockedDocuments.Contains(da.ID)).ToList();
+        }';
 	}
 }
 

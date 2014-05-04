@@ -112,6 +112,12 @@ Module TestEntity
     {
         LongString Text;
     }
+    
+    Entity UniqueEntity
+    {
+        ShortString Name { Required; Unique; }
+        ShortString Data;
+    }
 }
 
 Module TestBrowse

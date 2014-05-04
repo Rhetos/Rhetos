@@ -33,6 +33,12 @@ namespace Rhetos.TestCommon
     {
         public static Exception ShouldFail(Action action, params string[] expectedErrorContent)
         {
+            return ShouldFail<Exception>(action, expectedErrorContent);
+        }
+
+        public static Exception ShouldFail<TExpectedException>(Action action, params string[] expectedErrorContent)
+            where TExpectedException : Exception
+        {
             Exception exception = null;
             string message = null;
             try
@@ -50,8 +56,14 @@ namespace Rhetos.TestCommon
 
                 message = ex.GetType().Name + ": " + message;
             }
+
             Assert.IsNotNull(exception, "Expected exception did not happen.");
+
+            if (!(exception is TExpectedException))
+                Assert.Fail("The thrown exception " + exception.GetType().Name + " is not expected " + typeof(TExpectedException).GetType().Name + ".");
+
             AssertContains(message, expectedErrorContent, "Exception message text is incorrect. ", exception.ToString());
+
             return exception;
         }
 

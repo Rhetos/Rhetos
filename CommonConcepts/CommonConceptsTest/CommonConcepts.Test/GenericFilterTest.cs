@@ -27,6 +27,7 @@ using Rhetos.TestCommon;
 using System.Linq.Expressions;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
+using Rhetos;
 
 namespace CommonConcepts.Test
 {
@@ -397,8 +398,8 @@ namespace CommonConcepts.Test
                 PropertyFilter filter;
 
                 filter = new PropertyFilter { Property = "Parentt", Operation = "equal", Value = null };
-                TestUtility.ShouldFail(() => GenericFilterHelperFilter(childQuery, new[] { filter }).ToList(),
-                    "generic filter", "property 'Parentt'", "Type 'TestGenericFilter.Child'", "UserException");
+                TestUtility.ShouldFail<UserException>(() => GenericFilterHelperFilter(childQuery, new[] { filter }).ToList(),
+                    "generic filter", "property 'Parentt'", "Type 'TestGenericFilter.Child'");
             }
         }
     }

@@ -43,9 +43,8 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Sample usage: 1. Verify that locked items are not goind to be updated or deleted, 2. Cascade delete.</summary>
         public static readonly CsTag<DataStructureInfo> OldDataLoadedTag = "WritableOrm OldDataLoaded";
 
-        /// <summary>Arrays "inserted" and "updated" contain NEW data.
-        /// Data is not yet saved to database so SQL validations and computations can NOT be used).</summary>
-        public static readonly CsTag<DataStructureInfo> NewDataLoadedTag = "WritableOrm NewDataLoaded";
+        [Obsolete]
+        public static readonly CsTag<DataStructureInfo> ProcessedOldDataTag = "WritableOrm ProcessedOldData";
 
         /// <summary> Recomended usage: Recompute items that depend on changes items.
         /// Arrays "inserted" and "updated" contain NEW data.
@@ -57,7 +56,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Data is saved to the database (but the SQL transaction has not yet been commited) so SQL validations and computations CAN be used.</summary>
         public static readonly CsTag<DataStructureInfo> OnSaveTag2 = "WritableOrm OnSaveTag2";
 
-
+        // TODO: Remove "duplicateObjects" check after implementing NHibernate stateless session with "manual" saving.
         protected static string MemberFunctionsSnippet(DataStructureInfo info)
         {
             return string.Format(
@@ -87,6 +86,10 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public void Save(IEnumerable<{0}> insertedNew, IEnumerable<{0}> updatedNew, IEnumerable<{0}> deletedIds, bool checkUserPermissions = false)
         {{
+            if (insertedNew != null && !(insertedNew is System.Collections.IList)) insertedNew = insertedNew.ToList();
+            if (updatedNew != null && !(updatedNew is System.Collections.IList)) updatedNew = updatedNew.ToList();
+            if (deletedIds != null && !(deletedIds is System.Collections.IList)) deletedIds = deletedIds.ToList();
+
             if (insertedNew == null) insertedNew = new {0}[] {{ }};
             if (updatedNew == null) updatedNew = new {0}[] {{ }};
             if (deletedIds == null) deletedIds = new {0}[] {{ }};
@@ -94,17 +97,22 @@ namespace Rhetos.Dom.DefaultConcepts
             if (insertedNew.Count() == 0 && updatedNew.Count() == 0 && deletedIds.Count() == 0)
                 return;
 
-            foreach(var item in insertedNew)
-                if(item.ID == Guid.Empty)
+            foreach (var item in insertedNew)
+                if (item.ID == Guid.Empty)
                     item.ID = Guid.NewGuid();
 
             _executionContext.NHibernateSession.Clear(); // Updating a modified persistent object could break old-data validations such as checking for locked items.
 
             if (insertedNew.Count() > 0)
             {{
-                var existingObject = Filter(insertedNew.Select(item => item.ID).ToArray()).FirstOrDefault();
-                if (existingObject != null)
-                    throw new Rhetos.FrameworkException(""Inserting already existing object. ID="" + existingObject.ID);
+                var duplicateObjects = Filter(insertedNew.Select(item => item.ID).ToArray());
+                if (duplicateObjects.Count() > 0)
+                {{
+                    var deletedIndex = new HashSet<Guid>(deletedIds.Select(item => item.ID));
+                    duplicateObjects = duplicateObjects.Where(item => !deletedIndex.Contains(item.ID)).ToArray();
+                }}
+                if (duplicateObjects.Count() > 0)
+                    throw new Rhetos.FrameworkException(""Inserting an object that already exists. ID="" + duplicateObjects.First().ID);
             }}
 
 {1}
@@ -115,37 +123,44 @@ namespace Rhetos.Dom.DefaultConcepts
 
 {2}
 
-            // Using new data:
-            {0}[] inserted = insertedNew.Select(item => ({0})_executionContext.NHibernateSession.Merge(item)).ToArray();
-            updated = updatedNew.Select(item => ({0})_executionContext.NHibernateSession.Merge(item)).ToArray();
-            foreach (var item in deleted)
-                _executionContext.NHibernateSession.Delete(item);
-            deleted = null;
-
 {3}
+
+            {0}[] inserted;
 
             try
             {{
+                foreach (var item in deleted)
+                    _executionContext.NHibernateSession.Delete(item);
+                deleted = null;
+                _executionContext.NHibernateSession.Flush();
+
+                updated = updatedNew.Select(item => ({0})_executionContext.NHibernateSession.Merge(item)).ToArray();
+                _executionContext.NHibernateSession.Flush();
+
+                inserted = insertedNew.Select(item => ({0})_executionContext.NHibernateSession.Merge(item)).ToArray();
                 _executionContext.NHibernateSession.Flush();
             }}
             catch (NHibernate.Exceptions.GenericADOException nhException)
             {{
-                var newException = Rhetos.Utilities.MsSqlUtility.ProcessSqlException(nhException.InnerException);
-                if (newException != null)
-                    throw newException;
+                var sqlException = Rhetos.Utilities.MsSqlUtility.ProcessSqlException(nhException.InnerException);
+                if (sqlException != null)
+                    throw sqlException;
                 throw;
             }}
 
+            bool allEffectsCompleted = false;
             try
             {{
 {4}
 
 {5}
+
+                allEffectsCompleted = true;
             }}
-            catch
+            finally
             {{
-                _executionContext.PersistenceTransaction.DiscardChanges();
-                throw;
+                if (!allEffectsCompleted)
+                    _executionContext.PersistenceTransaction.DiscardChanges();
             }}
         }}
 
@@ -153,7 +168,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 info.GetKeyProperties(),
                 InitializationTag.Evaluate(info),
                 OldDataLoadedTag.Evaluate(info),
-                NewDataLoadedTag.Evaluate(info),
+                ProcessedOldDataTag.Evaluate(info),
                 OnSaveTag1.Evaluate(info),
                 OnSaveTag2.Evaluate(info));
         }
@@ -173,6 +188,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 codeBuilder.InsertCode("IWritableRepository", RepositoryHelper.RepositoryInterfaces, info);
                 codeBuilder.InsertCode(MemberFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info);
                 codeBuilder.InsertCode(RegisterRepository(info), ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
+                codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.ExceptionsUtility));
             }
         }
     }

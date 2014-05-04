@@ -53,7 +53,7 @@ namespace CommonConcepts.Test
                 new SomeEntity { Name = "e", Reference = id4 }
             };
 
-            DirectedGraph.SortByGivenOrder(items, expectedOrder, item => item.Reference);
+            Graph.SortByGivenOrder(items, expectedOrder, item => item.Reference);
             string result = string.Join(", ", items.Select(item => item.Name));
             const string expectedResult1 = "c, b, d, a, e";
             const string expectedResult2 = "c, d, b, a, e";
@@ -78,7 +78,7 @@ namespace CommonConcepts.Test
                 new SomeEntity { Name = "b", Reference = id2 },
             };
 
-            TestUtility.ShouldFail(() => DirectedGraph.SortByGivenOrder(items, expectedOrder, item => item.Reference),
+            TestUtility.ShouldFail(() => Graph.SortByGivenOrder(items, expectedOrder, item => item.Reference),
                 "SomeEntity", "ComputationsUtilityTest", id2.ToString());
         }
     }

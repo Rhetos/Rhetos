@@ -96,12 +96,12 @@ namespace Rhetos.Dom.DefaultConcepts
                             }
                             catch (SerializationException ex)
                             {
-                                throw new UserException("Invalid JSON format of " + basicType.Name + " propery '" + criteria.Property + "'. " + ex.Message, ex);
+                                throw new UserException("Invalid JSON format of " + basicType.Name + " property '" + criteria.Property + "'. " + ex.Message, ex);
                             }
                         }
                     }
                     else if ((basicType == typeof(decimal) || basicType == typeof(int)) && criteria.Value is string)
-                        throw new FrameworkException("Invalid JSON format of " + basicType.Name + " propery '" + criteria.Property + "'. Numeric value should not be passed as a string in JSON serialized object.");
+                        throw new FrameworkException("Invalid JSON format of " + basicType.Name + " property '" + criteria.Property + "'. Numeric value should not be passed as a string in JSON serialized object.");
                     else
                         convertedValue = Convert.ChangeType(criteria.Value, basicType);
 
@@ -276,7 +276,7 @@ namespace Rhetos.Dom.DefaultConcepts
             MethodInfo orderMethod = ascending ? OrderByAscendingMethod : OrderByDescendingMethod;
             MethodInfo genericOrderMethod = orderMethod.MakeGenericMethod(new[] { itemType, property.Type });
 
-            return (IQueryable<T>)genericOrderMethod.Invoke(null, new[] { (object)source, propertySelector });
+            return (IQueryable<T>)genericOrderMethod.InvokeEx(null, source, propertySelector);
         }
 
         private static readonly MethodInfo OrderByAscendingMethod =

@@ -22,6 +22,7 @@ using Rhetos.Configuration.Autofac;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -467,6 +468,85 @@ namespace CommonConcepts.Test
 
                 var loaded = repository.TestTypes.Reader.All().Single();
                 Assert.AreEqual(s.Length, loaded.Length);
+            }
+        }
+
+        [TestMethod]
+        public void SaveNonmaterialized()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestEntity.UniqueEntity" });
+                var r = container.Resolve<Common.DomRepository>().TestEntity.UniqueEntity;
+
+                var query = new[] { "a", "b", "c" }.Select(name => new TestEntity.UniqueEntity { Name = name });
+                Assert.IsFalse(query is ICollection);
+                Assert.IsFalse(query is IList);
+
+                r.Insert(query);
+                Assert.AreEqual("a, b, c", TestUtility.DumpSorted(r.All(), item => item.Name));
+            }
+        }
+
+        [TestMethod]
+        public void SaveDuplicate()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestEntity.Principal" });
+                var r = container.Resolve<Common.DomRepository>().TestEntity.Principal;
+
+                var i1 = new TestEntity.Principal { Name = "a", ID = Guid.NewGuid() };
+                var i2 = new TestEntity.Principal { Name = "b", ID = i1.ID };
+
+                r.Insert(new[] { i1 });
+                TestUtility.ShouldFail(() => r.Insert(new[] { i2 }), "Inserting an object that already exists");
+            }
+        }
+
+        [TestMethod]
+        public void DeleteUpdateInsert_ConflictUnique()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestEntity.UniqueEntity" });
+                var r = container.Resolve<Common.DomRepository>().TestEntity.UniqueEntity;
+                var nhSession = container.Resolve<Common.ExecutionContext>().NHibernateSession;
+
+                var ia = new TestEntity.UniqueEntity { Name = "a", ID = Guid.NewGuid() };
+                var ib = new TestEntity.UniqueEntity { Name = "b", ID = Guid.NewGuid() };
+                var ic1 = new TestEntity.UniqueEntity { Name = "c", ID = Guid.NewGuid() };
+
+                r.Insert(new[] { ia, ib, ic1 });
+                Assert.AreEqual("a, b, c", TestUtility.DumpSorted(r.All(), item => item.Name + item.Data));
+
+                // Deleting old 'c' and inserting new 'c'. Possible conflict on unique constraint for property Name.
+
+                var ic2 = new TestEntity.UniqueEntity { Name = "c", ID = Guid.NewGuid() };
+
+                r.Save(new[] { ic2 }, null, new[] { ic1 });
+                nhSession.Clear();
+                Assert.AreEqual("a, b, c", TestUtility.DumpSorted(r.All(), item => item.Name + item.Data));
+                Guid currentCID = r.Query().Where(item => item.Name == "c").Select(item => item.ID).Single();
+                Assert.AreEqual(ic2.ID, currentCID, "new inserted item 'c'");
+                Assert.AreNotEqual(ic1.ID, currentCID, "old deleted item 'c'");
+
+                // Deleting old 'c' and inserting new 'c' with same ID. Possible conflict on primary key.
+
+                var ic3 = new TestEntity.UniqueEntity { Name = "c", Data = "x", ID = ic2.ID };
+
+                r.Save(new[] { ic3 }, null, new[] { ic2 });
+                nhSession.Clear();
+                Assert.AreEqual("a, b, cx", TestUtility.DumpSorted(r.All(), item => item.Name + item.Data));
+
+                // Renaming old 'c' and inserting new 'c'. Possible conflict on unique constraint for property Name.
+
+                ic3.Name = "oldc";
+                var ic4 = new TestEntity.UniqueEntity { Name = "c", ID = Guid.NewGuid() };
+
+                r.Save(new[] { ic4 }, new[] { ic3 }, null);
+                nhSession.Clear();
+                Assert.AreEqual("a, b, c, oldcx", TestUtility.DumpSorted(r.All(), item => item.Name + item.Data));
             }
         }
     }

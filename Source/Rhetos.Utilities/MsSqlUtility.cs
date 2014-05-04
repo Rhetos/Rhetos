@@ -67,7 +67,7 @@ namespace Rhetos.Utilities
                          orderby e.LineNumber
                          select e;
             foreach (var err in errors)
-                if (err.State == 101) // Our convention for an error raised in SQL that is intended as a message to the end user.
+                if (err.State == 101) // Rhetos convention for an error raised in SQL that is intended as a message to the end user.
                     return new UserException(err.Message);
 
             return sqlException;

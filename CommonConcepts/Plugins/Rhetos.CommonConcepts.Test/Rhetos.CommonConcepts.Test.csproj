@@ -67,6 +67,7 @@
     <Compile Include="GenericRepositoryFilterTest.cs" />
     <Compile Include="ExpressionHandlerTest.cs" />
     <Compile Include="GenericRepositoryInstantiationTest.cs" />
+    <Compile Include="GenericRepositoryErrorsTest.cs" />
     <Compile Include="GenericRepositoryReadTest.cs" />
     <Compile Include="Mocks\DomainObjectModelMock.cs" />
     <Compile Include="Mocks\NHibernateSessionStub.cs" />

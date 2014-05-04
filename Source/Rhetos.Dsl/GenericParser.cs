@@ -29,9 +29,9 @@ namespace Rhetos.Dsl
     /// <summary>
     /// NOTES:
     /// 1. Parsing is done in the order as the properties are declares in the source.
-    /// 2. If the first propery implements IConceptInfo, it is possible to embed the concept within that parent concept.
+    /// 2. If the first property implements IConceptInfo, it is possible to embed the concept within that parent concept.
     /// ("module x { entity y; }") or to use it explicitly ("entity x.y;").
-    /// 3. If the first propery type is IConceptInfo interface, not the implementation, it can reference any concept
+    /// 3. If the first property type is IConceptInfo interface, not the implementation, it can reference any concept
     /// but can be used only in the embedded form.
     /// 4. Recursive "parent" property (referencing the same concept type) does not have to be the first property
 	/// to be used in the embedded form. This allows construction of recursive concepts such as menus.

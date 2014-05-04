@@ -278,15 +278,37 @@ namespace CommonConcepts.Test
                     new[] { new Test9.Part { ID = s13ID } });
                 Assert.AreEqual("d1:1, d2x:1, d3:1", ReportDocumentAggregates(repository), "autorecompute after insert&update&delete detail");
 
+                // Locked - simple:
+
                 var d4ID = Guid.NewGuid();
                 documents.Save(new[] { new Test9.Document { ID = d4ID, Name = "d4 locked" } }, null, null);
-                Assert.AreEqual("d1:1, d2x:1, d3:1", ReportDocumentAggregates(repository), "autorecompute after insert locked");
+                Assert.AreEqual("d1:1, d2x:1, d3:1", ReportDocumentAggregates(repository), "no autorecompute after insert locked");
 
                 documents.Save(null, new[] { new Test9.Document { ID = d2ID, Name = "d2xx" }, new Test9.Document { ID = d4ID, Name = "d4x locked" } }, null);
-                Assert.AreEqual("d1:1, d2xx:1, d3:1", ReportDocumentAggregates(repository), "autorecompute after update locked");
+                Assert.AreEqual("d1:1, d2xx:1, d3:1", ReportDocumentAggregates(repository), "no autorecompute after update locked");
 
                 documents.Save(null, null, new[] { new Test9.Document { ID = d3ID }, new Test9.Document { ID = d4ID } });
-                Assert.AreEqual("d1:1, d2xx:1", ReportDocumentAggregates(repository), "autorecompute after delete locked");
+                Assert.AreEqual("d1:1, d2xx:1", ReportDocumentAggregates(repository), "no autorecompute after delete locked");
+
+                // Locked - tricky:
+
+                documents.Save(new[] { new Test9.Document { ID = d4ID, Name = "d4 locked" } }, null, null);
+                Assert.AreEqual("d1:1, d2xx:1", ReportDocumentAggregates(repository), "no autorecompute after insert locked");
+
+                documents.Save(null, new[] { new Test9.Document { ID = d4ID, Name = "d41 unlckd" } }, null);
+                Assert.AreEqual("d1:1, d2xx:1, d41 unlckd:0", ReportDocumentAggregates(repository), "autorecompute after update to unlocked");
+
+                documents.Save(null, new[] { new Test9.Document { ID = d4ID, Name = "d42 locked" } }, null);
+                Assert.AreEqual("d1:1, d2xx:1, d41 unlckd:0", ReportDocumentAggregates(repository), "no autorecompute after update to locked");
+
+                documents.Save(null, new[] { new Test9.Document { ID = d4ID, Name = "d43 unlckd" } }, null);
+                Assert.AreEqual("d1:1, d2xx:1, d43 unlckd:0", ReportDocumentAggregates(repository), "autorecompute after update to unlocked");
+
+                documents.Save(null, new[] { new Test9.Document { ID = d4ID, Name = "d44 locked" } }, null);
+                Assert.AreEqual("d1:1, d2xx:1, d43 unlckd:0", ReportDocumentAggregates(repository), "no autorecompute after update to locked");
+
+                documents.Save(null, null, new[] { new Test9.Document { ID = d4ID, Name = "d45" } });
+                Assert.AreEqual("d1:1, d2xx:1", ReportDocumentAggregates(repository), "delete extension of locked item");
             }
         }
     }

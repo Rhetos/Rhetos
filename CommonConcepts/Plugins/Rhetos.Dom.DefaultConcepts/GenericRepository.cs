@@ -176,7 +176,7 @@ namespace Rhetos.Dom.DefaultConcepts
             if (_reflection.RepositoryQueryMethod == null)
                 throw new FrameworkException(EntityName + "'s repostory does not implement the Query() method.");
 
-            return (IQueryable<TEntityInterface>)_reflection.RepositoryQueryMethod.Invoke(_repository.Value, new object[] { });
+            return (IQueryable<TEntityInterface>)_reflection.RepositoryQueryMethod.InvokeEx(_repository.Value);
         }
 
         public IEnumerable<TEntityInterface> Read()
@@ -234,7 +234,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 return () =>
                 {
                     _logger.Trace(() => "Reading using Filter(" + reader.GetParameters()[0].ParameterType.FullName + ")");
-                    return (IEnumerable<TEntityInterface>)reader.Invoke(_repository.Value, new object[] { parameter });
+                    return (IEnumerable<TEntityInterface>)reader.InvokeEx(_repository.Value, parameter);
                 };
             };
 
@@ -245,7 +245,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 return () =>
                 {
                     _logger.Trace(() => "Reading using Query(" + reader.GetParameters()[0].ParameterType.FullName + ")");
-                    return (IEnumerable<TEntityInterface>)reader.Invoke(_repository.Value, new object[] { parameter });
+                    return (IEnumerable<TEntityInterface>)reader.InvokeEx(_repository.Value, parameter);
                 };
             };
 
@@ -257,8 +257,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 return () =>
                 {
                     _logger.Trace(() => "Reading using queryable Filter(Query(), " + reader.GetParameters()[1].ParameterType.FullName + ")");
-                    var query = _reflection.RepositoryQueryMethod.Invoke(_repository.Value, new object[] { });
-                    return (IEnumerable<TEntityInterface>)reader.Invoke(_repository.Value, new object[] { query, parameter });
+                    var query = _reflection.RepositoryQueryMethod.InvokeEx(_repository.Value);
+                    return (IEnumerable<TEntityInterface>)reader.InvokeEx(_repository.Value, query, parameter);
                 };
             };
 
@@ -283,7 +283,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         if (reader == null) return null;
                         return () => {
                             _logger.Trace(() => "Reading using All()");
-                            return (IEnumerable<TEntityInterface>)reader.Invoke(_repository.Value, new object[] { });
+                            return (IEnumerable<TEntityInterface>)reader.InvokeEx(_repository.Value);
                         };
                     },
                     () => {
@@ -291,7 +291,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         if (reader == null) return null;
                         return () => {
                             _logger.Trace(() => "Reading using Query()");
-                            return (IEnumerable<TEntityInterface>)reader.Invoke(_repository.Value, new object[] { });
+                            return (IEnumerable<TEntityInterface>)reader.InvokeEx(_repository.Value);
                         };
                     }
                 };
@@ -314,7 +314,7 @@ namespace Rhetos.Dom.DefaultConcepts
             if (_reflection.RepositoryQueryMethod != null && _reflection.IsPredicateExpression(parameterType))
             {
                 _logger.Trace(() => "Reading using Query().Where(" + parameterType.Name + ")");
-                var query = (IQueryable<TEntityInterface>)_reflection.RepositoryQueryMethod.Invoke(_repository.Value, new object[] { });
+                var query = (IQueryable<TEntityInterface>)_reflection.RepositoryQueryMethod.InvokeEx(_repository.Value);
                 return _reflection.Where(query, parameter);
             }
 
@@ -337,7 +337,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     {
                         _logger.Trace(() => "Reading using enumerable Filter(all, " + reader.GetParameters()[1].ParameterType.FullName + ")");
                         MaterializeEntityList(ref items);
-                        return (IEnumerable<TEntityInterface>)reader.Invoke(_repository.Value, new object[] { items, parameter });
+                        return (IEnumerable<TEntityInterface>)reader.InvokeEx(_repository.Value, items, parameter);
                     }
                 }
             }
@@ -379,7 +379,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             var specificMethod = _reflection.RepositoryReadCommandMethod;
             if (specificMethod != null)
-                return (ReadCommandResult)specificMethod.Invoke(_repository.Value, new object[] { commandInfo });
+                return (ReadCommandResult)specificMethod.InvokeEx(_repository.Value, commandInfo);
 
             bool pagingIsUsed = commandInfo.Top > 0 || commandInfo.Skip > 0;
 
@@ -439,7 +439,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         {
                             _logger.Trace(() => "Filtering using enumerable Filter(items, " + reader.GetParameters()[1].ParameterType.FullName + ")");
                             MaterializeEntityList(ref items);
-                            return (IEnumerable<TEntityInterface>)reader.Invoke(_repository.Value, new object[] { items, parameter });
+                            return (IEnumerable<TEntityInterface>)reader.InvokeEx(_repository.Value, items, parameter);
                         };
                     },
                     () => {
@@ -449,7 +449,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         {
                             _logger.Trace(() => "Filtering using queryable Filter(items, " + reader.GetParameters()[1].ParameterType.FullName + ")");
                             var query = _reflection.AsQueryable(items);
-                            return (IEnumerable<TEntityInterface>)reader.Invoke(_repository.Value, new object[] { query, parameter });
+                            return (IEnumerable<TEntityInterface>)reader.InvokeEx(_repository.Value, query, parameter);
                         };
                     }
                 };
@@ -512,11 +512,11 @@ namespace Rhetos.Dom.DefaultConcepts
             if (_reflection.RepositorySaveMethod == null)
                 throw new FrameworkException(EntityName + "'s repostory does not implement the Save(IEnumerable<Entity>, ...) method.");
 
-            _reflection.RepositorySaveMethod.Invoke(_repository.Value, new object[] {
+            _reflection.RepositorySaveMethod.InvokeEx(_repository.Value,
                 insertedNew != null ? _reflection.CastAsEntity(insertedNew) : null,
                 updatedNew != null ? _reflection.CastAsEntity(updatedNew) : null,
                 deletedIds != null ? _reflection.CastAsEntity(deletedIds) : null,
-                checkUserPermissions });
+                checkUserPermissions);
         }
 
         public void InsertOrReadId<TProperties>(
@@ -672,6 +672,8 @@ namespace Rhetos.Dom.DefaultConcepts
             toUpdate = (IEnumerable<TEntityInterface>)toUpdateList;
         }
 
+        public delegate void BeforeSave(ref IEnumerable<TEntityInterface> toInsert, ref IEnumerable<TEntityInterface> toUpdate, ref IEnumerable<TEntityInterface> toDelete);
+
         /// <param name="sameRecord">Compare key properties, determining the records that should be inserted or deleted.
         /// Typical implementation:
         /// <code>
@@ -687,8 +689,8 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <param name="filterLoad">For supported filters types see <see cref="Load{TParameter}(TParameter)"/> function.</param>
         /// <param name="assign">Typical implementation:
         /// <code>(destination, source) =&gt; {
-        ///     destination.Property1 == source.Property1;
-        ///     destination.Property2 == source.Property2; }</code></param>
+        ///     destination.Property1 = source.Property1;
+        ///     destination.Property2 = source.Property2; }</code></param>
         /// <param name="beforeSave"><code>(toInsert, toUpdate, toDelete) => { some code; } </code></param>
         public void InsertOrUpdateOrDelete<TFilterLoad>(
             IEnumerable<TEntityInterface> newItems,
@@ -696,7 +698,7 @@ namespace Rhetos.Dom.DefaultConcepts
             Func<TEntityInterface, TEntityInterface, bool> sameValue,
             TFilterLoad filterLoad,
             Action<TEntityInterface, TEntityInterface> assign,
-            Action<IEnumerable<TEntityInterface>, IEnumerable<TEntityInterface>, IEnumerable<TEntityInterface>> beforeSave = null)
+            BeforeSave beforeSave = null)
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -710,7 +712,7 @@ namespace Rhetos.Dom.DefaultConcepts
             _performanceLogger.Write(stopwatch, () => _repositoryName + ".InsertOrUpdateOrDeleteOrDeactivate: Diff");
 
             if (beforeSave != null)
-                beforeSave(toInsert, toUpdate, toDelete);
+                beforeSave(ref toInsert, ref toUpdate, ref toDelete);
             Save(toInsert, toUpdate, toDelete);
 
             _performanceLogger.Write(stopwatch, () => _repositoryName + ".InsertOrUpdateOrDeleteOrDeactivate: Save");
@@ -746,7 +748,7 @@ namespace Rhetos.Dom.DefaultConcepts
             TFilterLoad filterLoad,
             Action<TEntityInterface, TEntityInterface> assign,
             TFilterDeactivateDeleted deactivateDeleted,
-            Action<IEnumerable<TEntityInterface>, IEnumerable<TEntityInterface>, IEnumerable<TEntityInterface>> beforeSave = null)
+            BeforeSave beforeSave = null)
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -788,7 +790,7 @@ namespace Rhetos.Dom.DefaultConcepts
             _performanceLogger.Write(stopwatch, () => _repositoryName + ".InsertOrUpdateOrDeleteOrDeactivate: Deactivate");
 
             if (beforeSave != null)
-                beforeSave(toInsert, toUpdate, toDelete);
+                beforeSave(ref toInsert, ref toUpdate, ref toDelete);
             Save(toInsert, toUpdate, toDelete);
 
             _performanceLogger.Write(stopwatch, () => _repositoryName + ".InsertOrUpdateOrDeleteOrDeactivate: Save");

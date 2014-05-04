@@ -221,10 +221,11 @@ namespace Rhetos.Dom.DefaultConcepts
             IComparer<TEntityInterface> sameRecord,
             Func<TEntityInterface, TEntityInterface, bool> sameValue,
             TFilterLoad filterLoad,
-            Action<TEntityInterface, TEntityInterface> assign)
+            Action<TEntityInterface, TEntityInterface> assign,
+            GenericRepository<TEntityInterface>.BeforeSave beforeSave = null)
             where TEntityInterface : class, IEntity
         {
-            GetGenericRepository<TEntityInterface>().InsertOrUpdateOrDelete(newItems, sameRecord, sameValue, filterLoad, assign);
+            GetGenericRepository<TEntityInterface>().InsertOrUpdateOrDelete(newItems, sameRecord, sameValue, filterLoad, assign, beforeSave);
         }
 
         public void InsertOrUpdateOrDeleteOrDeactivate<TEntityInterface, TFilterLoad, TFilterDeactivateDeleted>(
@@ -233,10 +234,11 @@ namespace Rhetos.Dom.DefaultConcepts
             Func<TEntityInterface, TEntityInterface, bool> sameValue,
             TFilterLoad filterLoad,
             Action<TEntityInterface, TEntityInterface> assign,
-            TFilterDeactivateDeleted deactivateDeleted)
+            TFilterDeactivateDeleted deactivateDeleted,
+            GenericRepository<TEntityInterface>.BeforeSave beforeSave = null)
             where TEntityInterface : class, IEntity
         {
-            GetGenericRepository<TEntityInterface>().InsertOrUpdateOrDeleteOrDeactivate(newItems, sameRecord, sameValue, filterLoad, assign, deactivateDeleted);
+            GetGenericRepository<TEntityInterface>().InsertOrUpdateOrDeleteOrDeactivate(newItems, sameRecord, sameValue, filterLoad, assign, deactivateDeleted, beforeSave);
         }
 
         #endregion

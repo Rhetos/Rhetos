@@ -38,9 +38,9 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { StringFrom200To249 = "." };
-                TestUtility.ShouldFail(
+                TestUtility.ShouldFail<Rhetos.UserException>(
                     () => repository.TestRegex.Simple.Insert(new[] { entity }),
-                    "UserException", "StringFrom200To249 must be between 200 and 249", "Property:StringFrom200To249");
+                    "StringFrom200To249 must be between 200 and 249", "Property:StringFrom200To249");
             }
         }
 
@@ -73,9 +73,9 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleRequired { StringFrom200To249 = null };
-                TestUtility.ShouldFail(
+                TestUtility.ShouldFail<Rhetos.UserException>(
                     () => repository.TestRegex.SimpleRequired.Insert(new[] { entity }),
-                    "UserException", "Required", "Property:StringFrom200To249");
+                    "Required", "Property:StringFrom200To249");
             }
         }
 
@@ -89,9 +89,9 @@ namespace CommonConcepts.Test
                 repository.TestRegex.Simple.Insert(new[] { entity });
 
                 entity.StringFrom200To249 = "259";
-                TestUtility.ShouldFail(
+                TestUtility.ShouldFail<Rhetos.UserException>(
                     () => repository.TestRegex.Simple.Update(new[] { entity }),
-                    "UserException", "StringFrom200To249 must be between 200 and 249", "Property:StringFrom200To249");
+                    "StringFrom200To249 must be between 200 and 249", "Property:StringFrom200To249");
             }
         }
 
@@ -103,9 +103,9 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { StringFrom200To249 = "a 205 a" };
 
-                TestUtility.ShouldFail(
+                TestUtility.ShouldFail<Rhetos.UserException>(
                     () => repository.TestRegex.Simple.Insert(new[] { entity }),
-                    "UserException", "StringFrom200To249 must be between 200 and 249", "Property:StringFrom200To249");
+                    "StringFrom200To249 must be between 200 and 249", "Property:StringFrom200To249");
             }
         }
 
@@ -117,9 +117,9 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { StringFrom200To249 = " 205" };
 
-                TestUtility.ShouldFail(
+                TestUtility.ShouldFail<Rhetos.UserException>(
                     () => repository.TestRegex.Simple.Insert(new[] { entity }),
-                    "UserException", "StringFrom200To249 must be between 200 and 249", "Property:StringFrom200To249");
+                    "StringFrom200To249 must be between 200 and 249", "Property:StringFrom200To249");
             }
         }
 
@@ -131,9 +131,9 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { StringFrom200To249 = "205 " };
 
-                TestUtility.ShouldFail(
+                TestUtility.ShouldFail<Rhetos.UserException>(
                     () => repository.TestRegex.Simple.Insert(new[] { entity }),
-                    "UserException", "StringFrom200To249 must be between 200 and 249", "Property:StringFrom200To249");
+                    "StringFrom200To249 must be between 200 and 249", "Property:StringFrom200To249");
             }
         }
 
@@ -147,9 +147,9 @@ namespace CommonConcepts.Test
                 repository.TestRegex.Simple.Insert(new[] { entity });
 
                 entity.UnicodeTest = "x";
-                TestUtility.ShouldFail(
+                TestUtility.ShouldFail<Rhetos.UserException>(
                     () => repository.TestRegex.Simple.Update(new[] { entity }),
-                    "UserException", "must match", "Property:UnicodeTest");
+                    "must match", "Property:UnicodeTest");
             }
         }
 
@@ -163,9 +163,9 @@ namespace CommonConcepts.Test
                 repository.TestRegex.Simple.Insert(new[] { entity });
 
                 entity.WhitespaceTest = "x";
-                TestUtility.ShouldFail(
+                TestUtility.ShouldFail<Rhetos.UserException>(
                     () => repository.TestRegex.Simple.Update(new[] { entity }),
-                    "UserException", "must match", "Property:WhitespaceTest");
+                    "must match", "Property:WhitespaceTest");
             }
         }
 
@@ -179,9 +179,9 @@ namespace CommonConcepts.Test
                 repository.TestRegex.Simple.Insert(new[] { entity });
 
                 entity.SpecialCharTest = "x";
-                TestUtility.ShouldFail(
+                TestUtility.ShouldFail<Rhetos.UserException>(
                     () => repository.TestRegex.Simple.Update(new[] { entity }),
-                    "UserException", "must match", "Property:SpecialCharTest");
+                    "must match", "Property:SpecialCharTest");
             }
         }
 
@@ -195,9 +195,9 @@ namespace CommonConcepts.Test
                 repository.TestRegex.Simple.Insert(new[] { entity });
 
                 entity.DefaultErrorMessageTest = "x";
-                TestUtility.ShouldFail(
+                TestUtility.ShouldFail<Rhetos.UserException>(
                     () => repository.TestRegex.Simple.Update(new[] { entity }),
-                    "UserException", "Property DefaultErrorMessageTest does not match required format.", "Property:DefaultErrorMessageTest");
+                    "Property DefaultErrorMessageTest does not match required format.", "Property:DefaultErrorMessageTest");
             }
         }
     }

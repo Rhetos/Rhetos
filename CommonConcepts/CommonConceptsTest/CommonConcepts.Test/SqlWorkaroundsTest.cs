@@ -165,11 +165,9 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var ex = TestUtility.ShouldFail(
+                TestUtility.ShouldFail<Rhetos.UserException>(
                     () => repository.TestSqlWorkarounds.SqlUserError.Insert(new[] { new TestSqlWorkarounds.SqlUserError() }),
                     "custom user message");
-
-                Assert.AreEqual("UserException", ex.GetType().Name);
             }
         }
     }

@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Processing.DefaultCommands;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -159,7 +160,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             Type predicateParameter = GetPredicateExpressionParameter(predicateExpression.GetType());
             MethodInfo whereMethod = QueryableWhereMethod(predicateParameter);
-            object result = whereMethod.Invoke(null, new object[] { items, predicateExpression });
+            object result = whereMethod.InvokeEx(null, items, predicateExpression);
             return (IQueryable<TEntityInterface>)result;
         }
 
@@ -175,7 +176,7 @@ namespace Rhetos.Dom.DefaultConcepts
         }
         public void AddRange(IEnumerable<TEntityInterface> list, IEnumerable<TEntityInterface> items)
         {
-            AddRangeMethod.Invoke(list, new object[] { items });
+            AddRangeMethod.InvokeEx(list, items);
         }
 
         private MethodInfo _castAsEntityMethod = null;
@@ -191,7 +192,7 @@ namespace Rhetos.Dom.DefaultConcepts
         }
         public IEnumerable<TEntityInterface> CastAsEntity(IEnumerable<object> items)
         {
-            return (IEnumerable<TEntityInterface>)CastAsEntityMethod.Invoke(null, new object[] { items });
+            return (IEnumerable<TEntityInterface>)CastAsEntityMethod.InvokeEx(null, items);
         }
 
         private MethodInfo _asQueryableMethod = null;
@@ -210,7 +211,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public IQueryable<TEntityInterface> AsQueryable(IEnumerable<TEntityInterface> items)
         {
             var castItems = CastAsEntity(items);
-            return (IQueryable<TEntityInterface>)AsQueryableMethod.Invoke(null, new object[] { castItems });
+            return (IQueryable<TEntityInterface>)AsQueryableMethod.InvokeEx(null, castItems);
         }
 
         private MethodInfo _toListOfEntityMethod = null;
@@ -230,7 +231,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public IEnumerable<TEntityInterface> ToListOfEntity(IEnumerable<TEntityInterface> items)
         {
             var castItems = CastAsEntity(items);
-            return (IEnumerable<TEntityInterface>)ToListOfEntityMethod.Invoke(null, new object[] { castItems });
+            return (IEnumerable<TEntityInterface>)ToListOfEntityMethod.InvokeEx(null, castItems);
         }
 
         private MethodInfo _toArrayOfEntityMethod = null;
@@ -250,7 +251,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public IEnumerable<TEntityInterface> ToArrayOfEntity(IEnumerable<TEntityInterface> items)
         {
             var castItems = CastAsEntity(items);
-            return (IEnumerable<TEntityInterface>)ToArrayOfEntityMethod.Invoke(null, new object[] { castItems });
+            return (IEnumerable<TEntityInterface>)ToArrayOfEntityMethod.InvokeEx(null, castItems);
         }
 
         #endregion
