@@ -22,24 +22,14 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
-using Rhetos.Compiler;
-using Rhetos.Dsl;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Dsl.DefaultConcepts
 {
-    [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(ExtensionComputedFromInfo))]
-    public class ExtensionComputedFromCodeGenerator : IConceptCodeGenerator
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("KeyProperty")]
+    public class KeyPropertyComputedFromInfo : IConceptInfo
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
-        {
-            var info = (ExtensionComputedFromInfo)conceptInfo;
-            codeBuilder.InsertCode(
-                "Base = sourceItem.Base,\r\n                ",
-                EntityComputedFromCodeGenerator.ClonePropertyTag,
-                info.EntityComputedFrom);
-        }
+        [ConceptKey]
+        public PropertyComputedFromInfo PropertyComputedFrom { get; set; }
     }
 }

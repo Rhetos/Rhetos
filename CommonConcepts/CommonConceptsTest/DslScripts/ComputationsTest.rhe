@@ -483,4 +483,34 @@ Module TestComputedFrom
         DateTime Start { CreationTime; }
         DateTime LastModifiedName1bx { ModificationTimeOf TestComputedFrom.MultiSync.Name1bx; }
     }
+    
+    //==========================================================
+    
+    Entity SyncByKeySource
+    {
+        Integer Name1;
+        ShortString Name2;
+        ShortString Data;
+        
+        ChangesOnChangedItems TestComputedFrom.SyncByKeySource 'FilterAll' 'changedItems => new FilterAll()';
+    }
+    
+    Persisted SyncByKeyTarget TestComputedFrom.SyncByKeySource
+    {
+        AllProperties;
+        KeepSynchronized;
+        KeyProperties 'Name1 Name2';
+        
+        ShortString Control;
+    }
+    
+    Entity SyncByKeyTarget2
+    {
+        Integer Name1x { ComputedFrom TestComputedFrom.SyncByKeySource.Name1 { KeyProperty; } }
+        ShortString Name2x { ComputedFrom TestComputedFrom.SyncByKeySource.Name2 { KeyProperty; } }
+        ShortString Datax { ComputedFrom TestComputedFrom.SyncByKeySource.Data; }
+        ComputedFrom TestComputedFrom.SyncByKeySource { KeepSynchronized; }
+        
+        ShortString Control;
+    }
 }

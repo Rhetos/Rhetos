@@ -50,9 +50,6 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode(
                 FilterLoadFunction(info.UpdateOnChange.DependsOn, info.UpdateOnChange.FilterType, info.UpdateOnChange.FilterFormula, uniqueName),
                 RepositoryHelper.RepositoryMembers, info.UpdateOnChange.DependsOn);
-
-            if (!string.IsNullOrWhiteSpace(info.FilterSaveExpression))
-                codeBuilder.InsertCode(FilterSaveFunction(info, uniqueName), RepositoryHelper.RepositoryMembers, info.UpdateOnChange.DependsOn);
         }
 
         private static int _uniqueNumber = 1;
@@ -70,7 +67,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return string.Format(
 @"            {{
-                var filteredNew = _filterLoadKeepSynchronizedOnChangedItems{0}(inserted.Concat(updated).ToArray());
+                var filteredNew = _filterLoadKeepSynchronizedOnChangedItems{0}(inserted.Concat(updated).ToList());
                 _domRepository.{1}.{2}.{6}(filterKeepSynchronizedOnChangedItems{0}Old{3});
                 _domRepository.{1}.{2}.{6}(filteredNew{3});
                 
@@ -80,12 +77,24 @@ namespace Rhetos.Dom.DefaultConcepts
             }}
 ",
                 uniqueName,
-                info.EntityComputedFrom.Target.Module.Name,
-                info.EntityComputedFrom.Target.Name,
-                !string.IsNullOrWhiteSpace(info.FilterSaveExpression) ? (", _filterSaveKeepSynchronizedOnChangedItems" + uniqueName) : "",
+                info.KeepSynchronized.EntityComputedFrom.Target.Module.Name,
+                info.KeepSynchronized.EntityComputedFrom.Target.Name,
+                FilterSaveCall(info),
                 info.UpdateOnChange.DependsOn.Module.Name,
                 info.UpdateOnChange.DependsOn.Name,
-                EntityComputedFromInfo.RecomputeFunctionName(info.EntityComputedFrom));
+                EntityComputedFromInfo.RecomputeFunctionName(info.KeepSynchronized.EntityComputedFrom));
+        }
+
+        private static string FilterSaveCall(KeepSynchronizedOnChangedItemsInfo info)
+        {
+            if (string.IsNullOrWhiteSpace(info.KeepSynchronized.FilterSaveExpression))
+                return "";
+
+            return string.Format(", _domRepository.{0}.{1}.FilterSaveKeepSynchronizedOnChangedItems_{2}_{3}",
+                info.KeepSynchronized.EntityComputedFrom.Target.Module.Name,
+                info.KeepSynchronized.EntityComputedFrom.Target.Name,
+                info.KeepSynchronized.EntityComputedFrom.Source.Module.Name,
+                info.KeepSynchronized.EntityComputedFrom.Source.Name);
         }
 
         private static string FilterLoadFunction(DataStructureInfo hookOnSaveEntity, string filterType, string filterFormula, string uniqueName)
@@ -100,16 +109,6 @@ namespace Rhetos.Dom.DefaultConcepts
                 filterType,
                 uniqueName,
                 filterFormula);
-        }
-
-        private static string FilterSaveFunction(KeepSynchronizedOnChangedItemsInfo info, string uniqueName)
-        {
-            return string.Format(
-@"        private static readonly Func<IEnumerable<{0}.{1}>, IEnumerable<{0}.{1}>> _filterSaveKeepSynchronizedOnChangedItems{2} =
-            {3};
-
-",
-                info.EntityComputedFrom.Target.Module.Name, info.EntityComputedFrom.Target.Name, uniqueName, info.FilterSaveExpression);
         }
     }
 }

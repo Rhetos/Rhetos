@@ -33,33 +33,31 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(PropertyComputedFromInfo))]
     public class PropertyComputedFromCodeGenerator : IConceptCodeGenerator
     {
-        private static string ComparePropertySnippet(PropertyComputedFromInfo info)
+        private static string CompareValuePropertySnippet(PropertyComputedFromInfo info)
         {
             return string.Format(
-@"                        if (same && (sourceEnum.Current.{1} == null && destEnum.Current.{0} != null || sourceEnum.Current.{1} != null && !sourceEnum.Current.{1}.Equals(destEnum.Current.{0})))
-                            same = false;
-",
-                info.Target.Name, info.Source.Name);
+                "if (x.{0} == null && y.{0} != null || x.{0} != null && !x.{0}.Equals(y.{0})) return false;\r\n                    ",
+                info.Target.Name);
         }
 
         private static string ClonePropertySnippet(PropertyComputedFromInfo info)
         {
             return string.Format(
-@",
-                                    {0} = sourceEnum.Current.{1}", info.Target.Name, info.Source.Name);
+                "{0} = sourceItem.{1},\r\n                ",
+                info.Target.Name, info.Source.Name);
         }
 
         private static string AssignPropertySnippet(PropertyComputedFromInfo info)
         {
-            return string.Format(@"destEnum.Current.{0} = sourceEnum.Current.{1};
-                            ",
-                info.Target.Name, info.Source.Name);
+            return string.Format(
+                "destination.{0} = source.{0};\r\n                    ",
+                info.Target.Name);
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (PropertyComputedFromInfo) conceptInfo;
-            codeBuilder.InsertCode(ComparePropertySnippet(info), EntityComputedFromCodeGenerator.ComparePropertyTag, info.Dependency_EntityComputedFrom);
+            codeBuilder.InsertCode(CompareValuePropertySnippet(info), EntityComputedFromCodeGenerator.CompareValuePropertyTag, info.Dependency_EntityComputedFrom);
             codeBuilder.InsertCode(ClonePropertySnippet(info), EntityComputedFromCodeGenerator.ClonePropertyTag, info.Dependency_EntityComputedFrom);
             codeBuilder.InsertCode(AssignPropertySnippet(info), EntityComputedFromCodeGenerator.AssignPropertyTag, info.Dependency_EntityComputedFrom);
         }

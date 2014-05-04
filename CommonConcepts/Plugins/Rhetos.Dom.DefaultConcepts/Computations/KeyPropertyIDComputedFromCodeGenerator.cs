@@ -20,8 +20,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Globalization;
 using System.Linq;
 using System.Text;
+using Rhetos.Utilities;
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
@@ -30,16 +32,21 @@ using Rhetos.Extensibility;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(ExtensionComputedFromInfo))]
-    public class ExtensionComputedFromCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(KeyPropertyIDComputedFromInfo))]
+    public class KeyPropertyIDComputedFromCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (ExtensionComputedFromInfo)conceptInfo;
-            codeBuilder.InsertCode(
-                "Base = sourceItem.Base,\r\n                ",
-                EntityComputedFromCodeGenerator.ClonePropertyTag,
-                info.EntityComputedFrom);
+            var info = (KeyPropertyIDComputedFromInfo)conceptInfo;
+            codeBuilder.InsertCode(Snippet(info), EntityComputedFromCodeGenerator.CompareKeyPropertyTag, info.EntityComputedFrom);
+        }
+
+        private static string Snippet(KeyPropertyIDComputedFromInfo info)
+        {
+            return string.Format(
+                @"diff = x.ID.CompareTo(y.ID);
+                if (diff != 0) return diff;
+                ");
         }
     }
 }

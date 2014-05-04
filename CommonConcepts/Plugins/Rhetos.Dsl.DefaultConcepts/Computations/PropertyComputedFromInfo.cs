@@ -60,7 +60,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
             InternalCheck();
-            Dependency_EntityComputedFrom = new EntityComputedFromInfo { Target = (EntityInfo) Target.DataStructure, Source = Source.DataStructure };
+            Dependency_EntityComputedFrom = new EntityComputedFromInfo { Target = (EntityInfo)Target.DataStructure, Source = Source.DataStructure };
             createdConcepts = new[] { Dependency_EntityComputedFrom };
         }
     }

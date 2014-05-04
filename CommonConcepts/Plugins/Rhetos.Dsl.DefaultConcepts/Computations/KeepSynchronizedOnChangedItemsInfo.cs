@@ -29,21 +29,19 @@ namespace Rhetos.Dsl.DefaultConcepts
     public class KeepSynchronizedOnChangedItemsInfo : IConceptInfo, IValidationConcept
     {
         [ConceptKey]
-        public EntityComputedFromInfo EntityComputedFrom { get; set; }
+        public KeepSynchronizedInfo KeepSynchronized { get; set; }
 
         [ConceptKey]
         public ChangesOnChangedItemsInfo UpdateOnChange { get; set; }
 
-        public string FilterSaveExpression { get; set; }
-
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
-            if (UpdateOnChange.Computation != EntityComputedFrom.Source)
+            if (UpdateOnChange.Computation != KeepSynchronized.EntityComputedFrom.Source)
                 throw new DslSyntaxException(string.Format(
                     "Invalid use of {0}: UpdateOnChange.Computation ({1}) should be same as EntityComputedFrom.Source ({2}).",
                     this.GetUserDescription(),
                     UpdateOnChange.Computation.GetUserDescription(),
-                    EntityComputedFrom.Source.GetUserDescription()));
+                    KeepSynchronized.EntityComputedFrom.Source.GetUserDescription()));
         }
     }
 }

@@ -60,6 +60,9 @@
   <ItemGroup>
     <Compile Include="ClaimGenerator.cs" />
     <Compile Include="AutofacModuleConfiguration.cs" />
+    <Compile Include="Computations\KeepSynchronizedCodeGenerator.cs" />
+    <Compile Include="Computations\KeyPropertyIDComputedFromCodeGenerator.cs" />
+    <Compile Include="Computations\KeyPropertyComputedFromCodeGenerator.cs" />
     <Compile Include="DataStructure\ImplementsInterfacePropertyCodeGenerator.cs" />
     <Compile Include="DataStructure\RegisteredInterfaceImplementationCodeGenerator.cs" />
     <Compile Include="DataStructure\WriteCodeGenerator.cs" />

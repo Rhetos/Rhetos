@@ -30,16 +30,31 @@ using Rhetos.Extensibility;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(ExtensionComputedFromInfo))]
-    public class ExtensionComputedFromCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(KeepSynchronizedInfo))]
+    public class KeepSynchronizedCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (ExtensionComputedFromInfo)conceptInfo;
-            codeBuilder.InsertCode(
-                "Base = sourceItem.Base,\r\n                ",
-                EntityComputedFromCodeGenerator.ClonePropertyTag,
-                info.EntityComputedFrom);
+            var info = (KeepSynchronizedInfo)conceptInfo;
+
+            if (!string.IsNullOrWhiteSpace(info.FilterSaveExpression))
+                codeBuilder.InsertCode(FilterSaveFunction(info), RepositoryHelper.RepositoryMembers, info.EntityComputedFrom.Target);
+        }
+
+        private static string FilterSaveFunction(KeepSynchronizedInfo info)
+        {
+            return string.Format(
+@"        private static readonly Func<IEnumerable<{0}.{1}>, Common.DomRepository, IEnumerable<{0}.{1}>> _filterSaveKeepSynchronizedOnChangedItems_{3}_{4} =
+        {2};
+
+        public IEnumerable<{0}.{1}> FilterSaveKeepSynchronizedOnChangedItems_{3}_{4}(IEnumerable<{0}.{1}> items)
+        {{
+            return _filterSaveKeepSynchronizedOnChangedItems_{3}_{4}(items, _domRepository);
+        }}
+
+",
+                info.EntityComputedFrom.Target.Module.Name, info.EntityComputedFrom.Target.Name, info.FilterSaveExpression,
+                info.EntityComputedFrom.Source.Module.Name, info.EntityComputedFrom.Source.Name);
         }
     }
 }

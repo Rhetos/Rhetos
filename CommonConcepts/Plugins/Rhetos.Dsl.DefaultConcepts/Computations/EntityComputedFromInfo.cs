@@ -27,7 +27,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ComputedFrom")]
-    public class EntityComputedFromInfo : IConceptInfo
+    public class EntityComputedFromInfo : IConceptInfo, IMacroConcept
     {
         [ConceptKey]
         public EntityInfo Target { get; set; }
@@ -38,6 +38,15 @@ namespace Rhetos.Dsl.DefaultConcepts
         public static string RecomputeFunctionName(EntityComputedFromInfo info)
         {
             return "RecomputeFrom" + DslUtility.NameOptionalModule(info.Source, info.Target.Module);
+        }
+
+        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        {
+            if (!existingConcepts.OfType<KeyPropertyComputedFromInfo>().Any(kp => kp.PropertyComputedFrom.Dependency_EntityComputedFrom == this)
+                && !existingConcepts.OfType<KeyPropertyIDComputedFromInfo>().Any(kp => kp.EntityComputedFrom == this)
+                && !existingConcepts.OfType<PersistedKeyPropertiesInfo>().Any(kp => kp.Persisted == Target && kp.Persisted.Source == Source))
+                return new[] { new KeyPropertyIDComputedFromInfo { EntityComputedFrom = this } };
+            return null;
         }
     }
 }

@@ -109,6 +109,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Computations\KeyPropertyIDComputedFromInfo.cs" />
+    <Compile Include="Computations\PersistedKeyPropertiesInfo.cs" />
+    <Compile Include="Computations\KeyPropertyComputedFromInfo.cs" />
     <Compile Include="DatabaseWorkarounds\AutoSqlViewDependsOnInfo.cs" />
     <Compile Include="DatabaseWorkarounds\AutoSqlFunctionDependsOnInfo.cs" />
     <Compile Include="DatabaseWorkarounds\AutoSqlQueryableDependsOnInfo.cs" />

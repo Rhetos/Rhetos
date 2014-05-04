@@ -44,7 +44,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 .ToArray();
 
             newConcepts.AddRange(changesOnChangesItems.Select(change =>
-                new KeepSynchronizedOnChangedItemsInfo { EntityComputedFrom = EntityComputedFrom, UpdateOnChange = change, FilterSaveExpression = FilterSaveExpression }));
+                new KeepSynchronizedOnChangedItemsInfo { KeepSynchronized = this, UpdateOnChange = change }));
 
             // If the computed data source is an extension, but its value does not depend on changes in its base data structure,
             // it should still be computed every time the base data structure data is inserted.
