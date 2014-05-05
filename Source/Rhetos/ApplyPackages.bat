@@ -61,7 +61,7 @@ EXIT /B
 
 DEL /F /S /Q ServerDom.??? || GOTO Error1
 PUSHD %BinFolder%
-DeployPackages.exe || GOTO Error2
+DeployPackages.exe /Debug || GOTO Error2
 @POPD
 @POPD
 
