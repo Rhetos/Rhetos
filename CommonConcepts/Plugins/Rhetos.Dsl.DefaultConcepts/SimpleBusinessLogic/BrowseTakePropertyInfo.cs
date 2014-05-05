@@ -59,9 +59,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                     errorContext.GetUserDescription(),
                     newPropertyName));
 
-            var cloneMethod = typeof(object).GetMethod("MemberwiseClone", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            var browseProperty = (PropertyInfo)cloneMethod.Invoke(sourceProperty.Value, null);
-            browseProperty.DataStructure = browse;
+            var browseProperty = DslUtility.CreatePassiveClone(sourceProperty.Value, browse);
             browseProperty.Name = newPropertyName;
 
             var browsePropertySelector = new BrowseFromPropertyInfo { PropertyInfo = browseProperty, Path = path };

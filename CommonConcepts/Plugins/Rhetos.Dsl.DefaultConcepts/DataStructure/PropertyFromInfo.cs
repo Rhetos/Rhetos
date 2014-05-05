@@ -17,12 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -40,14 +37,8 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var newConcepts = new List<IConceptInfo>();
 
-            var cloneMethod = typeof(object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
-            var property = (PropertyInfo)cloneMethod.Invoke(Source, null);
-            property.DataStructure = Destination;
+            var property = DslUtility.CreatePassiveClone(Source, Destination);
             newConcepts.Add(property);
-
-            //var destinationEntity = Destination as EntityInfo;
-            //if (destinationEntity != null)
-            //{
 
             var required = existingConcepts.OfType<RequiredPropertyInfo>().Where(ci => ci.Property == Source)
                 .Select(ci => new RequiredPropertyInfo { Property = property })

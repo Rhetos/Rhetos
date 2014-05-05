@@ -29,12 +29,24 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Hierarchy")]
-    public class HierarchyInfo : IMacroConcept
+    public class HierarchyInfo : ReferencePropertyInfo, IAlternativeInitializationConcept, IMacroConcept
     {
-        [ConceptKey]
-        public DataStructureInfo DataStructure { get; set; }
+        public IEnumerable<string> DeclareNonparsableProperties()
+        {
+            return new[] { "Referenced" };
+        }
 
-        public string Name { get; set; }
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            if (Referenced != null && Referenced != DataStructure)
+                throw new DslSyntaxException(this, string.Format(
+                    "Incorrectly constructed Hierarchy property: it should reference itself. Reference='{0}', DataStructure='{1}'.",
+                    Referenced.GetUserDescription(),
+                    DataStructure.GetUserDescription()));
+
+            Referenced = DataStructure;
+            createdConcepts = null;
+        }
 
         public static readonly CsTag<HierarchyInfo> BeforeRecomputeTag = "BeforeRecompute";
 
@@ -79,8 +91,6 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             return new IConceptInfo[]
             {
-                new ReferencePropertyInfo { DataStructure = DataStructure, Name = Name, Referenced = DataStructure },
-
                 // Computing the hierarcy information:
                 computedDataStructure,
                 new ModuleExternalReferenceInfo { Module = computedDataStructure.Module, TypeOrAssembly = @"Plugins\Rhetos.Dom.DefaultConcepts.dll" },

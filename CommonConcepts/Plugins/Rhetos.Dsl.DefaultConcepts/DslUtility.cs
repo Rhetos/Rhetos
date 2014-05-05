@@ -23,6 +23,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using Rhetos.Utilities;
+using System.Reflection;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -66,6 +67,30 @@ namespace Rhetos.Dsl.DefaultConcepts
         public static string NameOptionalModule(DataStructureInfo dataStructure, ModuleInfo module)
         {
             return dataStructure.Module != module ? (dataStructure.Module.Name + dataStructure.Name) : dataStructure.Name;
+        }
+
+        /// <summary>
+        /// Creates a clone of the given source property and puts it in the given destination data structure.
+        /// The clone should not have active behavior (HierarchyInfo us turned into a simple ReferencePropertyInfo, e.g.).
+        /// </summary>
+        public static PropertyInfo CreatePassiveClone(PropertyInfo source, DataStructureInfo destination)
+        {
+            if (source is HierarchyInfo)
+            {
+                return new ReferencePropertyInfo
+                {
+                    DataStructure = destination,
+                    Name = source.Name,
+                    Referenced = ((HierarchyInfo)source).Referenced
+                };
+            }
+            else
+            {
+                var cloneMethod = typeof(object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
+                var property = (PropertyInfo)cloneMethod.Invoke(source, null);
+                property.DataStructure = destination;
+                return property;
+            }
         }
     }
 }
