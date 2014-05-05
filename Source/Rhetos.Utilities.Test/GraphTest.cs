@@ -241,8 +241,6 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void GetIndirectRelations_Cyclic()
         {
-            TestGetIndirectRelations("a-a", "");
-            TestGetIndirectRelations("a-b b-c b-b a-a c-c", "a-bc b-c");
             TestGetIndirectRelations("a-b b-a", "a-b b-a");
             TestGetIndirectRelations("a-b b-c c-a", "a-bc b-ac c-ab");
             TestGetIndirectRelations("a-b b-c c-a b-z", "a-bcz b-acz c-abz");
@@ -254,6 +252,14 @@ namespace Rhetos.Utilities.Test
         {
             TestGetIndirectRelations("b-a a-b a-c b-d c-d d-e", "a-bcde b-acde c-de d-e");
             TestGetIndirectRelations("d-e c-d b-d a-c a-b b-a", "a-bcde b-acde c-de d-e");
+        }
+
+        [TestMethod]
+        public void GetIndirectRelations_ExplicitSelfReference()
+        {
+            TestGetIndirectRelations("a-b b-a b-b", "a-b b-ab");
+            TestGetIndirectRelations("a-a", "a-a");
+            TestGetIndirectRelations("a-b b-c b-b a-a c-c", "a-abc b-bc c-c");
         }
     }
 }

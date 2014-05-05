@@ -223,7 +223,9 @@ namespace Rhetos.Utilities
 
         public static string QuoteText(string value)
         {
-            return "'" + value.Replace("'", "''") + "'";
+            return value != null
+                ? "'" + value.Replace("'", "''") + "'"
+                : "NULL";
         }
 
         public static string GetSchemaName(string fullObjectName)
@@ -310,6 +312,13 @@ namespace Rhetos.Utilities
         public static string QuoteGuid(Guid guid)
         {
             return "'" + GuidToString(guid) + "'";
+        }
+
+        public static string QuoteGuid(Guid? guid)
+        {
+            return guid.HasValue
+                ? "'" + GuidToString(guid.Value) + "'"
+                : "NULL";
         }
 
         public static string GuidToString(Guid guid)

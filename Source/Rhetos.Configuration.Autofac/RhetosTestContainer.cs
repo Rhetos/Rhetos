@@ -45,6 +45,7 @@ namespace Rhetos.Configuration.Autofac
         // Instance per test or session:
         protected ILifetimeScope _lifetimeScope;
         protected bool _commitChanges;
+        protected string _explicitRhetosServerFolder;
 
         /// <param name="commitChanges">
         /// Whether database updates (by ORM repositories) will be committed or rollbacked.
@@ -56,6 +57,7 @@ namespace Rhetos.Configuration.Autofac
         public RhetosTestContainer(bool commitChanges = false, string rhetosServerFolder = null)
         {
             _commitChanges = commitChanges;
+            _explicitRhetosServerFolder = rhetosServerFolder;
         }
 
         public T Resolve<T>()
@@ -82,7 +84,7 @@ namespace Rhetos.Configuration.Autofac
                     lock (_containerInitializationLock)
                         if (_iocContainer == null)
                         {
-                            Paths.InitializeRhetosServerRootPath(InitializeRhetosServerRootPath());
+                            Paths.InitializeRhetosServerRootPath(SearchForRhetosServerRootFolder());
                             _iocContainer = InitializeIocContainer();
                         }
                 }
@@ -98,8 +100,11 @@ namespace Rhetos.Configuration.Autofac
                 && File.Exists(Path.Combine(path, @"bin\Rhetos.dll"));
         }
 
-        protected virtual string InitializeRhetosServerRootPath()
+        protected virtual string SearchForRhetosServerRootFolder()
         {
+            if (_explicitRhetosServerFolder != null)
+                return _explicitRhetosServerFolder;
+
             var folder = new DirectoryInfo(Environment.CurrentDirectory);
 
             if (IsValidRhetosServerDirectory(folder.FullName))

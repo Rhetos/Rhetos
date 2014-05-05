@@ -189,10 +189,12 @@ namespace Rhetos.Utilities
                     targets.Value.UnionWith(targetsBySource[relation.Item2]);
 
             var allRelations = targetsBySource
-                 .SelectMany(targets => targets.Value
-                     .Where(target => !(targets.Key.Equals(target)))
-                     .Select(target => Tuple.Create(targets.Key, target)))
-                 .ToList();
+                .SelectMany(targets => targets.Value
+                    .Where(target => !(targets.Key.Equals(target)))
+                    .Select(target => Tuple.Create(targets.Key, target)))
+                .Concat(directRelations.Where(r => r.Item1.Equals(r.Item2)))
+                .ToList();
+
             return allRelations;
         }
     }
