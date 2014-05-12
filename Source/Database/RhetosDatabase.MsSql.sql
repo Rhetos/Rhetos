@@ -636,6 +636,8 @@ AS
 			EXEC ('CREATE TABLE [' + @MigrationSchemaName + '].[' + @TableName + '] (ID UNIQUEIDENTIFIER NOT NULL CONSTRAINT [PK_' + @TableName + '] PRIMARY KEY NONCLUSTERED)');
 			SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
 
+			DELETE FROM Rhetos.DataMigrationFreshRows WHERE OriginalSchemaName = @SchemaName AND TableName = @TableName;
+			SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
 		END
 
 		EXEC @Error = Rhetos.DataMigrationInitializeRows @SchemaName, @TableName;

@@ -192,7 +192,7 @@ namespace Rhetos.Utilities
                 .SelectMany(targets => targets.Value
                     .Where(target => !(targets.Key.Equals(target)))
                     .Select(target => Tuple.Create(targets.Key, target)))
-                .Concat(directRelations.Where(r => r.Item1.Equals(r.Item2)))
+                .Concat(directRelations.Where(r => r.Item1.Equals(r.Item2)).Distinct())
                 .ToList();
 
             return allRelations;

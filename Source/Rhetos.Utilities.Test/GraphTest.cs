@@ -261,5 +261,11 @@ namespace Rhetos.Utilities.Test
             TestGetIndirectRelations("a-a", "a-a");
             TestGetIndirectRelations("a-b b-c b-b a-a c-c", "a-abc b-bc c-c");
         }
+
+        [TestMethod]
+        public void GetIndirectRelations_Redundant()
+        {
+            TestGetIndirectRelations("a-b b-c c-b c-c a-c c-c a-c", "a-bc b-c c-bc");
+        }
     }
 }
