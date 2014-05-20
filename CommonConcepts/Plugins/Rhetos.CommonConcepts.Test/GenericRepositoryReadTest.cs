@@ -177,6 +177,7 @@ namespace Rhetos.CommonConcepts.Test
         class FilterAllRepository : IRepository
         {
             public IEnumerable<SimpleEntity> Filter(FilterAll parameter) { return new[] { new SimpleEntity { Name = "FilterAll" } }; }
+            public IQueryable<SimpleEntity> Query() { return new[] { new SimpleEntity { Name = "Query" } }.AsQueryable(); }
         }
 
         class AllRepository : IRepository
@@ -198,6 +199,14 @@ namespace Rhetos.CommonConcepts.Test
                 Assert.AreEqual("All", repos.Read().Single().Name);
                 Assert.AreEqual("All", repos.Read(new FilterAll()).Single().Name);
             }
+        }
+
+        [TestMethod]
+        public void ReadFilterAll_PreferQuery()
+        {
+            var repos = NewRepos(new FilterAllRepository());
+            Assert.AreEqual("FilterAll", repos.ReadNonMaterialized(new FilterAll(), preferQuery: false).Single().Name);
+            Assert.AreEqual("Query", repos.ReadNonMaterialized(new FilterAll(), preferQuery: true).Single().Name);
         }
 
         //===============================================

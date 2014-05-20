@@ -262,10 +262,24 @@ namespace Rhetos.Dom.DefaultConcepts
                 };
             };
 
+            ReadingOption queryAll = () =>
+            {
+                var reader = _reflection.RepositoryQueryMethod;
+                if (reader == null) return null;
+                return () =>
+                {
+                    _logger.Trace(() => "Reading using Query()");
+                    return (IEnumerable<TEntityInterface>)reader.InvokeEx(_repository.Value);
+                };
+            };
+
+
             {
                 ReadingOptions options;
                 if (!preferQuery)
                     options = new ReadingOptions { filterWithParameter, queryWithParameter, queryThenQueryableFilter };
+                else if (typeof(FilterAll).IsAssignableFrom(parameterType))
+                    options = new ReadingOptions { queryWithParameter, queryThenQueryableFilter, queryAll, filterWithParameter };
                 else
                     options = new ReadingOptions { queryWithParameter, queryThenQueryableFilter, filterWithParameter };
 
@@ -393,15 +407,21 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (commandInfo.ReadTotalCount)
                 if (pagingIsUsed)
-                    totalCount = filtered.Count();
+                    totalCount = SmartCount(filtered);
                 else
-                    totalCount = resultRecords != null ? resultRecords.Length : filtered.Count();
+                    totalCount = resultRecords != null ? resultRecords.Length : SmartCount(filtered);
 
             return new ReadCommandResult
             {
                 Records = resultRecords,
                 TotalCount = totalCount
             };
+        }
+
+        private static int SmartCount(IEnumerable<TEntityInterface> items)
+        {
+            var query = items as IQueryable<TEntityInterface>;
+            return query != null ? query.Count() : items.Count();
         }
 
         #endregion
