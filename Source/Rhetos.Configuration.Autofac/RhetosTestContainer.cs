@@ -100,7 +100,7 @@ namespace Rhetos.Configuration.Autofac
                 && File.Exists(Path.Combine(path, @"bin\Rhetos.dll"));
         }
 
-        protected virtual string SearchForRhetosServerRootFolder()
+        protected string SearchForRhetosServerRootFolder()
         {
             if (_explicitRhetosServerFolder != null)
                 return _explicitRhetosServerFolder;
@@ -149,7 +149,7 @@ namespace Rhetos.Configuration.Autofac
             return container;
         }
 
-        protected virtual Assembly SearchForAssembly(object sender, ResolveEventArgs args)
+        protected Assembly SearchForAssembly(object sender, ResolveEventArgs args)
         {
             foreach (var folder in new[] { Paths.PluginsFolder, Paths.GeneratedFolder, Paths.BinFolder })
             {
