@@ -1,3 +1,22 @@
+0.9.17 (2014-05-21)
+===================
+
+Breaking changes:
+
+* Testing API: RhetosTestContainer.InitializeRhetosServerRootPath function removed, use the constructor argument instead.
+
+New features:
+
+* New concepts: **KeyProperty** and **KeyProperties**, for **ComputedFrom** to control when to update an item or to delete old item and insert a new one. Backward compatible with previous ComputedFrom behavior where key property is assumed to be "ID".
+* AspNetFormsAuth: Token expiration parameter for *GeneratePasswordResetToken*.
+* `/Debug` option for DeployPackages.exe to generate ServerDom.dll without optimizations.
+
+Internal improvements:
+
+* Bugfix: Reading *top n* or *count* from Browse data structure loads all rows from database.
+* Bugfix: TargetInvocationException instead of UserException was reported to the client.
+* More minor bugfixes and error handling improvements.
+
 0.9.16 (2014-04-18)
 -------------------
 
