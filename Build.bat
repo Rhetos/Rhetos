@@ -13,7 +13,7 @@ CALL "%VSTOOLS%\..\..\VC\vcvarsall.bat" x86 || GOTO Error0
 :SkipVcvarsall
 
 IF EXIST Build.log DEL Build.log || GOTO Error0
-DevEnv.exe "Rhetos.sln" /build %Config% /out Build.log || TYPE Build.log && GOTO Error0
+DevEnv.com "Rhetos.sln" /build %Config% /out Build.log || TYPE Build.log && GOTO Error0
 
 @REM ================================================
 
