@@ -109,12 +109,30 @@ namespace DeployPackages
             return 0;
         }
 
+        private static void ValidateDbConnection(IContainer container)
+        {
+            var connectionReport = new ConnectionStringReport(container);
+            if (!connectionReport.connectivity)
+            {
+                Console.WriteLine("Could not connect to database! Terminating...");
+                throw (connectionReport.exceptionRaised);
+            }
+            else if (!connectionReport.isDbo)
+            {
+                string _errorMsg = "Current user does not have db_owner role for the database!";
+                Console.WriteLine(_errorMsg + " Terminating...");
+                throw (new DeployPackagesException(_errorMsg));
+            }
+        }
+
         private static void DeployPackages(IContainer container)
         {
             _logger = new ConsoleLogger("DeployPackages", container.Resolve<ILogProvider>().GetLogger("DeployPackages"));
             _performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
 
             Console.WriteLine("SQL connection string: " + SqlUtility.MaskPassword(SqlUtility.ConnectionString));
+
+            ValidateDbConnection(container);
 
             Console.Write("Parsing DSL scripts ... ");
             Console.WriteLine(container.Resolve<IDslModel>().Concepts.Count() + " statements.");
