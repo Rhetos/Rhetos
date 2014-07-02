@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Rhetos;
 using Rhetos.DatabaseGenerator;
 using Rhetos.Deployment;
 using Rhetos.Dom;
@@ -33,6 +34,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+
 
 namespace DeployPackages
 {
@@ -111,18 +113,11 @@ namespace DeployPackages
 
         private static void ValidateDbConnection(IContainer container)
         {
-            var connectionReport = new ConnectionStringReport(container);
+            var connectionReport = new ConnectionStringReport(container.Resolve<ISqlExecuter>());
             if (!connectionReport.connectivity)
-            {
-                Console.WriteLine("Could not connect to database! Terminating...");
                 throw (connectionReport.exceptionRaised);
-            }
             else if (!connectionReport.isDbo)
-            {
-                string _errorMsg = "Current user does not have db_owner role for the database!";
-                Console.WriteLine(_errorMsg + " Terminating...");
-                throw (new DeployPackagesException(_errorMsg));
-            }
+                throw (new FrameworkException("Current user does not have db_owner role for the database!"));
         }
 
         private static void DeployPackages(IContainer container)
