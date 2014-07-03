@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Rhetos;
 using Rhetos.DatabaseGenerator;
 using Rhetos.Deployment;
 using Rhetos.Dom;
@@ -33,6 +34,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+
 
 namespace DeployPackages
 {
@@ -109,12 +111,23 @@ namespace DeployPackages
             return 0;
         }
 
+        private static void ValidateDbConnection(IContainer container)
+        {
+            var connectionReport = new ConnectionStringReport(container.Resolve<ISqlExecuter>());
+            if (!connectionReport.connectivity)
+                throw (connectionReport.exceptionRaised);
+            else if (!connectionReport.isDbo)
+                throw (new FrameworkException("Current user does not have db_owner role for the database!"));
+        }
+
         private static void DeployPackages(IContainer container)
         {
             _logger = new ConsoleLogger("DeployPackages", container.Resolve<ILogProvider>().GetLogger("DeployPackages"));
             _performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
 
             Console.WriteLine("SQL connection string: " + SqlUtility.MaskPassword(SqlUtility.ConnectionString));
+
+            ValidateDbConnection(container);
 
             Console.Write("Parsing DSL scripts ... ");
             Console.WriteLine(container.Resolve<IDslModel>().Concepts.Count() + " statements.");

@@ -53,6 +53,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConnectionStringReport.cs" />
     <Compile Include="DeploymentUtility.cs" />
     <Compile Include="DatabaseCleaner.cs" />
     <Compile Include="DataMigration.cs" />
