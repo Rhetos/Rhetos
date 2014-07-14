@@ -50,11 +50,17 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                 info.Name));
         }
 
+        public static bool IsSupported(ReferencePropertyInfo info)
+        {
+            return ReferencePropertyDatabaseDefinition.IsSupported(info)
+                && info.Referenced.GetSchemaTableForForeignKey() != null;
+        }
+
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
             var info = (ReferencePropertyInfo)conceptInfo;
 
-            if (ReferencePropertyDatabaseDefinition.IsSupported(info))
+            if (IsSupported(info))
                 return Sql.Format("ReferencePropertyConstraintDatabaseDefinition_Create",
                     SqlUtility.Identifier(info.DataStructure.Module.Name) + "." + SqlUtility.Identifier(info.DataStructure.Name),
                     GetConstraintName(info),
@@ -68,7 +74,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (ReferencePropertyInfo)conceptInfo;
 
-            if (ReferencePropertyDatabaseDefinition.IsSupported(info))
+            if (IsSupported(info))
                 return Sql.Format("ReferencePropertyConstraintDatabaseDefinition_Remove",
                     SqlUtility.Identifier(info.DataStructure.Module.Name) + "." + SqlUtility.Identifier(info.DataStructure.Name),
                     GetConstraintName(info));

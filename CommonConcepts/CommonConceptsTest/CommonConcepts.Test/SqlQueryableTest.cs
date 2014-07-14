@@ -88,5 +88,21 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(4, documentRepository.All().Single().Extension_DocumentInfo.NameLen);
             }
         }
+
+        [TestMethod]
+        public void ReferenceToView()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDataStructure.ReferenceView;" });
+
+                var entityRepository = container.Resolve<Common.DomRepository>().TestDataStructure.ReferenceView;
+
+                var newItem = new TestDataStructure.ReferenceView { SqlQueryable1ID = new Guid("DB97EA5F-FB8C-408F-B35B-AD6642C593D7") };
+                entityRepository.Insert(new[] { newItem });
+
+                Assert.AreEqual("b", entityRepository.Query().Select(item => item.SqlQueryable1.s).Single());
+            }
+        }
     }
 }
