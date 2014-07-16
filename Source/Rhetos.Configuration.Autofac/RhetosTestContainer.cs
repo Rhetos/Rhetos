@@ -56,6 +56,10 @@ namespace Rhetos.Configuration.Autofac
         /// </param>
         public RhetosTestContainer(bool commitChanges = false, string rhetosServerFolder = null)
         {
+            if (rhetosServerFolder != null)
+                if (!Directory.Exists(rhetosServerFolder))
+                    throw new ArgumentException("The given folder does not exist: " + Path.GetFullPath(rhetosServerFolder), "rhetosServerFolder");
+
             _commitChanges = commitChanges;
             _explicitRhetosServerFolder = rhetosServerFolder;
         }

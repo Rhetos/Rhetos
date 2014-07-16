@@ -62,7 +62,7 @@ namespace Rhetos.TestCommon
             if (!(exception is TExpectedException))
                 Assert.Fail("The thrown exception " + exception.GetType().Name + " is not expected " + typeof(TExpectedException).GetType().Name + ".");
 
-            AssertContains(message, expectedErrorContent, "Exception message text is incorrect. ", exception.ToString());
+            AssertContains(message, expectedErrorContent, "Exception message is incorrect: " + message, exception.ToString());
 
             return exception;
         }
