@@ -453,5 +453,20 @@ namespace CommonConcepts.Test
                 }));
             }
         }
+
+        [TestMethod]
+        public void ComposableFilterWithExecutionContext()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var currentUserName = container.Resolve<IUserInfo>().UserName;
+                Assert.IsTrue(!string.IsNullOrWhiteSpace(currentUserName));
+
+                Assert.AreEqual(currentUserName,
+                    repository.TestFilter.FixedData.Filter(new TestFilter.ComposableFilterWithContext()).Single().Name);
+            }
+        }
     }
 }
