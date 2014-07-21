@@ -160,5 +160,29 @@ namespace CommonConcepts.Test
                 Assert.IsNull(loaded.Code);
             }
         }
+
+        [TestMethod]
+        public void SimpleWithPredefinedSuffixLength()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                DeleteOldData(container);
+                var repository = container.Resolve<Common.DomRepository>();
+
+                TestSimple(container, repository, "+", "1");
+                TestSimple(container, repository, "+", "2");
+                TestSimple(container, repository, "++++", "0003");
+                TestSimple(container, repository, "+", "0004");
+                TestSimple(container, repository, "+", "0005");
+                TestSimple(container, repository, "AB+", "AB1");
+                TestSimple(container, repository, "X", "X");
+                TestSimple(container, repository, "X+", "X1");
+                TestSimple(container, repository, "AB007", "AB007");
+                TestSimple(container, repository, "AB+", "AB008");
+                TestSimple(container, repository, "AB999", "AB999");
+                TestSimple(container, repository, "AB+", "AB1000");
+                TestSimple(container, repository, "AB++++++", "AB001001");
+            }
+        }
     }
 }
