@@ -1,8 +1,10 @@
 Prefix NVARCHAR2(256);
+TmpPlusses NVARCHAR2(256);
 PrefixLength NUMBER(10);
 QueryizedPrefix NVARCHAR2(2000);
 Query VARCHAR2(2000);
 MaxSuffixNum NUMBER(10);
+MinSuffixLength NUMBER(10);
 MaxSuffixLength NUMBER(10);
 NewNum NUMBER(10);
 NewNumFixLen NVARCHAR2(256);
@@ -14,16 +16,18 @@ BEGIN
 
   -- Possible format types with examples (CodeFormat => NewCode):
 
-  -- A) If the given format ends with "+", the new code will have the given prefix and the plus sign will be replaced with the next available number.
+  -- A) If the given format ends with at least one "+", the new code will have the given prefix and the plus signs will be replaced with the next available number.
+  --    If multiple plus signs are at the end, they define minimum len of suffix part (i.e. next available number prefixed with required number of "0").
   -- Examples:
   -- "ab+" => "ab1"
   -- "ab+" => "ab2"
   -- "ab+" => "ab3"
+  -- "ab++++" => "ab0004"
   -- "c+" => "c1"
   -- "+" => "1"
   -- "+" => "2"
-  -- Note: new code will maintain the length of the existing codes. For example, if the existing records contain code "ab005":
-  -- "ab+" => "ab006"
+  -- Note: new code will maintain the length of the existing codes. For example, if the existing records are those above (last one for "ab" prefix "ab0004"):
+  -- "ab+" => "ab0005"
 
   -- B) If the format doesn't end with "+", it is assumes the new code is explicitly defined.
   -- Examples:
@@ -33,7 +37,6 @@ BEGIN
 
   -- C) If an unsupported format is given, the procedure will raise an error:
   -- Examples:
-  -- "+++"
   -- "+123"
 
   -- Filter parameter:
@@ -51,12 +54,16 @@ BEGIN
 
   
   --===================================================================
-  -- Extract the prefix:
+  -- Extract the prefix and calculate minimum length of numeric suffix 
+  --		(defined by number of "+") at the end.
+  MinSuffixLength := LENGTH( CodeFormat ) - INSTR(CodeFormat, '+') + 1
+  Prefix := SUBSTR( CodeFormat, 0, LENGTH( CodeFormat ) - MinSuffixLength );
   
-  Prefix := SUBSTR( CodeFormat, 0, LENGTH( CodeFormat ) -1 );
+  -- TODO: replace this part with something like REPLICATE('3', MinSuffixLength)
+  TmpPlusses := '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
   
-  IF INSTR(Prefix, '+') <> 0 THEN
-    RAISE_APPLICATION_ERROR(-20000, 'Invalid code is entered: The value must contain only one "+" character, at the and of the code (AutoCode).', TRUE);
+  IF SUBSTR(CodeFormat, LENGTH( CodeFormat ) - MinSuffixLength, MinSuffixLength) <> SUBSTR(TmpPlusses, MinSuffixLength) THEN
+    RAISE_APPLICATION_ERROR(-20000, 'Invalid code is entered: The value must end with at least only one "+" character, at the end of the code (AutoCode). No "+" are allowed before those at the end.', TRUE);
     RETURN;
   END IF;
   
@@ -105,6 +112,10 @@ BEGIN
   --===================================================================
   -- Compute next available code:
   
+  IF MaxSuffixLength < MinSuffixLength THEN
+    SET MaxSuffixLength := MinSuffixLength
+  END IF;
+        
   NewNum := MaxSuffixNum+1;
   
   NewNumFixLen := CAST(NewNum AS NVARCHAR2);
