@@ -95,14 +95,14 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 var memberExpression = member.expression as MemberExpression;
                 if (memberExpression == null)
-                    throw new FrameworkException("Assing function supports only simple property selector. (" + member.expression.ToString() + " is not a MemberExpression)");
+                    throw new FrameworkException("Assign function supports only simple property selector. (" + member.expression.ToString() + " is not a MemberExpression)");
 
                 var propertyInfo = memberExpression.Member as PropertyInfo;
                 if (memberExpression == null)
-                    throw new FrameworkException("Assing function supports only simple property selector. (" + memberExpression.Member.ToString() + " is not a PropertyInfo)");
+                    throw new FrameworkException("Assign function supports only simple property selector. (" + memberExpression.Member.ToString() + " is not a PropertyInfo)");
 
                 if (!(memberExpression.Expression is ParameterExpression))
-                    throw new FrameworkException("Assing function supports only simple property selector. (" + memberExpression.Expression.ToString() + " is not a ParameterExpression)");
+                    throw new FrameworkException("Assign function supports only simple property selector. (" + memberExpression.Expression.ToString() + " is not a ParameterExpression)");
 
                 propertyInfo.SetValue(destination, member.value, null);
             }

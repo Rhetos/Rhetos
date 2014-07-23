@@ -66,7 +66,7 @@ namespace Rhetos.Security
         private void CheckIfUserRecognized()
         {
             if (!IsUserRecognized)
-                throw new UserException("User is not authenticated.");
+                throw new ClientException("User is not authenticated.");
         }
 
         private bool InitIsUserRecognized()
@@ -156,7 +156,7 @@ namespace Rhetos.Security
             {
                 const string msg = "Current identity is not authenticated in current domain.";
                 _logger.Trace(() => msg + " Identity: '" + _userName.Value + "', domain: '" + Environment.UserDomainName + "'.");
-                throw new FrameworkException(msg);
+                throw new ClientException(msg);
             }
 
             var name = _userName.Value.Substring(domainPrefix.Length);

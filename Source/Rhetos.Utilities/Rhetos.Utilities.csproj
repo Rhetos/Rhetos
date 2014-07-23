@@ -118,6 +118,7 @@
     <Compile Include="ConfigUtility.cs" />
     <Compile Include="ConnectionString.cs" />
     <Compile Include="ExceptionsUtility.cs" />
+    <Compile Include="Exceptions\ClientException.cs" />
     <Compile Include="Exceptions\RhetosException.cs" />
     <Compile Include="OracleSqlUtility.cs" />
     <Compile Include="Paths.cs" />

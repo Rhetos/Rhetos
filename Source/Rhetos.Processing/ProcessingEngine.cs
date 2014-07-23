@@ -45,6 +45,8 @@ namespace Rhetos.Processing
         private readonly XmlUtility _xmlUtility;
         private readonly IUserInfo _userInfo;
 
+        private static string _clientExceptionUserMessage = "Client request error";
+
         public ProcessingEngine(
             IPluginsContainer<ICommandImplementation> commandRepository,
             IPluginsContainer<ICommandObserver> commandObservers,
@@ -163,12 +165,22 @@ namespace Rhetos.Processing
 
                 string userMessage = null;
                 string systemMessage = null;
-                if (ex is UserException) {
+                
+                if (ex is UserException) 
+                {
                     userMessage = ex.Message;
                     systemMessage = (ex as UserException).SystemMessage;
                 }
-                if (userMessage == null)
+                else if (ex is ClientException)
+                {
+                    // some interfaces (REST) assume that internal error (FrameworkException) occured if userMessage is not set
+                    userMessage = _clientExceptionUserMessage;
+                    systemMessage = ex.Message;
+                }
+                else
+                {
                     userMessage = TryParseSqlException(ex);
+                }
 
                 if (userMessage == null && systemMessage == null)
                     systemMessage = ex.GetType().Name + ". For details see RhetosServer.log.";
