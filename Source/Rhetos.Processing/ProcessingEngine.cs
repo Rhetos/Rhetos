@@ -179,7 +179,11 @@ namespace Rhetos.Processing
                 }
                 else
                 {
-                    userMessage = TryParseSqlException(ex);
+                    var permissionError = CheckSqlPermissionError(ex);
+                    if (permissionError != null)
+                        systemMessage = permissionError;
+                    else
+                        userMessage = TryParseSqlException(ex);
                 }
 
                 if (userMessage == null && systemMessage == null)
@@ -193,6 +197,18 @@ namespace Rhetos.Processing
             }
         }
 
+        // TODO: Make this check DB Provider independant. This implementation works only on MS SQL
+        private static string CheckSqlPermissionError(Exception exception)
+        {
+            var sqlException = ExtractSqlException(exception);
+            if (sqlException == null) return null;
+            if (sqlException.Number == 229 || sqlException.Number == 230)
+                if (sqlException.Message.Contains("permission was denied"))
+                    return "Rhetos server lacks sufficient database permissions for this operation! It is suggested that Rhetos Server process has db_owner role for the database.";
+
+            return null;
+        }
+
         private static string TryParseSqlException(Exception exception)
         {
             var sqlException = ExtractSqlException(exception);
@@ -201,6 +217,7 @@ namespace Rhetos.Processing
 
             if (sqlException.State == 101) // Our convention for an error raised in SQL that is intended as a message to the end user.
                 return sqlException.Message;
+
 
             if (sqlException.Message.StartsWith("Cannot insert duplicate key"))
                 return "It is not allowed to enter a duplicate record."; // TODO: Internationalization.
