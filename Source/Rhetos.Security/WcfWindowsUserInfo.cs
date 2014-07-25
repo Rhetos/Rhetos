@@ -178,7 +178,16 @@ namespace Rhetos.Security
             searcher.Filter = "(samAccountName=" + _accountName.Value + ")";
             searcher.PropertiesToLoad.Add("name");
 
-            SearchResult searchResult = searcher.FindOne();
+            SearchResult searchResult = null;
+            try
+            {
+                searchResult = searcher.FindOne();
+            }
+            catch (Exception)
+            {
+                throw new FrameworkException("Active Directory server is not available! To run Rhetos under IISExpress without AD: a) IISExpress must be run as administrator, b) user connecting to Rhetos service must be local administrator, c) 'BuiltinAdminOverride' must be set to 'True' in config file");
+            }
+
             if (searchResult != null)
             {
                 _logger.Trace("Found Active Directory entry: " + searchResult.Path);
