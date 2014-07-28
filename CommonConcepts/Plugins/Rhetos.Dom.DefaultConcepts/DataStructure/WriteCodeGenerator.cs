@@ -80,6 +80,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (item.ID == Guid.Empty)
                     item.ID = Guid.NewGuid();
 
+            {5}
+
             {2}
 
             {1}
@@ -94,7 +96,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 info.SaveImplementation,
                 WritableOrmDataStructureCodeGenerator.InitializationTag.Evaluate(info.DataStructure),
                 WritableOrmDataStructureCodeGenerator.OnSaveTag1.Evaluate(info.DataStructure),
-                WritableOrmDataStructureCodeGenerator.OnSaveTag2.Evaluate(info.DataStructure));
+                WritableOrmDataStructureCodeGenerator.OnSaveTag2.Evaluate(info.DataStructure),
+                WritableOrmDataStructureCodeGenerator.ArgumentValidationTag.Evaluate(info.DataStructure));
         }
 
         protected static string RegisterRepository(DataStructureInfo info)

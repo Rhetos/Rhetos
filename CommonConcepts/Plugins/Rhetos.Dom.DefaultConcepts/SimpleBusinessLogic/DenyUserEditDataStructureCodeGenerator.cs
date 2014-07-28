@@ -37,7 +37,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (DenyUserEditDataStructureInfo)conceptInfo;
-            codeBuilder.InsertCode(CheckChangesSnippet(info), WritableOrmDataStructureCodeGenerator.InitializationTag, info.DataStructure);
+            codeBuilder.InsertCode(CheckChangesSnippet(info), WritableOrmDataStructureCodeGenerator.ArgumentValidationTag, info.DataStructure);
             codeBuilder.AddReferencesFromDependency(typeof(UserException));
         }
 
