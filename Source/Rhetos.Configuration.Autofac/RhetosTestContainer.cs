@@ -93,9 +93,15 @@ namespace Rhetos.Configuration.Autofac
                         }
                 }
 
-                _lifetimeScope = _iocContainer.BeginLifetimeScope();
+                if (_initializeSession != null)
+                    _lifetimeScope = _iocContainer.BeginLifetimeScope(_initializeSession);
+                else
+                    _lifetimeScope = _iocContainer.BeginLifetimeScope();
+
             }
         }
+
+        protected event Action<ContainerBuilder> _initializeSession;
 
         protected virtual bool IsValidRhetosServerDirectory(string path)
         {
