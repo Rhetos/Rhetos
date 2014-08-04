@@ -98,6 +98,19 @@ namespace CommonConcepts.Test
             Console.WriteLine(formatA + "," + formatB + " => " + generatedCodes);
             Assert.AreEqual(expectedCodes, generatedCodes);
         }
+
+        private static void TestDoubleIntegerAutoCodeWithGroup(RhetosTestContainer container, Common.DomRepository repository, int group, int codeA, int codeB, string expectedCodes)
+        {
+            Guid id = Guid.NewGuid();
+            repository.TestAutoCode.IntegerAutoCodeForEach.Insert(new[] { new TestAutoCode.IntegerAutoCodeForEach { ID = id, Grouping = group, CodeA = codeA, CodeB = codeB } });
+
+            container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
+            container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+
+            string generatedCodes = repository.TestAutoCode.IntegerAutoCodeForEach.Query().Where(item => item.ID == id).Select(item => item.CodeA.ToString() + "," + item.CodeB.ToString()).Single();
+            Console.WriteLine(codeA.ToString() + "," + codeB.ToString() + " => " + generatedCodes);
+            Assert.AreEqual(expectedCodes, generatedCodes);
+        }
         
         [TestMethod]
         public void Simple()
@@ -190,6 +203,23 @@ namespace CommonConcepts.Test
                 TestDoubleAutoCodeWithGroup(container, repository, "1", "AB+", "+", "AB009,8");
                 TestDoubleAutoCodeWithGroup(container, repository, "1", "+", "AB9999", "12,AB9999");
                 TestDoubleAutoCodeWithGroup(container, repository, "1", "AB+", "AB+", "AB010,AB10000");
+            }
+        }
+
+        [TestMethod]
+        public void DoubleIntegerAutoCodeWithGroup()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                DeleteOldData(container);
+                var repository = container.Resolve<Common.DomRepository>();
+
+                TestDoubleIntegerAutoCodeWithGroup(container, repository, 1, 0, 0, "1,1");
+                TestDoubleIntegerAutoCodeWithGroup(container, repository, 1, 5, 0, "5,2");
+                TestDoubleIntegerAutoCodeWithGroup(container, repository, 1, 0, 0, "6,3");
+                TestDoubleIntegerAutoCodeWithGroup(container, repository, 2, 8, 0, "8,1");
+                TestDoubleIntegerAutoCodeWithGroup(container, repository, 2, 0, 0, "9,2");
+                TestDoubleIntegerAutoCodeWithGroup(container, repository, 1, 0, 0, "10,4");
             }
         }
 

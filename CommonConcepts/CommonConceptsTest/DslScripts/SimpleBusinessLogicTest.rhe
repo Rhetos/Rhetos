@@ -62,6 +62,13 @@ Module TestAutoCode
 	{
 		Integer Code {  AutoCode; }
 	}
+    
+   Entity IntegerAutoCodeForEach
+	{
+		Integer Grouping;
+		Integer CodeA {  AutoCode; }
+		Integer CodeB {  AutoCodeForEach TestAutoCode.IntegerAutoCodeForEach.Grouping; }
+	}
 }
 
 Module TestRequired
