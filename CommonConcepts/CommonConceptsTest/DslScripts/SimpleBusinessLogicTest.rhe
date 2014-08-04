@@ -44,6 +44,24 @@ Module TestAutoCode
 		Reference Grouping;
 		ShortString Code {  AutoCodeForEach TestAutoCode.ShortReferenceGroup.Grouping; }
 	}
+   
+   Entity DoubleAutoCode
+	{
+		ShortString CodeA {  AutoCode; }
+		ShortString CodeB {  AutoCode; }
+	}
+   
+   Entity DoubleAutoCodeWithGroup
+	{
+		ShortString Grouping;
+		ShortString CodeA {  AutoCode; }
+		ShortString CodeB {  AutoCodeForEach TestAutoCode.DoubleAutoCodeWithGroup.Grouping; }
+	}
+    
+   Entity IntegerAutoCode
+	{
+		Integer Code {  AutoCode; }
+	}
 }
 
 Module TestRequired

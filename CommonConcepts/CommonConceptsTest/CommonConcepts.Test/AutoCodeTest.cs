@@ -25,6 +25,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
+using Rhetos.TestCommon;
 
 namespace CommonConcepts.Test
 {
@@ -39,7 +40,10 @@ namespace CommonConcepts.Test
                     DELETE FROM TestAutoCode.ShortReferenceGroup;
                     DELETE FROM TestAutoCode.StringGroup;
                     DELETE FROM TestAutoCode.IntGroup;
-                    DELETE FROM TestAutoCode.Simple;"
+                    DELETE FROM TestAutoCode.Simple;
+                    DELETE FROM TestAutoCode.DoubleAutoCode;
+                    DELETE FROM TestAutoCode.DoubleAutoCodeWithGroup;
+                    DELETE FROM TestAutoCode.IntegerAutoCode;"
                 });
         }
 
@@ -56,6 +60,45 @@ namespace CommonConcepts.Test
             Assert.AreEqual(expectedCode, generatedCode);
         }
 
+        private static void TestIntAutoCode(RhetosTestContainer container, Common.DomRepository repository, int? input, int expectedCode)
+        {
+            Guid id = Guid.NewGuid();
+            repository.TestAutoCode.IntegerAutoCode.Insert(new[] { new TestAutoCode.IntegerAutoCode { ID = id, Code = input } });
+
+            container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
+            container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+
+            int? generatedCode = repository.TestAutoCode.IntegerAutoCode.Query().Where(item => item.ID == id).Select(item => item.Code).Single();
+            Console.WriteLine(input.ToString() + " => " + generatedCode.ToString());
+            Assert.AreEqual(expectedCode, generatedCode);
+        }
+
+        private static void TestDoubleAutoCode(RhetosTestContainer container, Common.DomRepository repository, string formatA, string formatB, string expectedCodes)
+        {
+            Guid id = Guid.NewGuid();
+            repository.TestAutoCode.DoubleAutoCode.Insert(new[] { new TestAutoCode.DoubleAutoCode { ID = id, CodeA = formatA, CodeB = formatB } });
+
+            container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
+            container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+
+            string generatedCodes = repository.TestAutoCode.DoubleAutoCode.Query().Where(item => item.ID == id).Select(item => item.CodeA + "," + item.CodeB).Single();
+            Console.WriteLine(formatA + "," + formatB + " => " + generatedCodes);
+            Assert.AreEqual(expectedCodes, generatedCodes);
+        }
+
+        private static void TestDoubleAutoCodeWithGroup(RhetosTestContainer container, Common.DomRepository repository, string group, string formatA, string formatB, string expectedCodes)
+        {
+            Guid id = Guid.NewGuid();
+            repository.TestAutoCode.DoubleAutoCodeWithGroup.Insert(new[] { new TestAutoCode.DoubleAutoCodeWithGroup { ID = id, Grouping = group, CodeA = formatA, CodeB = formatB } });
+
+            container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
+            container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+
+            string generatedCodes = repository.TestAutoCode.DoubleAutoCodeWithGroup.Query().Where(item => item.ID == id).Select(item => item.CodeA + "," + item.CodeB).Single();
+            Console.WriteLine(formatA + "," + formatB + " => " + generatedCodes);
+            Assert.AreEqual(expectedCodes, generatedCodes);
+        }
+        
         [TestMethod]
         public void Simple()
         {
@@ -77,6 +120,76 @@ namespace CommonConcepts.Test
                 TestSimple(container, repository, "AB+", "AB008");
                 TestSimple(container, repository, "AB999", "AB999");
                 TestSimple(container, repository, "AB+", "AB1000");
+            }
+        }
+
+        [TestMethod]
+        public void DoubleAutoCode()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                DeleteOldData(container);
+                var repository = container.Resolve<Common.DomRepository>();
+
+                TestDoubleAutoCode(container, repository, "+", "+", "1,1");
+                TestDoubleAutoCode(container, repository, "+", "4", "2,4");
+                TestDoubleAutoCode(container, repository, "+", "+", "3,5");
+                TestDoubleAutoCode(container, repository, "9", "+", "9,6");
+                TestDoubleAutoCode(container, repository, "+", "11", "10,11");
+                TestDoubleAutoCode(container, repository, "+", "+", "11,12");
+                TestDoubleAutoCode(container, repository, "AB+", "+", "AB1,13");
+                TestDoubleAutoCode(container, repository, "AB+", "X", "AB2,X");
+                TestDoubleAutoCode(container, repository, "AB+", "X+", "AB3,X1");
+                TestDoubleAutoCode(container, repository, "AB008", "X+", "AB008,X2");
+                TestDoubleAutoCode(container, repository, "AB+", "+", "AB009,14");
+                TestDoubleAutoCode(container, repository, "+", "AB9999", "12,AB9999");
+                TestDoubleAutoCode(container, repository, "AB+", "AB+", "AB010,AB10000");
+            }
+        }
+
+        [TestMethod]
+        public void IntAutoCode()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                DeleteOldData(container);
+                var repository = container.Resolve<Common.DomRepository>();
+
+                TestIntAutoCode(container, repository, 0, 1);
+                TestIntAutoCode(container, repository, 10, 10);
+                TestIntAutoCode(container, repository, 0, 11);
+                // Null is not allowed since AutoCode generates Required concept for targeted property
+                TestUtility.ShouldFail(() => repository.TestAutoCode.IntegerAutoCode.Insert(new[] { new TestAutoCode.IntegerAutoCode { Code = null } }), "required", "Code");
+                TestIntAutoCode(container, repository, 99, 99);
+                TestIntAutoCode(container, repository, 0, 100);
+                TestIntAutoCode(container, repository, 0, 101);
+                TestIntAutoCode(container, repository, 0, 102);
+            }
+        }
+
+        [TestMethod]
+        public void DoubleAutoCodeWithGroup()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                DeleteOldData(container);
+                var repository = container.Resolve<Common.DomRepository>();
+
+                TestDoubleAutoCodeWithGroup(container, repository, "1", "+", "+", "1,1");
+                TestDoubleAutoCodeWithGroup(container, repository, "1", "+", "4", "2,4");
+                TestDoubleAutoCodeWithGroup(container, repository, "2", "+", "+", "3,1");
+                TestDoubleAutoCodeWithGroup(container, repository, "1", "9", "+", "9,5");
+                TestDoubleAutoCodeWithGroup(container, repository, "2", "+", "11", "10,11");
+                TestDoubleAutoCodeWithGroup(container, repository, "1", "+", "+", "11,6");
+                TestDoubleAutoCodeWithGroup(container, repository, "1", "AB+", "+", "AB1,7");
+                TestDoubleAutoCodeWithGroup(container, repository, "1", "AB+", "X", "AB2,X");
+                TestDoubleAutoCodeWithGroup(container, repository, "2", "AB+", "X09", "AB3,X09");
+                TestDoubleAutoCodeWithGroup(container, repository, "2", "AB+", "X+", "AB4,X10");
+                TestDoubleAutoCodeWithGroup(container, repository, "1", "AB+", "X+", "AB5,X1");
+                TestDoubleAutoCodeWithGroup(container, repository, "1", "AB008", "X+", "AB008,X2");
+                TestDoubleAutoCodeWithGroup(container, repository, "1", "AB+", "+", "AB009,8");
+                TestDoubleAutoCodeWithGroup(container, repository, "1", "+", "AB9999", "12,AB9999");
+                TestDoubleAutoCodeWithGroup(container, repository, "1", "AB+", "AB+", "AB010,AB10000");
             }
         }
 
