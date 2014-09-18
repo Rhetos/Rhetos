@@ -171,7 +171,7 @@ namespace Rhetos.Processing
             if (sqlException == null)
                 return null;
 
-            if (sqlException.State == 101) // Our convention for an error raised in SQL that is intended as a message to the end user.
+            if (sqlException.State == 101) // Rhetos convention for an error raised in SQL that is intended as a message to the end user.
                 return sqlException.Message;
 
             if (sqlException.Message.StartsWith("Cannot insert duplicate key"))
