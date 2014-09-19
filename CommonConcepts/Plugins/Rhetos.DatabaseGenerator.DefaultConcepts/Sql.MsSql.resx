@@ -121,7 +121,7 @@
     <value>trg_{0}_{1}_AutoCode</value>
   </data>
   <data name="AutoCodeDatabaseDefinition_TriggerSnippet" xml:space="preserve">
-    <value>CREATE TRIGGER {0}.{3}
+    <value>CREATE TRIGGER {0}.{2}
 ON {0}.{1}
 INSTEAD OF Insert
 AS
@@ -129,52 +129,91 @@ AS
 SET NOCOUNT ON
 
 DECLARE @Error INT
-DECLARE @CodeFormat VARCHAR({4})
-DECLARE @NewCode VARCHAR({4})
+DECLARE @CodeFormat VARCHAR({3})
+DECLARE @PropertyName VARCHAR({3})
+DECLARE @NewCode VARCHAR({3})
 DECLARE @id as UNIQUEIDENTIFIER
+DECLARE @Query NVARCHAR(2000)
+DECLARE @Filter VARCHAR(2000)
+DECLARE @GroupColumn VARCHAR({3})
+DECLARE @GroupValue VARCHAR(2000)
+DECLARE @HelperEnc VARCHAR(10)
 
 SELECT * INTO #t FROM inserted
 SET @Error = @@ERROR IF @Error &gt; 0 BEGIN ROLLBACK TRANSACTION RETURN END
 
-INSERT INTO {0}.{1}
-SELECT *
-FROM #t
-WHERE (CHARINDEX('+', {2}) = 0 AND CHARINDEX ('&gt;', {2}) = 0) OR {2} IS NULL
-
 SET @Error = @@ERROR IF @Error &gt; 0 BEGIN ROLLBACK TRANSACTION RETURN END
 
-DECLARE @Filter VARCHAR(2000)
-{5}
-
 DECLARE cur CURSOR FOR
-SELECT {2}, ID{6} FROM #t
-WHERE CHARINDEX('+', {2}) &lt;&gt; 0 OR CHARINDEX('&gt;', {2}) &lt;&gt; 0
+SELECT * FROM (
+SELECT Property = CAST(NULL as varchar({3})), 
+	Value = CAST(NULL as varchar({3})), 
+	ID, 
+	GroupColumn=CAST(NULL as varchar({3})), 
+	GroupValue=CAST(NULL as varchar(2000)) 
+FROM #t
+{4}
+) enumAutoCodeValues ORDER BY ID, Property DESC -- Order by ID ASC, then Property name in DESC order. This will ensure that all required
+						--	columns gets their AutoCode value calculated before entire row is saved
 
 OPEN cur
-FETCH NEXT FROM cur INTO @CodeFormat, @id{7}
+FETCH NEXT FROM cur INTO @PropertyName, @CodeFormat, @id, @GroupColumn, @GroupValue
 WHILE @@FETCH_STATUS = 0
 BEGIN
-    {8}
+	-- If there is no property in current row for which AutoCode value should be calculated
+	--		save current row in target table
+	IF (@PropertyName IS NULL)
+	BEGIN
+	    INSERT INTO {0}.{1}
+		SELECT *
+		FROM #t
+		WHERE id = @id
 
-    EXEC @Error = Common.GenerateNextAutoCode '{0}.{1}', '{2}', @Filter, @CodeFormat, @NewCode OUTPUT
+		SET @Error = @@ERROR IF @Error &gt; 0 BEGIN ROLLBACK TRANSACTION CLOSE cur DEALLOCATE cur RETURN END
+	END ELSE BEGIN
+		-- If grouped AutoCode is defined, add check in filter part
+		SET @Filter = NULL
+		IF (@GroupColumn IS NOT NULL AND @GroupColumn &lt;&gt; '')
+		BEGIN
+			-- If group value column is string type, encapsulate it with '
+			SET @HelperEnc = ''
+			IF (SELECT DATA_TYPE
+				FROM INFORMATION_SCHEMA.COLUMNS
+				where TABLE_SCHEMA = '{0}'
+					AND TABLE_NAME = '{1}'
+					AND COLUMN_NAME = @GroupColumn) IN ('char', 'varchar', 'nchar', 'nvarchar', 'text', 'uniqueidentifier', 'date', 'datetime')
+			BEGIN
+				SET @HelperEnc = ''''
+			END
+			SET @Filter = @GroupColumn + ISNULL('=' + @HelperEnc + @GroupValue + @HelperEnc, ' IS NULL')
+		END
+		IF (SELECT DATA_TYPE
+			FROM INFORMATION_SCHEMA.COLUMNS
+			where TABLE_SCHEMA = '{0}'
+				AND TABLE_NAME = '{1}'
+				AND COLUMN_NAME = @PropertyName) IN ('int', 'smallint', 'bigint', 'tinyint')
+		BEGIN
+			-- AutoCode for integer types is done inside cursor 
+			IF (@CodeFormat = '0' OR @CodeFormat IS NULL)
+			BEGIN
+				SET @Query = 'UPDATE #t SET '+@PropertyName+' = '+
+					+ ' (SELECT ISNULL(MAX('+@PropertyName+'), 0) + 1 FROM {0}.{1} ' + ISNULL( ' WHERE ( ' + @Filter + ' )', '' ) + ' )'
+					+ ' WHERE id = '''+CONVERT(NVARCHAR(256), @id, 126)+''''
+				EXECUTE (@Query)
+			END
+		END ELSE BEGIN	
+			-- Autocode for string columns is calculated in stored procedure
+			EXEC @Error = Common.GenerateNextAutoCode '{0}.{1}', @PropertyName, @Filter, @CodeFormat, @NewCode OUTPUT
+			SET @Error = ISNULL(NULLIF(@Error, 0), @@ERROR) IF @Error &gt; 0 BEGIN ROLLBACK TRANSACTION CLOSE cur DEALLOCATE cur RETURN END
 
-    SET @Error = ISNULL(NULLIF(@Error, 0), @@ERROR) IF @Error &gt; 0 BEGIN ROLLBACK TRANSACTION CLOSE cur DEALLOCATE cur RETURN END
+			SET @Query = 'UPDATE #t SET '+@PropertyName+' = '''+@NewCode+''' WHERE id = '''+CONVERT(NVARCHAR(256), @id, 126)+''''
+			EXECUTE (@Query)
+		END
 
+		SET @Error = @@ERROR IF @Error &gt; 0 BEGIN ROLLBACK TRANSACTION CLOSE cur DEALLOCATE cur RETURN END
+	END
 
-    UPDATE #t
-    SET {2} = @NewCode
-    WHERE id = @id
-
-    SET @Error = @@ERROR IF @Error &gt; 0 BEGIN ROLLBACK TRANSACTION CLOSE cur DEALLOCATE cur RETURN END
-
-    INSERT INTO {0}.{1}
-    SELECT *
-    FROM #t
-    WHERE id = @id
-
-    SET @Error = @@ERROR IF @Error &gt; 0 BEGIN ROLLBACK TRANSACTION CLOSE cur DEALLOCATE cur RETURN END
-
-    FETCH NEXT FROM cur INTO @CodeFormat, @id{7}
+    FETCH NEXT FROM cur INTO @PropertyName, @CodeFormat, @id, @GroupColumn, @GroupValue
 END
 CLOSE cur
 DEALLOCATE cur</value>
@@ -182,43 +221,8 @@ DEALLOCATE cur</value>
   <data name="AutoCodeDatabaseDefinition_Remove" xml:space="preserve">
     <value>DROP TRIGGER {0}.{1}</value>
   </data>
-  <data name="AutoCodeForEachDatabaseDefinition_ExtendBeforeCursor" xml:space="preserve">
-    <value>DECLARE @groupValue NVARCHAR({0})
-</value>
-  </data>
-  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_BoolPropertyInfo" xml:space="preserve">
-    <value>, GroupValue = CONVERT(NVARCHAR({1}), {0}, 126)</value>
-  </data>
-  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_DecimalPropertyInfo" xml:space="preserve">
-    <value>, GroupValue = CONVERT(NVARCHAR({1}), {0}, 126)</value>
-  </data>
-  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_IntegerPropertyInfo" xml:space="preserve">
-    <value>, GroupValue = CONVERT(NVARCHAR({1}), {0}, 126)</value>
-  </data>
-  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_MoneyPropertyInfo" xml:space="preserve">
-    <value>, GroupValue = CONVERT(NVARCHAR({1}), {0}, 126)</value>
-  </data>
-  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_DatePropertyInfo" xml:space="preserve">
-    <value>, GroupValue = '''' + CONVERT(NVARCHAR({1}), {0}, 126) + ''''</value>
-  </data>
-  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_DateTimePropertyInfo" xml:space="preserve">
-    <value>, GroupValue = '''' + CONVERT(NVARCHAR({1}), {0}, 126) + ''''</value>
-  </data>
-  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_GuidPropertyInfo" xml:space="preserve">
-    <value>, GroupValue = '''' + CONVERT(NVARCHAR({1}), {0}, 126) + ''''</value>
-  </data>
-  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_ReferencePropertyInfo" xml:space="preserve">
-    <value>, GroupValue = '''' + CONVERT(NVARCHAR({1}), {0}, 126) + ''''</value>
-  </data>
-  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorSelect_ShortStringPropertyInfo" xml:space="preserve">
-    <value>, GroupValue = '''' + CONVERT(NVARCHAR({1}), {0}, 126) + ''''</value>
-  </data>
-  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorFetch" xml:space="preserve">
-    <value>, @groupValue</value>
-  </data>
-  <data name="AutoCodeForEachDatabaseDefinition_ExtendBeforeGenerate" xml:space="preserve">
-    <value>SET @Filter = ISNULL('{0} = ' + @groupValue, '{0} IS NULL')
-    </value>
+  <data name="AutoCodeForEachDatabaseDefinition_ExtendCursorGroupValue" xml:space="preserve">
+    <value>+CONVERT(NVARCHAR({1}), {0}, 126)</value>
   </data>
   <data name="DataStructureExtendsDatabaseDefinition_ConstraintName" xml:space="preserve">
     <value>FK_{0}_{1}_ID</value>
@@ -682,6 +686,16 @@ WHERE
     {1} IS NOT NULL
     AND ({1} &lt;&gt; {0} OR {0} IS NULL);
 
+</value>
+  </data>
+  <data name="AutoCodeDatabaseDefinition_ColumnDefinition" xml:space="preserve">
+    <value>UNION ALL
+SELECT Property = '{0}', 
+	Value = CONVERT(NVARCHAR({1}), {0}, 126), 
+	ID, 
+	GroupColumn=''{2}, 
+	GroupValue=''{3} 
+FROM #t
 </value>
   </data>
 </root>
