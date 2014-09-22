@@ -65,7 +65,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 {
                     var parentExpression = memberAccess ?? (Expression)parameter;
                     if (parentExpression.Type.GetProperty(property) == null)
-                        throw new UserException("Invalid generic filter parameter: Type '" + parentExpression.Type.FullName + "' does not have property '" + property + "'.");
+                        throw new ClientException("Invalid generic filter parameter: Type '" + parentExpression.Type.FullName + "' does not have property '" + property + "'.");
                     memberAccess = Expression.Property(parentExpression, property);
                 }
 
@@ -96,7 +96,7 @@ namespace Rhetos.Dom.DefaultConcepts
                             }
                             catch (SerializationException ex)
                             {
-                                throw new UserException("Invalid JSON format of " + basicType.Name + " property '" + criteria.Property + "'. " + ex.Message, ex);
+                                throw new ClientException("Invalid JSON format of " + basicType.Name + " property '" + criteria.Property + "'. " + ex.Message, ex);
                             }
                         }
                     }
@@ -247,7 +247,7 @@ namespace Rhetos.Dom.DefaultConcepts
             bool pagingIsUsed = commandInfo.Top > 0 || commandInfo.Skip > 0;
 
             if (pagingIsUsed && (commandInfo.OrderByProperties == null || commandInfo.OrderByProperties.Length == 0))
-                throw new UserException("Invalid ReadCommand argument: Sort order must be set if paging is used (Top or Skip).");
+                throw new ClientException("Invalid ReadCommand argument: Sort order must be set if paging is used (Top or Skip).");
 
             if (commandInfo.OrderByProperties != null)
                 foreach (var order in commandInfo.OrderByProperties)
@@ -301,17 +301,17 @@ namespace Rhetos.Dom.DefaultConcepts
         private void ValidateAndPrepare(FilterCriteria filter)
         {
             if (!string.IsNullOrEmpty(filter.Property) && !string.IsNullOrEmpty(filter.Filter))
-                throw new UserException("Invalid generic filter criteria: both property filter and predefined filter are set. (Property = '" + filter.Property + "', Filter = '" + filter.Filter + "')");
+                throw new ClientException("Invalid generic filter criteria: both property filter and predefined filter are set. (Property = '" + filter.Property + "', Filter = '" + filter.Filter + "')");
 
             if (string.IsNullOrEmpty(filter.Property) && string.IsNullOrEmpty(filter.Filter))
-                throw new UserException("Invalid generic filter criteria: both property filter and predefined filter are null.");
+                throw new ClientException("Invalid generic filter criteria: both property filter and predefined filter are null.");
 
             if (!string.IsNullOrEmpty(filter.Property))
             {
                 // Property filter:
 
                 if (string.IsNullOrEmpty(filter.Operation))
-                    throw new UserException("Invalid generic filter criteria: Operation is not set. (Property = '" + filter.Property + "')");
+                    throw new ClientException("Invalid generic filter criteria: Operation is not set. (Property = '" + filter.Property + "')");
             }
 
             if (!string.IsNullOrEmpty(filter.Filter))
@@ -323,7 +323,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 
                 if (!string.Equals(filter.Operation, FilterOperationMatches, StringComparison.OrdinalIgnoreCase)
                     && !string.Equals(filter.Operation, FilterOperationNotMatches, StringComparison.OrdinalIgnoreCase))
-                    throw new UserException(string.Format(
+                    throw new ClientException(string.Format(
                         "Invalid generic filter criteria: Supported predefined filter operations are '{0}' and '{1}'. (Filter = '{2}', Operation = '{3}')",
                         FilterOperationMatches, FilterOperationNotMatches, filter.Filter, filter.Operation));
 
@@ -344,7 +344,7 @@ namespace Rhetos.Dom.DefaultConcepts
             filterType = filterType ?? Type.GetType(filterName);
 
             if (filterType == null)
-                throw new UserException(string.Format("Unknown filter type '{0}'.", filterName));
+                throw new ClientException(string.Format("Unknown filter type '{0}'.", filterName));
 
             return filterType;
         }

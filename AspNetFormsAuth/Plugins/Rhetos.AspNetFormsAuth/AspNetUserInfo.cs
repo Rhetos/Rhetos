@@ -55,7 +55,7 @@ namespace Rhetos.AspNetFormsAuth
         private void CheckIfUserRecognized()
         {
             if (!IsUserRecognized)
-                throw new UserException("User is not authenticated.");
+                throw new ClientException("User is not authenticated.");
         }
     }
 }

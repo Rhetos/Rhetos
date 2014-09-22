@@ -49,7 +49,7 @@ namespace Rhetos.Processing.DefaultCommands
             var info = (ReadCommandInfo)commandInfo;
 
             if (info.DataSource == null)
-                throw new UserException("Invalid ReadCommand argument: Data source is not set.");
+                throw new ClientException("Invalid ReadCommand argument: Data source is not set.");
 
             var genericRepository = _repositories.GetGenericRepository(info.DataSource);
             ReadCommandResult result = genericRepository.ExecuteReadCommand(info);

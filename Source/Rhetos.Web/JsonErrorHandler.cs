@@ -54,7 +54,7 @@ namespace Rhetos.Web
 
             object responseMessage;
             HttpStatusCode responseStatusCode;
-            if (error is UserException)
+            if (error is UserException || error is ClientException)
             {
                 responseStatusCode = HttpStatusCode.BadRequest;
                 responseMessage = error.Message;

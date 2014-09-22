@@ -67,6 +67,7 @@ namespace Rhetos.Utilities
                          orderby e.LineNumber
                          select e;
             foreach (var err in errors)
+                // TODO: Now that we added ClientException, maybe some of these SQL errors are ClientException and NOT UserExceptions? Needs extended convention to distinguish between the two
                 if (err.State == 101) // Rhetos convention for an error raised in SQL that is intended as a message to the end user.
                     return new UserException(err.Message);
 

@@ -43,6 +43,9 @@ namespace Rhetos.Processing
         private readonly IPersistenceTransaction _persistenceTransaction;
         private readonly IAuthorizationManager _authorizationManager;
         private readonly XmlUtility _xmlUtility;
+        private readonly IUserInfo _userInfo;
+
+        private static string _clientExceptionUserMessage = "Client request error";
 
         public ProcessingEngine(
             IPluginsContainer<ICommandImplementation> commandRepository,
@@ -50,7 +53,8 @@ namespace Rhetos.Processing
             ILogProvider logProvider,
             IPersistenceTransaction persistenceTransaction,
             IAuthorizationManager authorizationManager,
-            XmlUtility xmlUtility)
+            XmlUtility xmlUtility,
+            IUserInfo userInfo)
         {
             _commandRepository = commandRepository;
             _commandObservers = commandObservers;
@@ -59,11 +63,25 @@ namespace Rhetos.Processing
             _persistenceTransaction = persistenceTransaction;
             _authorizationManager = authorizationManager;
             _xmlUtility = xmlUtility;
+            _userInfo = userInfo;
+        }
+
+        string StringifyCommandNames(IList<ICommandInfo> commands)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (var commandInfo in commands)
+            {
+                if (sb.Length > 0) sb.Append(", ");
+                sb.Append(commandInfo.GetType().Name);
+            }
+            return sb.ToString();
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public ProcessingResult Execute(IList<ICommandInfo> commands)
         {
+            _logger.Info(() => string.Format("Process Request, User: {0}, Commands({1}): {2}", _userInfo.UserName, commands.Count, StringifyCommandNames(commands)));
+
             var authorizationMessage = _authorizationManager.Authorize(commands);
             _persistenceTransaction.NHibernateSession.Clear(); // NHibernate cached data from AuthorizationManager may cause problems later with serializing arrays that mix cached proxies with POCO instance.
 
@@ -147,12 +165,26 @@ namespace Rhetos.Processing
 
                 string userMessage = null;
                 string systemMessage = null;
-                if (ex is UserException) {
+                
+                if (ex is UserException) 
+                {
                     userMessage = ex.Message;
                     systemMessage = (ex as UserException).SystemMessage;
                 }
-                if (userMessage == null)
-                    userMessage = TryParseSqlException(ex);
+                else if (ex is ClientException)
+                {
+                    // some interfaces (REST) assume that internal error (FrameworkException) occured if userMessage is not set
+                    userMessage = _clientExceptionUserMessage;
+                    systemMessage = ex.Message;
+                }
+                else
+                {
+                    var permissionError = CheckSqlPermissionError(ex);
+                    if (permissionError != null)
+                        systemMessage = permissionError;
+                    else
+                        userMessage = TryParseSqlException(ex);
+                }
 
                 if (userMessage == null && systemMessage == null)
                     systemMessage = ex.GetType().Name + ". For details see RhetosServer.log.";
@@ -165,6 +197,18 @@ namespace Rhetos.Processing
             }
         }
 
+        // TODO: Make this check DB Provider independant. This implementation works only on MS SQL
+        private static string CheckSqlPermissionError(Exception exception)
+        {
+            var sqlException = ExtractSqlException(exception);
+            if (sqlException == null) return null;
+            if (sqlException.Number == 229 || sqlException.Number == 230)
+                if (sqlException.Message.Contains("permission was denied"))
+                    return "Rhetos server lacks sufficient database permissions for this operation! It is suggested that Rhetos Server process has db_owner role for the database.";
+
+            return null;
+        }
+
         private static string TryParseSqlException(Exception exception)
         {
             var sqlException = ExtractSqlException(exception);
@@ -173,6 +217,7 @@ namespace Rhetos.Processing
 
             if (sqlException.State == 101) // Rhetos convention for an error raised in SQL that is intended as a message to the end user.
                 return sqlException.Message;
+
 
             if (sqlException.Message.StartsWith("Cannot insert duplicate key"))
                 return "It is not allowed to enter a duplicate record."; // TODO: Internationalization.

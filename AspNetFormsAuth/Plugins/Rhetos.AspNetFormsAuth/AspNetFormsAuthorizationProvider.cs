@@ -83,7 +83,7 @@ namespace Rhetos.AspNetFormsAuth
             if (userId == default(Guid))
             {
                 _logger.Error("There is no principal with the given username '" + userInfo.UserName + "' in Common.Principal.");
-                throw new UserException("There is no principal with the given username.", "See server log for more info.");
+                throw new ClientException("There is no principal with the given username.");
             }
         }
 
