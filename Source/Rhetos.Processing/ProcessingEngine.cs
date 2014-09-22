@@ -80,7 +80,7 @@ namespace Rhetos.Processing
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public ProcessingResult Execute(IList<ICommandInfo> commands)
         {
-            _logger.Info(() => string.Format("Process Request, User: {0}, Commands({1}): {2}", _userInfo.UserName, commands.Count, StringifyCommandNames(commands)));
+            _logger.Trace(() => string.Format("Process Request, User: {0}, Commands({1}): {2}", _userInfo.UserName, commands.Count, StringifyCommandNames(commands)));
 
             var authorizationMessage = _authorizationManager.Authorize(commands);
             _persistenceTransaction.NHibernateSession.Clear(); // NHibernate cached data from AuthorizationManager may cause problems later with serializing arrays that mix cached proxies with POCO instance.
