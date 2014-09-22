@@ -137,6 +137,25 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
+        public void SimpleFromHelp()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                DeleteOldData(container);
+                var repository = container.Resolve<Common.DomRepository>();
+
+                TestSimple(container, repository, "ab+", "ab1");
+                TestSimple(container, repository, "ab+", "ab2");
+                TestSimple(container, repository, "ab+", "ab3");
+                TestSimple(container, repository, "ab++++", "ab0004");
+                TestSimple(container, repository, "c+", "c1");
+                TestSimple(container, repository, "+", "1");
+                TestSimple(container, repository, "+", "2");
+                TestSimple(container, repository, "ab+", "ab0005");
+            }
+        }
+
+        [TestMethod]
         public void DoubleAutoCode()
         {
             using (var container = new RhetosTestContainer())
@@ -316,7 +335,7 @@ namespace CommonConcepts.Test
                 TestSimple(container, repository, "+", "2");
                 TestSimple(container, repository, "++++", "0003");
                 TestSimple(container, repository, "+", "0004");
-                TestSimple(container, repository, "+", "0005");
+                TestSimple(container, repository, "++", "0005");
                 TestSimple(container, repository, "AB+", "AB1");
                 TestSimple(container, repository, "X", "X");
                 TestSimple(container, repository, "X+", "X1");
@@ -325,6 +344,72 @@ namespace CommonConcepts.Test
                 TestSimple(container, repository, "AB999", "AB999");
                 TestSimple(container, repository, "AB+", "AB1000");
                 TestSimple(container, repository, "AB++++++", "AB001001");
+            }
+        }
+
+        [TestMethod]
+        public void SimpleWithPredefinedSuffixLength2()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                DeleteOldData(container);
+                var repository = container.Resolve<Common.DomRepository>();
+
+                TestSimple(container, repository, "+++", "001");
+                TestSimple(container, repository, "+", "002");
+
+                TestSimple(container, repository, "AB99", "AB99");
+                TestSimple(container, repository, "AB++", "AB100");
+
+                TestSimple(container, repository, "AB999", "AB999");
+                TestSimple(container, repository, "AB++++++", "AB001000");
+
+                TestSimple(container, repository, "B999", "B999");
+                TestSimple(container, repository, "B++", "B1000");
+
+                TestSimple(container, repository, "C500", "C500");
+                TestSimple(container, repository, "C++", "C501");
+            }
+        }
+
+        [TestMethod]
+        public void DifferentLengths()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                DeleteOldData(container);
+                var repository = container.Resolve<Common.DomRepository>();
+
+                TestSimple(container, repository, "002", "002");
+                TestSimple(container, repository, "55", "55");
+                TestSimple(container, repository, "+", "56");
+
+                TestSimple(container, repository, "A002", "A002");
+                TestSimple(container, repository, "A55", "A55");
+                TestSimple(container, repository, "A++", "A56");
+
+                TestSimple(container, repository, "C100", "C100");
+                TestSimple(container, repository, "C99", "C99");
+                TestSimple(container, repository, "C+", "C101");
+            }
+        }
+
+        [TestMethod]
+        public void InvalidFormat()
+        {
+            foreach (var test in new[] {"a+a", "a++a", "+a", "++a", "+a+", "++a+", "+a++", "++a++"})
+            {
+                Console.WriteLine("Test: " + test);
+                using (var container = new RhetosTestContainer())
+                {
+                    DeleteOldData(container);
+                    var repository = container.Resolve<Common.DomRepository>();
+
+                    TestUtility.ShouldFail(
+                        () => repository.TestAutoCode.Simple.Insert(new[] {
+                            new TestAutoCode.Simple { ID = Guid.NewGuid(), Code = test } }),
+                        "invalid code");
+                }
             }
         }
     }
