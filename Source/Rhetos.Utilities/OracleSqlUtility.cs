@@ -78,5 +78,13 @@ END;", SqlUtility.NationalLanguage);
             if (userInfo.IsUserRecognized)
                 connection.ClientInfo = SqlUtility.UserContextInfoText(userInfo);
         }
+
+        /// <summary>
+        /// Checks exception for Sql related exceptions and attempts to transform it to RhetosException
+        /// </summary>
+        public static RhetosException InterpretSqlException(Exception exception)
+        {
+            return null;
+        }
     }
 }

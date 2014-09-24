@@ -21,6 +21,10 @@ using System;
 
 namespace Rhetos
 {
+    /// <summary>
+    /// This exceptions denotes an error during validation of data vs business logic rules. 
+    /// These errors result from end users' incorrect usage of the application.
+    /// </summary>
     [global::System.Serializable]
     public class UserException : RhetosException
     {

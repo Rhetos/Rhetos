@@ -21,6 +21,10 @@ using System;
 
 namespace Rhetos
 {
+    /// <summary>
+    /// Exception denotes a request or data format error occurred in communication between client and server. 
+    /// Client is not adhering to server API.
+    /// </summary>
     [global::System.Serializable]
     public class ClientException : RhetosException
     {

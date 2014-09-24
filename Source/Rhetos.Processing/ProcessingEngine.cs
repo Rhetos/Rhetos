@@ -45,7 +45,7 @@ namespace Rhetos.Processing
         private readonly XmlUtility _xmlUtility;
         private readonly IUserInfo _userInfo;
 
-        private static string _clientExceptionUserMessage = "Client request error";
+        private static string _clientExceptionUserMessage = "Operation could not be completed because the request sent to the server was not valid or not properly formatted.";
 
         public ProcessingEngine(
             IPluginsContainer<ICommandImplementation> commandRepository,
@@ -66,21 +66,10 @@ namespace Rhetos.Processing
             _userInfo = userInfo;
         }
 
-        string StringifyCommandNames(IList<ICommandInfo> commands)
-        {
-            StringBuilder sb = new StringBuilder();
-            foreach (var commandInfo in commands)
-            {
-                if (sb.Length > 0) sb.Append(", ");
-                sb.Append(commandInfo.GetType().Name);
-            }
-            return sb.ToString();
-        }
-
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public ProcessingResult Execute(IList<ICommandInfo> commands)
         {
-            _logger.Info(() => string.Format("Process Request, User: {0}, Commands({1}): {2}", _userInfo.UserName, commands.Count, StringifyCommandNames(commands)));
+            _logger.Trace(() => string.Format("Process Request, User: {0}, Commands({1}): {2}.", _userInfo.UserName, commands.Count, string.Join(", ", commands.Select(a => a.GetType().Name))));
 
             var authorizationMessage = _authorizationManager.Authorize(commands);
             _persistenceTransaction.NHibernateSession.Clear(); // NHibernate cached data from AuthorizationManager may cause problems later with serializing arrays that mix cached proxies with POCO instance.
@@ -165,7 +154,10 @@ namespace Rhetos.Processing
 
                 string userMessage = null;
                 string systemMessage = null;
-                
+
+                var sqlException = SqlUtility.InterpretSqlException(ex);
+                if (sqlException != null) ex = sqlException;
+
                 if (ex is UserException) 
                 {
                     userMessage = ex.Message;
@@ -179,11 +171,7 @@ namespace Rhetos.Processing
                 }
                 else
                 {
-                    var permissionError = CheckSqlPermissionError(ex);
-                    if (permissionError != null)
-                        systemMessage = permissionError;
-                    else
-                        userMessage = TryParseSqlException(ex);
+                    systemMessage = ex.Message;
                 }
 
                 if (userMessage == null && systemMessage == null)
@@ -195,55 +183,6 @@ namespace Rhetos.Processing
                     systemMessage,
                     userMessage);
             }
-        }
-
-        // TODO: Make this check DB Provider independant. This implementation works only on MS SQL
-        private static string CheckSqlPermissionError(Exception exception)
-        {
-            var sqlException = ExtractSqlException(exception);
-            if (sqlException == null) return null;
-            if (sqlException.Number == 229 || sqlException.Number == 230)
-                if (sqlException.Message.Contains("permission was denied"))
-                    return "Rhetos server lacks sufficient database permissions for this operation! It is suggested that Rhetos Server process has db_owner role for the database.";
-
-            return null;
-        }
-
-        private static string TryParseSqlException(Exception exception)
-        {
-            var sqlException = ExtractSqlException(exception);
-            if (sqlException == null)
-                return null;
-
-            if (sqlException.State == 101) // Our convention for an error raised in SQL that is intended as a message to the end user.
-                return sqlException.Message;
-
-
-            if (sqlException.Message.StartsWith("Cannot insert duplicate key"))
-                return "It is not allowed to enter a duplicate record."; // TODO: Internationalization.
-
-            if (sqlException.Message.StartsWith("The DELETE statement conflicted with the REFERENCE constraint"))
-                return "It is not allowed to delete a record that is referenced by other records."; // TODO: Internationalization.
-
-            if (sqlException.Message.StartsWith("The DELETE statement conflicted with the SAME TABLE REFERENCE constraint"))
-                return "It is not allowed to delete a record that is referenced by other records."; // TODO: Internationalization.
-
-            if (sqlException.Message.StartsWith("The INSERT statement conflicted with the FOREIGN KEY constraint"))
-                return "It is not allowed to enter the record. An entered value references nonexistent record."; // TODO: Internationalization.
-
-            if (sqlException.Message.StartsWith("The UPDATE statement conflicted with the FOREIGN KEY constraint"))
-                return "It is not allowed to edit the record. An entered value references nonexistent record."; // TODO: Internationalization.
-
-            return null;
-        }
-
-        private static SqlException ExtractSqlException(Exception exception)
-        {
-            if (exception is SqlException)
-                return (SqlException)exception;
-            if (exception.InnerException != null)
-                return ExtractSqlException(exception.InnerException);
-            return null;
         }
 
         private ProcessingResult LogResultsReturnError(List<CommandResult> commandResults, string logError, string systemMessage, string userMessage)
