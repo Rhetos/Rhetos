@@ -115,7 +115,13 @@ namespace Rhetos.Dom.DefaultConcepts
                     duplicateObjects = duplicateObjects.Where(item => !deletedIndex.Contains(item.ID)).ToArray();
                 }}
                 if (duplicateObjects.Count() > 0)
-                    throw new Rhetos.FrameworkException(""Inserting an object that already exists. ID="" + duplicateObjects.First().ID);
+                {{
+                    string msg = ""Inserting a record that already exists. ID="" + duplicateObjects.First().ID;
+                    if (checkUserPermissions)
+                        throw new Rhetos.ClientException(msg);
+                    else
+                        throw new Rhetos.FrameworkException(msg);
+                }}
             }}
 
             {6}
