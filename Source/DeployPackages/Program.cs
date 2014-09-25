@@ -117,7 +117,7 @@ namespace DeployPackages
             if (!connectionReport.connectivity)
                 throw (connectionReport.exceptionRaised);
             else if (!connectionReport.isDbo)
-                throw (new FrameworkException("Current user does not have db_owner role for the database!"));
+                throw (new FrameworkException("Current user does not have db_owner role for the database."));
         }
 
         private static void DeployPackages(IContainer container)

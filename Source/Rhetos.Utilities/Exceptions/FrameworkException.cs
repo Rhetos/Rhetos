@@ -24,6 +24,9 @@ using System.Text;
 
 namespace Rhetos
 {
+    /// <summary>
+    /// An internal error of the Rhetos platform occurred. If it is encountered a bug report should be submitted to Rhetos platform development team.
+    /// </summary>
     [global::System.Serializable]
     public class FrameworkException : RhetosException
     {

@@ -67,7 +67,6 @@ namespace Rhetos.Utilities
                          orderby e.LineNumber
                          select e;
             foreach (var err in errors)
-                // TODO: Now that we added ClientException, maybe some of these SQL errors are ClientException and NOT UserExceptions? Needs extended convention to distinguish between the two
                 if (err.State == 101) // Rhetos convention for an error raised in SQL that is intended as a message to the end user.
                     return new UserException(err.Message);
 
@@ -83,5 +82,49 @@ namespace Rhetos.Utilities
                 throw new ApplicationException("Cannot read database server time.");
             return databaseTime;
         }
+
+        /// <summary>
+        /// Checks exception for Sql related exceptions and attempts to transform it to RhetosException
+        /// </summary>
+        public static RhetosException InterpretSqlException(Exception exception)
+        {
+            var sqlException = ExtractSqlException(exception);
+            if (sqlException == null)
+                return null;
+
+            if (sqlException.State == 101) // Rhetos convention for an error raised in SQL that is intended as a message to the end user.
+                return new UserException(sqlException.Message);
+
+            if (sqlException.Number == 229 || sqlException.Number == 230)
+                if (sqlException.Message.Contains("permission was denied"))
+                    return new FrameworkException("Rhetos server lacks sufficient database permissions for this operation. Please make sure that Rhetos Server process has db_owner role for the database.", exception);
+
+            if (sqlException.Message.StartsWith("Cannot insert duplicate key"))
+                return new UserException("It is not allowed to enter a duplicate record."); // TODO: Internationalization.
+
+            if (sqlException.Message.StartsWith("The DELETE statement conflicted with the REFERENCE constraint"))
+                return new UserException("It is not allowed to delete a record that is referenced by other records."); // TODO: Internationalization.
+
+            if (sqlException.Message.StartsWith("The DELETE statement conflicted with the SAME TABLE REFERENCE constraint"))
+                return new UserException("It is not allowed to delete a record that is referenced by other records."); // TODO: Internationalization.
+
+            if (sqlException.Message.StartsWith("The INSERT statement conflicted with the FOREIGN KEY constraint"))
+                return new UserException("It is not allowed to enter the record. An entered value references nonexistent record."); // TODO: Internationalization.
+
+            if (sqlException.Message.StartsWith("The UPDATE statement conflicted with the FOREIGN KEY constraint"))
+                return new UserException("It is not allowed to edit the record. An entered value references nonexistent record."); // TODO: Internationalization.
+
+            return null;
+        }
+
+        private static SqlException ExtractSqlException(Exception exception)
+        {
+            if (exception is SqlException)
+                return (SqlException)exception;
+            if (exception.InnerException != null)
+                return ExtractSqlException(exception.InnerException);
+            return null;
+        }
+
     }
 }
