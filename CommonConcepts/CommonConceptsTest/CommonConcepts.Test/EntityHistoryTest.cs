@@ -462,10 +462,9 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
 
                 var future = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()).AddMinutes(1);
+                repository.TestHistory.Simple.Insert(new[] { new TestHistory.Simple { Code = 1, ActiveSince = future } });
 
-                TestUtility.ShouldFail(
-                    () => repository.TestHistory.Simple.Insert(new[] { new TestHistory.Simple { ActiveSince = future } }),
-                    "ActiveSince", "TestHistory.Simple", "future");
+                Assert.AreEqual("1  " + future.ToString("s"), DumpFull(repository.TestHistory.Simple.All()));
             }
         }
 
@@ -482,10 +481,9 @@ namespace CommonConcepts.Test
 
                 var future = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()).AddMinutes(1);
                 s.ActiveSince = future;
+                repository.TestHistory.Simple.Update(new[] { s });
 
-                TestUtility.ShouldFail(
-                    () => repository.TestHistory.Simple.Update(new[] { s }),
-                    "ActiveSince", "TestHistory.Simple", "future");
+                Assert.AreEqual("1  " + future.ToString("s"), DumpFull(repository.TestHistory.Simple.All()));
             }
         }
 
@@ -759,14 +757,14 @@ namespace CommonConcepts.Test
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var e = new TestHistory.Simple { Code = 1 };
+                var future1 = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()).AddMinutes(1);
+                var future2 = future1.AddMinutes(1);
+
+                var e = new TestHistory.Simple { Code = 1, ActiveSince = future2 };
                 repository.TestHistory.Simple.Insert(new[] { e });
 
-                var future = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()).AddMinutes(1);
-
-                TestUtility.ShouldFail(
-                    () => repository.TestHistory.Simple_Changes.Insert(new[] { new TestHistory.Simple_Changes { Entity = e, ActiveSince = future } }),
-                    "ActiveSince", "TestHistory.Simple_Changes", "future");
+                repository.TestHistory.Simple_Changes.Insert(new[] { new TestHistory.Simple_Changes { Entity = e, ActiveSince = future1 } });
+                Assert.AreEqual("1  " + future2.ToString("s"), DumpFull(repository.TestHistory.Simple.All()));
             }
         }
 
@@ -778,18 +776,19 @@ namespace CommonConcepts.Test
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var s = new TestHistory.Simple { ID = Guid.NewGuid(), Code = 1, ActiveSince = Day(2) };
+                var future1 = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()).AddMinutes(1);
+                var future2 = future1.AddMinutes(1);
+                var future3 = future2.AddMinutes(1);
+
+                var s = new TestHistory.Simple { ID = Guid.NewGuid(), Code = 1, ActiveSince = future3 };
                 repository.TestHistory.Simple.Insert(new[] { s });
 
-                var h = new TestHistory.Simple_Changes { EntityID = s.ID, Code = 2, ActiveSince = Day(1) };
+                var h = new TestHistory.Simple_Changes { EntityID = s.ID, Code = 2, ActiveSince = future1 };
                 repository.TestHistory.Simple_Changes.Insert(new[] { h });
 
-                var future = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()).AddMinutes(1);
-                h.ActiveSince = future;
-
-                TestUtility.ShouldFail(
-                    () => repository.TestHistory.Simple_Changes.Update(new[] { h }),
-                    "ActiveSince", "TestHistory.Simple_Changes", "future");
+                h.ActiveSince = future2;
+                repository.TestHistory.Simple_Changes.Update(new[] { h });
+                Assert.AreEqual("1  " + future3.ToString("s"), DumpFull(repository.TestHistory.Simple.All()));
             }
         }
 

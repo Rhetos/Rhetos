@@ -44,7 +44,6 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode(FilterImplementationSnippet(info), RepositoryHelper.RepositoryMembers, info.Dependency_ChangesEntity);
             codeBuilder.InsertCode(AdditionalParameterSnippet(info), DataStructureCodeGenerator.BodyTag, info.Entity);
             codeBuilder.InsertCode(CreateHistoryOnUpdateSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Entity);
-            codeBuilder.InsertCode(VerifyChangesEntityTimeSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Dependency_ChangesEntity);
         }
 
         private static string FilterInterfaceSnippet(EntityHistoryInfo info)
@@ -102,10 +101,6 @@ namespace Rhetos.Dom.DefaultConcepts
                 foreach (var newItem in insertedNew.Concat(updatedNew))
                     if (newItem.ActiveSince == null)
                         newItem.ActiveSince = now;
-                    else if (newItem.ActiveSince > now.AddSeconds(errorMarginSeconds))
-                        throw new Rhetos.UserException(string.Format(
-                            ""It is not allowed to enter a future time in {0}.{1}.ActiveSince ({{0}}). Set the property value to NULL to automatically use current time ({{1}})."",
-                            newItem.ActiveSince, now));
 
                 if (updatedNew.Count() > 0)
 			    {{
@@ -133,25 +128,6 @@ namespace Rhetos.Dom.DefaultConcepts
             info.Entity.Module.Name,
             info.Entity.Name,
             ClonePropertiesTag.Evaluate(info));
-        }
-
-        private static string VerifyChangesEntityTimeSnippet(EntityHistoryInfo info)
-        {
-            return string.Format(
-@"			if (insertedNew.Count() > 0 || updatedNew.Count() > 0)
-            {{
-                var now = SqlUtility.GetDatabaseTime(_executionContext.SqlExecuter);
-                
-                foreach (var newItem in insertedNew.Concat(updatedNew))
-                    if (newItem.ActiveSince > now)
-                        throw new Rhetos.UserException(string.Format(
-                            ""It is not allowed to enter a future time in {0}.{1}.ActiveSince ({{0}}). Current server time is {{1}}."",
-                            newItem.ActiveSince, now));
-            }}
-
-",
-            info.Dependency_ChangesEntity.Module.Name,
-            info.Dependency_ChangesEntity.Name);
         }
     }
 }
