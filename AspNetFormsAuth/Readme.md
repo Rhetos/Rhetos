@@ -4,6 +4,10 @@ AspNetFormsAuth
 AspNetFormsAuth is a DSL package (a plugin module) for [Rhetos development platform](https://github.com/Rhetos/Rhetos).
 It provides an implementation of **ASP.NET forms authentication** to Rhetos server applications.
 
+The authentication is implemented using Microsoft's *WebMatrix SimpleMembershipProvider*, with recommended security best practices such as password salting and hashing.
+Implementation fully depends on SimpleMembershipProvider; AspNetFormsAuth project does not try to implement its own authentication or security mechanisms.    
+
+
 Table of contents
 -----------------
 
@@ -39,8 +43,7 @@ Features
 * AspNetFormsAuth packages will automatically import all principals and permissions
   form SimpleWindowsAuth package, if used before.
   Note that roles cannot be automatically imported because SimpleWindowsAuth depends on Active Directory user groups.
-* Authentication is implemented using Microsoft's `SimpleMembershipProvider` (WebMatrix).
-* The log in form and service allow anonymous access (it is a standard forms authentication feature).
+* The login form and service allow anonymous access (it is a standard forms authentication feature).
 
 
 <a id="AuthenticationServiceApi"></a>
