@@ -112,6 +112,7 @@
     <Compile Include="ConceptKeywordAttribute.cs" />
     <Compile Include="ConceptMember.cs" />
     <Compile Include="ConceptMembers.cs" />
+    <Compile Include="ConceptMetadata.cs" />
     <Compile Include="DslScript.cs" />
     <Compile Include="DslSyntaxException.cs" />
     <Compile Include="IAlternativeInitializationConcept.cs" />

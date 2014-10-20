@@ -33,11 +33,21 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(DecimalPropertyInfo))]
     public class DecimalPropertyDatabaseDefinition : IConceptDatabaseDefinition
     {
+        ConceptMetadata _conceptMetadata;
+
+        public DecimalPropertyDatabaseDefinition(ConceptMetadata conceptMetadata)
+        {
+            _conceptMetadata = conceptMetadata;
+        }
+
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
             var info = (DecimalPropertyInfo)conceptInfo;
+
+            PropertyDatabaseDefinition.RegisterColumnMetadata(_conceptMetadata, info, SqlUtility.Identifier(info.Name), Sql.Get("DecimalPropertyDatabaseDefinition_DataType"));
             if (info.DataStructure is EntityInfo)
-                return PropertyDatabaseDefinition.AddColumn(info, SqlUtility.Identifier(info.Name), Sql.Get("DecimalPropertyDatabaseDefinition_DataType"));
+                return PropertyDatabaseDefinition.AddColumn(_conceptMetadata, info);
+
             return "";
         }
 

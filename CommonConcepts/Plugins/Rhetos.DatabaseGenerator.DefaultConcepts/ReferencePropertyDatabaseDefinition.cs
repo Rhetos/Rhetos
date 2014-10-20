@@ -37,6 +37,13 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ConceptImplementationVersion(2, 0)]
     public class ReferencePropertyDatabaseDefinition : IConceptDatabaseDefinition
     {
+        ConceptMetadata _conceptMetadata;
+
+        public ReferencePropertyDatabaseDefinition(ConceptMetadata conceptMetadata)
+        {
+            _conceptMetadata = conceptMetadata;
+        }
+
         public static bool IsSupported(ReferencePropertyInfo info)
         {
             return info.DataStructure is EntityInfo;
@@ -45,8 +52,11 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
             var info = (ReferencePropertyInfo)conceptInfo;
+
+            PropertyDatabaseDefinition.RegisterColumnMetadata(_conceptMetadata, info, info.GetColumnName(), Sql.Get("ReferencePropertyDatabaseDefinition_DataType"));
             if (IsSupported(info))
-                return PropertyDatabaseDefinition.AddColumn(info, info.GetColumnName(), Sql.Get("ReferencePropertyDatabaseDefinition_DataType"));
+                return PropertyDatabaseDefinition.AddColumn(_conceptMetadata, info);
+
             return "";
         }
 

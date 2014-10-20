@@ -34,6 +34,13 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(MoneyPropertyInfo))]
     public class MoneyPropertyDatabaseDefinition : IConceptDatabaseDefinition
     {
+        ConceptMetadata _conceptMetadata;
+
+        public MoneyPropertyDatabaseDefinition(ConceptMetadata conceptMetadata)
+        {
+            _conceptMetadata = conceptMetadata;
+        }
+
         private static string ConstraintName(MoneyPropertyInfo info)
         {
             return SqlUtility.Identifier(Sql.Format("MoneyPropertyDatabaseDefinition_CheckConstraintName",
@@ -46,8 +53,9 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             var info = (MoneyPropertyInfo)conceptInfo;
             SqlUtility.Identifier(info.Name);
 
+            PropertyDatabaseDefinition.RegisterColumnMetadata(_conceptMetadata, info, SqlUtility.Identifier(info.Name), Sql.Get("MoneyPropertyDatabaseDefinition_DataType"));
             if (info.DataStructure is EntityInfo)
-                return PropertyDatabaseDefinition.AddColumn(info, SqlUtility.Identifier(info.Name), Sql.Get("MoneyPropertyDatabaseDefinition_DataType"),
+                return PropertyDatabaseDefinition.AddColumn(_conceptMetadata, info,
                     Sql.Format("MoneyPropertyDatabaseDefinition_CreateCheckConstraint", ConstraintName(info), SqlUtility.Identifier(info.Name)));
             return "";
         }
