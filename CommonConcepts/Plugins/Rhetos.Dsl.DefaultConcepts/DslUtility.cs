@@ -64,9 +64,12 @@ namespace Rhetos.Dsl.DefaultConcepts
                     dataStructure.Name));
         }
 
-        public static string NameOptionalModule(DataStructureInfo dataStructure, ModuleInfo module)
+        /// <summary>
+        /// Concatenates module name and data stucture name. Omits module name if it is same as the context module.
+        /// </summary>
+        public static string NameOptionalModule(DataStructureInfo dataStructure, ModuleInfo contextModule)
         {
-            return dataStructure.Module != module ? (dataStructure.Module.Name + dataStructure.Name) : dataStructure.Name;
+            return dataStructure.Module.Name != contextModule.Name ? (dataStructure.Module.Name + dataStructure.Name) : dataStructure.Name;
         }
 
         /// <summary>

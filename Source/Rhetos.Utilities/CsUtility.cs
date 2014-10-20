@@ -66,12 +66,21 @@ namespace Rhetos.Utilities
         /// Reads a value from the dictionary, with extended error handling.
         /// Parameter exceptionMessage can contain format tag {0} that will be replaced by missing key.
         /// </summary>
-        public static TValue GetValue<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, string exceptionMessage)
+        public static TValue GetValue<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, Func<string> exceptionMessage)
         {
             TValue value;
             if (!dictionary.TryGetValue(key, out value))
-                throw new FrameworkException(string.Format(exceptionMessage, key));
+                throw new FrameworkException(string.Format(exceptionMessage(), key));
             return value;
+        }
+
+        /// <summary>
+        /// Reads a value from the dictionary, with extended error handling.
+        /// Parameter exceptionMessage can contain format tag {0} that will be replaced by missing key.
+        /// </summary>
+        public static TValue GetValue<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, string exceptionMessage)
+        {
+            return GetValue(dictionary, key, () => exceptionMessage);
         }
     }
 }

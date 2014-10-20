@@ -125,6 +125,9 @@
     <Compile Include="AutoCodeForEachDatabaseDefinition.cs" />
     <Compile Include="AutoCodeTriggerDatabaseDefinition.cs" />
     <Compile Include="LoggingRelatedItemDatabaseDefinition.cs" />
+    <Compile Include="IsSubtypeOfDatabaseDefinition.cs" />
+    <Compile Include="SubtypeImplementsPropertyDatabaseDefinition.cs" />
+    <Compile Include="PolymorphicPropertyDatabaseDefinition.cs" />
     <Compile Include="SqlDependsOnSqlIndexDatabaseDefinition.cs" />
     <Compile Include="EntityHistoryPropertyDatabaseDefinition.cs" />
     <Compile Include="ModificationTimeOfDatabaseDefinition.cs" />

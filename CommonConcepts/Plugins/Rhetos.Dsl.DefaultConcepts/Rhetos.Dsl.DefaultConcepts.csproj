@@ -122,6 +122,10 @@
     <Compile Include="DatabaseWorkarounds\AutoLegacyEntityDependsOnInfo.cs" />
     <Compile Include="DatabaseWorkarounds\AutoSqlProcedureDependsOnInfo.cs" />
     <Compile Include="DatabaseWorkarounds\ModuleAutoSqlDependsOnInfo.cs" />
+    <Compile Include="DataStructure\PolymorphicPropertyInfo.cs" />
+    <Compile Include="DataStructure\SubtypeImplementsPropertyInfo.cs" />
+    <Compile Include="DataStructure\IsSubtypeOfInfo.cs" />
+    <Compile Include="DataStructure\PolymorphicInfo.cs" />
     <Compile Include="DataStructure\RegisteredInterfaceImplementationInfo.cs" />
     <Compile Include="DataStructure\RegisteredInterfaceImplementationHelperInfo.cs" />
     <Compile Include="DataStructure\ImplementsInterfacePropertyInfo.cs" />

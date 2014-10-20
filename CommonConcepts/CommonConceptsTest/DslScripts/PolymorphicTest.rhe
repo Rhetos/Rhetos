@@ -1,0 +1,204 @@
+Module TestPolymorphic
+{
+	//=========================================================
+	
+	Polymorphic SimpleBase
+	{
+		ShortString Name;
+		Integer Days;
+	}
+	
+	Entity Simple1
+	{
+		Decimal Days; // Should automatically match Days implementation by name.
+		Is TestPolymorphic.SimpleBase; // Should automatically add Name property.
+	}
+	
+	Entity Simple2
+	{
+		ShortString Name1;
+		Integer Name2;
+		DateTime Finish;
+		
+		Is TestPolymorphic.SimpleBase
+		{
+			Implements TestPolymorphic.SimpleBase.Name "Name1 + '-' + CONVERT(NVARCHAR(256), Name2)";
+			Implements TestPolymorphic.SimpleBase.Days "DATEDIFF(d, '1999-12-31', Finish)";
+		}
+	}
+	
+	Browse SimpleBrowse TestPolymorphic.SimpleBase
+	{
+		Take Name;
+		Take Days;
+		Take Subtype;
+		Take 'Simple1.ID';
+		Take 'Simple1.Name';
+		Take Simple2;
+		Take 'Simple2.Name1';
+	}
+	
+	//=========================================================
+	
+	Polymorphic Empty
+	{
+		// Empty. No subtypes.
+	}
+	
+	//=========================================================
+	
+	Polymorphic SecondBase
+	{
+		LongString Info;
+	}
+	
+	Is Simple1 TestPolymorphic.SecondBase
+	{
+		Implements TestPolymorphic.SecondBase.Info "CONVERT(NVARCHAR(MAX), Name) +  '/' + CONVERT(NVARCHAR(MAX), Days)";
+	}
+	
+	Is Simple2 TestPolymorphic.SecondBase
+	{
+		Implements TestPolymorphic.SecondBase.Info "CONVERT(NVARCHAR(MAX), Name1) +  '/' + CONVERT(NVARCHAR(MAX), Name2) +  '/' + CONVERT(NVARCHAR(MAX), Finish, 126)";
+	}
+	
+	Is Second1 TestPolymorphic.SecondBase
+	{
+		Implements TestPolymorphic.SecondBase.Info "Info";
+	}
+
+	Entity Second1
+	{
+		LongString Info;
+	}
+	
+	// //=========================================================
+	
+	// Entity Dependant
+	// {
+		// ShortString Name;
+		// Reference TestPolymorphic.SimpleBase;
+	// }
+	
+	// Entity DependantBrowse TestPolymorphic.Dependant
+	// {
+		// Take Name;
+		// Take 'SimpleBase.Name';
+	// }
+	
+	// // TODO: Test referential integrity on insert Dependant, on delete ATemplate and on validate old data.
+	// // Create "Persisted Dependant_Key", or use delete triggers.
+	
+	// //=========================================================
+	
+	// Entity Disjunctive1
+	// {
+		// ShortString Name;
+	// }
+	
+	// Entity Disjunctive2
+	// {
+		// Integer Days;
+	// }
+	
+	// Polymorphic Disjunctive;
+	// Entity Disjunctive1 { Is TestPolymorphic.Disjunctive; }
+	// Entity Disjunctive2 { Is TestPolymorphic.Disjunctive; }
+
+	// Browse DisjunctiveBrowse TestPolymorphic.Disjunctive
+	// {
+		// Take Subtype;
+		// Take Disjunctive1;
+		// Take Disjunctive2.ID;
+		// Take Disjunctive2.Days;
+	// }
+	
+	// //=========================================================
+	
+	// Polymorphic Writable
+	// {
+		// ShortString Name;
+		// Integer Days;
+		
+		// WriteToSubtype TestPolymorphic.StandardWritable;
+			// // Will Implements all properties as-is, without any transformations.
+			// // Write '(insert, update, delete) => _context.Repositories.TestPolymorphic.StandardWritable.Save(new ....)';
+	// }
+	
+	// //=========================================================
+	
+	// Polymorphic Perf
+	// {
+		// ShortString Name;
+		// ShortString Code;
+	// }
+	
+	// Entity Perf1
+	// {
+		// Is TestPolymorphic.Perf;
+	// }
+	
+	// Entity Perf2
+	// {
+		// Is TestPolymorphic.Perf
+		// {
+			// Implements TestPolymorphic.Perf.Code "Fixed";
+		// }
+	// }
+	
+	// // TODO: Check performance when filtering by subtype.
+	// // TODO: Check performance when filtering by any property that is hardcoded on (some) subtypes.
+	
+	// //=========================================================
+	
+	// Polymorphic Base1
+	// {
+		// ShortString Name;
+	// }
+	
+	// Polymorphic Base2
+	// {
+		// ShortString Name2;
+	// }
+	
+	// Entity MultipleImplementations
+	// {
+		// Is TestPolymorphic.Base1;
+		// Is TestPolymorphic.Base1 'reverse' // TODO: Hack to avoid multiple IDs.
+		// {
+			// Implements TestPolymorphic.Base2.Name "Name.Reverse()";
+		// }
+		// Is TestPolymorphic.Base2;
+	// }
+
+}	
+	// //=========================================================
+
+Module TestPolymorphic
+{
+	Polymorphic DifferentModuleBase
+	{
+		ShortString Name;
+	}
+	
+	Polymorphic DifferentModule
+	{
+		ShortString Code;
+		Is TestPolymorphic.DifferentModuleBase
+		{
+			Implements TestPolymorphic.DifferentModuleBase.Name "Code + '1'";
+		}
+	}
+}
+
+Module TestPolymorphic2
+{
+	Polymorphic DifferentModule
+	{
+		ShortString Code;
+		Is TestPolymorphic.DifferentModuleBase
+		{
+			Implements TestPolymorphic.DifferentModuleBase.Name "Code + '2'";
+		}
+	}
+}

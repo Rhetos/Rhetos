@@ -360,7 +360,7 @@ namespace Rhetos.DatabaseGenerator
         {
             if (!conceptInfosByKey.ContainsKey(conceptInfoKey))
                 throw new FrameworkException(string.Format(
-                    "DatabaseGenerator error while generating code with plugin {0}: Plugin created dependency nonexisting concept info {1}.",
+                    "DatabaseGenerator error while generating code with plugin {0}: Extension created a dependency to the nonexisting concept info {1}.",
                     debugContextNewConceptApplication.ConceptImplementationType.Name,
                     conceptInfoKey));
             return conceptInfosByKey[conceptInfoKey];
