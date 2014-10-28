@@ -240,5 +240,32 @@ namespace CommonConcepts.Test
                     "It is not allowed to directly modify TestDenyUserEdit.Hardcoded.");
             }
         }
+
+        [TestMethod]
+        public void AutoInitialized()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                var sqlExecuter = container.Resolve<ISqlExecuter>();
+
+                DateTime start = SqlUtility.GetDatabaseTime(sqlExecuter);
+
+                var item = new TestDenyUserEdit.AutoInitialized
+                {
+                    ID = Guid.NewGuid()
+                };
+
+                repository.TestDenyUserEdit.AutoInitialized.Save(new[] { item }, null, null, checkUserPermissions: true);
+
+                DateTime finish = SqlUtility.GetDatabaseTime(sqlExecuter);
+
+                item = repository.TestDenyUserEdit.AutoInitialized.Filter(new[] { item.ID }).Single();
+
+                Console.WriteLine("item.Start: " + item.Start);
+                Assert.IsTrue(item.Start >= start && item.Start <= finish);
+            }
+        }
+
     }
 }

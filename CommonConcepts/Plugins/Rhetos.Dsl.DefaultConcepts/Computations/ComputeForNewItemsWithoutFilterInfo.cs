@@ -20,35 +20,26 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class AutoCodePropertyInfo : IAlternativeInitializationConcept, IValidationConcept
+    [ConceptKeyword("ComputeForNewItems")]
+    public class ComputeForNewItemsWithoutFilterInfo : ComputeForNewItemsInfo, IAlternativeInitializationConcept
     {
-        [ConceptKey]
-        public PropertyInfo Property { get; set; }
-
-        public AutoCodeTriggerInfo Dependency_TriggerInfo { get; set; }
-
         public IEnumerable<string> DeclareNonparsableProperties()
         {
-            return new[] { "Dependency_TriggerInfo" };
+            return new[] { "FilterSaveExpression" };
         }
 
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
-            if (!(Property.DataStructure is EntityInfo))
-                throw new DslSyntaxException(this, "AutoCode concept may only be used on properties of entity.");
-            Dependency_TriggerInfo = new AutoCodeTriggerInfo { Entity = (EntityInfo)this.Property.DataStructure };
-            createdConcepts = new IConceptInfo[] { Dependency_TriggerInfo };
+            FilterSaveExpression = "";
+            createdConcepts = null;
         }
-
-        public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            if (!(Property is ShortStringPropertyInfo) && !(Property is IntegerPropertyInfo))
-                throw new DslSyntaxException("AutoCode is only available for ShortString and Integer properties.");
-        }
-
     }
 }

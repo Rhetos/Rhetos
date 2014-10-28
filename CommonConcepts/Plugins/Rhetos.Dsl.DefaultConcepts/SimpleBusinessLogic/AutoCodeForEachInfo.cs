@@ -41,8 +41,9 @@ namespace Rhetos.Dsl.DefaultConcepts
             return newConcepts;
         }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public new void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
+            base.CheckSemantics(concepts);
             if (Group.DataStructure != Property.DataStructure)
                 throw new DslSyntaxException("AutoCodeForEach grouping property " + Group.GetKeyProperties()
                     + " is not a member of " + Property.DataStructure.GetUserDescription() + ".");

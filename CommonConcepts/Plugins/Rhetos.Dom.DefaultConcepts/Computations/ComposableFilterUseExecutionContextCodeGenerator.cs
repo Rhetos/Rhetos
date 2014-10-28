@@ -19,37 +19,26 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
-using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl;
+using Rhetos.Utilities;
 using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(DenyUserEditDataStructureInfo))]
-    public class DenyUserEditDataStructureCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(ComposableFilterUseExecutionContextInfo))]
+    public class ComposableFilterUseExecutionContextCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (DenyUserEditDataStructureInfo)conceptInfo;
-            codeBuilder.InsertCode(CheckChangesSnippet(info), WritableOrmDataStructureCodeGenerator.ArgumentValidationTag, info.DataStructure);
-            codeBuilder.AddReferencesFromDependency(typeof(UserException));
-        }
-
-        private static string CheckChangesSnippet(DenyUserEditDataStructureInfo info)
-        {
-            return string.Format(
-@"            if (checkUserPermissions)
-                throw new Rhetos.UserException(
-                    ""It is not allowed to directly modify {0}.{1}."");
-",
-                info.DataStructure.Module.Name,
-                info.DataStructure.Name);
+            var info = (ComposableFilterUseExecutionContextInfo)conceptInfo;
+            codeBuilder.InsertCode(", Common.ExecutionContext", ComposableFilterByCodeGenerator.AdditionalParametersTypeTag, info.Filter);
+            codeBuilder.InsertCode(", _executionContext", ComposableFilterByCodeGenerator.AdditionalParametersArgumentTag, info.Filter);
         }
     }
 }

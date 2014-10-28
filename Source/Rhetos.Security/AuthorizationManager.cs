@@ -77,7 +77,7 @@ namespace Rhetos.Security
         {
             var sw = Stopwatch.StartNew();
 
-            if (_allowBuiltinAdminOverride &&  IsBuiltInAdministrator(_userInfo))
+            if (_allowBuiltinAdminOverride && IsBuiltInAdministrator(_userInfo))
             {
                 _logger.Trace(() => string.Format("User {0} has builtin administrator privileges.", _userInfo.UserName));
                 return Enumerable.Repeat(true, requiredClaims.Count()).ToArray();

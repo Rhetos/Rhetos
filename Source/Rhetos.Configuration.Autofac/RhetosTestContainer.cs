@@ -56,6 +56,10 @@ namespace Rhetos.Configuration.Autofac
         /// </param>
         public RhetosTestContainer(bool commitChanges = false, string rhetosServerFolder = null)
         {
+            if (rhetosServerFolder != null)
+                if (!Directory.Exists(rhetosServerFolder))
+                    throw new ArgumentException("The given folder does not exist: " + Path.GetFullPath(rhetosServerFolder), "rhetosServerFolder");
+
             _commitChanges = commitChanges;
             _explicitRhetosServerFolder = rhetosServerFolder;
         }
@@ -89,9 +93,15 @@ namespace Rhetos.Configuration.Autofac
                         }
                 }
 
-                _lifetimeScope = _iocContainer.BeginLifetimeScope();
+                if (_initializeSession != null)
+                    _lifetimeScope = _iocContainer.BeginLifetimeScope(_initializeSession);
+                else
+                    _lifetimeScope = _iocContainer.BeginLifetimeScope();
+
             }
         }
+
+        protected event Action<ContainerBuilder> _initializeSession;
 
         protected virtual bool IsValidRhetosServerDirectory(string path)
         {

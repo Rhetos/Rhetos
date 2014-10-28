@@ -39,6 +39,7 @@ namespace Rhetos.Processing
         private readonly IPluginsContainer<ICommandImplementation> _commandRepository;
         private readonly IPluginsContainer<ICommandObserver> _commandObservers;
         private readonly ILogger _logger;
+        private readonly ILogger _requestLogger;
         private readonly ILogger _performanceLogger;
         private readonly IPersistenceTransaction _persistenceTransaction;
         private readonly IAuthorizationManager _authorizationManager;
@@ -59,6 +60,7 @@ namespace Rhetos.Processing
             _commandRepository = commandRepository;
             _commandObservers = commandObservers;
             _logger = logProvider.GetLogger("ProcessingEngine");
+            _requestLogger = logProvider.GetLogger("ProcessingEngine Request");
             _performanceLogger = logProvider.GetLogger("Performance");
             _persistenceTransaction = persistenceTransaction;
             _authorizationManager = authorizationManager;
@@ -69,7 +71,7 @@ namespace Rhetos.Processing
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public ProcessingResult Execute(IList<ICommandInfo> commands)
         {
-            _logger.Trace(() => string.Format("Process Request, User: {0}, Commands({1}): {2}.", _userInfo.UserName, commands.Count, string.Join(", ", commands.Select(a => a.GetType().Name))));
+            _requestLogger.Trace(() => string.Format("User: {0}, Commands({1}): {2}.", _userInfo.UserName, commands.Count, string.Join(", ", commands.Select(a => a.GetType().Name))));
 
             var authorizationMessage = _authorizationManager.Authorize(commands);
             _persistenceTransaction.NHibernateSession.Clear(); // NHibernate cached data from AuthorizationManager may cause problems later with serializing arrays that mix cached proxies with POCO instance.
@@ -148,7 +150,7 @@ namespace Rhetos.Processing
 
                 if (ex is TargetInvocationException && ex.InnerException is RhetosException)
                 {
-                    _logger.Error(() => "Unwrapping exception: " + ex.ToString());
+                    _logger.Trace(() => "Unwrapping exception: " + ex.ToString());
                     ex = ex.InnerException;
                 }
 
@@ -165,30 +167,36 @@ namespace Rhetos.Processing
                 }
                 else if (ex is ClientException)
                 {
-                    // some interfaces (REST) assume that internal error (FrameworkException) occured if userMessage is not set
                     userMessage = _clientExceptionUserMessage;
                     systemMessage = ex.Message;
                 }
                 else
                 {
-                    systemMessage = ex.Message;
-                }
-
-                if (userMessage == null && systemMessage == null)
+                    userMessage = null;
                     systemMessage = ex.GetType().Name + ". For details see RhetosServer.log.";
+                }
 
                 return LogResultsReturnError(
                     commandResults,
-                    "Command execution error: " + ex,
+                    "Command execution error: ",
                     systemMessage,
-                    userMessage);
+                    userMessage,
+                    ex);
             }
         }
 
-        private ProcessingResult LogResultsReturnError(List<CommandResult> commandResults, string logError, string systemMessage, string userMessage)
+        private ProcessingResult LogResultsReturnError(List<CommandResult> commandResults, string logError, string systemMessage, string userMessage, Exception logException = null)
         {
-            _logger.Error(logError);
+
+            var errorSeverity = logException == null ? EventType.Error
+                : logException is UserException ? EventType.Trace
+                : logException is ClientException ? EventType.Info
+                : EventType.Error;
+                 
+            _logger.Write(errorSeverity, () => logError + logException);
+
             _logger.Trace(_xmlUtility.SerializeArrayToXml(commandResults.ToArray()));
+
             return new ProcessingResult
                 {
                     Success = false,

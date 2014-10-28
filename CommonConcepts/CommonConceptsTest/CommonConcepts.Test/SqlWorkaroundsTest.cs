@@ -137,6 +137,35 @@ namespace CommonConcepts.Test
             }
         }
 
+        [TestMethod]
+        public void SqlDependsOn_CaseInsensitive()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var features = new Dictionary<string, string>
+                {
+                    { "1", "SqlViewInfo TestSqlWorkarounds.AutoDependsOn1" },
+                    { "1CI", "SqlViewInfo TestSqlWorkarounds.AutoDependsOn1CI" },
+                    { "2", "SqlViewInfo TestSqlWorkarounds.AutoDependsOn2" },
+                    { "3", "SqlViewInfo TestSqlWorkarounds.AutoDependsOn3" },
+                    { "4", "SqlViewInfo TestSqlWorkarounds.AutoDependsOn4" },
+                };
+
+                Dictionary<Guid, string> featuresById = features
+                    .Select(f => new { Name = f.Key, Id = ReadConceptId(f.Value, container) })
+                    .ToDictionary(fid => fid.Id, fid => fid.Name);
+
+                var deployedDependencies = ReadConceptDependencies(featuresById.Keys, container)
+                    .Select(dep => featuresById[dep.Item1] + "-" + featuresById[dep.Item2]);
+
+                var expectedDependencies = "2-1, 2-1CI, 3-2, 4-3"; // Second concept depends on first concept.
+
+                Assert.AreEqual(
+                    TestUtility.DumpSorted(expectedDependencies.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s))),
+                    TestUtility.DumpSorted(deployedDependencies));
+            }
+        }
+
         private static Guid ReadConceptId(string conceptInfoKey, RhetosTestContainer container)
         {
             Guid id = Guid.Empty;

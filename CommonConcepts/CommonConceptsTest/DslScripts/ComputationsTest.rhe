@@ -240,6 +240,23 @@ Module TestFilter
         FilterBy ComposableFilterBrowseLoader '(repository, parameter) => repository.TestFilter.ComposableFilterBrowse.Query().Where(item => item.Name.Contains(parameter.Pattern)).ToArray()';
     }
     Parameter ComposableFilterBrowseLoader { ShortString Pattern; }
+    
+
+    SqlQueryable FixedData
+		"SELECT ID=CONVERT(UNIQUEIDENTIFIER, 'DEC7CD4A-11EC-40E3-8463-5D2EF411449B'), Name='a', Num=1
+		UNION ALL SELECT CONVERT(UNIQUEIDENTIFIER, 'C7BC64CB-B62C-459E-9C3A-D029BED616B6'), 'b', 2"
+	{
+		ShortString Name;
+		Integer Num;
+        
+        ComposableFilterBy ComposableFilterWithContext '(items, repository, parameter, context) =>
+            new FixedData[] { new FixedData { Name = context.UserInfo.UserName } }.AsQueryable()'
+        {
+            UseExecutionContext;
+        }
+	}
+    
+    Parameter ComposableFilterWithContext;
 }
 
 Module TestFilter2;

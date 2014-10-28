@@ -221,10 +221,10 @@ namespace Rhetos.Deployment
         {
             var files = Directory.GetFiles(dataMigrationScriptsFolder, "*.*", SearchOption.AllDirectories);
 
-            const string expectedExtention = ".sql";
-            var badFile = files.FirstOrDefault(file => Path.GetExtension(file).ToLower() != expectedExtention);
+            const string expectedExtension = ".sql";
+            var badFile = files.FirstOrDefault(file => Path.GetExtension(file).ToLower() != expectedExtension);
             if (badFile != null)
-                throw new FrameworkException("Data migration script '"+ badFile +"' does not have expected extension '" + expectedExtention + "'.");
+                throw new FrameworkException("Data migration script '"+ badFile +"' does not have expected extension '" + expectedExtension + "'.");
 
             int baseFolderLength = GetFullPathLength(dataMigrationScriptsFolder);
 

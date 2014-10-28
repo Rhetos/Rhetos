@@ -37,7 +37,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (DenyUserEditInfo)conceptInfo;
-            codeBuilder.InsertCode(CheckChangesOnInsertSnippet(info), WritableOrmDataStructureCodeGenerator.InitializationTag, info.Property.DataStructure);
+            codeBuilder.InsertCode(CheckChangesOnInsertSnippet(info), WritableOrmDataStructureCodeGenerator.ArgumentValidationTag, info.Property.DataStructure);
             codeBuilder.InsertCode(CheckChangesOnUpdateSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Property.DataStructure);
             codeBuilder.AddReferencesFromDependency(typeof(UserException));
         }
@@ -60,13 +60,14 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string CheckChangesOnInsertSnippet(DenyUserEditInfo info)
         {
             return string.Format(
-@"            if (checkUserPermissions)
+@"if (checkUserPermissions)
             {{
                 var invalidItem = insertedNew.Where(newItem => newItem.{3} != null).FirstOrDefault();
                 
     {4}
             }}
-",
+
+            ",
                 info.Property.DataStructure.Module.Name,
                 info.Property.DataStructure.Name,
                 info.Property.Name,

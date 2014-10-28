@@ -37,7 +37,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             HashSet<string> sqlObjects;
             if (!SqlObjectsCache.TryGetValue(sqlScript, out sqlObjects))
             {
-                sqlObjects = new HashSet<string>(ExtractPossibleObjects(sqlScript));
+                sqlObjects = new HashSet<string>(ExtractPossibleObjects(sqlScript), StringComparer.InvariantCultureIgnoreCase);
                 SqlObjectsCache.Add(sqlScript, sqlObjects);
             }
 
@@ -81,17 +81,23 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (function)
             {
                 newConcepts.AddRange(existingConcepts.OfType<SqlFunctionInfo>()
-                    .Where(ci => ci.Module.Name == nameParts[0] && ci.Name == nameParts[1] && ci != dependent)
+                    .Where(ci => ci.Module.Name.Equals(nameParts[0], StringComparison.InvariantCultureIgnoreCase)
+                        && ci.Name.Equals(nameParts[1], StringComparison.InvariantCultureIgnoreCase)
+                        && ci != dependent)
                     .Select(ci => new SqlDependsOnSqlFunctionInfo { Dependent = dependent, DependsOn = ci }));
             }
             else
             {
                 newConcepts.AddRange(existingConcepts.OfType<DataStructureInfo>()
-                    .Where(ci => ci.Module.Name == nameParts[0] && ci.Name == nameParts[1] && ci != dependent)
+                    .Where(ci => ci.Module.Name.Equals(nameParts[0], StringComparison.InvariantCultureIgnoreCase)
+                        && ci.Name.Equals(nameParts[1], StringComparison.InvariantCultureIgnoreCase)
+                        && ci != dependent)
                     .Select(ci => new SqlDependsOnDataStructureInfo { Dependent = dependent, DependsOn = ci }));
 
                 newConcepts.AddRange(existingConcepts.OfType<SqlViewInfo>()
-                    .Where(ci => ci.Module.Name == nameParts[0] && ci.Name == nameParts[1] && ci != dependent)
+                    .Where(ci => ci.Module.Name.Equals(nameParts[0], StringComparison.InvariantCultureIgnoreCase)
+                        && ci.Name.Equals(nameParts[1], StringComparison.InvariantCultureIgnoreCase)
+                        && ci != dependent)
                     .Select(ci => new SqlDependsOnSqlViewInfo { Dependent = dependent, DependsOn = ci }));
             }
 

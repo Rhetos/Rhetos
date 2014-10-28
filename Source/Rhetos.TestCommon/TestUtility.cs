@@ -60,9 +60,11 @@ namespace Rhetos.TestCommon
             Assert.IsNotNull(exception, "Expected exception did not happen.");
 
             if (!(exception is TExpectedException))
-                Assert.Fail("The thrown exception " + exception.GetType().Name + " is not expected " + typeof(TExpectedException).GetType().Name + ".");
+                Assert.Fail(string.Format("Unexpected exception type: {0} instead of a {1}.",
+                    exception.GetType().Name,
+                    typeof(TExpectedException).Name));
 
-            AssertContains(message, expectedErrorContent, "Exception message text is incorrect. ", exception.ToString());
+            AssertContains(message, expectedErrorContent, "Exception message is incorrect: " + message, exception.ToString());
 
             return exception;
         }

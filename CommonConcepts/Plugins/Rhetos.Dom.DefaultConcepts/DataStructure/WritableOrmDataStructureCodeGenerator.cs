@@ -35,7 +35,10 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.DependsOn, typeof(OrmDataStructureCodeGenerator))]
     public class WritableOrmDataStructureCodeGenerator : IConceptCodeGenerator
     {
-        /// <summary>Inserted code can use enumerables "insertedNew", "updatedNew" and "deletedIds" but without navigation properties because they are not binded to ORM.</summary>
+        /// <summary>Inserted code can use enumerables "insertedNew", "updatedNew" and "deletedIds" but without navigation properties, because they are not binded to ORM.</summary>
+        public static readonly CsTag<DataStructureInfo> ArgumentValidationTag = "WritableOrm ArgumentValidation";
+
+        /// <summary>Inserted code can use enumerables "insertedNew", "updatedNew" and "deletedIds" but without navigation properties, because they are not binded to ORM.</summary>
         public static readonly CsTag<DataStructureInfo> InitializationTag = "WritableOrm Initialization";
 
         /// <summary>Arrays "updated" and "deleted" contain OLD data.
@@ -112,8 +115,16 @@ namespace Rhetos.Dom.DefaultConcepts
                     duplicateObjects = duplicateObjects.Where(item => !deletedIndex.Contains(item.ID)).ToArray();
                 }}
                 if (duplicateObjects.Count() > 0)
-                    throw new Rhetos.FrameworkException(""Inserting an object that already exists. ID="" + duplicateObjects.First().ID);
+                {{
+                    string msg = ""Inserting a record that already exists. ID="" + duplicateObjects.First().ID;
+                    if (checkUserPermissions)
+                        throw new Rhetos.ClientException(msg);
+                    else
+                        throw new Rhetos.FrameworkException(msg);
+                }}
             }}
+
+            {6}
 
 {1}
 
@@ -170,7 +181,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 OldDataLoadedTag.Evaluate(info),
                 ProcessedOldDataTag.Evaluate(info),
                 OnSaveTag1.Evaluate(info),
-                OnSaveTag2.Evaluate(info));
+                OnSaveTag2.Evaluate(info),
+                ArgumentValidationTag.Evaluate(info));
         }
 
         protected static string RegisterRepository(DataStructureInfo info)

@@ -183,9 +183,9 @@ namespace Rhetos.Security
             {
                 searchResult = searcher.FindOne();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new FrameworkException("Active Directory server is not available. To run Rhetos under IISExpress without AD: a) IISExpress must be run as administrator, b) user connecting to Rhetos service must be local administrator, c) 'BuiltinAdminOverride' must be set to 'True' in config file.");
+                throw new FrameworkException("Active Directory server is not available. To run Rhetos under IISExpress without AD: a) IISExpress must be run as administrator, b) user connecting to Rhetos service must be local administrator, c) 'BuiltinAdminOverride' must be set to 'True' in config file.", ex);
             }
 
             if (searchResult != null)

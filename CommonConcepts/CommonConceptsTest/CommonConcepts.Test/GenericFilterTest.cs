@@ -398,7 +398,7 @@ namespace CommonConcepts.Test
                 PropertyFilter filter;
 
                 filter = new PropertyFilter { Property = "Parentt", Operation = "equal", Value = null };
-                TestUtility.ShouldFail<UserException>(() => GenericFilterHelperFilter(childQuery, new[] { filter }).ToList(),
+                TestUtility.ShouldFail<ClientException>(() => GenericFilterHelperFilter(childQuery, new[] { filter }).ToList(),
                     "generic filter", "property 'Parentt'", "Type 'TestGenericFilter.Child'");
             }
         }

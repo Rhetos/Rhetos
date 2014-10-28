@@ -34,6 +34,9 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(ComposableFilterByInfo))]
     public class ComposableFilterByCodeGenerator : IConceptCodeGenerator
     {
+        public static readonly CsTag<ComposableFilterByInfo> AdditionalParametersTypeTag = "AdditionalParametersType";
+        public static readonly CsTag<ComposableFilterByInfo> AdditionalParametersArgumentTag = "AdditionalParametersArgument";
+
         private static string FilterExpressionPropertyName(ComposableFilterByInfo info)
         {
             return "_composableFilterExpression_" + CsUtility.TextToIdentifier(info.Parameter);
@@ -42,19 +45,21 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string FilterImplementationSnippet(ComposableFilterByInfo info)
         {
             return string.Format(
-@"        private static readonly Func<IQueryable<{0}>, Common.DomRepository, {1}, IQueryable<{0}>> {2} =
+@"        private static readonly Func<IQueryable<{0}>, Common.DomRepository, {1}{4}, IQueryable<{0}>> {2} =
             {3};
 
         public IQueryable<{0}> Filter(IQueryable<{0}> source, {1} parameter)
         {{
-            return {2}(source, _domRepository, parameter);
+            return {2}(source, _domRepository, parameter{5});
         }}
 
 ",
             info.Source.GetKeyProperties(),
             info.Parameter,
             FilterExpressionPropertyName(info),
-            info.Expression);
+            info.Expression,
+            AdditionalParametersTypeTag.Evaluate(info),
+            AdditionalParametersArgumentTag.Evaluate(info));
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)

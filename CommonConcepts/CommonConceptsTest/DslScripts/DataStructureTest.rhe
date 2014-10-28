@@ -4,7 +4,8 @@ Module TestDataStructure { DataStructure SimpleDataStructure2 { ShortString Simp
 
 Module TestDataStructure
 {
-	SqlQueryable SqlQueryable1 "SELECT ID = NEWID(), i = 1, s = 'a' UNION ALL SELECT NEWID(), 2, 'b'"
+	SqlQueryable SqlQueryable1 "SELECT ID = '5D089327-97EF-418D-A7DF-783D3873A5B4', i = 1, s = 'a'
+        UNION ALL SELECT 'DB97EA5F-FB8C-408F-B35B-AD6642C593D7', 2, 'b'"
 	{
 		Integer i;
 		ShortString s;
@@ -18,6 +19,8 @@ Module TestDataStructure
 	{
 		Reference Parent  { Detail; }
 	}
+    
+    Entity ReferenceView { Reference SqlQueryable1; }
 }
 
 Module TestExtension

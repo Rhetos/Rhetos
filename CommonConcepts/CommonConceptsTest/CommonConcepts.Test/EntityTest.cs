@@ -500,7 +500,7 @@ namespace CommonConcepts.Test
                 var i2 = new TestEntity.Principal { Name = "b", ID = i1.ID };
 
                 r.Insert(new[] { i1 });
-                TestUtility.ShouldFail(() => r.Insert(new[] { i2 }), "Inserting an object that already exists");
+                TestUtility.ShouldFail(() => r.Insert(new[] { i2 }), "Inserting a record that already exists");
             }
         }
 

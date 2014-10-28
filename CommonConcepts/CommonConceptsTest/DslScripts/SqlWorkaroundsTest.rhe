@@ -104,6 +104,7 @@ Module TestSqlWorkarounds
     }
     
     SqlView AutoDependsOn1 "SELECT * FROM TestSqlWorkarounds.AutoDependsOn2";
+    SqlView AutoDependsOn1CI "SELECT * FROM TESTSQLWORKAROUNDS.AUTODEPENDSON2"; // Case insensitive
     SqlView AutoDependsOn2 "SELECT 'TestSqlWorkarounds.AutoDependsOn1'=1, * FROM /*TestSqlWorkarounds.AutoDependsOn1*/ --TestSqlWorkarounds.AutoDependsOn1
         [TestSqlWorkarounds].[AutoDependsOn3]"; // Circular reference is avoided because TestSqlWorkarounds.AutoDependsOn1 is commented out in AutoDependsOn2.
     SqlView AutoDependsOn3 "SELECT * FROM TestSqlWorkarounds.[AutoDependsOn4]";

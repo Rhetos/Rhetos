@@ -61,7 +61,7 @@ namespace Rhetos.CommonConcepts.Test
         }
 
         [TestMethod]
-        public void AssingInterface()
+        public void AssignInterface()
         {
             var eh = NewExpressionHandler((I item) => item.i);
 
@@ -74,7 +74,7 @@ namespace Rhetos.CommonConcepts.Test
         }
 
         [TestMethod]
-        public void AssingReference()
+        public void AssignReference()
         {
             var eh = NewExpressionHandler((C item) => new { item.s, item.p });
 
@@ -90,25 +90,25 @@ namespace Rhetos.CommonConcepts.Test
         }
 
         [TestMethod]
-        public void AssingError()
+        public void AssignError()
         {
             var eh = NewExpressionHandler((C item) => new { item.s, ps = item.p.ps + "x" });
 
             var c1 = new C { i = 1, s = "a", p = new P { ps = "p1" } };
             var c2 = new C { i = 2, s = "b", p = new P { ps = "p2" } };
 
-            TestUtility.ShouldFail(() => eh.Assign(c1, c2), "Assing function supports only simple property selector", "P.ps");
+            TestUtility.ShouldFail(() => eh.Assign(c1, c2), "Assign function supports only simple property selector", "P.ps");
         }
 
         [TestMethod]
-        public void AssingError2()
+        public void AssignError2()
         {
             var eh = NewExpressionHandler((C item) => new { item.s, ps = item.p.ps });
 
             var c1 = new C { i = 1, s = "a", p = new P { ps = "p1" } };
             var c2 = new C { i = 2, s = "b", p = new P { ps = "p2" } };
 
-            TestUtility.ShouldFail(() => eh.Assign(c1, c2), "Assing function supports only simple property selector", "item.p");
+            TestUtility.ShouldFail(() => eh.Assign(c1, c2), "Assign function supports only simple property selector", "item.p");
         }
     }
 }

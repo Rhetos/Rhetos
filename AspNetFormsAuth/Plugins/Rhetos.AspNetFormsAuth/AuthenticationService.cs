@@ -327,7 +327,7 @@ namespace Rhetos.AspNetFormsAuth
         }
 
         /// <summary>
-        /// This methos is similar to SetPassword, but the difference is in access permissions.
+        /// This method is similar to SetPassword, but there is a difference in access permissions.
         /// ResetPassword allows anonymous access, while SetPassword needs a specific authorization.
         /// </summary>
         /// <param name="parameters"></param>
@@ -336,17 +336,18 @@ namespace Rhetos.AspNetFormsAuth
         [WebInvoke(Method = "POST", UriTemplate = "/ResetPassword", BodyStyle = WebMessageBodyStyle.Bare, RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         public bool ResetPassword(ResetPasswordParameters parameters)
         {
-            _logger.Trace(() => "ResetPassword: " + parameters.PasswordResetToken);
+            _logger.Trace("ResetPassword");
             parameters.Validate();
             CheckPasswordStrength(parameters.NewPassword);
 
             int userId = WebSecurity.GetUserIdFromPasswordResetToken(parameters.PasswordResetToken);
             SimpleMembershipProvider provider = (SimpleMembershipProvider)Membership.Provider;
             string userName = provider.GetUserNameFromId(userId);
+            _logger.Trace(() => "ResetPassword " + userName);
 
             bool successfulReset = SafeExecute(
                 () => WebSecurity.ResetPassword(parameters.PasswordResetToken, parameters.NewPassword),
-                "ResetPassword", parameters.PasswordResetToken);
+                "ResetPassword", userName);
 
             if (successfulReset && !string.IsNullOrEmpty(userName))
                 SafeExecute( // Login does not need to be successful for this function to return true.
