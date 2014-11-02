@@ -226,7 +226,6 @@ namespace Rhetos.Dom.DefaultConcepts
         public IEnumerable<TEntityInterface> ReadNonMaterialized(object parameter, Type parameterType, bool preferQuery)
         {
             // Use Filter(parameter), Query(parameter) or Filter(Query(), parameter), if any option exists
-
             ReadingOption filterWithParameter = () =>
             {
                 var reader = _reflection.RepositoryLoadWithParameterMethod(parameterType);
@@ -380,6 +379,24 @@ namespace Rhetos.Dom.DefaultConcepts
             return items ?? ReadNonMaterialized(new FilterAll(), preferQuery: preferQuery);
         }
 
+        public void ValidateRowPermissions(ReadCommandInfo commandInfo, IEnumerable<TEntityInterface> rows)
+        {
+            string module = _reflection.EntityType.Namespace;
+            FilterCriteria rpFilter = new FilterCriteria() {Filter = module + "." + RowPermissionsInfo.filterName };
+            var filterObjects = _genericFilterHelper.ToFilterObjects(new FilterCriteria[] {rpFilter}, _reflection.EntityType);
+
+            var RPType = filterObjects.Select(a => a.FilterType).SingleOrDefault();
+            if (RPType != null)
+            { 
+                _logger.Trace(() => "Found row permissions filter, checking if all items are allowed.");
+                var allowedItems = ReadNonMaterialized(null, RPType, true);
+                bool allowed = rows.All(a => allowedItems.Contains(a));
+                _logger.Trace(() => "Row permissions check result: " + allowed);
+                if (!allowed)
+                    throw new UserException("Insufficient permissions to access some or all of the data requested", "Row permission check failed on " + RPType.ToString());
+            }
+        }
+
         public ReadCommandResult ExecuteReadCommand(ReadCommandInfo commandInfo)
         {
             if (!commandInfo.ReadRecords && !commandInfo.ReadTotalCount)
@@ -398,6 +415,7 @@ namespace Rhetos.Dom.DefaultConcepts
             bool pagingIsUsed = commandInfo.Top > 0 || commandInfo.Skip > 0;
 
             IEnumerable<TEntityInterface> filtered = ReadNonMaterialized(commandInfo.Filters ?? new FilterCriteria[] { }, preferQuery: pagingIsUsed || !commandInfo.ReadRecords);
+            ValidateRowPermissions(commandInfo, filtered);
 
             object[] resultRecords = null;
             int? totalCount = null;

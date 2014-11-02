@@ -198,6 +198,7 @@
     <Compile Include="SqlQueryableTest.cs" />
     <Compile Include="ModuleRepositioryTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RowPermissionsTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="READ_ME.txt" />

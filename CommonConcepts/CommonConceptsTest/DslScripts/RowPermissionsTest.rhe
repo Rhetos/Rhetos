@@ -1,0 +1,19 @@
+Module RPTestModule
+{
+	Entity TestEntity
+	{
+		ShortString name;
+		Integer value;
+		
+		ItemFilter Value50 "item => item.value < 50";
+		RowPermissions "(source, repo, context) => source.Where(a => a.value > 10)";
+	}
+	
+	Entity TestEntity2
+	{
+		Integer value;
+	}
+	
+	RowPermissions TestEntity2 "(source, repo, context) => source.Where(a => a.value > 50)";
+
+}
