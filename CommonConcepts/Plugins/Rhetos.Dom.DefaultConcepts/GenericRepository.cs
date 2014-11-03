@@ -382,10 +382,9 @@ namespace Rhetos.Dom.DefaultConcepts
         public void ValidateRowPermissions(ReadCommandInfo commandInfo, IEnumerable<TEntityInterface> rows)
         {
             string module = _reflection.EntityType.Namespace;
-            FilterCriteria rpFilter = new FilterCriteria() {Filter = module + "." + RowPermissionsInfo.filterName };
-            var filterObjects = _genericFilterHelper.ToFilterObjects(new FilterCriteria[] {rpFilter}, _reflection.EntityType);
+            string filterName = module + "." + RowPermissionsInfo.filterName;
+            var RPType = _reflection.EntityType.Assembly.GetType(filterName);
 
-            var RPType = filterObjects.Select(a => a.FilterType).SingleOrDefault();
             if (RPType != null)
             { 
                 _logger.Trace(() => "Found row permissions filter, checking if all items are allowed.");
