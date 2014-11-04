@@ -72,47 +72,127 @@ Module TestPolymorphic
 		LongString Info;
 	}
 	
-	// //=========================================================
+	//=========================================================
 	
-	// Entity Dependant
-	// {
-		// ShortString Name;
-		// Reference TestPolymorphic.SimpleBase;
-	// }
+	Entity Dependant
+	{
+		ShortString Name;
+		Reference SimpleBase;
+	}
 	
-	// Entity DependantBrowse TestPolymorphic.Dependant
-	// {
-		// Take Name;
-		// Take 'SimpleBase.Name';
-	// }
+	Browse DependantBrowse TestPolymorphic.Dependant
+	{
+		Take Name;
+		Take 'SimpleBase.Name';
+	}
 	
-	// // TODO: Test referential integrity on insert Dependant, on delete ATemplate and on validate old data.
-	// // Create "Persisted Dependant_Key", or use delete triggers.
+	//=========================================================
 	
-	// //=========================================================
+	Entity Disjunctive1
+	{
+		ShortString Name;
+	}
 	
-	// Entity Disjunctive1
-	// {
-		// ShortString Name;
-	// }
+	Entity Disjunctive2
+	{
+		Integer Days;
+	}
 	
-	// Entity Disjunctive2
-	// {
-		// Integer Days;
-	// }
-	
-	// Polymorphic Disjunctive;
-	// Entity Disjunctive1 { Is TestPolymorphic.Disjunctive; }
-	// Entity Disjunctive2 { Is TestPolymorphic.Disjunctive; }
+	Polymorphic Disjunctive; // No common properties.
+	Entity Disjunctive1 { Is TestPolymorphic.Disjunctive; }
+	Entity Disjunctive2 { Is TestPolymorphic.Disjunctive; }
 
-	// Browse DisjunctiveBrowse TestPolymorphic.Disjunctive
+	Browse DisjunctiveBrowse TestPolymorphic.Disjunctive
+	{
+		Take Subtype;
+		Take Disjunctive1;
+		Take 'Disjunctive2.ID';
+		Take 'Disjunctive2.Days';
+	}
+	
+	//=========================================================
+	
+	Polymorphic Base1
+	{
+		ShortString Name1;
+		Materialized;
+	}
+	
+	Polymorphic Base2
+	{
+		ShortString Name2;
+	}
+	
+	Polymorphic Base3
+	{
+		ShortString Name1;
+	}
+	
+	Entity MultipleImplementations
+	{
+		Is TestPolymorphic.Base1;
+		Is TestPolymorphic.Base1 'Reverse'
+		{
+			Implements TestPolymorphic.Base1.Name1 "REVERSE(Name1)";
+		}
+		Is TestPolymorphic.Base2;
+		Is TestPolymorphic.Base2 'Reverse'
+		{
+			Implements TestPolymorphic.Base2.Name2 "REVERSE(Name2)";
+		}
+		Is TestPolymorphic.Base3
+		{
+			Implements TestPolymorphic.Base3.Name1 "Name1 + '-3'";
+		}
+	}
+}
+
+	// //=========================================================
+	
+	// SqlQueryable QueryableImplementation "SELECT a = 'SqlQueryable'"
 	// {
-		// Take Subtype;
-		// Take Disjunctive1;
-		// Take Disjunctive2.ID;
-		// Take Disjunctive2.Days;
+		// ShortString a;
+		// Is TestPolymorphic.Base1
+		// {
+			// Implements TestPolymorphic.Base1.Name1 "a";
+		// }
+		// Is TestPolymorphic.Base1 'Reverse'
+		// {
+			// Implements TestPolymorphic.Base1.Name1 "REVERSE(a)";
+		// }
 	// }
 	
+	// //=========================================================
+
+// Module TestPolymorphic
+// {
+	// Polymorphic DifferentModuleBase
+	// {
+		// ShortString Name;
+	// }
+	
+	// Entity DifferentModule
+	// {
+		// ShortString Code;
+		// Is TestPolymorphic.DifferentModuleBase
+		// {
+			// Implements TestPolymorphic.DifferentModuleBase.Name "Code + '1'";
+		// }
+	// }
+// }
+
+// Module TestPolymorphic2
+// {
+	// Entity DifferentModule
+	// {
+		// ShortString Code;
+		// Is TestPolymorphic.DifferentModuleBase
+		// {
+			// Implements TestPolymorphic.DifferentModuleBase.Name "Code + '2'";
+		// }
+	// }
+// }
+
 	// //=========================================================
 	
 	// Polymorphic Writable
@@ -124,81 +204,3 @@ Module TestPolymorphic
 			// // Will Implements all properties as-is, without any transformations.
 			// // Write '(insert, update, delete) => _context.Repositories.TestPolymorphic.StandardWritable.Save(new ....)';
 	// }
-	
-	// //=========================================================
-	
-	// Polymorphic Perf
-	// {
-		// ShortString Name;
-		// ShortString Code;
-	// }
-	
-	// Entity Perf1
-	// {
-		// Is TestPolymorphic.Perf;
-	// }
-	
-	// Entity Perf2
-	// {
-		// Is TestPolymorphic.Perf
-		// {
-			// Implements TestPolymorphic.Perf.Code "Fixed";
-		// }
-	// }
-	
-	// // TODO: Check performance when filtering by subtype.
-	// // TODO: Check performance when filtering by any property that is hardcoded on (some) subtypes.
-	
-	// //=========================================================
-	
-	// Polymorphic Base1
-	// {
-		// ShortString Name;
-	// }
-	
-	// Polymorphic Base2
-	// {
-		// ShortString Name2;
-	// }
-	
-	// Entity MultipleImplementations
-	// {
-		// Is TestPolymorphic.Base1;
-		// Is TestPolymorphic.Base1 'reverse' // TODO: Hack to avoid multiple IDs.
-		// {
-			// Implements TestPolymorphic.Base2.Name "Name.Reverse()";
-		// }
-		// Is TestPolymorphic.Base2;
-	// }
-
-}	
-	// //=========================================================
-
-Module TestPolymorphic
-{
-	Polymorphic DifferentModuleBase
-	{
-		ShortString Name;
-	}
-	
-	Polymorphic DifferentModule
-	{
-		ShortString Code;
-		Is TestPolymorphic.DifferentModuleBase
-		{
-			Implements TestPolymorphic.DifferentModuleBase.Name "Code + '1'";
-		}
-	}
-}
-
-Module TestPolymorphic2
-{
-	Polymorphic DifferentModule
-	{
-		ShortString Code;
-		Is TestPolymorphic.DifferentModuleBase
-		{
-			Implements TestPolymorphic.DifferentModuleBase.Name "Code + '2'";
-		}
-	}
-}

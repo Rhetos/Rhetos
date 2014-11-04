@@ -68,7 +68,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             return string.Format(
 @"
 DECLARE @columnList NVARCHAR(MAX);
-SET @columnList = N'ID{2}';
+SET @columnList = N'{2}';
 
 DECLARE @sql NVARCHAR(MAX);
 SET @sql = N'CREATE VIEW {0}.{1}
@@ -115,6 +115,11 @@ EXEC (@sql);
                 .Where(p => p.DataStructure == this)
                 .Where(p => !existingPolymorphicProperties.Contains(p.Name))
                 .Select(p => new PolymorphicPropertyInfo { Property = p }));
+
+            // Automatically materialize the polymorphic entity if it is referenced or extended, so the polymorphic can be used in FK constraint.
+            if (existingConcepts.OfType<ReferencePropertyInfo>().Where(r => r.Referenced == this && r.DataStructure is EntityInfo).Any()
+                || existingConcepts.OfType<DataStructureExtendsInfo>().Where(e => e.Base == this && e.Extension is EntityInfo).Any())
+                newConcepts.Add(new PolymorphicMaterializedInfo { Polymorphic = this });
 
             return newConcepts;
         }

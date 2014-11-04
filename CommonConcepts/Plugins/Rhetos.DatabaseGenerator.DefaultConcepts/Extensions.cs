@@ -17,16 +17,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using Rhetos.Utilities;
-using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Utilities;
+using System.Collections.Generic;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
-    public static class Extensions
+    public static class ForeignKeyUtility
     {
-        public static string GetSchemaTableForForeignKey(this DataStructureInfo dataStructure)
+        /// <summary>
+        /// Note: When using this function to create a database object, always add the dependencies from GetAdditionalForeignKeyDependencies().
+        /// </summary>
+        public static string GetSchemaTableForForeignKey(DataStructureInfo dataStructure)
         {
             if (dataStructure is EntityInfo)
                 return SqlUtility.Identifier(dataStructure.Module.Name)
@@ -44,7 +47,18 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                 return SqlUtility.GetFullName(legacy.Table);
             }
 
+            if (dataStructure is PolymorphicInfo)
+                return dataStructure.GetKeyProperties() + "_Materialized";
+
             return null;
+        }
+
+        public static IEnumerable<IConceptInfo> GetAdditionalForeignKeyDependencies(DataStructureInfo dataStructure)
+        {
+            if (dataStructure is PolymorphicInfo)
+                return new IConceptInfo[] { new PersistedDataStructureInfo { Module = dataStructure.Module, Name = dataStructure.Name + "_Materialized" } };
+
+            return new IConceptInfo[] { };
         }
     }
 }

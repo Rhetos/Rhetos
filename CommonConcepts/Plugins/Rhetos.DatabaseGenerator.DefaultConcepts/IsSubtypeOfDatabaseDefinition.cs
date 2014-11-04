@@ -63,13 +63,14 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         private string UnionSubquerySnippet(IsSubtypeOfInfo info)
         {
             return string.Format(@"UNION ALL
-    SELECT ' + REPLACE(REPLACE(@columnList, ', Subtype = NULL', ', Subtype = ''{2}'''), ', {3} = NULL', ', {3} = ID') + '
+    SELECT {4}' + REPLACE(REPLACE(@columnList, ', Subtype = NULL', ', Subtype = ''{2}'''), ', {3} = NULL', ', {3} = ID') + '
     FROM {0}.{1}
 ",
                 info.Dependency_ImplementationView.Module.Name,
                 info.Dependency_ImplementationView.Name,
-                info.GetSubtypeName(),
-                info.GetSubtypeReferenceName() + "ID");
+                info.Subtype.Module.Name + "." + info.Subtype.Name + (info.ImplementationName != "" ? " " + info.ImplementationName : ""),
+                info.GetSubtypeReferenceName() + "ID",
+                info.ImplementationName == "" ? "ID" : "ID = SubtypeImplementationID");
         }
     }
 }

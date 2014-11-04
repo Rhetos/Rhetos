@@ -122,6 +122,9 @@
     <Compile Include="DatabaseWorkarounds\AutoLegacyEntityDependsOnInfo.cs" />
     <Compile Include="DatabaseWorkarounds\AutoSqlProcedureDependsOnInfo.cs" />
     <Compile Include="DatabaseWorkarounds\ModuleAutoSqlDependsOnInfo.cs" />
+    <Compile Include="DataStructure\IsSubtypeOfDefaultNameInfo.cs" />
+    <Compile Include="DataStructure\PolymorphicMaterializedInfo.cs" />
+    <Compile Include="DataStructure\SubtypeImplementationColumnInfo.cs" />
     <Compile Include="DataStructure\PolymorphicPropertyInfo.cs" />
     <Compile Include="DataStructure\SubtypeImplementsPropertyInfo.cs" />
     <Compile Include="DataStructure\IsSubtypeOfInfo.cs" />
@@ -290,6 +293,10 @@
     <ProjectReference Include="..\..\..\Source\Rhetos.Dsl.Interfaces\Rhetos.Dsl.Interfaces.csproj">
       <Project>{f4acd412-2782-4191-8708-c7ae99b0cee9}</Project>
       <Name>Rhetos.Dsl.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Dom.DefaultConcepts.Interfaces\Rhetos.Dom.DefaultConcepts.Interfaces.csproj">
+      <Project>{32d57085-6113-43f9-a505-d8b311bd6204}</Project>
+      <Name>Rhetos.Dom.DefaultConcepts.Interfaces</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

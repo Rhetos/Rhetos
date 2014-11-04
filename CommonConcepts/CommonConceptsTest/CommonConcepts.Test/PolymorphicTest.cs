@@ -19,6 +19,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Configuration.Autofac;
+using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
@@ -57,7 +58,7 @@ namespace CommonConcepts.Test
                     new TestPolymorphic.Simple2 { Name1 = "cc", Name2 = 33, Finish = new DateTime(2000, 1, 3) },
                 });
 
-                // Tests reading:
+                // Tests:
 
                 var all = repository.TestPolymorphic.SimpleBase.All();
                 Assert.AreEqual(
@@ -157,7 +158,7 @@ namespace CommonConcepts.Test
                     new TestPolymorphic.Simple2 { Name1 = "cc", Name2 = 33, Finish = new DateTime(2000, 1, 3) },
                 });
 
-                // Tests reading:
+                // Tests:
 
                 var report = repository.TestPolymorphic.SimpleBrowse.Query()
                     .Where(item => item.Days == 2)
@@ -207,12 +208,226 @@ namespace CommonConcepts.Test
                     new TestPolymorphic.Second1 { Info = "c" },
                 });
 
-                // Tests reading:
+                // Tests:
 
                 var all = repository.TestPolymorphic.SecondBase.All();
                 Assert.AreEqual(
                     "a/1.0000000000, b/2/2000-01-22T00:00:00, c",
                     TestUtility.DumpSorted(all, item => item.Info));
+            }
+        }
+
+        [TestMethod]
+        public void Dependant_FKConstraintDelete()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var s1 = new TestPolymorphic.Simple1 { ID = Guid.NewGuid(), Name = "a", Days = 1 };
+                repository.TestPolymorphic.Simple1.Insert(new[] { s1 });
+
+                var dep = new TestPolymorphic.Dependant { ID = Guid.NewGuid(), Name = "dep", SimpleBaseID = s1.ID };
+                repository.TestPolymorphic.Dependant.Insert(new[] { dep });
+                Assert.AreEqual("dep-a", TestUtility.DumpSorted(
+                    repository.TestPolymorphic.DependantBrowse.Filter(new[] { dep.ID }),
+                    item => item.Name + "-" + item.SimpleBaseName));
+
+                TestUtility.ShouldFail(
+                    () => repository.TestPolymorphic.Simple1.Delete(new[] { s1 }),
+                    "Dependant", "REFERENCE", "SimpleBase");
+            }
+        }
+
+        [TestMethod]
+        public void Dependant_FKConstraintInsert()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var s1 = new TestPolymorphic.Simple1 { ID = Guid.NewGuid(), Name = "a", Days = 1 };
+                repository.TestPolymorphic.Simple1.Insert(new[] { s1 });
+
+                var dep = new TestPolymorphic.Dependant { ID = Guid.NewGuid(), Name = "dep", SimpleBaseID = s1.ID };
+                repository.TestPolymorphic.Dependant.Insert(new[] { dep });
+
+                var depInvalidReference = new TestPolymorphic.Dependant { ID = Guid.NewGuid(), Name = "depInvalidReference", SimpleBaseID = Guid.NewGuid() };
+                TestUtility.ShouldFail(
+                    () => repository.TestPolymorphic.Dependant.Insert(new[] { depInvalidReference }),
+                    "Dependant", "FOREIGN KEY", "SimpleBase");
+            }
+        }
+
+        [TestMethod]
+        public void Dependant_FKConstraintUpdate()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var s1 = new TestPolymorphic.Simple1 { ID = Guid.NewGuid(), Name = "a", Days = 1 };
+                repository.TestPolymorphic.Simple1.Insert(new[] { s1 });
+
+                var dep = new TestPolymorphic.Dependant { ID = Guid.NewGuid(), Name = "dep", SimpleBaseID = s1.ID };
+                repository.TestPolymorphic.Dependant.Insert(new[] { dep });
+
+                dep.SimpleBaseID = Guid.NewGuid();
+
+                TestUtility.ShouldFail(
+                    () => repository.TestPolymorphic.Dependant.Update(new[] { dep }),
+                    "Dependant", "FOREIGN KEY", "SimpleBase");
+            }
+        }
+
+        [TestMethod]
+        public void Disjunctive()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                repository.TestPolymorphic.Disjunctive1.Delete(repository.TestPolymorphic.Disjunctive1.All());
+                repository.TestPolymorphic.Disjunctive2.Delete(repository.TestPolymorphic.Disjunctive2.All());
+                Assert.AreEqual(0, repository.TestPolymorphic.Disjunctive.All().Count());
+
+                var d1 = new TestPolymorphic.Disjunctive1 { ID = Guid.NewGuid(), Name = "abc" };
+                repository.TestPolymorphic.Disjunctive1.Insert(new[] { d1 });
+
+                var d2 = new TestPolymorphic.Disjunctive2 { ID = Guid.NewGuid(), Days = 123 };
+                repository.TestPolymorphic.Disjunctive2.Insert(new[] { d2 });
+
+                var all = repository.TestPolymorphic.Disjunctive.All();
+                Assert.AreEqual(
+                    TestUtility.DumpSorted(new[] { d1.ID, d2.ID }),
+                    TestUtility.DumpSorted(all, item => item.ID));
+
+                var browseReport = repository.TestPolymorphic.DisjunctiveBrowse.Query()
+                    .Select(item => item.Subtype + "-" + item.Disjunctive1.Name + "-" + item.Disjunctive2Days)
+                    .ToList();
+                Assert.AreEqual(
+                    "TestPolymorphic.Disjunctive1-abc-, TestPolymorphic.Disjunctive2--123",
+                    TestUtility.DumpSorted(browseReport));
+            }
+        }
+
+        [TestMethod]
+        public void MultipleImplementations()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                // Initialize data:
+
+                repository.TestPolymorphic.MultipleImplementations.Delete(repository.TestPolymorphic.MultipleImplementations.All());
+
+                var mi1 = new TestPolymorphic.MultipleImplementations { Name1 = "abc", Name2 = "123" };
+                var mi2 = new TestPolymorphic.MultipleImplementations { Name1 = "def", Name2 = "456" };
+
+                repository.TestPolymorphic.MultipleImplementations.Insert(new[] { mi1, mi2 });
+
+                // Testing unions:
+
+                var base1 = repository.TestPolymorphic.Base1.All();
+                Assert.AreEqual("abc, cba, def, fed", TestUtility.DumpSorted(base1, item => item.Name1));
+
+                var base2 = repository.TestPolymorphic.Base2.All();
+                Assert.AreEqual("123, 321, 456, 654", TestUtility.DumpSorted(base2, item => item.Name2));
+
+                var base3 = repository.TestPolymorphic.Base3.All();
+                Assert.AreEqual("abc-3, def-3", TestUtility.DumpSorted(base3, item => item.Name1));
+
+                // Testing specific implementation ID uniqueness:
+
+                var base1IDs = base1.Select(item => item.ID).ToList();
+                Assert.AreEqual(base1IDs.Count, base1IDs.Distinct().Count());
+
+                // Testing specific implementation ID stability:
+
+                var secondRead = repository.TestPolymorphic.Base1.All();
+                Assert.AreEqual(
+                    TestUtility.DumpSorted(base1IDs),
+                    TestUtility.DumpSorted(secondRead, item => item.ID));
+
+                // Testing querying by specific implementation subtype:
+
+                Assert.AreEqual(
+                    "abc-, cba-abc, def-, fed-def",
+                    TestUtility.DumpSorted(repository.TestPolymorphic.Base1.Query()
+                        .Select(item => item.Name1 + "-" + item.MultipleImplementationsReverse.Name1)));
+
+                // Testing C# implementation:
+
+                int implementationHash = DomUtility.GetSubtypeImplementationHash("Reverse");
+
+                var expected = new[] {
+                    new TestPolymorphic.Base1 {
+                        ID = DomUtility.GetSubtypeImplementationId(mi1.ID, implementationHash),
+                        MultipleImplementationsReverseID = mi1.ID },
+                    new TestPolymorphic.Base1 {
+                        ID = DomUtility.GetSubtypeImplementationId(mi2.ID, implementationHash),
+                        MultipleImplementationsReverseID = mi2.ID },
+                };
+                var actual = base1.Where(item => item.MultipleImplementationsReverseID != null);
+                Assert.AreEqual(
+                    TestUtility.DumpSorted(expected, item => item.MultipleImplementationsReverseID.ToString() + "/" + item.ID.ToString()),
+                    TestUtility.DumpSorted(actual, item => item.MultipleImplementationsReverseID.ToString() + "/" + item.ID.ToString()));
+
+                // Testing persisted IDs for specific implementation subtype:
+
+                Assert.AreEqual(
+                    TestUtility.DumpSorted(base1IDs),
+                    TestUtility.DumpSorted(repository.TestPolymorphic.Base1_Materialized.Query().Select(item => item.ID)));
+            }
+        }
+
+        [TestMethod]
+        public void GetSubtypeImplementationId()
+        {
+            var testGuids = new Guid[] {
+                new Guid("60CFE21A-1C36-45A0-9D57-DD635551B33B"),
+                new Guid("12345678-2345-3456-4567-567890123456"),
+                new Guid("FEDCBFED-CBFE-DCBF-EDCB-FEDCBFEDCBFE"),
+                new Guid("00000000-0000-0000-0000-000000000000"),
+                new Guid("11111111-1111-1111-1111-111111111111"),
+                new Guid("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"),
+            };
+
+            var testHashes = new int[] {
+                0,
+                1,
+                -1,
+                123456,
+                -123456,
+                123456789,
+                -123456789,
+                1234567890,
+                -1234567890,
+                2147483647,
+                -2147483647,
+                -2147483648
+            };
+
+            using (var container = new RhetosTestContainer())
+            {
+                var sqlExecuter = container.Resolve<ISqlExecuter>();
+                
+                foreach (var guid in testGuids)
+                    foreach (var hash in testHashes)
+                    {
+                        Guid csId = DomUtility.GetSubtypeImplementationId(guid, hash);
+
+                        var sql = string.Format(
+                            @"SELECT ID = CONVERT(UNIQUEIDENTIFIER, CONVERT(BINARY(4), CONVERT(INT, CONVERT(BINARY(4), {1})) ^ {0}) + SUBSTRING(CONVERT(BINARY(16), {1}), 5, 12))",
+                            hash,
+                            "CONVERT(UNIQUEIDENTIFIER, '" + guid.ToString().ToUpper() + "')");
+
+                        Guid sqlId = Guid.Empty;
+                        sqlExecuter.ExecuteReader(sql, reader => { sqlId = reader.GetGuid(0); });
+
+                        Assert.AreEqual(csId, sqlId);
+                    }
             }
         }
     }

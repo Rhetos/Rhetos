@@ -64,7 +64,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                 SqlUtility.Identifier(info.Module.Name),
                 SqlUtility.Identifier(info.Name),
                 SqlUtility.ScriptSplitter,
-                info.GetSchemaTableForForeignKey(),
+                SqlUtility.GetFullName(info.Table),
                 InsertTriggerName(info),
                 UpdateTriggerName(info),
                 DeleteTriggerName(info),

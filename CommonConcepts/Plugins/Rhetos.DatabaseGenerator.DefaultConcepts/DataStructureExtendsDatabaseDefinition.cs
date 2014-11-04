@@ -47,7 +47,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
         private static bool ShouldCreateConstraint(DataStructureExtendsInfo info)
         {
-            return info.Extension is EntityInfo && (info.Base is IWritableOrmDataStructure);
+            return info.Extension is EntityInfo
+                && ForeignKeyUtility.GetSchemaTableForForeignKey(info.Base) != null;
         }
 
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
@@ -58,7 +59,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                 return Sql.Format("DataStructureExtendsDatabaseDefinition_Create",
                     SqlUtility.Identifier(info.Extension.Module.Name) + "." + SqlUtility.Identifier(info.Extension.Name),
                     GetConstraintName(info),
-                    info.Base.GetSchemaTableForForeignKey(),
+                    ForeignKeyUtility.GetSchemaTableForForeignKey(info.Base),
                     ForeignKeyConstraintOptions.Evaluate(info));
             }
             // TODO: else - Generate a Filter+DenySave validation in the server application that checks for invalid items.
@@ -69,8 +70,13 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (DataStructureExtendsInfo) conceptInfo;
 
-            var dependencies = new List<Tuple<IConceptInfo, IConceptInfo>>
-                                   {Tuple.Create<IConceptInfo, IConceptInfo>(info.Base, info.Extension)};
+            var dependencies = new List<Tuple<IConceptInfo, IConceptInfo>>();
+            dependencies.Add(Tuple.Create<IConceptInfo, IConceptInfo>(info.Base, info.Extension));
+
+            if (ShouldCreateConstraint(info))
+                dependencies.AddRange(ForeignKeyUtility.GetAdditionalForeignKeyDependencies(info.Base)
+                    .Select(dep => Tuple.Create<IConceptInfo, IConceptInfo>(dep, info))
+                    .ToList());
 
             createdDependencies = dependencies;
         }

@@ -40,11 +40,11 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
         {
             // Cascade delete FK in database is not essential because the server application will explicitly delete the referencing data (to ensure server-side validations and recomputations).
-			// Cascade delete in database is just a convenience for development and testing
+			// Cascade delete in database is just a convenience for development and testing.
             var info = (ReferenceCascadeDeleteInfo)conceptInfo;
             createdDependencies = null;
 
-            if (ReferencePropertyDatabaseDefinition.IsSupported(info.Reference))
+            if (ReferencePropertyConstraintDatabaseDefinition.IsSupported(info.Reference))
             {
                 codeBuilder.InsertCode(Sql.Get("ReferenceCascadeDeleteDatabaseDefinition_ExtendForeignKey"),
                     ReferencePropertyConstraintDatabaseDefinition.ForeignKeyConstraintOptions, info.Reference);

@@ -25,6 +25,7 @@ using Rhetos.Dsl;
 using System.ComponentModel.Composition;
 using Rhetos.Utilities;
 using Rhetos.Compiler;
+using Rhetos.Dom.DefaultConcepts;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -38,6 +39,13 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public PolymorphicInfo Supertype { get; set; }
 
+        /// <summary>
+        /// The same Subtype data structure may implement the same Supertype, using a different ImplementationName.
+        /// If there is only one implementation, use empty ImplementationName for better performace.
+        /// </summary>
+        [ConceptKey]
+        public string ImplementationName { get; set; }
+
         //===========================================================
         // Creating a view for the subtype's implementation of the supertype interface:
 
@@ -45,49 +53,70 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public static readonly SqlTag<IsSubtypeOfInfo> PropertyImplementationTag = new SqlTag<IsSubtypeOfInfo>("PropertyImplementation");
 
-        IEnumerable<string> IAlternativeInitializationConcept.DeclareNonparsableProperties()
+        public IEnumerable<string> DeclareNonparsableProperties()
         {
             return new[] { "Dependency_ImplementationView" };
         }
 
-        void IAlternativeInitializationConcept.InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
             Dependency_ImplementationView = new SqlViewInfo
             {
                 Module = Subtype.Module,
-                Name = ImplementationViewName(),
+                Name = GetImplementationViewName(),
                 ViewSource = ImplementationViewSnippet()
             };
 
             createdConcepts = new[] { Dependency_ImplementationView };
         }
 
-        public string GetSubtypeName()
-        {
-            return Subtype.Module.Name + "." + Subtype.Name;
-        }
-
         public string GetSubtypeReferenceName()
         {
-            return DslUtility.NameOptionalModule(Subtype, Supertype.Module);
+            return DslUtility.NameOptionalModule(Subtype, Supertype.Module) + ImplementationName;
+        }
+
+        private string GetImplementationViewName()
+        {
+            string viewName = Subtype.Name + "_As_" + DslUtility.NameOptionalModule(Supertype, Subtype.Module);
+            if (ImplementationName != "")
+                viewName += "_" + ImplementationName;
+            return viewName;
         }
 
         private string ImplementationViewSnippet()
         {
             return string.Format(
 @"SELECT
-    ID{2}
+    ID{3}{2}
 FROM
     {0}.{1}",
                 Subtype.Module.Name,
                 Subtype.Name,
-                PropertyImplementationTag.Evaluate(this));
+                PropertyImplementationTag.Evaluate(this),
+                GetSpecificImplementationId());
         }
 
-        private string ImplementationViewName()
+        public bool SupportsPersistedSubtypeImplementationColum()
         {
-            return Subtype.Name + "_As_"
-                + DslUtility.NameOptionalModule(Supertype, Subtype.Module);
+            return !string.IsNullOrEmpty(ImplementationName) && Subtype is EntityInfo;
+        }
+
+        /// <summary>
+        /// Same subtype may implement same supertype multiple time. Since ID of the supertype is usually same as subtype's ID,
+        /// that might result with multiple supertype records with the same ID. To avoid duplicate IDs and still keep the
+        /// deterministic ID values, the supertype's ID is XORed by a hash code taken from the ImplementationName.
+        /// </summary>
+        private string GetSpecificImplementationId()
+        {
+            if (ImplementationName == "")
+                return "";
+            else if (SupportsPersistedSubtypeImplementationColum())
+                return ",\r\n    SubtypeImplementationID = " + new SubtypeImplementationColumnInfo { Subtype = Subtype, ImplementationName = ImplementationName }.GetComputedColumnName();
+            else
+            {
+                int hash = DomUtility.GetSubtypeImplementationHash(ImplementationName);
+                return ",\r\n    SubtypeImplementationID = CONVERT(UNIQUEIDENTIFIER, CONVERT(BINARY(4), CONVERT(INT, CONVERT(BINARY(4), ID)) ^ " + hash + ") + SUBSTRING(CONVERT(BINARY(16), ID), 5, 12))";
+            }
         }
 
         //===========================================================
@@ -132,6 +161,29 @@ FROM
             newConcepts.AddRange(missingProperties);
 
             newConcepts.Add(new SqlDependsOnDataStructureInfo { Dependent = Dependency_ImplementationView, DependsOn = Subtype });
+
+            string materializedUpdateSelector;
+            if (ImplementationName == "")
+                materializedUpdateSelector = "changedItems => changedItems.Select(item => item.ID).ToArray()";
+            else
+                materializedUpdateSelector = string.Format(
+                    @"changedItems => changedItems.Select(item => DomUtility.GetSubtypeImplementationId(item.ID, {0})).ToArray()",
+                    DomUtility.GetSubtypeImplementationHash(ImplementationName));
+
+            newConcepts.Add(new ChangesOnChangedItemsInfo
+            {
+                Computation = Supertype,
+                DependsOn = Subtype,
+                FilterType = "System.Guid[]",
+                FilterFormula = materializedUpdateSelector
+            });
+
+            if (SupportsPersistedSubtypeImplementationColum())
+            {
+                var subtypeImplementationColumn = new SubtypeImplementationColumnInfo { Subtype = Subtype, ImplementationName = ImplementationName };
+                newConcepts.Add(subtypeImplementationColumn);
+                newConcepts.Add(new SqlDependsOnSqlObjectInfo { Dependent = Dependency_ImplementationView, DependsOn = subtypeImplementationColumn.GetSqlObject() });
+            }
 
             return newConcepts;
         }
