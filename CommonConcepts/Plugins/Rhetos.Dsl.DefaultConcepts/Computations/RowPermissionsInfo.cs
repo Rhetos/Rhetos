@@ -23,6 +23,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Rhetos.Dom.DefaultConcepts;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -30,8 +31,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     [ConceptKeyword("RowPermissions")]
     public class RowPermissionsInfo : IConceptInfo, IMacroConcept
     {
-        public static string filterName = "RowPermissions_AllowedItems";
-
+        public static Type filterType = typeof(RowPermissions_AllowedItems);
         [ConceptKey]
         public DataStructureInfo Source { get; set; }
 
@@ -41,7 +41,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         // we don't need parameter in row permission filter/expression
         string ReformatLambdaExpression(string expression)
         {
-            Regex regex = new Regex(@"^\((.+?),(.+?),(.+?)\).*?=>(.*)$");
+            Regex regex = new Regex(@"^\((.+?),(.+?),(.+?)\).*?=>(.*)$", RegexOptions.Singleline);
             Match match = regex.Match(expression);
             if (match.Groups.Count != 5)
                 throw new DslSyntaxException("RowPermissions expression format is not valid: " + expression);
@@ -58,11 +58,10 @@ namespace Rhetos.Dsl.DefaultConcepts
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
             var newExpression = ReformatLambdaExpression(Expression);
-            var filterParameter = new ParameterInfo() { Module = Source.Module, Name = filterName };
             var rpFilter = new ComposableFilterByInfo()
             {
                 Source = Source,
-                Parameter = filterParameter.GetKeyProperties(),
+                Parameter = filterType.FullName,
                 Expression = newExpression
             };
 
@@ -73,16 +72,13 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             return new IConceptInfo[]
             {
-                filterParameter,
                 rpFilter,
                 rpFilterUseExecutionContext,
-
-                /*
                 new ModuleExternalReferenceInfo
                 {
                     Module = new ModuleInfo {Name = Source.Module.Name},
-                    TypeOrAssembly = typeof (DslUtility).AssemblyQualifiedName
-                }*/
+                    TypeOrAssembly = typeof(ComposableFilterByInfo).AssemblyQualifiedName
+                }
             };
         }
     }

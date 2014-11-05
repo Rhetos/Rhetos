@@ -379,20 +379,48 @@ namespace Rhetos.Dom.DefaultConcepts
             return items ?? ReadNonMaterialized(new FilterAll(), preferQuery: preferQuery);
         }
 
-        public void ValidateRowPermissions(ReadCommandInfo commandInfo, IEnumerable<TEntityInterface> rows)
+        IEnumerable<T> GetSubset<T>(T[] source, int startIndex, int endIndex)
         {
-            string module = _reflection.EntityType.Namespace;
-            string filterName = module + "." + RowPermissionsInfo.filterName;
-            var RPType = _reflection.EntityType.Assembly.GetType(filterName);
+            while (startIndex < endIndex) yield return source[startIndex++];
+        }
 
-            if (RPType != null)
+        IEnumerable<IEnumerable<T>> GetChunks<T>(T[] source, int chunkSize)
+        {
+            int start = 0;
+            while (start < source.Length)
+            {
+                int end = Math.Min(start + chunkSize, source.Length);
+                yield return GetSubset(source, start, end);
+                start += chunkSize;
+            }
+        }
+
+        /// <summary>
+        /// Checks if RowPermissions concept is present and validates all items are included. Works with materialized items.
+        /// </summary>
+        /// <param name="materialized"></param>
+        void ValidateRowPermissions(IEnumerable<TEntityInterface> materialized)
+        {
+            int _batchSize = 2000; // true NHibernate/SQL limit is probably 2100
+
+            var filterMethodInfo = _reflection.RepositoryQueryableFilterMethod(RowPermissionsInfo.filterType);
+
+            if (filterMethodInfo != null)
             { 
-                _logger.Trace(() => "Found row permissions filter, checking if all items are allowed.");
-                var allowedItems = ReadNonMaterialized(null, RPType, true);
-                bool allowed = rows.All(a => allowedItems.Contains(a));
-                _logger.Trace(() => "Row permissions check result: " + allowed);
-                if (!allowed)
-                    throw new UserException("Insufficient permissions to access some or all of the data requested", "Row permission check failed on " + RPType.ToString());
+                _logger.Trace(() => string.Format("Found row permissions filter, checking if all items are allowed (with batchSize = {0}.", _batchSize));
+
+                var allowedItems = ((IQueryable<TEntityInterface>)ReadNonMaterialized(null, RowPermissionsInfo.filterType, true)).Select(a => a.ID);
+                var batches = GetChunks((TEntityInterface[]) materialized, _batchSize);
+                
+                foreach (var batch in batches)
+                {
+                    var preparedIDs = batch.Select(a => a.ID).Distinct().ToList();
+                    var allowedCount = allowedItems.Where(a => preparedIDs.Contains(a)).Distinct().Count();
+                    _logger.Trace(() => string.Format("Row permission batch test; distinct requested: {0}, distinct allowed: {1}", preparedIDs.Count, allowedCount));
+                    
+                    if (preparedIDs.Count != allowedCount)
+                        throw new UserException("Insufficient permissions to access some or all of the data requested.", "DataStructure: " + _reflection.EntityType.ToString() + ".");
+                }
             }
         }
 
@@ -414,13 +442,16 @@ namespace Rhetos.Dom.DefaultConcepts
             bool pagingIsUsed = commandInfo.Top > 0 || commandInfo.Skip > 0;
 
             IEnumerable<TEntityInterface> filtered = ReadNonMaterialized(commandInfo.Filters ?? new FilterCriteria[] { }, preferQuery: pagingIsUsed || !commandInfo.ReadRecords);
-            ValidateRowPermissions(commandInfo, filtered);
 
             object[] resultRecords = null;
             int? totalCount = null;
 
             if (commandInfo.ReadRecords)
-                resultRecords = (object[])_reflection.ToArrayOfEntity(_genericFilterHelper.SortAndPaginate(_reflection.AsQueryable(filtered), commandInfo));
+            {
+                var materialized = _reflection.ToArrayOfEntity(_genericFilterHelper.SortAndPaginate(_reflection.AsQueryable(filtered), commandInfo));
+                ValidateRowPermissions(materialized);
+                resultRecords = (object[])materialized;
+            }
 
             if (commandInfo.ReadTotalCount)
                 if (pagingIsUsed)

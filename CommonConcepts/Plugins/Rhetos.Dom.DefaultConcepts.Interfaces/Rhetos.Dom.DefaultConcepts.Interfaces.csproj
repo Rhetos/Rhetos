@@ -110,6 +110,7 @@
     <Compile Include="IEntity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IWritableRepository.cs" />
+    <Compile Include="RowPermissions_AllowedItems.cs" />
   </ItemGroup>
   <ItemGroup>
     <CodeAnalysisDictionary Include="..\..\..\CodeAnalysisDictionary.xml">

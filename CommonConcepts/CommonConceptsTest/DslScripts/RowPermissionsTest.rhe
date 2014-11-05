@@ -1,19 +1,37 @@
-Module RPTestModule
+Module TestRowPermissions
 {
-	Entity TestEntity
+	Entity NoRP
 	{
-		ShortString name;
 		Integer value;
+		ItemFilter Value30 'item => item.value > 30';
+	}
+	
+	Entity SimpleRP
+	{
+		Integer value;
+		RowPermissions '(source, repo, context) => source.Where(a => a.value >= 1500).Where(a => a.value <= 2500)';
+		ItemFilter Value30 'item => item.value > 30';
+	}
+	
+	Entity ComplexRP
+	{
+		Integer value;
+		ItemFilter Value10 'item => item.value > 10';
+	}
+	
+	Entity ComplexRPPermissions
+	{
+		ShortString userName;
+		Integer minVal;
+		Integer maxVal;
+	}
+	
+	RowPermissions ComplexRP '(source, repos, context) =>
+		{
+			var perms = repos.TestRowPermissions.ComplexRPPermissions.Query().Where(a => a.userName == context.UserInfo.UserName).ToList().SingleOrDefault();
+			if (perms == null) return source.Take(0);
+			
+			return source.Where(a => a.value >= perms.minVal && a.value <= perms.maxVal);
+		}';
 		
-		ItemFilter Value50 "item => item.value < 50";
-		RowPermissions "(source, repo, context) => source.Where(a => a.value > 10)";
-	}
-	
-	Entity TestEntity2
-	{
-		Integer value;
-	}
-	
-	RowPermissions TestEntity2 "(source, repo, context) => source.Where(a => a.value > 50)";
-
 }
