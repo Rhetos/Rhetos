@@ -399,7 +399,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Checks if RowPermissions concept is present and validates all items are included. Works with materialized items.
         /// </summary>
         /// <param name="materialized"></param>
-        void ValidateRowPermissions(IEnumerable<TEntityInterface> materialized)
+        void ValidateRowPermissions(TEntityInterface[] materialized)
         {
             int _batchSize = 2000; // true NHibernate/SQL limit is probably 2100
 
@@ -410,7 +410,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 _logger.Trace(() => string.Format("Found row permissions filter, checking if all items are allowed (with batchSize = {0}.", _batchSize));
 
                 var allowedItems = ((IQueryable<TEntityInterface>)ReadNonMaterialized(null, RowPermissionsInfo.filterType, true)).Select(a => a.ID);
-                var batches = GetChunks((TEntityInterface[]) materialized, _batchSize);
+                var batches = GetChunks(materialized, _batchSize);
                 
                 foreach (var batch in batches)
                 {
@@ -419,7 +419,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     _logger.Trace(() => string.Format("Row permission batch test; distinct requested: {0}, distinct allowed: {1}", preparedIDs.Count, allowedCount));
                     
                     if (preparedIDs.Count != allowedCount)
-                        throw new UserException("Insufficient permissions to access some or all of the data requested.", "DataStructure: " + _reflection.EntityType.ToString() + ".");
+                        throw new UserException("Insufficient permissions to access some or all of the data requested.", "DataStructure:" + _reflection.EntityType.ToString() + ".");
                 }
             }
         }
@@ -443,14 +443,13 @@ namespace Rhetos.Dom.DefaultConcepts
 
             IEnumerable<TEntityInterface> filtered = ReadNonMaterialized(commandInfo.Filters ?? new FilterCriteria[] { }, preferQuery: pagingIsUsed || !commandInfo.ReadRecords);
 
-            object[] resultRecords = null;
+            TEntityInterface[] resultRecords = null;
             int? totalCount = null;
 
             if (commandInfo.ReadRecords)
             {
-                var materialized = _reflection.ToArrayOfEntity(_genericFilterHelper.SortAndPaginate(_reflection.AsQueryable(filtered), commandInfo));
-                ValidateRowPermissions(materialized);
-                resultRecords = (object[])materialized;
+                resultRecords = (TEntityInterface[])_reflection.ToArrayOfEntity(_genericFilterHelper.SortAndPaginate(_reflection.AsQueryable(filtered), commandInfo));
+                ValidateRowPermissions(resultRecords);
             }
 
             if (commandInfo.ReadTotalCount)

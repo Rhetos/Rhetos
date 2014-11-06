@@ -1,4 +1,23 @@
-﻿using System;
+﻿/*
+    Copyright (C) 2014 Omega software d.o.o.
+
+    This file is part of Rhetos.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Configuration.Autofac;
@@ -16,7 +35,6 @@ namespace CommonConcepts.Test
     public class RowPermissionsTest
     {
         static string _exceptionText = "Insufficient permissions to access some or all of the data requested.";
-        static string _rowPermissionFilter = typeof(RowPermissions_AllowedItems).Name;
 
         /// <summary>
         /// Slightly redundant, but we still want to check if absence of RowPermissions is properly detected
@@ -27,7 +45,7 @@ namespace CommonConcepts.Test
             using (var container = new RhetosTestContainer())
             {
                 var gRepository = container.Resolve<GenericRepository<NoRP>>();
-                gRepository.Save(Enumerable.Range(0, 50).Select(a => new NoRP() { value = a }), null, null);
+                gRepository.Save(Enumerable.Range(0, 50).Select(a => new NoRP() { value = a }), null, gRepository.Read());
 
                 {
                     var all = new ReadCommandInfo()
@@ -80,7 +98,7 @@ namespace CommonConcepts.Test
             {
                 var gRepository = container.Resolve<GenericRepository<SimpleRP>>();
                 var items = Enumerable.Range(0, 4001).Select(a => new SimpleRP() { ID = Guid.NewGuid(), value = a }).ToList();
-                gRepository.Save(items, null, null);
+                gRepository.Save(items, null, gRepository.Read());
 
                 {
                     var cReadAll = new ReadCommandInfo()
@@ -235,11 +253,11 @@ namespace CommonConcepts.Test
                     new ComplexRPPermissions() { userName = currentUserName, minVal = 5, maxVal = 90 },
                     new ComplexRPPermissions() { userName = "__non_existant_user2__", minVal = 9, maxVal = 1 },
                 };
-                permRepository.Save(perms, null, null);
+                permRepository.Save(perms, null, permRepository.Read());
 
                 var gRepository = container.Resolve<GenericRepository<TestRowPermissions.ComplexRP>>();
                 var items = Enumerable.Range(0, 101).Select(a => new ComplexRP() { ID = Guid.NewGuid(), value = a }).ToList();
-                gRepository.Save(items, null, null);
+                gRepository.Save(items, null, gRepository.Read());
 
                 // first test results with explicit RP filter calls
                 {
