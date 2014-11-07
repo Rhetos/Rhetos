@@ -50,6 +50,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private readonly ILogger _performanceLogger;
         private readonly IPersistenceTransaction _persistenceTransaction;
         private readonly GenericFilterHelper _genericFilterHelper;
+        private readonly IDomainObjectModel _domainObjectModel;
 
         private readonly string _repositoryName;
         private readonly Lazy<IRepository> _repository;
@@ -86,6 +87,7 @@ namespace Rhetos.Dom.DefaultConcepts
             _performanceLogger = logProvider.GetLogger("Performance");
             _persistenceTransaction = persistenceTransaction;
             _genericFilterHelper = genericFilterHelper;
+            _domainObjectModel = domainObjectModel;
 
             _repository = new Lazy<IRepository>(() => InitializeRepository(repositories));
             _reflection = new ReflectionHelper<TEntityInterface>(EntityName, domainObjectModel, _repository);
@@ -403,13 +405,15 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             int _batchSize = 2000; // true NHibernate/SQL limit is probably 2100
 
-            var filterMethodInfo = _reflection.RepositoryQueryableFilterMethod(RowPermissionsInfo.filterType);
+            Type filterType = _domainObjectModel.Assembly.GetType(RowPermissionsInfo.FilterParameter.GetKeyProperties());
+
+            var filterMethodInfo = _reflection.RepositoryQueryableFilterMethod(filterType);
 
             if (filterMethodInfo != null)
             { 
                 _logger.Trace(() => string.Format("Found row permissions filter, checking if all items are allowed (with batchSize = {0}.", _batchSize));
 
-                var allowedItems = ((IQueryable<TEntityInterface>)ReadNonMaterialized(null, RowPermissionsInfo.filterType, true)).Select(a => a.ID);
+                var allowedItems = ((IQueryable<TEntityInterface>)ReadNonMaterialized(null, filterType, true)).Select(a => a.ID);
                 var batches = GetChunks(materialized, _batchSize);
                 
                 foreach (var batch in batches)

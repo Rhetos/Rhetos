@@ -28,6 +28,7 @@ using Rhetos.Processing.DefaultCommands;
 using Rhetos.Dom.DefaultConcepts;
 using System.Linq;
 using TestRowPermissions;
+using Rhetos.Dsl.DefaultConcepts;
 
 namespace CommonConcepts.Test
 {
@@ -35,6 +36,7 @@ namespace CommonConcepts.Test
     public class RowPermissionsTest
     {
         static string _exceptionText = "Insufficient permissions to access some or all of the data requested.";
+        static string _rowPermissionsFilterParameter = "Common.RowPermissionsAllowedItems";
 
         /// <summary>
         /// Slightly redundant, but we still want to check if absence of RowPermissions is properly detected
@@ -228,7 +230,7 @@ namespace CommonConcepts.Test
                         DataSource = "TestRowPermissions.SimpleRP",
                         ReadRecords = true,
                         Filters = new FilterCriteria[] { new FilterCriteria()  
-                            { Filter = typeof(RowPermissions_AllowedItems).AssemblyQualifiedName } }
+                            { Filter = _rowPermissionsFilterParameter } }
                     };
                     var result = gRepository.ExecuteReadCommand(cPermissionFilter);
                     Assert.AreNotEqual(null, result);
@@ -265,8 +267,7 @@ namespace CommonConcepts.Test
                     {
                         DataSource = "TestRowPermissions.ComplexRP",
                         ReadRecords = true,
-                        Filters = new FilterCriteria[] { new FilterCriteria()  
-                            { Filter = typeof(RowPermissions_AllowedItems).AssemblyQualifiedName } }
+                        Filters = new FilterCriteria[] { new FilterCriteria() { Filter = _rowPermissionsFilterParameter } }
                     };
                     var result = gRepository.ExecuteReadCommand(cAllowed);
                     Assert.AreNotEqual(null, result);
@@ -282,7 +283,7 @@ namespace CommonConcepts.Test
                         ReadRecords = true,
                         Filters = new FilterCriteria[]
                         { 
-                            new FilterCriteria() { Filter = typeof(RowPermissions_AllowedItems).AssemblyQualifiedName },
+                            new FilterCriteria() { Filter = _rowPermissionsFilterParameter },
                             new FilterCriteria() { Filter = "TestRowPermissions.Value10" }
                         }
                     };

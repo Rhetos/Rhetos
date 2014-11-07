@@ -23,7 +23,6 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Rhetos.Dom.DefaultConcepts;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -31,7 +30,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     [ConceptKeyword("RowPermissions")]
     public class RowPermissionsInfo : ComposableFilterByInfo, IMacroConcept, IAlternativeInitializationConcept
     {
-        public static Type filterType = typeof(RowPermissions_AllowedItems);
+        public static ParameterInfo FilterParameter = new ParameterInfo { Module = new ModuleInfo { Name = "Common" }, Name = "RowPermissionsAllowedItems" };
 
         public string SimplifiedExpression { get; set; }
 
@@ -42,7 +41,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
-            Parameter = filterType.FullName;
+            Parameter = FilterParameter.Module.Name + "." + FilterParameter.Name;
             Expression = ReformatLambdaExpression(SimplifiedExpression);
             createdConcepts = null;
         }
@@ -70,6 +69,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             var newConcepts = new List<IConceptInfo>();
             newConcepts.AddRange(base.CreateNewConcepts(existingConcepts));
 
+            newConcepts.Add(FilterParameter);
             newConcepts.Add(new ComposableFilterUseExecutionContextInfo() { Filter = this });
 
             return newConcepts;
