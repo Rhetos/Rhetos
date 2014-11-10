@@ -297,10 +297,8 @@ Module TestFilter
 	{
 		Take Name2 'Name';
 		ComposableFilterBy 'System.String' '(source, repository, parameter) => source.Where(item => item.Name2.StartsWith("b")).Select(item =>
-			new TestFilter.AutoFilter2Browse { ID = item.ID, Base = item.Base, Name2 = item.Name2 + "x"})'
-		{
-			ApplyOnClientRead;
-		}
+			new TestFilter.AutoFilter2Browse { ID = item.ID, Base = item.Base, Name2 = item.Name2 + "x"})';
+		ApplyFilterOnClientRead 'System.String';
 	}
 }
 

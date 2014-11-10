@@ -38,15 +38,12 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return new[]
+            return new IConceptInfo[]
             {
-                new ComposableFilterApplyOnClientReadInfo
+                new ApplyFilterOnClientReadInfo
                 {
-                    Filter = new ComposableFilterByInfo
-                    {
-                        Source = Filter.Source,
-                        Parameter = Filter.GetGeneratedFilter().GetKeyProperties()
-                    }
+                    DataStructure = Filter.Source,
+                    FilterName = Filter.GetGeneratedFilter().GetKeyProperties()
                 }
             };
         }

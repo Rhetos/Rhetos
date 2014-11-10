@@ -109,6 +109,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Computations\ApplyFilterOnClientReadInfo.cs" />
     <Compile Include="Computations\ItemFilterApplyOnClientReadInfo.cs" />
     <Compile Include="Computations\ComposableFilterUseExecutionContextInfo.cs" />
     <Compile Include="Computations\ComputeForNewItemsWithoutFilterInfo.cs" />

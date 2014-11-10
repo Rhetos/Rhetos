@@ -33,23 +33,23 @@ using Rhetos.Extensibility;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(ComposableFilterApplyOnClientReadInfo))]
-    public class ComposableFilterApplyOnClientReadCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(ApplyFilterOnClientReadInfo))]
+    public class ApplyFilterOnClientReadCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (ComposableFilterApplyOnClientReadInfo)conceptInfo;
+            var info = (ApplyFilterOnClientReadInfo)conceptInfo;
 
             codeBuilder.InsertCode(AddFilterSnippet(info), ModuleCodeGenerator.ApplyFiltersOnClientReadTag);
         }
 
-        protected static string AddFilterSnippet(ComposableFilterApplyOnClientReadInfo info)
+        protected static string AddFilterSnippet(ApplyFilterOnClientReadInfo info)
         {
             return string.Format(
             @"{{ {0}, {1} }},
             ",
-                CsUtility.QuotedString(info.Filter.Source.GetKeyProperties()),
-                CsUtility.QuotedString(info.Filter.Parameter));
+                CsUtility.QuotedString(info.DataStructure.GetKeyProperties()),
+                CsUtility.QuotedString(info.FilterName));
         }
     }
 }

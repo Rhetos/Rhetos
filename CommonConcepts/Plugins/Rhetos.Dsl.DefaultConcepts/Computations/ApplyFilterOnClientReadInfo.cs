@@ -30,22 +30,13 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// (the command is used in SOAP and REST API).
     /// </summary>
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("ApplyOnClientRead")]
-    public class ComposableFilterApplyOnClientReadInfo : IConceptInfo, IMacroConcept
+    [ConceptKeyword("ApplyFilterOnClientRead")]
+    public class ApplyFilterOnClientReadInfo : IConceptInfo
     {
         [ConceptKey]
-        public ComposableFilterByInfo Filter { get; set; }
+        public DataStructureInfo DataStructure { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            return new IConceptInfo[]
-            {
-                new ApplyFilterOnClientReadInfo
-                {
-                    DataStructure = Filter.Source,
-                    FilterName = Filter.Parameter
-                }
-            };
-        }
+        [ConceptKey]
+        public string FilterName { get; set; }
     }
 }
