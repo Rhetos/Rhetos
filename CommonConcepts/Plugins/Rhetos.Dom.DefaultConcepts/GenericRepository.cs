@@ -51,6 +51,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private readonly IPersistenceTransaction _persistenceTransaction;
         private readonly GenericFilterHelper _genericFilterHelper;
         private readonly IDomainObjectModel _domainObjectModel;
+        private readonly IApplyFiltersOnClientRead _applyFiltersOnClientRead;
 
         private readonly string _repositoryName;
         private readonly Lazy<IRepository> _repository;
@@ -67,8 +68,9 @@ namespace Rhetos.Dom.DefaultConcepts
             IRegisteredInterfaceImplementations registeredInterfaceImplementations,
             ILogProvider logProvider,
             IPersistenceTransaction persistenceTransaction,
-            GenericFilterHelper genericFilterHelper)
-            : this(domainObjectModel, repositories, InitializeEntityName(registeredInterfaceImplementations), logProvider, persistenceTransaction, genericFilterHelper)
+            GenericFilterHelper genericFilterHelper,
+            IApplyFiltersOnClientRead applyFiltersOnClientRead)
+            : this(domainObjectModel, repositories, InitializeEntityName(registeredInterfaceImplementations), logProvider, persistenceTransaction, genericFilterHelper, applyFiltersOnClientRead)
         {
         }
 
@@ -78,7 +80,8 @@ namespace Rhetos.Dom.DefaultConcepts
             string entityName,
             ILogProvider logProvider,
             IPersistenceTransaction persistenceTransaction,
-            GenericFilterHelper genericFilterHelper)
+            GenericFilterHelper genericFilterHelper,
+            IApplyFiltersOnClientRead applyFiltersOnClientRead)
         {
             EntityName = entityName;
             _repositoryName = "GenericRepository(" + EntityName + ")";
@@ -88,6 +91,7 @@ namespace Rhetos.Dom.DefaultConcepts
             _persistenceTransaction = persistenceTransaction;
             _genericFilterHelper = genericFilterHelper;
             _domainObjectModel = domainObjectModel;
+            _applyFiltersOnClientRead = applyFiltersOnClientRead;
 
             _repository = new Lazy<IRepository>(() => InitializeRepository(repositories));
             _reflection = new ReflectionHelper<TEntityInterface>(EntityName, domainObjectModel, _repository);
@@ -381,7 +385,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return items ?? ReadNonMaterialized(new FilterAll(), preferQuery: preferQuery);
         }
 
-        IEnumerable<T> GetSubset<T>(T[] source, int startIndex, int endIndex)
+        private IEnumerable<T> GetSubset<T>(T[] source, int startIndex, int endIndex)
         {
             while (startIndex < endIndex) yield return source[startIndex++];
         }
@@ -401,7 +405,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Checks if RowPermissions concept is present and validates all items are included. Works with materialized items.
         /// </summary>
         /// <param name="materialized"></param>
-        void ValidateRowPermissions(TEntityInterface[] materialized)
+        private void ValidateRowPermissions(TEntityInterface[] materialized)
         {
             int _batchSize = 2000; // true NHibernate/SQL limit is probably 2100
 
@@ -439,34 +443,62 @@ namespace Rhetos.Dom.DefaultConcepts
             if (commandInfo.Skip < 0)
                 throw new ArgumentException("Invalid ReadCommand argument: Skip parameter must not be negative.");
 
+            AutoApplyFilters(commandInfo);
+
+            ReadCommandResult result;
+
             var specificMethod = _reflection.RepositoryReadCommandMethod;
             if (specificMethod != null)
-                return (ReadCommandResult)specificMethod.InvokeEx(_repository.Value, commandInfo);
-
-            bool pagingIsUsed = commandInfo.Top > 0 || commandInfo.Skip > 0;
-
-            IEnumerable<TEntityInterface> filtered = ReadNonMaterialized(commandInfo.Filters ?? new FilterCriteria[] { }, preferQuery: pagingIsUsed || !commandInfo.ReadRecords);
-
-            TEntityInterface[] resultRecords = null;
-            int? totalCount = null;
-
-            if (commandInfo.ReadRecords)
+                result = (ReadCommandResult)specificMethod.InvokeEx(_repository.Value, commandInfo);
+            else
             {
-                resultRecords = (TEntityInterface[])_reflection.ToArrayOfEntity(_genericFilterHelper.SortAndPaginate(_reflection.AsQueryable(filtered), commandInfo));
-                ValidateRowPermissions(resultRecords);
+                bool pagingIsUsed = commandInfo.Top > 0 || commandInfo.Skip > 0;
+
+                IEnumerable<TEntityInterface> filtered = ReadNonMaterialized(commandInfo.Filters ?? new FilterCriteria[] { }, preferQuery: pagingIsUsed || !commandInfo.ReadRecords);
+
+                TEntityInterface[] resultRecords = null;
+                int? totalCount = null;
+
+                if (commandInfo.ReadRecords)
+                    resultRecords = (TEntityInterface[])_reflection.ToArrayOfEntity(_genericFilterHelper.SortAndPaginate(_reflection.AsQueryable(filtered), commandInfo));
+
+                if (commandInfo.ReadTotalCount)
+                    if (pagingIsUsed)
+                        totalCount = SmartCount(filtered);
+                    else
+                        totalCount = resultRecords != null ? resultRecords.Length : SmartCount(filtered);
+
+                result = new ReadCommandResult
+                {
+                    Records = resultRecords,
+                    TotalCount = totalCount
+                };
             }
 
-            if (commandInfo.ReadTotalCount)
-                if (pagingIsUsed)
-                    totalCount = SmartCount(filtered);
-                else
-                    totalCount = resultRecords != null ? resultRecords.Length : SmartCount(filtered);
+            if (result.Records != null)
+                ValidateRowPermissions((TEntityInterface[])result.Records);
+            return result;
+        }
 
-            return new ReadCommandResult
+        private void AutoApplyFilters(ReadCommandInfo commandInfo)
+        {
+            List<string> filterNames;
+            if (_applyFiltersOnClientRead.TryGetValue(EntityName, out filterNames))
             {
-                Records = resultRecords,
-                TotalCount = totalCount
-            };
+                commandInfo.Filters = commandInfo.Filters ?? new FilterCriteria[] { };
+
+                var newFilters = filterNames
+                    .Where(name => !commandInfo.Filters.Any(existingFilter =>
+                        existingFilter.Filter == name
+                        && existingFilter.Value == null
+                        && string.IsNullOrEmpty(existingFilter.Operation)))
+                    .Select(name => new FilterCriteria { Filter = name })
+                    .ToList();
+
+                _logger.Trace(() => "AutoApplyFilters: " + string.Join(", ", newFilters.Select(f => f.Filter)));
+
+                commandInfo.Filters = commandInfo.Filters.Concat(newFilters).ToArray();
+            }
         }
 
         private static int SmartCount(IEnumerable<TEntityInterface> items)

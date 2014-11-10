@@ -72,7 +72,8 @@ namespace Rhetos.CommonConcepts.Test
                 new RegisteredInterfaceImplementationsMock(typeof(ISimpleEntity), typeof(SimpleEntity)),
                 new ConsoleLogProvider(),
                 null,
-                new GenericFilterHelper(new DomainObjectModelMock()));
+                new GenericFilterHelper(new DomainObjectModelMock()),
+                new ApplyFiltersOnClientReadMock());
         }
 
         //=======================================================
@@ -694,7 +695,7 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual("IQ: 2, 12", TypeAndNames(genericRepos.FilterNonMaterialized(genericRepos.Query(), genericFilter)));
         }
 
-        class StringFilterRepository : IRepository
+        class SystemFilterRepository : IRepository
         {
             public IQueryable<SimpleEntity> Query()
             {
@@ -708,33 +709,44 @@ namespace Rhetos.CommonConcepts.Test
 
             public IQueryable<SimpleEntity> Filter(IQueryable<SimpleEntity> items, DateTime parameter)
             {
-                return null;
+                return new[] { new SimpleEntity { Name = parameter.ToString("s") } }.AsQueryable();
             }
 
             public IEnumerable<SimpleEntity> Filter(IEnumerable<SimpleEntity> items, Guid parameter)
             {
-                return null;
+                return new[] { new SimpleEntity { Name = parameter.ToString() } }.AsQueryable();
             }
         }
 
         [TestMethod]
         public void FilterGenericFilter_Errors()
         {
-            var entityRepos = new StringFilterRepository();
+            var entityRepos = new SystemFilterRepository();
             var genericRepos = NewRepos(entityRepos);
 
             TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Operation = "x" } }), "both property filter and predefined filter are null");
             TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Value = "x" } }), "both property filter and predefined filter are null");
             TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { } }), "both property filter and predefined filter are null");
             TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Filter = "xx", Property = "yy" } }), "both property filter and predefined filter are set", "xx", "yy");
-            
+
             TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Filter = "System.String", Operation = "xxx" } }), "Filter", "System.String", "Operation", "xxx", "Matches", "NotMatches");
             TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Filter = "System.String", Value = 123 } }), "System.String", "System.Int32");
             TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Property = "Name", Operation = "xxx" } }), "Operation", "xxx");
             TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Property = "Name", Value = "xxx" } }), "Property", "Name", "Operation");
-            
-            TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Filter = "System.DateTime" } }), "SimpleEntity", "System.DateTime", "null");
-            TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Filter = "System.Guid" } }), "SimpleEntity", "System.Guid", "null");
+        }
+
+        [TestMethod]
+        public void FilterGenericFilter_Defaults()
+        {
+            var entityRepos = new SystemFilterRepository();
+            var genericRepos = NewRepos(entityRepos);
+
+            Assert.AreEqual("0001-01-01T00:00:00", genericRepos
+                .Filter(genericRepos.Query(), new[] { new FilterCriteria { Filter = "System.DateTime" } })
+                .Single().Name);
+            Assert.AreEqual("00000000-0000-0000-0000-000000000000", genericRepos
+                .Filter(genericRepos.Query(), new[] { new FilterCriteria { Filter = "System.Guid" } })
+                .Single().Name);
         }
     }
 }

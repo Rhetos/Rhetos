@@ -29,7 +29,7 @@ Module TestRowPermissions
 	RowPermissions ComplexRP '(source, repos, context) =>
 		{
 			var perms = repos.TestRowPermissions.ComplexRPPermissions.Query().Where(a => a.userName == context.UserInfo.UserName).ToList().SingleOrDefault();
-			if (perms == null) return source.Take(0);
+			if (perms == null) return new TestRowPermissions.ComplexRP [] { }.AsQueryable();
 			
 			return source.Where(a => a.value >= perms.minVal && a.value <= perms.maxVal);
 		}';

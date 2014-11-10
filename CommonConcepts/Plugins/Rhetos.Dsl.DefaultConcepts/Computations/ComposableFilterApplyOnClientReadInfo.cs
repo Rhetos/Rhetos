@@ -17,30 +17,23 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Dom;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 
-namespace Rhetos.CommonConcepts.Test.Mocks
-{
-    class DomainObjectModelMock : IDomainObjectModel
-    {
-        public Assembly Assembly
-        {
-            get { return typeof(DomainObjectModelMock).Assembly; }
-        }
-    }
-}
-
-namespace Common
+namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// This class is expected in DomainObjectModel. It's here to support DomainObjectModelMock.
+    /// The given filter will be automatically applied when executing ReadCommand server command
+    /// (the command is used in SOAP and REST API).
     /// </summary>
-    public class RowPermissionsAllowedItems
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("ApplyOnClientRead")]
+    public class ComposableFilterApplyOnClientReadInfo : IConceptInfo
     {
+        [ConceptKey]
+        public ComposableFilterByInfo Filter { get; set; }
     }
 }

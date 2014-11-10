@@ -154,6 +154,8 @@ namespace {0}._Helper
         public const string ExecutionContextConstructorArgumentTag = "/*ExecutionContextConstructorArgument*/";
         public const string ExecutionContextConstructorAssignmentTag = "/*ExecutionContextConstructorAssignment*/";
         public const string RegisteredInterfaceImplementationNameTag = "/*RegisteredInterfaceImplementationName*/";
+        public const string ApplyFiltersOnClientReadTag = "/*ApplyFiltersOnClientRead*/";
+
         /// <summary>
         /// Instead of calling Configuration.LinqToHqlGeneratorsRegistry() function,
         /// add the registry code using ModuleCodeGenerator.LinqToHqlGeneratorsRegistryTag.
@@ -181,11 +183,30 @@ namespace {0}._Helper
             _executionContext = executionContext;
         }}
 
-        public class RegisteredInterfaceImplementations : Dictionary<Type, string>, IRegisteredInterfaceImplementations {{ }}
+        private class RegisteredInterfaceImplementations : Dictionary<Type, string>, IRegisteredInterfaceImplementations {{ }}
 
-        public static RegisteredInterfaceImplementations RegisteredInterfaceImplementationName = new RegisteredInterfaceImplementations
+        public static IRegisteredInterfaceImplementations RegisteredInterfaceImplementationName = new RegisteredInterfaceImplementations
         {{
             {7}
+        }};
+
+        private class ApplyFiltersOnClientReadDictionary : Dictionary<string, List<string>>, IApplyFiltersOnClientRead
+        {{
+            public void Add(string dataStructure, string filter)
+            {{
+                List<string> filters;
+                if (!TryGetValue(dataStructure, out filters))
+                {{
+                    filters = new List<string>();
+                    Add(dataStructure, filters);
+                }}
+                filters.Add(filter);
+            }}
+        }}
+
+        public static IApplyFiltersOnClientRead ApplyFiltersOnClientRead = new ApplyFiltersOnClientReadDictionary
+        {{
+            {10}
         }};
 
         {2}
@@ -247,6 +268,7 @@ namespace {0}._Helper
             builder.RegisterType<DomRepository>().InstancePerLifetimeScope();
             builder.RegisterType<ExecutionContext>().InstancePerLifetimeScope();
             builder.RegisterInstance(DomRepository.RegisteredInterfaceImplementationName).As<IRegisteredInterfaceImplementations>().ExternallyOwned();
+            builder.RegisterInstance(DomRepository.ApplyFiltersOnClientRead).As<IApplyFiltersOnClientRead>().ExternallyOwned();
             {3}
 
             base.Load(builder);
@@ -289,7 +311,8 @@ namespace {0}._Helper
             ExecutionContextConstructorAssignmentTag,
             RegisteredInterfaceImplementationNameTag,
             NHibernateConfigurationExtensionTag,
-            LinqToHqlGeneratorsRegistryTag);
+            LinqToHqlGeneratorsRegistryTag,
+            ApplyFiltersOnClientReadTag);
         }
     }
 }

@@ -41,7 +41,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
-            Parameter = FilterParameter.Module.Name + "." + FilterParameter.Name;
+            Parameter = FilterParameter.GetKeyProperties();
             Expression = ReformatLambdaExpression(SimplifiedExpression);
             createdConcepts = null;
         }

@@ -62,6 +62,7 @@
     <Compile Include="AutofacModuleConfiguration.cs" />
     <Compile Include="Computations\ComposableFilterUseExecutionContextCodeGenerator.cs" />
     <Compile Include="Computations\ComputeForNewItemsCodeGenerator.cs" />
+    <Compile Include="Computations\ComposableFilterApplyOnClientReadCodeGenerator.cs" />
     <Compile Include="Computations\KeepSynchronizedCodeGenerator.cs" />
     <Compile Include="Computations\KeyPropertyIDComputedFromCodeGenerator.cs" />
     <Compile Include="Computations\KeyPropertyComputedFromCodeGenerator.cs" />

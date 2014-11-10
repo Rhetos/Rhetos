@@ -17,30 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Dom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 
-namespace Rhetos.CommonConcepts.Test.Mocks
-{
-    class DomainObjectModelMock : IDomainObjectModel
-    {
-        public Assembly Assembly
-        {
-            get { return typeof(DomainObjectModelMock).Assembly; }
-        }
-    }
-}
-
-namespace Common
+namespace Rhetos.Dom.DefaultConcepts
 {
     /// <summary>
-    /// This class is expected in DomainObjectModel. It's here to support DomainObjectModelMock.
+    /// For a given data structure key, dictionary contains list of filters that will be
+    /// automatically applied when executing ReadCommand.
     /// </summary>
-    public class RowPermissionsAllowedItems
+    public interface IApplyFiltersOnClientRead : IDictionary<string, List<string>>
     {
     }
 }

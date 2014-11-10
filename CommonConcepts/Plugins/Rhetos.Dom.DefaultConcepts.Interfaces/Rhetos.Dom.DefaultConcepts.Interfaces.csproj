@@ -102,6 +102,7 @@
     <Compile Include="ICommonClaim.cs" />
     <Compile Include="IFilterRepository.cs" />
     <Compile Include="IQueryableRepository.cs" />
+    <Compile Include="IApplyFiltersOnClientRead.cs" />
     <Compile Include="IRegisteredInterfaceImplementations.cs" />
     <Compile Include="IReportRepository.cs" />
     <Compile Include="IRepository.cs" />

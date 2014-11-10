@@ -72,6 +72,7 @@
     <Compile Include="Mocks\DomainObjectModelMock.cs" />
     <Compile Include="Mocks\NHibernateSessionStub.cs" />
     <Compile Include="Mocks\PersistenceTransactionStub.cs" />
+    <Compile Include="Mocks\ApplyFiltersOnClientReadMock.cs" />
     <Compile Include="Mocks\RegisteredInterfaceImplementationsMock.cs" />
     <Compile Include="Mocks\RepositoryIndexMock.cs" />
     <Compile Include="Mocks\RepositoryMock.cs" />

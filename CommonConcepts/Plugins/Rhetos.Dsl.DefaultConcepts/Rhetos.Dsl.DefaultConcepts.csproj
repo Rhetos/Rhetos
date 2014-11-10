@@ -109,9 +109,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Computations\ItemFilterApplyOnClientReadInfo.cs" />
     <Compile Include="Computations\ComposableFilterUseExecutionContextInfo.cs" />
     <Compile Include="Computations\ComputeForNewItemsWithoutFilterInfo.cs" />
     <Compile Include="Computations\ComputeForNewItemsInfo.cs" />
+    <Compile Include="Computations\ComposableFilterApplyOnClientReadInfo.cs" />
     <Compile Include="Computations\KeyPropertyIDComputedFromInfo.cs" />
     <Compile Include="Computations\PersistedKeyPropertiesInfo.cs" />
     <Compile Include="Computations\KeyPropertyComputedFromInfo.cs" />

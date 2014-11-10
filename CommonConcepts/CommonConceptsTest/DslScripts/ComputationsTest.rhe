@@ -257,6 +257,51 @@ Module TestFilter
 	}
     
     Parameter ComposableFilterWithContext;
+	
+	Entity ExternalFilter
+	{
+		ShortString Name;
+		ComposableFilterBy 'System.DateTime' '(source, repository, parameter) =>
+			{
+				if (parameter == null)
+					return source.Where(item => item.Name.StartsWith("dnull"));
+				else if (parameter == default(System.DateTime))
+					return source.Where(item => item.Name.StartsWith("ddef"));
+				else
+					return source.Where(item => item.Name.StartsWith("date"));
+			}';
+		ComposableFilterBy 'System.String' '(source, repository, parameter) =>
+			{
+				if (parameter == null)
+					return source.Where(item => item.Name.StartsWith("snull"));
+				else
+					return source.Where(item => item.Name.StartsWith("str"));
+			}';
+	}
+	
+	Entity AutoFilter1
+	{
+		ShortString Name;
+		ItemFilter AList 'item => item.Name.StartsWith("a")'
+		{
+			ApplyOnClientRead;
+		}
+	}
+	
+	Entity AutoFilter2
+	{
+		ShortString Name;
+	}
+	
+	Browse AutoFilter2Browse TestFilter.AutoFilter2
+	{
+		Take Name2 'Name';
+		ComposableFilterBy 'System.String' '(source, repository, parameter) => source.Where(item => item.Name2.StartsWith("b")).Select(item =>
+			new TestFilter.AutoFilter2Browse { ID = item.ID, Base = item.Base, Name2 = item.Name2 + "x"})'
+		{
+			ApplyOnClientRead;
+		}
+	}
 }
 
 Module TestFilter2;
