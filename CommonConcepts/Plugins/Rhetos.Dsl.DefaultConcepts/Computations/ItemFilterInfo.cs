@@ -41,12 +41,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var newConcepts = new List<IConceptInfo>();
 
-            ParameterInfo filterParameter;
-            var filterNameElements = FilterName.Split('.');
-            if (filterNameElements.Count() == 2)
-                filterParameter = new ParameterInfo { Module = new ModuleInfo { Name = filterNameElements[0] }, Name = filterNameElements[1] };
-            else
-                filterParameter = new ParameterInfo { Module = Source.Module, Name = FilterName };
+            ParameterInfo filterParameter = GetGeneratedFilter();
 
             if (!existingConcepts.OfType<DataStructureInfo>() // Existing filter parameter does not have to be a ParameterInfo. Any DataStructureInfo is allowed.
                 .Any(item => item.Module.Name == filterParameter.Module.Name && item.Name == filterParameter.Name))
@@ -62,6 +57,15 @@ namespace Rhetos.Dsl.DefaultConcepts
             newConcepts.Add(composableFilter);
 
             return newConcepts;
+        }
+
+        public ParameterInfo GetGeneratedFilter()
+        {
+            var filterNameElements = FilterName.Split('.');
+            if (filterNameElements.Count() == 2)
+                return new ParameterInfo { Module = new ModuleInfo { Name = filterNameElements[0] }, Name = filterNameElements[1] };
+            else
+                return new ParameterInfo { Module = Source.Module, Name = FilterName };
         }
     }
 }

@@ -43,7 +43,8 @@ namespace Rhetos.CommonConcepts.Test.Mocks
                 new RegisteredInterfaceImplementationsMock(typeof(TEntityInterface), typeof(TEntity)),
                 new ConsoleLogProvider(),
                 new PersistenceTransactionStub(),
-                new GenericFilterHelper(new DomainObjectModelMock()))
+                new GenericFilterHelper(new DomainObjectModelMock()),
+                new ApplyFiltersOnClientReadMock())
         {
         }
 

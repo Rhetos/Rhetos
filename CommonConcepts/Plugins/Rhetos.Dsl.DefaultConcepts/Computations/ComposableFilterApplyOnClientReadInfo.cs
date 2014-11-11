@@ -19,15 +19,33 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// This class is used as a parameter for ComposableFilterBy created by RowPermissions concept
+    /// The given filter will be automatically applied when executing ReadCommand server command
+    /// (the command is used in SOAP and REST API).
     /// </summary>
-    public class RowPermissions_AllowedItems
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("ApplyOnClientRead")]
+    public class ComposableFilterApplyOnClientReadInfo : IConceptInfo, IMacroConcept
     {
+        [ConceptKey]
+        public ComposableFilterByInfo Filter { get; set; }
+
+        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        {
+            return new IConceptInfo[]
+            {
+                new ApplyFilterOnClientReadInfo
+                {
+                    DataStructure = Filter.Source,
+                    FilterName = Filter.Parameter
+                }
+            };
+        }
     }
 }

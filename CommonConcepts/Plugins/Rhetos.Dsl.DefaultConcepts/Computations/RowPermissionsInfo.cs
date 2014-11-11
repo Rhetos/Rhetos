@@ -23,19 +23,29 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Rhetos.Dom.DefaultConcepts;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RowPermissions")]
-    public class RowPermissionsInfo : IConceptInfo, IMacroConcept
+    public class RowPermissionsInfo : ComposableFilterByInfo, IMacroConcept, IAlternativeInitializationConcept
     {
-        public static Type filterType = typeof(RowPermissions_AllowedItems);
-        [ConceptKey]
-        public DataStructureInfo Source { get; set; }
+        public static readonly ParameterInfo FilterParameter = new ParameterInfo { Module = new ModuleInfo { Name = "Common" }, Name = "RowPermissionsAllowedItems" };
+        public static readonly string FilterName = FilterParameter.Module.Name + "." + FilterParameter.Name;
 
-        public string Expression { get; set; }
+        public string SimplifiedExpression { get; set; }
+
+        public IEnumerable<string> DeclareNonparsableProperties()
+        {
+            return new[] { "Parameter", "Expression" };
+        }
+
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            Parameter = FilterName;
+            Expression = ReformatLambdaExpression(SimplifiedExpression);
+            createdConcepts = null;
+        }
 
         // ugly workaround to eliminate unnecessary parameter which ComposableFilterBy expects
         // we don't need parameter in row permission filter/expression
@@ -55,31 +65,15 @@ namespace Rhetos.Dsl.DefaultConcepts
             return reformatted;
         }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public new IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            var newExpression = ReformatLambdaExpression(Expression);
-            var rpFilter = new ComposableFilterByInfo()
-            {
-                Source = Source,
-                Parameter = filterType.FullName,
-                Expression = newExpression
-            };
+            var newConcepts = new List<IConceptInfo>();
+            newConcepts.AddRange(base.CreateNewConcepts(existingConcepts));
 
-            var rpFilterUseExecutionContext = new ComposableFilterUseExecutionContextInfo()
-            {
-                Filter = rpFilter
-            };
+            newConcepts.Add(FilterParameter);
+            newConcepts.Add(new ComposableFilterUseExecutionContextInfo() { Filter = this });
 
-            return new IConceptInfo[]
-            {
-                rpFilter,
-                rpFilterUseExecutionContext,
-                new ModuleExternalReferenceInfo
-                {
-                    Module = new ModuleInfo {Name = Source.Module.Name},
-                    TypeOrAssembly = typeof(ComposableFilterByInfo).AssemblyQualifiedName
-                }
-            };
+            return newConcepts;
         }
     }
 }

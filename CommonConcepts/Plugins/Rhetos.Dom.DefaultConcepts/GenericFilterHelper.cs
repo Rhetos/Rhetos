@@ -326,9 +326,6 @@ namespace Rhetos.Dom.DefaultConcepts
                     throw new ClientException(string.Format(
                         "Invalid generic filter criteria: Supported predefined filter operations are '{0}' and '{1}'. (Filter = '{2}', Operation = '{3}')",
                         FilterOperationMatches, FilterOperationNotMatches, filter.Filter, filter.Operation));
-
-                if (filter.Value == null)
-                    filter.Value = Activator.CreateInstance(GetSpecificFilterType(filter.Filter));
             }
         }
 

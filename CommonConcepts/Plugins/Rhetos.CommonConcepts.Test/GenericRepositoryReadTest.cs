@@ -83,7 +83,8 @@ namespace Rhetos.CommonConcepts.Test
                 new RegisteredInterfaceImplementationsMock(typeof(ISimpleEntity), typeof(SimpleEntity)),
                 new ConsoleLogProvider(),
                 null,
-                new GenericFilterHelper(new DomainObjectModelMock()));
+                new GenericFilterHelper(new DomainObjectModelMock()),
+                new ApplyFiltersOnClientReadMock());
         }
 
         //=======================================================
@@ -702,7 +703,7 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual("IQ: 2, 12", TypeAndNames(genericRepos.ReadNonMaterialized(genericFilter, preferQuery: true)));
         }
 
-        class StringFilterRepository : IRepository
+        class SystemFilterRepository : IRepository
         {
             public IQueryable<SimpleEntity> Query()
             {
@@ -716,19 +717,19 @@ namespace Rhetos.CommonConcepts.Test
 
             public IQueryable<SimpleEntity> Filter(IQueryable<SimpleEntity> items, DateTime parameter)
             {
-                return null;
+                return new[] { new SimpleEntity { Name = parameter.ToString("s") } }.AsQueryable();
             }
 
             public IEnumerable<SimpleEntity> Filter(IEnumerable<SimpleEntity> items, Guid parameter)
             {
-                return null;
+                return new[] { new SimpleEntity { Name = parameter.ToString() } }.AsQueryable();
             }
         }
 
         [TestMethod]
         public void ReadGenericFilter_Errors()
         {
-            var entityRepos = new StringFilterRepository();
+            var entityRepos = new SystemFilterRepository();
             var genericRepos = NewRepos(entityRepos);
 
             TestUtility.ShouldFail(() => genericRepos.Read(new[] { new FilterCriteria { Operation = "x" } }), "both property filter and predefined filter are null");
@@ -740,9 +741,20 @@ namespace Rhetos.CommonConcepts.Test
             TestUtility.ShouldFail(() => genericRepos.Read(new[] { new FilterCriteria { Filter = "System.String", Value = 123 } }), "System.String", "System.Int32");
             TestUtility.ShouldFail(() => genericRepos.Read(new[] { new FilterCriteria { Property = "Name", Operation = "xxx" } }), "Operation", "xxx");
             TestUtility.ShouldFail(() => genericRepos.Read(new[] { new FilterCriteria { Property = "Name", Value = "xxx" } }), "Property", "Name", "Operation");
+        }
 
-            TestUtility.ShouldFail(() => genericRepos.Read(new[] { new FilterCriteria { Filter = "System.DateTime" } }), "SimpleEntity", "System.DateTime", "null");
-            TestUtility.ShouldFail(() => genericRepos.Read(new[] { new FilterCriteria { Filter = "System.Guid" } }), "SimpleEntity", "System.Guid", "null");
+        [TestMethod]
+        public void ReadGenericFilter_Defaults()
+        {
+            var entityRepos = new SystemFilterRepository();
+            var genericRepos = NewRepos(entityRepos);
+
+            Assert.AreEqual("0001-01-01T00:00:00", genericRepos
+                .Read(new[] { new FilterCriteria { Filter = "System.DateTime" } })
+                .Single().Name);
+            Assert.AreEqual("00000000-0000-0000-0000-000000000000", genericRepos
+                .Read(new[] { new FilterCriteria { Filter = "System.Guid" } })
+                .Single().Name);
         }
 
         //=======================================================
@@ -774,7 +786,7 @@ namespace Rhetos.CommonConcepts.Test
             {
                 return new ReadCommandResult
                 {
-                    Records = new SimpleEntityList { "a1", "b1", "b2" }.ToArray<object>(),
+                    Records = new SimpleEntityList { "a1", "b1", "b2" }.ToArray(),
                     TotalCount = 10
                 };
             }

@@ -27,7 +27,30 @@
         
         SqlIndexMultiple 'TableName Action';
         PrerequisiteAllProperties;
+		DenyUserEdit;
     }
+	
+	Action AddToLog '(parameter, repository, userInfo, context) =>
+		{
+			if (parameter.Action == null)
+				throw new Rhetos.UserException("Parameter Action is required.");
+			string sql = @"INSERT INTO Common.Log (Action, TableName, ItemId, Description)
+                SELECT :action, :tableName, :itemId, :description";
+			context.NHibernateSession.CreateSQLQuery(sql)
+				.SetString("action", parameter.Action)
+				.SetString("tableName", parameter.TableName)
+				.SetParameter<Guid?>("itemId", parameter.ItemId)
+				.SetString("description", parameter.Description)
+				.UniqueResult();
+		}'
+	{
+		ShortString Action;
+        ShortString TableName;
+        Guid ItemId;
+        LongString Description;
+		
+		UseExecutionContext;
+	}
     
     Entity LogRelatedItem
     {

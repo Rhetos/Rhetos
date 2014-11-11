@@ -1,4 +1,23 @@
-﻿using System;
+﻿/*
+    Copyright (C) 2014 Omega software d.o.o.
+
+    This file is part of Rhetos.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Configuration.Autofac;
@@ -9,6 +28,7 @@ using Rhetos.Processing.DefaultCommands;
 using Rhetos.Dom.DefaultConcepts;
 using System.Linq;
 using TestRowPermissions;
+using Rhetos.Dsl.DefaultConcepts;
 
 namespace CommonConcepts.Test
 {
@@ -16,7 +36,7 @@ namespace CommonConcepts.Test
     public class RowPermissionsTest
     {
         static string _exceptionText = "Insufficient permissions to access some or all of the data requested.";
-        static string _rowPermissionFilter = typeof(RowPermissions_AllowedItems).Name;
+        static string _rowPermissionsFilterParameter = "Common.RowPermissionsAllowedItems";
 
         /// <summary>
         /// Slightly redundant, but we still want to check if absence of RowPermissions is properly detected
@@ -27,7 +47,7 @@ namespace CommonConcepts.Test
             using (var container = new RhetosTestContainer())
             {
                 var gRepository = container.Resolve<GenericRepository<NoRP>>();
-                gRepository.Save(Enumerable.Range(0, 50).Select(a => new NoRP() { value = a }), null, null);
+                gRepository.Save(Enumerable.Range(0, 50).Select(a => new NoRP() { value = a }), null, gRepository.Read());
 
                 {
                     var all = new ReadCommandInfo()
@@ -80,7 +100,7 @@ namespace CommonConcepts.Test
             {
                 var gRepository = container.Resolve<GenericRepository<SimpleRP>>();
                 var items = Enumerable.Range(0, 4001).Select(a => new SimpleRP() { ID = Guid.NewGuid(), value = a }).ToList();
-                gRepository.Save(items, null, null);
+                gRepository.Save(items, null, gRepository.Read());
 
                 {
                     var cReadAll = new ReadCommandInfo()
@@ -210,7 +230,7 @@ namespace CommonConcepts.Test
                         DataSource = "TestRowPermissions.SimpleRP",
                         ReadRecords = true,
                         Filters = new FilterCriteria[] { new FilterCriteria()  
-                            { Filter = typeof(RowPermissions_AllowedItems).AssemblyQualifiedName } }
+                            { Filter = _rowPermissionsFilterParameter } }
                     };
                     var result = gRepository.ExecuteReadCommand(cPermissionFilter);
                     Assert.AreNotEqual(null, result);
@@ -235,11 +255,11 @@ namespace CommonConcepts.Test
                     new ComplexRPPermissions() { userName = currentUserName, minVal = 5, maxVal = 90 },
                     new ComplexRPPermissions() { userName = "__non_existant_user2__", minVal = 9, maxVal = 1 },
                 };
-                permRepository.Save(perms, null, null);
+                permRepository.Save(perms, null, permRepository.Read());
 
                 var gRepository = container.Resolve<GenericRepository<TestRowPermissions.ComplexRP>>();
                 var items = Enumerable.Range(0, 101).Select(a => new ComplexRP() { ID = Guid.NewGuid(), value = a }).ToList();
-                gRepository.Save(items, null, null);
+                gRepository.Save(items, null, gRepository.Read());
 
                 // first test results with explicit RP filter calls
                 {
@@ -247,8 +267,7 @@ namespace CommonConcepts.Test
                     {
                         DataSource = "TestRowPermissions.ComplexRP",
                         ReadRecords = true,
-                        Filters = new FilterCriteria[] { new FilterCriteria()  
-                            { Filter = typeof(RowPermissions_AllowedItems).AssemblyQualifiedName } }
+                        Filters = new FilterCriteria[] { new FilterCriteria() { Filter = _rowPermissionsFilterParameter } }
                     };
                     var result = gRepository.ExecuteReadCommand(cAllowed);
                     Assert.AreNotEqual(null, result);
@@ -264,7 +283,7 @@ namespace CommonConcepts.Test
                         ReadRecords = true,
                         Filters = new FilterCriteria[]
                         { 
-                            new FilterCriteria() { Filter = typeof(RowPermissions_AllowedItems).AssemblyQualifiedName },
+                            new FilterCriteria() { Filter = _rowPermissionsFilterParameter },
                             new FilterCriteria() { Filter = "TestRowPermissions.Value10" }
                         }
                     };
@@ -349,7 +368,7 @@ namespace CommonConcepts.Test
                         DataSource = "TestRowPermissions.ComplexRP",
                         ReadRecords = true,
                         Filters = new FilterCriteria[]
-                        { 
+                        {
                             new FilterCriteria() { Property = "ID", Operation = "equal", Value = items[90].ID },
                         }
                     };
@@ -369,6 +388,81 @@ namespace CommonConcepts.Test
                         }
                     };
                     TestUtility.ShouldFail(() => gRepository.ExecuteReadCommand(cSingleFail), _exceptionText);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void AutoApplyFilter()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var gr = container.Resolve<GenericRepository<TestRowPermissions.AutoFilter>>();
+                var logFilterQuery = container.Resolve<Common.DomRepository>().Common.Log.Query()
+                    .Where(log => log.TableName == "TestRowPermissions.AutoFilter" && log.Action == "RowPermissions filter");
+
+                var testData = new[] { "a1", "a2", "b1", "b2" }.Select(name => new TestRowPermissions.AutoFilter { Name = name });
+                gr.Save(testData, null, gr.Read());
+
+                int lastFilterCount = logFilterQuery.Count();
+
+                {
+                    var readCommand = new ReadCommandInfo
+                    {
+                        DataSource = "TestRowPermissions.AutoFilter",
+                        ReadRecords = true
+                    };
+                    var readResult = (TestRowPermissions.AutoFilter[])gr.ExecuteReadCommand(readCommand).Records;
+                    Assert.AreEqual("a1, a2", TestUtility.DumpSorted(readResult, item => item.Name));
+
+                    Assert.AreEqual(1, logFilterQuery.Count() - lastFilterCount,
+                        "Row permission filter should be automatically applied on reading, no need to be applied again on result permission validation.");
+                    lastFilterCount = logFilterQuery.Count();
+                }
+
+                {
+                    var readCommand = new ReadCommandInfo
+                    {
+                        DataSource = "TestRowPermissions.AutoFilter",
+                        ReadRecords = true,
+                        Filters = new FilterCriteria[] { new FilterCriteria("Name", "contains", "2") }
+                    };
+                    var readResult = (TestRowPermissions.AutoFilter[])gr.ExecuteReadCommand(readCommand).Records;
+                    Assert.AreEqual("a2", TestUtility.DumpSorted(readResult, item => item.Name));
+
+                    Assert.AreEqual(1, logFilterQuery.Count() - lastFilterCount,
+                        "Row permission filter should be automatically applied on reading, no need to be use it again for result permission validation.");
+                    lastFilterCount = logFilterQuery.Count();
+                }
+
+                {
+                    var readCommand = new ReadCommandInfo
+                    {
+                        DataSource = "TestRowPermissions.AutoFilter",
+                        ReadRecords = true,
+                        Filters = new FilterCriteria[] { new FilterCriteria("Name", "contains", "2"), new FilterCriteria(typeof(Common.RowPermissionsAllowedItems)) }
+                    };
+                    var readResult = (TestRowPermissions.AutoFilter[])gr.ExecuteReadCommand(readCommand).Records;
+                    Assert.AreEqual("a2", TestUtility.DumpSorted(readResult, item => item.Name));
+
+                    Assert.AreEqual(1, logFilterQuery.Count() - lastFilterCount,
+                        "Row permission filter should be automatically applied on reading, no need to be use it again for result permission validation.");
+                    lastFilterCount = logFilterQuery.Count();
+                }
+
+                {
+                    var readCommand = new ReadCommandInfo
+                    {
+                        DataSource = "TestRowPermissions.AutoFilter",
+                        ReadRecords = true,
+                        Filters = new FilterCriteria[] { new FilterCriteria(typeof(Common.RowPermissionsAllowedItems)), new FilterCriteria("Name", "contains", "2") }
+                    };
+                    var readResult = (TestRowPermissions.AutoFilter[])gr.ExecuteReadCommand(readCommand).Records;
+                    Assert.AreEqual("a2", TestUtility.DumpSorted(readResult, item => item.Name));
+
+                    Assert.AreEqual(2, logFilterQuery.Count() - lastFilterCount,
+                        "Row permission filter is not the last filter applied on reading. It will be use again for result permission validation to make sure other filters did not expand the result set.");
+                    lastFilterCount = logFilterQuery.Count();
                 }
             }
         }
