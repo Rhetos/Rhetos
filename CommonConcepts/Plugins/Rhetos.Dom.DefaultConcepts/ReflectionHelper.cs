@@ -341,6 +341,11 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         private Dictionary<Type, MethodInfo> _repositoryQueryableFilterMethod = null;
+        /// <summary>
+        /// Retrieves MethodInfo for Queryable Filter on the Entity with the specified parameterType, returns null if none exists
+        /// </summary>
+        /// <param name="parameterType"></param>
+        /// <returns></returns>
         public MethodInfo RepositoryQueryableFilterMethod(Type parameterType)
         {
             MethodInfo method = null;

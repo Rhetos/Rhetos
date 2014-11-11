@@ -1,0 +1,50 @@
+Module TestRowPermissions
+{
+	Entity NoRP
+	{
+		Integer value;
+		ItemFilter Value30 'item => item.value > 30';
+	}
+	
+	Entity SimpleRP
+	{
+		Integer value;
+		RowPermissions '(source, repo, context) => source.Where(a => a.value >= 1500).Where(a => a.value <= 2500)';
+		ItemFilter Value30 'item => item.value > 30';
+	}
+	
+	Entity ComplexRP
+	{
+		Integer value;
+		ItemFilter Value10 'item => item.value > 10';
+	}
+	
+	Entity ComplexRPPermissions
+	{
+		ShortString userName;
+		Integer minVal;
+		Integer maxVal;
+	}
+	
+	RowPermissions ComplexRP '(source, repos, context) =>
+		{
+			var perms = repos.TestRowPermissions.ComplexRPPermissions.Query().Where(a => a.userName == context.UserInfo.UserName).ToList().SingleOrDefault();
+			if (perms == null) return new TestRowPermissions.ComplexRP [] { }.AsQueryable();
+			
+			return source.Where(a => a.value >= perms.minVal && a.value <= perms.maxVal);
+		}';
+		
+	Entity AutoFilter
+	{
+		ShortString Name;
+		RowPermissions '(source, repository, context) =>
+			{
+				repository.Common.AddToLog.Execute(new Common.AddToLog {
+					TableName = "TestRowPermissions.AutoFilter",
+					Action = "RowPermissions filter" });
+				
+				return source.Where(item => item.Name.StartsWith("a"));
+			}';
+		ApplyFilterOnClientRead 'Common.RowPermissionsAllowedItems';
+	}
+}

@@ -27,6 +27,8 @@ using Rhetos.TestCommon;
 using Rhetos.Processing.DefaultCommands;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
+using Rhetos.Processing;
+using System.Linq.Expressions;
 
 namespace CommonConcepts.Test
 {
@@ -466,6 +468,220 @@ namespace CommonConcepts.Test
 
                 Assert.AreEqual(currentUserName,
                     repository.TestFilter.FixedData.Filter(new TestFilter.ComposableFilterWithContext()).Single().Name);
+            }
+        }
+
+        [TestMethod]
+        public void ExternalFilterType()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                repository.TestFilter.ExternalFilter.Delete(repository.TestFilter.ExternalFilter.All());
+                repository.TestFilter.ExternalFilter.Insert(
+                    new[] { "str", "snull", "date", "dnull", "ddef" }
+                    .Select(name => new TestFilter.ExternalFilter { Name = name }));
+
+                var tests = new List<Tuple<Type, object, string>>
+                {
+                    Tuple.Create<Type, object, string>(null, "abc", "str"),
+                    Tuple.Create<Type, object, string>(typeof(string), null, "snull"),
+                    Tuple.Create<Type, object, string>(null, DateTime.Now, "date"),
+                    Tuple.Create<Type, object, string>(typeof(DateTime), null, "ddef"), // A value type instance cannot be null.
+                    Tuple.Create<Type, object, string>(typeof(DateTime), default(DateTime), "ddef"),
+                };
+
+                var gr = container.Resolve<GenericRepository<TestFilter.ExternalFilter>>();
+
+                foreach (var test in tests)
+                {
+                    Type filterType = test.Item1 ?? test.Item2.GetType();
+
+                    string testReport = filterType.FullName + ": " + test.Item2;
+                    Console.WriteLine(testReport);
+
+                    {
+                        var reposReadResult = gr.Read(test.Item2, filterType);
+                        Assert.AreEqual(
+                            test.Item3,
+                            TestUtility.DumpSorted(reposReadResult, item => item.Name),
+                            "ReadRepos: " + testReport);
+                    }
+
+                    {
+                        var readCommand = new ReadCommandInfo
+                        {
+                            DataSource = "TestFilter.ExternalFilter",
+                            Filters = new FilterCriteria[] { new FilterCriteria {
+                                Filter = filterType.FullName,
+                                Value = test.Item2 } },
+                            ReadRecords = true
+                        };
+                        
+                        var commandResult = (TestFilter.ExternalFilter[])gr.ExecuteReadCommand(readCommand).Records;
+                        Assert.AreEqual(
+                            test.Item3,
+                            TestUtility.DumpSorted(commandResult, item => item.Name),
+                            "ReadCommand: " + testReport);
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void AutoFilter_NoEffectOnServerObjectModel()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                repository.TestFilter.AutoFilter1.Delete(repository.TestFilter.AutoFilter1.All());
+                repository.TestFilter.AutoFilter2.Delete(repository.TestFilter.AutoFilter2.All());
+
+                repository.TestFilter.AutoFilter1.Insert(
+                    new[] { "a1", "a2", "b1", "b2" }
+                    .Select(name => new TestFilter.AutoFilter1 { Name = name }));
+
+                repository.TestFilter.AutoFilter2.Insert(
+                    new[] { "a1", "a2", "b1", "b2" }
+                    .Select(name => new TestFilter.AutoFilter2 { Name = name }));
+
+                Assert.AreEqual("a1, a2, b1, b2", TestUtility.DumpSorted(repository.TestFilter.AutoFilter1.All(), item => item.Name));
+                Assert.AreEqual("a1, a2, b1, b2", TestUtility.DumpSorted(repository.TestFilter.AutoFilter2.All(), item => item.Name));
+                Assert.AreEqual("a1, a2, b1, b2", TestUtility.DumpSorted(repository.TestFilter.AutoFilter2Browse.All(), item => item.Name2));
+
+                var gr = container.Resolve<GenericRepositories>();
+
+                Assert.AreEqual("a1, a2, b1, b2", TestUtility.DumpSorted(gr.GetGenericRepository<TestFilter.AutoFilter1>().Read(), item => item.Name));
+                Assert.AreEqual("a1, a2, b1, b2", TestUtility.DumpSorted(gr.GetGenericRepository<TestFilter.AutoFilter2>().Read(), item => item.Name));
+                Assert.AreEqual("a1, a2, b1, b2", TestUtility.DumpSorted(gr.GetGenericRepository<TestFilter.AutoFilter2Browse>().Read(), item => item.Name2));
+            }
+        }
+
+        [TestMethod]
+        public void AutoFilter_Simple()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                repository.TestFilter.AutoFilter1.Delete(repository.TestFilter.AutoFilter1.All());
+                repository.TestFilter.AutoFilter2.Delete(repository.TestFilter.AutoFilter2.All());
+
+                repository.TestFilter.AutoFilter1.Insert(
+                    new[] { "a1", "a2", "b1", "b2" }
+                    .Select(name => new TestFilter.AutoFilter1 { Name = name }));
+
+                repository.TestFilter.AutoFilter2.Insert(
+                    new[] { "a1", "a2", "b1", "b2" }
+                    .Select(name => new TestFilter.AutoFilter2 { Name = name }));
+
+                var gr = container.Resolve<GenericRepositories>();
+
+                TestClientRead<TestFilter.AutoFilter1>(gr, "a1, a2", item => item.Name);
+                TestClientRead<TestFilter.AutoFilter2>(gr, "a1, a2, b1, b2", item => item.Name);
+                TestClientRead<TestFilter.AutoFilter2Browse>(gr, "b1x, b2x", item => item.Name2);
+            }
+        }
+
+        private static void TestClientRead<T>(GenericRepositories gr, string expected, Func<T, object> reporter, ReadCommandInfo readCommand = null)
+            where T : class, IEntity
+        {
+            readCommand = readCommand ?? new ReadCommandInfo();
+            readCommand.DataSource = typeof(T).FullName;
+            readCommand.ReadRecords = true;
+
+            var loaded = gr.GetGenericRepository<T>().ExecuteReadCommand(readCommand).Records;
+            var report = loaded.Select(item => reporter((T)item).ToString());
+            if (readCommand.OrderByProperties == null)
+                report = report.OrderBy(x => x);
+            Assert.AreEqual(expected, string.Join(", ", report));
+        }
+
+        [TestMethod]
+        public void AutoFilter_Complex()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                repository.TestFilter.AutoFilter1.Delete(repository.TestFilter.AutoFilter1.All());
+                repository.TestFilter.AutoFilter2.Delete(repository.TestFilter.AutoFilter2.All());
+
+                repository.TestFilter.AutoFilter1.Insert(
+                    new[] { "a1", "a2", "b1", "b2" }
+                    .Select(name => new TestFilter.AutoFilter1 { Name = name }));
+
+                repository.TestFilter.AutoFilter2.Insert(
+                    new[] { "a1", "a2", "b1", "b2" }
+                    .Select(name => new TestFilter.AutoFilter2 { Name = name }));
+
+                var gr = container.Resolve<GenericRepositories>();
+
+                var readCommand = new ReadCommandInfo
+                {
+                    Filters = new FilterCriteria[] { new FilterCriteria("Name", "contains", "2") },
+                    OrderByProperties = new OrderByProperty[] { new OrderByProperty { Property = "Name", Descending = true } },
+                    ReadTotalCount = true,
+                    Top = 1
+                };
+                TestClientRead<TestFilter.AutoFilter1>(gr, "a2", item => item.Name, readCommand);
+
+                readCommand = new ReadCommandInfo
+                {
+                    Filters = new FilterCriteria[] { new FilterCriteria("Name2", "contains", "2") },
+                    OrderByProperties = new OrderByProperty[] { new OrderByProperty { Property = "Name2", Descending = true } },
+                    ReadTotalCount = true,
+                    Top = 1
+                };
+                TestClientRead<TestFilter.AutoFilter2Browse>(gr, "b2x", item => item.Name2, readCommand);
+            }
+        }
+
+        [TestMethod]
+        public void AutoFilter_NoRedundantAutoFilter()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                repository.TestFilter.AutoFilter1.Delete(repository.TestFilter.AutoFilter1.All());
+                repository.TestFilter.AutoFilter2.Delete(repository.TestFilter.AutoFilter2.All());
+
+                repository.TestFilter.AutoFilter1.Insert(
+                    new[] { "a1", "a2", "b1", "b2" }
+                    .Select(name => new TestFilter.AutoFilter1 { Name = name }));
+
+                repository.TestFilter.AutoFilter2.Insert(
+                    new[] { "a1", "a2", "b1", "b2" }
+                    .Select(name => new TestFilter.AutoFilter2 { Name = name }));
+
+                var gr = container.Resolve<GenericRepositories>();
+
+                // Number of 'x' characters in the Name property shows how many times the filter was applied.
+                // Auto filter should not be applied if the filter was already manually applied.
+
+                var readCommand = new ReadCommandInfo
+                {
+                    Filters = new FilterCriteria[] {
+                        new FilterCriteria("Name2", "contains", "2"),
+                        new FilterCriteria(typeof(string)) },
+                    OrderByProperties = new OrderByProperty[] { new OrderByProperty { Property = "Name2", Descending = true } },
+                    ReadTotalCount = true,
+                    Top = 1
+                };
+                TestClientRead<TestFilter.AutoFilter2Browse>(gr, "b2x", item => item.Name2, readCommand);
+
+                // Same filter manually applied multiple times.
+
+                readCommand = new ReadCommandInfo
+                {
+                    Filters = new FilterCriteria[] {
+                        new FilterCriteria("Name2", "contains", "2"),
+                        new FilterCriteria(typeof(string)),
+                        new FilterCriteria("abc") },
+                    OrderByProperties = new OrderByProperty[] { new OrderByProperty { Property = "Name2", Descending = true } },
+                    ReadTotalCount = true,
+                    Top = 1
+                };
+                TestClientRead<TestFilter.AutoFilter2Browse>(gr, "b2xx", item => item.Name2, readCommand);
             }
         }
     }

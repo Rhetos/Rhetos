@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
 namespace Rhetos.Dom.DefaultConcepts
 {
     /// <summary>
@@ -29,13 +30,13 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         /// <summary>
         /// Property name.
-        /// Either "Property" or "Filter" should be set.
+        /// Either "Property" or "Filter" member should be set.
         /// </summary>
         public string Property { get; set; }
 
         /// <summary>
         /// Predefined filter name (filter type). May be a data structure name form DSL script (Common.Principal, e.g.).
-        /// Either "Property" or "Filter" should be set.
+        /// Either "Property" or "Filter" member should be set.
         /// </summary>
         public string Filter { get; set; }
 
@@ -49,5 +50,36 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Optional when Filter is set.
         /// </summary>
         public object Value { get; set; }
+
+        /// <summary>
+        /// Create a property filter.
+        /// </summary>
+        public FilterCriteria(string property, string operation, object value)
+        {
+            Property = property;
+            Operation = operation;
+            Value = value;
+        }
+
+        /// <summary>
+        /// Create a predefined filter.
+        /// </summary>
+        public FilterCriteria(Type filterType)
+        {
+            Filter = filterType.FullName;
+        }
+
+        /// <summary>
+        /// Create a predefined filter.
+        /// </summary>
+        public FilterCriteria(object filterValue)
+        {
+            Filter = filterValue.GetType().FullName;
+            Value = filterValue;
+        }
+
+        public FilterCriteria()
+        {
+        }
     }
 }

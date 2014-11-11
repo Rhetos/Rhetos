@@ -45,6 +45,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private readonly ILogProvider _logProvider;
         private readonly IPersistenceTransaction _persistenceTransaction;
         private readonly GenericFilterHelper _genericFilterHelper;
+        private readonly IApplyFiltersOnClientRead _applyFiltersOnClientRead;
 
         public GenericRepositories(
             IDomainObjectModel domainObjectModel,
@@ -52,7 +53,8 @@ namespace Rhetos.Dom.DefaultConcepts
             IRegisteredInterfaceImplementations registeredInterfaceImplementations,
             ILogProvider logProvider,
             IPersistenceTransaction persistenceTransaction,
-            GenericFilterHelper genericFilterHelper)
+            GenericFilterHelper genericFilterHelper,
+            IApplyFiltersOnClientRead applyFiltersOnClientRead)
         {
             _domainObjectModel = domainObjectModel;
             _repositories = repositories;
@@ -60,6 +62,7 @@ namespace Rhetos.Dom.DefaultConcepts
             _logProvider = logProvider;
             _persistenceTransaction = persistenceTransaction;
             _genericFilterHelper = genericFilterHelper;
+            _applyFiltersOnClientRead = applyFiltersOnClientRead;
         }
 
         public GenericRepository<TEntityInterface> GetGenericRepository<TEntityInterface>()
@@ -71,7 +74,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 _registeredInterfaceImplementations,
                 _logProvider,
                 _persistenceTransaction,
-                _genericFilterHelper);
+                _genericFilterHelper,
+                _applyFiltersOnClientRead);
         }
 
         public GenericRepository<IEntity> GetGenericRepository(string entityName)
@@ -82,7 +86,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 entityName,
                 _logProvider,
                 _persistenceTransaction,
-                _genericFilterHelper);
+                _genericFilterHelper,
+                _applyFiltersOnClientRead);
         }
 
         public string GetEntityName<TEntityInterface>()

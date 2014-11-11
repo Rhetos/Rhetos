@@ -50,6 +50,8 @@ namespace Rhetos.Dom.DefaultConcepts
         private readonly ILogger _performanceLogger;
         private readonly IPersistenceTransaction _persistenceTransaction;
         private readonly GenericFilterHelper _genericFilterHelper;
+        private readonly IDomainObjectModel _domainObjectModel;
+        private readonly IApplyFiltersOnClientRead _applyFiltersOnClientRead;
 
         private readonly string _repositoryName;
         private readonly Lazy<IRepository> _repository;
@@ -66,8 +68,9 @@ namespace Rhetos.Dom.DefaultConcepts
             IRegisteredInterfaceImplementations registeredInterfaceImplementations,
             ILogProvider logProvider,
             IPersistenceTransaction persistenceTransaction,
-            GenericFilterHelper genericFilterHelper)
-            : this(domainObjectModel, repositories, InitializeEntityName(registeredInterfaceImplementations), logProvider, persistenceTransaction, genericFilterHelper)
+            GenericFilterHelper genericFilterHelper,
+            IApplyFiltersOnClientRead applyFiltersOnClientRead)
+            : this(domainObjectModel, repositories, InitializeEntityName(registeredInterfaceImplementations), logProvider, persistenceTransaction, genericFilterHelper, applyFiltersOnClientRead)
         {
         }
 
@@ -77,7 +80,8 @@ namespace Rhetos.Dom.DefaultConcepts
             string entityName,
             ILogProvider logProvider,
             IPersistenceTransaction persistenceTransaction,
-            GenericFilterHelper genericFilterHelper)
+            GenericFilterHelper genericFilterHelper,
+            IApplyFiltersOnClientRead applyFiltersOnClientRead)
         {
             EntityName = entityName;
             _repositoryName = "GenericRepository(" + EntityName + ")";
@@ -86,6 +90,8 @@ namespace Rhetos.Dom.DefaultConcepts
             _performanceLogger = logProvider.GetLogger("Performance");
             _persistenceTransaction = persistenceTransaction;
             _genericFilterHelper = genericFilterHelper;
+            _domainObjectModel = domainObjectModel;
+            _applyFiltersOnClientRead = applyFiltersOnClientRead;
 
             _repository = new Lazy<IRepository>(() => InitializeRepository(repositories));
             _reflection = new ReflectionHelper<TEntityInterface>(EntityName, domainObjectModel, _repository);
@@ -226,7 +232,6 @@ namespace Rhetos.Dom.DefaultConcepts
         public IEnumerable<TEntityInterface> ReadNonMaterialized(object parameter, Type parameterType, bool preferQuery)
         {
             // Use Filter(parameter), Query(parameter) or Filter(Query(), parameter), if any option exists
-
             ReadingOption filterWithParameter = () =>
             {
                 var reader = _reflection.RepositoryLoadWithParameterMethod(parameterType);
@@ -380,42 +385,154 @@ namespace Rhetos.Dom.DefaultConcepts
             return items ?? ReadNonMaterialized(new FilterAll(), preferQuery: preferQuery);
         }
 
+        private IEnumerable<T> GetSubset<T>(T[] source, int startIndex, int endIndex)
+        {
+            while (startIndex < endIndex) yield return source[startIndex++];
+        }
+
+        IEnumerable<IEnumerable<T>> GetChunks<T>(T[] source, int chunkSize)
+        {
+            int start = 0;
+            while (start < source.Length)
+            {
+                int end = Math.Min(start + chunkSize, source.Length);
+                yield return GetSubset(source, start, end);
+                start += chunkSize;
+            }
+        }
+
+        /// <summary>
+        /// Checks if RowPermissions concept is present and validates all items are included. Works with materialized items.
+        /// </summary>
+        /// <param name="materialized"></param>
+        private void ValidateRowPermissions(TEntityInterface[] materialized)
+        {
+            int _batchSize = 2000; // true NHibernate/SQL limit is probably 2100
+
+            Type filterType = _domainObjectModel.Assembly.GetType(RowPermissionsInfo.FilterName);
+
+            var filterMethodInfo = _reflection.RepositoryQueryableFilterMethod(filterType);
+
+            if (filterMethodInfo != null)
+            { 
+                _logger.Trace(() => string.Format("Found row permissions filter, checking if all items are allowed (with batchSize = {0}).", _batchSize));
+
+                var allowedItems = ((IQueryable<TEntityInterface>)ReadNonMaterialized(null, filterType, true)).Select(a => a.ID);
+                var batches = GetChunks(materialized, _batchSize);
+                
+                foreach (var batch in batches)
+                {
+                    var preparedIDs = batch.Select(a => a.ID).Distinct().ToList();
+                    var allowedCount = allowedItems.Where(a => preparedIDs.Contains(a)).Distinct().Count();
+                    _logger.Trace(() => string.Format("Row permission batch test; distinct requested: {0}, distinct allowed: {1}", preparedIDs.Count, allowedCount));
+                    
+                    if (preparedIDs.Count != allowedCount)
+                        throw new UserException("Insufficient permissions to access some or all of the data requested.", "DataStructure:" + _reflection.EntityType.ToString() + ".");
+                }
+            }
+        }
+
         public ReadCommandResult ExecuteReadCommand(ReadCommandInfo commandInfo)
         {
             if (!commandInfo.ReadRecords && !commandInfo.ReadTotalCount)
-                throw new ArgumentException("Invalid ReadCommand argument: At least one of the properties ReadRecords or ReadTotalCount should be set to true.");
+                throw new ClientException("Invalid ReadCommand argument: At least one of the properties ReadRecords or ReadTotalCount should be set to true.");
 
             if (commandInfo.Top  < 0)
-                throw new ArgumentException("Invalid ReadCommand argument: Top parameter must not be negative.");
+                throw new ClientException("Invalid ReadCommand argument: Top parameter must not be negative.");
 
             if (commandInfo.Skip < 0)
-                throw new ArgumentException("Invalid ReadCommand argument: Skip parameter must not be negative.");
+                throw new ClientException("Invalid ReadCommand argument: Skip parameter must not be negative.");
+
+            AutoApplyFilters(commandInfo);
+
+            ReadCommandResult result;
 
             var specificMethod = _reflection.RepositoryReadCommandMethod;
             if (specificMethod != null)
-                return (ReadCommandResult)specificMethod.InvokeEx(_repository.Value, commandInfo);
-
-            bool pagingIsUsed = commandInfo.Top > 0 || commandInfo.Skip > 0;
-
-            IEnumerable<TEntityInterface> filtered = ReadNonMaterialized(commandInfo.Filters ?? new FilterCriteria[] { }, preferQuery: pagingIsUsed || !commandInfo.ReadRecords);
-
-            object[] resultRecords = null;
-            int? totalCount = null;
-
-            if (commandInfo.ReadRecords)
-                resultRecords = (object[])_reflection.ToArrayOfEntity(_genericFilterHelper.SortAndPaginate(_reflection.AsQueryable(filtered), commandInfo));
-
-            if (commandInfo.ReadTotalCount)
-                if (pagingIsUsed)
-                    totalCount = SmartCount(filtered);
-                else
-                    totalCount = resultRecords != null ? resultRecords.Length : SmartCount(filtered);
-
-            return new ReadCommandResult
+                result = (ReadCommandResult)specificMethod.InvokeEx(_repository.Value, commandInfo);
+            else
             {
-                Records = resultRecords,
-                TotalCount = totalCount
-            };
+                bool pagingIsUsed = commandInfo.Top > 0 || commandInfo.Skip > 0;
+
+                IEnumerable<TEntityInterface> filtered = ReadNonMaterialized(commandInfo.Filters ?? new FilterCriteria[] { }, preferQuery: pagingIsUsed || !commandInfo.ReadRecords);
+
+                TEntityInterface[] resultRecords = null;
+                int? totalCount = null;
+
+                if (commandInfo.ReadRecords)
+                    resultRecords = (TEntityInterface[])_reflection.ToArrayOfEntity(_genericFilterHelper.SortAndPaginate(_reflection.AsQueryable(filtered), commandInfo));
+
+                if (commandInfo.ReadTotalCount)
+                    if (pagingIsUsed)
+                        totalCount = SmartCount(filtered);
+                    else
+                        totalCount = resultRecords != null ? resultRecords.Length : SmartCount(filtered);
+
+                result = new ReadCommandResult
+                {
+                    Records = resultRecords,
+                    TotalCount = totalCount
+                };
+            }
+
+            if (ShouldValidateRowPermissions(commandInfo, result))
+                ValidateRowPermissions((TEntityInterface[])result.Records);
+
+            return result;
+        }
+
+        private bool ShouldValidateRowPermissions(ReadCommandInfo readCommand, ReadCommandResult readResult)
+        {
+            if (readResult.Records == null)
+                return false;
+
+            if (readCommand.Filters != null)
+            {
+                int lastRowPermissionFilter = -1;
+                for (int f = readCommand.Filters.Length - 1; f >= 0; f--)
+                    if (EqualsSimpleFilter(readCommand.Filters[f], RowPermissionsInfo.FilterName))
+                    {
+                        lastRowPermissionFilter = f;
+                        break;
+                    }
+
+                if (lastRowPermissionFilter == readCommand.Filters.Length - 1)
+                {
+                    _logger.Trace(() => "Last filter is '" + RowPermissionsInfo.FilterName + "', skipping ValidateRowPermissions.");
+                    return false;
+                }
+
+                if (lastRowPermissionFilter >= 0)
+                    _logger.Trace(() => "Warning: Improve performance by moving '" + RowPermissionsInfo.FilterName + "' to last position, in order to skip ValidateRowPermissions.");
+            }
+
+            return true;
+        }
+
+        private void AutoApplyFilters(ReadCommandInfo commandInfo)
+        {
+            List<string> filterNames;
+            if (_applyFiltersOnClientRead.TryGetValue(EntityName, out filterNames))
+            {
+                commandInfo.Filters = commandInfo.Filters ?? new FilterCriteria[] { };
+
+                var newFilters = filterNames
+                    .Where(name => !commandInfo.Filters.Any(existingFilter => EqualsSimpleFilter(existingFilter, name)))
+                    .Select(name => new FilterCriteria { Filter = name })
+                    .ToList();
+
+                _logger.Trace(() => "AutoApplyFilters: " + string.Join(", ", newFilters.Select(f => f.Filter)));
+
+                commandInfo.Filters = commandInfo.Filters.Concat(newFilters).ToArray();
+            }
+        }
+
+        private static bool EqualsSimpleFilter(FilterCriteria filter, string filterName)
+        {
+            return filter.Filter == filterName
+                && filter.Value == null
+                && (string.IsNullOrEmpty(filter.Operation)
+                    || string.Equals(filter.Operation, GenericFilterHelper.FilterOperationMatches, StringComparison.OrdinalIgnoreCase));
         }
 
         private static int SmartCount(IEnumerable<TEntityInterface> items)
