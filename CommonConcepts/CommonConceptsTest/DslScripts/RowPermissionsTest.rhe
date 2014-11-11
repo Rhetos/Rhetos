@@ -34,4 +34,17 @@ Module TestRowPermissions
 			return source.Where(a => a.value >= perms.minVal && a.value <= perms.maxVal);
 		}';
 		
+	Entity AutoFilter
+	{
+		ShortString Name;
+		RowPermissions '(source, repository, context) =>
+			{
+				repository.Common.AddToLog.Execute(new Common.AddToLog {
+					TableName = "TestRowPermissions.AutoFilter",
+					Action = "RowPermissions filter" });
+				
+				return source.Where(item => item.Name.StartsWith("a"));
+			}';
+		ApplyFilterOnClientRead 'Common.RowPermissionsAllowedItems';
+	}
 }

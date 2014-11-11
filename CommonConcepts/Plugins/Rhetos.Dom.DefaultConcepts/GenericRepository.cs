@@ -409,13 +409,13 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             int _batchSize = 2000; // true NHibernate/SQL limit is probably 2100
 
-            Type filterType = _domainObjectModel.Assembly.GetType(RowPermissionsInfo.FilterParameter.GetKeyProperties());
+            Type filterType = _domainObjectModel.Assembly.GetType(RowPermissionsInfo.FilterName);
 
             var filterMethodInfo = _reflection.RepositoryQueryableFilterMethod(filterType);
 
             if (filterMethodInfo != null)
             { 
-                _logger.Trace(() => string.Format("Found row permissions filter, checking if all items are allowed (with batchSize = {0}.", _batchSize));
+                _logger.Trace(() => string.Format("Found row permissions filter, checking if all items are allowed (with batchSize = {0}).", _batchSize));
 
                 var allowedItems = ((IQueryable<TEntityInterface>)ReadNonMaterialized(null, filterType, true)).Select(a => a.ID);
                 var batches = GetChunks(materialized, _batchSize);
@@ -435,13 +435,13 @@ namespace Rhetos.Dom.DefaultConcepts
         public ReadCommandResult ExecuteReadCommand(ReadCommandInfo commandInfo)
         {
             if (!commandInfo.ReadRecords && !commandInfo.ReadTotalCount)
-                throw new ArgumentException("Invalid ReadCommand argument: At least one of the properties ReadRecords or ReadTotalCount should be set to true.");
+                throw new ClientException("Invalid ReadCommand argument: At least one of the properties ReadRecords or ReadTotalCount should be set to true.");
 
             if (commandInfo.Top  < 0)
-                throw new ArgumentException("Invalid ReadCommand argument: Top parameter must not be negative.");
+                throw new ClientException("Invalid ReadCommand argument: Top parameter must not be negative.");
 
             if (commandInfo.Skip < 0)
-                throw new ArgumentException("Invalid ReadCommand argument: Skip parameter must not be negative.");
+                throw new ClientException("Invalid ReadCommand argument: Skip parameter must not be negative.");
 
             AutoApplyFilters(commandInfo);
 
@@ -475,9 +475,38 @@ namespace Rhetos.Dom.DefaultConcepts
                 };
             }
 
-            if (result.Records != null)
+            if (ShouldValidateRowPermissions(commandInfo, result))
                 ValidateRowPermissions((TEntityInterface[])result.Records);
+
             return result;
+        }
+
+        private bool ShouldValidateRowPermissions(ReadCommandInfo readCommand, ReadCommandResult readResult)
+        {
+            if (readResult.Records == null)
+                return false;
+
+            if (readCommand.Filters != null)
+            {
+                int lastRowPermissionFilter = -1;
+                for (int f = readCommand.Filters.Length - 1; f >= 0; f--)
+                    if (EqualsSimpleFilter(readCommand.Filters[f], RowPermissionsInfo.FilterName))
+                    {
+                        lastRowPermissionFilter = f;
+                        break;
+                    }
+
+                if (lastRowPermissionFilter == readCommand.Filters.Length - 1)
+                {
+                    _logger.Trace(() => "Last filter is '" + RowPermissionsInfo.FilterName + "', skipping ValidateRowPermissions.");
+                    return false;
+                }
+
+                if (lastRowPermissionFilter >= 0)
+                    _logger.Trace(() => "Warning: Improve performance by moving '" + RowPermissionsInfo.FilterName + "' to last position, in order to skip ValidateRowPermissions.");
+            }
+
+            return true;
         }
 
         private void AutoApplyFilters(ReadCommandInfo commandInfo)
@@ -488,10 +517,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 commandInfo.Filters = commandInfo.Filters ?? new FilterCriteria[] { };
 
                 var newFilters = filterNames
-                    .Where(name => !commandInfo.Filters.Any(existingFilter =>
-                        existingFilter.Filter == name
-                        && existingFilter.Value == null
-                        && string.IsNullOrEmpty(existingFilter.Operation)))
+                    .Where(name => !commandInfo.Filters.Any(existingFilter => EqualsSimpleFilter(existingFilter, name)))
                     .Select(name => new FilterCriteria { Filter = name })
                     .ToList();
 
@@ -499,6 +525,14 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 commandInfo.Filters = commandInfo.Filters.Concat(newFilters).ToArray();
             }
+        }
+
+        private static bool EqualsSimpleFilter(FilterCriteria filter, string filterName)
+        {
+            return filter.Filter == filterName
+                && filter.Value == null
+                && (string.IsNullOrEmpty(filter.Operation)
+                    || string.Equals(filter.Operation, GenericFilterHelper.FilterOperationMatches, StringComparison.OrdinalIgnoreCase));
         }
 
         private static int SmartCount(IEnumerable<TEntityInterface> items)

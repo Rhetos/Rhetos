@@ -30,7 +30,8 @@ namespace Rhetos.Dsl.DefaultConcepts
     [ConceptKeyword("RowPermissions")]
     public class RowPermissionsInfo : ComposableFilterByInfo, IMacroConcept, IAlternativeInitializationConcept
     {
-        public static ParameterInfo FilterParameter = new ParameterInfo { Module = new ModuleInfo { Name = "Common" }, Name = "RowPermissionsAllowedItems" };
+        public static readonly ParameterInfo FilterParameter = new ParameterInfo { Module = new ModuleInfo { Name = "Common" }, Name = "RowPermissionsAllowedItems" };
+        public static readonly string FilterName = FilterParameter.Module.Name + "." + FilterParameter.Name;
 
         public string SimplifiedExpression { get; set; }
 
@@ -41,7 +42,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
-            Parameter = FilterParameter.GetKeyProperties();
+            Parameter = FilterName;
             Expression = ReformatLambdaExpression(SimplifiedExpression);
             createdConcepts = null;
         }

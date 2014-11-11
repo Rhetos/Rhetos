@@ -368,7 +368,7 @@ namespace CommonConcepts.Test
                         DataSource = "TestRowPermissions.ComplexRP",
                         ReadRecords = true,
                         Filters = new FilterCriteria[]
-                        { 
+                        {
                             new FilterCriteria() { Property = "ID", Operation = "equal", Value = items[90].ID },
                         }
                     };
@@ -388,6 +388,81 @@ namespace CommonConcepts.Test
                         }
                     };
                     TestUtility.ShouldFail(() => gRepository.ExecuteReadCommand(cSingleFail), _exceptionText);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void AutoApplyFilter()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var gr = container.Resolve<GenericRepository<TestRowPermissions.AutoFilter>>();
+                var logFilterQuery = container.Resolve<Common.DomRepository>().Common.Log.Query()
+                    .Where(log => log.TableName == "TestRowPermissions.AutoFilter" && log.Action == "RowPermissions filter");
+
+                var testData = new[] { "a1", "a2", "b1", "b2" }.Select(name => new TestRowPermissions.AutoFilter { Name = name });
+                gr.Save(testData, null, gr.Read());
+
+                int lastFilterCount = logFilterQuery.Count();
+
+                {
+                    var readCommand = new ReadCommandInfo
+                    {
+                        DataSource = "TestRowPermissions.AutoFilter",
+                        ReadRecords = true
+                    };
+                    var readResult = (TestRowPermissions.AutoFilter[])gr.ExecuteReadCommand(readCommand).Records;
+                    Assert.AreEqual("a1, a2", TestUtility.DumpSorted(readResult, item => item.Name));
+
+                    Assert.AreEqual(1, logFilterQuery.Count() - lastFilterCount,
+                        "Row permission filter should be automatically applied on reading, no need to be applied again on result permission validation.");
+                    lastFilterCount = logFilterQuery.Count();
+                }
+
+                {
+                    var readCommand = new ReadCommandInfo
+                    {
+                        DataSource = "TestRowPermissions.AutoFilter",
+                        ReadRecords = true,
+                        Filters = new FilterCriteria[] { new FilterCriteria("Name", "contains", "2") }
+                    };
+                    var readResult = (TestRowPermissions.AutoFilter[])gr.ExecuteReadCommand(readCommand).Records;
+                    Assert.AreEqual("a2", TestUtility.DumpSorted(readResult, item => item.Name));
+
+                    Assert.AreEqual(1, logFilterQuery.Count() - lastFilterCount,
+                        "Row permission filter should be automatically applied on reading, no need to be use it again for result permission validation.");
+                    lastFilterCount = logFilterQuery.Count();
+                }
+
+                {
+                    var readCommand = new ReadCommandInfo
+                    {
+                        DataSource = "TestRowPermissions.AutoFilter",
+                        ReadRecords = true,
+                        Filters = new FilterCriteria[] { new FilterCriteria("Name", "contains", "2"), new FilterCriteria(typeof(Common.RowPermissionsAllowedItems)) }
+                    };
+                    var readResult = (TestRowPermissions.AutoFilter[])gr.ExecuteReadCommand(readCommand).Records;
+                    Assert.AreEqual("a2", TestUtility.DumpSorted(readResult, item => item.Name));
+
+                    Assert.AreEqual(1, logFilterQuery.Count() - lastFilterCount,
+                        "Row permission filter should be automatically applied on reading, no need to be use it again for result permission validation.");
+                    lastFilterCount = logFilterQuery.Count();
+                }
+
+                {
+                    var readCommand = new ReadCommandInfo
+                    {
+                        DataSource = "TestRowPermissions.AutoFilter",
+                        ReadRecords = true,
+                        Filters = new FilterCriteria[] { new FilterCriteria(typeof(Common.RowPermissionsAllowedItems)), new FilterCriteria("Name", "contains", "2") }
+                    };
+                    var readResult = (TestRowPermissions.AutoFilter[])gr.ExecuteReadCommand(readCommand).Records;
+                    Assert.AreEqual("a2", TestUtility.DumpSorted(readResult, item => item.Name));
+
+                    Assert.AreEqual(2, logFilterQuery.Count() - lastFilterCount,
+                        "Row permission filter is not the last filter applied on reading. It will be use again for result permission validation to make sure other filters did not expand the result set.");
+                    lastFilterCount = logFilterQuery.Count();
                 }
             }
         }
