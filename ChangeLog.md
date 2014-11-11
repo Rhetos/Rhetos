@@ -1,3 +1,41 @@
+0.9.19 (2014-11-12)
+===================
+
+New features:
+
+* New concept: **Polymorphic**. It allows multiple entites to implement same interface. Polymorphic data structure is readable, it returns the union of all implementations. A reference to a polymorphic entity will validate foreign key constraint on all data changes.
+* New concepts: **RowPermissions** for programmable constaints on records that a client is allowed to read. Can be used explicitely by filter parameter: *Common.RowPermissionsAllowedItems*.
+* New concepts: **ApplyFilterOnClientRead** and **ApplyOnClientRead**, for filters that are automatically added to each client request. 
+ 
+Internal improvements:
+
+* New action for custom log entries: *Common.AddToLog*.
+* Bugfix: Value-type filter without a given parameter value would fail even if the value is not used in the filter.
+* Using *ConceptMetadata* for sharing concept implementation info (SQL column name and type, e.g.).
+
+
+0.9.18 (2014-10-01)
+===================
+
+New features:
+
+* **AutoCode** for **Integer** properties.
+* **AutoCode** allows client to define minimal number length by multiple "+" at the end of the format string.
+* New persistence control mode: **ComputeForNewItems**.
+* **History** allows *ActiveSince* in future. "Current" entry is now simply the latest one (may have future date). 
+* Enabled use of **UseExecutionContext** on **ComposableFilterBy**.
+
+Internal improvements:
+
+* Added friendly error messages for authentication and permission problems while running Rhetos under IISExpress or when server process lacks MS SQL permissions.
+* New exception type: *ClientException*, to separate client software errors, such as invalid request format, from denied user actions (UserException).       
+* Async logging for trace log.
+* Bugfix: Allow multiple **AutoCode** on same Entity.
+* Bugfix: **DenyUserEdit** with **CreationTime** on same property fails on save.
+* Bugfix: Reference to an **SqlQueryable** causes SQL error on deployment.
+* Bugfix: *ApplyPackages.bat* fails on space in package's folder name.
+* Bugfix: **AutodetectSqlDependencies** and other SqlDependsOn* concepts should not be case sensitive.
+
 0.9.17 (2014-05-21)
 ===================
 

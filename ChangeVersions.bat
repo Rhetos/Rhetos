@@ -1,5 +1,5 @@
 @SETLOCAL
-@SET BuildVersion=0.9.18.1
+@SET BuildVersion=0.9.19.1
 CALL ChangeRhetosServerVersion.bat %BuildVersion% || EXIT /B 1
 CALL ChangeRhetosPackageVersion.bat CommonConcepts %BuildVersion% || EXIT /B 1
 CALL ChangeRhetosPackageVersion.bat SimpleWindowsAuth %BuildVersion% || EXIT /B 1
