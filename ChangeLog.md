@@ -1,10 +1,10 @@
 0.9.19 (2014-11-12)
-===================
+-------------------
 
 New features:
 
-* New concept: **Polymorphic**. It allows multiple entites to implement same interface. Polymorphic data structure is readable, it returns the union of all implementations. A reference to a polymorphic entity will validate foreign key constraint on all data changes.
-* New concepts: **RowPermissions** for programmable constaints on records that a client is allowed to read. Can be used explicitely by filter parameter: *Common.RowPermissionsAllowedItems*.
+* New concept: **Polymorphic**. It allows multiple entities to implement same interface. Polymorphic data structure is readable, it returns the union of all implementations. A reference to a polymorphic entity will validate foreign key constraint on all data changes.
+* New concept: **RowPermissions** for programmable constraints on records that a client is allowed to read. Can be used explicitly by filter parameter: *Common.RowPermissionsAllowedItems*.
 * New concepts: **ApplyFilterOnClientRead** and **ApplyOnClientRead**, for filters that are automatically added to each client request. 
  
 Internal improvements:
@@ -15,7 +15,7 @@ Internal improvements:
 
 
 0.9.18 (2014-10-01)
-===================
+-------------------
 
 New features:
 
@@ -37,7 +37,7 @@ Internal improvements:
 * Bugfix: **AutodetectSqlDependencies** and other SqlDependsOn* concepts should not be case sensitive.
 
 0.9.17 (2014-05-21)
-===================
+-------------------
 
 Breaking changes:
 
