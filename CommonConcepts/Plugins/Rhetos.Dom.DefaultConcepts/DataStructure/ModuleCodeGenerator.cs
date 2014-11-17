@@ -17,18 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Globalization;
-using System.ComponentModel.Composition;
 using Microsoft.CSharp.RuntimeBinder;
-using Rhetos.Utilities;
 using Rhetos.Compiler;
-using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.Linq;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -155,6 +151,8 @@ namespace {0}._Helper
         public const string ExecutionContextConstructorAssignmentTag = "/*ExecutionContextConstructorAssignment*/";
         public const string RegisteredInterfaceImplementationNameTag = "/*RegisteredInterfaceImplementationName*/";
         public const string ApplyFiltersOnClientReadTag = "/*ApplyFiltersOnClientRead*/";
+        public const string CommonNamespaceMembersTag = "/*CommonNamespaceMembers*/";
+        public const string CommonInfrastructureMembersTag = "/*CommonInfrastructureMembers*/";
 
         /// <summary>
         /// Instead of calling Configuration.LinqToHqlGeneratorsRegistry() function,
@@ -183,33 +181,22 @@ namespace {0}._Helper
             _executionContext = executionContext;
         }}
 
-        private class RegisteredInterfaceImplementations : Dictionary<Type, string>, IRegisteredInterfaceImplementations {{ }}
+        {2}
+    }}
 
-        public static IRegisteredInterfaceImplementations RegisteredInterfaceImplementationName = new RegisteredInterfaceImplementations
+    public static class Infrastructure
+    {{
+        public static readonly RegisteredInterfaceImplementations RegisteredInterfaceImplementationName = new RegisteredInterfaceImplementations
         {{
             {7}
         }};
 
-        private class ApplyFiltersOnClientReadDictionary : Dictionary<string, List<string>>, IApplyFiltersOnClientRead
-        {{
-            public void Add(string dataStructure, string filter)
-            {{
-                List<string> filters;
-                if (!TryGetValue(dataStructure, out filters))
-                {{
-                    filters = new List<string>();
-                    Add(dataStructure, filters);
-                }}
-                filters.Add(filter);
-            }}
-        }}
-
-        public static IApplyFiltersOnClientRead ApplyFiltersOnClientRead = new ApplyFiltersOnClientReadDictionary
+        public static readonly ApplyFiltersOnClientRead ApplyFiltersOnClientRead = new ApplyFiltersOnClientRead
         {{
             {10}
         }};
 
-        {2}
+        {12}
     }}
 
     public class ExecutionContext
@@ -267,8 +254,8 @@ namespace {0}._Helper
         {{
             builder.RegisterType<DomRepository>().InstancePerLifetimeScope();
             builder.RegisterType<ExecutionContext>().InstancePerLifetimeScope();
-            builder.RegisterInstance(DomRepository.RegisteredInterfaceImplementationName).As<IRegisteredInterfaceImplementations>().ExternallyOwned();
-            builder.RegisterInstance(DomRepository.ApplyFiltersOnClientRead).As<IApplyFiltersOnClientRead>().ExternallyOwned();
+            builder.RegisterInstance(Infrastructure.RegisteredInterfaceImplementationName).ExternallyOwned();
+            builder.RegisterInstance(Infrastructure.ApplyFiltersOnClientRead).ExternallyOwned();
             {3}
 
             base.Load(builder);
@@ -301,6 +288,8 @@ namespace {0}._Helper
             }}
         }}
     }}
+
+    {11}
 }}",
             StandardNamespacesSnippet,
             CommonUsingTag,
@@ -312,7 +301,9 @@ namespace {0}._Helper
             RegisteredInterfaceImplementationNameTag,
             NHibernateConfigurationExtensionTag,
             LinqToHqlGeneratorsRegistryTag,
-            ApplyFiltersOnClientReadTag);
+            ApplyFiltersOnClientReadTag,
+            CommonNamespaceMembersTag,
+            CommonInfrastructureMembersTag);
         }
     }
 }

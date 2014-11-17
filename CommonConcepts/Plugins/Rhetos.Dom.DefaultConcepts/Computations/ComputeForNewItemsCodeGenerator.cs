@@ -71,7 +71,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 hookOnSave.Name,
                 uniqueSuffix,
                 !string.IsNullOrWhiteSpace(info.FilterSaveExpression) ? (", _filterSaveComputeForNewItems_" + uniqueSuffix) : "",
-                EntityComputedFromInfo.RecomputeFunctionName(info.EntityComputedFrom));
+                EntityComputedFromCodeGenerator.RecomputeFunctionName(info.EntityComputedFrom));
         }
 
         private static string FilterSaveFunction(ComputeForNewItemsInfo info, string uniqueSuffix)

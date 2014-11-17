@@ -80,11 +80,11 @@ namespace Rhetos.CommonConcepts.Test
             return new GenericRepository<ISimpleEntity>(
                 new DomainObjectModelMock(),
                 new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock(typeof(SimpleEntity), repository)),
-                new RegisteredInterfaceImplementationsMock(typeof(ISimpleEntity), typeof(SimpleEntity)),
+                new RegisteredInterfaceImplementations { { typeof(ISimpleEntity), typeof(SimpleEntity).FullName } },
                 new ConsoleLogProvider(),
                 null,
                 new GenericFilterHelper(new DomainObjectModelMock()),
-                new ApplyFiltersOnClientReadMock());
+                new ApplyFiltersOnClientRead());
         }
 
         //=======================================================
@@ -254,7 +254,7 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual("o", repos.Read<object>(null).Single().Name);
             Assert.AreEqual("s", repos.Read("abc").Single().Name);
             Assert.AreEqual("s", repos.Read<string>(null).Single().Name);
-            Assert.AreEqual("o", repos.Read<object>("abc").Single().Name);
+            Assert.AreEqual("s", repos.Read<object>("abc").Single().Name);
             Assert.AreEqual("o", repos.Read("abc", typeof(object)).Single().Name);
             Assert.AreEqual("s", repos.Read("abc", "abc".GetType()).Single().Name);
             Assert.AreEqual("o", repos.Read(null, typeof(object)).Single().Name);

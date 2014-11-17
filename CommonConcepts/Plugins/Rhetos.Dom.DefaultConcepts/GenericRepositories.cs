@@ -41,20 +41,20 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private readonly IDomainObjectModel _domainObjectModel;
         private readonly Lazy<IIndex<string, IRepository>> _repositories;
-        private readonly IRegisteredInterfaceImplementations _registeredInterfaceImplementations;
+        private readonly RegisteredInterfaceImplementations _registeredInterfaceImplementations;
         private readonly ILogProvider _logProvider;
         private readonly IPersistenceTransaction _persistenceTransaction;
         private readonly GenericFilterHelper _genericFilterHelper;
-        private readonly IApplyFiltersOnClientRead _applyFiltersOnClientRead;
+        private readonly ApplyFiltersOnClientRead _applyFiltersOnClientRead;
 
         public GenericRepositories(
             IDomainObjectModel domainObjectModel,
             Lazy<IIndex<string, IRepository>> repositories,
-            IRegisteredInterfaceImplementations registeredInterfaceImplementations,
+            RegisteredInterfaceImplementations registeredInterfaceImplementations,
             ILogProvider logProvider,
             IPersistenceTransaction persistenceTransaction,
             GenericFilterHelper genericFilterHelper,
-            IApplyFiltersOnClientRead applyFiltersOnClientRead)
+            ApplyFiltersOnClientRead applyFiltersOnClientRead)
         {
             _domainObjectModel = domainObjectModel;
             _repositories = repositories;

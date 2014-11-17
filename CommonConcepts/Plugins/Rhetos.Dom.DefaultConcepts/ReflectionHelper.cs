@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Processing.DefaultCommands;
 using Rhetos.Utilities;
 using System;
@@ -387,6 +388,39 @@ namespace Rhetos.Dom.DefaultConcepts
                     _repositoryReadCommandMethod = RepositoryType.GetMethod("ReadCommand", new Type[] { typeof(ReadCommandInfo) });
                 return _repositoryReadCommandMethod;
             }
+        }
+
+        private Dictionary<string, MethodInfo> _repositoryRecomputeFromMethod = null;
+        public MethodInfo RepositoryRecomputeFromMethod(string sourceDataStructure)
+        {
+            MethodInfo method = null;
+            bool exists = false;
+
+            if (_repositoryRecomputeFromMethod == null)
+                _repositoryRecomputeFromMethod = new Dictionary<string, MethodInfo>();
+            else
+                exists = _repositoryRecomputeFromMethod.TryGetValue(sourceDataStructure, out method);
+
+            if (!exists)
+            {
+                string methodName = RepositoryRecomputeFromMethodName(sourceDataStructure);
+                method = RepositoryType.GetMethod(methodName);
+                _repositoryRecomputeFromMethod.Add(sourceDataStructure, method);
+            }
+
+            return method;
+        }
+
+        public string RepositoryRecomputeFromMethodName(string sourceDataStructure)
+        {
+            var entityModuleName = DataStructureUtility.SplitModuleName(_entityName);
+            var sourceModuleName = DataStructureUtility.SplitModuleName(sourceDataStructure);
+            var computedConcept = new EntityComputedFromInfo
+            {
+                Source = new DataStructureInfo { Module = new ModuleInfo { Name = sourceModuleName.Item1 }, Name = sourceModuleName.Item2 },
+                Target = new EntityInfo { Module = new ModuleInfo { Name = entityModuleName.Item1 }, Name = entityModuleName.Item2 }
+            };
+            return EntityComputedFromCodeGenerator.RecomputeFunctionName(computedConcept);
         }
 
         #endregion

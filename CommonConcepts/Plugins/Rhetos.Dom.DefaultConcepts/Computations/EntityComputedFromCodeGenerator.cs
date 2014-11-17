@@ -39,6 +39,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<EntityComputedFromInfo> CompareValuePropertyTag = "CompareValueProperty";
         public static readonly CsTag<EntityComputedFromInfo> ClonePropertyTag = "CloneProperty";
         public static readonly CsTag<EntityComputedFromInfo> AssignPropertyTag = "AssignProperty";
+        public static readonly CsTag<EntityComputedFromInfo> OverrideDefaultFiltersTag = new CsTag<EntityComputedFromInfo>("OverrideDefaultFilters", TagType.Reverse);
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
@@ -46,20 +47,15 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode(CodeSnippet(info), RepositoryHelper.RepositoryMembers, info.Target);
         }
 
-        protected static string CodeSnippet(EntityComputedFromInfo info)
+        public static string RecomputeFunctionName(EntityComputedFromInfo info)
+        {
+            return "RecomputeFrom" + DslUtility.NameOptionalModule(info.Source, info.Target.Module);
+        }
+
+        private static string CodeSnippet(EntityComputedFromInfo info)
         {
             return string.Format(
-@"        public void {2}()
-        {{
-            {2}<FilterAll>(null);
-        }}
-
-        public void {2}<T>(T filterLoad)
-        {{
-            {2}(filterLoad, x => x);
-        }}
-
-        private class {2}_KeyComparer : IComparer<{0}>
+@"        private class {2}_KeyComparer : IComparer<{0}>
         {{
             public int Compare({0} x, {0} y)
             {{
@@ -69,8 +65,12 @@ namespace Rhetos.Dom.DefaultConcepts
             }}
         }}
 
-        public void {2}<T>(T filterLoad, Func<IEnumerable<{0}>, IEnumerable<{0}>> filterSave)
+        public void {2}(object filterLoad = null, Func<IEnumerable<{0}>, IEnumerable<{0}>> filterSave = null)
         {{
+            {7}
+            filterLoad = filterLoad ?? new FilterAll();
+            filterSave = filterSave ?? (x => x);
+
             var sourceRepository = _executionContext.GenericRepositories.GetGenericRepository<{1}>();
             var sourceItems = sourceRepository.Read(filterLoad);
             var newItems = sourceItems.Select(sourceItem => new {0} {{
@@ -102,11 +102,12 @@ namespace Rhetos.Dom.DefaultConcepts
 ",
             info.Target.GetKeyProperties(),
             info.Source.GetKeyProperties(),
-            EntityComputedFromInfo.RecomputeFunctionName(info),
+            RecomputeFunctionName(info),
             CompareValuePropertyTag.Evaluate(info),
             ClonePropertyTag.Evaluate(info),
             AssignPropertyTag.Evaluate(info),
-            CompareKeyPropertyTag.Evaluate(info));
+            CompareKeyPropertyTag.Evaluate(info),
+            OverrideDefaultFiltersTag.Evaluate(info));
         }
     }
 }

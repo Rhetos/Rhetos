@@ -37,13 +37,14 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (KeepSynchronizedInfo)conceptInfo;
 
-            if (!string.IsNullOrWhiteSpace(info.FilterSaveExpression))
-                codeBuilder.InsertCode(FilterSaveFunction(info), RepositoryHelper.RepositoryMembers, info.EntityComputedFrom.Target);
+            codeBuilder.InsertCode(FilterSaveFunction(info), RepositoryHelper.RepositoryMembers, info.EntityComputedFrom.Target);
+            codeBuilder.InsertCode(SnippetDefaultFilterSaveOnRecompute(info), EntityComputedFromCodeGenerator.OverrideDefaultFiltersTag, info.EntityComputedFrom);
         }
 
         private static string FilterSaveFunction(KeepSynchronizedInfo info)
         {
-            return string.Format(
+            if (!string.IsNullOrWhiteSpace(info.FilterSaveExpression))
+                return string.Format(
 @"        private static readonly Func<IEnumerable<{0}.{1}>, Common.DomRepository, IEnumerable<{0}.{1}>> _filterSaveKeepSynchronizedOnChangedItems_{3}_{4} =
         {2};
 
@@ -53,6 +54,24 @@ namespace Rhetos.Dom.DefaultConcepts
         }}
 
 ",
+                    info.EntityComputedFrom.Target.Module.Name, info.EntityComputedFrom.Target.Name, info.FilterSaveExpression,
+                    info.EntityComputedFrom.Source.Module.Name, info.EntityComputedFrom.Source.Name);
+            else
+                return string.Format(
+@"        public IEnumerable<{0}.{1}> FilterSaveKeepSynchronizedOnChangedItems_{3}_{4}(IEnumerable<{0}.{1}> items)
+        {{
+            return items;
+        }}
+
+",
+                    info.EntityComputedFrom.Target.Module.Name, info.EntityComputedFrom.Target.Name, info.FilterSaveExpression,
+                    info.EntityComputedFrom.Source.Module.Name, info.EntityComputedFrom.Source.Name);
+        }
+
+        private static string SnippetDefaultFilterSaveOnRecompute(KeepSynchronizedInfo info)
+        {
+            return string.Format(@"
+            filterSave = filterSave ?? FilterSaveKeepSynchronizedOnChangedItems_{3}_{4};",
                 info.EntityComputedFrom.Target.Module.Name, info.EntityComputedFrom.Target.Name, info.FilterSaveExpression,
                 info.EntityComputedFrom.Source.Module.Name, info.EntityComputedFrom.Source.Name);
         }

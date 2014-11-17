@@ -66,6 +66,7 @@
     <Compile Include="Computations\KeepSynchronizedCodeGenerator.cs" />
     <Compile Include="Computations\KeyPropertyIDComputedFromCodeGenerator.cs" />
     <Compile Include="Computations\KeyPropertyComputedFromCodeGenerator.cs" />
+    <Compile Include="Computations\KeepSynchronizedRecomputeOnDeployCodeGenerator.cs" />
     <Compile Include="DataStructure\ImplementsInterfacePropertyCodeGenerator.cs" />
     <Compile Include="DataStructure\RegisteredInterfaceImplementationCodeGenerator.cs" />
     <Compile Include="DataStructure\WriteCodeGenerator.cs" />
@@ -96,6 +97,7 @@
     <Compile Include="GenericRepositories.cs" />
     <Compile Include="ExpressionHelper.cs" />
     <Compile Include="HierarchyItem.cs" />
+    <Compile Include="KeepSynchronizedRecomputeOnDeploy.cs" />
     <Compile Include="ReflectionHelper.cs" />
     <Compile Include="SimpleBusinessLogic\ActionCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ReloadBeforeValidationsCodeGenerator.cs" />

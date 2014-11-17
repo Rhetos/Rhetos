@@ -1,0 +1,11 @@
+﻿Module Common
+{
+	Entity KeepSynchronizedMetadata
+	{
+		ShortString Target;
+		ShortString Source;
+		LongString Context; // Set the context to NORECOMPUTE immediately before the deployment, to avoid recomputing the old persisted data.
+
+		Implements 'Rhetos.Dom.DefaultConcepts.IKeepSynchronizedMetadata, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
+	}
+}

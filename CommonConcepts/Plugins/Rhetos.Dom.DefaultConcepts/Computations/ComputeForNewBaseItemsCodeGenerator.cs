@@ -79,7 +79,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 updatePersistedComputation.Module.Name,
                 updatePersistedComputation.Name,
                 !string.IsNullOrWhiteSpace(info.FilterSaveExpression) ? (", _filterSaveComputeForNewBaseItems_" + uniqueSuffix) : "",
-                EntityComputedFromInfo.RecomputeFunctionName(info.EntityComputedFrom));
+                EntityComputedFromCodeGenerator.RecomputeFunctionName(info.EntityComputedFrom));
         }
 
         private static string HelperFunctionSnippet(ComputeForNewBaseItemsInfo info, string uniqueSuffix)

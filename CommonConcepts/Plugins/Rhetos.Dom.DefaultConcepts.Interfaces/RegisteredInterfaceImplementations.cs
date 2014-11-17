@@ -25,10 +25,9 @@ using System.Text;
 namespace Rhetos.Dom.DefaultConcepts
 {
     /// <summary>
-    /// For a given data structure key, dictionary contains list of filters that will be
-    /// automatically applied when executing ReadCommand.
+    /// Key is the interface type, value is full name of the entity that implements the interface.
     /// </summary>
-    public interface IApplyFiltersOnClientRead : IDictionary<string, List<string>>
+    public class RegisteredInterfaceImplementations : Dictionary<Type, string>
     {
     }
 }

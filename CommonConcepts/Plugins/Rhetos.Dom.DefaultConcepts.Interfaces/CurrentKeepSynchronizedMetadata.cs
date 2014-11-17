@@ -21,22 +21,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Rhetos.Compiler;
-using Rhetos.Dsl.DefaultConcepts;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public static class DataStructureUtility
+    public class CurrentKeepSynchronizedMetadata : List<IKeepSynchronizedMetadata>
     {
-        public static readonly CsTag<DataStructureInfo> ComputationAdditionalParametersTypeTag = "AdditionalParametersType";
-        public static readonly CsTag<DataStructureInfo> ComputationAdditionalParametersArgumentTag = "AdditionalParametersArgument";
-
-        public static Tuple<string, string> SplitModuleName(string fullName)
-        {
-            int dot = fullName.IndexOf('.');
-            if (dot < 0)
-                throw new FrameworkException("Invalid full name format '" + fullName + "'. Expected format is 'module.name'.");
-            return Tuple.Create(fullName.Substring(0, dot), fullName.Substring(dot + 1));
-        }
     }
 }

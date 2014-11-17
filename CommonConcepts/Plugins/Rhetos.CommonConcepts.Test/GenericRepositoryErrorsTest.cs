@@ -78,11 +78,11 @@ namespace Rhetos.CommonConcepts.Test
             return new GenericRepository<SimpleEntity>(
                 new DomainObjectModelMock(),
                 new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock(typeof(SimpleEntity), repository)),
-                new RegisteredInterfaceImplementationsMock(),
+                new RegisteredInterfaceImplementations(),
                 new ConsoleLogProvider(),
                 null,
                 new GenericFilterHelper(new DomainObjectModelMock()),
-                new ApplyFiltersOnClientReadMock());
+                new ApplyFiltersOnClientRead());
         }
 
         void TestError(Action action, string errorMessage, string locationFunctionName)

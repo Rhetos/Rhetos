@@ -17,23 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Dom.DefaultConcepts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Rhetos.CommonConcepts.Test.Mocks
+namespace Rhetos.Dom.DefaultConcepts
 {
-    class RegisteredInterfaceImplementationsMock : Dictionary<Type, string>, IRegisteredInterfaceImplementations
+    public interface IKeepSynchronizedMetadata : IEntity
     {
-        public RegisteredInterfaceImplementationsMock()
-        {
-        }
-
-        public RegisteredInterfaceImplementationsMock(Type interfaceType, Type entityType)
-        {
-            Add(interfaceType, entityType.FullName);
-        }
+        string Target { get; set; }
+        string Source { get; set; }
+        string Context { get; set; }
     }
 }

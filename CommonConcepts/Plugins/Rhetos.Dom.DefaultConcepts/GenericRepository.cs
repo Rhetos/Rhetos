@@ -51,7 +51,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private readonly IPersistenceTransaction _persistenceTransaction;
         private readonly GenericFilterHelper _genericFilterHelper;
         private readonly IDomainObjectModel _domainObjectModel;
-        private readonly IApplyFiltersOnClientRead _applyFiltersOnClientRead;
+        private readonly ApplyFiltersOnClientRead _applyFiltersOnClientRead;
 
         private readonly string _repositoryName;
         private readonly Lazy<IRepository> _repository;
@@ -65,11 +65,11 @@ namespace Rhetos.Dom.DefaultConcepts
         public GenericRepository(
             IDomainObjectModel domainObjectModel,
             Lazy<IIndex<string, IRepository>> repositories,
-            IRegisteredInterfaceImplementations registeredInterfaceImplementations,
+            RegisteredInterfaceImplementations registeredInterfaceImplementations,
             ILogProvider logProvider,
             IPersistenceTransaction persistenceTransaction,
             GenericFilterHelper genericFilterHelper,
-            IApplyFiltersOnClientRead applyFiltersOnClientRead)
+            ApplyFiltersOnClientRead applyFiltersOnClientRead)
             : this(domainObjectModel, repositories, InitializeEntityName(registeredInterfaceImplementations), logProvider, persistenceTransaction, genericFilterHelper, applyFiltersOnClientRead)
         {
         }
@@ -81,7 +81,7 @@ namespace Rhetos.Dom.DefaultConcepts
             ILogProvider logProvider,
             IPersistenceTransaction persistenceTransaction,
             GenericFilterHelper genericFilterHelper,
-            IApplyFiltersOnClientRead applyFiltersOnClientRead)
+            ApplyFiltersOnClientRead applyFiltersOnClientRead)
         {
             EntityName = entityName;
             _repositoryName = "GenericRepository(" + EntityName + ")";
@@ -97,7 +97,7 @@ namespace Rhetos.Dom.DefaultConcepts
             _reflection = new ReflectionHelper<TEntityInterface>(EntityName, domainObjectModel, _repository);
         }
 
-        private static string InitializeEntityName(IRegisteredInterfaceImplementations registeredInterfaceImplementations)
+        private static string InitializeEntityName(RegisteredInterfaceImplementations registeredInterfaceImplementations)
         {
             if (typeof(TEntityInterface).IsInterface)
                 return registeredInterfaceImplementations.GetValue(typeof(TEntityInterface),
@@ -201,7 +201,8 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         public IEnumerable<TEntityInterface> Read<TParameter>(TParameter parameter)
         {
-            return Read(parameter, typeof(TParameter));
+            Type filterType = parameter != null ? parameter.GetType() : typeof(TParameter);
+            return Read(parameter, filterType);
         }
 
         public IEnumerable<TEntityInterface> Read(object parameter, Type parameterType)
@@ -213,7 +214,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public IEnumerable<TEntityInterface> ReadNonMaterialized<TParameter>(TParameter parameter, bool preferQuery)
         {
-            return ReadNonMaterialized(parameter, typeof(TParameter), preferQuery);
+            Type filterType = parameter != null ? parameter.GetType() : typeof(TParameter);
+            return ReadNonMaterialized(parameter, filterType, preferQuery);
         }
 
         private delegate Func<IEnumerable<TEntityInterface>> ReadingOption();
@@ -345,7 +347,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     IEnumerable<TEntityInterface> items;
                     try
                     {
-                        items = ReadNonMaterialized(new FilterAll(), typeof(FilterAll), false);
+                        items = ReadNonMaterialized(new FilterAll(), false);
                     }
                     catch (FrameworkException)
                     {
@@ -547,7 +549,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public IEnumerable<TEntityInterface> Filter<TParameter>(IEnumerable<TEntityInterface> items, TParameter parameter)
         {
-            return Filter(items, parameter, typeof(TParameter));
+            Type filterType = parameter != null ? parameter.GetType() : typeof(TParameter);
+            return Filter(items, parameter, filterType);
         }
 
         public IEnumerable<TEntityInterface> Filter(IEnumerable<TEntityInterface> items, object parameter, Type parameterType)
@@ -557,9 +560,10 @@ namespace Rhetos.Dom.DefaultConcepts
             return filteredItems;
         }
 
-        public IEnumerable<TEntityInterface> FilterNonMaterialized(IEnumerable<TEntityInterface> items, object parameter)
+        public IEnumerable<TEntityInterface> FilterNonMaterialized<TParameter>(IEnumerable<TEntityInterface> items, TParameter parameter)
         {
-            return FilterNonMaterialized(items, parameter, parameter.GetType());
+            Type filterType = parameter != null ? parameter.GetType() : typeof(TParameter);
+            return FilterNonMaterialized(items, parameter, filterType);
         }
 
         public IEnumerable<TEntityInterface> FilterNonMaterialized(IEnumerable<TEntityInterface> items, object parameter, Type parameterType)
@@ -732,6 +736,22 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
+        /// <param name="sameRecord">Compare key properties, determining the records that should be inserted or deleted.
+        /// Typical implementation:
+        /// <code>
+        ///     class CompareName : IComparer&lt;ISomeEntity&gt;
+        ///     {
+        ///         public int Compare(ISomeEntity x, ISomeEntity y) { return string.Compare(x.Name, y.Name, StringComparison.InvariantCultureIgnoreCase); }
+        ///     }
+        /// </code></param>
+        /// <param name="sameValue">Compare other properties, determining the records that should be updated.
+        /// Comparison may also include key properties with stricter constaints (such as case sensitivity).
+        /// Typical implementation:
+        /// <code>(x, y) =&gt; x.Name == y.Name &amp;&amp; x.SomeValue == y.SomeValue;</code></param>
+        /// <param name="assign">Typical implementation:
+        /// <code>(destination, source) =&gt; {
+        ///     destination.Property1 = source.Property1;
+        ///     destination.Property2 = source.Property2; }</code></param>
         public void Diff(
             IEnumerable<TEntityInterface> oldItems, IEnumerable<TEntityInterface> newItems,
             IComparer<TEntityInterface> sameRecord, Func<TEntityInterface, TEntityInterface, bool> sameValue,
@@ -742,11 +762,11 @@ namespace Rhetos.Dom.DefaultConcepts
             var toInsertList = (IList)CreateList(0);
             var toUpdateList = (IList)CreateList(0);
 
-            newItems = newItems.OrderBy(item => item, sameRecord).ToList();
-            oldItems = oldItems.OrderBy(item => item, sameRecord).ToList();
+            List<TEntityInterface> newItemsList = newItems.OrderBy(item => item, sameRecord).ToList();
+            List<TEntityInterface> oldItemsList = oldItems.OrderBy(item => item, sameRecord).ToList();
 
-            IEnumerator<TEntityInterface> newEnum = newItems.AsEnumerable().GetEnumerator();
-            IEnumerator<TEntityInterface> oldEnum = oldItems.AsEnumerable().GetEnumerator();
+            IEnumerator<TEntityInterface> newEnum = newItemsList.GetEnumerator();
+            IEnumerator<TEntityInterface> oldEnum = oldItemsList.GetEnumerator();
 
             try
             {
@@ -829,30 +849,42 @@ namespace Rhetos.Dom.DefaultConcepts
         ///     destination.Property1 = source.Property1;
         ///     destination.Property2 = source.Property2; }</code></param>
         /// <param name="beforeSave"><code>(toInsert, toUpdate, toDelete) => { some code; } </code></param>
-        public void InsertOrUpdateOrDelete<TFilterLoad>(
+        public void InsertOrUpdateOrDelete(
             IEnumerable<TEntityInterface> newItems,
             IComparer<TEntityInterface> sameRecord,
             Func<TEntityInterface, TEntityInterface, bool> sameValue,
-            TFilterLoad filterLoad,
+            object filterLoad,
             Action<TEntityInterface, TEntityInterface> assign,
             BeforeSave beforeSave = null)
         {
             var stopwatch = Stopwatch.StartNew();
 
-            IEnumerable<TEntityInterface> oldItems = Read(filterLoad);
+            // Initialize new items:
 
-            _performanceLogger.Write(stopwatch, () => _repositoryName + ".InsertOrUpdateOrDeleteOrDeactivate: Read old items");
+            MaterializeQuick(ref newItems);
+            _performanceLogger.Write(stopwatch, () => string.Format("{0}.InsertOrUpdateOrDelete: Initialize new items ({1})",
+                _repositoryName, newItems.Count()));
+
+            // Read old items:
+
+            IEnumerable<TEntityInterface> oldItems = Read(filterLoad);
+            _performanceLogger.Write(stopwatch, () => string.Format("{0}.InsertOrUpdateOrDelete: Read old items ({1})",
+                _repositoryName, oldItems.Count()));
+
+            // Compare new and old items:
 
             IEnumerable<TEntityInterface> toInsert, toUpdate, toDelete;
             Diff(oldItems, newItems, sameRecord, sameValue, assign, out toInsert, out toUpdate, out toDelete);
+            _performanceLogger.Write(stopwatch, () => string.Format("{0}.InsertOrUpdateOrDelete: Diff ({1} new items, {2} old items, {3} to insert, {4} to update, {5} to delete)",
+                _repositoryName, newItems.Count(), oldItems.Count(), toInsert.Count(), toUpdate.Count(), toDelete.Count()));
 
-            _performanceLogger.Write(stopwatch, () => _repositoryName + ".InsertOrUpdateOrDeleteOrDeactivate: Diff");
+            // Modify old items to match new items:
 
             if (beforeSave != null)
                 beforeSave(ref toInsert, ref toUpdate, ref toDelete);
             Save(toInsert, toUpdate, toDelete);
-
-            _performanceLogger.Write(stopwatch, () => _repositoryName + ".InsertOrUpdateOrDeleteOrDeactivate: Save");
+            _performanceLogger.Write(stopwatch, () => string.Format("{0}.InsertOrUpdateOrDelete: Save ({1} new items, {2} old items, {3} to insert, {4} to update, {5} to delete)",
+                _repositoryName, newItems.Count(), oldItems.Count(), toInsert.Count(), toUpdate.Count(), toDelete.Count()));
         }
 
         /// <param name="sameRecord">Compare key properties, determining the records that should be inserted or deleted.
@@ -878,59 +910,80 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <br/>For supported filters types see <see cref="Filter"/> function.
         /// </param>
         /// <param name="beforeSave"><code>(toInsert, toUpdate, toDelete) => { some code; } </code></param>
-        public void InsertOrUpdateOrDeleteOrDeactivate<TFilterLoad, TFilterDeactivateDeleted>(
+        public void InsertOrUpdateOrDeleteOrDeactivate(
             IEnumerable<TEntityInterface> newItems,
             IComparer<TEntityInterface> sameRecord,
             Func<TEntityInterface, TEntityInterface, bool> sameValue,
-            TFilterLoad filterLoad,
+            object filterLoad,
             Action<TEntityInterface, TEntityInterface> assign,
-            TFilterDeactivateDeleted deactivateDeleted,
+            object filterDeactivateDeleted,
             BeforeSave beforeSave = null)
         {
             var stopwatch = Stopwatch.StartNew();
+
+            // Initialize new items:
 
             MaterializeQuick(ref newItems);
             foreach (var newItem in newItems.Cast<IDeactivatable>())
                 if (newItem.Active == null)
                     newItem.Active = true;
+            _performanceLogger.Write(stopwatch, () => string.Format("{0}.InsertOrUpdateOrDeleteOrDeactivate: Initialize new items ({1})",
+                _repositoryName, newItems.Count()));
 
-            _performanceLogger.Write(stopwatch, () => _repositoryName + ".InsertOrUpdateOrDeleteOrDeactivate: Initialize new items");
+            // Read old items:
 
             IEnumerable<TEntityInterface> oldItems = Read(filterLoad);
+            _performanceLogger.Write(stopwatch, () => string.Format("{0}.InsertOrUpdateOrDeleteOrDeactivate: Read old items ({1})",
+                _repositoryName, oldItems.Count()));
 
-            _performanceLogger.Write(stopwatch, () => _repositoryName + ".InsertOrUpdateOrDeleteOrDeactivate: Read old items");
+            // Compare new and old items:
 
             IEnumerable<TEntityInterface> toInsert, toUpdate, toDelete;
             Diff(oldItems, newItems, sameRecord, sameValue, assign, out toInsert, out toUpdate, out toDelete);
+            _performanceLogger.Write(stopwatch, () => string.Format("{0}.InsertOrUpdateOrDeleteOrDeactivate: Diff ({1} new items, {2} old items, {3} to insert, {4} to update, {5} to delete)",
+                _repositoryName, newItems.Count(), oldItems.Count(), toInsert.Count(), toUpdate.Count(), toDelete.Count()));
 
-            _performanceLogger.Write(stopwatch, () => _repositoryName + ".InsertOrUpdateOrDeleteOrDeactivate: Diff");
+            // Deactivate some items instead of deleting:
 
-            IEnumerable<TEntityInterface> toDeactivate = Filter(toDelete, deactivateDeleted);
+            IEnumerable<TEntityInterface> toDeactivate = Filter(toDelete, filterDeactivateDeleted);
+            int activeToDeactivateCount = 0;
             if (toDeactivate.Count() > 0)
             {
+                int oldDeleteCount = toDelete.Count();
+
                 // Don't delete items that should be deactivated:
-                if (toDeactivate.Count() == toDelete.Count())
+                if (toDeactivate.Count() == oldDeleteCount)
                     toDelete = CreateList(0);
                 else
                 {
                     var toDeactivateIndex = new HashSet<TEntityInterface>(toDeactivate, new InstanceComparer());
                     toDelete = _reflection.ToListOfEntity(toDelete.Where(item => !toDeactivateIndex.Contains(item)));
                 }
+                if (toDelete.Count() + toDeactivate.Count() != oldDeleteCount)
+                    throw new FrameworkException(string.Format(
+                        "Invalid number of items to deactivate for '{0}'."
+                            + " Verify if the deactivation filter ({1}) on that data structure retuns a valid subset of the given items."
+                            + " {2} items to remove: {3} items to deactivate and {4} items remainig to delete (should be {5}).",
+                        _repositoryName, filterDeactivateDeleted.GetType().FullName,
+                        oldDeleteCount, toDeactivate.Count(), toDelete.Count(), oldDeleteCount - toDeactivate.Count()));
 
                 // Update the items to deactivate (unless already deactivated):
                 var activeToDeactivate = toDeactivate.Cast<IDeactivatable>().Where(item => item.Active == null || item.Active == true).ToList();
                 foreach (var item in activeToDeactivate)
                     item.Active = false;
                 _reflection.AddRange(toUpdate, _reflection.CastAsEntity(activeToDeactivate));
+                activeToDeactivateCount = activeToDeactivate.Count;
             }
+            _performanceLogger.Write(stopwatch, () => string.Format("{0}.InsertOrUpdateOrDeleteOrDeactivate: Deactivate ({1} to deactivate, {2} already deactivated)",
+                _repositoryName, activeToDeactivateCount, toDeactivate.Count() - activeToDeactivateCount));
 
-            _performanceLogger.Write(stopwatch, () => _repositoryName + ".InsertOrUpdateOrDeleteOrDeactivate: Deactivate");
+            // Modify old items to match new items:
 
             if (beforeSave != null)
                 beforeSave(ref toInsert, ref toUpdate, ref toDelete);
             Save(toInsert, toUpdate, toDelete);
-
-            _performanceLogger.Write(stopwatch, () => _repositoryName + ".InsertOrUpdateOrDeleteOrDeactivate: Save");
+            _performanceLogger.Write(stopwatch, () => string.Format("{0}.InsertOrUpdateOrDeleteOrDeactivate: Save ({1} new items, {2} old items, {3} to insert, {4} to update, {5} to delete)",
+                _repositoryName, newItems.Count(), oldItems.Count(), toInsert.Count(), toUpdate.Count(), toDelete.Count()));
         }
 
         private class InstanceComparer : IEqualityComparer<TEntityInterface>
@@ -944,6 +997,20 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 return System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(obj);
             }
+        }
+
+        public void RecomputeFrom(
+            string source,
+            object filterLoad = null)
+        {
+            var recomputeMethod = _reflection.RepositoryRecomputeFromMethod(source);
+
+            if (recomputeMethod == null)
+                throw new FrameworkException(string.Format(
+                    "{0}'s repostory does not implement the method to recompute from {1} ({2}).",
+                    EntityName, source, _reflection.RepositoryRecomputeFromMethodName(source)));
+
+            recomputeMethod.InvokeEx(_repository.Value, filterLoad, null);
         }
 
         #endregion

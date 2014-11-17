@@ -17,15 +17,34 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.TestCommon;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Rhetos.CommonConcepts.Test.Mocks
+namespace Rhetos.CommonConcepts.Test
 {
-    class ApplyFiltersOnClientReadMock : Dictionary<string, List<string>>, IApplyFiltersOnClientRead
+    [TestClass]
+    class DataStructureUtilityTest
     {
+        [TestMethod]
+        public void SplitModuleName()
+        {
+            {
+                var split = DataStructureUtility.SplitModuleName("a.bcd");
+                Assert.AreEqual("a/bcd", split.Item1 + "/" + split.Item2);
+            }
+            {
+                var split = DataStructureUtility.SplitModuleName("abc.d");
+                Assert.AreEqual("abc/d", split.Item1 + "/" + split.Item2);
+            }
+            {
+                TestUtility.ShouldFail<FrameworkException>(() => DataStructureUtility.SplitModuleName("abc"), "abc", "format", "module.name");
+                TestUtility.ShouldFail<FrameworkException>(() => DataStructureUtility.SplitModuleName(""), "format", "module.name");
+            }
+        }
     }
 }

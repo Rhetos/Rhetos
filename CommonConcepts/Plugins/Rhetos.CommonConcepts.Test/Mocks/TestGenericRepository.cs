@@ -40,11 +40,11 @@ namespace Rhetos.CommonConcepts.Test.Mocks
             : base(
                 new DomainObjectModelMock(),
                 new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock<TEntityInterface, TEntity>(items)),
-                new RegisteredInterfaceImplementationsMock(typeof(TEntityInterface), typeof(TEntity)),
+                new RegisteredInterfaceImplementations { { typeof(TEntityInterface), typeof(TEntity).FullName }},
                 new ConsoleLogProvider(),
                 new PersistenceTransactionStub(),
                 new GenericFilterHelper(new DomainObjectModelMock()),
-                new ApplyFiltersOnClientReadMock())
+                new ApplyFiltersOnClientRead())
         {
         }
 

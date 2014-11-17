@@ -35,11 +35,6 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public DataStructureInfo Source { get; set; }
 
-        public static string RecomputeFunctionName(EntityComputedFromInfo info)
-        {
-            return "RecomputeFrom" + DslUtility.NameOptionalModule(info.Source, info.Target.Module);
-        }
-
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
             if (!existingConcepts.OfType<KeyPropertyComputedFromInfo>().Any(kp => kp.PropertyComputedFrom.Dependency_EntityComputedFrom == this)

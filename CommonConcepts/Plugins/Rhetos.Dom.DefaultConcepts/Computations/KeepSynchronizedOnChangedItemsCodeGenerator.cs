@@ -68,33 +68,20 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format(
 @"            {{
                 var filteredNew = _filterLoadKeepSynchronizedOnChangedItems{0}(inserted.Concat(updated).ToList());
-                _domRepository.{1}.{2}.{6}(filterKeepSynchronizedOnChangedItems{0}Old{3});
-                _domRepository.{1}.{2}.{6}(filteredNew{3});
+                _domRepository.{1}.{2}.{5}(filterKeepSynchronizedOnChangedItems{0}Old);
+                _domRepository.{1}.{2}.{5}(filteredNew);
                 
                 // Workaround to restore NH proxies after using NHSession.Clear() when saving data in Recompute().
-                for (int i=0; i<inserted.Length; i++) inserted[i] = _executionContext.NHibernateSession.Load<{4}.{5}>(inserted[i].ID);
-                for (int i=0; i<updated.Length; i++) updated[i] = _executionContext.NHibernateSession.Load<{4}.{5}>(updated[i].ID);
+                for (int i=0; i<inserted.Length; i++) inserted[i] = _executionContext.NHibernateSession.Load<{3}.{4}>(inserted[i].ID);
+                for (int i=0; i<updated.Length; i++) updated[i] = _executionContext.NHibernateSession.Load<{3}.{4}>(updated[i].ID);
             }}
 ",
                 uniqueName,
                 info.KeepSynchronized.EntityComputedFrom.Target.Module.Name,
                 info.KeepSynchronized.EntityComputedFrom.Target.Name,
-                FilterSaveCall(info),
                 info.UpdateOnChange.DependsOn.Module.Name,
                 info.UpdateOnChange.DependsOn.Name,
-                EntityComputedFromInfo.RecomputeFunctionName(info.KeepSynchronized.EntityComputedFrom));
-        }
-
-        private static string FilterSaveCall(KeepSynchronizedOnChangedItemsInfo info)
-        {
-            if (string.IsNullOrWhiteSpace(info.KeepSynchronized.FilterSaveExpression))
-                return "";
-
-            return string.Format(", _domRepository.{0}.{1}.FilterSaveKeepSynchronizedOnChangedItems_{2}_{3}",
-                info.KeepSynchronized.EntityComputedFrom.Target.Module.Name,
-                info.KeepSynchronized.EntityComputedFrom.Target.Name,
-                info.KeepSynchronized.EntityComputedFrom.Source.Module.Name,
-                info.KeepSynchronized.EntityComputedFrom.Source.Name);
+                EntityComputedFromCodeGenerator.RecomputeFunctionName(info.KeepSynchronized.EntityComputedFrom));
         }
 
         private static string FilterLoadFunction(DataStructureInfo hookOnSaveEntity, string filterType, string filterFormula, string uniqueName)
