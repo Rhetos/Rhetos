@@ -27,15 +27,13 @@ namespace Rhetos.Utilities
     public static class CsUtility
     {
         /// <summary>
-        /// Generater a C# string constant by adding quotes at the beginning and the end of the string and using escape sequences for special characters.
+        /// Generates a C# string constant.
         /// </summary>
-        /// <param name="text"></param>
-        /// <returns></returns>
         public static string QuotedString(string text)
         {
             if (text == null)
-                throw new ArgumentNullException("text");
-            return @"""" + text.Replace(@"\", @"\\").Replace(@"""", @"\""") + @"""";
+                return "null";
+            return "@\"" + text.Replace("\"", "\"\"") + "\"";
         }
 
         /// <summary>

@@ -38,6 +38,8 @@ namespace Rhetos.Compiler
         void InsertCode(string code);
         void InsertCode(string code, string tag);
         void InsertCode(string firstCode, string nextCode, string firstTag, string nextTag);
+        void InsertCode(string code, string tag, bool insertAfterTag);
+        void InsertCode(string firstCode, string nextCode, string firstTag, string nextTag, bool insertAfterTag);
         void ReplaceCode(string code, string tag);
 
         bool TagExists(string tag);

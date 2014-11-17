@@ -66,14 +66,31 @@ namespace Rhetos.Compiler
 
         public void InsertCode(string code, string tag)
         {
+            InsertCode(code, tag, false);
+        }
+
+        public void InsertCode(string code, string tag, bool insertAfterTag)
+        {
             CheckTag(code, tag);
-            _code.InsertBefore(tag, code);
+            if (insertAfterTag)
+                _code.InsertAfter(tag, code);
+            else
+                _code.InsertBefore(tag, code);
+                
         }
 
         public void InsertCode(string firstCode, string nextCode, string firstTag, string nextTag)
         {
+            InsertCode(firstCode, nextCode, firstTag, nextTag, false);
+        }
+
+        public void InsertCode(string firstCode, string nextCode, string firstTag, string nextTag, bool insertAfterTag)
+        {
             CheckTags(firstCode + " /OR/ " + nextCode, firstTag, nextTag);
-            _code.InsertBefore(nextTag, nextCode);
+            if (insertAfterTag)
+                _code.InsertAfter(nextTag, nextCode);
+            else
+                _code.InsertBefore(nextTag, nextCode);
             _code.Replace(firstTag, firstCode + nextTag);
         }
 

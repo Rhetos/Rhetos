@@ -28,10 +28,22 @@ namespace Rhetos.Compiler
 {
     public enum TagType
     { 
-        /// <summary>Code can be inserted at the tag position only once.</summary>
+        /// <summary>
+        /// Code can be inserted at the tag position only once.
+        /// </summary>
         Single,
-        /// <summary>Code can be inserted at the tag position multiple times. New code is inserted <b>after</b> the previously inserted code.</summary>
-        Appendable
+        /// <summary>
+        /// Code can be inserted at the tag position multiple times.
+        /// New code is inserted <b>after</b> the previously inserted code.
+        /// </summary>
+        Appendable,
+        /// <summary>
+        /// Code can be inserted at the tag position multiple times.
+        /// New code is inserted <b>before</b> the previously inserted code,
+        /// so that multiple insertions at the same tag will result
+        /// in reversed order of the generatered code.
+        /// </summary>
+        Reverse
     };
 
     public class Tag<T>
@@ -97,11 +109,11 @@ namespace Rhetos.Compiler
             if (tag.TagType == TagType.Single)
                 codeBuilder.ReplaceCode(code1, tagPattern);
             else if (tag.NextFormat == null)
-                codeBuilder.InsertCode(code1, tagPattern);
+                codeBuilder.InsertCode(code1, tagPattern, tag.TagType == TagType.Reverse);
             else
             {
                 string nextTagPattern = string.Format(CultureInfo.InvariantCulture, tag.NextFormat, conceptInfoKeyProperties);
-                codeBuilder.InsertCode(code1, code2, tagPattern, nextTagPattern);
+                codeBuilder.InsertCode(code1, code2, tagPattern, nextTagPattern, tag.TagType == TagType.Reverse);
             }
         }
     }

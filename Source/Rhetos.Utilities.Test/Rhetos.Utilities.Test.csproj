@@ -60,6 +60,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CsUtilityTest.cs" />
     <Compile Include="OracleSqlExecuterTest.cs" />
     <Compile Include="GraphTest.cs" />
     <Compile Include="FastReplacerTest.cs" />
