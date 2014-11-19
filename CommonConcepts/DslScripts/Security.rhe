@@ -44,4 +44,6 @@
 			UseExecutionContext;
 		}
 	}
+	
+	Parameter RowPermissionsAllowedItems;
 }

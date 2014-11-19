@@ -112,6 +112,16 @@ namespace CommonConcepts.Test
                 }
 
                 {
+                    var cReadAll = new ReadCommandInfo()
+                    {
+                        DataSource = "TestRowPermissions.SimpleRP",
+                        ReadRecords = true,
+                        Filters = new FilterCriteria[] { }
+                    };
+                    TestUtility.ShouldFail(() => gRepository.ExecuteReadCommand(cReadAll), _exceptionText);
+                }
+
+                {
                     var cReadCountOnly = new ReadCommandInfo()
                     {
                         DataSource = "TestRowPermissions.SimpleRP",

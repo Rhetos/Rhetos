@@ -32,23 +32,11 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(KeepSynchronizedInfo))]
     public class KeepSynchronizedRecomputeOnDeployCodeGenerator : IConceptCodeGenerator
     {
-        public const string AddKeepSynchronizedMetadataTag = "/*AddKeepSynchronizedMetadata*/";
-
-        private static bool InfrastructureCreated = false;
-
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (KeepSynchronizedInfo)conceptInfo;
 
-            if (!InfrastructureCreated)
-            {
-                codeBuilder.InsertCode(SnippetInfrastructureKeepSynchronizedMetadata(), ModuleCodeGenerator.CommonInfrastructureMembersTag);
-                codeBuilder.InsertCode(SnippetRegisterInfrastructure(), ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
-
-                InfrastructureCreated = true;
-            }
-
-            codeBuilder.InsertCode(KeepSynchronizedMetadataSnippet(info), AddKeepSynchronizedMetadataTag);
+            codeBuilder.InsertCode(KeepSynchronizedMetadataSnippet(info), KeepSynchronizedRecomputeOnDeployInfrastructureCodeGenerator.AddKeepSynchronizedMetadataTag);
         }
 
         private static string KeepSynchronizedMetadataSnippet(KeepSynchronizedInfo info)
@@ -71,25 +59,6 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string GetKeepSynchronizedContext(KeepSynchronizedInfo info)
         {
             return info.EntityComputedFrom.Source.GetFullDescription();
-        }
-
-        private static string SnippetInfrastructureKeepSynchronizedMetadata()
-        {
-            return string.Format(
-        @"public static readonly CurrentKeepSynchronizedMetadata CurrentKeepSynchronizedMetadata = new CurrentKeepSynchronizedMetadata
-        {{
-            {0}
-        }};
-
-        ",
-                AddKeepSynchronizedMetadataTag);
-        }
-
-        private static string SnippetRegisterInfrastructure()
-        {
-            return
-            @"builder.RegisterInstance(Infrastructure.CurrentKeepSynchronizedMetadata).ExternallyOwned();
-            ";
         }
     }
 }

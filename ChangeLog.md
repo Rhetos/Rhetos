@@ -1,3 +1,12 @@
+0.9.20 (TO BE RELEASED)
+-------------------
+
+Internal improvements:
+
+* Automatically updating persisted "KeepSynchronized" data on deployment.
+* Bugfix: ArgumentNullException thrown on some client request.
+* Bugfix: Row permissions not used on empty filter requests.
+
 0.9.19 (2014-11-12)
 -------------------
 
@@ -12,7 +21,6 @@ Internal improvements:
 * New action for custom log entries: *Common.AddToLog*.
 * Bugfix: Value-type filter without a given parameter value would fail even if the value is not used in the filter.
 * Using *ConceptMetadata* for sharing concept implementation info (SQL column name and type, e.g.).
-
 
 0.9.18 (2014-10-01)
 -------------------

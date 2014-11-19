@@ -59,13 +59,15 @@ namespace Rhetos.Dom.DefaultConcepts
             IEnumerable<IKeepSynchronizedMetadata> toInsert, toUpdate, toDelete;
             keepSyncRepos.Diff(oldItems, _currentKeepSynchronizedMetadata, new SameRecord(), SameValue, Assign, out toInsert, out toUpdate, out toDelete);
 
-            var toRecompute = toInsert.Concat(toUpdate).Where(item => !avoidRecompute.Contains(GetKey(item))).ToList();
-            foreach (var keepSynchronized in toRecompute)
-            {
-                _logger.Info(() => string.Format("Recomputing {0} from {1}.", keepSynchronized.Target, keepSynchronized.Source));
-                _genericRepositories.GetGenericRepository(keepSynchronized.Target).RecomputeFrom(keepSynchronized.Source);
-                _performanceLogger.Write(sw, () => string.Format("KeepSynchronizedRecomputeOnDeploy: {0} from {1}.", keepSynchronized.Target, keepSynchronized.Source));
-            }
+            foreach (var keepSynchronized in toInsert.Concat(toUpdate))
+                if (!avoidRecompute.Contains(GetKey(keepSynchronized)))
+                {
+                    _logger.Info(() => string.Format("Recomputing {0} from {1}.", keepSynchronized.Target, keepSynchronized.Source));
+                    _genericRepositories.GetGenericRepository(keepSynchronized.Target).RecomputeFrom(keepSynchronized.Source);
+                    _performanceLogger.Write(sw, () => string.Format("KeepSynchronizedRecomputeOnDeploy: {0} from {1}.", keepSynchronized.Target, keepSynchronized.Source));
+                }
+                else
+                    _logger.Info(() => string.Format("Specified not to recompute {0} from {1}.", keepSynchronized.Target, keepSynchronized.Source));
 
             keepSyncRepos.Save(toInsert, toUpdate, toDelete);
         }

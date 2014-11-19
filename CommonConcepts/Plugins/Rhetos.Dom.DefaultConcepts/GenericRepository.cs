@@ -488,7 +488,7 @@ namespace Rhetos.Dom.DefaultConcepts
             if (readResult.Records == null)
                 return false;
 
-            if (readCommand.Filters != null)
+            if (readCommand.Filters != null && readCommand.Filters.Length > 0)
             {
                 int lastRowPermissionFilter = -1;
                 for (int f = readCommand.Filters.Length - 1; f >= 0; f--)
@@ -498,14 +498,14 @@ namespace Rhetos.Dom.DefaultConcepts
                         break;
                     }
 
-                if (lastRowPermissionFilter == readCommand.Filters.Length - 1)
-                {
-                    _logger.Trace(() => "Last filter is '" + RowPermissionsInfo.FilterName + "', skipping ValidateRowPermissions.");
-                    return false;
-                }
-
                 if (lastRowPermissionFilter >= 0)
-                    _logger.Trace(() => "Warning: Improve performance by moving '" + RowPermissionsInfo.FilterName + "' to last position, in order to skip ValidateRowPermissions.");
+                    if (lastRowPermissionFilter == readCommand.Filters.Length - 1)
+                    {
+                        _logger.Trace(() => "Last filter is '" + RowPermissionsInfo.FilterName + "', skipping ValidateRowPermissions.");
+                        return false;
+                    }
+                    else
+                        _logger.Trace(() => "Warning: Improve performance by moving '" + RowPermissionsInfo.FilterName + "' to last position, in order to skip ValidateRowPermissions.");
             }
 
             return true;
