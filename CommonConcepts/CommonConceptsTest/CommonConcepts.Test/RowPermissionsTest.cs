@@ -29,6 +29,7 @@ using Rhetos.Dom.DefaultConcepts;
 using System.Linq;
 using TestRowPermissions;
 using Rhetos.Dsl.DefaultConcepts;
+using Rhetos;
 
 namespace CommonConcepts.Test
 {
@@ -403,6 +404,47 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
+        public void Browse()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var gr = container.Resolve<GenericRepository<SimpleRP>>();
+                var grBrowse = container.Resolve<GenericRepository<SimpleRPBrowse>>();
+
+                var items = new[] { 1000, 2000 }.Select(a => new SimpleRP() { ID = Guid.NewGuid(), value = a }).ToList();
+                gr.Save(items, null, gr.Read());
+
+                {
+                    var cReadAll = new ReadCommandInfo()
+                    {
+                        DataSource = "TestRowPermissions.SimpleRPBrowse",
+                        ReadRecords = true,
+                    };
+                    TestUtility.ShouldFail(() => grBrowse.ExecuteReadCommand(cReadAll), _exceptionText);
+                }
+                {
+                    var cReadAll = new ReadCommandInfo()
+                    {
+                        DataSource = "TestRowPermissions.SimpleRPBrowse",
+                        ReadRecords = true,
+                        Filters = new[] { new FilterCriteria("Value2", "less", 1900) }
+                    };
+                    TestUtility.ShouldFail(() => grBrowse.ExecuteReadCommand(cReadAll), _exceptionText);
+                }
+                {
+                    var cReadAll = new ReadCommandInfo()
+                    {
+                        DataSource = "TestRowPermissions.SimpleRPBrowse",
+                        ReadRecords = true,
+                        Filters = new[] { new FilterCriteria("Value2", "greater", 1900) }
+                    };
+                    dynamic result = grBrowse.ExecuteReadCommand(cReadAll).Records.Single();
+                    Assert.AreEqual(2000, result.Value2);
+                }
+            }
+        }
+
+        [TestMethod]
         public void AutoApplyFilter()
         {
             using (var container = new RhetosTestContainer())
@@ -474,6 +516,37 @@ namespace CommonConcepts.Test
                         "Row permission filter is not the last filter applied on reading. It will be use again for result permission validation to make sure other filters did not expand the result set.");
                     lastFilterCount = logFilterQuery.Count();
                 }
+            }
+        }
+
+        string ReadErrorData(GenericRepository<ErrorData> gr, string testName)
+        {
+            Console.WriteLine("Test: " + testName);
+            var readCommand = new ReadCommandInfo() { ReadRecords = true, Filters = new[] { new FilterCriteria(testName) } };
+            var loaded = gr.ExecuteReadCommand(readCommand).Records;
+            string report = TestUtility.DumpSorted(loaded, item => ((ErrorData)item).Name);
+            Console.WriteLine("Result: " + report);
+            return report;
+        }
+
+        [TestMethod]
+        public void ErrorHandling()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var gr = container.Resolve<GenericRepository<ErrorData>>();
+                var newItems = new[] { "a", "b", "c" }.Select(name => new ErrorData { ID = Guid.NewGuid(), Name = name }).ToList();
+                gr.Save(newItems, null, gr.Read());
+
+                Assert.AreEqual("a, b, c", ReadErrorData(gr, ""));
+
+                TestUtility.ShouldFail<FrameworkException>(() => ReadErrorData(gr, "duplicateSecondItem"),
+                    "duplicate IDs", "ErrorData", newItems[1].ID.ToString());
+
+                gr.Save(new[] { new ErrorData { Name = "makeInvalidFilter" } }, null, null);
+
+                TestUtility.ShouldFail<FrameworkException>(() => ReadErrorData(gr, ""),
+                    "Invalid row permissions filter result", "ErrorData");
             }
         }
     }

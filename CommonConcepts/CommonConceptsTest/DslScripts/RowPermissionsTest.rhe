@@ -33,7 +33,13 @@ Module TestRowPermissions
 			
 			return source.Where(a => a.value >= perms.minVal && a.value <= perms.maxVal);
 		}';
-		
+	
+	Browse SimpleRPBrowse TestRowPermissions.SimpleRP
+	{
+		Take Value2 value;
+		RowPermissions '(source, repo, context) => source.Where(a => a.Base.value >= 1500).Where(a => a.Base.value <= 2500)';
+	}
+	
 	Entity AutoFilter
 	{
 		ShortString Name;
@@ -46,5 +52,29 @@ Module TestRowPermissions
 				return source.Where(item => item.Name.StartsWith("a"));
 			}';
 		ApplyFilterOnClientRead 'Common.RowPermissionsAllowedItems';
+	}
+	
+	Entity ErrorData
+	{
+		ShortString Name;
+		
+		RowPermissions '(source, repos, context) =>
+			{
+				var items = source.ToList();
+				if (items.Any(item => item.Name == "makeInvalidFilter"))
+					return items.Concat(items).ToList().AsQueryable();
+					
+				return source;
+			}';
+		
+		FilterBy 'System.String' '(repository, parameter) =>
+			{
+				var items = repository.TestRowPermissions.ErrorData.All();
+				if (parameter == "duplicateSecondItem")
+					return items.Concat(new[] { items[1] }).ToArray();
+				if (parameter == "makeInvalidFilter")
+					return items.Concat(new[] { new ErrorData { Name = "makeInvalidFilter" } }).ToArray();
+				return items;
+			}';
 	}
 }

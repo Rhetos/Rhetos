@@ -392,7 +392,7 @@ namespace Rhetos.Dom.DefaultConcepts
             while (startIndex < endIndex) yield return source[startIndex++];
         }
 
-        IEnumerable<IEnumerable<T>> GetChunks<T>(T[] source, int chunkSize)
+        private IEnumerable<IEnumerable<T>> GetChunks<T>(T[] source, int chunkSize)
         {
             int start = 0;
             while (start < source.Length)
@@ -407,31 +407,57 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Checks if RowPermissions concept is present and validates all items are included. Works with materialized items.
         /// </summary>
         /// <param name="materialized"></param>
-        private void ValidateRowPermissions(TEntityInterface[] materialized)
+        private void ValidateRowPermissions(TEntityInterface[] readItems)
         {
-            int _batchSize = 2000; // true NHibernate/SQL limit is probably 2100
-
             Type filterType = _domainObjectModel.Assembly.GetType(RowPermissionsInfo.FilterName);
-
             var filterMethodInfo = _reflection.RepositoryQueryableFilterMethod(filterType);
 
             if (filterMethodInfo != null)
-            { 
-                _logger.Trace(() => string.Format("Found row permissions filter, checking if all items are allowed (with batchSize = {0}).", _batchSize));
+            {
+                var allowedItemsQuery = (IQueryable<TEntityInterface>)ReadNonMaterialized(null, filterType, true);
 
-                var allowedItems = ((IQueryable<TEntityInterface>)ReadNonMaterialized(null, filterType, true)).Select(a => a.ID);
-                var batches = GetChunks(materialized, _batchSize);
-                
-                foreach (var batch in batches)
+                const int batchSize = 2000; // true NHibernate/SQL limit is probably 2100
+                _logger.Trace(() => string.Format("Found row permissions filter, checking if all items are allowed (with batchSize = {0}).", batchSize));
+                var readItemsBatches = GetChunks(readItems, batchSize);
+
+                foreach (var readItemsBatch in readItemsBatches)
                 {
-                    var preparedIDs = batch.Select(a => a.ID).Distinct().ToList();
-                    var allowedCount = allowedItems.Where(a => preparedIDs.Contains(a)).Distinct().Count();
-                    _logger.Trace(() => string.Format("Row permission batch test; distinct requested: {0}, distinct allowed: {1}", preparedIDs.Count, allowedCount));
-                    
-                    if (preparedIDs.Count != allowedCount)
+                    var readItemsIds = readItemsBatch.Select(readItem => readItem.ID).ToList();
+
+                    Guid? duplicateId = FindDuplicate(readItemsIds);
+                    if (duplicateId != null)
+                        throw new FrameworkException(string.Format(
+                            "Error while checking row permissions: Loaded items have duplicate IDs ({0}:{1}).",
+                            EntityName, duplicateId));
+
+                    // The following query is equivalent to: int allowedReadItemsCount = allowedItemsQuery.Where(allowedItem => readItemsIds.Contains(allowedItem.ID)).Count();
+                    // The query is built by reflection to avoid an obscure problem with complex query in NHibernate: using generic parameter TEntityInterface for a query parameter
+                    // breaks on some complex scenarios, so row permissions would not work on browse data structures, see unit test CommonConcepts.Test.RowPermissionsTest.Browse).
+                    var allowedReadItemPredicateParameter = Expression.Parameter(_reflection.EntityType, "allowedItem");
+                    var allowedReadItemPredicate = Expression.Lambda(
+                        Expression.Call(
+                            Expression.Constant(readItemsIds),
+                            typeof(List<Guid>).GetMethod("Contains"),
+                            new[] { Expression.Property(allowedReadItemPredicateParameter, "ID") }),
+                        allowedReadItemPredicateParameter);
+                    int allowedReadItemsCount = _reflection.Where(allowedItemsQuery, allowedReadItemPredicate).Count();
+                    _logger.Trace(() => string.Format("Row permission batch test; distinct requested: {0}, distinct allowed: {1}", readItemsIds.Count, allowedReadItemsCount));
+
+                    if (allowedReadItemsCount < readItemsIds.Count)
                         throw new UserException("Insufficient permissions to access some or all of the data requested.", "DataStructure:" + _reflection.EntityType.ToString() + ".");
+                    else if (allowedReadItemsCount > readItemsIds.Count)
+                        throw new FrameworkException(string.Format(
+                            "Invalid row permissions filter result: More items allowed ({0}) then items read ({1}). Check if the {2} filter on {3} returns duplicate IDs.",
+                            allowedReadItemsCount, readItemsIds.Count, EntityName, RowPermissionsInfo.FilterName));
                 }
             }
+        }
+
+        private Guid? FindDuplicate(List<Guid> ids)
+        {
+            if (ids.Distinct().Count() != ids.Count)
+                return ids.GroupBy(id => id).Where(group => group.Count() > 1).First().Key;
+            return null;
         }
 
         public ReadCommandResult ExecuteReadCommand(ReadCommandInfo commandInfo)
@@ -676,7 +702,7 @@ namespace Rhetos.Dom.DefaultConcepts
             foreach (var newItem in newItems)
             {
                 var filterLoad = propertiesSelectorHandler.BuildComparisonPredicate(newItem);
-                Guid id = Query().Where(filterLoad).Select(e => e.ID).FirstOrDefault();
+                Guid id = _reflection.Where(Query(), filterLoad).Select(e => e.ID).FirstOrDefault();
 
                 if (id == default(Guid))
                 {
@@ -710,7 +736,7 @@ namespace Rhetos.Dom.DefaultConcepts
             foreach (var newItem in newItems)
             {
                 var filterOld = keyPropertiesHandler.BuildComparisonPredicate(newItem);
-                TEntityInterface oldItem = Query().Where(filterOld).ToList().SingleOrDefault();
+                TEntityInterface oldItem = _reflection.Where(Query(), filterOld).ToList().SingleOrDefault();
 
                 if (oldItem == null)
                 {

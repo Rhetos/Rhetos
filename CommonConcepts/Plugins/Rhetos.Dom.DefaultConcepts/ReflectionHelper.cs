@@ -29,7 +29,7 @@ using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    internal class ReflectionHelper<TEntityInterface>
+    public class ReflectionHelper<TEntityInterface>
         where TEntityInterface : class, IEntity
     {
         private readonly string _entityName;
