@@ -30,6 +30,7 @@ using Rhetos.XmlSerialization;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
 using Rhetos.TestCommon;
+using Rhetos.Logging;
 
 namespace CommonConcepts.Test
 {
@@ -53,7 +54,7 @@ namespace CommonConcepts.Test
         {
             var repositories = container.Resolve<GenericRepositories>();
 
-            ICommandImplementation command = new QueryDataSourceCommand(new SimpleDataTypeProvider(), repositories);
+            ICommandImplementation command = new QueryDataSourceCommand(new SimpleDataTypeProvider(), repositories, container.Resolve<ILogProvider>());
             var result = (QueryDataSourceCommandResult)command.Execute(info).Data.Value;
             var items = ((IEnumerable<TestQueryDataStructureCommand.E>)result.Records).Select(item => item.Name);
             if (sort)
@@ -168,7 +169,7 @@ namespace CommonConcepts.Test
 
         private static string ReportCommandResult2(RhetosTestContainer container, ICommandInfo info, bool sort = false)
         {
-            ICommandImplementation command = new QueryDataSourceCommand(new SimpleDataTypeProvider(), container.Resolve<GenericRepositories>());
+            ICommandImplementation command = new QueryDataSourceCommand(new SimpleDataTypeProvider(), container.Resolve<GenericRepositories>(), container.Resolve<ILogProvider>());
             var result = (QueryDataSourceCommandResult)command.Execute(info).Data.Value;
             var items = ((IEnumerable<TestQueryDataStructureCommand.Source>)result.Records).Select(item => item.Name);
             if (sort)

@@ -415,6 +415,15 @@ namespace Rhetos.Dom.DefaultConcepts
             };
         }
 
+        public static bool EqualsSimpleFilter(FilterCriteria filter, string filterName)
+        {
+            return filter.Filter == filterName
+                && filter.Value == null
+                && (string.IsNullOrEmpty(filter.Operation)
+                    || string.Equals(filter.Operation, GenericFilterHelper.FilterOperationMatches, StringComparison.OrdinalIgnoreCase));
+        }
+
+
         #endregion
     }
 }

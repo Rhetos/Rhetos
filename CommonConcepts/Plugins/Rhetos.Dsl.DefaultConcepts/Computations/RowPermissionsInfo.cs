@@ -28,32 +28,32 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RowPermissions")]
-    public class RowPermissionsInfo : ComposableFilterByInfo, IMacroConcept, IAlternativeInitializationConcept
+    public class RowPermissionsInfo : IMacroConcept
     {
-        public static readonly string FilterName = "Common.RowPermissionsAllowedItems";
+        [ConceptKey]
+        public DataStructureInfo Source { get; set; }
 
         public string SimplifiedExpression { get; set; }
 
-        public IEnumerable<string> DeclareNonparsableProperties()
+        public new IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return new[] { "Parameter", "Expression" };
-        }
+            var newConcepts = new List<IConceptInfo>();
 
-        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
-        {
-            Parameter = FilterName;
-            Expression = ReformatLambdaExpression(SimplifiedExpression);
-            createdConcepts = null;
+            newConcepts.Add(new RowPermissionsReadInfo() { SimplifiedExpression = SimplifiedExpression, Source = Source });
+            newConcepts.Add(new RowPermissionsWriteInfo() { SimplifiedExpression = SimplifiedExpression, Source = Source });
+
+            return newConcepts;
         }
 
         // ugly workaround to eliminate unnecessary parameter which ComposableFilterBy expects
         // we don't need parameter in row permission filter/expression
-        string ReformatLambdaExpression(string expression)
+        // it is used by child concepts RowPermissionsRead i RowPermissionsWrite
+        public static string ReformatLambdaExpression_RemoveParameter(string expression)
         {
             Regex regex = new Regex(@"^\((.+?),(.+?),(.+?)\).*?=>(.*)$", RegexOptions.Singleline);
             Match match = regex.Match(expression);
             if (match.Groups.Count != 5)
-                throw new DslSyntaxException("RowPermissions expression format is not valid: " + expression);
+                throw new DslSyntaxException("RowPermissionsRead expression format is not valid: " + expression);
 
             string source = match.Groups[1].Value, repo = match.Groups[2].Value, context = match.Groups[3].Value,
                 expr = match.Groups[4].Value;
@@ -62,16 +62,6 @@ namespace Rhetos.Dsl.DefaultConcepts
                 source, repo, context, expr);
 
             return reformatted;
-        }
-
-        public new IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            var newConcepts = new List<IConceptInfo>();
-            newConcepts.AddRange(base.CreateNewConcepts(existingConcepts));
-
-            newConcepts.Add(new ComposableFilterUseExecutionContextInfo() { Filter = this });
-
-            return newConcepts;
         }
     }
 }

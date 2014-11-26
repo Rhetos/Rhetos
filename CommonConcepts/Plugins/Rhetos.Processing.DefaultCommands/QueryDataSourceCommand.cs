@@ -26,6 +26,7 @@ using Autofac.Features.Indexed;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Extensibility;
 using Rhetos.Dom;
+using Rhetos.Logging;
 
 namespace Rhetos.Processing.DefaultCommands
 {
@@ -36,13 +37,16 @@ namespace Rhetos.Processing.DefaultCommands
     {
         private readonly IDataTypeProvider _dataTypeProvider;
         private readonly GenericRepositories _repositories;
+        private readonly ILogProvider _logProvider;
 
         public QueryDataSourceCommand(
             IDataTypeProvider dataTypeProvider,
-            GenericRepositories repositories)
+            GenericRepositories repositories,
+            ILogProvider logProvider)
         {
             _dataTypeProvider = dataTypeProvider;
             _repositories = repositories;
+            _logProvider = logProvider;
         }
 
         public CommandResult Execute(ICommandInfo commandInfo)
@@ -50,7 +54,7 @@ namespace Rhetos.Processing.DefaultCommands
             var info = (QueryDataSourceCommandInfo)commandInfo;
 
             var genericRepository = _repositories.GetGenericRepository(info.DataSource);
-            var readCommand = new ReadCommand(_dataTypeProvider, _repositories);
+            var readCommand = new ReadCommand(_dataTypeProvider, _repositories, _logProvider);
             var readCommandInfo = info.ToReadCommandInfo();
             ReadCommandResult readCommandResult = genericRepository.ExecuteReadCommand(readCommandInfo);
 

@@ -26,6 +26,8 @@ using Autofac.Features.Indexed;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Extensibility;
 using Rhetos.Dom;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Logging;
 
 namespace Rhetos.Processing.DefaultCommands
 {
@@ -35,24 +37,37 @@ namespace Rhetos.Processing.DefaultCommands
     {
         private readonly IDataTypeProvider _dataTypeProvider;
         private readonly GenericRepositories _repositories;
+        private readonly ILogger _logger;
 
         public ReadCommand(
             IDataTypeProvider dataTypeProvider,
-            GenericRepositories repositories)
+            GenericRepositories repositories,
+            ILogProvider logProvider)
         {
             _dataTypeProvider = dataTypeProvider;
             _repositories = repositories;
+            _logger = logProvider.GetLogger(GetType().Name);
         }
 
         public CommandResult Execute(ICommandInfo commandInfo)
         {
-            var info = (ReadCommandInfo)commandInfo;
+            var readInfo = commandInfo as ReadCommandInfo;
 
-            if (info.DataSource == null)
+            if (readInfo == null)
+                return CommandResult.Fail("CommandInfo does not implement ReadCommandInfo");
+
+            if (readInfo.DataSource == null)
                 throw new ClientException("Invalid ReadCommand argument: Data source is not set.");
+            
+            var genericRepository = _repositories.GetGenericRepository(readInfo.DataSource);
+            ReadCommandResult result = genericRepository.ExecuteReadCommand(readInfo);
 
-            var genericRepository = _repositories.GetGenericRepository(info.DataSource);
-            ReadCommandResult result = genericRepository.ExecuteReadCommand(info);
+            if (ShouldValidateRowPermissionsRead(readInfo, result))
+            {
+                var valid = genericRepository.CheckAllItemsWithinFilter(result.Records, RowPermissionsReadInfo.FilterName);
+                if (!valid) 
+                    throw new UserException("Insufficient permissions to access some or all of the data requested.", "DataStructure:" + readInfo.DataSource + ".");
+            }
 
             return new CommandResult
             {
@@ -61,5 +76,35 @@ namespace Rhetos.Processing.DefaultCommands
                 Success = true
             };
         }
+
+
+        private bool ShouldValidateRowPermissionsRead(ReadCommandInfo readCommand, ReadCommandResult readResult)
+        {
+            if (readResult.Records == null)
+                return false;
+
+            if (readCommand.Filters != null && readCommand.Filters.Length > 0)
+            {
+                int lastRowPermissionFilter = -1;
+                for (int f = readCommand.Filters.Length - 1; f >= 0; f--)
+                    if (GenericFilterHelper.EqualsSimpleFilter(readCommand.Filters[f], RowPermissionsReadInfo.FilterName))
+                    {
+                        lastRowPermissionFilter = f;
+                        break;
+                    }
+
+                if (lastRowPermissionFilter >= 0)
+                    if (lastRowPermissionFilter == readCommand.Filters.Length - 1)
+                    {
+                        _logger.Trace(() => "Last filter is '" + RowPermissionsReadInfo.FilterName + "', skipping RowPermissionsRead validation.");
+                        return false;
+                    }
+                    else
+                        _logger.Trace(() => "Warning: Improve performance by moving '" + RowPermissionsReadInfo.FilterName + "' to last position, in order to skip RowPermissionsRead validation.");
+            }
+
+            return true;
+        }
+
     }
 }
