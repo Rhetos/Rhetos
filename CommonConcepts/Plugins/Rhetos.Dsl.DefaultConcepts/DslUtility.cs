@@ -95,5 +95,21 @@ namespace Rhetos.Dsl.DefaultConcepts
                 return property;
             }
         }
+
+        /// <summary>
+        /// Throws a DslSyntaxException if the argument is not a valid identifier.
+        /// </summary>
+        public static string ValidateIdentifier(string name, IConceptInfo errorContext, string additionalErrorMessage = null)
+        {
+            string error = CsUtility.GetIdentifierError(name);
+            if (error != null)
+            {
+                if (!string.IsNullOrEmpty(additionalErrorMessage))
+                    error = additionalErrorMessage + " " + error;
+
+                throw new DslSyntaxException(errorContext, error);
+            }
+            return name;
+        }
     }
 }

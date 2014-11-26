@@ -56,8 +56,9 @@ namespace Rhetos.Dom.DefaultConcepts
         private readonly string _repositoryName;
         private readonly Lazy<IRepository> _repository;
         private readonly ReflectionHelper<TEntityInterface> _reflection;
-        private const string UnsupportedLoaderMessage = "{0} does not implement a loader or a filter with parameter {1}.";
+        private const string UnsupportedLoaderMessage = "{0} does not implement a loader, a query or a filter with parameter {1}.";
         private const string UnsupportedFilterMessage = "{0} does not implement a filter with parameter {1}.";
+        private const string UnsupportedQueryMessage = "{0} does not implement a query method or a filter with parameter {1} than will return an IQueryable. Try using Read function instead of the Query function.";
 
         public string EntityName { get; private set; }
         public IRepository EntityRepository { get { return _repository.Value; } }
@@ -139,10 +140,10 @@ namespace Rhetos.Dom.DefaultConcepts
             return list;
         }
 
-        /// <returns>Result is a List<> of the data structure type.
-        /// The list is returened as IEnumerable<> of the interface type,
+        /// <returns>Result is a List&lt;&gt; of the data structure type.
+        /// The list is returened as IEnumerable&lt;&gt; of the interface type,
         /// to allow strongly-typed use of the list through TEntityInterface interface.
-        /// Neither List or IList are covariant, so IEnumerable is used.</returns>
+        /// Neither List&lt;&gt; or IList&lt;&gt; are covariant, so IEnumerable&lt;&gt; is used.</returns>
         public IEnumerable<TEntityInterface> CreateList<TSource>(IEnumerable<TSource> source, Action<TSource, TEntityInterface> initializer)
         {
             MaterializeQuick(ref source);
@@ -180,14 +181,46 @@ namespace Rhetos.Dom.DefaultConcepts
         public IQueryable<TEntityInterface> Query()
         {
             if (_reflection.RepositoryQueryMethod == null)
-                throw new FrameworkException(EntityName + "'s repostory does not implement the Query() method.");
+                throw new FrameworkException(EntityName + "'s repository does not implement the Query() method.");
 
             return (IQueryable<TEntityInterface>)_reflection.RepositoryQueryMethod.InvokeEx(_repository.Value);
+        }
+
+        public IQueryable<TEntityInterface> Query<TParameter>()
+        {
+            return Query(null, typeof(TParameter));
+        }
+
+        public IQueryable<TEntityInterface> Query(Expression<Func<TEntityInterface, bool>> filter)
+        {
+            return Query().Where(filter);
+        }
+
+        public IQueryable<TEntityInterface> Query<TParameter>(TParameter parameter)
+        {
+            Type filterType = parameter != null ? parameter.GetType() : typeof(TParameter);
+            return Query(parameter, filterType);
+        }
+
+        public IQueryable<TEntityInterface> Query(object parameter, Type parameterType)
+        {
+            var items = ReadNonMaterialized(parameter, parameterType, true);
+
+            var query = items as IQueryable<TEntityInterface>;
+            if (query == null && items != null)
+                throw new FrameworkException(string.Format(UnsupportedQueryMessage, EntityName, parameterType.FullName));
+
+            return query;
         }
 
         public IEnumerable<TEntityInterface> Read()
         {
             return Read(new FilterAll());
+        }
+
+        public IEnumerable<TEntityInterface> Read<TParameter>()
+        {
+            return Read(null, typeof(TParameter));
         }
 
         public IEnumerable<TEntityInterface> Read(Expression<Func<TEntityInterface, bool>> filter)
@@ -677,7 +710,7 @@ namespace Rhetos.Dom.DefaultConcepts
             MaterializeEntityList(ref deletedIds);
 
             if (_reflection.RepositorySaveMethod == null)
-                throw new FrameworkException(EntityName + "'s repostory does not implement the Save(IEnumerable<Entity>, ...) method.");
+                throw new FrameworkException(EntityName + "'s repository does not implement the Save(IEnumerable<Entity>, ...) method.");
 
             _reflection.RepositorySaveMethod.InvokeEx(_repository.Value,
                 insertedNew != null ? _reflection.CastAsEntity(insertedNew) : null,
@@ -688,30 +721,30 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public void InsertOrReadId<TProperties>(
             TEntityInterface newItem,
-            Expression<Func<TEntityInterface, TProperties>> propertiesSelector)
+            Expression<Func<TEntityInterface, TProperties>> keySelector)
         {
-            InsertOrReadId(new[] { newItem }, propertiesSelector);
+            InsertOrReadId(new[] { newItem }, keySelector);
         }
 
         public void InsertOrReadId<TProperties>(
             IEnumerable<TEntityInterface> newItems,
-            Expression<Func<TEntityInterface, TProperties>> propertiesSelector)
+            Expression<Func<TEntityInterface, TProperties>> keySelector)
         {
-            var propertiesSelectorHandler = new ExpressionHelper<TEntityInterface, TProperties>(propertiesSelector);
+            var keySelectorHandler = new PropertySelectorExpression<TEntityInterface, TProperties>(keySelector);
 
             foreach (var newItem in newItems)
             {
-                var filterLoad = propertiesSelectorHandler.BuildComparisonPredicate(newItem);
+                var filterLoad = keySelectorHandler.BuildComparisonPredicate(newItem);
                 Guid id = _reflection.Where(Query(), filterLoad).Select(e => e.ID).FirstOrDefault();
 
                 if (id == default(Guid))
                 {
-                    _logger.Trace(() => "Creating " + EntityName + " " + propertiesSelectorHandler.ToString(newItem) + ".");
+                    _logger.Trace(() => "Creating " + EntityName + " " + keySelectorHandler.ToString(newItem) + ".");
                     Save(new[] { newItem }, null, null);
                 }
                 else
                 {
-                    _logger.Trace(() => "Already exists " + EntityName + " " + propertiesSelectorHandler.ToString(newItem) + ".");
+                    _logger.Trace(() => "Already exists " + EntityName + " " + keySelectorHandler.ToString(newItem) + ".");
                     newItem.ID = id;
                 }
             }
@@ -730,8 +763,8 @@ namespace Rhetos.Dom.DefaultConcepts
             Expression<Func<TEntityInterface, TKeyProperties>> keySelector,
             Expression<Func<TEntityInterface, TValueProperties>> valueSelector)
         {
-            var keyPropertiesHandler = new ExpressionHelper<TEntityInterface, TKeyProperties>(keySelector);
-            var valuePropertiesHandler = new ExpressionHelper<TEntityInterface, TValueProperties>(valueSelector);
+            var keyPropertiesHandler = new PropertySelectorExpression<TEntityInterface, TKeyProperties>(keySelector);
+            var valuePropertiesHandler = new PropertySelectorExpression<TEntityInterface, TValueProperties>(valueSelector);
 
             foreach (var newItem in newItems)
             {
@@ -1033,7 +1066,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (recomputeMethod == null)
                 throw new FrameworkException(string.Format(
-                    "{0}'s repostory does not implement the method to recompute from {1} ({2}).",
+                    "{0}'s repository does not implement the method to recompute from {1} ({2}).",
                     EntityName, source, _reflection.RepositoryRecomputeFromMethodName(source)));
 
             recomputeMethod.InvokeEx(_repository.Value, filterLoad, null);

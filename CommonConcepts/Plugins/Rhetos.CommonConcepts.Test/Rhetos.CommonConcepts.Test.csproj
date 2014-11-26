@@ -66,7 +66,8 @@
     <Compile Include="ClaimsTest.cs" />
     <Compile Include="DataStructureUtilityTest.cs" />
     <Compile Include="GenericRepositoryFilterTest.cs" />
-    <Compile Include="ExpressionHandlerTest.cs" />
+    <Compile Include="GenericRepositoryQueryTest.cs" />
+    <Compile Include="PropertySelectorExpressionTest.cs" />
     <Compile Include="GenericRepositoryInstantiationTest.cs" />
     <Compile Include="GenericRepositoryErrorsTest.cs" />
     <Compile Include="GenericRepositoryReadTest.cs" />

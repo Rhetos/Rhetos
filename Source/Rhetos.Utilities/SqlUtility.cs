@@ -187,36 +187,12 @@ namespace Rhetos.Utilities
         /// </summary>
         public static string Identifier(string name)
         {
-            CheckIdentifier(name);
+            string error = CsUtility.GetIdentifierError(name);
+            if (error != null)
+                throw new FrameworkException("Invalid database object name: " + error);
 
             if (DatabaseLanguageIsOracle.Value)
                 name = OracleSqlUtility.LimitIdentifierLength(name);
-
-            return name;
-        }
-
-        /// <summary>
-        /// Use Identifier(name) instead of CheckIdentifier(name) if converting a DSL feature name or object model name to an SQL identifier.
-        /// </summary>
-        public static string CheckIdentifier(string name)
-        {
-            if (name == null)
-                throw new FrameworkException("Given database object name '" + name + "' is null.");
-
-            if (string.IsNullOrEmpty(name))
-                throw new FrameworkException("Given database object name '" + name + "' is empty.");
-
-            {
-                foreach (char c in name)
-                    if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && (c < '0' || c > '9') && c != '_')
-                        throw new FrameworkException("Given database object name '" + name + "' is not valid. Character '" + c + "' is not an english letter or number or undescore.");
-            }
-
-            {
-                char c = name[0];
-                if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && c != '_')
-                    throw new FrameworkException("Given database object name '" + name + "' is not valid. First character is not an english letter or undescore.");
-            }
 
             return name;
         }

@@ -85,10 +85,12 @@ namespace Rhetos.Dsl.Test
             }
             public ValueOrError<IConceptInfo> Parse(ITokenReader tokenReader, Stack<IConceptInfo> context)
             {
-                if (tokenReader.ReadText() == Keyword)
+                if (tokenReader.ReadText().Value == Keyword)
                 {
-                    tokenReader.Read("-", ErrorMessage);
-                    return new SimpleConceptInfo("", "");
+                    if (tokenReader.TryRead("-"))
+                        return new SimpleConceptInfo("", "");
+                    else
+                        return ValueOrError.CreateError(ErrorMessage);
                 }
                 return ValueOrError<IConceptInfo>.CreateError("");
             }
@@ -96,44 +98,31 @@ namespace Rhetos.Dsl.Test
 
         [TestMethod()]
         [DeploymentItem("Rhetos.Dsl.dll")]
-        [ExpectedException(typeof(DslSyntaxException))]
         public void ParseNextConcept_DontDescribeExceptionIfConceptNotRecognized()
         {
             string dsl = "a";
             List<IConceptParser> conceptParsers = new List<IConceptParser>() { new TestErrorParser("b") };
 
             TokenReader tokenReader = new TokenReader(Tokenizer.GetTokens(new DslSourceHelper(dsl)), 0);
-            try
-            {
-                IConceptInfo actual = new TestDslParser(dsl).ParseNextConcept(tokenReader, null, conceptParsers);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                Assert.IsFalse(e.Message.Contains(TestErrorParser.ErrorMessage), "Exception must not contain: " + TestErrorParser.ErrorMessage);
-                throw;
-            }
+
+            var e = TestUtility.ShouldFail<DslSyntaxException>(
+                () => new TestDslParser(dsl).ParseNextConcept(tokenReader, null, conceptParsers));
+
+            Assert.IsFalse(e.Message.Contains(TestErrorParser.ErrorMessage), "Exception must not contain: " + TestErrorParser.ErrorMessage);
         }
 
         [TestMethod()]
         [DeploymentItem("Rhetos.Dsl.dll")]
-        [ExpectedException(typeof(DslSyntaxException))]
-        public void ParseNextConcept_PropagateExceptionIfKeywordRecognized()
+        public void ParseNextConcept_PropagateErrorIfKeywordRecognized()
         {
             string dsl = "a";
             List<IConceptParser> conceptParsers = new List<IConceptParser>() { new TestErrorParser("a") };
 
             TokenReader tokenReader = TestTokenReader(dsl);
-            try
-            {
-                IConceptInfo actual = new TestDslParser(dsl).ParseNextConcept(tokenReader, null, conceptParsers);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                Assert.IsTrue(e.Message.Contains(TestErrorParser.ErrorMessage), "Exception must contain: " + TestErrorParser.ErrorMessage);
-                throw;
-            }
+
+            TestUtility.ShouldFail<DslSyntaxException>(
+                () => new TestDslParser(dsl).ParseNextConcept(tokenReader, null, conceptParsers),
+                TestErrorParser.ErrorMessage);
         }
 
         //===================================================================================
@@ -182,7 +171,7 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual("simple", (concept as SimpleConceptInfo).Name);
             Assert.AreEqual("simpledata", (concept as SimpleConceptInfo).Data);
 
-            tokenReader.Read(";", "Reading ';' between concepts.");
+            Assert.IsTrue(tokenReader.TryRead(";"), "Reading ';' between concepts.");
 
             concept = new TestDslParser(dsl).ParseNextConcept(tokenReader, noContext, conceptParsers);
             Assert.AreEqual(typeof(ExtendedConceptInfo), concept.GetType());
@@ -190,7 +179,7 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual("extdata", (concept as ExtendedConceptInfo).Data);
             Assert.AreEqual("extdata2", (concept as ExtendedConceptInfo).Data2);
 
-            tokenReader.Read(";", "Reading ';' after the concept.");
+            Assert.IsTrue(tokenReader.TryRead(";"), "Reading ';' after the concept.");
         }
 
         [TestMethod()]
@@ -210,7 +199,7 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual("name", (concept as SimpleConceptInfo).Name);
             Assert.AreEqual("data", (concept as SimpleConceptInfo).Data);
 
-			tokenReader.Read("{", "Reading '{' between concepts.");
+			Assert.IsTrue(tokenReader.TryRead("{"), "Reading '{' between concepts.");
 
             context.Push(concept);
             concept = new TestDslParser(dsl).ParseNextConcept(tokenReader, context, conceptParsers);

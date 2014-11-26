@@ -29,7 +29,7 @@ using System.Text;
 namespace Rhetos.CommonConcepts.Test
 {
     [TestClass]
-    public class ExpressionHandlerTest
+    public class PropertySelectorExpressionTest
     {
         public interface I
         {
@@ -54,21 +54,21 @@ namespace Rhetos.CommonConcepts.Test
             public string ps { get; set; }
         }
 
-        private ExpressionHelper<TEntityInterface, TProperties> NewExpressionHandler<TEntityInterface, TProperties>(
+        private PropertySelectorExpression<TEntityInterface, TProperties> NewPropertySelectorExpression<TEntityInterface, TProperties>(
             Expression<Func<TEntityInterface, TProperties>> propertiesSelector)
         {
-            return new ExpressionHelper<TEntityInterface, TProperties>(propertiesSelector);
+            return new PropertySelectorExpression<TEntityInterface, TProperties>(propertiesSelector);
         }
 
         [TestMethod]
         public void AssignInterface()
         {
-            var eh = NewExpressionHandler((I item) => item.i);
+            var ps = NewPropertySelectorExpression((I item) => item.i);
 
             var c1 = new C { i = 1, s = "a" };
             var c2 = new C { i = 2, s = "b" };
 
-            eh.Assign(c1, c2);
+            ps.Assign(c1, c2);
             Assert.AreEqual("2 a", c1.ToString());
             Assert.AreEqual("2 b", c2.ToString());
         }
@@ -76,14 +76,14 @@ namespace Rhetos.CommonConcepts.Test
         [TestMethod]
         public void AssignReference()
         {
-            var eh = NewExpressionHandler((C item) => new { item.s, item.p });
+            var ps = NewPropertySelectorExpression((C item) => new { item.s, item.p });
 
             var c1 = new C { i = 1, s = "a" };
             var c2 = new C { i = 2, s = "b", p = new P { ps = "p2" } };
             var c3 = new C { i = 3, s = "c" };
 
-            eh.Assign(c1, c2);
-            eh.Assign(c2, c3);
+            ps.Assign(c1, c2);
+            ps.Assign(c2, c3);
             Assert.AreEqual("1 b p2", c1.ToString());
             Assert.AreEqual("2 c", c2.ToString());
             Assert.AreEqual("3 c", c3.ToString());
@@ -92,23 +92,23 @@ namespace Rhetos.CommonConcepts.Test
         [TestMethod]
         public void AssignError()
         {
-            var eh = NewExpressionHandler((C item) => new { item.s, ps = item.p.ps + "x" });
+            var ps = NewPropertySelectorExpression((C item) => new { item.s, ps = item.p.ps + "x" });
 
             var c1 = new C { i = 1, s = "a", p = new P { ps = "p1" } };
             var c2 = new C { i = 2, s = "b", p = new P { ps = "p2" } };
 
-            TestUtility.ShouldFail(() => eh.Assign(c1, c2), "Assign function supports only simple property selector", "P.ps");
+            TestUtility.ShouldFail(() => ps.Assign(c1, c2), "Assign function supports only simple property selector", "P.ps");
         }
 
         [TestMethod]
         public void AssignError2()
         {
-            var eh = NewExpressionHandler((C item) => new { item.s, ps = item.p.ps });
+            var ps = NewPropertySelectorExpression((C item) => new { item.s, ps = item.p.ps });
 
             var c1 = new C { i = 1, s = "a", p = new P { ps = "p1" } };
             var c2 = new C { i = 2, s = "b", p = new P { ps = "p2" } };
 
-            TestUtility.ShouldFail(() => eh.Assign(c1, c2), "Assign function supports only simple property selector", "item.p");
+            TestUtility.ShouldFail(() => ps.Assign(c1, c2), "Assign function supports only simple property selector", "item.p");
         }
     }
 }

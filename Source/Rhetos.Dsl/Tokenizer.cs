@@ -237,19 +237,11 @@ namespace Rhetos.Dsl
                 filePaths.Insert(0, databaseSpecificFilePath);
             }
 
-            Exception lastExcetion = null;
             foreach (var filePath in filePaths)
-            {
-                try
-                {
+                if (File.Exists(filePath))
                     return File.ReadAllText(filePath, Encoding.Default);
-                }
-                catch (Exception ex)
-                {
-                    lastExcetion = ex;
-                }
-            }
-            throw new DslSyntaxException("Cannot find the extension file referenced in DSL script. Looking for:\r\n" + string.Join("\r\n", filePaths), lastExcetion);
+
+            throw new DslSyntaxException("Cannot find the extension file referenced in DSL script. Looking for:\r\n" + string.Join("\r\n", filePaths));
         }
     }
 }

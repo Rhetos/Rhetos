@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
 
 namespace Rhetos.Dsl
@@ -24,14 +25,9 @@ namespace Rhetos.Dsl
     public interface ITokenReader
     {
         /// <summary>
-        /// Throws exception if there are no more tokens. Throws exception if next token is a special token.
+        /// Returns error if there are no more tokens or the next token is a special token.
         /// </summary>
-        string ReadText();
-
-        /// <summary>
-        /// Throws exception if next token does not equal "value". Ignores case. Exception will contain text from 'reason' argument.
-        /// </summary>
-        void Read(string value, string reason);
+        ValueOrError<string> ReadText();
 
         /// <summary>
         /// Returns false if next token does not equal "value". Ignores case.

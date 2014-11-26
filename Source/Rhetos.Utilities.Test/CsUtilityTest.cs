@@ -19,6 +19,7 @@
 
 using Microsoft.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.TestCommon;
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
@@ -75,6 +76,46 @@ namespace Rhetos.Utilities.Test
                 MethodInfo generatedMethod = generatedClass.GetMethod("F2");
                 string generatedCodeResult = (string)generatedMethod.Invoke(null, new object[] { });
                 Assert.IsNull(generatedCodeResult);
+            }
+        }
+
+        [TestMethod()]
+        public void ValidateNameTest()
+        {
+            string[] validNames = new[] {
+                "abc", "ABC", "i",
+                "a12300", "a1a",
+                "_abc", "_123", "_", "a_a_"
+            };
+
+            string[] invalidNames = new[] {
+                "0", "2asdasd", "123", "1_",
+                null, "",
+                " abc", "abc ", " ",
+                "!", "@", "#", "a!", "a@", "a#",
+                "ač", "č",
+            };
+
+            foreach (string name in validNames)
+            {
+                Console.WriteLine("Testing valid name '" + name + "'.");
+                string error = CsUtility.GetIdentifierError(name);
+                Console.WriteLine("Error: " + error);
+                Assert.IsNull(error);
+            }
+
+            foreach (string name in invalidNames)
+            {
+                Console.WriteLine("Testing invalid name '" + name + "'.");
+                string error = CsUtility.GetIdentifierError(name);
+                Console.WriteLine("Error: " + error);
+
+                if (name == null)
+                    TestUtility.AssertContains(error, "null");
+                else if (name == "")
+                    TestUtility.AssertContains(error, "empty");
+                else if (name == "")
+                    TestUtility.AssertContains(error, new[] { name, "not valid" });
             }
         }
     }

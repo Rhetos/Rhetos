@@ -29,7 +29,7 @@ namespace Rhetos.Dom.DefaultConcepts
     /// <summary>
     /// A helper class for lambda expression handling.
     /// </summary>
-    public class ExpressionHelper<TEntityInterface, TProperties>
+    public class PropertySelectorExpression<TEntityInterface, TProperties>
     {
         readonly Expression<Func<TEntityInterface, TProperties>> _propertiesSelector;
 
@@ -38,7 +38,7 @@ namespace Rhetos.Dom.DefaultConcepts
         readonly Lazy<IEnumerable<Expression>> _propertiesExpression;
         readonly Lazy<IEnumerable<PropertyInfo>> _propertiesInfo;
 
-        public ExpressionHelper(Expression<Func<TEntityInterface, TProperties>> propertiesSelector)
+        public PropertySelectorExpression(Expression<Func<TEntityInterface, TProperties>> propertiesSelector)
         {
             _propertiesSelector = propertiesSelector;
 

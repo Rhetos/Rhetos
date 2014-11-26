@@ -49,13 +49,13 @@ namespace Rhetos.Dsl
             this.PositionInTokenList = positionInTokenList;
         }
 
-        public string ReadText()
+        public ValueOrError<string> ReadText()
         {
             if (PositionInTokenList >= TokenList.Count)
-                throw new DslSyntaxException("Tried to read a token past the end of the DSL script.");
+                return ValueOrError.CreateError("Tried to read a token past the end of the DSL script.");
 
             if (CurrentToken.Type != Token.TokenType.Text)
-                throw new DslSyntaxException(string.Format(CultureInfo.InvariantCulture,
+                return ValueOrError.CreateError(string.Format(CultureInfo.InvariantCulture,
                     "Unexpected token type ({0} {1}) while reading text. Use quotes to specify text if that was intended.",
                         CurrentToken.Type,
                         CurrentToken.Value == "'" ? "\"'\"" : "'" + CurrentToken.Value + "'"));
@@ -73,12 +73,6 @@ namespace Rhetos.Dsl
                 "{0}Expected \"{1}\". ",
                     string.IsNullOrEmpty(reason) ? "" : (reason + " "),
                     value));
-        }
-
-        public void Read(string value, string reason)
-        {
-            if(!TryRead(value))
-                ThrowReadException(value, reason);
         }
 
         public bool TryRead(string value)

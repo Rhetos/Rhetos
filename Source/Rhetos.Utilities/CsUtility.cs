@@ -80,5 +80,31 @@ namespace Rhetos.Utilities
         {
             return GetValue(dictionary, key, () => exceptionMessage);
         }
+
+        /// <summary>
+        /// Returns null if the argument is a valid identifier, error message otherwise.
+        /// </summary>
+        public static string GetIdentifierError(string name)
+        {
+            if (name == null)
+                return "Given name is null.";
+
+            if (string.IsNullOrEmpty(name))
+                return "Given name is empty.";
+
+            {
+                char c = name[0];
+                if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && c != '_')
+                    return "Given name '" + name + "' is not valid. First character is not an english letter or undescore.";
+            }
+
+            {
+                foreach (char c in name)
+                    if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && c != '_' && (c < '0' || c > '9'))
+                        return "Given name '" + name + "' is not valid. Character '" + c + "' is not an english letter or number or undescore.";
+            }
+
+            return null;
+        }
     }
 }

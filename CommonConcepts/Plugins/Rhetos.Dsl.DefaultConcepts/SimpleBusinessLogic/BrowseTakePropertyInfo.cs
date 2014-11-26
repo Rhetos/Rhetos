@@ -53,11 +53,12 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (sourceProperty.IsError)
                 return null; // Creating the browse property may be delayed for other macro concepts to generate the needed properties. If this condition is not resolved, the CheckSemantics function below will throw an exception.
 
-            if (!IsValidIdentifier(newPropertyName))
+            string identifierError = CsUtility.GetIdentifierError(newPropertyName);
+            if (identifierError != null)
                 throw new DslSyntaxException(string.Format(
-                    "Invalid format of {0}: Property name '{1}' is not a valid identifier. Specify a valid name before the path to override the generated name.",
+                    "Invalid format of {0}: Property name is not a valid identifier. Specify a valid name before the path to override the generated name. {1}" ,
                     errorContext.GetUserDescription(),
-                    newPropertyName));
+                    identifierError));
 
             var browseProperty = DslUtility.CreatePassiveClone(sourceProperty.Value, browse);
             browseProperty.Name = newPropertyName;
@@ -65,21 +66,6 @@ namespace Rhetos.Dsl.DefaultConcepts
             var browsePropertySelector = new BrowseFromPropertyInfo { PropertyInfo = browseProperty, Path = path };
 
             return new IConceptInfo[] { browseProperty, browsePropertySelector };
-        }
-
-        private static bool IsValidIdentifier(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-                return false;
-
-            if ((name[0] < 'a' || name[0] > 'z') && (name[0] < 'A' || name[0] > 'Z') && name[0] != '_')
-                return false;
-
-            foreach (char c in name)
-                if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && (c < '0' || c > '9') && c != '_')
-                    return false;
-
-            return true;
         }
 
         private static ValueOrError<PropertyInfo> GetSelectedPropertyByPath(BrowseDataStructureInfo browse, string path, IEnumerable<IConceptInfo> existingConcepts)

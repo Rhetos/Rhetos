@@ -95,12 +95,14 @@
     <Compile Include="Computations\KeepSynchronizedOnChangedItemsCodeGenerator.cs" />
     <Compile Include="Computations\ComputeForNewBaseItemsCodeGenerator.cs" />
     <Compile Include="Computations\QueryableExtensionCodeGenerator.cs" />
+    <Compile Include="FilterExpression.cs" />
     <Compile Include="GenericRepository.cs" />
     <Compile Include="GenericRepositories.cs" />
-    <Compile Include="ExpressionHelper.cs" />
+    <Compile Include="PropertySelectorExpression.cs" />
     <Compile Include="HierarchyItem.cs" />
     <Compile Include="KeepSynchronizedRecomputeOnDeploy.cs" />
     <Compile Include="ReflectionHelper.cs" />
+    <Compile Include="RowPermissions\RowPermissionsAllowReadCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ActionCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ReloadBeforeValidationsCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\DenyUserEditDataStructureCodeGenerator.cs" />

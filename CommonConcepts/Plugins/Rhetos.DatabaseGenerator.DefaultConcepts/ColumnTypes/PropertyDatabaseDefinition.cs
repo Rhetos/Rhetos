@@ -52,10 +52,12 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
         public static string AddColumn(ConceptMetadata conceptMetadata, PropertyInfo property, string options = "")
         {
+            string columnName = conceptMetadata.Get(property, ColumnNamesMetadata).Single();
+
             return Sql.Format("PropertyDatabaseDefinition_AddColumn",
                 SqlUtility.Identifier(property.DataStructure.Module.Name),
                 SqlUtility.Identifier(property.DataStructure.Name),
-                SqlUtility.CheckIdentifier(conceptMetadata.Get(property, ColumnNamesMetadata).Single()),
+                DslUtility.ValidateIdentifier(columnName, property, "Invalid column name."),
                 conceptMetadata.Get(property, ColumnTypesMetadata).Single(),
                 options,
                 Options1Tag.Evaluate(property),
@@ -67,7 +69,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             return Sql.Format("PropertyDatabaseDefinition_RemoveColumn",
                 SqlUtility.Identifier(property.DataStructure.Module.Name),
                 SqlUtility.Identifier(property.DataStructure.Name),
-                SqlUtility.CheckIdentifier(columnName));
+                DslUtility.ValidateIdentifier(columnName, property, "Invalid column name."));
         }
     }
 }

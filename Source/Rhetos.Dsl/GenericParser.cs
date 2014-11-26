@@ -103,7 +103,7 @@ namespace Rhetos.Dsl
                 lastPropertyWasInlineParent = false;
 
                 if (member.IsStringType)
-                    return tokenReader.ReadText();
+                    return tokenReader.ReadText().ChangeType<object>();
 
                 if (member.ValueType == typeof(IConceptInfo))
                     if (firstMember && lastConcept != null)

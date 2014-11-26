@@ -121,6 +121,14 @@ namespace Rhetos.Dom.DefaultConcepts
         protected Lazy<Rhetos.Dom.DefaultConcepts.GenericRepositories> _genericRepositories;
         public Rhetos.Dom.DefaultConcepts.GenericRepositories GenericRepositories {{ get {{ return _genericRepositories.Value; }} }}
 
+        public Rhetos.Dom.DefaultConcepts.GenericRepository<TEntity> GenericRepository<TEntity>() where TEntity : class, IEntity
+        {{
+            return GenericRepositories.GetGenericRepository<TEntity>();
+        }}
+
+        protected Lazy<Common.DomRepository> _repositories;
+        public Common.DomRepository Repositories {{ get {{ return _repositories.Value; }} }}
+
         {4}
 
         // This constructor is used for automatic parameter injection with autofac.
@@ -138,6 +146,7 @@ namespace Rhetos.Dom.DefaultConcepts
             _authorizationManager = authorizationManager;
             _resourcesFolder = resourcesFolder;
             _genericRepositories = genericRepositories;
+            _repositories = new Lazy<Common.DomRepository>(() => new Common.DomRepository(this));
             {6}
         }}
 
