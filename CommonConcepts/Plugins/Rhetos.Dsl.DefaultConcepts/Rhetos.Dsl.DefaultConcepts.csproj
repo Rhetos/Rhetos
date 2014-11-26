@@ -118,7 +118,11 @@
     <Compile Include="Computations\KeyPropertyIDComputedFromInfo.cs" />
     <Compile Include="Computations\PersistedKeyPropertiesInfo.cs" />
     <Compile Include="Computations\KeyPropertyComputedFromInfo.cs" />
-    <Compile Include="Computations\RowPermissionsInfo.cs" />
+    <Compile Include="RowPermissions\RowPermissionsAllowReadNoConditionInfo.cs" />
+    <Compile Include="RowPermissions\RowPermissionsAllowReadInfo.cs" />
+    <Compile Include="RowPermissions\RowPermissionsPluginableFilterInfo.cs" />
+    <Compile Include="RowPermissions\RowPermissionsRuleInfo.cs" />
+    <Compile Include="RowPermissions\RowPermissionsInfo.cs" />
     <Compile Include="DatabaseWorkarounds\AutoSqlViewDependsOnInfo.cs" />
     <Compile Include="DatabaseWorkarounds\AutoSqlFunctionDependsOnInfo.cs" />
     <Compile Include="DatabaseWorkarounds\AutoSqlQueryableDependsOnInfo.cs" />

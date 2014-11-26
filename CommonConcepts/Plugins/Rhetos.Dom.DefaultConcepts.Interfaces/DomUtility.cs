@@ -57,5 +57,14 @@ namespace Rhetos.Dom.DefaultConcepts
                 guidBytes[b] ^= (byte)(subtypeImplementationHash >> (24 - b * 8));
             return new Guid(guidBytes);
         }
+
+        /// <summary>
+        /// (Ab)using generics to automatically detect the function's result, so that the generated code
+        /// can use static typing without explicitly defining the result type.
+        /// </summary>
+        public static Func<TResult> Function<TResult>(Func<TResult> func)
+        {
+            return func;
+        }
     }
 }
