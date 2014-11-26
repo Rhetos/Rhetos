@@ -111,5 +111,88 @@ namespace Rhetos.Dsl.DefaultConcepts
             }
             return name;
         }
+
+        public static void ValidatePath(DataStructureInfo source, string path, IEnumerable<IConceptInfo> existingConcepts, IConceptInfo errorContext)
+        {
+            var property = GetPropertyByPath(source, path, existingConcepts);
+            if (property.IsError)
+                throw new DslSyntaxException(errorContext, "Invalid path: " + property.Error);
+        }
+
+        public static ValueOrError<PropertyInfo> GetPropertyByPath(DataStructureInfo source, string path, IEnumerable<IConceptInfo> existingConcepts)
+        {
+            if (path.Contains(" "))
+                return ValueOrError.CreateError("The path contains a space character.");
+
+            if (string.IsNullOrEmpty(path))
+                return ValueOrError.CreateError("The path is empty.");
+
+            var propertyNames = path.Split('.');
+            var referenceNames = propertyNames.Take(propertyNames.Count() - 1).ToArray();
+            var lastPropertyName = propertyNames[propertyNames.Count() - 1];
+
+            ValueOrError<DataStructureInfo> selectedDataStructure = source;
+            foreach (var referenceName in referenceNames)
+            {
+                selectedDataStructure = NavigateToNextDataStructure(selectedDataStructure.Value, referenceName, existingConcepts);
+                if (selectedDataStructure.IsError)
+                    return ValueOrError.CreateError(selectedDataStructure.Error);
+            }
+
+            PropertyInfo selectedProperty = existingConcepts.OfType<PropertyInfo>()
+                .Where(p => p.DataStructure == selectedDataStructure.Value && p.Name == lastPropertyName)
+                .SingleOrDefault();
+
+            if (selectedProperty == null && lastPropertyName == "ID")
+                return new GuidPropertyInfo { DataStructure = selectedDataStructure.Value, Name = "ID" };
+
+            if (selectedProperty == null)
+                return ValueOrError.CreateError("There is no property '" + lastPropertyName + "' on " + selectedDataStructure.Value.GetUserDescription() + ".");
+
+            return selectedProperty;
+        }
+
+        private static ValueOrError<DataStructureInfo> NavigateToNextDataStructure(DataStructureInfo source, string referenceName, IEnumerable<IConceptInfo> existingConcepts)
+        {
+            var selectedProperty = existingConcepts.OfType<PropertyInfo>()
+                .Where(p => p.DataStructure == source && p.Name == referenceName)
+                .SingleOrDefault();
+
+            if (selectedProperty == null && referenceName == "Base")
+            {
+                var baseDataStructure = existingConcepts.OfType<DataStructureExtendsInfo>()
+                    .Where(ex => ex.Extension == source)
+                    .Select(ex => ex.Base).SingleOrDefault();
+                if (baseDataStructure != null)
+                    return baseDataStructure;
+
+                if (selectedProperty == null)
+                    return ValueOrError.CreateError("There is no property '" + referenceName + "' nor a base data structure on " + source.GetUserDescription() + ".");
+            }
+
+            if (selectedProperty == null && referenceName.StartsWith("Extension_"))
+            {
+                string extensionName = referenceName.Substring("Extension_".Length);
+                var extendsionDataStructure = existingConcepts.OfType<DataStructureExtendsInfo>()
+                    .Where(ex => ex.Base == source)
+                    .Where(ex => ex.Extension.Module == source.Module && ex.Extension.Name == extensionName
+                        || ex.Extension.Module.Name + "_" + ex.Extension.Name == extensionName)
+                    .Select(ex => ex.Extension).SingleOrDefault();
+                if (extendsionDataStructure != null)
+                    return extendsionDataStructure;
+
+                if (selectedProperty == null)
+                    return ValueOrError.CreateError("There is no property '" + referenceName + "' nor an extension '" + extensionName + "' on " + source.GetUserDescription() + ".");
+            }
+
+            if (selectedProperty == null)
+                return ValueOrError.CreateError("There is no property '" + referenceName + "' on " + source.GetUserDescription() + ".");
+
+            if (!(selectedProperty is ReferencePropertyInfo))
+                return ValueOrError.CreateError(string.Format("Property {0} cannot be used in the path because it is '{1}'. Only Reference properties can be used in a path.",
+                    selectedProperty.Name, selectedProperty.GetKeywordOrTypeName()));
+
+            return ((ReferencePropertyInfo)selectedProperty).Referenced;
+        }
     }
 }

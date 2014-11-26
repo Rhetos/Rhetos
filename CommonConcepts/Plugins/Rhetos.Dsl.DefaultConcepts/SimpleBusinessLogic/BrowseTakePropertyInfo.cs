@@ -29,132 +29,17 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Take")]
-    public class BrowseTakePropertyInfo : IMacroConcept, IValidationConcept
+    public class BrowseTakePropertyInfo : BrowseTakeNamedPropertyInfo, IAlternativeInitializationConcept
     {
-        [ConceptKey]
-        public BrowseDataStructureInfo Browse { get; set; }
-
-        [ConceptKey]
-        public string Path { get; set; }
-
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<string> DeclareNonparsableProperties()
         {
-            // This is also used in BrowseTakeNamedPropertyInfo.
-            return CreateNewConcepts(Browse, Path, Path.Replace(".", ""), existingConcepts, this);
+            return new[] { "Name" };
         }
 
-        internal static IList<IConceptInfo> CreateNewConcepts(
-            BrowseDataStructureInfo browse, string path, string newPropertyName,
-            IEnumerable<IConceptInfo> existingConcepts, IConceptInfo errorContext)
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
-            var newConcepts = new List<IConceptInfo>();
-
-            ValueOrError<PropertyInfo> sourceProperty = GetSelectedPropertyByPath(browse, path, existingConcepts);
-            if (sourceProperty.IsError)
-                return null; // Creating the browse property may be delayed for other macro concepts to generate the needed properties. If this condition is not resolved, the CheckSemantics function below will throw an exception.
-
-            string identifierError = CsUtility.GetIdentifierError(newPropertyName);
-            if (identifierError != null)
-                throw new DslSyntaxException(string.Format(
-                    "Invalid format of {0}: Property name is not a valid identifier. Specify a valid name before the path to override the generated name. {1}" ,
-                    errorContext.GetUserDescription(),
-                    identifierError));
-
-            var browseProperty = DslUtility.CreatePassiveClone(sourceProperty.Value, browse);
-            browseProperty.Name = newPropertyName;
-
-            var browsePropertySelector = new BrowseFromPropertyInfo { PropertyInfo = browseProperty, Path = path };
-
-            return new IConceptInfo[] { browseProperty, browsePropertySelector };
-        }
-
-        private static ValueOrError<PropertyInfo> GetSelectedPropertyByPath(BrowseDataStructureInfo browse, string path, IEnumerable<IConceptInfo> existingConcepts)
-        {
-            if (path.Contains(" "))
-                return ValueOrError.CreateError("The path contains a space character.");
-
-            if (string.IsNullOrEmpty(path))
-                return ValueOrError.CreateError("The path is empty.");
-
-            var propertyNames = path.Split('.');
-            var referenceNames = propertyNames.Take(propertyNames.Count() - 1).ToArray();
-            var lastPropertyName = propertyNames[propertyNames.Count() - 1];
-
-            ValueOrError<DataStructureInfo> selectedDataStructure = browse.Source;
-            foreach (var referenceName in referenceNames)
-            {
-                selectedDataStructure = NavigateToNextDataStructure(selectedDataStructure.Value, referenceName, existingConcepts);
-                if (selectedDataStructure.IsError)
-                    return ValueOrError.CreateError(selectedDataStructure.Error);
-            }
-
-            PropertyInfo selectedProperty = existingConcepts.OfType<PropertyInfo>()
-                .Where(p => p.DataStructure == selectedDataStructure.Value && p.Name == lastPropertyName)
-                .SingleOrDefault();
-
-            if (selectedProperty == null && lastPropertyName == "ID")
-                return new GuidPropertyInfo { DataStructure = selectedDataStructure.Value, Name = "ID" };
-
-            if (selectedProperty == null)
-                return ValueOrError.CreateError("There is no property '" + lastPropertyName + "' on " + selectedDataStructure.Value.GetUserDescription() + ".");
-
-            return selectedProperty;
-        }
-
-        private static ValueOrError<DataStructureInfo> NavigateToNextDataStructure(DataStructureInfo dataStructure, string referenceName, IEnumerable<IConceptInfo> existingConcepts)
-        {
-            var selectedProperty = existingConcepts.OfType<PropertyInfo>()
-                .Where(p => p.DataStructure == dataStructure && p.Name == referenceName)
-                .SingleOrDefault();
-
-            if (selectedProperty == null && referenceName == "Base")
-            {
-                var baseDataStructure = existingConcepts.OfType<DataStructureExtendsInfo>()
-                    .Where(ex => ex.Extension == dataStructure)
-                    .Select(ex => ex.Base).SingleOrDefault();
-                if (baseDataStructure != null)
-                    return baseDataStructure;
-
-                if (selectedProperty == null)
-                    return ValueOrError.CreateError("There is no property '" + referenceName + "' nor a base data structure on " + dataStructure.GetUserDescription() + ".");
-            }
-
-            if (selectedProperty == null && referenceName.StartsWith("Extension_"))
-            {
-                string extensionName = referenceName.Substring("Extension_".Length);
-                var extendsionDataStructure = existingConcepts.OfType<DataStructureExtendsInfo>()
-                    .Where(ex => ex.Base == dataStructure)
-                    .Where(ex => ex.Extension.Module == dataStructure.Module && ex.Extension.Name == extensionName
-                        || ex.Extension.Module.Name + "_" + ex.Extension.Name == extensionName)
-                    .Select(ex => ex.Extension).SingleOrDefault();
-                if (extendsionDataStructure != null)
-                    return extendsionDataStructure;
-
-                if (selectedProperty == null)
-                    return ValueOrError.CreateError("There is no property '" + referenceName + "' nor an extension '" + extensionName + "' on " + dataStructure.GetUserDescription() + ".");
-            }
-
-            if (selectedProperty == null)
-                return ValueOrError.CreateError("There is no property '" + referenceName + "' on " + dataStructure.GetUserDescription() + ".");
-
-            if (!(selectedProperty is ReferencePropertyInfo))
-                return ValueOrError.CreateError(string.Format("Property {0} cannot be used in the path because it is '{1}'. Only Reference properties can be used in a path.",
-                    selectedProperty.Name, selectedProperty.GetKeywordOrTypeName()));
-
-            return ((ReferencePropertyInfo)selectedProperty).Referenced;
-        }
-
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
-        {
-            // This is also used in BrowseTakeNamedPropertyInfo.
-            CheckSemantics(Browse, Path, concepts, this);
-        }
-
-        internal static void CheckSemantics(BrowseDataStructureInfo browse, string path, IEnumerable<IConceptInfo> concepts, IConceptInfo errorContext)
-        {
-            var property = GetSelectedPropertyByPath(browse, path, concepts);
-            if (property.IsError)
-                throw new DslSyntaxException("Invalid format of " + errorContext.GetUserDescription() + ": " + property.Error);
+            Name = Path.Replace(".", "");
+            createdConcepts = null;
         }
     }
 }

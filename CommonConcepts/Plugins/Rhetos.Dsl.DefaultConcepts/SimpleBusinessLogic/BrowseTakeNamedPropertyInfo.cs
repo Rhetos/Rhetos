@@ -41,12 +41,24 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return BrowseTakePropertyInfo.CreateNewConcepts(Browse, Path, Name, existingConcepts, this);
+            var newConcepts = new List<IConceptInfo>();
+
+            ValueOrError<PropertyInfo> sourceProperty = DslUtility.GetPropertyByPath(Browse.Source, Path, existingConcepts);
+            if (sourceProperty.IsError)
+                return null; // Creating the browse property may be delayed for other macro concepts to generate the needed properties. If this condition is not resolved, the CheckSemantics function below will throw an exception.
+
+            var browseProperty = DslUtility.CreatePassiveClone(sourceProperty.Value, Browse);
+            browseProperty.Name = Name;
+
+            var browsePropertySelector = new BrowseFromPropertyInfo { PropertyInfo = browseProperty, Path = Path };
+
+            return new IConceptInfo[] { browseProperty, browsePropertySelector };
         }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
         {
-            BrowseTakePropertyInfo.CheckSemantics(Browse, Path, concepts, this);
+            DslUtility.ValidatePath(Browse.Source, Path, existingConcepts, this);
+            DslUtility.ValidateIdentifier(Name, this, "Specify a valid name before the path, to override the generated name.");
         }
     }
 }
