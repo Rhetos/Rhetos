@@ -44,7 +44,7 @@ namespace Rhetos.Dsl
             StringBuilder desc = new StringBuilder(100);
             desc.Append(BaseConceptInfoType(ci).Name);
             desc.Append(" ");
-            AppendMembers(desc, ci, SerializationOptions.KeyMembers, checkNotNull: true);
+            AppendMembers(desc, ci, SerializationOptions.KeyMembers, exceptionOnNullMember: true);
             return desc.ToString();
         }
 
@@ -79,7 +79,7 @@ namespace Rhetos.Dsl
         public static string GetKeyProperties(this IConceptInfo ci)
         {
             StringBuilder desc = new StringBuilder(100);
-            AppendMembers(desc, ci, SerializationOptions.KeyMembers, checkNotNull: true);
+            AppendMembers(desc, ci, SerializationOptions.KeyMembers, exceptionOnNullMember: true);
             return desc.ToString();
         }
 
@@ -163,7 +163,7 @@ namespace Rhetos.Dsl
                     if (memberValue == null)
                         report.Append("<null>");
                     else if (member.IsConceptInfo)
-                        report.Append(((IConceptInfo)memberValue).GetKeyProperties());
+                        AppendMembers(report, (IConceptInfo)memberValue, SerializationOptions.KeyMembers, exceptionOnNullMember: false);
                     else
                         report.Append(memberValue.ToString());
                 }
@@ -196,7 +196,7 @@ namespace Rhetos.Dsl
             AllMembers
         };
 
-        private static void AppendMembers(StringBuilder text, IConceptInfo ci, SerializationOptions serializationOptions, bool checkNotNull = false)
+        private static void AppendMembers(StringBuilder text, IConceptInfo ci, SerializationOptions serializationOptions, bool exceptionOnNullMember = false)
         {
             IEnumerable<ConceptMember> members = ConceptMembers.Get(ci);
             if (serializationOptions == SerializationOptions.KeyMembers)
@@ -210,15 +210,15 @@ namespace Rhetos.Dsl
                     text.Append(separator);
                 firstMember = false;
 
-                AppendMember(text, ci, member, checkNotNull);
+                AppendMember(text, ci, member, exceptionOnNullMember);
             }
         }
 
-        private static void AppendMember(StringBuilder text, IConceptInfo ci, ConceptMember member, bool checkNotNull)
+        private static void AppendMember(StringBuilder text, IConceptInfo ci, ConceptMember member, bool exceptionOnNullMember)
         {
             object memberValue = member.GetValue(ci);
             if (memberValue == null)
-                if (checkNotNull)
+                if (exceptionOnNullMember)
                     throw new DslSyntaxException(ci, string.Format(
                         "{0}'s property {1} is null. Info: {2}.",
                         ci.GetType().Name, member.Name, ci.GetErrorDescription()));
@@ -229,7 +229,7 @@ namespace Rhetos.Dsl
                 IConceptInfo value = (IConceptInfo)member.GetValue(ci);
                 if (member.ValueType == typeof(IConceptInfo))
                     text.Append(BaseConceptInfoType(value).Name).Append(":");
-                AppendMembers(text, value, SerializationOptions.KeyMembers, checkNotNull);
+                AppendMembers(text, value, SerializationOptions.KeyMembers, exceptionOnNullMember);
             }
             else if (member.ValueType == typeof(string))
                 text.Append(SafeDelimit(member.GetValue(ci).ToString()));

@@ -77,4 +77,41 @@ Module TestRowPermissions
 				return items;
 			}';
 	}
+	
+	Entity RPRulesGroup { ShortString Name; }
+	Entity RPRulesItem { ShortString Name; Reference Group TestRowPermissions.RPRulesGroup { Detail; } }
+	
+	Entity RpRulesAllowItem { ShortString UserName; Reference Item TestRowPermissions.RPRulesItem; }
+	Entity RpRulesAllowGroup { ShortString UserName; Reference Group TestRowPermissions.RPRulesGroup; }
+	Entity RpRulesDenyItem { ShortString UserName; Reference Item TestRowPermissions.RPRulesItem; }
+	
+	Entity RPRulesItem
+	{
+		RowPermissions
+		{
+			AllowRead DirectlyAlllowedItems
+				'context.GenericRepository<RpRulesAllowItem>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Item.ID).ToList()'
+				'item => DirectlyAlllowedItems.Contains(item.ID)'
+				'DirectlyAlllowedItems.Count > 0';
+
+			AllowRead DirectlyAlllowedGroups
+				'context.GenericRepository<RpRulesAllowGroup>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Group.ID).ToList()'
+				'item => DirectlyAlllowedGroups.Contains(item.Group.ID)'
+				'DirectlyAlllowedGroups.Count > 0';
+			
+			AllowRead AllowedAllGroups
+				'{
+					int totalGroupsCount = context.GenericRepository<RPRulesGroup>().Query().Count();
+					int allowedGroupsCount = context.GenericRepository<RpRulesAllowGroup>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Group.ID).Distinct().Count();
+					return allowedGroupsCount == totalGroupsCount;
+				}'
+				'item => true' // This specific filter will be optimized. If it is active, there is no need to check other rules when querying RPRulesItem.
+				'AllowedAllGroups';
+			
+			DenyRead DirectlyDeniedItems
+				'context.GenericRepository<RpRulesDenyItem>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Item.ID).ToList()'
+				'item => DirectlyDeniedItems.Contains(item.ID)'
+				'DirectlyDeniedItems.Count > 0';
+		}
+	}
 }

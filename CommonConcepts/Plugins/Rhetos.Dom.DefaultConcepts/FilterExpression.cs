@@ -25,42 +25,115 @@ using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public class FilterExpression<TEntity>
-        where TEntity : class
+    /// <summary>
+    /// Helper class for joining multiple filter expressions to a single filter expression (Expression&lt;Func&lt;T, bool&gt;&gt;).
+    /// The class is used for joining row permission rules to a single row permission filter.
+    /// Use of expression that includes or excludes all items ("item => true") will be optimized when generating the final expression.
+    /// </summary>
+    public class FilterExpression<T>
     {
-        private Expression<Func<TEntity, bool>> _filterExpression = null;
+        private static readonly Expression<Func<T, bool>> _selectAll = item => true;
+        private static readonly Expression<Func<T, bool>> _selectNone = item => false;
 
-        private static readonly Expression<Func<TEntity, bool>> _selectAll = item => true;
+        private Expression<Func<T, bool>> _allowExpression = _selectNone;
+        private Expression<Func<T, bool>> _denyExpression = _selectAll;
 
-        public void Include(Expression<Func<TEntity, bool>> newExpression)
+        public void Include(Expression<Func<T, bool>> newExpression)
         {
-            var constant = newExpression.Body as ConstantExpression;
-            if (constant != null && constant.Type == typeof(bool) && (bool)constant.Value == true)
-                newExpression = _selectAll;
-
-            if (_filterExpression == _selectAll || newExpression == _selectAll)
-                _filterExpression = _selectAll;
-            else if (_filterExpression == null)
-                _filterExpression = newExpression;
-            else
-                _filterExpression = Expression.Lambda<Func<TEntity, bool>>(
-                    Expression.OrElse(_filterExpression.Body, newExpression.Body),
-                    _filterExpression.Parameters);
+            Optimize(ref newExpression);
+            _allowExpression = Or(_allowExpression, newExpression);
         }
 
-        public IQueryable<TEntity> Filter(IQueryable<TEntity> query)
+        public void Exclude(Expression<Func<T, bool>> newExpression)
         {
-            if (_filterExpression == null)
-                return CreateEmptyQuery();
-            else if (_filterExpression == _selectAll)
+            Optimize(ref newExpression);
+            _denyExpression = And(_denyExpression, Not(newExpression));
+        }
+
+        public IQueryable<T> Filter(IQueryable<T> query)
+        {
+            var finalExpression = And(_allowExpression, _denyExpression);
+
+            if (finalExpression == _selectAll)
                 return query;
+            else if (finalExpression == _selectNone)
+                return new T[] { }.AsQueryable();
             else
-                return query.Where(_filterExpression);
+                return query.Where(finalExpression);
         }
 
-        private IQueryable<TEntity> CreateEmptyQuery()
+        #region Optimized boolean expression functions
+
+        private static void Optimize(ref Expression<Func<T, bool>> a)
         {
-            return new TEntity[] { }.AsQueryable();
+            var constant = a.Body as ConstantExpression;
+            if (constant != null && constant.Type == typeof(bool))
+                a = (bool)constant.Value ? _selectAll : _selectNone;
+        }
+
+        private static Expression<Func<T, bool>> Not(Expression<Func<T, bool>> a)
+        {
+            if (a == _selectAll)
+                return _selectNone;
+            else if (a == _selectNone)
+                return _selectAll;
+            else
+                return Expression.Lambda<Func<T, bool>>(Expression.Not(a.Body), a.Parameters);
+        }
+
+        private static Expression<Func<T, bool>> Or(Expression<Func<T, bool>> a, Expression<Func<T, bool>> b)
+        {
+            if (a == _selectAll || b == _selectAll)
+                return _selectAll;
+            else if (a == _selectNone)
+                return b;
+            else if (b == _selectNone)
+                return a;
+            else
+            {
+                MatchExpressionParameter(a, ref b);
+                return Expression.Lambda<Func<T, bool>>(Expression.OrElse(a.Body, b.Body), a.Parameters);
+            }
+        }
+
+        private static Expression<Func<T, bool>> And(Expression<Func<T, bool>> a, Expression<Func<T, bool>> b)
+        {
+            if (a == _selectNone || b == _selectNone)
+                return _selectNone;
+            else if (a == _selectAll)
+                return b;
+            else if (b == _selectAll)
+                return a;
+            else
+            {
+                MatchExpressionParameter(a, ref b);
+                return Expression.Lambda<Func<T, bool>>(Expression.AndAlso(a.Body, b.Body), a.Parameters);
+            }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Modifies expression b to have the same parameter instance as expression a.
+        /// </summary>
+        private static void MatchExpressionParameter(Expression<Func<T, bool>> a, ref Expression<Func<T, bool>> b)
+        {
+            b = (Expression<Func<T, bool>>)new ParameterReplacer(a.Parameters.Single()).Visit(b);
+        }
+
+        private class ParameterReplacer : ExpressionVisitor
+        {
+            private readonly ParameterExpression _parameter;
+
+            internal ParameterReplacer(ParameterExpression parameter)
+            {
+                _parameter = parameter;
+            }
+
+            protected override Expression VisitParameter(ParameterExpression node)
+            {
+                return _parameter;
+            }
         }
     }
 }

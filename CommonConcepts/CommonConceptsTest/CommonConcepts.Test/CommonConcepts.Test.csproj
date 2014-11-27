@@ -161,6 +161,7 @@
     <Compile Include="CloningTest.cs" />
     <Compile Include="PolymorphicTest.cs" />
     <Compile Include="MultipleValidationsTest.cs" />
+    <Compile Include="RowPermissionsRulesTest.cs" />
     <Compile Include="SystemRequiredTest.cs" />
     <Compile Include="DenyUserEditTest.cs" />
     <Compile Include="DeactivatableTest.cs" />
