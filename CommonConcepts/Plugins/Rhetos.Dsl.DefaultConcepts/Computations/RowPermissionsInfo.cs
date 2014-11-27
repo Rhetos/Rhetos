@@ -53,7 +53,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             Regex regex = new Regex(@"^\((.+?),(.+?),(.+?)\).*?=>(.*)$", RegexOptions.Singleline);
             Match match = regex.Match(expression);
             if (match.Groups.Count != 5)
-                throw new DslSyntaxException("RowPermissionsRead expression format is not valid: " + expression);
+                throw new DslSyntaxException("Row permissions expression format is not valid: " + expression);
 
             string source = match.Groups[1].Value, repo = match.Groups[2].Value, context = match.Groups[3].Value,
                 expr = match.Groups[4].Value;

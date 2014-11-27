@@ -763,5 +763,24 @@ namespace CommonConcepts.Test
                 Assert.IsTrue(toDelete.All(a => !resIDs.Contains(a.ID)));
             }
         }
+
+        [TestMethod]
+        public void TestUpdateIntoLegalValue()
+        {
+            Guid illegalID = Guid.NewGuid();
+            SimpleRP[] illegal = new SimpleRP[]
+            {
+                new SimpleRP() { ID = illegalID, value = 100 }
+            };
+
+            SimpleRP[] updateToLegal = new SimpleRP[]
+            {
+                new SimpleRP() { ID = illegalID, value = 600}
+            };
+
+            var result = TestWrite<SimpleRP>(illegal, null, updateToLegal, null, _writeException);
+            Assert.AreEqual(1, result.Count());
+            Assert.AreEqual(100, result.First().value);
+        }
     }
 }

@@ -61,11 +61,15 @@ namespace Rhetos.Processing.DefaultCommands
             if (saveInfo.Entity == null)
                 throw new ClientException("Invalid SaveEntityCommand argument: Entity is not set.");
 
-            // we need to check delete permissions before actually deleting items
+            // we need to check delete permissions before actually deleting items 
+            // and update items before AND after they are updated
             var genericRepository = _genericRepositories.GetGenericRepository(saveInfo.Entity);
             bool valid = true;
-            if (saveInfo.DataToDelete != null) 
-                valid = genericRepository.CheckAllItemsWithinFilter(saveInfo.DataToDelete, RowPermissionsWriteInfo.FilterName);
+            var updateDeleteItems = saveInfo.DataToDelete;
+            if (updateDeleteItems == null) updateDeleteItems = saveInfo.DataToUpdate;
+            else if (saveInfo.DataToUpdate != null) updateDeleteItems = updateDeleteItems.Concat(saveInfo.DataToUpdate).ToArray();
+            if (updateDeleteItems != null) 
+                valid = genericRepository.CheckAllItemsWithinFilter(updateDeleteItems, RowPermissionsWriteInfo.FilterName);
 
             if (valid)
             {

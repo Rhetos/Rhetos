@@ -416,7 +416,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (filterMethodInfo != null)
             {
-                Guid? duplicateId = FindDuplicate(validateItems.Select(a => a.ID));
+                Guid? duplicateId = FindDuplicate(validateItems.Select(a => a.ID).ToList());
                 if (duplicateId != null)
                     throw new FrameworkException(string.Format(
                         "Error while checking {2}: Loaded items have duplicate IDs ({0}:{1}).",
@@ -457,7 +457,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return true;
         }
 
-        private Guid? FindDuplicate(IEnumerable<Guid> ids)
+        private Guid? FindDuplicate(List<Guid> ids)
         {
             if (ids.Distinct().Count() != ids.Count())
                 return ids.GroupBy(id => id).Where(group => group.Count() > 1).First().Key;

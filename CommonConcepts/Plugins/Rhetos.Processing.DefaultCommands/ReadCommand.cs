@@ -96,11 +96,13 @@ namespace Rhetos.Processing.DefaultCommands
                 if (lastRowPermissionFilter >= 0)
                     if (lastRowPermissionFilter == readCommand.Filters.Length - 1)
                     {
-                        _logger.Trace(() => "Last filter is '" + RowPermissionsReadInfo.FilterName + "', skipping RowPermissionsRead validation.");
+                        _logger.Trace(() => string.Format("(DataStructure:{0}) Last filter is '{1}', skipping RowPermissionsRead validation.",
+                            readCommand.DataSource, RowPermissionsReadInfo.FilterName));
                         return false;
                     }
                     else
-                        _logger.Trace(() => "Warning: Improve performance by moving '" + RowPermissionsReadInfo.FilterName + "' to last position, in order to skip RowPermissionsRead validation.");
+                        _logger.Trace(() => string.Format("(DataStructure:{0}) Warning: Improve performance by moving filter '{1}' to last position, in order to skip RowPermissionsRead validation.",
+                            readCommand.DataSource, RowPermissionsReadInfo.FilterName));
             }
 
             return true;
