@@ -404,58 +404,62 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         /// <summary>
-        /// Checks if RowPermissions concept is present and validates all items are included. Works with materialized items.
+        /// Checks if all items are within filter 'filterName'. Works with materialized items.
         /// </summary>
-        /// <param name="materialized"></param>
-        private void ValidateRowPermissions(TEntityInterface[] readItems)
+        /// <param name="readItems"></param>
+        public bool CheckAllItemsWithinFilter(object[] validateObjects, string filterName)
         {
-            Type filterType = _domainObjectModel.Assembly.GetType(RowPermissionsInfo.FilterName);
+            if (validateObjects == null) return true;
+            var validateItems = (TEntityInterface[])validateObjects;
+            var filterType = _domainObjectModel.Assembly.GetType(filterName);
             var filterMethodInfo = _reflection.RepositoryQueryableFilterMethod(filterType);
 
             if (filterMethodInfo != null)
             {
+                Guid? duplicateId = FindDuplicate(validateItems.Select(a => a.ID).ToList());
+                if (duplicateId != null)
+                    throw new FrameworkException(string.Format(
+                        "Error while checking {2}: Loaded items have duplicate IDs ({0}:{1}).",
+                        EntityName, duplicateId, filterType.Name));
+
                 var allowedItemsQuery = (IQueryable<TEntityInterface>)ReadNonMaterialized(null, filterType, true);
 
                 const int batchSize = 2000; // true NHibernate/SQL limit is probably 2100
-                _logger.Trace(() => string.Format("Found row permissions filter, checking if all items are allowed (with batchSize = {0}).", batchSize));
-                var readItemsBatches = GetChunks(readItems, batchSize);
-
-                foreach (var readItemsBatch in readItemsBatches)
+                _logger.Trace(() => string.Format("Found validation filter {0}, checking if all items are allowed (with batchSize = {1}).", filterType.Name, batchSize));
+                
+                var itemsBatches = GetChunks(validateItems, batchSize);
+                foreach (var itemsBatch in itemsBatches)
                 {
-                    var readItemsIds = readItemsBatch.Select(readItem => readItem.ID).ToList();
+                    var itemsIds = itemsBatch.Select(item => item.ID).ToList();
 
-                    Guid? duplicateId = FindDuplicate(readItemsIds);
-                    if (duplicateId != null)
-                        throw new FrameworkException(string.Format(
-                            "Error while checking row permissions: Loaded items have duplicate IDs ({0}:{1}).",
-                            EntityName, duplicateId));
-
-                    // The following query is equivalent to: int allowedReadItemsCount = allowedItemsQuery.Where(allowedItem => readItemsIds.Contains(allowedItem.ID)).Count();
+                    // The following query is equivalent to: int allowedItemsCount = allowedItemsQuery.Where(allowedItem => readItemsIds.Contains(allowedItem.ID)).Count();
                     // The query is built by reflection to avoid an obscure problem with complex query in NHibernate: using generic parameter TEntityInterface for a query parameter
                     // breaks on some complex scenarios, so row permissions would not work on browse data structures, see unit test CommonConcepts.Test.RowPermissionsTest.Browse).
-                    var allowedReadItemPredicateParameter = Expression.Parameter(_reflection.EntityType, "allowedItem");
-                    var allowedReadItemPredicate = Expression.Lambda(
+                    var allowedItemPredicateParameter = Expression.Parameter(_reflection.EntityType, "allowedItem");
+                    var allowedItemPredicate = Expression.Lambda(
                         Expression.Call(
-                            Expression.Constant(readItemsIds),
+                            Expression.Constant(itemsIds),
                             typeof(List<Guid>).GetMethod("Contains"),
-                            new[] { Expression.Property(allowedReadItemPredicateParameter, "ID") }),
-                        allowedReadItemPredicateParameter);
-                    int allowedReadItemsCount = _reflection.Where(allowedItemsQuery, allowedReadItemPredicate).Count();
-                    _logger.Trace(() => string.Format("Row permission batch test; distinct requested: {0}, distinct allowed: {1}", readItemsIds.Count, allowedReadItemsCount));
+                            new[] { Expression.Property(allowedItemPredicateParameter, "ID") }),
+                        allowedItemPredicateParameter);
+                    int allowedItemsCount = _reflection.Where(allowedItemsQuery, allowedItemPredicate).Count();
+                    _logger.Trace(() => string.Format("Filter validation {0} batch test; distinct requested: {1}, distinct allowed: {2}.", filterType.Name, itemsIds.Count, allowedItemsCount));
 
-                    if (allowedReadItemsCount < readItemsIds.Count)
-                        throw new UserException("Insufficient permissions to access some or all of the data requested.", "DataStructure:" + _reflection.EntityType.ToString() + ".");
-                    else if (allowedReadItemsCount > readItemsIds.Count)
+                    if (allowedItemsCount < itemsIds.Count)
+                        return false;
+                    else if (allowedItemsCount > itemsIds.Count)
                         throw new FrameworkException(string.Format(
-                            "Invalid row permissions filter result: More items allowed ({0}) then items read ({1}). Check if the {2} filter on {3} returns duplicate IDs.",
-                            allowedReadItemsCount, readItemsIds.Count, EntityName, RowPermissionsInfo.FilterName));
+                            "Invalid filter validation result: More items allowed ({0}) then items read ({1}). Check if the {2} filter on {3} returns duplicate IDs.",
+                            allowedItemsCount, itemsIds.Count, filterType.Name, EntityName));
                 }
             }
+
+            return true;
         }
 
         private Guid? FindDuplicate(List<Guid> ids)
         {
-            if (ids.Distinct().Count() != ids.Count)
+            if (ids.Distinct().Count() != ids.Count())
                 return ids.GroupBy(id => id).Where(group => group.Count() > 1).First().Key;
             return null;
         }
@@ -503,39 +507,9 @@ namespace Rhetos.Dom.DefaultConcepts
                 };
             }
 
-            if (ShouldValidateRowPermissions(commandInfo, result))
-                ValidateRowPermissions((TEntityInterface[])result.Records);
-
             return result;
         }
 
-        private bool ShouldValidateRowPermissions(ReadCommandInfo readCommand, ReadCommandResult readResult)
-        {
-            if (readResult.Records == null)
-                return false;
-
-            if (readCommand.Filters != null && readCommand.Filters.Length > 0)
-            {
-                int lastRowPermissionFilter = -1;
-                for (int f = readCommand.Filters.Length - 1; f >= 0; f--)
-                    if (EqualsSimpleFilter(readCommand.Filters[f], RowPermissionsInfo.FilterName))
-                    {
-                        lastRowPermissionFilter = f;
-                        break;
-                    }
-
-                if (lastRowPermissionFilter >= 0)
-                    if (lastRowPermissionFilter == readCommand.Filters.Length - 1)
-                    {
-                        _logger.Trace(() => "Last filter is '" + RowPermissionsInfo.FilterName + "', skipping ValidateRowPermissions.");
-                        return false;
-                    }
-                    else
-                        _logger.Trace(() => "Warning: Improve performance by moving '" + RowPermissionsInfo.FilterName + "' to last position, in order to skip ValidateRowPermissions.");
-            }
-
-            return true;
-        }
 
         private void AutoApplyFilters(ReadCommandInfo commandInfo)
         {
@@ -545,7 +519,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 commandInfo.Filters = commandInfo.Filters ?? new FilterCriteria[] { };
 
                 var newFilters = filterNames
-                    .Where(name => !commandInfo.Filters.Any(existingFilter => EqualsSimpleFilter(existingFilter, name)))
+                    .Where(name => !commandInfo.Filters.Any(existingFilter => GenericFilterHelper.EqualsSimpleFilter(existingFilter, name)))
                     .Select(name => new FilterCriteria { Filter = name })
                     .ToList();
 
@@ -555,13 +529,6 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
-        private static bool EqualsSimpleFilter(FilterCriteria filter, string filterName)
-        {
-            return filter.Filter == filterName
-                && filter.Value == null
-                && (string.IsNullOrEmpty(filter.Operation)
-                    || string.Equals(filter.Operation, GenericFilterHelper.FilterOperationMatches, StringComparison.OrdinalIgnoreCase));
-        }
 
         private static int SmartCount(IEnumerable<TEntityInterface> items)
         {

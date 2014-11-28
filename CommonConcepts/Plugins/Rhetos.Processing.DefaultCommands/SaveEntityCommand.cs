@@ -29,6 +29,7 @@ using Rhetos.Dom;
 using Rhetos.Dom.DefaultConcepts;
 using System.ComponentModel.Composition;
 using Rhetos.Extensibility;
+using Rhetos.Dsl.DefaultConcepts;
 
 namespace Rhetos.Processing.DefaultCommands
 {
@@ -37,22 +38,59 @@ namespace Rhetos.Processing.DefaultCommands
     public class SaveEntityCommand : ICommandImplementation
     {
         private readonly IIndex<string, IWritableRepository> _writableRepositories;
+        private readonly GenericRepositories _genericRepositories;
+        private readonly IPersistenceTransaction _persistenceTransaction;
 
-        public SaveEntityCommand(IIndex<string, IWritableRepository> writableRepositories)
+        public SaveEntityCommand(
+            IIndex<string, IWritableRepository> writableRepositories,
+            GenericRepositories genericRepositories,
+            IPersistenceTransaction persistenceTransaction)
         {
             _writableRepositories = writableRepositories;
+            _genericRepositories = genericRepositories;
+            _persistenceTransaction = persistenceTransaction;
         }
 
-        public CommandResult Execute(ICommandInfo info)
+        public CommandResult Execute(ICommandInfo commandInfo)
         {
-            var saveInfo = info as SaveEntityCommandInfo;
+            var saveInfo = commandInfo as SaveEntityCommandInfo;
 
             if (saveInfo == null)
                 return CommandResult.Fail("CommandInfo does not implement SaveEntityCommandInfo");
 
-            var repository = _writableRepositories[saveInfo.Entity];
-            repository.Save(saveInfo.DataToInsert, saveInfo.DataToUpdate, saveInfo.DataToDelete, true);
+            if (saveInfo.Entity == null)
+                throw new ClientException("Invalid SaveEntityCommand argument: Entity is not set.");
 
+            // we need to check delete permissions before actually deleting items 
+            // and update items before AND after they are updated
+            var genericRepository = _genericRepositories.GetGenericRepository(saveInfo.Entity);
+            bool valid = true;
+            var updateDeleteItems = saveInfo.DataToDelete;
+            if (updateDeleteItems == null) updateDeleteItems = saveInfo.DataToUpdate;
+            else if (saveInfo.DataToUpdate != null) updateDeleteItems = updateDeleteItems.Concat(saveInfo.DataToUpdate).ToArray();
+            if (updateDeleteItems != null) 
+                valid = genericRepository.CheckAllItemsWithinFilter(updateDeleteItems, RowPermissionsWriteInfo.FilterName);
+
+            if (valid)
+            {
+                var repository = _writableRepositories[saveInfo.Entity];
+                repository.Save(saveInfo.DataToInsert, saveInfo.DataToUpdate, saveInfo.DataToDelete, true);
+
+                var insertUpdateItems = saveInfo.DataToInsert;
+                if (insertUpdateItems == null) insertUpdateItems = saveInfo.DataToUpdate;
+                else if (saveInfo.DataToUpdate != null) insertUpdateItems = insertUpdateItems.Concat(saveInfo.DataToUpdate).ToArray();
+
+                // we rely that this call will only use IDs of the items, because other data might be dirty
+                if (insertUpdateItems != null)
+                    valid = genericRepository.CheckAllItemsWithinFilter(insertUpdateItems, RowPermissionsWriteInfo.FilterName);
+            }
+
+            if (!valid)
+            {
+                _persistenceTransaction.DiscardChanges();
+                throw new UserException("Insufficient permissions to write some or all of the data.", "DataStructure:" + saveInfo.Entity + ".");
+            }
+            
             return new CommandResult
             {
                 Message = "Comand executed",
