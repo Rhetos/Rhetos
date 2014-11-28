@@ -54,7 +54,7 @@ namespace CommonConcepts.Test
                 groupsRepository.Insert(new[] { g1, g2 });
                 itemsRepository.Insert(new[] { i1, i2, i3, i4 });
 
-                var allowedItems = itemsRepository.Filter(itemsRepository.Query(), new Common.RowPermissionsAllowedItems());
+                var allowedItems = itemsRepository.Filter(itemsRepository.Query(), new Common.RowPermissionsReadItems());
                 Console.WriteLine(itemsRepository.Query().Expression.ToString());
                 Console.WriteLine(allowedItems.Expression.ToString());
                 Assert.AreEqual("", TestUtility.DumpSorted(allowedItems, item => item.Name));
@@ -93,7 +93,7 @@ namespace CommonConcepts.Test
                 repositories.TestRowPermissions.RpRulesDenyItem.Insert(new[] {
                     new TestRowPermissions.RpRulesDenyItem { UserName = currentUserName, Item = i3 } });
 
-                var allowedItems = itemsRepository.Filter(itemsRepository.Query(), new Common.RowPermissionsAllowedItems());
+                var allowedItems = itemsRepository.Filter(itemsRepository.Query(), new Common.RowPermissionsReadItems());
                 Console.WriteLine(itemsRepository.Query().Expression.ToString());
                 Console.WriteLine(allowedItems.Expression.ToString());
                 Assert.AreEqual("i2, i4", TestUtility.DumpSorted(allowedItems, item => item.Name));
@@ -130,7 +130,7 @@ namespace CommonConcepts.Test
                     new TestRowPermissions.RpRulesAllowItem { UserName = currentUserName, Item = i1 },
                     new TestRowPermissions.RpRulesAllowItem { UserName = currentUserName, Item = i2 } });
 
-                var allowedItems = itemsRepository.Filter(itemsRepository.Query(), new Common.RowPermissionsAllowedItems());
+                var allowedItems = itemsRepository.Filter(itemsRepository.Query(), new Common.RowPermissionsReadItems());
                 Console.WriteLine(itemsRepository.Query().Expression.ToString());
                 Console.WriteLine(allowedItems.Expression.ToString());
                 Assert.AreEqual("i1, i2, i3, i4", TestUtility.DumpSorted(allowedItems, item => item.Name));

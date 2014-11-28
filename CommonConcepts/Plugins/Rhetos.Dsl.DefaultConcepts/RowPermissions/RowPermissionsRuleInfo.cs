@@ -32,7 +32,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     public class RowPermissionsRuleInfo : IConceptInfo, IValidationConcept
     {
         [ConceptKey]
-        public RowPermissionsPluginableFilterInfo RowPermissionsFilter { get; set; }
+        public RowPermissionsPluginableFiltersInfo RowPermissionsFilters { get; set; }
 
         [ConceptKey]
         public string Name { get; set; }

@@ -39,15 +39,15 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (RowPermissionsDenyReadInfo)conceptInfo;
 
             codeBuilder.InsertCode(
-                RowPermissionsAllowReadCodeGenerator.GetSnippetFilterExpression(
-                    info.RowPermissionsFilter.Source,
+                RowPermissionsUtility.GetSnippetFilterExpression(
+                    info.RowPermissionsFilters.DataStructure,
                     info.Name,
                     info.GroupSelector,
                     info.PermissionPredicate,
                     info.Condition,
                     allow: false),
-                RowPermissionsPluginableFilterInfo.FilterExpressionsTag,
-                info.RowPermissionsFilter);
+                RowPermissionsPluginableFiltersInfo.ReadFilterExpressionsTag,
+                info.RowPermissionsFilters);
         }
     }
 }

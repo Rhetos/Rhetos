@@ -104,6 +104,7 @@
     <Compile Include="ReflectionHelper.cs" />
     <Compile Include="RowPermissions\RowPermissionsDenyReadCodeGenerator.cs" />
     <Compile Include="RowPermissions\RowPermissionsAllowReadCodeGenerator.cs" />
+    <Compile Include="RowPermissions\RowPermissionsUtility.cs" />
     <Compile Include="SimpleBusinessLogic\ActionCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ReloadBeforeValidationsCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\DenyUserEditDataStructureCodeGenerator.cs" />

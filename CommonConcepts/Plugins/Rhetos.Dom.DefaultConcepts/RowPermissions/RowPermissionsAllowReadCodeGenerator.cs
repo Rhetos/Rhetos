@@ -39,50 +39,15 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (RowPermissionsAllowReadInfo)conceptInfo;
 
             codeBuilder.InsertCode(
-                GetSnippetFilterExpression(
-                    info.RowPermissionsFilter.Source,
+                RowPermissionsUtility.GetSnippetFilterExpression(
+                    info.RowPermissionsFilters.DataStructure,
                     info.Name,
                     info.GroupSelector,
                     info.PermissionPredicate,
                     info.Condition,
                     allow: true),
-                RowPermissionsPluginableFilterInfo.FilterExpressionsTag,
-                info.RowPermissionsFilter);
-        }
-
-        public static string GetSnippetFilterExpression(
-            DataStructureInfo source,
-            string name,
-            string groupSelector,
-            string permissionPredicate,
-            string condition,
-            bool allow)
-        {
-            string checkRuleCondition;
-            if (!string.IsNullOrEmpty(condition))
-                checkRuleCondition = string.Format(
-                @"Func<bool> ruleCondition = () => {0};
-				if (ruleCondition.Invoke())
-					",
-                    condition);
-            else
-                checkRuleCondition = "";
-
-            return string.Format(
-            @"{{
-				var {2}Function = DomUtility.Function(() =>
-                    {3});
-				var {2} = {2}Function.Invoke();
-				{5}filterExpression.{6}({4});
-			}}
-            ",
-                source.Module.Name,
-                source.Name,
-                name,
-                groupSelector,
-                permissionPredicate,
-                checkRuleCondition,
-                allow ? "Include" : "Exclude");
+                RowPermissionsPluginableFiltersInfo.ReadFilterExpressionsTag,
+                info.RowPermissionsFilters);
         }
     }
 }
