@@ -9,7 +9,8 @@ Module TestRowPermissions
 	Entity SimpleRP
 	{
 		Integer value;
-		RowPermissions '(source, repo, context) => source.Where(a => a.value >= 1500).Where(a => a.value <= 2500)';
+		RowPermissionsRead '(source, repo, context) => source.Where(a => a.value >= 1500).Where(a => a.value <= 2500)';
+		RowPermissionsWrite '(source, repo, context) => source.Where(a => a.value >= 500).Where(a => a.value <= 3500)';
 		ItemFilter Value30 'item => item.value > 30';
 	}
 	
@@ -37,28 +38,28 @@ Module TestRowPermissions
 	Browse SimpleRPBrowse TestRowPermissions.SimpleRP
 	{
 		Take Value2 value;
-		RowPermissions '(source, repo, context) => source.Where(a => a.Base.value >= 1500).Where(a => a.Base.value <= 2500)';
+		RowPermissionsRead '(source, repo, context) => source.Where(a => a.Base.value >= 1500).Where(a => a.Base.value <= 2500)';
 	}
 	
 	Entity AutoFilter
 	{
 		ShortString Name;
-		RowPermissions '(source, repository, context) =>
+		RowPermissionsRead '(source, repository, context) =>
 			{
 				repository.Common.AddToLog.Execute(new Common.AddToLog {
 					TableName = "TestRowPermissions.AutoFilter",
-					Action = "RowPermissions filter" });
+					Action = "RowPermissionsReadItems filter" });
 				
 				return source.Where(item => item.Name.StartsWith("a"));
 			}';
-		ApplyFilterOnClientRead 'Common.RowPermissionsAllowedItems';
+		ApplyFilterOnClientRead 'Common.RowPermissionsReadItems';
 	}
 	
 	Entity ErrorData
 	{
 		ShortString Name;
 		
-		RowPermissions '(source, repos, context) =>
+		RowPermissionsRead '(source, repos, context) =>
 			{
 				var items = source.ToList();
 				if (items.Any(item => item.Name == "makeInvalidFilter"))

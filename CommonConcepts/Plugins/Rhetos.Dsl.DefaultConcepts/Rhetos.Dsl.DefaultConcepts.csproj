@@ -125,6 +125,8 @@
     <Compile Include="RowPermissions\RowPermissionsPluginableFilterInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsRuleInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsInfo.cs" />
+    <Compile Include="Computations\RowPermissionsReadInfo.cs" />
+    <Compile Include="Computations\RowPermissionsWriteInfo.cs" />
     <Compile Include="DatabaseWorkarounds\AutoSqlViewDependsOnInfo.cs" />
     <Compile Include="DatabaseWorkarounds\AutoSqlFunctionDependsOnInfo.cs" />
     <Compile Include="DatabaseWorkarounds\AutoSqlQueryableDependsOnInfo.cs" />

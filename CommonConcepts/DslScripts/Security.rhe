@@ -45,5 +45,6 @@
 		}
 	}
 	
-	Parameter RowPermissionsAllowedItems;
+	Parameter RowPermissionsReadItems;
+	Parameter RowPermissionsWriteItems;
 }

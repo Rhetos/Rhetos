@@ -62,6 +62,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Extensibility.dll</HintPath>
     </Reference>
+    <Reference Include="Rhetos.Extensibility.Interfaces, Version=0.9.19.3, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Extensibility.Interfaces.dll</HintPath>
+    </Reference>
     <Reference Include="Rhetos.Security, Version=0.9.14.1, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Security.dll</HintPath>
