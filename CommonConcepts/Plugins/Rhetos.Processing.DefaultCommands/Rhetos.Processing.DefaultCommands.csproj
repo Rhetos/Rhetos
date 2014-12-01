@@ -53,6 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutofacModuleConfiguration.cs" />
     <Compile Include="CommonConceptsConfiguration.cs" />
     <Compile Include="ReadCommand.cs" />
     <Compile Include="ExecuteActionCommand.cs" />
@@ -69,6 +70,7 @@
     <Compile Include="Security\QueryDataSourceCommandClaims.cs" />
     <Compile Include="Security\ReadCommandClaims.cs" />
     <Compile Include="Security\SaveCommandClaims.cs" />
+    <Compile Include="ServerCommandsUtility.cs" />
   </ItemGroup>
   <ItemGroup>
     <CodeAnalysisDictionary Include="..\..\..\CodeAnalysisDictionary.xml">

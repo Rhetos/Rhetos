@@ -50,18 +50,16 @@ namespace Rhetos.Dom.DefaultConcepts
         private readonly ILogger _performanceLogger;
         private readonly IPersistenceTransaction _persistenceTransaction;
         private readonly GenericFilterHelper _genericFilterHelper;
-        private readonly IDomainObjectModel _domainObjectModel;
-        private readonly ApplyFiltersOnClientRead _applyFiltersOnClientRead;
 
         private readonly string _repositoryName;
         private readonly Lazy<IRepository> _repository;
-        private readonly ReflectionHelper<TEntityInterface> _reflection;
         private const string UnsupportedLoaderMessage = "{0} does not implement a loader, a query or a filter with parameter {1}.";
         private const string UnsupportedFilterMessage = "{0} does not implement a filter with parameter {1}.";
         private const string UnsupportedQueryMessage = "{0} does not implement a query method or a filter with parameter {1} than will return an IQueryable. Try using Read function instead of the Query function.";
 
         public string EntityName { get; private set; }
         public IRepository EntityRepository { get { return _repository.Value; } }
+        public ReflectionHelper<TEntityInterface> Reflection { get; private set; }
 
         public GenericRepository(
             IDomainObjectModel domainObjectModel,
@@ -69,9 +67,8 @@ namespace Rhetos.Dom.DefaultConcepts
             RegisteredInterfaceImplementations registeredInterfaceImplementations,
             ILogProvider logProvider,
             IPersistenceTransaction persistenceTransaction,
-            GenericFilterHelper genericFilterHelper,
-            ApplyFiltersOnClientRead applyFiltersOnClientRead)
-            : this(domainObjectModel, repositories, InitializeEntityName(registeredInterfaceImplementations), logProvider, persistenceTransaction, genericFilterHelper, applyFiltersOnClientRead)
+            GenericFilterHelper genericFilterHelper)
+            : this(domainObjectModel, repositories, InitializeEntityName(registeredInterfaceImplementations), logProvider, persistenceTransaction, genericFilterHelper)
         {
         }
 
@@ -81,8 +78,7 @@ namespace Rhetos.Dom.DefaultConcepts
             string entityName,
             ILogProvider logProvider,
             IPersistenceTransaction persistenceTransaction,
-            GenericFilterHelper genericFilterHelper,
-            ApplyFiltersOnClientRead applyFiltersOnClientRead)
+            GenericFilterHelper genericFilterHelper)
         {
             EntityName = entityName;
             _repositoryName = "GenericRepository(" + EntityName + ")";
@@ -91,11 +87,9 @@ namespace Rhetos.Dom.DefaultConcepts
             _performanceLogger = logProvider.GetLogger("Performance");
             _persistenceTransaction = persistenceTransaction;
             _genericFilterHelper = genericFilterHelper;
-            _domainObjectModel = domainObjectModel;
-            _applyFiltersOnClientRead = applyFiltersOnClientRead;
 
             _repository = new Lazy<IRepository>(() => InitializeRepository(repositories));
-            _reflection = new ReflectionHelper<TEntityInterface>(EntityName, domainObjectModel, _repository);
+            Reflection = new ReflectionHelper<TEntityInterface>(EntityName, domainObjectModel, _repository);
         }
 
         private static string InitializeEntityName(RegisteredInterfaceImplementations registeredInterfaceImplementations)
@@ -122,7 +116,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public TEntityInterface CreateInstance()
         {
-            return (TEntityInterface)Activator.CreateInstance(_reflection.EntityType);
+            return (TEntityInterface)Activator.CreateInstance(Reflection.EntityType);
         }
 
         /// <returns>Result is a List&lt;&gt; of the data structure type.
@@ -131,11 +125,11 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Neither List&lt;&gt; or IList&lt;&gt; are covariant, so IEnumerable&lt;&gt; is used.</returns>
         public IEnumerable<TEntityInterface> CreateList(int size)
         {
-            IEnumerable<object> instances = Enumerable.Range(1, size).Select(i => Activator.CreateInstance(_reflection.EntityType));
-            var castInstances = _reflection.CastAsEntity(instances);
+            IEnumerable<object> instances = Enumerable.Range(1, size).Select(i => Activator.CreateInstance(Reflection.EntityType));
+            var castInstances = Reflection.CastAsEntity(instances);
 
-            var list = (IEnumerable<TEntityInterface>)Activator.CreateInstance(_reflection.ListType, new object[] { size });
-            _reflection.AddRange(list, castInstances);
+            var list = (IEnumerable<TEntityInterface>)Activator.CreateInstance(Reflection.ListType, new object[] { size });
+            Reflection.AddRange(list, castInstances);
 
             return list;
         }
@@ -171,7 +165,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private void MaterializeEntityList(ref IEnumerable<TEntityInterface> items)
         {
             if (items != null && !(items is IList))
-                items = _reflection.ToListOfEntity(items);
+                items = Reflection.ToListOfEntity(items);
         }
 
         #endregion
@@ -180,10 +174,10 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public IQueryable<TEntityInterface> Query()
         {
-            if (_reflection.RepositoryQueryMethod == null)
+            if (Reflection.RepositoryQueryMethod == null)
                 throw new FrameworkException(EntityName + "'s repository does not implement the Query() method.");
 
-            return (IQueryable<TEntityInterface>)_reflection.RepositoryQueryMethod.InvokeEx(_repository.Value);
+            return (IQueryable<TEntityInterface>)Reflection.RepositoryQueryMethod.InvokeEx(_repository.Value);
         }
 
         public IQueryable<TEntityInterface> Query<TParameter>()
@@ -269,7 +263,7 @@ namespace Rhetos.Dom.DefaultConcepts
             // Use Filter(parameter), Query(parameter) or Filter(Query(), parameter), if any option exists
             ReadingOption filterWithParameter = () =>
             {
-                var reader = _reflection.RepositoryLoadWithParameterMethod(parameterType);
+                var reader = Reflection.RepositoryLoadWithParameterMethod(parameterType);
                 if (reader == null) return null;
                 return () =>
                 {
@@ -280,7 +274,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             ReadingOption queryWithParameter = () =>
             {
-                var reader = _reflection.RepositoryQueryWithParameterMethod(parameterType);
+                var reader = Reflection.RepositoryQueryWithParameterMethod(parameterType);
                 if (reader == null) return null;
                 return () =>
                 {
@@ -291,20 +285,20 @@ namespace Rhetos.Dom.DefaultConcepts
 
             ReadingOption queryThenQueryableFilter = () =>
             {
-                if (_reflection.RepositoryQueryMethod == null) return null;
-                var reader = _reflection.RepositoryQueryableFilterMethod(parameterType);
+                if (Reflection.RepositoryQueryMethod == null) return null;
+                var reader = Reflection.RepositoryQueryableFilterMethod(parameterType);
                 if (reader == null) return null;
                 return () =>
                 {
                     _logger.Trace(() => "Reading using queryable Filter(Query(), " + reader.GetParameters()[1].ParameterType.FullName + ")");
-                    var query = _reflection.RepositoryQueryMethod.InvokeEx(_repository.Value);
+                    var query = Reflection.RepositoryQueryMethod.InvokeEx(_repository.Value);
                     return (IEnumerable<TEntityInterface>)reader.InvokeEx(_repository.Value, query, parameter);
                 };
             };
 
             ReadingOption queryAll = () =>
             {
-                var reader = _reflection.RepositoryQueryMethod;
+                var reader = Reflection.RepositoryQueryMethod;
                 if (reader == null) return null;
                 return () =>
                 {
@@ -333,7 +327,7 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 var options = new ReadingOptions {
                     () => {
-                        var reader = _reflection.RepositoryLoadMethod;
+                        var reader = Reflection.RepositoryLoadMethod;
                         if (reader == null) return null;
                         return () => {
                             _logger.Trace(() => "Reading using All()");
@@ -341,7 +335,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         };
                     },
                     () => {
-                        var reader = _reflection.RepositoryQueryMethod;
+                        var reader = Reflection.RepositoryQueryMethod;
                         if (reader == null) return null;
                         return () => {
                             _logger.Trace(() => "Reading using Query()");
@@ -365,16 +359,16 @@ namespace Rhetos.Dom.DefaultConcepts
             }
 
             // If the parameter is a filter expression, unless explicitly implemented above, use Query().Where(parameter)
-            if (_reflection.RepositoryQueryMethod != null && _reflection.IsPredicateExpression(parameterType))
+            if (Reflection.RepositoryQueryMethod != null && Reflection.IsPredicateExpression(parameterType))
             {
                 _logger.Trace(() => "Reading using Query().Where(" + parameterType.Name + ")");
-                var query = (IQueryable<TEntityInterface>)_reflection.RepositoryQueryMethod.InvokeEx(_repository.Value);
-                return _reflection.Where(query, parameter);
+                var query = (IQueryable<TEntityInterface>)Reflection.RepositoryQueryMethod.InvokeEx(_repository.Value);
+                return Reflection.Where(query, parameter);
             }
 
             // It there is only enumerable filter available, use inefficient loader with in-memory filtering: Filter(All(), parameter)
             {
-                var reader = _reflection.RepositoryEnumerableFilterMethod(parameterType);
+                var reader = Reflection.RepositoryEnumerableFilterMethod(parameterType);
                 if (reader != null)
                 {
                     IEnumerable<TEntityInterface> items;
@@ -401,7 +395,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private IEnumerable<TEntityInterface> ExecuteGenericFilter(IEnumerable<FilterCriteria> genericFilter, bool preferQuery, IEnumerable<TEntityInterface> items = null)
         {
-            var filterObjects = _genericFilterHelper.ToFilterObjects(genericFilter, _reflection.EntityType);
+            var filterObjects = _genericFilterHelper.ToFilterObjects(genericFilter, Reflection.EntityType);
 
             foreach (var filter in filterObjects)
             {
@@ -418,155 +412,6 @@ namespace Rhetos.Dom.DefaultConcepts
             }
 
             return items ?? ReadNonMaterialized(new FilterAll(), preferQuery: preferQuery);
-        }
-
-        private IEnumerable<T> GetSubset<T>(T[] source, int startIndex, int endIndex)
-        {
-            while (startIndex < endIndex) yield return source[startIndex++];
-        }
-
-        private IEnumerable<IEnumerable<T>> GetChunks<T>(T[] source, int chunkSize)
-        {
-            int start = 0;
-            while (start < source.Length)
-            {
-                int end = Math.Min(start + chunkSize, source.Length);
-                yield return GetSubset(source, start, end);
-                start += chunkSize;
-            }
-        }
-
-        /// <summary>
-        /// Checks if all items are within filter 'filterName'. Works with materialized items.
-        /// </summary>
-        /// <param name="readItems"></param>
-        public bool CheckAllItemsWithinFilter(object[] validateObjects, string filterName)
-        {
-            if (validateObjects == null) return true;
-            var validateItems = (TEntityInterface[])validateObjects;
-            var filterType = _domainObjectModel.Assembly.GetType(filterName);
-            var filterMethodInfo = _reflection.RepositoryQueryableFilterMethod(filterType);
-
-            if (filterMethodInfo != null)
-            {
-                Guid? duplicateId = FindDuplicate(validateItems.Select(a => a.ID).ToList());
-                if (duplicateId != null)
-                    throw new FrameworkException(string.Format(
-                        "Error while checking {2}: Loaded items have duplicate IDs ({0}:{1}).",
-                        EntityName, duplicateId, filterType.Name));
-
-                var allowedItemsQuery = (IQueryable<TEntityInterface>)ReadNonMaterialized(null, filterType, true);
-
-                const int batchSize = 2000; // true NHibernate/SQL limit is probably 2100
-                _logger.Trace(() => string.Format("Found validation filter {0}, checking if all items are allowed (with batchSize = {1}).", filterType.Name, batchSize));
-                
-                var itemsBatches = GetChunks(validateItems, batchSize);
-                foreach (var itemsBatch in itemsBatches)
-                {
-                    var itemsIds = itemsBatch.Select(item => item.ID).ToList();
-
-                    // The following query is equivalent to: int allowedItemsCount = allowedItemsQuery.Where(allowedItem => readItemsIds.Contains(allowedItem.ID)).Count();
-                    // The query is built by reflection to avoid an obscure problem with complex query in NHibernate: using generic parameter TEntityInterface for a query parameter
-                    // breaks on some complex scenarios, so row permissions would not work on browse data structures, see unit test CommonConcepts.Test.RowPermissionsTest.Browse).
-                    var allowedItemPredicateParameter = Expression.Parameter(_reflection.EntityType, "allowedItem");
-                    var allowedItemPredicate = Expression.Lambda(
-                        Expression.Call(
-                            Expression.Constant(itemsIds),
-                            typeof(List<Guid>).GetMethod("Contains"),
-                            new[] { Expression.Property(allowedItemPredicateParameter, "ID") }),
-                        allowedItemPredicateParameter);
-                    int allowedItemsCount = _reflection.Where(allowedItemsQuery, allowedItemPredicate).Count();
-                    _logger.Trace(() => string.Format("Filter validation {0} batch test; distinct requested: {1}, distinct allowed: {2}.", filterType.Name, itemsIds.Count, allowedItemsCount));
-
-                    if (allowedItemsCount < itemsIds.Count)
-                        return false;
-                    else if (allowedItemsCount > itemsIds.Count)
-                        throw new FrameworkException(string.Format(
-                            "Invalid filter validation result: More items allowed ({0}) then items read ({1}). Check if the {2} filter on {3} returns duplicate IDs.",
-                            allowedItemsCount, itemsIds.Count, filterType.Name, EntityName));
-                }
-            }
-
-            return true;
-        }
-
-        private Guid? FindDuplicate(List<Guid> ids)
-        {
-            if (ids.Distinct().Count() != ids.Count())
-                return ids.GroupBy(id => id).Where(group => group.Count() > 1).First().Key;
-            return null;
-        }
-
-        public ReadCommandResult ExecuteReadCommand(ReadCommandInfo commandInfo)
-        {
-            if (!commandInfo.ReadRecords && !commandInfo.ReadTotalCount)
-                throw new ClientException("Invalid ReadCommand argument: At least one of the properties ReadRecords or ReadTotalCount should be set to true.");
-
-            if (commandInfo.Top  < 0)
-                throw new ClientException("Invalid ReadCommand argument: Top parameter must not be negative.");
-
-            if (commandInfo.Skip < 0)
-                throw new ClientException("Invalid ReadCommand argument: Skip parameter must not be negative.");
-
-            AutoApplyFilters(commandInfo);
-
-            ReadCommandResult result;
-
-            var specificMethod = _reflection.RepositoryReadCommandMethod;
-            if (specificMethod != null)
-                result = (ReadCommandResult)specificMethod.InvokeEx(_repository.Value, commandInfo);
-            else
-            {
-                bool pagingIsUsed = commandInfo.Top > 0 || commandInfo.Skip > 0;
-
-                IEnumerable<TEntityInterface> filtered = ReadNonMaterialized(commandInfo.Filters ?? new FilterCriteria[] { }, preferQuery: pagingIsUsed || !commandInfo.ReadRecords);
-
-                TEntityInterface[] resultRecords = null;
-                int? totalCount = null;
-
-                if (commandInfo.ReadRecords)
-                    resultRecords = (TEntityInterface[])_reflection.ToArrayOfEntity(_genericFilterHelper.SortAndPaginate(_reflection.AsQueryable(filtered), commandInfo));
-
-                if (commandInfo.ReadTotalCount)
-                    if (pagingIsUsed)
-                        totalCount = SmartCount(filtered);
-                    else
-                        totalCount = resultRecords != null ? resultRecords.Length : SmartCount(filtered);
-
-                result = new ReadCommandResult
-                {
-                    Records = resultRecords,
-                    TotalCount = totalCount
-                };
-            }
-
-            return result;
-        }
-
-
-        private void AutoApplyFilters(ReadCommandInfo commandInfo)
-        {
-            List<string> filterNames;
-            if (_applyFiltersOnClientRead.TryGetValue(EntityName, out filterNames))
-            {
-                commandInfo.Filters = commandInfo.Filters ?? new FilterCriteria[] { };
-
-                var newFilters = filterNames
-                    .Where(name => !commandInfo.Filters.Any(existingFilter => GenericFilterHelper.EqualsSimpleFilter(existingFilter, name)))
-                    .Select(name => new FilterCriteria { Filter = name })
-                    .ToList();
-
-                _logger.Trace(() => "AutoApplyFilters: " + string.Join(", ", newFilters.Select(f => f.Filter)));
-
-                commandInfo.Filters = commandInfo.Filters.Concat(newFilters).ToArray();
-            }
-        }
-
-
-        private static int SmartCount(IEnumerable<TEntityInterface> items)
-        {
-            var query = items as IQueryable<TEntityInterface>;
-            return query != null ? query.Count() : items.Count();
         }
 
         #endregion
@@ -600,7 +445,7 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 var options = new ReadingOptions {
                     () => {
-                        var reader = _reflection.RepositoryEnumerableFilterMethod(parameterType);
+                        var reader = Reflection.RepositoryEnumerableFilterMethod(parameterType);
                         if (reader == null) return null;
                         return () =>
                         {
@@ -610,12 +455,12 @@ namespace Rhetos.Dom.DefaultConcepts
                         };
                     },
                     () => {
-                        var reader = _reflection.RepositoryQueryableFilterMethod(parameterType);
+                        var reader = Reflection.RepositoryQueryableFilterMethod(parameterType);
                         if (reader == null) return null;
                         return () =>
                         {
                             _logger.Trace(() => "Filtering using queryable Filter(items, " + reader.GetParameters()[1].ParameterType.FullName + ")");
-                            var query = _reflection.AsQueryable(items);
+                            var query = Reflection.AsQueryable(items);
                             return (IEnumerable<TEntityInterface>)reader.InvokeEx(_repository.Value, query, parameter);
                         };
                     }
@@ -643,11 +488,11 @@ namespace Rhetos.Dom.DefaultConcepts
             }
 
             // If the parameter is a filter expression, unless explicitly implemented above, use queryable items.Where(parameter)
-            if (_reflection.IsPredicateExpression(parameterType))
+            if (Reflection.IsPredicateExpression(parameterType))
             {
                 _logger.Trace(() => "Filtering using items.AsQueryable().Where(" + parameterType.Name + ")");
-                var query = _reflection.AsQueryable(items);
-                return _reflection.Where(query, parameter);
+                var query = Reflection.AsQueryable(items);
+                return Reflection.Where(query, parameter);
             }
 
             // If the parameter is a filter function, unless explicitly implemented above, use materialized items.Where(parameter)
@@ -676,13 +521,13 @@ namespace Rhetos.Dom.DefaultConcepts
             MaterializeEntityList(ref updatedNew);
             MaterializeEntityList(ref deletedIds);
 
-            if (_reflection.RepositorySaveMethod == null)
+            if (Reflection.RepositorySaveMethod == null)
                 throw new FrameworkException(EntityName + "'s repository does not implement the Save(IEnumerable<Entity>, ...) method.");
 
-            _reflection.RepositorySaveMethod.InvokeEx(_repository.Value,
-                insertedNew != null ? _reflection.CastAsEntity(insertedNew) : null,
-                updatedNew != null ? _reflection.CastAsEntity(updatedNew) : null,
-                deletedIds != null ? _reflection.CastAsEntity(deletedIds) : null,
+            Reflection.RepositorySaveMethod.InvokeEx(_repository.Value,
+                insertedNew != null ? Reflection.CastAsEntity(insertedNew) : null,
+                updatedNew != null ? Reflection.CastAsEntity(updatedNew) : null,
+                deletedIds != null ? Reflection.CastAsEntity(deletedIds) : null,
                 checkUserPermissions);
         }
 
@@ -702,7 +547,7 @@ namespace Rhetos.Dom.DefaultConcepts
             foreach (var newItem in newItems)
             {
                 var filterLoad = keySelectorHandler.BuildComparisonPredicate(newItem);
-                Guid id = _reflection.Where(Query(), filterLoad).Select(e => e.ID).FirstOrDefault();
+                Guid id = Reflection.Where(Query(), filterLoad).Select(e => e.ID).FirstOrDefault();
 
                 if (id == default(Guid))
                 {
@@ -736,7 +581,7 @@ namespace Rhetos.Dom.DefaultConcepts
             foreach (var newItem in newItems)
             {
                 var filterOld = keyPropertiesHandler.BuildComparisonPredicate(newItem);
-                TEntityInterface oldItem = _reflection.Where(Query(), filterOld).ToList().SingleOrDefault();
+                TEntityInterface oldItem = Reflection.Where(Query(), filterOld).ToList().SingleOrDefault();
 
                 if (oldItem == null)
                 {
@@ -983,7 +828,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 else
                 {
                     var toDeactivateIndex = new HashSet<TEntityInterface>(toDeactivate, new InstanceComparer());
-                    toDelete = _reflection.ToListOfEntity(toDelete.Where(item => !toDeactivateIndex.Contains(item)));
+                    toDelete = Reflection.ToListOfEntity(toDelete.Where(item => !toDeactivateIndex.Contains(item)));
                 }
                 if (toDelete.Count() + toDeactivate.Count() != oldDeleteCount)
                     throw new FrameworkException(string.Format(
@@ -997,7 +842,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 var activeToDeactivate = toDeactivate.Cast<IDeactivatable>().Where(item => item.Active == null || item.Active == true).ToList();
                 foreach (var item in activeToDeactivate)
                     item.Active = false;
-                _reflection.AddRange(toUpdate, _reflection.CastAsEntity(activeToDeactivate));
+                Reflection.AddRange(toUpdate, Reflection.CastAsEntity(activeToDeactivate));
                 activeToDeactivateCount = activeToDeactivate.Count;
             }
             _performanceLogger.Write(stopwatch, () => string.Format("{0}.InsertOrUpdateOrDeleteOrDeactivate: Deactivate ({1} to deactivate, {2} already deactivated)",
@@ -1029,12 +874,12 @@ namespace Rhetos.Dom.DefaultConcepts
             string source,
             object filterLoad = null)
         {
-            var recomputeMethod = _reflection.RepositoryRecomputeFromMethod(source);
+            var recomputeMethod = Reflection.RepositoryRecomputeFromMethod(source);
 
             if (recomputeMethod == null)
                 throw new FrameworkException(string.Format(
                     "{0}'s repository does not implement the method to recompute from {1} ({2}).",
-                    EntityName, source, _reflection.RepositoryRecomputeFromMethodName(source)));
+                    EntityName, source, Reflection.RepositoryRecomputeFromMethodName(source)));
 
             recomputeMethod.InvokeEx(_repository.Value, filterLoad, null);
         }

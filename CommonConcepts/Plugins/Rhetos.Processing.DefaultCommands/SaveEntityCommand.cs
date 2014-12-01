@@ -40,15 +40,18 @@ namespace Rhetos.Processing.DefaultCommands
         private readonly IIndex<string, IWritableRepository> _writableRepositories;
         private readonly GenericRepositories _genericRepositories;
         private readonly IPersistenceTransaction _persistenceTransaction;
+        private readonly ServerCommandsUtility _serverCommandsUtility;
 
         public SaveEntityCommand(
             IIndex<string, IWritableRepository> writableRepositories,
             GenericRepositories genericRepositories,
-            IPersistenceTransaction persistenceTransaction)
+            IPersistenceTransaction persistenceTransaction,
+            ServerCommandsUtility serverCommandsUtility)
         {
             _writableRepositories = writableRepositories;
             _genericRepositories = genericRepositories;
             _persistenceTransaction = persistenceTransaction;
+            _serverCommandsUtility = serverCommandsUtility;
         }
 
         public CommandResult Execute(ICommandInfo commandInfo)
@@ -68,7 +71,7 @@ namespace Rhetos.Processing.DefaultCommands
 
             var updateDeleteItems = ConcatenateNullable(saveInfo.DataToDelete, saveInfo.DataToUpdate);
             if (updateDeleteItems != null)
-                valid = genericRepository.CheckAllItemsWithinFilter(updateDeleteItems, RowPermissionsWriteInfo.FilterName);
+                valid = _serverCommandsUtility.CheckAllItemsWithinFilter(updateDeleteItems, RowPermissionsWriteInfo.FilterName, genericRepository);
 
             if (valid)
             {
@@ -78,7 +81,7 @@ namespace Rhetos.Processing.DefaultCommands
                 var insertUpdateItems = ConcatenateNullable(saveInfo.DataToInsert, saveInfo.DataToUpdate);
                 // We rely that this call will only use IDs of the items, because other data might be dirty.
                 if (insertUpdateItems != null)
-                    valid = genericRepository.CheckAllItemsWithinFilter(insertUpdateItems, RowPermissionsWriteInfo.FilterName);
+                    valid = _serverCommandsUtility.CheckAllItemsWithinFilter(insertUpdateItems, RowPermissionsWriteInfo.FilterName, genericRepository);
             }
 
             if (!valid)

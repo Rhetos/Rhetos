@@ -29,25 +29,27 @@ using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
 using Rhetos.Processing;
 using System.Linq.Expressions;
+using Autofac.Features.Indexed;
 
 namespace CommonConcepts.Test
 {
-    static class LegacyExtension
-    {
-        public static QueryDataSourceCommandResult ExecuteQueryDataSourceCommand<T>(
-            this GenericRepository<T> genericRepository,
-            QueryDataSourceCommandInfo queryDataSourceCommandInfo)
-            where T : class, IEntity
-        {
-            var commandInfo = queryDataSourceCommandInfo.ToReadCommandInfo();
-            var commandResult = genericRepository.ExecuteReadCommand(commandInfo);
-            return QueryDataSourceCommandResult.FromReadCommandResult(commandResult);
-        }
-    }
-
     [TestClass]
     public class FilterTest
     {
+        private static QueryDataSourceCommandResult ExecuteCommand(QueryDataSourceCommandInfo commandInfo, RhetosTestContainer container)
+        {
+            var commands = container.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
+            var readCommand = (QueryDataSourceCommand)commands[typeof(QueryDataSourceCommandInfo)].Single();
+            return (QueryDataSourceCommandResult)readCommand.Execute(commandInfo).Data.Value;
+        }
+
+        private static ReadCommandResult ExecuteCommand(ReadCommandInfo commandInfo, RhetosTestContainer container)
+        {
+            var commands = container.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
+            var readCommand = (ReadCommand)commands[typeof(ReadCommandInfo)].Single();
+            return (ReadCommandResult)readCommand.Execute(commandInfo).Data.Value;
+        }
+
         private static string ReportSource<T>(Common.DomRepository repository, T filter)
         {
             var filterRepository = (IFilterRepository<T, Test10.Source>) repository.Test10.Source;
@@ -295,20 +297,18 @@ namespace CommonConcepts.Test
                 var s2 = new TestFilter.CombinedFilters { Name = "abeceda" };
                 repository.TestFilter.CombinedFilters.Insert(new[] { s1, s2 });
 
-                var genericRepositoryCombinedFilters = container.Resolve<GenericRepositories>().GetGenericRepository<TestFilter.CombinedFilters>();
-
-                var filteredByContainsJustComposable = genericRepositoryCombinedFilters.ExecuteQueryDataSourceCommand(new QueryDataSourceCommandInfo
+                var filteredByContainsJustComposable = ExecuteCommand(new QueryDataSourceCommandInfo
                 {
                     DataSource = "TestFilter.CombinedFilters",
                     Filter = new TestFilter.ComposableFilterByContains { Pattern = "Abec" }
-                });
+                }, container);
 
-                var filteredByContainsWithGenericFilter = genericRepositoryCombinedFilters.ExecuteQueryDataSourceCommand(new QueryDataSourceCommandInfo
+                var filteredByContainsWithGenericFilter = ExecuteCommand(new QueryDataSourceCommandInfo
                 {
                     DataSource = "TestFilter.CombinedFilters",
                     Filter = new TestFilter.ComposableFilterByContains { Pattern = "Abec" },
                     GenericFilter = new FilterCriteria[] {new FilterCriteria {Property = "Name", Operation = "Contains", Value="Abec"}}
-                });
+                }, container);
                 // filter doubled should return same results as just one Composable filter
                 Assert.AreEqual(filteredByContainsJustComposable.Records.Length, filteredByContainsWithGenericFilter.Records.Length);
                 Assert.AreEqual(2, filteredByContainsWithGenericFilter.Records.Length);
@@ -328,27 +328,23 @@ namespace CommonConcepts.Test
                 var s2 = new TestFilter.CombinedFilters { Name = "abeceda" };
                 repository.TestFilter.CombinedFilters.Insert(new[] { s1, s2 });
 
-                var genericRepositoryCombinedFilters = container.Resolve<GenericRepositories>().GetGenericRepository<TestFilter.CombinedFilters>();
-
                 // Containing "ece" and referenced object name contains "es"
-                var filteredByContainsWithGenericFilter = genericRepositoryCombinedFilters.ExecuteQueryDataSourceCommand(new QueryDataSourceCommandInfo
+                var filteredByContainsWithGenericFilter = ExecuteCommand(new QueryDataSourceCommandInfo
                 {
                     DataSource = "TestFilter.CombinedFilters",
                     Filter = new TestFilter.ComposableFilterByContains { Pattern = "ece" },
                     GenericFilter = new FilterCriteria[] { new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "es" } }
-                });
+                }, container);
                 Assert.AreEqual(1, filteredByContainsWithGenericFilter.Records.Length);
             }
         }
 
         private static string ReportFilteredBrowse(RhetosTestContainer container, QueryDataSourceCommandInfo queryDataSourceCommandInfo)
         {
-            var genericRepositoryCombinedFilters = container.Resolve<GenericRepositories>().GetGenericRepository("TestFilter.ComposableFilterBrowse");
-
             queryDataSourceCommandInfo.DataSource = "TestFilter.ComposableFilterBrowse";
 
             return TestUtility.DumpSorted(
-                genericRepositoryCombinedFilters.ExecuteQueryDataSourceCommand(queryDataSourceCommandInfo).Records,
+                ExecuteCommand(queryDataSourceCommandInfo, container).Records,
                 item =>
                 {
                     var x = (TestFilter.ComposableFilterBrowse)item;
@@ -519,7 +515,7 @@ namespace CommonConcepts.Test
                             ReadRecords = true
                         };
                         
-                        var commandResult = (TestFilter.ExternalFilter[])gr.ExecuteReadCommand(readCommand).Records;
+                        var commandResult = (TestFilter.ExternalFilter[])ExecuteCommand(readCommand, container).Records;
                         Assert.AreEqual(
                             test.Item3,
                             TestUtility.DumpSorted(commandResult, item => item.Name),
@@ -577,20 +573,20 @@ namespace CommonConcepts.Test
 
                 var gr = container.Resolve<GenericRepositories>();
 
-                TestClientRead<TestFilter.AutoFilter1>(gr, "a1, a2", item => item.Name);
-                TestClientRead<TestFilter.AutoFilter2>(gr, "a1, a2, b1, b2", item => item.Name);
-                TestClientRead<TestFilter.AutoFilter2Browse>(gr, "b1x, b2x", item => item.Name2);
+                TestClientRead<TestFilter.AutoFilter1>(container, "a1, a2", item => item.Name);
+                TestClientRead<TestFilter.AutoFilter2>(container, "a1, a2, b1, b2", item => item.Name);
+                TestClientRead<TestFilter.AutoFilter2Browse>(container, "b1x, b2x", item => item.Name2);
             }
         }
 
-        private static void TestClientRead<T>(GenericRepositories gr, string expected, Func<T, object> reporter, ReadCommandInfo readCommand = null)
+        private static void TestClientRead<T>(RhetosTestContainer container, string expected, Func<T, object> reporter, ReadCommandInfo readCommand = null)
             where T : class, IEntity
         {
             readCommand = readCommand ?? new ReadCommandInfo();
             readCommand.DataSource = typeof(T).FullName;
             readCommand.ReadRecords = true;
 
-            var loaded = gr.GetGenericRepository<T>().ExecuteReadCommand(readCommand).Records;
+            var loaded = ExecuteCommand(readCommand, container).Records;
             var report = loaded.Select(item => reporter((T)item).ToString());
             if (readCommand.OrderByProperties == null)
                 report = report.OrderBy(x => x);
@@ -623,7 +619,7 @@ namespace CommonConcepts.Test
                     ReadTotalCount = true,
                     Top = 1
                 };
-                TestClientRead<TestFilter.AutoFilter1>(gr, "a2", item => item.Name, readCommand);
+                TestClientRead<TestFilter.AutoFilter1>(container, "a2", item => item.Name, readCommand);
 
                 readCommand = new ReadCommandInfo
                 {
@@ -632,7 +628,7 @@ namespace CommonConcepts.Test
                     ReadTotalCount = true,
                     Top = 1
                 };
-                TestClientRead<TestFilter.AutoFilter2Browse>(gr, "b2x", item => item.Name2, readCommand);
+                TestClientRead<TestFilter.AutoFilter2Browse>(container, "b2x", item => item.Name2, readCommand);
             }
         }
 
@@ -667,7 +663,7 @@ namespace CommonConcepts.Test
                     ReadTotalCount = true,
                     Top = 1
                 };
-                TestClientRead<TestFilter.AutoFilter2Browse>(gr, "b2x", item => item.Name2, readCommand);
+                TestClientRead<TestFilter.AutoFilter2Browse>(container, "b2x", item => item.Name2, readCommand);
 
                 // Same filter manually applied multiple times.
 
@@ -681,7 +677,7 @@ namespace CommonConcepts.Test
                     ReadTotalCount = true,
                     Top = 1
                 };
-                TestClientRead<TestFilter.AutoFilter2Browse>(gr, "b2xx", item => item.Name2, readCommand);
+                TestClientRead<TestFilter.AutoFilter2Browse>(container, "b2xx", item => item.Name2, readCommand);
             }
         }
     }

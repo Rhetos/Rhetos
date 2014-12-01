@@ -44,16 +44,11 @@ namespace CommonConcepts.Test
         static string _rowPermissionsReadFilter = "Common.RowPermissionsReadItems";
         static string _rowPermissionsWriteFilter = "Common.RowPermissionsWriteItems";
 
-
-        private ReadCommandResult ExecuteReadCommand(ReadCommandInfo command, RhetosTestContainer container)
+        private static ReadCommandResult ExecuteReadCommand(ReadCommandInfo commandInfo, RhetosTestContainer container)
         {
-            var readCommand = new ReadCommand(container.Resolve<IDataTypeProvider>(), container.Resolve<GenericRepositories>(), container.Resolve<ILogProvider>());
-            var result = readCommand.Execute(command);
-            Assert.AreNotEqual(null, result);
-            Assert.AreNotEqual(null, result.Data);
-            var readResult = (ReadCommandResult)(result.Data.Value);
-            Assert.AreNotEqual(null, readResult);
-            return readResult;
+            var commands = container.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
+            var readCommand = (ReadCommand)commands[typeof(ReadCommandInfo)].Single();
+            return (ReadCommandResult)readCommand.Execute(commandInfo).Data.Value;
         }
 
         /// <summary>

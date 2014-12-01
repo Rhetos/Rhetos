@@ -249,7 +249,7 @@ namespace Rhetos.Dom.DefaultConcepts
         //================================================================
         #region Sorting and paging
 
-        public IQueryable<T> SortAndPaginate<T>(IQueryable<T> query, ReadCommandInfo commandInfo)
+        public static IQueryable<T> SortAndPaginate<T>(IQueryable<T> query, ReadCommandInfo commandInfo)
         {
             bool pagingIsUsed = commandInfo.Top > 0 || commandInfo.Skip > 0;
 
@@ -269,7 +269,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return query;
         }
 
-        private IQueryable<T> Sort<T>(IQueryable<T> source, string orderByProperty, bool ascending = true)
+        private static IQueryable<T> Sort<T>(IQueryable<T> source, string orderByProperty, bool ascending = true)
         {
             if (string.IsNullOrEmpty(orderByProperty))
                 return source;

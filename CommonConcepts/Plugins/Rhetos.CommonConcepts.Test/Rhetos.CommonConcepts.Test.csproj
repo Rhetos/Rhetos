@@ -79,6 +79,7 @@
     <Compile Include="Mocks\RepositoryMock.cs" />
     <Compile Include="Mocks\TestGenericRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServerCommandsUtilityTest.cs" />
     <Compile Include="SqlAnalysisTest.cs" />
     <Compile Include="GenericRepositoryWriteTest.cs" />
   </ItemGroup>
@@ -134,6 +135,10 @@
     <ProjectReference Include="..\Rhetos.Processing.DefaultCommands.Interfaces\Rhetos.Processing.DefaultCommands.Interfaces.csproj">
       <Project>{98f36936-5842-49cf-bacf-61119ac7bf3e}</Project>
       <Name>Rhetos.Processing.DefaultCommands.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Processing.DefaultCommands\Rhetos.Processing.DefaultCommands.csproj">
+      <Project>{de021676-a95f-4f64-9fc3-f23c1bb946b5}</Project>
+      <Name>Rhetos.Processing.DefaultCommands</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

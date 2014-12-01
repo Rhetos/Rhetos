@@ -81,8 +81,7 @@ namespace Rhetos.CommonConcepts.Test
                 new RegisteredInterfaceImplementations(),
                 new ConsoleLogProvider(),
                 null,
-                new GenericFilterHelper(new DomainObjectModelMock()),
-                new ApplyFiltersOnClientRead());
+                new GenericFilterHelper(new DomainObjectModelMock()));
         }
 
         void TestError(Action action, string errorMessage, string locationFunctionName)

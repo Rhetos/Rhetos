@@ -37,16 +37,16 @@ namespace Rhetos.Processing.DefaultCommands
     {
         private readonly IDataTypeProvider _dataTypeProvider;
         private readonly GenericRepositories _repositories;
-        private readonly ILogProvider _logProvider;
+        private readonly ServerCommandsUtility _serverCommandsUtility;
 
         public QueryDataSourceCommand(
             IDataTypeProvider dataTypeProvider,
             GenericRepositories repositories,
-            ILogProvider logProvider)
+            ServerCommandsUtility serverCommandsUtility)
         {
             _dataTypeProvider = dataTypeProvider;
             _repositories = repositories;
-            _logProvider = logProvider;
+            _serverCommandsUtility = serverCommandsUtility;
         }
 
         public CommandResult Execute(ICommandInfo commandInfo)
@@ -54,9 +54,8 @@ namespace Rhetos.Processing.DefaultCommands
             var info = (QueryDataSourceCommandInfo)commandInfo;
 
             var genericRepository = _repositories.GetGenericRepository(info.DataSource);
-            var readCommand = new ReadCommand(_dataTypeProvider, _repositories, _logProvider);
             var readCommandInfo = info.ToReadCommandInfo();
-            ReadCommandResult readCommandResult = genericRepository.ExecuteReadCommand(readCommandInfo);
+            ReadCommandResult readCommandResult = _serverCommandsUtility.ExecuteReadCommand(readCommandInfo, genericRepository);
 
             var result = QueryDataSourceCommandResult.FromReadCommandResult(readCommandResult);
             return new CommandResult

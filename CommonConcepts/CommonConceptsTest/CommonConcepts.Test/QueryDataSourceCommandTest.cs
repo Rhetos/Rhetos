@@ -50,12 +50,12 @@ namespace CommonConcepts.Test
                 });
         }
 
-        private static string ReportCommandResult(RhetosTestContainer container, ICommandInfo info, bool sort = false)
+        private static string ReportCommandResult(RhetosTestContainer container, QueryDataSourceCommandInfo info, bool sort = false)
         {
-            var repositories = container.Resolve<GenericRepositories>();
+            var commands = container.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
+            var queryDataSourceCommand = (QueryDataSourceCommand)commands[typeof(QueryDataSourceCommandInfo)].Single();
 
-            ICommandImplementation command = new QueryDataSourceCommand(new SimpleDataTypeProvider(), repositories, container.Resolve<ILogProvider>());
-            var result = (QueryDataSourceCommandResult)command.Execute(info).Data.Value;
+            var result = (QueryDataSourceCommandResult)queryDataSourceCommand.Execute(info).Data.Value;
             var items = ((IEnumerable<TestQueryDataStructureCommand.E>)result.Records).Select(item => item.Name);
             if (sort)
                 items = items.OrderBy(x => x);
@@ -167,10 +167,12 @@ namespace CommonConcepts.Test
 
         //====================================================================
 
-        private static string ReportCommandResult2(RhetosTestContainer container, ICommandInfo info, bool sort = false)
+        private static string ReportCommandResult2(RhetosTestContainer container, QueryDataSourceCommandInfo info, bool sort = false)
         {
-            ICommandImplementation command = new QueryDataSourceCommand(new SimpleDataTypeProvider(), container.Resolve<GenericRepositories>(), container.Resolve<ILogProvider>());
-            var result = (QueryDataSourceCommandResult)command.Execute(info).Data.Value;
+            var commands = container.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
+            var queryDataSourceCommand = (QueryDataSourceCommand)commands[typeof(QueryDataSourceCommandInfo)].Single();
+
+            var result = (QueryDataSourceCommandResult)queryDataSourceCommand.Execute(info).Data.Value;
             var items = ((IEnumerable<TestQueryDataStructureCommand.Source>)result.Records).Select(item => item.Name);
             if (sort)
                 items = items.OrderBy(x => x);
@@ -213,7 +215,7 @@ namespace CommonConcepts.Test
         {
             using (var container = new RhetosTestContainer())
             {
-                var genericRepos = container.Resolve<GenericRepository<Common.Claim>>();
+                var genericRepos = container.Resolve<GenericRepositories>().GetGenericRepository("Common.Claim");
 
                 var readCommand = new ReadCommandInfo
                 {
@@ -224,7 +226,9 @@ namespace CommonConcepts.Test
                     ReadTotalCount = true
                 };
 
-                var readResult = genericRepos.ExecuteReadCommand(readCommand);
+                var serverCommandsUtility = container.Resolve<ServerCommandsUtility>();
+
+                var readResult = serverCommandsUtility.ExecuteReadCommand(readCommand, genericRepos);
                 Console.WriteLine("Records.Length: " + readResult.Records.Length);
                 Console.WriteLine("TotalCount: " + readResult.TotalCount);
                 Assert.IsTrue(readResult.Records.Length < readResult.TotalCount);

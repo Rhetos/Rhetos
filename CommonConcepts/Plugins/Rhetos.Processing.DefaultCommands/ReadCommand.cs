@@ -38,15 +38,18 @@ namespace Rhetos.Processing.DefaultCommands
         private readonly IDataTypeProvider _dataTypeProvider;
         private readonly GenericRepositories _repositories;
         private readonly ILogger _logger;
+        private readonly ServerCommandsUtility _serverCommandsUtility;
 
         public ReadCommand(
             IDataTypeProvider dataTypeProvider,
             GenericRepositories repositories,
-            ILogProvider logProvider)
+            ILogProvider logProvider,
+            ServerCommandsUtility serverCommandsUtility)
         {
             _dataTypeProvider = dataTypeProvider;
             _repositories = repositories;
             _logger = logProvider.GetLogger(GetType().Name);
+            _serverCommandsUtility = serverCommandsUtility;
         }
 
         public CommandResult Execute(ICommandInfo commandInfo)
@@ -60,11 +63,11 @@ namespace Rhetos.Processing.DefaultCommands
                 throw new ClientException("Invalid ReadCommand argument: Data source is not set.");
             
             var genericRepository = _repositories.GetGenericRepository(readInfo.DataSource);
-            ReadCommandResult result = genericRepository.ExecuteReadCommand(readInfo);
+            ReadCommandResult result = _serverCommandsUtility.ExecuteReadCommand(readInfo, genericRepository);
 
             if (result.Records != null && !AlreadyFilteredByRowPermissions(readInfo))
             {
-                var valid = genericRepository.CheckAllItemsWithinFilter(result.Records, RowPermissionsReadInfo.FilterName);
+                var valid = _serverCommandsUtility.CheckAllItemsWithinFilter(result.Records, RowPermissionsReadInfo.FilterName, genericRepository);
                 if (!valid) 
                     throw new UserException("Insufficient permissions to access some or all of the data requested.", "DataStructure:" + readInfo.DataSource + ".");
             }

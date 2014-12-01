@@ -70,8 +70,7 @@ namespace Rhetos.CommonConcepts.Test
                 new RegisteredInterfaceImplementations { { typeof(ISimpleEntity), typeof(SimpleEntity).FullName } },
                 new ConsoleLogProvider(),
                 null,
-                new GenericFilterHelper(new DomainObjectModelMock()),
-                new ApplyFiltersOnClientRead());
+                new GenericFilterHelper(new DomainObjectModelMock()));
         }
 
         //=======================================================

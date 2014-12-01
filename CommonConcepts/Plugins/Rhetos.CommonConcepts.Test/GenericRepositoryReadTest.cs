@@ -36,19 +36,6 @@ using System.Text;
 
 namespace Rhetos.CommonConcepts.Test
 {
-    static class LegacyExtension
-    {
-        public static QueryDataSourceCommandResult ExecuteQueryDataSourceCommand<T>(
-            this GenericRepository<T> genericRepository,
-            QueryDataSourceCommandInfo queryDataSourceCommandInfo)
-            where T : class, IEntity
-        {
-            var commandInfo = queryDataSourceCommandInfo.ToReadCommandInfo();
-            var commandResult = genericRepository.ExecuteReadCommand(commandInfo);
-            return QueryDataSourceCommandResult.FromReadCommandResult(commandResult);
-        }
-    }
-
     [TestClass]
     public class GenericRepositoryReadTest
     {
@@ -83,8 +70,7 @@ namespace Rhetos.CommonConcepts.Test
                 new RegisteredInterfaceImplementations { { typeof(ISimpleEntity), typeof(SimpleEntity).FullName } },
                 new ConsoleLogProvider(),
                 null,
-                new GenericFilterHelper(new DomainObjectModelMock()),
-                new ApplyFiltersOnClientRead());
+                new GenericFilterHelper(new DomainObjectModelMock()));
         }
 
         //=======================================================
@@ -484,7 +470,7 @@ namespace Rhetos.CommonConcepts.Test
         [TestMethod]
         public void ReadGenericFilter_Empty()
         {
-            var gf = new FilterCriteria[] {};
+            var gf = new FilterCriteria[] { };
             var entityRepos = new GenericFilterRepository();
             var genericRepos = NewRepos(entityRepos);
 
@@ -755,126 +741,6 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual("00000000-0000-0000-0000-000000000000", genericRepos
                 .Read(new[] { new FilterCriteria { Filter = "System.Guid" } })
                 .Single().Name);
-        }
-
-        //=======================================================
-
-        class ImplicitQueryDataSourceCommandRepository : IRepository
-        {
-            public int QueryCount = 0;
-            public int DropQueryCount() { int t = QueryCount; QueryCount = 0; return t; }
-
-            public IQueryable<SimpleEntity> Query()
-            {
-                return new[] { 1 }
-                    .SelectMany(x =>
-                    {
-                        QueryCount++;
-                        return new SimpleEntityList { "a1", "b1", "b2", "b3", "b4", "b5" };
-                    }).AsQueryable();
-            }
-
-            public IEnumerable<SimpleEntity> Filter(IEnumerable<SimpleEntity> source, string pattern)
-            {
-                return source.Where(item => item.Name.Contains(pattern));
-            }
-        }
-
-        class ExplicitQueryDataSourceCommandRepository : IRepository
-        {
-            public ReadCommandResult ReadCommand(ReadCommandInfo commandInfo)
-            {
-                return new ReadCommandResult
-                {
-                    Records = new SimpleEntityList { "a1", "b1", "b2" }.ToArray(),
-                    TotalCount = 10
-                };
-            }
-        }
-
-        string Dump(QueryDataSourceCommandResult commandResult)
-        {
-            return TestUtility.Dump(commandResult.Records) + " / " + commandResult.TotalRecords;
-        }
-
-        [TestMethod]
-        public void QueryDataSourceCommand()
-        {
-            var entityRepos = new ImplicitQueryDataSourceCommandRepository();
-            var genericRepos = NewRepos(entityRepos);
-
-            var command = new QueryDataSourceCommandInfo
-            {
-                GenericFilter = new[] { new FilterCriteria { Property = "Name", Operation = "StartsWith", Value = "b" } },
-                OrderByProperty = "Name",
-                RecordsPerPage = 3,
-                PageNumber = 2
-            };
-            Assert.AreEqual("a1, b1, b2 / 10", Dump(NewRepos(new ExplicitQueryDataSourceCommandRepository()).ExecuteQueryDataSourceCommand(command)));
-            Assert.AreEqual(0, entityRepos.DropQueryCount());
-            Assert.AreEqual("b4, b5 / 5", Dump(genericRepos.ExecuteQueryDataSourceCommand(command)));
-            Assert.AreEqual(2, entityRepos.DropQueryCount()); // Paging should result with two queries: selecting items and count.
-
-            command = new QueryDataSourceCommandInfo();
-            Assert.AreEqual("a1, b1, b2, b3, b4, b5 / 6", Dump(genericRepos.ExecuteQueryDataSourceCommand(command)));
-            Assert.AreEqual(1, entityRepos.DropQueryCount()); // Without paging, there is no need for two queries.
-
-            command = new QueryDataSourceCommandInfo { Filter = "1" };
-            Assert.AreEqual("a1, b1 / 2", Dump(genericRepos.ExecuteQueryDataSourceCommand(command)));
-            Assert.AreEqual(1, entityRepos.DropQueryCount()); // Without paging, there is no need for two queries.
-
-            command = new QueryDataSourceCommandInfo { Filter = "1", GenericFilter = new[] { new FilterCriteria { Property = "Name", Operation = "StartsWith", Value = "b" } } };
-            Assert.AreEqual("b1 / 1", Dump(genericRepos.ExecuteQueryDataSourceCommand(command)));
-            Assert.AreEqual(1, entityRepos.DropQueryCount()); // Without paging, there is no need for two queries.
-
-            command = new QueryDataSourceCommandInfo { Filter = "1", GenericFilter = new[] { new FilterCriteria { Filter = "System.String", Value = "b" } } };
-            Assert.AreEqual("b1 / 1", Dump(genericRepos.ExecuteQueryDataSourceCommand(command)));
-            Assert.AreEqual(1, entityRepos.DropQueryCount()); // Without paging, there is no need for two queries.
-
-            command = new QueryDataSourceCommandInfo { Filter = "b", PageNumber = 2, RecordsPerPage = 2, OrderByProperty = "Name" };
-            Assert.AreEqual("b3, b4 / 5", Dump(genericRepos.ExecuteQueryDataSourceCommand(command)));
-            Assert.AreEqual(1, entityRepos.DropQueryCount()); // Enumerable filter will cause GenericRepository to materialize of the query, so it will be executed only once even though the paging is used.
-        }
-
-        [TestMethod]
-        public void QueryDataSourceCommand_OutsideInterface()
-        {
-            var entityRepos = new ImplicitQueryDataSourceCommandRepository();
-            var genericRepos = NewRepos(entityRepos);
-
-            var command = new QueryDataSourceCommandInfo
-            {
-                GenericFilter = new[] { new FilterCriteria { Property = "Name", Operation = "StartsWith", Value = "b" } },
-                OrderByProperty = "Data",
-                RecordsPerPage = 3,
-                PageNumber = 2
-            };
-            Assert.AreEqual("b4, b5 / 5", Dump(genericRepos.ExecuteQueryDataSourceCommand(command)));
-
-            command = new QueryDataSourceCommandInfo
-            {
-                GenericFilter = new[] { new FilterCriteria { Property = "Data", Operation = "Equal", Value = "xxx" } },
-                OrderByProperty = "Name",
-                RecordsPerPage = 3,
-                PageNumber = 2
-            };
-            Assert.AreEqual(" / 0", Dump(genericRepos.ExecuteQueryDataSourceCommand(command)));
-        }
-
-        [TestMethod]
-        public void QueryDataSourceCommand_Null()
-        {
-            var entityRepos = new ImplicitQueryDataSourceCommandRepository();
-            var genericRepos = NewRepos(entityRepos);
-
-            var command = new QueryDataSourceCommandInfo
-            {
-                GenericFilter = new[] { new FilterCriteria { Property = "Data", Operation = "Equal", Value = null } },
-                OrderByProperty = "Name",
-                RecordsPerPage = 3,
-                PageNumber = 2
-            };
-            Assert.AreEqual("b3, b4, b5 / 6", Dump(genericRepos.ExecuteQueryDataSourceCommand(command)));
         }
     }
 }
