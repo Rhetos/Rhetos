@@ -109,4 +109,15 @@ Module TestSqlWorkarounds
         [TestSqlWorkarounds].[AutoDependsOn3]"; // Circular reference is avoided because TestSqlWorkarounds.AutoDependsOn1 is commented out in AutoDependsOn2.
     SqlView AutoDependsOn3 "SELECT * FROM TestSqlWorkarounds.[AutoDependsOn4]";
     SqlView AutoDependsOn4 "SELECT a=1";
+	
+	Entity NoProperties;
+	SqlView DependsOnNoProperties "SELECT A = 1;" { SqlDependsOn TestSqlWorkarounds.NoProperties; }
+}
+
+Module TestSqlWorkarounds2
+{
+	SqlView OtherModuleObject "SELECT A = 1;"
+	{
+		SqlDependsOn TestSqlWorkarounds;
+	}
 }

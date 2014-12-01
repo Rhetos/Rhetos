@@ -129,7 +129,8 @@ namespace CommonConcepts.Test
                     + "baseA-depA,"
                     + "baseB-depB, baseBAIndex-depB," // SqlDependsOnSqlIndex should be automatically included when depending on its first property.
                     + "baseA-depAll, baseB-depAll,"
-                    + "baseBAIndex-depAll"; // SqlDependsOnSqlIndex should be automatically included when depending on its entity.
+                    + "baseBAIndex-depAll," // SqlDependsOnSqlIndex should be automatically included when depending on its entity.
+                    + "base-depAll";
 
                 Assert.AreEqual(
                     TestUtility.DumpSorted(expectedDependencies.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s))),
@@ -138,7 +139,7 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void SqlDependsOn_CaseInsensitive()
+        public void SqlDependsOnCaseInsensitive()
         {
             using (var container = new RhetosTestContainer())
             {
@@ -159,6 +160,62 @@ namespace CommonConcepts.Test
                     .Select(dep => featuresById[dep.Item1] + "-" + featuresById[dep.Item2]);
 
                 var expectedDependencies = "2-1, 2-1CI, 3-2, 4-3"; // Second concept depends on first concept.
+
+                Assert.AreEqual(
+                    TestUtility.DumpSorted(expectedDependencies.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s))),
+                    TestUtility.DumpSorted(deployedDependencies));
+            }
+        }
+
+        [TestMethod]
+        public void SqlDependsOnDataStructureNoProperties()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var features = new Dictionary<string, string>
+                {
+                    { "EntityNoProperies", "DataStructureInfo TestSqlWorkarounds.NoProperties" },
+                    { "View", "SqlViewInfo TestSqlWorkarounds.DependsOnNoProperties" },
+                };
+
+                Dictionary<Guid, string> featuresById = features
+                    .Select(f => new { Name = f.Key, Id = ReadConceptId(f.Value, container) })
+                    .ToDictionary(fid => fid.Id, fid => fid.Name);
+
+                var deployedDependencies = ReadConceptDependencies(featuresById.Keys, container)
+                    .Select(dep => featuresById[dep.Item1] + "-" + featuresById[dep.Item2]);
+
+                var expectedDependencies = "EntityNoProperies-View"; // Second concept depends on first concept.
+
+                Assert.AreEqual(
+                    TestUtility.DumpSorted(expectedDependencies.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s))),
+                    TestUtility.DumpSorted(deployedDependencies));
+            }
+        }
+
+        [TestMethod]
+        public void SqlDependsOnModule()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var features = new Dictionary<string, string>
+                {
+                    { "X", "SqlViewInfo TestSqlWorkarounds2.OtherModuleObject" },
+                    { "Entity", "DataStructureInfo TestSqlWorkarounds.E" },
+                    { "Function", "SqlFunctionInfo TestSqlWorkarounds.Fun1" },
+                    { "Property", "PropertyInfo TestSqlWorkarounds.E.I" },
+                    { "View", "SqlViewInfo TestSqlWorkarounds.DependsOnNoProperties" },
+                };
+
+                Dictionary<Guid, string> featuresById = features
+                    .Select(f => new { Name = f.Key, Id = ReadConceptId(f.Value, container) })
+                    .ToDictionary(fid => fid.Id, fid => fid.Name);
+
+                var deployedDependencies = ReadConceptDependencies(featuresById.Keys, container)
+                    .Where(dep => featuresById[dep.Item1] == "X" || featuresById[dep.Item2] == "X")
+                    .Select(dep => featuresById[dep.Item1] + "-" + featuresById[dep.Item2]);
+
+                var expectedDependencies = "Entity-X, Function-X, Property-X, View-X"; // Second concept depends on first concept.
 
                 Assert.AreEqual(
                     TestUtility.DumpSorted(expectedDependencies.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s))),

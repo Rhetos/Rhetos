@@ -46,11 +46,39 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return existingConcepts.OfType<PropertyInfo>()
+            var newConcepts = new List<IConceptInfo>();
+
+            newConcepts.AddRange(existingConcepts.OfType<PropertyInfo>()
                 .Where(p => p.DataStructure.Module == DependsOn)
                 .Where(p => p != Dependent && p.DataStructure != Dependent)
-                .Select(p => new SqlDependsOnPropertyInfo {Dependent = Dependent, DependsOn = p})
-                .ToList();
+                .Select(p => new SqlDependsOnPropertyInfo { Dependent = Dependent, DependsOn = p }));
+
+            newConcepts.AddRange(existingConcepts.OfType<DataStructureInfo>()
+                .Where(item => item.Module == DependsOn)
+                .Where(item => item != Dependent)
+                .Select(item => new SqlDependsOnDataStructureInfo { Dependent = Dependent, DependsOn = item }));
+
+            newConcepts.AddRange(existingConcepts.OfType<SqlFunctionInfo>()
+                .Where(item => item.Module == DependsOn)
+                .Where(item => item != Dependent)
+                .Select(item => new SqlDependsOnSqlFunctionInfo { Dependent = Dependent, DependsOn = item }));
+
+            newConcepts.AddRange(existingConcepts.OfType<SqlIndexMultipleInfo>()
+                .Where(item => item.Entity.Module == DependsOn)
+                .Where(item => item != Dependent && item.Entity != Dependent)
+                .Select(item => new SqlDependsOnSqlIndexInfo { Dependent = Dependent, DependsOn = item }));
+
+            newConcepts.AddRange(existingConcepts.OfType<SqlObjectInfo>()
+                .Where(item => item.Module == DependsOn)
+                .Where(item => item != Dependent)
+                .Select(item => new SqlDependsOnSqlObjectInfo { Dependent = Dependent, DependsOn = item }));
+
+            newConcepts.AddRange(existingConcepts.OfType<SqlViewInfo>()
+                .Where(item => item.Module == DependsOn)
+                .Where(item => item != Dependent)
+                .Select(item => new SqlDependsOnSqlViewInfo { Dependent = Dependent, DependsOn = item }));
+
+            return newConcepts;
         }
     }
 }

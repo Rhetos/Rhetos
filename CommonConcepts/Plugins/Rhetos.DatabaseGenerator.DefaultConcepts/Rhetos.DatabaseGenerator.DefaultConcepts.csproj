@@ -126,6 +126,8 @@
     <Compile Include="AutoCodeTriggerDatabaseDefinition.cs" />
     <Compile Include="LoggingRelatedItemDatabaseDefinition.cs" />
     <Compile Include="IsSubtypeOfDatabaseDefinition.cs" />
+    <Compile Include="SqlDependsOnDataStructureDatabaseDefinition.cs" />
+    <Compile Include="SqlDependsOnModuleDatabaseDefinition.cs" />
     <Compile Include="SubtypeImplementsPropertyDatabaseDefinition.cs" />
     <Compile Include="PolymorphicPropertyDatabaseDefinition.cs" />
     <Compile Include="SqlDependsOnSqlIndexDatabaseDefinition.cs" />
@@ -146,7 +148,7 @@
     <Compile Include="LegacyEntityWithAutoCreatedViewDatabaseDefinition.cs" />
     <Compile Include="LegacyPropertySimpleDatabaseDefinition.cs" />
     <Compile Include="SqlQueryableDatabaseDefinition.cs" />
-    <Compile Include="SqlDependsOnDatabaseDefinition.cs" />
+    <Compile Include="SqlDependsOnPropertyDatabaseDefinition.cs" />
     <Compile Include="EntityLoggingDefinition.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="PropertyLoggingDefinition.cs" />

@@ -30,8 +30,8 @@ using Rhetos.Dsl.DefaultConcepts;
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
     [Export(typeof(IConceptDatabaseDefinition))]
-    [ExportMetadata(MefProvider.Implements, typeof(SqlDependsOnPropertyInfo))]
-    public class SqlDependsOnDatabaseDefinition : IConceptDatabaseDefinitionExtension
+    [ExportMetadata(MefProvider.Implements, typeof(SqlDependsOnDataStructureInfo))]
+    public class SqlDependsOnDataStructureDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
@@ -45,7 +45,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
         public void ExtendDatabaseStructure(IConceptInfo conceptInfo, ICodeBuilder codeBuilder, out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
         {
-            var info = (SqlDependsOnPropertyInfo) conceptInfo;
+            var info = (SqlDependsOnDataStructureInfo)conceptInfo;
             createdDependencies = new[] {Tuple.Create<IConceptInfo, IConceptInfo>(info.DependsOn, info.Dependent)};
         }
     }
