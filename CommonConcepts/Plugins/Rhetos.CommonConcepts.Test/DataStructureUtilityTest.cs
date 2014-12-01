@@ -28,7 +28,7 @@ using System.Text;
 namespace Rhetos.CommonConcepts.Test
 {
     [TestClass]
-    class DataStructureUtilityTest
+    public class DataStructureUtilityTest
     {
         [TestMethod]
         public void SplitModuleName()

@@ -36,17 +36,24 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     public class GenericFilterHelper
     {
-        IDomainObjectModel _dom;
+        IDomainObjectModel _domainObjectModel;
 
-        public GenericFilterHelper(IDomainObjectModel dom)
+        public GenericFilterHelper(IDomainObjectModel domainObjectModel)
         {
-            _dom = dom;
+            _domainObjectModel = domainObjectModel;
         }
 
         //================================================================
         #region Property filters
 
-        public LambdaExpression ToExpression(IEnumerable<PropertyFilter> filterCriterias, Type parameterType)
+        class PropertyFilter
+        {
+            public string Property;
+            public string Operation;
+            public object Value;
+        }
+
+        private LambdaExpression ToExpression(IEnumerable<PropertyFilter> filterCriterias, Type parameterType)
         {
             ParameterExpression parameter = Expression.Parameter(parameterType, "p");
 
@@ -336,7 +343,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             Type filterType = null;
 
-            filterType = _dom.Assembly.GetType(filterName);
+            filterType = _domainObjectModel.Assembly.GetType(filterName);
 
             filterType = filterType ?? Type.GetType(filterName);
 
@@ -346,7 +353,11 @@ namespace Rhetos.Dom.DefaultConcepts
             return filterType;
         }
 
-        public class FilterObject { public Type FilterType; public object Parameter; }
+        public class FilterObject
+        {
+            public Type FilterType;
+            public object Parameter;
+        }
 
         public IList<FilterObject> ToFilterObjects(IEnumerable<FilterCriteria> genericFilter, Type parameterType)
         {
@@ -415,6 +426,9 @@ namespace Rhetos.Dom.DefaultConcepts
             };
         }
 
+        /// <summary>
+        /// Compares only filters without parameters.
+        /// </summary>
         public static bool EqualsSimpleFilter(FilterCriteria filter, string filterName)
         {
             return filter.Filter == filterName
@@ -422,7 +436,6 @@ namespace Rhetos.Dom.DefaultConcepts
                 && (string.IsNullOrEmpty(filter.Operation)
                     || string.Equals(filter.Operation, GenericFilterHelper.FilterOperationMatches, StringComparison.OrdinalIgnoreCase));
         }
-
 
         #endregion
     }

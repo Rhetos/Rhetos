@@ -129,33 +129,6 @@ namespace Rhetos.Utilities
             return null;
         }
 
-//        private Assembly _objectModelAssembly;
-//
-//        private Assembly ObjectModelAssembly
-//        {
-//            get
-//            {
-//                if (null == _objectModelAssembly)
-//                    _objectModelAssembly = FindObjectModelAssembly();
-//
-//                return _objectModelAssembly;
-//            }
-//        }
-//
-//        private static Assembly FindObjectModelAssembly()
-//        {
-//            var asms = (from asm in AppDomain.CurrentDomain.GetAssemblies()
-//                        where asm.FullName.StartsWith("Rhetos.ObjectModel,")
-//                        select asm).ToList();
-//
-//            if (asms.Count > 1)
-//                throw new FrameworkException("There are multiple assemblies named Rhetos.ObjectModel.");
-//            if (asms.Count == 0)
-//                throw new FrameworkException("Rhetos.ObjectModel assembly not found.");
-//
-//            return asms[0];
-//        }
-
         public override bool TryResolveType(Type type, Type declaredType, DataContractResolver knownTypeResolver, out XmlDictionaryString typeName, out XmlDictionaryString typeNamespace)
         {
             XmlDictionary dictionary = new XmlDictionary();

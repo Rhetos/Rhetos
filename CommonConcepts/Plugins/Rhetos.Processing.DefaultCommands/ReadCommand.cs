@@ -62,7 +62,7 @@ namespace Rhetos.Processing.DefaultCommands
             var genericRepository = _repositories.GetGenericRepository(readInfo.DataSource);
             ReadCommandResult result = genericRepository.ExecuteReadCommand(readInfo);
 
-            if (ShouldValidateRowPermissionsRead(readInfo, result))
+            if (result.Records != null && !AlreadyFilteredByRowPermissions(readInfo))
             {
                 var valid = genericRepository.CheckAllItemsWithinFilter(result.Records, RowPermissionsReadInfo.FilterName);
                 if (!valid) 
@@ -77,12 +77,8 @@ namespace Rhetos.Processing.DefaultCommands
             };
         }
 
-
-        private bool ShouldValidateRowPermissionsRead(ReadCommandInfo readCommand, ReadCommandResult readResult)
+        private bool AlreadyFilteredByRowPermissions(ReadCommandInfo readCommand)
         {
-            if (readResult.Records == null)
-                return false;
-
             if (readCommand.Filters != null && readCommand.Filters.Length > 0)
             {
                 int lastRowPermissionFilter = -1;
@@ -98,15 +94,14 @@ namespace Rhetos.Processing.DefaultCommands
                     {
                         _logger.Trace(() => string.Format("(DataStructure:{0}) Last filter is '{1}', skipping RowPermissionsRead validation.",
                             readCommand.DataSource, RowPermissionsReadInfo.FilterName));
-                        return false;
+                        return true;
                     }
                     else
                         _logger.Trace(() => string.Format("(DataStructure:{0}) Warning: Improve performance by moving filter '{1}' to last position, in order to skip RowPermissionsRead validation.",
                             readCommand.DataSource, RowPermissionsReadInfo.FilterName));
             }
 
-            return true;
+            return false;
         }
-
     }
 }

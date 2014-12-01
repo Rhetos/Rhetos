@@ -61,14 +61,13 @@ namespace Rhetos.Processing.DefaultCommands
             if (saveInfo.Entity == null)
                 throw new ClientException("Invalid SaveEntityCommand argument: Entity is not set.");
 
-            // we need to check delete permissions before actually deleting items 
-            // and update items before AND after they are updated
+            // We need to check delete permissions before actually deleting items 
+            // and update items before AND after they are updated.
             var genericRepository = _genericRepositories.GetGenericRepository(saveInfo.Entity);
             bool valid = true;
-            var updateDeleteItems = saveInfo.DataToDelete;
-            if (updateDeleteItems == null) updateDeleteItems = saveInfo.DataToUpdate;
-            else if (saveInfo.DataToUpdate != null) updateDeleteItems = updateDeleteItems.Concat(saveInfo.DataToUpdate).ToArray();
-            if (updateDeleteItems != null) 
+
+            var updateDeleteItems = ConcatenateNullable(saveInfo.DataToDelete, saveInfo.DataToUpdate);
+            if (updateDeleteItems != null)
                 valid = genericRepository.CheckAllItemsWithinFilter(updateDeleteItems, RowPermissionsWriteInfo.FilterName);
 
             if (valid)
@@ -76,11 +75,8 @@ namespace Rhetos.Processing.DefaultCommands
                 var repository = _writableRepositories[saveInfo.Entity];
                 repository.Save(saveInfo.DataToInsert, saveInfo.DataToUpdate, saveInfo.DataToDelete, true);
 
-                var insertUpdateItems = saveInfo.DataToInsert;
-                if (insertUpdateItems == null) insertUpdateItems = saveInfo.DataToUpdate;
-                else if (saveInfo.DataToUpdate != null) insertUpdateItems = insertUpdateItems.Concat(saveInfo.DataToUpdate).ToArray();
-
-                // we rely that this call will only use IDs of the items, because other data might be dirty
+                var insertUpdateItems = ConcatenateNullable(saveInfo.DataToInsert, saveInfo.DataToUpdate);
+                // We rely that this call will only use IDs of the items, because other data might be dirty.
                 if (insertUpdateItems != null)
                     valid = genericRepository.CheckAllItemsWithinFilter(insertUpdateItems, RowPermissionsWriteInfo.FilterName);
             }
@@ -96,6 +92,20 @@ namespace Rhetos.Processing.DefaultCommands
                 Message = "Comand executed",
                 Success = true
             };
+        }
+
+        private static IEntity[] ConcatenateNullable(IEntity[] a, IEntity[] b)
+        {
+            if (a != null && a.Length > 0)
+                if (b != null && b.Length > 0)
+                    return a.Concat(b).ToArray();
+                else
+                    return a;
+            else
+                if (b != null && b.Length > 0)
+                    return b;
+                else
+                    return null;
         }
     }
 }

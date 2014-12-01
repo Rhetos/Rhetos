@@ -92,17 +92,20 @@ namespace CommonConcepts.Test
             public static IQueryable<TestPermissionBrowse> Query() { return TestData.AsQueryable(); }
         }
 
-        private static Expression<Func<TEntity, bool>> GenericFilterHelperToExpression<TEntity>(IEnumerable<PropertyFilter> propertyFilters)
+        private static Expression<Func<TEntity, bool>> GenericFilterHelperToExpression<TEntity>(IEnumerable<FilterCriteria> propertyFilters)
         {
             using (var container = new RhetosTestContainer())
             {
                 var gfh = container.Resolve<GenericFilterHelper>();
-                var expr = gfh.ToExpression(propertyFilters, typeof(TEntity));
-                return (Expression<Func<TEntity, bool>>)expr;
+                var filters = gfh.ToFilterObjects(propertyFilters, typeof(TEntity));
+                var expr = (Expression<Func<TEntity, bool>>)filters.Select(f => f.Parameter).SingleOrDefault();
+                if (expr == null)
+                    expr = item => true;
+                return expr;
             }
         }
 
-        private static IQueryable<TEntity> GenericFilterHelperFilter<TEntity>(IQueryable<TEntity> items, IEnumerable<PropertyFilter> propertyFilters)
+        private static IQueryable<TEntity> GenericFilterHelperFilter<TEntity>(IQueryable<TEntity> items, IEnumerable<FilterCriteria> propertyFilters)
         {
             var expr = GenericFilterHelperToExpression<TEntity>(propertyFilters);
             return items.Where(expr);
@@ -114,10 +117,10 @@ namespace CommonConcepts.Test
             IQueryable<TestPermissionBrowse> browse = TestPermissionBrowse.Query();
 
             Console.WriteLine(browse.Count());
-            var propertyFilters = new []
+            var propertyFilters = new[]
                 {
-                    new PropertyFilter { Property = "Principal", Value = "Domain Users", Operation = "Equal" },
-                    new PropertyFilter { Property = "ClaimResource", Value = "Common.Log", Operation = "Equal" }
+                    new FilterCriteria { Property = "Principal", Value = "Domain Users", Operation = "Equal" },
+                    new FilterCriteria { Property = "ClaimResource", Value = "Common.Log", Operation = "Equal" }
                 };
 
             browse = browse.Where(GenericFilterHelperToExpression<TestPermissionBrowse>(propertyFilters));
@@ -130,9 +133,9 @@ namespace CommonConcepts.Test
             IQueryable<TestPermission> permissions = TestPermission.Query();
 
             Console.WriteLine(permissions.Count());
-            var propertyFilters = new []
+            var propertyFilters = new[]
                 {
-                    new PropertyFilter { Property = "Claim.ClaimRight", Value = "Read", Operation = "Equal" }
+                    new FilterCriteria { Property = "Claim.ClaimRight", Value = "Read", Operation = "Equal" }
                 };
 
             permissions = permissions.Where(GenericFilterHelperToExpression<TestPermission>(propertyFilters));
@@ -145,7 +148,7 @@ namespace CommonConcepts.Test
             IQueryable<TestPermission> permissions = TestPermission.Query();
 
             Console.WriteLine(permissions.Count());
-            List<PropertyFilter> propertyFilters = new List<PropertyFilter>();
+            List<FilterCriteria> propertyFilters = new List<FilterCriteria>();
 
             permissions = GenericFilterHelperFilter(permissions, propertyFilters);
             Assert.AreEqual(4, permissions.Count());
@@ -157,7 +160,7 @@ namespace CommonConcepts.Test
         {
             Console.WriteLine("TEST NAME: " + operation + " " + value);
             var source = repository.TestGenericFilter.Simple.Query();
-            var result = GenericFilterHelperFilter(source, new[] { new PropertyFilter { Property = "Name", Operation = operation, Value = value } });
+            var result = GenericFilterHelperFilter(source, new[] { new FilterCriteria { Property = "Name", Operation = operation, Value = value } });
             Assert.AreEqual(expectedCodes, TestUtility.DumpSorted(result, item => item.Code.ToString()));
         }
 
@@ -167,7 +170,7 @@ namespace CommonConcepts.Test
         {
             Console.WriteLine("TEST CODE: " + operation + " " + value);
             var source = repository.TestGenericFilter.Simple.Query();
-            var result = GenericFilterHelperFilter(source, new[] { new PropertyFilter { Property = "Code", Operation = operation, Value =
+            var result = GenericFilterHelperFilter(source, new[] { new FilterCriteria { Property = "Code", Operation = operation, Value =
                 ComperisonOperations.Contains(operation) ? (object) int.Parse(value) : value } });
             Assert.AreEqual(expectedCodes, TestUtility.DumpSorted(result, item => item.Code.ToString()));
         }
@@ -241,7 +244,7 @@ namespace CommonConcepts.Test
         {
             Console.WriteLine("TEST DateIn: " + value);
             var source = repository.TestGenericFilter.Simple.Query();
-            var result = GenericFilterHelperFilter(source, new[] { new PropertyFilter { Property = "Start", Operation = "DateIn", Value = value } });
+            var result = GenericFilterHelperFilter(source, new[] { new FilterCriteria { Property = "Start", Operation = "DateIn", Value = value } });
             Assert.AreEqual(expectedCodes, TestUtility.DumpSorted(result, item => item.Code.ToString()));
         }
 
@@ -350,8 +353,8 @@ namespace CommonConcepts.Test
 
                 Func<string, string, object, IQueryable<TestGenericFilter.Simple>> filter1 = (property, operation, value) =>
                     GenericFilterHelperFilter(simple, new[] {
-                        new PropertyFilter { Property = property, Operation = operation, Value = value },
-                        new PropertyFilter { Property = "Code", Operation = "less", Value = 0 }});
+                        new FilterCriteria { Property = property, Operation = operation, Value = value },
+                        new FilterCriteria { Property = "Code", Operation = "less", Value = 0 }});
 
                 Assert.AreEqual("-1", TestUtility.DumpSorted(filter1("Name", "equal", "a"), item => item.Code));
                 Assert.AreEqual("-2", TestUtility.DumpSorted(filter1("Name", "equal", ""), item => item.Code));
@@ -362,8 +365,8 @@ namespace CommonConcepts.Test
 
                 Func<string, string, object, IQueryable<TestGenericFilter.Simple>> filter2 = (property, operation, value) =>
                     GenericFilterHelperFilter(simple, new[] {
-                        new PropertyFilter { Property = property, Operation = operation, Value = value },
-                        new PropertyFilter { Property = "Code", Operation = "greater", Value = 0 }});
+                        new FilterCriteria { Property = property, Operation = operation, Value = value },
+                        new FilterCriteria { Property = "Code", Operation = "greater", Value = 0 }});
 
                 Assert.AreEqual("1", TestUtility.DumpSorted(filter2("Start", "equal", new DateTime(2013, 2, 1)), item => item.Code));
                 Assert.AreEqual("2", TestUtility.DumpSorted(filter2("Start", "equal", null), item => item.Code));
@@ -372,7 +375,7 @@ namespace CommonConcepts.Test
 
                 Func<string, string, object, IQueryable<TestGenericFilter.Child>> filterChild = (property, operation, value) =>
                     GenericFilterHelperFilter(child, new[] {
-                        new PropertyFilter { Property = property, Operation = operation, Value = value }});
+                        new FilterCriteria { Property = property, Operation = operation, Value = value }});
 
                 Assert.AreEqual("c1", TestUtility.DumpSorted(filterChild("Parent.ID", "equal", parentId), item => item.Name));
                 Assert.AreEqual("c2", TestUtility.DumpSorted(filterChild("Parent.ID", "equal", null), item => item.Name));
@@ -381,7 +384,7 @@ namespace CommonConcepts.Test
 
                 Func<string, string, object, IQueryable<TestGenericFilter.Simple>> filterSimple = (property, operation, value) =>
                     GenericFilterHelperFilter(simple, new[] {
-                        new PropertyFilter { Property = property, Operation = operation, Value = value }});
+                        new FilterCriteria { Property = property, Operation = operation, Value = value }});
 
                 Assert.AreEqual("n1", TestUtility.DumpSorted(filterSimple("Code", "equal", 0), item => item.Name));
                 Assert.AreEqual("n2", TestUtility.DumpSorted(filterSimple("Code", "equal", null), item => item.Name));
@@ -395,9 +398,9 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var childQuery = repository.TestGenericFilter.Child.Query();
-                PropertyFilter filter;
+                FilterCriteria filter;
 
-                filter = new PropertyFilter { Property = "Parentt", Operation = "equal", Value = null };
+                filter = new FilterCriteria { Property = "Parentt", Operation = "equal", Value = null };
                 TestUtility.ShouldFail<ClientException>(() => GenericFilterHelperFilter(childQuery, new[] { filter }).ToList(),
                     "generic filter", "property 'Parentt'", "Type 'TestGenericFilter.Child'");
             }
