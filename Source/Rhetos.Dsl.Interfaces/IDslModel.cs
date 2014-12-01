@@ -34,6 +34,7 @@ namespace Rhetos.Dsl
 
         /// <summary>
         /// See ConceptInfoHelper.GetKey function description for expected format of conceptKey.
+        /// Returns null is there is no concept with the given key.
         /// </summary>
         IConceptInfo FindByKey(string conceptKey);
     }

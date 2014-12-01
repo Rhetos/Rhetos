@@ -25,7 +25,12 @@ using System.Text;
 
 namespace Rhetos.Dsl
 {
-    public class DslContainer : IDslContainer
+    /// <summary>
+    /// This class implements IDslModel, but it may return uninitialized or empty list of concepts, as opposed to
+    /// DslModel class (also implements IDslModel) that always makes sure that the model is fully initialized
+    /// before returning the concepts.
+    /// </summary>
+    public class DslContainer : IDslModel
     {
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
@@ -34,16 +39,14 @@ namespace Rhetos.Dsl
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("DslContainer");
+
+            ConceptsByKey = new Dictionary<string, IConceptInfo>();
+            UnresolvedConceptReferencesByKey = new Dictionary<string, IConceptInfo>();
         }
 
         private readonly List<IConceptInfo> _concepts = new List<IConceptInfo>();
-        private readonly Dictionary<string, IConceptInfo> _conceptsByKey = new Dictionary<string, IConceptInfo>();
-        private readonly Dictionary<string, IConceptInfo> _unresolvedConceptReferencesByKey = new Dictionary<string, IConceptInfo>();
-
-        public IEnumerable<IConceptInfo> Concepts { get { return _concepts; } }
-        public IDictionary<string, IConceptInfo> ConceptsByKey { get { return _conceptsByKey; } }
-        public IDictionary<string, IConceptInfo> UnresolvedConceptReferencesByKey { get { return _unresolvedConceptReferencesByKey; } }
-
+        public Dictionary<string, IConceptInfo> ConceptsByKey { get; private set; }
+        public Dictionary<string, IConceptInfo> UnresolvedConceptReferencesByKey { get; private set; }
 
         /// <summary>
         /// Returns new concepts that did not previously exist in DslModel (a subset of the given concepts enumerable).
@@ -61,9 +64,9 @@ namespace Rhetos.Dsl
                 string key = conceptInfo.GetKey();
 
                 IConceptInfo existingConcept;
-                if (!_conceptsByKey.TryGetValue(key, out existingConcept))
+                if (!ConceptsByKey.TryGetValue(key, out existingConcept))
                 {
-                    _conceptsByKey.Add(key, conceptInfo);
+                    ConceptsByKey.Add(key, conceptInfo);
                     newConcepts.Add(conceptInfo);
                 }
                 else
@@ -87,7 +90,7 @@ namespace Rhetos.Dsl
             var newConceptsWithNewResolvedReferences = new List<IConceptInfo>();
             var newUnresolvedReferences = new List<IConceptInfo>();
 
-            foreach (IConceptInfo ci in newConcepts.Concat(_unresolvedConceptReferencesByKey.Values))
+            foreach (IConceptInfo ci in newConcepts.Concat(UnresolvedConceptReferencesByKey.Values))
             {
                 try
                 {
@@ -114,7 +117,7 @@ namespace Rhetos.Dsl
                             string referencedKey = reference.GetKey();
 
                             IConceptInfo referencedConcept;
-                            if (!_conceptsByKey.TryGetValue(referencedKey, out referencedConcept))
+                            if (!ConceptsByKey.TryGetValue(referencedKey, out referencedConcept))
                             {
                                 if (errorOnUnresolvedReference)
                                     throw new DslSyntaxException(string.Format(
@@ -147,15 +150,15 @@ namespace Rhetos.Dsl
             foreach (var ci in newConceptsWithNewResolvedReferences)
             {
                 string ciKey = ci.GetKey();
-                if (_unresolvedConceptReferencesByKey.ContainsKey(ciKey))
-                    _unresolvedConceptReferencesByKey.Remove(ciKey);
+                if (UnresolvedConceptReferencesByKey.ContainsKey(ciKey))
+                    UnresolvedConceptReferencesByKey.Remove(ciKey);
                 _logger.Trace(() => "New concept with resolved references: " + ciKey);
             }
             foreach (var ci in newUnresolvedReferences)
             {
                 string ciKey = ci.GetKey();
-                if (!_unresolvedConceptReferencesByKey.ContainsKey(ciKey))
-                    _unresolvedConceptReferencesByKey.Add(ciKey, ci);
+                if (!UnresolvedConceptReferencesByKey.ContainsKey(ciKey))
+                    UnresolvedConceptReferencesByKey.Add(ciKey, ci);
             }
 
             return newConceptsWithNewResolvedReferences;
@@ -194,5 +197,21 @@ namespace Rhetos.Dsl
                     AddReferencesBeforeConcept((IConceptInfo)member.GetValue(concept), sortedList, processed);
             sortedList.Add(concept);
         }
+
+        #region IDslModel filters implementation
+
+        public IEnumerable<IConceptInfo> Concepts
+        {
+            get { return _concepts; }
+        }
+
+        public IConceptInfo FindByKey(string conceptKey)
+        {
+            IConceptInfo result = null;
+            ConceptsByKey.TryGetValue(conceptKey, out result);
+            return result;
+        }
+
+        #endregion
     }
 }

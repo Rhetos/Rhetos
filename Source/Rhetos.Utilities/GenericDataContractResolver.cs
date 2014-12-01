@@ -31,6 +31,7 @@ namespace Rhetos.Utilities
 {
     internal class GenericDataContractResolver : DataContractResolver
     {
+        /// <param name="domainObjectModel">The parameter may be null is the object model is not yet generated.</param>
         public GenericDataContractResolver(IDomainObjectModel domainObjectModel)
         {
             _domainObjectModel = domainObjectModel;

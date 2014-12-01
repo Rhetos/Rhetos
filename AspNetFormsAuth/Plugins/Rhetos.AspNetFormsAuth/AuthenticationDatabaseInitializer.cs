@@ -20,6 +20,7 @@
 using Autofac.Features.Indexed;
 using Rhetos.Dom;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Persistence;
@@ -158,7 +159,7 @@ namespace Rhetos.AspNetFormsAuth
             return null;
         }
 
-        public IList<Claim> GetAllClaims(Dsl.IDslModel dslModel)
+        public IList<Claim> GetAllClaims(IDslModel dslModel)
         {
             return GetAdminClaims();
         }

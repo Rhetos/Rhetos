@@ -33,7 +33,6 @@ namespace Rhetos.Configuration.Autofac
         {
             builder.RegisterType<DslModel>().As<IDslModel>().SingleInstance();
             builder.RegisterType<DslParser>().As<IDslParser>();
-            builder.RegisterType<DslContainer>().As<IDslContainer>();
             builder.RegisterType<ConceptMetadata>().SingleInstance();
             PluginsUtility.RegisterPlugins<IConceptInfo>(builder);
 

@@ -58,39 +58,6 @@ namespace Rhetos.DatabaseGenerator.Test
         }
     }
 
-    class NullDslContainer : IDslContainer
-    {
-        public List<IConceptInfo> AddNewConceptsAndReplaceReferences(IEnumerable<IConceptInfo> concepts)
-        {
-            return concepts.ToList();
-        }
-
-        public IEnumerable<IConceptInfo> Concepts
-        {
-            get { return new IConceptInfo[] {}; }
-        }
-
-        public IDictionary<string, IConceptInfo> ConceptsByKey
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public void ReportErrorForUnresolvedConcepts()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SortReferencesBeforeUsingConcept()
-        {
-            throw new NotImplementedException();
-        }
-
-        public IDictionary<string, IConceptInfo> UnresolvedConceptReferencesByKey
-        {
-            get { throw new NotImplementedException(); }
-        }
-    }
-
     [ConceptImplementationVersion(1, 0)]
     class TestConceptImplementation : IConceptDatabaseDefinition
     {
