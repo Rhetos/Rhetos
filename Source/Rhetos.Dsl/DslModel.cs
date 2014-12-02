@@ -106,10 +106,7 @@ namespace Rhetos.Dsl
 
                 createdConcepts.Clear();
 
-                var resolvedMacroConcepts = _dslContainer.ConceptsByKey
-                    .Where(item => !_dslContainer.UnresolvedConceptReferencesByKey.ContainsKey(item.Key))
-                    .Select(item => item.Value)
-                    .OfType<IMacroConcept>().ToArray();
+                var resolvedMacroConcepts = _dslContainer.Concepts.OfType<IMacroConcept>().ToArray();
 
                 foreach (IMacroConcept macroConcept in resolvedMacroConcepts)
                 {
