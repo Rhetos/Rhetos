@@ -37,5 +37,11 @@ namespace Rhetos.Dsl
         /// Returns null is there is no concept with the given key.
         /// </summary>
         IConceptInfo FindByKey(string conceptKey);
+
+        /// <summary>
+        /// See ConceptInfoHelper.GetKey function description for expected format of conceptKey.
+        /// Returns null is there is no concept with the given key.
+        /// </summary>
+        IEnumerable<T> FindByType<T>();
     }
 }

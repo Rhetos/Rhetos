@@ -29,7 +29,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Take")]
-    public class BrowseTakeNamedPropertyInfo : IMacroConcept, IValidationConcept
+    public class BrowseTakeNamedPropertyInfo : IValidationConcept
     {
         [ConceptKey]
         public BrowseDataStructureInfo Browse { get; set; }
@@ -39,26 +39,28 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public string Path { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            var newConcepts = new List<IConceptInfo>();
-
-            ValueOrError<PropertyInfo> sourceProperty = DslUtility.GetPropertyByPath(Browse.Source, Path, existingConcepts);
-            if (sourceProperty.IsError)
-                return null; // Creating the browse property may be delayed for other macro concepts to generate the needed properties. If this condition is not resolved, the CheckSemantics function below will throw an exception.
-
-            var browseProperty = DslUtility.CreatePassiveClone(sourceProperty.Value, Browse);
-            browseProperty.Name = Name;
-
-            var browsePropertySelector = new BrowseFromPropertyInfo { PropertyInfo = browseProperty, Path = Path };
-
-            return new IConceptInfo[] { browseProperty, browsePropertySelector };
-        }
-
         public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
         {
             DslUtility.ValidatePath(Browse.Source, Path, existingConcepts, this);
             DslUtility.ValidateIdentifier(Name, this, "Specify a valid name before the path, to override the generated name.");
+        }
+    }
+
+    [Export(typeof(IConceptMacro))]
+    public class BrowseTakeNamedPropertyMacro : IConceptMacro<BrowseTakeNamedPropertyInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(BrowseTakeNamedPropertyInfo conceptInfo, IDslModel existingConcepts)
+        {
+            ValueOrError<PropertyInfo> sourceProperty = DslUtility.GetPropertyByPath(conceptInfo.Browse.Source, conceptInfo.Path, existingConcepts);
+            if (sourceProperty.IsError)
+                return null; // Creating the browse property may be delayed for other macro concepts to generate the needed properties. If this condition is not resolved, the CheckSemantics function below will throw an exception.
+
+            var browseProperty = DslUtility.CreatePassiveClone(sourceProperty.Value, conceptInfo.Browse);
+            browseProperty.Name = conceptInfo.Name;
+
+            var browsePropertySelector = new BrowseFromPropertyInfo { PropertyInfo = browseProperty, Path = conceptInfo.Path };
+
+            return new IConceptInfo[] { browseProperty, browsePropertySelector };
         }
     }
 }

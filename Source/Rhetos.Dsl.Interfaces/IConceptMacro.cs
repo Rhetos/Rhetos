@@ -24,12 +24,16 @@ using System.Text;
 
 namespace Rhetos.Dsl
 {
-    [Obsolete("Use IConceptMacro.")]
-    public interface IMacroConcept : IConceptInfo
+    public interface IConceptMacro
+    {
+    }
+
+    public interface IConceptMacro<in TConceptInfo> : IConceptMacro
+        where TConceptInfo : IConceptInfo
     {
         /// <summary>
-        /// If the function creates a concept that already exists, that concept will be ignored.
+        /// If the function creates a concept that already exists, that concept will be safely ignored.
         /// </summary>
-        IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts);
+        IEnumerable<IConceptInfo> CreateNewConcepts(TConceptInfo conceptInfo, IDslModel existingConcepts);
     }
 }

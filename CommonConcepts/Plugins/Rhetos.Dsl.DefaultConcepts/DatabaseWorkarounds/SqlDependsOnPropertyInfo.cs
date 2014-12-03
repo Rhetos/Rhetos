@@ -27,20 +27,23 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlDependsOn")]
-    public class SqlDependsOnPropertyInfo : IConceptInfo, IMacroConcept
+    public class SqlDependsOnPropertyInfo : IConceptInfo
     {
         [ConceptKey]
         public IConceptInfo Dependent { get; set; }
         [ConceptKey]
         public PropertyInfo DependsOn { get; set; }
+    }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+    [Export(typeof(IConceptMacro))]
+    public class SqlDependsOnPropertyMacro : IConceptMacro<SqlDependsOnPropertyInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(SqlDependsOnPropertyInfo conceptInfo, IDslModel existingConcepts)
         {
-            return existingConcepts.OfType<SqlUniqueMultipleInfo>()
-                .Where(unique => unique.SqlIndex.Entity == DependsOn.DataStructure)
-                .Where(unique => IsFirstIdentifierInList(DependsOn.Name, unique.SqlIndex.PropertyNames))
-                .Select(unique => new SqlDependsOnSqlIndexInfo { Dependent = Dependent, DependsOn = unique.SqlIndex })
-                .ToList();
+            return existingConcepts.FindByType<SqlUniqueMultipleInfo>()
+                .Where(unique => unique.SqlIndex.Entity == conceptInfo.DependsOn.DataStructure)
+                .Where(unique => IsFirstIdentifierInList(conceptInfo.DependsOn.Name, unique.SqlIndex.PropertyNames))
+                .Select(unique => new SqlDependsOnSqlIndexInfo { Dependent = conceptInfo.Dependent, DependsOn = unique.SqlIndex });
         }
 
         private static bool IsFirstIdentifierInList(string identifier, string list)

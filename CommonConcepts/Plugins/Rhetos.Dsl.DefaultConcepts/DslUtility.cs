@@ -31,7 +31,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public static void ValidatePropertyListSyntax(string propertyList, IConceptInfo errorContext)
         {
-            var errorHeader = new Lazy<string>(() => 
+            var errorHeader = new Lazy<string>(() =>
                 "Invalid format of list '" + propertyList + "' in '" + errorContext.GetUserDescription() + "': ");
 
             if (string.IsNullOrWhiteSpace(propertyList))
@@ -114,12 +114,30 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public static void ValidatePath(DataStructureInfo source, string path, IEnumerable<IConceptInfo> existingConcepts, IConceptInfo errorContext)
         {
-            var property = GetPropertyByPath(source, path, existingConcepts);
+            var property = GetPropertyByPath(source, path, new ConceptsListToDslModel(existingConcepts));
             if (property.IsError)
                 throw new DslSyntaxException(errorContext, "Invalid path: " + property.Error);
         }
 
-        public static ValueOrError<PropertyInfo> GetPropertyByPath(DataStructureInfo source, string path, IEnumerable<IConceptInfo> existingConcepts)
+        /// <summary>This is a temporary solution until IValidationConcept.CheckSemantics is upgraded to use IDslModel.</summary>
+        private class ConceptsListToDslModel : IDslModel
+        {
+            public ConceptsListToDslModel(IEnumerable<IConceptInfo> concepts)
+            {
+                Concepts = concepts;
+            }
+            public IEnumerable<IConceptInfo> Concepts { get; set; }
+            public IConceptInfo FindByKey(string conceptKey)
+            {
+                throw new NotImplementedException();
+            }
+            public IEnumerable<T> FindByType<T>()
+            {
+                return Concepts.OfType<T>();
+            }
+        }
+
+        public static ValueOrError<PropertyInfo> GetPropertyByPath(DataStructureInfo source, string path, IDslModel existingConcepts)
         {
             if (path.Contains(" "))
                 return ValueOrError.CreateError("The path contains a space character.");
@@ -139,7 +157,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                     return ValueOrError.CreateError(selectedDataStructure.Error);
             }
 
-            PropertyInfo selectedProperty = existingConcepts.OfType<PropertyInfo>()
+            PropertyInfo selectedProperty = existingConcepts.FindByType<PropertyInfo>()
                 .Where(p => p.DataStructure == selectedDataStructure.Value && p.Name == lastPropertyName)
                 .SingleOrDefault();
 
@@ -152,15 +170,15 @@ namespace Rhetos.Dsl.DefaultConcepts
             return selectedProperty;
         }
 
-        private static ValueOrError<DataStructureInfo> NavigateToNextDataStructure(DataStructureInfo source, string referenceName, IEnumerable<IConceptInfo> existingConcepts)
+        private static ValueOrError<DataStructureInfo> NavigateToNextDataStructure(DataStructureInfo source, string referenceName, IDslModel existingConcepts)
         {
-            var selectedProperty = existingConcepts.OfType<PropertyInfo>()
+            var selectedProperty = existingConcepts.FindByType<PropertyInfo>()
                 .Where(p => p.DataStructure == source && p.Name == referenceName)
                 .SingleOrDefault();
 
             if (selectedProperty == null && referenceName == "Base")
             {
-                var baseDataStructure = existingConcepts.OfType<DataStructureExtendsInfo>()
+                var baseDataStructure = existingConcepts.FindByType<DataStructureExtendsInfo>()
                     .Where(ex => ex.Extension == source)
                     .Select(ex => ex.Base).SingleOrDefault();
                 if (baseDataStructure != null)
@@ -173,7 +191,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (selectedProperty == null && referenceName.StartsWith("Extension_"))
             {
                 string extensionName = referenceName.Substring("Extension_".Length);
-                var extendsionDataStructure = existingConcepts.OfType<DataStructureExtendsInfo>()
+                var extendsionDataStructure = existingConcepts.FindByType<DataStructureExtendsInfo>()
                     .Where(ex => ex.Base == source)
                     .Where(ex => ex.Extension.Module == source.Module && ex.Extension.Name == extensionName
                         || ex.Extension.Module.Name + "_" + ex.Extension.Name == extensionName)

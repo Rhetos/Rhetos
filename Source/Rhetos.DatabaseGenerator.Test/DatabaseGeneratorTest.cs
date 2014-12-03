@@ -605,6 +605,7 @@ namespace Rhetos.DatabaseGenerator.Test
             public MockDslModel(IEnumerable<IConceptInfo> conceptInfos) { _conceptInfos = conceptInfos; }
             public IEnumerable<IConceptInfo> Concepts { get { return _conceptInfos; } }
             public IConceptInfo FindByKey(string conceptKey) { throw new NotImplementedException(); }
+            public IEnumerable<T> FindByType<T>() { throw new NotImplementedException(); }
         }
 
         private class ExtendingConceptImplementation : IConceptDatabaseDefinition, IConceptDatabaseDefinitionExtension

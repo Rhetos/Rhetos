@@ -25,6 +25,20 @@ using System.Text;
 
 namespace Rhetos.Dsl
 {
+    public class DictionaryOfLists<TKey, TValue> : Dictionary<TKey, List<TValue>>
+    {
+        public void Add(TKey key, TValue value)
+        {
+            List<TValue> list;
+            if (!TryGetValue(key, out list))
+            {
+                list = new List<TValue>();
+                Add(key, list);
+            }
+            list.Add(value);
+        }
+    }
+
     /// <summary>
     /// This class implements IDslModel, but it may return empty or partly initialized list of concepts, as opposed to
     /// DslModel class (also implements IDslModel) that always makes sure that the DSL model is fully initialized
@@ -43,6 +57,8 @@ namespace Rhetos.Dsl
 
         private readonly List<IConceptInfo> _resolvedConcepts = new List<IConceptInfo>();
         private readonly Dictionary<string, IConceptInfo> _resolvedConceptsByKey = new Dictionary<string, IConceptInfo>();
+        private readonly DictionaryOfLists<Type, IConceptInfo> _resolvedConceptsByType = new DictionaryOfLists<Type, IConceptInfo>();
+
         private readonly Dictionary<string, IConceptInfo> _unresolvedConceptsByKey = new Dictionary<string, IConceptInfo>();
 
         #region IDslModel filters implementation
@@ -57,6 +73,14 @@ namespace Rhetos.Dsl
             IConceptInfo result = null;
             _resolvedConceptsByKey.TryGetValue(conceptKey, out result);
             return result;
+        }
+
+        public IEnumerable<T> FindByType<T>()
+        {
+            return _resolvedConceptsByType
+                .Where(conceptsGroup => typeof(T).IsAssignableFrom(conceptsGroup.Key))
+                .SelectMany(conceptsGroup => conceptsGroup.Value)
+                .Cast<T>();
         }
 
         #endregion
@@ -108,8 +132,10 @@ namespace Rhetos.Dsl
                 if (resolved)
                 {
                     _unresolvedConceptsByKey.Remove(concept.Key);
-                    _resolvedConceptsByKey.Add(concept.Key, concept.Value);
+
                     _resolvedConcepts.Add(concept.Value);
+                    _resolvedConceptsByKey.Add(concept.Key, concept.Value);
+                    _resolvedConceptsByType.Add(concept.Value.GetType(), concept.Value);
 
                     conceptsWithNewlyResolvedReferences.Add(concept.Value);
                     _logger.Trace(() => "New concept with resolved references: " + concept.Key);
@@ -141,10 +167,8 @@ namespace Rhetos.Dsl
             {
                 if (errorOnUnresolvedReference)
                     throw new DslSyntaxException(ci, string.Format(
-                        "Referenced concept is not defined in DSL scripts. '{0}' references undefined contept '{1}' (type {2}).",
-                        ci.GetUserDescription(),
-                        reference.GetUserDescription(),
-                        reference.GetType().Name));
+                        "Referenced concept is not defined in DSL scripts: '{0}'.",
+                        reference.GetUserDescription()));
                 else
                     return false;
             }

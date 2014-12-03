@@ -47,13 +47,36 @@ namespace Rhetos.Utilities
         public void Write(EventType eventType, Func<string> logMessage)
         {
             if (eventType >= _minLevel)
-                Console.WriteLine(
-                    "[" + eventType + "] "
-                    + (_eventName != null ? (_eventName + ": ") : "")
-                    + logMessage());
+            {
+                string message;
+                try
+                {
+                    message = logMessage();
+                    const int maxLogMessageLength = 10000;
+                    if (message.Length > maxLogMessageLength)
+                        message = message.Substring(0, maxLogMessageLength)
+                            + " ... (trimmed to max " + GetType().Name + " message length of " + maxLogMessageLength + ")";
+
+                    Write(eventType, _eventName, message);
+                }
+                catch (Exception ex)
+                {
+                    Write(EventType.Error, GetType().Name, string.Format(
+                        "Error while getting the log message ({0}: {1}). {2}",
+                        eventType, _eventName, ex.ToString()));
+                }
+            }
 
             if (_decoratedLogger != null)
                 _decoratedLogger.Write(eventType, logMessage);
+        }
+
+        private static void Write(EventType eventType, string eventName, string message)
+        {
+            Console.WriteLine(
+                "[" + eventType + "] "
+                + (eventName != null ? (eventName + ": ") : "")
+                + message);
         }
 
         private static EventType _minLevel = 0;

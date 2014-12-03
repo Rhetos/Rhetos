@@ -178,16 +178,20 @@ namespace Rhetos.Extensibility
 
         //================================================================
 
-        private static HashSet<Type> _registeredPluginExportTypes = new HashSet<Type>();
+        /// <summary>
+        /// List of previous plugin registerations, used for rescanning when new assemblies are introduced.
+        /// Key is the plugin (export) type. Value is optional generic implementation interface.
+        /// </summary>
+        private static Dictionary<Type, Type> _pluginRegistrations = new Dictionary<Type, Type>();
 
         private static void RegisterNewPlugins(ContainerBuilder builder, Dictionary<string, List<PluginInfo>> newPlugins)
         {
-            lock (_registeredPluginExportTypes)
-                foreach (Type pluginType in _registeredPluginExportTypes)
-                    RegisterPlugins(builder, newPlugins, pluginType);
+            lock (_pluginRegistrations)
+                foreach (var pluginRegistration in _pluginRegistrations)
+                    RegisterPlugins(builder, newPlugins, pluginRegistration.Key, pluginRegistration.Value);
         }
 
-        private static void RegisterPlugins(ContainerBuilder builder, Dictionary<string, List<PluginInfo>> pluginsByExport, Type exportType)
+        private static void RegisterPlugins(ContainerBuilder builder, Dictionary<string, List<PluginInfo>> pluginsByExport, Type exportType, Type genericImplementationInterface)
         {
             List<PluginInfo> matchingPlugins;
             if (pluginsByExport.TryGetValue(exportType.FullName, out matchingPlugins))
@@ -197,27 +201,61 @@ namespace Rhetos.Extensibility
                 foreach (var plugin in matchingPlugins)
                 {
                     var registration = builder.RegisterType(plugin.Type).As(new[] { exportType });
+
                     foreach (var metadataElement in plugin.Metadata)
                     {
                         registration = registration.WithMetadata(metadataElement.Key, metadataElement.Value);
                         if (metadataElement.Key == MefProvider.Implements)
                             registration = registration.Keyed(metadataElement.Value, exportType);
                     }
+
+                    if (genericImplementationInterface != null)
+                    {
+                        var implementsTypes = plugin.Type.GetInterfaces()
+                            .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == genericImplementationInterface)
+                            .Select(i => i.GetGenericArguments()[0])
+                            .ToList();
+
+                        if (implementsTypes.Count == 0)
+                            throw new FrameworkException(string.Format(
+                                "Plugin {0} does not implement generic interface {1}.",
+                                plugin.Type.FullName,
+                                genericImplementationInterface.FullName));
+
+                        foreach (Type implements in implementsTypes)
+                            registration = registration.Keyed(implements, exportType);
+                    }
                 }
             }
         }
 
         /// <summary>
-        /// Scans for plugins that implement the given export type (it is usually the plugin's interface),
-        /// and registers them.
-        /// It should be called from a plugin module initialization (from Autofac.Module implementation).
+        /// Scans for plugins that implement the given export type (it is usually the plugin's interface), and registers them.
+        /// The function should be called from a plugin module initialization (from Autofac.Module implementation).
         /// </summary>
-        public static void RegisterPlugins<T>(ContainerBuilder builder)
+        public static void RegisterPlugins<TPlugin>(ContainerBuilder builder)
         {
-            lock (_registeredPluginExportTypes)
+            lock (_pluginRegistrations)
             {
-                RegisterPlugins(builder, _loadedPluginsByExport, typeof(T));
-                _registeredPluginExportTypes.Add(typeof(T));
+                RegisterPlugins(builder, _loadedPluginsByExport, typeof(TPlugin), null);
+                _pluginRegistrations.Add(typeof(TPlugin), null);
+            }
+        }
+
+        /// <summary>
+        /// Scans for plugins that implement the given export type (it is usually the plugin's interface), and registers them.
+        /// The function should be called from a plugin module initialization (from Autofac.Module implementation).
+        /// </summary>
+        /// <param name="genericImplementationInterface">
+        /// Argument type that the plugin handles is automatically extracted from the provided genericImplementationInterface parameter.
+        /// This is an alternative to using MefProvider.Implements in the plugin's ExportMetadata attribute.
+        /// </param>
+        public static void RegisterPlugins<TPlugin>(ContainerBuilder builder, Type genericImplementationInterface)
+        {
+            lock (_pluginRegistrations)
+            {
+                RegisterPlugins(builder, _loadedPluginsByExport, typeof(TPlugin), genericImplementationInterface);
+                _pluginRegistrations.Add(typeof(TPlugin), genericImplementationInterface);
             }
         }
     }

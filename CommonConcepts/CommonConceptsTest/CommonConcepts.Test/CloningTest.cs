@@ -81,22 +81,15 @@ Clone3.Start
                     ORDER BY
                         i.name, ic.key_ordinal";
 
-                var expected =
-@"IX_Clone2_Parent.ParentID
-IX_Clone2_Start_Parent.Start
-IX_Clone2_Start_Parent.ParentID
-IX_Clone3_Code.Code
-IX_Clone3_Parent.ParentID
-IX_Clone3_Start_Parent.Start
-IX_Clone3_Start_Parent.ParentID
-PK_Clone1.ID
-PK_Clone2.ID
-PK_Clone3.ID
-";
-                var actual = new StringBuilder();
-                container.Resolve<ISqlExecuter>().ExecuteReader(sql, reader => actual.AppendLine(reader.GetString(0)));
+                string[] expected =
+                    ("IX_Clone2_Parent.ParentID IX_Clone2_Start_Parent.Start IX_Clone2_Start_Parent.ParentID"
+                    + " IX_Clone3_Code.Code IX_Clone3_Parent.ParentID IX_Clone3_Start_Parent.Start"
+                    + " IX_Clone3_Start_Parent.ParentID PK_Clone1.ID PK_Clone2.ID PK_Clone3.ID").Split(' ');
 
-                Assert.AreEqual(expected, actual.ToString());
+                var actual = new List<string>();
+                container.Resolve<ISqlExecuter>().ExecuteReader(sql, reader => actual.Add(reader.GetString(0)));
+
+                Assert.AreEqual(TestUtility.DumpSorted(expected), TestUtility.DumpSorted(actual));
             }
         }
 

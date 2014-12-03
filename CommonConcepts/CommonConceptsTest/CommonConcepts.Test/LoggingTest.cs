@@ -260,18 +260,20 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("", ins.Description);
                 Assert.AreEqual(@"<PREVIOUS ls=""abc"" />", upd.Description);
 
-                var description = del.Description.Split(' ');
-                Assert.AreEqual(@"<PREVIOUS", description[0]);
-                Assert.AreEqual(@"bi=""0x010203""", description[1]);
-                Assert.AreEqual(@"bo=""1""", description[2]);
-                Assert.AreEqual(@"da=""2001-02-03""", description[3]);
-                Assert.IsTrue(new Regex(@"^t=""2001-02-03T04:05:06(.0+)?""$").IsMatch(description[4]));// optional millisconds
+                Console.WriteLine(del.Description);
+
+                var description = del.Description.Split(' ').OrderBy(x => x).ToList();
+                Assert.AreEqual(@"/>", description[0]);
+                Assert.AreEqual(@"<PREVIOUS", description[1]);
+                Assert.AreEqual(@"bi=""0x010203""", description[2]);
+                Assert.AreEqual(@"bo=""1""", description[3]);
+                Assert.AreEqual(@"da=""2001-02-03""", description[4]);
                 Assert.IsTrue(new Regex(@"^de=""123\.45670*""$").IsMatch(description[5]));// optional additional zeros
                 Assert.AreEqual(@"g=""" + SqlUtility.GuidToString(complex.g.Value) + @"""", description[6]);
                 Assert.AreEqual(@"ls=""def""", description[7]);
                 Assert.AreEqual(@"m=""11.2200""", description[8]);
                 Assert.AreEqual(@"rID=""" + SqlUtility.GuidToString(simple.ID) + @"""", description[9]);
-                Assert.AreEqual(@"/>", description[10]);
+                Assert.IsTrue(new Regex(@"^t=""2001-02-03T04:05:06(.0+)?""$").IsMatch(description[10]));// optional millisconds
             }
         }
     }
