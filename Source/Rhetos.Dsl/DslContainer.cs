@@ -110,7 +110,12 @@ namespace Rhetos.Dsl
                             key));
             }
 
-            return ReplaceReferencesWithFullConcepts(errorOnUnresolvedReference: false);
+            var newlyResolved = new List<IConceptInfo>();
+            // Multiple passes are currently needed (to avoid additional macro iterations) because a reference can be resolved only by a concept that has resolved references.
+            newlyResolved.AddRange(ReplaceReferencesWithFullConcepts(errorOnUnresolvedReference: false));
+            newlyResolved.AddRange(ReplaceReferencesWithFullConcepts(errorOnUnresolvedReference: false));
+            newlyResolved.AddRange(ReplaceReferencesWithFullConcepts(errorOnUnresolvedReference: false));
+            return newlyResolved;
         }
 
         /// <summary>
