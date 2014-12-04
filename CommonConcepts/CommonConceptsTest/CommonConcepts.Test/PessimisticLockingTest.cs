@@ -397,7 +397,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(container.Resolve<IUserInfo>().UserName, myLock.UserName);
                 Assert.AreEqual(container.Resolve<IUserInfo>().Workstation, myLock.Workstation);
                 var now = DateTime.Now;
-                AssertInRange(myLock.LockStart.Value, now.AddSeconds(-1), now);
+                AssertInRange(myLock.LockStart.Value, now.AddSeconds(-1), now.AddSeconds(0.01));
                 AssertInRange(myLock.LockFinish.Value, now.AddMinutes(defaultLockMinutes).AddSeconds(-1), now.AddMinutes(defaultLockMinutes));
             }
         }

@@ -150,6 +150,11 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 inserted = insertedNew.Select(item => ({0})_executionContext.NHibernateSession.Merge(item)).ToArray();
                 _executionContext.NHibernateSession.Flush();
+
+                // Clearing lazy object cache to ensure loading fresh data from database, in case of data modifications by triggers.
+                _executionContext.NHibernateSession.Clear();
+                for (int i=0; i<inserted.Length; i++) inserted[i] = _executionContext.NHibernateSession.Load<{0}>(inserted[i].ID);
+                for (int i=0; i<updated.Length; i++) updated[i] = _executionContext.NHibernateSession.Load<{0}>(updated[i].ID);
             }}
             catch (NHibernate.Exceptions.GenericADOException nhException)
             {{

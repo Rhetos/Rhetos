@@ -25,6 +25,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using Rhetos.Configuration.Autofac;
+using Rhetos.Dom.DefaultConcepts;
 
 namespace CommonConcepts.Test
 {
@@ -168,8 +169,8 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("b1 b1a b1b ", TestUtility.DumpSorted(repository.TestComputedFrom.MultiSync.All(), Dump));
 
                 var ms = repository.TestComputedFrom.MultiSync.All().Single();
-                AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()));
                 AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()));
+                AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()));
 
                 ms.Start = new DateTime(2001, 2, 3);
                 ms.LastModifiedName1bx = new DateTime(2001, 2, 3);
@@ -193,6 +194,21 @@ namespace CommonConcepts.Test
                 ms = repository.TestComputedFrom.MultiSync.All().Single();
                 AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()), false);
                 AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()));
+            }
+        }
+
+        [TestMethod]
+        public void ComputedWithAutocode()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var computedRepos = container.Resolve<GenericRepository<TestComputedFrom.ComputedWithAutoCode>>();
+                var computedSourceRepos = container.Resolve<GenericRepository<TestComputedFrom.ComputedWithAutoCodeSource>>();
+
+                var item1 = new TestComputedFrom.ComputedWithAutoCode { ID = Guid.NewGuid(), Code = "+" };
+                computedRepos.Save(new[] { item1 }, null, computedRepos.Read());
+
+                Assert.AreEqual("1 abc", TestUtility.DumpSorted(computedRepos.Read(), item => item.Code + " " + item.Comp));
             }
         }
 

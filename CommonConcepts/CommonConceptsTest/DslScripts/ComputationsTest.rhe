@@ -543,6 +543,19 @@ Module TestComputedFrom
         DateTime Start { CreationTime; }
         DateTime LastModifiedName1bx { ModificationTimeOf TestComputedFrom.MultiSync.Name1bx; }
     }
+	
+	Entity ComputedWithAutoCode
+	{
+		ShortString Comp;
+		ShortString Code { AutoCode; }
+		
+		ComputedFrom TestComputedFrom.ComputedWithAutoCodeSource { AllProperties; ComputeForNewItems; }
+	}
+	
+	SqlQueryable ComputedWithAutoCodeSource "SELECT ID, Comp = 'abc' FROM ComputedWithAutoCode"
+	{
+		ShortString Comp;
+	}
     
     //==========================================================
     
