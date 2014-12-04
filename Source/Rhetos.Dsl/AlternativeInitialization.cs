@@ -17,7 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Logging;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,30 +28,48 @@ namespace Rhetos.Dsl
 {
     public static class AlternativeInitialization
     {
-        public static IEnumerable<IConceptInfo> InitializeNonparsablePropertiesRecursive(IAlternativeInitializationConcept alternativeInitializationConcept)
+        public static IEnumerable<IConceptInfo> InitializeNonparsableProperties(IEnumerable<IConceptInfo> concepts, ILogger traceLogger)
         {
-            return InitializeNonparsablePropertiesRecursive(alternativeInitializationConcept, new HashSet<string>(), 0);
+            var newConcepts = new List<IConceptInfo>();
+
+            foreach (var alternativeInitializationConcept in concepts.OfType<IAlternativeInitializationConcept>())
+                newConcepts.AddRange(InitializeNonparsablePropertiesRecursive(alternativeInitializationConcept, new HashSet<string>(), 0, traceLogger));
+
+            return newConcepts;
         }
 
-        private static IEnumerable<IConceptInfo> InitializeNonparsablePropertiesRecursive(IAlternativeInitializationConcept alternativeInitializationConcept, HashSet<string> alreadyCreated, int depth)
+        private static IEnumerable<IConceptInfo> InitializeNonparsablePropertiesRecursive(IAlternativeInitializationConcept alternativeInitializationConcept, HashSet<string> alreadyCreated, int depth, ILogger traceLogger)
         {
             if (depth > 10)
-                throw new DslSyntaxException("Macro concept references cannot be resolved.");
+                throw new DslSyntaxException(alternativeInitializationConcept, "Macro concept references cannot be resolved.");
+
+            List<IConceptInfo> result = new List<IConceptInfo>();
 
             IEnumerable<IConceptInfo> createdConcepts;
-            List<IConceptInfo> result = new List<IConceptInfo>();
             alternativeInitializationConcept.InitializeNonparsableProperties(out createdConcepts);
+            Materialize(ref createdConcepts);
+
             if (createdConcepts != null && createdConcepts.Count() > 0)
             {
+                traceLogger.Trace(() => alternativeInitializationConcept.GetShortDescription() + " generated on alternative initialization: "
+                    + string.Join(", ", createdConcepts.Select(c => c.GetShortDescription())) + ".");
+
                 result.AddRange(createdConcepts);
                 foreach (var concept in createdConcepts.OfType<IAlternativeInitializationConcept>())
                     if (!alreadyCreated.Contains(concept.GetFullDescription()))
                     {
                         alreadyCreated.Add(concept.GetFullDescription());
-                        result.AddRange(InitializeNonparsablePropertiesRecursive(concept, alreadyCreated, depth + 1));
+                        result.AddRange(InitializeNonparsablePropertiesRecursive(concept, alreadyCreated, depth + 1, traceLogger));
                     }
             }
+
             return result;
+        }
+
+        private static void Materialize(ref IEnumerable<IConceptInfo> items)
+        {
+            if (items != null && !(items is IList))
+                items = items.ToList();
         }
     }
 }

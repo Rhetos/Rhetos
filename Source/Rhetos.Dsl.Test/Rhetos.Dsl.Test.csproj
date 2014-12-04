@@ -55,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConceptInfoHelperTest.cs" />
+    <Compile Include="DslContainerTest.cs" />
     <Compile Include="DslParserTest.cs" />
     <Compile Include="DslParser_Accessor.cs" />
     <Compile Include="DslScriptProviderTest.cs" />

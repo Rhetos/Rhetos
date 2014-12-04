@@ -195,7 +195,7 @@ namespace Rhetos.Processing
                  
             _logger.Write(errorSeverity, () => logError + logException);
 
-            _logger.Trace(_xmlUtility.SerializeArrayToXml(commandResults.ToArray()));
+            _logger.Trace(() => _xmlUtility.SerializeArrayToXml(commandResults.ToArray()));
 
             return new ProcessingResult
                 {

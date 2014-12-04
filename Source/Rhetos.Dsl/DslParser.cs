@@ -49,11 +49,11 @@ namespace Rhetos.Dsl
             {
                 IEnumerable<IConceptParser> parsers = CreateGenericParsers();
                 var parsedConcepts = ExtractConcepts(parsers);
-                var alternativeInitializationGeneratedReferences = ResolveAlternativeInitializationConcepts(parsedConcepts);
+                var alternativeInitializationGeneratedReferences = InitializeAlternativeInitializationConcepts(parsedConcepts);
                 return new[] { CreateInitializationConcept() }
                     .Concat(parsedConcepts)
                     .Concat(alternativeInitializationGeneratedReferences)
-                    .ToArray();
+                    .ToList();
             }
         }
 
@@ -106,7 +106,7 @@ namespace Rhetos.Dsl
                 UpdateContextForNextConcept(tokenReader, context, conceptInfo);
             }
 
-            _performanceLogger.Write(stopwatch, "DslParser.ExtractConcepts.");
+            _performanceLogger.Write(stopwatch, "DslParser.ExtractConcepts (" + newConcepts.Count + " concepts).");
 
             if (context.Count > 0)
                 throw new DslSyntaxException(string.Format(
@@ -218,13 +218,12 @@ namespace Rhetos.Dsl
             }
         }
 
-        protected List<IConceptInfo> ResolveAlternativeInitializationConcepts(IEnumerable<IConceptInfo> parsedConcepts)
+        protected IEnumerable<IConceptInfo> InitializeAlternativeInitializationConcepts(IEnumerable<IConceptInfo> parsedConcepts)
         {
-            var newConcets = new List<IConceptInfo>();
-            foreach (var alternativeInitializationConcept in parsedConcepts.OfType<IAlternativeInitializationConcept>())
-                newConcets.AddRange(AlternativeInitialization.InitializeNonparsablePropertiesRecursive(alternativeInitializationConcept));
-            return newConcets;
+            var stopwatch = Stopwatch.StartNew();
+            var newConcepts = AlternativeInitialization.InitializeNonparsableProperties(parsedConcepts, _logger);
+            _performanceLogger.Write(stopwatch, "DslParser.InitializeAlternativeInitializationConcepts (" + newConcepts.Count() + " new concepts created).");
+            return newConcepts;
         }
-
     }
 }

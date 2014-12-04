@@ -86,14 +86,14 @@ namespace Rhetos.Security
                     return dnsEntry.HostName;
 
                 // It seems that "nbtstat.exe -A <ipaddress>" can return up to date values while 'nslookup.exe <ipaddress>' and Dns.GetHostEntry(ipaddress) return old values.
-                logger.Trace("Cannot obtain client host name. DSN lookup returned a DSN entry that does not match given IP address. Check if 'nslookup.exe " + clientAddress + "' returns up-to-date values.");
+                logger.Trace(() => "Cannot obtain client host name. DSN lookup returned a DSN entry that does not match given IP address. Check if 'nslookup.exe " + clientAddress + "' returns up-to-date values.");
                 if (port.HasValue)
                     return address + " port " + port;
                 return address;
             }
             catch (Exception ex)
             {
-                logger.Trace("Cannot obtain client host name for " + address + ". " + ex);
+                logger.Trace(() => "Cannot obtain client host name for " + address + ". " + ex);
                 return null;
             }
         }

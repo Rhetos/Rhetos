@@ -18,8 +18,10 @@
 */
 
 using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -48,6 +50,12 @@ namespace Rhetos.Dsl
     {
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
+        private readonly Stopwatch _addConceptsStopwatch = new Stopwatch();
+
+        private readonly List<IConceptInfo> _resolvedConcepts = new List<IConceptInfo>();
+        private readonly Dictionary<string, IConceptInfo> _resolvedConceptsByKey = new Dictionary<string, IConceptInfo>();
+        private readonly DictionaryOfLists<Type, IConceptInfo> _resolvedConceptsByType = new DictionaryOfLists<Type, IConceptInfo>();
+        private readonly Dictionary<string, IConceptInfo> _unresolvedConceptsByKey = new Dictionary<string, IConceptInfo>();
 
         public DslContainer(ILogProvider logProvider)
         {
@@ -55,11 +63,6 @@ namespace Rhetos.Dsl
             _logger = logProvider.GetLogger("DslContainer");
         }
 
-        private readonly List<IConceptInfo> _resolvedConcepts = new List<IConceptInfo>();
-        private readonly Dictionary<string, IConceptInfo> _resolvedConceptsByKey = new Dictionary<string, IConceptInfo>();
-        private readonly DictionaryOfLists<Type, IConceptInfo> _resolvedConceptsByType = new DictionaryOfLists<Type, IConceptInfo>();
-
-        private readonly Dictionary<string, IConceptInfo> _unresolvedConceptsByKey = new Dictionary<string, IConceptInfo>();
 
         #region IDslModel filters implementation
 
@@ -86,21 +89,25 @@ namespace Rhetos.Dsl
         #endregion
 
         /// <summary>
-        /// Result include new concepts that did not previously exist in DslModel (a subset of the given concepts enumerable and also
-        /// concepts that where previously added in DslModel but their references could not be resolved until now).
-        /// Updates concept references to reference existing instances from DslMode with the same concept key.
-        /// Result does not include new concepts which references could not be resolved.
+        /// Updates concept references to reference existing instances from DslModel matched by the concept key.
+        /// Returns new unique concepts that did not previously exist in DslModel
+        /// (note that some of the returned concepts might not have their references resolved yet).
         /// </summary>
         public List<IConceptInfo> AddNewConceptsAndReplaceReferences(IEnumerable<IConceptInfo> newConcepts)
         {
+            _addConceptsStopwatch.Start();
+            var newUniqueConcepts = new List<IConceptInfo>();
+
             foreach (var conceptInfo in newConcepts)
             {
                 string key = conceptInfo.GetKey();
-
                 IConceptInfo existingConcept;
 
                 if (!_resolvedConceptsByKey.TryGetValue(key, out existingConcept) && !_unresolvedConceptsByKey.TryGetValue(key, out existingConcept))
+                {
+                    newUniqueConcepts.Add(conceptInfo);
                     _unresolvedConceptsByKey.Add(key, conceptInfo);
+                }
                 else
                     if (existingConcept != conceptInfo && existingConcept.GetFullDescription() != conceptInfo.GetFullDescription())
                         throw new DslSyntaxException(string.Format(
@@ -110,80 +117,87 @@ namespace Rhetos.Dsl
                             key));
             }
 
-            var newlyResolved = new List<IConceptInfo>();
-            // Multiple passes are currently needed (to avoid additional macro iterations) because a reference can be resolved only by a concept that has resolved references.
-            newlyResolved.AddRange(ReplaceReferencesWithFullConcepts(errorOnUnresolvedReference: false));
-            newlyResolved.AddRange(ReplaceReferencesWithFullConcepts(errorOnUnresolvedReference: false));
-            newlyResolved.AddRange(ReplaceReferencesWithFullConcepts(errorOnUnresolvedReference: false));
-            return newlyResolved;
+            ReplaceReferencesWithFullConcepts(errorOnUnresolvedReference: false);
+
+            _addConceptsStopwatch.Stop();
+            return newUniqueConcepts;
         }
 
         /// <summary>
         /// Since DSL parser returns stub references, this function replaces each reference with actual instance of the referenced concept.
         /// Function returns concepts that have newly resolved references.
         /// </summary>
-        private List<IConceptInfo> ReplaceReferencesWithFullConcepts(bool errorOnUnresolvedReference)
+		private void ReplaceReferencesWithFullConcepts(bool errorOnUnresolvedReference)
         {
-            var conceptsWithNewlyResolvedReferences = new List<IConceptInfo>();
+            var dependencies = new List<Tuple<string, string>>();
+            var unresolved = new List<string>();
 
-            var _unresolvedConceptsCopy = _unresolvedConceptsByKey.ToList(); // The copy is needed because _unresolvedConceptsByKey will be modified inside the loop.
-            foreach (var concept in _unresolvedConceptsCopy)
+            foreach (var concept in _unresolvedConceptsByKey)
             {
-                bool resolved = true;
                 foreach (ConceptMember member in ConceptMembers.Get(concept.Value))
                     if (member.IsConceptInfo)
-                        resolved &= TryResolveReferenceMember(concept.Value, member, errorOnUnresolvedReference);
+                    {
+                        var reference = (IConceptInfo)member.GetValue(concept.Value);
 
-                if (resolved)
-                {
-                    _unresolvedConceptsByKey.Remove(concept.Key);
+                        if (reference == null)
+                        {
+                            string errorMessage = "Property '" + member.Name + "' is not initialized.";
+                            if (concept.Value is IAlternativeInitializationConcept)
+                                errorMessage = errorMessage + string.Format(
+                                    " Check if the InitializeNonparsableProperties function of IAlternativeInitializationConcept implementation at {0} is implemented properly.",
+                                    concept.Value.GetType().Name);
+                            throw new DslSyntaxException(concept.Value, errorMessage);
+                        }
 
-                    _resolvedConcepts.Add(concept.Value);
-                    _resolvedConceptsByKey.Add(concept.Key, concept.Value);
-                    _resolvedConceptsByType.Add(concept.Value.GetType(), concept.Value);
+                        string referencedKey = reference.GetKey();
 
-                    conceptsWithNewlyResolvedReferences.Add(concept.Value);
-                    _logger.Trace(() => "New concept with resolved references: " + concept.Key);
-                }
+                        dependencies.Add(Tuple.Create(referencedKey, concept.Key));
+
+                        IConceptInfo referencedConcept;
+                        if (!_resolvedConceptsByKey.TryGetValue(referencedKey, out referencedConcept)
+                            && !_unresolvedConceptsByKey.TryGetValue(referencedKey, out referencedConcept))
+                            {
+                                if (errorOnUnresolvedReference)
+                                    throw new DslSyntaxException(concept.Value, string.Format(
+                                        "Referenced concept is not defined in DSL scripts: '{0}'.",
+                                        reference.GetUserDescription()));
+
+                                unresolved.Add(concept.Key);
+                                break;
+                            }
+
+                        member.SetMemberValue(concept.Value, referencedConcept);
+                    }
             }
 
-            return conceptsWithNewlyResolvedReferences;
+            // Unresolved concepts should alse include any concept with resolved references that references an unresolved concept.
+            unresolved = Graph.IncludeDependents(unresolved, dependencies);
+
+            var unresolvedIndex = new HashSet<string>(unresolved);
+            var newlyResolved = _unresolvedConceptsByKey
+                .Where(concept => !unresolvedIndex.Contains(concept.Key))
+                .ToList();
+
+            foreach (var concept in newlyResolved)
+            {
+                _unresolvedConceptsByKey.Remove(concept.Key);
+
+                _resolvedConcepts.Add(concept.Value);
+                _resolvedConceptsByKey.Add(concept.Key, concept.Value);
+                _resolvedConceptsByType.Add(concept.Value.GetType(), concept.Value);
+
+                _logger.Trace(() => "New concept with resolved references: " + concept.Key);
+            }
         }
 
-        private bool TryResolveReferenceMember(IConceptInfo ci, ConceptMember member, bool errorOnUnresolvedReference)
+        public int UnresolvedConceptsCount()
         {
-            var reference = (IConceptInfo)member.GetValue(ci);
-
-            if (reference == null)
-            {
-                if (errorOnUnresolvedReference)
-                    throw new DslSyntaxException(ci, string.Format(
-                        "Property '{1}' is not initialized. Check if the InitializeNonparsableProperties function on class {0} is implemented properly.",
-                        ci.GetType().Name,
-                        member.Name));
-                else
-                    return false;
-            }
-
-            string referencedKey = reference.GetKey();
-
-            IConceptInfo referencedConcept;
-            if (!_resolvedConceptsByKey.TryGetValue(referencedKey, out referencedConcept))
-            {
-                if (errorOnUnresolvedReference)
-                    throw new DslSyntaxException(ci, string.Format(
-                        "Referenced concept is not defined in DSL scripts: '{0}'.",
-                        reference.GetUserDescription()));
-                else
-                    return false;
-            }
-
-            member.SetMemberValue(ci, referencedConcept);
-            return true;
+            return _unresolvedConceptsByKey.Count();
         }
 
         public void ReportErrorForUnresolvedConcepts()
         {
+            _performanceLogger.Write(_addConceptsStopwatch, "DslContainer.AddNewConceptsAndReplaceReferences total time.");
             ReplaceReferencesWithFullConcepts(errorOnUnresolvedReference: true);
         }
 

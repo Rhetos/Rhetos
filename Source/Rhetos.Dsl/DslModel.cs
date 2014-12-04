@@ -34,6 +34,7 @@ namespace Rhetos.Dsl
         private readonly IDslParser _dslParser;
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
+        private readonly ILogger _evaluatorsOrderLogger;
         private readonly ILogger _dslModelConceptsLogger;
         private readonly DslContainer _dslContainer;
         private readonly IPluginsContainer<IConceptMacro> _macros;
@@ -43,6 +44,7 @@ namespace Rhetos.Dsl
             _dslParser = dslParser;
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("DslModel");
+            _evaluatorsOrderLogger = logProvider.GetLogger("MacroEvaluatorsOrder");
             _dslModelConceptsLogger = logProvider.GetLogger("DslModelConcepts");
             _dslContainer = new DslContainer(logProvider);
             _macros = macros;
@@ -108,81 +110,126 @@ namespace Rhetos.Dsl
 
         private const int MacroIterationLimit = 200;
 
+        private class MacroEvaluator
+        {
+            public string Name;
+            public Func<IDslModel, IEnumerable<IConceptInfo>> Evaluate;
+            public IConceptInfo ConceptInfo;
+        }
+
         private void ExpandMacroConcepts()
         {
+            var swTotal = Stopwatch.StartNew();
             var sw = Stopwatch.StartNew();
             var iterationCreatedConcepts = new List<IConceptInfo>();
             int iteration = 0;
-            while (true)
+
+            _performanceLogger.Write(sw, "DslModel.ExpandMacroConcepts start ("
+                + _dslContainer.Concepts.Count() + " parsed concepts resolved, "
+                +  _dslContainer.UnresolvedConceptsCount() + " unresolved).");
+
+            var lastEvaluation = new Dictionary<string, int>();
+            int lastEvaluationCounter = 0;
+            var lastEvaluationByIteration = new List<int>();
+
+            do
             {
                 iteration++;
-                _logger.Trace("Expanding macro concepts, pass {0}.", iteration);
-
-                iterationCreatedConcepts.Clear();
-
-                foreach (IMacroConcept macroConcept in _dslContainer.FindByType<IMacroConcept>())
-                    AddNewConcepts(
-                        macroConcept.CreateNewConcepts(_dslContainer.Concepts),
-                        iterationCreatedConcepts,
-                        () => "Macro concept " + macroConcept.GetShortDescription());
-
-                foreach (IConceptInfo conceptInfo in _dslContainer.Concepts)
-                    foreach (IConceptMacro macro in _macros.GetImplementations(conceptInfo.GetType()))
-                        AddNewConcepts(
-                            macro.CreateNewConcepts(conceptInfo, _dslContainer),
-                            iterationCreatedConcepts,
-                            () => "Macro " + macro.GetType().Name + " for concept " + conceptInfo.GetShortDescription());
-
-                iterationCreatedConcepts = _dslContainer.AddNewConceptsAndReplaceReferences(iterationCreatedConcepts);
-
-                _performanceLogger.Write(sw, "DslModel.ExpandMacroConcepts " + iteration);
-
-                if (iterationCreatedConcepts.Count == 0)
-                    break;
-
                 if (iteration > MacroIterationLimit)
                     throw new DslSyntaxException(string.Format(
                         "Possible infinite loop detected with recursive macro concept {1}. Iteration limit ({0}) exceeded while expanding macro.",
                         MacroIterationLimit,
                         iterationCreatedConcepts.First().GetShortDescription()));
-            }
+
+                iterationCreatedConcepts.Clear();
+                _logger.Trace("Expanding macro concepts, pass {0}.", iteration);
+
+                var macroEvaluators = ListMacroEvaluators();
+                _performanceLogger.Write(sw, "DslModel.ExpandMacroConcepts prepared evaluators (" + macroEvaluators.Count + ").");
+
+                foreach (var macroEvaluator in macroEvaluators)
+                {
+                    var macroCreatedConcepts = macroEvaluator.Evaluate(_dslContainer);
+                    Materialize(ref macroCreatedConcepts);
+
+                    if (macroCreatedConcepts != null && macroCreatedConcepts.Count() > 0)
+                    {
+                        _logger.Trace(() => macroEvaluator.Name + " on " + macroEvaluator.ConceptInfo.GetShortDescription() + " generated: "
+                            + string.Join(", ", macroCreatedConcepts.Select(c => c.GetShortDescription())) + ".");
+
+                        var aiCreatedConcepts = AlternativeInitialization.InitializeNonparsableProperties(macroCreatedConcepts, _logger);
+                        var newUniqueConcepts = _dslContainer.AddNewConceptsAndReplaceReferences(macroCreatedConcepts.Concat(aiCreatedConcepts));
+                        if (newUniqueConcepts.Count > 0)
+                        {
+                            lastEvaluation[macroEvaluator.Name] = ++lastEvaluationCounter;
+                            iterationCreatedConcepts.AddRange(newUniqueConcepts);
+                        }
+                    }
+                };
+
+                lastEvaluationByIteration.Add(lastEvaluationCounter);
+
+                _performanceLogger.Write(sw, "DslModel.ExpandMacroConcepts iteration " + iteration + " ("
+                    + iterationCreatedConcepts.Count + " new concepts, "
+                    + _dslContainer.UnresolvedConceptsCount() + " left unresolved).");
+
+            } while (iterationCreatedConcepts.Count > 0);
+
+            _evaluatorsOrderLogger.Trace(() => "\r\n" + ReportLastEvaluationOrder(lastEvaluation, lastEvaluationByIteration));
+            _performanceLogger.Write(swTotal, "DslModel.ExpandMacroConcepts.");
         }
 
-        private void AddNewConcepts(IEnumerable<IConceptInfo> macroCreatedConcepts, List<IConceptInfo> iterationCreatedConcepts, Func<string> logDescription)
+        private List<MacroEvaluator> ListMacroEvaluators()
         {
-            if (macroCreatedConcepts == null || macroCreatedConcepts.Count() == 0)
-                return;
+            var macroEvaluators = new List<MacroEvaluator>();
 
-            // Evaluate macro concept:
+            foreach (IMacroConcept macroConcept in _dslContainer.FindByType<IMacroConcept>().ToList())
+                macroEvaluators.Add(new MacroEvaluator
+                {
+                    Name = "IMacroConcept " + macroConcept.GetType().FullName,
+                    Evaluate = dslContainer => macroConcept.CreateNewConcepts(dslContainer.Concepts),
+                    ConceptInfo = macroConcept
+                });
 
-            Materialize(ref macroCreatedConcepts);
-            iterationCreatedConcepts.AddRange(macroCreatedConcepts);
+            foreach (IConceptInfo conceptInfo in _dslContainer.Concepts.ToList())
+                foreach (IConceptMacro macro in _macros.GetImplementations(conceptInfo.GetType()))
+                    macroEvaluators.Add(new MacroEvaluator
+                    {
+                        Name = "IConceptMacro " + macro.GetType().FullName + " for " + conceptInfo.GetType().FullName,
+                        Evaluate = dslContainer => macro.CreateNewConcepts(conceptInfo, dslContainer),
+                        ConceptInfo = conceptInfo
+                    });
 
-            _logger.Trace("{0} generated: {1}.", logDescription(), string.Join(", ", macroCreatedConcepts.Select(c => c.GetShortDescription())));
-
-            // Alternative initialization of the created concepts:
-
-            var alternativeInitializationCreatedConcepts = new List<IConceptInfo>();
-            foreach (var macroCreatedAlternativeInitializationConcept in macroCreatedConcepts.OfType<IAlternativeInitializationConcept>())
-            {
-                IEnumerable<IConceptInfo> aicc = AlternativeInitialization.InitializeNonparsablePropertiesRecursive(macroCreatedAlternativeInitializationConcept);
-                if (aicc != null)
-                    alternativeInitializationCreatedConcepts.AddRange(aicc);
-            }
-            iterationCreatedConcepts.AddRange(alternativeInitializationCreatedConcepts);
-
-            if (alternativeInitializationCreatedConcepts.Count() > 0)
-                _logger.Trace("{0} generated by alternative initialization: {1}.", logDescription(), string.Join(", ", alternativeInitializationCreatedConcepts.Select(c => c.GetShortDescription())));
+            return macroEvaluators;
         }
-
-        private static readonly IConceptInfo[] emptyConceptsArray = new IConceptInfo[] { };
 
         private static void Materialize(ref IEnumerable<IConceptInfo> items)
         {
-            if (items == null)
-                items = emptyConceptsArray;
-            else if (!(items is IList))
+            if (items != null && !(items is IList))
                 items = items.ToList();
+        }
+
+        private string ReportLastEvaluationOrder(Dictionary<string, int> lastEvaluation, List<int> lastEvaluationByIteration)
+        {
+            var evaluatorsOrderedByLastEvaluation = lastEvaluation
+                .OrderBy(lastEval => lastEval.Value)
+                .Select(lastEval => new { Name = lastEval.Key, Time = lastEval.Value })
+                .ToList();
+
+            var report = new StringBuilder();
+
+            int previosIterationTime = 0;
+            for (int i = 0; i < lastEvaluationByIteration.Count(); i++)
+            {
+                report.AppendLine("Iteration " + (i + 1) + ":");
+                foreach (var evaluator in evaluatorsOrderedByLastEvaluation)
+                    if (evaluator.Time > previosIterationTime && evaluator.Time <= lastEvaluationByIteration[i])
+                        report.AppendLine(evaluator.Name);
+
+                previosIterationTime = lastEvaluationByIteration[i];
+            }
+
+            return report.ToString();
         }
 
         private void CheckSemantics()

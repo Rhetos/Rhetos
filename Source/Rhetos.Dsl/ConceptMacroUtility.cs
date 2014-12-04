@@ -67,41 +67,5 @@ namespace Rhetos.Dsl
 
             return methods;
         }
-
-        /*IConceptMacro _pluginInstance;
-        Lazy<List<MethodInfo>> _pluginMethods;
-
-        public ConceptMacroGenericProxy(IConceptMacro pluginInstance)
-        {
-            _pluginInstance = pluginInstance;
-            _pluginMethods = new Lazy<List<MethodInfo>>(
-                () => pluginInstance.GetType().GetInterfaces()
-                    .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IConceptMacro<>))
-                    .Select(i => i.GetMethod("CreateNewConcepts"))
-                    .ToList());
-        }
-
-        IEnumerable<IConceptInfo> CreateNewConcepts(IConceptInfo conceptInfo, IDslModel existingConcepts)
-        {
-            if (_pluginMethods.Value.Count == 0)
-                throw new FrameworkException(string.Format(
-                    "Plugin {0} does not implement interface {1}.",
-                    _pluginInstance.GetType().FullName,
-                    typeof(IConceptMacro<>).FullName));
-
-            IEnumerable<IConceptInfo> newConcepts = null;
-
-            foreach (var pluginMethod in _pluginMethods.Value)
-            {
-                var pluginCreatedConcepts = (IEnumerable<IConceptInfo>)pluginMethod.Invoke(_pluginInstance, new object[] { conceptInfo, existingConcepts });
-
-                if (newConcepts == null)
-                    newConcepts = pluginCreatedConcepts;
-                else if (pluginCreatedConcepts != null)
-                    newConcepts = newConcepts.Concat(pluginCreatedConcepts);
-            }
-
-            return newConcepts;
-        }*/
     }
 }

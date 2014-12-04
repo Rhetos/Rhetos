@@ -73,7 +73,7 @@ namespace Rhetos.Dom
         private void GenerateObjectModel()
         {
             IAssemblySource assemblySource = _codeGenerator.ExecutePlugins(_pluginRepository, "/*", "*/", null);
-            _log.GetLogger("Domain Object Model references").Trace(string.Join(", ", assemblySource.RegisteredReferences));
+            _log.GetLogger("Domain Object Model references").Trace(() => string.Join(", ", assemblySource.RegisteredReferences));
             _log.GetLogger("Domain Object Model source").Trace(assemblySource.GeneratedCode);
 
             CompilerParameters parameters = new CompilerParameters
