@@ -28,15 +28,19 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AllProperties")]
-    public class EntityHistoryAllPropertiesInfo : IMacroConcept
+    public class EntityHistoryAllPropertiesInfo : IConceptInfo
     {
         [ConceptKey]
         public EntityHistoryInfo EntityHistory { get; set; }
+    }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+    [Export(typeof(IConceptMacro))]
+    public class EntityHistoryAllPropertiesMacro : IConceptMacro<EntityHistoryAllPropertiesInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(EntityHistoryAllPropertiesInfo conceptInfo, IDslModel existingConcepts)
         {
-            return existingConcepts.OfType<PropertyInfo>()
-                .Where(p => p.DataStructure == EntityHistory.Entity)
+            return existingConcepts.FindByType<PropertyInfo>()
+                .Where(p => p.DataStructure == conceptInfo.EntityHistory.Entity)
                 .Select(p => new EntityHistoryPropertyInfo { Property = p })
                 .ToList();
         }

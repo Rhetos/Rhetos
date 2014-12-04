@@ -28,31 +28,35 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AllPropertiesFrom")]
-    public class AllPropertiesFromInfo : IMacroConcept
+    public class AllPropertiesFromInfo : IConceptInfo
     {
         [ConceptKey]
         public DataStructureInfo Destination { get; set; }
 
         [ConceptKey]
         public DataStructureInfo Source { get; set; }
+    }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+    [Export(typeof(IConceptMacro))]
+    public class AllPropertiesFromMacro : IConceptMacro<AllPropertiesFromInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(AllPropertiesFromInfo conceptInfo, IDslModel existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();
 
             newConcepts.AddRange(
-                existingConcepts.OfType<PropertyInfo>().Where(ci => ci.DataStructure == Source)
-                .Select(property => new PropertyFromInfo { Destination = Destination, Source = property }));
+                existingConcepts.FindByType<PropertyInfo>().Where(ci => ci.DataStructure == conceptInfo.Source)
+                .Select(property => new PropertyFromInfo { Destination = conceptInfo.Destination, Source = property }));
 
-            CloneExtension(Source, Destination, existingConcepts, newConcepts);
+            CloneExtension(conceptInfo.Source, conceptInfo.Destination, existingConcepts, newConcepts);
 
             return newConcepts;
         }
 
-        public static void CloneExtension(DataStructureInfo source, DataStructureInfo destination, IEnumerable<IConceptInfo> existingConcepts, List<IConceptInfo> newConcepts)
+        public static void CloneExtension(DataStructureInfo source, DataStructureInfo destination, IDslModel existingConcepts, List<IConceptInfo> newConcepts)
         {
             newConcepts.AddRange(
-                existingConcepts.OfType<DataStructureExtendsInfo>().Where(ci => ci.Extension == source)
+                existingConcepts.FindByType<DataStructureExtendsInfo>().Where(ci => ci.Extension == source)
                 .Select(ci => new DataStructureExtendsInfo { Extension = destination, Base = ci.Base }));
         }
     }

@@ -32,7 +32,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         private static Dictionary<string, HashSet<string>> SqlObjectsCache = new Dictionary<string, HashSet<string>>();
 
-        public static IEnumerable<IConceptInfo> GenerateDependencies(IConceptInfo dependent, IEnumerable<IConceptInfo> existingConcepts, string sqlScript)
+        public static IEnumerable<IConceptInfo> GenerateDependencies(IConceptInfo dependent, IDslModel existingConcepts, string sqlScript)
         {
             HashSet<string> sqlObjects;
             if (!SqlObjectsCache.TryGetValue(sqlScript, out sqlObjects))
@@ -42,30 +42,26 @@ namespace Rhetos.Dsl.DefaultConcepts
             }
 
             var newConcepts = new List<IConceptInfo>();
-            foreach (var conceptInfo in existingConcepts)
+
+            foreach (var conceptInfo in existingConcepts.FindByType<DataStructureInfo>())
                 if (conceptInfo != dependent)
-                {
-                    var conceptType = conceptInfo.GetType();
-                    if (typeof(DataStructureInfo).IsAssignableFrom(conceptType))
-                    {
-                        if (sqlObjects.Contains(conceptInfo.GetKeyProperties())) // Currently, GetKeyProperties is not cached, so checking Contains after IsAssignableFrom improves execution speed.
-                            newConcepts.Add(new SqlDependsOnDataStructureInfo { Dependent = dependent, DependsOn = (DataStructureInfo)conceptInfo });
-                    }
-                    else if (typeof(SqlViewInfo).IsAssignableFrom(conceptType))
-                    {
-                        if (sqlObjects.Contains(conceptInfo.GetKeyProperties()))
-                            newConcepts.Add(new SqlDependsOnSqlViewInfo { Dependent = dependent, DependsOn = (SqlViewInfo)conceptInfo });
-                    }
-                    else if (typeof(SqlFunctionInfo).IsAssignableFrom(conceptType))
-                    {
-                        if (sqlObjects.Contains(conceptInfo.GetKeyProperties()))
-                            newConcepts.Add(new SqlDependsOnSqlFunctionInfo { Dependent = dependent, DependsOn = (SqlFunctionInfo)conceptInfo });
-                    }
-                }
+                    if (sqlObjects.Contains(conceptInfo.GetKeyProperties()))
+                        newConcepts.Add(new SqlDependsOnDataStructureInfo { Dependent = dependent, DependsOn = conceptInfo });
+
+            foreach (var conceptInfo in existingConcepts.FindByType<SqlViewInfo>())
+                if (conceptInfo != dependent)
+                    if (sqlObjects.Contains(conceptInfo.GetKeyProperties()))
+                        newConcepts.Add(new SqlDependsOnSqlViewInfo { Dependent = dependent, DependsOn = conceptInfo });
+
+            foreach (var conceptInfo in existingConcepts.FindByType<SqlFunctionInfo>())
+                if (conceptInfo != dependent)
+                    if (sqlObjects.Contains(conceptInfo.GetKeyProperties()))
+                        newConcepts.Add(new SqlDependsOnSqlFunctionInfo { Dependent = dependent, DependsOn = conceptInfo });
+
             return newConcepts;
         }
 
-        public static IEnumerable<IConceptInfo> GenerateDependenciesToObject(IConceptInfo dependent, IEnumerable<IConceptInfo> existingConcepts, string sqlObjectName)
+        public static IEnumerable<IConceptInfo> GenerateDependenciesToObject(IConceptInfo dependent, IDslModel existingConcepts, string sqlObjectName)
         {
             var newConcepts = new List<IConceptInfo>();
 
@@ -80,7 +76,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             if (function)
             {
-                newConcepts.AddRange(existingConcepts.OfType<SqlFunctionInfo>()
+                newConcepts.AddRange(existingConcepts.FindByType<SqlFunctionInfo>()
                     .Where(ci => ci.Module.Name.Equals(nameParts[0], StringComparison.InvariantCultureIgnoreCase)
                         && ci.Name.Equals(nameParts[1], StringComparison.InvariantCultureIgnoreCase)
                         && ci != dependent)
@@ -88,13 +84,13 @@ namespace Rhetos.Dsl.DefaultConcepts
             }
             else
             {
-                newConcepts.AddRange(existingConcepts.OfType<DataStructureInfo>()
+                newConcepts.AddRange(existingConcepts.FindByType<DataStructureInfo>()
                     .Where(ci => ci.Module.Name.Equals(nameParts[0], StringComparison.InvariantCultureIgnoreCase)
                         && ci.Name.Equals(nameParts[1], StringComparison.InvariantCultureIgnoreCase)
                         && ci != dependent)
                     .Select(ci => new SqlDependsOnDataStructureInfo { Dependent = dependent, DependsOn = ci }));
 
-                newConcepts.AddRange(existingConcepts.OfType<SqlViewInfo>()
+                newConcepts.AddRange(existingConcepts.FindByType<SqlViewInfo>()
                     .Where(ci => ci.Module.Name.Equals(nameParts[0], StringComparison.InvariantCultureIgnoreCase)
                         && ci.Name.Equals(nameParts[1], StringComparison.InvariantCultureIgnoreCase)
                         && ci != dependent)

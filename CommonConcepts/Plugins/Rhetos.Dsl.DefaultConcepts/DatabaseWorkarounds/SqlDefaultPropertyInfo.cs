@@ -32,16 +32,6 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public string Definition { get; set; }
 
-        public override string ToString()
-        {
-            return Property.ToString() + " SqlDefault";
-        }
-
-        public override int GetHashCode()
-        {
-            return Property.GetHashCode();
-        }
-
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
             if (!(Property.DataStructure is EntityInfo))

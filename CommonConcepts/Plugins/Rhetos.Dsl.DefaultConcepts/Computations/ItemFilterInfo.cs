@@ -27,7 +27,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ItemFilter")]
-    public class ItemFilterInfo : IMacroConcept
+    public class ItemFilterInfo : IConceptInfo
     {
         [ConceptKey]
         public DataStructureInfo Source { get; set; }
@@ -36,22 +36,26 @@ namespace Rhetos.Dsl.DefaultConcepts
         public string FilterName { get; set; }
 
         public string Expression { get; set; }
+    }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+    [Export(typeof(IConceptMacro))]
+    public class ItemFilterMacro: IConceptMacro<ItemFilterInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(ItemFilterInfo conceptInfo, IDslModel existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();
 
-            ParameterInfo filterParameter = GetGeneratedFilter();
+            ParameterInfo filterParameter = GetGeneratedFilter(conceptInfo);
 
-            if (!existingConcepts.OfType<DataStructureInfo>() // Existing filter parameter does not have to be a ParameterInfo. Any DataStructureInfo is allowed.
+            if (!existingConcepts.FindByType<DataStructureInfo>() // Existing filter parameter does not have to be a ParameterInfo. Any DataStructureInfo is allowed.
                 .Any(item => item.Module.Name == filterParameter.Module.Name && item.Name == filterParameter.Name))
                     newConcepts.Add(filterParameter);
 
             var composableFilter = new ComposableFilterByInfo
             { 
-                Source = Source, 
+                Source = conceptInfo.Source, 
                 Parameter = filterParameter.GetKeyProperties(),
-                Expression = "(source, repository, parameter) => source.Where(" + Expression + ")"
+                Expression = "(source, repository, parameter) => source.Where(" + conceptInfo.Expression + ")"
             };
 
             newConcepts.Add(composableFilter);
@@ -59,13 +63,13 @@ namespace Rhetos.Dsl.DefaultConcepts
             return newConcepts;
         }
 
-        public ParameterInfo GetGeneratedFilter()
+        public static ParameterInfo GetGeneratedFilter(ItemFilterInfo conceptInfo)
         {
-            var filterNameElements = FilterName.Split('.');
+            var filterNameElements = conceptInfo.FilterName.Split('.');
             if (filterNameElements.Count() == 2)
                 return new ParameterInfo { Module = new ModuleInfo { Name = filterNameElements[0] }, Name = filterNameElements[1] };
             else
-                return new ParameterInfo { Module = Source.Module, Name = FilterName };
+                return new ParameterInfo { Module = conceptInfo.Source.Module, Name = conceptInfo.FilterName };
         }
     }
 }

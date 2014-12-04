@@ -27,14 +27,18 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ChangesOnBaseItem")]
-    public class ChangesOnBaseItemInfo : IMacroConcept
+    public class ChangesOnBaseItemInfo : IConceptInfo
     {
         [ConceptKey]
         public DataStructureInfo Computation { get; set; }
+    }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+    [Export(typeof(IConceptMacro))]
+    public class ChangesOnBaseItemMacro : IConceptMacro<ChangesOnBaseItemInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(ChangesOnBaseItemInfo conceptInfo, IDslModel existingConcepts)
         {
-            var extendsConcept = existingConcepts.OfType<DataStructureExtendsInfo>().Where(extends => extends.Extension == Computation).FirstOrDefault();
+            var extendsConcept = existingConcepts.FindByType<DataStructureExtendsInfo>().Where(extends => extends.Extension == conceptInfo.Computation).FirstOrDefault();
 
             if (extendsConcept == null)
                 return null;
@@ -43,7 +47,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 //    + "' which does not extend another base data structure. Consider adding 'Extends' concept.");
 
             if (!typeof(EntityInfo).IsAssignableFrom(extendsConcept.Base.GetType()))
-                throw new DslSyntaxException("ChangesOnBaseItem is used on '" + Computation.GetUserDescription()
+                throw new DslSyntaxException("ChangesOnBaseItem is used on '" + conceptInfo.Computation.GetUserDescription()
                 + "', but the base data structure '" + extendsConcept.Base.GetUserDescription()
                 + "' is not Entity. Currently only entities are supported in automatic handling of dependencies.");
 
@@ -51,7 +55,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                        {
                            new ChangesOnChangedItemsInfo
                                {
-                                   Computation = Computation,
+                                   Computation = conceptInfo.Computation,
                                    DependsOn = (EntityInfo)extendsConcept.Base,
                                    FilterType = "Guid[]",
                                    FilterFormula = "changedItems => changedItems.Select(item => item.ID).ToArray()"

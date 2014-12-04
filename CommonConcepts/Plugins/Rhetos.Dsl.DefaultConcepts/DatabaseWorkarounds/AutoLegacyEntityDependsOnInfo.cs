@@ -27,15 +27,19 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AutodetectSqlDependencies")]
-    public class AutoLegacyEntityDependsOnInfo : IMacroConcept
+    public class AutoLegacyEntityDependsOnInfo : IConceptInfo
     {
         [ConceptKey]
         public LegacyEntityInfo Dependent { get; set; }
+    }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+    [Export(typeof(IConceptMacro))]
+    public class AutoLegacyEntityDependsOnMacro : IConceptMacro<AutoLegacyEntityDependsOnInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(AutoLegacyEntityDependsOnInfo conceptInfo, IDslModel existingConcepts)
         {
             // Legacy entity's view is often created as an SqlView (or similar) in a DSL script of a Rhetos application.
-            return SqlAnalysis.GenerateDependenciesToObject(Dependent, existingConcepts, Dependent.View);
+            return SqlAnalysis.GenerateDependenciesToObject(conceptInfo.Dependent, existingConcepts, conceptInfo.Dependent.View);
         }
     }
 }

@@ -29,24 +29,11 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Hierarchy")]
-    public class HierarchyWithPathInfo : HierarchyInfo, IMacroConcept
+    public class HierarchyWithPathInfo : HierarchyInfo
     {
         public string PathName { get; set; }
         public string GeneratePathFrom { get; set; }
         public string PathSeparator { get; set; }
-
-        public new IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            var pathProperty = new LongStringPropertyInfo
-                {
-                    DataStructure = GetComputedDataStructure(),
-                    Name = PathName
-                };
-
-            return new IConceptInfo[] { pathProperty }
-                .Concat(base.CreateNewConcepts(existingConcepts))
-                .ToList();
-        }
 
         protected override string ComputedDataStructureExpression()
         {
@@ -86,6 +73,21 @@ namespace Rhetos.Dsl.DefaultConcepts
                GeneratePathFrom,
                CsUtility.QuotedString(PathSeparator),
                BeforeRecomputeTag.Evaluate(this));
+        }
+    }
+
+    [Export(typeof(IConceptMacro))]
+    public class HierarchyWithPathMacro : IConceptMacro<HierarchyWithPathInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(HierarchyWithPathInfo conceptInfo, IDslModel existingConcepts)
+        {
+            var pathProperty = new LongStringPropertyInfo
+                {
+                    DataStructure = conceptInfo.GetComputedDataStructure(),
+                    Name = conceptInfo.PathName
+                };
+
+            return new IConceptInfo[] { pathProperty };
         }
     }
 }

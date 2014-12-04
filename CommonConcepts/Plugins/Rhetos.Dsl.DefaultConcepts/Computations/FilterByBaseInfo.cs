@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("FilterByBase")]
-    public class FilterByBaseInfo : IMacroConcept, IValidationConcept
+    public class FilterByBaseInfo : IValidationConcept
     {
         [ConceptKey]
         public DataStructureInfo Source { get; set; }
@@ -50,10 +50,14 @@ namespace Rhetos.Dsl.DefaultConcepts
                 .Select(ci => ci.Base)
                 .SingleOrDefault();
         }
+    }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+    [Export(typeof(IConceptMacro))]
+    public class FilterByBaseMacro : IConceptMacro<FilterByBaseInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(FilterByBaseInfo conceptInfo, IDslModel existingConcepts)
         {
-            DataStructureInfo baseDataStructure = GetBaseDataStructure(existingConcepts);
+            DataStructureInfo baseDataStructure = GetBaseDataStructure(conceptInfo, existingConcepts);
             if (baseDataStructure == null)
                 return null;
 
@@ -61,16 +65,24 @@ namespace Rhetos.Dsl.DefaultConcepts
                        {
                            new FilterByInfo
                                {
-                                   Source = Source,
-                                   Parameter = Parameter,
-                                   Expression = GetFilterExpression(this, baseDataStructure)
+                                   Source = conceptInfo.Source,
+                                   Parameter = conceptInfo.Parameter,
+                                   Expression = GetFilterExpression(conceptInfo, baseDataStructure)
                                },
                            new ModuleExternalReferenceInfo
                                {
-                                   Module = new ModuleInfo {Name = Source.Module.Name},
-                                   TypeOrAssembly = typeof (DslUtility).AssemblyQualifiedName
+                                   Module = new ModuleInfo { Name = conceptInfo.Source.Module.Name },
+                                   TypeOrAssembly = typeof(DslUtility).AssemblyQualifiedName
                                }
                        };
+        }
+
+        private DataStructureInfo GetBaseDataStructure(FilterByBaseInfo conceptInfo, IDslModel concepts)
+        {
+            return concepts.FindByType<DataStructureExtendsInfo>()
+                .Where(ci => ci.Extension == conceptInfo.Source)
+                .Select(ci => ci.Base)
+                .SingleOrDefault();
         }
 
         private static string GetFilterExpression(FilterByBaseInfo info, DataStructureInfo baseDataStructure)

@@ -29,8 +29,10 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Hierarchy")]
-    public class HierarchyInfo : ReferencePropertyInfo, IAlternativeInitializationConcept, IMacroConcept
+    public class HierarchyInfo : ReferencePropertyInfo, IAlternativeInitializationConcept
     {
+        public static readonly CsTag<HierarchyInfo> BeforeRecomputeTag = "BeforeRecompute";
+
         public IEnumerable<string> DeclareNonparsableProperties()
         {
             return new[] { "Referenced" };
@@ -48,8 +50,6 @@ namespace Rhetos.Dsl.DefaultConcepts
             createdConcepts = null;
         }
 
-        public static readonly CsTag<HierarchyInfo> BeforeRecomputeTag = "BeforeRecompute";
-
         public ComputedInfo GetComputedDataStructure()
         {
             return new ComputedInfo
@@ -60,7 +60,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             };
         }
 
-        protected PersistedDataStructureInfo GetPersistedDataStructure()
+        public PersistedDataStructureInfo GetPersistedDataStructure()
         {
             return new PersistedDataStructureInfo
             {
@@ -68,85 +68,6 @@ namespace Rhetos.Dsl.DefaultConcepts
                 Name = DataStructure.Name + Name + "Hierarchy",
                 Source = GetComputedDataStructure()
             };
-        }
-
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            ComputedInfo computedDataStructure = GetComputedDataStructure();
-            PersistedDataStructureInfo persistedDataStructure = GetPersistedDataStructure();
-            var persistedLeftIndexProperty = new IntegerPropertyInfo { DataStructure = persistedDataStructure, Name = "LeftIndex" };
-
-            var dependencies = GetDependsOnWriteableDataStructure(DataStructure, existingConcepts, this);
-            var computedDataStructureDependencies = dependencies.Select(dependsOn =>
-                new ChangesOnChangedItemsInfo
-                {
-                    Computation = computedDataStructure,
-                    DependsOn = dependsOn,
-                    FilterType = "FilterAll",
-                    FilterFormula = "changedItems => new FilterAll()"
-                });
-
-            var filterAncestorsParameter = new ParameterInfo { Module = DataStructure.Module, Name = Name + "HierarchyAncestors" };
-            var filterDescendantsParameter = new ParameterInfo { Module = DataStructure.Module, Name = Name + "HierarchyDescendants" };
-
-            return new IConceptInfo[]
-            {
-                // Computing the hierarcy information:
-                computedDataStructure,
-                new ModuleExternalReferenceInfo { Module = computedDataStructure.Module, TypeOrAssembly = @"Plugins\Rhetos.Dom.DefaultConcepts.dll" },
-                new DataStructureExtendsInfo { Extension = computedDataStructure, Base = DataStructure },
-                new IntegerPropertyInfo { DataStructure = computedDataStructure, Name = "LeftIndex" },
-                new IntegerPropertyInfo { DataStructure = computedDataStructure, Name = "RightIndex" },
-                new IntegerPropertyInfo { DataStructure = computedDataStructure, Name = "Level" },
-
-                // Persisting the hierarcy information:
-                persistedDataStructure,
-                new PersistedAllPropertiesInfo { Persisted = persistedDataStructure }, // This will copy all properties from computedDataStructure.
-                new PersistedKeepSynchronizedInfo { Persisted = persistedDataStructure },
-                persistedLeftIndexProperty,
-                new SqlIndexInfo { Property = persistedLeftIndexProperty },
-
-                // Implement filters for finding ancestors and descendants, using indexed pesisted data:
-                filterAncestorsParameter,
-                filterDescendantsParameter,
-                new GuidPropertyInfo { DataStructure = filterAncestorsParameter, Name = "ID" },
-                new GuidPropertyInfo { DataStructure = filterDescendantsParameter, Name = "ID" },
-                new ComposableFilterByInfo { Source = DataStructure, Parameter = Name + "HierarchyAncestors", Expression = FilterAncestorsExpression() },
-                new ComposableFilterByInfo { Source = DataStructure, Parameter = Name + "HierarchyDescendants", Expression = FilterDescendantsExpression() },
-
-            }.Concat(computedDataStructureDependencies);
-        }
-
-        /// <summary>
-        /// Returns all entites that a given data structure is constructed from.
-        /// If the given data structure depends is an entity, it will be the only item in the result.
-        /// </summary>
-        public static List<DataStructureInfo> GetDependsOnWriteableDataStructure(DataStructureInfo dataStructure, IEnumerable<IConceptInfo> allConcepts, IConceptInfo errorContext)
-        {
-            var dependencies = new List<DataStructureInfo>();
-            GetDependsOnWriteableDataStructure(dataStructure, dependencies, allConcepts, errorContext, new HashSet<string>());
-            return dependencies;
-        }
-
-        private static void GetDependsOnWriteableDataStructure(DataStructureInfo dataStructure, List<DataStructureInfo> dependencies, IEnumerable<IConceptInfo> allConcepts, IConceptInfo errorContext, HashSet<string> done)
-        {
-            var conceptKey = dataStructure.GetKey();
-            if (done.Contains(conceptKey))
-                return;
-            done.Add(conceptKey);
-
-            if (dataStructure is EntityInfo)
-                dependencies.Add(dataStructure);
-            else if (dataStructure is SqlQueryableInfo)
-            {
-                var deps = allConcepts.OfType<SqlDependsOnDataStructureInfo>().Where(dep => dep.Dependent == dataStructure).ToArray();
-                foreach (var dep in deps)
-                    GetDependsOnWriteableDataStructure(dep.DependsOn, dependencies, allConcepts, errorContext, done);
-            }
-            else
-                throw new DslSyntaxException(errorContext.GetKeywordOrTypeName()
-                    + " is not supported on dependency type '" + dataStructure.GetKeywordOrTypeName() + "'. "
-                    + errorContext.GetUserDescription() + " depends on " + dataStructure.GetUserDescription() + ".");
         }
 
         protected virtual string ComputedDataStructureExpression()
@@ -183,7 +104,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                BeforeRecomputeTag.Evaluate(this));
         }
 
-        protected virtual string FilterAncestorsExpression()
+        public virtual string FilterAncestorsExpression()
         {
             return string.Format(@"(items, repository, filterParameter) =>
             {{
@@ -201,7 +122,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 Name);
         }
 
-        protected virtual string FilterDescendantsExpression()
+        public virtual string FilterDescendantsExpression()
         {
             return string.Format(@"(items, repository, filterParameter) =>
             {{
@@ -218,6 +139,89 @@ namespace Rhetos.Dsl.DefaultConcepts
                 DataStructure.Module.Name,
                 DataStructure.Name,
                 Name);
+        }
+    }
+
+    [Export(typeof(IConceptMacro))]
+    public class HierarchyMacro : IConceptMacro<HierarchyInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(HierarchyInfo conceptInfo, IDslModel existingConcepts)
+        {
+            ComputedInfo computedDataStructure = conceptInfo.GetComputedDataStructure();
+            PersistedDataStructureInfo persistedDataStructure = conceptInfo.GetPersistedDataStructure();
+            var persistedLeftIndexProperty = new IntegerPropertyInfo { DataStructure = persistedDataStructure, Name = "LeftIndex" };
+
+            var dependencies = GetDependsOnWriteableDataStructure(conceptInfo.DataStructure, existingConcepts, conceptInfo);
+            var computedDataStructureDependencies = dependencies.Select(dependsOn =>
+                new ChangesOnChangedItemsInfo
+                {
+                    Computation = computedDataStructure,
+                    DependsOn = dependsOn,
+                    FilterType = "FilterAll",
+                    FilterFormula = "changedItems => new FilterAll()"
+                });
+
+            var filterAncestorsParameter = new ParameterInfo { Module = conceptInfo.DataStructure.Module, Name = conceptInfo.Name + "HierarchyAncestors" };
+            var filterDescendantsParameter = new ParameterInfo { Module = conceptInfo.DataStructure.Module, Name = conceptInfo.Name + "HierarchyDescendants" };
+
+            return new IConceptInfo[]
+            {
+                // Computing the hierarcy information:
+                computedDataStructure,
+                new ModuleExternalReferenceInfo { Module = computedDataStructure.Module, TypeOrAssembly = @"Plugins\Rhetos.Dom.DefaultConcepts.dll" },
+                new DataStructureExtendsInfo { Extension = computedDataStructure, Base = conceptInfo.DataStructure },
+                new IntegerPropertyInfo { DataStructure = computedDataStructure, Name = "LeftIndex" },
+                new IntegerPropertyInfo { DataStructure = computedDataStructure, Name = "RightIndex" },
+                new IntegerPropertyInfo { DataStructure = computedDataStructure, Name = "Level" },
+
+                // Persisting the hierarcy information:
+                persistedDataStructure,
+                new PersistedAllPropertiesInfo { Persisted = persistedDataStructure }, // This will copy all properties from computedDataStructure.
+                new PersistedKeepSynchronizedInfo { Persisted = persistedDataStructure },
+                persistedLeftIndexProperty,
+                new SqlIndexInfo { Property = persistedLeftIndexProperty },
+
+                // Implement filters for finding ancestors and descendants, using indexed pesisted data:
+                filterAncestorsParameter,
+                filterDescendantsParameter,
+                new GuidPropertyInfo { DataStructure = filterAncestorsParameter, Name = "ID" },
+                new GuidPropertyInfo { DataStructure = filterDescendantsParameter, Name = "ID" },
+                new ComposableFilterByInfo { Source = conceptInfo.DataStructure, Parameter = conceptInfo.Name + "HierarchyAncestors", Expression = conceptInfo.FilterAncestorsExpression() },
+                new ComposableFilterByInfo { Source = conceptInfo.DataStructure, Parameter = conceptInfo.Name + "HierarchyDescendants", Expression = conceptInfo.FilterDescendantsExpression() },
+
+            }.Concat(computedDataStructureDependencies);
+        }
+
+        /// <summary>
+        /// Returns all entites that a given data structure is constructed from.
+        /// If the given data structure depends is an entity, it will be the only item in the result.
+        /// </summary>
+        public static List<DataStructureInfo> GetDependsOnWriteableDataStructure(DataStructureInfo dataStructure, IDslModel allConcepts, IConceptInfo errorContext)
+        {
+            var dependencies = new List<DataStructureInfo>();
+            GetDependsOnWriteableDataStructure(dataStructure, dependencies, allConcepts, errorContext, new HashSet<string>());
+            return dependencies;
+        }
+
+        private static void GetDependsOnWriteableDataStructure(DataStructureInfo dataStructure, List<DataStructureInfo> dependencies, IDslModel allConcepts, IConceptInfo errorContext, HashSet<string> done)
+        {
+            var conceptKey = dataStructure.GetKey();
+            if (done.Contains(conceptKey))
+                return;
+            done.Add(conceptKey);
+
+            if (dataStructure is EntityInfo)
+                dependencies.Add(dataStructure);
+            else if (dataStructure is SqlQueryableInfo)
+            {
+                var deps = allConcepts.FindByType<SqlDependsOnDataStructureInfo>().Where(dep => dep.Dependent == dataStructure).ToArray();
+                foreach (var dep in deps)
+                    GetDependsOnWriteableDataStructure(dep.DependsOn, dependencies, allConcepts, errorContext, done);
+            }
+            else
+                throw new DslSyntaxException(errorContext.GetKeywordOrTypeName()
+                    + " is not supported on dependency type '" + dataStructure.GetKeywordOrTypeName() + "'. "
+                    + errorContext.GetUserDescription() + " depends on " + dataStructure.GetUserDescription() + ".");
         }
     }
 }

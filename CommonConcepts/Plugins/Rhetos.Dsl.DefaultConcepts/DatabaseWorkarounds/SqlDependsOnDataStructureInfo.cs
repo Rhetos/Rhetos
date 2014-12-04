@@ -27,29 +27,23 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlDependsOn")]
-    public class SqlDependsOnDataStructureInfo : IMacroConcept
+    public class SqlDependsOnDataStructureInfo : IConceptInfo
     {
         [ConceptKey]
         public IConceptInfo Dependent { get; set; }
         [ConceptKey]
         public DataStructureInfo DependsOn { get; set; }
+    }
 
-        public override string ToString()
+    [Export(typeof(IConceptMacro))]
+    public class SqlDependsOnDataStructureMacro : IConceptMacro<SqlDependsOnDataStructureInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(SqlDependsOnDataStructureInfo conceptInfo, IDslModel existingConcepts)
         {
-            return Dependent + " depends on " + DependsOn;
-        }
-
-        public override int GetHashCode()
-        {
-            return ToString().GetHashCode();
-        }
-
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            return existingConcepts.OfType<PropertyInfo>()
-                .Where(p => p.DataStructure == DependsOn)
-                .Where(p => p != Dependent)
-                .Select(p => new SqlDependsOnPropertyInfo {Dependent = Dependent, DependsOn = p})
+            return existingConcepts.FindByType<PropertyInfo>()
+                .Where(p => p.DataStructure == conceptInfo.DependsOn)
+                .Where(p => p != conceptInfo.Dependent)
+                .Select(p => new SqlDependsOnPropertyInfo {Dependent = conceptInfo.Dependent, DependsOn = p})
                 .ToList();
         }
     }

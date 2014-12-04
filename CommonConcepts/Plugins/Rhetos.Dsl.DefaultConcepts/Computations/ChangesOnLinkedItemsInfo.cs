@@ -27,40 +27,46 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ChangesOnLinkedItems")]
-    public class ChangesOnLinkedItemsInfo : IMacroConcept
+    public class ChangesOnLinkedItemsInfo : IConceptInfo
     {
         [ConceptKey]
         public DataStructureInfo Computation { get; set; }
 
         [ConceptKey]
         public ReferencePropertyInfo LinkedItemsReference { get; set; }
+    }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+    [Export(typeof(IConceptMacro))]
+    public class ChangesOnLinkedItemsMacro : IConceptMacro<ChangesOnLinkedItemsInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(ChangesOnLinkedItemsInfo conceptInfo, IDslModel existingConcepts)
         {
-            var extendsConcept = existingConcepts.OfType<DataStructureExtendsInfo>().Where(extends => extends.Extension == Computation).FirstOrDefault();
+            var extendsConcept = existingConcepts.FindByType<DataStructureExtendsInfo>().Where(extends => extends.Extension == conceptInfo.Computation).FirstOrDefault();
             if (extendsConcept == null)
-                throw new DslSyntaxException("ChangesOnLinkedItems is used on '" + Computation.GetUserDescription()
+                throw new DslSyntaxException("ChangesOnLinkedItems is used on '" + conceptInfo.Computation.GetUserDescription()
                     + "' which does not extend another base data structure. Consider adding 'Extends' concept.");
 
-            if (LinkedItemsReference.Referenced != extendsConcept.Base)
-                throw new DslSyntaxException("ChangesOnLinkedItems used on '" + Computation.GetUserDescription()
-                    + "' declares reference '" + LinkedItemsReference.GetKeyProperties()
+            if (conceptInfo.LinkedItemsReference.Referenced != extendsConcept.Base)
+                throw new DslSyntaxException("ChangesOnLinkedItems used on '" + conceptInfo.Computation.GetUserDescription()
+                    + "' declares reference '" + conceptInfo.LinkedItemsReference.GetKeyProperties()
                     + "'. The reference should point to computation's base data structure '" + extendsConcept.Base.GetUserDescription()
-                    + "'. Instead it points to '" + LinkedItemsReference.Referenced.GetUserDescription() + "'.");
+                    + "'. Instead it points to '" + conceptInfo.LinkedItemsReference.Referenced.GetUserDescription() + "'.");
 
-            if (!typeof(EntityInfo).IsAssignableFrom(LinkedItemsReference.DataStructure.GetType()))
-                throw new DslSyntaxException("ChangesOnLinkedItems is used on '" + Computation.GetUserDescription()
-                + "', but the data structure it depends on '" + LinkedItemsReference.DataStructure.GetUserDescription()
+            if (!typeof(EntityInfo).IsAssignableFrom(conceptInfo.LinkedItemsReference.DataStructure.GetType()))
+                throw new DslSyntaxException("ChangesOnLinkedItems is used on '" + conceptInfo.Computation.GetUserDescription()
+                + "', but the data structure it depends on '" + conceptInfo.LinkedItemsReference.DataStructure.GetUserDescription()
                 + "' is not Entity. Currently only entities are supported in automatic handling of dependencies.");
 
             return new[]
                 {
                     new ChangesOnChangedItemsInfo
                         {
-                            Computation = Computation,
-                            DependsOn = (EntityInfo)LinkedItemsReference.DataStructure,
+                            Computation = conceptInfo.Computation,
+                            DependsOn = (EntityInfo)conceptInfo.LinkedItemsReference.DataStructure,
                             FilterType = "Guid[]",
-                            FilterFormula = @"changedItems => changedItems.Where(item => item." + LinkedItemsReference.Name + " != null).Select(item => item." + LinkedItemsReference.Name + ".ID).Distinct().ToArray()"
+                            FilterFormula = @"changedItems => changedItems.Where(item => item."
+                                + conceptInfo.LinkedItemsReference.Name + " != null).Select(item => item."
+                                + conceptInfo.LinkedItemsReference.Name + ".ID).Distinct().ToArray()"
                         }
                 };
         }

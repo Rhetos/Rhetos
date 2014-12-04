@@ -17,28 +17,26 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Dsl;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.ComponentModel.Composition;
 
-namespace Rhetos.Dsl.DefaultConcepts
+namespace Rhetos.CommonConcepts.Test.Mocks
 {
-    [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("AutodetectSqlDependencies")]
-    public class AutoSqlQueryableDependsOnInfo : IConceptInfo
+    public class DslModelMock : List<IConceptInfo>, IDslModel
     {
-        [ConceptKey]
-        public SqlQueryableInfo Dependent { get; set; }
-    }
+        public IEnumerable<IConceptInfo> Concepts { get { return this; } }
 
-    [Export(typeof(IConceptMacro))]
-    public class AutoSqlQueryableDependsOnMacro: IConceptMacro<AutoSqlQueryableDependsOnInfo>
-    {
-        public IEnumerable<IConceptInfo> CreateNewConcepts(AutoSqlQueryableDependsOnInfo conceptInfo, IDslModel existingConcepts)
+        public IConceptInfo FindByKey(string conceptKey)
         {
-            return SqlAnalysis.GenerateDependencies(conceptInfo.Dependent, existingConcepts, conceptInfo.Dependent.SqlSource);
+            return this.Where(c => c.GetKey() == conceptKey).SingleOrDefault();
+        }
+
+        public IEnumerable<T> FindByType<T>()
+        {
+            return this.OfType<T>();
         }
     }
 }

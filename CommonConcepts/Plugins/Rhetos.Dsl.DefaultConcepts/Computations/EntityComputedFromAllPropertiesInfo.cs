@@ -28,22 +28,26 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AllProperties")]
-    public class EntityComputedFromAllPropertiesInfo : IMacroConcept
+    public class EntityComputedFromAllPropertiesInfo : IConceptInfo
     {
         [ConceptKey]
         public EntityComputedFromInfo EntityComputedFrom { get; set; }
+    }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+    [Export(typeof(IConceptMacro))]
+    public class EntityComputedFromAllPropertiesMacro : IConceptMacro<EntityComputedFromAllPropertiesInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(EntityComputedFromAllPropertiesInfo conceptInfo, IDslModel existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();
 
-            var sourceProperties = existingConcepts.OfType<PropertyInfo>().Where(p => p.DataStructure == EntityComputedFrom.Source);
+            var sourceProperties = existingConcepts.FindByType<PropertyInfo>().Where(p => p.DataStructure == conceptInfo.EntityComputedFrom.Source);
 
             // Some computed properties might be customized, so ignore existing ones:
 
             var existingComputedPropertiesSource = new HashSet<string>(
-                existingConcepts.OfType<PropertyComputedFromInfo>()
-                    .Where(comp => comp.Dependency_EntityComputedFrom == EntityComputedFrom)
+                existingConcepts.FindByType<PropertyComputedFromInfo>()
+                    .Where(comp => comp.Dependency_EntityComputedFrom == conceptInfo.EntityComputedFrom)
                     .Select(comp => comp.Source.Name));
 
             var newSourceProperties = sourceProperties
@@ -51,18 +55,18 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             // Clone source properties, including their cascade delete and extension concepts (only for automatically created propeties):
 
-            newConcepts.AddRange(newSourceProperties.Select(sp => new PropertyFromInfo { Source = sp, Destination = EntityComputedFrom.Target }));
+            newConcepts.AddRange(newSourceProperties.Select(sp => new PropertyFromInfo { Source = sp, Destination = conceptInfo.EntityComputedFrom.Target }));
 
-            AllPropertiesFromInfo.CloneExtension(EntityComputedFrom.Source, EntityComputedFrom.Target, existingConcepts, newConcepts);
+            AllPropertiesFromMacro.CloneExtension(conceptInfo.EntityComputedFrom.Source, conceptInfo.EntityComputedFrom.Target, existingConcepts, newConcepts);
 
-            newConcepts.AddRange(existingConcepts.OfType<ReferenceCascadeDeleteInfo>()
-                .Where(ci => ci.Reference.DataStructure == EntityComputedFrom.Source)
+            newConcepts.AddRange(existingConcepts.FindByType<ReferenceCascadeDeleteInfo>()
+                .Where(ci => ci.Reference.DataStructure == conceptInfo.EntityComputedFrom.Source)
                 .Where(ci => newSourceProperties.Contains(ci.Reference))
                 .Select(ci => new ReferenceCascadeDeleteInfo
                 {
                     Reference = new ReferencePropertyInfo
                     {
-                        DataStructure = EntityComputedFrom.Target,
+                        DataStructure = conceptInfo.EntityComputedFrom.Target,
                         Name = ci.Reference.Name,
                         Referenced = ci.Reference.Referenced
                     }
@@ -73,14 +77,14 @@ namespace Rhetos.Dsl.DefaultConcepts
             newConcepts.AddRange(newSourceProperties.Select(sp =>
                     new PropertyComputedFromInfo
                     {
-                        Target = new PropertyInfo { DataStructure = EntityComputedFrom.Target, Name = sp.Name },
+                        Target = new PropertyInfo { DataStructure = conceptInfo.EntityComputedFrom.Target, Name = sp.Name },
                         Source = sp,
-                        Dependency_EntityComputedFrom = EntityComputedFrom
+                        Dependency_EntityComputedFrom = conceptInfo.EntityComputedFrom
                     }));
 
-            IConceptInfo extensionComputedFrom = existingConcepts.OfType<DataStructureExtendsInfo>()
-                .Where(extension => extension.Extension == EntityComputedFrom.Source)
-                .Select(extension => new ExtensionComputedFromInfo { EntityComputedFrom = EntityComputedFrom })
+            IConceptInfo extensionComputedFrom = existingConcepts.FindByType<DataStructureExtendsInfo>()
+                .Where(extension => extension.Extension == conceptInfo.EntityComputedFrom.Source)
+                .Select(extension => new ExtensionComputedFromInfo { EntityComputedFrom = conceptInfo.EntityComputedFrom })
                 .SingleOrDefault();
 
             if (extensionComputedFrom != null)

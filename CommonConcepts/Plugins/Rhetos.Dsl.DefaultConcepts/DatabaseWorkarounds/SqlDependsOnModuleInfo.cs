@@ -27,56 +27,50 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlDependsOn")]
-    public class SqlDependsOnModuleInfo : IMacroConcept
+    public class SqlDependsOnModuleInfo : IConceptInfo
     {
         [ConceptKey]
         public IConceptInfo Dependent { get; set; }
         [ConceptKey]
         public ModuleInfo DependsOn { get; set; }
+    }
 
-        public override string ToString()
-        {
-            return Dependent + " depends on " + DependsOn;
-        }
-
-        public override int GetHashCode()
-        {
-            return ToString().GetHashCode();
-        }
-
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+    [Export(typeof(IConceptMacro))]
+    public class SqlDependsOnModuleMacro : IConceptMacro<SqlDependsOnModuleInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(SqlDependsOnModuleInfo conceptInfo, IDslModel existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();
 
-            newConcepts.AddRange(existingConcepts.OfType<PropertyInfo>()
-                .Where(p => p.DataStructure.Module == DependsOn)
-                .Where(p => p != Dependent && p.DataStructure != Dependent)
-                .Select(p => new SqlDependsOnPropertyInfo { Dependent = Dependent, DependsOn = p }));
+            newConcepts.AddRange(existingConcepts.FindByType<PropertyInfo>()
+                .Where(p => p.DataStructure.Module == conceptInfo.DependsOn)
+                .Where(p => p != conceptInfo.Dependent && p.DataStructure != conceptInfo.Dependent)
+                .Select(p => new SqlDependsOnPropertyInfo { Dependent = conceptInfo.Dependent, DependsOn = p }));
 
-            newConcepts.AddRange(existingConcepts.OfType<DataStructureInfo>()
-                .Where(item => item.Module == DependsOn)
-                .Where(item => item != Dependent)
-                .Select(item => new SqlDependsOnDataStructureInfo { Dependent = Dependent, DependsOn = item }));
+            newConcepts.AddRange(existingConcepts.FindByType<DataStructureInfo>()
+                .Where(item => item.Module == conceptInfo.DependsOn)
+                .Where(item => item != conceptInfo.Dependent)
+                .Select(item => new SqlDependsOnDataStructureInfo { Dependent = conceptInfo.Dependent, DependsOn = item }));
 
-            newConcepts.AddRange(existingConcepts.OfType<SqlFunctionInfo>()
-                .Where(item => item.Module == DependsOn)
-                .Where(item => item != Dependent)
-                .Select(item => new SqlDependsOnSqlFunctionInfo { Dependent = Dependent, DependsOn = item }));
+            newConcepts.AddRange(existingConcepts.FindByType<SqlFunctionInfo>()
+                .Where(item => item.Module == conceptInfo.DependsOn)
+                .Where(item => item != conceptInfo.Dependent)
+                .Select(item => new SqlDependsOnSqlFunctionInfo { Dependent = conceptInfo.Dependent, DependsOn = item }));
 
-            newConcepts.AddRange(existingConcepts.OfType<SqlIndexMultipleInfo>()
-                .Where(item => item.Entity.Module == DependsOn)
-                .Where(item => item != Dependent && item.Entity != Dependent)
-                .Select(item => new SqlDependsOnSqlIndexInfo { Dependent = Dependent, DependsOn = item }));
+            newConcepts.AddRange(existingConcepts.FindByType<SqlIndexMultipleInfo>()
+                .Where(item => item.Entity.Module == conceptInfo.DependsOn)
+                .Where(item => item != conceptInfo.Dependent && item.Entity != conceptInfo.Dependent)
+                .Select(item => new SqlDependsOnSqlIndexInfo { Dependent = conceptInfo.Dependent, DependsOn = item }));
 
-            newConcepts.AddRange(existingConcepts.OfType<SqlObjectInfo>()
-                .Where(item => item.Module == DependsOn)
-                .Where(item => item != Dependent)
-                .Select(item => new SqlDependsOnSqlObjectInfo { Dependent = Dependent, DependsOn = item }));
+            newConcepts.AddRange(existingConcepts.FindByType<SqlObjectInfo>()
+                .Where(item => item.Module == conceptInfo.DependsOn)
+                .Where(item => item != conceptInfo.Dependent)
+                .Select(item => new SqlDependsOnSqlObjectInfo { Dependent = conceptInfo.Dependent, DependsOn = item }));
 
-            newConcepts.AddRange(existingConcepts.OfType<SqlViewInfo>()
-                .Where(item => item.Module == DependsOn)
-                .Where(item => item != Dependent)
-                .Select(item => new SqlDependsOnSqlViewInfo { Dependent = Dependent, DependsOn = item }));
+            newConcepts.AddRange(existingConcepts.FindByType<SqlViewInfo>()
+                .Where(item => item.Module == conceptInfo.DependsOn)
+                .Where(item => item != conceptInfo.Dependent)
+                .Select(item => new SqlDependsOnSqlViewInfo { Dependent = conceptInfo.Dependent, DependsOn = item }));
 
             return newConcepts;
         }

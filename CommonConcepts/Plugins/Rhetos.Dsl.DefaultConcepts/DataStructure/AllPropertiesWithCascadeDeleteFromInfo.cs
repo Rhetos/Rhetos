@@ -28,20 +28,24 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AllPropertiesWithCascadeDeleteFrom")]
-    public class AllPropertiesWithCascadeDeleteFromInfo : AllPropertiesFromInfo, IMacroConcept
+    public class AllPropertiesWithCascadeDeleteFromInfo : AllPropertiesFromInfo
     {
-        new public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+    }
+
+    [Export(typeof(IConceptMacro))]
+    [ConceptKeyword("AllPropertiesWithCascadeDeleteFrom")]
+    public class AllPropertiesWithCascadeDeleteFromMacro : IConceptMacro<AllPropertiesWithCascadeDeleteFromInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(AllPropertiesWithCascadeDeleteFromInfo conceptInfo, IDslModel existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();
             
-            newConcepts.AddRange(base.CreateNewConcepts(existingConcepts));
-
-            newConcepts.AddRange(existingConcepts.OfType<ReferenceCascadeDeleteInfo>().Where(ci => ci.Reference.DataStructure == Source)
+            newConcepts.AddRange(existingConcepts.FindByType<ReferenceCascadeDeleteInfo>().Where(ci => ci.Reference.DataStructure == conceptInfo.Source)
                 .Select(ci => new ReferenceCascadeDeleteInfo
                 {
                     Reference = new ReferencePropertyInfo
                         {
-                            DataStructure = Destination,
+                            DataStructure = conceptInfo.Destination,
                             Name = ci.Reference.Name,
                             Referenced = ci.Reference.Referenced
                         }

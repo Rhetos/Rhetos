@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Rhetos.Utilities;
 
 namespace Rhetos.Dsl
 {
@@ -38,7 +39,7 @@ namespace Rhetos.Dsl
 
             foreach (var method in GetPluginMethods(conceptMacro, conceptInfo))
             {
-                var pluginCreatedConcepts = (IEnumerable<IConceptInfo>)method.Invoke(conceptMacro, new object[] { conceptInfo, existingConcepts });
+                var pluginCreatedConcepts = (IEnumerable<IConceptInfo>)method.InvokeEx(conceptMacro, new object[] { conceptInfo, existingConcepts });
 
                 if (newConcepts == null)
                     newConcepts = pluginCreatedConcepts;

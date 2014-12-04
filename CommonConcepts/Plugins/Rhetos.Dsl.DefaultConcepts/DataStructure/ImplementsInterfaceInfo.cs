@@ -27,39 +27,13 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Implements")]
-    public class ImplementsInterfaceInfo : IMacroConcept, IValidationConcept
+    public class ImplementsInterfaceInfo : IConceptInfo, IValidationConcept
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }
 
         [ConceptKey]
         public string InterfaceType { get; set; }
-
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            var newConcepts = new List<IConceptInfo>();
-            newConcepts.Add(new ModuleExternalReferenceInfo { Module = DataStructure.Module, TypeOrAssembly = InterfaceType });
-
-            var interfaceProperties = GetInterfaceType().GetProperties();
-            var interfacePropertiesIndex = interfaceProperties.ToDictionary(ip => ip.Name);
-
-            foreach (var property in existingConcepts.OfType<PropertyInfo>().Where(p => p.DataStructure == DataStructure))
-            {
-                System.Reflection.PropertyInfo interfaceProperty;
-                if (interfacePropertiesIndex.TryGetValue(property.Name, out interfaceProperty))
-                {
-                    if (interfaceProperty.PropertyType.IsInterface)
-                        newConcepts.Add(new ImplementsInterfacePropertyInfo
-                            {
-                                ImplementsInterface = this,
-                                Property = property,
-                                PropertyInterfaceTypeName = interfaceProperty.PropertyType.FullName
-                            });
-                }
-            }
-
-            return newConcepts;
-        }
 
         public Type GetInterfaceType()
         {
@@ -72,6 +46,36 @@ namespace Rhetos.Dsl.DefaultConcepts
         public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
         {
             GetInterfaceType();
+        }
+    }
+
+    [Export(typeof(IConceptMacro))]
+    public class ImplementsInterfaceMacro : IConceptMacro<ImplementsInterfaceInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(ImplementsInterfaceInfo conceptInfo, IDslModel existingConcepts)
+        {
+            var newConcepts = new List<IConceptInfo>();
+            newConcepts.Add(new ModuleExternalReferenceInfo { Module = conceptInfo.DataStructure.Module, TypeOrAssembly = conceptInfo.InterfaceType });
+
+            var interfaceProperties = conceptInfo.GetInterfaceType().GetProperties();
+            var interfacePropertiesIndex = interfaceProperties.ToDictionary(ip => ip.Name);
+
+            foreach (var property in existingConcepts.FindByType<PropertyInfo>().Where(p => p.DataStructure == conceptInfo.DataStructure))
+            {
+                System.Reflection.PropertyInfo interfaceProperty;
+                if (interfacePropertiesIndex.TryGetValue(property.Name, out interfaceProperty))
+                {
+                    if (interfaceProperty.PropertyType.IsInterface)
+                        newConcepts.Add(new ImplementsInterfacePropertyInfo
+                            {
+                                ImplementsInterface = conceptInfo,
+                                Property = property,
+                                PropertyInterfaceTypeName = interfaceProperty.PropertyType.FullName
+                            });
+                }
+            }
+
+            return newConcepts;
         }
     }
 }

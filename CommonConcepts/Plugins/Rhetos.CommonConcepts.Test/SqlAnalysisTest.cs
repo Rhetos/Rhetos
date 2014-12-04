@@ -28,6 +28,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Rhetos;
 using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.CommonConcepts.Test.Mocks;
 
 namespace CommonConcepts.Test
 {
@@ -287,7 +288,7 @@ namespace CommonConcepts.Test
         {
             var dependent = new SimpleConceptInfo("dd");
             dependent.GetKeyProperties();
-            var existingConcepts = new IConceptInfo[] {
+            var existingConcepts = new DslModelMock {
                 new EntityInfo { Module = new ModuleInfo { Name = "a" }, Name = "b" },
                 new DataStructureInfo { Module = new ModuleInfo { Name = "c" }, Name = "d" },
                 new SqlViewInfo { Module = new ModuleInfo { Name = "e" }, Name = "f" },
@@ -319,7 +320,7 @@ namespace CommonConcepts.Test
         {
             var dependent = new SimpleConceptInfo("dd");
             dependent.GetKeyProperties();
-            var existingConcepts = new IConceptInfo[] {
+            var existingConcepts = new DslModelMock {
                 new EntityInfo { Module = new ModuleInfo { Name = "a" }, Name = "b" },
                 new DataStructureInfo { Module = new ModuleInfo { Name = "c" }, Name = "d" },
                 new SqlViewInfo { Module = new ModuleInfo { Name = "e" }, Name = "f" },

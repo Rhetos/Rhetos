@@ -68,6 +68,7 @@
     <Compile Include="FilterExpressionTest.cs" />
     <Compile Include="GenericRepositoryFilterTest.cs" />
     <Compile Include="GenericRepositoryQueryTest.cs" />
+    <Compile Include="Mocks\DslModelMock.cs" />
     <Compile Include="PropertySelectorExpressionTest.cs" />
     <Compile Include="GenericRepositoryInstantiationTest.cs" />
     <Compile Include="GenericRepositoryErrorsTest.cs" />

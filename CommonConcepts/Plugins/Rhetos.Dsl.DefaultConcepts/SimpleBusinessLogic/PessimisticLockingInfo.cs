@@ -25,38 +25,32 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("PessimisticLocking")]
-    public class PessimisticLockingInfo : IMacroConcept
+    public class PessimisticLockingInfo : IConceptInfo
     {
         [ConceptKey]
         public DataStructureInfo Resource { get; set; }
+    }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+    [Export(typeof(IConceptMacro))]
+    public class PessimisticLockingMacro : IConceptMacro<PessimisticLockingInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(PessimisticLockingInfo conceptInfo, IDslModel existingConcepts)
         {
             Dictionary<string, PessimisticLockingInfo> PessimisticLockingByDataStructureIndex =
-                existingConcepts.OfType<PessimisticLockingInfo>()
+                existingConcepts.FindByType<PessimisticLockingInfo>()
                     .ToDictionary(locking => locking.Resource.GetKey());
 
-            var myParentsWithPessimisticLocking = existingConcepts.OfType<ReferenceDetailInfo>()
-                .Where(detailReference => detailReference.Reference.DataStructure == Resource)
+            var myParentsWithPessimisticLocking = existingConcepts.FindByType<ReferenceDetailInfo>()
+                .Where(detailReference => detailReference.Reference.DataStructure == conceptInfo.Resource)
                 .Where(detailReference => PessimisticLockingByDataStructureIndex.ContainsKey(detailReference.Reference.Referenced.GetKey()))
                 .Select(detailReference => detailReference.Reference).ToArray();
 
             return myParentsWithPessimisticLocking.Select(
                 reference => new PessimisticLockingParentInfo
                     {
-                        Detail = PessimisticLockingByDataStructureIndex[Resource.GetKey()],
+                        Detail = PessimisticLockingByDataStructureIndex[conceptInfo.Resource.GetKey()],
                         Reference = reference
                     }).ToList();
-        }
-
-        public override string ToString()
-        {
-            return "PessimisticLocking: " + Resource;
-        }
-
-        public override int GetHashCode()
-        {
-            return ToString().GetHashCode();
         }
     }
 }

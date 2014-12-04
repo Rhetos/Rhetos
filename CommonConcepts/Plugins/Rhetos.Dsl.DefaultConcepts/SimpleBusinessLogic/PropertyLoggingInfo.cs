@@ -27,35 +27,13 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Log")]
-    public class PropertyLoggingInfo : IConceptInfo, IValidationConcept, IMacroConcept
+    public class PropertyLoggingInfo : IConceptInfo, IValidationConcept
     {
         [ConceptKey]
         public EntityLoggingInfo EntityLogging { get; set; }
 
         [ConceptKey]
         public PropertyInfo Property { get; set; }
-
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            var newConcepts = new List<IConceptInfo>();
-
-            var reference = Property as ReferencePropertyInfo;
-
-            if (reference != null
-                && existingConcepts.OfType<ReferenceDetailInfo>().Where(d => d.Reference == reference).Any()
-                && existingConcepts.OfType<EntityLoggingInfo>().Where(l => l.Entity == reference.Referenced).Any())
-            {
-                newConcepts.Add(new LoggingRelatedItemInfo
-                    {
-                        Logging = EntityLogging,
-                        Table = SqlUtility.Identifier(reference.Referenced.Module.Name) + "." + SqlUtility.Identifier(reference.Referenced.Name),
-                        Column = reference.Name + "ID",
-                        Relation = "Detail"
-                    });
-            }
-
-            return newConcepts;
-        }
 
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
@@ -67,6 +45,32 @@ namespace Rhetos.Dsl.DefaultConcepts
                     Property.DataStructure.Module.Name,
                     Property.DataStructure.Name,
                     Property.Name));
+        }
+    }
+
+    [Export(typeof(IConceptMacro))]
+    public class PropertyLoggingMacro : IConceptMacro<PropertyLoggingInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(PropertyLoggingInfo conceptInfo, IDslModel existingConcepts)
+        {
+            var newConcepts = new List<IConceptInfo>();
+
+            var reference = conceptInfo.Property as ReferencePropertyInfo;
+
+            if (reference != null
+                && existingConcepts.FindByType<ReferenceDetailInfo>().Where(d => d.Reference == reference).Any()
+                && existingConcepts.FindByType<EntityLoggingInfo>().Where(l => l.Entity == reference.Referenced).Any())
+            {
+                newConcepts.Add(new LoggingRelatedItemInfo
+                    {
+                        Logging = conceptInfo.EntityLogging,
+                        Table = SqlUtility.Identifier(reference.Referenced.Module.Name) + "." + SqlUtility.Identifier(reference.Referenced.Name),
+                        Column = reference.Name + "ID",
+                        Relation = "Detail"
+                    });
+            }
+
+            return newConcepts;
         }
     }
 }

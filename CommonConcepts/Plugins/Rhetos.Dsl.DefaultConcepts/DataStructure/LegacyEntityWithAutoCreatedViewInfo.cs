@@ -29,7 +29,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("LegacyEntity")]
-    public class LegacyEntityWithAutoCreatedViewInfo : DataStructureInfo, IWritableOrmDataStructure, IMacroConcept
+    public class LegacyEntityWithAutoCreatedViewInfo : DataStructureInfo, IWritableOrmDataStructure
     {
         public string Table { get; set; }
 
@@ -42,15 +42,18 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             return Name;
         }
+    }
 
-        /// <summary>
+    [Export(typeof(IConceptMacro))]
+    public class LegacyEntityWithAutoCreatedViewMacro : IConceptMacro<LegacyEntityWithAutoCreatedViewInfo>
+    {    /// <summary>
         /// For each property that does not have it's LegacyProperty defined, this function creates a default LegacyProperty
         /// assuming that corresponding legacy tables's column has the same name as the property.
         /// </summary>
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts(LegacyEntityWithAutoCreatedViewInfo conceptInfo, IDslModel existingConcepts)
         {
-            var properties = existingConcepts.OfType<PropertyInfo>().Where(prop => prop.DataStructure == this).ToArray();
-            var propertiesWithLegacyProperty = existingConcepts.OfType<LegacyPropertyInfo>().Where(lp => lp.Property.DataStructure == this).Select(lp => lp.Property).ToArray();
+            var properties = existingConcepts.FindByType<PropertyInfo>().Where(prop => prop.DataStructure == conceptInfo).ToArray();
+            var propertiesWithLegacyProperty = existingConcepts.FindByType<LegacyPropertyInfo>().Where(lp => lp.Property.DataStructure == conceptInfo).Select(lp => lp.Property).ToArray();
 
             var legacyIndex = new HashSet<PropertyInfo>(propertiesWithLegacyProperty);
             var propertiesWithoutLegacyPropertyInfo = properties.Where(p => !legacyIndex.Contains(p)).ToArray();

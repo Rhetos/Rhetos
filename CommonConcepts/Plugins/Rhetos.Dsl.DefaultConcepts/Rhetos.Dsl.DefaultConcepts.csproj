@@ -275,7 +275,7 @@
     <Compile Include="DataStructure\Properties\DecimalPropertyInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlDefaultPropertyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\UniquePropertiesInfo.cs" />
-    <Compile Include="SimpleBusinessLogic\AllPropertyLoggingInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\AllPropertiesLoggingInfo.cs" />
     <Compile Include="SimpleBusinessLogic\UniquePropertyInfo.cs" />
     <Compile Include="DataStructure\ImplementsInterfaceInfo.cs" />
     <Compile Include="DataStructure\EntityInfo.cs" />

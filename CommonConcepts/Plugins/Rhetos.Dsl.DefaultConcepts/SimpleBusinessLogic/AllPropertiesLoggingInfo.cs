@@ -25,40 +25,31 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AllProperties")]
-    public class AllPropertyLoggingInfo : IConceptInfo, IMacroConcept
+    public class AllPropertiesLoggingInfo : IConceptInfo
     {
         [ConceptKey]
         public EntityLoggingInfo EntityLogging { get; set; }
+    }
 
-        public override string ToString()
-        {
-            return "All Property Logging: " + EntityLogging.Entity;
-        }
-
-        public override int GetHashCode()
-        {
-            return EntityLogging.GetHashCode();
-        }
-
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+    [Export(typeof(IConceptMacro))]
+    public class AllPropertiesLoggingMacro : IConceptMacro<AllPropertiesLoggingInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(AllPropertiesLoggingInfo conceptInfo, IDslModel existingConcepts)
         {
             var alreadyLoggedProperties = new HashSet<PropertyInfo>(
-                existingConcepts
-                    .Where(c => c is PropertyLoggingInfo).Select(c => (PropertyLoggingInfo) c)
-                    .Where(propLog => propLog.EntityLogging == EntityLogging)
+                existingConcepts.FindByType<PropertyLoggingInfo>()
+                    .Where(propLog => propLog.EntityLogging == conceptInfo.EntityLogging)
                     .Select(propLog => propLog.Property));
 
-            return existingConcepts
-                .Where(c => c is PropertyInfo).Select(c => (PropertyInfo) c)
-                .Where(prop => prop.DataStructure == EntityLogging.Entity)
+            return existingConcepts.FindByType<PropertyInfo>()
+                .Where(prop => prop.DataStructure == conceptInfo.EntityLogging.Entity)
                 .Where(prop => !alreadyLoggedProperties.Contains(prop))
                 .Select(prop => new PropertyLoggingInfo
                                     {
-                                        EntityLogging = EntityLogging,
+                                        EntityLogging = conceptInfo.EntityLogging,
                                         Property = prop
                                     })
                 .ToList();
-
         }
     }
 }

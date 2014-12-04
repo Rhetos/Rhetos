@@ -31,26 +31,20 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("PrerequisiteAllProperties")]
-    public class PrerequisiteAllProperties : IConceptInfo, IMacroConcept
+    public class PrerequisiteAllProperties : IConceptInfo
     {
         [ConceptKey]
         public EntityInfo DependsOn { get; set; }
+    }
 
-        public override string ToString()
+    [Export(typeof(IConceptMacro))]
+    public class PrerequisiteAllPropertiesMacro : IConceptMacro<PrerequisiteAllProperties>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(PrerequisiteAllProperties conceptInfo, IDslModel existingConcepts)
         {
-            return "PrerequisiteAllProperties of " + DependsOn;
-        }
-
-        public override int GetHashCode()
-        {
-            return DependsOn.GetHashCode() ^ "Prerequisite".GetHashCode();
-        }
-
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            var dependsOnProperties = existingConcepts.OfType<PropertyInfo>().Where(p => p.DataStructure == DependsOn);
+            var dependsOnProperties = existingConcepts.FindByType<PropertyInfo>().Where(p => p.DataStructure == conceptInfo.DependsOn);
             return dependsOnProperties
-                .Select(dependsOnProperty => new SqlDependsOnPropertyInfo { Dependent = this, DependsOn = dependsOnProperty })
+                .Select(dependsOnProperty => new SqlDependsOnPropertyInfo { Dependent = conceptInfo, DependsOn = dependsOnProperty })
                 .ToList();
         }
     }

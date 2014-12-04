@@ -27,20 +27,24 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ComputedFrom")]
-    public class EntityComputedFromInfo : IConceptInfo, IMacroConcept
+    public class EntityComputedFromInfo : IConceptInfo
     {
         [ConceptKey]
         public EntityInfo Target { get; set; }
 
         [ConceptKey]
         public DataStructureInfo Source { get; set; }
+    }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+    [Export(typeof(IConceptMacro))]
+    public class EntityComputedFromMacro : IConceptMacro<EntityComputedFromInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(EntityComputedFromInfo conceptInfo, IDslModel existingConcepts)
         {
-            if (!existingConcepts.OfType<KeyPropertyComputedFromInfo>().Any(kp => kp.PropertyComputedFrom.Dependency_EntityComputedFrom == this)
-                && !existingConcepts.OfType<KeyPropertyIDComputedFromInfo>().Any(kp => kp.EntityComputedFrom == this)
-                && !existingConcepts.OfType<PersistedKeyPropertiesInfo>().Any(kp => kp.Persisted == Target && kp.Persisted.Source == Source))
-                return new[] { new KeyPropertyIDComputedFromInfo { EntityComputedFrom = this } };
+            if (!existingConcepts.FindByType<KeyPropertyComputedFromInfo>().Any(kp => kp.PropertyComputedFrom.Dependency_EntityComputedFrom == conceptInfo)
+                && !existingConcepts.FindByType<KeyPropertyIDComputedFromInfo>().Any(kp => kp.EntityComputedFrom == conceptInfo)
+                && !existingConcepts.FindByType<PersistedKeyPropertiesInfo>().Any(kp => kp.Persisted == conceptInfo.Target && kp.Persisted.Source == conceptInfo.Source))
+                return new[] { new KeyPropertyIDComputedFromInfo { EntityComputedFrom = conceptInfo } };
             return null;
         }
     }

@@ -43,7 +43,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 new ApplyFilterOnClientReadInfo
                 {
                     DataStructure = Filter.Source,
-                    FilterName = Filter.GetGeneratedFilter().GetKeyProperties()
+                    FilterName = ItemFilterMacro.GetGeneratedFilter(Filter).GetKeyProperties()
                 }
             };
         }

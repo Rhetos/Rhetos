@@ -31,7 +31,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Is")]
-    public class IsSubtypeOfInfo : IMacroConcept, IAlternativeInitializationConcept
+    public class IsSubtypeOfInfo : IConceptInfo, IAlternativeInitializationConcept
     {
         [ConceptKey]
         public DataStructureInfo Subtype { get; set; }
@@ -118,10 +118,12 @@ FROM
                 return ",\r\n    SubtypeImplementationID = CONVERT(UNIQUEIDENTIFIER, CONVERT(BINARY(4), CONVERT(INT, CONVERT(BINARY(4), ID)) ^ " + hash + ") + SUBSTRING(CONVERT(BINARY(16), ID), 5, 12))";
             }
         }
+    }
 
-        //===========================================================
-
-        IEnumerable<IConceptInfo> IMacroConcept.CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+    [Export(typeof(IConceptMacro))]
+    public class IsSubtypeOfMacro : IConceptMacro<IsSubtypeOfInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(IsSubtypeOfInfo conceptInfo, IDslModel existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();
 
@@ -129,60 +131,60 @@ FROM
 
             var subtypeReference = new ReferencePropertyInfo
             {
-                DataStructure = Supertype,
-                Referenced = Subtype,
-                Name = GetSubtypeReferenceName()
+                DataStructure = conceptInfo.Supertype,
+                Referenced = conceptInfo.Subtype,
+                Name = conceptInfo.GetSubtypeReferenceName()
             };
             newConcepts.Add(subtypeReference);
-            newConcepts.Add(new PolymorphicPropertyInfo { Property = subtypeReference, SubtypeReference = Subtype.GetKeyProperties() });
+            newConcepts.Add(new PolymorphicPropertyInfo { Property = subtypeReference, SubtypeReference = conceptInfo.Subtype.GetKeyProperties() });
 
             // Automatically add missing property implementations and missing properties to the subtype (automatic interface implementation)
 
-            var implementableSupertypeProperties = existingConcepts.OfType<PolymorphicPropertyInfo>()
-                .Where(pp => pp.Property.DataStructure == Supertype && pp.IsImplementable())
+            var implementableSupertypeProperties = existingConcepts.FindByType<PolymorphicPropertyInfo>()
+                .Where(pp => pp.Property.DataStructure == conceptInfo.Supertype && pp.IsImplementable())
                 .Select(pp => pp.Property).ToList();
-            var subtypeProperties = existingConcepts.OfType<PropertyInfo>().Where(p => p.DataStructure == Subtype).ToList();
-            var subtypeImplementsProperties = existingConcepts.OfType<SubtypeImplementsPropertyInfo>().Where(subim => subim.IsSubtypeOf == this).Select(subim => subim.Property).ToList();
+            var subtypeProperties = existingConcepts.FindByType<PropertyInfo>().Where(p => p.DataStructure == conceptInfo.Subtype).ToList();
+            var subtypeImplementsProperties = existingConcepts.FindByType<SubtypeImplementsPropertyInfo>().Where(subim => subim.IsSubtypeOf == conceptInfo).Select(subim => subim.Property).ToList();
 
             var missingImplementations = implementableSupertypeProperties.Except(subtypeImplementsProperties)
                 .Select(supp => new SubtypeImplementsPropertyInfo
                 {
-                    IsSubtypeOf = this,
+                    IsSubtypeOf = conceptInfo,
                     Property = supp,
                     Expression = supp.Name
                 })
                 .ToList();
 
             var missingProperties = missingImplementations.Select(subim => subim.Property).Where(supp => !subtypeProperties.Any(subp => subp.Name == supp.Name))
-                .Select(supp => DslUtility.CreatePassiveClone(supp, Subtype))
+                .Select(supp => DslUtility.CreatePassiveClone(supp, conceptInfo.Subtype))
                 .ToList();
 
             newConcepts.AddRange(missingImplementations);
             newConcepts.AddRange(missingProperties);
 
-            newConcepts.Add(new SqlDependsOnDataStructureInfo { Dependent = Dependency_ImplementationView, DependsOn = Subtype });
+            newConcepts.Add(new SqlDependsOnDataStructureInfo { Dependent = conceptInfo.Dependency_ImplementationView, DependsOn = conceptInfo.Subtype });
 
             string materializedUpdateSelector;
-            if (ImplementationName == "")
+            if (conceptInfo.ImplementationName == "")
                 materializedUpdateSelector = "changedItems => changedItems.Select(item => item.ID).ToArray()";
             else
                 materializedUpdateSelector = string.Format(
                     @"changedItems => changedItems.Select(item => DomUtility.GetSubtypeImplementationId(item.ID, {0})).ToArray()",
-                    DomUtility.GetSubtypeImplementationHash(ImplementationName));
+                    DomUtility.GetSubtypeImplementationHash(conceptInfo.ImplementationName));
 
             newConcepts.Add(new ChangesOnChangedItemsInfo
             {
-                Computation = Supertype,
-                DependsOn = Subtype,
+                Computation = conceptInfo.Supertype,
+                DependsOn = conceptInfo.Subtype,
                 FilterType = "System.Guid[]",
                 FilterFormula = materializedUpdateSelector
             });
 
-            if (SupportsPersistedSubtypeImplementationColum())
+            if (conceptInfo.SupportsPersistedSubtypeImplementationColum())
             {
-                var subtypeImplementationColumn = new SubtypeImplementationColumnInfo { Subtype = Subtype, ImplementationName = ImplementationName };
+                var subtypeImplementationColumn = new SubtypeImplementationColumnInfo { Subtype = conceptInfo.Subtype, ImplementationName = conceptInfo.ImplementationName };
                 newConcepts.Add(subtypeImplementationColumn);
-                newConcepts.Add(new SqlDependsOnSqlObjectInfo { Dependent = Dependency_ImplementationView, DependsOn = subtypeImplementationColumn.GetSqlObject() });
+                newConcepts.Add(new SqlDependsOnSqlObjectInfo { Dependent = conceptInfo.Dependency_ImplementationView, DependsOn = subtypeImplementationColumn.GetSqlObject() });
             }
 
             return newConcepts;

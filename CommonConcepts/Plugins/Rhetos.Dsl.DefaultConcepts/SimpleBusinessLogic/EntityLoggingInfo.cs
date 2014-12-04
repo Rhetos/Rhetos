@@ -26,23 +26,27 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Logging")]
-    public class EntityLoggingInfo : IConceptInfo, IMacroConcept
+    public class EntityLoggingInfo : IConceptInfo
     {
         [ConceptKey]
         public EntityInfo Entity { get; set; }
+    }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+    [Export(typeof(IConceptMacro))]
+    public class EntityLoggingMacro : IConceptMacro<EntityLoggingInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(EntityLoggingInfo conceptInfo, IDslModel existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();
 
-            var extension = existingConcepts.OfType<DataStructureExtendsInfo>().Where(e => e.Extension == Entity).SingleOrDefault();
+            var extension = existingConcepts.FindByType<DataStructureExtendsInfo>().Where(e => e.Extension == conceptInfo.Entity).SingleOrDefault();
 
             if (extension != null
-                && existingConcepts.OfType<EntityLoggingInfo>().Where(l => l.Entity == extension.Base).Any())
+                && existingConcepts.FindByType<EntityLoggingInfo>().Where(l => l.Entity == extension.Base).Any())
             {
                 newConcepts.Add(new LoggingRelatedItemInfo
                 {
-                    Logging = this,
+                    Logging = conceptInfo,
                     Table = SqlUtility.Identifier(extension.Base.Module.Name) + "." + SqlUtility.Identifier(extension.Base.Name),
                     Column = "ID",
                     Relation = "Extension"

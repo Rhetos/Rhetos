@@ -30,7 +30,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Polymorphic")]
-    public class PolymorphicInfo : DataStructureInfo, IOrmDataStructure, IMacroConcept, IAlternativeInitializationConcept
+    public class PolymorphicInfo : DataStructureInfo, IOrmDataStructure, IAlternativeInitializationConcept
     {
         public static readonly SqlTag<PolymorphicInfo> PolymorphicPropertyNameTag = new SqlTag<PolymorphicInfo>("PolymorphicPropertyName");
         public static readonly SqlTag<PolymorphicInfo> PolymorphicPropertyInitializationTag = new SqlTag<PolymorphicInfo>("PolymorphicPropertyInitialization");
@@ -95,35 +95,6 @@ EXEC (@sql);
             return string.Format("DROP VIEW {0}.{1};", Module.Name, Name);
         }
 
-        //===========================================================
-
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            var newConcepts = new List<IConceptInfo>();
-
-            var subtypeString = new ShortStringPropertyInfo { DataStructure = this, Name = "Subtype" };
-            newConcepts.Add(subtypeString);
-            newConcepts.Add(new PolymorphicPropertyInfo { Property = subtypeString });
-
-            var existingPolymorphicProperties = new HashSet<string>(
-                existingConcepts.OfType<PolymorphicPropertyInfo>()
-                    .Where(pp => pp.Property.DataStructure == this)
-                    .Select(pp => pp.Property.Name));
-
-            newConcepts.AddRange(existingConcepts
-                .OfType<PropertyInfo>()
-                .Where(p => p.DataStructure == this)
-                .Where(p => !existingPolymorphicProperties.Contains(p.Name))
-                .Select(p => new PolymorphicPropertyInfo { Property = p }));
-
-            // Automatically materialize the polymorphic entity if it is referenced or extended, so the polymorphic can be used in FK constraint.
-            if (existingConcepts.OfType<ReferencePropertyInfo>().Where(r => r.Referenced == this && r.DataStructure is EntityInfo).Any()
-                || existingConcepts.OfType<DataStructureExtendsInfo>().Where(e => e.Base == this && e.Extension is EntityInfo).Any())
-                newConcepts.Add(new PolymorphicMaterializedInfo { Polymorphic = this });
-
-            return newConcepts;
-        }
-
         public string GetOrmSchema()
         {
             return Dependency_View.Module.Name;
@@ -132,6 +103,37 @@ EXEC (@sql);
         public string GetOrmDatabaseObject()
         {
             return Dependency_View.Name;
+        }
+    }
+
+    [Export(typeof(IConceptMacro))]
+    public class PolymorphicMacro : IConceptMacro<PolymorphicInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(PolymorphicInfo conceptInfo, IDslModel existingConcepts)
+        {
+            var newConcepts = new List<IConceptInfo>();
+
+            var subtypeString = new ShortStringPropertyInfo { DataStructure = conceptInfo, Name = "Subtype" };
+            newConcepts.Add(subtypeString);
+            newConcepts.Add(new PolymorphicPropertyInfo { Property = subtypeString });
+
+            var existingPolymorphicProperties = new HashSet<string>(
+                existingConcepts.FindByType<PolymorphicPropertyInfo>()
+                    .Where(pp => pp.Property.DataStructure == conceptInfo)
+                    .Select(pp => pp.Property.Name));
+
+            newConcepts.AddRange(existingConcepts
+                .FindByType<PropertyInfo>()
+                .Where(p => p.DataStructure == conceptInfo)
+                .Where(p => !existingPolymorphicProperties.Contains(p.Name))
+                .Select(p => new PolymorphicPropertyInfo { Property = p }));
+
+            // Automatically materialize the polymorphic entity if it is referenced or extended, so the polymorphic can be used in FK constraint.
+            if (existingConcepts.FindByType<ReferencePropertyInfo>().Where(r => r.Referenced == conceptInfo && r.DataStructure is EntityInfo).Any()
+                || existingConcepts.FindByType<DataStructureExtendsInfo>().Where(e => e.Base == conceptInfo && e.Extension is EntityInfo).Any())
+                newConcepts.Add(new PolymorphicMaterializedInfo { Polymorphic = conceptInfo });
+
+            return newConcepts;
         }
     }
 }
