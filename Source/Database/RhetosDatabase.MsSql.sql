@@ -690,3 +690,14 @@ AS
 	IF @InitialTranCount = 0 COMMIT TRANSACTION @TranName
 	RETURN 0
 GO
+
+IF OBJECT_ID(N'[Rhetos].[MacroEvaluatorOrder]') IS NULL
+BEGIN
+	CREATE TABLE Rhetos.MacroEvaluatorOrder
+	(
+		ID uniqueidentifier NOT NULL CONSTRAINT PK_MacroEvaluatorOrder PRIMARY KEY NONCLUSTERED CONSTRAINT DF_MacroEvaluatorOrder_ID DEFAULT (newid()),
+		EvaluatorName nvarchar(256) NOT NULL,
+		EvaluatorOrder decimal(28,10) NOT NULL,
+		CONSTRAINT UQ_MacroEvaluatorOrder_EvaluatorName UNIQUE (EvaluatorName)
+	);
+END

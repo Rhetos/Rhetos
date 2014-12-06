@@ -17,26 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Dsl;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace Rhetos.CommonConcepts.Test.Mocks
+namespace Rhetos.Dsl
 {
-    public class DslModelMock : List<IConceptInfo>, IDslModel
+    public interface IMacroOrderRepository
     {
-        public IEnumerable<IConceptInfo> Concepts { get { return this; } }
-
-        public IConceptInfo FindByKey(string conceptKey)
-        {
-            return this.Where(c => c.GetKey() == conceptKey).SingleOrDefault();
-        }
-
-        public IEnumerable<IConceptInfo> FindByType(Type conceptType)
-        {
-            return this.Where(c => conceptType.IsAssignableFrom(c.GetType()));
-        }
+        List<MacroOrder> Load();
+        void Save(IEnumerable<MacroOrder> macroOrders);
     }
 }

@@ -131,9 +131,9 @@ namespace Rhetos.Dsl.DefaultConcepts
             {
                 throw new NotImplementedException();
             }
-            public IEnumerable<T> FindByType<T>()
+            public IEnumerable<IConceptInfo> FindByType(Type conceptType)
             {
-                return Concepts.OfType<T>();
+                return Concepts.Where(c => conceptType.IsAssignableFrom(c.GetType()));
             }
         }
 

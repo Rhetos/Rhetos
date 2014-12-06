@@ -52,6 +52,17 @@ namespace Rhetos.Dsl.DefaultConcepts
                 .Where(item => item != conceptInfo.Dependent)
                 .Select(item => new SqlDependsOnDataStructureInfo { Dependent = conceptInfo.Dependent, DependsOn = item }));
 
+            return newConcepts;
+        }
+    }
+
+    [Export(typeof(IConceptMacro))]
+    public class SqlDependsOnModuleMacro2 : IConceptMacro<SqlDependsOnModuleInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(SqlDependsOnModuleInfo conceptInfo, IDslModel existingConcepts)
+        {
+            var newConcepts = new List<IConceptInfo>();
+
             newConcepts.AddRange(existingConcepts.FindByType<SqlFunctionInfo>()
                 .Where(item => item.Module == conceptInfo.DependsOn)
                 .Where(item => item != conceptInfo.Dependent)

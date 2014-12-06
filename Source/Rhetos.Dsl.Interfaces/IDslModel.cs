@@ -42,6 +42,14 @@ namespace Rhetos.Dsl
         /// See ConceptInfoHelper.GetKey function description for expected format of conceptKey.
         /// Returns null is there is no concept with the given key.
         /// </summary>
-        IEnumerable<T> FindByType<T>();
+        IEnumerable<IConceptInfo> FindByType(Type conceptType);
+    }
+
+    public static class DslModelExtensions
+    {
+        public static IEnumerable<T> FindByType<T>(this IDslModel dslModel)
+        {
+            return dslModel.FindByType(typeof(T)).Cast<T>();
+        }
     }
 }

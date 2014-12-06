@@ -26,6 +26,7 @@ using Rhetos.Logging;
 using System.Collections;
 using Rhetos.Utilities;
 using Rhetos.Extensibility;
+using Autofac.Features.Indexed;
 
 namespace Rhetos.Dsl
 {
@@ -37,9 +38,18 @@ namespace Rhetos.Dsl
         private readonly ILogger _evaluatorsOrderLogger;
         private readonly ILogger _dslModelConceptsLogger;
         private readonly DslContainer _dslContainer;
-        private readonly IPluginsContainer<IConceptMacro> _macros;
+        private readonly IIndex<Type, IEnumerable<IConceptMacro>>  _macros;
+        private readonly IEnumerable<Type> _macroTypes;
+        private readonly IEnumerable<Type> _conceptTypes;
+        private readonly IMacroOrderRepository _macroOrderRepository;
 
-        public DslModel(IDslParser dslParser, ILogProvider logProvider, IPluginsContainer<IConceptMacro> macros)
+        public DslModel(
+            IDslParser dslParser,
+            ILogProvider logProvider,
+            IIndex<Type, IEnumerable<IConceptMacro>> macros,
+            IEnumerable<IConceptMacro> macroPrototypes,
+            IEnumerable<IConceptInfo> conceptPrototypes,
+            IMacroOrderRepository macroOrderRepository)
         {
             _dslParser = dslParser;
             _performanceLogger = logProvider.GetLogger("Performance");
@@ -48,6 +58,9 @@ namespace Rhetos.Dsl
             _dslModelConceptsLogger = logProvider.GetLogger("DslModelConcepts");
             _dslContainer = new DslContainer(logProvider);
             _macros = macros;
+            _macroTypes = macroPrototypes.Select(macro => macro.GetType());
+            _conceptTypes = conceptPrototypes.Select(conceptInfo => conceptInfo.GetType());
+            _macroOrderRepository = macroOrderRepository;
         }
 
         #region IDslModel implementation
@@ -69,11 +82,11 @@ namespace Rhetos.Dsl
             return _dslContainer.FindByKey(conceptKey);
         }
 
-        public IEnumerable<T> FindByType<T>()
+        public IEnumerable<IConceptInfo> FindByType(Type conceptType)
         {
             if (!_initialized)
                 Initialize();
-            return _dslContainer.FindByType<T>();
+            return _dslContainer.FindByType(conceptType);
         }
 
         #endregion
@@ -113,24 +126,27 @@ namespace Rhetos.Dsl
         private class MacroEvaluator
         {
             public string Name;
-            public Func<IDslModel, IEnumerable<IConceptInfo>> Evaluate;
-            public IConceptInfo ConceptInfo;
+            public Func<IConceptInfo, IDslModel, IEnumerable<IConceptInfo>> Evaluate;
+            public Type Implements;
+            public bool ImplementsDerivations;
         }
 
         private void ExpandMacroConcepts()
         {
             var swTotal = Stopwatch.StartNew();
             var sw = Stopwatch.StartNew();
-            var iterationCreatedConcepts = new List<IConceptInfo>();
+
             int iteration = 0;
-
-            _performanceLogger.Write(sw, "DslModel.ExpandMacroConcepts start ("
+            var iterationCreatedConcepts = new List<IConceptInfo>();
+            int lastResolvedConceptTime = 0;
+            var lastResolvedConceptTimeByIteration = new List<int>();
+            var lastResolvedConceptTimeByMacro = new Dictionary<string, int>();
+            var recommendedMacroOrder = _macroOrderRepository.Load().ToDictionary(m => m.EvaluatorName, m => m.EvaluatorOrder);
+            var macroEvaluators = ListMacroEvaluators(recommendedMacroOrder);
+            _performanceLogger.Write(sw, "DslModel.ExpandMacroConcepts initialization ("
+                + macroEvaluators.Count + " evaluators, "
                 + _dslContainer.Concepts.Count() + " parsed concepts resolved, "
-                +  _dslContainer.UnresolvedConceptsCount() + " unresolved).");
-
-            var lastEvaluation = new Dictionary<string, int>();
-            int lastEvaluationCounter = 0;
-            var lastEvaluationByIteration = new List<int>();
+                + _dslContainer.UnresolvedConceptsCount() + " unresolved).");
 
             do
             {
@@ -142,32 +158,30 @@ namespace Rhetos.Dsl
                         iterationCreatedConcepts.First().GetShortDescription()));
 
                 iterationCreatedConcepts.Clear();
-                _logger.Trace("Expanding macro concepts, pass {0}.", iteration);
-
-                var macroEvaluators = ListMacroEvaluators();
-                _performanceLogger.Write(sw, "DslModel.ExpandMacroConcepts prepared evaluators (" + macroEvaluators.Count + ").");
+                _logger.Trace("Expanding macro concepts, iteration {0}.", iteration);
 
                 foreach (var macroEvaluator in macroEvaluators)
-                {
-                    var macroCreatedConcepts = macroEvaluator.Evaluate(_dslContainer);
-                    Materialize(ref macroCreatedConcepts);
-
-                    if (macroCreatedConcepts != null && macroCreatedConcepts.Count() > 0)
+                    foreach (var conceptInfo in _dslContainer.FindByType(macroEvaluator.Implements, macroEvaluator.ImplementsDerivations).ToList())
                     {
-                        _logger.Trace(() => macroEvaluator.Name + " on " + macroEvaluator.ConceptInfo.GetShortDescription() + " generated: "
-                            + string.Join(", ", macroCreatedConcepts.Select(c => c.GetShortDescription())) + ".");
+                        var macroCreatedConcepts = macroEvaluator.Evaluate(conceptInfo, _dslContainer);
+                        Materialize(ref macroCreatedConcepts);
 
-                        var aiCreatedConcepts = AlternativeInitialization.InitializeNonparsableProperties(macroCreatedConcepts, _logger);
-                        var newUniqueConcepts = _dslContainer.AddNewConceptsAndReplaceReferences(macroCreatedConcepts.Concat(aiCreatedConcepts));
-                        if (newUniqueConcepts.Count > 0)
+                        if (macroCreatedConcepts != null && macroCreatedConcepts.Count() > 0)
                         {
-                            lastEvaluation[macroEvaluator.Name] = ++lastEvaluationCounter;
-                            iterationCreatedConcepts.AddRange(newUniqueConcepts);
+                            var aiCreatedConcepts = AlternativeInitialization.InitializeNonparsableProperties(macroCreatedConcepts, _logger);
+
+                            var newConceptsReport = _dslContainer.AddNewConceptsAndReplaceReferences(
+                                aiCreatedConcepts.Concat(macroCreatedConcepts));
+
+                            _logger.Trace(() => LogCreatedConcepts(macroEvaluator, conceptInfo, macroCreatedConcepts, newConceptsReport));
+
+                            iterationCreatedConcepts.AddRange(newConceptsReport.NewUniqueConcepts);
+                            if (newConceptsReport.NewlyResolvedConcepts.Count > 0)
+                                lastResolvedConceptTimeByMacro[macroEvaluator.Name] = ++lastResolvedConceptTime;
                         }
-                    }
                 };
 
-                lastEvaluationByIteration.Add(lastEvaluationCounter);
+                lastResolvedConceptTimeByIteration.Add(lastResolvedConceptTime);
 
                 _performanceLogger.Write(sw, "DslModel.ExpandMacroConcepts iteration " + iteration + " ("
                     + iterationCreatedConcepts.Count + " new concepts, "
@@ -175,33 +189,93 @@ namespace Rhetos.Dsl
 
             } while (iterationCreatedConcepts.Count > 0);
 
-            _evaluatorsOrderLogger.Trace(() => "\r\n" + ReportLastEvaluationOrder(lastEvaluation, lastEvaluationByIteration));
+            _evaluatorsOrderLogger.Trace(() => swTotal.Elapsed + "\r\n"
+                + ReportLastEvaluationOrder(lastResolvedConceptTimeByMacro, lastResolvedConceptTimeByIteration));
+            SaveMacroEvaluationOrder(lastResolvedConceptTimeByMacro);
+
             _performanceLogger.Write(swTotal, "DslModel.ExpandMacroConcepts.");
         }
 
-        private List<MacroEvaluator> ListMacroEvaluators()
+        private string LogCreatedConcepts(MacroEvaluator macroEvaluator, IConceptInfo conceptInfo, IEnumerable<IConceptInfo> macroCreatedConcepts, DslContainer.AddNewConceptsReport newConceptsReport)
+        {
+            var report = new StringBuilder();
+            report.Append(macroEvaluator.Name + " on " + conceptInfo.GetShortDescription()
+                + " created: " + string.Join(", ", macroCreatedConcepts.Select(c => c.GetShortDescription())) + ".");
+
+            var newUniqueIndex = new HashSet<string>(newConceptsReport.NewUniqueConcepts.Select(c => c.GetKey()));
+            LogConcepts(report, "New resolved", newConceptsReport.NewlyResolvedConcepts.Where(c => newUniqueIndex.Contains(c.GetKey())));
+            LogConcepts(report, "Old resolved", newConceptsReport.NewlyResolvedConcepts.Where(c => !newUniqueIndex.Contains(c.GetKey())));
+            LogConcepts(report, "New unresolved", newConceptsReport.NewUniqueConcepts.Where(c => _dslContainer.FindByKey(c.GetKey()) == null));
+
+            return report.ToString();
+        }
+
+        private void LogConcepts(StringBuilder report, string reportName, IEnumerable<IConceptInfo> concepts)
+        {
+            Materialize(ref concepts);
+            if (concepts != null && concepts.Count() > 0)
+                report.Append("\r\n  " + reportName + ": " + string.Join(", ", concepts.Select(c => c.GetShortDescription())) + ".");
+        }
+
+        private List<MacroEvaluator> ListMacroEvaluators(Dictionary<string, decimal> recommendedMacroOrder)
         {
             var macroEvaluators = new List<MacroEvaluator>();
 
-            foreach (IMacroConcept macroConcept in _dslContainer.FindByType<IMacroConcept>().ToList())
+            foreach (Type macroConceptType in _conceptTypes.Where(type => typeof(IMacroConcept).IsAssignableFrom(type)))
                 macroEvaluators.Add(new MacroEvaluator
                 {
-                    Name = "IMacroConcept " + macroConcept.GetType().FullName,
-                    Evaluate = dslContainer => macroConcept.CreateNewConcepts(dslContainer.Concepts),
-                    ConceptInfo = macroConcept
+                    Name = "IMacroConcept " + macroConceptType.FullName,
+                    Evaluate = (conceptInfo, dslContainer) => ((IMacroConcept)conceptInfo).CreateNewConcepts(dslContainer.Concepts),
+                    Implements = macroConceptType,
+                    ImplementsDerivations = false
                 });
 
-            foreach (IConceptInfo conceptInfo in _dslContainer.Concepts.ToList())
-                foreach (IConceptMacro macro in _macros.GetImplementations(conceptInfo.GetType()))
+            var detectedConceptMacros = new List<Type>();
+            foreach (Type conceptType in _conceptTypes)
+                foreach (IConceptMacro macro in _macros[conceptType])
+                {
                     macroEvaluators.Add(new MacroEvaluator
                     {
-                        Name = "IConceptMacro " + macro.GetType().FullName + " for " + conceptInfo.GetType().FullName,
-                        Evaluate = dslContainer => macro.CreateNewConcepts(conceptInfo, dslContainer),
-                        ConceptInfo = conceptInfo
+                        Name = "IConceptMacro " + macro.GetType().FullName + " for " + conceptType.FullName,
+                        Evaluate = (conceptInfo, dslContainer) => macro.CreateNewConcepts(conceptInfo, dslContainer),
+                        Implements = conceptType,
+                        ImplementsDerivations = true
                     });
 
-            return macroEvaluators;
+                    detectedConceptMacros.Add(macro.GetType());
+                }
+
+            var undetectedConceptMacro = _macroTypes.Except(detectedConceptMacros).FirstOrDefault();
+            if (undetectedConceptMacro != null)
+                throw new DslSyntaxException("Macro " + undetectedConceptMacro + " is not registered properly."
+                    + " Check if the concept that the macro implements is registered by attribute Export(typeof(IConceptInfo)).");
+
+            return macroEvaluators
+                .OrderBy(evaluator => GetOrderOrDefault(recommendedMacroOrder, evaluator.Name, 0.5m))
+                .ThenBy(evaluator => evaluator.Name)
+                .ToList();
         }
+
+        private decimal GetOrderOrDefault(IDictionary<string, decimal> recommendedMacroOrder, string key, decimal defaultValue)
+        {
+            const int databaseLengthLimit = 256;
+            if (key.Length > databaseLengthLimit)
+                key = key.Substring(0, databaseLengthLimit);
+
+            decimal value;
+            if (!recommendedMacroOrder.TryGetValue(key, out value))
+            {
+                value = defaultValue;
+                if (!_noRecommendedOrderReported.Contains(key))
+                {
+                    _noRecommendedOrderReported.Add(key);
+                    _performanceLogger.Trace("DslMode.GetOrderOrDefault: No recommended macro order for " + key + ".");
+                }
+            }
+            return value;
+        }
+
+        private static HashSet<string> _noRecommendedOrderReported = new HashSet<string>();
 
         private static void Materialize(ref IEnumerable<IConceptInfo> items)
         {
@@ -209,27 +283,38 @@ namespace Rhetos.Dsl
                 items = items.ToList();
         }
 
-        private string ReportLastEvaluationOrder(Dictionary<string, int> lastEvaluation, List<int> lastEvaluationByIteration)
+        private string ReportLastEvaluationOrder(Dictionary<string, int> lastResolvedConceptTimeByMacro, List<int> lastResolvedConceptTimeByIteration)
         {
-            var evaluatorsOrderedByLastEvaluation = lastEvaluation
+            var orderedMacros = lastResolvedConceptTimeByMacro
                 .OrderBy(lastEval => lastEval.Value)
                 .Select(lastEval => new { Name = lastEval.Key, Time = lastEval.Value })
                 .ToList();
 
             var report = new StringBuilder();
 
-            int previosIterationTime = 0;
-            for (int i = 0; i < lastEvaluationByIteration.Count(); i++)
+            int previousIterationTime = 0;
+            for (int i = 0; i < lastResolvedConceptTimeByIteration.Count(); i++)
             {
                 report.AppendLine("Iteration " + (i + 1) + ":");
-                foreach (var evaluator in evaluatorsOrderedByLastEvaluation)
-                    if (evaluator.Time > previosIterationTime && evaluator.Time <= lastEvaluationByIteration[i])
+                foreach (var evaluator in orderedMacros)
+                    if (evaluator.Time > previousIterationTime && evaluator.Time <= lastResolvedConceptTimeByIteration[i])
                         report.AppendLine(evaluator.Name);
 
-                previosIterationTime = lastEvaluationByIteration[i];
+                previousIterationTime = lastResolvedConceptTimeByIteration[i];
             }
 
             return report.ToString();
+        }
+
+        private void SaveMacroEvaluationOrder(Dictionary<string, int> lastResolvedConceptTimeByMacro)
+        {
+            var orderedMacros = lastResolvedConceptTimeByMacro.OrderBy(lastEval => lastEval.Value).Select(lastEval => lastEval.Key).ToList();
+            var macroOrders = orderedMacros.Select((macro, index) => new MacroOrder
+                {
+                    EvaluatorName = macro,
+                    EvaluatorOrder = ((decimal)index + 0.5m) / orderedMacros.Count
+                });
+            _macroOrderRepository.Save(macroOrders);
         }
 
         private void CheckSemantics()

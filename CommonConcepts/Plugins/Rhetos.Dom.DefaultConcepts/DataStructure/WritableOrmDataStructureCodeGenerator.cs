@@ -49,12 +49,12 @@ namespace Rhetos.Dom.DefaultConcepts
         [Obsolete]
         public static readonly CsTag<DataStructureInfo> ProcessedOldDataTag = "WritableOrm ProcessedOldData";
 
-        /// <summary> Recomended usage: Recompute items that depend on changes items.
+        /// <summary> Recommended usage: Recompute items that depend on changes items.
         /// Arrays "inserted" and "updated" contain NEW data.
         /// Data is saved to the database (but the SQL transaction has not yet been commited) so SQL validations and computations CAN be used.</summary>
         public static readonly CsTag<DataStructureInfo> OnSaveTag1 = "WritableOrm OnSaveTag1";
 
-        /// <summary>Recomended usage: Verify that invalid items are not going to be inserted or updated.
+        /// <summary>Recommended usage: Verify that invalid items are not going to be inserted or updated.
         /// Arrays "inserted" and "updated" contain NEW data.
         /// Data is saved to the database (but the SQL transaction has not yet been commited) so SQL validations and computations CAN be used.</summary>
         public static readonly CsTag<DataStructureInfo> OnSaveTag2 = "WritableOrm OnSaveTag2";

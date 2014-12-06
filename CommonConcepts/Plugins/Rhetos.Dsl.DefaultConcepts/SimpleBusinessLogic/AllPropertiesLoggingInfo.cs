@@ -36,20 +36,13 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public IEnumerable<IConceptInfo> CreateNewConcepts(AllPropertiesLoggingInfo conceptInfo, IDslModel existingConcepts)
         {
-            var alreadyLoggedProperties = new HashSet<PropertyInfo>(
-                existingConcepts.FindByType<PropertyLoggingInfo>()
-                    .Where(propLog => propLog.EntityLogging == conceptInfo.EntityLogging)
-                    .Select(propLog => propLog.Property));
-
             return existingConcepts.FindByType<PropertyInfo>()
                 .Where(prop => prop.DataStructure == conceptInfo.EntityLogging.Entity)
-                .Where(prop => !alreadyLoggedProperties.Contains(prop))
                 .Select(prop => new PropertyLoggingInfo
                                     {
                                         EntityLogging = conceptInfo.EntityLogging,
                                         Property = prop
-                                    })
-                .ToList();
+                                    });
         }
     }
 }

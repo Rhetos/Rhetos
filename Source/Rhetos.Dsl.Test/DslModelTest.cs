@@ -99,17 +99,29 @@ namespace Rhetos.Dsl.Test
             public IEnumerable<IConceptInfo> ParsedConcepts { get { return _rawConcepts; } }
         }
 
-        internal class StubPluginsContainer<T> : IPluginsContainer<T>
+        internal class StubMacroIndex : Autofac.Features.Indexed.IIndex<Type, IEnumerable<IConceptMacro>>
         {
-            public IEnumerable<T> GetPlugins() { return new T[] { }; }
-            public Type GetMetadata(T plugin, string metadataKey) { return null; }
-            public Type GetMetadata(Type pluginType, string metadataKey) { return null; }
-            public IEnumerable<T> GetImplementations(Type implements) { return new T[] { }; }
+            public bool TryGetValue(Type key, out IEnumerable<IConceptMacro> value)
+            {
+                value = new IConceptMacro[] { };
+                return true;
+            }
+
+            public IEnumerable<IConceptMacro> this[Type key]
+            {
+                get { return new IConceptMacro[] { }; }
+            }
+        }
+
+        internal class StubMacroOrderRepository : IMacroOrderRepository
+        {
+            public List<MacroOrder> Load() { return new List<MacroOrder>(); }
+            public void Save(IEnumerable<MacroOrder> macroOrders) { }
         }
 
         static List<IConceptInfo> DslModelFromConcepts(IEnumerable<IConceptInfo> rawConcepts)
         {
-            var dslModel = new DslModel(new StubDslParser(rawConcepts), new ConsoleLogProvider(), new StubPluginsContainer<IConceptMacro>());
+            var dslModel = new DslModel(new StubDslParser(rawConcepts), new ConsoleLogProvider(), new StubMacroIndex(), new IConceptMacro[] { }, rawConcepts, new StubMacroOrderRepository());
             return dslModel.Concepts.ToList();
         }
 
@@ -119,7 +131,7 @@ namespace Rhetos.Dsl.Test
             Console.WriteLine("Parsed concepts:");
             Console.WriteLine(string.Join(Environment.NewLine, nullDslParser.ParsedConcepts.Select(ci => " - " + ci.GetShortDescription())));
 
-            var dslModel = new DslModel(nullDslParser, new ConsoleLogProvider(), new StubPluginsContainer<IConceptMacro>());
+            var dslModel = new DslModel(nullDslParser, new ConsoleLogProvider(), new StubMacroIndex(), new IConceptMacro[] { }, conceptInfoPluginsForGenericParser, new StubMacroOrderRepository());
             return dslModel.Concepts.ToList();
         }
 
