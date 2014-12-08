@@ -45,23 +45,14 @@ namespace Rhetos.Dsl.DefaultConcepts
             return newConcepts;
         }
 
-        // ugly workaround to eliminate unnecessary parameter which ComposableFilterBy expects
-        // we don't need parameter in row permission filter/expression
-        // it is used by child concepts RowPermissionsRead i RowPermissionsWrite
-        public static string ReformatLambdaExpression_RemoveParameter(string expression)
+        public static string CreateComposableFilterSnippet(string permissionExpressionName, string entityType)
         {
-            Regex regex = new Regex(@"^\((.+?),(.+?),(.+?)\).*?=>(.*)$", RegexOptions.Singleline);
-            Match match = regex.Match(expression);
-            if (match.Groups.Count != 5)
-                throw new DslSyntaxException("Row permissions expression format is not valid: " + expression);
-
-            string source = match.Groups[1].Value, repo = match.Groups[2].Value, context = match.Groups[3].Value,
-                expr = match.Groups[4].Value;
-
-            string reformatted = string.Format("({0}, {1}, __obsoleteParameter, {2}) => {3}",
-                source, repo, context, expr);
-
-            return reformatted;
+            return string.Format(
+            @"(source, repository, parameter, context) => 
+                {{
+                    var filterExpression = {0}(source, repository, context);
+                    return FilterExpression<{1}>.OptimizedWhere(filterExpression, source);
+                }}", permissionExpressionName, entityType);
         }
     }
 }
