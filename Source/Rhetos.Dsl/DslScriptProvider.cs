@@ -33,27 +33,25 @@ namespace Rhetos.Dsl
         public DslScriptProvider(params DslScript[] scripts)
         {
             _scripts.AddRange(scripts);
+            Script = string.Join(_scriptSeparator, _scripts.Select(it => it.Script));
         }
 
-        public string Script
-        {
-            get { return string.Join(_scriptSeparator, _scripts.Select(it => it.Script)); }
-        }
+        public string Script { get; private set; }
 
         public string ReportError(int index)
         {
-            var location = LocatDslScript(index);
+            var location = LocateDslScript(index);
             return ScriptPositionReporting.ReportPosition(location.DslScript.Script, location.Position, location.DslScript.Path);
         }
 
         public string GetSourceFilePath(int index)
         {
-            return LocatDslScript(index).DslScript.Path;
+            return LocateDslScript(index).DslScript.Path;
         }
 
         private class Location { public DslScript DslScript; public int Position; }
 
-        private Location LocatDslScript(int index)
+        private Location LocateDslScript(int index)
         {
             if (index < 0 || index > Script.Length)
                 throw new FrameworkException("Error in DSL script parser. Provided position in script is out of range. Position: " + index + ".");

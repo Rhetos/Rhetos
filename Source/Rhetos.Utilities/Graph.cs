@@ -86,17 +86,18 @@ namespace Rhetos.Utilities
             }
 
             var result = new List<T>();
+            var givenList = new HashSet<T>(list);
             var processed = new HashSet<T>();
             var analysisStarted = new List<T>();
             foreach (var element in list)
-                AddDependenciesBeforeElement(element, result, list, dependenciesByDependent, processed, analysisStarted);
+                AddDependenciesBeforeElement(element, result, givenList, dependenciesByDependent, processed, analysisStarted);
             list.Clear();
             list.AddRange(result);
         }
 
-        private static void AddDependenciesBeforeElement<T>(T element, List<T> result, List<T> list, Dictionary<T, List<T>> dependencies, HashSet<T> processed, List<T> analysisStarted)
+        private static void AddDependenciesBeforeElement<T>(T element, List<T> result, HashSet<T> givenList, Dictionary<T, List<T>> dependencies, HashSet<T> processed, List<T> analysisStarted)
         {
-            if (!processed.Contains(element) && list.Contains(element))
+            if (!processed.Contains(element) && givenList.Contains(element))
             {
                 if (analysisStarted.Contains(element))
                 {
@@ -109,7 +110,7 @@ namespace Rhetos.Utilities
 
                 if (dependencies.ContainsKey(element))
                     foreach (T dependency in dependencies[element])
-                        AddDependenciesBeforeElement(dependency, result, list, dependencies, processed, analysisStarted);
+                        AddDependenciesBeforeElement(dependency, result, givenList, dependencies, processed, analysisStarted);
 
                 analysisStarted.RemoveAt(analysisStarted.Count - 1);
                 processed.Add(element);
