@@ -112,15 +112,30 @@ Module TestRowPermissions
 	
 	Entity Parent
 	{
-		ShortString name;
+		Integer value;
+		RowPermissionsRead '(source, repo, context) => item => item.value > 100 && item.value < 200';
+		RowPermissionsWrite '(source, repo, context) => item => item.value > 50 && item.value < 150';
 	}
 	
 	Entity Child
 	{
-		Reference Parent TestRowPermissions.Parent;
+		Integer value;
+		Reference MyParent TestRowPermissions.Parent;
 		RowPermissions
 		{
-			ByReference TestRowPermissions.Child.Parent;
+			InheritFrom TestRowPermissions.Child.MyParent;
+			DenyRead Denied
+				'new List<int?>() { 1, 2, 3 }'
+				'item => Denied.Contains(item.value)';
+		}
+	}
+	
+	Entity Baby
+	{
+		Reference MyParent TestRowPermissions.Child;
+		RowPermissions
+		{
+			InheritFrom TestRowPermissions.Baby.MyParent;
 		}
 	}
 

@@ -79,6 +79,7 @@
     <Compile Include="Mocks\RepositoryMock.cs" />
     <Compile Include="Mocks\TestGenericRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReplaceWithReferenceTest.cs" />
     <Compile Include="ServerCommandsUtilityTest.cs" />
     <Compile Include="SqlAnalysisTest.cs" />
     <Compile Include="GenericRepositoryWriteTest.cs" />

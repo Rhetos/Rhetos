@@ -27,30 +27,21 @@ using System.ComponentModel.Composition;
 using Rhetos.Extensibility;
 using Rhetos.Dsl;
 using Rhetos.Compiler;
-using System.Linq.Expressions;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(RowPermissionsWriteInfo))]
-    public class RowPermissionsWriteCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(RowPermissionsInheritReadFromInfo))]
+    public class RowPermissionsInheritReadFromCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (RowPermissionsWriteInfo)conceptInfo;
+            var info = (RowPermissionsInheritReadFromInfo)conceptInfo;
 
-            var code = string.Format(
-@"        public static Func< IQueryable<{0}>, Common.DomRepository, Common.ExecutionContext, 
-              Expression<Func<{0}, bool>> > {1} = 
-              {2};
-
-",
-                info.Source.GetKeyProperties(),
-                RowPermissionsWriteInfo.PermissionsExpressionName,
-                info.SimplifiedExpression
-                );
-
-            codeBuilder.InsertCode(code, RepositoryHelper.RepositoryMembers, info.Source);
+            codeBuilder.InsertCode(
+                RowPermissionsUtility.GetInheritSnippet(info.InheritFromInfo, RowPermissionsReadInfo.PermissionsExpressionName),
+                RowPermissionsPluginableFiltersInfo.ReadFilterExpressionsTag, 
+                info.InheritFromInfo.RowPermissionsFilters); 
         }
     }
 }

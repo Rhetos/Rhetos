@@ -122,7 +122,9 @@
     <Compile Include="RowPermissions\RowPermissionsDenyReadNoConditionInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsAllowReadNoConditionInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsAllowReadInfo.cs" />
-    <Compile Include="RowPermissions\RowPermissionsByReferenceInfo.cs" />
+    <Compile Include="RowPermissions\RowPermissionsInheritFromInfo.cs" />
+    <Compile Include="RowPermissions\RowPermissionsInheritReadFromInfo.cs" />
+    <Compile Include="RowPermissions\RowPermissionsInheritWriteFromInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsPluginableFiltersInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsRuleInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsInfo.cs" />

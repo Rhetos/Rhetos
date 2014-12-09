@@ -30,7 +30,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     public class RowPermissionsReadInfo : ComposableFilterByInfo, IMacroConcept, IAlternativeInitializationConcept
     {
         public static readonly string FilterName = "Common.RowPermissionsReadItems";
-        public static readonly string PermissionsExpressionName = "_rowPermissionsReadExpression";
+        public static readonly string PermissionsExpressionName = "GetRowPermissionsReadExpression";
 
         public string SimplifiedExpression { get; set; }
 

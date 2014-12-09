@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Rhetos.Dsl;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -60,6 +61,25 @@ namespace Rhetos.Dom.DefaultConcepts
                 permissionPredicate,
                 checkRuleCondition,
                 allow ? "Include" : "Exclude");
+        }
+
+        public static string GetInheritSnippet(RowPermissionsInheritFromInfo info, string permissionExpressionName)
+        {
+            return string.Format(
+@"          
+            {{
+                var parentRepository = context.Repositories.{0}.{1};
+                var parentRowPermissionsExpression = {0}._Helper.{1}_Repository.{2}(parentRepository.Query(), repository, context);
+                var replacedExpression = new ReplaceWithReference<{0}.{1}, {3}>(parentRowPermissionsExpression, ""{4}"" , ""{5}"").NewExpression;
+                filterExpression.Include(replacedExpression);
+            }}  
+",
+                info.ReferenceProperty.Referenced.Module,
+                info.ReferenceProperty.Referenced.Name,
+                permissionExpressionName,
+                info.RowPermissionsFilters.DataStructure.GetKeyProperties(),
+                info.ReferenceProperty.Name,
+                info.ReferenceProperty.DataStructure.Name.ToLower() + "Item");
         }
     }
 }

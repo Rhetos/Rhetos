@@ -26,13 +26,10 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("ByReference")]
-    public class RowPermissionsByReferenceInfo : IConceptInfo
+    public class RowPermissionsInheritReadFromInfo : IConceptInfo
     {
         [ConceptKey]
-        public RowPermissionsPluginableFiltersInfo RowPermissionsFilters { get; set; }
-
-        [ConceptKey]
-        public ReferencePropertyInfo ReferenceProperty { get; set; }
+        public RowPermissionsInheritFromInfo InheritFromInfo { get; set; }
     }
 }
+

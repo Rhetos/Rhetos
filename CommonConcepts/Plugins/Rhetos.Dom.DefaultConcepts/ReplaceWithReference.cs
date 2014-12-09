@@ -29,6 +29,7 @@ namespace Rhetos.Dom.DefaultConcepts
     /// This class traverses expression tree and 
     /// a) changes expression type from TFrom to TTo
     /// b) replaces all reference to parameter in original expression to 'parameter.referenceName'
+    /// Will work ONLY for properties!
     /// </summary>
     public class ReplaceWithReference<TFrom, TTo> : ExpressionVisitor
     {
@@ -38,10 +39,10 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public Expression<Func<TTo, bool>> NewExpression { get { return newExpression; } }
 
-        public ReplaceWithReference(Expression<Func<TFrom, bool>> expression, string referenceName)
+        public ReplaceWithReference(Expression<Func<TFrom, bool>> expression, string referenceName, string parameterName)
         {
             this.referenceName = referenceName;
-            parameter = Expression.Parameter(typeof(TTo), typeof(TTo).Name + typeof(TFrom).Name + "Item");
+            parameter = Expression.Parameter(typeof(TTo), parameterName);
             var body = Visit(expression.Body);
             newExpression = Expression.Lambda<Func<TTo, bool>>(body, parameter);
         }
