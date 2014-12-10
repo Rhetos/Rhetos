@@ -129,6 +129,10 @@ namespace DeployPackages
 
             ValidateDbConnection(container);
 
+            Console.Write("Preparing Rhetos database ... ");
+            DeploymentUtility.PrepareRhetosDatabase(container.Resolve<ISqlExecuter>());
+            Console.WriteLine("Done.");
+
             Console.Write("Parsing DSL scripts ... ");
             Console.WriteLine(container.Resolve<IDslModel>().Concepts.Count() + " statements.");
 
@@ -152,10 +156,6 @@ namespace DeployPackages
             }
             if (!generators.Any())
                 Console.WriteLine("No additional generators.");
-
-            Console.Write("Preparing Rhetos database ... ");
-            DeploymentUtility.PrepareRhetosDatabase(container.Resolve<ISqlExecuter>());
-            Console.WriteLine("Done.");
 
             Console.Write("Cleaning old migration data ... ");
             var databaseCleaner = container.Resolve<DatabaseCleaner>();

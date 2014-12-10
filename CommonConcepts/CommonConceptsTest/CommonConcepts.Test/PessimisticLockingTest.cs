@@ -248,9 +248,10 @@ namespace CommonConcepts.Test
 
         static void AssertInRange(DateTime value, DateTime start, DateTime end)
         {
-            Assert.IsTrue(value >= start, value.ToString("o") + " should be greater than " + start.ToString("o"));
-            Assert.IsTrue(value <= end, value.ToString("o") + " should be less than " + end.ToString("o"));
-            Console.WriteLine(start.ToString("o") + " <= " + value.ToString("o") + " <= " + end.ToString("o"));
+            const double errorMarginSec = 0.01; // Rounding on saving to database may modify the number.
+            Assert.IsTrue(value >= start.AddSeconds(-errorMarginSec), value.ToString("o") + " should be greater than " + start.ToString("o"));
+            Assert.IsTrue(value <= end.AddSeconds(errorMarginSec), value.ToString("o") + " should be less than " + end.ToString("o"));
+            Console.WriteLine(start.ToString("o") + " <= " + value.ToString("o") + " <= " + end.ToString("o") + " (error margin " + errorMarginSec + " sec)");
         }
 
         const int defaultLockMinutes = 15;
@@ -397,7 +398,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(container.Resolve<IUserInfo>().UserName, myLock.UserName);
                 Assert.AreEqual(container.Resolve<IUserInfo>().Workstation, myLock.Workstation);
                 var now = DateTime.Now;
-                AssertInRange(myLock.LockStart.Value, now.AddSeconds(-1), now.AddSeconds(0.01));
+                AssertInRange(myLock.LockStart.Value, now.AddSeconds(-1), now);
                 AssertInRange(myLock.LockFinish.Value, now.AddMinutes(defaultLockMinutes).AddSeconds(-1), now.AddMinutes(defaultLockMinutes));
             }
         }

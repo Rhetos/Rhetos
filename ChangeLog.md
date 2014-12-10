@@ -1,11 +1,19 @@
-0.9.20 (TO BE RELEASED)
+0.9.20 (2014-12-09)
 -------------------
+
+New features:
+
+* New concepts: RowPermissions **AllowRead** and **DenyRead**, helpers for row permissions that allows combining multiple rules and inheriting rules from one entity to another.
 
 Internal improvements:
 
-* Automatically updating persisted "KeepSynchronized" data on deployment.
-* Bugfix: ArgumentNullException thrown on some client request.
-* Bugfix: Row permissions not used on empty filter requests.
+* Improved performance of *DeployPackages.exe* (mostly DSL parser).
+* Automatically updating persisted **KeepSynchronized** data on first deployment. The update may be avoided for a specific computation by setting `Context='NORECOMPUTE'` in *Common.KeepSynchronizedMetadata* table.
+* Bugfix: **SqlDependsOn** to an entity without properties does not work.
+* Bugfix: *ArgumentNullException* thrown on some client request.
+* Bugfixes: Row permissions not supported on **Browse**. Row permissions not used on empty filter requests.
+* New interface *IConceptMacro*, for implementing macro concepts with better performance.
+* Added Query function to *GenericRepository*, for simplied use in application code.
 
 0.9.19 (2014-11-12)
 -------------------
