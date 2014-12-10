@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -50,18 +51,16 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (required != null)
                 newConcepts.Add(required);
 
-            var destinationProperties = new HashSet<string>(
-                existingConcepts.FindByType<PropertyInfo>()
-                    .Where(ci => ci.DataStructure == conceptInfo.Destination)
-                    .Select(ci => ci.Name));
-
             if (SqlIndexMultipleInfo.IsSupported(conceptInfo.Destination))
                 foreach (var sourceIndex in existingConcepts.FindByType<SqlIndexMultipleInfo>().Where(ci => ci.Entity == conceptInfo.Source.DataStructure))
                 {
                     var indexProperties = sourceIndex.PropertyNames.Split(' ');
                     if (property.Name == indexProperties.FirstOrDefault()
-                        && indexProperties.Skip(1).All(indexProperty => destinationProperties.Contains(indexProperty)))
+                        && indexProperties.Skip(1).All(indexProperty =>
+                            DslUtility.FindProperty(existingConcepts, conceptInfo.Destination, indexProperty) != null))
+                    {
                         newConcepts.Add(new SqlIndexMultipleInfo { Entity = conceptInfo.Destination, PropertyNames = sourceIndex.PropertyNames });
+                    }
                 }
 
             return newConcepts;

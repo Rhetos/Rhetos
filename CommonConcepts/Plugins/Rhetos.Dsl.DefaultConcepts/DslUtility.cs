@@ -137,6 +137,20 @@ namespace Rhetos.Dsl.DefaultConcepts
             }
         }
 
+        public static PropertyInfo FindProperty(IDslModel dslModel, DataStructureInfo dataStructure, string propertyName)
+        {
+            if (dslModel is ConceptsListToDslModel)
+                return dslModel.Concepts.OfType<PropertyInfo>()
+                    .Where(p => p.DataStructure == dataStructure
+                        && p.Name == propertyName)
+                    .SingleOrDefault();
+            else
+            {
+                var propertyKey = string.Format("PropertyInfo {0}.{1}.{2}", dataStructure.Module.Name, dataStructure.Name, propertyName);
+                return (PropertyInfo)dslModel.FindByKey(propertyKey);
+            }
+        }
+
         public static ValueOrError<PropertyInfo> GetPropertyByPath(DataStructureInfo source, string path, IDslModel existingConcepts)
         {
             if (path.Contains(" "))
@@ -157,9 +171,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                     return ValueOrError.CreateError(selectedDataStructure.Error);
             }
 
-            PropertyInfo selectedProperty = existingConcepts.FindByType<PropertyInfo>()
-                .Where(p => p.DataStructure == selectedDataStructure.Value && p.Name == lastPropertyName)
-                .SingleOrDefault();
+            PropertyInfo selectedProperty = FindProperty(existingConcepts, selectedDataStructure.Value, lastPropertyName);
 
             if (selectedProperty == null && lastPropertyName == "ID")
                 return new GuidPropertyInfo { DataStructure = selectedDataStructure.Value, Name = "ID" };
@@ -172,9 +184,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         private static ValueOrError<DataStructureInfo> NavigateToNextDataStructure(DataStructureInfo source, string referenceName, IDslModel existingConcepts)
         {
-            var selectedProperty = existingConcepts.FindByType<PropertyInfo>()
-                .Where(p => p.DataStructure == source && p.Name == referenceName)
-                .SingleOrDefault();
+            var selectedProperty = FindProperty(existingConcepts, source, referenceName);
 
             if (selectedProperty == null && referenceName == "Base")
             {

@@ -109,16 +109,27 @@ namespace Rhetos.Dsl
                         CheckSemantics();
                         _dslContainer.SortReferencesBeforeUsingConcept();
 
-                        _dslModelConceptsLogger.Trace(LogConcepts);
-                        _performanceLogger.Write(sw, "DslModel.Initialize");
+                        LogDslModel();
+                        _performanceLogger.Write(sw, "DslModel.Initialize (" + _dslContainer.Concepts.Count() + " concepts).");
                         _initialized = true;
                     }
         }
 
-        private string LogConcepts()
+        private void LogDslModel()
         {
-            var xmlUtility = new XmlUtility(null);
-            return string.Join("\r\n", _dslContainer.Concepts.Select(c => xmlUtility.SerializeToXml(c, c.GetType())).OrderBy(x => x));
+            var sw = Stopwatch.StartNew();
+
+            // It is important to avoid generating XMLs if the logger is not enabled.
+            var xmlUtility = new Lazy<XmlUtility>(() => new XmlUtility(null));
+            var sortedConceptsXml = new Lazy<List<string>>(() => _dslContainer.Concepts
+                .Select(c => xmlUtility.Value.SerializeToXml(c, c.GetType()))
+                .OrderBy(xml => xml).ToList());
+
+            const int chunkSize = 10000; // Keeping message size under NLog memory limit.
+            for (int start = 0; start < _dslContainer.Concepts.Count(); start += chunkSize)
+                _dslModelConceptsLogger.Trace(() => string.Join("\r\n", sortedConceptsXml.Value.Skip(start).Take(chunkSize)));
+
+            _performanceLogger.Write(sw, "DslModel.LogDslModel.");
         }
 
         private const int MacroIterationLimit = 200;
@@ -143,6 +154,7 @@ namespace Rhetos.Dsl
             var lastResolvedConceptTimeByMacro = new Dictionary<string, int>();
             var recommendedMacroOrder = _macroOrderRepository.Load().ToDictionary(m => m.EvaluatorName, m => m.EvaluatorOrder);
             var macroEvaluators = ListMacroEvaluators(recommendedMacroOrder);
+            var macroStopwatches = macroEvaluators.ToDictionary(macro => macro.Name, macro => new Stopwatch());
             _performanceLogger.Write(sw, "DslModel.ExpandMacroConcepts initialization ("
                 + macroEvaluators.Count + " evaluators, "
                 + _dslContainer.Concepts.Count() + " parsed concepts resolved, "
@@ -161,6 +173,8 @@ namespace Rhetos.Dsl
                 _logger.Trace("Expanding macro concepts, iteration {0}.", iteration);
 
                 foreach (var macroEvaluator in macroEvaluators)
+                {
+                    macroStopwatches[macroEvaluator.Name].Start();
                     foreach (var conceptInfo in _dslContainer.FindByType(macroEvaluator.Implements, macroEvaluator.ImplementsDerivations).ToList())
                     {
                         var macroCreatedConcepts = macroEvaluator.Evaluate(conceptInfo, _dslContainer);
@@ -179,6 +193,8 @@ namespace Rhetos.Dsl
                             if (newConceptsReport.NewlyResolvedConcepts.Count > 0)
                                 lastResolvedConceptTimeByMacro[macroEvaluator.Name] = ++lastResolvedConceptTime;
                         }
+                    }
+                    macroStopwatches[macroEvaluator.Name].Stop();
                 };
 
                 lastResolvedConceptTimeByIteration.Add(lastResolvedConceptTime);
@@ -192,6 +208,9 @@ namespace Rhetos.Dsl
             _evaluatorsOrderLogger.Trace(() => swTotal.Elapsed + "\r\n"
                 + ReportLastEvaluationOrder(lastResolvedConceptTimeByMacro, lastResolvedConceptTimeByIteration));
             SaveMacroEvaluationOrder(lastResolvedConceptTimeByMacro);
+
+            foreach (var macroStopwatch in macroStopwatches.OrderByDescending(msw => msw.Value.Elapsed.TotalSeconds).Take(5))
+                _performanceLogger.Write(macroStopwatch.Value, () => "DslModel.ExpandMacroConcepts total time for " + macroStopwatch.Key + ".");
 
             _performanceLogger.Write(swTotal, "DslModel.ExpandMacroConcepts.");
         }
@@ -269,7 +288,7 @@ namespace Rhetos.Dsl
                 if (!_noRecommendedOrderReported.Contains(key))
                 {
                     _noRecommendedOrderReported.Add(key);
-                    _performanceLogger.Trace("DslMode.GetOrderOrDefault: No recommended macro order for " + key + ".");
+                    _logger.Trace("GetOrderOrDefault: No recommended macro order for " + key + ".");
                 }
             }
             return value;

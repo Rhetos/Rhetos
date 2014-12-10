@@ -30,14 +30,14 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     public static class SqlAnalysis
     {
-        private static Dictionary<string, HashSet<string>> SqlObjectsCache = new Dictionary<string, HashSet<string>>();
+        private static Dictionary<string, SortedSet<string>> SqlObjectsCache = new Dictionary<string, SortedSet<string>>();
 
         public static IEnumerable<IConceptInfo> GenerateDependencies(IConceptInfo dependent, IDslModel existingConcepts, string sqlScript)
         {
-            HashSet<string> sqlObjects;
+            SortedSet<string> sqlObjects;
             if (!SqlObjectsCache.TryGetValue(sqlScript, out sqlObjects))
             {
-                sqlObjects = new HashSet<string>(ExtractPossibleObjects(sqlScript), StringComparer.InvariantCultureIgnoreCase);
+                sqlObjects = new SortedSet<string>(ExtractPossibleObjects(sqlScript), StringComparer.InvariantCultureIgnoreCase);
                 SqlObjectsCache.Add(sqlScript, sqlObjects);
             }
 
@@ -45,17 +45,17 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             foreach (var conceptInfo in existingConcepts.FindByType<DataStructureInfo>())
                 if (conceptInfo != dependent)
-                    if (sqlObjects.Contains(conceptInfo.GetKeyProperties()))
+                    if (sqlObjects.Contains(conceptInfo.Module.Name + "." + conceptInfo.Name))
                         newConcepts.Add(new SqlDependsOnDataStructureInfo { Dependent = dependent, DependsOn = conceptInfo });
 
             foreach (var conceptInfo in existingConcepts.FindByType<SqlViewInfo>())
                 if (conceptInfo != dependent)
-                    if (sqlObjects.Contains(conceptInfo.GetKeyProperties()))
+                    if (sqlObjects.Contains(conceptInfo.Module.Name + "." + conceptInfo.Name))
                         newConcepts.Add(new SqlDependsOnSqlViewInfo { Dependent = dependent, DependsOn = conceptInfo });
 
             foreach (var conceptInfo in existingConcepts.FindByType<SqlFunctionInfo>())
                 if (conceptInfo != dependent)
-                    if (sqlObjects.Contains(conceptInfo.GetKeyProperties()))
+                    if (sqlObjects.Contains(conceptInfo.Module.Name + "." + conceptInfo.Name))
                         newConcepts.Add(new SqlDependsOnSqlFunctionInfo { Dependent = dependent, DependsOn = conceptInfo });
 
             return newConcepts;
@@ -123,7 +123,8 @@ namespace Rhetos.Dsl.DefaultConcepts
                         if (end != -1) end++;
                         break;
                     case '[':
-                        while (true) {
+                        while (true)
+                        {
                             end = sql.IndexOf(']', end);
                             if (end != -1) end++;
                             if (TryGet(sql, end) == ']') { end++; continue; }
@@ -149,7 +150,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                         while (depth > 0)
                         {
                             end = sql.IndexOfAny(MultilineCommentChars, end);
-                            if (end == -1) break; 
+                            if (end == -1) break;
                             char first = sql[end++];
                             if (first == '/')
                             {
@@ -204,7 +205,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (firstFrom.Success)
                 Extract(sql, sqlObjects, crossJoinRegex, firstFrom.Index + firstFrom.Length);
 
-            return sqlObjects.Distinct().OrderBy(x=>x).ToList();
+            return sqlObjects.Distinct().OrderBy(x => x).ToList();
         }
 
         private static void Extract(string sql, List<string> sqlObjects, Regex regex, int startPosition = 0)
