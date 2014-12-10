@@ -1,6 +1,10 @@
 0.9.20 (2014-12-09)
 -------------------
 
+Breaking changes:
+
+* Filter `Common.RowPermissionsAllowedItems` renamed to `Common.RowPermissionsReadItems`.
+
 New features:
 
 * New concepts: RowPermissions **AllowRead** and **DenyRead**, helpers for row permissions that allows combining multiple rules and inheriting rules from one entity to another.
