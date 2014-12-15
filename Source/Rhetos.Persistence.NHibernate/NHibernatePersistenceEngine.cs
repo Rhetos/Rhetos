@@ -122,6 +122,7 @@ namespace Rhetos.Persistence.NHibernate
                 var configuration = new Configuration();
                 configuration.SetProperty("connection.provider", "NHibernate.Connection.DriverConnectionProvider");
                 configuration.SetProperty("connection.connection_string", _connectionString);
+                configuration.SetProperty("command_timeout", SqlUtility.SqlCommandTimeout.ToString());
 
                 if (SqlUtility.DatabaseLanguage == "MsSql")
                 {

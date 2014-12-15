@@ -35,6 +35,9 @@ namespace Rhetos.Utilities
     public static class SqlUtility
     {
         private static int _sqlCommandTimeout = -1;
+        /// <summary>
+        /// In seconds.
+        /// </summary>
         public static int SqlCommandTimeout
         {
             get
