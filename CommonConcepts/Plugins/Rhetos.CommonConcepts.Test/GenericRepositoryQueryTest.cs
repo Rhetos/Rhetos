@@ -155,14 +155,14 @@ namespace Rhetos.CommonConcepts.Test
             TestUtility.ShouldFail(() => repos.Query<Parameter2>(),
                 "does not implement a query method or a filter with parameter",
                 "IQueryable",
-                "Try using Read function instead",
+                "Try using the Read function instead",
                 typeof(SimpleEntity).FullName,
                 typeof(Parameter2).FullName);
 
             TestUtility.ShouldFail(() => repos.Query<Parameter3>(),
                 "does not implement a query method or a filter with parameter",
                 "IQueryable",
-                "Try using Read function instead",
+                "Try using the Read function instead",
                 typeof(SimpleEntity).FullName,
                 typeof(Parameter3).FullName);
 

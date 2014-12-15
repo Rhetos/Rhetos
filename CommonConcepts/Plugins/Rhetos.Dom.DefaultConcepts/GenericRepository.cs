@@ -55,7 +55,6 @@ namespace Rhetos.Dom.DefaultConcepts
         private readonly Lazy<IRepository> _repository;
         private const string UnsupportedLoaderMessage = "{0} does not implement a loader, a query or a filter with parameter {1}.";
         private const string UnsupportedFilterMessage = "{0} does not implement a filter with parameter {1}.";
-        private const string UnsupportedQueryMessage = "{0} does not implement a query method or a filter with parameter {1} than will return an IQueryable. Try using Read function instead of the Query function.";
 
         public string EntityName { get; private set; }
         public IRepository EntityRepository { get { return _repository.Value; } }
@@ -202,7 +201,10 @@ namespace Rhetos.Dom.DefaultConcepts
 
             var query = items as IQueryable<TEntityInterface>;
             if (query == null && items != null)
-                throw new FrameworkException(string.Format(UnsupportedQueryMessage, EntityName, parameterType.FullName));
+                throw new FrameworkException(string.Format(
+                    "{0} does not implement a query method or a filter with parameter {1} than returns an IQueryable. There is an IEnumerable loader of filter implemented, so try using the Read function instead of the Query function.",
+                    EntityName,
+                    parameterType.FullName));
 
             return query;
         }

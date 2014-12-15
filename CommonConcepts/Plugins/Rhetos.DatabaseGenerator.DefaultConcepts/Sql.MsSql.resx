@@ -144,7 +144,7 @@ SET @Error = @@ERROR IF @Error &gt; 0 BEGIN ROLLBACK TRANSACTION RETURN END
 
 SET @Error = @@ERROR IF @Error &gt; 0 BEGIN ROLLBACK TRANSACTION RETURN END
 
-DECLARE cur CURSOR FOR
+DECLARE cur CURSOR FORWARD_ONLY READ_ONLY FOR
 SELECT * FROM (
 SELECT Property = CAST(NULL as varchar({3})), 
 	Value = CAST(NULL as varchar({3})), 
@@ -156,6 +156,15 @@ FROM #t
 ) enumAutoCodeValues ORDER BY ID, Property DESC -- Order by ID ASC, then Property name in DESC order. This will ensure that all required
 						--	columns gets their AutoCode value calculated before entire row is saved
 
+DECLARE @lockResult int;
+EXEC @lockResult = sp_getapplock 'AutoCode {0}.{1}', 'Exclusive';
+IF @lockResult &lt; 0
+BEGIN
+    RAISERROR ('Cannot insert the record in {0}.{1} because another user''s insert command is still running.', 16, 101);
+    ROLLBACK;
+    RETURN;
+END
+
 OPEN cur
 FETCH NEXT FROM cur INTO @PropertyName, @CodeFormat, @id, @GroupColumn, @GroupValue
 WHILE @@FETCH_STATUS = 0
@@ -164,13 +173,12 @@ BEGIN
 	--		save current row in target table
 	IF (@PropertyName IS NULL)
 	BEGIN
-	    INSERT INTO {0}.{1}
-		SELECT *
-		FROM #t
-		WHERE id = @id
+    INSERT INTO {0}.{1} SELECT * FROM #t WHERE id = @id;
 
 		SET @Error = @@ERROR IF @Error &gt; 0 BEGIN ROLLBACK TRANSACTION CLOSE cur DEALLOCATE cur RETURN END
-	END ELSE BEGIN
+	END
+  ELSE
+  BEGIN
 		-- If grouped AutoCode is defined, add check in filter part
 		SET @Filter = NULL
 		IF (@GroupColumn IS NOT NULL AND @GroupColumn &lt;&gt; '')
@@ -216,7 +224,10 @@ BEGIN
     FETCH NEXT FROM cur INTO @PropertyName, @CodeFormat, @id, @GroupColumn, @GroupValue
 END
 CLOSE cur
-DEALLOCATE cur</value>
+DEALLOCATE cur
+
+EXEC sp_releaseapplock 'AutoCode {0}.{1}';
+</value>
   </data>
   <data name="AutoCodeDatabaseDefinition_Remove" xml:space="preserve">
     <value>DROP TRIGGER {0}.{1}</value>
