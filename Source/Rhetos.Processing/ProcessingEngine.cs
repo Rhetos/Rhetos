@@ -116,7 +116,7 @@ namespace Rhetos.Processing
 
                     var commandResult = commandImplementation.Execute(commandInfo);
 
-                    _performanceLogger.Write(stopwatch, "ProcessingEngine: Command executed.");
+                    _performanceLogger.Write(stopwatch, () => "ProcessingEngine: Command executed (" + commandInfo.GetType().FullName + ").");
                     _logger.Trace("Execution result message: {0}", commandResult.Message);
 
                     if (commandResult.Success)

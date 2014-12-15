@@ -17,7 +17,8 @@ Table of contents
 4. [Configuration](#Configuration)
 5. [Uninstallation](#Uninstallation)
 6. [Sharing the authentication across web applications](#SharingAuthentication)
-7. [Troubleshooting](#Troubleshooting)
+7. [Session timeout](#SessionTimeout)
+8. [Troubleshooting](#Troubleshooting)
 
 
 <a id="Features"></a>
@@ -283,7 +284,19 @@ You may use the following C# code to generate the keys:
 	  sb.ToString().Dump();
 	}
 
-    
+<a id="SessionTimeout"></a>
+Session timeout
+---------------
+
+ASP.NET forms authentication ticket will expire after 30 minutes of **client incativity**, by default.
+To allow user to stay logged in after longer time of inactivity, add standard ASP.NET configuration option `timeout` (in minutes) in Web.config:
+
+	<system.web>
+	     <authentication mode="Forms">
+	       <forms timeout="50000000"/>
+	     </authentication>
+	</system.web>
+
 <a id="Troubleshooting"></a>
 Troubleshooting
 ---------------

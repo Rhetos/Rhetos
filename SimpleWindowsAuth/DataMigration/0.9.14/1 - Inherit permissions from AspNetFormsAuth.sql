@@ -24,11 +24,20 @@ IF EXISTS (SELECT TOP 1 1 FROM _Common.Permission WHERE RoleID IS NOT NULL AND P
 BEGIN
 
 	SELECT
-		RoleID = rol.ID, PrincipalID = NEWID(), PrincipalName = CASE WHEN RIGHT(rol.Name, 5) = ' role' THEN SUBSTRING(rol.Name, 1, LEN(rol.Name) - 5) ELSE rol.Name END
+		RoleID = rol.ID, PrincipalID = NEWID(), PrincipalName = rol.Name
 	INTO
 		#roleToPrincipal
 	FROM
 		_Common.Role rol;
+	
+	UPDATE
+		#roleToPrincipal
+	SET
+		PrincipalName = SUBSTRING(PrincipalName, 1, LEN(PrincipalName) - 5)
+	WHERE
+		RIGHT(PrincipalName, 5) = ' role'
+		AND SUBSTRING(PrincipalName, 1, LEN(PrincipalName) - 5)
+			NOT IN (SELECT PrincipalName FROM #roleToPrincipal)
 
 	UPDATE
 		rtp
