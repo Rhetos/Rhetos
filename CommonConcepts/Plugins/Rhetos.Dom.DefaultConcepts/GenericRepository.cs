@@ -517,20 +517,53 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// Type casting helper. The type casting of performance-efficient; it will not generate a new list or array or instance.
         /// </summary>
-        public void Save(IEnumerable<TEntityInterface> insertedNew, IEnumerable<TEntityInterface> updatedNew, IEnumerable<TEntityInterface> deletedIds, bool checkUserPermissions = false)
+        public void Save(IEnumerable<TEntityInterface> insertNew, IEnumerable<TEntityInterface> updateNew, IEnumerable<TEntityInterface> deleteIds, bool checkUserPermissions = false)
         {
-            MaterializeEntityList(ref insertedNew);
-            MaterializeEntityList(ref updatedNew);
-            MaterializeEntityList(ref deletedIds);
+            MaterializeEntityList(ref insertNew);
+            MaterializeEntityList(ref updateNew);
+            MaterializeEntityList(ref deleteIds);
 
             if (Reflection.RepositorySaveMethod == null)
                 throw new FrameworkException(EntityName + "'s repository does not implement the Save(IEnumerable<Entity>, ...) method.");
 
             Reflection.RepositorySaveMethod.InvokeEx(_repository.Value,
-                insertedNew != null ? Reflection.CastAsEntity(insertedNew) : null,
-                updatedNew != null ? Reflection.CastAsEntity(updatedNew) : null,
-                deletedIds != null ? Reflection.CastAsEntity(deletedIds) : null,
+                insertNew != null ? Reflection.CastAsEntity(insertNew) : null,
+                updateNew != null ? Reflection.CastAsEntity(updateNew) : null,
+                deleteIds != null ? Reflection.CastAsEntity(deleteIds) : null,
                 checkUserPermissions);
+        }
+
+        public void Insert(IEnumerable<TEntityInterface> insertNew, bool checkUserPermissions = false)
+        {
+            Save(insertNew, null, null, checkUserPermissions);
+        }
+
+        public void Update(IEnumerable<TEntityInterface> updateNew, bool checkUserPermissions = false)
+        {
+            Save(null, updateNew, null, checkUserPermissions);
+        }
+
+        public void Delete(IEnumerable<TEntityInterface> deleteIds, bool checkUserPermissions = false)
+        {
+            Save(null, null, deleteIds, checkUserPermissions);
+        }
+
+        /// <summary>checkUserPermissions is set to false.</summary>
+        public void Insert(params TEntityInterface[] insertNew)
+        {
+            Save(insertNew, null, null, false);
+        }
+
+        /// <summary>checkUserPermissions is set to false.</summary>
+        public void Update(params TEntityInterface[] updateNew)
+        {
+            Save(null, updateNew, null, false);
+        }
+
+        /// <summary>checkUserPermissions is set to false.</summary>
+        public void Delete(params TEntityInterface[] deleteIds)
+        {
+            Save(null, null, deleteIds, false);
         }
 
         public void InsertOrReadId<TProperties>(

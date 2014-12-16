@@ -34,7 +34,7 @@ namespace Rhetos.Utilities
 {
     public static class SqlUtility
     {
-        private static int _sqlCommandTimeout = -1;
+        private static int? _sqlCommandTimeout = null;
         /// <summary>
         /// In seconds.
         /// </summary>
@@ -42,7 +42,7 @@ namespace Rhetos.Utilities
         {
             get
             {
-                if (_sqlCommandTimeout == -1)
+                if (!_sqlCommandTimeout.HasValue)
                 {
                     string value = ConfigUtility.GetAppSetting("SqlCommandTimeout");
 
@@ -51,7 +51,7 @@ namespace Rhetos.Utilities
                     else
                         _sqlCommandTimeout = 30;
                 }
-                return _sqlCommandTimeout;
+                return _sqlCommandTimeout.Value;
             }
         }
 

@@ -64,6 +64,15 @@ namespace Rhetos.Configuration.Autofac
             _explicitRhetosServerFolder = rhetosServerFolder;
         }
 
+        /// <summary>
+        /// No need to call this method directly before calling Resolve().
+        /// Calling Initialize() is needed only when directly accessing static (global) Rhetos properties before resolving any component.
+        /// </summary>
+        public void Initialize()
+        {
+            InitializeLifetimeScope();
+        }
+
         public T Resolve<T>()
         {
             InitializeLifetimeScope();
