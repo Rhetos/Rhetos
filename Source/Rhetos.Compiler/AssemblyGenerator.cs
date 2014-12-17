@@ -117,6 +117,5 @@ namespace Rhetos.Compiler
             string msg = sb.ToString();
             return msg;
         }
-
     }
 }

@@ -21,7 +21,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Diagnostics.Contracts;
 using System.IO;
 using Rhetos.Utilities;
 
@@ -60,11 +59,6 @@ namespace Rhetos.Dsl
 
         public static void SkipWhitespaces(string dsl, ref int position)
         {
-            Contract.Requires(dsl != null);
-            Contract.Requires(position >= 0 && position <= dsl.Length);
-            Contract.Ensures(position >= 0 && position <= dsl.Length);
-            Contract.Ensures(position >= Contract.OldValue(position));
-
             while (position < dsl.Length && Whitespaces.Contains(dsl[position]))
                 position++;
         }
@@ -72,15 +66,9 @@ namespace Rhetos.Dsl
         public static Token GetNextToken_ValueType(IDslSource dslSource, ref int position)
         {
             var dsl = dslSource.Script;
-            Contract.Requires(dsl != null);
-            Contract.Requires(position >= 0 && position <= dsl.Length);
-            Contract.Ensures(position >= 0 && position <= dsl.Length);
-            Contract.Ensures(position >= Contract.OldValue(position));
-            Contract.Ensures(Contract.Result<string>() != null);
 
-            System.Diagnostics.Debug.Assert(
-                position < dsl.Length && !Whitespaces.Contains(dsl[position]),
-                "Unexpected call of GetNextToken_ValueType without skipping whitespaces.");
+            if (position < dsl.Length && Whitespaces.Contains(dsl[position]))
+                throw new FrameworkException("Unexpected call of GetNextToken_ValueType without skipping whitespaces.");
 
             if (IsSimpleStringElement(dsl[position]))
                 return new Token
@@ -91,7 +79,7 @@ namespace Rhetos.Dsl
             else if (IsQuotedStringStart(dsl[position]))
                 return new Token
                 {
-                    Value = ReadQuotedString(dsl, ref position),
+                    Value = ReadQuotedString(dslSource, ref position),
                     Type = Token.TokenType.Text
                 };
             else if (IsExternalTextStart(dsl[position]))
@@ -142,11 +130,6 @@ namespace Rhetos.Dsl
 
         private static string ReadSimpleStringToken(string dsl, ref int end)
         {
-            Contract.Requires(dsl != null);
-            Contract.Requires(end >= 0 && end < dsl.Length);
-            Contract.Ensures(end >= 0 && end < dsl.Length);
-            Contract.Ensures(end >= Contract.OldValue(end));
-
             int begin = end;
             while (end < dsl.Length && IsSimpleStringElement(dsl[end]))
                 end++;
@@ -158,13 +141,9 @@ namespace Rhetos.Dsl
             return c == '"' || c == '\'';
         }
 
-        private static string ReadQuotedString(string dsl, ref int end)
+        private static string ReadQuotedString(IDslSource dslSource, ref int end)
         {
-            Contract.Requires(dsl != null);
-            Contract.Requires(end >= 0 && end < dsl.Length);
-            Contract.Ensures(end >= 0 && end < dsl.Length);
-            Contract.Ensures(end >= Contract.OldValue(end));
-
+            string dsl = dslSource.Script;
             char quote = dsl[end];
             int begin = end;
             end++;
@@ -174,7 +153,7 @@ namespace Rhetos.Dsl
                 while (end < dsl.Length && dsl[end] != quote)
                     end++;
                 if (end >= dsl.Length)
-                    throw new DslSyntaxException("Unexpected end of script within quoted string. Missing closing character: " + quote + ".");
+                    throw new DslSyntaxException("Unexpected end of script within quoted string. Missing closing character: " + quote + ". " + dslSource.ReportError(begin));
                 if (end + 1 < dsl.Length && dsl[end + 1] == quote)
                 {
                     // Two quote characters make escape sequence for a quote within the string:
@@ -197,31 +176,32 @@ namespace Rhetos.Dsl
             return c == '<';
         }
 
+        private static HashSet<char> invalidPathChars = new HashSet<char>(Path.GetInvalidPathChars());
+
         private static string ReadExternalText(IDslSource dslSource, ref int end)
         {
             var dsl = dslSource.Script;
-            Contract.Requires(dsl != null);
-            Contract.Requires(end >= 0 && end < dsl.Length);
-            Contract.Ensures(end >= 0 && end < dsl.Length);
-            Contract.Ensures(end >= Contract.OldValue(end));
 
             int begin = end;
             end++;
 
-            while (end < dsl.Length && dsl[end] != '>')
+            while (end < dsl.Length && dsl[end] != '>' && !invalidPathChars.Contains(dsl[end]))
                 end++;
 
             if (end >= dsl.Length)
-                throw new DslSyntaxException("Unexpected end of script within external text reference. Missing closing character: '>'.");
+                throw new DslSyntaxException("Unexpected end of script within external text reference. Missing closing character: '>'." + dslSource.ReportError(end));
+
+            if (dsl[end] != '>')
+                throw new DslSyntaxException("Invalid filename character within external text reference. " + dslSource.ReportError(end));
 
             end++; // Skip closing character.
 
             string basicFilePath = dsl.Substring(begin + 1, end - begin - 2);
             string dslScriptFolder = Path.GetDirectoryName(dslSource.GetSourceFilePath(begin));
-            return LoadFile(Path.Combine(dslScriptFolder, basicFilePath));
+            return LoadFile(Path.Combine(dslScriptFolder, basicFilePath), dslSource, begin);
         }
 
-        private static string LoadFile(string basicFilePath)
+        private static string LoadFile(string basicFilePath, IDslSource dslSource, int begin)
         {
             var filePaths = new List<string> { basicFilePath };
 
@@ -231,7 +211,7 @@ namespace Rhetos.Dsl
                 var directory = Path.GetDirectoryName(basicFilePath);
                 var fileName = Path.GetFileNameWithoutExtension(basicFilePath);
                 if (string.IsNullOrWhiteSpace(fileName))
-                    throw new DslSyntaxException("Referenced empty file name (" + basicFilePath + ") in DSL script.");
+                    throw new DslSyntaxException("Referenced empty file name (" + basicFilePath + ") in DSL script. " + dslSource.ReportError(begin));
 
                 string databaseSpecificFilePath = Path.Combine(directory, fileName + " (" + SqlUtility.DatabaseLanguage + ")" + basicFileExtension);
                 filePaths.Insert(0, databaseSpecificFilePath);
@@ -241,7 +221,7 @@ namespace Rhetos.Dsl
                 if (File.Exists(filePath))
                     return File.ReadAllText(filePath, Encoding.Default);
 
-            throw new DslSyntaxException("Cannot find the extension file referenced in DSL script. Looking for:\r\n" + string.Join("\r\n", filePaths));
+            throw new DslSyntaxException("Cannot find the extension file referenced in DSL script. " + dslSource.ReportError(begin) + "\r\nLooking for files:\r\n" + string.Join("\r\n", filePaths));
         }
     }
 }
