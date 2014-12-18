@@ -128,6 +128,7 @@
     <Compile Include="IsSubtypeOfDatabaseDefinition.cs" />
     <Compile Include="SqlDependsOnDataStructureDatabaseDefinition.cs" />
     <Compile Include="SqlDependsOnModuleDatabaseDefinition.cs" />
+    <Compile Include="SqlIndexClusteredDatabaseDefinition.cs" />
     <Compile Include="SubtypeImplementsPropertyDatabaseDefinition.cs" />
     <Compile Include="PolymorphicPropertyDatabaseDefinition.cs" />
     <Compile Include="SqlDependsOnSqlIndexDatabaseDefinition.cs" />

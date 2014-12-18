@@ -112,6 +112,13 @@ Module TestSqlWorkarounds
 	
 	Entity NoProperties;
 	SqlView DependsOnNoProperties "SELECT A = 1;" { SqlDependsOn TestSqlWorkarounds.NoProperties; }
+	
+	Entity TestIndex
+	{
+		ShortString A;
+		ShortString B;
+		SqlIndexMultiple 'A B' { Clustered; }
+	}
 }
 
 Module TestSqlWorkarounds2

@@ -26,16 +26,33 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class SqlIndexMultiplePropertyInfo : IConceptInfo
+    public class SqlIndexMultiplePropertyInfo : IConceptInfo, IAlternativeInitializationConcept
     {
         [ConceptKey]
         public SqlIndexMultipleInfo SqlIndex { get; set; }
         [ConceptKey]
+        public string Order { get; set; }
         public PropertyInfo Property { get; set; }
+        public SqlIndexMultiplePropertyInfo Dependency_PreviousProperty { get; set; } // Used for property ordering when creating the index.
 
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
             DslUtility.CheckIfPropertyBelongsToDataStructure(Property, SqlIndex.Entity, this);
+        }
+
+        public IEnumerable<string> DeclareNonparsableProperties()
+        {
+            return new[] { "Dependency_PreviousProperty" };
+        }
+
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            int order = int.Parse(Order);
+            if (order > 0)
+                Dependency_PreviousProperty = new SqlIndexMultiplePropertyInfo { SqlIndex = SqlIndex, Order = (order - 1).ToString() };
+            else
+                Dependency_PreviousProperty = this;
+            createdConcepts = null;
         }
     }
 }

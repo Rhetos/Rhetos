@@ -369,9 +369,10 @@ namespace Rhetos.DatabaseGenerator
         /// <returns>Item2 depends on item1.</returns>
         protected static List<Tuple<NewConceptApplication, NewConceptApplication>> GetDependencyPairs(IEnumerable<NewConceptApplication> conceptApplications)
         {
-            return conceptApplications.SelectMany(
-                dependent => dependent.DependsOn.Select(dependency => Tuple.Create((NewConceptApplication)dependency, dependent))
-                ).ToList();
+            return conceptApplications
+                .SelectMany(dependent => dependent.DependsOn.Select(dependency => Tuple.Create((NewConceptApplication)dependency, dependent)))
+                .Where(dependency => dependency.Item1 != dependency.Item2)
+                .ToList();
         }
 
         /// <returns>Item2 depends on item1.</returns>

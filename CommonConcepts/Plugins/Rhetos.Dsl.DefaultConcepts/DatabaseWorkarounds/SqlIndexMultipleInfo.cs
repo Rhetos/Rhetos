@@ -42,7 +42,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             newConcepts.AddRange(PropertyNames.Split(' ')
                 .Select(name => new PropertyInfo { DataStructure = Entity, Name = name })
-                .Select(property => new SqlIndexMultiplePropertyInfo { SqlIndex = this, Property = property }));
+                .Select((property, order) => new SqlIndexMultiplePropertyInfo { SqlIndex = this, Property = property, Order = order.ToString() }));
 
             return newConcepts;
         }
