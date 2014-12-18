@@ -39,50 +39,24 @@ namespace Rhetos.Dom.DefaultConcepts
         // ================================================================================
         #region Initialization
 
-        private readonly IDomainObjectModel _domainObjectModel;
-        private readonly Lazy<IIndex<string, IRepository>> _repositories;
+        private readonly GenericRepositoryParameters _parameters;
         private readonly RegisteredInterfaceImplementations _registeredInterfaceImplementations;
-        private readonly ILogProvider _logProvider;
-        private readonly IPersistenceTransaction _persistenceTransaction;
-        private readonly GenericFilterHelper _genericFilterHelper;
 
-        public GenericRepositories(
-            IDomainObjectModel domainObjectModel,
-            Lazy<IIndex<string, IRepository>> repositories,
-            RegisteredInterfaceImplementations registeredInterfaceImplementations,
-            ILogProvider logProvider,
-            IPersistenceTransaction persistenceTransaction,
-            GenericFilterHelper genericFilterHelper)
+        public GenericRepositories(GenericRepositoryParameters parameters, RegisteredInterfaceImplementations registeredInterfaceImplementations)
         {
-            _domainObjectModel = domainObjectModel;
-            _repositories = repositories;
+            _parameters = parameters;
             _registeredInterfaceImplementations = registeredInterfaceImplementations;
-            _logProvider = logProvider;
-            _persistenceTransaction = persistenceTransaction;
-            _genericFilterHelper = genericFilterHelper;
         }
 
         public GenericRepository<TEntityInterface> GetGenericRepository<TEntityInterface>()
             where TEntityInterface : class, IEntity
         {
-            return new GenericRepository<TEntityInterface>(
-                _domainObjectModel,
-                _repositories,
-                _registeredInterfaceImplementations,
-                _logProvider,
-                _persistenceTransaction,
-                _genericFilterHelper);
+            return new GenericRepository<TEntityInterface>(_parameters, _registeredInterfaceImplementations);
         }
 
         public GenericRepository<IEntity> GetGenericRepository(string entityName)
         {
-            return new GenericRepository<IEntity>(
-                _domainObjectModel,
-                _repositories,
-                entityName,
-                _logProvider,
-                _persistenceTransaction,
-                _genericFilterHelper);
+            return new GenericRepository<IEntity>(_parameters, entityName);
         }
 
         public string GetEntityName<TEntityInterface>()

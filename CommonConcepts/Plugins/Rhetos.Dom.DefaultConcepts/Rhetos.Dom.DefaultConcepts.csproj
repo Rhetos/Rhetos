@@ -68,6 +68,7 @@
     <Compile Include="Computations\KeyPropertyIDComputedFromCodeGenerator.cs" />
     <Compile Include="Computations\KeyPropertyComputedFromCodeGenerator.cs" />
     <Compile Include="Computations\KeepSynchronizedRecomputeOnDeployCodeGenerator.cs" />
+    <Compile Include="DataStructure\FilterIdRepositoryCodeGenerator.cs" />
     <Compile Include="DataStructure\ImplementsInterfacePropertyCodeGenerator.cs" />
     <Compile Include="DataStructure\DomInitializationCodeGenerator.cs" />
     <Compile Include="DataStructure\RegisteredInterfaceImplementationCodeGenerator.cs" />

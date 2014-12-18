@@ -29,6 +29,7 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         protected override void Load(ContainerBuilder builder)
         {
+            builder.RegisterType<GenericRepositoryParameters>().PropertiesAutowired();
             builder.RegisterType<GenericRepositories>();
             builder.RegisterGeneric(typeof(GenericRepository<>));
             builder.RegisterType<GenericFilterHelper>();

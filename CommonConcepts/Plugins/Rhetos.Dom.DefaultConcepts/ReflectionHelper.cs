@@ -100,6 +100,17 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
+        private Type _nhQueryableType = null;
+        public Type NhQueryableType
+        {
+            get
+            {
+                if (_nhQueryableType == null)
+                    _nhQueryableType = typeof(NHibernate.Linq.NhQueryable<>).MakeGenericType(new[] { EntityType });
+                return _nhQueryableType;
+            }
+        }
+
         private Type _repositoryType = null;
         public Type RepositoryType
         {
@@ -157,7 +168,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <param name="predicateExpression">
         /// Expression&lt;Func&lt;parameter, result&gt;&gt; does not support contravariant parameter type,
         /// so the object is used for predicateExpression.</param>
-        public IQueryable<TEntityInterface> Where(IQueryable<TEntityInterface> items, object predicateExpression)
+        public IQueryable<TEntityInterface> Where(IQueryable<TEntityInterface> items, Expression predicateExpression)
         {
             Type predicateParameter = GetPredicateExpressionParameter(predicateExpression.GetType());
             MethodInfo whereMethod = QueryableWhereMethod(predicateParameter);

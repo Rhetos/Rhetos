@@ -20,23 +20,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NHibernate;
+using System.Text;
 
-namespace Rhetos.Persistence
+namespace Rhetos.Dom.DefaultConcepts
 {
-    public interface IPersistenceTransaction : IDisposable
+    public interface ICommonFilterId : IEntity
     {
-        ISession NHibernateSession { get; }
-
-        /// <summary>
-        /// DiscardChanges marks the transaction as invalid. The changes will be descarded (rollback executed) on Dispose.
-        /// </summary>
-        void DiscardChanges();
-
-        /// <summary>
-        /// Use for cleanup code, such as deleting temporary data that may be used until the transaction is closed.
-        /// This event will not be invoked if the transaction rollback was executed (see <see cref="DiscardChanges()"/>).
-        /// </summary>
-        event Action BeforeClose;
+        Guid? Handle { get; set; }
+        Guid? Value { get; set; }
     }
 }

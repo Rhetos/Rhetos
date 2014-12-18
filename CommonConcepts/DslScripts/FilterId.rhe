@@ -1,0 +1,12 @@
+﻿Module Common
+{
+	Entity FilterId
+	{
+		Guid Handle;
+		Guid Value;
+		SqlIndexMultiple 'Handle Value' { Clustered; }
+		
+		// TODO: KeepEmpty;
+		Implements 'Rhetos.Dom.DefaultConcepts.ICommonFilterId, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
+	}
+}

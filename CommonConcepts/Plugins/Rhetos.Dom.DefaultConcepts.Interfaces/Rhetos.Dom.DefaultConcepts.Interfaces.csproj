@@ -96,6 +96,7 @@
     <Compile Include="DeactivateInsteadOfDelete.cs" />
     <Compile Include="DomUtility.cs" />
     <Compile Include="FilterAll.cs" />
+    <Compile Include="ICommonFilterId.cs" />
     <Compile Include="IDeactivatable.cs" />
     <Compile Include="DatabaseExtensionFunctions.cs" />
     <Compile Include="FilterCriteria.cs" />

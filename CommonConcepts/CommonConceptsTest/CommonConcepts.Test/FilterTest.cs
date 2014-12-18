@@ -100,8 +100,15 @@ namespace CommonConcepts.Test
 
         private static void FilterEntityByIdentifiers(int n)
         {
-            using (var container = new RhetosTestContainer())
+            int oldFilterIds;
+            Guid commitCheckId = Guid.NewGuid();
+
+            using (var container = new RhetosTestContainer(true))
             {
+                var context = container.Resolve<Common.ExecutionContext>();
+                var filterIdRepos = container.Resolve<GenericRepository<Common.FilterId>>();
+                oldFilterIds = filterIdRepos.Query().Count();
+
                 var guids = Enumerable.Range(0, n).Select(x => Guid.NewGuid()).ToList();
 
                 List<string> commands = new List<string>();
@@ -121,8 +128,11 @@ namespace CommonConcepts.Test
 
                 try
                 {
-                    var all = repository.Test10.Simple.Filter(guids);
-                    Assert.AreEqual(n, all.Count());
+                    var loadedByIds = repository.Test10.Simple.Filter(guids);
+                    Assert.AreEqual(n, loadedByIds.Count());
+
+                    var queriedByIds = container.Resolve<GenericRepository<Test10.Simple>>().Query(guids);
+                    Assert.AreEqual(n, queriedByIds.Count());
                 }
                 catch (Exception ex)
                 {
@@ -139,6 +149,19 @@ namespace CommonConcepts.Test
 
                     throw new Exception(limitedLengthReport.ToString());
                 }
+
+                context.NHibernateSession.CreateSQLQuery("DELETE FROM Test10.Simple").ExecuteUpdate();
+                repository.Test10.Simple.Insert(new[] { new Test10.Simple { ID = commitCheckId } });
+            }
+
+            using (var container = new RhetosTestContainer())
+            {
+                var testRepos = container.Resolve<GenericRepository<Test10.Simple>>();
+                if (testRepos.Query(new[] { commitCheckId }).Count() == 0)
+                    Assert.Fail("Transaction did not commit. Cannot test for remaining temporary data.");
+
+                var filterIdRepos = container.Resolve<GenericRepository<Common.FilterId>>();
+                Assert.AreEqual(0, filterIdRepos.Query().Count() - oldFilterIds, "Temporary data used for filtering should be cleaned.");
             }
         }
 

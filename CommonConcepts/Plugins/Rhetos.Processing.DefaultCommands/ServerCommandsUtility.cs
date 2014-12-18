@@ -58,42 +58,25 @@ namespace Rhetos.Processing.DefaultCommands
 
             if (filterMethodInfo != null)
             {
-                Guid? duplicateId = FindDuplicate(validateItems.Select(a => a.ID).ToList());
+                var itemsIds = validateItems.Select(item => item.ID).ToList();
+                Guid? duplicateId = FindDuplicate(itemsIds); // Duplicates validation is necessary because CheckAllItemsWithinFilter works by counting filtered items.
                 if (duplicateId != null)
                     throw new FrameworkException(string.Format(
                         "Error while checking {2}: Loaded items have duplicate IDs ({0}:{1}).",
                         genericRepository.EntityName, duplicateId, filterType.Name));
 
-                var allowedItemsQuery = (IQueryable<IEntity>)genericRepository.ReadNonMaterialized(null, filterType, true);
+                var allowedGivenItemsFilter = new[] { new FilterCriteria { Filter = filterName }, new FilterCriteria(itemsIds) };
+                var allowedGivenItemsQuery = (IQueryable<IEntity>)genericRepository.ReadOrQuery(allowedGivenItemsFilter, preferQuery: true);
+                int allowedItemsCount = allowedGivenItemsQuery.Count();
 
-                const int batchSize = 2000; // true NHibernate/SQL limit is probably 2100
-                _logger.Trace(() => string.Format("Found validation filter {0}, checking if all items are allowed (with batchSize = {1}).", filterType.Name, batchSize));
+                _logger.Trace(() => string.Format("Filter validation {0} test; requested: {1}, allowed: {2}.", filterType.Name, itemsIds.Count, allowedItemsCount));
 
-                var itemsBatches = GetChunks(validateItems, batchSize);
-                foreach (var itemsBatch in itemsBatches)
-                {
-                    var itemsIds = itemsBatch.Select(item => item.ID).ToList();
-
-                    // The following query is equivalent to: int allowedItemsCount = allowedItemsQuery.Where(allowedItem => readItemsIds.Contains(allowedItem.ID)).Count();
-                    // The query is built by reflection to avoid an obscure problem with complex query in NHibernate: using generic parameter TEntityInterface or IEntity for a query parameter
-                    // breaks on some complex scenarios, so row permissions would not work on browse data structures, see unit test CommonConcepts.Test.RowPermissionsTest.Browse).
-                    var allowedItemPredicateParameter = Expression.Parameter(genericRepository.Reflection.EntityType, "allowedItem");
-                    var allowedItemPredicate = Expression.Lambda(
-                        Expression.Call(
-                            Expression.Constant(itemsIds),
-                            typeof(List<Guid>).GetMethod("Contains"),
-                            new[] { Expression.Property(allowedItemPredicateParameter, "ID") }),
-                        allowedItemPredicateParameter);
-                    int allowedItemsCount = genericRepository.Reflection.Where(allowedItemsQuery, allowedItemPredicate).Count();
-                    _logger.Trace(() => string.Format("Filter validation {0} batch test; distinct requested: {1}, distinct allowed: {2}.", filterType.Name, itemsIds.Count, allowedItemsCount));
-
-                    if (allowedItemsCount < itemsIds.Count)
-                        return false;
-                    else if (allowedItemsCount > itemsIds.Count)
-                        throw new FrameworkException(string.Format(
-                            "Invalid filter validation result: More items allowed ({0}) then items read ({1}). Check if the {2} filter on {3} returns duplicate IDs.",
-                            allowedItemsCount, itemsIds.Count, filterType.Name, genericRepository.EntityName));
-                }
+                if (allowedItemsCount < itemsIds.Count)
+                    return false;
+                else if (allowedItemsCount > itemsIds.Count)
+                    throw new FrameworkException(string.Format(
+                        "Invalid filter validation result: More items allowed ({0}) then items read ({1}). Check if the {2} filter on {3} returns duplicate IDs.",
+                        allowedItemsCount, itemsIds.Count, filterType.Name, genericRepository.EntityName));
             }
 
             return true;
@@ -126,7 +109,7 @@ namespace Rhetos.Processing.DefaultCommands
             {
                 bool pagingIsUsed = commandInfo.Top > 0 || commandInfo.Skip > 0;
 
-                IEnumerable<IEntity> filtered = genericRepository.ReadNonMaterialized(commandInfo.Filters ?? new FilterCriteria[] { }, preferQuery: pagingIsUsed || !commandInfo.ReadRecords);
+                IEnumerable<IEntity> filtered = genericRepository.ReadOrQuery(commandInfo.Filters ?? new FilterCriteria[] { }, preferQuery: pagingIsUsed || !commandInfo.ReadRecords);
 
                 IEntity[] resultRecords = null;
                 int? totalCount = null;

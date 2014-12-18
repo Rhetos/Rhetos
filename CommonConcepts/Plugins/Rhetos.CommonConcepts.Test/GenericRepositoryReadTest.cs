@@ -64,13 +64,7 @@ namespace Rhetos.CommonConcepts.Test
 
         GenericRepository<ISimpleEntity> NewRepos(IRepository repository)
         {
-            return new GenericRepository<ISimpleEntity>(
-                new DomainObjectModelMock(),
-                new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock(typeof(SimpleEntity), repository)),
-                new RegisteredInterfaceImplementations { { typeof(ISimpleEntity), typeof(SimpleEntity).FullName } },
-                new ConsoleLogProvider(),
-                null,
-                new GenericFilterHelper(new DomainObjectModelMock()));
+            return new TestGenericRepository<ISimpleEntity, SimpleEntity>(repository);
         }
 
         //=======================================================
@@ -192,8 +186,8 @@ namespace Rhetos.CommonConcepts.Test
         public void ReadFilterAll_PreferQuery()
         {
             var repos = NewRepos(new FilterAllRepository());
-            Assert.AreEqual("FilterAll", repos.ReadNonMaterialized(new FilterAll(), preferQuery: false).Single().Name);
-            Assert.AreEqual("Query", repos.ReadNonMaterialized(new FilterAll(), preferQuery: true).Single().Name);
+            Assert.AreEqual("FilterAll", repos.ReadOrQuery(new FilterAll(), preferQuery: false).Single().Name);
+            Assert.AreEqual("Query", repos.ReadOrQuery(new FilterAll(), preferQuery: true).Single().Name);
         }
 
         //===============================================
@@ -314,9 +308,9 @@ namespace Rhetos.CommonConcepts.Test
 
             Assert.AreEqual(3, impRepos.Counter);
 
-            exp = NewRepos(new ExplicitGenericPropertyFilterRepository()).ReadNonMaterialized(gf, false);
-            exp2 = NewRepos(new ExplicitGenericPropertyFilterRepository2()).ReadNonMaterialized(gf, false);
-            imp = NewRepos(impRepos).ReadNonMaterialized(gf, false);
+            exp = NewRepos(new ExplicitGenericPropertyFilterRepository()).ReadOrQuery(gf, false);
+            exp2 = NewRepos(new ExplicitGenericPropertyFilterRepository2()).ReadOrQuery(gf, false);
+            imp = NewRepos(impRepos).ReadOrQuery(gf, false);
 
             Assert.AreEqual(3, impRepos.Counter);
 
@@ -454,7 +448,7 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual("IL", TestIListIQueryable(items));
             Assert.AreEqual("Q, X", entityRepos.Log);
 
-            items = genericRepos.ReadNonMaterialized(gf, true);
+            items = genericRepos.ReadOrQuery(gf, true);
             Assert.AreEqual("Q, X, Q", entityRepos.Log);
 
             Assert.AreEqual("b1, b2", TestUtility.Dump(items));
@@ -483,7 +477,7 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual("IL", TestIListIQueryable(items));
             Assert.AreEqual("Q, X", entityRepos.Log);
 
-            items = genericRepos.ReadNonMaterialized(gf, true);
+            items = genericRepos.ReadOrQuery(gf, true);
             Assert.AreEqual("Q, X, Q", entityRepos.Log);
 
             Assert.AreEqual("a1, a2, b1, b2", TestUtility.Dump(items));
@@ -508,7 +502,7 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual("f1, f2", TestUtility.Dump(items));
             Assert.AreEqual("LP", entityRepos.Log);
 
-            items = genericRepos.ReadNonMaterialized(gf, preferQuery: true);
+            items = genericRepos.ReadOrQuery(gf, preferQuery: true);
             Assert.AreEqual("IQ", TestIListIQueryable(items));
             Assert.AreEqual("LP, Q, QF", entityRepos.Log);
             Assert.AreEqual("b1, b2", TestUtility.Dump(items));
@@ -530,7 +524,7 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual("a1, a2", TestUtility.Dump(items));
             Assert.AreEqual("Q, QF, X", entityRepos.Log);
 
-            items = genericRepos.ReadNonMaterialized(gf, preferQuery: true);
+            items = genericRepos.ReadOrQuery(gf, preferQuery: true);
             Assert.AreEqual("IQ", TestIListIQueryable(items));
             Assert.AreEqual("Q, QF, X, Q, QF", entityRepos.Log);
             Assert.AreEqual("a1, a2", TestUtility.Dump(items));
@@ -586,7 +580,7 @@ namespace Rhetos.CommonConcepts.Test
             var entityRepos = new GenericFilterRepository();
             var genericRepos = NewRepos(entityRepos);
 
-            Assert.AreEqual("IQ: ql1, ql2", TypeAndNames(genericRepos.ReadNonMaterialized(new[] {
+            Assert.AreEqual("IQ: ql1, ql2", TypeAndNames(genericRepos.ReadOrQuery(new[] {
                 new FilterCriteria { Filter = typeof(QueryLoaderFilter).FullName } }, preferQuery: true)));
             Assert.AreEqual("QP", entityRepos.Log); entityRepos._log.Clear();
 
@@ -654,12 +648,12 @@ namespace Rhetos.CommonConcepts.Test
             var entityRepos = new GenericFilterRepository();
             var genericRepos = NewRepos(entityRepos);
 
-            Assert.AreEqual("IQ: a1, a2", TypeAndNames(genericRepos.ReadNonMaterialized(
+            Assert.AreEqual("IQ: a1, a2", TypeAndNames(genericRepos.ReadOrQuery(
                 new[] { new FilterCriteria { Filter = predicate.GetType().AssemblyQualifiedName, Operation = "Matches", Value = predicate } },
                 preferQuery: false)));
             Assert.AreEqual("Q, X", entityRepos.Log); entityRepos._log.Clear();
 
-            Assert.AreEqual("IQ: b1, b2", TypeAndNames(genericRepos.ReadNonMaterialized(
+            Assert.AreEqual("IQ: b1, b2", TypeAndNames(genericRepos.ReadOrQuery(
                 new[] { new FilterCriteria { Filter = predicate.GetType().AssemblyQualifiedName, Operation = "NotMatches", Value = predicate } },
                 preferQuery: false)));
             Assert.AreEqual("Q, X", entityRepos.Log); entityRepos._log.Clear();
@@ -686,7 +680,7 @@ namespace Rhetos.CommonConcepts.Test
 
             var genericFilter = new[] { propertyFilter, new FilterCriteria { Filter = expressionFilter.GetType().AssemblyQualifiedName, Value = expressionFilter } };
 
-            Assert.AreEqual("IQ: 2, 12", TypeAndNames(genericRepos.ReadNonMaterialized(genericFilter, preferQuery: true)));
+            Assert.AreEqual("IQ: 2, 12", TypeAndNames(genericRepos.ReadOrQuery(genericFilter, preferQuery: true)));
         }
 
         class SystemFilterRepository : IRepository

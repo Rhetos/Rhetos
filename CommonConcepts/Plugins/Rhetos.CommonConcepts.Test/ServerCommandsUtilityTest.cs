@@ -73,13 +73,7 @@ namespace Rhetos.CommonConcepts.Test
 
         GenericRepository<IEntity> NewRepos(IRepository repository)
         {
-            return new GenericRepository<IEntity>(
-                new DomainObjectModelMock(),
-                new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock(typeof(SimpleEntity), repository)),
-                typeof(SimpleEntity).FullName,
-                new ConsoleLogProvider(),
-                null,
-                new GenericFilterHelper(new DomainObjectModelMock()));
+            return new TestGenericRepository<IEntity, SimpleEntity>(repository);
         }
 
         class ImplicitQueryDataSourceCommandRepository : IRepository

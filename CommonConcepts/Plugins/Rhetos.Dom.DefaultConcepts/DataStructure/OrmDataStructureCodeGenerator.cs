@@ -40,6 +40,25 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<DataStructureInfo> EqualsBaseTag = "Orm EqualsBase";
         public static readonly CsTag<DataStructureInfo> EqualsInterfaceTag = "Orm EqualsInterface";
 
+        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        {
+            var info = (DataStructureInfo)conceptInfo;
+
+            if (info is IOrmDataStructure)
+            {
+                codeBuilder.InsertCode(CodeSnippet(info), DataStructureCodeGenerator.BodyTag, info);
+                codeBuilder.AddInterfaceAndReference(string.Format("System.IEquatable<{0}>", info.Name), typeof(System.IEquatable<>), info);
+
+                PropertyInfo idProperty = new PropertyInfo { DataStructure = info, Name = "ID" };
+                PropertyHelper.GenerateCodeForType(idProperty, codeBuilder, "Guid", true);
+                codeBuilder.AddInterfaceAndReference(typeof(IEntity), info);
+
+                RepositoryHelper.GenerateRepository(info, codeBuilder);
+                RepositoryHelper.GenerateQueryableRepositoryFunctions(info, codeBuilder, QuerySnippet(info));
+                codeBuilder.InsertCode(SnippetQueryableFilterById(info), RepositoryHelper.RepositoryMembers, info);
+            }
+        }
+
         protected static string CodeSnippet(DataStructureInfo info)
         {
             return
@@ -72,22 +91,25 @@ namespace Rhetos.Dom.DefaultConcepts
                 info.Module.Name, info.Name);
         }
 
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        public static string SnippetQueryableFilterById(DataStructureInfo info)
         {
-            var info = (DataStructureInfo)conceptInfo;
+            return string.Format(
+@"        public IQueryable<{0}.{1}> Filter(IQueryable<{0}.{1}> items, IEnumerable<Guid> ids)
+        {{
+            if (!(ids is System.Collections.IList))
+                ids = ids.ToList();
 
-            if (info is IOrmDataStructure)
-            {
-                codeBuilder.InsertCode(CodeSnippet(info), DataStructureCodeGenerator.BodyTag, info);
-                codeBuilder.AddInterfaceAndReference(string.Format("System.IEquatable<{0}>", info.Name), typeof (System.IEquatable<>), info);
+            if (ids.Count() < 2000) // NHibernate limit for Contains function.
+                return items.Where(item => ids.Contains(item.ID));
+            else
+            {{
+                var idsQuery = _domRepository.Common.FilterId.CreateQueryableFilterIds(ids);
+                return items.Where(item => idsQuery.Contains(item.ID));
+            }}
+        }}
 
-                PropertyInfo idProperty = new PropertyInfo {DataStructure = info, Name = "ID"};
-                PropertyHelper.GenerateCodeForType(idProperty, codeBuilder, "Guid", true);
-                codeBuilder.AddInterfaceAndReference(typeof (IEntity), info);
-
-                RepositoryHelper.GenerateRepository(info, codeBuilder);
-                RepositoryHelper.GenerateQueryableRepositoryFunctions(info, codeBuilder, QuerySnippet(info));
-            }
+",
+                info.Module.Name, info.Name);
         }
     }
 }

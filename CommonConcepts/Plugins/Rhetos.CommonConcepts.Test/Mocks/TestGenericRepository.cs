@@ -38,12 +38,31 @@ namespace Rhetos.CommonConcepts.Test.Mocks
     {
         public TestGenericRepository(IEnumerable<TEntity> items = null)
             : base(
-                new DomainObjectModelMock(),
-                new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock<TEntityInterface, TEntity>(items)),
-                new RegisteredInterfaceImplementations { { typeof(TEntityInterface), typeof(TEntity).FullName }},
-                new ConsoleLogProvider(),
-                new PersistenceTransactionStub(),
-                new GenericFilterHelper(new DomainObjectModelMock()))
+                new GenericRepositoryParameters
+                {
+                    DomainObjectModel = new DomainObjectModelMock(),
+                    Repositories = new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock<TEntityInterface, TEntity>(items)),
+                    LogProvider = new ConsoleLogProvider(),
+                    PersistenceTransaction = new PersistenceTransactionStub(),
+                    GenericFilterHelper = new GenericFilterHelper(new DomainObjectModelMock()),
+                    FilterIdRepository = null
+                },
+                new RegisteredInterfaceImplementations { { typeof(TEntityInterface), typeof(TEntity).FullName }})
+        {
+        }
+
+        public TestGenericRepository(IRepository repository)
+            : base(
+                new GenericRepositoryParameters
+                {
+                    DomainObjectModel = new DomainObjectModelMock(),
+                    Repositories = new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock(typeof(TEntity), repository)),
+                    LogProvider = new ConsoleLogProvider(),
+                    PersistenceTransaction = new PersistenceTransactionStub(),
+                    GenericFilterHelper = new GenericFilterHelper(new DomainObjectModelMock()),
+                    FilterIdRepository = null
+                },
+                new RegisteredInterfaceImplementations { { typeof(TEntityInterface), typeof(TEntity).FullName } })
         {
         }
 

@@ -39,5 +39,7 @@ namespace Rhetos.CommonConcepts.Test.Mocks
         public void Dispose()
         {
         }
+
+        public event Action BeforeClose;
     }
 }

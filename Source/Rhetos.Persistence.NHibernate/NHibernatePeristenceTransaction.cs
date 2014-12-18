@@ -101,18 +101,28 @@ namespace Rhetos.Persistence.NHibernate
                     Commit();
             }
 
+            BeforeClose = null;
             _disposed = true;
             FreeResources();
         }
 
+        public event Action BeforeClose;
+
         private void Commit()
         {
+            if (BeforeClose != null)
+            {
+                BeforeClose();
+                BeforeClose = null;
+            }
+
             if (_transaction != null)
                 _transaction.Commit();
         }
 
         private void Rollback()
         {
+            BeforeClose = null;
             try
             {
                 if (_transaction != null)

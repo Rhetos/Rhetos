@@ -76,6 +76,7 @@ namespace Rhetos.Dom.DefaultConcepts
             RepositoryHelper.GenerateRepository(info, codeBuilder);
             RepositoryHelper.GenerateQueryableRepositoryFunctions(info, codeBuilder, QuerySnippet(info));
             codeBuilder.InsertCode(RepositoryFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info);
+            codeBuilder.InsertCode(OrmDataStructureCodeGenerator.SnippetQueryableFilterById(info), RepositoryHelper.RepositoryMembers, info);
         }
     }
 }

@@ -25,6 +25,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
+using Rhetos.Dom.DefaultConcepts;
 
 namespace CommonConcepts.Test.OldConcepts
 {
@@ -182,6 +183,48 @@ namespace CommonConcepts.Test.OldConcepts
                 Assert.AreEqual(parentID, repository.TestBrowse.SFTake.Query().Single().RefID);
                 Assert.AreEqual(parentID, repository.TestBrowse.SFTake.Query().Single().ParentReferenceID);
                 Assert.AreEqual("parent", repository.TestBrowse.SFTake.Query().Single().ParentReference.Name);
+            }
+        }
+
+        [TestMethod]
+        public void Filters()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                var genericRepository = container.Resolve<GenericRepository<TestBrowse.SF>>();                    
+
+                Guid sourceId = Guid.NewGuid();
+                Guid refId = Guid.NewGuid();
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                    {
+                        "DELETE FROM TestBrowse.Source;",
+                        "DELETE FROM TestBrowse.Other;",
+                        "INSERT INTO TestBrowse.Other (ID, Name) SELECT '" + refId + "', 'abc';",
+                        "INSERT INTO TestBrowse.Source (ID, RefID) SELECT '" + sourceId + "', '" + refId + "';",
+                    });
+
+                var ids = new[] { sourceId };
+                Assert.AreEqual("abc", repository.TestBrowse.SF.Filter(ids).Single().RefName);
+                Assert.AreEqual("abc", repository.TestBrowse.SF.Query().Where(item => ids.Contains(item.ID)).Single().RefName);
+
+                {
+                    Assert.AreEqual("abc", genericRepository.Read(ids).Single().RefName);
+
+                    var q = genericRepository.Query(ids);
+                    Assert.IsTrue(q is IQueryable, q.GetType().FullName);
+                    Assert.AreEqual("abc", q.Single().RefName);
+                }
+
+                var manyIds = Enumerable.Range(0, 5000).Select(x => Guid.NewGuid()).Concat(ids).ToList();
+
+                {
+                    Assert.AreEqual("abc", genericRepository.Read(manyIds).Single().RefName);
+
+                    var q = genericRepository.Query(manyIds);
+                    Assert.IsTrue(q is IQueryable, q.GetType().FullName);
+                    Assert.AreEqual("abc", q.Single().RefName);
+                }
             }
         }
     }

@@ -75,13 +75,7 @@ namespace Rhetos.CommonConcepts.Test
 
         GenericRepository<SimpleEntity> NewRepos(IRepository repository)
         {
-            return new GenericRepository<SimpleEntity>(
-                new DomainObjectModelMock(),
-                new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock(typeof(SimpleEntity), repository)),
-                new RegisteredInterfaceImplementations(),
-                new ConsoleLogProvider(),
-                null,
-                new GenericFilterHelper(new DomainObjectModelMock()));
+            return new TestGenericRepository<SimpleEntity, SimpleEntity>(repository);
         }
 
         void TestError(Action action, string errorMessage, string locationFunctionName)

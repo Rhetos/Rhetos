@@ -64,13 +64,7 @@ namespace Rhetos.CommonConcepts.Test
 
         GenericRepository<ISimpleEntity> NewRepos(IRepository repository)
         {
-            return new GenericRepository<ISimpleEntity>(
-                new DomainObjectModelMock(),
-                new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock(typeof(SimpleEntity), repository)),
-                new RegisteredInterfaceImplementations { { typeof(ISimpleEntity), typeof(SimpleEntity).FullName } },
-                new ConsoleLogProvider(),
-                null,
-                new GenericFilterHelper(new DomainObjectModelMock()));
+            return new TestGenericRepository<ISimpleEntity, SimpleEntity>(repository);
         }
 
         //=======================================================
@@ -171,6 +165,30 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual("qf5", repos.Query<Parameter5>().Single().Name);
 
             Assert.AreEqual("qb", repos.Query(new Parameter6 { Pattern = "b" }).Single().Name);
+        }
+
+        [TestMethod]
+        public void GenericFilterByIds()
+        {
+            var repos = NewRepos(new SimpleRepository());
+
+            var guids = new[] { new Guid(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) };
+            Assert.AreEqual("qb", repos.Read(guids).Single().Name);
+            Assert.AreEqual("qb", repos.Read(guids.ToList()).Single().Name);
+            Assert.AreEqual("qb", repos.Read(guids.AsQueryable()).Single().Name);
+            Assert.AreEqual("qb", repos.Query(guids).Single().Name);
+            Assert.AreEqual("qb", repos.Query(guids.ToList()).Single().Name);
+            Assert.AreEqual("qb", repos.Query(guids.AsQueryable()).Single().Name);
+
+            var q = repos.Query();
+            Assert.AreEqual("qb", repos.Filter(q, guids).Single().Name);
+            Assert.AreEqual("qb", repos.Filter(q, guids.ToList()).Single().Name);
+            Assert.AreEqual("qb", repos.Filter(q, guids.AsQueryable()).Single().Name);
+
+            var a = repos.Read();
+            Assert.AreEqual("qb", repos.Filter(a, guids).Single().Name);
+            Assert.AreEqual("qb", repos.Filter(a, guids.ToList()).Single().Name);
+            Assert.AreEqual("qb", repos.Filter(a, guids.AsQueryable()).Single().Name);
         }
     }
 }
