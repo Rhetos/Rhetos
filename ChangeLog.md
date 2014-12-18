@@ -1,3 +1,16 @@
+0.9.21 (2014-12-18)
+-------------------
+
+Internal improvements:
+
+* Bugfix: Filter by ID cannot be combined with queryable filters. Some queries may throw NHibernate error, such as using row permissions on filters browse data structure.
+* Bugfix: **SqlIndexMultiple** sometimes did not use the given ordering of properties.
+* Bugfix: *SqlCommandTimeout* config parameter does not apply to NHibernate queries.
+* Bugfix: **AutoCode** fails with unique index constraint error on concurrent inserts.
+* Bugfix: Duplicate unique value error in *IX_Permission_Principal_Claim* on deployment, when migrating roles from *AspNetFormsAuth* to *SimpleWindowsAuth* package.
+* New concept: **Clustered**, for SQL indexes.
+* Minor performance optimizations.
+
 0.9.20 (2014-12-09)
 -------------------
 
