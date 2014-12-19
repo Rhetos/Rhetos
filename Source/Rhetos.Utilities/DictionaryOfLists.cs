@@ -17,27 +17,35 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac.Features.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Rhetos.Extensibility.Test
+namespace Rhetos.Utilities
 {
-    public class PluginsContainerAccessor<TPlugin> : PluginsContainer<TPlugin>
+    public class DictionaryOfLists<TKey, TValue> : Dictionary<TKey, List<TValue>>
     {
-        public PluginsContainerAccessor()
-            : base (
-                new Lazy<IEnumerable<TPlugin>> { },
-                new Lazy<Autofac.Features.Indexed.IIndex<Type, IEnumerable<TPlugin>>> { },
-                new PluginsMetadataCache<TPlugin>(new Lazy<IEnumerable<Meta<TPlugin>>> { }))
+        public void Add(TKey key, TValue value)
         {
+            List<TValue> list;
+            if (!TryGetValue(key, out list))
+            {
+                list = new List<TValue>();
+                Add(key, list);
+            }
+            list.Add(value);
         }
 
-        public static List<Type> Access_GetTypeHierarchy(Type type)
+        /// <summary>
+        /// Returns empty list is the given key does not exist.
+        /// </summary>
+        public List<TValue> Get(TKey key)
         {
-            return GetTypeHierarchy(type);
+            List<TValue> list;
+            if (!TryGetValue(key, out list))
+                list = new List<TValue>();
+            return list;
         }
     }
 }

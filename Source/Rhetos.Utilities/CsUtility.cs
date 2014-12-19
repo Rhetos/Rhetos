@@ -106,5 +106,21 @@ namespace Rhetos.Utilities
 
             return null;
         }
+
+        /// <summary>
+        /// Result does not include implemented interfaces, only base classes.
+        /// Result includes the given type.
+        /// </summary>
+        public static List<Type> GetClassHierarchy(Type type)
+        {
+            var types = new List<Type>();
+            while (type != typeof(object))
+            {
+                types.Add(type);
+                type = type.BaseType;
+            }
+            types.Reverse();
+            return types;
+        }
     }
 }

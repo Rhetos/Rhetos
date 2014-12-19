@@ -25,19 +25,8 @@ using System.Diagnostics.Contracts;
 
 namespace Rhetos.Dsl
 {
-    public interface IDslModel
+    public interface IDslModelIndex
     {
-        /// <summary>
-        /// The concepts are already sorted by their dependencies.
-        /// </summary>
-        IEnumerable<IConceptInfo> Concepts { get; }
-
-        /// <summary>
-        /// See ConceptInfoHelper.GetKey function description for expected format of conceptKey.
-        /// Returns null is there is no concept with the given key.
-        /// </summary>
-        IConceptInfo FindByKey(string conceptKey);
-
-        T GetIndex<T>() where T : IDslModelIndex;
+        void Add(IConceptInfo concept);
     }
 }

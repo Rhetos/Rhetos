@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
@@ -27,20 +28,6 @@ using System.Text;
 
 namespace Rhetos.Dsl
 {
-    public class DictionaryOfLists<TKey, TValue> : Dictionary<TKey, List<TValue>>
-    {
-        public void Add(TKey key, TValue value)
-        {
-            List<TValue> list;
-            if (!TryGetValue(key, out list))
-            {
-                list = new List<TValue>();
-                Add(key, list);
-            }
-            list.Add(value);
-        }
-    }
-
     /// <summary>
     /// This class implements IDslModel, but it may return empty or partly initialized list of concepts, as opposed to
     /// DslModel class (also implements IDslModel) that always makes sure that the DSL model is fully initialized
@@ -54,13 +41,16 @@ namespace Rhetos.Dsl
 
         private readonly List<IConceptInfo> _resolvedConcepts = new List<IConceptInfo>();
         private readonly Dictionary<string, IConceptInfo> _resolvedConceptsByKey = new Dictionary<string, IConceptInfo>();
-        private readonly DictionaryOfLists<Type, IConceptInfo> _resolvedConceptsByType = new DictionaryOfLists<Type, IConceptInfo>();
         private readonly Dictionary<string, IConceptInfo> _unresolvedConceptsByKey = new Dictionary<string, IConceptInfo>();
+        private readonly List<IDslModelIndex> _dslModelIndexes;
+        private readonly Dictionary<Type, IDslModelIndex> _dslModelIndexesByType;
 
-        public DslContainer(ILogProvider logProvider)
+        public DslContainer(ILogProvider logProvider, IPluginsContainer<IDslModelIndex> dslModelIndexPlugins)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("DslContainer");
+            _dslModelIndexes = dslModelIndexPlugins.GetPlugins().ToList();
+            _dslModelIndexesByType = _dslModelIndexes.ToDictionary(index => index.GetType());
         }
 
         #region IDslModel filters implementation
@@ -77,27 +67,15 @@ namespace Rhetos.Dsl
             return result;
         }
 
-        public IEnumerable<IConceptInfo> FindByType(Type conceptType)
+        public T GetIndex<T>() where T : IDslModelIndex
         {
-            return FindByType(conceptType, includeDerivations: true);
+            IDslModelIndex index;
+            if (!_dslModelIndexesByType.TryGetValue(typeof(T), out index))
+                throw new FrameworkException("There is no registered IDslModelIndex plugin of type '" + typeof(T).FullName + "'.");
+            return (T)index;
         }
 
         #endregion
-
-        public IEnumerable<IConceptInfo> FindByType(Type conceptType, bool includeDerivations)
-        {
-            if (includeDerivations)
-                return _resolvedConceptsByType
-                    .Where(conceptsGroup => conceptType.IsAssignableFrom(conceptsGroup.Key))
-                    .SelectMany(conceptsGroup => conceptsGroup.Value);
-            else
-            {
-                List<IConceptInfo> result = null;
-                if (_resolvedConceptsByType.TryGetValue(conceptType, out result))
-                    return result;
-                return new List<IConceptInfo>();
-            }
-        }
 
         public class AddNewConceptsReport
         {
@@ -200,13 +178,15 @@ namespace Rhetos.Dsl
 
             foreach (var concept in newlyResolved)
             {
+                _logger.Trace(() => "New concept with resolved references: " + concept.Key);
+
                 _unresolvedConceptsByKey.Remove(concept.Key);
 
                 _resolvedConcepts.Add(concept.Value);
                 _resolvedConceptsByKey.Add(concept.Key, concept.Value);
-                _resolvedConceptsByType.Add(concept.Value.GetType(), concept.Value);
 
-                _logger.Trace(() => "New concept with resolved references: " + concept.Key);
+                foreach (var index in _dslModelIndexes)
+                    index.Add(concept.Value);
             }
 
             return newlyResolved.Select(concept => concept.Value);

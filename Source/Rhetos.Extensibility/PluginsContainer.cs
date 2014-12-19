@@ -62,24 +62,12 @@ namespace Rhetos.Extensibility
 
         public IEnumerable<TPlugin> GetImplementations(Type implements)
         {
-            var typeHierarchy = GetTypeHierarchy(implements);
+            var typeHierarchy = CsUtility.GetClassHierarchy(implements);
             var allImplementations = typeHierarchy.SelectMany(type => _pluginsByImplementation.Value[type]).ToArray();
 
             _cache.SortByMetadataDependsOn(implements, allImplementations);
 
             return allImplementations;
-        }
-
-        protected static List<Type> GetTypeHierarchy(Type type)
-        {
-            var types = new List<Type>();
-            while (type != typeof(object))
-            {
-                types.Add(type);
-                type = type.BaseType;
-            }
-            types.Reverse();
-            return types;
         }
     }
 }

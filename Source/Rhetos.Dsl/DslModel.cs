@@ -46,6 +46,7 @@ namespace Rhetos.Dsl
         public DslModel(
             IDslParser dslParser,
             ILogProvider logProvider,
+            DslContainer dslContainer,
             IIndex<Type, IEnumerable<IConceptMacro>> macros,
             IEnumerable<IConceptMacro> macroPrototypes,
             IEnumerable<IConceptInfo> conceptPrototypes,
@@ -56,7 +57,7 @@ namespace Rhetos.Dsl
             _logger = logProvider.GetLogger("DslModel");
             _evaluatorsOrderLogger = logProvider.GetLogger("MacroEvaluatorsOrder");
             _dslModelConceptsLogger = logProvider.GetLogger("DslModelConcepts");
-            _dslContainer = new DslContainer(logProvider);
+            _dslContainer = dslContainer;
             _macros = macros;
             _macroTypes = macroPrototypes.Select(macro => macro.GetType());
             _conceptTypes = conceptPrototypes.Select(conceptInfo => conceptInfo.GetType());
@@ -87,6 +88,13 @@ namespace Rhetos.Dsl
             if (!_initialized)
                 Initialize();
             return _dslContainer.FindByType(conceptType);
+        }
+
+        public T GetIndex<T>() where T : IDslModelIndex
+        {
+            if (!_initialized)
+                Initialize();
+            return _dslContainer.GetIndex<T>();
         }
 
         #endregion

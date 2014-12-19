@@ -17,27 +17,41 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Extensibility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Diagnostics.Contracts;
 
-namespace Rhetos.Dsl
+namespace Rhetos.Dsl.Test
 {
-    public interface IDslModel
+    public class PluginsContainerMock<T> : IPluginsContainer<T>
     {
-        /// <summary>
-        /// The concepts are already sorted by their dependencies.
-        /// </summary>
-        IEnumerable<IConceptInfo> Concepts { get; }
+        IEnumerable<T> _plugins;
 
-        /// <summary>
-        /// See ConceptInfoHelper.GetKey function description for expected format of conceptKey.
-        /// Returns null is there is no concept with the given key.
-        /// </summary>
-        IConceptInfo FindByKey(string conceptKey);
+        public PluginsContainerMock(params T[] plugins)
+        {
+            _plugins = plugins;
+        }
 
-        T GetIndex<T>() where T : IDslModelIndex;
+        public IEnumerable<T> GetPlugins()
+        {
+            return _plugins;
+        }
+
+        public Type GetMetadata(T plugin, string metadataKey)
+        {
+            return null;
+        }
+
+        public Type GetMetadata(Type pluginType, string metadataKey)
+        {
+            return null;
+        }
+
+        public IEnumerable<T> GetImplementations(Type implements)
+        {
+            return new T[] { };
+        }
     }
 }

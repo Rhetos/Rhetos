@@ -119,9 +119,16 @@ namespace Rhetos.Dsl.Test
             public void Save(IEnumerable<MacroOrder> macroOrders) { }
         }
 
+        static IDslModel NewDslModel(IDslParser parser, IEnumerable<IConceptInfo> conceptPrototypes)
+        {
+            var dslContainter = new DslContainer(new ConsoleLogProvider(), new PluginsContainerMock<IDslModelIndex>(new DslModelIndexByType()));
+            var dslModel = new DslModel(parser, new ConsoleLogProvider(), dslContainter, new StubMacroIndex(), new IConceptMacro[] { }, conceptPrototypes, new StubMacroOrderRepository());
+            return dslModel;
+        }
+
         static List<IConceptInfo> DslModelFromConcepts(IEnumerable<IConceptInfo> rawConcepts)
         {
-            var dslModel = new DslModel(new StubDslParser(rawConcepts), new ConsoleLogProvider(), new StubMacroIndex(), new IConceptMacro[] { }, rawConcepts, new StubMacroOrderRepository());
+            var dslModel = NewDslModel(new StubDslParser(rawConcepts), rawConcepts);
             return dslModel.Concepts.ToList();
         }
 
@@ -131,7 +138,7 @@ namespace Rhetos.Dsl.Test
             Console.WriteLine("Parsed concepts:");
             Console.WriteLine(string.Join(Environment.NewLine, nullDslParser.ParsedConcepts.Select(ci => " - " + ci.GetShortDescription())));
 
-            var dslModel = new DslModel(nullDslParser, new ConsoleLogProvider(), new StubMacroIndex(), new IConceptMacro[] { }, conceptInfoPluginsForGenericParser, new StubMacroOrderRepository());
+            var dslModel = NewDslModel(nullDslParser, conceptInfoPluginsForGenericParser);
             return dslModel.Concepts.ToList();
         }
 

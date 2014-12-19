@@ -135,6 +135,10 @@ namespace Rhetos.Dsl.DefaultConcepts
             {
                 return Concepts.Where(c => conceptType.IsAssignableFrom(c.GetType()));
             }
+            public T GetIndex<T>() where T : IDslModelIndex
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public static PropertyInfo FindProperty(IDslModel dslModel, DataStructureInfo dataStructure, string propertyName)
@@ -186,9 +190,15 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var selectedProperty = FindProperty(existingConcepts, source, referenceName);
 
+            IEnumerable<DataStructureExtendsInfo> allExtensions;
+            if (existingConcepts is ConceptsListToDslModel)
+                allExtensions = existingConcepts.Concepts.OfType<DataStructureExtendsInfo>().ToList();
+            else
+                allExtensions = existingConcepts.FindByType<DataStructureExtendsInfo>();
+
             if (selectedProperty == null && referenceName == "Base")
             {
-                var baseDataStructure = existingConcepts.FindByType<DataStructureExtendsInfo>()
+                var baseDataStructure = allExtensions
                     .Where(ex => ex.Extension == source)
                     .Select(ex => ex.Base).SingleOrDefault();
                 if (baseDataStructure != null)
@@ -201,7 +211,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (selectedProperty == null && referenceName.StartsWith("Extension_"))
             {
                 string extensionName = referenceName.Substring("Extension_".Length);
-                var extendsionDataStructure = existingConcepts.FindByType<DataStructureExtendsInfo>()
+                var extendsionDataStructure = allExtensions
                     .Where(ex => ex.Base == source)
                     .Where(ex => ex.Extension.Module == source.Module && ex.Extension.Name == extensionName
                         || ex.Extension.Module.Name + "_" + ex.Extension.Name == extensionName)

@@ -38,5 +38,17 @@ namespace Rhetos.CommonConcepts.Test.Mocks
         {
             return this.Where(c => conceptType.IsAssignableFrom(c.GetType()));
         }
+
+        public T GetIndex<T>() where T : IDslModelIndex
+        {
+            if (typeof(T) == typeof(DslModelIndexByType))
+            {
+                IDslModelIndex index = new DslModelIndexByType();
+                foreach (var concept in Concepts)
+                    index.Add(concept);
+                return (T)index;
+            }
+            throw new NotImplementedException();
+        }
     }
 }

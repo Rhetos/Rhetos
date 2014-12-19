@@ -118,5 +118,23 @@ namespace Rhetos.Utilities.Test
                     TestUtility.AssertContains(error, new[] { name, "not valid" });
             }
         }
+
+        class BaseClass { public string Name; }
+
+        class DerivedClass : BaseClass { }
+
+        [TestMethod]
+        public void GetTypeHierarchyTest()
+        {
+            object o = new DerivedClass();
+            string expected = "BaseClass-DerivedClass";
+            string actual = string.Join("-", CsUtility.GetClassHierarchy(o.GetType()).Select(type => type.Name));
+            Assert.AreEqual(expected, actual);
+
+            o = new object();
+            expected = "";
+            actual = string.Join("-", CsUtility.GetClassHierarchy(o.GetType()).Select(type => type.Name));
+            Assert.AreEqual(expected, actual);
+        }
     }
 }

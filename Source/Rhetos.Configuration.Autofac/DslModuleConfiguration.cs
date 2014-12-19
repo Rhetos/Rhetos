@@ -31,10 +31,14 @@ namespace Rhetos.Configuration.Autofac
     {
         protected override void Load(ContainerBuilder builder)
         {
+            builder.RegisterType<DslContainer>().As<DslContainer>();
             builder.RegisterType<DslModel>().As<IDslModel>().SingleInstance();
             builder.RegisterType<DslParser>().As<IDslParser>();
             builder.RegisterType<MacroOrderRepository>().As<IMacroOrderRepository>();
             builder.RegisterType<ConceptMetadata>().SingleInstance();
+            builder.RegisterType<DslModelIndexByType>().As<IDslModelIndex>(); // This plugin is registered manually because RegisterPlugins does not scan core Rhetos dlls.
+            builder.RegisterType<DslModelIndexByReference>().As<IDslModelIndex>(); // This plugin is registered manually because RegisterPlugins does not scan core Rhetos dlls.
+            PluginsUtility.RegisterPlugins<IDslModelIndex>(builder);
             PluginsUtility.RegisterPlugins<IConceptInfo>(builder);
             PluginsUtility.RegisterPlugins<IConceptMacro>(builder, typeof(IConceptMacro<>));
             base.Load(builder);
