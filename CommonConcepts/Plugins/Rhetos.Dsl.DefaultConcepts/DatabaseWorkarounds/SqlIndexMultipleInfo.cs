@@ -40,9 +40,25 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             CheckSemantics(existingConcepts);
 
-            newConcepts.AddRange(PropertyNames.Split(' ')
-                .Select(name => new PropertyInfo { DataStructure = Entity, Name = name })
-                .Select((property, order) => new SqlIndexMultiplePropertyInfo { SqlIndex = this, Property = property, Order = order.ToString() }));
+            var names = PropertyNames.Split(' ');
+            if (names.Distinct().Count() != names.Count())
+                throw new DslSyntaxException(this, "Duplicate property name in index list '" + PropertyNames + "'.");
+            if (names.Count() == 0)
+                throw new DslSyntaxException(this, "Empty property list.");
+
+            SqlIndexMultiplePropertyInfo lastIndexProperty = null;
+            for (int i = 0; i < names.Count(); i++)
+            {
+                var property = new PropertyInfo { DataStructure = Entity, Name = names[i] };
+                SqlIndexMultiplePropertyInfo indexProperty;
+                if (i == 0)
+                    indexProperty = new SqlIndexMultiplePropertyInfo { SqlIndex = this, Property = property };
+                else
+                    indexProperty = new SqlIndexMultipleFollowingPropertyInfo { SqlIndex = this, Property = property, PreviousIndexProperty = lastIndexProperty };
+
+                newConcepts.Add(indexProperty);
+                lastIndexProperty = indexProperty;
+            }
 
             return newConcepts;
         }
