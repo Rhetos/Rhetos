@@ -81,7 +81,7 @@ namespace Rhetos.CommonConcepts.Test
 
         private IQueryable<int> GetOpt(Expression<Func<int, bool>> expression, IQueryable<int> query)
         {
-            return FilterExpression<int>.OptimizedWhere(expression, query);
+            return FilterExpression<int>.OptimizedWhere(query, expression);
         }
 
         [TestMethod]
@@ -91,7 +91,7 @@ namespace Rhetos.CommonConcepts.Test
             var query = mockQuery.Query();
 
             var filterExpression = new FilterExpression<int>();
-            var filteredQuery = GetOpt(filterExpression.Filter(), query);
+            var filteredQuery = GetOpt(filterExpression.GetFilter(), query);
 
             Assert.AreEqual("New query: System.Int32[]", mockQuery.GetWherePart(filteredQuery), "Result should be a newly constructed empty array");
             Assert.AreEqual("", TestUtility.Dump(filteredQuery));
@@ -107,7 +107,7 @@ namespace Rhetos.CommonConcepts.Test
 
             var filterExpression = new FilterExpression<int>();
             filterExpression.Include(x => false);
-            var filteredQuery = GetOpt(filterExpression.Filter(), query);
+            var filteredQuery = GetOpt(filterExpression.GetFilter(), query);
 
             Assert.AreEqual("New query: System.Int32[]", mockQuery.GetWherePart(filteredQuery), "Result should be a newly constructed empty array");
             Assert.AreEqual("", TestUtility.Dump(filteredQuery));
@@ -124,7 +124,7 @@ namespace Rhetos.CommonConcepts.Test
             filterExpression.Include(x1 => x1 > 2);
             filterExpression.Include(x2 => true);
             filterExpression.Include(x3 => x3 > 3);
-            var filteredQuery = GetOpt(filterExpression.Filter(), query);
+            var filteredQuery = GetOpt(filterExpression.GetFilter(), query);
 
             Assert.AreEqual("", mockQuery.GetWherePart(filteredQuery), "Optimized - No where part");
             Assert.AreEqual("1, 2, 3, 4", TestUtility.Dump(filteredQuery));
@@ -140,7 +140,7 @@ namespace Rhetos.CommonConcepts.Test
             var filterExpression = new FilterExpression<int>();
             filterExpression.Include(x1 => x1 >= 4);
             filterExpression.Include(x2 => x2 <= 2);
-            var filteredQuery = GetOpt(filterExpression.Filter(), query);
+            var filteredQuery = GetOpt(filterExpression.GetFilter(), query);
 
             Assert.AreEqual(".Where(x1 => ((x1 >= 4) OrElse (x1 <= 2)))", mockQuery.GetWherePart(filteredQuery));
             Assert.AreEqual("1, 2, 4", TestUtility.DumpSorted(filteredQuery));
@@ -155,7 +155,7 @@ namespace Rhetos.CommonConcepts.Test
 
             var filterExpression = new FilterExpression<int>();
             filterExpression.Exclude(x => false);
-            var filteredQuery = GetOpt(filterExpression.Filter(), query);
+            var filteredQuery = GetOpt(filterExpression.GetFilter(), query);
 
             Assert.AreEqual("New query: System.Int32[]", mockQuery.GetWherePart(filteredQuery), "Result should be a newly constructed empty array");
             Assert.AreEqual("", TestUtility.Dump(filteredQuery));
@@ -171,7 +171,7 @@ namespace Rhetos.CommonConcepts.Test
             var filterExpression = new FilterExpression<int>();
             filterExpression.Include(x1 => true);
             filterExpression.Exclude(x2 => false);
-            var filteredQuery = GetOpt(filterExpression.Filter(), query);
+            var filteredQuery = GetOpt(filterExpression.GetFilter(), query);
 
             Assert.AreEqual("", mockQuery.GetWherePart(filteredQuery), "Optimized - No where part");
             Assert.AreEqual("1, 2, 3, 4", TestUtility.Dump(filteredQuery));
@@ -187,7 +187,7 @@ namespace Rhetos.CommonConcepts.Test
             var filterExpression = new FilterExpression<int>();
             filterExpression.Include(x1 => true);
             filterExpression.Exclude(x2 => true);
-            var filteredQuery = GetOpt(filterExpression.Filter(), query);
+            var filteredQuery = GetOpt(filterExpression.GetFilter(), query);
 
             Assert.AreEqual("New query: System.Int32[]", mockQuery.GetWherePart(filteredQuery), "Result should be a newly constructed empty array");
             Assert.AreEqual("", TestUtility.Dump(filteredQuery));
@@ -203,7 +203,7 @@ namespace Rhetos.CommonConcepts.Test
             var filterExpression = new FilterExpression<int>();
             filterExpression.Include(x1 => x1 >= 3);
             filterExpression.Exclude(x2 => false);
-            var filteredQuery = GetOpt(filterExpression.Filter(), query);
+            var filteredQuery = GetOpt(filterExpression.GetFilter(), query);
 
             Assert.AreEqual(".Where(x1 => (x1 >= 3))", mockQuery.GetWherePart(filteredQuery));
             Assert.AreEqual("3, 4", TestUtility.Dump(filteredQuery));
@@ -219,7 +219,7 @@ namespace Rhetos.CommonConcepts.Test
             var filterExpression = new FilterExpression<int>();
             filterExpression.Include(x1 => x1 >= 3);
             filterExpression.Exclude(x2 => true);
-            var filteredQuery = GetOpt(filterExpression.Filter(), query);
+            var filteredQuery = GetOpt(filterExpression.GetFilter(), query);
 
             Assert.AreEqual("New query: System.Int32[]", mockQuery.GetWherePart(filteredQuery), "Result should be a newly constructed empty array");
             Assert.AreEqual("", TestUtility.Dump(filteredQuery));
@@ -234,7 +234,7 @@ namespace Rhetos.CommonConcepts.Test
 
             var filterExpression = new FilterExpression<int>();
             filterExpression.Exclude(x => x >= 3);
-            var filteredQuery = GetOpt(filterExpression.Filter(), query);
+            var filteredQuery = GetOpt(filterExpression.GetFilter(), query);
 
             Assert.AreEqual("New query: System.Int32[]", mockQuery.GetWherePart(filteredQuery), "Result should be a newly constructed empty array");
             Assert.AreEqual("", TestUtility.Dump(filteredQuery));
@@ -251,7 +251,7 @@ namespace Rhetos.CommonConcepts.Test
             filterExpression.Include(x1 => true);
             filterExpression.Exclude(x2 => x2 > 2);
             filterExpression.Exclude(x3 => x3 < 2);
-            var filteredQuery = GetOpt(filterExpression.Filter(), query);
+            var filteredQuery = GetOpt(filterExpression.GetFilter(), query);
 
             Assert.AreEqual(".Where(x2 => (Not((x2 > 2)) AndAlso Not((x2 < 2))))", mockQuery.GetWherePart(filteredQuery));
             Assert.AreEqual("2", TestUtility.Dump(filteredQuery));
@@ -269,7 +269,7 @@ namespace Rhetos.CommonConcepts.Test
             filterExpression.Include(x2 => x2 >= 4);
             filterExpression.Exclude(x3 => x3 >= 4);
             filterExpression.Exclude(x4 => x4 >= 5);
-            var filteredQuery = GetOpt(filterExpression.Filter(), query);
+            var filteredQuery = GetOpt(filterExpression.GetFilter(), query);
 
             Assert.AreEqual(".Where(x1 => (((x1 >= 2) OrElse (x1 >= 4)) AndAlso (Not((x1 >= 4)) AndAlso Not((x1 >= 5)))))", mockQuery.GetWherePart(filteredQuery));
             Assert.AreEqual("2, 3", TestUtility.Dump(filteredQuery));

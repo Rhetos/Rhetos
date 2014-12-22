@@ -59,15 +59,15 @@ namespace Rhetos.Dsl.DefaultConcepts
                 throw new DslSyntaxException(this, "Reference '" + ReferenceProperty.Name + "' is not a reference to entity with RowPermissions.");
         }
 
-        private RowPermissionsReadInfo GetReadConceptInfoForReference(ReferencePropertyInfo reference, IEnumerable<IConceptInfo> concepts) 
+        private RowPermissionsReadInfo GetReadConceptInfoForReference(ReferencePropertyInfo reference, IEnumerable<IConceptInfo> concepts)
         {
-            var allRP = concepts.Where(a => (a as RowPermissionsReadInfo) != null).Select(a => a as RowPermissionsReadInfo);
-            return allRP.Where(a => a.Source == reference.Referenced).SingleOrDefault();
+            var allRp = concepts.OfType<RowPermissionsReadInfo>();
+            return allRp.SingleOrDefault(a => a.Source == reference.Referenced);
         }
         private RowPermissionsWriteInfo GetWriteConceptInfoForReference(ReferencePropertyInfo reference, IEnumerable<IConceptInfo> concepts)
         {
-            var allRP = concepts.Where(a => (a as RowPermissionsWriteInfo) != null).Select(a => a as RowPermissionsWriteInfo);
-            return allRP.Where(a => a.Source == reference.Referenced).SingleOrDefault();
+            var allRp = concepts.OfType<RowPermissionsWriteInfo>();
+            return allRp.SingleOrDefault(a => a.Source == reference.Referenced);
         }
     }
 }

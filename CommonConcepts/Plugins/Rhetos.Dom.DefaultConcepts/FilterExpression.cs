@@ -50,34 +50,18 @@ namespace Rhetos.Dom.DefaultConcepts
             _denyExpression = And(_denyExpression, Not(newExpression));
         }
 
-        public Expression<Func<T, bool>> Filter()
+        public Expression<Func<T, bool>> GetFilter()
         {
             var finalExpression = And(_allowExpression, _denyExpression);
 
-            /* obsolete optimizations, we have to do this elsewhere now
-            if (finalExpression == _selectAll)
-                return item => true;
-            else if (finalExpression == _selectNone)
-                return item => false;
-            else*/
-            
             return finalExpression;
         }
 
-        public enum FilterType { SelectAll, SelectNone, SelectComplex };
-        public static FilterType OptimizeAndGetType(ref Expression<Func<T, bool>> expression)
+        public static IQueryable<T> OptimizedWhere(IQueryable<T> source, Expression<Func<T, bool>> expression)
         {
             Optimize(ref expression);
-            if (expression == _selectAll) return FilterType.SelectAll;
-            else if (expression == _selectNone) return FilterType.SelectNone;
-            else return FilterType.SelectComplex;
-        }
-
-        public static IQueryable<T> OptimizedWhere(Expression<Func<T, bool>> expression, IQueryable<T> source)
-        {
-            var type = OptimizeAndGetType(ref expression);
-            if (type == FilterType.SelectAll) return source;
-            else if (type == FilterType.SelectNone) return (new T[] { }).AsQueryable();
+            if (expression == _selectAll) return source;
+            else if (expression == _selectNone) return (new T[] { }).AsQueryable();
             else return source.Where(expression);
         }
 

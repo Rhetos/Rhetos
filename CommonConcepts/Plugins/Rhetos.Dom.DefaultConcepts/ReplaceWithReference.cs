@@ -33,30 +33,30 @@ namespace Rhetos.Dom.DefaultConcepts
     /// </summary>
     public class ReplaceWithReference<TFrom, TTo> : ExpressionVisitor
     {
-        private ParameterExpression parameter;
-        private string referenceName = null;
-        private Expression<Func<TTo, bool>> newExpression = null;
+        private readonly ParameterExpression _parameter;
+        private readonly string _referenceName;
+        private readonly Expression<Func<TTo, bool>> _newExpression;
 
-        public Expression<Func<TTo, bool>> NewExpression { get { return newExpression; } }
+        public Expression<Func<TTo, bool>> NewExpression { get { return _newExpression; } }
 
         public ReplaceWithReference(Expression<Func<TFrom, bool>> expression, string referenceName, string parameterName)
         {
-            this.referenceName = referenceName;
-            parameter = Expression.Parameter(typeof(TTo), parameterName);
+            _referenceName = referenceName;
+            _parameter = Expression.Parameter(typeof(TTo), parameterName);
             var body = Visit(expression.Body);
-            newExpression = Expression.Lambda<Func<TTo, bool>>(body, parameter);
+            _newExpression = Expression.Lambda<Func<TTo, bool>>(body, _parameter);
         }
 
         protected override Expression VisitParameter(ParameterExpression node)
         {
-            return parameter;
+            return _parameter;
         }
 
         protected override Expression VisitMember(MemberExpression node)
         {
             if (node.Member.DeclaringType == typeof(TFrom))
             {
-                var referenceInfo = typeof(TTo).GetProperty(referenceName);
+                var referenceInfo = typeof(TTo).GetProperty(_referenceName);
                 var referenceExp = Expression.MakeMemberAccess(Visit(node.Expression), referenceInfo);
 
                 var memberInfo = typeof(TFrom).GetProperty(node.Member.Name);

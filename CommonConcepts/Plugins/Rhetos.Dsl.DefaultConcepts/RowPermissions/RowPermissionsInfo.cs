@@ -51,7 +51,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             @"(source, repository, parameter, context) => 
                 {{
                     var filterExpression = {0}(source, repository, context);
-                    return FilterExpression<{1}>.OptimizedWhere(filterExpression, source);
+                    return FilterExpression<{1}>.OptimizedWhere(source, filterExpression);
                 }}", permissionExpressionName, entityType);
         }
     }

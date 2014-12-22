@@ -60,7 +60,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 		{{
             var filterExpression = new FilterExpression<{0}.{1}>();
 			{2}
-			return filterExpression.Filter();
+			return filterExpression.GetFilter();
 		}}",
                 DataStructure.Module.Name,
                 DataStructure.Name,
