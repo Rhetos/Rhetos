@@ -516,7 +516,7 @@ namespace CommonConcepts.Test
                 }
             }
         }
-
+        
         string ReadErrorData(RhetosTestContainer container, string testName)
         {
             Console.WriteLine("Test: " + testName);
@@ -540,14 +540,8 @@ namespace CommonConcepts.Test
 
                 TestUtility.ShouldFail<FrameworkException>(() => ReadErrorData(container, "duplicateSecondItem"),
                     "duplicate IDs", "ErrorData", newItems[1].ID.ToString());
-
-                gr.Save(new[] { new ErrorData { Name = "makeInvalidFilter" } }, null, null);
-
-                TestUtility.ShouldFail<FrameworkException>(() => ReadErrorData(container, ""),
-                    "Invalid filter validation result", "ErrorData");
             }
         }
-
 
         private void ExecuteSaveCommand(SaveEntityCommandInfo saveInfo, RhetosTestContainer container)
         {

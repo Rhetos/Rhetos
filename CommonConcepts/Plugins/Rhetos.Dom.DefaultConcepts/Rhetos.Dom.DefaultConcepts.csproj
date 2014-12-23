@@ -102,9 +102,14 @@
     <Compile Include="HierarchyItem.cs" />
     <Compile Include="KeepSynchronizedRecomputeOnDeploy.cs" />
     <Compile Include="ReflectionHelper.cs" />
+    <Compile Include="ReplaceWithReference.cs" />
     <Compile Include="RowPermissions\RowPermissionsDenyReadCodeGenerator.cs" />
     <Compile Include="RowPermissions\RowPermissionsAllowReadCodeGenerator.cs" />
+    <Compile Include="RowPermissions\RowPermissionsInheritReadFromCodeGenerator.cs" />
+    <Compile Include="RowPermissions\RowPermissionsInheritWriteFromCodeGenerator.cs" />
+    <Compile Include="RowPermissions\RowPermissionsReadCodeGenerator.cs" />
     <Compile Include="RowPermissions\RowPermissionsUtility.cs" />
+    <Compile Include="RowPermissions\RowPermissionsWriteCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ActionCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ReloadBeforeValidationsCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\DenyUserEditDataStructureCodeGenerator.cs" />
