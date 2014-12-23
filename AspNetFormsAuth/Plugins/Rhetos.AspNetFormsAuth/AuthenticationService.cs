@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Security;
 using Rhetos.Utilities;
@@ -33,6 +34,8 @@ using WebMatrix.WebData;
 
 namespace Rhetos.AspNetFormsAuth
 {
+    #region Service parameters
+
     public class LoginParameters
     {
         public string UserName { get; set; }
@@ -112,6 +115,23 @@ namespace Rhetos.AspNetFormsAuth
         }
     }
 
+    public class SendPasswordResetTokenParameters
+    {
+        public string UserName { get; set; }
+
+        /// <summary>
+        /// Used for future ISendPasswordResetToken extensibility.
+        /// For example, AdditionalClientInfo may contain answers to security questions, preferred method of communication or similar user provided information.
+        /// </summary>
+        public Dictionary<string, string> AdditionalClientInfo { get; set; }
+
+        public void Validate()
+        {
+            if (string.IsNullOrWhiteSpace(UserName))
+                throw new UserException("Empty UserName is not allowed.");
+        }
+    }
+
     public class ResetPasswordParameters
     {
         public string PasswordResetToken { get; set; }
@@ -127,13 +147,15 @@ namespace Rhetos.AspNetFormsAuth
         }
     }
 
-    // TODO: Delete when stateless session is implemented. A separate PasswordAttemptsLimit class is needed to allow editing of the loaded data (TimeoutInSeconds) that is not bound to the ORM. 
+    // TODO: Delete when NHibernate stateless session is implemented. A separate PasswordAttemptsLimit class is needed to allow editing of the loaded data (TimeoutInSeconds) that is not bound to the ORM. 
     class PasswordAttemptsLimit : IPasswordAttemptsLimit
     {
         public Guid ID { get; set; }
         public int? MaxInvalidPasswordAttempts { get; set; }
         public int? TimeoutInSeconds { get; set; }
     }
+
+    #endregion
 
     [ServiceContract]
     [AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Required)]
@@ -144,17 +166,20 @@ namespace Rhetos.AspNetFormsAuth
         private readonly Lazy<IQueryableRepository<IPasswordStrength>> _passwordStrengthRules;
         private readonly Lazy<IList<PasswordAttemptsLimit>> _passwordAttemptsLimits;
         private readonly Lazy<ISqlExecuter> _sqlExecuter;
+        private readonly Lazy<ISendPasswordResetToken> _sendPasswordResetTokenPlugin;
 
         public AuthenticationService(
             ILogProvider logProvider,
             Lazy<IAuthorizationManager> authorizationManager,
             Lazy<IQueryableRepository<IPasswordStrength>> passwordStrengthRules,
             Lazy<IQueryableRepository<IPasswordAttemptsLimit>> passwordAttemptsLimitRepository,
-            Lazy<ISqlExecuter> sqlExecuter)
+            Lazy<ISqlExecuter> sqlExecuter,
+            Lazy<IEnumerable<ISendPasswordResetToken>> sendPasswordResetTokenPlugins)
         {
             _logger = logProvider.GetLogger("AspNetFormsAuth.AuthenticationService");
             _authorizationManager = authorizationManager;
             _sqlExecuter = sqlExecuter;
+            _sendPasswordResetTokenPlugin = new Lazy<ISendPasswordResetToken>(() => SinglePlugin(sendPasswordResetTokenPlugins));
 
             _passwordStrengthRules = passwordStrengthRules;
             _passwordAttemptsLimits = new Lazy<IList<PasswordAttemptsLimit>>(
@@ -170,6 +195,18 @@ namespace Rhetos.AspNetFormsAuth
                 });
         }
 
+        private ISendPasswordResetToken SinglePlugin(Lazy<IEnumerable<ISendPasswordResetToken>> plugins)
+        {
+            if (plugins.Value.Count() == 0)
+                throw new FrameworkException("There is no plugin registered for sending the password reset token.");
+
+            if (plugins.Value.Count() > 1)
+                throw new FrameworkException("There is more than one plugin registered for sending the password reset token: "
+                    + string.Join(", ", plugins.Value.Select(plugin => plugin.GetType().FullName)) + ".");
+
+            return plugins.Value.Single();
+        }
+
         private void CheckPermissions(Claim claim)
         {
             bool allowed = _authorizationManager.Value.GetAuthorizations(new[] { claim }).Single();
@@ -183,6 +220,8 @@ namespace Rhetos.AspNetFormsAuth
         [WebInvoke(Method = "POST", UriTemplate = "/Login", BodyStyle = WebMessageBodyStyle.Bare, RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         public bool Login(LoginParameters parameters)
         {
+            if (parameters == null)
+                throw new ClientException("It is not allowed to call this authentication service method with not parameters provided.");
             _logger.Trace(() => "Login: " + parameters.UserName);
             parameters.Validate();
             CheckPasswordFailuresBeforeLogin(parameters.UserName);
@@ -231,6 +270,8 @@ namespace Rhetos.AspNetFormsAuth
         [WebInvoke(Method = "POST", UriTemplate = "/SetPassword", BodyStyle = WebMessageBodyStyle.Bare, RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         public void SetPassword(SetPasswordParameters parameters)
         {
+            if (parameters == null)
+                throw new ClientException("It is not allowed to call this authentication service method with not parameters provided.");
             _logger.Trace(() => "SetPassword: " + parameters.UserName);
             CheckPermissions(AuthenticationServiceClaims.SetPasswordClaim);
             parameters.Validate();
@@ -239,7 +280,7 @@ namespace Rhetos.AspNetFormsAuth
             else
                 CheckPasswordStrength(parameters.Password);
 
-            if (!WebSecurity.UserExists(parameters.UserName))
+            if (!WebSecurity.UserExists(parameters.UserName)) // Providing this information is not a security issue, because this method requires admin credentials (SetPasswordClaim).
                 throw new UserException("User '" + parameters.UserName + "' is not registered.");
 
             if (!IsAccountCreated(parameters.UserName))
@@ -261,6 +302,8 @@ namespace Rhetos.AspNetFormsAuth
         [WebInvoke(Method = "POST", UriTemplate = "/ChangeMyPassword", BodyStyle = WebMessageBodyStyle.Bare, RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         public bool ChangeMyPassword(ChangeMyPasswordParameters parameters)
         {
+            if (parameters == null)
+                throw new ClientException("It is not allowed to call this authentication service method with not parameters provided.");
             _logger.Trace(() => "ChangeMyPassword: " + WebSecurity.CurrentUserName);
             parameters.Validate();
             CheckPasswordStrength(parameters.NewPassword);
@@ -287,6 +330,8 @@ namespace Rhetos.AspNetFormsAuth
         [WebInvoke(Method = "POST", UriTemplate = "/UnlockUser", BodyStyle = WebMessageBodyStyle.Bare, RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         public void UnlockUser(UnlockUserParameters parameters)
         {
+            if (parameters == null)
+                throw new ClientException("It is not allowed to call this authentication service method with not parameters provided.");
             _logger.Trace(() => "UnlockUser: " + parameters.UserName);
             CheckPermissions(AuthenticationServiceClaims.UnlockUserClaim);
             parameters.Validate();
@@ -309,21 +354,74 @@ namespace Rhetos.AspNetFormsAuth
         [WebInvoke(Method = "POST", UriTemplate = "/GeneratePasswordResetToken", BodyStyle = WebMessageBodyStyle.Bare, RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         public string GeneratePasswordResetToken(GeneratePasswordResetTokenParameters parameters)
         {
+            if (parameters == null)
+                throw new ClientException("It is not allowed to call this authentication service method with not parameters provided.");
             _logger.Trace(() => "GeneratePasswordResetToken: " + parameters.UserName);
             CheckPermissions(AuthenticationServiceClaims.GeneratePasswordResetTokenClaim);
             parameters.Validate();
 
-            var id = WebSecurity.GetUserId(parameters.UserName);
+            return GeneratePasswordResetTokenInternal(parameters);
+        }
+
+        private string GeneratePasswordResetTokenInternal(GeneratePasswordResetTokenParameters parameters)
+        {
+            if (!WebSecurity.UserExists(parameters.UserName)) // Providing this information is not a security issue, because this method requires admin credentials (GeneratePasswordResetTokenClaim).
+                throw new UserException("User '" + parameters.UserName + "' is not registered.");
 
             if (!IsAccountCreated(parameters.UserName))
             {
-                _logger.Trace(() => "GeneratePasswordResetToken creating account: " + parameters.UserName);
+                _logger.Trace(() => "GeneratePasswordResetTokenInternal creating security account: " + parameters.UserName);
                 WebSecurity.CreateAccount(parameters.UserName, Guid.NewGuid().ToString());
             }
 
             return parameters.TokenExpirationInMinutesFromNow != 0
                 ? WebSecurity.GeneratePasswordResetToken(parameters.UserName, parameters.TokenExpirationInMinutesFromNow)
                 : WebSecurity.GeneratePasswordResetToken(parameters.UserName, GeneratePasswordResetTokenParameters.DefaultTokenExpirationInMinutes);
+        }
+
+        [OperationContract]
+        [WebInvoke(Method = "POST", UriTemplate = "/SendPasswordResetToken", BodyStyle = WebMessageBodyStyle.Bare, RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        public void SendPasswordResetToken(SendPasswordResetTokenParameters parameters)
+        {
+            if (parameters == null)
+                throw new ClientException("It is not allowed to call this authentication service method with not parameters provided.");
+            _logger.Trace("SendPasswordResetToken " + parameters.UserName);
+            parameters.Validate();
+
+            const string logErrorFormat = "SendPasswordResetToken failed for {0}: {1}";
+
+            try
+            {
+                string passwordResetToken;
+                try
+                {
+                    var tokenParameters = new GeneratePasswordResetTokenParameters
+                    {
+                        UserName = parameters.UserName,
+                        TokenExpirationInMinutesFromNow = Int32.Parse(ConfigUtility.GetAppSetting("AspNetFormsAuth.SendPasswordResetToken.ExpirationInMinutes") ?? "1440")
+                    };
+                    passwordResetToken = GeneratePasswordResetTokenInternal(tokenParameters);
+                }
+                // Providing an error information to the client might be a security issue, because this method allows anonymous access.
+                catch (UserException ex)
+                {
+                    _logger.Trace(logErrorFormat, parameters.UserName, ex);
+                    return;
+                }
+                catch (ClientException ex)
+                {
+                    _logger.Info(logErrorFormat, parameters.UserName, ex);
+                    return;
+                }
+
+                // The plugin may choose it's own client error messages (UserException and ClientException will not be suppressed)
+                _sendPasswordResetTokenPlugin.Value.SendPasswordResetToken(parameters.UserName, parameters.AdditionalClientInfo, passwordResetToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(logErrorFormat, parameters.UserName, ex);
+                throw new FrameworkException("Internal server error occurred. See RhetosServer.log for more information.");
+            }
         }
 
         /// <summary>
@@ -336,6 +434,8 @@ namespace Rhetos.AspNetFormsAuth
         [WebInvoke(Method = "POST", UriTemplate = "/ResetPassword", BodyStyle = WebMessageBodyStyle.Bare, RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         public bool ResetPassword(ResetPasswordParameters parameters)
         {
+            if (parameters == null)
+                throw new ClientException("It is not allowed to call this authentication service method with not parameters provided.");
             _logger.Trace("ResetPassword");
             parameters.Validate();
             CheckPasswordStrength(parameters.NewPassword);

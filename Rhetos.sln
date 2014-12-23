@@ -188,6 +188,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Web", "Source\Rhetos
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InitAspNetDatabase", "AspNetFormsAuth\Plugins\InitAspNetDatabase\InitAspNetDatabase.csproj", "{D0AA25A2-8D00-472A-9395-26003D89A702}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.AspNetFormsAuth.Interfaces", "AspNetFormsAuth\Plugins\Rhetos.AspNetFormsAuth.Interfaces\Rhetos.AspNetFormsAuth.Interfaces.csproj", "{B818F493-EF0C-448F-A89F-FC805FFA879E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		CodeAnalysis|Any CPU = CodeAnalysis|Any CPU
@@ -964,6 +966,21 @@ Global
 		{D0AA25A2-8D00-472A-9395-26003D89A702}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{D0AA25A2-8D00-472A-9395-26003D89A702}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{D0AA25A2-8D00-472A-9395-26003D89A702}.Release|x86.ActiveCfg = Release|Any CPU
+		{B818F493-EF0C-448F-A89F-FC805FFA879E}.CodeAnalysis|Any CPU.ActiveCfg = Release|Any CPU
+		{B818F493-EF0C-448F-A89F-FC805FFA879E}.CodeAnalysis|Any CPU.Build.0 = Release|Any CPU
+		{B818F493-EF0C-448F-A89F-FC805FFA879E}.CodeAnalysis|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{B818F493-EF0C-448F-A89F-FC805FFA879E}.CodeAnalysis|Mixed Platforms.Build.0 = Release|Any CPU
+		{B818F493-EF0C-448F-A89F-FC805FFA879E}.CodeAnalysis|x86.ActiveCfg = Release|Any CPU
+		{B818F493-EF0C-448F-A89F-FC805FFA879E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B818F493-EF0C-448F-A89F-FC805FFA879E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B818F493-EF0C-448F-A89F-FC805FFA879E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{B818F493-EF0C-448F-A89F-FC805FFA879E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{B818F493-EF0C-448F-A89F-FC805FFA879E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B818F493-EF0C-448F-A89F-FC805FFA879E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B818F493-EF0C-448F-A89F-FC805FFA879E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B818F493-EF0C-448F-A89F-FC805FFA879E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{B818F493-EF0C-448F-A89F-FC805FFA879E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{B818F493-EF0C-448F-A89F-FC805FFA879E}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1021,6 +1038,7 @@ Global
 		{9D5BEF32-A7D3-4580-AE84-0DC2A144231A} = {EA83F423-2486-4154-B0CE-7590EB65D40A}
 		{A334FFFD-0400-4FEC-BC83-C044072C76A8} = {E6D8EA3D-AF0C-412E-B8C5-BDED68BD5700}
 		{D0AA25A2-8D00-472A-9395-26003D89A702} = {EA83F423-2486-4154-B0CE-7590EB65D40A}
+		{B818F493-EF0C-448F-A89F-FC805FFA879E} = {EA83F423-2486-4154-B0CE-7590EB65D40A}
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Rhetos.vsmdi

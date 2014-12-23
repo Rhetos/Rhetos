@@ -4,6 +4,7 @@ ECHO $(ConfigurationName) = [%2]
 REM "%~dp0" is this script's folder.
 
 XCOPY /Y/D/R "%~dp0"Plugins\Rhetos.AspNetFormsAuth\bin\%2\Rhetos.AspNetFormsAuth.??? %1 || EXIT /B 1
+XCOPY /Y/D/R "%~dp0"Plugins\Rhetos.AspNetFormsAuth\bin\%2\Rhetos.AspNetFormsAuth.Interfaces.??? %1 || EXIT /B 1
 XCOPY /Y/D/R "%~dp0"Plugins\Rhetos.AspNetFormsAuth\bin\%2\WebMatrix.Data.dll %1 || EXIT /B 1
 XCOPY /Y/D/R "%~dp0"Plugins\Rhetos.AspNetFormsAuth\bin\%2\WebMatrix.WebData.dll %1 || EXIT /B 1
 XCOPY /Y/D/R "%~dp0"Plugins\AdminSetup\bin\%2\AdminSetup.??? %1 || EXIT /B 1

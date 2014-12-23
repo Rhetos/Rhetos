@@ -18,7 +18,8 @@ Table of contents
 5. [Uninstallation](#Uninstallation)
 6. [Sharing the authentication across web applications](#SharingAuthentication)
 7. [Session timeout](#SessionTimeout)
-8. [Troubleshooting](#Troubleshooting)
+8. [Implementing SendPasswordResetToken](#SendPasswordResetTokenImplementation)
+9. [Troubleshooting](#Troubleshooting)
 
 
 <a id="Features"></a>
@@ -37,7 +38,17 @@ Features
 #### Authorization
 
 * Authorization is implemented internally using claim-based permissions system. 
-  The users' permissions may be configured for each action or data query, using Rhetos entities: `Principal`, `Role`, `Permission` and `Claim`.
+  The users' permissions may be configured for each action or data query, using Rhetos entities in `Common` module: `Principal`, `Role`, `Permission`, `Claim`, `PrincipalHasRole` and `RoleInheritsRole`.
+
+#### Common administration activities
+
+* To create a new user, insert the record in the `Principal` entity.
+* To configure the user's permissions, enter the data in `PrincipalHasRole` or `Permission` entities.
+* To set the user's password, administrator may use `SetPassword` or `GeneratePasswordResetToken` web service methods (see below). The user may use `ChangeMyPassword` later, if authenticated.
+
+#### Forgot password
+
+The user may use `SendPasswordResetToken` web service method (see below) **without authentication**. The implementation of sending the password (by SMS or email, e.g.) should be provided by an additional plugin (see [Implementing SendPasswordResetToken](#SendPasswordResetTokenImplementation)).
 
 #### Technical notes
 
@@ -92,12 +103,21 @@ The JSON service is available at URI `<rhetos server>/Resources/AspNetFormsAuth/
 * Reset the number of [failed login attempts](#FailedPasswordAttempts). Response is empty.
 * Requires *UnlockUser* [claim](#Permissions).
 
+<a id="GeneratePasswordResetToken"></a>
 **`/GeneratePasswordResetToken`** (string UserName, int TokenExpirationInMinutesFromNow) -> string
 
 * Generates a password reset token that can be send to the user by email.
 * Use it to implement *forgot password* web page (see [MSDN](http://msdn.microsoft.com/en-us/library/webmatrix.webdata.websecurity.generatepasswordresettoken.aspx)) or to create a user account without initial password and let a user choose it.
 * Requires *GeneratePasswordResetToken* [claim](#Permissions).
 * If TokenExpirationInMinutesFromNow is not set (or set to 0), the token will expire in 24 hours.
+
+**`/SendPasswordResetToken`** (string UserName, Dictionary<string, string> AdditionalClientInfo)
+
+* Generates a password reset token (see [GeneratePasswordResetToken](#GeneratePasswordResetToken)) and sends it to the user.
+* The method does not require user authentication.
+* **NOTE:** *AspNetFormsAuth* package **does not contain** any implementation of sending the token (by SMS or email, e.g.). The implementation must be provided by an additional plugin. For example, adding [SimpleSPRTEmail](https://github.com/Rhetos/SimpleSPRTEmail) package to the Rhetos server will allow sending the token by email.
+* See [Implementing SendPasswordResetToken](#SendPasswordResetTokenImplementation) for developing specific implementations.    
+* Use `AspNetFormsAuth.SendPasswordResetToken.ExpirationInMinutes` appSettings key in `web.config` to set the token expiration timeout. Default value is 1440 (24 hours).
 
 **`/ResetPassword`** (string PasswordResetToken, string NewPassword) -> bool
 
@@ -297,6 +317,37 @@ To allow user to stay logged in after longer time of inactivity, add standard AS
 	     </authentication>
 	</system.web>
 
+
+<a id="SendPasswordResetTokenImplementation"></a>
+Implementing SendPasswordResetToken
+-----------------------------------
+
+A sample implementation is available at [https://github.com/Rhetos/SimpleSPRTEmail](https://github.com/Rhetos/SimpleSPRTEmail).
+
+A package that implements a method of sending the token to the user (by SMS or email, e.g.) must contain a class that implements the `Rhetos.AspNetFormsAuth.ISendPasswordResetToken` interfaces from `Rhetos.AspNetFormsAuth.Interfaces.dll`. The class must use `Export` attribute to register the plugin implementation. For example:
+
+	[Export(typeof(ISendPasswordResetToken))]
+    public class EmailSender : ISendPasswordResetToken
+	{
+		...
+	}
+
+The `AdditionalClientInfo` parameter of web service method `/SendPasswordResetToken` will be provided to the implementation function. The parameter may contain answers to security questions, preferred method of communication or any similar user provided information required by the `ISendPasswordResetToken` implementation.
+
+### Security isses with error handling
+
+The implementation class may throw a `Rhetos.UserException` or a `Rhetos.ClientException` to provide an error message to the client, but use it with caution, or better avoid it: The `SendPasswordResetToken` web service method allows **anonymous access**, so providing any error information to the client might be a security issue.
+
+Any other exception (`Rhetos.FrameworkException`, e.g.) will only be logged on the server, but no error will be sent to the client.
+
+### Password reset token expiration time
+
+Use `AspNetFormsAuth.SendPasswordResetToken.ExpirationInMinutes` appSettings key in `web.config` to set the token expiration timeout. Default value is 1440 (24 hours). An example:
+
+    <appSettings>
+      <add key="AspNetFormsAuth.SendPasswordResetToken.ExpirationInMinutes" value="60" />
+    </appSettings>
+
 <a id="Troubleshooting"></a>
 Troubleshooting
 ---------------
@@ -311,4 +362,4 @@ Troubleshooting
 **Solution**: Execute `DeployPackages.exe` again. It will regenerate the default administration settings. See [admin user](#AdminSetup). 
 
 **Other:** In case of a server error, additional information on the error may be found in the Rhetos server log (`RhetosServer.log` file, by default).
-If needed, more verbose logging may be switched on by uncommenting the `<logger name="*" minLevel="Trace" writeTo="TraceLog" />` element in Rhetos server's `web.config`. 
+If needed, more verbose logging of the authentication service may be switched on by adding `<logger name="AspNetFormsAuth.AuthenticationService" minLevel="Trace" writeTo="TraceLog" />` in Rhetos server's `web.config`. The trace log will be written to `RhetosServerTrace.log`.

@@ -17,32 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.IO;
 using System.Linq;
 using System.Text;
 
 namespace Rhetos.AspNetFormsAuth
 {
-    [Export(typeof(IHomePageSnippet))]
-    public class HomePageSnippet : IHomePageSnippet
+    public interface ISendPasswordResetToken
     {
-        private string _snippet;
-
-        public string Html
-        {
-            get
-            {
-                if (_snippet == null)
-                {
-                    string filePath = Path.Combine(Paths.ResourcesFolder, "AspNetFormsAuth", "HomePageSnippet.html");
-                    _snippet = File.ReadAllText(filePath, Encoding.Default);
-                }
-                return _snippet;
-            }
-        }
+        void SendPasswordResetToken(string userName, Dictionary<string, string> additionalClientInfo, string passwordResetToken);
     }
 }

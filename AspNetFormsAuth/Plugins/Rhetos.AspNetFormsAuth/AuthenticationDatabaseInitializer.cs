@@ -150,6 +150,9 @@ namespace Rhetos.AspNetFormsAuth
         }
     }
 
+    /// <summary>
+    /// List of admin claims is provided by a IClaimProvider plugin, in order to automatically create the claims on Rhetos deployment.
+    /// </summary>
     [Export(typeof(IClaimProvider))]
     [ExportMetadata(MefProvider.Implements, typeof(DummyCommandInfo))]
     public class AuthenticationServiceClaims : IClaimProvider
@@ -166,13 +169,18 @@ namespace Rhetos.AspNetFormsAuth
 
         public static IList<Claim> GetAdminClaims()
         {
-            return new[] { SetPasswordClaim, UnlockUserClaim, IgnorePasswordStrengthPolicyClaim, GeneratePasswordResetTokenClaim };
+            return new[] {
+                SetPasswordClaim, UnlockUserClaim, IgnorePasswordStrengthPolicyClaim, GeneratePasswordResetTokenClaim,
+                ReadCommonPrincipal, NewCommonPrincipal };
         }
 
         public static readonly Claim SetPasswordClaim = new Claim("AspNetFormsAuth.AuthenticationService", "SetPassword");
         public static readonly Claim UnlockUserClaim = new Claim("AspNetFormsAuth.AuthenticationService", "UnlockUser");
         public static readonly Claim IgnorePasswordStrengthPolicyClaim = new Claim("AspNetFormsAuth.AuthenticationService", "IgnorePasswordStrengthPolicy");
         public static readonly Claim GeneratePasswordResetTokenClaim = new Claim("AspNetFormsAuth.AuthenticationService", "GeneratePasswordResetToken");
+
+        public static readonly Claim ReadCommonPrincipal = new Claim("Common.Principal", "Read");
+        public static readonly Claim NewCommonPrincipal = new Claim("Common.Principal", "New");
     }
 
     public class DummyCommandInfo : ICommandInfo

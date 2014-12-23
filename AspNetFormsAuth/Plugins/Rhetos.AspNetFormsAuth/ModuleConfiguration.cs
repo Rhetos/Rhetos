@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Rhetos.Extensibility;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
@@ -34,6 +35,8 @@ namespace Rhetos.AspNetFormsAuth
         {
             builder.RegisterType<AuthenticationService>().InstancePerLifetimeScope();
             builder.RegisterType<AspNetUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
+
+            PluginsUtility.RegisterPlugins<ISendPasswordResetToken>(builder);
 
             base.Load(builder);
         }

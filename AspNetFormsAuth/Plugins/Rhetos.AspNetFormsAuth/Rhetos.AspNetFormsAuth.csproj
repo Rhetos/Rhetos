@@ -106,6 +106,10 @@
       <Project>{ddc73f5f-bb0e-4944-92cc-4ac937398499}</Project>
       <Name>Rhetos.Extensibility.Interfaces</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Extensibility\Rhetos.Extensibility.csproj">
+      <Project>{7eaf15bd-39c9-44ab-8834-ec0ae013a8a2}</Project>
+      <Name>Rhetos.Extensibility</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Source\Rhetos.Interfaces\Rhetos.Interfaces.csproj">
       <Project>{52b9e0eb-f4d1-4ca5-9239-93917dc76e2b}</Project>
       <Name>Rhetos.Interfaces</Name>
@@ -141,6 +145,10 @@
     <ProjectReference Include="..\..\..\Source\Rhetos.Web\Rhetos.Web.csproj">
       <Project>{a334fffd-0400-4fec-bc83-c044072c76a8}</Project>
       <Name>Rhetos.Web</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.AspNetFormsAuth.Interfaces\Rhetos.AspNetFormsAuth.Interfaces.csproj">
+      <Project>{b818f493-ef0c-448f-a89f-fc805ffa879e}</Project>
+      <Name>Rhetos.AspNetFormsAuth.Interfaces</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
