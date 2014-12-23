@@ -30,6 +30,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     public class RowPermissionsWriteInfo : ComposableFilterByInfo, IMacroConcept, IAlternativeInitializationConcept
     {
         public static readonly string FilterName = "Common.RowPermissionsWriteItems";
+        public static readonly string PermissionsExpressionName = "GetRowPermissionsWriteExpression";
 
         public string SimplifiedExpression { get; set; }
 
@@ -41,7 +42,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
             Parameter = FilterName;
-            Expression = RowPermissionsInfo.ReformatLambdaExpression_RemoveParameter(SimplifiedExpression);
+            Expression = RowPermissionsInfo.CreateComposableFilterSnippet(PermissionsExpressionName, Source.GetKeyProperties());
             createdConcepts = null;
         }
 

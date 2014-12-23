@@ -50,16 +50,19 @@ namespace Rhetos.Dom.DefaultConcepts
             _denyExpression = And(_denyExpression, Not(newExpression));
         }
 
-        public IQueryable<T> Filter(IQueryable<T> query)
+        public Expression<Func<T, bool>> GetFilter()
         {
             var finalExpression = And(_allowExpression, _denyExpression);
 
-            if (finalExpression == _selectAll)
-                return query;
-            else if (finalExpression == _selectNone)
-                return new T[] { }.AsQueryable();
-            else
-                return query.Where(finalExpression);
+            return finalExpression;
+        }
+
+        public static IQueryable<T> OptimizedWhere(IQueryable<T> source, Expression<Func<T, bool>> expression)
+        {
+            Optimize(ref expression);
+            if (expression == _selectAll) return source;
+            else if (expression == _selectNone) return (new T[] { }).AsQueryable();
+            else return source.Where(expression);
         }
 
         #region Optimized boolean expression functions
