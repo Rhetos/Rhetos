@@ -103,8 +103,10 @@
     <Compile Include="KeepSynchronizedRecomputeOnDeploy.cs" />
     <Compile Include="ReflectionHelper.cs" />
     <Compile Include="ReplaceWithReference.cs" />
+    <Compile Include="RowPermissions\RowPermissionsAllowWriteCodeGenerator.cs" />
     <Compile Include="RowPermissions\RowPermissionsDenyReadCodeGenerator.cs" />
     <Compile Include="RowPermissions\RowPermissionsAllowReadCodeGenerator.cs" />
+    <Compile Include="RowPermissions\RowPermissionsDenyWriteCodeGenerator.cs" />
     <Compile Include="RowPermissions\RowPermissionsInheritReadFromCodeGenerator.cs" />
     <Compile Include="RowPermissions\RowPermissionsInheritWriteFromCodeGenerator.cs" />
     <Compile Include="RowPermissions\RowPermissionsReadCodeGenerator.cs" />
