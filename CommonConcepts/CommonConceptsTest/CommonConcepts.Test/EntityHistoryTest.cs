@@ -776,9 +776,11 @@ namespace CommonConcepts.Test
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var future1 = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()).AddMinutes(1);
-                var future2 = future1.AddMinutes(1);
-                var future3 = future2.AddMinutes(1);
+                DateTime future1 = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()).AddMinutes(1);
+                DateTime future2 = future1.AddMinutes(1);
+                DateTime future3 = future2.AddMinutes(1);
+
+                Console.WriteLine(TestUtility.Dump(new[] { future1, future2, future3 }, item => item.ToString("s")));
 
                 var s = new TestHistory.Simple { ID = Guid.NewGuid(), Code = 1, ActiveSince = future3 };
                 repository.TestHistory.Simple.Insert(new[] { s });

@@ -54,7 +54,6 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
             typeof(GuidPropertyInfo),
             typeof(IntegerPropertyInfo),
             typeof(MoneyPropertyInfo),
-            typeof(ShortStringPropertyInfo)
         };
 
         public static bool IsSupported(PropertyInfo info)
