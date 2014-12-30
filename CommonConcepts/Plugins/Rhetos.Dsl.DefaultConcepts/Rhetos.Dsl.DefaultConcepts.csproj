@@ -120,10 +120,14 @@
     <Compile Include="Computations\KeyPropertyComputedFromInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndexClusteredInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndexMultipleFollowingPropertyInfo.cs" />
+    <Compile Include="RowPermissions\RowPermissionsAllowWriteInfo.cs" />
+    <Compile Include="RowPermissions\RowPermissionsAllowWriteNoConditionInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsDenyReadInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsDenyReadNoConditionInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsAllowReadNoConditionInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsAllowReadInfo.cs" />
+    <Compile Include="RowPermissions\RowPermissionsDenyWriteInfo.cs" />
+    <Compile Include="RowPermissions\RowPermissionsDenyWriteNoConditionInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsInheritFromInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsInheritReadFromInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsInheritWriteFromInfo.cs" />

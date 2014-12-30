@@ -27,12 +27,16 @@ using Rhetos.Utilities;
 using System;
 using System.Linq;
 using TestRowPermissions;
+using Rhetos.Extensibility;
+using Rhetos.Processing;
 
 namespace CommonConcepts.Test
 {
     [TestClass]
     public class RowPermissionsRulesTest
     {
+        static string _writeException = "Insufficient permissions to write some or all of the data";
+
         [TestMethod]
         public void FilterNoPermissions()
         {
@@ -192,6 +196,106 @@ namespace CommonConcepts.Test
                     Assert.AreEqual(1, babyRepo.Query().Count());
                     var babyDenyWrite = babyRepo.Filter(babyRepo.Query(), new Common.RowPermissionsWriteItems()).ToList();
                     Assert.AreEqual(0, babyDenyWrite.Count());
+                }
+            }
+        }
+
+        [TestMethod]
+        public void RulesWrite()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repositories = container.Resolve<Common.DomRepository>();
+                var emptyRP = repositories.TestRowPermissions.RPWriteRulesEmpty;
+                var writeRP = repositories.TestRowPermissions.RPWriteRules;
+                var commandImplementations = container.Resolve<IPluginsContainer<ICommandImplementation>>();
+                var saveCommand = commandImplementations.GetImplementations(typeof(SaveEntityCommandInfo)).Single();
+
+                {
+                    emptyRP.Delete(emptyRP.All());
+                    var saveInfo = new SaveEntityCommandInfo() {Entity = "TestRowPermissions.RPWriteRulesEmpty"};
+                    saveInfo.DataToInsert = new[] {new RPWriteRulesEmpty()};
+                    TestUtility.ShouldFail(() => saveCommand.Execute(saveInfo), _writeException);
+                }
+                {
+                    writeRP.Delete(writeRP.All());
+                    var saveInfo = new SaveEntityCommandInfo() { Entity = "TestRowPermissions.RPWriteRules" };
+                    saveInfo.DataToInsert = (new[] {10}).Select(item => new RPWriteRules() {value = item}).ToArray();
+                    TestUtility.ShouldFail(() => saveCommand.Execute(saveInfo), _writeException);
+                }
+
+                {
+                    writeRP.Delete(writeRP.All());
+                    var saveInfo = new SaveEntityCommandInfo() { Entity = "TestRowPermissions.RPWriteRules" };
+                    saveInfo.DataToInsert = (new[] { 5 }).Select(item => new RPWriteRules() { value = item }).ToArray();
+                    TestUtility.ShouldFail(() => saveCommand.Execute(saveInfo), _writeException);
+                }
+
+                {
+                    writeRP.Delete(writeRP.All());
+                    var saveInfo = new SaveEntityCommandInfo() { Entity = "TestRowPermissions.RPWriteRules" };
+                    saveInfo.DataToInsert = (new[] { 1, 2, 8 }).Select(item => new RPWriteRules() { value = item }).ToArray();
+                    TestUtility.ShouldFail(() => saveCommand.Execute(saveInfo), _writeException);
+                }
+
+                {
+                    writeRP.Delete(writeRP.All());
+                    var saveInfo = new SaveEntityCommandInfo() { Entity = "TestRowPermissions.RPWriteRules" };
+                    saveInfo.DataToDelete = (new[] { 7 }).Select(item => new RPWriteRules() { value = item, ID = Guid.NewGuid()}).ToArray();
+                    writeRP.Insert(saveInfo.DataToDelete);
+
+                    TestUtility.ShouldFail(() => saveCommand.Execute(saveInfo), _writeException);
+                }
+
+                {
+                    writeRP.Delete(writeRP.All());
+                    var saveInfo = new SaveEntityCommandInfo() { Entity = "TestRowPermissions.RPWriteRules" };
+                    saveInfo.DataToInsert = (new[] { 1, 2, 3, 4, 6, 9 }).Select(item => new RPWriteRules() { value = item, ID = Guid.NewGuid() }).ToArray();
+                    saveCommand.Execute(saveInfo);
+                    saveInfo.DataToDelete = saveInfo.DataToInsert;
+                    saveInfo.DataToInsert = null;
+                    saveCommand.Execute(saveInfo);
+                    Assert.AreEqual(0, writeRP.All().Count());
+                }
+
+                // update to legal
+                {
+                    writeRP.Delete(writeRP.All());
+                    var saveInfo = new SaveEntityCommandInfo() { Entity = "TestRowPermissions.RPWriteRules" };
+                    var items = (new[] { 12 }).Select(item => new RPWriteRules() { value = item, ID = Guid.NewGuid() }).ToArray();
+                    writeRP.Insert(items);
+                    items[0].value = 1;
+                    saveInfo.DataToUpdate = items;
+                    TestUtility.ShouldFail(() => saveCommand.Execute(saveInfo), _writeException);
+                }
+
+                // update from legal
+                {
+                    writeRP.Delete(writeRP.All());
+                    var saveInfo = new SaveEntityCommandInfo() { Entity = "TestRowPermissions.RPWriteRules" };
+                    var items = (new[] { 1 }).Select(item => new RPWriteRules() { value = item, ID = Guid.NewGuid() }).ToArray();
+                    writeRP.Insert(items);
+                    items[0].value = 12;
+                    saveInfo.DataToUpdate = items;
+                    TestUtility.ShouldFail(() => saveCommand.Execute(saveInfo), _writeException);
+                }
+
+                {
+                    writeRP.Delete(writeRP.All());
+                    var saveInfo = new SaveEntityCommandInfo() { Entity = "TestRowPermissions.RPWriteRules" };
+                    var items = (new[] { 1 }).Select(item => new RPWriteRules() { value = item, ID = Guid.NewGuid() }).ToArray();
+                    writeRP.Insert(items);
+                    items[0].value = 2;
+                    saveInfo.DataToUpdate = items;
+                    saveCommand.Execute(saveInfo);
+                }
+
+                {
+                    writeRP.Delete(writeRP.All());
+                    var saveInfo = new SaveEntityCommandInfo() { Entity = "TestRowPermissions.RPWriteRules" };
+                    saveInfo.DataToInsert = (new[] { 20 }).Select(item => new RPWriteRules() { value = item, ID = Guid.NewGuid() }).ToArray();
+
+                    saveCommand.Execute(saveInfo);
                 }
             }
         }

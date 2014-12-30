@@ -139,4 +139,44 @@ Module TestRowPermissions
 		}
 	}
 
+	// we test only write specific functionality, rules specific functionality is tested together with read rules
+	Entity RPWriteRulesEmpty
+	{
+		RowPermissions
+		{
+			AllowRead AllowAll
+			'0'
+			'item => true';
+		}
+	}
+	
+	Entity RPWriteRules
+	{
+		Integer value;
+		RowPermissions
+		{
+			AllowWrite AllowNoCondition
+				'new List<int?>() { 1, 2, 3, 4, 5, 6, 7, 8, 9 }'
+				'item => AllowNoCondition.Contains(item.value)';
+				
+			AllowWrite AllowCondition
+				'true'
+				'item => AllowCondition'
+				'AllowCondition == false';
+				
+			DenyWrite DenyCondition
+				'true'
+				'item => item.value == 5'
+				'DenyCondition == true';
+				
+			DenyWrite DenyNoCondition
+				'new List<int?>() { 7, 8 }'
+				'item => DenyNoCondition.Contains(item.value)';
+
+			AllowWrite AllowConditionTrue
+				'20'
+				'item => item.value == 20'
+				'AllowConditionTrue == 20';
+		}
+	}
 }
