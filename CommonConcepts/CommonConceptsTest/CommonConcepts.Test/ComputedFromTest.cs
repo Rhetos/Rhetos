@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using CommonConcepts.Test.Helpers;
 using System;
 using System.Text;
 using System.Collections.Generic;
@@ -140,14 +141,9 @@ namespace CommonConcepts.Test
             }
         }
 
-        private static string Dump(DateTime? dateTime)
-        {
-            return dateTime.HasValue ? dateTime.Value.ToString("s") : "null";
-        }
-
         private static void AssertIsRecently(DateTime? time, DateTime now, bool positiveLogic = true)
         {
-            string msg = "Time " + Dump(time.Value) + " should " + (positiveLogic ? "" : "NOT ") + "be recent to " + Dump(now) + ".";
+            string msg = "Time " + time.Dump() + " should " + (positiveLogic ? "" : "NOT ") + "be recent to " + now.Dump() + ".";
             Console.WriteLine(msg);
             Assert.AreEqual(positiveLogic, time.Value >= now.AddSeconds(-10) && time.Value <= now.AddSeconds(1), msg);
         }

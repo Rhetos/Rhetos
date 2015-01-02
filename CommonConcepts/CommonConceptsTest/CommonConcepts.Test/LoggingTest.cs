@@ -58,7 +58,7 @@ namespace CommonConcepts.Test
                 TestUtility.AssertContains(logRecord.ContextInfo, container.Resolve<IUserInfo>().UserName);
                 TestUtility.AssertContains(logRecord.ContextInfo, container.Resolve<IUserInfo>().Workstation);
 
-                var now = MsSqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
                 Assert.IsTrue(logRecord.Created.Value.Subtract(now).TotalSeconds < 5);
 
                 Assert.AreEqual("TestLogging.Simple", logRecord.TableName);

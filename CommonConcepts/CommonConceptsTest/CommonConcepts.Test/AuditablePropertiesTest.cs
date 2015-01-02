@@ -54,10 +54,10 @@ namespace CommonConcepts.Test
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestAuditable.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var start = MsSqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                var start = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
                 repository.TestAuditable.Simple.Insert(new[] { new TestAuditable.Simple { Name = "app" } });
                 container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
-                var finish = MsSqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                var finish = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
                 CheckCreatedDate(container, start, finish);
             }
@@ -125,7 +125,7 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
 
                 {
-                    var start = MsSqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                    var start = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
                     repository.TestAuditable.Simple.Insert(new[] { ReadInstance(insertData) });
 
                     container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
@@ -141,7 +141,7 @@ namespace CommonConcepts.Test
                     return;
 
                 {
-                    var start = MsSqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                    var start = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
                     repository.TestAuditable.Simple.Update(new[] { ReadInstance(updateData) });
 
                     container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
@@ -175,7 +175,7 @@ namespace CommonConcepts.Test
         {
             using (var container = new RhetosTestContainer())
             {
-                var start = MsSqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                var start = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestAuditable.Simple",

@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using CommonConcepts.Test.Helpers;
 using System;
 using System.Text;
 using System.Collections.Generic;
@@ -40,7 +41,7 @@ namespace CommonConcepts.Test
                 var report = new StringBuilder();
                 container.Resolve<ISqlExecuter>().ExecuteReader(
                     SqlGetSome(new DateTime(2001, 2, 3, 4, 5, 6)),
-                    reader => report.AppendLine(reader["Code"].ToString() + ", " + reader.GetDateTime(2).ToString("s")));
+                    reader => report.AppendLine(reader["Code"].ToString() + ", " + reader.GetDateTime(2).Dump()));
 
                 Console.WriteLine(report);
                 Assert.AreEqual("1, 2001-02-03T04:05:06\r\n2, 2001-02-04T04:05:06\r\n", report.ToString());
@@ -62,7 +63,7 @@ namespace CommonConcepts.Test
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestSqlFilter.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
                 var result = repository.TestSqlFilter.Simple.All();
-                var report = string.Join("|", result.Select(item => item.Code + ", " + item.Start.Value.ToString("s")));
+                var report = string.Join("|", result.Select(item => item.Code + ", " + item.Start.Dump()));
                 Assert.AreEqual("", report);
             }
         }
@@ -83,7 +84,7 @@ namespace CommonConcepts.Test
                     .SetResultTransformer(Transformers.AliasToBean(typeof(TestSqlFilter.Simple)));
 
                 var result = nhSqlQuery.List<TestSqlFilter.Simple>();
-                var report = string.Join("|", result.Select(item => item.Code + ", " + item.Start.Value.ToString("s")));
+                var report = string.Join("|", result.Select(item => item.Code + ", " + item.Start.Dump()));
 
                 Console.WriteLine(report);
                 Assert.AreEqual("1, 2001-02-03T04:05:06|2, 2001-02-04T04:05:06", report);

@@ -380,7 +380,7 @@ namespace Rhetos.Utilities
         public static DateTime GetDatabaseTime(ISqlExecuter sqlExecuter)
         {
             var now = DateTime.Now;
-            if (now < DatabaseTimeObsoleteAfter)
+            if (now <= DatabaseTimeObsoleteAfter)
                 return now + DatabaseTimeDifference;
             else
             {
