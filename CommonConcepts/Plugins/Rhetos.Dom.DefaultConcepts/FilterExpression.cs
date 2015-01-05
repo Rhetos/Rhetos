@@ -40,13 +40,13 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public void Include(Expression<Func<T, bool>> newExpression)
         {
-            Optimize(ref newExpression);
+            RecognizeConstantExpression(ref newExpression);
             _allowExpression = Or(_allowExpression, newExpression);
         }
 
         public void Exclude(Expression<Func<T, bool>> newExpression)
         {
-            Optimize(ref newExpression);
+            RecognizeConstantExpression(ref newExpression);
             _denyExpression = And(_denyExpression, Not(newExpression));
         }
 
@@ -59,7 +59,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static IQueryable<T> OptimizedWhere(IQueryable<T> source, Expression<Func<T, bool>> expression)
         {
-            Optimize(ref expression);
+            RecognizeConstantExpression(ref expression);
             if (expression == _selectAll) return source;
             else if (expression == _selectNone) return (new T[] { }).AsQueryable();
             else return source.Where(expression);
@@ -67,7 +67,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         #region Optimized boolean expression functions
 
-        private static void Optimize(ref Expression<Func<T, bool>> a)
+        private static void RecognizeConstantExpression(ref Expression<Func<T, bool>> a)
         {
             var constant = a.Body as ConstantExpression;
             if (constant != null && constant.Type == typeof(bool))
