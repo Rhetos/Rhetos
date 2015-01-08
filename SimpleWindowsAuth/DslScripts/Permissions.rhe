@@ -1,6 +1,6 @@
 ﻿Module Common
 {
-    // Principal is user, a client application or any other actor that can be authenticated.
+    // Principal is a user, a client application or any other actor that can be authenticated.
 	Entity Principal
 	{
 		ShortString Name { Required; Unique; }
@@ -12,7 +12,7 @@
 		Reference Principal Common.Principal { Required; CascadeDelete; }
 		Reference Claim Common.Claim { Required; CascadeDelete; }
 		Unique Common.Permission.Principal Common.Permission.Claim;
-		Bool IsAuthorized { Required; } // If IsAuthorized equals false then autorization is explicitly denied.
+		Bool IsAuthorized { Required; } // If IsAuthorized equals false then the autorization is explicitly denied.
 		Logging { AllProperties; }
 	}
 	

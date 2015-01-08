@@ -139,6 +139,13 @@ Module TestRowPermissions
 		}
 	}
 
+	Browse ParentBrowse TestRowPermissions.Parent
+	{
+		Take Value2 value;
+		RowPermissions { InheritFromBase; }
+	}
+	
+
 	// we test only write specific functionality, rules specific functionality is tested together with read rules
 	Entity RPWriteRulesEmpty
 	{

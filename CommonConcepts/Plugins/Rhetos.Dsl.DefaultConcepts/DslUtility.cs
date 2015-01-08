@@ -119,28 +119,6 @@ namespace Rhetos.Dsl.DefaultConcepts
                 throw new DslSyntaxException(errorContext, "Invalid path: " + property.Error);
         }
 
-        /// <summary>This is a temporary solution until IValidationConcept.CheckSemantics is upgraded to use IDslModel.</summary>
-        private class ConceptsListToDslModel : IDslModel
-        {
-            public ConceptsListToDslModel(IEnumerable<IConceptInfo> concepts)
-            {
-                Concepts = concepts;
-            }
-            public IEnumerable<IConceptInfo> Concepts { get; set; }
-            public IConceptInfo FindByKey(string conceptKey)
-            {
-                throw new NotImplementedException();
-            }
-            public IEnumerable<IConceptInfo> FindByType(Type conceptType)
-            {
-                return Concepts.Where(c => conceptType.IsAssignableFrom(c.GetType()));
-            }
-            public T GetIndex<T>() where T : IDslModelIndex
-            {
-                throw new NotImplementedException();
-            }
-        }
-
         public static PropertyInfo FindProperty(IDslModel dslModel, DataStructureInfo dataStructure, string propertyName)
         {
             if (dslModel is ConceptsListToDslModel)

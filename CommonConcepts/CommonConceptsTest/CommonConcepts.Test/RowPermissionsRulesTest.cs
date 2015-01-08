@@ -163,6 +163,7 @@ namespace CommonConcepts.Test
                 var parentRepo = repositories.TestRowPermissions.Parent;
                 var childRepo = repositories.TestRowPermissions.Child;
                 var babyRepo = repositories.TestRowPermissions.Baby;
+                var browseRepo = repositories.TestRowPermissions.ParentBrowse;
 
                 parentRepo.Delete(parentRepo.All());
                 childRepo.Delete(childRepo.All());
@@ -170,7 +171,7 @@ namespace CommonConcepts.Test
 
                 parentRepo.Insert(new Parent[] { pReadAllow, pReadDeny, pWriteAllow, pWriteDeny });
                 childRepo.Insert(new Child[] { cParentReadAllow, cParentReadDeny, cParentWriteAllow, cParentWriteDeny });
-                
+
                 {
                     var childAllowRead = childRepo.Filter(childRepo.Query(), new Common.RowPermissionsReadItems()).ToList();
                     Assert.AreEqual("5, 8", TestUtility.DumpSorted(childAllowRead, a => a.value.ToString()));
@@ -196,6 +197,15 @@ namespace CommonConcepts.Test
                     Assert.AreEqual(1, babyRepo.Query().Count());
                     var babyDenyWrite = babyRepo.Filter(babyRepo.Query(), new Common.RowPermissionsWriteItems()).ToList();
                     Assert.AreEqual(0, babyDenyWrite.Count());
+                }
+
+                // Test inheritance form base data structure
+                {
+                    var allowedRead = browseRepo.Filter(browseRepo.Query(), new Common.RowPermissionsReadItems()).ToList();
+                    Assert.AreEqual("160, 190", TestUtility.DumpSorted(allowedRead, item => item.Value2));
+
+                    var allowedWrite = browseRepo.Filter(browseRepo.Query(), new Common.RowPermissionsWriteItems()).ToList();
+                    Assert.AreEqual("60, 90", TestUtility.DumpSorted(allowedWrite, item => item.Value2));
                 }
             }
         }

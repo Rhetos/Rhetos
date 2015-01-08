@@ -118,6 +118,7 @@
     <Compile Include="Computations\KeyPropertyIDComputedFromInfo.cs" />
     <Compile Include="Computations\PersistedKeyPropertiesInfo.cs" />
     <Compile Include="Computations\KeyPropertyComputedFromInfo.cs" />
+    <Compile Include="ConceptsListToDslModel.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndexClusteredInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndexMultipleFollowingPropertyInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsAllowWriteInfo.cs" />
@@ -128,7 +129,9 @@
     <Compile Include="RowPermissions\RowPermissionsAllowReadInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsDenyWriteInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsDenyWriteNoConditionInfo.cs" />
+    <Compile Include="RowPermissions\RowPermissionsInheritFromBaseInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsInheritFromInfo.cs" />
+    <Compile Include="RowPermissions\RowPermissionsInheritFromReferenceInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsInheritReadFromInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsInheritWriteFromInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsPluginableFiltersInfo.cs" />

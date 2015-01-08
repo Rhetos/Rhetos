@@ -73,12 +73,12 @@ namespace Rhetos.Dom.DefaultConcepts
                 filterExpression.Include(replacedExpression);
             }}
             ",
-                info.ReferenceProperty.Referenced.Module,
-                info.ReferenceProperty.Referenced.Name,
+                info.Source.Module,
+                info.Source.Name,
                 permissionExpressionName,
                 info.RowPermissionsFilters.DataStructure.GetKeyProperties(),
-                info.ReferenceProperty.Name,
-                info.ReferenceProperty.DataStructure.Name.ToLower() + "Item");
+                info.SourceSelector,
+                info.RowPermissionsFilters.DataStructure.Name.ToLower() + "Item");
         }
     }
 }

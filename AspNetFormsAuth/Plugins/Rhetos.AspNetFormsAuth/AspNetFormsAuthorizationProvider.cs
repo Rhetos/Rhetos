@@ -90,7 +90,6 @@ namespace Rhetos.AspNetFormsAuth
         private IList<PermissionValue> GetUsersPermissions(IList<Claim> requiredClaims, IList<Guid> userAllRoles)
         {
             var claimNames = requiredClaims.Select(claim => claim.Resource + "." + claim.Right).ToList();
-            var claimIndex = new HashSet<Rhetos.Security.Claim>(requiredClaims);
 
             IList<PermissionValue> userPermissions = _permissionRepository.Value.Query()
                 .Where(permission =>
@@ -103,6 +102,7 @@ namespace Rhetos.AspNetFormsAuth
                         IsAuthorized = permission.IsAuthorized.Value
                     })
                 .ToList();
+
             return userPermissions;
         }
 

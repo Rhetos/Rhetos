@@ -26,48 +26,51 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("InheritFrom")]
     public class RowPermissionsInheritFromInfo : IValidationConcept, IMacroConcept
     {
         [ConceptKey]
         public RowPermissionsPluginableFiltersInfo RowPermissionsFilters { get; set; }
 
+        /// <summary>Row permissions are inherited from this data structure.</summary>
         [ConceptKey]
-        public ReferencePropertyInfo ReferenceProperty { get; set; }
+        public DataStructureInfo Source { get; set; }
+
+        /// <summary>Object model property name that references the Source data structure class.</summary>
+        [ConceptKey]
+        public string SourceSelector { get; set; }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
             List<IConceptInfo> newConcepts = new List<IConceptInfo>();
-            var readInfo = GetReadConceptInfoForReference(ReferenceProperty, existingConcepts);
-            if (readInfo != null) newConcepts.Add(new RowPermissionsInheritReadFromInfo() { InheritFromInfo = this });
 
-            var writeInfo = GetWriteConceptInfoForReference(ReferenceProperty, existingConcepts);
-            if (writeInfo != null) newConcepts.Add(new RowPermissionsInheritWriteFromInfo() { InheritFromInfo = this });
+            var rowPermissionsRead = GetRowPermissionsRead(Source, existingConcepts);
+            if (rowPermissionsRead != null) newConcepts.Add(new RowPermissionsInheritReadFromInfo() { InheritFromInfo = this });
+
+            var rowPermissionsWrite = GetRowPermissionsWrite(Source, existingConcepts);
+            if (rowPermissionsWrite != null) newConcepts.Add(new RowPermissionsInheritWriteFromInfo() { InheritFromInfo = this });
 
             return newConcepts;
         }
      
         public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
         {
-            if (ReferenceProperty.DataStructure != RowPermissionsFilters.DataStructure)
-                throw new DslSyntaxException(this, "Referenced property must belong to the same DataStructure as this concept.");
-
-            var rowPermissionsRead = GetReadConceptInfoForReference(ReferenceProperty, existingConcepts);
-            var rowPermissionsWrite = GetWriteConceptInfoForReference(ReferenceProperty, existingConcepts);
+            var rowPermissionsRead = GetRowPermissionsRead(Source, existingConcepts);
+            var rowPermissionsWrite = GetRowPermissionsWrite(Source, existingConcepts);
 
             if (rowPermissionsRead == null && rowPermissionsWrite == null)
-                throw new DslSyntaxException(this, "Reference '" + ReferenceProperty.Name + "' is not a reference to entity with RowPermissions.");
+                throw new DslSyntaxException(this, "Referenced '" + Source.GetUserDescription() + "' does not have row permissions.");
         }
 
-        private RowPermissionsReadInfo GetReadConceptInfoForReference(ReferencePropertyInfo reference, IEnumerable<IConceptInfo> concepts)
+        private RowPermissionsReadInfo GetRowPermissionsRead(DataStructureInfo dataStructure, IEnumerable<IConceptInfo> concepts)
         {
             var allRp = concepts.OfType<RowPermissionsReadInfo>();
-            return allRp.SingleOrDefault(a => a.Source == reference.Referenced);
+            return allRp.SingleOrDefault(a => a.Source == dataStructure);
         }
-        private RowPermissionsWriteInfo GetWriteConceptInfoForReference(ReferencePropertyInfo reference, IEnumerable<IConceptInfo> concepts)
+
+        private RowPermissionsWriteInfo GetRowPermissionsWrite(DataStructureInfo dataStructure, IEnumerable<IConceptInfo> concepts)
         {
             var allRp = concepts.OfType<RowPermissionsWriteInfo>();
-            return allRp.SingleOrDefault(a => a.Source == reference.Referenced);
+            return allRp.SingleOrDefault(a => a.Source == dataStructure);
         }
     }
 }
