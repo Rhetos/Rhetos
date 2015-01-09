@@ -97,7 +97,7 @@ namespace Rhetos.Dsl
         /// The <see cref="Get"/> method returns all previously registered derivations or implementations (see <see cref="Add"/> method) of the given base class or an index, including the supertype itself (if registered).
         /// The supertype may be an interface or a class, except the <see cref="Object"/> type.
         /// </summary>
-        private class Subtypes : DictionaryOfLists<Type, Type>
+        private class Subtypes : MultiDictionary<Type, Type>
         {
             private readonly HashSet<Type> _typesAdded = new HashSet<Type>();
 

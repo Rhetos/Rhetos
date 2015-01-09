@@ -41,14 +41,10 @@ namespace Rhetos.CommonConcepts.Test.Mocks
 
         public T GetIndex<T>() where T : IDslModelIndex
         {
-            if (typeof(T) == typeof(DslModelIndexByType))
-            {
-                IDslModelIndex index = new DslModelIndexByType();
-                foreach (var concept in Concepts)
-                    index.Add(concept);
-                return (T)index;
-            }
-            throw new NotImplementedException();
+            IDslModelIndex index = (IDslModelIndex)typeof(T).GetConstructor(new Type[] { }).Invoke(new object[] { });
+            foreach (var concept in Concepts)
+                index.Add(concept);
+            return (T)index;
         }
     }
 }

@@ -34,29 +34,30 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public static IEnumerable<IConceptInfo> GenerateDependencies(IConceptInfo dependent, IDslModel existingConcepts, string sqlScript)
         {
-            SortedSet<string> sqlObjects;
-            if (!SqlObjectsCache.TryGetValue(sqlScript, out sqlObjects))
+            SortedSet<string> sqlObjectsInScript;
+            if (!SqlObjectsCache.TryGetValue(sqlScript, out sqlObjectsInScript))
             {
-                sqlObjects = new SortedSet<string>(ExtractPossibleObjects(sqlScript), StringComparer.InvariantCultureIgnoreCase);
-                SqlObjectsCache.Add(sqlScript, sqlObjects);
+                sqlObjectsInScript = new SortedSet<string>(ExtractPossibleObjects(sqlScript), StringComparer.InvariantCultureIgnoreCase);
+                SqlObjectsCache.Add(sqlScript, sqlObjectsInScript);
             }
 
             var newConcepts = new List<IConceptInfo>();
 
-            foreach (var conceptInfo in existingConcepts.FindByType<DataStructureInfo>())
-                if (conceptInfo != dependent)
-                    if (sqlObjects.Contains(conceptInfo.Module.Name + "." + conceptInfo.Name))
-                        newConcepts.Add(new SqlDependsOnDataStructureInfo { Dependent = dependent, DependsOn = conceptInfo });
+            var conceptsBySqlName = existingConcepts.GetIndex<SqlObjectsIndex>().ConceptsBySqlName;
 
-            foreach (var conceptInfo in existingConcepts.FindByType<SqlViewInfo>())
-                if (conceptInfo != dependent)
-                    if (sqlObjects.Contains(conceptInfo.Module.Name + "." + conceptInfo.Name))
-                        newConcepts.Add(new SqlDependsOnSqlViewInfo { Dependent = dependent, DependsOn = conceptInfo });
-
-            foreach (var conceptInfo in existingConcepts.FindByType<SqlFunctionInfo>())
-                if (conceptInfo != dependent)
-                    if (sqlObjects.Contains(conceptInfo.Module.Name + "." + conceptInfo.Name))
-                        newConcepts.Add(new SqlDependsOnSqlFunctionInfo { Dependent = dependent, DependsOn = conceptInfo });
+            foreach (var sqlObjectInScript in sqlObjectsInScript)
+                foreach (var conceptInfo in conceptsBySqlName.Get(sqlObjectInScript))
+                    if (conceptInfo != dependent)
+                    {
+                        if (conceptInfo is DataStructureInfo)
+                            newConcepts.Add(new SqlDependsOnDataStructureInfo { Dependent = dependent, DependsOn = (DataStructureInfo)conceptInfo });
+                        else if (conceptInfo is SqlViewInfo)
+                            newConcepts.Add(new SqlDependsOnSqlViewInfo { Dependent = dependent, DependsOn = (SqlViewInfo)conceptInfo });
+                        else if (conceptInfo is SqlFunctionInfo)
+                            newConcepts.Add(new SqlDependsOnSqlFunctionInfo { Dependent = dependent, DependsOn = (SqlFunctionInfo)conceptInfo });
+                        else
+                            throw new DslSyntaxException(dependent, "Internal error: Unexpected SQL concept type: " + conceptInfo.GetUserDescription() + ".");
+                    }
 
             return newConcepts;
         }

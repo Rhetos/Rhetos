@@ -45,14 +45,14 @@ namespace Rhetos.Dsl.DefaultConcepts
             var property = DslUtility.CreatePassiveClone(conceptInfo.Source, conceptInfo.Destination);
             newConcepts.Add(property);
 
-            var required = existingConcepts.FindByType<RequiredPropertyInfo>().Where(ci => ci.Property == conceptInfo.Source)
+            var required = existingConcepts.FindByReference<RequiredPropertyInfo>(ci => ci.Property, conceptInfo.Source)
                 .Select(ci => new RequiredPropertyInfo { Property = property })
                 .SingleOrDefault();
             if (required != null)
                 newConcepts.Add(required);
 
             if (SqlIndexMultipleInfo.IsSupported(conceptInfo.Destination))
-                foreach (var sourceIndex in existingConcepts.FindByType<SqlIndexMultipleInfo>().Where(ci => ci.Entity == conceptInfo.Source.DataStructure))
+                foreach (var sourceIndex in existingConcepts.FindByReference<SqlIndexMultipleInfo>(ci => ci.Entity, conceptInfo.Source.DataStructure))
                 {
                     var indexProperties = sourceIndex.PropertyNames.Split(' ');
                     if (property.Name == indexProperties.FirstOrDefault()

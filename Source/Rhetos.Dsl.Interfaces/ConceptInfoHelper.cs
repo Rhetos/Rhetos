@@ -20,12 +20,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Rhetos.Dsl
 {
     public static class ConceptInfoHelper
     {
+        private static ConditionalWeakTable<IConceptInfo, string> KeyCache = new ConditionalWeakTable<IConceptInfo, string>();
+
         /// <summary>
         /// Returns a string that <b>uniquely describes the concept instance</b>.
         /// The string contains concept's base class type and a list of concept's key properties.
@@ -41,6 +44,11 @@ namespace Rhetos.Dsl
             if (ci == null)
                 throw new ArgumentNullException();
 
+            return KeyCache.GetValue(ci, CreateKey);
+        }
+
+        private static string CreateKey(IConceptInfo ci)
+        {
             StringBuilder desc = new StringBuilder(100);
             desc.Append(BaseConceptInfoType(ci).Name);
             desc.Append(" ");

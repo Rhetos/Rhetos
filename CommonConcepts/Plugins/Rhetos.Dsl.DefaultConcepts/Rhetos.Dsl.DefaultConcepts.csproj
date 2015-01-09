@@ -298,6 +298,7 @@
     <Compile Include="DataStructure\Properties\ReferencePropertyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\RequiredPropertyInfo.cs" />
     <Compile Include="DataStructure\Properties\ShortStringPropertyInfo.cs" />
+    <Compile Include="SqlObjectsIndex.cs" />
     <Compile Include="SqlAnalysis.cs" />
   </ItemGroup>
   <ItemGroup>

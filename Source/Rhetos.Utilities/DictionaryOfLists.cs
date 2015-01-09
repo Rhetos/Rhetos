@@ -24,8 +24,20 @@ using System.Text;
 
 namespace Rhetos.Utilities
 {
-    public class DictionaryOfLists<TKey, TValue> : Dictionary<TKey, List<TValue>>
+    /// <summary>
+    /// May contain multiple values with the same key.
+    /// </summary>
+    public class MultiDictionary<TKey, TValue> : Dictionary<TKey, List<TValue>>
     {
+        public MultiDictionary()
+        {
+        }
+
+        public MultiDictionary(IEqualityComparer<TKey> comparer)
+            : base(comparer)
+        {
+        }
+
         public void Add(TKey key, TValue value)
         {
             List<TValue> list;
@@ -37,14 +49,16 @@ namespace Rhetos.Utilities
             list.Add(value);
         }
 
+        private static TValue[] EmptyArray = new TValue[] { };
+
         /// <summary>
         /// Returns empty list is the given key does not exist.
         /// </summary>
-        public List<TValue> Get(TKey key)
+        public IEnumerable<TValue> Get(TKey key)
         {
             List<TValue> list;
             if (!TryGetValue(key, out list))
-                list = new List<TValue>();
+                return EmptyArray;
             return list;
         }
     }

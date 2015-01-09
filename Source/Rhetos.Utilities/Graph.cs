@@ -35,9 +35,9 @@ namespace Rhetos.Utilities
             var result = new List<T>(list);
             var alreadyInserted = new HashSet<T>(list);
 
-            var dependents = dependencies
-                .GroupBy(dep => dep.Item1)
-                .ToDictionary(g => g.Key, g => g.Select(dep => dep.Item2).ToList());
+            var dependents = new MultiDictionary<T, T>();
+            foreach (var dependency in dependencies)
+                dependents.Add(dependency.Item1, dependency.Item2);
 
             foreach (var element in list)
                 AddDependents(

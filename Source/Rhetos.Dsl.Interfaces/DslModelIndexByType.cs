@@ -50,7 +50,7 @@ namespace Rhetos.Dsl
             }
         }
 
-        private readonly DictionaryOfLists<Type, IConceptInfo> _conceptsByType = new DictionaryOfLists<Type, IConceptInfo>();
+        private readonly MultiDictionary<Type, IConceptInfo> _conceptsByType = new MultiDictionary<Type, IConceptInfo>();
     }
 
     public static class DslModelIndexerByTypeExtensions
