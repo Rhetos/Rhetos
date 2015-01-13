@@ -35,7 +35,8 @@ namespace Rhetos.Dsl.DefaultConcepts
             return new IConceptInfo[]
             {
                 new ReferenceCascadeDeleteInfo { Reference = Reference },
-                new SqlIndexInfo { Property = Reference }
+                new SqlIndexInfo { Property = Reference },
+                new SystemRequiredInfo { Property = Reference }
             };
         }
         

@@ -18,8 +18,8 @@ Module TestAllProperties
 		Extends TestAllProperties.Base;
 		ShortString Name { SqlIndex; }
 		DateTime Start;
-		Reference TheParent TestAllProperties.Parent { Detail; } // Instead of full Detail concept, only CascadeDelete base concept will be used.
-		Unique TestAllProperties.Source.Name TestAllProperties.Source.Start; // Instead of full Unique concept, only SqlIndex base concept will be used.
+		Reference TheParent TestAllProperties.Parent { Detail; } // Instead of full Detail concept, only CascadeDelete base concept should  be copied to TestAllPropertiesCopyAllFeatures.
+		Unique TestAllProperties.Source.Name TestAllProperties.Source.Start; // Instead of full Unique concept, only SqlIndex base concept should  be copied to TestAllPropertiesCopyAllFeatures.
 		Unique TestAllProperties.Source.Name TestAllProperties.Source.Start TestAllProperties.Source.TheParent;
 	}
 

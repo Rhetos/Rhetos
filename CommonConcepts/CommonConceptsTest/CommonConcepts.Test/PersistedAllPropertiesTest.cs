@@ -94,9 +94,12 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("", TestUtility.DumpSorted(
                     repository.TestAllProperties.UsesImplicitlyCreatedProperties.All(), item => item.ComputedName), "initial state");
 
+                var parentId = Guid.NewGuid();
+                repository.TestAllProperties.Parent.Insert(new[] { new TestAllProperties.Parent { ID = parentId } });
+
                 var id = Guid.NewGuid();
                 repository.TestAllProperties.Base.Insert(new[] { new TestAllProperties.Base { ID = id } });
-                repository.TestAllProperties.Source.Insert(new[] { new TestAllProperties.Source { ID = id, Name = "abc" } });
+                repository.TestAllProperties.Source.Insert(new[] { new TestAllProperties.Source { ID = id, Name = "abc", TheParentID = parentId } });
 
                 repository.TestAllProperties.TestAllPropertiesCopyAllFeatures.Recompute();
                 Assert.AreEqual("abc", TestUtility.DumpSorted(

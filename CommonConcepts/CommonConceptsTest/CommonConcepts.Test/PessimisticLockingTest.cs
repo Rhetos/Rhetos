@@ -38,14 +38,16 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
+                var groupId = Guid.NewGuid();
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestPessimisticLocking.Article;",
                         "DELETE FROM Common.ExclusiveLock;",
-                        "INSERT INTO TestPessimisticLocking.Article (ID, Name) SELECT '" + id1 + "', 'aaa';",
-                        "INSERT INTO TestPessimisticLocking.Article (ID, Name) SELECT '" + id2 + "', 'bbb';"
+                        "INSERT INTO TestPessimisticLocking.ArticleGroup (ID, Name) SELECT '" + groupId + "', 'ggg';",
+                        "INSERT INTO TestPessimisticLocking.Article (ID, Name, ParentID) SELECT '" + id1 + "', 'aaa', '" + groupId + "';",
+                        "INSERT INTO TestPessimisticLocking.Article (ID, Name, ParentID) SELECT '" + id2 + "', 'bbb', '" + groupId + "';",
                     });
 
                 var articleRepos = repository.TestPessimisticLocking.Article;
