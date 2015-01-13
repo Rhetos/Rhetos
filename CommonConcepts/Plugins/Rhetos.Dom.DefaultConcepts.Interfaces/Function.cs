@@ -21,27 +21,30 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
-using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl;
-using Rhetos.Compiler;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(RowPermissionsInheritWriteFromInfo))]
-    public class RowPermissionsInheritWriteFromCodeGenerator : IConceptCodeGenerator
+    public static class Function
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        /// <summary>
+        /// (Ab)using generics to automatically detect the function's result, so that the generated code
+        /// can use static typing without explicitly defining the result type.
+        /// </summary>
+        public static Func<TResult> Create<TResult>(Func<TResult> func)
         {
-            var info = (RowPermissionsInheritWriteFromInfo)conceptInfo;
+            return func;
+        }
+    }
 
-            codeBuilder.InsertCode(
-                RowPermissionsUtility.GetInheritSnippet(info.InheritFromInfo, RowPermissionsWriteInfo.PermissionsExpressionName),
-                RowPermissionsPluginableFiltersInfo.WriteFilterExpressionsTag,
-                info.Dependency_RowPermissionsWrite);
+    public static class Function<T>
+    {
+        /// <summary>
+        /// (Ab)using generics to automatically detect the function's result, so that the generated code
+        /// can use static typing without explicitly defining the result type.
+        /// </summary>
+        public static Func<T, TResult> Create<TResult>(Func<T, TResult> func)
+        {
+            return func;
         }
     }
 }

@@ -85,17 +85,17 @@ Module TestRowPermissions
 		RowPermissions
 		{
 			AllowRead DirectlyAlllowedItems
-				'context.GenericRepository<RpRulesAllowItem>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Item.ID).ToList()'
+				'context => context.GenericRepository<RpRulesAllowItem>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Item.ID).ToList()'
 				'item => DirectlyAlllowedItems.Contains(item.ID)'
 				'DirectlyAlllowedItems.Count > 0';
 
 			AllowRead DirectlyAlllowedGroups
-				'context.GenericRepository<RpRulesAllowGroup>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Group.ID).ToList()'
+				'context => context.GenericRepository<RpRulesAllowGroup>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Group.ID).ToList()'
 				'item => DirectlyAlllowedGroups.Contains(item.Group.ID)'
 				'DirectlyAlllowedGroups.Count > 0';
 			
 			AllowRead AllowedAllGroups
-				'{
+				'context => {
 					int totalGroupsCount = context.GenericRepository<RPRulesGroup>().Query().Count();
 					int allowedGroupsCount = context.GenericRepository<RpRulesAllowGroup>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Group.ID).Distinct().Count();
 					return allowedGroupsCount == totalGroupsCount;
@@ -104,7 +104,7 @@ Module TestRowPermissions
 				'AllowedAllGroups';
 			
 			DenyRead DirectlyDeniedItems
-				'context.GenericRepository<RpRulesDenyItem>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Item.ID).ToList()'
+				'context => context.GenericRepository<RpRulesDenyItem>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Item.ID).ToList()'
 				'item => DirectlyDeniedItems.Contains(item.ID)'
 				'DirectlyDeniedItems.Count > 0';
 		}
@@ -125,7 +125,7 @@ Module TestRowPermissions
 		{
 			InheritFrom TestRowPermissions.Child.MyParent;
 			DenyRead Denied
-				'new List<int?>() { 1, 2, 3 }'
+				'context => new List<int?>() { 1, 2, 3 }'
 				'item => Denied.Contains(item.value)';
 		}
 	}
@@ -152,7 +152,7 @@ Module TestRowPermissions
 		RowPermissions
 		{
 			AllowRead AllowAll
-			'0'
+			'context => 0'
 			'item => true';
 		}
 	}
@@ -163,27 +163,87 @@ Module TestRowPermissions
 		RowPermissions
 		{
 			AllowWrite AllowNoCondition
-				'new List<int?>() { 1, 2, 3, 4, 5, 6, 7, 8, 9 }'
+				'context => new List<int?>() { 1, 2, 3, 4, 5, 6, 7, 8, 9 }'
 				'item => AllowNoCondition.Contains(item.value)';
 				
 			AllowWrite AllowCondition
-				'true'
+				'context => true'
 				'item => AllowCondition'
 				'AllowCondition == false';
 				
 			DenyWrite DenyCondition
-				'true'
+				'context => true'
 				'item => item.value == 5'
 				'DenyCondition == true';
 				
 			DenyWrite DenyNoCondition
-				'new List<int?>() { 7, 8 }'
+				'context => new List<int?>() { 7, 8 }'
 				'item => DenyNoCondition.Contains(item.value)';
 
 			AllowWrite AllowConditionTrue
-				'20'
+				'context => 20'
 				'item => item.value == 20'
 				'AllowConditionTrue == 20';
 		}
+	}
+}
+
+Module TestRowPermissions1
+{
+	AutoInheritRowPermissions;
+	
+	Entity E1
+	{
+		ShortString Name1;
+		Reference E2 TestRowPermissions2.E2 { Detail; }
+		// Allowed: E3.Name3="3" OR E2.Name2=="2" OR E1.Name1=="1".
+		RowPermissions { AllowRead Allow1 'context => true' 'item => item.Name1 == "1"'; }
+	}
+	
+	Browse E1Browse TestRowPermissions1.E1
+	{
+		// Allowed: E3.Name3="3" OR E2.Name2=="2" OR E1.Name1=="1".
+		Take Name1Browse 'Name1';
+	}
+	
+	Browse E1BrowseRP TestRowPermissions1.E1
+	{
+		Take Name1Browse 'Name1';
+		// Allowed: E3.Name3="3" OR E2.Name2=="2" OR E1.Name1=="1" OR E1BrowseRP.Name1Browse=="1B".
+		RowPermissions { AllowRead Allow1Browse 'context => true' 'item => item.Name1Browse == "1b"'; }
+	}
+}
+
+Module TestRowPermissions2
+{
+	AutoInheritRowPermissions;
+	
+	Entity E2
+	{
+		ShortString Name2;
+		Reference E3 TestRowPermissions3.E3 { Detail; }
+		// Allowed: E3.Name3="3" OR E2.Name2=="2".
+		RowPermissions { AllowRead Allow2 'context => true' 'item => item.Name2 == "2"'; }
+	}
+}
+
+Module TestRowPermissions3
+{
+	Entity E3
+	{
+		ShortString Name3;
+		Reference E4 TestRowPermissions4.E4 { Detail; }
+		// Doesn't inherit row permissions from parent since there is no AutoInheritRowPermissions.
+		// Inheriting the row permissions would fail because this entity doesn't use "RowPermissions" rules.
+		RowPermissionsRead '(source, repo, context) => item => item.Name3 == "3"';
+	}
+}
+
+Module TestRowPermissions4
+{
+	Entity E4
+	{
+		ShortString Name4;
+		RowPermissionsRead '(source, repo, context) => item => item.Name4 == "4"';
 	}
 }

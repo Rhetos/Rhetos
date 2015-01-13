@@ -28,43 +28,92 @@ using System.Text.RegularExpressions;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// The root concept for row permission rules.
+    /// It allows combining multiple rules and inheriting rules from one data structure to another.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RowPermissions")]
-    public class RowPermissionsPluginableFiltersInfo : IAlternativeInitializationConcept
+    public class RowPermissionsPluginableFiltersInfo : IConceptInfo
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }
-        public RowPermissionsReadInfo Dependency_RowPermissionsRead { get; set; }
-        public RowPermissionsWriteInfo Dependency_RowPermissionsWrite { get; set; }
 
-        public static readonly CsTag<RowPermissionsPluginableFiltersInfo> ReadFilterExpressionsTag = "ReadFilterExpressions";
-        public static readonly CsTag<RowPermissionsPluginableFiltersInfo> WriteFilterExpressionsTag = "WriteFilterExpressions";
+        public static readonly CsTag<RowPermissionsReadInfo> ReadFilterExpressionsTag = "ReadFilterExpressions";
+        public static readonly CsTag<RowPermissionsWriteInfo> WriteFilterExpressionsTag = "WriteFilterExpressions";
+    }
 
-
-        public IEnumerable<string> DeclareNonparsableProperties()
+    [Export(typeof(IConceptMacro))]
+    public class RowPermissionsPluginableFiltersMacro : IConceptMacro<RowPermissionsPluginableFiltersInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(RowPermissionsPluginableFiltersInfo conceptInfo, IDslModel existingConcepts)
         {
-            return new[] { "Dependency_RowPermissionsRead", "Dependency_RowPermissionsWrite" };
+            var rowPermissionsRead = new RowPermissionsReadInfo()
+            {
+                Source = conceptInfo.DataStructure,
+                Parameter = RowPermissionsReadInfo.FilterName
+            };
+            rowPermissionsRead.SimplifiedExpression = GetSnippetRowPermissionsFilter(conceptInfo,
+                RowPermissionsPluginableFiltersInfo.ReadFilterExpressionsTag.Evaluate(rowPermissionsRead));
+
+            var rowPermissionsWrite = new RowPermissionsWriteInfo()
+            {
+                Source = conceptInfo.DataStructure,
+                Parameter = RowPermissionsWriteInfo.FilterName
+            };
+            rowPermissionsWrite.SimplifiedExpression = GetSnippetRowPermissionsFilter(conceptInfo,
+                RowPermissionsPluginableFiltersInfo.WriteFilterExpressionsTag.Evaluate(rowPermissionsWrite));
+
+            CheckForIncompatibleSpecificRowPermissionsFilter(existingConcepts, rowPermissionsRead, conceptInfo);
+            CheckForIncompatibleSpecificRowPermissionsFilter(existingConcepts, rowPermissionsWrite, conceptInfo);
+
+            return new IConceptInfo[] { rowPermissionsRead, rowPermissionsWrite };
         }
 
-        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        public string GetSnippetRowPermissionsFilter(RowPermissionsPluginableFiltersInfo conceptInfo, string filtersTag)
         {
-            Dependency_RowPermissionsRead = new RowPermissionsReadInfo() { SimplifiedExpression = GetSnippetRowPermissionsFilter(ReadFilterExpressionsTag), Source = DataStructure };
-            Dependency_RowPermissionsWrite = new RowPermissionsWriteInfo() { SimplifiedExpression = GetSnippetRowPermissionsFilter(WriteFilterExpressionsTag), Source = DataStructure };
-
-            createdConcepts = new IConceptInfo[] { Dependency_RowPermissionsRead, Dependency_RowPermissionsWrite };
-        }
-
-        public string GetSnippetRowPermissionsFilter(CsTag<RowPermissionsPluginableFiltersInfo> filterExpressionTag)
-        {
-            return string.Format(@"(items, repository, context) =>
+            return string.Format(@"(items, repository, executionContext) =>
 		{{
             var filterExpression = new FilterExpression<{0}.{1}>();
 			{2}
 			return filterExpression.GetFilter();
 		}}",
-                DataStructure.Module.Name,
-                DataStructure.Name,
-                filterExpressionTag.Evaluate(this));
+                conceptInfo.DataStructure.Module.Name,
+                conceptInfo.DataStructure.Name,
+                filtersTag);
+        }
+
+        // Check if the data structure already contains a specific row permissions filter that is not rule-based. Such filter is not compatible with RowPermissionsPluginableFiltersInfo.
+        private void CheckForIncompatibleSpecificRowPermissionsFilter(IDslModel existingConcepts, IConceptInfo newRowPermissionsFilter, RowPermissionsPluginableFiltersInfo conceptInfo)
+        {
+            IConceptInfo oldRowPermissions = existingConcepts.FindByKey(newRowPermissionsFilter.GetKey());
+            if (oldRowPermissions == null)
+                return;
+
+            string filterName;
+            string newFilterExpression;
+            string oldFilterExpression = null;
+
+            if (newRowPermissionsFilter is RowPermissionsReadInfo)
+            {
+                filterName = RowPermissionsReadInfo.FilterName;
+                newFilterExpression = ((RowPermissionsReadInfo)newRowPermissionsFilter).SimplifiedExpression;
+                if (oldRowPermissions is RowPermissionsReadInfo)
+                    oldFilterExpression = ((RowPermissionsReadInfo)oldRowPermissions).SimplifiedExpression;
+            }
+            else
+            {
+                filterName = RowPermissionsWriteInfo.FilterName;
+                newFilterExpression = ((RowPermissionsWriteInfo)newRowPermissionsFilter).SimplifiedExpression;
+                if (oldRowPermissions is RowPermissionsWriteInfo)
+                    oldFilterExpression = ((RowPermissionsWriteInfo)oldRowPermissions).SimplifiedExpression;
+            }
+
+            if (oldFilterExpression == null || oldFilterExpression != newFilterExpression)
+                throw new DslSyntaxException(conceptInfo, "Cannot use row permissions rules or row permissions inheritance on "
+                    + conceptInfo.DataStructure.GetUserDescription() + " because it already contains a specific row permissions filter ("
+                    + filterName + ")."
+                    + " Use RowPermissions concept instead of the specific filter, to create rules-based row permissions.");
         }
     }
 }

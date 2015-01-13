@@ -48,9 +48,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
             return string.Format(
             @"{{
-				var {2}Function = DomUtility.Function(() =>
-                    {3});
-				var {2} = {2}Function.Invoke();
+				var {2}Function = Function<Common.ExecutionContext>.Create({3});
+				var {2} = {2}Function.Invoke(executionContext);
 				{5}filterExpression.{6}({4});
 			}}
             ",
@@ -67,8 +66,8 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return string.Format(
             @"{{
-                var parentRepository = context.Repositories.{0}.{1};
-                var parentRowPermissionsExpression = {0}._Helper.{1}_Repository.{2}(parentRepository.Query(), repository, context);
+                var parentRepository = executionContext.Repository.{0}.{1};
+                var parentRowPermissionsExpression = {0}._Helper.{1}_Repository.{2}(parentRepository.Query(), repository, executionContext);
                 var replacedExpression = new ReplaceWithReference<{0}.{1}, {3}>(parentRowPermissionsExpression, ""{4}"" , ""{5}"").NewExpression;
                 filterExpression.Include(replacedExpression);
             }}

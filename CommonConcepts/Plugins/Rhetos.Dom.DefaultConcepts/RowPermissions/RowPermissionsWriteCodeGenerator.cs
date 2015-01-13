@@ -40,7 +40,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (RowPermissionsWriteInfo)conceptInfo;
 
             var code = string.Format(
-@"        public static Func< IQueryable<{0}>, Common.DomRepository, Common.ExecutionContext, 
+@"        public static Func<IQueryable<{0}>, Common.DomRepository, Common.ExecutionContext, 
               Expression<Func<{0}, bool>> > {1} = 
               {2};
 

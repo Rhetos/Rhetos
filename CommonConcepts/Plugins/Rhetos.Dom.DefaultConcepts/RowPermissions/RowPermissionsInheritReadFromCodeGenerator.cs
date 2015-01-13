@@ -41,7 +41,7 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode(
                 RowPermissionsUtility.GetInheritSnippet(info.InheritFromInfo, RowPermissionsReadInfo.PermissionsExpressionName),
                 RowPermissionsPluginableFiltersInfo.ReadFilterExpressionsTag, 
-                info.InheritFromInfo.RowPermissionsFilters); 
+                info.Dependency_RowPermissionsRead); 
         }
     }
 }

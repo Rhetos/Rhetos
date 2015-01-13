@@ -47,7 +47,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     info.Condition,
                     allow: true),
                 RowPermissionsPluginableFiltersInfo.WriteFilterExpressionsTag,
-                info.RowPermissionsFilters);
+                info.Dependency_RowPermissionsWrite);
         }
     }
 }

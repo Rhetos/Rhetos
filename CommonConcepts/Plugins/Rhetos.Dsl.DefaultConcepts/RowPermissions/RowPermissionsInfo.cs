@@ -35,7 +35,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public string SimplifiedExpression { get; set; }
 
-        public new IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();
 

@@ -30,15 +30,15 @@ namespace Rhetos.Dsl.DefaultConcepts
     [ConceptKeyword("DenyRead")]
     public class RowPermissionsDenyReadNoConditionInfo : RowPermissionsDenyReadInfo, IAlternativeInitializationConcept
     {
-        public IEnumerable<string> DeclareNonparsableProperties()
+        public new IEnumerable<string> DeclareNonparsableProperties()
         {
-            return new[] { "Condition" };
+            return base.DeclareNonparsableProperties().Concat(new[] { "Condition" });
         }
 
-        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        public new void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
+            base.InitializeNonparsableProperties(out createdConcepts); 
             Condition = "";
-            createdConcepts = null;
         }
     }
 }

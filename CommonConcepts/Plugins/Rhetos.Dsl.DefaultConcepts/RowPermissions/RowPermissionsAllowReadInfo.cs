@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AllowRead")]
-    public class RowPermissionsAllowReadInfo : RowPermissionsRuleInfo
+    public class RowPermissionsAllowReadInfo : RowPermissionsRuleInfo, IAlternativeInitializationConcept
     {
         public string GroupSelector { get; set; }
 
@@ -38,5 +38,25 @@ namespace Rhetos.Dsl.DefaultConcepts
         /// Optional.
         /// </summary>
         public string Condition { get; set; }
+
+        /// <summary>
+        /// Used in DOM code generator. The dependency's code generator must be executed before this concept's code generator.
+        /// </summary>
+        public RowPermissionsReadInfo Dependency_RowPermissionsRead { get; set; }
+
+        public IEnumerable<string> DeclareNonparsableProperties()
+        {
+            return new[] { "Dependency_RowPermissionsRead" };
+        }
+
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            Dependency_RowPermissionsRead = new RowPermissionsReadInfo
+            {
+                Source = RowPermissionsFilters.DataStructure,
+                Parameter = RowPermissionsReadInfo.FilterName,
+            };
+            createdConcepts = null;
+        }
     }
 }

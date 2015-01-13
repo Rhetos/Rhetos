@@ -121,6 +121,7 @@
     <Compile Include="ConceptsListToDslModel.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndexClusteredInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndexMultipleFollowingPropertyInfo.cs" />
+    <Compile Include="RowPermissions\AutoInheritRowPermissionsInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsAllowWriteInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsAllowWriteNoConditionInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsDenyReadInfo.cs" />

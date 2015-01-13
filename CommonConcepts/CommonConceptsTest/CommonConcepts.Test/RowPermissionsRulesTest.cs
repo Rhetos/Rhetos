@@ -309,5 +309,37 @@ namespace CommonConcepts.Test
                 }
             }
         }
+
+        [TestMethod]
+        public void AutoInherit()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var names = new[] { "1", "1b", "2", "3", "4" };
+                var itemsE4 = names.Select(name => new TestRowPermissions4.E4 { ID = Guid.NewGuid(), Name4 = name }).ToList();
+                var itemsE3 = names.Select((name, x) => new TestRowPermissions3.E3 { ID = Guid.NewGuid(), Name3 = name, E4 = itemsE4[x] }).ToList();
+                var itemsE2 = names.Select((name, x) => new TestRowPermissions2.E2 { ID = Guid.NewGuid(), Name2 = name, E3 = itemsE3[x] }).ToList();
+                var itemsE1 = names.Select((name, x) => new TestRowPermissions1.E1 { ID = Guid.NewGuid(), Name1 = name, E2 = itemsE2[x] }).ToList();
+
+                var reposE1 = container.Resolve<GenericRepository<TestRowPermissions1.E1>>();
+                var reposE1Browse = container.Resolve<GenericRepository<TestRowPermissions1.E1Browse>>();
+                var reposE1BrowseRP = container.Resolve<GenericRepository<TestRowPermissions1.E1BrowseRP>>();
+                var reposE2 = container.Resolve<GenericRepository<TestRowPermissions2.E2>>();
+                var reposE3 = container.Resolve<GenericRepository<TestRowPermissions3.E3>>();
+                var reposE4 = container.Resolve<GenericRepository<TestRowPermissions4.E4>>();
+
+                reposE4.Save(itemsE4, null, reposE4.Read());
+                reposE3.Save(itemsE3, null, reposE3.Read());
+                reposE2.Save(itemsE2, null, reposE2.Read());
+                reposE1.Save(itemsE1, null, reposE1.Read());
+
+                Assert.AreEqual("4", TestUtility.DumpSorted(reposE4.Read<Common.RowPermissionsReadItems>(), item => item.Name4));
+                Assert.AreEqual("3->3", TestUtility.DumpSorted(reposE3.Read<Common.RowPermissionsReadItems>(), item => item.Name3 + "->" + item.E4.Name4));
+                Assert.AreEqual("2, 3", TestUtility.DumpSorted(reposE2.Read<Common.RowPermissionsReadItems>(), item => item.Name2));
+                Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(reposE1.Read<Common.RowPermissionsReadItems>(), item => item.Name1));
+                Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(reposE1Browse.Read<Common.RowPermissionsReadItems>(), item => item.Name1Browse));
+                Assert.AreEqual("1, 1b, 2, 3", TestUtility.DumpSorted(reposE1BrowseRP.Read<Common.RowPermissionsReadItems>(), item => item.Name1Browse));
+            }
+        }
     }
 }

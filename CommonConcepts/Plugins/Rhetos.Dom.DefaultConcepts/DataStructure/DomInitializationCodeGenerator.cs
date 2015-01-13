@@ -126,8 +126,8 @@ namespace Rhetos.Dom.DefaultConcepts
             return GenericRepositories.GetGenericRepository<TEntity>();
         }}
 
-        protected Lazy<Common.DomRepository> _repositories;
-        public Common.DomRepository Repositories {{ get {{ return _repositories.Value; }} }}
+        protected Lazy<Common.DomRepository> _repository;
+        public Common.DomRepository Repository {{ get {{ return _repository.Value; }} }}
 
         {4}
 
@@ -146,7 +146,7 @@ namespace Rhetos.Dom.DefaultConcepts
             _authorizationManager = authorizationManager;
             _resourcesFolder = resourcesFolder;
             _genericRepositories = genericRepositories;
-            _repositories = new Lazy<Common.DomRepository>(() => new Common.DomRepository(this));
+            _repository = new Lazy<Common.DomRepository>(() => new Common.DomRepository(this));
             {6}
         }}
 

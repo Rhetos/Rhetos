@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("DenyWrite")]
-    public class RowPermissionsDenyWriteInfo : RowPermissionsRuleInfo
+    public class RowPermissionsDenyWriteInfo : RowPermissionsRuleInfo, IAlternativeInitializationConcept
     {
         public string GroupSelector { get; set; }
 
@@ -38,5 +38,25 @@ namespace Rhetos.Dsl.DefaultConcepts
         /// Optional.
         /// </summary>
         public string Condition { get; set; }
+
+        /// <summary>
+        /// Used in DOM code generator. The dependency's code generator must be executed before this concept's code generator.
+        /// </summary>
+        public RowPermissionsWriteInfo Dependency_RowPermissionsWrite { get; set; }
+
+        public IEnumerable<string> DeclareNonparsableProperties()
+        {
+            return new[] { "Dependency_RowPermissionsWrite" };
+        }
+
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            Dependency_RowPermissionsWrite = new RowPermissionsWriteInfo
+            {
+                Source = RowPermissionsFilters.DataStructure,
+                Parameter = RowPermissionsWriteInfo.FilterName,
+            };
+            createdConcepts = null;
+        }
     }
 }
