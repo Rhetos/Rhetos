@@ -1,3 +1,22 @@
+0.9.22 (2015-01-13)
+-------------------
+
+Breaking changes:
+
+* **Detail** reference is **SystemRequired**.
+
+New features:
+
+* Added [Forgot my password](https://github.com/Rhetos/Rhetos/tree/master/AspNetFormsAuth#forgot-password) feature to *AspNetFormsAuth*. Sending the password reset token to the user (by SMS or email, e.g.) is to be implemented as a seperate plugin (for example see [SimpleSPRTEmail](https://github.com/Rhetos/SimpleSPRTEmail)).
+* New RowPermissions concepts: **AllowWrite** and **DenyWrite**.
+* New RowPermissions concept: **InheritFromBase**.
+* New RowPermissions concept: **AutoInheritRowPermissions**.
+
+Internal improvements:
+
+* Minor performance optimizations for some macro concepts.
+* Bugfix: InitializationConcept was not registered as a regular concept.
+
 0.9.21 (2014-12-18)
 -------------------
 
