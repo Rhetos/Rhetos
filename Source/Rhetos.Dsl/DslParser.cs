@@ -34,6 +34,7 @@ namespace Rhetos.Dsl
         protected readonly IConceptInfo[] _conceptInfoPlugins;
         protected readonly ILogger _performanceLogger;
         protected readonly ILogger _logger;
+        protected readonly ILogger _keywordsLogger;
 
         public DslParser(IDslSource dslSource, IConceptInfo[] conceptInfoPlugins, ILogProvider logProvider)
         {
@@ -41,6 +42,7 @@ namespace Rhetos.Dsl
             _conceptInfoPlugins = conceptInfoPlugins;
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("DslParser");
+            _keywordsLogger = logProvider.GetLogger("DslParser.Keywords");
         }
 
         public IEnumerable<IConceptInfo> ParsedConcepts
@@ -82,8 +84,7 @@ namespace Rhetos.Dsl
                 .Where(cm => cm.conceptKeyword != null)
                 .ToList();
 
-            _logger.Trace(() => "DSL keywords: " + string.Join(" ",
-                conceptMetadata.Select(cm => cm.conceptKeyword).OrderBy(keyword => keyword).Distinct()));
+            _keywordsLogger.Trace(() => string.Join(" ", conceptMetadata.Select(cm => cm.conceptKeyword).OrderBy(keyword => keyword).Distinct()));
 
             var result = conceptMetadata.Select(cm => new GenericParser(cm.conceptType, cm.conceptKeyword)).ToList<IConceptParser>();
             _performanceLogger.Write(stopwatch, "DslParser.CreateGenericParsers.");

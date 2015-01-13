@@ -24,6 +24,10 @@ using System.Text;
 
 namespace Rhetos.Dsl
 {
+    /// <summary>
+    /// An instance of this concept is always present as the first concept in the DSL model.
+    /// This concept can be used for code generators that generate infrastructure classes and singletones.
+    /// </summary>
     public class InitializationConcept : IConceptInfo
     {
         [ConceptKey]

@@ -38,6 +38,7 @@ namespace Rhetos.Configuration.Autofac
             builder.RegisterType<ConceptMetadata>().SingleInstance();
             builder.RegisterType<DslModelIndexByType>().As<IDslModelIndex>(); // This plugin is registered manually because RegisterPlugins does not scan core Rhetos dlls.
             builder.RegisterType<DslModelIndexByReference>().As<IDslModelIndex>(); // This plugin is registered manually because RegisterPlugins does not scan core Rhetos dlls.
+            builder.RegisterType<InitializationConcept>().As<IConceptInfo>(); // This plugin is registered manually because RegisterPlugins does not scan core Rhetos dlls.
             PluginsUtility.RegisterPlugins<IDslModelIndex>(builder);
             PluginsUtility.RegisterPlugins<IConceptInfo>(builder);
             PluginsUtility.RegisterPlugins<IConceptMacro>(builder, typeof(IConceptMacro<>));
