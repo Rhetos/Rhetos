@@ -72,6 +72,8 @@ Module TestRowPermissions
 				return items;
 			}';
 	}
+	
+	//===============================================================
 
 	Entity RPRulesGroup { ShortString Name; }
 	Entity RPRulesItem { ShortString Name; Reference Group TestRowPermissions.RPRulesGroup { Detail; } }
@@ -109,6 +111,42 @@ Module TestRowPermissions
 				'DirectlyDeniedItems.Count > 0';
 		}
 	}
+	
+	//===============================================================
+	// Combined read and write rules:
+	
+	Entity RPCombinedRulesSettings
+	{
+		ShortString Settings;
+	}
+	
+	Entity RPCombinedRulesItems
+	{
+		ShortString Name;
+		
+		RowPermissions
+		{
+			Allow a 'context => context.Repository.TestRowPermissions.RPCombinedRulesSettings.Query().Select(s => s.Settings).SingleOrDefault()'
+				'item => item.Name.Contains("a")';
+			
+			Allow bConditional 'context => context.Repository.TestRowPermissions.RPCombinedRulesSettings.Query().Select(s => s.Settings).SingleOrDefault()'
+				'item => item.Name.Contains("b")'
+				'bConditional == "add conditional rules"';
+
+			Deny no1 'context => context.Repository.TestRowPermissions.RPCombinedRulesSettings.Query().Select(s => s.Settings).SingleOrDefault()'
+				'item => item.Name.Contains("1")';
+			
+			Deny no2Conditional  'context => context.Repository.TestRowPermissions.RPCombinedRulesSettings.Query().Select(s => s.Settings).SingleOrDefault()'
+				'item => item.Name.Contains("2")'
+				'no2Conditional == "add conditional rules"';
+				
+			AllowRead r 'context => 0' 'item => item.Name.Contains("r")';
+			
+			AllowWrite w 'context => 0' 'item => item.Name.Contains("w")';
+		}
+	}
+	
+	//===============================================================
 	
 	Entity Parent
 	{

@@ -27,18 +27,8 @@ using System.Text.RegularExpressions;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("DenyWrite")]
-    public class RowPermissionsDenyWriteNoConditionInfo : RowPermissionsDenyWriteInfo, IAlternativeInitializationConcept
+    [ConceptKeyword("DenyRead")]
+    public class RowPermissionsRuleDenyReadInfo : RowPermissionsStandardRuleInfo
     {
-        public new IEnumerable<string> DeclareNonparsableProperties()
-        {
-            return base.DeclareNonparsableProperties().Concat(new[] { "Condition" });
-        }
-
-        public new void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
-        {
-            base.InitializeNonparsableProperties(out createdConcepts);
-            Condition = "";
-        }
     }
 }

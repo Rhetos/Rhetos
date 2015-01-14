@@ -27,18 +27,19 @@ using System.Text.RegularExpressions;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("AllowWrite")]
-    public class RowPermissionsAllowWriteNoConditionInfo : RowPermissionsAllowWriteInfo, IAlternativeInitializationConcept
+    [ConceptKeyword("Deny")]
+    public class RowPermissionsRuleDenyNoConditionInfo : RowPermissionsRuleDenyInfo, IAlternativeInitializationConcept
     {
         public new IEnumerable<string> DeclareNonparsableProperties()
         {
-            return base.DeclareNonparsableProperties().Concat(new[] { "Condition" });
+            return base.DeclareNonparsableProperties()
+                .Concat(new[] { "Condition" });
         }
 
         public new void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
-            base.InitializeNonparsableProperties(out createdConcepts);
             Condition = "";
+            base.InitializeNonparsableProperties(out createdConcepts);
         }
     }
 }

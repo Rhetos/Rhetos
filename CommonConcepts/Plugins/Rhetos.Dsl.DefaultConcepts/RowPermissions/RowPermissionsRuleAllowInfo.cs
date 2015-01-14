@@ -22,30 +22,13 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class RowPermissionsInheritWriteFromInfo : IConceptInfo, IAlternativeInitializationConcept
+    [ConceptKeyword("Allow")]
+    public class RowPermissionsRuleAllowInfo : RowPermissionsStandardRuleInfo
     {
-        [ConceptKey]
-        public RowPermissionsInheritFromInfo InheritFromInfo { get; set; }
-
-        public RowPermissionsWriteInfo Dependency_RowPermissionsWrite { get; set; } // The dependency's code generator must be executed before this concept's code generator.
-
-        public IEnumerable<string> DeclareNonparsableProperties()
-        {
-            return new[] { "Dependency_RowPermissionsWrite" };
-        }
-
-        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
-        {
-            Dependency_RowPermissionsWrite = new RowPermissionsWriteInfo
-            {
-                Source = InheritFromInfo.RowPermissionsFilters.DataStructure,
-                Parameter = RowPermissionsWriteInfo.FilterName,
-            };
-            createdConcepts = null;
-        }
     }
 }

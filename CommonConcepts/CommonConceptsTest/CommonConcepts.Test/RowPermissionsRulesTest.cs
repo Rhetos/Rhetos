@@ -311,6 +311,62 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
+        public void CombinedRules()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var settingsRepos = container.Resolve<GenericRepository<RPCombinedRulesSettings>>();
+                var itemsRepos = container.Resolve<GenericRepository<RPCombinedRulesItems>>();
+
+                var items = "a a1 a2 ab ab1 ab2 b b1 b2 r w"
+                    .Split(' ')
+                    .Select(name => new RPCombinedRulesItems { Name = name })
+                    .ToList();
+                itemsRepos.Save(items, null, itemsRepos.Read());
+
+                {
+                    // Test read allow/deny without conditional rules:
+
+                    var settings = new RPCombinedRulesSettings { Settings = "no conditional rules" };
+                    settingsRepos.Save(new[] { settings }, null, settingsRepos.Read());
+
+                    var allowRead = itemsRepos.Query<Common.RowPermissionsReadItems>().Select(item => item.Name).ToList();
+                    Assert.AreEqual("a, a2, ab, ab2, r", TestUtility.DumpSorted(allowRead));
+                }
+
+                {
+                    // Test read allow/deny with conditional rules:
+
+                    var settings = new RPCombinedRulesSettings { Settings = "add conditional rules" };
+                    settingsRepos.Save(new[] { settings }, null, settingsRepos.Read());
+
+                    var allowRead = itemsRepos.Query<Common.RowPermissionsReadItems>().Select(item => item.Name).ToList();
+                    Assert.AreEqual("a, ab, b, r", TestUtility.DumpSorted(allowRead));
+                }
+
+                {
+                    // Test write allow/deny without conditional rules:
+
+                    var settings = new RPCombinedRulesSettings { Settings = "no conditional rules" };
+                    settingsRepos.Save(new[] { settings }, null, settingsRepos.Read());
+
+                    var allowWrite = itemsRepos.Query<Common.RowPermissionsWriteItems>().Select(item => item.Name).ToList();
+                    Assert.AreEqual("a, a2, ab, ab2, w", TestUtility.DumpSorted(allowWrite));
+                }
+
+                {
+                    // Test write allow/deny with conditional rules:
+
+                    var settings = new RPCombinedRulesSettings { Settings = "add conditional rules" };
+                    settingsRepos.Save(new[] { settings }, null, settingsRepos.Read());
+
+                    var allowWrite = itemsRepos.Query<Common.RowPermissionsWriteItems>().Select(item => item.Name).ToList();
+                    Assert.AreEqual("a, ab, b, w", TestUtility.DumpSorted(allowWrite));
+                }
+            }
+        }
+
+        [TestMethod]
         public void AutoInherit()
         {
             using (var container = new RhetosTestContainer())

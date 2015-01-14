@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Compiler;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -27,26 +29,21 @@ using System.Text.RegularExpressions;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("AllowRead")]
-    public class RowPermissionsAllowReadInfo : RowPermissionsRuleInfo, IAlternativeInitializationConcept
+    public class RowPermissionsStandardRuleInfo : RowPermissionsRuleInfo, IAlternativeInitializationConcept
     {
         public string GroupSelector { get; set; }
 
         public string PermissionPredicate { get; set; }
 
-        /// <summary>
-        /// Optional.
-        /// </summary>
+        /// <summary>Optional.</summary>
         public string Condition { get; set; }
 
-        /// <summary>
-        /// Used in DOM code generator. The dependency's code generator must be executed before this concept's code generator.
-        /// </summary>
-        public RowPermissionsReadInfo Dependency_RowPermissionsRead { get; set; }
+        public RowPermissionsReadInfo Dependency_RowPermissionsRead { get; set; } // Dependency for code generator.
+        public RowPermissionsWriteInfo Dependency_RowPermissionsWrite { get; set; } // Dependency for code generator.
 
         public IEnumerable<string> DeclareNonparsableProperties()
         {
-            return new[] { "Dependency_RowPermissionsRead" };
+            return new[] { "Dependency_RowPermissionsRead", "Dependency_RowPermissionsWrite" };
         }
 
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
@@ -55,6 +52,11 @@ namespace Rhetos.Dsl.DefaultConcepts
             {
                 Source = RowPermissionsFilters.DataStructure,
                 Parameter = RowPermissionsReadInfo.FilterName,
+            };
+            Dependency_RowPermissionsWrite = new RowPermissionsWriteInfo
+            {
+                Source = RowPermissionsFilters.DataStructure,
+                Parameter = RowPermissionsWriteInfo.FilterName,
             };
             createdConcepts = null;
         }

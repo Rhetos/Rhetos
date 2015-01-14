@@ -31,23 +31,17 @@ using Rhetos.Compiler;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(RowPermissionsAllowReadInfo))]
-    public class RowPermissionsAllowReadCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(RowPermissionsRuleDenyWriteInfo))]
+    public class RowPermissionsRuleDenyWriteCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (RowPermissionsAllowReadInfo)conceptInfo;
+            var info = (RowPermissionsStandardRuleInfo)conceptInfo;
 
             codeBuilder.InsertCode(
-                RowPermissionsUtility.GetSnippetFilterExpression(
-                    info.RowPermissionsFilters.DataStructure,
-                    info.Name,
-                    info.GroupSelector,
-                    info.PermissionPredicate,
-                    info.Condition,
-                    allow: true),
-                RowPermissionsPluginableFiltersInfo.ReadFilterExpressionsTag,
-                info.Dependency_RowPermissionsRead);
+                RowPermissionsUtility.GetSnippetFilterExpression(info, allowNotDeny: false),
+                RowPermissionsPluginableFiltersInfo.WriteFilterExpressionsTag,
+                info.Dependency_RowPermissionsWrite);
         }
     }
 }

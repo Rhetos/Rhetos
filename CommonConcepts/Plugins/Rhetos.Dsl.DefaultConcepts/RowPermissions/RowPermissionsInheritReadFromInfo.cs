@@ -31,10 +31,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public RowPermissionsInheritFromInfo InheritFromInfo { get; set; }
 
-        /// <summary>
-        /// Used in DOM code generator. The dependency's code generator must be executed before this concept's code generator.
-        /// </summary>
-        public RowPermissionsReadInfo Dependency_RowPermissionsRead { get; set; }
+        public RowPermissionsReadInfo Dependency_RowPermissionsRead { get; set; } // The dependency's code generator must be executed before this concept's code generator.
 
         public IEnumerable<string> DeclareNonparsableProperties()
         {

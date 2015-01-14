@@ -28,21 +28,16 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     public static class RowPermissionsUtility
     {
-        public static string GetSnippetFilterExpression(
-            DataStructureInfo source,
-            string name,
-            string groupSelector,
-            string permissionPredicate,
-            string condition,
-            bool allow)
+        public static string GetSnippetFilterExpression(RowPermissionsStandardRuleInfo info, bool allowNotDeny)
         {
             string checkRuleCondition;
-            if (!string.IsNullOrEmpty(condition))
+
+            if (!string.IsNullOrEmpty(info.Condition))
                 checkRuleCondition = string.Format(
                 @"Func<bool> ruleCondition = () => {0};
 				if (ruleCondition.Invoke())
 					",
-                    condition);
+                    info.Condition);
             else
                 checkRuleCondition = "";
 
@@ -53,13 +48,13 @@ namespace Rhetos.Dom.DefaultConcepts
 				{5}filterExpression.{6}({4});
 			}}
             ",
-                source.Module.Name,
-                source.Name,
-                name,
-                groupSelector,
-                permissionPredicate,
+                info.RowPermissionsFilters.DataStructure.Module.Name,
+                info.RowPermissionsFilters.DataStructure.Name,
+                info.Name,
+                info.GroupSelector,
+                info.PermissionPredicate,
                 checkRuleCondition,
-                allow ? "Include" : "Exclude");
+                allowNotDeny ? "Include" : "Exclude");
         }
 
         public static string GetInheritSnippet(RowPermissionsInheritFromInfo info, string permissionExpressionName)

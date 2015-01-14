@@ -28,36 +28,18 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AllowWrite")]
-    public class RowPermissionsAllowWriteInfo : RowPermissionsRuleInfo, IAlternativeInitializationConcept
+    public class RowPermissionsRuleAllowWriteNoConditionInfo : RowPermissionsRuleAllowWriteInfo, IAlternativeInitializationConcept
     {
-        public string GroupSelector { get; set; }
-
-        public string PermissionPredicate { get; set; }
-
-        /// <summary>
-        /// Optional.
-        /// </summary>
-        public string Condition { get; set; }
-
-        /// <summary>
-        /// Used in DOM code generator. The dependency's code generator must be executed before this concept's code generator.
-        /// </summary>
-        public RowPermissionsWriteInfo Dependency_RowPermissionsWrite { get; set; }
-
-        public IEnumerable<string> DeclareNonparsableProperties()
+        public new IEnumerable<string> DeclareNonparsableProperties()
         {
-            return new[] { "Dependency_RowPermissionsWrite" };
+            return base.DeclareNonparsableProperties()
+                .Concat(new[] { "Condition" });
         }
 
-        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        public new void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
-            Dependency_RowPermissionsWrite = new RowPermissionsWriteInfo
-            {
-                Source = RowPermissionsFilters.DataStructure,
-                Parameter = RowPermissionsWriteInfo.FilterName,
-            };
-            createdConcepts = null;
+            Condition = "";
+            base.InitializeNonparsableProperties(out createdConcepts);
         }
-
     }
 }
