@@ -1,287 +1,280 @@
 Module TestRowPermissions
 {
-	Entity NoRP
-	{
-		Integer value;
-		ItemFilter Value30 'item => item.value > 30';
-	}
-	
-	Entity SimpleRP
-	{
-		Integer value;
-		RowPermissionsRead '(source, repo, context) => item => (item.value >= 1500) && (item.value <= 2500)';
-		RowPermissionsWrite '(source, repo, context) => item => (item.value >= 500) && (item.value <= 3500)';
-		ItemFilter Value30 'item => item.value > 30';
-	}
-		
-	Entity ComplexRP
-	{
-		Integer value;
-		ItemFilter Value10 'item => item.value > 10';
-	}
-	
-	Entity ComplexRPPermissions
-	{
-		ShortString userName;
-		Integer minVal;
-		Integer maxVal;
-	}
-	
-	RowPermissions ComplexRP '(source, repos, context) =>
-		{
-			var perms = repos.TestRowPermissions.ComplexRPPermissions.Query().Where(a => a.userName == context.UserInfo.UserName).ToList().SingleOrDefault();
-			if (perms == null) return item => false;
-			
-			return item => (item.value >= perms.minVal) && (item.value <= perms.maxVal);
-		}';
-	
-	Browse SimpleRPBrowse TestRowPermissions.SimpleRP
-	{
-		Take Value2 value;
-		RowPermissionsRead '(source, repo, context) => item => (item.Base.value >= 1500) && (item.Base.value <= 2500)';
-	}
-	
-	Entity AutoFilter
-	{
-		ShortString Name;
-		RowPermissionsRead '(source, repository, context) =>
-			{
-				repository.Common.AddToLog.Execute(new Common.AddToLog {
-					TableName = "TestRowPermissions.AutoFilter",
-					Action = "RowPermissionsReadItems filter" });
-				
-				return item => item.Name.StartsWith("a");
-			}';
-		ApplyFilterOnClientRead 'Common.RowPermissionsReadItems';
-	}
+    Entity NoRP
+    {
+        Integer value;
+        ItemFilter Value30 'item => item.value > 30';
+    }
+    
+    Entity SimpleRP
+    {
+        Integer value;
+        RowPermissionsRead '(source, repo, context) => item => (item.value >= 1500) && (item.value <= 2500)';
+        RowPermissionsWrite '(source, repo, context) => item => (item.value >= 500) && (item.value <= 3500)';
+        ItemFilter Value30 'item => item.value > 30';
+    }
+        
+    Entity ComplexRP
+    {
+        Integer value;
+        ItemFilter Value10 'item => item.value > 10';
+    }
+    
+    Entity ComplexRPPermissions
+    {
+        ShortString userName;
+        Integer minVal;
+        Integer maxVal;
+    }
+    
+    RowPermissions ComplexRP '(source, repos, context) =>
+        {
+            var perms = repos.TestRowPermissions.ComplexRPPermissions.Query().Where(a => a.userName == context.UserInfo.UserName).ToList().SingleOrDefault();
+            if (perms == null) return item => false;
+            
+            return item => (item.value >= perms.minVal) && (item.value <= perms.maxVal);
+        }';
+    
+    Browse SimpleRPBrowse TestRowPermissions.SimpleRP
+    {
+        Take Value2 value;
+        RowPermissionsRead '(source, repo, context) => item => (item.Base.value >= 1500) && (item.Base.value <= 2500)';
+    }
+    
+    Entity AutoFilter
+    {
+        ShortString Name;
+        RowPermissionsRead '(source, repository, context) =>
+            {
+                repository.Common.AddToLog.Execute(new Common.AddToLog {
+                    TableName = "TestRowPermissions.AutoFilter",
+                    Action = "RowPermissionsReadItems filter" });
+                
+                return item => item.Name.StartsWith("a");
+            }';
+        ApplyFilterOnClientRead 'Common.RowPermissionsReadItems';
+    }
 
-	Entity ErrorData
-	{
-		ShortString Name;
-		
-		RowPermissionsRead '(source, repos, context) =>
-			{
-				return item => true;
-			}';
-		
-		FilterBy 'System.String' '(repository, parameter) =>
-			{
-				var items = repository.TestRowPermissions.ErrorData.All();
-				if (parameter == "duplicateSecondItem")
-					return items.Concat(new[] { items[1] }).ToArray();
-				return items;
-			}';
-	}
-	
-	//===============================================================
+    Entity ErrorData
+    {
+        ShortString Name;
+        
+        RowPermissionsRead '(source, repos, context) =>
+            {
+                return item => true;
+            }';
+        
+        FilterBy 'System.String' '(repository, parameter) =>
+            {
+                var items = repository.TestRowPermissions.ErrorData.All();
+                if (parameter == "duplicateSecondItem")
+                    return items.Concat(new[] { items[1] }).ToArray();
+                return items;
+            }';
+    }
+    
+    //===============================================================
 
-	Entity RPRulesGroup { ShortString Name; }
-	Entity RPRulesItem { ShortString Name; Reference Group TestRowPermissions.RPRulesGroup { Detail; } }
-	
-	Entity RpRulesAllowItem { ShortString UserName; Reference Item TestRowPermissions.RPRulesItem; }
-	Entity RpRulesAllowGroup { ShortString UserName; Reference Group TestRowPermissions.RPRulesGroup; }
-	Entity RpRulesDenyItem { ShortString UserName; Reference Item TestRowPermissions.RPRulesItem; }
-	
-	Entity RPRulesItem
-	{
-		RowPermissions
-		{
-			AllowRead DirectlyAlllowedItems
-				'context => context.GenericRepository<RpRulesAllowItem>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Item.ID).ToList()'
-				'item => DirectlyAlllowedItems.Contains(item.ID)'
-				'DirectlyAlllowedItems.Count > 0';
+    Entity RPRulesGroup { ShortString Name; }
+    Entity RPRulesItem { ShortString Name; Reference Group TestRowPermissions.RPRulesGroup { Detail; } }
+    
+    Entity RpRulesAllowItem { ShortString UserName; Reference Item TestRowPermissions.RPRulesItem; }
+    Entity RpRulesAllowGroup { ShortString UserName; Reference Group TestRowPermissions.RPRulesGroup; }
+    Entity RpRulesDenyItem { ShortString UserName; Reference Item TestRowPermissions.RPRulesItem; }
+    
+    Entity RPRulesItem
+    {
+        RowPermissions
+        {
+            AllowRead DirectlyAlllowedItems 'context =>
+                {
+                    var DirectlyAlllowedItems = context.GenericRepository<RpRulesAllowItem>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Item.ID).ToList();
+                    if (DirectlyAlllowedItems.Count == 0)
+                        return item => false;
+                    return item => DirectlyAlllowedItems.Contains(item.ID);
+                }';
 
-			AllowRead DirectlyAlllowedGroups
-				'context => context.GenericRepository<RpRulesAllowGroup>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Group.ID).ToList()'
-				'item => DirectlyAlllowedGroups.Contains(item.Group.ID)'
-				'DirectlyAlllowedGroups.Count > 0';
-			
-			AllowRead AllowedAllGroups
-				'context => {
-					int totalGroupsCount = context.GenericRepository<RPRulesGroup>().Query().Count();
-					int allowedGroupsCount = context.GenericRepository<RpRulesAllowGroup>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Group.ID).Distinct().Count();
-					return allowedGroupsCount == totalGroupsCount;
-				}'
-				'item => true' // This specific filter will be optimized. If it is active, there is no need to check other rules when querying RPRulesItem.
-				'AllowedAllGroups';
-			
-			DenyRead DirectlyDeniedItems
-				'context => context.GenericRepository<RpRulesDenyItem>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Item.ID).ToList()'
-				'item => DirectlyDeniedItems.Contains(item.ID)'
-				'DirectlyDeniedItems.Count > 0';
-		}
-	}
-	
-	//===============================================================
-	// Combined read and write rules:
-	
-	Entity RPCombinedRulesSettings
-	{
-		ShortString Settings;
-	}
-	
-	Entity RPCombinedRulesItems
-	{
-		ShortString Name;
-		
-		RowPermissions
-		{
-			Allow a 'context => context.Repository.TestRowPermissions.RPCombinedRulesSettings.Query().Select(s => s.Settings).SingleOrDefault()'
-				'item => item.Name.Contains("a")';
-			
-			Allow bConditional 'context => context.Repository.TestRowPermissions.RPCombinedRulesSettings.Query().Select(s => s.Settings).SingleOrDefault()'
-				'item => item.Name.Contains("b")'
-				'bConditional == "add conditional rules"';
+            AllowRead DirectlyAlllowedGroups 'context =>
+                {
+                    var DirectlyAlllowedGroups = context.GenericRepository<RpRulesAllowGroup>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Group.ID).ToList();
+                    if (DirectlyAlllowedGroups.Count == 0)
+                        return item => false;
+                    return item => DirectlyAlllowedGroups.Contains(item.Group.ID);
+                }';
+            
+            AllowRead AllowedAllGroups 'context =>
+                {
+                    int totalGroupsCount = context.GenericRepository<RPRulesGroup>().Query().Count();
+                    int allowedGroupsCount = context.GenericRepository<RpRulesAllowGroup>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Group.ID).Distinct().Count();
+                    if (allowedGroupsCount == totalGroupsCount)
+                        return item => true; // This specific filter will be optimized. If it is active, there is no need to check other rules when querying RPRulesItem.
+                    else
+                        return item => false;
+                }';
+            
+            DenyRead DirectlyDeniedItems 'context =>
+                {
+                    var DirectlyDeniedItems = context.GenericRepository<RpRulesDenyItem>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Item.ID).ToList();
+                    if (DirectlyDeniedItems.Count == 0)
+                        return item => false;
+                    return item => DirectlyDeniedItems.Contains(item.ID);
+                }';
+        }
+    }
+    
+    //===============================================================
+    // Combined read and write rules:
+    
+    Entity RPCombinedRulesSettings
+    {
+        ShortString Settings;
+    }
+    
+    Entity RPCombinedRulesItems
+    {
+        ShortString Name;
+        
+        RowPermissions
+        {
+            Allow a 'context => { var a = context.Repository.TestRowPermissions.RPCombinedRulesSettings.Query().Select(s => s.Settings).SingleOrDefault();
+                return item => item.Name.Contains("a"); }';
+            
+            Allow bConditional 'context => { var bConditional  = context.Repository.TestRowPermissions.RPCombinedRulesSettings.Query().Select(s => s.Settings).SingleOrDefault();
+                if (bConditional != "add conditional rules") return item => false;
+                return item => item.Name.Contains("b"); }';
 
-			Deny no1 'context => context.Repository.TestRowPermissions.RPCombinedRulesSettings.Query().Select(s => s.Settings).SingleOrDefault()'
-				'item => item.Name.Contains("1")';
-			
-			Deny no2Conditional  'context => context.Repository.TestRowPermissions.RPCombinedRulesSettings.Query().Select(s => s.Settings).SingleOrDefault()'
-				'item => item.Name.Contains("2")'
-				'no2Conditional == "add conditional rules"';
-				
-			AllowRead r 'context => 0' 'item => item.Name.Contains("r")';
-			
-			AllowWrite w 'context => 0' 'item => item.Name.Contains("w")';
-		}
-	}
-	
-	//===============================================================
-	
-	Entity Parent
-	{
-		Integer value;
-		RowPermissionsRead '(source, repo, context) => item => item.value > 100 && item.value < 200';
-		RowPermissionsWrite '(source, repo, context) => item => item.value > 50 && item.value < 150';
-	}
-	
-	Entity Child
-	{
-		Integer value;
-		Reference MyParent TestRowPermissions.Parent;
-		RowPermissions
-		{
-			InheritFrom TestRowPermissions.Child.MyParent;
-			DenyRead Denied
-				'context => new List<int?>() { 1, 2, 3 }'
-				'item => Denied.Contains(item.value)';
-		}
-	}
-	
-	Entity Baby
-	{
-		Reference MyParent TestRowPermissions.Child;
-		RowPermissions
-		{
-			InheritFrom TestRowPermissions.Baby.MyParent;
-		}
-	}
+            Deny no1 'context => { var no1 = context.Repository.TestRowPermissions.RPCombinedRulesSettings.Query().Select(s => s.Settings).SingleOrDefault();
+                return item => item.Name.Contains("1"); }';
+            
+            Deny no2Conditional  'context => { var no2Conditional = context.Repository.TestRowPermissions.RPCombinedRulesSettings.Query().Select(s => s.Settings).SingleOrDefault();
+                if (no2Conditional != "add conditional rules") return item => false;
+                return item => item.Name.Contains("2"); }';
+                
+            AllowRead r 'context => item => item.Name.Contains("r")';
+            
+            AllowWrite w 'context => item => item.Name.Contains("w")';
+        }
+    }
+    
+    //===============================================================
+    
+    Entity Parent
+    {
+        Integer value;
+        RowPermissionsRead '(source, repo, context) => item => item.value > 100 && item.value < 200';
+        RowPermissionsWrite '(source, repo, context) => item => item.value > 50 && item.value < 150';
+    }
+    
+    Entity Child
+    {
+        Integer value;
+        Reference MyParent TestRowPermissions.Parent;
+        RowPermissions
+        {
+            InheritFrom TestRowPermissions.Child.MyParent;
+            DenyRead Denied 'context => item => new List<int?>() { 1, 2, 3 }.Contains(item.value)';
+        }
+    }
+    
+    Entity Baby
+    {
+        Reference MyParent TestRowPermissions.Child;
+        RowPermissions
+        {
+            InheritFrom TestRowPermissions.Baby.MyParent;
+        }
+    }
 
-	Browse ParentBrowse TestRowPermissions.Parent
-	{
-		Take Value2 value;
-		RowPermissions { InheritFromBase; }
-	}
-	
+    Browse ParentBrowse TestRowPermissions.Parent
+    {
+        Take Value2 value;
+        RowPermissions { InheritFromBase; }
+    }
+    
 
-	// we test only write specific functionality, rules specific functionality is tested together with read rules
-	Entity RPWriteRulesEmpty
-	{
-		RowPermissions
-		{
-			AllowRead AllowAll
-			'context => 0'
-			'item => true';
-		}
-	}
-	
-	Entity RPWriteRules
-	{
-		Integer value;
-		RowPermissions
-		{
-			AllowWrite AllowNoCondition
-				'context => new List<int?>() { 1, 2, 3, 4, 5, 6, 7, 8, 9 }'
-				'item => AllowNoCondition.Contains(item.value)';
-				
-			AllowWrite AllowCondition
-				'context => true'
-				'item => AllowCondition'
-				'AllowCondition == false';
-				
-			DenyWrite DenyCondition
-				'context => true'
-				'item => item.value == 5'
-				'DenyCondition == true';
-				
-			DenyWrite DenyNoCondition
-				'context => new List<int?>() { 7, 8 }'
-				'item => DenyNoCondition.Contains(item.value)';
+    // we test only write specific functionality, rules specific functionality is tested together with read rules
+    Entity RPWriteRulesEmpty
+    {
+        RowPermissions
+        {
+            AllowRead AllowAll 'context => item => true';
+        }
+    }
+    
+    Entity RPWriteRules
+    {
+        Integer value;
+        RowPermissions
+        {
+            AllowWrite AllowNoCondition 'context => item => new List<int?>() { 1, 2, 3, 4, 5, 6, 7, 8, 9 }.Contains(item.value)';
+                
+            AllowWrite AllowCondition 'context => item => false';
+                
+            DenyWrite DenyCondition 'context => item => item.value == 5';
+                
+            DenyWrite DenyNoCondition 'context => item => new List<int?>() { 7, 8 }.Contains(item.value)';
 
-			AllowWrite AllowConditionTrue
-				'context => 20'
-				'item => item.value == 20'
-				'AllowConditionTrue == 20';
-		}
-	}
+            AllowWrite AllowConditionTrue 'context => item => item.value == 20';
+        }
+    }
 }
 
 Module TestRowPermissions1
 {
-	AutoInheritRowPermissions;
-	
-	Entity E1
-	{
-		ShortString Name1;
-		Reference E2 TestRowPermissions2.E2 { Detail; }
-		// Allowed: E3.Name3="3" OR E2.Name2=="2" OR E1.Name1=="1".
-		RowPermissions { AllowRead Allow1 'context => true' 'item => item.Name1 == "1"'; }
-	}
-	
-	Browse E1Browse TestRowPermissions1.E1
-	{
-		// Allowed: E3.Name3="3" OR E2.Name2=="2" OR E1.Name1=="1".
-		Take Name1Browse 'Name1';
-	}
-	
-	Browse E1BrowseRP TestRowPermissions1.E1
-	{
-		Take Name1Browse 'Name1';
-		// Allowed: E3.Name3="3" OR E2.Name2=="2" OR E1.Name1=="1" OR E1BrowseRP.Name1Browse=="1B".
-		RowPermissions { AllowRead Allow1Browse 'context => true' 'item => item.Name1Browse == "1b"'; }
-	}
+    AutoInheritRowPermissions;
+    
+    Entity E1
+    {
+        ShortString Name1;
+        Reference E2 TestRowPermissions2.E2 { Detail; }
+        // Allowed: E3.Name3="3" OR E2.Name2=="2" OR E1.Name1=="1".
+        RowPermissions { AllowRead Allow1 'context => item => item.Name1 == "1"'; }
+    }
+    
+    Browse E1Browse TestRowPermissions1.E1
+    {
+        // Allowed: E3.Name3="3" OR E2.Name2=="2" OR E1.Name1=="1".
+        Take Name1Browse 'Name1';
+    }
+    
+    Browse E1BrowseRP TestRowPermissions1.E1
+    {
+        Take Name1Browse 'Name1';
+        // Allowed: E3.Name3="3" OR E2.Name2=="2" OR E1.Name1=="1" OR E1BrowseRP.Name1Browse=="1B".
+        RowPermissions { AllowRead Allow1Browse 'context => item => item.Name1Browse == "1b"'; }
+    }
 }
 
 Module TestRowPermissions2
 {
-	AutoInheritRowPermissions;
-	
-	Entity E2
-	{
-		ShortString Name2;
-		Reference E3 TestRowPermissions3.E3 { Detail; }
-		// Allowed: E3.Name3="3" OR E2.Name2=="2".
-		RowPermissions { AllowRead Allow2 'context => true' 'item => item.Name2 == "2"'; }
-	}
+    AutoInheritRowPermissions;
+    
+    Entity E2
+    {
+        ShortString Name2;
+        Reference E3 TestRowPermissions3.E3 { Detail; }
+        // Allowed: E3.Name3="3" OR E2.Name2=="2".
+        RowPermissions { AllowRead Allow2 'context => item => item.Name2 == "2"'; }
+    }
 }
 
 Module TestRowPermissions3
 {
-	Entity E3
-	{
-		ShortString Name3;
-		Reference E4 TestRowPermissions4.E4 { Detail; }
-		// Doesn't inherit row permissions from parent since there is no AutoInheritRowPermissions.
-		// Inheriting the row permissions would fail because this entity doesn't use "RowPermissions" rules.
-		RowPermissionsRead '(source, repo, context) => item => item.Name3 == "3"';
-	}
+    Entity E3
+    {
+        ShortString Name3;
+        Reference E4 TestRowPermissions4.E4 { Detail; }
+        // Doesn't inherit row permissions from parent since there is no AutoInheritRowPermissions.
+        // Inheriting the row permissions would fail because this entity doesn't use "RowPermissions" rules.
+        RowPermissionsRead '(source, repo, context) => item => item.Name3 == "3"';
+    }
 }
 
 Module TestRowPermissions4
 {
-	Entity E4
-	{
-		ShortString Name4;
-		RowPermissionsRead '(source, repo, context) => item => item.Name4 == "4"';
-	}
+    Entity E4
+    {
+        ShortString Name4;
+        RowPermissionsRead '(source, repo, context) => item => item.Name4 == "4"';
+    }
 }

@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Allow")]
-    public class RowPermissionsRuleAllowInfo : RowPermissionsStandardRuleInfo
+    public class RowPermissionsRuleAllowInfo : RowPermissionsSingleFunctionRuleInfo
     {
     }
 }

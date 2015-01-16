@@ -28,32 +28,19 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     public static class RowPermissionsUtility
     {
-        public static string GetSnippetFilterExpression(RowPermissionsStandardRuleInfo info, bool allowNotDeny)
+        public static string GetSnippetFilterExpression(RowPermissionsSingleFunctionRuleInfo info, bool allowNotDeny)
         {
-            string checkRuleCondition;
-
-            if (!string.IsNullOrEmpty(info.Condition))
-                checkRuleCondition = string.Format(
-                @"Func<bool> ruleCondition = () => {0};
-				if (ruleCondition.Invoke())
-					",
-                    info.Condition);
-            else
-                checkRuleCondition = "";
-
             return string.Format(
             @"{{
-				var {2}Function = Function<Common.ExecutionContext>.Create({3});
-				var {2} = {2}Function.Invoke(executionContext);
-				{5}filterExpression.{6}({4});
+				Func<Common.ExecutionContext, Expression<Func<{0}.{1}, bool>>> getRuleFilter =
+                    {2};
+				Expression<Func<{0}.{1}, bool>> ruleFilter = getRuleFilter.Invoke(executionContext);
+				filterExpression.{3}(ruleFilter);
 			}}
             ",
                 info.RowPermissionsFilters.DataStructure.Module.Name,
                 info.RowPermissionsFilters.DataStructure.Name,
-                info.Name,
-                info.GroupSelector,
-                info.PermissionPredicate,
-                checkRuleCondition,
+                info.FilterExpression,
                 allowNotDeny ? "Include" : "Exclude");
         }
 

@@ -25,18 +25,20 @@
             
             RowPermissions
             {
-                Allow EmployeeDivision
-                    'context => context.Repository.DemoRowPermissions1.Employee.Query()
-                        .Where(u => u.UserName == context.UserInfo.UserName)
-                        .Select(u => u.Division.ID)
-                        .SingleOrDefault()'
-                    'item => item.Division.ID == EmployeeDivision';
+                Allow EmployeeDivision 'context =>
+					{
+						Guid myDivisionID = context.Repository.DemoRowPermissions1.Employee.Query()
+							.Where(e => e.UserName == context.UserInfo.UserName)
+							.Select(e => e.Division.ID)
+							.SingleOrDefault();
+						return item => item.Division.ID == myDivisionID;
+					}';
             }
         }
     }
 
 //=========================================================
-// Complex row permission rules:
+// Combining multiple rules:
 
     Module DemoRowPermissions2
     {
@@ -71,24 +73,30 @@
 
             RowPermissions
             {
-                Allow EmployeeDivision
-                    'context => context.Repository.DemoRowPermissions2.Employee.Query()
-                        .Where(u => u.UserName == context.UserInfo.UserName)
-                        .Select(u => u.Division.ID)
-                        .SingleOrDefault()' // Returns a Guid.
-                    'item => item.Division.ID == EmployeeDivision';
-                    
-                AllowRead SupervisedRegions
-                    'context => context.Repository.DemoRowPermissions2.RegionSupervisor.Query()
-                        .Where(rs => rs.Employee.UserName == context.UserInfo.UserName)
-                        .Select(rs => rs.Region.ID)
-                        .ToList()' // Returns a list of Guids.
-                    'item => SupervisedRegions.Contains(item.Division.Region.ID)'
-                    'SupervisedRegions.Count > 0';
-                    
-                DenyWrite BeforeCurrentYear
-                    'context => new DateTime(DateTime.Today.Year, 1, 1)'
-                    'item => item.Created < BeforeCurrentYear';
+                Allow EmployeeDivision 'context => 
+					{
+						Guid myDivisionID = context.Repository.DemoRowPermissions2.Employee.Query()
+							.Where(e => e.UserName == context.UserInfo.UserName)
+							.Select(e => e.Division.ID)
+							.SingleOrDefault();
+						return item => item.Division.ID == myDivisionID;
+					}';
+				
+                AllowRead SupervisedRegions 'context =>
+					{
+						var myRegionIds = context.Repository.DemoRowPermissions2.RegionSupervisor.Query()
+							.Where(rs => rs.Employee.UserName == context.UserInfo.UserName)
+							.Select(rs => rs.Region.ID)
+							.ToList();
+						if (myRegionIds.Count == 0)
+							return item => false;
+						return item => myRegionIds.Contains(item.Division.Region.ID);
+					}';
+				
+                DenyWrite BeforeCurrentYear 'context =>
+					{
+						return item => item.Created < new DateTime(DateTime.Today.Year, 1, 1);
+					}';
             }
         }
     }
@@ -121,13 +129,14 @@
             RowPermissions
             {
                 // This rule is joined with the inherited rules from DemoRowPermissions2.Document.
-                
-                DenyWrite ApprovedByCurrentUser
-                    'context => context.Repository.DemoRowPermissions2.Employee.Query()
-                        .Where(u => u.UserName == context.UserInfo.UserName)
-                        .Select(u => u.ID)
-                        .SingleOrDefault()'
-                    'item => item.ApprovedBy.ID != ApprovedByCurrentUser';
+                DenyWrite ApprovedByCurrentUser 'context =>
+					{
+						var myEmployeeId = context.Repository.DemoRowPermissions2.Employee.Query()
+							.Where(e => e.UserName == context.UserInfo.UserName)
+							.Select(e => e.ID)
+							.SingleOrDefault();
+						return item => item.ApprovedBy.ID != myEmployeeId;
+					}';
             }
         }
     }

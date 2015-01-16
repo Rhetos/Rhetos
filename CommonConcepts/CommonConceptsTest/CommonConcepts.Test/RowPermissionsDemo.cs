@@ -38,7 +38,7 @@ namespace CommonConcepts.Test
     public class RowPermissionsDemo
     {
         [TestMethod]
-        public void SimpleRowPermissions()
+        public void SimpleRowPermissionRules()
         {
             SetBasicAccessPermissions<DemoRowPermissions1.Document>(); // Not related to row permissions.
 
@@ -106,7 +106,7 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void ComplexRowPermissions()
+        public void CombiningMultipleRules()
         {
             SetBasicAccessPermissions<DemoRowPermissions2.Document>(); // Not related to row permissions.
 

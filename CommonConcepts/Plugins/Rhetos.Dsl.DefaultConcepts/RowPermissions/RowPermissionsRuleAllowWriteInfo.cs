@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AllowWrite")]
-    public class RowPermissionsRuleAllowWriteInfo : RowPermissionsStandardRuleInfo
+    public class RowPermissionsRuleAllowWriteInfo : RowPermissionsSingleFunctionRuleInfo
     {
     }
 }

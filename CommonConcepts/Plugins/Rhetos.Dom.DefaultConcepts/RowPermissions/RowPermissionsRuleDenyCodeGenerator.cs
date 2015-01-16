@@ -36,7 +36,7 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (RowPermissionsStandardRuleInfo)conceptInfo;
+            var info = (RowPermissionsSingleFunctionRuleInfo)conceptInfo;
 
             codeBuilder.InsertCode(
                 RowPermissionsUtility.GetSnippetFilterExpression(info, allowNotDeny: false),

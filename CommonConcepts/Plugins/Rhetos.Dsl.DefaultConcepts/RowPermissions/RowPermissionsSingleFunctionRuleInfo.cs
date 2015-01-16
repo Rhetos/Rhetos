@@ -28,18 +28,21 @@ using System.Text.RegularExpressions;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// This class is a helper for implementing row permissions rules that are based on a single function that returns the rule filter expression.
+    /// Other types if row permissions rules are possible, that do not inherit this class (see RowPermissionsRuleInfo).
+    /// </summary>
     [Export(typeof(IConceptInfo))]
-    public class RowPermissionsStandardRuleInfo : RowPermissionsRuleInfo, IAlternativeInitializationConcept
+    public class RowPermissionsSingleFunctionRuleInfo : RowPermissionsRuleInfo, IAlternativeInitializationConcept
     {
-        public string GroupSelector { get; set; }
+        /// <summary>
+        /// A lambda expression that returns the rule filter.
+        /// Expected type: Func&lt;Common.ExecutionContext, Expression&lt;Func&lt;TEntity, bool&gt;&gt;&gt;.
+        /// </summary>
+        public string FilterExpression { get; set; }
 
-        public string PermissionPredicate { get; set; }
-
-        /// <summary>Optional.</summary>
-        public string Condition { get; set; }
-
-        public RowPermissionsReadInfo Dependency_RowPermissionsRead { get; set; } // Dependency for code generator.
-        public RowPermissionsWriteInfo Dependency_RowPermissionsWrite { get; set; } // Dependency for code generator.
+        public RowPermissionsReadInfo Dependency_RowPermissionsRead { get; set; } // Dependency for the code generator.
+        public RowPermissionsWriteInfo Dependency_RowPermissionsWrite { get; set; } // Dependency for the code generator.
 
         public IEnumerable<string> DeclareNonparsableProperties()
         {

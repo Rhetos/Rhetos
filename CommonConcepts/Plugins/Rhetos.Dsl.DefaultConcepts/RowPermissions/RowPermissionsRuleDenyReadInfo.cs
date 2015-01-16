@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("DenyRead")]
-    public class RowPermissionsRuleDenyReadInfo : RowPermissionsStandardRuleInfo
+    public class RowPermissionsRuleDenyReadInfo : RowPermissionsSingleFunctionRuleInfo
     {
     }
 }
