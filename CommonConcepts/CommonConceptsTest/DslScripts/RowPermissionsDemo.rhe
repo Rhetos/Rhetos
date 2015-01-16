@@ -25,14 +25,14 @@
             
             RowPermissions
             {
-                Allow EmployeeDivision 'context =>
-					{
-						Guid myDivisionID = context.Repository.DemoRowPermissions1.Employee.Query()
-							.Where(e => e.UserName == context.UserInfo.UserName)
-							.Select(e => e.Division.ID)
-							.SingleOrDefault();
-						return item => item.Division.ID == myDivisionID;
-					}';
+                Allow WithinDivision 'context =>
+                    {
+                        Guid myDivisionId = context.Repository.DemoRowPermissions1.Employee.Query()
+                            .Where(e => e.UserName == context.UserInfo.UserName)
+                            .Select(e => e.Division.ID)
+                            .SingleOrDefault();
+                        return item => item.Division.ID == myDivisionId;
+                    }';
             }
         }
     }
@@ -70,33 +70,36 @@
             ShortString Title;
             DateTime Created { CreationTime; }
             Reference Division;
-
+            
             RowPermissions
             {
-                Allow EmployeeDivision 'context => 
-					{
-						Guid myDivisionID = context.Repository.DemoRowPermissions2.Employee.Query()
-							.Where(e => e.UserName == context.UserInfo.UserName)
-							.Select(e => e.Division.ID)
-							.SingleOrDefault();
-						return item => item.Division.ID == myDivisionID;
-					}';
-				
+                Allow WithinDivision 'context =>
+                    {
+                        Guid myDivisionId = context.Repository.DemoRowPermissions2.Employee.Query()
+                            .Where(e => e.UserName == context.UserInfo.UserName)
+                            .Select(e => e.Division.ID)
+                            .SingleOrDefault();
+                        return item => item.Division.ID == myDivisionId;
+                    }';
+                
                 AllowRead SupervisedRegions 'context =>
-					{
-						var myRegionIds = context.Repository.DemoRowPermissions2.RegionSupervisor.Query()
-							.Where(rs => rs.Employee.UserName == context.UserInfo.UserName)
-							.Select(rs => rs.Region.ID)
-							.ToList();
-						if (myRegionIds.Count == 0)
-							return item => false;
-						return item => myRegionIds.Contains(item.Division.Region.ID);
-					}';
-				
-                DenyWrite BeforeCurrentYear 'context =>
-					{
-						return item => item.Created < new DateTime(DateTime.Today.Year, 1, 1);
-					}';
+                    {
+                        List<Guid> myRegionIds = context.Repository
+                          .DemoRowPermissions2.RegionSupervisor.Query()
+                            .Where(rs => rs.Employee.UserName == context.UserInfo.UserName)
+                            .Select(rs => rs.Region.ID)
+                            .ToList();
+						
+                        if (myRegionIds.Count == 0)
+                            return item => false; // Minor optimization.
+						
+                        return item => myRegionIds.Contains(item.Division.Region.ID);
+                    }';
+                
+                DenyWrite PreviousYears 'context =>
+                    {
+                        return item => item.Created < new DateTime(DateTime.Today.Year, 1, 1);
+                    }';
             }
         }
     }
@@ -124,19 +127,19 @@
         {
             Extends DemoRowPermissions2.Document;
             Reference ApprovedBy DemoRowPermissions2.Employee;
-			ShortString Note;
-			
+            ShortString Note;
+            
             RowPermissions
             {
                 // This rule is joined with the inherited rules from DemoRowPermissions2.Document.
                 DenyWrite ApprovedByCurrentUser 'context =>
-					{
-						var myEmployeeId = context.Repository.DemoRowPermissions2.Employee.Query()
-							.Where(e => e.UserName == context.UserInfo.UserName)
-							.Select(e => e.ID)
-							.SingleOrDefault();
-						return item => item.ApprovedBy.ID != myEmployeeId;
-					}';
+                    {
+                        var myEmployeeId = context.Repository.DemoRowPermissions2.Employee.Query()
+                            .Where(e => e.UserName == context.UserInfo.UserName)
+                            .Select(e => e.ID)
+                            .SingleOrDefault();
+                        return item => item.ApprovedBy.ID != myEmployeeId;
+                    }';
             }
         }
     }

@@ -40,7 +40,7 @@ namespace Rhetos.Dom.DefaultConcepts
             ",
                 info.RowPermissionsFilters.DataStructure.Module.Name,
                 info.RowPermissionsFilters.DataStructure.Name,
-                info.FilterExpression,
+                info.FilterExpressionFunction,
                 allowNotDeny ? "Include" : "Exclude");
         }
 

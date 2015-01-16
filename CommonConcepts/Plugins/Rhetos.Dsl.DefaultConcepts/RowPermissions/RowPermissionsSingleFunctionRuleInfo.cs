@@ -29,17 +29,17 @@ using System.Text.RegularExpressions;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// This class is a helper for implementing row permissions rules that are based on a single function that returns the rule filter expression.
+    /// This class is a helper for implementing row permissions rules that are based on a single function that returns the rule's filter expression.
     /// Other types if row permissions rules are possible, that do not inherit this class (see RowPermissionsRuleInfo).
     /// </summary>
     [Export(typeof(IConceptInfo))]
     public class RowPermissionsSingleFunctionRuleInfo : RowPermissionsRuleInfo, IAlternativeInitializationConcept
     {
         /// <summary>
-        /// A lambda expression that returns the rule filter.
+        /// A lambda expression that returns the rule's filter.
         /// Expected type: Func&lt;Common.ExecutionContext, Expression&lt;Func&lt;TEntity, bool&gt;&gt;&gt;.
         /// </summary>
-        public string FilterExpression { get; set; }
+        public string FilterExpressionFunction { get; set; }
 
         public RowPermissionsReadInfo Dependency_RowPermissionsRead { get; set; } // Dependency for the code generator.
         public RowPermissionsWriteInfo Dependency_RowPermissionsWrite { get; set; } // Dependency for the code generator.
