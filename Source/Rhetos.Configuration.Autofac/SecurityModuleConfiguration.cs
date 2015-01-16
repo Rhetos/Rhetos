@@ -28,6 +28,7 @@ namespace Rhetos.Configuration.Autofac
     {
         protected override void Load(ContainerBuilder builder)
         {
+            builder.RegisterType<WindowsSecurity>().InstancePerLifetimeScope();
             builder.RegisterType<AuthorizationManager>().As<IAuthorizationManager>().InstancePerLifetimeScope();
             builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope().PreserveExistingDefaults();
             builder.RegisterType<NullAuthorizationProvider>().As<IAuthorizationProvider>().PreserveExistingDefaults();

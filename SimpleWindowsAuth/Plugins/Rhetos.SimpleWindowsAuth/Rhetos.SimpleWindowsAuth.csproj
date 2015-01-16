@@ -76,6 +76,10 @@
       <Project>{ddc73f5f-bb0e-4944-92cc-4ac937398499}</Project>
       <Name>Rhetos.Extensibility.Interfaces</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj">
+      <Project>{bb7e5668-1b43-4fce-a832-444cc57fee80}</Project>
+      <Name>Rhetos.Logging.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Source\Rhetos.Security.Interfaces\Rhetos.Security.Interfaces.csproj">
       <Project>{8e1d4acd-b1aa-433f-9e52-fa50d4a1c9dc}</Project>
       <Name>Rhetos.Security.Interfaces</Name>

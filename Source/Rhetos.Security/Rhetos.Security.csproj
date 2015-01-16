@@ -63,7 +63,7 @@
     <Compile Include="AuthorizationManager.cs" />
     <Compile Include="ProcessUserInfo.cs" />
     <Compile Include="NullAuthorizationProvider.cs" />
-    <Compile Include="WcfUtility.cs" />
+    <Compile Include="WindowsSecurity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WcfWindowsUserInfo.cs" />
   </ItemGroup>

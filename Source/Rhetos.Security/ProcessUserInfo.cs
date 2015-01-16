@@ -35,11 +35,14 @@ namespace Rhetos.Security
             _currentUser = new Lazy<WindowsIdentity>(() => WindowsIdentity.GetCurrent());
         }
 
+        #region IWindowsUserInfo interface implementation
+
         public bool IsUserRecognized
         {
             get { return _currentUser.Value != null; }
         }
 
+        /// <summary>Format: "domain\user"</summary>
         public string UserName
         {
             get { CheckIfUserRecognized(); return _currentUser.Value.Name; }
@@ -54,6 +57,8 @@ namespace Rhetos.Security
         {
             get { CheckIfUserRecognized(); return _currentUser.Value; }
         }
+
+        #endregion
 
         private void CheckIfUserRecognized()
         {

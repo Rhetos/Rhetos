@@ -25,6 +25,8 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using Rhetos.Security;
+using System.Diagnostics;
+using Rhetos.Logging;
 
 namespace Rhetos.SimpleWindowsAuth
 {
@@ -32,16 +34,22 @@ namespace Rhetos.SimpleWindowsAuth
     public class SimpleWindowsAuthorizationProvider : IAuthorizationProvider
     {
         private readonly Lazy<IPermissionLoader> _permissionLoader;
+        private readonly WindowsSecurity _windowsSecurity;
 
         public SimpleWindowsAuthorizationProvider(
-            Lazy<IPermissionLoader> permissionLoader)
+            Lazy<IPermissionLoader> permissionLoader,
+            WindowsSecurity windowsSecurity)
         {
             _permissionLoader = permissionLoader;
+            _windowsSecurity = windowsSecurity;
         }
 
         public IList<bool> GetAuthorizations(IUserInfo userInfo, IList<Claim> requiredClaims)
         {
-            IList<string> userMembership = ((WcfWindowsUserInfo)userInfo).GetIdentityMembership();
+            if (!(userInfo is IWindowsUserInfo))
+                throw new FrameworkException("Unexpected userInfo type '" + userInfo.GetType().FullName + "'.");
+            IList<string> userMembership = _windowsSecurity.GetIdentityMembership((IWindowsUserInfo)userInfo);
+
             IList<IPermissionBrowse> userPermissions = _permissionLoader.Value.LoadPermissions(requiredClaims, userMembership);
 
             HashSet<string> hasClaims = new HashSet<string>();

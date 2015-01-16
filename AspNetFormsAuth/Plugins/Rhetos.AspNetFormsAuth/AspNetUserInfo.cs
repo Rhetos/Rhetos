@@ -34,22 +34,19 @@ namespace Rhetos.AspNetFormsAuth
         public string UserName { get { CheckIfUserRecognized(); return _userName.Value; } }
         public string Workstation { get { CheckIfUserRecognized(); return _workstation.Value; } }
 
-        private ILogger _logger;
         private Lazy<bool> _isUserRecognized;
         private Lazy<string> _userName;
         private Lazy<string> _workstation;
 
-        public AspNetUserInfo(ILogProvider logProvider)
+        public AspNetUserInfo(WindowsSecurity windowsSecurity)
         {
-            _logger = logProvider.GetLogger("AspNetUserInfo");
-
             _isUserRecognized = new Lazy<bool>(() =>
                 HttpContext.Current != null
                 && HttpContext.Current.User != null
                 && HttpContext.Current.User.Identity != null
                 && HttpContext.Current.User.Identity.IsAuthenticated);
             _userName = new Lazy<string>(() => HttpContext.Current.User.Identity.Name);
-            _workstation = new Lazy<string>(() => WcfUtility.InitClientWorkstation(_logger));
+            _workstation = new Lazy<string>(() => windowsSecurity.GetClientWorkstation());
         }
 
         private void CheckIfUserRecognized()
