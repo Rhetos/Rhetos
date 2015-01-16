@@ -167,6 +167,7 @@
     <Compile Include="PolymorphicTest.cs" />
     <Compile Include="MultipleValidationsTest.cs" />
     <Compile Include="RowPermissionsRulesTest.cs" />
+    <Compile Include="RowPermissionsDemo.cs" />
     <Compile Include="SqlIndexTest.cs" />
     <Compile Include="SystemRequiredTest.cs" />
     <Compile Include="DenyUserEditTest.cs" />
