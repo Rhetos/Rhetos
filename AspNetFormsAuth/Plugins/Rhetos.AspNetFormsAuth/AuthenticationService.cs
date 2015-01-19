@@ -221,7 +221,7 @@ namespace Rhetos.AspNetFormsAuth
         public bool Login(LoginParameters parameters)
         {
             if (parameters == null)
-                throw new ClientException("It is not allowed to call this authentication service method with not parameters provided.");
+                throw new ClientException("It is not allowed to call this authentication service method with no parameters provided.");
             _logger.Trace(() => "Login: " + parameters.UserName);
             parameters.Validate();
             CheckPasswordFailuresBeforeLogin(parameters.UserName);
@@ -271,7 +271,7 @@ namespace Rhetos.AspNetFormsAuth
         public void SetPassword(SetPasswordParameters parameters)
         {
             if (parameters == null)
-                throw new ClientException("It is not allowed to call this authentication service method with not parameters provided.");
+                throw new ClientException("It is not allowed to call this authentication service method with no parameters provided.");
             _logger.Trace(() => "SetPassword: " + parameters.UserName);
             CheckPermissions(AuthenticationServiceClaims.SetPasswordClaim);
             parameters.Validate();
@@ -303,7 +303,7 @@ namespace Rhetos.AspNetFormsAuth
         public bool ChangeMyPassword(ChangeMyPasswordParameters parameters)
         {
             if (parameters == null)
-                throw new ClientException("It is not allowed to call this authentication service method with not parameters provided.");
+                throw new ClientException("It is not allowed to call this authentication service method with no parameters provided.");
             _logger.Trace(() => "ChangeMyPassword: " + WebSecurity.CurrentUserName);
             parameters.Validate();
             CheckPasswordStrength(parameters.NewPassword);
@@ -331,7 +331,7 @@ namespace Rhetos.AspNetFormsAuth
         public void UnlockUser(UnlockUserParameters parameters)
         {
             if (parameters == null)
-                throw new ClientException("It is not allowed to call this authentication service method with not parameters provided.");
+                throw new ClientException("It is not allowed to call this authentication service method with no parameters provided.");
             _logger.Trace(() => "UnlockUser: " + parameters.UserName);
             CheckPermissions(AuthenticationServiceClaims.UnlockUserClaim);
             parameters.Validate();
@@ -355,7 +355,7 @@ namespace Rhetos.AspNetFormsAuth
         public string GeneratePasswordResetToken(GeneratePasswordResetTokenParameters parameters)
         {
             if (parameters == null)
-                throw new ClientException("It is not allowed to call this authentication service method with not parameters provided.");
+                throw new ClientException("It is not allowed to call this authentication service method with no parameters provided.");
             _logger.Trace(() => "GeneratePasswordResetToken: " + parameters.UserName);
             CheckPermissions(AuthenticationServiceClaims.GeneratePasswordResetTokenClaim);
             parameters.Validate();
@@ -384,7 +384,7 @@ namespace Rhetos.AspNetFormsAuth
         public void SendPasswordResetToken(SendPasswordResetTokenParameters parameters)
         {
             if (parameters == null)
-                throw new ClientException("It is not allowed to call this authentication service method with not parameters provided.");
+                throw new ClientException("It is not allowed to call this authentication service method with no parameters provided.");
             _logger.Trace("SendPasswordResetToken " + parameters.UserName);
             parameters.Validate();
 
@@ -435,7 +435,7 @@ namespace Rhetos.AspNetFormsAuth
         public bool ResetPassword(ResetPasswordParameters parameters)
         {
             if (parameters == null)
-                throw new ClientException("It is not allowed to call this authentication service method with not parameters provided.");
+                throw new ClientException("It is not allowed to call this authentication service method with no parameters provided.");
             _logger.Trace("ResetPassword");
             parameters.Validate();
             CheckPasswordStrength(parameters.NewPassword);
