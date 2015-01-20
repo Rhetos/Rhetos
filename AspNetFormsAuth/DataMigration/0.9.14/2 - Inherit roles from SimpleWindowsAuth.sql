@@ -21,31 +21,51 @@ EXEC Rhetos.DataMigrationUse 'Common', 'Claim', 'ID', 'uniqueidentifier';
 GO
 
 IF EXISTS (SELECT TOP 1 1 FROM _Common.Permission WHERE RoleID IS NULL AND PrincipalID IS NOT NULL)
-	AND NOT EXISTS (SELECT TOP 1 1 FROM _Common.Role)
 BEGIN
+	CREATE TABLE #principalToRole (PrincipalID UNIQUEIDENTIFIER, RoleID UNIQUEIDENTIFIER);
+	
 	INSERT INTO
-		_Common.Role (ID, Name)
+		#principalToRole (PrincipalID)
 	SELECT
-		NEWID(), pri.Name + ' role'
+		pri.ID
 	FROM
 		_Common.Principal pri
 		INNER JOIN (SELECT DISTINCT PrincipalID FROM _Common.Permission) per ON per.PrincipalID = pri.ID;
 
 	INSERT INTO
+		_Common.Role (ID, Name)
+	SELECT
+		NEWID(), pri.Name + ' role'
+	FROM
+		#principalToRole ptr
+		INNER JOIN _Common.Principal pri ON pri.ID = ptr.PrincipalID
+		LEFT JOIN _Common.Role r ON r.Name = pri.Name OR r.Name = pri.Name + ' role'
+	WHERE
+		r.ID IS NULL;
+
+	UPDATE
+		ptr
+	SET
+		RoleID = r.ID
+	FROM
+		#principalToRole ptr
+		INNER JOIN _Common.Principal pri ON pri.ID = ptr.PrincipalID
+		LEFT JOIN _Common.Role r ON r.Name = pri.Name OR r.Name = pri.Name + ' role';
+
+	INSERT INTO
 		_Common.PrincipalHasRole (ID, PrincipalID, RoleID)
 	SELECT
-		NEWID(), pri.ID, r.ID
+		NEWID(), PrincipalID, RoleID
 	FROM
-		_Common.Principal pri
-		INNER JOIN _Common.Role r ON r.Name = pri.Name + ' role';
+		#principalToRole
 
 	UPDATE
 		per
 	SET
-		RoleID = phr.RoleID
+		RoleID = ptr.RoleID
 	FROM
 		_Common.Permission per
-		INNER JOIN _Common.PrincipalHasRole phr ON phr.PrincipalID = per.PrincipalID;
+		INNER JOIN #principalToRole ptr ON ptr.PrincipalID = per.PrincipalID;
 END
 
 DELETE p FROM _Common.Permission p LEFT JOIN _Common.Claim c ON c.ID = p.ClaimID WHERE c.ID IS NULL;
