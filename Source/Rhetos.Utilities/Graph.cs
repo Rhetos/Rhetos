@@ -126,15 +126,18 @@ namespace Rhetos.Utilities
         /// </summary>
         /// <param name="candidates">Nodes to be removed.</param>
         /// <param name="dependencies">Dependency: Item2 depends on Item1.</param>
-        public static List<T> RemovableLeaves<T>(List<T> candidates, IEnumerable<Tuple<T, T>> dependencies)
+        public static List<T> RemovableLeaves<T>(IEnumerable<T> candidates, IEnumerable<Tuple<T, T>> dependencies)
         {
+            CsUtility.Materialize(ref candidates);
+            CsUtility.Materialize(ref dependencies);
+
             dependencies = dependencies.Distinct().ToArray();
             var all = candidates.Union(dependencies.Select(d => d.Item1)).Union(dependencies.Select(d => d.Item2)).ToArray();
 
             var numberOfDependents = all.ToDictionary(node => node, node => 0);
             foreach (var relation in dependencies)
                 numberOfDependents[relation.Item1]++;
-            
+
             var dependsOn = all.ToDictionary(node => node, node => new List<T>());
             foreach (var relation in dependencies)
                 dependsOn[relation.Item2].Add(relation.Item1);
@@ -161,14 +164,47 @@ namespace Rhetos.Utilities
 
         //==============================================================================
 
-        public static void SortByGivenOrder<TItem, TKey>(TItem[] items, TKey[] expectedKeyOrder, Func<TItem, TKey> itemKeySelector)
+        public static void SortByGivenOrder<TItem, TKey>(TItem[] items, IEnumerable<TKey> expectedKeyOrder, Func<TItem, TKey> itemKeySelector)
         {
-            var expectedIndex = expectedKeyOrder.Select((key, index) => new { key, index }).ToDictionary(item => item.key, item => item.index);
-
-            string cannotFindKeyError = "Given array expectedKeyOrder does not contain key '{0}' that is present in given items (" + typeof(TItem).FullName + ").";
-            var itemsOrder = items.Select(item => expectedIndex.GetValue(itemKeySelector(item), cannotFindKeyError)).ToArray();
-
+            var positionByKey = GetPositionByKey(expectedKeyOrder);
+            var itemsOrder = items.Select(item => positionByKey.GetValue(itemKeySelector(item), CannotFindKeyError<TItem>)).ToArray();
             Array.Sort(itemsOrder, items);
+        }
+
+        public static void SortByGivenOrder<TItem, TKey>(List<TItem> items, IEnumerable<TKey> expectedKeyOrder, Func<TItem, TKey> itemKeySelector)
+        {
+            var positionByKey = GetPositionByKey(expectedKeyOrder);
+            var itemsComparer = new IndirectComparer<TItem, TKey>(positionByKey, itemKeySelector, CannotFindKeyError<TItem>);
+            items.Sort(itemsComparer);
+        }
+
+        public static Dictionary<TKey, int> GetPositionByKey<TKey>(IEnumerable<TKey> expectedKeyOrder)
+        {
+            return expectedKeyOrder.Select((key, index) => new { key, index }).ToDictionary(item => item.key, item => item.index);
+        }
+
+        public static string CannotFindKeyError<TItem>()
+        {
+            return "Given array expectedKeyOrder does not contain key '{0}' that is present in given items (" + typeof(TItem).FullName + ").";
+        }
+
+        class IndirectComparer<TItem, TKey> : IComparer<TItem>
+        {
+            Dictionary<TKey, int> _positionByKey;
+            Func<TItem, TKey> _itemKeySelector;
+            Func<string> _cannotFindKeyError;
+
+            public IndirectComparer(Dictionary<TKey, int> positionByKey, Func<TItem, TKey> itemKeySelector, Func<string> cannotFindKeyError)
+            {
+                _positionByKey = positionByKey;
+                _itemKeySelector = itemKeySelector;
+                _cannotFindKeyError = cannotFindKeyError;
+            }
+
+            public int Compare(TItem x, TItem y)
+            {
+                return _positionByKey.GetValue(_itemKeySelector(x), _cannotFindKeyError) - _positionByKey.GetValue(_itemKeySelector(y), _cannotFindKeyError);
+            }
         }
 
         //==============================================================================

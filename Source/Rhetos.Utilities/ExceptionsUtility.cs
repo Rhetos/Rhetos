@@ -47,17 +47,14 @@ namespace Rhetos.Utilities
         /// <summary>
         /// Keeps the original stack trace when rethrowing an existing exception.
         /// </summary>
-        /// <param name="exception">
-        /// If the argument is null, the function does nothing.
-        /// </param>
         public static void Rethrow(Exception exception)
         {
-            if (exception != null)
-            {
-                typeof(Exception).GetMethod("PrepForRemoting", BindingFlags.NonPublic | BindingFlags.Instance)
-                    .Invoke(exception, new object[0]);
-                throw exception;
-            }
+            if (exception == null)
+                throw new ArgumentNullException("exception");
+
+            typeof(Exception).GetMethod("PrepForRemoting", BindingFlags.NonPublic | BindingFlags.Instance)
+                .Invoke(exception, new object[0]);
+            throw exception;
         }
     }
 }

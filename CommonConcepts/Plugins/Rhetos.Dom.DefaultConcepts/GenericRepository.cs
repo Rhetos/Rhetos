@@ -139,23 +139,11 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Neither List&lt;&gt; or IList&lt;&gt; are covariant, so IEnumerable&lt;&gt; is used.</returns>
         public IEnumerable<TEntityInterface> CreateList<TSource>(IEnumerable<TSource> source, Action<TSource, TEntityInterface> initializer)
         {
-            MaterializeQuick(ref source);
+            CsUtility.Materialize(ref source);
             var newItems = CreateList(source.Count());
             foreach (var pair in source.Zip(newItems, (sourceItem, newItem) => new { sourceItem, newItem}))
                 initializer(pair.sourceItem, pair.newItem);
             return newItems;
-        }
-
-        /// <summary>
-        /// If <paramref name="items"/> is not a list or an array, converts it to a list of <typeparam name="T"></typeparam>.
-        /// Use this function to make sure that the <paramref name="items"/> is not a LINQ query,
-        /// before using it multiple times, to aviod query evaulation every time
-        /// (sometimes it means reading data from the database on every evaluation).
-        /// </summary>
-        private void MaterializeQuick<T>(ref IEnumerable<T> items)
-        {
-            if (items != null && !(items is IList))
-                items = items.ToList();
         }
 
         /// <summary>
@@ -828,7 +816,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             // Initialize new items:
 
-            MaterializeQuick(ref newItems);
+            CsUtility.Materialize(ref newItems);
             _performanceLogger.Write(stopwatch, () => string.Format("{0}.InsertOrUpdateOrDelete: Initialize new items ({1})",
                 _repositoryName, newItems.Count()));
 
@@ -890,7 +878,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             // Initialize new items:
 
-            MaterializeQuick(ref newItems);
+            CsUtility.Materialize(ref newItems);
             foreach (var newItem in newItems.Cast<IDeactivatable>())
                 if (newItem.Active == null)
                     newItem.Active = true;

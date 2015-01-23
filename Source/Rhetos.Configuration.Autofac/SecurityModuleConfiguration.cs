@@ -24,16 +24,18 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Configuration.Autofac
 {
-    public class SecurityModuleConfiguration  : Module
+    public class SecurityModuleConfiguration : Module
     {
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<WindowsSecurity>().InstancePerLifetimeScope();
             builder.RegisterType<AuthorizationManager>().As<IAuthorizationManager>().InstancePerLifetimeScope();
+
+            // Default user authentication and authorization components. Custom plugins may override it by registering their own interface implementations.
             builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope().PreserveExistingDefaults();
             builder.RegisterType<NullAuthorizationProvider>().As<IAuthorizationProvider>().PreserveExistingDefaults();
 
-            PluginsUtility.RegisterPlugins<IUserInfo>(builder); // Allow custom IUserInfo plugin implementation (overriding WcfWindowsUserInfo).
+            // Cannot use RegisterPlugins on IUserInfo because each type should be manually registered with InstancePerLifetimeScope.
             PluginsUtility.RegisterPlugins<IAuthorizationProvider>(builder);
             PluginsUtility.RegisterPlugins<IClaimProvider>(builder);
 

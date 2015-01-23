@@ -24,7 +24,7 @@ using System.Text;
 
 namespace Rhetos.Extensibility
 {
-    public static class MefProvider
+    public static class MefProvider // TODO: Create custom attributes instead of this class. PluginHandles(conceptType) and PluginDependsOn(pluginType).
     {
         public const string Implements = "Implements";
         public const string DependsOn = "DependsOn";

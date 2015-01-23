@@ -33,17 +33,17 @@ namespace Rhetos.Configuration.Autofac
 {
     public class DefaultAutofacConfiguration : Module
     {
-        public DefaultAutofacConfiguration(bool generate)
+        public DefaultAutofacConfiguration(bool generateDomAssembly)
         {
-            _generate = generate;
+            _generateDomAssembly = generateDomAssembly;
         }
 
-        private readonly bool _generate;
+        private readonly bool _generateDomAssembly;
 
         protected override void Load(ContainerBuilder builder)
         {
             // Specific registrations configuration:
-            if (_generate)
+            if (_generateDomAssembly)
             {
                 builder.RegisterModule(new DomModuleConfiguration(Paths.DomAssemblyName, DomAssemblyUsage.Generate));
                 builder.RegisterModule(new NHibernateModuleConfiguration(null));
@@ -64,7 +64,7 @@ namespace Rhetos.Configuration.Autofac
             builder.RegisterModule(new CompilerConfiguration());
             builder.RegisterModule(new LoggingConfiguration());
             builder.RegisterModule(new ProcessingModuleConfiguration());
-            builder.RegisterModule(new ExtensibilityModuleConfiguration());
+            builder.RegisterModule(new ExtensibilityModuleConfiguration()); // This is the last registration, so that the plugin can easier override core components.
 
             base.Load(builder);
         }

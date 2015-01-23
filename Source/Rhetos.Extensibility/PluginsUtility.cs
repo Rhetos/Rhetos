@@ -32,7 +32,7 @@ using System.Text;
 
 namespace Rhetos.Extensibility
 {
-    public static class PluginsUtility
+    public static class PluginsUtility // TODO: Rename to Plugins.
     {
         private static bool _initialized;
         private static ILogger _logger = new NullLogger();
@@ -52,7 +52,7 @@ namespace Rhetos.Extensibility
         }
 
         /// <summary>Should be called once, at system initialization time.</summary>
-        public static void RegisterPluginModules(ContainerBuilder builder)
+        public static void RegisterPluginModules(ContainerBuilder builder) // TODO: Rename to FindAndRegisterModules
         {
             if (!_initialized)
             {
@@ -62,7 +62,7 @@ namespace Rhetos.Extensibility
         }
 
         /// <summary>Should be called after generating new dlls, to load new plugins from them.</summary>
-        public static void DetectAndRegisterNewModulesAndPlugins(IContainer container)
+        public static void DetectAndRegisterNewModulesAndPlugins(IContainer container) // TODO: Rename to FindAndRegisterNewModulesAndPlugins
         {
             var newBuilder = new ContainerBuilder();
             LoadNewAssemblies(newBuilder);
@@ -104,7 +104,7 @@ namespace Rhetos.Extensibility
                     LoadNewPlugins(builder, newAssemblies);
                     _performanceLogger.Write(sw, "PluginsUtility: Loaded and registered new plugins");
 
-                    RegisterNewModules(builder, newAssemblies);
+                    RegisterNewModules(builder);
                     _performanceLogger.Write(sw, "PluginsUtility: Registered new modules");
                 }
                 catch (System.Reflection.ReflectionTypeLoadException ex)
@@ -120,7 +120,7 @@ namespace Rhetos.Extensibility
         private class PluginInfo
         {
             public Type Type;
-            public IDictionary<string, object> Metadata;
+            public Dictionary<string, object> Metadata;
         }
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace Rhetos.Extensibility
                         ped => new PluginInfo
                         {
                             Type = ReflectionModelServices.GetPartType(ped.Part).Value,
-                            Metadata = ped.Metadata
+                            Metadata = ped.Metadata.ToDictionary(e => e.Key, e => e.Value)
                         }).ToList());
 
                 _performanceLogger.Write(sw, "PluginsUtility: Loaded MEF plugins");
@@ -164,16 +164,33 @@ namespace Rhetos.Extensibility
 
         //================================================================
 
-        private static void RegisterNewModules(ContainerBuilder builder, List<string> newAssemblies)
+        private static HashSet<Type> _registeredModules = new HashSet<Type>();
+
+        private static void RegisterNewModules(ContainerBuilder builder)
         {
-            var assemblyCatalogs = newAssemblies.Select(a => new AssemblyCatalog(a));
-            var container = new CompositionContainer(new AggregateCatalog(assemblyCatalogs));
-            var pluginModules = container.GetExports<Module>().ToList();
-            foreach (var pluginModule in pluginModules)
+            var allModulesPluginInfo = _loadedPluginsByExport[typeof(Module).FullName];
+            SortByDependency(allModulesPluginInfo);
+            var allModules = allModulesPluginInfo.Select(p => p.Type);
+
+            var newModules = allModules.Except(_registeredModules).ToList();
+            foreach (var module in newModules)
             {
-                _logger.Trace(() => "Registering module: " + pluginModule.Value.GetType().FullName);
-                builder.RegisterModule(pluginModule.Value);
+                _logger.Trace(() => "Registering module: " + module.FullName);
+                builder.RegisterModule((Module)Activator.CreateInstance(module));
+                _registeredModules.Add(module);
             }
+        }
+
+        private static void SortByDependency(List<PluginInfo> plugins)
+        {
+            var dependencies = plugins
+                .Where(p => p.Metadata.ContainsKey(MefProvider.DependsOn))
+                .Select(p => Tuple.Create((Type)p.Metadata[MefProvider.DependsOn], p.Type))
+                .ToList();
+
+            var pluginTypes = plugins.Select(p => p.Type).ToList();
+            Graph.TopologicalSort(pluginTypes, dependencies);
+            Graph.SortByGivenOrder(plugins, pluginTypes, p => p.Type);
         }
 
         //================================================================
@@ -182,7 +199,10 @@ namespace Rhetos.Extensibility
         /// List of previous plugin registerations, used for rescanning when new assemblies are introduced.
         /// Key is the plugin (export) type. Value is optional generic implementation interface.
         /// </summary>
-        private static Dictionary<Type, Type> _pluginRegistrations = new Dictionary<Type, Type>();
+        private static Dictionary<Type, Type> _pluginRegistrations = new Dictionary<Type, Type>
+            {
+                { typeof(Module), null }
+            };
 
         private static void RegisterNewPlugins(ContainerBuilder builder, Dictionary<string, List<PluginInfo>> newPlugins)
         {
@@ -198,6 +218,10 @@ namespace Rhetos.Extensibility
             {
                 _logger.Trace(() => "Registering plugins: " + exportType.FullName + " (" + matchingPlugins.Count + ")");
 
+                if (genericImplementationInterface != null)
+                    foreach (var plugin in matchingPlugins)
+                        ExtractGenericPluginImplementsMetadata(plugin, genericImplementationInterface);
+
                 foreach (var plugin in matchingPlugins)
                 {
                     var registration = builder.RegisterType(plugin.Type).As(new[] { exportType });
@@ -208,32 +232,32 @@ namespace Rhetos.Extensibility
                         if (metadataElement.Key == MefProvider.Implements)
                             registration = registration.Keyed(metadataElement.Value, exportType);
                     }
-
-                    if (genericImplementationInterface != null)
-                    {
-                        var implementsTypes = plugin.Type.GetInterfaces()
-                            .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == genericImplementationInterface)
-                            .Select(i => i.GetGenericArguments()[0])
-                            .ToList();
-
-                        if (implementsTypes.Count == 0)
-                            throw new FrameworkException(string.Format(
-                                "Plugin {0} does not implement generic interface {1}.",
-                                plugin.Type.FullName,
-                                genericImplementationInterface.FullName));
-
-                        foreach (Type implements in implementsTypes)
-                            registration = registration.Keyed(implements, exportType);
-                    }
                 }
             }
+        }
+
+        private static void ExtractGenericPluginImplementsMetadata(PluginInfo plugin, Type genericImplementationInterface)
+        {
+            var implementsTypes = plugin.Type.GetInterfaces()
+                .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == genericImplementationInterface)
+                .Select(i => i.GetGenericArguments()[0])
+                .ToList();
+
+            if (implementsTypes.Count == 0)
+                throw new FrameworkException(string.Format(
+                    "Plugin {0} does not implement generic interface {1}.",
+                    plugin.Type.FullName,
+                    genericImplementationInterface.FullName));
+
+            foreach (Type implements in implementsTypes)
+                plugin.Metadata.Add(MefProvider.Implements, implements);
         }
 
         /// <summary>
         /// Scans for plugins that implement the given export type (it is usually the plugin's interface), and registers them.
         /// The function should be called from a plugin module initialization (from Autofac.Module implementation).
         /// </summary>
-        public static void RegisterPlugins<TPlugin>(ContainerBuilder builder)
+        public static void RegisterPlugins<TPlugin>(ContainerBuilder builder) // TODO: Rename to FindAndRegisterPlugins.
         {
             lock (_pluginRegistrations)
             {
@@ -250,13 +274,50 @@ namespace Rhetos.Extensibility
         /// Argument type that the plugin handles is automatically extracted from the provided genericImplementationInterface parameter.
         /// This is an alternative to using MefProvider.Implements in the plugin's ExportMetadata attribute.
         /// </param>
-        public static void RegisterPlugins<TPlugin>(ContainerBuilder builder, Type genericImplementationInterface)
+        public static void RegisterPlugins<TPlugin>(ContainerBuilder builder, Type genericImplementationInterface) // TODO: Rename to FindAndRegisterPlugins.
         {
             lock (_pluginRegistrations)
             {
                 RegisterPlugins(builder, _loadedPluginsByExport, typeof(TPlugin), genericImplementationInterface);
                 _pluginRegistrations.Add(typeof(TPlugin), genericImplementationInterface);
             }
+        }
+
+        /// <summary>
+        /// Since the last registration is considered the active one, when overriding previous registrations
+        /// use this function to verify if the previous plugins are already registered and will be overriden.
+        /// 
+        /// To force the specific registration order between modules (derivations of Autofac.Module)
+        /// use [ExportMetadata(MefProvider.DependsOn, typeof(the other Autofac.Module derivation))] attribute
+        /// on the module that registers the components that override registrations from the other module.
+        /// </summary>
+        public static void CheckOverride<TInterface, TImplementation>(ContainerBuilder builder, params Type[] expectedPreviousPlugins)
+        {
+            builder.RegisterCallback(componentRegistry =>
+                {
+                    var existingService = new Autofac.Core.TypedService(typeof(TInterface));
+                    var existingRegistrations = componentRegistry.RegistrationsFor(existingService).Select(r => r.Activator.LimitType).ToList();
+
+                    var missingRegistration = expectedPreviousPlugins.Except(existingRegistrations).ToList();
+                    var excessRegistration = existingRegistrations.Except(expectedPreviousPlugins).ToList();
+
+                    if (missingRegistration.Count > 0 || excessRegistration.Count > 0)
+                    {
+                        string error = "Unexpected plugins while overriding '" + typeof(TInterface).Name + "' with '" + typeof(TImplementation).Name + "'.";
+
+                        if (missingRegistration.Count > 0)
+                            error += " The following plugins should have been previous registered in order to be overriden: "
+                                + string.Join(", ", missingRegistration.Select(r => r.Name)) + ".";
+
+                        if (excessRegistration.Count > 0)
+                            error += " The following plugins have been previous registered and whould be unintentionally overriden: "
+                                + string.Join(", ", excessRegistration.Select(r => r.Name)) + ".";
+
+                        error += " Verify that the module registration is occurring in the right order: Use [ExportMetadata(MefProvider.DependsOn, typeof(other Autofac.Module implementation))], to make those registration will occur before this one.";
+
+                        throw new FrameworkException(error);
+                    }
+                });
         }
     }
 }

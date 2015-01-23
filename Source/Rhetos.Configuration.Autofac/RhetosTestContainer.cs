@@ -154,14 +154,15 @@ namespace Rhetos.Configuration.Autofac
             // Specific registrations and initialization:
             PluginsUtility.SetLogProvider(new ConsoleLogProvider());
 
-            // Build the container:
+            // General registrations:
             var builder = new ContainerBuilder();
-            builder.RegisterModule(new DefaultAutofacConfiguration(generate: false));
+            builder.RegisterModule(new DefaultAutofacConfiguration(generateDomAssembly: false));
 
             // Specific registrations override:
             builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
             builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
 
+            // Build the container:
             var sw = Stopwatch.StartNew();
             var container = builder.Build();
             _performanceLogger.Write(sw, "RhetosTestContainer: Built IoC container");

@@ -18,6 +18,7 @@
 */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -121,6 +122,18 @@ namespace Rhetos.Utilities
             }
             types.Reverse();
             return types;
+        }
+
+        /// <summary>
+        /// If <paramref name="items"/> is not a List or an Array, converts it to a List&lt;<typeparamref name="T"/>&gt;.
+        /// Use this function to make sure that the <paramref name="items"/> is not a LINQ query
+        /// before using it multiple times, in order to aviod the query evaluation every time
+        /// (sometimes it means reading data from the database on every evaluation).
+        /// </summary>
+        public static void Materialize<T>(ref IEnumerable<T> items)
+        {
+            if (items != null && !(items is IList))
+                items = items.ToList();
         }
     }
 }

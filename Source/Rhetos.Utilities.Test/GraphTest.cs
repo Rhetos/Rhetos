@@ -267,5 +267,43 @@ namespace Rhetos.Utilities.Test
         {
             TestGetIndirectRelations("a-b b-c c-b c-c a-c c-c a-c", "a-bc b-c c-bc");
         }
+
+        [TestMethod]
+        public void SortByGivenOrder()
+        {
+            TestSortByGivenOrder(4, "a x2 x1 c x3 x0 b", "2 1 3 0");
+            TestSortByGivenOrder(4, "x0 x1 x2 x3", "0 1 2 3");
+            TestSortByGivenOrder(4, "a x1 c x3 x0 b", "-", "does not contain key 'x2'");
+            TestSortByGivenOrder(0, "", "");
+        }
+
+        private void TestSortByGivenOrder(int itemsCount, string orderedKeysString, string expectedOrderedItemsString, params string[] errorMessages)
+        {
+            var items = Enumerable.Range(0, itemsCount);
+            var orderedKeys = orderedKeysString.Split(' ');
+            var expectedOrder = expectedOrderedItemsString.Split(' ');
+
+            {
+                var itemsArray = items.ToArray();
+                if (errorMessages.Length == 0)
+                {
+                    Graph.SortByGivenOrder(itemsArray, orderedKeys, item => "x" + item);
+                    Assert.AreEqual(TestUtility.Dump(expectedOrder), TestUtility.Dump(itemsArray));
+                }
+                else
+                    TestUtility.ShouldFail(() => Graph.SortByGivenOrder(itemsArray, orderedKeys, item => "x" + item), errorMessages);
+            }
+
+            {
+                var itemsList = items.ToArray();
+                if (errorMessages.Length == 0)
+                {
+                    Graph.SortByGivenOrder(itemsList, orderedKeys, item => "x" + item);
+                    Assert.AreEqual(TestUtility.Dump(expectedOrder), TestUtility.Dump(itemsList));
+                }
+                else
+                    TestUtility.ShouldFail(() => Graph.SortByGivenOrder(itemsList, orderedKeys, item => "x" + item), errorMessages);
+            }
+        }
     }
 }

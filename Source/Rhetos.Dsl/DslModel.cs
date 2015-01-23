@@ -186,7 +186,7 @@ namespace Rhetos.Dsl
                     foreach (var conceptInfo in _dslContainer.FindByType(macroEvaluator.Implements, macroEvaluator.ImplementsDerivations).ToList())
                     {
                         var macroCreatedConcepts = macroEvaluator.Evaluate(conceptInfo, _dslContainer);
-                        Materialize(ref macroCreatedConcepts);
+                        CsUtility.Materialize(ref macroCreatedConcepts);
 
                         if (macroCreatedConcepts != null && macroCreatedConcepts.Count() > 0)
                         {
@@ -239,7 +239,7 @@ namespace Rhetos.Dsl
 
         private void LogConcepts(StringBuilder report, string reportName, IEnumerable<IConceptInfo> concepts)
         {
-            Materialize(ref concepts);
+            CsUtility.Materialize(ref concepts);
             if (concepts != null && concepts.Count() > 0)
                 report.Append("\r\n  " + reportName + ": " + string.Join(", ", concepts.Select(c => c.GetShortDescription())) + ".");
         }
@@ -303,12 +303,6 @@ namespace Rhetos.Dsl
         }
 
         private static HashSet<string> _noRecommendedOrderReported = new HashSet<string>();
-
-        private static void Materialize(ref IEnumerable<IConceptInfo> items)
-        {
-            if (items != null && !(items is IList))
-                items = items.ToList();
-        }
 
         private string ReportLastEvaluationOrder(Dictionary<string, int> lastResolvedConceptTimeByMacro, List<int> lastResolvedConceptTimeByIteration)
         {

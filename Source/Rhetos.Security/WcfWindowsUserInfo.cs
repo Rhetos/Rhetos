@@ -33,7 +33,7 @@ using System.DirectoryServices;
 namespace Rhetos.Security
 {
     /// <summary>
-    /// This is a security principal provider (IUserInfo) based on WCF and Windows authentication.
+    /// This is a security principal provider based on WCF and Windows authentication.
     /// </summary>
     public class WcfWindowsUserInfo : IWindowsUserInfo
     {

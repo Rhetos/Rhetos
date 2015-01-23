@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -47,7 +48,7 @@ namespace Rhetos.Dsl
 
             IEnumerable<IConceptInfo> createdConcepts;
             alternativeInitializationConcept.InitializeNonparsableProperties(out createdConcepts);
-            Materialize(ref createdConcepts);
+            CsUtility.Materialize(ref createdConcepts);
 
             if (createdConcepts != null && createdConcepts.Count() > 0)
             {
@@ -64,12 +65,6 @@ namespace Rhetos.Dsl
             }
 
             return result;
-        }
-
-        private static void Materialize(ref IEnumerable<IConceptInfo> items)
-        {
-            if (items != null && !(items is IList))
-                items = items.ToList();
         }
     }
 }

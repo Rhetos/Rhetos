@@ -35,7 +35,7 @@ namespace Rhetos
             PluginsUtility.RegisterPlugins<IHomePageSnippet>(builder);
 
             // General registrations:
-            builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(generate: false));
+            builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(generateDomAssembly: false));
 
             base.Load(builder);
         }

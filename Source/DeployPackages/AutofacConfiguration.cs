@@ -38,7 +38,7 @@ namespace DeployPackages
             builder.RegisterType<DatabaseCleaner>();
 
             // General registrations:
-            builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(generate: true));
+            builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(generateDomAssembly: true));
 
             // Specific registrations override:
             builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
