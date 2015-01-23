@@ -17,30 +17,52 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac.Features.Indexed;
+using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
-using Rhetos.Extensibility;
 using Rhetos.Processing;
 using Rhetos.Processing.DefaultCommands;
+using Rhetos.Security;
 using Rhetos.TestCommon;
+using Rhetos.Utilities;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace CommonConcepts.Test
 {
     [TestClass]
     public class RowPermissionsDemo
     {
+        /// <summary>
+        /// Overrides deployed IAuthorizationProvider (windows or forms authorization) to turn off checking user security claims.
+        /// Not related to row permissions.
+        /// </summary>
+        private class NoClaimsRhetosTestContainer : RhetosTestContainer
+        {
+            public NoClaimsRhetosTestContainer(bool commitChanges = false)
+                : base(commitChanges: commitChanges)
+            {
+                this._initializeSession += builder =>
+                    builder.RegisterType<IgnoreAuthorizationProvider>().As<IAuthorizationProvider>();
+           }
+        }
+
+        public class IgnoreAuthorizationProvider : IAuthorizationProvider
+        {
+            public IgnoreAuthorizationProvider() { }
+
+            public IList<bool> GetAuthorizations(IUserInfo userInfo, IList<Claim> requiredClaims)
+            {
+                return requiredClaims.Select(c => true).ToList();
+            }
+        }
+
         [TestMethod]
         public void SimpleRowPermissionRules()
         {
-            SetBasicAccessPermissions<DemoRowPermissions1.Document>(); // Not related to row permissions.
+            InsertCurrentPrincipal(); // Not related to row permissions.
 
             // Insert the test data (server code bypasses row permissions):
 
@@ -73,7 +95,7 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Reading all documents (access denied)
 
-            using (var container = new RhetosTestContainer())
+            using (var container = new NoClaimsRhetosTestContainer())
             {
                 var processingEngine = container.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
@@ -89,7 +111,7 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Reading the user's documents
 
-            using (var container = new RhetosTestContainer())
+            using (var container = new NoClaimsRhetosTestContainer())
             {
                 var processingEngine = container.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
@@ -108,7 +130,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void CombiningMultipleRules()
         {
-            SetBasicAccessPermissions<DemoRowPermissions2.Document>(); // Not related to row permissions.
+            InsertCurrentPrincipal(); // Not related to row permissions.
 
             // Insert the test data (server code bypasses row permissions):
 
@@ -160,7 +182,7 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Reading all documents (access denied)
 
-            using (var container = new RhetosTestContainer())
+            using (var container = new NoClaimsRhetosTestContainer())
             {
                 var processingEngine = container.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
@@ -176,7 +198,7 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Reading the user's documents
 
-            using (var container = new RhetosTestContainer())
+            using (var container = new NoClaimsRhetosTestContainer())
             {
                 var processingEngine = container.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
@@ -193,7 +215,7 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Edit doc1 (ok)
 
-            using (var container = new RhetosTestContainer())
+            using (var container = new NoClaimsRhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var doc1 = repository.DemoRowPermissions2.Document.Query().Where(d => d.Title == "doc1").Single();
@@ -216,7 +238,7 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Edit doc4 (acces denied)
 
-            using (var container = new RhetosTestContainer())
+            using (var container = new NoClaimsRhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var doc4 = repository.DemoRowPermissions2.Document.Query().Where(d => d.Title == "doc4").Single();
@@ -239,7 +261,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InheritingRowPermissions()
         {
-            SetBasicAccessPermissions<DemoRowPermissions2.Document>(); // Not related to row permissions.
+            InsertCurrentPrincipal(); // Not related to row permissions.
 
             // Insert the test data (server code bypasses row permissions):
 
@@ -332,28 +354,28 @@ namespace CommonConcepts.Test
             }
         }
 
-        private void SetBasicAccessPermissions<TEntity>()
+        private void InsertCurrentPrincipal()
         {
-            // Set the current user's basic permissions for client requests (not related to row permissions).
-
             using (var container = new RhetosTestContainer(commitChanges: true))
             {
                 var context = container.Resolve<Common.ExecutionContext>();
-                var genericRepositories = container.Resolve<GenericRepositories>();
-
-                // Loading or creating the Principal record for the current user:
                 var userAccount = context.UserInfo.UserName.Split('\\').Last();
-                var principal = new Common.Principal { Name = userAccount };
-                genericRepositories.InsertOrReadId(principal, p => p.Name);
 
-                // Loading all available claims for the given entity:
-                var claims = genericRepositories.Read<Common.Claim>(c => c.ClaimResource == typeof(TEntity).FullName && c.Active.Value);
+                var genericRepositories = container.Resolve<GenericRepositories>();
+                var principalRepository = genericRepositories.GetGenericRepository("Common.Principal");
 
-                // Giving the current user permissions for the claims:
-                var permissions = claims.Select(claim => new Common.Permission { Claim = claim, Principal = principal, IsAuthorized = true });
-                genericRepositories.InsertOrUpdateReadId(permissions,
-                    p => new { cid = p.Claim.ID, pid = p.Principal.ID },
-                    p => new { p.IsAuthorized });
+                // Avoding direct use of Common.Principal class, because some AspNetFormsAuth
+                // package extend the class with specific interfaces, requiring this project
+                // to reference those plugins.
+
+                dynamic principal = principalRepository.Read().Where(p => ((dynamic)p).Name == userAccount).SingleOrDefault();
+
+                if (principal == null)
+                {
+                    principal = principalRepository.CreateInstance();
+                    principal.Name = userAccount;
+                    principalRepository.Insert(principal);
+                }
             }
         }
 

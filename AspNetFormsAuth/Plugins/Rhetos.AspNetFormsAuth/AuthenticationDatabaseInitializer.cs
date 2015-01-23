@@ -17,27 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac.Features.Indexed;
-using Rhetos.Dom;
 using Rhetos.Dom.DefaultConcepts;
-using Rhetos.Dsl;
-using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.Persistence.NHibernate;
-using Rhetos.Processing;
-using Rhetos.Security;
 using Rhetos.Utilities;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Linq.Expressions;
-using System.ServiceModel;
-using System.ServiceModel.Activation;
-using System.ServiceModel.Description;
 using System.Text;
 
 namespace Rhetos.AspNetFormsAuth
@@ -60,16 +48,17 @@ namespace Rhetos.AspNetFormsAuth
             _persistenceTransaction = persistenceTransaction;
         }
 
-        const string adminUserName = "admin";
-        const string adminRoleName = "SecurityAdministrator";
+        public const string AdminUserName = "admin";
+        public const string AdminRoleName = "SecurityAdministrator";
+
         public void Initialize()
         {
             var adminPrincipal = _repositories.CreateInstance<IPrincipal>();
-            adminPrincipal.Name = adminUserName;
+            adminPrincipal.Name = AdminUserName;
             _repositories.InsertOrReadId(adminPrincipal, item => item.Name);
 
             var adminRole = _repositories.CreateInstance<IRole>();
-            adminRole.Name = adminRoleName;
+            adminRole.Name = AdminRoleName;
             _repositories.InsertOrReadId(adminRole, item => item.Name);
 
             var adminPrincipalHasRole = _repositories.CreateInstance<IPrincipalHasRole>();
@@ -77,7 +66,7 @@ namespace Rhetos.AspNetFormsAuth
             adminPrincipalHasRole.RoleID = adminRole.ID;
             _repositories.InsertOrReadId(adminPrincipalHasRole, item => new { PrincipalID = item.Principal.ID, RoleID = item.Role.ID });
 
-            foreach (var securityClaim in AuthenticationServiceClaims.GetAdminClaims())
+            foreach (var securityClaim in AuthenticationServiceClaims.GetDefaultAdminClaims())
             {
                 var commonClaim = _repositories.CreateInstance<ICommonClaim>();
                 commonClaim.ClaimResource = securityClaim.Resource;
@@ -148,42 +137,5 @@ namespace Rhetos.AspNetFormsAuth
             if (processErrorCode != 0)
                 throw new FrameworkException(Path.GetFileName(path) + " returned an error: " + processOutput.ToString());
         }
-    }
-
-    /// <summary>
-    /// List of admin claims is provided by a IClaimProvider plugin, in order to automatically create the claims on Rhetos deployment.
-    /// </summary>
-    [Export(typeof(IClaimProvider))]
-    [ExportMetadata(MefProvider.Implements, typeof(DummyCommandInfo))]
-    public class AuthenticationServiceClaims : IClaimProvider
-    {
-        public IList<Claim> GetRequiredClaims(ICommandInfo info)
-        {
-            return null;
-        }
-
-        public IList<Claim> GetAllClaims(IDslModel dslModel)
-        {
-            return GetAdminClaims();
-        }
-
-        public static IList<Claim> GetAdminClaims()
-        {
-            return new[] {
-                SetPasswordClaim, UnlockUserClaim, IgnorePasswordStrengthPolicyClaim, GeneratePasswordResetTokenClaim,
-                ReadCommonPrincipal, NewCommonPrincipal };
-        }
-
-        public static readonly Claim SetPasswordClaim = new Claim("AspNetFormsAuth.AuthenticationService", "SetPassword");
-        public static readonly Claim UnlockUserClaim = new Claim("AspNetFormsAuth.AuthenticationService", "UnlockUser");
-        public static readonly Claim IgnorePasswordStrengthPolicyClaim = new Claim("AspNetFormsAuth.AuthenticationService", "IgnorePasswordStrengthPolicy");
-        public static readonly Claim GeneratePasswordResetTokenClaim = new Claim("AspNetFormsAuth.AuthenticationService", "GeneratePasswordResetToken");
-
-        public static readonly Claim ReadCommonPrincipal = new Claim("Common.Principal", "Read");
-        public static readonly Claim NewCommonPrincipal = new Claim("Common.Principal", "New");
-    }
-
-    public class DummyCommandInfo : ICommandInfo
-    {
     }
 }

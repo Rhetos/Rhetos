@@ -61,6 +61,7 @@
   <ItemGroup>
     <Compile Include="AspNetUserInfo.cs" />
     <Compile Include="AuthenticationDatabaseInitializer.cs" />
+    <Compile Include="AuthenticationServiceClaims.cs" />
     <Compile Include="AuthenticationServiceInitializer.cs" />
     <Compile Include="CancelUnauthorizedClientRedirection.cs" />
     <Compile Include="DeactivateClaimsCodeGenerator.cs" />
@@ -73,7 +74,7 @@
     <Compile Include="IPrincipalHasRole.cs" />
     <Compile Include="IRoleInheritsRole.cs" />
     <Compile Include="AuthenticationService.cs" />
-    <Compile Include="ModuleConfiguration.cs" />
+    <Compile Include="AutofacModuleConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AspNetFormsAuthorizationProvider.cs" />
   </ItemGroup>

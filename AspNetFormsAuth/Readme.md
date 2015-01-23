@@ -13,8 +13,19 @@ to implement its own authentication or security mechanisms.
 
 1. [Features](#features)
 2. [Authentication service API](#authentication-service-api)
+    * [Logout](#logout)
+    * [SetPassword](#setpassword)
+    * [ChangeMyPassword](#changemypassword)
+    * [UnlockUser](#unlockuser)
+    * [GeneratePasswordResetToken](#generatepasswordresettoken)
+    * [SendPasswordResetToken](#sendpasswordresettoken)
+    * [ResetPassword](#resetpassword)
 3. [Installation](#installation)
 4. [Configuration](#configuration)
+    * ["admin" user](#admin-user)
+    * [Permissions and claims](#permissions-and-claims)
+    * [Maximum failed password attempts](#maximum-failed-password-attempts)
+    * [Password strength policy](#password-strength-policy)
 5. [Uninstallation](#uninstallation)
 6. [Sharing the authentication across web applications](#sharing-the-authentication-across-web-applications)
 7. [Session timeout](#session-timeout)
@@ -93,8 +104,8 @@ The JSON service is available at URI `<rhetos server>/Resources/AspNetFormsAuth/
 Sets or resets the given user's password.
 
 * Interface: `(string UserName, string Password, bool IgnorePasswordStrengthPolicy) -> void`
-* Requires "SetPassword" [claim](#permissions-and-claims).
-  If IgnorePasswordStrengthPolicy property is set, "IgnorePasswordStrengthPolicy" [claim](#permissions-and-claims) is required.
+* Requires `SetPassword` [security claim](#permissions-and-claims).
+  If IgnorePasswordStrengthPolicy property is set, `IgnorePasswordStrengthPolicy` [security claim](#permissions-and-claims) is required.
 * Response data is empty if the command is successful,
   an error message (string) with HTTP error code 400 if the password does not match the password strength policy,
   or an error message with HTTP error code 4* or 5* in case of any other error.
@@ -115,7 +126,7 @@ Reset the number of [failed login attempts](#maximum-failed-password-attempts).
 
 * Interface: `(string UserName) -> void`
 * Response is empty.
-* Requires "UnlockUser" [claim](#permissions-and-claims).
+* Requires `UnlockUser` [security claim](#permissions-and-claims).
 
 ### GeneratePasswordResetToken
 
@@ -126,7 +137,7 @@ Generates a password reset token.
   in order to create a user account without initial password and let a user choose it, or to implement forgot-password functionality.
 * To implement forgot-password functionality *without* using administrator privileges in web application,
   use [`SendPasswordResetToken`](#sendpasswordresettoken) method instead (see [Forgot password](#forgot-password)).
-* Requires "GeneratePasswordResetToken" [claim](#permissions-and-claims).
+* Requires `GeneratePasswordResetToken` [security claim](#permissions-and-claims).
 * If TokenExpirationInMinutesFromNow parameter is not set (or set to 0), the token will expire in 24 hours.
 
 ### SendPasswordResetToken
@@ -230,7 +241,7 @@ authentication service methods.
 
 ### Permissions and claims
 
-All claims related to the authentication service have resource="*AspNetFormsAuth.AuthenticationService*".
+All claims related to the authentication service have resource=`AspNetFormsAuth.AuthenticationService`.
 [Admin user](#admin-user) has all the necessary permissions (claims) for all authentication service methods.
 
 ### Maximum failed password attempts

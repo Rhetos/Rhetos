@@ -198,7 +198,7 @@ namespace Rhetos.AspNetFormsAuth
         private ISendPasswordResetToken SinglePlugin(Lazy<IEnumerable<ISendPasswordResetToken>> plugins)
         {
             if (plugins.Value.Count() == 0)
-                throw new FrameworkException("There is no plugin registered for sending the password reset token.");
+                throw new UserException("Sending the password reset token is not enabled on this server (the required plugin is not registered).");
 
             if (plugins.Value.Count() > 1)
                 throw new FrameworkException("There is more than one plugin registered for sending the password reset token: "
@@ -212,7 +212,7 @@ namespace Rhetos.AspNetFormsAuth
             bool allowed = _authorizationManager.Value.GetAuthorizations(new[] { claim }).Single();
             if (!allowed)
                 throw new UserException(string.Format(
-                    "You are not authorized for action '{0}' on resource '{1}', user '{2}'.",
+                    "You are not authorized for action '{0}' on resource '{1}', user '{2}'. The required security claim is not set.",
                     claim.Right, claim.Resource, WebSecurity.CurrentUserName));
         }
 
@@ -280,8 +280,8 @@ namespace Rhetos.AspNetFormsAuth
             else
                 CheckPasswordStrength(parameters.Password);
 
-            if (!WebSecurity.UserExists(parameters.UserName)) // Providing this information is not a security issue, because this method requires admin credentials (SetPasswordClaim).
-                throw new UserException("User '" + parameters.UserName + "' is not registered.");
+            if (!WebSecurity.UserExists(parameters.UserName))
+                throw new UserException("User '" + parameters.UserName + "' is not registered."); // Providing this information is not a security issue, because this method requires admin credentials (SetPasswordClaim).
 
             if (!IsAccountCreated(parameters.UserName))
             {
@@ -414,11 +414,14 @@ namespace Rhetos.AspNetFormsAuth
                     return;
                 }
 
-                // The plugin may choose it's own client error messages (UserException and ClientException will not be suppressed)
+                // The plugin may choose it's own client error messages (UserException and ClientException will not be suppressed).
                 _sendPasswordResetTokenPlugin.Value.SendPasswordResetToken(parameters.UserName, parameters.AdditionalClientInfo, passwordResetToken);
             }
             catch (Exception ex)
             {
+                if (ex is UserException || ex is ClientException)
+                    ExceptionsUtility.Rethrow(ex);
+
                 _logger.Error(logErrorFormat, parameters.UserName, ex);
                 throw new FrameworkException("Internal server error occurred. See RhetosServer.log for more information.");
             }

@@ -19,6 +19,7 @@
 
 using Autofac;
 using Rhetos.Extensibility;
+using Rhetos.Security;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
@@ -29,11 +30,13 @@ using System.Text;
 namespace Rhetos.AspNetFormsAuth
 {
     [Export(typeof(Module))]
-    public class ModuleConfiguration : Module
+    public class AutofacModuleConfiguration : Module
     {
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<AuthenticationService>().InstancePerLifetimeScope();
+
+            PluginsUtility.CheckOverride<IUserInfo, AspNetUserInfo>(builder, typeof(WcfWindowsUserInfo));
             builder.RegisterType<AspNetUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
 
             PluginsUtility.RegisterPlugins<ISendPasswordResetToken>(builder);
