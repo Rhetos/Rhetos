@@ -37,12 +37,13 @@ namespace Rhetos.Security
     /// </summary>
     public class WcfWindowsUserInfo : IWindowsUserInfo
     {
-        #region IWindowsUserInfo interface implementation
+        #region IWindowsUserInfo implementation
 
         public bool IsUserRecognized { get { return _isUserRecognized.Value; } }
         public string UserName { get { CheckIfUserRecognized(); return _userName.Value; } }
         public string Workstation { get { CheckIfUserRecognized(); return _workstation.Value; } }
         public WindowsIdentity WindowsIdentity { get { CheckIfUserRecognized(); return _windowsIdentity.Value; } }
+        public string Report() { return UserName + "," + Workstation; }
 
         #endregion
 

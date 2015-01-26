@@ -37,5 +37,6 @@ namespace Rhetos.TestCommon
         public bool IsUserRecognized { get; private set; }
         public string UserName { get; private set; }
         public string Workstation { get; private set; }
+        public string Report() { return UserName + "," + Workstation; }
     }
 }

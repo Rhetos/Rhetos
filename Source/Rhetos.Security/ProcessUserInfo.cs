@@ -58,6 +58,11 @@ namespace Rhetos.Security
             get { CheckIfUserRecognized(); return _currentUser.Value; }
         }
 
+        public string Report()
+        {
+            return UserName + "," + Workstation;
+        }
+
         #endregion
 
         private void CheckIfUserRecognized()

@@ -30,6 +30,12 @@ namespace Rhetos.Utilities
         /// Client host name or address.
         /// </summary>
         string Workstation { get; }
+
+        /// <summary>
+        /// Specially formatted user info. Usual implementation is "Domain\UserName,WorkStation".
+        /// </summary>
+        /// <returns></returns>
+        string Report();
     }
 
     public class NullUserInfo : IUserInfo
@@ -37,5 +43,6 @@ namespace Rhetos.Utilities
         public bool IsUserRecognized { get { return false; } }
         public string UserName { get { return null; } }
         public string Workstation { get { return null; } }
+        public string Report() { return null; }
     }
 }

@@ -134,7 +134,7 @@ namespace Rhetos.Utilities
             if (!userInfo.IsUserRecognized)
                 return "";
 
-            return "Rhetos:" + userInfo.UserName + "," + userInfo.Workstation;
+            return "Rhetos:" + userInfo.Report();
         }
 
         public static IUserInfo ExtractUserInfo(string contextInfo)
@@ -181,6 +181,7 @@ namespace Rhetos.Utilities
             public bool IsUserRecognized { get; set; }
             public string UserName { get; set; }
             public string Workstation { get; set; }
+            public string Report() { return UserName + "," + Workstation; }
         }
 
         /// <summary>

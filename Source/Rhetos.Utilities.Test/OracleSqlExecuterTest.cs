@@ -254,6 +254,7 @@ END;" }),
             public bool IsUserRecognized { get; set; }
             public string UserName { get; set; }
             public string Workstation { get; set; }
+            public string Report() { return UserName + "," + Workstation; }
         }
 
         [TestMethod]

@@ -30,9 +30,14 @@ namespace Rhetos.AspNetFormsAuth
 {
     public class AspNetUserInfo : IUserInfo
     {
+        #region IUserInfo implementation
+
         public bool IsUserRecognized { get { return _isUserRecognized.Value; } }
         public string UserName { get { CheckIfUserRecognized(); return _userName.Value; } }
         public string Workstation { get { CheckIfUserRecognized(); return _workstation.Value; } }
+        public string Report() { return UserName + "," + Workstation; }
+
+        #endregion
 
         private Lazy<bool> _isUserRecognized;
         private Lazy<string> _userName;

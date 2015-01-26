@@ -51,7 +51,9 @@ namespace Rhetos.Security
             RemoteEndpointMessageProperty endpointInfo;
             try
             {
-                endpointInfo = OperationContext.Current.IncomingMessageProperties[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
+                var endpointName = RemoteEndpointMessageProperty.Name;
+                var currentContext = OperationContext.Current;
+                endpointInfo = currentContext.IncomingMessageProperties[endpointName] as RemoteEndpointMessageProperty;
             }
             catch (Exception ex)
             {
