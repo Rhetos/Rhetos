@@ -46,6 +46,7 @@ namespace Rhetos.Configuration.Autofac
         protected ILifetimeScope _lifetimeScope;
         protected bool _commitChanges;
         protected string _explicitRhetosServerFolder;
+        protected event Action<ContainerBuilder> _initializeSession;
 
         /// <param name="commitChanges">
         /// Whether database updates (by ORM repositories) will be committed or rollbacked.
@@ -109,8 +110,6 @@ namespace Rhetos.Configuration.Autofac
 
             }
         }
-
-        protected event Action<ContainerBuilder> _initializeSession;
 
         protected virtual bool IsValidRhetosServerDirectory(string path)
         {

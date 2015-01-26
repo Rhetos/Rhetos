@@ -8,8 +8,8 @@
     <h1>Rhetos</h1>
     <div>
 <%
-    var snippets = Autofac.ResolutionExtensions.Resolve<IEnumerable<Rhetos.IHomePageSnippet>>(Autofac.Integration.Wcf.AutofacServiceHostFactory.Container);
-    foreach (var snippet in snippets)
+    var snippets = Autofac.ResolutionExtensions.Resolve<Rhetos.Extensibility.IPluginsContainer<Rhetos.IHomePageSnippet>>(Autofac.Integration.Wcf.AutofacServiceHostFactory.Container);
+    foreach (var snippet in snippets.GetPlugins())
         Response.Write(snippet.Html);
 %>    </div>
     <h2>Server status</h2>

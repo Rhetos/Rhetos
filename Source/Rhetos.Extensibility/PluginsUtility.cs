@@ -262,7 +262,7 @@ namespace Rhetos.Extensibility
             lock (_pluginRegistrations)
             {
                 RegisterPlugins(builder, _loadedPluginsByExport, typeof(TPlugin), null);
-                _pluginRegistrations.Add(typeof(TPlugin), null);
+                _pluginRegistrations[typeof(TPlugin)] = null;
             }
         }
 
@@ -279,7 +279,7 @@ namespace Rhetos.Extensibility
             lock (_pluginRegistrations)
             {
                 RegisterPlugins(builder, _loadedPluginsByExport, typeof(TPlugin), genericImplementationInterface);
-                _pluginRegistrations.Add(typeof(TPlugin), genericImplementationInterface);
+                _pluginRegistrations[typeof(TPlugin)] = genericImplementationInterface;
             }
         }
 

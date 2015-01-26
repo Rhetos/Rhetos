@@ -126,6 +126,11 @@ namespace Rhetos.Dom.DefaultConcepts
             return GenericRepositories.GetGenericRepository<TEntity>();
         }}
 
+        public Rhetos.Dom.DefaultConcepts.GenericRepository<IEntity> GenericRepository(string entityName)
+        {{
+            return GenericRepositories.GetGenericRepository(entityName);
+        }}
+
         protected Lazy<Common.DomRepository> _repository;
         public Common.DomRepository Repository {{ get {{ return _repository.Value; }} }}
 

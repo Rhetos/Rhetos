@@ -37,7 +37,7 @@ namespace Rhetos.Extensibility
         public Dictionary<Type, IDictionary<string, object>> MetadataByPluginType { get; private set; }
         private object _metadataByPluginTypeLock = new object();
 
-        public Dictionary<Type, Type[]> SortedImplementations { get; private set; }
+        public Dictionary<Type, List<Type>> SortedImplementations { get; private set; }
         private object _sortedImplementationsLock = new object();
 
         public PluginsMetadataCache(Lazy<IEnumerable<Meta<TPlugin>>> pluginsWithMetadata)
@@ -47,12 +47,12 @@ namespace Rhetos.Extensibility
                     if (MetadataByPluginType == null)
                         MetadataByPluginType = pluginsWithMetadata.Value.ToDictionary(pm => pm.Value.GetType(), pm => pm.Metadata);
 
-            SortedImplementations = new Dictionary<Type, Type[]>();
+            SortedImplementations = new Dictionary<Type, List<Type>>();
         }
 
         public void SortByMetadataDependsOn(Type key, TPlugin[] plugins)
         {
-            Type[] pluginTypesSorted;
+            List<Type> pluginTypesSorted;
 
             lock (_sortedImplementationsLock)
             {
@@ -66,12 +66,12 @@ namespace Rhetos.Extensibility
                     List<Type> pluginTypesSortedList = plugins.Select(plugin => plugin.GetType()).ToList();
                     Graph.TopologicalSort(pluginTypesSortedList, dependencies);
 
-                    pluginTypesSorted = pluginTypesSortedList.ToArray();
+                    pluginTypesSorted = pluginTypesSortedList;
                     SortedImplementations.Add(key, pluginTypesSorted);
                 }
             }
 
-            Graph.SortByGivenOrder(plugins, pluginTypesSorted.ToArray(), plugin => plugin.GetType());
+            Graph.SortByGivenOrder(plugins, pluginTypesSorted, plugin => plugin.GetType());
         }
 
         public Type GetMetadata(Type pluginType, string metadataKey)
