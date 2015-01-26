@@ -1,3 +1,20 @@
+0.9.23 (2015-01-26)
+-------------------
+
+Breaking changes:
+
+* Internal server error information is removed from server responses (a configuration option will be added in future).
+
+New features:
+
+* New row permissions concepts: **Allow** and **Deny**, for combined read and write rules.
+* Simplified row permission rules format: a single function that returns the expression.
+
+Internal improvements:
+
+* Bugfix: Deploying AspNetFormsAuth after SimpleWindowsAuth fails on IX_Permission_Role_Claim.
+* Bugfix: User authorization fails when using IProcessingEngine (executing server commands) in unit tests and in LinqPad scripts.
+
 0.9.22 (2015-01-13)
 -------------------
 
