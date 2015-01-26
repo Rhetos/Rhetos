@@ -173,7 +173,7 @@ namespace Rhetos.Processing
                 else
                 {
                     userMessage = null;
-                    systemMessage = ex.GetType().Name + ". For details see RhetosServer.log.";
+                    systemMessage = "Internal server error occurred (" + ex.GetType().Name + "). See RhetosServer.log for more information.";
                 }
 
                 return LogResultsReturnError(

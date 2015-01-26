@@ -62,7 +62,7 @@ namespace Rhetos.Web
             else
             {
                 responseStatusCode = HttpStatusCode.InternalServerError;
-                responseMessage = error.GetType().Name + ": " + error.Message;
+                responseMessage = "Internal server error occurred (" + error.GetType().Name + "). See RhetosServer.log for more information.";
             }
 
             fault = Message.CreateMessage(version, "", responseMessage,
