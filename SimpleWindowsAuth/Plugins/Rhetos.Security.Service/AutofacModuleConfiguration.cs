@@ -27,7 +27,7 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Security.Service
 {
     [Export(typeof(Module))]
-    public class DefaultAutofacConfiguration : Module
+    public class AutofacModuleConfiguration : Module
     {
         protected override void Load(ContainerBuilder builder)
         {

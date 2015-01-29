@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Autofac.Core;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
@@ -70,6 +71,49 @@ namespace Rhetos.Extensibility
             var sw = Stopwatch.StartNew();
             newBuilder.Update(container);
             _performanceLogger.Write(sw, () => "PluginsUtility: Updated Autofac container");
+        }
+
+        public static void LogRegistrationStatistics(string title, IContainer container)
+        {
+            _logger.Trace(() => ReportRegistrationStatistics(title, container.ComponentRegistry));
+        }
+
+        private static string ReportRegistrationStatistics(string title, IComponentRegistry componentRegistry)
+        {
+            var registrations = componentRegistry.Registrations
+                .SelectMany(r => r.Services.Select(s => new { pluginInterface = GetServiceType(s), pluginType = r.Activator.LimitType, registration = r }))
+                .OrderBy(r => r.pluginInterface)
+                .ToList();
+
+            var stats = registrations.GroupBy(r => r.pluginInterface)
+                .Select(g => new
+                {
+                    pluginInterface = g.Key,
+                    pluginsCountDistinct = g.Select(x => x.pluginType).Distinct().Count(),
+                    pluginsCount = g.Select(x => x.pluginType).Count()
+                })
+                .OrderBy(stat => stat.pluginInterface)
+                .ToList();
+
+            return title + ":" + string.Join("", stats.Select(stat => "\r\n"
+                + stat.pluginInterface + " " + stat.pluginsCountDistinct + " " + stat.pluginsCount));
+        }
+
+        private static string GetServiceType(Autofac.Core.Service service)
+        {
+            if (service is TypedService)
+                return GetShortTypeName(((TypedService)service).ServiceType);
+            if (service is KeyedService)
+                return GetShortTypeName(((KeyedService)service).ServiceType);
+            return service.Description;
+        }
+
+        private static string GetShortTypeName(Type type)
+        {
+            if (!type.IsGenericType)
+                return type.Name;
+            else
+                return type.Name + "<" + string.Join(", ", type.GetGenericArguments().Select(ga => GetShortTypeName(ga))) + ">";
         }
 
         //================================================================

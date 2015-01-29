@@ -162,7 +162,7 @@ namespace Rhetos.Dom.DefaultConcepts
     }}
 
     [System.ComponentModel.Composition.Export(typeof(Autofac.Module))]
-    public class AutofacConfiguration : Autofac.Module
+    public class AutofacModuleConfiguration : Autofac.Module
     {{
         protected override void Load(Autofac.ContainerBuilder builder)
         {{

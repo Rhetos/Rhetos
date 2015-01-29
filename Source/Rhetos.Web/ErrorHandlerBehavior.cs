@@ -17,13 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac;
+using Autofac.Integration.Wcf;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.ServiceModel.Configuration;
-using Autofac.Integration.Wcf;
-using Autofac;
+using System.Web;
 
 namespace Rhetos.Web
 {

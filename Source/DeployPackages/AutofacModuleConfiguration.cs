@@ -27,7 +27,7 @@ using Rhetos.Utilities;
 
 namespace DeployPackages
 {
-    public class AutofacConfiguration : Module
+    public class AutofacModuleConfiguration : Module
     {
         protected override void Load(ContainerBuilder builder)
         {

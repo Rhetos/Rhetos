@@ -22,8 +22,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.ServiceModel.Configuration;
-using Autofac.Integration.Wcf;
-using Autofac;
 
 namespace Rhetos.Web
 {

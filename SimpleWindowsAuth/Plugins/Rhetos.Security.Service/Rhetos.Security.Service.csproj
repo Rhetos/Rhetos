@@ -63,7 +63,7 @@
     <Compile Include="PermissionsHomePageSnippet.cs" />
     <Compile Include="SecurityRestServiceInitializer.cs" />
     <Compile Include="DataObjectModel.cs" />
-    <Compile Include="DefaultAutofacConfiguration.cs" />
+    <Compile Include="AutofacModuleConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RestImpl.cs" />
     <Compile Include="SecurityRestService.cs" />

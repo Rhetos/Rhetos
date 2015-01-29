@@ -64,7 +64,7 @@ namespace DeployPackages
 
                 oldCurrentDirectory = Directory.GetCurrentDirectory();
                 Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
-                
+
                 if (!Directory.Exists(Paths.GeneratedFolder))
                     Directory.CreateDirectory(Paths.GeneratedFolder);
                 foreach (var oldGeneratedFile in Directory.GetFiles(Paths.GeneratedFolder, "*", SearchOption.AllDirectories))
@@ -73,7 +73,7 @@ namespace DeployPackages
                     File.Delete(Paths.DomAssemblyFile);
 
                 var builder = new ContainerBuilder();
-                builder.RegisterModule(new AutofacConfiguration());
+                builder.RegisterModule(new AutofacModuleConfiguration());
                 using (var container = builder.Build())
                 {
                     if (arguments.Debug)
@@ -199,9 +199,11 @@ namespace DeployPackages
 
             {
                 Console.Write("Loading generated plugins ... ");
+                PluginsUtility.LogRegistrationStatistics("Components before update", container);
                 var stopwatch = Stopwatch.StartNew();
                 PluginsUtility.DetectAndRegisterNewModulesAndPlugins(container);
                 _performanceLogger.Write(stopwatch, "DeployPackages.ServerInitialization: New modules and plugins registered.");
+                PluginsUtility.LogRegistrationStatistics("Components after update", container);
                 Console.WriteLine("Done.");
 
                 var initializers = container.Resolve<ServerInitializationPlugins>().GetInitializers();
