@@ -17,19 +17,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Utilities;
-using Rhetos.Persistence;
-using System.Diagnostics;
-using System.Globalization;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
-using System.Data.SqlClient;
-using Autofac.Features.OwnedInstances;
+using Rhetos.Persistence;
 using Rhetos.Security;
+using Rhetos.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
 using System.Reflection;
 
 namespace Rhetos.Processing

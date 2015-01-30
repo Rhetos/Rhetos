@@ -28,9 +28,9 @@ using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.TestCommon;
 using Rhetos.DatabaseGenerator;
-using Autofac.Features.Metadata;
 using System.Text;
 using Autofac.Features.Indexed;
+using Autofac.Features.Metadata;
 
 namespace Rhetos.DatabaseGenerator.Test
 {

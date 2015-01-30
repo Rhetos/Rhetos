@@ -120,6 +120,7 @@ Source/Rhetos/Resources/
 Source/Rhetos/PackageInfo/
 Install/
 Source/Rhetos/*Trace.xml
+NuGet.exe
 
 # Rhetos user-specific files
 Source/Rhetos/ConnectionStrings.config

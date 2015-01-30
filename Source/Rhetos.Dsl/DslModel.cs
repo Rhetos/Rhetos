@@ -17,16 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac.Features.Indexed;
+using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using Rhetos.Logging;
-using System.Collections;
-using Rhetos.Utilities;
-using Rhetos.Extensibility;
-using Autofac.Features.Indexed;
 
 namespace Rhetos.Dsl
 {

@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac.Features.Indexed;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Extensibility;
 using Rhetos.TestCommon;
@@ -99,7 +100,7 @@ namespace Rhetos.Dsl.Test
             public IEnumerable<IConceptInfo> ParsedConcepts { get { return _rawConcepts; } }
         }
 
-        internal class StubMacroIndex : Autofac.Features.Indexed.IIndex<Type, IEnumerable<IConceptMacro>>
+        internal class StubMacroIndex : IIndex<Type, IEnumerable<IConceptMacro>>
         {
             public bool TryGetValue(Type key, out IEnumerable<IConceptMacro> value)
             {

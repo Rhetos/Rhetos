@@ -17,17 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.ComponentModel.Composition;
-using Autofac.Features.Indexed;
 using Rhetos.Dom.DefaultConcepts;
-using Rhetos.Extensibility;
-using Rhetos.Dom;
 using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
 using Rhetos.Logging;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Processing.DefaultCommands
 {

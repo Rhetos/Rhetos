@@ -153,10 +153,33 @@ namespace Rhetos.Extensibility
                 }
                 catch (System.Reflection.ReflectionTypeLoadException ex)
                 {
-                    var firstFive = ex.LoaderExceptions.Take(5).Select(it => Environment.NewLine + it.Message);
-                    throw new FrameworkException("Can't find MEF plugin dependencies:" + string.Concat(firstFive), ex);
+                    throw new FrameworkException(ReportLoaderExceptions(ex), ex);
                 }
             }
+        }
+
+        private static string ReportLoaderExceptions(System.Reflection.ReflectionTypeLoadException rtle)
+        {
+            var report = new StringBuilder();
+            report.Append("Cannot load plugins. Check for missing assembly or unsupported assembly version:");
+            bool first = true;
+            foreach (var innerException in rtle.LoaderExceptions.Take(5))
+            {
+                report.AppendLine();
+                report.Append(innerException.Message);
+
+                if (first)
+                {
+                    var fileLoadException = innerException as FileLoadException;
+                    if (fileLoadException != null && !string.IsNullOrEmpty(fileLoadException.FusionLog))
+                    {
+                        report.AppendLine();
+                        report.Append(fileLoadException.FusionLog);
+                    }
+                }
+                first = false;
+            }
+            return report.ToString();
         }
 
         //================================================================
