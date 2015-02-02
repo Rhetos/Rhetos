@@ -36,6 +36,8 @@ namespace DeployPackages
             builder.RegisterModule(new DatabaseGeneratorModuleConfiguration());
             builder.RegisterType<DataMigration>();
             builder.RegisterType<DatabaseCleaner>();
+            builder.RegisterType<ApplicationGenerator>();
+            builder.RegisterType<ApplicationInitialization>();
 
             // General registrations:
             builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(generateDomAssembly: true));

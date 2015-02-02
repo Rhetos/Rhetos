@@ -67,6 +67,7 @@
     <Compile Include="DslSourceHelper.cs" />
     <Compile Include="DslModelTest.cs" />
     <Compile Include="GenericParserTest.cs" />
+    <Compile Include="MockDslSource.cs" />
     <Compile Include="PluginsContainerMock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TokenizerTest.cs" />

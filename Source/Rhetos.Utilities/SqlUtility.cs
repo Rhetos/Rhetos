@@ -208,6 +208,16 @@ namespace Rhetos.Utilities
                 : "NULL";
         }
 
+        public static string QuoteIdentifier(string sqlIdentifier)
+        {
+            if (SqlUtility.DatabaseLanguage == "MsSql")
+            {
+                sqlIdentifier = sqlIdentifier.Replace("]", "]]");
+                return "[" + sqlIdentifier + "]";
+            }
+            throw new FrameworkException("Database language " + SqlUtility.DatabaseLanguage + " not supported.");
+        }
+
         public static string GetSchemaName(string fullObjectName)
         {
             int dotPosition = fullObjectName.IndexOf('.');

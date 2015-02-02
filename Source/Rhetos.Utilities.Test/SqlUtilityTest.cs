@@ -185,5 +185,21 @@ namespace Rhetos.Utilities.Test
                 Assert.AreEqual(test.Value, (result.UserName ?? "null") + "|" + (result.Workstation ?? "null"), "Input: " + test.Key);
             }
         }
+
+        [TestMethod]
+        public void QuoteIdentifier()
+        {
+            var tests = new Dictionary<string, string>
+            {
+                { "abc", "[abc]" },
+                { "abc[", "[abc[]" },
+                { "abc]", "[abc]]]" },
+                { "[][][]", "[[]][]][]]]" },
+                { " '\" ", "[ '\" ]" }
+            };
+
+            foreach (var test in tests)
+                Assert.AreEqual(test.Value, SqlUtility.QuoteIdentifier(test.Key));
+        }
     }
 }

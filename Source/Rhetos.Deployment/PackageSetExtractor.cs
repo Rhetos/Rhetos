@@ -196,7 +196,9 @@ namespace Rhetos.Deployment
                     //if (tries == maxTries)
                         //Console.Write(actionName + " failed");
                     //Console.Write(" ... retrying");
-                    System.Threading.Thread.Sleep(500);
+
+                    if (Environment.UserInteractive)
+                        System.Threading.Thread.Sleep(500);
                     continue;
                 }
             }

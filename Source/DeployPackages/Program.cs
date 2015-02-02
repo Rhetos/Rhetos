@@ -18,35 +18,26 @@
 */
 
 using Autofac;
-using Rhetos;
-using Rhetos.DatabaseGenerator;
 using Rhetos.Deployment;
 using Rhetos.Dom;
-using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
-using Rhetos.Persistence.NHibernate;
 using Rhetos.Utilities;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
-
 
 namespace DeployPackages
 {
-    class Program
+    public class Program
     {
-        static ILogger _logger = new NLogger("DeployPackagesInitialization");
-        static ILogger _performanceLogger;
-        static Action undoDataMigrationScriptsOnError = null;
-        static string oldCurrentDirectory = null;
-
-        static int Main(string[] args)
+        public static int Main(string[] args)
         {
+            ILogger _logger = new ConsoleLogger("DeployPackages.Program", new NLogger("DeployPackages.Program"));
+            string oldCurrentDirectory = null;
             try
             {
                 var arguments = new Arguments(args);
@@ -79,7 +70,24 @@ namespace DeployPackages
                     if (arguments.Debug)
                         container.Resolve<DomGeneratorOptions>().Debug = true;
 
-                    DeployPackages(container);
+                    container.Resolve<ApplicationGenerator>().ExecuteGenerators();
+
+                    {
+                        var _performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
+                        Console.Write("Loading generated plugins ... ");
+                        PluginsUtility.LogRegistrationStatistics("Components before update", container);
+                        var stopwatch = Stopwatch.StartNew();
+                        PluginsUtility.DetectAndRegisterNewModulesAndPlugins(container);
+                        _performanceLogger.Write(stopwatch, "DeployPackages.ServerInitialization: New modules and plugins registered.");
+                        PluginsUtility.LogRegistrationStatistics("Components after update", container);
+                        Console.WriteLine("Done.");
+
+ 
+                    }
+
+                    container.Resolve<ApplicationInitialization>().ExecuteInitializers();
+
+
                 }
             }
             catch (Exception ex)
@@ -96,10 +104,8 @@ namespace DeployPackages
                     _logger.Error(loaderMessages);
                 }
 
-                if (undoDataMigrationScriptsOnError != null)
-                    undoDataMigrationScriptsOnError();
-
-                Thread.Sleep(3000);
+                if (Environment.UserInteractive)
+                    Thread.Sleep(3000);
                 return 1;
             }
             finally
@@ -109,122 +115,6 @@ namespace DeployPackages
             }
 
             return 0;
-        }
-
-        private static void ValidateDbConnection(IContainer container)
-        {
-            var connectionReport = new ConnectionStringReport(container.Resolve<ISqlExecuter>());
-            if (!connectionReport.connectivity)
-                throw (connectionReport.exceptionRaised);
-            else if (!connectionReport.isDbo)
-                throw (new FrameworkException("Current user does not have db_owner role for the database."));
-        }
-
-        private static void DeployPackages(IContainer container)
-        {
-            _logger = new ConsoleLogger("DeployPackages", container.Resolve<ILogProvider>().GetLogger("DeployPackages"));
-            _performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
-
-            Console.WriteLine("SQL connection string: " + SqlUtility.MaskPassword(SqlUtility.ConnectionString));
-
-            ValidateDbConnection(container);
-
-            Console.Write("Preparing Rhetos database ... ");
-            DeploymentUtility.PrepareRhetosDatabase(container.Resolve<ISqlExecuter>());
-            Console.WriteLine("Done.");
-
-            Console.Write("Parsing DSL scripts ... ");
-            Console.WriteLine(container.Resolve<IDslModel>().Concepts.Count() + " statements.");
-
-            Console.Write("Compiling DOM assembly ... ");
-            int generatedTypesCount = container.Resolve<IDomGenerator>().Assembly.GetTypes().Length;
-            if (generatedTypesCount == 0)
-            {
-                string report = "WARNING: Empty assembly is generated.";
-                DeploymentUtility.WriteError(report);
-                _logger.Error(report);
-            }
-            else
-                Console.WriteLine("Generated " + generatedTypesCount + " types.");
-
-            var generators = container.Resolve<GeneratorPlugins>().GetGenerators();
-            foreach (var generator in generators)
-            {
-                Console.Write("Executing " + generator.GetType().Name + " ... ");
-                generator.Generate();
-                Console.WriteLine("Done.");
-            }
-            if (!generators.Any())
-                Console.WriteLine("No additional generators.");
-
-            Console.Write("Cleaning old migration data ... ");
-            var databaseCleaner = container.Resolve<DatabaseCleaner>();
-            {
-                string report = databaseCleaner.RemoveRedundantMigrationColumns();
-                databaseCleaner.RefreshDataMigrationRows();
-                Console.WriteLine(report);
-            }
-
-            Console.Write("Executing data migration scripts ... ");
-            var dataMigration = container.Resolve<DataMigration>();
-            var dataMigrationReport = dataMigration.ExecuteDataMigrationScripts(Paths.DataMigrationScriptsFolder);
-            Console.WriteLine(dataMigrationReport);
-            undoDataMigrationScriptsOnError = delegate { dataMigration.UndoDataMigrationScripts(dataMigrationReport.CreatedTags); };
-
-            Console.Write("Upgrading database ... ");
-            var updateDatabaseReport = container.Resolve<IDatabaseGenerator>().UpdateDatabaseStructure();
-            Console.WriteLine(updateDatabaseReport);
-            undoDataMigrationScriptsOnError = null;
-
-            Console.Write("Deleting redundant migration data ... ");
-            {
-                var report = databaseCleaner.RemoveRedundantMigrationColumns();
-                databaseCleaner.RefreshDataMigrationRows();
-                Console.WriteLine(report);
-            }
-
-            Console.Write("Uploading DSL scripts ... ");
-            int dslScriptCount = DslScriptManager.UploadDslScriptsToServer(Paths.DslScriptsFolder, container.Resolve<ISqlExecuter>());
-            if (dslScriptCount == 0)
-            {
-                string report = "WARNING: There are no DSL scripts in source folder " + Paths.DslScriptsFolder + ".";
-                _logger.Info(report);
-            }
-            else
-                Console.WriteLine("Uploaded " + dslScriptCount + " DSL scripts to database.");
-
-            Console.Write("Generating NHibernate mapping ... ");
-            File.WriteAllText(Paths.NHibernateMappingFile, container.Resolve<INHibernateMapping>().GetMapping(), Encoding.Unicode);
-            Console.WriteLine("Done.");
-
-            {
-                Console.Write("Loading generated plugins ... ");
-                PluginsUtility.LogRegistrationStatistics("Components before update", container);
-                var stopwatch = Stopwatch.StartNew();
-                PluginsUtility.DetectAndRegisterNewModulesAndPlugins(container);
-                _performanceLogger.Write(stopwatch, "DeployPackages.ServerInitialization: New modules and plugins registered.");
-                PluginsUtility.LogRegistrationStatistics("Components after update", container);
-                Console.WriteLine("Done.");
-
-                var initializers = container.Resolve<ServerInitializationPlugins>().GetInitializers();
-                foreach (var initializer in initializers)
-                {
-                    Console.Write("Initialization: " + initializer.GetType().Name + " ... ");
-                    initializer.Initialize();
-                    Console.WriteLine("Done.");
-                }
-                if (!initializers.Any())
-                    Console.WriteLine("No server initialization plugins.");
-            }
-
-            var configFile = new FileInfo(Paths.RhetosServerWebConfigFile);
-            if (configFile.Exists)
-            {
-                DeploymentUtility.Touch(configFile);
-                Console.WriteLine("Updated Web.config modification date to restart server.");
-            }
-            else
-                Console.WriteLine("Web.config update skipped.");
         }
     }
 }

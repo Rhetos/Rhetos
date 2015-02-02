@@ -78,7 +78,6 @@
   <ItemGroup>
     <Compile Include="DataMigrationTest.cs" />
     <Compile Include="DataMigration_Accessor.cs" />
-    <Compile Include="DeploymentUtilityTest.cs" />
     <Compile Include="PackageCompilerShould.cs" />
     <Compile Include="PackageSetExtractorShould.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

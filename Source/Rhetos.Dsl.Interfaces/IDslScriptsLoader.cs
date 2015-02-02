@@ -21,28 +21,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.TestCommon;
 
-namespace Rhetos.Deployment.Test
+namespace Rhetos.Dsl
 {
-    [TestClass]
-    public class DeploymentUtilityTest
+    public interface IDslScriptsLoader
     {
-        [TestMethod]
-        public void QuoteSqlIdentifier()
-        {
-            var tests = new Dictionary<string, string>
-            {
-                { "abc", "[abc]" },
-                { "abc[", "[abc[]" },
-                { "abc]", "[abc]]]" },
-                { "[][][]", "[[]][]][]]]" },
-                { " '\" ", "[ '\" ]" }
-            };
-
-            foreach (var test in tests)
-                Assert.AreEqual(test.Value, DeploymentUtility.QuoteSqlIdentifier(test.Key));
-        }
+        IEnumerable<DslScript> DslScripts { get; }
     }
 }

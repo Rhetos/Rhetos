@@ -31,23 +31,12 @@ namespace Rhetos.Dsl.Test
     [TestClass]
     public class DslScriptProviderTest
     {
-        class MockDslScriptProvider : DslScriptProvider
-        {
-            public MockDslScriptProvider() : base(_dslScripts)
-            {
-            }
-
-            private static readonly DslScript[] _dslScripts = new []
-            {
-                new DslScript { Name = "name1", Script = "abc" },
-                new DslScript { Name = "name2", Script = "123" }
-            };
-        }
-
         [TestMethod]
         public void ReportErrorTest()
         {
-            var dslScriptProvider = new MockDslScriptProvider();
+            var dslScriptProvider = new MockDslSource(
+                new DslScript { Name = "name1", Script = "abc" },
+                new DslScript { Name = "name2", Script = "123" });
 
             TestUtility.ShouldFail(() => dslScriptProvider.ReportError(-1), "out of range", "-1"); // Index too low
             TestUtility.AssertContains(dslScriptProvider.ReportError(0), "before: \"abc\"", "name1");

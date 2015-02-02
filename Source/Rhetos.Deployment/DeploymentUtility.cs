@@ -42,35 +42,5 @@ namespace Rhetos.Deployment
             Console.ForegroundColor = oldFg;
             Console.BackgroundColor = oldBg;
         }
-
-        public static void Touch(FileInfo file)
-        {
-            var isReadOnly = file.IsReadOnly;
-            file.IsReadOnly = false;
-            file.LastWriteTime = DateTime.Now;
-            file.IsReadOnly = isReadOnly;
-        }
-
-        public static void PrepareRhetosDatabase(ISqlExecuter sqlExecuter)
-        {
-            string rhetosDatabaseScriptResourceName = "Rhetos.Deployment.RhetosDatabase." + SqlUtility.DatabaseLanguage + ".sql";
-            var resourceStream = typeof(DeploymentUtility).Assembly.GetManifestResourceStream(rhetosDatabaseScriptResourceName);
-            if (resourceStream == null)
-                throw new FrameworkException("Cannot find resource '" + rhetosDatabaseScriptResourceName + "'.");
-            var sql = new StreamReader(resourceStream).ReadToEnd();
-
-            var sqlScripts = sql.Split(new[] {"\r\nGO\r\n"}, StringSplitOptions.RemoveEmptyEntries).Where(s => !String.IsNullOrWhiteSpace(s));
-            sqlExecuter.ExecuteSql(sqlScripts);
-        }
-
-        public static string QuoteSqlIdentifier(string sqlIdentifier)
-        {
-            if (SqlUtility.DatabaseLanguage == "MsSql")
-            {
-                sqlIdentifier = sqlIdentifier.Replace("]", "]]");
-                return "[" + sqlIdentifier + "]";
-            }
-            throw new FrameworkException("Database language " + SqlUtility.DatabaseLanguage + " not supported.");
-        }
     }
 }

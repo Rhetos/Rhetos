@@ -72,10 +72,6 @@ namespace Rhetos.Deployment
     {
         public string Message;
         public List<string> CreatedTags;
-        public override string ToString()
-        {
-            return Message;
-        }
     }
 
     public class DataMigration

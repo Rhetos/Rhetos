@@ -117,7 +117,7 @@
   <ItemGroup>
     <Compile Include="AlternativeInitialization.cs" />
     <Compile Include="ConceptMacroUtility.cs" />
-    <Compile Include="DiskDslScriptProvider.cs" />
+    <Compile Include="DiskDslScriptLoader.cs" />
     <Compile Include="DslContainer.cs" />
     <Compile Include="DslParser.cs" />
     <Compile Include="DslModel.cs" />

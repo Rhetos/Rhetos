@@ -115,8 +115,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ServerInitializationPlugins.cs" />
-    <Compile Include="GeneratorPlugins.cs" />
     <Compile Include="PluginsContainer.cs" />
     <Compile Include="PluginsMetadataCache.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

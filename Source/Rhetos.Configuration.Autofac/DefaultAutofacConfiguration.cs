@@ -56,7 +56,8 @@ namespace Rhetos.Configuration.Autofac
 
             // General registrations:
             builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));
-            builder.RegisterInstance<IDslSource>(new DiskDslScriptProvider(Paths.DslScriptsFolder));
+            builder.RegisterType<DiskDslScriptLoader>().As<IDslScriptsLoader>().SingleInstance();
+            builder.RegisterType<DslScriptProvider>().As<IDslSource>().SingleInstance();
             builder.RegisterInstance(new ResourcesFolder(Paths.ResourcesFolder));
             builder.RegisterModule(new SecurityModuleConfiguration());
             builder.RegisterModule(new UtilitiesModuleConfiguration());

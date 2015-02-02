@@ -177,24 +177,24 @@ namespace Rhetos.Deployment
         {
             return string.Format(
                 "ALTER TABLE {0}.{1} DROP COLUMN {2}",
-                DeploymentUtility.QuoteSqlIdentifier(column.SchemaName),
-                DeploymentUtility.QuoteSqlIdentifier(column.TableName),
-                DeploymentUtility.QuoteSqlIdentifier(column.ColumnName));
+                SqlUtility.QuoteIdentifier(column.SchemaName),
+                SqlUtility.QuoteIdentifier(column.TableName),
+                SqlUtility.QuoteIdentifier(column.ColumnName));
         }
 
         private string DropTable(TableInfo table)
         {
             return string.Format(
                 "DROP TABLE {0}.{1}",
-                DeploymentUtility.QuoteSqlIdentifier(table.SchemaName),
-                DeploymentUtility.QuoteSqlIdentifier(table.TableName));
+                SqlUtility.QuoteIdentifier(table.SchemaName),
+                SqlUtility.QuoteIdentifier(table.TableName));
         }
 
         private string DropSchema(string schema)
         {
             return string.Format(
                 "DROP SCHEMA {0}",
-                DeploymentUtility.QuoteSqlIdentifier(schema));
+                SqlUtility.QuoteIdentifier(schema));
         }
     }
 

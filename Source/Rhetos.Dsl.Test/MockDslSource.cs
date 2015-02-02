@@ -21,29 +21,41 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using Rhetos.Utilities;
 
-namespace Rhetos.Extensibility
+namespace Rhetos.Dsl.Test
 {
-    public class GeneratorPlugins
+    public class MockDslSource : DslScriptProvider
     {
-        private IEnumerable<IGenerator> _generators;
-
-        public GeneratorPlugins(IEnumerable<IGenerator> generators)
+        public MockDslSource(string dslScript)
+            : base(new MockDslLoader(dslScript))
         {
-            this._generators = generators;
         }
 
-        public IList<IGenerator> GetGenerators()
+        public MockDslSource(params DslScript[] dslScripts)
+            : base(new MockDslLoader(dslScripts))
         {
-            var genNames = _generators.Select(gen => gen.GetType().FullName).ToList();
-            var genDependencies = _generators.SelectMany(gen => (gen.Dependencies ?? new string[0]).Select(x => Tuple.Create(x, gen.GetType().FullName)));
-            Rhetos.Utilities.Graph.TopologicalSort(genNames, genDependencies);
+        }
 
-            var sortedGenerators = _generators.ToArray();
-            Graph.SortByGivenOrder(sortedGenerators, genNames.ToArray(), gen => gen.GetType().FullName);
-            return sortedGenerators;
+        public const string TestScriptName = "TestDslScript";
+    }
+
+    class MockDslLoader : IDslScriptsLoader
+    {
+        DslScript[] _dslScripts;
+
+        public MockDslLoader(string dslScript)
+        {
+            _dslScripts = new[] { new DslScript { Name = MockDslSource.TestScriptName, Script = dslScript } };
+        }
+
+        public MockDslLoader(params DslScript[] dslScripts)
+        {
+            _dslScripts = dslScripts;
+        }
+
+        public IEnumerable<DslScript> DslScripts
+        {
+            get { return _dslScripts; }
         }
     }
 }

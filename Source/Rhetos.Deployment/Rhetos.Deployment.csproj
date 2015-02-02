@@ -20,6 +20,8 @@
     </SccAuxPath>
     <SccProvider>
     </SccProvider>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -53,11 +55,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplicationGenerator.cs" />
+    <Compile Include="ApplicationInitialization.cs" />
     <Compile Include="ConnectionStringReport.cs" />
     <Compile Include="DeploymentUtility.cs" />
     <Compile Include="DatabaseCleaner.cs" />
     <Compile Include="DataMigration.cs" />
-    <Compile Include="DslScriptManager.cs" />
     <Compile Include="Package.cs" />
     <Compile Include="PackageCompiler.cs" />
     <Compile Include="PackageSetExtractor.cs" />
@@ -77,6 +80,26 @@
       <Project>{BB7E5668-1B43-4FCE-A832-444CC57FEE80}</Project>
       <Name>Rhetos.Logging.Interfaces</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rhetos.DatabaseGenerator.Interfaces\Rhetos.DatabaseGenerator.Interfaces.csproj">
+      <Project>{ca29d948-78b1-42d9-8e24-d2811e355f5a}</Project>
+      <Name>Rhetos.DatabaseGenerator.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Dom.Interfaces\Rhetos.Dom.Interfaces.csproj">
+      <Project>{91bdf488-0921-4969-8a53-32169338d8db}</Project>
+      <Name>Rhetos.Dom.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Extensibility.Interfaces\Rhetos.Extensibility.Interfaces.csproj">
+      <Project>{ddc73f5f-bb0e-4944-92cc-4ac937398499}</Project>
+      <Name>Rhetos.Extensibility.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Extensibility\Rhetos.Extensibility.csproj">
+      <Project>{7eaf15bd-39c9-44ab-8834-ec0ae013a8a2}</Project>
+      <Name>Rhetos.Extensibility</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Persistence.NHibernate\Rhetos.Persistence.NHibernate.csproj">
+      <Project>{24238da8-70c5-4be5-85b3-359e60b40acf}</Project>
+      <Name>Rhetos.Persistence.NHibernate</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\..\Source\Database\RhetosDatabase.MsSql.sql">
@@ -89,6 +112,13 @@
     <EmbeddedResource Include="Sql.Oracle.resx" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

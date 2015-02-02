@@ -27,16 +27,31 @@ namespace Rhetos.Dsl
 {
     public class DslScriptProvider : IDslSource
     {
-        private readonly List<DslScript> _scripts = new List<DslScript>();
-        private readonly string _scriptSeparator = Environment.NewLine;
+        private readonly IDslScriptsLoader _dslScriptsLoader;
 
-        public DslScriptProvider(params DslScript[] scripts)
+        private static readonly string _scriptSeparator = Environment.NewLine;
+
+        private string _script = null;
+        private readonly object _scriptLock = new object();
+        public string Script
         {
-            _scripts.AddRange(scripts);
-            Script = string.Join(_scriptSeparator, _scripts.Select(it => it.Script));
+            get
+            {
+                if (_script == null)
+                    lock (_scriptLock)
+                        if (_script == null)
+                        {
+                            _script = string.Join(_scriptSeparator, _dslScriptsLoader.DslScripts.Select(it => it.Script));
+                        }
+
+                return _script;
+            }
         }
 
-        public string Script { get; private set; }
+        public DslScriptProvider(IDslScriptsLoader dslScriptsLoader)
+        {
+            _dslScriptsLoader = dslScriptsLoader;
+        }
 
         public string ReportError(int index)
         {
@@ -57,7 +72,7 @@ namespace Rhetos.Dsl
                 throw new FrameworkException("Error in DSL script parser. Provided position in script is out of range. Position: " + index + ".");
 
             int i = index;
-            foreach (var s in _scripts)
+            foreach (var s in _dslScriptsLoader.DslScripts)
             {
                 if (i >= 0 && i <= s.Script.Length)
                     return new Location { DslScript = s, Position = i };

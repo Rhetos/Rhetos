@@ -50,7 +50,8 @@ namespace ExtractPackages
                 WriteError(ex.Message);
                 Console.WriteLine("Details:");
                 Console.WriteLine(ex);
-                Thread.Sleep(3000);
+                if (Environment.UserInteractive) 
+                    Thread.Sleep(3000);
                 return 1;
             }
         }

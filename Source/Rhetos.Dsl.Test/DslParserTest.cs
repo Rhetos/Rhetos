@@ -264,42 +264,22 @@ namespace Rhetos.Dsl.Test
         //===================================================================================
         // DslParser error reporting:
 
-        class TestDslSource : DslScriptProvider
-        {
-            public TestDslSource(string dslScript)
-                : base(PrepareDslScripts(dslScript))
-            {
-            }
-
-            public const string TestScriptName = "TestDslScript";
-
-            private static DslScript[] PrepareDslScripts(string dslScript)
-            {
-                return new[]
-                {
-                    //new DslScript { Name = "FirstCommentScript", Script = "// first comment" },
-                    new DslScript { Name = TestScriptName, Script = dslScript }
-                    //new DslScript { Name = "LastCommentScript", Script = "// last comment" }
-                };
-            }
-        }
-
         [TestMethod]
         public void DslParser_ErrorReporting()
         {
             DslParserParse("simple a b;");
 
             TestUtility.ShouldFail(() => DslParserParse("simple a"), // missing second parameter
-                "simple", "end of the DSL script", TestDslSource.TestScriptName, "line 1", "column 1", "Cannot read the value of Data");
+                "simple", "end of the DSL script", MockDslSource.TestScriptName, "line 1", "column 1", "Cannot read the value of Data");
 
             TestUtility.ShouldFail(() => DslParserParse("simple a;"), // missing second parameter
-                "simple", "unexpected", "';'", TestDslSource.TestScriptName, "line 1", "column 1", "Cannot read the value of Data");
+                "simple", "unexpected", "';'", MockDslSource.TestScriptName, "line 1", "column 1", "Cannot read the value of Data");
 
             TestUtility.ShouldFail(() => DslParserParse("{"), // invalid syntax
-                TestDslSource.TestScriptName, "line 1", "column 1");
+                MockDslSource.TestScriptName, "line 1", "column 1");
 
             TestUtility.ShouldFail(() => DslParserParse("simple a b"), // missing semicolon
-                "simple", "Expected \";\" or \"{\"", TestDslSource.TestScriptName, "line 1", "column 11");
+                "simple", "Expected \";\" or \"{\"", MockDslSource.TestScriptName, "line 1", "column 11");
         }
 
         private static void DslParser_ErrorReporting(string dsl)
@@ -317,13 +297,13 @@ namespace Rhetos.Dsl.Test
             Assert.IsNotNull(exception);
             Console.WriteLine("=============================");
             Console.WriteLine(exception.Message);
-            Assert.IsTrue(exception.Message.Contains(TestDslSource.TestScriptName), "Error message should contain script name.");
+            Assert.IsTrue(exception.Message.Contains(MockDslSource.TestScriptName), "Error message should contain script name.");
         }
 
         private static void DslParserParse(string dsl)
         {
             var dslParser = new DslParser(
-                new TestDslSource(dsl),
+                new MockDslSource(dsl),
                 new IConceptInfo[] { new SimpleConceptInfo() },
                 new ConsoleLogProvider());
             Console.WriteLine(string.Join(";\r\n", dslParser.ParsedConcepts));

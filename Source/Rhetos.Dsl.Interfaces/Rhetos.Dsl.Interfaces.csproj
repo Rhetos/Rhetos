@@ -123,6 +123,7 @@
     <Compile Include="IConceptMacro.cs" />
     <Compile Include="DslModelIndexByType.cs" />
     <Compile Include="IDslModelIndex.cs" />
+    <Compile Include="IDslScriptsLoader.cs" />
     <Compile Include="InitializationConcept.cs" />
     <Compile Include="IValidationConcept.cs" />
     <Compile Include="IDslModel.cs" />
