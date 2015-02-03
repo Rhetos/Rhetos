@@ -27,6 +27,5 @@ namespace Rhetos.Dom
     public class DomGeneratorOptions
     {
         public bool Debug { get; set; }
-        public string AssemblyName { get; set; }
     }
 }

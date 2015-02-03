@@ -120,10 +120,15 @@ namespace Rhetos.Dsl.Test
             public void Save(IEnumerable<MacroOrder> macroOrders) { }
         }
 
+        internal class StubDslModelFile : IDslModelFile
+        {
+            public void SaveConcepts(IEnumerable<IConceptInfo> concepts) { }
+        }
+
         static IDslModel NewDslModel(IDslParser parser, IEnumerable<IConceptInfo> conceptPrototypes)
         {
             var dslContainter = new DslContainer(new ConsoleLogProvider(), new PluginsContainerMock<IDslModelIndex>(new DslModelIndexByType()));
-            var dslModel = new DslModel(parser, new ConsoleLogProvider(), dslContainter, new StubMacroIndex(), new IConceptMacro[] { }, conceptPrototypes, new StubMacroOrderRepository());
+            var dslModel = new DslModel(parser, new ConsoleLogProvider(), dslContainter, new StubMacroIndex(), new IConceptMacro[] { }, conceptPrototypes, new StubMacroOrderRepository(), new StubDslModelFile());
             return dslModel;
         }
 

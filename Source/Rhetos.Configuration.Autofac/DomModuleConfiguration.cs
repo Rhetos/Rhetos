@@ -27,29 +27,22 @@ using System.Diagnostics.Contracts;
 
 namespace Rhetos.Configuration.Autofac
 {
-    public enum DomAssemblyUsage { Generate, Load };
-
     public class DomModuleConfiguration : Module
     {
-        private readonly string _assemblyName;
-        private readonly DomAssemblyUsage _domAssemblyUsage;
+        private readonly bool _deploymentTime;
 
-        /// <summary>
-        /// If assemblyName is not null, the assembly will be saved on disk.
-        /// If assemblyName is null, the assembly will be generated in memory.
-        /// </summary>
-        public DomModuleConfiguration(string assemblyName, DomAssemblyUsage domAssemblyUsage)
+        public DomModuleConfiguration(bool deploymentTime)
         {
-            _assemblyName = assemblyName;
-            _domAssemblyUsage = domAssemblyUsage;
+            _deploymentTime = deploymentTime;
         }
 
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterInstance(new DomGeneratorOptions { AssemblyName = _assemblyName });
-
-            if (_domAssemblyUsage == DomAssemblyUsage.Generate)
+            if (_deploymentTime)
+            {
+                builder.RegisterType<DomGeneratorOptions>().SingleInstance();
                 builder.RegisterType<DomGenerator>().As<IDomainObjectModel>().As<IDomGenerator>().SingleInstance();
+            }
             else
                 builder.RegisterType<DomLoader>().As<IDomainObjectModel>().SingleInstance();
 

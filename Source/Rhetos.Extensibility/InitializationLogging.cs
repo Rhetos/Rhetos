@@ -17,31 +17,22 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac;
-using Rhetos.Extensibility;
-using Rhetos.Security;
-using Rhetos.Utilities;
+using Rhetos.Logging;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 
-namespace Rhetos.AspNetFormsAuth
+namespace Rhetos.Extensibility
 {
-    [Export(typeof(Module))]
-    public class AutofacModuleConfiguration : Module
+    internal static class InitializationLogging
     {
-        protected override void Load(ContainerBuilder builder)
+        public static ILogger Logger = new NullLogger();
+        public static ILogger PerformanceLogger = new NullLogger();
+
+        private class NullLogger : ILogger
         {
-            builder.RegisterType<AuthenticationService>().InstancePerLifetimeScope();
-
-            Plugins.CheckOverride<IUserInfo, AspNetUserInfo>(builder, typeof(WcfWindowsUserInfo));
-            builder.RegisterType<AspNetUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
-
-            Plugins.FindAndRegisterPlugins<ISendPasswordResetToken>(builder);
-
-            base.Load(builder);
+            public void Write(EventType eventType, Func<string> logMessage) { }
         }
     }
 }

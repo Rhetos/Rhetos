@@ -35,9 +35,9 @@ namespace Rhetos.Configuration.Autofac
             builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope().PreserveExistingDefaults();
             builder.RegisterType<NullAuthorizationProvider>().As<IAuthorizationProvider>().PreserveExistingDefaults();
 
-            // Cannot use RegisterPlugins on IUserInfo because each type should be manually registered with InstancePerLifetimeScope.
-            PluginsUtility.RegisterPlugins<IAuthorizationProvider>(builder);
-            PluginsUtility.RegisterPlugins<IClaimProvider>(builder);
+            // Cannot use FindAndRegisterPlugins on IUserInfo because each type should be manually registered with InstancePerLifetimeScope.
+            Plugins.FindAndRegisterPlugins<IAuthorizationProvider>(builder);
+            Plugins.FindAndRegisterPlugins<IClaimProvider>(builder);
 
             base.Load(builder);
         }

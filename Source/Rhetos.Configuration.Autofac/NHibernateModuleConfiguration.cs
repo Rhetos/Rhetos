@@ -38,29 +38,27 @@ namespace Rhetos.Configuration.Autofac
 {
     public class NHibernateModuleConfiguration : Module
     {
-        private readonly string _loadNhMappingFromFile;
+        private readonly bool _deploymentTime;
 
-        /// <summary>
-        /// If loadNhMappingFromFile is not null, the NHibernate mapping configuration will be loaded from the file.
-        /// If loadNhMappingFromFile is null, the NHibernate mapping configuration will be generated from IConceptMappingCodeGenerator plugins.
-        /// </summary>
-        public NHibernateModuleConfiguration(string loadNhMappingFromFile)
+        public NHibernateModuleConfiguration(bool deploymentTime)
         {
-            _loadNhMappingFromFile = loadNhMappingFromFile;
+            _deploymentTime = deploymentTime;
         }
 
         protected override void Load(ContainerBuilder builder)
         {
-            if (string.IsNullOrEmpty(_loadNhMappingFromFile))
+            if (_deploymentTime)
+            {
                 builder.RegisterType<NHibernateMappingGenerator>().As<INHibernateMapping>().SingleInstance();
+                Plugins.FindAndRegisterPlugins<IConceptMappingCodeGenerator>(builder);
+            }
             else
-                builder.RegisterType<NHibernateMappingLoader>().WithParameter("nHibernateMappingFile", _loadNhMappingFromFile).As<INHibernateMapping>().SingleInstance();
-
-            builder.RegisterType<NHibernatePersistenceEngine>().As<IPersistenceEngine>().SingleInstance();
-            PluginsUtility.RegisterPlugins<IConceptMappingCodeGenerator>(builder);
-            PluginsUtility.RegisterPlugins<INHibernateConfigurationExtension>(builder);
-
-            builder.RegisterType<NHibernatePersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope();
+            {
+                builder.RegisterType<NHibernateMappingLoader>().WithParameter("nHibernateMappingFile", Paths.NHibernateMappingFile).As<INHibernateMapping>().SingleInstance();
+                builder.RegisterType<NHibernatePersistenceEngine>().As<IPersistenceEngine>().SingleInstance();
+                Plugins.FindAndRegisterPlugins<INHibernateConfigurationExtension>(builder);
+                builder.RegisterType<NHibernatePersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope();
+            }
 
             base.Load(builder);
         }

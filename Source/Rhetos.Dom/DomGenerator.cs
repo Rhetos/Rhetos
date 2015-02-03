@@ -79,8 +79,8 @@ namespace Rhetos.Dom
             CompilerParameters parameters = new CompilerParameters
             {
                 GenerateExecutable = false,
-                GenerateInMemory = string.IsNullOrEmpty(_domGeneratorOptions.AssemblyName),
-                OutputAssembly = string.IsNullOrEmpty(_domGeneratorOptions.AssemblyName) ? null : Path.Combine(Paths.BinFolder, _domGeneratorOptions.AssemblyName + ".dll"),
+                GenerateInMemory = string.IsNullOrEmpty(Paths.DomAssemblyName),
+                OutputAssembly = string.IsNullOrEmpty(Paths.DomAssemblyName) ? null : Path.Combine(Paths.BinFolder, Paths.DomAssemblyName + ".dll"),
                 IncludeDebugInformation = true,
                 CompilerOptions = _domGeneratorOptions.Debug ? "" : "/optimize"
             };

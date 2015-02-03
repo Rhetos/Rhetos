@@ -28,14 +28,14 @@ namespace Rhetos
         protected override void Load(ContainerBuilder builder)
         {
             // Specific registrations and initialization:
-            PluginsUtility.SetLogProvider(new NLogProvider());
+            Plugins.SetLogProvider(new NLogProvider());
             builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
             builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
-            PluginsUtility.RegisterPlugins<IService>(builder);
-            PluginsUtility.RegisterPlugins<IHomePageSnippet>(builder);
+            Plugins.FindAndRegisterPlugins<IService>(builder);
+            Plugins.FindAndRegisterPlugins<IHomePageSnippet>(builder);
 
             // General registrations:
-            builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(generateDomAssembly: false));
+            builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(deploymentTime: false));
 
             base.Load(builder);
         }

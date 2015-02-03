@@ -31,16 +31,24 @@ namespace Rhetos.Configuration.Autofac
 {
     public class ProcessingModuleConfiguration : Module
     {
+        private readonly bool _deploymentTime;
+
+        public ProcessingModuleConfiguration(bool deploymentTime)
+        {
+            _deploymentTime = deploymentTime;
+        }
+
         protected override void Load(ContainerBuilder builder)
         {
-            Contract.Requires(builder != null);
-
-            builder.RegisterType<XmlDataTypeProvider>().As<IDataTypeProvider>().SingleInstance();
-            builder.RegisterType<ProcessingEngine>().As<IProcessingEngine>();
-            PluginsUtility.RegisterPlugins<ICommandData>(builder);
-            PluginsUtility.RegisterPlugins<ICommandImplementation>(builder);
-            PluginsUtility.RegisterPlugins<ICommandObserver>(builder);
-            PluginsUtility.RegisterPlugins<ICommandInfo>(builder);
+            if (!_deploymentTime)
+            {
+                builder.RegisterType<XmlDataTypeProvider>().As<IDataTypeProvider>().SingleInstance();
+                builder.RegisterType<ProcessingEngine>().As<IProcessingEngine>();
+                Plugins.FindAndRegisterPlugins<ICommandData>(builder);
+                Plugins.FindAndRegisterPlugins<ICommandImplementation>(builder);
+                Plugins.FindAndRegisterPlugins<ICommandObserver>(builder);
+                Plugins.FindAndRegisterPlugins<ICommandInfo>(builder);
+            }
 
             base.Load(builder);
         }

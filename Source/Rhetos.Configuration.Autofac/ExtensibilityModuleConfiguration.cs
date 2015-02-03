@@ -31,11 +31,7 @@ namespace Rhetos.Configuration.Autofac
 
             builder.RegisterGeneric(typeof(PluginsMetadataCache<>)).SingleInstance();
             builder.RegisterGeneric(typeof(PluginsContainer<>)).As(typeof(IPluginsContainer<>)).InstancePerLifetimeScope();
-
-            Rhetos.Extensibility.PluginsUtility.RegisterPlugins<IGenerator>(builder);
-            Rhetos.Extensibility.PluginsUtility.RegisterPlugins<IServerInitializer>(builder);
-
-            PluginsUtility.RegisterPluginModules(builder);
+            Plugins.FindAndRegisterModules(builder);
 
             base.Load(builder);
         }

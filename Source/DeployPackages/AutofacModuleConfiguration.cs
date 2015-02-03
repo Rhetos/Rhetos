@@ -29,18 +29,34 @@ namespace DeployPackages
 {
     public class AutofacModuleConfiguration : Module
     {
+        private readonly bool _deploymentTime;
+
+        public AutofacModuleConfiguration(bool deploymentTime)
+        {
+            _deploymentTime = deploymentTime;
+        }
+
         protected override void Load(ContainerBuilder builder)
         {
             // Specific registrations and initialization:
-            PluginsUtility.SetLogProvider(new NLogProvider());
-            builder.RegisterModule(new DatabaseGeneratorModuleConfiguration());
-            builder.RegisterType<DataMigration>();
-            builder.RegisterType<DatabaseCleaner>();
-            builder.RegisterType<ApplicationGenerator>();
-            builder.RegisterType<ApplicationInitialization>();
+            Plugins.SetLogProvider(new NLogProvider());
+
+            if (_deploymentTime)
+            {
+                builder.RegisterModule(new DatabaseGeneratorModuleConfiguration());
+                builder.RegisterType<DataMigration>();
+                builder.RegisterType<DatabaseCleaner>();
+                builder.RegisterType<ApplicationGenerator>();
+                Plugins.FindAndRegisterPlugins<IGenerator>(builder);
+            }
+            else
+            {
+                builder.RegisterType<ApplicationInitialization>();
+                Plugins.FindAndRegisterPlugins<IServerInitializer>(builder);
+            }
 
             // General registrations:
-            builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(generateDomAssembly: true));
+            builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(_deploymentTime));
 
             // Specific registrations override:
             builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();

@@ -31,12 +31,22 @@ namespace Rhetos.Configuration.Autofac
 {
     public class CompilerConfiguration : Module
     {
+        private readonly bool _deploymentTime;
+
+        public CompilerConfiguration(bool deploymentTime)
+        {
+            _deploymentTime = deploymentTime;
+        }
+
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<CodeBuilder>().As<ICodeBuilder>();
-            builder.RegisterType<CodeGenerator>().As<ICodeGenerator>();
-            builder.RegisterType<AssemblyGenerator>().As<IAssemblyGenerator>();
-            PluginsUtility.RegisterPlugins<IConceptCodeGenerator>(builder);
+            if (_deploymentTime)
+            {
+                builder.RegisterType<CodeBuilder>().As<ICodeBuilder>();
+                builder.RegisterType<CodeGenerator>().As<ICodeGenerator>();
+                builder.RegisterType<AssemblyGenerator>().As<IAssemblyGenerator>();
+                Plugins.FindAndRegisterPlugins<IConceptCodeGenerator>(builder);
+            }
 
             base.Load(builder);
         }

@@ -36,14 +36,14 @@ namespace Rhetos.Processing.DefaultCommands
     [ExportMetadata(MefProvider.Implements, typeof(LoadDslModelCommandInfo))]
     public class LoadDslModelCommand : ICommandImplementation
     {
-        private readonly IDslSource DslSource;
+        private readonly IDslModel DslModel;
         private readonly IDataTypeProvider DataTypeProvider;
 
         public LoadDslModelCommand(
-            IDslSource dslSource,
+            IDslModel dslModel,
             IDataTypeProvider dataTypeProvider)
         {
-            this.DslSource = dslSource;
+            this.DslModel = dslModel;
             this.DataTypeProvider = dataTypeProvider;
         }
 
@@ -51,7 +51,7 @@ namespace Rhetos.Processing.DefaultCommands
         {
             return new CommandResult
             {
-                Data = DataTypeProvider.CreateBasicData(DslSource.Script),
+                Data = DataTypeProvider.CreateBasicData(DslModel.Concepts),
                 Message = "Model loaded",
                 Success = true
             };

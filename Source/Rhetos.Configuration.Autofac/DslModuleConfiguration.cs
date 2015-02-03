@@ -24,24 +24,40 @@ using System.Diagnostics.Contracts;
 
 namespace Rhetos.Configuration.Autofac
 {
-    /// <summary>
-    /// Specific IDslSource must be registered separately.
-    /// </summary>
     public class DslModuleConfiguration : Module
     {
+        private readonly bool _deploymentTime;
+
+        public DslModuleConfiguration(bool deploymentTime)
+        {
+            _deploymentTime = deploymentTime;
+        }
+
         protected override void Load(ContainerBuilder builder)
         {
+            if (_deploymentTime)
+            {
+                builder.RegisterType<DiskDslScriptLoader>().As<IDslScriptsLoader>().SingleInstance();
+                builder.RegisterType<DslScriptProvider>().As<IDslSource>().SingleInstance();
+                builder.RegisterType<DslModel>().As<IDslModel>().SingleInstance();
+                builder.RegisterType<DslModelFile>().As<IDslModelFile>().SingleInstance();
+                builder.RegisterType<DslParser>().As<IDslParser>();
+                builder.RegisterType<MacroOrderRepository>().As<IMacroOrderRepository>();
+                builder.RegisterType<ConceptMetadata>().SingleInstance();
+                builder.RegisterType<InitializationConcept>().As<IConceptInfo>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos dlls.
+                Plugins.FindAndRegisterPlugins<IConceptInfo>(builder);
+                Plugins.FindAndRegisterPlugins<IConceptMacro>(builder, typeof(IConceptMacro<>));
+            }
+            else
+            {
+                builder.RegisterType<DslModelFile>().As<IDslModel>().SingleInstance();
+            }
+
             builder.RegisterType<DslContainer>().As<DslContainer>();
-            builder.RegisterType<DslModel>().As<IDslModel>().SingleInstance();
-            builder.RegisterType<DslParser>().As<IDslParser>();
-            builder.RegisterType<MacroOrderRepository>().As<IMacroOrderRepository>();
-            builder.RegisterType<ConceptMetadata>().SingleInstance();
-            builder.RegisterType<DslModelIndexByType>().As<IDslModelIndex>(); // This plugin is registered manually because RegisterPlugins does not scan core Rhetos dlls.
-            builder.RegisterType<DslModelIndexByReference>().As<IDslModelIndex>(); // This plugin is registered manually because RegisterPlugins does not scan core Rhetos dlls.
-            builder.RegisterType<InitializationConcept>().As<IConceptInfo>(); // This plugin is registered manually because RegisterPlugins does not scan core Rhetos dlls.
-            PluginsUtility.RegisterPlugins<IDslModelIndex>(builder);
-            PluginsUtility.RegisterPlugins<IConceptInfo>(builder);
-            PluginsUtility.RegisterPlugins<IConceptMacro>(builder, typeof(IConceptMacro<>));
+            Plugins.FindAndRegisterPlugins<IDslModelIndex>(builder);
+            builder.RegisterType<DslModelIndexByType>().As<IDslModelIndex>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos dlls.
+            builder.RegisterType<DslModelIndexByReference>().As<IDslModelIndex>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos dlls.
+
             base.Load(builder);
         }
     }

@@ -151,11 +151,11 @@ namespace Rhetos.Configuration.Autofac
             AppDomain.CurrentDomain.AssemblyResolve += SearchForAssembly;
 
             // Specific registrations and initialization:
-            PluginsUtility.SetLogProvider(new ConsoleLogProvider());
+            Plugins.SetLogProvider(new ConsoleLogProvider());
 
             // General registrations:
             var builder = new ContainerBuilder();
-            builder.RegisterModule(new DefaultAutofacConfiguration(generateDomAssembly: false));
+            builder.RegisterModule(new DefaultAutofacConfiguration(deploymentTime: false));
 
             // Specific registrations override:
             builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();

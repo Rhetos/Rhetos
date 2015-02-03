@@ -63,31 +63,44 @@ namespace DeployPackages
                 if (File.Exists(Paths.DomAssemblyFile))
                     File.Delete(Paths.DomAssemblyFile);
 
-                var builder = new ContainerBuilder();
-                builder.RegisterModule(new AutofacModuleConfiguration());
-                using (var container = builder.Build())
                 {
-                    if (arguments.Debug)
-                        container.Resolve<DomGeneratorOptions>().Debug = true;
+                    Console.Write("Loading plugins ... ");
+                    var stopwatch = Stopwatch.StartNew();
 
-                    container.Resolve<ApplicationGenerator>().ExecuteGenerators();
-
+                    var builder = new ContainerBuilder();
+                    builder.RegisterModule(new AutofacModuleConfiguration(deploymentTime: true));
+                    using (var container = builder.Build())
                     {
-                        var _performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
-                        Console.Write("Loading generated plugins ... ");
-                        PluginsUtility.LogRegistrationStatistics("Components before update", container);
-                        var stopwatch = Stopwatch.StartNew();
-                        PluginsUtility.DetectAndRegisterNewModulesAndPlugins(container);
-                        _performanceLogger.Write(stopwatch, "DeployPackages.ServerInitialization: New modules and plugins registered.");
-                        PluginsUtility.LogRegistrationStatistics("Components after update", container);
                         Console.WriteLine("Done.");
+                        var _performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
+                        _performanceLogger.Write(stopwatch, "DeployPackages.Program: Modules and plugins registered.");
+                        Plugins.LogRegistrationStatistics("Generating application", container);
 
- 
+                        if (arguments.Debug)
+                            container.Resolve<DomGeneratorOptions>().Debug = true;
+
+                        container.Resolve<ApplicationGenerator>().ExecuteGenerators();
                     }
+                }
 
-                    container.Resolve<ApplicationInitialization>().ExecuteInitializers();
+                // Creating a new container builder instead of using builder.Update, because of severe performance issues with the Update method.
+                Plugins.ClearCache();
 
+                {
+                    Console.Write("Loading generated plugins ... ");
+                    var stopwatch = Stopwatch.StartNew();
 
+                    var builder = new ContainerBuilder();
+                    builder.RegisterModule(new AutofacModuleConfiguration(deploymentTime: false));
+                    using (var container = builder.Build())
+                    {
+                        Console.WriteLine("Done.");
+                        var _performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
+                        _performanceLogger.Write(stopwatch, "DeployPackages.Program: New modules and plugins registered.");
+                        Plugins.LogRegistrationStatistics("Initializing application", container);
+
+                        container.Resolve<ApplicationInitialization>().ExecuteInitializers();
+                    }
                 }
             }
             catch (Exception ex)

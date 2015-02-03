@@ -33,39 +33,26 @@ namespace Rhetos.Configuration.Autofac
 {
     public class DefaultAutofacConfiguration : Module
     {
-        public DefaultAutofacConfiguration(bool generateDomAssembly)
-        {
-            _generateDomAssembly = generateDomAssembly;
-        }
+        private readonly bool _deploymentTime;
 
-        private readonly bool _generateDomAssembly;
+        public DefaultAutofacConfiguration(bool deploymentTime)
+        {
+            _deploymentTime = deploymentTime;
+        }
 
         protected override void Load(ContainerBuilder builder)
         {
-            // Specific registrations configuration:
-            if (_generateDomAssembly)
-            {
-                builder.RegisterModule(new DomModuleConfiguration(Paths.DomAssemblyName, DomAssemblyUsage.Generate));
-                builder.RegisterModule(new NHibernateModuleConfiguration(null));
-            }
-            else
-            {
-                builder.RegisterModule(new DomModuleConfiguration(Paths.DomAssemblyName, DomAssemblyUsage.Load));
-                builder.RegisterModule(new NHibernateModuleConfiguration(Paths.NHibernateMappingFile));
-            }
-
-            // General registrations:
+            builder.RegisterModule(new DomModuleConfiguration(_deploymentTime));
+            builder.RegisterModule(new NHibernateModuleConfiguration(_deploymentTime));
             builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));
-            builder.RegisterType<DiskDslScriptLoader>().As<IDslScriptsLoader>().SingleInstance();
-            builder.RegisterType<DslScriptProvider>().As<IDslSource>().SingleInstance();
             builder.RegisterInstance(new ResourcesFolder(Paths.ResourcesFolder));
             builder.RegisterModule(new SecurityModuleConfiguration());
             builder.RegisterModule(new UtilitiesModuleConfiguration());
-            builder.RegisterModule(new DslModuleConfiguration());
-            builder.RegisterModule(new CompilerConfiguration());
+            builder.RegisterModule(new DslModuleConfiguration(_deploymentTime));
+            builder.RegisterModule(new CompilerConfiguration(_deploymentTime));
             builder.RegisterModule(new LoggingConfiguration());
-            builder.RegisterModule(new ProcessingModuleConfiguration());
-            builder.RegisterModule(new ExtensibilityModuleConfiguration()); // This is the last registration, so that the plugin can easier override core components.
+            builder.RegisterModule(new ProcessingModuleConfiguration(_deploymentTime));
+            builder.RegisterModule(new ExtensibilityModuleConfiguration()); // This is the last registration, so that the plugins can override core components.
 
             base.Load(builder);
         }

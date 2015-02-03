@@ -40,6 +40,7 @@ namespace Rhetos.Dsl
         private readonly IEnumerable<Type> _macroTypes;
         private readonly IEnumerable<Type> _conceptTypes;
         private readonly IMacroOrderRepository _macroOrderRepository;
+        private readonly IDslModelFile _dslModelFile;
 
         public DslModel(
             IDslParser dslParser,
@@ -48,7 +49,8 @@ namespace Rhetos.Dsl
             IIndex<Type, IEnumerable<IConceptMacro>> macros,
             IEnumerable<IConceptMacro> macroPrototypes,
             IEnumerable<IConceptInfo> conceptPrototypes,
-            IMacroOrderRepository macroOrderRepository)
+            IMacroOrderRepository macroOrderRepository,
+            IDslModelFile dslModelFile)
         {
             _dslParser = dslParser;
             _performanceLogger = logProvider.GetLogger("Performance");
@@ -60,6 +62,7 @@ namespace Rhetos.Dsl
             _macroTypes = macroPrototypes.Select(macro => macro.GetType());
             _conceptTypes = conceptPrototypes.Select(conceptInfo => conceptInfo.GetType());
             _macroOrderRepository = macroOrderRepository;
+            _dslModelFile = dslModelFile;
         }
 
         #region IDslModel implementation
@@ -114,9 +117,10 @@ namespace Rhetos.Dsl
                         _dslContainer.ReportErrorForUnresolvedConcepts();
                         CheckSemantics();
                         _dslContainer.SortReferencesBeforeUsingConcept();
+                        _performanceLogger.Write(sw, "DslModel.Initialize (" + _dslContainer.Concepts.Count() + " concepts).");
 
                         LogDslModel();
-                        _performanceLogger.Write(sw, "DslModel.Initialize (" + _dslContainer.Concepts.Count() + " concepts).");
+                        _dslModelFile.SaveConcepts(_dslContainer.Concepts);
                         _initialized = true;
                     }
         }
