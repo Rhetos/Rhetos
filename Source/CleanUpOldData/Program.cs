@@ -17,14 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Text;
-using System.Threading;
-using Rhetos.Utilities;
-using Rhetos.Deployment;
-using System.Collections.Generic;
 using Rhetos;
+using Rhetos.Deployment;
+using Rhetos.Utilities;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 namespace CleanupOldData
 {

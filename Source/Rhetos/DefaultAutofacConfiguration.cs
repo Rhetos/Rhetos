@@ -28,7 +28,7 @@ namespace Rhetos
         protected override void Load(ContainerBuilder builder)
         {
             // Specific registrations and initialization:
-            Plugins.SetLogProvider(new NLogProvider());
+            Plugins.SetInitializationLogging(new NLogProvider());
             builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
             builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
             Plugins.FindAndRegisterPlugins<IService>(builder);

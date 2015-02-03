@@ -27,10 +27,6 @@ namespace Rhetos.Utilities
 {
     public class ConsoleLogProvider : ILogProvider
     {
-        public ConsoleLogProvider()
-        {
-        }
-
         public ILogger GetLogger(string eventName)
         {
             return new ConsoleLogger(eventName);

@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Extensibility;
+using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
@@ -29,10 +30,14 @@ namespace Rhetos.Deployment
 {
     public class ApplicationInitialization
     {
+        private readonly ILogger _deployPackagesLogger;
         private readonly IPluginsContainer<IServerInitializer> _initializersContainer;
 
-        public ApplicationInitialization(IPluginsContainer<IServerInitializer> initializersContainer)
+        public ApplicationInitialization(
+            ILogProvider logProvider,
+            IPluginsContainer<IServerInitializer> initializersContainer)
         {
+            _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _initializersContainer = initializersContainer;
         }
 
@@ -42,12 +47,11 @@ namespace Rhetos.Deployment
                 var initializers = GetSortedInitializers();
                 foreach (var initializer in initializers)
                 {
-                    Console.Write("Initialization: " + initializer.GetType().Name + " ... ");
+                    _deployPackagesLogger.Trace("Initialization " + initializer.GetType().Name + ".");
                     initializer.Initialize();
-                    Console.WriteLine("Done.");
                 }
                 if (!initializers.Any())
-                    Console.WriteLine("No server initialization plugins.");
+                    _deployPackagesLogger.Trace("No server initialization plugins.");
             }
 
             {
@@ -55,10 +59,10 @@ namespace Rhetos.Deployment
                 if (configFile.Exists)
                 {
                     Touch(configFile);
-                    Console.WriteLine("Updated Web.config modification date to restart server.");
+                    _deployPackagesLogger.Trace("Updated Web.config modification date to restart server.");
                 }
                 else
-                    Console.WriteLine("Web.config update skipped.");
+                    _deployPackagesLogger.Trace("Web.config update skipped.");
             }
         }
 

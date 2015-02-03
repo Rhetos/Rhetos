@@ -37,6 +37,9 @@ namespace Rhetos.DatabaseGenerator
         protected readonly IPluginsContainer<IConceptDatabaseDefinition> _plugins;
         protected readonly ConceptApplicationRepository _conceptApplicationRepository;
         protected readonly ILogger _logger;
+		/// <summary>Special logger for keeping track of inserted/updated/deleted concept applications in database.</summary>
+        protected readonly ILogger _conceptsLogger;
+        protected readonly ILogger _deployPackagesLogger;
         protected readonly ILogger _performanceLogger;
 
         protected bool DatabaseUpdated = false;
@@ -55,18 +58,20 @@ namespace Rhetos.DatabaseGenerator
             _plugins = plugins;
             _conceptApplicationRepository = conceptApplicationRepository;
             _logger = logProvider.GetLogger("DatabaseGenerator");
+            _conceptsLogger = logProvider.GetLogger("DatabaseGenerator Concepts");
+            _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _performanceLogger = logProvider.GetLogger("Performance");
         }
 
-        public string UpdateDatabaseStructure()
+        public void UpdateDatabaseStructure()
         {
             if (DatabaseUpdated) // performance optimization
-                return "Database already updated.";
+                _deployPackagesLogger.Trace("Database already updated.");
 
             lock (_databaseUpdateLock)
             {
                 if (DatabaseUpdated)
-                    return "Database already updated.";
+                    _deployPackagesLogger.Trace("Database already updated.");
 
                 _logger.Trace("Updating database structure.");
                 var stopwatchTotal = Stopwatch.StartNew();
@@ -87,7 +92,7 @@ namespace Rhetos.DatabaseGenerator
                 CalculateApplicationsToBeRemovedAndInserted(oldApplications, newApplications, out toBeRemoved, out toBeInserted, _logger);
                 _performanceLogger.Write(stopwatch, "DatabaseGenerator: Analized differences in database structure.");
 
-                var report = ApplyChangesToDatabase(oldApplications, newApplications, toBeRemoved, toBeInserted);
+                ApplyChangesToDatabase(oldApplications, newApplications, toBeRemoved, toBeInserted);
                 _performanceLogger.Write(stopwatch, "DatabaseGenerator: Applied changes to database.");
 
                 VerifyIntegrity();
@@ -95,7 +100,6 @@ namespace Rhetos.DatabaseGenerator
 
                 _performanceLogger.Write(stopwatchTotal, "DatabaseGenerator.UpdateDatabaseStructure");
                 DatabaseUpdated = true;
-                return report;
             }
         }
 
@@ -461,7 +465,7 @@ namespace Rhetos.DatabaseGenerator
             toBeInserted = toBeInsertedKeys.Select(key => newApplicationsByKey[key]).ToList();
         }
 
-        protected string ApplyChangesToDatabase(
+        protected void ApplyChangesToDatabase(
             List<ConceptApplication> oldApplications, List<NewConceptApplication> newApplications,
             List<ConceptApplication> toBeRemoved, List<NewConceptApplication> toBeInserted)
         {
@@ -482,9 +486,8 @@ namespace Rhetos.DatabaseGenerator
             _sqlExecuter.ExecuteSql(allSql.Where(sql => sql != "").ToList());
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Executed " + allSql.Count + " SQL scripts.");
 
-            string report = "Removed " + reportRemovedCount + ", inserted " + reportInsertedCount + " concept applications.";
-            _logger.Trace(() => "Report: " + report);
-            return report;
+            var logLevel = reportRemovedCount > 0 || reportInsertedCount > 0 ? EventType.Info : EventType.Trace;
+            _deployPackagesLogger.Write(logLevel, "DatabaseGenerator removed " + reportRemovedCount + ", inserted " + reportInsertedCount + " concept applications.");
         }
 
         protected int ApplyChangesToDatabase_Remove(List<string> allSql, List<ConceptApplication> toBeRemoved, List<ConceptApplication> oldApplications)
@@ -496,7 +499,7 @@ namespace Rhetos.DatabaseGenerator
             int reportRemovedCount = 0;
             foreach (var ca in toBeRemoved)
             {
-                Log(ca, "Removing previously applied concept");
+                Log(ca, "Removing");
 
                 string[] removeSqlScripts = SplitSqlScript(ca.RemoveQuery);
                 allSql.AddRange(removeSqlScripts);
@@ -517,7 +520,7 @@ namespace Rhetos.DatabaseGenerator
             int reportInsertedCount = 0;
             foreach (var ca in toBeInserted)
             {
-                Log(ca, "Adding new concept");
+                Log(ca, "Creating");
 
                 string[] createSqlScripts = SplitSqlScript(ca.CreateQuery);
                 allSql.AddRange(createSqlScripts);
@@ -561,7 +564,7 @@ namespace Rhetos.DatabaseGenerator
 
         protected void Log(ConceptApplication conceptApplication, string action)
         {
-            _logger.Info("{0} {1}, ID={2}.", action, conceptApplication.GetConceptApplicationKey(), SqlUtility.GuidToString(conceptApplication.Id));
+            _conceptsLogger.Trace("{0} {1}, ID={2}.", action, conceptApplication.GetConceptApplicationKey(), SqlUtility.GuidToString(conceptApplication.Id));
         }
 
         protected void VerifyIntegrity()

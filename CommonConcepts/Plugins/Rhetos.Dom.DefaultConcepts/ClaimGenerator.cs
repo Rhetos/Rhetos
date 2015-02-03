@@ -42,7 +42,8 @@ namespace Rhetos.Dom.DefaultConcepts
         private readonly IPluginsContainer<IClaimProvider> _claimProviders;
         private readonly IDslModel _dslModel;
         private readonly ILogger _performanceLogger;
-        private readonly ILogger _logger;
+        /// <summary>Special logger for keeping track of inserted/updated/deleted claims.</summary>
+        private readonly ILogger _claimsLogger;
         private readonly GenericRepository<ICommonClaim> _claimRepository;
 
         public ClaimGenerator(
@@ -54,7 +55,7 @@ namespace Rhetos.Dom.DefaultConcepts
             _claimProviders = claimProviders;
             _dslModel = dslModel;
             _performanceLogger = logProvider.GetLogger("Performance");
-            _logger = logProvider.GetLogger("ClaimGenerator");
+            _claimsLogger = logProvider.GetLogger("ClaimGenerator Claims");
             _claimRepository = claimRepository;
         }
 
@@ -125,9 +126,13 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private void Log(string title, IEnumerable<ICommonClaim> claims)
         {
-            _logger.Write(
-                claims.Count() > 0 ? EventType.Info : EventType.Trace,
-                () => title + ": " + string.Join(", ", claims.Select(claim => claim.ClaimResource + "." + claim.ClaimRight)) + ".");
+            const int groupSize = 1000;
+            var groups = claims.Select((claim, index) => new { claim, index })
+                .GroupBy(ci => ci.index / groupSize, ci => ci.claim)
+                .OrderBy(g => g.Key).ToList();
+
+            foreach (var group in groups)
+                _claimsLogger.Trace(() => title + " " + string.Join(", ", group.Select(claim => claim.ClaimResource + "." + claim.ClaimRight)) + ".");
         }
 
         internal class ClaimComparer : IComparer<ICommonClaim>

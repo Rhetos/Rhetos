@@ -35,7 +35,7 @@ namespace Rhetos.Extensibility
 
         /// <summary>Plugins class is usually used before IoC container is built, so we use this
         /// improvised way of handling the logging, instead of using IoC registered components.</summary>
-        public static void SetLogProvider(ILogProvider logProvider)
+        public static void SetInitializationLogging(ILogProvider logProvider)
         {
             InitializationLogging.PerformanceLogger = logProvider.GetLogger("Performance");
             InitializationLogging.Logger = logProvider.GetLogger("Plugins");

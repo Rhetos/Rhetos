@@ -117,7 +117,6 @@ namespace Rhetos.Deployment.Test
 
                     throw new Exception("Unexpected SQL command in MockSqlExecuter.");
                 }
-
             }
         }
 
@@ -127,7 +126,7 @@ namespace Rhetos.Deployment.Test
         {
             var mockSqlExecuter = new MockSqlExecuter(oldColumns, oldTables, oldSchemas);
             var databaseCleaner = new DatabaseCleaner(new ConsoleLogProvider(), mockSqlExecuter);
-            Console.WriteLine("Report: " + databaseCleaner.RemoveRedundantMigrationColumns());
+            databaseCleaner.RemoveRedundantMigrationColumns();
 
             Assert.AreEqual(expectedDeletedColumns, TestUtility.DumpSorted(mockSqlExecuter.DroppedColumns), description + ": Deleted columns.");
             Assert.AreEqual(expectedDeletedTables, TestUtility.DumpSorted(mockSqlExecuter.DroppedTables), description + ": Deleted tables.");

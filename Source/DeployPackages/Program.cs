@@ -36,16 +36,22 @@ namespace DeployPackages
     {
         public static int Main(string[] args)
         {
-            ILogger _logger = new ConsoleLogger("DeployPackages.Program", new NLogger("DeployPackages.Program"));
+            ILogger logger = new ConsoleLogger("DeployPackages"); // Using the simplest logger outside of try-catch block.
             string oldCurrentDirectory = null;
+
             try
             {
+                logger = DeploymentUtility.InitializationLogProvider.GetLogger("DeployPackages"); // Setting the final log provider inside the try-catch block, so that the simple ConsoleLogger can be used (see above) in case of an initialization error.
+
                 var arguments = new Arguments(args);
                 if (arguments.Help)
                     return 1;
 
                 if (arguments.StartPaused)
                 {
+                    if (!Environment.UserInteractive)
+                        throw new Rhetos.UserException("DeployPackages parameter 'StartPaused' must not be set, because the application is executed in a non-interactive environment.");
+
                     // Use for debugging (Attach to Process)
                     Console.WriteLine("Press any key to continue . . .");
                     Console.ReadKey(true);
@@ -56,24 +62,18 @@ namespace DeployPackages
                 oldCurrentDirectory = Directory.GetCurrentDirectory();
                 Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
 
-                if (!Directory.Exists(Paths.GeneratedFolder))
-                    Directory.CreateDirectory(Paths.GeneratedFolder);
-                foreach (var oldGeneratedFile in Directory.GetFiles(Paths.GeneratedFolder, "*", SearchOption.AllDirectories))
-                    File.Delete(oldGeneratedFile);
-                if (File.Exists(Paths.DomAssemblyFile))
-                    File.Delete(Paths.DomAssemblyFile);
+                DeleteOldGeneratedFiles(); // The old plugins must be deleted before loading the application generator plugins.
 
                 {
-                    Console.Write("Loading plugins ... ");
+                    logger.Trace("Loading plugins.");
                     var stopwatch = Stopwatch.StartNew();
 
                     var builder = new ContainerBuilder();
                     builder.RegisterModule(new AutofacModuleConfiguration(deploymentTime: true));
                     using (var container = builder.Build())
                     {
-                        Console.WriteLine("Done.");
-                        var _performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
-                        _performanceLogger.Write(stopwatch, "DeployPackages.Program: Modules and plugins registered.");
+                        var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
+                        performanceLogger.Write(stopwatch, "DeployPackages.Program: Modules and plugins registered.");
                         Plugins.LogRegistrationStatistics("Generating application", container);
 
                         if (arguments.Debug)
@@ -87,16 +87,15 @@ namespace DeployPackages
                 Plugins.ClearCache();
 
                 {
-                    Console.Write("Loading generated plugins ... ");
+                    logger.Trace("Loading generated plugins.");
                     var stopwatch = Stopwatch.StartNew();
 
                     var builder = new ContainerBuilder();
                     builder.RegisterModule(new AutofacModuleConfiguration(deploymentTime: false));
                     using (var container = builder.Build())
                     {
-                        Console.WriteLine("Done.");
-                        var _performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
-                        _performanceLogger.Write(stopwatch, "DeployPackages.Program: New modules and plugins registered.");
+                        var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
+                        performanceLogger.Write(stopwatch, "DeployPackages.Program: New modules and plugins registered.");
                         Plugins.LogRegistrationStatistics("Initializing application", container);
 
                         container.Resolve<ApplicationInitialization>().ExecuteInitializers();
@@ -105,20 +104,20 @@ namespace DeployPackages
             }
             catch (Exception ex)
             {
-                Console.WriteLine();
-                _logger.Error(ex.ToString());
-
-                DeploymentUtility.WriteError(ex.GetType().Name + ": " + ex.Message);
-                Console.WriteLine("See DeployPackages.log for more information on error. Enable TraceLog in config file for even more details.");
+                logger.Error(ex.ToString());
 
                 if (ex is ReflectionTypeLoadException)
                 {
-                    var loaderMessages = string.Join("\r\n", ((ReflectionTypeLoadException)ex).LoaderExceptions.Select(le => le.Message).Distinct());
-                    _logger.Error(loaderMessages);
+                    string loaderMessages = string.Join("\r\n", ((ReflectionTypeLoadException)ex).LoaderExceptions.Select(le => le.Message).Distinct());
+                    logger.Error(loaderMessages);
                 }
 
                 if (Environment.UserInteractive)
+                {
+                    PrintSummary(ex);
                     Thread.Sleep(3000);
+                }
+
                 return 1;
             }
             finally
@@ -128,6 +127,24 @@ namespace DeployPackages
             }
 
             return 0;
+        }
+
+        private static void DeleteOldGeneratedFiles()
+        {
+            if (!Directory.Exists(Paths.GeneratedFolder))
+                Directory.CreateDirectory(Paths.GeneratedFolder);
+            foreach (var oldGeneratedFile in Directory.GetFiles(Paths.GeneratedFolder, "*", SearchOption.AllDirectories))
+                File.Delete(oldGeneratedFile);
+            if (File.Exists(Paths.DomAssemblyFile))
+                File.Delete(Paths.DomAssemblyFile);
+        }
+
+        private static void PrintSummary(Exception ex)
+        {
+            Console.WriteLine();
+            DeploymentUtility.WriteError(ex.GetType().Name + ":\r\n" + ex.Message);
+            Console.WriteLine();
+            Console.WriteLine("See DeployPackages.log for more information on error. Enable TraceLog in DeployPackages.exe.config for even more details.");
         }
     }
 }

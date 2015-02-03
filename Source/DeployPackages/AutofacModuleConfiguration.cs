@@ -39,7 +39,7 @@ namespace DeployPackages
         protected override void Load(ContainerBuilder builder)
         {
             // Specific registrations and initialization:
-            Plugins.SetLogProvider(new NLogProvider());
+            Plugins.SetInitializationLogging(DeploymentUtility.InitializationLogProvider);
 
             if (_deploymentTime)
             {
@@ -60,6 +60,7 @@ namespace DeployPackages
 
             // Specific registrations override:
             builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
+            builder.RegisterInstance(DeploymentUtility.InitializationLogProvider).As<ILogProvider>(); // InitializationLogProvider allows overriding deployment logging (both within and outside IoC).
 
             base.Load(builder);
         }

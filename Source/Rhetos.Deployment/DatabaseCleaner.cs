@@ -28,10 +28,12 @@ namespace Rhetos.Deployment
     {
         private readonly ISqlExecuter _sqlExecuter;
         private readonly ILogger _logger;
+        private readonly ILogger _deployPackagesLogger;
 
         public DatabaseCleaner(ILogProvider logProvider, ISqlExecuter sqlExecuter)
         {
             _logger = logProvider.GetLogger("DatabaseCleaner");
+            _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _sqlExecuter = sqlExecuter;
         }
 
@@ -66,13 +68,12 @@ namespace Rhetos.Deployment
             return null;
         }
 
-        public string RemoveRedundantMigrationColumns()
+        public void RemoveRedundantMigrationColumns()
         {
             if (SqlUtility.DatabaseLanguage != "MsSql")
             {
-                var reportSkip = "Skipped DatabaseCleaner.RemoveRedundantMigrationColumns (DatabaseLanguage=" + SqlUtility.DatabaseLanguage + ").";
-                _logger.Info(reportSkip);
-                return reportSkip;
+                _deployPackagesLogger.Info("Skipped DatabaseCleaner.RemoveRedundantMigrationColumns (DatabaseLanguage=" + SqlUtility.DatabaseLanguage + ").");
+                return;
             }
 
             var allColumns = ReadAllColumnsFromDatabase();
@@ -101,12 +102,9 @@ namespace Rhetos.Deployment
 
             DeleteDatabaseObjects(deleteMigrationColumnsOptimized, emptyMigrationTables, emptyMigrationSchemas);
 
-            var report = "Deleted " + deleteMigrationColumns.Count() + " columns in data migration schemas, " + remainingMigrationColumns.Count() + " remaining.";
-            if (deleteMigrationColumns.Count() != 0)
-                _logger.Info(report);
-            else
-                _logger.Trace(report);
-            return report;
+            _deployPackagesLogger.Trace(() =>
+                "Deleted " + deleteMigrationColumns.Count + " columns in data migration schemas, "
+                + remainingMigrationColumns.Count + " remaining.");
         }
 
         private void DeleteDatabaseObjects(IEnumerable<ColumnInfo> deleteColumns, List<TableInfo> deleteTables, List<string> deleteSchemas)

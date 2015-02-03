@@ -34,7 +34,7 @@ namespace Rhetos.Deployment
 {
     public class ApplicationGenerator
     {
-        private readonly ILogger _logger;
+        private readonly ILogger _deployPackagesLogger;
         private readonly ILogger _performanceLogger;
         private readonly ISqlExecuter _sqlExecuter;
         private readonly IDslModel _dslModel;
@@ -58,7 +58,7 @@ namespace Rhetos.Deployment
             IDslScriptsLoader dslScriptsLoader,
             INHibernateMapping nHibernateMapping)
         {
-            _logger = new ConsoleLogger(GetType().Name, logProvider.GetLogger(GetType().Name));
+            _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _performanceLogger = logProvider.GetLogger("Performance");
             _sqlExecuter = sqlExecuter;
             _dslModel = dslModel;
@@ -73,54 +73,45 @@ namespace Rhetos.Deployment
 
         public void ExecuteGenerators()
         {
-            Console.WriteLine("SQL connection string: " + SqlUtility.MaskPassword(SqlUtility.ConnectionString));
+            _deployPackagesLogger.Trace("SQL connection string: " + SqlUtility.MaskPassword(SqlUtility.ConnectionString));
             ValidateDbConnection();
 
-            Console.Write("Preparing Rhetos database ... ");
+            _deployPackagesLogger.Trace("Preparing Rhetos database.");
             PrepareRhetosDatabase();
-            Console.WriteLine("Done.");
 
-            Console.Write("Parsing DSL scripts ... ");
+            _deployPackagesLogger.Trace("Parsing DSL scripts.");
             int dslModelConceptsCount = _dslModel.Concepts.Count();
-            Console.WriteLine(dslModelConceptsCount + " statements.");
+            _deployPackagesLogger.Trace("Application model has " + dslModelConceptsCount + " statements.");
 
-            Console.Write("Compiling DOM assembly ... ");
+            _deployPackagesLogger.Trace("Compiling DOM assembly.");
             int generatedTypesCount = _domGenerator.Assembly.GetTypes().Length;
             if (generatedTypesCount == 0)
             {
-                string report = "WARNING: Empty assembly is generated.";
-                DeploymentUtility.WriteError(report);
-                _logger.Error(report);
+                _deployPackagesLogger.Error("WARNING: Empty assembly is generated.");
             }
             else
-                Console.WriteLine("Generated " + generatedTypesCount + " types.");
+                _deployPackagesLogger.Trace("Generated " + generatedTypesCount + " types.");
 
             var generators = GetSortedGenerators();
             foreach (var generator in generators)
             {
-                Console.Write("Executing " + generator.GetType().Name + " ... ");
+                _deployPackagesLogger.Trace("Executing " + generator.GetType().Name + ".");
                 generator.Generate();
-                Console.WriteLine("Done.");
             }
             if (!generators.Any())
-                Console.WriteLine("No additional generators.");
+                _deployPackagesLogger.Trace("No additional generators.");
 
-            Console.Write("Cleaning old migration data ... ");
-            {
-                string report = _databaseCleaner.RemoveRedundantMigrationColumns();
-                _databaseCleaner.RefreshDataMigrationRows();
-                Console.WriteLine(report);
-            }
+            _deployPackagesLogger.Trace("Cleaning old migration data.");
+            _databaseCleaner.RemoveRedundantMigrationColumns();
+            _databaseCleaner.RefreshDataMigrationRows();
 
-            Console.Write("Executing data migration scripts ... ");
+            _deployPackagesLogger.Trace("Executing data migration scripts.");
             var dataMigrationReport = _dataMigration.ExecuteDataMigrationScripts(Paths.DataMigrationScriptsFolder);
-            Console.WriteLine(dataMigrationReport.Message);
 
-            Console.Write("Upgrading database ... ");
+            _deployPackagesLogger.Trace("Upgrading database.");
             try
             {
-                string report = _databaseGenerator.UpdateDatabaseStructure();
-                Console.WriteLine(report);
+                _databaseGenerator.UpdateDatabaseStructure();
             }
             catch (Exception ex)
             {
@@ -130,27 +121,20 @@ namespace Rhetos.Deployment
                 }
                 catch (Exception undoException)
                 {
-                    _logger.Error(undoException.ToString());
+                    _deployPackagesLogger.Error(undoException.ToString());
                 }
                 ExceptionsUtility.Rethrow(ex);
             }
 
-            Console.Write("Deleting redundant migration data ... ");
-            {
-                var report = _databaseCleaner.RemoveRedundantMigrationColumns();
-                _databaseCleaner.RefreshDataMigrationRows();
-                Console.WriteLine(report);
-            }
+            _deployPackagesLogger.Trace("Deleting redundant migration data.");
+            _databaseCleaner.RemoveRedundantMigrationColumns();
+            _databaseCleaner.RefreshDataMigrationRows();
 
-            Console.Write("Uploading DSL scripts ... ");
-            {
-                string report = UploadDslScriptsToServer();
-                Console.WriteLine(report);
-            }
+            _deployPackagesLogger.Trace("Uploading DSL scripts.");
+            UploadDslScriptsToServer();
 
-            Console.Write("Generating NHibernate mapping ... ");
+            _deployPackagesLogger.Trace("Generating NHibernate mapping.");
             File.WriteAllText(Paths.NHibernateMappingFile, _nHibernateMapping.GetMapping(), Encoding.Unicode);
-            Console.WriteLine("Done.");
         }
 
         private void ValidateDbConnection()
@@ -165,7 +149,7 @@ namespace Rhetos.Deployment
         private void PrepareRhetosDatabase()
         {
             string rhetosDatabaseScriptResourceName = "Rhetos.Deployment.RhetosDatabase." + SqlUtility.DatabaseLanguage + ".sql";
-            var resourceStream = typeof(DeploymentUtility).Assembly.GetManifestResourceStream(rhetosDatabaseScriptResourceName);
+            var resourceStream = GetType().Assembly.GetManifestResourceStream(rhetosDatabaseScriptResourceName);
             if (resourceStream == null)
                 throw new FrameworkException("Cannot find resource '" + rhetosDatabaseScriptResourceName + "'.");
             var sql = new StreamReader(resourceStream).ReadToEnd();
@@ -189,7 +173,7 @@ namespace Rhetos.Deployment
             return sortedGenerators;
         }
 
-        private string UploadDslScriptsToServer()
+        private void UploadDslScriptsToServer()
         {
             List<string> sql = new List<string>();
 
@@ -202,7 +186,7 @@ namespace Rhetos.Deployment
 
             _sqlExecuter.ExecuteSql(sql);
 
-            return "Uploaded " + _dslScriptsLoader.DslScripts.Count() + " DSL scripts to database.";
+            _deployPackagesLogger.Trace("Uploaded " + _dslScriptsLoader.DslScripts.Count() + " DSL scripts to database.");
         }
     }
 }

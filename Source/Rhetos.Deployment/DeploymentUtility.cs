@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Logging;
 using System;
 
 namespace Rhetos.Deployment
@@ -32,6 +33,24 @@ namespace Rhetos.Deployment
             Console.WriteLine(msg);
             Console.ForegroundColor = oldFg;
             Console.BackgroundColor = oldBg;
+        }
+
+        private static ILogProvider _initializationLogProvider;
+
+        /// <summary>To be used during system initialization while the IoC container is yet not built.
+        /// In all other situations the ILogProvider should be resolved from the IoC container.</summary>
+        public static ILogProvider InitializationLogProvider
+        {
+            get
+            {
+                if (_initializationLogProvider == null)
+                    _initializationLogProvider = new NLogProvider();
+                return _initializationLogProvider;
+            }
+            set
+            {
+                _initializationLogProvider = value;
+            }
         }
     }
 }

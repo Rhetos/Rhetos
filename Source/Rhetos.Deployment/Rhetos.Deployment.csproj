@@ -92,9 +92,9 @@
       <Project>{ddc73f5f-bb0e-4944-92cc-4ac937398499}</Project>
       <Name>Rhetos.Extensibility.Interfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Extensibility\Rhetos.Extensibility.csproj">
-      <Project>{7eaf15bd-39c9-44ab-8834-ec0ae013a8a2}</Project>
-      <Name>Rhetos.Extensibility</Name>
+    <ProjectReference Include="..\Rhetos.Logging\Rhetos.Logging.csproj">
+      <Project>{8c9f1c24-2d9c-420b-9787-3fcad96c5b3e}</Project>
+      <Name>Rhetos.Logging</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rhetos.Persistence.NHibernate\Rhetos.Persistence.NHibernate.csproj">
       <Project>{24238da8-70c5-4be5-85b3-359e60b40acf}</Project>

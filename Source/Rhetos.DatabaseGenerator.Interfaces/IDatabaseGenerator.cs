@@ -26,9 +26,6 @@ namespace Rhetos.DatabaseGenerator
 {
     public interface IDatabaseGenerator
     {
-        /// <summary>
-        /// Returns report.
-        /// </summary>
-        string UpdateDatabaseStructure();
+        void UpdateDatabaseStructure();
     }
 }

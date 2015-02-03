@@ -151,7 +151,7 @@ namespace Rhetos.Configuration.Autofac
             AppDomain.CurrentDomain.AssemblyResolve += SearchForAssembly;
 
             // Specific registrations and initialization:
-            Plugins.SetLogProvider(new ConsoleLogProvider());
+            Plugins.SetInitializationLogging(new ConsoleLogProvider());
 
             // General registrations:
             var builder = new ContainerBuilder();
