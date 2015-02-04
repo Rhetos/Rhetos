@@ -1,3 +1,19 @@
+0.9.24 (2015-02-04)
+-------------------
+
+Breaking changes:
+
+* Using new version of Autofac (v3.5.2). Since Autofac dlls are signed, all plugin packages that use Autofac must be rebuilt with the new version.
+
+New features:
+
+* New concept: **LockExcept**, for locking entity without locking the specified properties.
+
+Internal improvements:
+
+* `DeployPackages.exe` uses a logger instead of `Console.WriteLine()` directly. The logger can be configured in `DeployPackages.exe.config`.
+* Deployment performance improvements.
+
 0.9.23 (2015-01-26)
 -------------------
 
