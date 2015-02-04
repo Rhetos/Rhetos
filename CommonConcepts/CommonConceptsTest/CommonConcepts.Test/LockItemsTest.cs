@@ -25,6 +25,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using Rhetos.Configuration.Autofac;
+using Rhetos.Dom.DefaultConcepts;
 
 namespace CommonConcepts.Test
 {
@@ -235,6 +236,49 @@ namespace CommonConcepts.Test
 
                 Assert.AreEqual("def", s1.Name);
                 Assert.AreEqual("abc locked", repository.TestLockItems.Simple.All().Single().Name);
+            }
+        }
+
+        [TestMethod]
+        public void LockExceptProperty()
+        {
+            UpdateLockedExceptProperty(item => item.Name += "X", updateShouldPass: true);
+            UpdateLockedExceptProperty(item => item.Count++, updateShouldPass: false);
+            UpdateLockedExceptProperty(item => item.TestReferenceID = null, updateShouldPass: false);
+        }
+
+        public void UpdateLockedExceptProperty(Action<TestLockItems.Simple2> update, bool updateShouldPass)
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                    "DELETE FROM TestLockItems.Simple2",
+                    "DELETE FROM TestLockItems.Simple" });
+
+                var simpleRepos = container.Resolve<GenericRepository<TestLockItems.Simple>>();
+                var simple2Repos = container.Resolve<GenericRepository<TestLockItems.Simple2>>();
+
+                var s1a = new TestLockItems.Simple { Name = "a" };
+                var s1b = new TestLockItems.Simple { Name = "b" };
+                var s2a = new TestLockItems.Simple2 { Name = "aa", Count = 100, TestReference = s1a };
+                var s2b = new TestLockItems.Simple2 { Name = "LockExceptName", Count = 200, TestReference = s1b };
+
+                simpleRepos.Insert(s1a, s1b);
+                simple2Repos.Insert(s2a, s2b);
+
+                s2a.Name += "X";
+                s2a.Count++;
+                update(s2b);
+
+                if (updateShouldPass)
+                {
+                    simple2Repos.Update(s2a, s2b);
+                    TestUtility.DumpSorted(simple2Repos.Read(), item => item.Name + " " + item.Count);
+                    Assert.AreEqual(s2b.Name, simple2Repos.Read(new[] { s2b.ID }).Single().Name);
+                }
+                else
+                    TestUtility.ShouldFail(() => simple2Repos.Update(s2a, s2b),
+                        "The record is locked except the Name property", s2b.ID.ToString());
             }
         }
     }

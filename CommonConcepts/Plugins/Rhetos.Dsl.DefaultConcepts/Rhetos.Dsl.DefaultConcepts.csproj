@@ -116,6 +116,8 @@
     <Compile Include="Computations\ComputeForNewItemsInfo.cs" />
     <Compile Include="Computations\ComposableFilterApplyOnClientReadInfo.cs" />
     <Compile Include="Computations\KeyPropertyIDComputedFromInfo.cs" />
+    <Compile Include="Computations\LockItemsExceptPropertiesInfo.cs" />
+    <Compile Include="Computations\LockItemsLockPropertyInfo.cs" />
     <Compile Include="Computations\PersistedKeyPropertiesInfo.cs" />
     <Compile Include="Computations\KeyPropertyComputedFromInfo.cs" />
     <Compile Include="ConceptsListToDslModel.cs" />
@@ -170,7 +172,7 @@
     <Compile Include="Computations\PersistedComputeForNewBaseItemsWithFilterInfo.cs" />
     <Compile Include="Computations\EntityComputedFromAllPropertiesInfo.cs" />
     <Compile Include="Computations\EntityComputedFromInfo.cs" />
-    <Compile Include="Computations\LockItemsForPropertyInfo.cs" />
+    <Compile Include="Computations\LockItemsMarkPropertyInfo.cs" />
     <Compile Include="Computations\DenySaveForPropertyInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlDependsOnSqlObjectInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlObjectInfo.cs" />

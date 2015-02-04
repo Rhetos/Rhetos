@@ -334,19 +334,6 @@ Module TestDenySave
 
 Module TestLockItems
 {
-	Entity Simple2 {
-		Reference TestReference TestLockItems.Simple;
-		
-		Integer Count;
-		ShortString Name;
-				
-		ItemFilter CountNegative 'item => item.Count < 0';
-		LockProperty Name.CountNegative 'Name is locked if count negative.';
-		
-		LockProperty TestReference.CountNegative 'TestReference is locked if count negative.';
-	}
-	
-	
 	Entity Simple
 	{
 		ShortString Name;
@@ -357,6 +344,21 @@ Module TestLockItems
 		
 		ItemFilter CountNegative 'item => item.Count < 0';
 		LockProperty Name.CountNegative 'Name is locked if count negative.';
+	}
+	
+	Entity Simple2
+	{
+		ShortString Name;
+		Integer Count;
+		Reference TestReference TestLockItems.Simple { CascadeDelete; }
+		
+		ItemFilter CountNegative 'item => item.Count < 0';
+		LockProperty Name.CountNegative 'Name is locked if count negative.';
+		
+		LockProperty TestReference.CountNegative 'TestReference is locked if count negative.';
+		
+		ItemFilter LockExceptName 'item => item.Name.StartsWith("LockExceptName")';
+		LockExcept LockExceptName 'The record is locked except the Name property.' 'Name';
 	}
 }
 

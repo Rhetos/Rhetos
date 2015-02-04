@@ -20,30 +20,20 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Globalization;
 using System.Linq;
 using System.Text;
-using Rhetos.Utilities;
-using Rhetos.Compiler;
-using Rhetos.Dsl;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Dsl.DefaultConcepts
 {
-    [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(LockItemsForPropertyInfo))]
-    public class LockItemsForPropertyCodeGenerator : IConceptCodeGenerator
+    /// <summary>
+    /// Same business logic as LockItemsInfo.
+    /// The given property is not used in locking, it is just reported to the user
+    /// (the client application should focus the property).
+    /// </summary>
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("Lock")]
+    public class LockItemsMarkPropertyInfo : LockItemsInfo
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
-        {
-            var info = (LockItemsForPropertyInfo)conceptInfo;
-            codeBuilder.InsertCode(AdditionalInvalidMessageSnippet(info), LockItemsCodeGenerator.UserMessageAppend, info);
-        }
-
-        private static string AdditionalInvalidMessageSnippet(LockItemsForPropertyInfo info)
-        {
-            return string.Format(@"+"",Property:{0}""", info.DependedProperty.Name);
-        }
+        public PropertyInfo DependedProperty { get; set; }
     }
 }

@@ -32,33 +32,32 @@ using Rhetos.Utilities;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(LockPropertyInfo))]
-    public class LockPropertyCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(LockItemsExceptPropertiesInfo))]
+    public class LockItemsExceptPropertiesCodeGenerator : IConceptCodeGenerator
     {
+        public static readonly CsTag<LockItemsExceptPropertiesInfo> ComparePropertyTag = "CompareProperty";
+        public static readonly CsTag<LockItemsExceptPropertiesInfo> ClientMessageTag = "ClientMessage";
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (LockPropertyInfo)conceptInfo;
-            codeBuilder.InsertCode(CheckLockedPropertySnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Source.DataStructure);
+            var info = (LockItemsExceptPropertiesInfo)conceptInfo;
+            codeBuilder.InsertCode(CheckLockedItemsSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Source);
             codeBuilder.AddReferencesFromDependency(typeof(UserException));
         }
 
-        private static string CheckLockedPropertySnippet(LockPropertyInfo info)
+        private static string CheckLockedItemsSnippet(LockItemsExceptPropertiesInfo info)
         {
-            string propertyName = info.Source.Name;
-            if (info.Source is ReferencePropertyInfo)
-                propertyName += "ID";
-
             return string.Format(
 @"            if (updated.Length > 0 || deleted.Length > 0)
             {{
-                {0}[] changedItems = updated.Zip(updatedNew, (i, j) => ({4})
-                    ? i : null).Where(x => x != null).ToArray();
+                {0}[] changedItems = updated.Zip(updatedNew, (i, j) => (false{4})
+                    ? i : null).Where(x => x != null).Concat(deleted).ToArray();
 
                 if (changedItems != null && changedItems.Length > 0)
                 {{
                     var lockedItems = _domRepository.{0}.Filter(changedItems.AsQueryable(), new {1}());
                     if (lockedItems.Count() > 0)
-                        throw new Rhetos.UserException({2}, ""DataStructure:{0},ID:"" + lockedItems.First().ID.ToString() + "",Property:{3}"");
+                        throw new Rhetos.UserException({2}, ""DataStructure:{0},ID:"" + lockedItems.First().ID.ToString(){3});
 
                     // Workaround to restore NH proxies if NHSession.Clear() is called inside filter.
                     for (int i=0; i<updated.Length; i++) updated[i] = _executionContext.NHibernateSession.Load<{0}>(updated[i].ID);
@@ -66,18 +65,11 @@ namespace Rhetos.Dom.DefaultConcepts
                 }}
             }}
 ",
-                info.Source.DataStructure.GetKeyProperties(),
+                info.Source.GetKeyProperties(),
                 info.FilterType,
                 CsUtility.QuotedString(info.Title),
-                propertyName,
-                CompareValuePropertySnippet(propertyName));
-        }
-
-        private static string CompareValuePropertySnippet(string propertyName)
-        {
-            return string.Format(
-                "i.{0} == null && j.{0} != null || i.{0} != null && !i.{0}.Equals(j.{0})",
-                propertyName);
+                ClientMessageTag.Evaluate(info),
+                ComparePropertyTag.Evaluate(info));
         }
     }
 }

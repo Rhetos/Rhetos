@@ -114,8 +114,7 @@ namespace Rhetos.Compiler
             }
             if (errors.Count() > 5)
                 sb.AppendLine("...");
-            string msg = sb.ToString();
-            return msg;
+            return sb.ToString().Trim();
         }
     }
 }

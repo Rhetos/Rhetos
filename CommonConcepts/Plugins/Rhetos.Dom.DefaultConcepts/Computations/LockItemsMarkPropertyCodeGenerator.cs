@@ -20,15 +20,30 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Globalization;
 using System.Linq;
 using System.Text;
+using Rhetos.Utilities;
+using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
 
-namespace Rhetos.Dsl.DefaultConcepts
+namespace Rhetos.Dom.DefaultConcepts
 {
-    [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("LockItems")]
-    public class LockItemsForPropertyInfo : LockItemsInfo
+    [Export(typeof(IConceptCodeGenerator))]
+    [ExportMetadata(MefProvider.Implements, typeof(LockItemsMarkPropertyInfo))]
+    public class LockItemsMarkPropertyCodeGenerator : IConceptCodeGenerator
     {
-        public PropertyInfo DependedProperty { get; set; }
+        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        {
+            var info = (LockItemsMarkPropertyInfo)conceptInfo;
+            codeBuilder.InsertCode(AdditionalInvalidMessageSnippet(info), LockItemsCodeGenerator.ClientMessageTag, info);
+        }
+
+        private static string AdditionalInvalidMessageSnippet(LockItemsMarkPropertyInfo info)
+        {
+            return string.Format(@"+"",Property:{0}""", info.DependedProperty.Name);
+        }
     }
 }

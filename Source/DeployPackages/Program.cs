@@ -142,7 +142,7 @@ namespace DeployPackages
         private static void PrintSummary(Exception ex)
         {
             Console.WriteLine();
-            DeploymentUtility.WriteError(ex.GetType().Name + ":\r\n" + ex.Message);
+            DeploymentUtility.WriteError(ex.GetType().Name + ": " + ex.Message);
             Console.WriteLine();
             Console.WriteLine("See DeployPackages.log for more information on error. Enable TraceLog in DeployPackages.exe.config for even more details.");
         }

@@ -35,7 +35,7 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(LockItemsInfo))]
     public class LockItemsCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly CsTag<LockItemsInfo> UserMessageAppend = "UserMessage";
+        public static readonly CsTag<LockItemsInfo> ClientMessageTag = "ClientMessage";
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
@@ -50,6 +50,7 @@ namespace Rhetos.Dom.DefaultConcepts
 @"            if (updated.Length > 0 || deleted.Length > 0)
             {{
                 {0}[] changedItems = updated.Concat(deleted).ToArray();
+
                 var lockedItems = _domRepository.{0}.Filter(changedItems.AsQueryable(), new {1}());
                 if (lockedItems.Count() > 0)
                     throw new Rhetos.UserException({2}, ""DataStructure:{0},ID:"" + lockedItems.First().ID.ToString(){3});
@@ -62,7 +63,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 info.Source.GetKeyProperties(),
                 info.FilterType,
                 CsUtility.QuotedString(info.Title),
-                UserMessageAppend.Evaluate(info));
+                ClientMessageTag.Evaluate(info));
         }
     }
 }

@@ -69,6 +69,7 @@
     <Compile Include="Computations\KeyPropertyIDComputedFromCodeGenerator.cs" />
     <Compile Include="Computations\KeyPropertyComputedFromCodeGenerator.cs" />
     <Compile Include="Computations\KeepSynchronizedRecomputeOnDeployCodeGenerator.cs" />
+    <Compile Include="Computations\LockItemsLockPropertyCodeGenerator.cs" />
     <Compile Include="DataStructure\FilterIdRepositoryCodeGenerator.cs" />
     <Compile Include="DataStructure\ImplementsInterfacePropertyCodeGenerator.cs" />
     <Compile Include="DataStructure\DomInitializationCodeGenerator.cs" />
@@ -78,13 +79,14 @@
     <Compile Include="Advanced\EntityHistoryPropertyCodeGenerator.cs" />
     <Compile Include="Advanced\EntityHistoryCodeGenerator.cs" />
     <Compile Include="Computations\EntityComputedFromCodeGenerator.cs" />
-    <Compile Include="Computations\LockItemsForPropertyCodeGenerator.cs" />
+    <Compile Include="Computations\LockItemsMarkPropertyCodeGenerator.cs" />
     <Compile Include="Computations\DenySaveForPropertyCodeGenerator.cs" />
     <Compile Include="Computations\LockPropertyCodeGenerator.cs" />
     <Compile Include="Computations\HierarchySingleRootInternalCodeGenerator.cs" />
     <Compile Include="Computations\ReportFileCodeGenerator.cs" />
     <Compile Include="Computations\ReportDataSourceCodeGenerator.cs" />
     <Compile Include="Computations\LockItemsCodeGenerator.cs" />
+    <Compile Include="Computations\LockItemsExceptPropertiesCodeGenerator.cs" />
     <Compile Include="Computations\FilterUseExecutionContextCodeGenerator.cs" />
     <Compile Include="Computations\ReportDataCodeGenerator.cs" />
     <Compile Include="DataStructure\ComputedCodeGenerator.cs" />
