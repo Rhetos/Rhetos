@@ -225,6 +225,9 @@ Module TestFilter
     // FilterByReferenced test:
     Entity SourceDetail { Reference Parent TestFilter.Source { Detail; } ShortString Name2; }
     FilterByReferenced SourceDetail.'TestFilter.FilterByPrefix' TestFilter.SourceDetail.Parent '';
+	
+	ItemFilter Source.Composable 'item => item.Name.Contains("1")';
+	ItemFilterReferenced SourceDetail.Composable TestFilter.SourceDetail.Parent;
     
     // FilterByLinkedItems test:
     Parameter FilterDetail { ShortString Prefix; }

@@ -110,6 +110,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Computations\ApplyFilterOnClientReadInfo.cs" />
+    <Compile Include="Computations\ItemFilterReferencedInfo.cs" />
+    <Compile Include="Computations\ItemFilterReferencedNoSubfilterInfo.cs" />
+    <Compile Include="Computations\ComposableFilterByReferencedNoSubfilterInfo.cs" />
+    <Compile Include="Computations\ComposableFilterByReferencedInfo.cs" />
+    <Compile Include="Computations\FilterByReferencedNoSubfilterInfo.cs" />
     <Compile Include="Computations\ItemFilterApplyOnClientReadInfo.cs" />
     <Compile Include="Computations\ComposableFilterUseExecutionContextInfo.cs" />
     <Compile Include="Computations\ComputeForNewItemsWithoutFilterInfo.cs" />

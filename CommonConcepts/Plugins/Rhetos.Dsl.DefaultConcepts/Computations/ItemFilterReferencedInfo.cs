@@ -27,14 +27,14 @@ using Rhetos.Utilities;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("FilterByReferenced")]
-    public class FilterByReferencedInfo : IValidationConcept, IMacroConcept
+    [ConceptKeyword("ItemFilterReferenced")]
+    public class ItemFilterReferencedInfo : IValidationConcept, IMacroConcept
     {
         [ConceptKey]
         public DataStructureInfo Source { get; set; }
 
         [ConceptKey]
-        public string Parameter { get; set; }
+        public string FilterName { get; set; }
 
         public ReferencePropertyInfo ReferenceFromMe { get; set; }
 
@@ -49,22 +49,28 @@ namespace Rhetos.Dsl.DefaultConcepts
                 throw new DslSyntaxException("'" + this.GetUserDescription()
                     + "' must use a reference property that is a member of it's own data structure. Try using FilterByLinkedItems instead.");
 
-            var referencedFilter = concepts.OfType<FilterByInfo>().Where(f => f.Source == ReferenceFromMe.Referenced)
-                .Where(f => f.Parameter == Parameter).SingleOrDefault();
+            var referencedFilter = concepts.OfType<ItemFilterInfo>().Where(f => f.Source == ReferenceFromMe.Referenced)
+                .Where(f => f.FilterName == FilterName).SingleOrDefault();
 
             if (referencedFilter == null)
-                throw new DslSyntaxException(this, "There is no " + new FilterByInfo().GetKeywordOrTypeName()
-                    + " '" + Parameter + "' on " + ReferenceFromMe.Referenced.GetUserDescription() + ".");
+                throw new DslSyntaxException(this, "There is no " + new ItemFilterInfo().GetKeywordOrTypeName()
+                    + " '" + FilterName + "' on " + ReferenceFromMe.Referenced.GetUserDescription() + ".");
+        }
+
+        private string ComposableFilterParameter()
+        {
+            var itemFilterPrototype = new ItemFilterInfo { Source = Source, FilterName = FilterName, Expression = null };
+            return ItemFilterMacro.GetGeneratedFilter(itemFilterPrototype).GetKeyProperties();
         }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
             return new IConceptInfo[]
                 {
-                    new FilterByInfo
+                    new ComposableFilterByInfo
                     {
                         Source = Source,
-                        Parameter = Parameter,
+                        Parameter = ComposableFilterParameter(),
                         Expression = GetFilterExpression()
                     },
                     new ModuleExternalReferenceInfo
@@ -77,33 +83,20 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         private string GetFilterExpression()
         {
-            return string.Format(@"(repository, parameter) =>
+            return string.Format(@"(items, repository, parameter) =>
 	        {{
-                Guid[] references = repository.{2}.{3}.Filter(parameter).Select(item => item.ID).ToArray();
-
-			    const int BufferSize = 1000;
-			    int n = references.Count();
-			    var result = new List<{0}.{1}>(n);
-			    for (int i = 0; i < (n+BufferSize-1) / BufferSize; i++)
-                {{
-				    Guid[] idBuffer = references.Skip(i*BufferSize).Take(BufferSize).ToArray();
-				    var itemBuffer = repository.{0}.{1}.Query().Where(item => idBuffer.Contains(item.{4}.ID)).ToArray();
-				    result.AddRange(itemBuffer);
-			    }}
-
-                var groups = result.GroupBy(s => s.{4}ID.Value).ToArray();
-                Rhetos.Utilities.Graph.SortByGivenOrder(groups, references, item => item.Key);
-
-                Func<IEnumerable<{0}.{1}>, IEnumerable<{0}.{1}>> subFilter = {5};
-                return groups.SelectMany(g => subFilter(g)).ToArray();
+                var filteredReferencedItems = repository.{0}.{1}.Filter(repository.{0}.{1}.Query(), parameter);
+                var filteredItems = items.Where(item => filteredReferencedItems.Contains(item.{2}));
+                {3}
+                return filteredItems;
             }}
 ",
-            Source.Module.Name,
-            Source.Name,
             ReferenceFromMe.Referenced.Module.Name,
             ReferenceFromMe.Referenced.Name,
             ReferenceFromMe.Name,
-            !string.IsNullOrWhiteSpace(SubFilterExpression) ? SubFilterExpression : "items => items");
+            !string.IsNullOrWhiteSpace(SubFilterExpression)
+                ? "filteredItems = filteredItems.Where(" + SubFilterExpression + ")"
+                : "");
         }
     }
 }
