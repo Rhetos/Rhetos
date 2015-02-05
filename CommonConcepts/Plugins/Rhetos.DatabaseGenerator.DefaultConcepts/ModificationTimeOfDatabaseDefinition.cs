@@ -63,7 +63,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             var info = (ModificationTimeOfInfo)conceptInfo;
             return
                 new SqlTriggerDatabaseDefinition().CreateDatabaseStructure(GeneratedTrigger(info, "Insert"))
-                + SqlUtility.ScriptSplitter
+                + SqlUtility.ScriptSplitterTag
                 + new SqlTriggerDatabaseDefinition().CreateDatabaseStructure(GeneratedTrigger(info, "Update"));
         }
 
@@ -72,7 +72,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             var info = (ModificationTimeOfInfo)conceptInfo;
             return
                 new SqlTriggerDatabaseDefinition().RemoveDatabaseStructure(GeneratedTrigger(info, "Update"))
-                + SqlUtility.ScriptSplitter
+                + SqlUtility.ScriptSplitterTag
                 + new SqlTriggerDatabaseDefinition().RemoveDatabaseStructure(GeneratedTrigger(info, "Insert"));
         }
     }

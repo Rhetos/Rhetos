@@ -44,7 +44,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                 SqlUtility.Identifier(info.Module.Name),
                 SqlUtility.Identifier(info.Name),
                 info.ViewSource,
-                SqlUtility.ScriptSplitter);
+                SqlUtility.ScriptSplitterTag);
         }
 
         public string RemoveDatabaseStructure(IConceptInfo conceptInfo)

@@ -63,7 +63,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             return Sql.Format("LegacyEntityWithAutoCreatedViewDatabaseDefinition_Create",
                 SqlUtility.Identifier(info.Module.Name),
                 SqlUtility.Identifier(info.Name),
-                SqlUtility.ScriptSplitter,
+                SqlUtility.ScriptSplitterTag,
                 SqlUtility.GetFullName(info.Table),
                 InsertTriggerName(info),
                 UpdateTriggerName(info),

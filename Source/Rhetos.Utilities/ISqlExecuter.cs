@@ -28,6 +28,7 @@ namespace Rhetos.Utilities
     {
         void ExecuteReader(string command, Action<DbDataReader> action);
         void ExecuteSql(IEnumerable<string> commands);
+        void ExecuteSql(IEnumerable<string> commands, bool useTransaction);
     }
 
     public class NullSqlExecuter : ISqlExecuter
@@ -39,7 +40,16 @@ namespace Rhetos.Utilities
             throw new FrameworkException(message);
         }
 
+        /// <summary>
+        /// Executes the SQL queries in a transaction.
+        /// </summary>
+        /// <param name="commands"></param>
         public void ExecuteSql(IEnumerable<string> commands)
+        {
+            throw new FrameworkException(message);
+        }
+
+        public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
         {
             throw new FrameworkException(message);
         }

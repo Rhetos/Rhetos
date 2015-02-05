@@ -31,6 +31,7 @@ using Rhetos.DatabaseGenerator;
 using System.Text;
 using Autofac.Features.Indexed;
 using Autofac.Features.Metadata;
+using System.Text.RegularExpressions;
 
 namespace Rhetos.DatabaseGenerator.Test
 {
@@ -41,14 +42,20 @@ namespace Rhetos.DatabaseGenerator.Test
 
         public class SimpleConceptImplementation : IConceptDatabaseDefinition
         {
-            public string CreateDatabaseStructure(IConceptInfo conceptInfo) { return "CREATE SimpleConceptImplementation"; }
-            public string RemoveDatabaseStructure(IConceptInfo conceptInfo) { return ""; }
+            public string CreateDatabaseStructure(IConceptInfo conceptInfo) { return "create "+ ((BaseCi)conceptInfo).Name; }
+            public string RemoveDatabaseStructure(IConceptInfo conceptInfo) { return "remove " + ((BaseCi)conceptInfo).Name; }
         }
 
         public class DependentConceptImplementation : IConceptDatabaseDefinition
         {
             public string CreateDatabaseStructure(IConceptInfo conceptInfo) { return "CREATE DependentConceptImplementation"; }
             public string RemoveDatabaseStructure(IConceptInfo conceptInfo) { return ""; }
+        }
+
+        public class NoTransactionConceptImplementation : IConceptDatabaseDefinition
+        {
+            public string CreateDatabaseStructure(IConceptInfo conceptInfo) { return SqlUtility.NoTransactionTag + "create " + ((BaseCi)conceptInfo).Name; }
+            public string RemoveDatabaseStructure(IConceptInfo conceptInfo) { return SqlUtility.NoTransactionTag + "remove " + ((BaseCi)conceptInfo).Name; }
         }
 
         public class BaseCi : IConceptInfo
@@ -63,19 +70,19 @@ namespace Rhetos.DatabaseGenerator.Test
 
             public static NewConceptApplication CreateApplication(string name)
             {
-                return new NewConceptApplication(new BaseCi { Name = name }, new SimpleConceptImplementation())
-                {
-                    CreateQuery = "sql",
-                    DependsOn = new ConceptApplication[] { }
-                };
+                return CreateApplication(name, new SimpleConceptImplementation());
             }
 
             public static NewConceptApplication CreateApplication(string name, IConceptDatabaseDefinition implementation)
             {
-                var ca = CreateApplication(name);
-                ca.ConceptImplementationType = implementation.GetType();
-
-                return ca;
+                var conceptInfo = new BaseCi { Name = name };
+                return new NewConceptApplication(conceptInfo, implementation)
+                {
+                    CreateQuery = implementation.CreateDatabaseStructure(conceptInfo),
+                    RemoveQuery = implementation.RemoveDatabaseStructure(conceptInfo),
+                    DependsOn = new ConceptApplication[] { },
+                    ConceptImplementationType = implementation.GetType(),
+                };
             }
         }
 
@@ -282,7 +289,7 @@ namespace Rhetos.DatabaseGenerator.Test
                 pluginsWithMedata.Select(pm => pm.Item1));
             Lazy<IEnumerable<Meta<IConceptDatabaseDefinition>>> pluginsWithMetadata = new Lazy<IEnumerable<Meta<IConceptDatabaseDefinition>>>(() =>
                 pluginsWithMedata.Select(pm => new Meta<IConceptDatabaseDefinition>(pm.Item1, pm.Item2)));
-            Lazy<IIndex<Type, IEnumerable<IConceptDatabaseDefinition>>> pluginsByImplementation = new Lazy<IIndex<Type,IEnumerable<IConceptDatabaseDefinition>>>(() =>
+            Lazy<IIndex<Type, IEnumerable<IConceptDatabaseDefinition>>> pluginsByImplementation = new Lazy<IIndex<Type, IEnumerable<IConceptDatabaseDefinition>>>(() =>
                 new StubIndex(pluginsWithMedata));
 
             return new PluginsContainer<IConceptDatabaseDefinition>(plugins, pluginsByImplementation, new PluginsMetadataCache<IConceptDatabaseDefinition>(pluginsWithMetadata));
@@ -490,7 +497,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
             string result = string.Join(" ", dependencies
                 .Select(d => ((dynamic)d).DependsOn.ConceptInfo.Name + "<" + ((dynamic)d).Dependent.ConceptInfo.Name)
-                .OrderBy(str=>str));
+                .OrderBy(str => str));
             Console.WriteLine(result);
 
             Assert.AreEqual("1<3 2<3 5<4 A<1 A<3 B<1 B<2 B<3 C<2 C<3 C<4 C<5", result);
@@ -658,6 +665,61 @@ namespace Rhetos.DatabaseGenerator.Test
         private static IEnumerable<ConceptApplication> DirectAndIndirectDependencies(ConceptApplication ca)
         {
             return ca.DependsOn.Union(ca.DependsOn.SelectMany(DirectAndIndirectDependencies));
+        }
+
+        [TestMethod]
+        [DeploymentItem("Rhetos.DatabaseGenerator.dll")]
+        public void DatabaseGenerator_NoTransaction()
+        {
+            var oldApplications = new List<ConceptApplication> {
+                BaseCi.CreateApplication("A", new SimpleConceptImplementation()),
+                BaseCi.CreateApplication("B", new NoTransactionConceptImplementation()),
+                BaseCi.CreateApplication("C", new SimpleConceptImplementation()) };
+            var newApplications = new List<NewConceptApplication> {
+                BaseCi.CreateApplication("D", new SimpleConceptImplementation()),
+                BaseCi.CreateApplication("E", new NoTransactionConceptImplementation()),
+                BaseCi.CreateApplication("F", new SimpleConceptImplementation()) };
+
+            var sqlExecuter = new MockSqlExecuter();
+            var databaseGenerator = new DatabaseGenerator_Accessor(sqlExecuter);
+            databaseGenerator.ApplyChangesToDatabase(oldApplications, newApplications, oldApplications, newApplications);
+
+            var executedSql = TestUtility.Dump(sqlExecuter.executedScriptsWithTransaction, scripts =>
+                    (scripts.Item2 ? "TRAN" : "NOTRAN") + ": " + string.Join(", ", scripts.Item1));
+
+            executedSql = ClearSqlForReport(executedSql);
+
+            Assert.AreEqual(
+                "TRAN: remove A, NOTRAN: remove B, CommitMetadata, TRAN: remove C, create D, NOTRAN: create E, CommitMetadata, TRAN: create F",
+                executedSql);
+        }
+
+        private string ClearSqlForReport(string sql)
+        {
+            Console.WriteLine("ClearSqlForReport: " + sql);
+            return sql
+                .Replace(SqlUtility.NoTransactionTag, "")
+                .Replace("PRINT 'DummyScript'", "CommitMetadata");
+        }
+
+        class MockSqlExecuter : ISqlExecuter
+        {
+            public List<Tuple<List<string>, bool>> executedScriptsWithTransaction = new List<Tuple<List<string>, bool>>();
+
+            public void ExecuteReader(string command, Action<System.Data.Common.DbDataReader> action)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void ExecuteSql(IEnumerable<string> commands)
+            {
+                executedScriptsWithTransaction.Add(Tuple.Create(commands.ToList(), true));
+            }
+
+            public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
+            {
+                executedScriptsWithTransaction.Add(Tuple.Create(commands.ToList(), useTransaction));
+            }
         }
     }
 }

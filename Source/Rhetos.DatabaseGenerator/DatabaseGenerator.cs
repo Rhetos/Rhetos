@@ -35,7 +35,7 @@ namespace Rhetos.DatabaseGenerator
         protected readonly ISqlExecuter _sqlExecuter;
         protected readonly IDslModel _dslModel;
         protected readonly IPluginsContainer<IConceptDatabaseDefinition> _plugins;
-        protected readonly ConceptApplicationRepository _conceptApplicationRepository;
+        protected readonly IConceptApplicationRepository _conceptApplicationRepository;
         protected readonly ILogger _logger;
 		/// <summary>Special logger for keeping track of inserted/updated/deleted concept applications in database.</summary>
         protected readonly ILogger _conceptsLogger;
@@ -50,7 +50,7 @@ namespace Rhetos.DatabaseGenerator
             ISqlExecuter sqlExecuter, 
             IDslModel dslModel,
             IPluginsContainer<IConceptDatabaseDefinition> plugins,
-            ConceptApplicationRepository conceptApplicationRepository,
+            IConceptApplicationRepository conceptApplicationRepository,
             ILogProvider logProvider)
         {
             _sqlExecuter = sqlExecuter;
@@ -472,70 +472,92 @@ namespace Rhetos.DatabaseGenerator
             var stopwatch = Stopwatch.StartNew();
 
             int estimatedNumberOfQueries = (toBeRemoved.Count() + toBeInserted.Count()) * 3;
-            var allSql = new List<string>(estimatedNumberOfQueries);
+            var sqlScripts = new List<string>(estimatedNumberOfQueries);
 
-            int reportRemovedCount = ApplyChangesToDatabase_Remove(allSql, toBeRemoved, oldApplications);
+            sqlScripts.AddRange(ApplyChangesToDatabase_Remove(toBeRemoved, oldApplications));
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Prepared SQL scripts for removing concept applications.");
 
-            ApplyChangesToDatabase_Unchanged(allSql, toBeInserted, newApplications, oldApplications);
+            sqlScripts.AddRange(ApplyChangesToDatabase_Unchanged(toBeInserted, newApplications, oldApplications));
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Prepared SQL scripts for updating unchanged concept applications' metadata.");
 
-            int reportInsertedCount = ApplyChangesToDatabase_Insert(allSql, toBeInserted, newApplications);
+            sqlScripts.AddRange(ApplyChangesToDatabase_Insert(toBeInserted, newApplications));
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Prepared SQL scripts for inserting concept applications.");
 
-            _sqlExecuter.ExecuteSql(allSql.Where(sql => sql != "").ToList());
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Executed " + allSql.Count + " SQL scripts.");
-
-            var logLevel = reportRemovedCount > 0 || reportInsertedCount > 0 ? EventType.Info : EventType.Trace;
-            _deployPackagesLogger.Write(logLevel, "DatabaseGenerator removed " + reportRemovedCount + ", inserted " + reportInsertedCount + " concept applications.");
+            foreach (var batchOfScripts in SqlBatch.FormBatches(sqlScripts.Where(sql => sql != "")))
+                _sqlExecuter.ExecuteSql(batchOfScripts, batchOfScripts.UseTransacion);
+            _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Executed " + sqlScripts.Count + " SQL scripts.");
         }
 
-        protected int ApplyChangesToDatabase_Remove(List<string> allSql, List<ConceptApplication> toBeRemoved, List<ConceptApplication> oldApplications)
+        protected List<string> ApplyChangesToDatabase_Remove(List<ConceptApplication> toBeRemoved, List<ConceptApplication> oldApplications)
         {
+            var newScripts = new List<string>();
+
             toBeRemoved.Sort((ca1, ca2) => ca1.OldCreationOrder - ca2.OldCreationOrder); // TopologicalSort is stable sort, so it will keep this (original) order unless current dependencies direct otherwise.
             Graph.TopologicalSort(toBeRemoved, GetDependencyPairs(oldApplications)); // Concept's dependencies might have changed, without dropping and recreating the concept. It is important to compute up-to-date remove order, otherwise FK constraint FK_AppliedConceptDependsOn_DependsOn might fail.
             toBeRemoved.Reverse();
 
-            int reportRemovedCount = 0;
+            int removedCACount = 0;
             foreach (var ca in toBeRemoved)
             {
-                Log(ca, "Removing");
-
                 string[] removeSqlScripts = SplitSqlScript(ca.RemoveQuery);
-                allSql.AddRange(removeSqlScripts);
                 if (removeSqlScripts.Length > 0)
-                    reportRemovedCount++;
+                {
+                    Log(ca, "Removing");
+                    removedCACount++;
+                }
 
-                allSql.Add(_conceptApplicationRepository.DeleteMetadataSql(ca));
-
-                allSql.Add(Sql.Get("DatabaseGenerator_CommitAfterDDL")); // Oracle must commit metadata changes before modifying next database object, to ensure metadata consistency if next DDL command fails (Oracle db automatically commits changes on DDL commands, so the previous DDL command has already been committed).
+                newScripts.AddRange(removeSqlScripts);
+                newScripts.AddRange(_conceptApplicationRepository.DeleteMetadataSql(ca));
+                newScripts.AddRange(CommitMetadataIfModifyingWithoutTransaction(removeSqlScripts));
             }
-            return reportRemovedCount;
+
+            var logLevel = removedCACount > 0 ? EventType.Info : EventType.Trace;
+            _deployPackagesLogger.Write(logLevel, "DatabaseGenerator removing " + removedCACount + " concept applications.");
+            return newScripts;
         }
 
-        protected int ApplyChangesToDatabase_Insert(List<string> allSql, List<NewConceptApplication> toBeInserted, List<NewConceptApplication> newApplications)
+        protected List<string> ApplyChangesToDatabase_Insert(List<NewConceptApplication> toBeInserted, List<NewConceptApplication> newApplications)
         {
+            var newScripts = new List<string>();
+
             Graph.TopologicalSort(toBeInserted, GetDependencyPairs(newApplications));
 
-            int reportInsertedCount = 0;
+            int insertedCACount = 0;
             foreach (var ca in toBeInserted)
             {
-                Log(ca, "Creating");
-
                 string[] createSqlScripts = SplitSqlScript(ca.CreateQuery);
-                allSql.AddRange(createSqlScripts);
                 if (createSqlScripts.Length > 0)
-                    reportInsertedCount++;
+                {
+                    Log(ca, "Creating");
+                    insertedCACount++;
+                }
 
-                allSql.AddRange(_conceptApplicationRepository.InsertMetadataSql(ca));
-
-                allSql.Add(Sql.Get("DatabaseGenerator_CommitAfterDDL")); // Oracle must commit metadata changes before modifying next database object, to ensure metadata consistency if next DDL command fails (Oracle db automatically commits changes on DDL commands, so the previous DDL command has already been committed).
+                newScripts.AddRange(createSqlScripts);
+                newScripts.AddRange(_conceptApplicationRepository.InsertMetadataSql(ca));
+                newScripts.AddRange(CommitMetadataIfModifyingWithoutTransaction(createSqlScripts));
             }
-            return reportInsertedCount;
+
+            var logLevel = insertedCACount > 0 ? EventType.Info : EventType.Trace;
+            _deployPackagesLogger.Write(logLevel, "DatabaseGenerator creating " + insertedCACount + " concept applications.");
+            return newScripts;
         }
 
-        protected void ApplyChangesToDatabase_Unchanged(List<string> allSql, List<NewConceptApplication> toBeInserted, List<NewConceptApplication> newApplications, List<ConceptApplication> oldApplications)
+        private IEnumerable<string> CommitMetadataIfModifyingWithoutTransaction(string[] databaseModificationScripts)
         {
+            // If a DDL script is executed out of transaction, its metadata should also be committed immediately,
+            // to avoid rolling back the concept application's metadata in case of any error that might occur later in the transaction.
+            if (databaseModificationScripts.Any(script => script.StartsWith(SqlUtility.NoTransactionTag)))
+                yield return SqlUtility.NoTransactionTag + Sql.Get("DatabaseGenerator_DummyScript"); // The NoTransaction script will force commit of the previous (metadata) scripts.
+
+            // Oracle must commit metadata changes before modifying next database object, to ensure metadata consistency if next DDL command fails
+            // (Oracle db automatically commits changes on DDL commands, so the previous DDL command has already been committed).
+            yield return Sql.Get("DatabaseGenerator_CommitAfterDDL");
+        }
+
+        protected List<string> ApplyChangesToDatabase_Unchanged(List<NewConceptApplication> toBeInserted, List<NewConceptApplication> newApplications, List<ConceptApplication> oldApplications)
+        {
+            var newScripts = new List<string>();
+
             var indexInsertedConcepts = new HashSet<string>(toBeInserted.Select(ca => ca.GetConceptApplicationKey()));
             var unchangedApplications = newApplications
                 .Where(ca => !indexInsertedConcepts.Contains(ca.GetConceptApplicationKey()));
@@ -548,16 +570,18 @@ namespace Rhetos.DatabaseGenerator
                 if (updateMetadataSql.Count() > 0)
                 {
                     Log(ca, "Updating metadata");
-                    allSql.AddRange(updateMetadataSql);
+                    newScripts.AddRange(updateMetadataSql);
                 }
             }
+
+            return newScripts;
         }
 
         protected static string[] SplitSqlScript(string script)
         {
             if (string.IsNullOrEmpty(script))
                 return new string[] { };
-            return script.Split(new[] { SqlUtility.ScriptSplitter }, StringSplitOptions.RemoveEmptyEntries)
+            return script.Split(new[] { SqlUtility.ScriptSplitterTag }, StringSplitOptions.RemoveEmptyEntries)
                 .Where(query => !string.IsNullOrWhiteSpace(query))
                 .Select(query => query.Trim()).ToArray();
         }

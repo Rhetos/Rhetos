@@ -118,6 +118,11 @@ namespace Rhetos.Deployment.Test
                     throw new Exception("Unexpected SQL command in MockSqlExecuter.");
                 }
             }
+
+            public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
+            {
+                ExecuteSql(commands);
+            }
         }
 
         public void TestCleanupRedundantOldData(string description,

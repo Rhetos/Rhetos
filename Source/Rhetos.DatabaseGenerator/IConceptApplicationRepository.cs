@@ -17,22 +17,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac;
-using Rhetos.DatabaseGenerator;
-using Rhetos.Extensibility;
+using System;
+using System.Collections.Generic;
 
-namespace Rhetos.Configuration.Autofac
+namespace Rhetos.DatabaseGenerator
 {
-    public class DatabaseGeneratorModuleConfiguration : Module
+    public interface IConceptApplicationRepository
     {
-        protected override void Load(ContainerBuilder builder)
-        {
-            builder.RegisterType<ConceptApplicationRepository>().As<IConceptApplicationRepository>();
-            builder.RegisterType<DatabaseGenerator.DatabaseGenerator>().As<IDatabaseGenerator>();
-            Plugins.FindAndRegisterPlugins<IConceptDatabaseDefinition>(builder);
-            builder.RegisterType<NullImplementation>().As<IConceptDatabaseDefinition>();
-
-            base.Load(builder);
-        }
+        List<string> InsertMetadataSql(NewConceptApplication ca);
+        List<string> UpdateMetadataSql(NewConceptApplication ca, ConceptApplication oldApp);
+        List<string> DeleteMetadataSql(ConceptApplication ca);
+        List<ConceptApplication> Load();
     }
 }
