@@ -125,6 +125,7 @@
     <Compile Include="IDslModelIndex.cs" />
     <Compile Include="IDslScriptsLoader.cs" />
     <Compile Include="InitializationConcept.cs" />
+    <Compile Include="IValidatedConcept.cs" />
     <Compile Include="IValidationConcept.cs" />
     <Compile Include="IDslModel.cs" />
     <Compile Include="IDslSource.cs" />

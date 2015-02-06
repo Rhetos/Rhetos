@@ -98,7 +98,6 @@ namespace Rhetos.Dsl
                         var loadedConcepts = LoadConcepts();
                         _dslContainer.AddNewConceptsAndReplaceReferences(loadedConcepts);
 
-                        LogDslModel();
                         _performanceLogger.Write(sw, "DslModelFile.Initialize (" + _dslContainer.Concepts.Count() + " concepts).");
                         _initialized = true;
                     }
@@ -142,23 +141,6 @@ namespace Rhetos.Dsl
             var concepts = (IEnumerable<IConceptInfo>)JsonConvert.DeserializeObject(serializedConcepts, serializerSettings);
             _performanceLogger.Write(sw, "DslModelFile.Load.");
             return concepts;
-        }
-
-        private void LogDslModel()
-        {
-            var sw = Stopwatch.StartNew();
-
-            // It is important to avoid generating XMLs if the logger is not enabled.
-            var xmlUtility = new Lazy<XmlUtility>(() => new XmlUtility(null));
-            var sortedConceptsXml = new Lazy<List<string>>(() => _dslContainer.Concepts
-                .Select(c => xmlUtility.Value.SerializeToXml(c, c.GetType()))
-                .OrderBy(xml => xml).ToList());
-
-            const int chunkSize = 10000; // Keeping message size under NLog memory limit.
-            for (int start = 0; start < _dslContainer.Concepts.Count(); start += chunkSize)
-                _dslModelConceptsLogger.Trace(() => string.Join("\r\n", sortedConceptsXml.Value.Skip(start).Take(chunkSize)));
-
-            _performanceLogger.Write(sw, "DslModel.LogDslModel.");
         }
     }
 }

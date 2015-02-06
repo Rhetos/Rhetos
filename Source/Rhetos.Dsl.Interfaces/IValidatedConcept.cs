@@ -22,27 +22,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Rhetos.Dsl.DefaultConcepts
+namespace Rhetos.Dsl
 {
-    /// <summary>This is a temporary solution until IValidationConcept.CheckSemantics is upgraded to use IDslModel.</summary>
-    public class ConceptsListToDslModel : IDslModel
+    /// <summary>
+    /// An implementation of IConceptInfo may implement this interface
+    /// to enforce constraints that cannot be enforced by data structure or inheritance.
+    /// </summary>
+    public interface IValidatedConcept : IConceptInfo
     {
-        public ConceptsListToDslModel(IEnumerable<IConceptInfo> concepts)
-        {
-            Concepts = concepts;
-        }
-
-        public IEnumerable<IConceptInfo> Concepts { get; set; }
-
-        public IConceptInfo FindByKey(string conceptKey)
-        {
-            // TODO: This entire class should be removed after implementing concept validation with IDslModel argument.
-            throw new NotImplementedException();
-        }
-
-        public T GetIndex<T>() where T : IDslModelIndex
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Throws exception if the instance of IConceptInfo has invalid data.
+        /// </summary>
+        void CheckSemantics(IDslModel existingConcepts);
     }
 }

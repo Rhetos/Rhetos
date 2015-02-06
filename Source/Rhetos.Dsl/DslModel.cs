@@ -129,15 +129,15 @@ namespace Rhetos.Dsl
         {
             var sw = Stopwatch.StartNew();
 
-            // It is important to avoid generating XMLs if the logger is not enabled.
-            var xmlUtility = new Lazy<XmlUtility>(() => new XmlUtility(null));
-            var sortedConceptsXml = new Lazy<List<string>>(() => _dslContainer.Concepts
-                .Select(c => xmlUtility.Value.SerializeToXml(c, c.GetType()))
-                .OrderBy(xml => xml).ToList());
+            // It is important to avoid generating the log data if the logger is not enabled.
+            var sortedConceptsLog = new Lazy<List<string>>(() => _dslContainer.Concepts
+                .Select(c => c.GetFullDescription())
+                .OrderBy(log => log)
+                .ToList());
 
-            const int chunkSize = 10000; // Keeping message size under NLog memory limit.
+            const int chunkSize = 10000; // Keeping the message size under NLog memory limit.
             for (int start = 0; start < _dslContainer.Concepts.Count(); start += chunkSize)
-                _dslModelConceptsLogger.Trace(() => string.Join("\r\n", sortedConceptsXml.Value.Skip(start).Take(chunkSize)));
+                _dslModelConceptsLogger.Trace(() => string.Join("\r\n", sortedConceptsLog.Value.Skip(start).Take(chunkSize)));
 
             _performanceLogger.Write(sw, "DslModel.LogDslModel.");
         }
@@ -343,8 +343,32 @@ namespace Rhetos.Dsl
         private void CheckSemantics()
         {
             var sw = Stopwatch.StartNew();
-            foreach (var conceptValidation in _dslContainer.Concepts.OfType<IValidationConcept>())
-                conceptValidation.CheckSemantics(_dslContainer.Concepts);
+
+            // Validations are grouped by concept type, for group preformance diagnostics.
+            var validationsByConcept = new MultiDictionary<Type, Action>();
+
+            foreach (var conceptValidation in _dslContainer.FindByType<IValidationConcept>())
+                validationsByConcept.Add(conceptValidation.GetType(), () => conceptValidation.CheckSemantics(_dslContainer.Concepts));
+
+            foreach (var conceptValidation in _dslContainer.FindByType<IValidatedConcept>())
+                validationsByConcept.Add(conceptValidation.GetType(), () => conceptValidation.CheckSemantics(_dslContainer));
+
+            var validationStopwatches = new Dictionary<Type, Stopwatch>();
+
+            foreach (var validationsGroup in validationsByConcept)
+            {
+                var validationStopwatch = Stopwatch.StartNew();
+
+                foreach (var validation in validationsGroup.Value)
+                    validation.Invoke();
+
+                validationStopwatch.Stop();
+                validationStopwatches.Add(validationsGroup.Key, validationStopwatch);
+            }
+
+            foreach (var validationStopwatch in validationStopwatches.OrderByDescending(vsw => vsw.Value.Elapsed.TotalSeconds).Take(3))
+                _performanceLogger.Write(validationStopwatch.Value, () => "DslModel.CheckSemantics total time for " + validationStopwatch.Key.Name + ".");
+
             _performanceLogger.Write(sw, "DslModel.CheckSemantics");
         }
     }
