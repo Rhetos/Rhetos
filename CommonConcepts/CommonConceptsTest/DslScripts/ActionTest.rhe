@@ -39,7 +39,7 @@ Module TestAction
         ShortString Name;
         
         ItemFilter NameHasLessThanThreeChars 'item => item.Name.Length < 3';
-        DenySave NameHasLessThanThreeChars 'Name have to be longer than 2 chars.';
+        InvalidData NameHasLessThanThreeChars 'Name have to be longer than 2 chars.';
         
     }
     

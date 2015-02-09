@@ -371,12 +371,12 @@ Module TestMultipleLock
         Reference PassDependency;
         
         ItemFilter PassValidation 'item => !repository.TestMultipleLock.SimpleChecks.Filter(new[]{item.ID}).SingleOrDefault().ContainsAlphabetic.Value || !repository.TestMultipleLock.SimpleChecks.Filter(new[]{item.ID}).SingleOrDefault().ContainsNumeric.Value || !repository.TestMultipleLock.SimpleChecks.Filter(new[]{item.ID}).SingleOrDefault().ContainsNonAlphaNumeric.Value';
-        DenySave PassValidation 'Pass is not valid.';
+        InvalidData PassValidation 'Pass is not valid.';
 
         ItemFilter PassContainsName 'item => item.Pass.Contains(item.UserName)';
-        DenySave PassContainsName 'Pass cannot contain UserName.';
+        InvalidData PassContainsName 'Pass cannot contain UserName.';
 
         ItemFilter PassTooShort 'item => item.Pass.Length < item.PassDependency.MinPassLength';
-        DenySave PassTooShort 'Pass is too short.';
+        InvalidData PassTooShort 'Pass is too short.';
     }
 }

@@ -188,7 +188,7 @@
     <Compile Include="LockItemsTest.cs" />
     <Compile Include="LoggingTest.cs" />
     <Compile Include="PersistedAllPropertiesTest.cs" />
-    <Compile Include="DenySaveTest.cs" />
+    <Compile Include="InvalidDataTest.cs" />
     <Compile Include="RequiredPropertyTest.cs" />
     <Compile Include="SqlFilterTest.cs" />
     <Compile Include="SqlWorkaroundsTest.cs" />

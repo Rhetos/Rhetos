@@ -49,13 +49,13 @@ namespace Rhetos.Dsl.DefaultConcepts
                     FilterName = Property.Name + "_MinValueFilter", 
                     Source = Property.DataStructure 
             };
-            var denySaveMinValueProperty = new DenySaveForPropertyInfo { 
+            var invalidDataMinValueProperty = new InvalidDataMarkPropertyInfo { 
                     DependedProperty = Property,
                     FilterType = itemFilterMinValueProperty.FilterName,
                     ErrorMessage = String.Format("Minimum value of {0} is {1}.", Property.Name, Value), 
                     Source = Property.DataStructure 
             };
-            return new IConceptInfo[] { itemFilterMinValueProperty, denySaveMinValueProperty };
+            return new IConceptInfo[] { itemFilterMinValueProperty, invalidDataMinValueProperty };
         }
 
         private static readonly Regex DecimalChecker = new Regex(@"^[+-]?(\d+(\.\d*)?|\.\d+)$");

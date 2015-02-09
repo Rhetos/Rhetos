@@ -323,7 +323,7 @@ Module TestGenericFilter
 	}
 }
 
-Module TestDenySave
+Module TestInvalidData
 {
 	Entity Simple
 	{
@@ -331,7 +331,7 @@ Module TestDenySave
 		Integer Count;
 		
 		ItemFilter TooMuch 'item => item.Count > 100';
-		DenySave TooMuch 'Quantity may not be larger than 100.';
+		InvalidData TooMuch 'Quantity may not be larger than 100.';
 	}
 }
 

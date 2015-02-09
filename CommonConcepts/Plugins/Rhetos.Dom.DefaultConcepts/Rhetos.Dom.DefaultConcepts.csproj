@@ -80,7 +80,7 @@
     <Compile Include="Advanced\EntityHistoryCodeGenerator.cs" />
     <Compile Include="Computations\EntityComputedFromCodeGenerator.cs" />
     <Compile Include="Computations\LockItemsMarkPropertyCodeGenerator.cs" />
-    <Compile Include="Computations\DenySaveForPropertyCodeGenerator.cs" />
+    <Compile Include="Computations\InvalidDataForPropertyCodeGenerator.cs" />
     <Compile Include="Computations\LockPropertyCodeGenerator.cs" />
     <Compile Include="Computations\HierarchySingleRootInternalCodeGenerator.cs" />
     <Compile Include="Computations\ReportFileCodeGenerator.cs" />
@@ -94,7 +94,7 @@
     <Compile Include="DataStructureUtility.cs" />
     <Compile Include="Computations\ComposableFilterByCodeGenerator.cs" />
     <Compile Include="Computations\ComputationUseExecutionContextCodeGenerator.cs" />
-    <Compile Include="Computations\DenySaveCodeGenerator.cs" />
+    <Compile Include="Computations\InvalidDataCodeGenerator.cs" />
     <Compile Include="Computations\FilterByCodeGenerator.cs" />
     <Compile Include="Computations\KeepSynchronizedOnChangedItemsCodeGenerator.cs" />
     <Compile Include="Computations\ComputeForNewBaseItemsCodeGenerator.cs" />

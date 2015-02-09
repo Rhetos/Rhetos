@@ -44,14 +44,14 @@ namespace Rhetos.Dsl.DefaultConcepts
                 FilterName = Property.Name + "_MaxLengthFilter",
                 Source = Property.DataStructure
             };
-            var denySaveMinLengthProperty = new DenySaveForPropertyInfo
+            var invalidDataMinLengthProperty = new InvalidDataMarkPropertyInfo
             {
                 DependedProperty = Property,
                 FilterType = itemFilterMinLengthProperty.FilterName,
                 ErrorMessage = String.Format("Maximum allowed length of {0} is {1} characters.", Property.Name, Length),
                 Source = Property.DataStructure
             };
-            return new IConceptInfo[] { itemFilterMinLengthProperty, denySaveMinLengthProperty };
+            return new IConceptInfo[] { itemFilterMinLengthProperty, invalidDataMinLengthProperty };
         }
 
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)

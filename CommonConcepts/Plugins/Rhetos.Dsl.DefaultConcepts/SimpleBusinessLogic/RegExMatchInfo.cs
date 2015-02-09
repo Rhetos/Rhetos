@@ -48,14 +48,14 @@ namespace Rhetos.Dsl.DefaultConcepts
                 FilterName = Property.Name + "_RegExMatchFilter",
                 Source = Property.DataStructure
             };
-            var denySaveRegExMatchProperty = new DenySaveForPropertyInfo
+            var invalidDataRegExMatchProperty = new InvalidDataMarkPropertyInfo
             {
                 DependedProperty = Property,
                 FilterType = itemFilterRegExMatchProperty.FilterName,
                 ErrorMessage = ErrorMessage,
                 Source = Property.DataStructure
             };
-            return new IConceptInfo[] { itemFilterRegExMatchProperty, denySaveRegExMatchProperty };
+            return new IConceptInfo[] { itemFilterRegExMatchProperty, invalidDataRegExMatchProperty };
         }
 
         public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)

@@ -45,7 +45,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 Expression = "item => item." + Property.Name + " == null"
             };
 
-            var denySave = new DenySaveForPropertyInfo
+            var invalidData = new InvalidDataMarkPropertyInfo
             {
                 Source = Property.DataStructure,
                 FilterType = filterName,
@@ -58,7 +58,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 DataStructure = Property.DataStructure
             };
 
-            return new IConceptInfo[] { filter, denySave, reloadBeforeValidations };
+            return new IConceptInfo[] { filter, invalidData, reloadBeforeValidations };
         }
     }
 }

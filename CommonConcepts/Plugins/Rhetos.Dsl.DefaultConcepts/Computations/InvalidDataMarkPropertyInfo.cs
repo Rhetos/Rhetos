@@ -20,30 +20,15 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Globalization;
 using System.Linq;
 using System.Text;
-using Rhetos.Utilities;
-using Rhetos.Compiler;
-using Rhetos.Dsl;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Dsl.DefaultConcepts
 {
-    [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(DenySaveForPropertyInfo))]
-    public class DenySaveForPropertyCodeGenerator : IConceptCodeGenerator
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("InvalidData")]
+    public class InvalidDataMarkPropertyInfo : InvalidDataInfo
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
-        {
-            var info = (DenySaveForPropertyInfo)conceptInfo;
-            codeBuilder.InsertCode(AdditionalInvalidMessageSnippet(info), DenySaveCodeGenerator.UserMessageAppend, info);
-        }
-
-        private static string AdditionalInvalidMessageSnippet(DenySaveForPropertyInfo info)
-        {
-            return string.Format(@"+"",Property:{0}""", info.DependedProperty.Name);
-        }
+        public PropertyInfo DependedProperty { get; set; }
     }
 }

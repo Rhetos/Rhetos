@@ -29,16 +29,16 @@ using Rhetos.Utilities;
 namespace CommonConcepts.Test
 {
     [TestClass]
-    public class DenySaveTest
+    public class InvalidDataTest
     {
         private static void AssertData(Common.DomRepository repository, string expected)
         {
-            Assert.AreEqual(expected, TestUtility.DumpSorted(repository.TestDenySave.Simple.All(), item => item.Name));
+            Assert.AreEqual(expected, TestUtility.DumpSorted(repository.TestInvalidData.Simple.All(), item => item.Name));
         }
 
-        private static TestDenySave.Simple[] CreateSimple(params int[] data)
+        private static TestInvalidData.Simple[] CreateSimple(params int[] data)
         {
-            return data.Select(e => new TestDenySave.Simple { Name = "s" + e, Count = e }).ToArray();
+            return data.Select(e => new TestInvalidData.Simple { Name = "s" + e, Count = e }).ToArray();
         }
 
         [TestMethod]
@@ -46,13 +46,13 @@ namespace CommonConcepts.Test
         {
             using (var container = new RhetosTestContainer())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDenySave.Simple;" });
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestInvalidData.Simple;" });
                 var repository = container.Resolve<Common.DomRepository>();
 
-                repository.TestDenySave.Simple.Insert(CreateSimple(3));
+                repository.TestInvalidData.Simple.Insert(CreateSimple(3));
                 AssertData(repository, "s3");
 
-                TestUtility.ShouldFail(() => repository.TestDenySave.Simple.Insert(CreateSimple(300)), "larger than 100");
+                TestUtility.ShouldFail(() => repository.TestInvalidData.Simple.Insert(CreateSimple(300)), "larger than 100");
             }
         }
 
@@ -61,10 +61,10 @@ namespace CommonConcepts.Test
         {
             using (var container = new RhetosTestContainer())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDenySave.Simple;" });
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestInvalidData.Simple;" });
                 var repository = container.Resolve<Common.DomRepository>();
 
-                TestUtility.ShouldFail(() => repository.TestDenySave.Simple.Insert(CreateSimple(3, 300)), "larger than 100");
+                TestUtility.ShouldFail(() => repository.TestInvalidData.Simple.Insert(CreateSimple(3, 300)), "larger than 100");
             }
         }
 
@@ -73,20 +73,20 @@ namespace CommonConcepts.Test
         {
             using (var container = new RhetosTestContainer())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDenySave.Simple;" });
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestInvalidData.Simple;" });
                 var repository = container.Resolve<Common.DomRepository>();
 
                 var s3 = CreateSimple(3).Single();
-                repository.TestDenySave.Simple.Insert(new[] { s3 });
+                repository.TestInvalidData.Simple.Insert(new[] { s3 });
 
                 s3.Name = "s3b";
                 s3.Count = 33;
-                repository.TestDenySave.Simple.Update(new[] { s3 });
+                repository.TestInvalidData.Simple.Update(new[] { s3 });
 
                 AssertData(repository, "s3b");
                 s3.Name = "s3c";
                 s3.Count = 300;
-                TestUtility.ShouldFail(() => repository.TestDenySave.Simple.Update(new[] { s3 }), "larger than 100");
+                TestUtility.ShouldFail(() => repository.TestInvalidData.Simple.Update(new[] { s3 }), "larger than 100");
             }
         }
 
@@ -95,22 +95,22 @@ namespace CommonConcepts.Test
         {
             using (var container = new RhetosTestContainer())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDenySave.Simple;" });
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestInvalidData.Simple;" });
                 var repository = container.Resolve<Common.DomRepository>();
 
                 var s1 = CreateSimple(1).Single();
                 var s2 = CreateSimple(2).Single();
                 var s3 = CreateSimple(3).Single();
-                repository.TestDenySave.Simple.Insert(new[] { s1, s2, s3 });
+                repository.TestInvalidData.Simple.Insert(new[] { s1, s2, s3 });
                 s3.Name = "s3b";
                 s3.Count = 33;
-                repository.TestDenySave.Simple.Update(new[] { s3 });
-                repository.TestDenySave.Simple.Delete(new[] { s1 });
+                repository.TestInvalidData.Simple.Update(new[] { s3 });
+                repository.TestInvalidData.Simple.Delete(new[] { s1 });
 
                 AssertData(repository, "s2, s3b");
                 s3.Name = "s3d";
                 s3.Count = 333;
-                TestUtility.ShouldFail(() => repository.TestDenySave.Simple.Save(CreateSimple(5), new[] { s3 }, new[] { s2 }), "larger than 100");
+                TestUtility.ShouldFail(() => repository.TestInvalidData.Simple.Save(CreateSimple(5), new[] { s3 }, new[] { s2 }), "larger than 100");
             }
         }
 
@@ -119,22 +119,22 @@ namespace CommonConcepts.Test
         {
             using (var container = new RhetosTestContainer())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDenySave.Simple;" });
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestInvalidData.Simple;" });
                 var repository = container.Resolve<Common.DomRepository>();
 
                 var s1 = CreateSimple(1).Single();
                 var s2 = CreateSimple(2).Single();
                 var s3 = CreateSimple(3).Single();
-                repository.TestDenySave.Simple.Insert(new[] { s1, s2, s3 });
+                repository.TestInvalidData.Simple.Insert(new[] { s1, s2, s3 });
                 s3.Name = "s3b";
                 s3.Count = 33;
-                repository.TestDenySave.Simple.Update(new[] { s3 });
-                repository.TestDenySave.Simple.Delete(new[] { s1 });
+                repository.TestInvalidData.Simple.Update(new[] { s3 });
+                repository.TestInvalidData.Simple.Delete(new[] { s1 });
 
                 AssertData(repository, "s2, s3b");
                 s3.Name = "s3e";
                 s3.Count = 33;
-                TestUtility.ShouldFail(() => repository.TestDenySave.Simple.Save(CreateSimple(555), new[] { s3 }, new[] { s2 }), "larger than 100");
+                TestUtility.ShouldFail(() => repository.TestInvalidData.Simple.Save(CreateSimple(555), new[] { s3 }, new[] { s2 }), "larger than 100");
             }
         }
     }

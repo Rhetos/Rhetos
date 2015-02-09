@@ -110,6 +110,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Computations\ApplyFilterOnClientReadInfo.cs" />
+    <Compile Include="Computations\InvalidDataInfo.cs" />
+    <Compile Include="Computations\InvalidDataMarkPropertyInfo.cs" />
     <Compile Include="Computations\ItemFilterReferencedInfo.cs" />
     <Compile Include="Computations\ItemFilterReferencedNoSubfilterInfo.cs" />
     <Compile Include="Computations\ComposableFilterByReferencedNoSubfilterInfo.cs" />

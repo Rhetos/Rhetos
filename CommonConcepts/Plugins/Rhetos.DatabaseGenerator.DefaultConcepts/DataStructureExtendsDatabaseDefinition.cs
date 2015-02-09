@@ -62,7 +62,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                     ForeignKeyUtility.GetSchemaTableForForeignKey(info.Base),
                     ForeignKeyConstraintOptions.Evaluate(info));
             }
-            // TODO: else - Generate a Filter+DenySave validation in the server application that checks for invalid items.
+            // TODO: else - Generate a Filter+InvalidData validation in the server application that checks for invalid items.
             return "";
         }
 

@@ -32,19 +32,19 @@ using Rhetos.Extensibility;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(DenySaveInfo))]
-    public class DenySaveCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(InvalidDataInfo))]
+    public class InvalidDataCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly CsTag<DenySaveInfo> UserMessageAppend = "UserMessage";
+        public static readonly CsTag<InvalidDataInfo> UserMessageAppend = "UserMessage";
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (DenySaveInfo)conceptInfo;
+            var info = (InvalidDataInfo)conceptInfo;
             codeBuilder.InsertCode(CheckInvalidItemsSnippet(info), WritableOrmDataStructureCodeGenerator.OnSaveTag2, info.Source);
             codeBuilder.AddReferencesFromDependency(typeof(UserException));
         }
 
-        private static string CheckInvalidItemsSnippet(DenySaveInfo info)
+        private static string CheckInvalidItemsSnippet(InvalidDataInfo info)
         {
             return string.Format(
 @"            if (inserted.Length > 0 || updated.Length > 0)
