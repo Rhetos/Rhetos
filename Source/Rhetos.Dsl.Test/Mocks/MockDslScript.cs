@@ -24,38 +24,15 @@ using System.Text;
 
 namespace Rhetos.Dsl.Test
 {
-    public class MockDslSource : DslScriptProvider
+    public class MockDslScript : DslScript
     {
-        public MockDslSource(string dslScript)
-            : base(new MockDslLoader(dslScript))
-        {
-        }
-
-        public MockDslSource(params DslScript[] dslScripts)
-            : base(new MockDslLoader(dslScripts))
-        {
-        }
-
         public const string TestScriptName = "TestDslScript";
-    }
 
-    class MockDslLoader : IDslScriptsLoader
-    {
-        DslScript[] _dslScripts;
-
-        public MockDslLoader(string dslScript)
+        public MockDslScript(string dsl)
         {
-            _dslScripts = new[] { new DslScript { Name = MockDslSource.TestScriptName, Script = dslScript } };
-        }
-
-        public MockDslLoader(params DslScript[] dslScripts)
-        {
-            _dslScripts = dslScripts;
-        }
-
-        public IEnumerable<DslScript> DslScripts
-        {
-            get { return _dslScripts; }
+            Script = dsl;
+            Name = TestScriptName;
+            Path = TestScriptName;
         }
     }
 }

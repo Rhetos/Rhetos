@@ -43,7 +43,7 @@ namespace Rhetos.Deployment
         private readonly DatabaseCleaner _databaseCleaner;
         private readonly DataMigration _dataMigration;
         private readonly IDatabaseGenerator _databaseGenerator;
-        private readonly IDslScriptsLoader _dslScriptsLoader;
+        private readonly IDslScriptsProvider _dslScriptsLoader;
         private readonly INHibernateMapping _nHibernateMapping;
 
         public ApplicationGenerator(
@@ -55,7 +55,7 @@ namespace Rhetos.Deployment
             DatabaseCleaner databaseCleaner,
             DataMigration dataMigration,
             IDatabaseGenerator databaseGenerator,
-            IDslScriptsLoader dslScriptsLoader,
+            IDslScriptsProvider dslScriptsLoader,
             INHibernateMapping nHibernateMapping)
         {
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");

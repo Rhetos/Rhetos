@@ -21,14 +21,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Diagnostics.Contracts;
 
-namespace Rhetos.Dsl
+namespace Rhetos.Dsl.Test
 {
-    public interface IDslSource
+    class MockDslScriptsProvider : IDslScriptsProvider
     {
-        string Script { get; }
-        string ReportError(int index);
-        string GetSourceFilePath(int index);
+        DslScript[] _dslScripts;
+
+        public MockDslScriptsProvider(params string[] dslScripts)
+        {
+            _dslScripts = dslScripts.Select(dslScript => new MockDslScript(dslScript)).ToArray();
+        }
+
+        public IEnumerable<DslScript> DslScripts
+        {
+            get { return _dslScripts; }
+        }
     }
 }

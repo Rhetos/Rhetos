@@ -17,17 +17,21 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 namespace Rhetos.Dsl
 {
     public class DslScript
     {
         public string Name { get; set; }
         public string Script { get; set; }
-        private string _path;
-        public string Path
+        public string Path { get; set; }
+
+        public string ReportPosition(int index)
         {
-            get { return _path ?? Name; }
-            set { _path = value; }
+            if (index < 0 || index > Script.Length)
+                throw new FrameworkException("Error in DSL script parser. Provided position in script is out of range. Position: " + index + ".");
+
+            return ScriptPositionReporting.ReportPosition(Script, index, Path);
         }
     }
 }

@@ -37,8 +37,8 @@ namespace Rhetos.Configuration.Autofac
         {
             if (_deploymentTime)
             {
-                builder.RegisterType<DiskDslScriptLoader>().As<IDslScriptsLoader>().SingleInstance();
-                builder.RegisterType<DslScriptProvider>().As<IDslSource>().SingleInstance();
+                builder.RegisterType<DiskDslScriptLoader>().As<IDslScriptsProvider>().SingleInstance();
+                builder.RegisterType<Tokenizer>().As<Tokenizer>().SingleInstance();
                 builder.RegisterType<DslModel>().As<IDslModel>().SingleInstance();
                 builder.RegisterType<DslModelFile>().As<IDslModelFile>().SingleInstance();
                 builder.RegisterType<DslParser>().As<IDslParser>();

@@ -63,12 +63,12 @@
     <Compile Include="DslContainerTest.cs" />
     <Compile Include="DslParserTest.cs" />
     <Compile Include="DslParser_Accessor.cs" />
-    <Compile Include="DslScriptProviderTest.cs" />
-    <Compile Include="DslSourceHelper.cs" />
+    <Compile Include="DslScriptTest.cs" />
     <Compile Include="DslModelTest.cs" />
     <Compile Include="GenericParserTest.cs" />
-    <Compile Include="MockDslSource.cs" />
-    <Compile Include="PluginsContainerMock.cs" />
+    <Compile Include="Mocks\MockDslScript.cs" />
+    <Compile Include="Mocks\MockDslScriptsProvider.cs" />
+    <Compile Include="Mocks\MockPluginsContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TokenizerTest.cs" />
     <Compile Include="InitializationConceptTest.cs" />

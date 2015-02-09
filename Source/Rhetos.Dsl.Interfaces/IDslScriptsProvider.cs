@@ -24,7 +24,7 @@ using System.Text;
 
 namespace Rhetos.Dsl
 {
-    public interface IDslScriptsLoader
+    public interface IDslScriptsProvider
     {
         IEnumerable<DslScript> DslScripts { get; }
     }

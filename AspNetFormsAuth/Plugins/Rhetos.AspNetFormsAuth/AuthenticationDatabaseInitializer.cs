@@ -103,14 +103,14 @@ namespace Rhetos.AspNetFormsAuth
             ((NHibernatePersistenceTransaction)_persistenceTransaction).CommitAndReconnect();
 
             var path = Path.Combine(Paths.PluginsFolder, @"InitAspNetDatabase.exe");
-            ExecuteApplication(path);
+            ExecuteApplication(path, "/nopause");
         }
 
-        private void ExecuteApplication(string path)
+        private void ExecuteApplication(string path, string arguments)
         {
             ProcessStartInfo start = new ProcessStartInfo(path)
             {
-                Arguments = "/nopause",
+                Arguments = arguments,
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,

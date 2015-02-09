@@ -59,11 +59,11 @@ namespace Rhetos.Dsl.Test
 
         private static Token TestGetNextToken_ValueType(string dsl, ref int position)
         {
-            var dslSource = new DslSourceHelper(dsl);
-            return TokenizerInternals.GetNextToken_ValueType(dslSource, ref position);
+            var dslScript = new MockDslScript(dsl);
+            return TokenizerInternals.GetNextToken_ValueType(dslScript, ref position);
         }
 
-        static void CheckSingle(Token.TokenType expectedType, string expectedValue, string dsl)
+        static void CheckSingle(TokenType expectedType, string expectedValue, string dsl)
         {
             int p = 0;
             Token t = TestGetNextToken_ValueType(dsl, ref p);
@@ -85,51 +85,51 @@ namespace Rhetos.Dsl.Test
         [TestMethod()]
         public void GetNextToken_SimpleString()
         {
-            CheckSingle(Token.TokenType.Text, "Ab", "Ab");
-            CheckSingle(Token.TokenType.Text, "ab", "ab.");
-            CheckSingle(Token.TokenType.Text, "ab", "ab{");
-            CheckSingle(Token.TokenType.Text, "ab", "ab;");
-            CheckSingle(Token.TokenType.Text, "ab", "ab\tcd");
-            CheckSingle(Token.TokenType.Text, "ab", "ab\rcd");
-            CheckSingle(Token.TokenType.Text, "ab", "ab\ncd");
-            CheckSingle(Token.TokenType.Text, "ab_1", "ab_1");
-            CheckSingle(Token.TokenType.Text, "_ab", "_ab");
-            CheckSingle(Token.TokenType.Text, "123abc", "123abc.");
-            CheckSingle(Token.TokenType.Text, "čćšđžČĆŠĐŽ", "čćšđžČĆŠĐŽ.");
+            CheckSingle(TokenType.Text, "Ab", "Ab");
+            CheckSingle(TokenType.Text, "ab", "ab.");
+            CheckSingle(TokenType.Text, "ab", "ab{");
+            CheckSingle(TokenType.Text, "ab", "ab;");
+            CheckSingle(TokenType.Text, "ab", "ab\tcd");
+            CheckSingle(TokenType.Text, "ab", "ab\rcd");
+            CheckSingle(TokenType.Text, "ab", "ab\ncd");
+            CheckSingle(TokenType.Text, "ab_1", "ab_1");
+            CheckSingle(TokenType.Text, "_ab", "_ab");
+            CheckSingle(TokenType.Text, "123abc", "123abc.");
+            CheckSingle(TokenType.Text, "čćšđžČĆŠĐŽ", "čćšđžČĆŠĐŽ.");
         }
 
         [TestMethod()]
         public void GetNextToken_StringWithQuotes()
         {
-            CheckSingle(Token.TokenType.Text, "ab", "'ab'");
-            CheckSingle(Token.TokenType.Text, "ab", "\"ab\"");
-            CheckSingle(Token.TokenType.Text, "{", "'{'");
-            CheckSingle(Token.TokenType.Text, "{", "\"{\"");
-            CheckSingle(Token.TokenType.Text, "", "''");
-            CheckSingle(Token.TokenType.Text, "", "\"\"");
+            CheckSingle(TokenType.Text, "ab", "'ab'");
+            CheckSingle(TokenType.Text, "ab", "\"ab\"");
+            CheckSingle(TokenType.Text, "{", "'{'");
+            CheckSingle(TokenType.Text, "{", "\"{\"");
+            CheckSingle(TokenType.Text, "", "''");
+            CheckSingle(TokenType.Text, "", "\"\"");
         }
 
         [TestMethod()]
         public void GetNextToken_Special()
         {
-            CheckSingle(Token.TokenType.Special, ".", "..");
-            CheckSingle(Token.TokenType.Special, "{", "{a");
-            CheckSingle(Token.TokenType.Special, ";", ";a");
-            CheckSingle(Token.TokenType.Special, "/", "/");
+            CheckSingle(TokenType.Special, ".", "..");
+            CheckSingle(TokenType.Special, "{", "{a");
+            CheckSingle(TokenType.Special, ";", ";a");
+            CheckSingle(TokenType.Special, "/", "/");
         }
 
         [TestMethod()]
         public void GetNextToken_Comment()
         {
-            CheckSingle(Token.TokenType.Comment, "simple", "//simple");
-            CheckSingle(Token.TokenType.Comment, " whitespace ", "// whitespace \r\n second line");
-            CheckSingle(Token.TokenType.Comment, "", "//");
+            CheckSingle(TokenType.Comment, "simple", "//simple");
+            CheckSingle(TokenType.Comment, " whitespace ", "// whitespace \r\n second line");
+            CheckSingle(TokenType.Comment, "", "//");
         }
 
         [TestMethod()]
         public void GetNextToken_NotComment()
         {
-            CheckSingle(Token.TokenType.Text, "//", "'//'");
+            CheckSingle(TokenType.Text, "//", "'//'");
         }
 
 
@@ -137,8 +137,14 @@ namespace Rhetos.Dsl.Test
 
         private static List<Token> TestGetTokens(string dsl)
         {
-            var dslSource = new DslSourceHelper(dsl);
-            return Tokenizer.GetTokens(dslSource);
+            return new Tokenizer(new MockDslScriptsProvider(dsl)).GetTokens();
+        }
+
+        static void CheckAll(string expectedCSV, string dsl)
+        {
+            List<Token> tokens = TestGetTokens(dsl);
+            string csv = string.Join(",", tokens.Select(t => t.Type + ":" + t.Value + "(" + t.PositionInDslScript + ")"));
+            Assert.AreEqual(expectedCSV, csv);
         }
 
         static void CheckTokens(string expectedCSV, string dsl)
@@ -151,85 +157,83 @@ namespace Rhetos.Dsl.Test
         static void CheckPositions(string expectedCSV, string dsl)
         {
             List<Token> tokens = TestGetTokens(dsl);
-            string csv = string.Join(",", tokens.Select(t => t.PositionInDslSource.ToString()));
+            string csv = string.Join(",", tokens.Select(t => t.PositionInDslScript.ToString()));
             Assert.AreEqual(expectedCSV, csv);
         }
-
 
         [TestMethod()]
         public void GetTokens_Simple()
         {
-            CheckTokens("ab,cde", "ab cde");
-            CheckPositions("0,3", "ab cde");
+            CheckAll("Text:ab(0),Text:cde(3),EndOfFile:(6)", "ab cde");
         }
 
         [TestMethod()]
         public void GetTokens_Empty()
         {
-            CheckTokens("", "  \t\r\n  ");
+            CheckAll("EndOfFile:(7)", "  \t\r\n  ");
         }
 
         [TestMethod()]
         public void GetTokens_Delimiter()
         {
-            CheckTokens("simple,abc,;", "simple abc;");
-            CheckTokens("simple,abc,{", "simple abc{");
-            CheckTokens("simple,abc,def", "simple abc def");
-            CheckTokens("simple,_abc", "simple _abc");
+            CheckTokens("simple,abc,;,", "simple abc;");
+            CheckTokens("simple,abc,{,", "simple abc{");
+            CheckTokens("simple,abc,def,", "simple abc def");
+            CheckTokens("simple,_abc,", "simple _abc");
         }
 
         [TestMethod()]
         public void GetTokens_Separators()
         {
-            CheckTokens("simple,abc", "\t simple    \t\r\n\r\n\n\tabc\t\r\n");
-            CheckPositions("2,19", "\t simple    \t\r\n\r\n\n\tabc\t\r\n");
+            CheckTokens("simple,abc,", "\t simple    \t\r\n\r\n\n\tabc\t\r\n");
+            CheckPositions("2,19,25", "\t simple    \t\r\n\r\n\n\tabc\t\r\n");
         }
 
         [TestMethod()]
         public void GetTokens_String()
         {
-            CheckTokens("simple, a b ", "\"simple\" \" a b \"");
+            CheckTokens("simple, a b ,", "\"simple\" \" a b \"");
         }
 
         [TestMethod()]
         public void GetTokens_StringCroatian()
         {
-            CheckTokens("simple,čćšđžČĆŠĐŽ", "simple \"čćšđžČĆŠĐŽ\"");
+            CheckTokens("simple,čćšđžČĆŠĐŽ,", "simple \"čćšđžČĆŠĐŽ\"");
         }
 
         [TestMethod()]
         public void GetTokens_StringWithSpecialCharacters()
         {
-            CheckTokens("simple,,./<>?;':[]\\{}|!@#$%^&*()-=_+", "simple \",./<>?;':[]\\{}|!@#$%^&*()-=_+\"");
+            CheckTokens("simple,,./<>?;':[]\\{}|!@#$%^&*()-=_+,", "simple \",./<>?;':[]\\{}|!@#$%^&*()-=_+\"");
         }
 
 
         [TestMethod()]
         public void GetTokens_StringWithQuotes()
         {
-            CheckTokens("simple,abc\"def,next,abc\"def", "simple \"abc\"\"def\" next \"abc\"\"def\"");
-            CheckTokens("simple,\"", "simple \"\"\"\"");
+            CheckTokens("simple,abc\"def,next,abc\"def,", "simple \"abc\"\"def\" next \"abc\"\"def\"");
+            CheckTokens("simple,\",", "simple \"\"\"\"");
         }
 
         [TestMethod()]
         public void GetTokens_StringWithSingleQuotes()
         {
-            CheckTokens("simple,abc\"def", "simple 'abc\"def'");
+            CheckTokens("simple,abc\"def,", "simple 'abc\"def'");
         }
 
         [TestMethod()]
         public void GetTokens_StringWithTwoSingleQuotes()
         {
-            CheckTokens("simple,abc'def,next,abc'def", "simple 'abc''def' next 'abc''def'");
+            CheckTokens("simple,abc'def,next,abc'def,", "simple 'abc''def' next 'abc''def'");
         }
 
         [TestMethod()]
         public void GetTokens_RemoveComments()
         {
             CheckTokens("", "//comment");
-            CheckTokens("inline", "inline//comment comment");
-            CheckTokens("one,two", "one //comment \t until end of line\r\ntwo");
-            CheckTokens("one,two", "one //comment \t until end of line unix\ntwo");
+            CheckTokens("inline,", "inline//comment comment");
+            CheckTokens("one,two,", "one //comment \t until end of line\r\ntwo");
+            CheckTokens("one,two,", "one //comment \t until end of line unix\ntwo");
         }
 
 
@@ -240,7 +244,7 @@ namespace Rhetos.Dsl.Test
         {
             string dsl = "11 '22' //00\r\n 33";
             foreach (Token t in TestGetTokens(dsl))
-                Assert.AreEqual(dsl, t.DslSource.Script, t.Value);
+                Assert.AreEqual(dsl, t.DslScript.Script, t.Value);
         }
     }
 }

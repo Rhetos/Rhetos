@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,17 +25,13 @@ using System.Text;
 
 namespace Rhetos.Dsl
 {
+    public enum TokenType { Text, Special, Comment, EndOfFile };
+
     public class Token
     {
         public string Value;
-        public IDslSource DslSource;
-        public int PositionInDslSource;
-        public enum TokenType { Text, Special, Comment };
+        public DslScript DslScript;
+        public int PositionInDslScript;
         public TokenType Type;
-
-        public override string ToString()
-        {
-            return Value;
-        }
     }
 }

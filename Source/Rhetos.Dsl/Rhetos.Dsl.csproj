@@ -126,7 +126,6 @@
     <Compile Include="DslModelFile.cs" />
     <Compile Include="DslParser.cs" />
     <Compile Include="DslModel.cs" />
-    <Compile Include="DslScriptProvider.cs" />
     <Compile Include="GenericParser.cs" />
     <Compile Include="IDslParser.cs" />
     <Compile Include="IMacroOrderRepository.cs" />

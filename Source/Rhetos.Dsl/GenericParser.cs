@@ -169,11 +169,5 @@ namespace Rhetos.Dsl
                 return ValueOrError<object>.CreateError(ex.Message);
             }
         }
-
-
-        public override string ToString()
-        {
-            return Keyword;
-        }
     }
 }

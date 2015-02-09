@@ -25,11 +25,11 @@ using System.Text;
 
 namespace Rhetos.Dsl.Test
 {
-    public class PluginsContainerMock<T> : IPluginsContainer<T>
+    public class MockPluginsContainer<T> : IPluginsContainer<T>
     {
         IEnumerable<T> _plugins;
 
-        public PluginsContainerMock(params T[] plugins)
+        public MockPluginsContainer(params T[] plugins)
         {
             _plugins = plugins;
         }

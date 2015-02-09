@@ -33,7 +33,5 @@ namespace Rhetos.Dsl
         /// Returns false if next token does not equal "value". Ignores case.
         /// </summary>
         bool TryRead(string value);
-
-        int CurrentPosition { get; }
     }
 }

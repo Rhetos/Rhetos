@@ -26,7 +26,7 @@ using System.Text;
 
 namespace Rhetos.Dsl
 {
-    public class DiskDslScriptLoader : IDslScriptsLoader
+    public class DiskDslScriptLoader : IDslScriptsProvider
     {
         private List<DslScript> _scripts = null;
         private readonly object _scriptsLock = new object();
