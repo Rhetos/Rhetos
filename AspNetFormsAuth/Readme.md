@@ -233,9 +233,9 @@ in development or QA environment.
 
 ### "admin" user
 
-`DeployPackages.exe`, when deploying the AspNetFormsAuth packages, automatically creates the *admin* user account
-and *SecurityAdministrator* role, adds the account to the role and gives it necessary permissions (claims) for all
-authentication service methods.
+When deploying the AspNetFormsAuth packages, it will automatically create
+the *admin* user account and *SecurityAdministrator* role, add the account to the role
+and give it necessary permissions (claims) for all authentication service methods.
 
 1. After deployment, **run the utility** `\bin\Plugins\AdminSetup.exe` to initialize the *admin* user's password.
 
@@ -398,8 +398,8 @@ Any other exception (`Rhetos.FrameworkException`, e.g.) will only be logged on t
 **Issue**: Web service responds with error message "The Role Manager feature has not been enabled."<br>
 **Solution**: The error occurs when the necessary modifications of Web.config file are not done. Please check that you have followed the [installation](#installation) instructions above.
 
-**Issue**: I have accidentally deleted the *admin* user, *SecurityAdministrator* role, or some of its claims. How can I get it back?<br> 
-**Solution**: Execute `DeployPackages.exe` again. It will regenerate the default administration settings. See [admin user](#admin-user). 
+**Issue**: I have accidentally deleted the *admin* user, *SecurityAdministrator* role, or some of its permissions. How can I get it back?<br> 
+**Solution**: Execute `AdminSetup.exe` again. It will regenerate the default administration settings. See [admin user](#admin-user). 
 
 **Other:** In case of a server error, additional information on the error may be found in the Rhetos server log (`RhetosServer.log` file, by default).
 If needed, more verbose logging of the authentication service may be switched on by adding `<logger name="AspNetFormsAuth.AuthenticationService" minLevel="Trace" writeTo="TraceLog" />` in Rhetos server's `web.config`. The trace log will be written to `RhetosServerTrace.log`.
