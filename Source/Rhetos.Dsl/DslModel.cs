@@ -120,26 +120,10 @@ namespace Rhetos.Dsl
                         _performanceLogger.Write(sw, "DslModel.Initialize (" + _dslContainer.Concepts.Count() + " concepts).");
 
                         LogDslModel();
+                        ReportObsoleteConcepts();
                         _dslModelFile.SaveConcepts(_dslContainer.Concepts);
                         _initialized = true;
                     }
-        }
-
-        private void LogDslModel()
-        {
-            var sw = Stopwatch.StartNew();
-
-            // It is important to avoid generating the log data if the logger is not enabled.
-            var sortedConceptsLog = new Lazy<List<string>>(() => _dslContainer.Concepts
-                .Select(c => c.GetFullDescription())
-                .OrderBy(log => log)
-                .ToList());
-
-            const int chunkSize = 10000; // Keeping the message size under NLog memory limit.
-            for (int start = 0; start < _dslContainer.Concepts.Count(); start += chunkSize)
-                _dslModelConceptsLogger.Trace(() => string.Join("\r\n", sortedConceptsLog.Value.Skip(start).Take(chunkSize)));
-
-            _performanceLogger.Write(sw, "DslModel.LogDslModel.");
         }
 
         private const int MacroIterationLimit = 200;
@@ -370,6 +354,55 @@ namespace Rhetos.Dsl
                 _performanceLogger.Write(validationStopwatch.Value, () => "DslModel.CheckSemantics total time for " + validationStopwatch.Key.Name + ".");
 
             _performanceLogger.Write(sw, "DslModel.CheckSemantics");
+        }
+
+        private void LogDslModel()
+        {
+            var sw = Stopwatch.StartNew();
+
+            // It is important to avoid generating the log data if the logger is not enabled.
+            var sortedConceptsLog = new Lazy<List<string>>(() => _dslContainer.Concepts
+                .Select(c => c.GetFullDescription())
+                .OrderBy(log => log)
+                .ToList());
+
+            const int chunkSize = 10000; // Keeping the message size under NLog memory limit.
+            for (int start = 0; start < _dslContainer.Concepts.Count(); start += chunkSize)
+                _dslModelConceptsLogger.Trace(() => string.Join("\r\n", sortedConceptsLog.Value.Skip(start).Take(chunkSize)));
+
+            _performanceLogger.Write(sw, "DslModel.LogDslModel.");
+        }
+
+        private void ReportObsoleteConcepts()
+        {
+            var obsoleteConceptsByType = _dslContainer.Concepts
+                .GroupBy(concept => concept.GetType())
+                .Select(conceptsGroup => new
+                {
+                    ConceptType = conceptsGroup.Key,
+                    ConceptKeyword = ConceptInfoHelper.GetKeywordOrTypeName(conceptsGroup.Key),
+                    Concepts = conceptsGroup.ToList(),
+                    ObsoleteAttribute = (ObsoleteAttribute)conceptsGroup.Key.GetCustomAttributes(typeof(ObsoleteAttribute), false).SingleOrDefault()
+                })
+                .Where(conceptsGroup => conceptsGroup.ObsoleteAttribute != null)
+                .ToList();
+
+            // Obsolete concepts in the report are grouped by concept keyword and obsolete message.
+            var obsoleteConceptsByUserReport = obsoleteConceptsByType
+                .GroupBy(conceptsGroup => new { conceptsGroup.ConceptKeyword, conceptsGroup.ObsoleteAttribute.Message })
+                .Select(conceptsGroup => new
+                {
+                    conceptsGroup.Key.ConceptKeyword,
+                    ObsoleteMessage = conceptsGroup.Key.Message,
+                    Concepts = conceptsGroup.SelectMany(group => group.Concepts)
+                })
+                .ToList();
+
+            foreach (var conceptsGroup in obsoleteConceptsByUserReport)
+                _logger.Info(() => string.Format("Obsolete concept {0} ({1} occurrences). {2}",
+                    conceptsGroup.Concepts.First().GetUserDescription(),
+                    conceptsGroup.Concepts.Count(),
+                    conceptsGroup.ObsoleteMessage));
         }
     }
 }
