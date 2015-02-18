@@ -17,25 +17,42 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Logging;
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Rhetos.Deployment.Test
+namespace Rhetos.Deployment
 {
-    class DataMigration_Accessor : DataMigration
+    public class InstalledPackage
     {
-        public DataMigration_Accessor()
-            : base(null, new ConsoleLogProvider(), null)
+        public InstalledPackage(
+            string id,
+            string version,
+            IEnumerable<PackageRequest> dependencies,
+            string folder,
+            PackageRequest request)
         {
+            Id = id;
+            Version = version;
+            Dependencies = dependencies;
+            Folder = folder;
+            Request = request;
         }
 
-        new public List<DataMigrationScript> SkipOlderScriptsInEachFolder(HashSet<string> oldIndex, List<DataMigrationScript> newScripts)
+        public string Id { get; private set; }
+
+        public string Version { get; private set; }
+
+        public IEnumerable<PackageRequest> Dependencies { get; private set; }
+
+        public string Folder { get; private set; }
+
+        public PackageRequest Request { get; private set; }
+
+        public string Report()
         {
-            return base.SkipOlderScriptsInEachFolder(oldIndex, newScripts);
+            return Id + " " + Version + " (requested by " + Request.RequestedBy + ") in " + Folder + ".";
         }
     }
 }

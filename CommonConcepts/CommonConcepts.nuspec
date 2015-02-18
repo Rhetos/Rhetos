@@ -1,0 +1,34 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>CommonConcepts</id>
+    <version>0.9.24.1-prerelease</version>
+    <authors>Omega software</authors>
+    <owners>Omega software</owners>
+    <licenseUrl>http://opensource.org/licenses/AGPL-3.0</licenseUrl>
+    <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
+    <description>CommonConcepts is a DSL package for Rhetos development platform.
+      It provides an implementation of domain-specific programming language for business applications.</description>
+    <copyright>Copyright Omega software 2015</copyright>
+    <tags>Rhetos</tags>
+  </metadata>
+  <files>
+    <file src="Readme.md" target="" />
+    <file src="DataMigration\**\*" target="DataMigration" />
+    <file src="DslScripts\**\*" target="DslScripts" />
+    <file src="Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\Rhetos.Dsl.DefaultConcepts.dll" target="Plugins" />
+    <file src="Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\Rhetos.Dsl.DefaultConcepts.pdb" target="Plugins" />
+    <file src="Plugins\Rhetos.Dom.DefaultConcepts\bin\Debug\Rhetos.Dom.DefaultConcepts.dll" target="Plugins" />
+    <file src="Plugins\Rhetos.Dom.DefaultConcepts\bin\Debug\Rhetos.Dom.DefaultConcepts.pdb" target="Plugins" />
+    <file src="Plugins\Rhetos.Dom.DefaultConcepts.Interfaces\bin\Debug\Rhetos.Dom.DefaultConcepts.Interfaces.dll" target="Plugins" />
+    <file src="Plugins\Rhetos.Dom.DefaultConcepts.Interfaces\bin\Debug\Rhetos.Dom.DefaultConcepts.Interfaces.pdb" target="Plugins" />
+    <file src="Plugins\Rhetos.DatabaseGenerator.DefaultConcepts\bin\Debug\Rhetos.DatabaseGenerator.DefaultConcepts.dll" target="Plugins" />
+    <file src="Plugins\Rhetos.DatabaseGenerator.DefaultConcepts\bin\Debug\Rhetos.DatabaseGenerator.DefaultConcepts.pdb" target="Plugins" />
+    <file src="Plugins\Rhetos.Persistence.NHibernateDefaultConcepts\bin\Debug\Rhetos.Persistence.NHibernateDefaultConcepts.dll" target="Plugins" />
+    <file src="Plugins\Rhetos.Persistence.NHibernateDefaultConcepts\bin\Debug\Rhetos.Persistence.NHibernateDefaultConcepts.pdb" target="Plugins" />
+    <file src="Plugins\Rhetos.Processing.DefaultCommands\bin\Debug\Rhetos.Processing.DefaultCommands.dll" target="Plugins" />
+    <file src="Plugins\Rhetos.Processing.DefaultCommands\bin\Debug\Rhetos.Processing.DefaultCommands.pdb" target="Plugins" />
+    <file src="Plugins\Rhetos.Processing.DefaultCommands.Interfaces\bin\Debug\Rhetos.Processing.DefaultCommands.Interfaces.dll" target="Plugins" />
+    <file src="Plugins\Rhetos.Processing.DefaultCommands.Interfaces\bin\Debug\Rhetos.Processing.DefaultCommands.Interfaces.pdb" target="Plugins" />
+  </files>
+</package>

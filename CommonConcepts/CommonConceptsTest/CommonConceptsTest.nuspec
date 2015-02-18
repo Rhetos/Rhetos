@@ -1,0 +1,17 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>CommonConceptsTest</id>
+    <version>0.9.24.1</version>
+    <authors>Omega software</authors>
+    <owners>Omega software</owners>
+    <licenseUrl>http://opensource.org/licenses/AGPL-3.0</licenseUrl>
+    <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
+    <description>This package is a plugin for Rhetos development platform.</description>
+    <copyright>Copyright Omega software 2015</copyright>
+    <tags>Rhetos</tags>
+  </metadata>
+  <files>
+    <file src="DslScripts\**\*" target="DslScripts" />
+  </files>
+</package>

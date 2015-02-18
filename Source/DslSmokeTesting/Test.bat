@@ -22,7 +22,7 @@ MD bin\DslScripts
 XCOPY %1 bin\DslScripts\ || GOTO Error1
 
 PUSHD bin\Debug
-DeployPackages.exe /skipclaims || GOTO Error1
+DeployPackages.exe || GOTO Error1
 POPD
 
 ECHO ==== TEST PASSED: %~nx1

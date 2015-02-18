@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Deployment;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
@@ -28,8 +29,17 @@ namespace Rhetos.Dsl
 {
     public class DiskDslScriptLoader : IDslScriptsProvider
     {
+        protected readonly IInstalledPackages _installedPackages;
+
+        public DiskDslScriptLoader(IInstalledPackages installedPackages)
+        {
+            _installedPackages = installedPackages;
+        }
+
         private List<DslScript> _scripts = null;
         private readonly object _scriptsLock = new object();
+
+        const string DslScriptsSubfolder = "DslScripts";
 
         public IEnumerable<DslScript> DslScripts
         {
@@ -39,18 +49,30 @@ namespace Rhetos.Dsl
                     lock (_scriptsLock)
                         if (_scripts == null)
                         {
-                            var baseFolder = Path.GetFullPath(Paths.DslScriptsFolder);
-                            if (baseFolder.Last() != '\\') baseFolder += '\\';
+                            _scripts = new List<DslScript>();
 
-                            var files = Directory.GetFiles(baseFolder, "*.rhe", SearchOption.AllDirectories).OrderBy(path => path);
-
-                            _scripts = files.Select(file =>
-                                new DslScript
+                            foreach (var package in _installedPackages.Packages)
+                            {
+                                string dslScriptsFolder = Path.Combine(package.Folder, DslScriptsSubfolder);
+                                if (Directory.Exists(dslScriptsFolder))
                                 {
-                                    Name = file.Replace(baseFolder, String.Empty),
-                                    Script = File.ReadAllText(file, Encoding.Default),
-                                    Path = Path.GetFullPath(file)
-                                }).ToList();
+                                    var baseFolder = Path.GetFullPath(dslScriptsFolder);
+                                    if (baseFolder.Last() != '\\') baseFolder += '\\';
+
+                                    var files = Directory.GetFiles(baseFolder, "*.rhe", SearchOption.AllDirectories).OrderBy(path => path);
+
+                                    var packageScripts = files.Select(file =>
+                                        new DslScript
+                                        {
+                                            // Using package.Id instead of full package subfolder name, in order to keep the same script path between different versions of the package (the folder name will contain the version number).
+                                            Name = package.Id + "\\" + file.Substring(baseFolder.Length),
+                                            Script = File.ReadAllText(file, Encoding.Default),
+                                            Path = file
+                                        });
+
+                                    _scripts.AddRange(packageScripts);
+                                }
+                            }
                         }
 
                 return _scripts;

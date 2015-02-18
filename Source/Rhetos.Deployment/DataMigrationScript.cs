@@ -1,4 +1,4 @@
-/*
+﻿/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -18,23 +18,34 @@
 */
 
 using Rhetos.Utilities;
-using System.Diagnostics;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 
-namespace Rhetos.Dsl
+namespace Rhetos.Deployment
 {
-    [DebuggerDisplay("Name = {Name}")]
-    public class DslScript
+    public class DataMigrationScript : IComparable<DataMigrationScript>
     {
-        public string Name { get; set; }
-        public string Script { get; set; }
-        public string Path { get; set; }
+        public string Tag;
+        public string Path;
+        public string Content;
 
-        public string ReportPosition(int index)
+        protected string _order;
+        protected string Order
         {
-            if (index < 0 || index > Script.Length)
-                throw new FrameworkException("Error in DSL script parser. Provided position in script is out of range. Position: " + index + ".");
+            get { return _order ?? (_order = ComputeOrder(Path)); }
+        }
 
-            return ScriptPositionReporting.ReportPosition(Script, index, Path);
+        protected static string ComputeOrder(string s)
+        {
+            return CsUtility.GetNaturalSortString(s).Replace(@"\", @" \");
+        }
+
+        public int CompareTo(DataMigrationScript other)
+        {
+            return string.Compare(Order, other.Order, StringComparison.InvariantCultureIgnoreCase);
         }
     }
 }

@@ -106,7 +106,7 @@ namespace Rhetos.Deployment
             _databaseCleaner.RefreshDataMigrationRows();
 
             _deployPackagesLogger.Trace("Executing data migration scripts.");
-            var dataMigrationReport = _dataMigration.ExecuteDataMigrationScripts(Paths.DataMigrationScriptsFolder);
+            var dataMigrationReport = _dataMigration.ExecuteDataMigrationScripts();
 
             _deployPackagesLogger.Trace("Upgrading database.");
             try

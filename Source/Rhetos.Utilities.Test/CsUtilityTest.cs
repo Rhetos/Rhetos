@@ -136,5 +136,24 @@ namespace Rhetos.Utilities.Test
             actual = string.Join("-", CsUtility.GetClassHierarchy(o.GetType()).Select(type => type.Name));
             Assert.AreEqual(expected, actual);
         }
+
+        [TestMethod]
+        public void NaturalSortTest_Simple()
+        {
+            string test = @"0, 1, 9, 10, 11, 100, s1:1\9.9\x, s2:1\9.10\x, s3:1\10.9\x, s4:1\10.10\x, s5:1\11\x, s6:1\11.next\x";
+
+            var unsortedList = test.Split(new[] { ", " }, StringSplitOptions.None).Reverse();
+            Assert.AreNotEqual(test, TestUtility.Dump(unsortedList));
+            Assert.AreEqual(test, TestUtility.Dump(unsortedList.OrderBy(s => CsUtility.GetNaturalSortString(s))));
+        }
+
+        [TestMethod]
+        public void NaturalSortTest_NonNumeric()
+        {
+            var tests = new[] { "", " ", "  ", "a", ".", "-" };
+
+            foreach (var test in tests)
+                Assert.AreEqual(test, CsUtility.GetNaturalSortString(test));
+        }
     }
 }

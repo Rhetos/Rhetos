@@ -1,4 +1,4 @@
-/*
+﻿/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -17,24 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
-using System.Diagnostics;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-namespace Rhetos.Dsl
+namespace Rhetos.Deployment
 {
-    [DebuggerDisplay("Name = {Name}")]
-    public class DslScript
+    public class PackageInfo
     {
-        public string Name { get; set; }
-        public string Script { get; set; }
-        public string Path { get; set; }
-
-        public string ReportPosition(int index)
-        {
-            if (index < 0 || index > Script.Length)
-                throw new FrameworkException("Error in DSL script parser. Provided position in script is out of range. Position: " + index + ".");
-
-            return ScriptPositionReporting.ReportPosition(Script, index, Path);
-        }
+        public string id { get; set; }
+        public string version { get; set; }
+        public string source { get; set; }
     }
 }

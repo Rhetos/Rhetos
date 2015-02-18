@@ -96,8 +96,7 @@ namespace Rhetos.Utilities
             }
         }
 
-        public static string DslScriptsFolder { get { return Path.Combine(RhetosServerRootPath, "DslScripts"); } }
-        public static string DataMigrationScriptsFolder { get { return Path.Combine(RhetosServerRootPath, "DataMigration"); } }
+        public static string PackagesFolder { get { return Path.Combine(RhetosServerRootPath, "PackagesCache"); } }
         public static string ResourcesFolder { get { return Path.Combine(RhetosServerRootPath, "Resources"); } }
         public static string BinFolder { get { return Path.Combine(RhetosServerRootPath, "bin"); } }
         public static string GeneratedFolder { get { return Path.Combine(RhetosServerRootPath, "bin\\Generated"); } }

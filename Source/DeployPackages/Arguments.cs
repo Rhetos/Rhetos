@@ -29,6 +29,7 @@ namespace DeployPackages
         public bool Help { get; private set; }
         public bool StartPaused { get; private set; }
         public bool Debug { get; private set; }
+        public bool NoPauseOnError { get; private set; }
 
         public Arguments(string[] args)
         {
@@ -47,6 +48,9 @@ namespace DeployPackages
             if (Pop(arguments, "/Debug") != -1)
                 Debug = true;
 
+            if (Pop(arguments, "/NoPause") != -1)
+                NoPauseOnError = true;
+
             if (arguments.Count > 0)
             {
                 ShowHelp();
@@ -59,6 +63,7 @@ namespace DeployPackages
             Console.WriteLine("Command-line arguments:");
             Console.WriteLine("/StartPaused   Use for debugging with Visual Studio (Attach to Process).");
             Console.WriteLine("/Debug         Generates nonoptimized dlls (ServerDom.dll, e.g.) for debuging.");
+            Console.WriteLine("/NoPause       Don't pause on error. Use this switch for build automation.");
         }
 
         private int Pop(List<string> arguments, string option)
