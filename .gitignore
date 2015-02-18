@@ -111,21 +111,17 @@ UpgradeLog*.XML
 *.bak
 
 # Rhetos build results
-**/ForDeployment/
 *.zip
 Source/Rhetos/bin/Plugins/
-Source/Rhetos/DataMigration/
-Source/Rhetos/DslScripts/
+Source/Rhetos/bin/Generated/
 Source/Rhetos/Resources/
-Source/Rhetos/PackageInfo/
+Source/Rhetos/PackagesCache/
 Install/
 Source/Rhetos/*Trace.xml
 NuGet.exe
 
 # Rhetos user-specific files
 Source/Rhetos/ConnectionStrings.config
-Source/Rhetos/ExtractPackages.txt
-Source/Rhetos/ApplyPackages.txt
 Source/Rhetos/IISExpress.config
 Source/Rhetos/RhetosPackages.config
 Source/Rhetos/RhetosPackageSources.config
