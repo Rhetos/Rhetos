@@ -194,6 +194,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{B127A8
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Deployment.Interfaces", "Source\Rhetos.Deployment.Interfaces\Rhetos.Deployment.Interfaces.csproj", "{945537DC-4AF7-4DEF-B73C-07F19229EFE6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReplaceRegEx", "Source\ReplaceRegEx\ReplaceRegEx.csproj", "{E59FDCEC-2B91-4114-A1D3-18DCF78F574E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		CodeAnalysis|Any CPU = CodeAnalysis|Any CPU
@@ -970,6 +972,21 @@ Global
 		{945537DC-4AF7-4DEF-B73C-07F19229EFE6}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{945537DC-4AF7-4DEF-B73C-07F19229EFE6}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{945537DC-4AF7-4DEF-B73C-07F19229EFE6}.Release|x86.ActiveCfg = Release|Any CPU
+		{E59FDCEC-2B91-4114-A1D3-18DCF78F574E}.CodeAnalysis|Any CPU.ActiveCfg = Release|Any CPU
+		{E59FDCEC-2B91-4114-A1D3-18DCF78F574E}.CodeAnalysis|Any CPU.Build.0 = Release|Any CPU
+		{E59FDCEC-2B91-4114-A1D3-18DCF78F574E}.CodeAnalysis|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E59FDCEC-2B91-4114-A1D3-18DCF78F574E}.CodeAnalysis|Mixed Platforms.Build.0 = Release|Any CPU
+		{E59FDCEC-2B91-4114-A1D3-18DCF78F574E}.CodeAnalysis|x86.ActiveCfg = Release|Any CPU
+		{E59FDCEC-2B91-4114-A1D3-18DCF78F574E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E59FDCEC-2B91-4114-A1D3-18DCF78F574E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E59FDCEC-2B91-4114-A1D3-18DCF78F574E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E59FDCEC-2B91-4114-A1D3-18DCF78F574E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E59FDCEC-2B91-4114-A1D3-18DCF78F574E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E59FDCEC-2B91-4114-A1D3-18DCF78F574E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E59FDCEC-2B91-4114-A1D3-18DCF78F574E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E59FDCEC-2B91-4114-A1D3-18DCF78F574E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E59FDCEC-2B91-4114-A1D3-18DCF78F574E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E59FDCEC-2B91-4114-A1D3-18DCF78F574E}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1027,6 +1044,7 @@ Global
 		{D0AA25A2-8D00-472A-9395-26003D89A702} = {EA83F423-2486-4154-B0CE-7590EB65D40A}
 		{B818F493-EF0C-448F-A89F-FC805FFA879E} = {EA83F423-2486-4154-B0CE-7590EB65D40A}
 		{945537DC-4AF7-4DEF-B73C-07F19229EFE6} = {2D001517-CE8E-4902-8C0A-0EA13C134830}
+		{E59FDCEC-2B91-4114-A1D3-18DCF78F574E} = {2D001517-CE8E-4902-8C0A-0EA13C134830}
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Rhetos.vsmdi

@@ -24,11 +24,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Rhetos.Deployment.Interfaces")]
+[assembly: AssemblyTitle("ReplaceRegEx")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Omega software")]
-[assembly: AssemblyProduct("Rhetos.Deployment.Interfaces")]
+[assembly: AssemblyProduct("ReplaceRegEx")]
 [assembly: AssemblyCopyright("Copyright (C) Omega software 2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -39,7 +39,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("9b833989-c4b1-4a2d-80ca-85a02e0dd526")]
+[assembly: Guid("a4a2f0b4-3e72-440d-96b1-0c9f691df89d")]
 
 // Version information for an assembly consists of the following four values:
 //
