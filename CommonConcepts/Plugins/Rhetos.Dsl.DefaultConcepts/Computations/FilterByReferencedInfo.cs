@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("FilterByReferenced")]
-    public class FilterByReferencedInfo : IMacroConcept, IValidationConcept
+    public class FilterByReferencedInfo : IValidationConcept, IMacroConcept
     {
         [ConceptKey]
         public DataStructureInfo Source { get; set; }
@@ -48,63 +48,62 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (ReferenceFromMe.DataStructure != Source)
                 throw new DslSyntaxException("'" + this.GetUserDescription()
                     + "' must use a reference property that is a member of it's own data structure. Try using FilterByLinkedItems instead.");
+
+            var referencedFilter = concepts.OfType<FilterByInfo>().Where(f => f.Source == ReferenceFromMe.Referenced)
+                .Where(f => f.Parameter == Parameter).SingleOrDefault();
+
+            if (referencedFilter == null)
+                throw new DslSyntaxException(this, "There is no " + new FilterByInfo().GetKeywordOrTypeName()
+                    + " '" + Parameter + "' on " + ReferenceFromMe.Referenced.GetUserDescription() + ".");
         }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
             return new IConceptInfo[]
-                       {
-                           new FilterByInfo
-                               {
-                                   Source = Source,
-                                   Parameter = Parameter,
-                                   Expression = GetFilterExpression(this)
-                               },
-                           new ModuleExternalReferenceInfo
-                               {
-                                   Module = new ModuleInfo {Name = Source.Module.Name},
-                                   TypeOrAssembly = typeof (DslUtility).AssemblyQualifiedName
-                               }
-                       };
+                {
+                    new FilterByInfo
+                    {
+                        Source = Source,
+                        Parameter = Parameter,
+                        Expression = GetFilterExpression()
+                    },
+                    new ModuleExternalReferenceInfo
+                    {
+                        Module = new ModuleInfo { Name = Source.Module.Name },
+                        TypeOrAssembly = typeof(Graph).AssemblyQualifiedName
+                    }
+                };
         }
 
-        private static string GetFilterExpression(FilterByReferencedInfo info)
+        private string GetFilterExpression()
         {
             return string.Format(@"(repository, parameter) =>
 	        {{
-                var baseDataSourceRepositiory = repository.{3}.{4} as IFilterRepository<{2}, {3}.{4}>;
-                if (baseDataSourceRepositiory == null)
-                {{
-                    const string userDescription = {6};
-                    throw new Rhetos.UserException(""Invalid use of "" + userDescription + "". Filter's base data source '{3}.{4}' does not implement a filter for '{2}'."");
-                }}
-
-                Guid[] references = baseDataSourceRepositiory.Filter(parameter).Select(item => item.ID).ToArray();
+                Guid[] references = repository.{2}.{3}.Filter(parameter).Select(item => item.ID).ToArray();
 
 			    const int BufferSize = 1000;
 			    int n = references.Count();
 			    var result = new List<{0}.{1}>(n);
-			    for (int i = 0; i < (n+BufferSize-1) / BufferSize; i++) {{
+			    for (int i = 0; i < (n+BufferSize-1) / BufferSize; i++)
+                {{
 				    Guid[] idBuffer = references.Skip(i*BufferSize).Take(BufferSize).ToArray();
-				    var itemBuffer = repository.{0}.{1}.Query().Where(item => idBuffer.Contains(item.{5}.ID)).ToArray();
+				    var itemBuffer = repository.{0}.{1}.Query().Where(item => idBuffer.Contains(item.{4}.ID)).ToArray();
 				    result.AddRange(itemBuffer);
 			    }}
 
-                var groups = result.GroupBy(s => s.{5}ID.Value).ToArray();
+                var groups = result.GroupBy(s => s.{4}ID.Value).ToArray();
                 Rhetos.Utilities.Graph.SortByGivenOrder(groups, references, item => item.Key);
 
-                Func<IEnumerable<{0}.{1}>, IEnumerable<{0}.{1}>> subFilter = {7};
+                Func<IEnumerable<{0}.{1}>, IEnumerable<{0}.{1}>> subFilter = {5};
                 return groups.SelectMany(g => subFilter(g)).ToArray();
             }}
 ",
-            info.Source.Module.Name,
-            info.Source.Name,
-            info.Parameter,
-            info.ReferenceFromMe.Referenced.Module.Name,
-            info.ReferenceFromMe.Referenced.Name,
-            info.ReferenceFromMe.Name,
-            CsUtility.QuotedString(info.GetUserDescription()),
-            !string.IsNullOrWhiteSpace(info.SubFilterExpression) ? info.SubFilterExpression : "items => items");
+            Source.Module.Name,
+            Source.Name,
+            ReferenceFromMe.Referenced.Module.Name,
+            ReferenceFromMe.Referenced.Name,
+            ReferenceFromMe.Name,
+            !string.IsNullOrWhiteSpace(SubFilterExpression) ? SubFilterExpression : "items => items");
         }
     }
 }

@@ -1,0 +1,35 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>AspNetFormsAuth</id>
+    <version>0.9.24.1</version>
+    <authors>Omega software</authors>
+    <owners>Omega software</owners>
+    <licenseUrl>http://opensource.org/licenses/AGPL-3.0</licenseUrl>
+    <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
+    <description>AspNetFormsAuth is a DSL package for Rhetos development platform.
+      It provides an implementation of ASP.NET forms authentication to Rhetos server applications.</description>
+    <copyright>Copyright Omega software 2015</copyright>
+    <tags>Rhetos</tags>
+  </metadata>
+  <files>
+    <file src="Readme.md" target="" />
+    <file src="DataMigration\**\*" target="DataMigration" />
+    <file src="DslScripts\**\*" target="DslScripts" />
+    <file src="Resources\**\*" target="Resources" />
+    <file src="Plugins\Rhetos.AspNetFormsAuth\bin\Debug\Rhetos.AspNetFormsAuth.dll" target="Plugins" />
+    <file src="Plugins\Rhetos.AspNetFormsAuth\bin\Debug\Rhetos.AspNetFormsAuth.pdb" target="Plugins" />
+    <file src="Plugins\Rhetos.AspNetFormsAuth\bin\Debug\Rhetos.AspNetFormsAuth.Interfaces.dll" target="Plugins" />
+    <file src="Plugins\Rhetos.AspNetFormsAuth\bin\Debug\Rhetos.AspNetFormsAuth.Interfaces.pdb" target="Plugins" />
+    <file src="Plugins\Rhetos.AspNetFormsAuth\bin\Debug\WebMatrix.Data.dll" target="Plugins" />
+    <file src="Plugins\Rhetos.AspNetFormsAuth\bin\Debug\WebMatrix.WebData.dll" target="Plugins" />
+    <file src="Plugins\AdminSetup\bin\Debug\AdminSetup.exe" target="Plugins" />
+    <file src="Plugins\AdminSetup\bin\Debug\AdminSetup.pdb" target="Plugins" />
+    <file src="Plugins\AdminSetup\bin\Debug\AdminSetup.exe.config" target="Plugins" />
+    <file src="Plugins\AdminSetup\bin\Debug\System.Web.WebPages.dll" target="Plugins" />
+    <file src="Plugins\AdminSetup\bin\Debug\System.Web.Helpers.dll" target="Plugins" />
+    <file src="Plugins\InitAspNetDatabase\bin\Debug\InitAspNetDatabase.exe" target="Plugins" />
+    <file src="Plugins\InitAspNetDatabase\bin\Debug\InitAspNetDatabase.pdb" target="Plugins" />
+    <file src="Plugins\InitAspNetDatabase\bin\Debug\InitAspNetDatabase.exe.config" target="Plugins" />
+  </files>
+</package>

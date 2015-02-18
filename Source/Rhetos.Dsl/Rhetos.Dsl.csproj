@@ -126,7 +126,6 @@
     <Compile Include="DslModelFile.cs" />
     <Compile Include="DslParser.cs" />
     <Compile Include="DslModel.cs" />
-    <Compile Include="DslScriptProvider.cs" />
     <Compile Include="GenericParser.cs" />
     <Compile Include="IDslParser.cs" />
     <Compile Include="IMacroOrderRepository.cs" />
@@ -139,6 +138,10 @@
     <Compile Include="TokenReader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Rhetos.Deployment.Interfaces\Rhetos.Deployment.Interfaces.csproj">
+      <Project>{945537dc-4af7-4def-b73c-07f19229efe6}</Project>
+      <Name>Rhetos.Deployment.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Dom.Interfaces\Rhetos.Dom.Interfaces.csproj">
       <Project>{91bdf488-0921-4969-8a53-32169338d8db}</Project>
       <Name>Rhetos.Dom.Interfaces</Name>

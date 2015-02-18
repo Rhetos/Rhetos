@@ -119,6 +119,24 @@ Module TestSqlWorkarounds
 		ShortString B;
 		SqlIndexMultiple 'A B' { Clustered; }
 	}
+	
+	SqlObject WithTransaction
+		"DECLARE @createView nvarchar(max);
+			SET @createView = 'CREATE VIEW TestSqlWorkarounds.WithTransaction_' + CONVERT(NVARCHAR(max), @@TRANCOUNT) + ' AS SELECT a=1';
+			EXEC (@createView);"
+		"DECLARE @dropView nvarchar(max);
+			SELECT @dropView = name FROM sys.objects o WHERE type = 'V' AND SCHEMA_NAME(schema_id) = 'TestSqlWorkarounds' AND name LIKE 'WithTransaction[_]%';
+			SET @dropView = 'DROP VIEW TestSqlWorkarounds.' + @dropView;
+			EXEC (@dropView);";
+	
+	SqlObject WithoutTransaction
+		"/*DatabaseGenerator:NoTransaction*/DECLARE @createView nvarchar(max);
+			SET @createView = 'CREATE VIEW TestSqlWorkarounds.WithoutTransaction_' + CONVERT(NVARCHAR(max), @@TRANCOUNT) + ' AS SELECT a=1';
+			EXEC (@createView);"
+		"/*DatabaseGenerator:NoTransaction*/DECLARE @dropView nvarchar(max);
+			SELECT @dropView = name FROM sys.objects o WHERE type = 'V' AND SCHEMA_NAME(schema_id) = 'TestSqlWorkarounds' AND name LIKE 'WithoutTransaction[_]%';
+			SET @dropView = 'DROP VIEW TestSqlWorkarounds.' + @dropView;
+			EXEC (@dropView);";
 }
 
 Module TestSqlWorkarounds2

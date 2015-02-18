@@ -256,5 +256,19 @@ namespace CommonConcepts.Test
                     "custom user message");
             }
         }
+
+        [TestMethod]
+        public void WithoutTransaction()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var sqlExecuter = container.Resolve<ISqlExecuter>();
+                var createdViews = new List<string>();
+                sqlExecuter.ExecuteReader(
+                    "SELECT name FROM sys.objects o WHERE type = 'V' AND SCHEMA_NAME(schema_id) = 'TestSqlWorkarounds' AND name LIKE 'With%Transaction[_]%'",
+                    reader => createdViews.Add(reader.GetString(0)));
+                Assert.AreEqual("WithoutTransaction_0, WithTransaction_1", TestUtility.DumpSorted(createdViews));
+            }
+        }
     }
 }

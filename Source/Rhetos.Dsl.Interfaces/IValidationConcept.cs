@@ -25,9 +25,10 @@ using System.Text;
 namespace Rhetos.Dsl
 {
     /// <summary>
-    /// An implementation of IConceptInfo may implement IValidationConcept
+    /// An implementation of IConceptInfo may implement this interface
     /// to enforce constraints that cannot be enforced by data structure or inheritance.
     /// </summary>
+    [Obsolete("Use IValidatedConcept instead of IValidationConcept.")]
     public interface IValidationConcept : IConceptInfo
     {
         /// <summary>

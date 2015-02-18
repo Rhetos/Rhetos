@@ -17,10 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac;
 using Rhetos.AspNetFormsAuth;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Extensibility;
+using Rhetos.Logging;
+using Rhetos.Security;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -44,7 +51,21 @@ namespace AdminSetup
             string errorMessage = null;
             try
             {
+                Exception createAdminUserException = null;
+                try
+                {
+                    // If CreateAdminUserAndPermissions() fails, this program will still try to execute SetUpAdminAccount() then report the exception later.
+                    CreateAdminUserAndPermissions();
+                }
+                catch (Exception ex)
+                {
+                    createAdminUserException = ex;
+                }
+
                 SetUpAdminAccount();
+
+                if (createAdminUserException != null)
+                    ExceptionsUtility.Rethrow(createAdminUserException);
             }
             catch (ApplicationException ex)
             {
@@ -71,13 +92,52 @@ namespace AdminSetup
             return 0;
         }
 
-        const string adminUserName = "admin";
+        private static IContainer CreateRhetosContainer()
+        {
+            // Specific registrations and initialization:
+            Plugins.SetInitializationLogging(new ConsoleLogProvider());
+            ConsoleLogger.MinLevel = EventType.Info;
+
+            // General registrations:
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new DefaultAutofacConfiguration(deploymentTime: false));
+
+            // Specific registrations override:
+            builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
+            builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
+
+            // Build the container:
+            var container = builder.Build();
+            return container;
+        }
+
+        private static void CreateAdminUserAndPermissions()
+        {
+            string oldDirectory = Directory.GetCurrentDirectory();
+            try
+            {
+                Directory.SetCurrentDirectory(Paths.RhetosServerRootPath);
+                using (var container = CreateRhetosContainer())
+                {
+                    var repositories = container.Resolve<GenericRepositories>();
+                    ConsoleLogger.MinLevel = EventType.Trace;
+                    AuthenticationDatabaseInitializer.CreateAdminUserAndPermissions(repositories);
+                    ConsoleLogger.MinLevel = EventType.Info;
+                }
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(oldDirectory);
+            }
+        }
 
         private static void SetUpAdminAccount()
         {
             CheckElevatedPrivileges();
 
             AuthenticationServiceInitializer.InitializeDatabaseConnection(autoCreateTables: true);
+
+            const string adminUserName = AuthenticationDatabaseInitializer.AdminUserName;
 
             int id = WebSecurity.GetUserId(adminUserName);
             if (id == -1)
@@ -124,38 +184,52 @@ namespace AdminSetup
 
         private static string InputPassword()
         {
-            var buildPwd = new StringBuilder();
-            ConsoleKeyInfo key;
-
-            Console.Write("Enter new password for user 'admin': ");
-            do
+            var oldFg = Console.ForegroundColor;
+            var oldBg = Console.BackgroundColor;
+            try
             {
-                key = Console.ReadKey(true);
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.BackgroundColor = ConsoleColor.Black;
 
-                if (((int)key.KeyChar) >= 32)
+                var buildPwd = new StringBuilder();
+                ConsoleKeyInfo key;
+
+                Console.WriteLine();
+                Console.Write("Enter new password for user 'admin': ");
+                do
                 {
-                    buildPwd.Append(key.KeyChar);
-                    Console.Write("*");
-                }
-                else if (key.Key == ConsoleKey.Backspace && buildPwd.Length > 0)
-                {
-                    buildPwd.Remove(buildPwd.Length - 1, 1);
-                    Console.Write("\b \b");
-                }
-                else if (key.Key == ConsoleKey.Escape)
-                {
-                    Console.WriteLine();
-                    throw new ApplicationException("User pressed the escape key.");
-                }
+                    key = Console.ReadKey(true);
 
-            } while (key.Key != ConsoleKey.Enter);
-            Console.WriteLine();
+                    if (((int)key.KeyChar) >= 32)
+                    {
+                        buildPwd.Append(key.KeyChar);
+                        Console.Write("*");
+                    }
+                    else if (key.Key == ConsoleKey.Backspace && buildPwd.Length > 0)
+                    {
+                        buildPwd.Remove(buildPwd.Length - 1, 1);
+                        Console.Write("\b \b");
+                    }
+                    else if (key.Key == ConsoleKey.Escape)
+                    {
+                        Console.WriteLine();
+                        throw new ApplicationException("User pressed the escape key.");
+                    }
 
-            string pwd = buildPwd.ToString();
-            if (string.IsNullOrWhiteSpace(pwd))
-                throw new ApplicationException("The password may not be empty.");
+                } while (key.Key != ConsoleKey.Enter);
+                Console.WriteLine();
 
-            return pwd;
+                string pwd = buildPwd.ToString();
+                if (string.IsNullOrWhiteSpace(pwd))
+                    throw new ApplicationException("The password may not be empty.");
+
+                return pwd;
+            }
+            finally
+            {
+                Console.ForegroundColor = oldFg;
+                Console.BackgroundColor = oldBg;
+            }
         }
     }
 }

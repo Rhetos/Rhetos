@@ -69,7 +69,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             var activeSinceHistory = new EntityHistoryPropertyInfo { Property = activeSinceProperty };
             newConcepts.AddRange(new IConceptInfo[] { activeSinceProperty, activeSinceHistory });
 
-            // DenySave for base entity: it is not allowed to save with ActiveSince older than last one used in History
+            // InvalidData for base entity: it is not allowed to save with ActiveSince older than last one used in History
             var denyFilter = new ComposableFilterByInfo {
                 Parameter = "Common.OlderThanHistoryEntries",
                 Source = Entity,
@@ -79,13 +79,13 @@ namespace Rhetos.Dsl.DefaultConcepts
                                 Entity.Module.Name, 
                                 Entity.Name) 
             };
-            var denySaveValidation = new DenySaveForPropertyInfo {
+            var invalidDataValidation = new InvalidDataMarkPropertyInfo {
                 FilterType = "Common.OlderThanHistoryEntries", 
                 Source = Entity, 
                 ErrorMessage = "ActiveSince is not allowed to be older than last entry in history.", 
                 DependedProperty = activeSinceProperty 
             };
-            newConcepts.AddRange(new IConceptInfo[] { denyFilter, denySaveValidation, new ParameterInfo { Module = new ModuleInfo { Name = "Common" }, Name = "OlderThanHistoryEntries" } });
+            newConcepts.AddRange(new IConceptInfo[] { denyFilter, invalidDataValidation, new ParameterInfo { Module = new ModuleInfo { Name = "Common" }, Name = "OlderThanHistoryEntries" } });
 
             // Create a new entity for history data:
             var currentProperty = new ReferencePropertyInfo { DataStructure = Dependency_ChangesEntity, Name = "Entity", Referenced = Entity };
@@ -99,21 +99,21 @@ namespace Rhetos.Dsl.DefaultConcepts
                 new UniquePropertiesInfo { DataStructure = Dependency_ChangesEntity, Property1 = currentProperty, Property2 = historyActiveSinceProperty }
             });
 
-            // DenySave for history entity: it is not allowed to save with ActiveSince newer than current entity
+            // InvalidData for history entity: it is not allowed to save with ActiveSince newer than current entity
             var denyFilterHistory = new ComposableFilterByInfo
             {
                 Parameter = "Common.NewerThanCurrentEntry",
                 Source = Dependency_ChangesEntity,
                 Expression = @"(items, repository, parameter) => items.Where(item => item.ActiveSince > item.Entity.ActiveSince)"
             };
-            var denySaveValidationHistory = new DenySaveForPropertyInfo
+            var invalidDataValidationHistory = new InvalidDataMarkPropertyInfo
             {
                 FilterType = "Common.NewerThanCurrentEntry",
                 Source = Dependency_ChangesEntity,
                 ErrorMessage = "ActiveSince of history entry is not allowed to be newer than current entry.",
                 DependedProperty = historyActiveSinceProperty
             };
-            newConcepts.AddRange(new IConceptInfo[] { denyFilterHistory, denySaveValidationHistory, new ParameterInfo { Module = new ModuleInfo { Name = "Common" }, Name = "NewerThanCurrentEntry" } });
+            newConcepts.AddRange(new IConceptInfo[] { denyFilterHistory, invalidDataValidationHistory, new ParameterInfo { Module = new ModuleInfo { Name = "Common" }, Name = "NewerThanCurrentEntry" } });
 
             // Create ActiveUntil SqlQueryable:
             var activeUntilSqlQueryable = new SqlQueryableInfo { Module = Entity.Module, Name = Entity.Name + "_ChangesActiveUntil", SqlSource = ActiveUntilSqlSnippet() };

@@ -7,27 +7,13 @@ IF EXIST Install\Rhetos ECHO ERROR: Cannot delete old files in Install folder. C
 SET Config=%1%
 IF [%1] == [] SET Config=Debug
 
-DEL /F /Q *.zip || EXIT /B 1
+CALL Source\Rhetos\GetServerFiles.bat %Config% /NOPAUSE || GOTO Error0
 
-IF NOT EXIST CommonConcepts\Plugins\ForDeployment\ MD CommonConcepts\Plugins\ForDeployment\
-DEL /F /S /Q CommonConcepts\Plugins\ForDeployment\*  || GOTO Error0
-CALL CommonConcepts\CopyPlugins.bat CommonConcepts\Plugins\ForDeployment\ %Config%  || GOTO Error0
-Source\CreatePackage\bin\%Config%\CreatePackage.exe CommonConcepts  || GOTO Error0
-RD /S /Q CommonConcepts\Plugins\ForDeployment\
+.nuget\NuGet.exe pack CommonConcepts\CommonConcepts.nuspec -o Install || GOTO Error0
 
-IF NOT EXIST SimpleWindowsAuth\Plugins\ForDeployment\ MD SimpleWindowsAuth\Plugins\ForDeployment\
-DEL /F /S /Q SimpleWindowsAuth\Plugins\ForDeployment\*  || GOTO Error0
-CALL SimpleWindowsAuth\CopyPlugins.bat SimpleWindowsAuth\Plugins\ForDeployment\ %Config% || GOTO Error0
-Source\CreatePackage\bin\%Config%\CreatePackage.exe SimpleWindowsAuth || GOTO Error0
-RD /S /Q SimpleWindowsAuth\Plugins\ForDeployment\
+.nuget\NuGet.exe pack SimpleWindowsAuth\SimpleWindowsAuth.nuspec -o Install || GOTO Error0
 
-IF NOT EXIST AspNetFormsAuth\Plugins\ForDeployment\ MD AspNetFormsAuth\Plugins\ForDeployment\
-DEL /F /S /Q AspNetFormsAuth\Plugins\ForDeployment\*  || GOTO Error0
-CALL AspNetFormsAuth\CopyPlugins.bat AspNetFormsAuth\Plugins\ForDeployment\ %Config% || GOTO Error0
-Source\CreatePackage\bin\%Config%\CreatePackage.exe AspNetFormsAuth || GOTO Error0
-RD /S /Q AspNetFormsAuth\Plugins\ForDeployment\
-
-MOVE *.zip Install\ || GOTO Error0
+.nuget\NuGet.exe pack AspNetFormsAuth\AspNetFormsAuth.nuspec -o Install || GOTO Error0
 
 MD Install\Rhetos
 MD Install\Rhetos\bin

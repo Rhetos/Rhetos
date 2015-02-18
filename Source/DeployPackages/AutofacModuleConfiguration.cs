@@ -24,6 +24,7 @@ using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Security;
 using Rhetos.Utilities;
+using System.Collections.Generic;
 
 namespace DeployPackages
 {
@@ -41,6 +42,7 @@ namespace DeployPackages
             // Specific registrations and initialization:
             Plugins.SetInitializationLogging(DeploymentUtility.InitializationLogProvider);
 
+            builder.RegisterType<InstalledPackages>().As<IInstalledPackages>().SingleInstance();
             if (_deploymentTime)
             {
                 builder.RegisterModule(new DatabaseGeneratorModuleConfiguration());

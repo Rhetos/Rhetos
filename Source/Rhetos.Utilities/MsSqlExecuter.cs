@@ -42,10 +42,14 @@ namespace Rhetos.Utilities
             _logger = logProvider.GetLogger("MsSqlExecuter");
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
         public void ExecuteSql(IEnumerable<string> commands)
         {
-            _logger.Trace("Executing {0} commands.", commands.Count());
+            ExecuteSql(commands, useTransaction: true);
+        }
+
+        public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
+        {
+            _logger.Trace(() => "Executing " + commands.Count() + " commands" + (useTransaction ? "" : " without transaction") + ".");
 
             SafeExecuteCommand(
                 com =>
@@ -63,23 +67,26 @@ namespace Rhetos.Utilities
                         com.CommandText = sql;
                         com.ExecuteNonQuery();
 
-                        try
+                        if (useTransaction)
                         {
-                            com.CommandText = @"IF @@TRANCOUNT <> 1 RAISERROR('Transaction count is %d, expected value is 1.', 16, 10, @@TRANCOUNT)";
-                            com.ExecuteNonQuery();
-                        }
-                        catch (SqlException ex)
-                        {
-                            throw new FrameworkException(
-                                string.Format(CultureInfo.InvariantCulture,
-                                    "SQL script has changed transaction level.{0}{1}",
-                                        Environment.NewLine, 
-                                        sql.Substring(0, Math.Min(1000, sql.Length))),
-                                ex);
+                            try
+                            {
+                                com.CommandText = @"IF @@TRANCOUNT <> 1 RAISERROR('Transaction count is %d, expected value is 1.', 16, 10, @@TRANCOUNT)";
+                                com.ExecuteNonQuery();
+                            }
+                            catch (SqlException ex)
+                            {
+                                throw new FrameworkException(
+                                    string.Format(CultureInfo.InvariantCulture,
+                                        "SQL script has changed transaction level.{0}{1}",
+                                            Environment.NewLine,
+                                            sql.Substring(0, Math.Min(1000, sql.Length))),
+                                    ex);
+                            }
                         }
                     }
                 },
-                true);
+                useTransaction);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]

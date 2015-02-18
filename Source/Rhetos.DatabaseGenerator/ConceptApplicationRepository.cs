@@ -29,7 +29,7 @@ using System.Text;
 
 namespace Rhetos.DatabaseGenerator
 {
-    public class ConceptApplicationRepository
+    public class ConceptApplicationRepository : IConceptApplicationRepository
     {
         private readonly ISqlExecuter _sqlExecuter;
         private readonly ILogger _logger;
@@ -140,12 +140,15 @@ namespace Rhetos.DatabaseGenerator
             return Sql.Get("ConceptApplicationRepository_DeleteAll");
         }
 
-        public string DeleteMetadataSql(ConceptApplication ca)
+        public List<string> DeleteMetadataSql(ConceptApplication ca)
         {
-            return Sql.Format("ConceptApplicationRepository_Delete", SqlUtility.QuoteGuid(ca.Id));
+            return new List<string>
+            {
+                Sql.Format("ConceptApplicationRepository_Delete", SqlUtility.QuoteGuid(ca.Id))
+            };
         }
 
-        public IEnumerable<string> InsertMetadataSql(NewConceptApplication ca)
+        public List<string> InsertMetadataSql(NewConceptApplication ca)
         {
             var sql = new List<string>();
 

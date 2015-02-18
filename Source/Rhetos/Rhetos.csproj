@@ -186,7 +186,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ApplyPackages.bat" />
     <None Include="GetServerFiles.bat" />
     <Content Include="Template.ConnectionStrings.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

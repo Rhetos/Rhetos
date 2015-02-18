@@ -25,10 +25,10 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    [Obsolete("Use InvalidData instead.")]
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("DenySave")]
-    public class DenySaveForPropertyInfo : DenySaveInfo
+    public class DenySaveForPropertyInfo : InvalidDataMarkPropertyInfo
     {
-        public PropertyInfo DependedProperty { get; set; }
     }
 }

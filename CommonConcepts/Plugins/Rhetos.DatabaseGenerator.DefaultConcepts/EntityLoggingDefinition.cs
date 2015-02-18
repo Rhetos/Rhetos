@@ -75,7 +75,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                 GetTriggerNameInsert(info),
                 GetTriggerNameUpdate(info),
                 GetTriggerNameDelete(info),
-                SqlUtility.ScriptSplitter,
+                SqlUtility.ScriptSplitterTag,
                 LogPropertyTag.Evaluate(info),
                 TempColumnDefinitionTag.Evaluate(info),
                 TempColumnListTag.Evaluate(info),

@@ -22,6 +22,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Rhetos.Utilities
 {
@@ -135,5 +136,26 @@ namespace Rhetos.Utilities
             if (items != null && !(items is IList))
                 items = items.ToList();
         }
+
+        /// <summary>
+        /// Use this method to sort strings respecting the number values in the string.
+        /// Example: new[] { "a10", "a11", "a9", "b3-11", "b3-2" }.OrderBy(s => GetNaturalSortString(s))
+        /// Returns: "a9", "a10", "a11", "b3-2", "b3-11"
+        /// </summary>
+        public static string GetNaturalSortString(string s)
+        {
+            var result = new StringBuilder();
+            foreach (var match in _splitNumericGroups.Matches(s))
+            {
+                var part = match.ToString();
+                if (char.IsDigit(part[0]))
+                    result.Append(new string('0', Math.Max(10 - part.Length, 0)) + part);
+                else
+                    result.Append(part);
+            }
+            return result.ToString();
+        }
+
+        private static readonly Regex _splitNumericGroups = new Regex(@"(\d+|\D+)");
     }
 }

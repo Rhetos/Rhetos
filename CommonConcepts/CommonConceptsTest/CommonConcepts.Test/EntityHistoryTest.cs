@@ -254,7 +254,7 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void HistoryWithDenySave()
+        public void HistoryWithInvalidData()
         {
             using (var container = new RhetosTestContainer())
             {
@@ -1140,7 +1140,7 @@ namespace CommonConcepts.Test
 
 //        [TestMethod]
 //        [Ignore] // Not yet implemented.
-//        public void DenySave()
+//        public void InvalidData()
 //        {
 //            using (var container = new RhetosTestContainer())
 //            {
@@ -1633,7 +1633,7 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void HistoryLockPropertyAndDenySave()
+        public void HistoryLockPropertyAndInvalidData()
         {
             using (var container = new RhetosTestContainer())
             {

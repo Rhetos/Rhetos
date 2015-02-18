@@ -170,6 +170,11 @@ namespace Rhetos.DatabaseGenerator.Test
             {
                 throw new NotImplementedException();
             }
+
+            public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private static string Dump(IEnumerable<ConceptApplication> appliedConcepts)

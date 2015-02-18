@@ -93,13 +93,13 @@ Module TestHistory
 		LockProperty Name.NameNewWithLetterAtest 'Name is locked if NameNew contains word ''atest''.';
         
         ItemFilter TooLongNameNew 'item => item.Extension_SimpleWithLockAndDenyAdd.NameNew.Length > 7';
-		DenySave TooLongNameNew 'NameNew too long.';
+		InvalidData TooLongNameNew 'NameNew too long.';
 
         ItemFilter TooTooLongNameNew 'item => item.Extension_SimpleWithLockAndDenyAdd.NameNew.Length > 9';
-		DenySave TooTooLongNameNew 'NameNew tootoo long.';
+		InvalidData TooTooLongNameNew 'NameNew tootoo long.';
 
         ItemFilter FarTooLongNameNew 'item => item.Extension_SimpleWithLockAndDenyAdd.NameNew.Length > 11';
-		DenySave FarTooLongNameNew 'NameNew fartoo long.';
+		InvalidData FarTooLongNameNew 'NameNew fartoo long.';
     }
     
 	Entity Standard
@@ -109,7 +109,7 @@ Module TestHistory
         ShortString Name;
         DateTime Birthday;
         ItemFilter TooLongName 'item => item.Name.Length > 10';
-		DenySave TooLongName 'Name too long.';
+		InvalidData TooLongName 'Name too long.';
 	}
     
     Entity Other;
@@ -126,7 +126,7 @@ Module TestHistory
         PessimisticLocking;
         Logging { Log TestHistory.Complex.Name; }
         ItemFilter TooLong 'item => item.Name.Length > 10';
-		DenySave TooLong 'Name too long.';
+		InvalidData TooLong 'Name too long.';
 	}
     
     Entity Sub

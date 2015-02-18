@@ -29,7 +29,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Take")]
-    public class BrowseTakeNamedPropertyInfo : IValidationConcept
+    public class BrowseTakeNamedPropertyInfo : IValidatedConcept
     {
         [ConceptKey]
         public BrowseDataStructureInfo Browse { get; set; }
@@ -39,7 +39,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public string Path { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             DslUtility.ValidatePath(Browse.Source, Path, existingConcepts, this);
             DslUtility.ValidateIdentifier(Name, this, "Specify a valid name before the path, to override the generated name.");

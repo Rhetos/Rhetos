@@ -45,6 +45,11 @@ namespace Rhetos.Utilities
 
         public void ExecuteSql(IEnumerable<string> commands)
         {
+            ExecuteSql(commands, useTransaction: true);
+        }
+
+        public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
+        {
             _logger.Trace("Executing {0} commands.", commands.Count());
 
             if (commands.Any(sql => sql == null))

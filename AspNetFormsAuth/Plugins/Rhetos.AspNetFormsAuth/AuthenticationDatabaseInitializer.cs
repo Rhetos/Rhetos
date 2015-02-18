@@ -53,35 +53,38 @@ namespace Rhetos.AspNetFormsAuth
 
         public void Initialize()
         {
-            var adminPrincipal = _repositories.CreateInstance<IPrincipal>();
+            CreateAdminUserAndPermissions(_repositories);
+            InitializeAspNetDatabase();
+        }
+
+        public static void CreateAdminUserAndPermissions(GenericRepositories repositories)
+        {
+            var adminPrincipal = repositories.CreateInstance<IPrincipal>();
             adminPrincipal.Name = AdminUserName;
-            _repositories.InsertOrReadId(adminPrincipal, item => item.Name);
+            repositories.InsertOrReadId(adminPrincipal, item => item.Name);
 
-            var adminRole = _repositories.CreateInstance<IRole>();
+            var adminRole = repositories.CreateInstance<IRole>();
             adminRole.Name = AdminRoleName;
-            _repositories.InsertOrReadId(adminRole, item => item.Name);
+            repositories.InsertOrReadId(adminRole, item => item.Name);
 
-            var adminPrincipalHasRole = _repositories.CreateInstance<IPrincipalHasRole>();
+            var adminPrincipalHasRole = repositories.CreateInstance<IPrincipalHasRole>();
             adminPrincipalHasRole.PrincipalID = adminPrincipal.ID;
             adminPrincipalHasRole.RoleID = adminRole.ID;
-            _repositories.InsertOrReadId(adminPrincipalHasRole, item => new { PrincipalID = item.Principal.ID, RoleID = item.Role.ID });
+            repositories.InsertOrReadId(adminPrincipalHasRole, item => new { PrincipalID = item.Principal.ID, RoleID = item.Role.ID });
 
             foreach (var securityClaim in AuthenticationServiceClaims.GetDefaultAdminClaims())
             {
-                var commonClaim = _repositories.CreateInstance<ICommonClaim>();
+                var commonClaim = repositories.CreateInstance<ICommonClaim>();
                 commonClaim.ClaimResource = securityClaim.Resource;
                 commonClaim.ClaimRight = securityClaim.Right;
-                _repositories.InsertOrReadId(commonClaim, item => new { item.ClaimResource, item.ClaimRight });
+                repositories.InsertOrReadId(commonClaim, item => new { item.ClaimResource, item.ClaimRight });
 
-                var permission = _repositories.CreateInstance<IPermission>();
+                var permission = repositories.CreateInstance<IPermission>();
                 permission.RoleID = adminRole.ID;
                 permission.ClaimID = commonClaim.ID;
                 permission.IsAuthorized = true;
-                _repositories.InsertOrUpdateReadId(permission, item => new { RoleID = item.Role.ID, ClaimID = item.Claim.ID }, item => item.IsAuthorized);
+                repositories.InsertOrUpdateReadId(permission, item => new { RoleID = item.Role.ID, ClaimID = item.Claim.ID }, item => item.IsAuthorized);
             }
-
-            ((NHibernatePersistenceTransaction)_persistenceTransaction).CommitAndReconnect();
-            InitializeAspNetDatabase();
         }
 
         public IEnumerable<string> Dependencies
@@ -96,15 +99,18 @@ namespace Rhetos.AspNetFormsAuth
         /// </summary>
         private void InitializeAspNetDatabase()
         {
+            // Committing the inserted user data so it can be used by InitAspNetDatabase.exe.
+            ((NHibernatePersistenceTransaction)_persistenceTransaction).CommitAndReconnect();
+
             var path = Path.Combine(Paths.PluginsFolder, @"InitAspNetDatabase.exe");
-            ExecuteApplication(path);
+            ExecuteApplication(path, "/nopause");
         }
 
-        private void ExecuteApplication(string path)
+        private void ExecuteApplication(string path, string arguments)
         {
             ProcessStartInfo start = new ProcessStartInfo(path)
             {
-                Arguments = "/nopause",
+                Arguments = arguments,
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,

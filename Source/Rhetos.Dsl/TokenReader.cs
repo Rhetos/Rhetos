@@ -28,13 +28,14 @@ namespace Rhetos.Dsl
 {
     public class TokenReader : Rhetos.Dsl.ITokenReader
     {
-        List<Token> TokenList;
         public int PositionInTokenList { get; private set; }
-        Token CurrentToken { get { return TokenList[PositionInTokenList]; } }
+
+        List<Token> _tokenList;
+        Token CurrentToken { get { return _tokenList[PositionInTokenList]; } }
         
         public void CopyFrom(TokenReader tokenReader)
         {
-            this.TokenList = tokenReader.TokenList;
+            this._tokenList = tokenReader._tokenList;
             this.PositionInTokenList = tokenReader.PositionInTokenList;
         }
 
@@ -45,16 +46,16 @@ namespace Rhetos.Dsl
 
         public TokenReader(List<Token> tokenList, int positionInTokenList)
         {
-            this.TokenList = tokenList;
+            this._tokenList = tokenList;
             this.PositionInTokenList = positionInTokenList;
         }
 
         public ValueOrError<string> ReadText()
         {
-            if (PositionInTokenList >= TokenList.Count)
+            if (PositionInTokenList >= _tokenList.Count || CurrentToken.Type == TokenType.EndOfFile)
                 return ValueOrError.CreateError("Tried to read a token past the end of the DSL script.");
 
-            if (CurrentToken.Type != Token.TokenType.Text)
+            if (CurrentToken.Type != TokenType.Text)
                 return ValueOrError.CreateError(string.Format(CultureInfo.InvariantCulture,
                     "Unexpected token type ({0} {1}) while reading text. Use quotes to specify text if that was intended.",
                         CurrentToken.Type,
@@ -65,7 +66,7 @@ namespace Rhetos.Dsl
             return result;
         }
 
-        public bool EndOfInput { get { return PositionInTokenList >= TokenList.Count; } }
+        public bool EndOfInput { get { return PositionInTokenList >= _tokenList.Count; } }
 
         private static void ThrowReadException(string value, string reason)
         {
@@ -77,7 +78,7 @@ namespace Rhetos.Dsl
 
         public bool TryRead(string value)
         {
-            if (PositionInTokenList >= TokenList.Count)
+            if (PositionInTokenList >= _tokenList.Count || CurrentToken.Type == TokenType.EndOfFile)
                 return false;
 
             if (!string.Equals(CurrentToken.Value, value, StringComparison.InvariantCultureIgnoreCase))
@@ -88,24 +89,37 @@ namespace Rhetos.Dsl
             return true;
         }
 
-        public int CurrentPosition
+        public string ReportPosition()
         {
-            get
+            DslScript dslScript;
+            int position;
+
+            if (PositionInTokenList < _tokenList.Count())
             {
-                if (PositionInTokenList < TokenList.Count())
-                    return CurrentToken.PositionInDslSource;
-                if (TokenList.Count() > 0)
-                {
-                    var lastToken = TokenList[TokenList.Count() - 1];
-                    return lastToken.PositionInDslSource + lastToken.Value.Length;
-                }
-                return 0;
+                dslScript = CurrentToken.DslScript;
+                position = CurrentToken.PositionInDslScript;
             }
+            else if (_tokenList.Count > 0)
+            {
+                dslScript = _tokenList.Last().DslScript;
+                position = dslScript.Script.Length;
+            }
+            else
+            {
+                dslScript = new DslScript { Script = "", Name = "", Path = "" };
+                position = 0;
+            }
+
+            return ScriptPositionReporting.ReportPosition(dslScript.Script, position, dslScript.Path);
         }
 
-        public override string ToString()
+        /// <summary>
+        /// This method should only be called between parsing two concepts.
+        /// </summary>
+        public void SkipEndOfFile()
         {
-            return "Token reader at " + CurrentPosition;
+            while (PositionInTokenList < _tokenList.Count && CurrentToken.Type == TokenType.EndOfFile)
+                PositionInTokenList++;
         }
     }
 }

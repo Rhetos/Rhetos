@@ -28,34 +28,34 @@ namespace Rhetos.Utilities
 {
     public static class ScriptPositionReporting
     {
-        public static int Line(string dsl, int position)
+        public static int Line(string script, int position)
         {
-            Contract.Requires(dsl != null);
-            Contract.Requires(position >= 0 && position < dsl.Length);
+            Contract.Requires(script != null);
+            Contract.Requires(position >= 0 && position < script.Length);
 
-            return dsl.Substring(0, position).Count(c => c == '\n') + 1;
+            return script.Substring(0, position).Count(c => c == '\n') + 1;
         }
 
-        public static int Column(string dsl, int position)
+        public static int Column(string script, int position)
         {
-            Contract.Requires(dsl != null);
-            Contract.Requires(position >= 0 && position < dsl.Length);
+            Contract.Requires(script != null);
+            Contract.Requires(position >= 0 && position < script.Length);
 
             if (position == 0)
                 return 1;
-            int end = dsl.LastIndexOf('\n', position - 1);
+            int end = script.LastIndexOf('\n', position - 1);
             if (end == -1)
                 return position + 1;
 
             return position - end;
         }
 
-        public static int Position(string dsl, int line, int column)
+        public static int Position(string script, int line, int column)
         {
             int pos = 0;
             while (line > 1)
             {
-                pos = dsl.IndexOf('\n', pos);
+                pos = script.IndexOf('\n', pos);
                 if (pos == -1)
                     break;
                 pos++;
@@ -64,44 +64,44 @@ namespace Rhetos.Utilities
             return pos + column - 1;
         }
 
-        public static string FollowingText(string dsl, int position, int maxLength)
+        public static string FollowingText(string script, int position, int maxLength)
         {
-            Contract.Requires(dsl != null);
-            Contract.Requires(position >= 0 && position < dsl.Length);
+            Contract.Requires(script != null);
+            Contract.Requires(position >= 0 && position < script.Length);
             Contract.Requires(maxLength >= 0);
 
-            if (position >= dsl.Length)
+            if (position >= script.Length)
                 return "";
 
-            dsl = dsl.Substring(position);
-            dsl = string.Join(" ", dsl.Split(new char[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
-            if (dsl.Length > maxLength)
-                dsl = dsl.Substring(0, maxLength) + "...";
-            return dsl;
+            script = script.Substring(position);
+            script = string.Join(" ", script.Split(new char[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
+            if (script.Length > maxLength)
+                script = script.Substring(0, maxLength) + "...";
+            return script;
         }
 
-        public static string FollowingText(string dsl, int line, int column, int maxLength)
+        public static string FollowingText(string script, int line, int column, int maxLength)
         {
-            return FollowingText(dsl, Position(dsl, line, column), maxLength);
+            return FollowingText(script, Position(script, line, column), maxLength);
         }
 
-        public static string PreviousText(string dsl, int position, int maxLength)
+        public static string PreviousText(string script, int position, int maxLength)
         {
-            if (position >= dsl.Length)
-                position = dsl.Length;
+            if (position >= script.Length)
+                position = script.Length;
             if (position <= 0)
                 return "";
 
-            dsl = dsl.Substring(0, position);
-            dsl = string.Join(" ", dsl.Split(new char[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
-            if (dsl.Length > maxLength)
-                dsl = "..." + dsl.Substring(dsl.Length - maxLength, maxLength);
-            return dsl;
+            script = script.Substring(0, position);
+            script = string.Join(" ", script.Split(new char[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
+            if (script.Length > maxLength)
+                script = "..." + script.Substring(script.Length - maxLength, maxLength);
+            return script;
         }
 
-        public static string PreviousText(string dsl, int line, int column, int maxLength)
+        public static string PreviousText(string script, int line, int column, int maxLength)
         {
-            return PreviousText(dsl, Position(dsl, line, column), maxLength);
+            return PreviousText(script, Position(script, line, column), maxLength);
         }
 
         public static string ReportPosition(string text, int line, int column, string filePath = null)

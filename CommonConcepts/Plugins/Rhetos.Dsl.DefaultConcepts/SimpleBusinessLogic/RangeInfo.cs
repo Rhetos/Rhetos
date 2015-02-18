@@ -45,14 +45,14 @@ namespace Rhetos.Dsl.DefaultConcepts
                 FilterName = PropertyFrom.Name + "_" + PropertyTo.Name + "_RangeFilter",
                 Source = PropertyFrom.DataStructure
             };
-            var denySaveRange = new DenySaveForPropertyInfo
+            var invalidDataRange = new InvalidDataMarkPropertyInfo
             {
                 DependedProperty = PropertyFrom,
                 FilterType = itemFilterRange.FilterName,
                 ErrorMessage = String.Format("Value of {0} has to be less than or equal to {1}.", PropertyFrom.Name, PropertyTo.Name),
                 Source = PropertyFrom.DataStructure
             };
-            return new IConceptInfo[] { itemFilterRange, denySaveRange };
+            return new IConceptInfo[] { itemFilterRange, invalidDataRange };
         }
 
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)

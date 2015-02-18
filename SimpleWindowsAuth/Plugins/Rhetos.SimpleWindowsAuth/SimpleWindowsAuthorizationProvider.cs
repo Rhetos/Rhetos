@@ -35,13 +35,16 @@ namespace Rhetos.SimpleWindowsAuth
     {
         private readonly Lazy<IPermissionLoader> _permissionLoader;
         private readonly WindowsSecurity _windowsSecurity;
+        private readonly ILogger _logger;
 
         public SimpleWindowsAuthorizationProvider(
             Lazy<IPermissionLoader> permissionLoader,
-            WindowsSecurity windowsSecurity)
+            WindowsSecurity windowsSecurity,
+            ILogProvider logProvider)
         {
             _permissionLoader = permissionLoader;
             _windowsSecurity = windowsSecurity;
+            _logger = logProvider.GetLogger(GetType().Name);
         }
 
         public IList<bool> GetAuthorizations(IUserInfo userInfo, IList<Claim> requiredClaims)
@@ -49,8 +52,10 @@ namespace Rhetos.SimpleWindowsAuth
             if (!(userInfo is IWindowsUserInfo))
                 throw new FrameworkException("Unexpected userInfo type '" + userInfo.GetType().FullName + "'.");
             IList<string> userMembership = _windowsSecurity.GetIdentityMembership((IWindowsUserInfo)userInfo);
-
             IList<IPermissionBrowse> userPermissions = _permissionLoader.Value.LoadPermissions(requiredClaims, userMembership);
+
+            _logger.Trace(() => "User " + userInfo.UserName + " has roles: " + string.Join(", ", userMembership) + ".");
+            _logger.Trace(() => ReportPermissions(userInfo, userPermissions, requiredClaims));
 
             HashSet<string> hasClaims = new HashSet<string>();
             foreach (IPermissionBrowse permission in userPermissions)
@@ -61,6 +66,38 @@ namespace Rhetos.SimpleWindowsAuth
                     hasClaims.Remove(permission.ClaimResource + "." + permission.ClaimRight);
 
             return requiredClaims.Select(requiredClaim => hasClaims.Contains(requiredClaim.FullName)).ToArray();
+        }
+
+        private string ReportPermissions(IUserInfo userInfo, IList<IPermissionBrowse> userPermissions, IList<Claim> requiredClaims)
+        {
+            // Reporting is done in a function that returns string, to avoid any performance impact when the trace log is not enabled.
+
+            var report = new List<string>();
+
+            var permissionsByClaim = new MultiDictionary<string, IPermissionBrowse>();
+            foreach (var permission in userPermissions)
+                permissionsByClaim.Add(permission.ClaimResource + "." + permission.ClaimRight, permission);
+
+            foreach (var claim in requiredClaims)
+            {
+                string claimName = claim.FullName;
+                var claimPermissions = permissionsByClaim.Get(claimName);
+                var allowedForRoles = claimPermissions.Where(p => p.IsAuthorized.Value).Select(p => p.Principal).ToList();
+                var deniedForRoles = claimPermissions.Where(p => !p.IsAuthorized.Value).Select(p => p.Principal).ToList();
+
+                if (deniedForRoles.Count != 0)
+                    if (allowedForRoles.Count != 0)
+                        report.Add("User " + userInfo.UserName + " claim '" + claimName + "' is denied for role " + string.Join(", ", deniedForRoles) + " and allowed for role " + string.Join(", ", allowedForRoles) + " (deny overrides allow).");
+                    else
+                        report.Add("User " + userInfo.UserName + " claim '" + claimName + "' is denied for role " + string.Join(", ", deniedForRoles) + ".");
+                else
+                    if (allowedForRoles.Count != 0)
+                        report.Add("User " + userInfo.UserName + " claim '" + claimName + "' is allowed for role " + string.Join(", ", allowedForRoles) + ".");
+                    else
+                        report.Add("User " + userInfo.UserName + " claim '" + claimName + "' is denied by default (no permissions defined).");
+            }
+
+            return string.Join("\r\n", report);
         }
     }
 }

@@ -117,6 +117,7 @@
   <ItemGroup>
     <Compile Include="ConfigUtility.cs" />
     <Compile Include="ConnectionString.cs" />
+    <Compile Include="FilesUtility.cs" />
     <Compile Include="MultiDictionary.cs" />
     <Compile Include="ExceptionsUtility.cs" />
     <Compile Include="Exceptions\ClientException.cs" />

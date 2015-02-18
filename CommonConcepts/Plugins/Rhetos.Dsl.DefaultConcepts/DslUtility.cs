@@ -112,25 +112,17 @@ namespace Rhetos.Dsl.DefaultConcepts
             return name;
         }
 
-        public static void ValidatePath(DataStructureInfo source, string path, IEnumerable<IConceptInfo> existingConcepts, IConceptInfo errorContext)
+        public static void ValidatePath(DataStructureInfo source, string path, IDslModel existingConcepts, IConceptInfo errorContext)
         {
-            var property = GetPropertyByPath(source, path, new ConceptsListToDslModel(existingConcepts));
+            var property = GetPropertyByPath(source, path, existingConcepts);
             if (property.IsError)
                 throw new DslSyntaxException(errorContext, "Invalid path: " + property.Error);
         }
 
         public static PropertyInfo FindProperty(IDslModel dslModel, DataStructureInfo dataStructure, string propertyName)
         {
-            if (dslModel is ConceptsListToDslModel)
-                return dslModel.Concepts.OfType<PropertyInfo>()
-                    .Where(p => p.DataStructure == dataStructure
-                        && p.Name == propertyName)
-                    .SingleOrDefault();
-            else
-            {
-                var propertyKey = string.Format("PropertyInfo {0}.{1}.{2}", dataStructure.Module.Name, dataStructure.Name, propertyName);
-                return (PropertyInfo)dslModel.FindByKey(propertyKey);
-            }
+            var propertyKey = string.Format("PropertyInfo {0}.{1}.{2}", dataStructure.Module.Name, dataStructure.Name, propertyName);
+            return (PropertyInfo)dslModel.FindByKey(propertyKey);
         }
 
         public static ValueOrError<PropertyInfo> GetPropertyByPath(DataStructureInfo source, string path, IDslModel existingConcepts)
@@ -169,10 +161,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             var selectedProperty = FindProperty(existingConcepts, source, referenceName);
 
             IEnumerable<DataStructureExtendsInfo> allExtensions;
-            if (existingConcepts is ConceptsListToDslModel)
-                allExtensions = existingConcepts.Concepts.OfType<DataStructureExtendsInfo>().ToList();
-            else
-                allExtensions = existingConcepts.FindByType<DataStructureExtendsInfo>();
+            allExtensions = existingConcepts.FindByType<DataStructureExtendsInfo>();
 
             if (selectedProperty == null && referenceName == "Base")
             {

@@ -78,8 +78,6 @@
   <ItemGroup>
     <Compile Include="DataMigrationTest.cs" />
     <Compile Include="DataMigration_Accessor.cs" />
-    <Compile Include="PackageCompilerShould.cs" />
-    <Compile Include="PackageSetExtractorShould.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DatabaseCleanerTest.cs" />
   </ItemGroup>
@@ -104,15 +102,14 @@
       <Project>{43BA178B-7642-473C-A43A-DBF58294635A}</Project>
       <Name>Rhetos.TestCommon</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Deployment.Interfaces\Rhetos.Deployment.Interfaces.csproj">
+      <Project>{945537dc-4af7-4def-b73c-07f19229efe6}</Project>
+      <Name>Rhetos.Deployment.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Deployment\Rhetos.Deployment.csproj">
       <Project>{A7328BFA-A009-4F1E-B9A1-B51B2020F45C}</Project>
       <Name>Rhetos.Deployment</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="TestData\**">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

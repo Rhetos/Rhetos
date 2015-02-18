@@ -49,6 +49,12 @@ namespace Rhetos.Utilities
             list.Add(value);
         }
 
+        public void AddKey(TKey key)
+        {
+            if (!ContainsKey(key))
+                Add(key, new List<TValue>());
+        }
+
         private static TValue[] EmptyArray = new TValue[] { };
 
         /// <summary>

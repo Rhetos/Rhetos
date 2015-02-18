@@ -30,15 +30,15 @@ namespace Rhetos.Dsl
 {
     public class DslParser : IDslParser
     {
-        protected readonly IDslSource _dslSource;
+        protected readonly Tokenizer _tokenizer;
         protected readonly IConceptInfo[] _conceptInfoPlugins;
         protected readonly ILogger _performanceLogger;
         protected readonly ILogger _logger;
         protected readonly ILogger _keywordsLogger;
 
-        public DslParser(IDslSource dslSource, IConceptInfo[] conceptInfoPlugins, ILogProvider logProvider)
+        public DslParser(Tokenizer tokenizer, IConceptInfo[] conceptInfoPlugins, ILogProvider logProvider)
         {
-            _dslSource = dslSource;
+            _tokenizer = tokenizer;
             _conceptInfoPlugins = conceptInfoPlugins;
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("DslParser");
@@ -95,42 +95,38 @@ namespace Rhetos.Dsl
         {
             var stopwatch = Stopwatch.StartNew();
 
-            TokenReader tokenReader = new TokenReader(Tokenizer.GetTokens(_dslSource), 0);
+            TokenReader tokenReader = new TokenReader(_tokenizer.GetTokens(), 0);
 
             List<IConceptInfo> newConcepts = new List<IConceptInfo>();
             Stack<IConceptInfo> context = new Stack<IConceptInfo>();
+
+            tokenReader.SkipEndOfFile();
             while (!tokenReader.EndOfInput)
             {
                 IConceptInfo conceptInfo = ParseNextConcept(tokenReader, context, conceptParsers);
                 newConcepts.Add(conceptInfo);
 
                 UpdateContextForNextConcept(tokenReader, context, conceptInfo);
+
+                if (context.Count == 0)
+                    tokenReader.SkipEndOfFile();
             }
 
             _performanceLogger.Write(stopwatch, "DslParser.ExtractConcepts (" + newConcepts.Count + " concepts).");
 
             if (context.Count > 0)
                 throw new DslSyntaxException(string.Format(
-                    ReportErrorContext(context.Peek(), _dslSource.Script.Length - 1)
+                    ReportErrorContext(context.Peek(), tokenReader)
                     + "Expected \"}\" at the end of the script to close concept \"{0}\".", context.Peek()));
 
             return newConcepts;
         }
 
-        struct Interpretation { public IConceptInfo ConceptInfo; public TokenReader NextPosition; }
-
-        struct ErrorContext
-        {
-            public string Error; public int Postion; public string ParserName; public IDslSource DslSource;
-            public override string ToString()
-            {
-                return ParserName + ": " + Error + "\r\n" + DslSource.ReportError(Postion);
-            }
-        }
+        class Interpretation { public IConceptInfo ConceptInfo; public TokenReader NextPosition; }
 
         protected IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, IEnumerable<IConceptParser> conceptParsers)
         {
-            var errors = new List<ErrorContext>();
+            var errors = new List<string>();
             List<Interpretation> possibleInterpretations = new List<Interpretation>();
 
             foreach (var conceptParser in conceptParsers)
@@ -145,18 +141,12 @@ namespace Rhetos.Dsl
                         NextPosition = nextPosition
                     });
                 else if (!string.IsNullOrEmpty(conceptInfoOrError.Error)) // Empty error means that this parser is not for this keyword.
-                    errors.Add(new ErrorContext
-                    {
-                        Error = conceptInfoOrError.Error,
-                        Postion = tokenReader.CurrentPosition,
-                        ParserName = conceptParser.GetType().Name,
-                        DslSource = _dslSource
-                    });
+                    errors.Add(string.Format("{0}: {1}\r\n{2}", conceptParser.GetType().Name, conceptInfoOrError.Error, tokenReader.ReportPosition()));
             }
 
             if (possibleInterpretations.Count == 0)
             {
-                string msg = "Unrecognized concept. " + _dslSource.ReportError(tokenReader.CurrentPosition);
+                string msg = "Unrecognized concept. " + tokenReader.ReportPosition();
                 if (errors.Count > 0)
                 {
                     string listedErrors = string.Join("\r\n", errors);
@@ -170,7 +160,7 @@ namespace Rhetos.Dsl
             possibleInterpretations.RemoveAll(i => i.NextPosition.PositionInTokenList < largest);
             if (possibleInterpretations.Count > 1)
             {
-                string msg = "Ambiguous syntax. " + _dslSource.ReportError(tokenReader.CurrentPosition)
+                string msg = "Ambiguous syntax. " + tokenReader.ReportPosition()
                     + "\r\n Possible interpretations: "
                     + string.Join(", ", possibleInterpretations.Select(i => i.ConceptInfo.GetType().Name))
                     + ".";
@@ -181,10 +171,10 @@ namespace Rhetos.Dsl
             return possibleInterpretations.Single().ConceptInfo;
         }
 
-        protected string ReportErrorContext(IConceptInfo conceptInfo, int index)
+        protected string ReportErrorContext(IConceptInfo conceptInfo, TokenReader tokenReader)
         {
             var sb = new StringBuilder();
-            sb.AppendLine(_dslSource.ReportError(index));
+            sb.AppendLine(tokenReader.ReportPosition());
             if (conceptInfo != null)
             {
                 sb.AppendFormat("Previous concept: {0}", conceptInfo.GetUserDescription()).AppendLine();
@@ -206,7 +196,7 @@ namespace Rhetos.Dsl
             else if (!tokenReader.TryRead(";"))
             {
                 var sb = new StringBuilder();
-                sb.Append(ReportErrorContext(conceptInfo, tokenReader.CurrentPosition));
+                sb.Append(ReportErrorContext(conceptInfo, tokenReader));
                 sb.AppendFormat("Expected \";\" or \"{{\".");
                 throw new DslSyntaxException(sb.ToString());
             }
@@ -214,7 +204,7 @@ namespace Rhetos.Dsl
             while (tokenReader.TryRead("}"))
             {
                 if (context.Count == 0)
-                    throw new DslSyntaxException(_dslSource.ReportError(tokenReader.CurrentPosition) + "\r\nUnexpected \"}\". ");
+                    throw new DslSyntaxException(tokenReader.ReportPosition() + "\r\nUnexpected \"}\". ");
                 context.Pop();
             }
         }

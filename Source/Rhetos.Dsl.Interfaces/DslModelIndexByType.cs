@@ -55,6 +55,9 @@ namespace Rhetos.Dsl
 
     public static class DslModelIndexerByTypeExtensions
     {
+        /// <summary>
+        /// Returns all concepts of the given interface or type, including derivations.
+        /// </summary>
         public static IEnumerable<T> FindByType<T>(this IDslModel dslModel) where T : IConceptInfo
         {
             return dslModel.GetIndex<DslModelIndexByType>().FindByType(typeof(T), includeDerivations: true).Cast<T>();

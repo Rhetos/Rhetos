@@ -69,7 +69,7 @@ namespace Rhetos.Dsl.Test
 
         internal static TokenReader TestTokenReader(string dsl, int position = 0)
         {
-            return new TokenReader(Tokenizer.GetTokens(new DslSourceHelper(dsl)), position);
+            return new TokenReader(new Tokenizer(new MockDslScriptsProvider(dsl)).GetTokens(), position);
         }
 
 
@@ -103,7 +103,7 @@ namespace Rhetos.Dsl.Test
             string dsl = "a";
             List<IConceptParser> conceptParsers = new List<IConceptParser>() { new TestErrorParser("b") };
 
-            TokenReader tokenReader = new TokenReader(Tokenizer.GetTokens(new DslSourceHelper(dsl)), 0);
+            TokenReader tokenReader = new TokenReader(new Tokenizer(new MockDslScriptsProvider(dsl)).GetTokens(), 0);
 
             var e = TestUtility.ShouldFail<DslSyntaxException>(
                 () => new TestDslParser(dsl).ParseNextConcept(tokenReader, null, conceptParsers));
@@ -270,16 +270,16 @@ namespace Rhetos.Dsl.Test
             DslParserParse("simple a b;");
 
             TestUtility.ShouldFail(() => DslParserParse("simple a"), // missing second parameter
-                "simple", "end of the DSL script", MockDslSource.TestScriptName, "line 1", "column 1", "Cannot read the value of Data");
+                "simple", "end of the DSL script", MockDslScript.TestScriptName, "line 1", "column 1", "Cannot read the value of Data");
 
             TestUtility.ShouldFail(() => DslParserParse("simple a;"), // missing second parameter
-                "simple", "unexpected", "';'", MockDslSource.TestScriptName, "line 1", "column 1", "Cannot read the value of Data");
+                "simple", "unexpected", "';'", MockDslScript.TestScriptName, "line 1", "column 1", "Cannot read the value of Data");
 
             TestUtility.ShouldFail(() => DslParserParse("{"), // invalid syntax
-                MockDslSource.TestScriptName, "line 1", "column 1");
+                MockDslScript.TestScriptName, "line 1", "column 1");
 
             TestUtility.ShouldFail(() => DslParserParse("simple a b"), // missing semicolon
-                "simple", "Expected \";\" or \"{\"", MockDslSource.TestScriptName, "line 1", "column 11");
+                "simple", "Expected \";\" or \"{\"", MockDslScript.TestScriptName, "line 1", "column 11");
         }
 
         private static void DslParser_ErrorReporting(string dsl)
@@ -297,16 +297,35 @@ namespace Rhetos.Dsl.Test
             Assert.IsNotNull(exception);
             Console.WriteLine("=============================");
             Console.WriteLine(exception.Message);
-            Assert.IsTrue(exception.Message.Contains(MockDslSource.TestScriptName), "Error message should contain script name.");
+            Assert.IsTrue(exception.Message.Contains(MockDslScript.TestScriptName), "Error message should contain script name.");
         }
 
-        private static void DslParserParse(string dsl)
+        private static IEnumerable<IConceptInfo> DslParserParse(params string[] dsl)
         {
             var dslParser = new DslParser(
-                new MockDslSource(dsl),
+                new Tokenizer(new MockDslScriptsProvider(dsl)),
                 new IConceptInfo[] { new SimpleConceptInfo() },
                 new ConsoleLogProvider());
-            Console.WriteLine(string.Join(";\r\n", dslParser.ParsedConcepts));
+            var parsedConcepts = dslParser.ParsedConcepts;
+            Console.WriteLine("Parsed concepts: " + string.Join("\r\n", dslParser.ParsedConcepts));
+            return parsedConcepts;
+        }
+
+        [TestMethod]
+        public void DslParser_MultipleFiles()
+        {
+            var concepts = DslParserParse("simple a b;", "simple c d;");
+            Assert.AreEqual("Rhetos.Dsl.InitializationConcept, SIMPLE a, SIMPLE c", TestUtility.DumpSorted(concepts));
+        }
+
+        [TestMethod]
+        public void DslParser_ConceptSplitOverFiles()
+        {
+            TestUtility.ShouldFail(() => DslParserParse("simple a", " b;"),
+                "past the end of the DSL script");
+
+            TestUtility.ShouldFail(() => DslParserParse("simple a b", ";"),
+                "Expected \";\" or \"{\"");
         }
 
         //===================================================================================

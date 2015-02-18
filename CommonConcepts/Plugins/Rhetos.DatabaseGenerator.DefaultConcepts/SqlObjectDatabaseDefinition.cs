@@ -41,14 +41,14 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (SqlObjectInfo)conceptInfo;
             return info.CreateSql
-                .Replace("{SPLIT SCRIPT}", SqlUtility.ScriptSplitter); // Using 'Replace' instead of 'Format' function, to minimize unexpected errors for application developers (Format function expects all curly brackets to be escaped, e.g.).
+                .Replace("{SPLIT SCRIPT}", SqlUtility.ScriptSplitterTag); // Using 'Replace' instead of 'Format' function, to minimize unexpected errors for application developers (Format function expects all curly brackets to be escaped, e.g.).
         }
 
         public string RemoveDatabaseStructure(IConceptInfo conceptInfo)
         {
             var info = (SqlObjectInfo)conceptInfo;
             return info.RemoveSql
-                .Replace("{SPLIT SCRIPT}", SqlUtility.ScriptSplitter);
+                .Replace("{SPLIT SCRIPT}", SqlUtility.ScriptSplitterTag);
         }
     }
 }

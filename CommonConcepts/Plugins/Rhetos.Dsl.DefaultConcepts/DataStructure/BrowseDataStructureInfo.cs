@@ -28,11 +28,11 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Browse")]
-    public class BrowseDataStructureInfo : DataStructureInfo, IValidationConcept, IMacroConcept
+    public class BrowseDataStructureInfo : DataStructureInfo, IValidatedConcept, IMacroConcept
     {
         public DataStructureInfo Source { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel concepts)
         {
             if (Module.Name != Source.Module.Name)
                 throw new DslSyntaxException(
@@ -40,14 +40,10 @@ namespace Rhetos.Dsl.DefaultConcepts
                         Source.Module,
                         Module));
 
-            var propertiesWithSelector = new HashSet<string>(
-                concepts.OfType<BrowseFromPropertyInfo>()
-                    .Where(sp => sp.PropertyInfo.DataStructure == this)
-                    .Select(sp => sp.PropertyInfo.Name));
+            var properties = concepts.FindByReference<PropertyInfo>(p => p.DataStructure, this);
 
-            var propertyWithoutSelector = concepts.OfType<PropertyInfo>()
-                .Where(p => p.DataStructure == this)
-                .Where(p => !propertiesWithSelector.Contains(p.Name))
+            var propertyWithoutSelector = properties
+                .Where(p => concepts.FindByReference<BrowseFromPropertyInfo>(bfp => bfp.PropertyInfo, p).Count() == 0)
                 .FirstOrDefault();
 
             if (propertyWithoutSelector != null)

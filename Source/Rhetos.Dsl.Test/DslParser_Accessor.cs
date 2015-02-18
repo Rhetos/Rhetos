@@ -30,7 +30,7 @@ namespace Rhetos.Dsl.Test
     {
         public TestDslParser(string dsl, IConceptInfo[] conceptInfoPlugins = null)
             : base (
-                new DslSourceHelper(dsl),
+                new Tokenizer(new MockDslScriptsProvider(dsl)),
                 conceptInfoPlugins != null ? conceptInfoPlugins : new IConceptInfo[] { },
                 new ConsoleLogProvider())
         {

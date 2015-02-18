@@ -17,57 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Rhetos.Utilities;
-using Rhetos.Logging;
 
 namespace Rhetos.Deployment
 {
-    public class DataMigrationScript : IComparable<DataMigrationScript>
-    {
-        public string Tag;
-        public string Path;
-        public string Content;
-
-        protected string _order;
-        protected string Order
-        {
-            get { return _order ?? (_order = ComputeOrder(Path)); }
-        }
-
-        protected static readonly Regex Numerics = new Regex(@"(\d+|\D+)");
-
-        protected static string ComputeOrder(string s)
-        {
-            return NumericString(s).Replace(@"\", @" \");
-        }
-
-        protected static string NumericString(string s)
-        {
-            var result = new StringBuilder();
-            foreach (var match in Numerics.Matches(s))
-            {
-                var part = match.ToString();
-                if (char.IsDigit(part[0]))
-                    result.Append(new string('0', Math.Max(10 - part.Length, 0)) + part);
-                else
-                    result.Append(part);
-            }
-            return result.ToString();
-        }
-
-        public int CompareTo(DataMigrationScript other)
-        {
-            return string.Compare(Order, other.Order, StringComparison.InvariantCultureIgnoreCase);
-        }
-    }
-
     public class DataMigrationReport
     {
         public List<string> CreatedTags;
@@ -78,17 +38,19 @@ namespace Rhetos.Deployment
         protected readonly ISqlExecuter _sqlExecuter;
         protected readonly ILogger _logger;
         protected readonly ILogger _deployPackagesLogger;
+        protected readonly IInstalledPackages _installedPackages;
 
-        public DataMigration(ISqlExecuter sqlExecuter, ILogProvider logProvider)
+        public DataMigration(ISqlExecuter sqlExecuter, ILogProvider logProvider, IInstalledPackages installedPackages)
         {
             _sqlExecuter = sqlExecuter;
             _logger = logProvider.GetLogger("DataMigration");
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
+            _installedPackages = installedPackages;
         }
 
-        public DataMigrationReport ExecuteDataMigrationScripts(string dataMigrationScriptsFolder)
+        public DataMigrationReport ExecuteDataMigrationScripts()
         {
-            var newScripts = LoadScriptsFromDisk(dataMigrationScriptsFolder);
+            var newScripts = LoadScriptsFromDisk();
 
             var scriptsInOtherLanguages = FindScriptsInOtherLanguages(newScripts, SqlUtility.DatabaseLanguage);
             LogScripts("Ignoring scripts in other database languages", scriptsInOtherLanguages);
@@ -198,7 +160,7 @@ namespace Rhetos.Deployment
             foreach (var script in scripts)
             {
                 var s = script;
-                _logger.Write(eventType, () => msg + " " + s.Tag + " " + s.Path);
+                _logger.Write(eventType, () => msg + " " + s.Path + " (" + s.Tag + ")");
             }
         }
 
@@ -216,33 +178,48 @@ namespace Rhetos.Deployment
             return scripts.OrderBy(s => s).ToList();
         }
 
-        protected List<DataMigrationScript> LoadScriptsFromDisk(string dataMigrationScriptsFolder)
+        const string DataMigrationScriptsSubfolder = "DataMigration";
+
+        protected List<DataMigrationScript> LoadScriptsFromDisk()
         {
-            var files = Directory.GetFiles(dataMigrationScriptsFolder, "*.*", SearchOption.AllDirectories);
+            var allScripts = new List<DataMigrationScript>();
 
-            const string expectedExtension = ".sql";
-            var badFile = files.FirstOrDefault(file => Path.GetExtension(file).ToLower() != expectedExtension);
-            if (badFile != null)
-                throw new FrameworkException("Data migration script '"+ badFile +"' does not have expected extension '" + expectedExtension + "'.");
+            foreach (var package in _installedPackages.Packages)
+            {
+                string dataMigrationScriptsFolder = Path.Combine(package.Folder, DataMigrationScriptsSubfolder);
+                if (Directory.Exists(dataMigrationScriptsFolder))
+                {
+                    var files = Directory.GetFiles(dataMigrationScriptsFolder, "*.*", SearchOption.AllDirectories);
 
-            int baseFolderLength = GetFullPathLength(dataMigrationScriptsFolder);
+                    const string expectedExtension = ".sql";
+                    var badFile = files.FirstOrDefault(file => Path.GetExtension(file).ToLower() != expectedExtension);
+                    if (badFile != null)
+                        throw new FrameworkException("Data migration script '" + badFile + "' does not have expected extension '" + expectedExtension + "'.");
 
-            var scripts = (from file in files
-                    let scriptPath = Path.GetFullPath(file).Substring(baseFolderLength)
-                    let scriptContent = File.ReadAllText(file, Encoding.Default)
-                    select new DataMigrationScript
-                               {
-                                   Tag = ParseScriptTag(scriptContent, scriptPath),
-                                   Path = scriptPath,
-                                   Content = scriptContent
-                               }).ToList();
+                    int baseFolderLength = GetFullPathLength(dataMigrationScriptsFolder);
 
-            var badGroup = scripts.GroupBy(s => s.Tag).FirstOrDefault(g => g.Count() >= 2);
+                    var packageScripts = (from file in files
+                                   let scriptRelativePath = Path.GetFullPath(file).Substring(baseFolderLength)
+                                   let scriptContent = File.ReadAllText(file, Encoding.Default)
+                                   select new DataMigrationScript
+                                              {
+                                                  Tag = ParseScriptTag(scriptContent, file),
+                                                  // Using package.Id instead of full package subfolder name, in order to keep the same script path between different versions of the package (the folder name will contain the version number).
+                                                  Path = package.Id + "\\" + scriptRelativePath,
+                                                  Content = scriptContent
+                                              }).ToList();
+
+                    allScripts.AddRange(packageScripts);
+                }
+            }
+
+            var badGroup = allScripts.GroupBy(s => s.Tag).FirstOrDefault(g => g.Count() >= 2);
             if (badGroup != null)
                 throw new FrameworkException(string.Format(
                     "Data migration scripts '{0}' and '{1}' have same tag '{2}' in their headers.",
                     badGroup.First().Path, badGroup.ElementAt(1).Path, badGroup.Key));
-            return scripts.OrderBy(s => s).ToList();
+
+            return allScripts.OrderBy(s => s).ToList();
         }
 
         protected static int GetFullPathLength(string dataMigrationScriptsFolder)

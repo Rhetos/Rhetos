@@ -63,7 +63,7 @@ namespace Rhetos.Dsl.Test
     {
         internal static TokenReader TestTokenReader(string dsl, int position = 0)
         {
-            return new TokenReader(Tokenizer.GetTokens(new DslSourceHelper(dsl)), position);
+            return new TokenReader(new Tokenizer(new MockDslScriptsProvider(dsl)).GetTokens(), position);
         }
 
         class SimpleConceptInfo : IConceptInfo
@@ -85,14 +85,15 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual("Wholesale", ci.Name);
         }
 
+        [TestMethod()]
         public void ParsePosition()
         {
-            var simpleParser = new GenericParserHelper<SimpleConceptInfo>("simple");
+            var simpleParser = new GenericParserHelper<SimpleConceptInfo>("abc");
             var tokenReader = TestTokenReader("simple abc def", 1);
             SimpleConceptInfo ci = (SimpleConceptInfo)simpleParser.Parse(tokenReader, new Stack<IConceptInfo>()).Value;
 
-            Assert.AreEqual("abc", ci.Name);
-            Assert.AreEqual(11, tokenReader.CurrentPosition);
+            Assert.AreEqual("def", ci.Name);
+            TestUtility.AssertContains(tokenReader.ReportPosition(), "column 15,");
         }
 
         [TestMethod()]
@@ -104,21 +105,11 @@ namespace Rhetos.Dsl.Test
         }
 
         [TestMethod()]
-        [ExpectedException(typeof(FrameworkException))]
         public void ParseNotEnoughParameters()
         {
-            try
-            {
-                var simpleParser = new GenericParserHelper<SimpleConceptInfo>("module");
-                SimpleConceptInfo ci = simpleParser.QuickParse("module");
-            }
-            catch (Exception ex)
-            {
-                Assert.IsTrue(ex.Message.Contains("Name"));
-                Assert.IsTrue(ex.Message.Contains("SimpleConceptInfo"));
-                Assert.IsTrue(ex.Message.Contains("past the end"));
-                throw;
-            }
+            var simpleParser = new GenericParserHelper<SimpleConceptInfo>("module");
+            TestUtility.ShouldFail(() => simpleParser.QuickParse("module"),
+                "Name", "SimpleConceptInfo", "past the end");
         }
 
         [TestMethod()]
@@ -357,7 +348,7 @@ namespace Rhetos.Dsl.Test
             EnclosedConceptInfo ci = (EnclosedConceptInfo)enclosedParser.Parse(tokenReader, stack).Value;
             Assert.AreEqual("a", ci.Parent.Name);
             Assert.AreEqual("b", ci.Name);
-            Assert.AreEqual(21, tokenReader.CurrentPosition);
+            TestUtility.AssertContains(tokenReader.ReportPosition(), "before: \";");
         }
 
         [TestMethod()]
@@ -403,7 +394,7 @@ namespace Rhetos.Dsl.Test
             catch (Exception e)
             {
                 Assert.IsTrue(e.Message.Contains("\".\""), "Expecting \".\"");
-                var msg = ScriptPositionReporting.ReportPosition(dsl, parser.tokenReader.CurrentPosition);
+                var msg = parser.tokenReader.ReportPosition();
                 Assert.IsTrue(msg.Contains("def"), "Report the unexpected text.");
                 throw;
             }

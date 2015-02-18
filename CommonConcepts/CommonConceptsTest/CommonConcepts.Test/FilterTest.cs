@@ -703,5 +703,23 @@ namespace CommonConcepts.Test
                 TestClientRead<TestFilter.AutoFilter2Browse>(container, "b2xx", item => item.Name2, readCommand);
             }
         }
+
+        [TestMethod]
+        public void ItemFilterReferenced()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var source = container.Resolve<GenericRepository<TestFilter.Source>>();
+                var detail = container.Resolve<GenericRepository<TestFilter.SourceDetail>>();
+
+                var testSources = new[] { "a1", "a2", "b1", "b2" }.Select(name => new TestFilter.Source { Name = name }).ToList();
+                var testDetails = testSources.Select(s => new TestFilter.SourceDetail { Parent = s, Name2 = "d" }).ToList();
+
+                source.Save(testSources, null, source.Read());
+                detail.Save(testDetails, null, detail.Read());
+
+                Assert.AreEqual("a1d, b1d", TestUtility.DumpSorted(detail.Query<TestFilter.Composable>(), d => d.Parent.Name + d.Name2));
+            }
+        }
     }
 }

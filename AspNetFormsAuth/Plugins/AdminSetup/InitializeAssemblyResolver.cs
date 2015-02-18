@@ -45,7 +45,7 @@ namespace AdminSetup
             string assemblyPath = Path.GetFullPath(Path.Combine(rhetosBinFolder, new AssemblyName(args.Name).Name + ".dll"));
             if (File.Exists(assemblyPath) == false)
             {
-                Console.WriteLine("InitAspNetDatabase: Guessed external assembly path '" + assemblyPath + "' for assembly name '" + args.Name + "'.");
+                Console.WriteLine(System.AppDomain.CurrentDomain.FriendlyName + ": Guessed external assembly path '" + assemblyPath + "' for assembly name '" + args.Name + "'.");
                 return null;
             }
             return Assembly.LoadFrom(assemblyPath);

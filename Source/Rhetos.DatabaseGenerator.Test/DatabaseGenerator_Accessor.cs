@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Compiler;
+using Rhetos.Dom;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
@@ -39,6 +40,26 @@ namespace Rhetos.DatabaseGenerator.Test
         public DatabaseGenerator_Accessor(IDslModel dslModel, PluginsContainer<IConceptDatabaseDefinition> plugins)
             : base(null, dslModel, plugins, null, new ConsoleLogProvider())
         {
+        }
+
+        public DatabaseGenerator_Accessor(ISqlExecuter sqlExecuter)
+            : base(sqlExecuter, null, new NullPluginsContainer<IConceptDatabaseDefinition>(),
+            new MockConceptApplicationRepository(),
+            new ConsoleLogProvider())
+        {
+        }
+
+        class MockDomainObjectModel : IDomainObjectModel
+        {
+            public System.Reflection.Assembly Assembly { get { return GetType().Assembly; } }
+        }
+
+        class MockConceptApplicationRepository : IConceptApplicationRepository
+        {
+            public List<string> InsertMetadataSql(NewConceptApplication ca) { return new List<string> { }; }
+            public List<string> UpdateMetadataSql(NewConceptApplication ca, ConceptApplication oldApp) { return new List<string> { }; }
+            public List<string> DeleteMetadataSql(ConceptApplication ca) { return new List<string> { }; }
+            public List<ConceptApplication> Load() { return new List<ConceptApplication> { }; }
         }
 
         new public static void AddConceptApplicationSeparator(ConceptApplication ca, CodeBuilder sqlCodeBuilder)
@@ -84,6 +105,13 @@ namespace Rhetos.DatabaseGenerator.Test
         new public static IEnumerable<Dependency> GetConceptApplicationDependencies(IEnumerable<Tuple<IConceptInfo, IConceptInfo>> conceptInfoDependencies, IEnumerable<ConceptApplication> conceptApplications)
         {
             return DatabaseGenerator.GetConceptApplicationDependencies(conceptInfoDependencies, conceptApplications);
+        }
+
+        new public void ApplyChangesToDatabase(
+            List<ConceptApplication> oldApplications, List<NewConceptApplication> newApplications,
+            List<ConceptApplication> toBeRemoved, List<NewConceptApplication> toBeInserted)
+        {
+            base.ApplyChangesToDatabase(oldApplications, newApplications, toBeRemoved, toBeInserted);
         }
     }
 }

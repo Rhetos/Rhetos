@@ -1,0 +1,23 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>SimpleWindowsAuth</id>
+    <version>0.9.24.1</version>
+    <authors>Omega software</authors>
+    <owners>Omega software</owners>
+    <licenseUrl>http://opensource.org/licenses/AGPL-3.0</licenseUrl>
+    <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
+    <description>SimpleWindowsAuth is a DSL package for Rhetos development platform.
+      It provides a simple authorization system and Windows authentication to Rhetos server applications.</description>
+    <copyright>Copyright Omega software 2015</copyright>
+    <tags>Rhetos</tags>
+  </metadata>
+  <files>
+    <file src="Readme.md" target="" />
+    <file src="DataMigration\**\*" target="DataMigration" />
+    <file src="DslScripts\**\*" target="DslScripts" />
+    <file src="Resources\**\*" target="Resources" />
+    <file src="Plugins\Rhetos.SimpleWindowsAuth\bin\Debug\Rhetos.SimpleWindowsAuth.dll" target="Plugins" />
+    <file src="Plugins\Rhetos.SimpleWindowsAuth\bin\Debug\Rhetos.SimpleWindowsAuth.pdb" target="Plugins" />
+  </files>
+</package>
