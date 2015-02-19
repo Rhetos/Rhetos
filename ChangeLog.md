@@ -1,3 +1,33 @@
+0.9.25 (2015-02-19)
+-------------------
+
+Breaking changes:
+
+* `ExtractPackages.exe` tool is deleted. Its functionality is now part of `DeployPackages.exe`.
+* `CreatePackage.exe` tool is deleted. New Rhetos packages should be packed by [NuGet](https://www.nuget.org/).
+
+New features:
+
+* `DeployPackages.exe` can now fully deploy Rhetos packages to Rhetos server, instead of relying other tools to extract or copy package's content into a Rhetos server.
+  The following types of packages are supported:
+    1. NuGet packages
+    2. Unpacked source folders, for development environment 
+    3. Legacy zip packages, for backward compatibility.
+* **SqlObject** can be created without transaction.
+  This is necessary for deploying SQL objects that cannot be created inside a transaction (*Full-text search index* on MS SQL Server, e.g).
+* New concepts: **ComposableFilterByReferenced** and **ItemFilterReferenced**,
+  for inheriting filters from referenced data structure.
+* New concept **InvalidData**, to replace obsolete **DenySave** (same syntax).
+* `DeployPackages.exe` will pause on error, unless `/NoPause` command-line argument is used.
+
+Internal improvements:
+
+* *IValidatedConcept* interface allows improved performance in semantic validation. Old interface *IValidationConcept* is now obsolete.
+* Detailed logging of permission analysis in *SimpleWindowsAuthorizationProvider*.
+* `DeployPackages.exe` reports use of obsolete concepts.
+* `AdminSetup.exe` in *AspNetFormsAuth* also creates admin user and permissions, to make sure the admin account is property set up.
+* Better *EndOfFile* error handling in DSL parser.
+
 0.9.24 (2015-02-04)
 -------------------
 
