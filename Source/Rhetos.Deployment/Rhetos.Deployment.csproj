@@ -70,15 +70,15 @@
     <Compile Include="ApplicationInitialization.cs" />
     <Compile Include="ConnectionStringReport.cs" />
     <Compile Include="DataMigrationScript.cs" />
-    <Compile Include="Packages\DeploymentConfiguration.cs" />
-    <Compile Include="Packages\FileSyncer.cs" />
-    <Compile Include="Packages\InstalledPackages.cs" />
-    <Compile Include="Packages\LoggerForNuget.cs" />
-    <Compile Include="Packages\PackageSource.cs" />
+    <Compile Include="DeploymentConfiguration.cs" />
+    <Compile Include="FileSyncer.cs" />
+    <Compile Include="InstalledPackages.cs" />
+    <Compile Include="LoggerForNuget.cs" />
+    <Compile Include="PackageSource.cs" />
     <Compile Include="DeploymentUtility.cs" />
     <Compile Include="DatabaseCleaner.cs" />
     <Compile Include="DataMigration.cs" />
-    <Compile Include="Packages\PackageDownloader.cs" />
+    <Compile Include="PackageDownloader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sql.cs" />
   </ItemGroup>
