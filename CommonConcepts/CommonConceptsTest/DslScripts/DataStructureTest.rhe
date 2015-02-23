@@ -354,3 +354,54 @@ Module TestCloning
 		AllPropertiesWithCascadeDeleteFrom TestCloning.Source;
 	}
 }
+
+Module TestDataStructure
+{
+	Entity SaveTesterBase
+	{
+		ShortString Name;
+	}
+	
+	Entity SaveTester
+	{
+		Extends TestDataStructure.SaveTesterBase;
+		ShortString Name;
+		Integer Code;
+		
+		SaveMethod
+		{
+			LoadOldItems
+			{
+				Take Name;
+				Take 'Base.Name';
+			}
+			
+			OnSaveUpdate 'UnitTestingUpdate'
+				'var changedItemsName = updatedOld
+					.Zip(updated, (oldItem, newItem) => new { oldItem, newItem})
+					// Safe universal property comparison:
+					.Where(change => change.oldItem.Name == null && change.newItem.Name != null || change.oldItem.Name != null && !change.oldItem.Name.Equals(change.newItem.Name))
+					.ToList();
+				
+				var updateBaseIds = changedItemsName.Select(change => change.newItem.Base.ID);
+				var updateBaseItems = _executionContext.Repository.TestDataStructure.SaveTesterBase.Filter(updateBaseIds);
+				foreach (var baseItem in updateBaseItems)
+					baseItem.Name += " updated";
+				_executionContext.Repository.TestDataStructure.SaveTesterBase.Update(updateBaseItems);';
+				
+			OnSaveValidate 'UnitTestingValidate'
+				'var lockedItemModifyName = updatedOld
+					.Zip(updated, (oldItem, newItem) => new { oldItem, newItem})
+					// Safe universal property comparison:
+					.Where(change => change.oldItem.Name == null && change.newItem.Name != null || change.oldItem.Name != null && !change.oldItem.Name.Equals(change.newItem.Name))
+					.Where(change => change.oldItem.BaseName != null && change.oldItem.BaseName.Contains("lock"))
+					.SingleOrDefault();
+				
+				if (lockedItemModifyName != null)
+					throw new Rhetos.UserException(string.Format(
+						"It is not allow to modify locked item''s name ''{0}'' => ''{1}''.",
+						lockedItemModifyName.oldItem.Name,
+						lockedItemModifyName.newItem.Name));';
+		}
+	}
+}

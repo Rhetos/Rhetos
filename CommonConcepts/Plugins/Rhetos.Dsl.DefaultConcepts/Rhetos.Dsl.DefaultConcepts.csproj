@@ -129,6 +129,11 @@
     <Compile Include="Computations\KeyPropertyComputedFromInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndexClusteredInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndexMultipleFollowingPropertyInfo.cs" />
+    <Compile Include="DataStructure\Writing\OnSaveUpdateInfo.cs" />
+    <Compile Include="DataStructure\Writing\SaveMethodInfo.cs" />
+    <Compile Include="DataStructure\Writing\LoadOldItemsInfo.cs" />
+    <Compile Include="DataStructure\Writing\LoadOldItemsTakeInfo.cs" />
+    <Compile Include="DataStructure\Writing\OnSaveValidateInfo.cs" />
     <Compile Include="RowPermissions\AutoInheritRowPermissionsInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsRuleDenyInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsRuleAllowInfo.cs" />
