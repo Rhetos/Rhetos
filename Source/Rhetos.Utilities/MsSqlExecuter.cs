@@ -26,6 +26,7 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Globalization;
 using Rhetos.Logging;
+using System.Diagnostics;
 
 namespace Rhetos.Utilities
 {
@@ -34,12 +35,14 @@ namespace Rhetos.Utilities
         private readonly string _connectionString;
         private readonly IUserInfo _userInfo;
         private readonly ILogger _logger;
+        private readonly ILogger _performanceLogger;
 
         public MsSqlExecuter(ConnectionString connectionString, ILogProvider logProvider, IUserInfo userInfo)
         {
             _connectionString = connectionString;
             _userInfo = userInfo;
             _logger = logProvider.GetLogger("MsSqlExecuter");
+            _performanceLogger = logProvider.GetLogger("Performance");
         }
 
         public void ExecuteSql(IEnumerable<string> commands)
@@ -59,13 +62,21 @@ namespace Rhetos.Utilities
                         if (sql == null)
                             throw new FrameworkException("SQL script is null.");
 
-                        _logger.Trace("Executing command: {0}", sql);
+                        _logger.Trace(() => "Executing command: " + sql);
 
                         if (string.IsNullOrWhiteSpace(sql))
                             continue;
 
-                        com.CommandText = sql;
-                        com.ExecuteNonQuery();
+                        var sw = Stopwatch.StartNew();
+                        try
+                        {
+                            com.CommandText = sql;
+                            com.ExecuteNonQuery();
+                        }
+                        finally
+                        {
+                            LogPerformanceIssue(sw, sql);
+                        }
 
                         if (useTransaction)
                         {
@@ -92,17 +103,25 @@ namespace Rhetos.Utilities
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
         public void ExecuteReader(string command, Action<DbDataReader> action)
         {
-            _logger.Trace("Executing reader: {0}", command);
+            _logger.Trace(() => "Executing reader: " + command);
 
             SafeExecuteCommand(
                 com =>
                 {
-                    com.CommandText = command;
-                    var dr = com.ExecuteReader();
-                    while (dr.Read())
-                        action(dr);
-                    dr.Close();
-                }, 
+                    var sw = Stopwatch.StartNew();
+                    try
+                    {
+                        com.CommandText = command;
+                        var dr = com.ExecuteReader();
+                        while (dr.Read())
+                            action(dr);
+                        dr.Close();
+                    }
+                    finally
+                    {
+                        LogPerformanceIssue(sw, command);
+                    }
+                },
                 false);
         }
 
@@ -155,6 +174,14 @@ namespace Rhetos.Utilities
                     throw new FrameworkException(msg, ex);
                 }
             }
+        }
+
+        private void LogPerformanceIssue(Stopwatch sw, string sql)
+        {
+            if (sw.Elapsed >= LoggerHelper.SlowEvent) // Avoid flooding the performance trace log.
+                _performanceLogger.Write(sw, () => "MsSqlExecuter: " + sql);
+            else
+                sw.Restart(); // _performanceLogger.Write would restart the stopwatch.
         }
 
         private void SetContextInfo(SqlCommand sqlCommand)
