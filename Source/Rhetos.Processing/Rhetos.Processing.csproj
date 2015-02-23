@@ -91,6 +91,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExecutionCommandsLogEntry.cs" />
+    <Compile Include="ExecutionResultLogEntry.cs" />
     <Compile Include="ProcessingEngine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

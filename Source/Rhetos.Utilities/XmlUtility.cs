@@ -102,33 +102,5 @@ namespace Rhetos.Utilities
         {
             return DeserializeFromXml(element.MakeArrayType(), xml);
         }
-
-        public string SerializeServerCallInfoToXml<T>(T obj, Guid serverCallID)
-        {
-            var sb = new StringBuilder();
-            using (var xmlWriter = XmlWriter.Create(sb, new XmlWriterSettings
-            {
-                Indent = true,
-                OmitXmlDeclaration = true,
-                Encoding = Encoding.UTF8
-            }))
-            using (var xmlDict = XmlDictionaryWriter.CreateDictionaryWriter(xmlWriter))
-            {
-                var serializer = new DataContractSerializer(typeof(ServerCallInfo), new [] {typeof(T)});
-                serializer.WriteObject(xmlDict, new ServerCallInfo { Entry = obj, ServerCallID = serverCallID });
-                xmlWriter.Flush();
-                return sb.ToString();
-            }
-        }
-    }
-
-    [DataContract]
-    public class ServerCallInfo
-    {
-        [DataMember]
-        public object Entry;
-
-        [DataMember]
-        public Guid ServerCallID;
     }
 }

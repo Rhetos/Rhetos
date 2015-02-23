@@ -18,14 +18,15 @@
 */
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-namespace RhetosServerLogTester
+namespace Rhetos.Processing
 {
-    static class Program
+    public class ExecutionResultLogEntry
     {
-        static int Main(string[] args)
-        {
-            return (int) new Tester(Console.Out).Exec(args);
-        }
+        public Guid ExecutionId { get; set; }
+        public ProcessingResult Result { get; set; }
     }
 }

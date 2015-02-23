@@ -36,8 +36,10 @@ namespace Rhetos.Processing
         private readonly IPluginsContainer<ICommandImplementation> _commandRepository;
         private readonly IPluginsContainer<ICommandObserver> _commandObservers;
         private readonly ILogger _logger;
-        private readonly ILogger _requestLogger;
         private readonly ILogger _performanceLogger;
+        private readonly ILogger _requestLogger;
+        private readonly ILogger _commandsLogger;
+        private readonly ILogger _commandsResultLogger;
         private readonly IPersistenceTransaction _persistenceTransaction;
         private readonly IAuthorizationManager _authorizationManager;
         private readonly XmlUtility _xmlUtility;
@@ -57,19 +59,34 @@ namespace Rhetos.Processing
             _commandRepository = commandRepository;
             _commandObservers = commandObservers;
             _logger = logProvider.GetLogger("ProcessingEngine");
-            _requestLogger = logProvider.GetLogger("ProcessingEngine Request");
             _performanceLogger = logProvider.GetLogger("Performance");
+            _requestLogger = logProvider.GetLogger("ProcessingEngine Request");
+            _commandsLogger = logProvider.GetLogger("ProcessingEngine Commands");
+            _commandsResultLogger = logProvider.GetLogger("ProcessingEngine CommandsResult");
             _persistenceTransaction = persistenceTransaction;
             _authorizationManager = authorizationManager;
             _xmlUtility = xmlUtility;
             _userInfo = userInfo;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public ProcessingResult Execute(IList<ICommandInfo> commands)
         {
             _requestLogger.Trace(() => string.Format("User: {0}, Commands({1}): {2}.", _userInfo.UserName, commands.Count, string.Join(", ", commands.Select(a => a.GetType().Name))));
+            var executionId = Guid.NewGuid();
+            _commandsLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionCommandsLogEntry { ExecutionId = executionId, UserInfo = _userInfo.Report(), Commands = commands }));
 
+            var result = ExecuteInner(commands);
+            _commandsResultLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionResultLogEntry { ExecutionId = executionId, Result = result }));
+
+            // On error, the CommandResults will contain partial results of the commands executed before the failed one, and should be cleared.
+            if (result.Success == false)
+                result.CommandResults = null;
+
+            return result;
+        }
+
+        public ProcessingResult ExecuteInner(IList<ICommandInfo> commands)
+        {
             var authorizationMessage = _authorizationManager.Authorize(commands);
             _persistenceTransaction.NHibernateSession.Clear(); // NHibernate cached data from AuthorizationManager may cause problems later with serializing arrays that mix cached proxies with POCO instance.
 
@@ -130,7 +147,7 @@ namespace Rhetos.Processing
                         _persistenceTransaction.DiscardChanges();
 
                         var systemMessage = String.Format(CultureInfo.InvariantCulture, "Command failed. {0} {1} {2}", commandInfo.GetType().Name, commandInfo, commandImplementation.GetType().Name);
-                        return LogResultsReturnError(commandResults, systemMessage + " " + commandResult.Message, systemMessage, commandResult.Message);
+                        return LogAndReturnError(commandResults, systemMessage + " " + commandResult.Message, systemMessage, commandResult.Message);
                     }
                 }
 
@@ -173,7 +190,7 @@ namespace Rhetos.Processing
                     systemMessage = "Internal server error occurred (" + ex.GetType().Name + "). See RhetosServer.log for more information.";
                 }
 
-                return LogResultsReturnError(
+                return LogAndReturnError(
                     commandResults,
                     "Command execution error: ",
                     systemMessage,
@@ -182,9 +199,8 @@ namespace Rhetos.Processing
             }
         }
 
-        private ProcessingResult LogResultsReturnError(List<CommandResult> commandResults, string logError, string systemMessage, string userMessage, Exception logException = null)
+        private ProcessingResult LogAndReturnError(List<CommandResult> commandResults, string logError, string systemMessage, string userMessage, Exception logException = null)
         {
-
             var errorSeverity = logException == null ? EventType.Error
                 : logException is UserException ? EventType.Trace
                 : logException is ClientException ? EventType.Info
@@ -192,10 +208,9 @@ namespace Rhetos.Processing
                  
             _logger.Write(errorSeverity, () => logError + logException);
 
-            _logger.Trace(() => _xmlUtility.SerializeArrayToXml(commandResults.ToArray()));
-
             return new ProcessingResult
                 {
+                    CommandResults = commandResults.ToArray(),
                     Success = false,
                     SystemMessage = systemMessage,
                     UserMessage = userMessage

@@ -17,21 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.ServiceModel;
-using Rhetos;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-namespace RhetosServerLogTester
+namespace Rhetos.Processing
 {
-    public class ServerProxy : ClientBase<IServerApplication>, IServerApplication
+    public class ExecutionCommandsLogEntry
     {
-        public ServerProxy(EndpointAddress address)
-        {
-            Endpoint.Address = address;
-        }
-
-        public ServerProcessingResult Execute(ServerCommandInfo[] commands)
-        {
-            return Channel.Execute(commands);
-        }
+        public Guid ExecutionId { get; set; }
+        public string UserInfo { get; set; }
+        public IEnumerable<ICommandInfo> Commands { get; set; }
     }
 }

@@ -37,9 +37,6 @@ namespace Rhetos
         private readonly IProcessingEngine _processingEngine;
         private readonly IEnumerable<ICommandInfo> _commands;
         private IDictionary<string, ICommandInfo> _commandsByName;
-        private readonly ILogger _logger;
-        private readonly ILogger _commandsLogger;
-        private readonly ILogger _commandResultsLogger;
         private readonly ILogger _performanceLogger;
         private readonly XmlUtility _xmlUtility;
 
@@ -51,9 +48,6 @@ namespace Rhetos
         {
             _processingEngine = processingEngine;
             _commands = commands;
-            _logger = logProvider.GetLogger("IServerApplication.RhetosService.Execute");
-            _commandsLogger = logProvider.GetLogger("IServerApplication Commands");
-            _commandResultsLogger = logProvider.GetLogger("IServerApplication CommandResults");
             _performanceLogger = logProvider.GetLogger("Performance");
             _xmlUtility = xmlUtility;
         }
@@ -62,12 +56,8 @@ namespace Rhetos
         {
             var stopwatch = Stopwatch.StartNew();
 
-            var serverCallID = Guid.NewGuid();
-            _commandsLogger.Trace(() => _xmlUtility.SerializeServerCallInfoToXml(commands, serverCallID));
-
             var result = ExecuteInner(commands);
 
-            _commandResultsLogger.Trace(() => _xmlUtility.SerializeServerCallInfoToXml(result, serverCallID));
             _performanceLogger.Write(stopwatch, "RhetosService: Executed " + string.Join(",", commands.Select(c => c.CommandName)) + ".");
 
             return result;
