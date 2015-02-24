@@ -62,12 +62,6 @@ namespace Rhetos.Deployment
             var sw = Stopwatch.StartNew();
             var installedPackages = new List<InstalledPackage>();
 
-            // Rhetos framework is reposted as a package for easies dependency handling. If any package depends on a specific Rhetos vesion, the version will be checked in CheckAlreadyDownloaded.
-            string rhetosPackageFolder = Path.Combine(Paths.PackagesFolder, "Rhetos");
-            FilesUtility.EmptyDirectory(rhetosPackageFolder);
-            installedPackages.Add(new InstalledPackage("Rhetos", GetType().Assembly.GetName().Version.ToString(), new List<PackageRequest> { }, rhetosPackageFolder,
-                new PackageRequest { Id = "Rhetos", RequestedBy = "Rhetos framework", Source = null, VersionsRange = null }));
-
             var binFileSyncer = new FileSyncer(_logProvider);
             binFileSyncer.AddDestinations(Paths.PluginsFolder, Paths.ResourcesFolder); // Even if there are no packages, those folders must be created and emptied.
 
@@ -124,7 +118,10 @@ namespace Rhetos.Deployment
             {
                 var installedPackage = TryGetPackage(source, request, binFileSyncer);
                 if (installedPackage != null)
+                {
+                    ValidatePackage(installedPackage, request, source);
                     return installedPackage;
+                }
             }
 
             throw new UserException("Cannot download package " + request.ReportIdVersionsRange()
@@ -145,6 +142,29 @@ namespace Rhetos.Deployment
             return TryGetPackageFromUnpackedSourceFolder(source, request, binFileSyncer)
                 ?? TryGetPackageFromLegacyZipPackage(source, request, binFileSyncer)
                 ?? TryGetPackageFromNuGet(source, request, binFileSyncer);
+        }
+
+        private void ValidatePackage(InstalledPackage installedPackage, PackageRequest request, PackageSource source)
+        {
+            if (request.Id != null)
+                if (installedPackage.Id != request.Id)
+                    throw new UserException(string.Format(
+                        "Package ID '{0}' at location '{1}' does not match requested package ID '{2}', requested from {3}.",
+                        installedPackage.Id, source.ProvidedLocation, request.Id, request.RequestedBy));
+
+            var currentRhetosVersion = GetType().Assembly.GetName().Version.ToString();
+            if (installedPackage.RequiredRhetosVersion != null)
+                if (!VersionUtility.ParseVersionSpec(installedPackage.RequiredRhetosVersion).Satisfies(SemanticVersion.Parse(currentRhetosVersion)))
+                    throw new UserException(string.Format(
+                        "Package '{0}, version {1}' requires Rhetos version {2}. It is incompatible with current Rhetos version {3}.",
+                        installedPackage.Id, installedPackage.Version, installedPackage.RequiredRhetosVersion, currentRhetosVersion));
+
+            if (request.VersionsRange != null)
+                if (!VersionUtility.ParseVersionSpec(request.VersionsRange).Satisfies(SemanticVersion.Parse(installedPackage.Version)))
+                    throw new UserException(string.Format(
+                        "Incompatible package version '{0}, version {1}'. Version {2} is requested from {3}'.",
+                        installedPackage.Id, installedPackage.Version,
+                        request.VersionsRange, request.RequestedBy));
         }
 
         //================================================================
@@ -194,13 +214,6 @@ namespace Rhetos.Deployment
             };
             var packageBuilder = new PackageBuilder(metadataFile, properties, includeEmptyDirectories: false);
 
-            if (request.VersionsRange != null)
-                if (!VersionUtility.ParseVersionSpec(request.VersionsRange).Satisfies(packageBuilder.Version))
-                    throw new UserException(string.Format(
-                        "Incompatible package version '{0}, version {1}'. Version {2} is requested from {3}'.",
-                        packageBuilder.Id, packageBuilder.Version,
-                        request.VersionsRange, request.RequestedBy));
-
             var sourceFolder = Path.GetDirectoryName(metadataFile);
             var targetFolder = GetTargetFolder(packageBuilder.Id, packageBuilder.Version.ToString());
             foreach (PhysicalPackageFile file in packageBuilder.Files)
@@ -209,7 +222,7 @@ namespace Rhetos.Deployment
                 else if (file.Path.StartsWith(@"Resources\"))
                     binFileSyncer.AddFile(file.SourcePath, Paths.ResourcesFolder, Path.Combine(packageBuilder.Id, file.Path.Substring(@"Resources\".Length)));
 
-            return new InstalledPackage(packageBuilder.Id, packageBuilder.Version.ToString(), GetNuGetPackageDependencies(packageBuilder), sourceFolder, request);
+            return new InstalledPackage(packageBuilder.Id, packageBuilder.Version.ToString(), GetNuGetPackageDependencies(packageBuilder), sourceFolder, request, GetNuGetRequiredRhetosVersion(packageBuilder));
         }
 
         private List<PackageRequest> GetNuGetPackageDependencies(IPackageMetadata package)
@@ -221,6 +234,18 @@ namespace Rhetos.Deployment
                     VersionsRange = dependency.VersionSpec.ToString(),
                     RequestedBy = "package " + package.Id
                 }).ToList();
+        }
+
+        private string GetNuGetRequiredRhetosVersion(IPackageMetadata package)
+        {
+            var rhetosFrameworkRegex = new Regex(@"^Rhetos\s*,\s*Version\s*=\s*(\S+)$");
+            var match = package.FrameworkAssemblies
+                .Select(fa => rhetosFrameworkRegex.Match(fa.AssemblyName.Trim()))
+                .SingleOrDefault(m => m.Success == true);
+            if (match != null)
+                return match.Groups[1].Value;
+            else
+                return null;
         }
 
         private class SimplePropertyProvider : Dictionary<string, string>, IPropertyProvider
@@ -246,7 +271,7 @@ namespace Rhetos.Deployment
             binFileSyncer.AddFolderContent(Path.Combine(sourceFolder, "Resources"), Paths.ResourcesFolder, request.Id, recursive: true);
 
             string defaultVersion = CreateVersionInRangeOrZero(request);
-            return new InstalledPackage(request.Id, defaultVersion, new List<PackageRequest> { }, sourceFolder, request);
+            return new InstalledPackage(request.Id, defaultVersion, new List<PackageRequest> { }, sourceFolder, request, null);
         }
 
         #endregion
@@ -281,7 +306,7 @@ namespace Rhetos.Deployment
             binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Plugins"), Paths.PluginsFolder, recursive: false);
             binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Resources"), Paths.ResourcesFolder, request.Id, recursive: true);
 
-            return new InstalledPackage(request.Id, request.VersionsRange, new List<PackageRequest> { }, targetFolder, request);
+            return new InstalledPackage(request.Id, request.VersionsRange, new List<PackageRequest> { }, targetFolder, request, null);
         }
 
         #endregion
@@ -320,7 +345,7 @@ namespace Rhetos.Deployment
             binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Plugins"), Paths.PluginsFolder, recursive: false);
             binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Resources"), Paths.ResourcesFolder, package.Id, recursive: true);
 
-            return new InstalledPackage(package.Id, package.Version.ToString(), GetNuGetPackageDependencies(package), targetFolder, request);
+            return new InstalledPackage(package.Id, package.Version.ToString(), GetNuGetPackageDependencies(package), targetFolder, request, GetNuGetRequiredRhetosVersion(package));
         }
 
         private static bool IsLocalPath(string path)
