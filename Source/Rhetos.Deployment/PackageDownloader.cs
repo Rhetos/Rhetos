@@ -41,16 +41,19 @@ namespace Rhetos.Deployment
         private readonly Rhetos.Logging.ILogger _logger;
         private readonly Rhetos.Logging.ILogger _packagesLogger;
         private readonly Rhetos.Logging.ILogger _performanceLogger;
+        private readonly PackageDownloaderOptions _options;
 
         public PackageDownloader(
             DeploymentConfiguration deploymentConfiguration,
-            ILogProvider logProvider)
+            ILogProvider logProvider,
+            PackageDownloaderOptions options)
         {
             _deploymentConfiguration = deploymentConfiguration;
             _logProvider = logProvider;
             _logger = logProvider.GetLogger(GetType().Name);
             _packagesLogger = logProvider.GetLogger("Packages");
             _performanceLogger = logProvider.GetLogger("Performance");
+            _options = options;
         }
 
         /// <summary>
@@ -101,15 +104,24 @@ namespace Rhetos.Deployment
 
             var requestVersionsRange = VersionUtility.ParseVersionSpec(request.VersionsRange);
             var existingVersion = SemanticVersion.Parse(existing.Version);
-            if (requestVersionsRange.Satisfies(existingVersion))
-                return true;
 
-            throw new UserException(string.Format(
-                "Incompatible package version '{0}, version {1}, requested by {2}' conflicts with prevously downloaded package '{3}, version {4}, requested by {5} ({6})'."
-                + " Try specifying newer version of the package at the beginning of {7}.",
-                request.Id, request.VersionsRange ?? "not specified", request.RequestedBy,
-                existing.Id, existing.Version, existing.Request.RequestedBy, existing.Request.VersionsRange,
-                DeploymentConfiguration.PackagesConfigurationFileName));
+            if (!requestVersionsRange.Satisfies(existingVersion))
+                DependencyError(string.Format(
+                    "Incompatible package version '{0}, version {1}, requested by {2}' conflicts with prevously downloaded package '{3}, version {4}, requested by {5} ({6})'."
+                    + " Try specifying newer version of the package at the beginning of {7}.",
+                    request.Id, request.VersionsRange ?? "not specified", request.RequestedBy,
+                    existing.Id, existing.Version, existing.Request.RequestedBy, existing.Request.VersionsRange,
+                    DeploymentConfiguration.PackagesConfigurationFileName));
+
+            return true;
+        }
+
+        private void DependencyError(string errorMessage)
+        {
+            if (_options.IgnorePackageDependencies)
+                _logger.Error(errorMessage);
+            else
+                throw new UserException(errorMessage);
         }
 
         private InstalledPackage GetPackage(PackageRequest request, FileSyncer binFileSyncer)
@@ -153,13 +165,13 @@ namespace Rhetos.Deployment
             var currentRhetosVersion = GetType().Assembly.GetName().Version.ToString();
             if (installedPackage.RequiredRhetosVersion != null)
                 if (!VersionUtility.ParseVersionSpec(installedPackage.RequiredRhetosVersion).Satisfies(SemanticVersion.Parse(currentRhetosVersion)))
-                    throw new UserException(string.Format(
+                    DependencyError(string.Format(
                         "Package '{0}, version {1}' requires Rhetos version {2}. It is incompatible with current Rhetos version {3}.",
                         installedPackage.Id, installedPackage.Version, installedPackage.RequiredRhetosVersion, currentRhetosVersion));
 
             if (request.VersionsRange != null)
                 if (!VersionUtility.ParseVersionSpec(request.VersionsRange).Satisfies(SemanticVersion.Parse(installedPackage.Version)))
-                    throw new UserException(string.Format(
+                    DependencyError(string.Format(
                         "Incompatible package version '{0}, version {1}'. Version {2} is requested from {3}'.",
                         installedPackage.Id, installedPackage.Version,
                         request.VersionsRange, request.RequestedBy));

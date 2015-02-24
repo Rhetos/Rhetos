@@ -65,7 +65,7 @@ namespace DeployPackages
                 oldCurrentDirectory = Directory.GetCurrentDirectory();
                 Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
 
-                DownloadPackages(logger);
+                DownloadPackages(logger, arguments);
                 GenerateApplication(logger, arguments);
                 InitializeGeneratedApplication(logger);
             }
@@ -100,7 +100,7 @@ namespace DeployPackages
             return 0;
         }
 
-        private static void DownloadPackages(ILogger logger)
+        private static void DownloadPackages(ILogger logger, Arguments arguments)
         {
             var obsoleteFolders = new string[] { Path.Combine(Paths.RhetosServerRootPath, "DslScripts"), Path.Combine(Paths.RhetosServerRootPath, "DataMigration") };
             var obsoleteFolder = obsoleteFolders.FirstOrDefault(folder => Directory.Exists(folder));
@@ -109,7 +109,8 @@ namespace DeployPackages
 
             logger.Trace("Getting packages.");
             var config = new DeploymentConfiguration(DeploymentUtility.InitializationLogProvider);
-            var packageDownloader = new PackageDownloader(config, DeploymentUtility.InitializationLogProvider);
+            var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = arguments.IgnorePackageDependencies };
+            var packageDownloader = new PackageDownloader(config, DeploymentUtility.InitializationLogProvider, packageDownloaderOptions);
             var packages = packageDownloader.GetPackages();
             InstalledPackages.Save(packages);
         }

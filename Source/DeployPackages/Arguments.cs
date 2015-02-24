@@ -30,6 +30,7 @@ namespace DeployPackages
         public bool StartPaused { get; private set; }
         public bool Debug { get; private set; }
         public bool NoPauseOnError { get; private set; }
+        public bool IgnorePackageDependencies { get; private set; }
 
         public Arguments(string[] args)
         {
@@ -42,14 +43,10 @@ namespace DeployPackages
                 return;
             }
 
-            if (Pop(arguments, "/StartPaused") != -1)
-                StartPaused = true;
-
-            if (Pop(arguments, "/Debug") != -1)
-                Debug = true;
-
-            if (Pop(arguments, "/NoPause") != -1)
-                NoPauseOnError = true;
+            StartPaused = Pop(arguments, "/StartPaused");
+            Debug = Pop(arguments, "/Debug");
+            NoPauseOnError = Pop(arguments, "/NoPause");
+            IgnorePackageDependencies = Pop(arguments, "/IgnoreDependencies");
 
             if (arguments.Count > 0)
             {
@@ -64,15 +61,19 @@ namespace DeployPackages
             Console.WriteLine("/StartPaused   Use for debugging with Visual Studio (Attach to Process).");
             Console.WriteLine("/Debug         Generates nonoptimized dlls (ServerDom.dll, e.g.) for debuging.");
             Console.WriteLine("/NoPause       Don't pause on error. Use this switch for build automation.");
+            Console.WriteLine("/IgnoreDependencies  Allow installing incompatible versions of Rhetos packages.");
         }
 
-        private int Pop(List<string> arguments, string option)
+        /// <summary>
+        /// Reads and removes the option form the arguments list.
+        /// </summary>
+        private bool Pop(List<string> arguments, string option)
         {
             var position = arguments.FindIndex(a => option.Equals(a, StringComparison.InvariantCultureIgnoreCase));
             if (position != -1)
                 arguments.RemoveAt(position);
 
-            return position;
+            return position != -1;
         }
     }
 }
