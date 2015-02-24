@@ -398,12 +398,12 @@ namespace CommonConcepts.Test
                 if (records is IEnumerable<DemoRowPermissions1.Document>)
                 {
                     var documents = (IEnumerable<DemoRowPermissions1.Document>)records;
-                    return string.Join(", ", documents.Select(document => document.Title));
+                    return string.Join(", ", documents.Select(document => document.Title).OrderBy(x => x));
                 }
                 else if (records is IEnumerable<DemoRowPermissions2.Document>)
                 {
                     var documents = (IEnumerable<DemoRowPermissions2.Document>)records;
-                    return string.Join(", ", documents.Select(document => document.Title));
+                    return string.Join(", ", documents.Select(document => document.Title).OrderBy(x => x));
                 }
                 else
                     return records.Count() + " records.";
