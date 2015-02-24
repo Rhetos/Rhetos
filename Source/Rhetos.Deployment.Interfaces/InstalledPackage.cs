@@ -32,6 +32,7 @@ namespace Rhetos.Deployment
             IEnumerable<PackageRequest> dependencies,
             string folder,
             PackageRequest request,
+            string source,
             string requiredRhetosVersion)
         {
             Id = id;
@@ -39,6 +40,7 @@ namespace Rhetos.Deployment
             Dependencies = dependencies;
             Folder = folder;
             Request = request;
+            Source = source;
             RequiredRhetosVersion = requiredRhetosVersion;
         }
 
@@ -48,9 +50,13 @@ namespace Rhetos.Deployment
 
         public IEnumerable<PackageRequest> Dependencies { get; private set; }
 
+        /// <summary>The local folder where the package files are extracted and used by Rhetos.</summary>
         public string Folder { get; private set; }
 
         public PackageRequest Request { get; private set; }
+
+        /// <summary>URI or a folder where the package was downloaded from.</summary>
+        public string Source { get; set; }
 
         /// <summary>A nuget-compatible version specification, or null.</summary>
         public string RequiredRhetosVersion { get; private set; }
