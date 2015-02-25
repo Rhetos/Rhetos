@@ -40,13 +40,16 @@ namespace Rhetos.Processing.DefaultCommands
 
         public IList<Claim> GetAllClaims(IDslModel dslModel)
         {
-            List<Claim> allClaims =
-                (from c in dslModel.Concepts
-                 let dataStructure = c as DataStructureInfo
-                 where dataStructure != null
-                 select new Claim(dataStructure.Module.Name + "." + dataStructure.Name, "Read")).ToList();
-
-            return allClaims;
+            var claims = dslModel
+                .FindByType<DataStructureInfo>()
+                .Where(dataStructure =>
+                    dataStructure is IOrmDataStructure
+                    || dataStructure is BrowseDataStructureInfo
+                    || dataStructure is QueryableExtensionInfo
+                    || dataStructure is ComputedInfo)
+                .Select(dataStructure => new Claim(dataStructure.Module.Name + "." + dataStructure.Name, "Read"))
+                .ToList();
+            return claims;
         }
     }
 }

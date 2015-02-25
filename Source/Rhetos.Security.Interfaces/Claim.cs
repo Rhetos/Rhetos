@@ -19,12 +19,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Rhetos.Security
 {
     /// <summary>
     /// Resource and Right properties are case insensitive.
     /// </summary>
+    [DebuggerDisplay("{FullName}")]
     public class Claim : IEquatable<Claim>
     {
         public readonly string Resource;
