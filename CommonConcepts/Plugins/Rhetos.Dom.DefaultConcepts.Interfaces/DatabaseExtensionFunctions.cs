@@ -30,23 +30,68 @@ namespace Rhetos.Dom.DefaultConcepts
     /// </summary>
     public static class DatabaseExtensionFunctions
     {
+        /// <summary>
+        /// If b is null, SQL query will use IS NULL instead of the equality operator.
+        /// </summary>
+        public static bool EqualsCaseInsensitive(this string a, string b)
+        {
+            if (b == null)
+                return a == null;
+            else
+                return a != null && a.Equals(b, StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        /// <summary>
+        /// If b is null, SQL query will use IS NOT NULL instead of the inequality operator.
+        /// </summary>
+        public static bool NotEqualsCaseInsensitive(this string a, string b)
+        {
+            if (b == null)
+                return a != null;
+            else
+                return a != null && !a.Equals(b, StringComparison.InvariantCultureIgnoreCase);
+        }
+
         public static bool IsLessThen(this string a, string b)
         {
-            return String.Compare(a, b, StringComparison.OrdinalIgnoreCase) < 0;
+            return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) < 0;
         }
 
         public static bool IsLessThenOrEqual(this string a, string b)
         {
-            return String.Compare(a, b, StringComparison.OrdinalIgnoreCase) < 0;
+            return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) <= 0;
+        }
+
+        public static bool IsGreaterThen(this string a, string b)
+        {
+            return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) > 0;
+        }
+
+        public static bool IsGreaterThenOrEqual(this string a, string b)
+        {
+            return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) >= 0;
         }
 
         public static bool StartsWith(this int? a, string b)
         {
-            return a.ToString().StartsWith(b);
+            return a != null && b != null && a.ToString().StartsWith(b);
+        }
+
+        public static bool StartsWithCaseInsensitive(this string a, string b)
+        {
+            return a != null && b != null && a.StartsWith(b, StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        public static bool ContainsCaseInsensitive(this string a, string b)
+        {
+            return a != null && b != null && a.ToLowerInvariant().Contains(b.ToLowerInvariant());
         }
 
         public static bool Like(this string text, string pattern)
         {
+            if (text == null || pattern == null)
+                return false;
+
             pattern = Regex.Escape(pattern);
             pattern = pattern.Replace("%", ".*");
             pattern = pattern.Replace("_", ".");
@@ -58,6 +103,9 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static string CastToString(this int? a)
         {
+            if (a == null)
+                return null;
+
             return a.ToString();
         }
     }

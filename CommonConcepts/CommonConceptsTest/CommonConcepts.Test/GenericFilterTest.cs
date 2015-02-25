@@ -359,6 +359,8 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("-1", TestUtility.DumpSorted(filter1("Name", "equal", "a"), item => item.Code));
                 Assert.AreEqual("-2", TestUtility.DumpSorted(filter1("Name", "equal", ""), item => item.Code));
                 Assert.AreEqual("-3", TestUtility.DumpSorted(filter1("Name", "equal", null), item => item.Code));
+                Assert.AreEqual("-1", TestUtility.DumpSorted(filter1("Name", "notequal", ""), item => item.Code));
+                Assert.AreEqual("-1, -2", TestUtility.DumpSorted(filter1("Name", "notequal", null), item => item.Code));
                 Assert.AreEqual("-1, -2", TestUtility.DumpSorted(filter1("Name", "less", "b"), item => item.Code));
 
                 // Null datetime:

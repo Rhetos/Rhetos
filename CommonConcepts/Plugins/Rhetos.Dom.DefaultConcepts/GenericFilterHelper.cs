@@ -136,20 +136,26 @@ namespace Rhetos.Dom.DefaultConcepts
                 switch (criteria.Operation.ToLower())
                 {
                     case "equal":
-                        expression = Expression.Equal(memberAccess, constant);
+                        if (basicType == typeof(string))
+                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("EqualsCaseInsensitive"), memberAccess, constant);
+                        else
+                            expression = Expression.Equal(memberAccess, constant);
                         break;
                     case "notequal":
-                        expression = Expression.NotEqual(memberAccess, constant);
+                        if (basicType == typeof(string))
+                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("NotEqualsCaseInsensitive"), memberAccess, constant);
+                        else
+                            expression = Expression.NotEqual(memberAccess, constant);
                         break;
                     case "greater":
                         if (basicType == typeof(string))
-                            expression = Expression.Not(Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("IsLessThenOrEqual"), memberAccess, constant));
+                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("IsGreaterThen"), memberAccess, constant);
                         else
                             expression = Expression.GreaterThan(memberAccess, constant);
                         break;
                     case "greaterequal":
                         if (basicType == typeof(string))
-                            expression = Expression.Not(Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("IsLessThen"), memberAccess, constant));
+                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("IsGreaterThenOrEqual"), memberAccess, constant);
                         else
                             expression = Expression.GreaterThanOrEqual(memberAccess, constant);
                         break;
@@ -177,7 +183,7 @@ namespace Rhetos.Dom.DefaultConcepts
                                     throw new FrameworkException("Generic filter operation '" + criteria.Operation + "' is not supported on property type '" + basicType.Name + "'. There is no overload of 'DatabaseExtensionFunctions.CastToString' function for the type.");
                                 stringMember = Expression.Call(castMethod, memberAccess);
                             }
-                            expression = Expression.Call(stringMember, typeof(String).GetMethod("StartsWith", new[] { typeof(string) }), constant);
+                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("StartsWithCaseInsensitive"), stringMember, constant);
                             break;
                         }
                     case "contains":
@@ -192,7 +198,7 @@ namespace Rhetos.Dom.DefaultConcepts
                                     throw new FrameworkException("Generic filter operation '" + criteria.Operation + "' is not supported on property type '" + basicType.Name + "'. There is no overload of 'DatabaseExtensionFunctions.CastToString' function for the type.");
                                 stringMember = Expression.Call(castMethod, memberAccess);
                             }
-                            expression = Expression.Call(stringMember, typeof(String).GetMethod("Contains", new[] { typeof(string) }), constant);
+                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("ContainsCaseInsensitive"), stringMember, constant);
                             break;
                         }
                     case "datein":
@@ -269,7 +275,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return query;
         }
 
-        private static IQueryable<T> Sort<T>(IQueryable<T> source, string orderByProperty, bool ascending = true)
+        public static IQueryable<T> Sort<T>(IQueryable<T> source, string orderByProperty, bool ascending = true)
         {
             if (string.IsNullOrEmpty(orderByProperty))
                 return source;

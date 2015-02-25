@@ -49,12 +49,28 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
 
             @"{
                 RegisterGenerator(ReflectionHelper.GetMethodDefinition(
+                    () => Rhetos.Dom.DefaultConcepts.DatabaseExtensionFunctions.EqualsCaseInsensitive(null, null)),
+                    new Rhetos.Persistence.NHibernateDefaultConcepts.StringEqualsGenerator());
+
+                RegisterGenerator(ReflectionHelper.GetMethodDefinition(
+                    () => Rhetos.Dom.DefaultConcepts.DatabaseExtensionFunctions.NotEqualsCaseInsensitive(null, null)),
+                    new Rhetos.Persistence.NHibernateDefaultConcepts.StringNotEqualsGenerator());
+
+                RegisterGenerator(ReflectionHelper.GetMethodDefinition(
                     () => Rhetos.Dom.DefaultConcepts.DatabaseExtensionFunctions.IsLessThen(null, null)),
                     new Rhetos.Persistence.NHibernateDefaultConcepts.StringIsLessThenGenerator());
 
                 RegisterGenerator(ReflectionHelper.GetMethodDefinition(
                     () => Rhetos.Dom.DefaultConcepts.DatabaseExtensionFunctions.IsLessThenOrEqual(null, null)),
                     new Rhetos.Persistence.NHibernateDefaultConcepts.StringIsLessThenOrEqualGenerator());
+
+                RegisterGenerator(ReflectionHelper.GetMethodDefinition(
+                    () => Rhetos.Dom.DefaultConcepts.DatabaseExtensionFunctions.IsGreaterThen(null, null)),
+                    new Rhetos.Persistence.NHibernateDefaultConcepts.StringIsGreaterThenGenerator());
+
+                RegisterGenerator(ReflectionHelper.GetMethodDefinition(
+                    () => Rhetos.Dom.DefaultConcepts.DatabaseExtensionFunctions.IsGreaterThenOrEqual(null, null)),
+                    new Rhetos.Persistence.NHibernateDefaultConcepts.StringIsGreaterThenOrEqualGenerator());
 
                 RegisterGenerator(ReflectionHelper.GetMethodDefinition(
                     () => Rhetos.Dom.DefaultConcepts.DatabaseExtensionFunctions.Like(null, null)),
@@ -67,6 +83,14 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
                     new Rhetos.Persistence.NHibernateDefaultConcepts.IntStartsWithGenerator());
 
                 RegisterGenerator(ReflectionHelper.GetMethodDefinition(
+                    () => Rhetos.Dom.DefaultConcepts.DatabaseExtensionFunctions.StartsWithCaseInsensitive(null, null)),
+                    new Rhetos.Persistence.NHibernateDefaultConcepts.StringStartsWithGenerator());
+
+                RegisterGenerator(ReflectionHelper.GetMethodDefinition(
+                    () => Rhetos.Dom.DefaultConcepts.DatabaseExtensionFunctions.ContainsCaseInsensitive(null, null)),
+                    new Rhetos.Persistence.NHibernateDefaultConcepts.StringContainsGenerator());
+
+                RegisterGenerator(ReflectionHelper.GetMethodDefinition(
                     () => Rhetos.Dom.DefaultConcepts.DatabaseExtensionFunctions.CastToString(_nullInt)),
                     new Rhetos.Persistence.NHibernateDefaultConcepts.IntCastToStringGenerator());
             }
@@ -75,6 +99,52 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
 
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.DatabaseExtensionFunctions));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.NHibernateDefaultConcepts.StringIsLessThenGenerator));
+        }
+    }
+
+    /// <summary>
+    /// LING2NH implementation of DatabaseExtensionFunctions.EqualsCaseInsensitive().
+    /// </summary>
+    public class StringEqualsGenerator : BaseHqlGeneratorForMethod
+    {
+        public StringEqualsGenerator()
+        {
+            SupportedMethods = new[] { ReflectionHelper.GetMethodDefinition(() => DatabaseExtensionFunctions.EqualsCaseInsensitive(null, null)) };
+        }
+
+        public override HqlTreeNode BuildHql(MethodInfo method, Expression targetObject,
+                ReadOnlyCollection<Expression> arguments, HqlTreeBuilder treeBuilder, IHqlExpressionVisitor visitor)
+        {
+            var constantParameter = arguments[1] as ConstantExpression;
+            if (constantParameter != null && constantParameter.Value == null)
+                return treeBuilder.IsNull(visitor.Visit(arguments[0]).AsExpression());
+            else
+                return treeBuilder.Equality(
+                    visitor.Visit(arguments[0]).AsExpression(),
+                    visitor.Visit(arguments[1]).AsExpression());
+        }
+    }
+
+    /// <summary>
+    /// LING2NH implementation of DatabaseExtensionFunctions.NotEqualsCaseInsensitive().
+    /// </summary>
+    public class StringNotEqualsGenerator : BaseHqlGeneratorForMethod
+    {
+        public StringNotEqualsGenerator()
+        {
+            SupportedMethods = new[] { ReflectionHelper.GetMethodDefinition(() => DatabaseExtensionFunctions.NotEqualsCaseInsensitive(null, null)) };
+        }
+
+        public override HqlTreeNode BuildHql(MethodInfo method, Expression targetObject,
+                ReadOnlyCollection<Expression> arguments, HqlTreeBuilder treeBuilder, IHqlExpressionVisitor visitor)
+        {
+            var constantParameter = arguments[1] as ConstantExpression;
+            if (constantParameter != null && constantParameter.Value == null)
+                return treeBuilder.IsNotNull(visitor.Visit(arguments[0]).AsExpression());
+            else
+                return treeBuilder.Inequality(
+                    visitor.Visit(arguments[0]).AsExpression(),
+                    visitor.Visit(arguments[1]).AsExpression());
         }
     }
 
@@ -91,7 +161,9 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
         public override HqlTreeNode BuildHql(MethodInfo method, Expression targetObject,
                 ReadOnlyCollection<Expression> arguments, HqlTreeBuilder treeBuilder, IHqlExpressionVisitor visitor)
         {
-            return treeBuilder.LessThan(visitor.Visit(arguments[0]).AsExpression(), visitor.Visit(arguments[1]).AsExpression());
+            return treeBuilder.LessThan(
+                visitor.Visit(arguments[0]).AsExpression(),
+                visitor.Visit(arguments[1]).AsExpression());
         }
     }
 
@@ -108,7 +180,47 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
         public override HqlTreeNode BuildHql(MethodInfo method, Expression targetObject,
                 ReadOnlyCollection<Expression> arguments, HqlTreeBuilder treeBuilder, IHqlExpressionVisitor visitor)
         {
-            return treeBuilder.LessThanOrEqual(visitor.Visit(arguments[0]).AsExpression(), visitor.Visit(arguments[1]).AsExpression());
+            return treeBuilder.LessThanOrEqual(
+                visitor.Visit(arguments[0]).AsExpression(),
+                visitor.Visit(arguments[1]).AsExpression());
+        }
+    }
+
+    /// <summary>
+    /// LING2NH implementation of DatabaseExtensionFunctions.IsGreaterThen().
+    /// </summary>
+    public class StringIsGreaterThenGenerator : BaseHqlGeneratorForMethod
+    {
+        public StringIsGreaterThenGenerator()
+        {
+            SupportedMethods = new[] { ReflectionHelper.GetMethodDefinition(() => DatabaseExtensionFunctions.IsGreaterThen(null, null)) };
+        }
+
+        public override HqlTreeNode BuildHql(MethodInfo method, Expression targetObject,
+                ReadOnlyCollection<Expression> arguments, HqlTreeBuilder treeBuilder, IHqlExpressionVisitor visitor)
+        {
+            return treeBuilder.GreaterThan(
+                visitor.Visit(arguments[0]).AsExpression(),
+                visitor.Visit(arguments[1]).AsExpression());
+        }
+    }
+
+    /// <summary>
+    /// LING2NH implementation of DatabaseExtensionFunctions.IsGreaterThenOrEqual().
+    /// </summary>
+    public class StringIsGreaterThenOrEqualGenerator : BaseHqlGeneratorForMethod
+    {
+        public StringIsGreaterThenOrEqualGenerator()
+        {
+            SupportedMethods = new[] { ReflectionHelper.GetMethodDefinition(() => DatabaseExtensionFunctions.IsGreaterThenOrEqual(null, null)) };
+        }
+
+        public override HqlTreeNode BuildHql(MethodInfo method, Expression targetObject,
+                ReadOnlyCollection<Expression> arguments, HqlTreeBuilder treeBuilder, IHqlExpressionVisitor visitor)
+        {
+            return treeBuilder.GreaterThanOrEqual(
+                visitor.Visit(arguments[0]).AsExpression(),
+                visitor.Visit(arguments[1]).AsExpression());
         }
     }
 
@@ -130,6 +242,44 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
             return treeBuilder.Like(
                 treeBuilder.Cast(visitor.Visit(arguments[0]).AsExpression(), typeof(string)),
                 treeBuilder.Concat(visitor.Visit(arguments[1]).AsExpression(), treeBuilder.Constant("%")));
+        }
+    }
+
+    /// <summary>
+    /// LING2NH implementation of DatabaseExtensionFunctions.StartsWithCaseInsensitive().
+    /// </summary>
+    public class StringStartsWithGenerator : BaseHqlGeneratorForMethod
+    {
+        public StringStartsWithGenerator()
+        {
+            SupportedMethods = new[] { ReflectionHelper.GetMethodDefinition(() => DatabaseExtensionFunctions.StartsWithCaseInsensitive(null, null)) };
+        }
+
+        public override HqlTreeNode BuildHql(MethodInfo method, Expression targetObject,
+                ReadOnlyCollection<Expression> arguments, HqlTreeBuilder treeBuilder, IHqlExpressionVisitor visitor)
+        {
+            return treeBuilder.Like(
+                visitor.Visit(arguments[0]).AsExpression(),
+                treeBuilder.Concat(visitor.Visit(arguments[1]).AsExpression(), treeBuilder.Constant("%")));
+        }
+    }
+
+    /// <summary>
+    /// LING2NH implementation of DatabaseExtensionFunctions.ContainsCaseInsensitive().
+    /// </summary>
+    public class StringContainsGenerator : BaseHqlGeneratorForMethod
+    {
+        public StringContainsGenerator()
+        {
+            SupportedMethods = new[] { ReflectionHelper.GetMethodDefinition(() => DatabaseExtensionFunctions.ContainsCaseInsensitive(null, null)) };
+        }
+
+        public override HqlTreeNode BuildHql(MethodInfo method, Expression targetObject,
+                ReadOnlyCollection<Expression> arguments, HqlTreeBuilder treeBuilder, IHqlExpressionVisitor visitor)
+        {
+            return treeBuilder.Like(
+                visitor.Visit(arguments[0]).AsExpression(),
+                treeBuilder.Concat(treeBuilder.Constant("%"), visitor.Visit(arguments[1]).AsExpression(), treeBuilder.Constant("%")));
         }
     }
 
