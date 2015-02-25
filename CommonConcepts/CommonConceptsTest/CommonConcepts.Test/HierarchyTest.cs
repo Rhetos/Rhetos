@@ -171,6 +171,37 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
+        public void ErrorCircularReference1InsertSingleRoot()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple2" });
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var single = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "a" };
+                single.Parent2ID = single.ID;
+
+                TestUtility.ShouldFail(() => repository.TestHierarchy.Simple2.Insert(new[] { single }), "not allowed", "circular dependency");
+            }
+        }
+
+        [TestMethod]
+        public void ErrorCircularReference1UpdateSingleRoot()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple2" });
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var single = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "a" };
+                repository.TestHierarchy.Simple2.Insert(new[] { single });
+
+                single.Parent2ID = single.ID;
+                TestUtility.ShouldFail(() => repository.TestHierarchy.Simple2.Update(new[] { single }), "not allowed", "circular dependency");
+            }
+        }
+
+        [TestMethod]
         public void MultipleRoots()
         {
             using (var container = new RhetosTestContainer())
@@ -203,6 +234,38 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
+        public void ErrorCircularReference1Insert()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var single = new TestHierarchy.Simple { ID = Guid.NewGuid(), Name = "a" };
+                single.ParentID = single.ID;
+
+                TestUtility.ShouldFail(() => repository.TestHierarchy.Simple.Insert(new[] { single }), "not allowed", "circular dependency");
+            }
+        }
+
+        [TestMethod]
+        public void ErrorCircularReference1Update()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
+                var repository = container.Resolve<Common.DomRepository>();
+
+                PrepareSimpleData(repository, "a");
+                Assert.AreEqual("a1/2", ReportSimple(repository));
+                var single = repository.TestHierarchy.Simple.Query().Where(item => item.Name == "a").Single();
+                single.Parent = single;
+
+                TestUtility.ShouldFail(() => repository.TestHierarchy.Simple.Update(new[] { single }), "not allowed", "circular dependency");
+            }
+        }
+
+        [TestMethod]
         public void ErrorCircularReference2()
         {
             using (var container = new RhetosTestContainer())
@@ -211,6 +274,7 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
 
                 PrepareSimpleData(repository, "a, a-b");
+                Assert.AreEqual("a1/4, b2/3", ReportSimple(repository));
                 var root = repository.TestHierarchy.Simple.Query().Where(item => item.Name == "a").Single();
                 var leaf = repository.TestHierarchy.Simple.Query().Where(item => item.Name == "b").Single();
                 root.Parent = leaf;
