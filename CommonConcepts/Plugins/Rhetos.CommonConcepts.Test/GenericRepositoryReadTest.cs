@@ -618,7 +618,8 @@ namespace Rhetos.CommonConcepts.Test
             TestUtility.ShouldFail(() => TypeAndNames(genericRepos.Read(new[] {
                 new FilterCriteria { Filter = typeof(QueryLoaderFilter).FullName },
                 new FilterCriteria { Filter = typeof(LoaderParameter).FullName }, })),
-                "SimpleEntity", "does not implement a filter", "LoaderParameter");
+                "SimpleEntity", "does not implement a filter", "LoaderParameter",
+                "Try reordering"); // Since there is a loader implemented, reordering parameters might help.
             entityRepos._log.Clear();
 
             // Enumerable filter after enumerable loader

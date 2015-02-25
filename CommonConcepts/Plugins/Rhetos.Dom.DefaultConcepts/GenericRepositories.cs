@@ -59,6 +59,12 @@ namespace Rhetos.Dom.DefaultConcepts
             return new GenericRepository<IEntity>(_parameters, entityName);
         }
 
+        public GenericRepository<TEntityInterface> GetGenericRepository<TEntityInterface>(string entityName)
+            where TEntityInterface : class, IEntity
+        {
+            return new GenericRepository<TEntityInterface>(_parameters, entityName);
+        }
+
         public string GetEntityName<TEntityInterface>()
             where TEntityInterface : class, IEntity
         {

@@ -64,8 +64,6 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private readonly string _repositoryName;
         private readonly Lazy<IRepository> _repository;
-        private const string UnsupportedLoaderMessage = "{0} does not implement a loader, a query or a filter with parameter {1}.";
-        private const string UnsupportedFilterMessage = "{0} does not implement a filter with parameter {1}.";
 
         public string EntityName { get; private set; }
         public IRepository EntityRepository { get { return _repository.Value; } }
@@ -405,7 +403,9 @@ namespace Rhetos.Dom.DefaultConcepts
                 }
             }
 
-            throw new FrameworkException(string.Format(UnsupportedLoaderMessage, EntityName, parameterType.FullName));
+            throw new FrameworkException(string.Format(
+                "{0} does not implement a loader, a query or a filter with parameter {1}.",
+                EntityName, parameterType.FullName));
         }
 
         private IEnumerable<TEntityInterface> ExecuteGenericFilter(IEnumerable<FilterCriteria> genericFilter, bool preferQuery, IEnumerable<TEntityInterface> items = null)
@@ -422,7 +422,8 @@ namespace Rhetos.Dom.DefaultConcepts
                     items = FilterOrQuery(items, filter.Parameter, filter.FilterType);
 
                 if (items == null)
-                    throw new FrameworkException(string.Format("{0}'s loader or filter result is null. ParameterType = '{1}', Parameter.ToString = '{2}'.",
+                    throw new FrameworkException(string.Format(
+                        "{0}'s loader or filter result is null. ParameterType = '{1}', Parameter.ToString = '{2}'.",
                         EntityName, filter.FilterType.FullName, filter.Parameter.ToString()));
             }
 
@@ -556,7 +557,14 @@ namespace Rhetos.Dom.DefaultConcepts
                 return items.Where(item => ((List<Guid>)parameter).Contains(item.ID));
             }
 
-            throw new FrameworkException(string.Format(UnsupportedFilterMessage, EntityName, parameterType.FullName));
+            string errorMessage = string.Format(
+                "{0} does not implement a filter with parameter {1}.",
+                EntityName, parameterType.FullName);
+
+            if (Reflection.RepositoryLoadWithParameterMethod(parameterType) != null)
+                errorMessage += " There is a loader method with this parameter implemented: Try reordering filters to use the " + parameterType.Name + " first.";
+
+            throw new FrameworkException(errorMessage);
         }
 
         #endregion

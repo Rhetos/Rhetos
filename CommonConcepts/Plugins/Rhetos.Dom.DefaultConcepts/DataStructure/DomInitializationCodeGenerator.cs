@@ -126,6 +126,11 @@ namespace Rhetos.Dom.DefaultConcepts
             return GenericRepositories.GetGenericRepository<TEntity>();
         }}
 
+        public Rhetos.Dom.DefaultConcepts.GenericRepository<TEntity> GenericRepository<TEntity>(string entityName) where TEntity : class, IEntity
+        {{
+            return GenericRepositories.GetGenericRepository<TEntity>(entityName);
+        }}
+
         public Rhetos.Dom.DefaultConcepts.GenericRepository<IEntity> GenericRepository(string entityName)
         {{
             return GenericRepositories.GetGenericRepository(entityName);
