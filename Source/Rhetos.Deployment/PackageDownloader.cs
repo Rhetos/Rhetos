@@ -42,6 +42,7 @@ namespace Rhetos.Deployment
         private readonly Rhetos.Logging.ILogger _packagesLogger;
         private readonly Rhetos.Logging.ILogger _performanceLogger;
         private readonly PackageDownloaderOptions _options;
+        private readonly FilesUtility _filesUtility;
 
         public PackageDownloader(
             DeploymentConfiguration deploymentConfiguration,
@@ -54,6 +55,7 @@ namespace Rhetos.Deployment
             _packagesLogger = logProvider.GetLogger("Packages");
             _performanceLogger = logProvider.GetLogger("Performance");
             _options = options;
+            _filesUtility = new FilesUtility(logProvider);
         }
 
         /// <summary>
@@ -68,7 +70,7 @@ namespace Rhetos.Deployment
             var binFileSyncer = new FileSyncer(_logProvider);
             binFileSyncer.AddDestinations(Paths.PluginsFolder, Paths.ResourcesFolder); // Even if there are no packages, those folders must be created and emptied.
 
-            FilesUtility.SafeCreateDirectory(Paths.PackagesFolder);
+            _filesUtility.SafeCreateDirectory(Paths.PackagesFolder);
             var packageRequests = _deploymentConfiguration.PackageRequests;
             while (packageRequests.Count() > 0)
             {
@@ -325,7 +327,7 @@ namespace Rhetos.Deployment
             _logger.Trace(() => "Reading package " + request.Id + " from legacy file " + zipPackageName + ".");
 
             string targetFolder = GetTargetFolder(request.Id, request.VersionsRange);
-            FilesUtility.EmptyDirectory(targetFolder);
+            _filesUtility.EmptyDirectory(targetFolder);
             using (var zipFile = ZipFile.Read(zipPackagePath))
                 foreach (var zipEntry in zipFile)
                     zipEntry.Extract(targetFolder, ExtractExistingFileAction.OverwriteSilently);
@@ -422,7 +424,7 @@ namespace Rhetos.Deployment
                 .Except(installedPackages.Select(p => p.Folder));
 
             foreach (var folder in obsoletePackages)
-                FilesUtility.SafeDeleteDirectory(folder);
+                _filesUtility.SafeDeleteDirectory(folder);
         }
     }
 }

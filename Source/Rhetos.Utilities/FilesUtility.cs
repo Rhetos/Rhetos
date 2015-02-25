@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -25,9 +26,16 @@ using System.Text;
 
 namespace Rhetos.Utilities
 {
-    public static class FilesUtility
+    public class FilesUtility
     {
-        private static void Retry(Action action, string actionName)
+        private readonly ILogger _logger;
+
+        public FilesUtility(ILogProvider logProvider)
+        {
+            _logger = logProvider.GetLogger(GetType().Name);
+        }
+
+        private void Retry(Action action, Func<string> actionName)
         {
             const int maxTries = 10;
             for (int tries = maxTries; tries > 0; tries--)
@@ -35,23 +43,15 @@ namespace Rhetos.Utilities
                 try
                 {
                     action();
-
-                    //if (tries < maxTries)
-                    //Console.WriteLine(" ... succeded.");
                     break;
                 }
                 catch
                 {
                     if (tries <= 1)
-                    {
-                        //if (tries < maxTries)
-                        //Console.WriteLine(" ... unsuccessful.");
                         throw;
-                    }
 
-                    //if (tries == maxTries)
-                    //Console.Write(actionName + " failed");
-                    //Console.Write(" ... retrying");
+                    if (tries == maxTries - 1) // Logging the second retry instead of the first one, because first retries are too common.
+                        _logger.Trace(() => "Waiting to " + actionName.Invoke() + ".");
 
                     if (Environment.UserInteractive)
                         System.Threading.Thread.Sleep(500);
@@ -60,14 +60,13 @@ namespace Rhetos.Utilities
             }
         }
 
-        public static void SafeCreateDirectory(string path)
+        public void SafeCreateDirectory(string path)
         {
             try
             {
                 // When using TortoiseHg and the Rhetos folder is opened in Windows Explorer,
                 // Directory.CreateDirectory() will stochastically fail with UnauthorizedAccessException or DirectoryNotFoundException.
-                Retry(() => Directory.CreateDirectory(path), "CreateDirectory");
-                //Console.WriteLine("Created directory " + path);
+                Retry(() => Directory.CreateDirectory(path), () => "create directory " + path);
             }
             catch (Exception ex)
             {
@@ -75,7 +74,7 @@ namespace Rhetos.Utilities
             }
         }
 
-        public static void SafeDeleteDirectory(string path)
+        public void SafeDeleteDirectory(string path)
         {
             try
             {
@@ -90,10 +89,9 @@ namespace Rhetos.Utilities
                 foreach (var file in Directory.GetFiles(path, "*", SearchOption.AllDirectories))
                     File.SetAttributes(file, FileAttributes.Normal);
 
-                Retry(() => Directory.Delete(path, true), "Directory.Delete");
-                //Console.WriteLine("Deleted directory " + path);
+                Retry(() => Directory.Delete(path, true), () => "delete directory " + path);
 
-                Retry(() => { if (Directory.Exists(path)) throw new FrameworkException("Failed to delete directory " + path); }, "Directory.Exists");
+                Retry(() => { if (Directory.Exists(path)) throw new FrameworkException("Failed to delete directory " + path); }, () => "check if directory deleted " + path);
             }
             catch (Exception ex)
             {
@@ -105,25 +103,25 @@ namespace Rhetos.Utilities
         /// Creates the directory if it doesn't exists and deletes its content.
         /// This method will not delete the directory and create a new one; the existing directory is kept, in order to reduce locking issues if the folder is opened in command prompt or other application.
         /// </summary>
-        public static void EmptyDirectory(string path)
+        public void EmptyDirectory(string path)
         {
             SafeCreateDirectory(path);
 
             foreach (var file in Directory.GetFiles(path, "*", SearchOption.TopDirectoryOnly))
             {
                 File.SetAttributes(file, FileAttributes.Normal);
-                Retry(() => File.Delete(file), "File.Delete");
+                Retry(() => File.Delete(file), () => "delete file " + file);
             }
             foreach (var folder in Directory.GetDirectories(path, "*", SearchOption.TopDirectoryOnly))
                 SafeDeleteDirectory(folder);
         }
 
-        public static void SafeMoveFile(string source, string destination)
+        public void SafeMoveFile(string source, string destination)
         {
             try
             {
                 SafeCreateDirectory(Path.GetDirectoryName(destination)); // Less problems with locked folders if the directory is created before moving the file. Locking may occur when using TortoiseHg and the Rhetos folder is opened in Windows Explorer.
-                Retry(() => File.Move(source, destination), "File.Move");
+                Retry(() => File.Move(source, destination), () => "move file " + source);
             }
             catch (Exception ex)
             {
@@ -131,12 +129,12 @@ namespace Rhetos.Utilities
             }
         }
 
-        public static void SafeCopyFile(string source, string destination)
+        public void SafeCopyFile(string source, string destination)
         {
             try
             {
                 SafeCreateDirectory(Path.GetDirectoryName(destination));
-                Retry(() => File.Copy(source, destination), "File.Copy");
+                Retry(() => File.Copy(source, destination), () => "copy file " + source);
             }
             catch (Exception ex)
             {

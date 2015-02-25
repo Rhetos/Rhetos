@@ -34,10 +34,12 @@ namespace Rhetos.Deployment
     public class FileSyncer
     {
         private readonly ILogger _logger;
+        private readonly FilesUtility _filesUtility;
 
         public FileSyncer(ILogProvider logProvider)
         {
             _logger = logProvider.GetLogger(GetType().Name);
+            _filesUtility = new FilesUtility(logProvider);
         }
 
         private class CopyFile { public string File; public string Target; }
@@ -104,10 +106,10 @@ namespace Rhetos.Deployment
 
             foreach (var destination in _filesByDestination)
             {
-                FilesUtility.EmptyDirectory(destination.Key);
+                _filesUtility.EmptyDirectory(destination.Key);
                 foreach (var copyFile in destination.Value)
                     if (!ignoreFiles.Contains(copyFile.File))
-                        FilesUtility.SafeCopyFile(copyFile.File, copyFile.Target);
+                        _filesUtility.SafeCopyFile(copyFile.File, copyFile.Target);
             }
             _filesByDestination.Clear();
         }

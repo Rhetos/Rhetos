@@ -118,7 +118,7 @@ namespace DeployPackages
         private static void GenerateApplication(ILogger logger, Arguments arguments)
         {
             // The old plugins must be deleted before loading the application generator plugins.
-            FilesUtility.EmptyDirectory(Paths.GeneratedFolder);
+            new FilesUtility(DeploymentUtility.InitializationLogProvider).EmptyDirectory(Paths.GeneratedFolder);
             if (File.Exists(Paths.DomAssemblyFile)) // Generated DomAssemblyFile is not in GeneratedFolder.
                 File.Delete(Paths.DomAssemblyFile);
             
