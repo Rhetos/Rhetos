@@ -8,11 +8,12 @@ Breaking changes:
 
 New features:
 
-* `DeployPackages.exe` can now fully deploy Rhetos packages to Rhetos server, instead of relying other tools to extract or copy package's content into a Rhetos server.
+* `DeployPackages.exe` can now fully deploy Rhetos packages to Rhetos server, without relying on other tools to extract or copy package's content into a Rhetos server.
   The following types of packages are supported:
     1. NuGet packages
-    2. Unpacked source folders, for development environment 
-    3. Legacy zip packages, for backward compatibility.
+    2. Unpacked source folders, for development environment
+    3. Legacy zip packages, for backward compatibility
+* `DeployPackages.exe` handles package dependencies (see [NuGet versioning](https://docs.nuget.org/create/versioning)). It will verify if package versions are compatible and automatically download referenced packages.
 * **SqlObject** can be created without transaction.
   This is necessary for deploying SQL objects that cannot be created inside a transaction (*Full-text search index* on MS SQL Server, e.g).
 * New concepts: **ComposableFilterByReferenced** and **ItemFilterReferenced**,
