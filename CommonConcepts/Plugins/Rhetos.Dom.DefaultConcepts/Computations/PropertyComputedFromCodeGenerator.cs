@@ -37,26 +37,34 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return string.Format(
                 "if (x.{0} == null && y.{0} != null || x.{0} != null && !x.{0}.Equals(y.{0})) return false;\r\n                    ",
-                info.Target.Name);
+                GetPropertyName(info.Target));
         }
 
         private static string ClonePropertySnippet(PropertyComputedFromInfo info)
         {
             return string.Format(
                 "{0} = sourceItem.{1},\r\n                ",
-                info.Target.Name, info.Source.Name);
+                GetPropertyName(info.Target), GetPropertyName(info.Source));
         }
 
         private static string AssignPropertySnippet(PropertyComputedFromInfo info)
         {
             return string.Format(
                 "destination.{0} = source.{0};\r\n                    ",
-                info.Target.Name);
+                GetPropertyName(info.Target));
+        }
+
+        private static string GetPropertyName(PropertyInfo property)
+        {
+            if (property is ReferencePropertyInfo)
+                return property.Name + "ID";
+            else
+                return property.Name;
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (PropertyComputedFromInfo) conceptInfo;
+            var info = (PropertyComputedFromInfo)conceptInfo;
             codeBuilder.InsertCode(CompareValuePropertySnippet(info), EntityComputedFromCodeGenerator.CompareValuePropertyTag, info.Dependency_EntityComputedFrom);
             codeBuilder.InsertCode(ClonePropertySnippet(info), EntityComputedFromCodeGenerator.ClonePropertyTag, info.Dependency_EntityComputedFrom);
             codeBuilder.InsertCode(AssignPropertySnippet(info), EntityComputedFromCodeGenerator.AssignPropertyTag, info.Dependency_EntityComputedFrom);

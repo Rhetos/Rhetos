@@ -45,7 +45,6 @@ namespace Rhetos.Configuration.Autofac
             builder.RegisterModule(new DomModuleConfiguration(_deploymentTime));
             builder.RegisterModule(new NHibernateModuleConfiguration(_deploymentTime));
             builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));
-            builder.RegisterInstance(new ResourcesFolder(Paths.ResourcesFolder));
             builder.RegisterModule(new SecurityModuleConfiguration());
             builder.RegisterModule(new UtilitiesModuleConfiguration());
             builder.RegisterModule(new DslModuleConfiguration(_deploymentTime));

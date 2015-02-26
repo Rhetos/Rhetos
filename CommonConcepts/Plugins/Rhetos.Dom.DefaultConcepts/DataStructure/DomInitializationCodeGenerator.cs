@@ -54,7 +54,6 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.IUserInfo));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.ISqlExecuter));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Security.IAuthorizationManager));
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.ResourcesFolder));
             codeBuilder.AddReferencesFromDependency(typeof(System.ComponentModel.Composition.ExportAttribute));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.GenericRepositories));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.NHibernate.INHibernateConfigurationExtension));
@@ -115,9 +114,6 @@ namespace Rhetos.Dom.DefaultConcepts
         protected Lazy<Rhetos.Security.IAuthorizationManager> _authorizationManager;
         public Rhetos.Security.IAuthorizationManager AuthorizationManager {{ get {{ return _authorizationManager.Value; }} }}
 
-        protected Lazy<Rhetos.Utilities.ResourcesFolder> _resourcesFolder;
-        public Rhetos.Utilities.ResourcesFolder ResourcesFolder {{ get {{ return _resourcesFolder.Value; }} }}
-
         protected Lazy<Rhetos.Dom.DefaultConcepts.GenericRepositories> _genericRepositories;
         public Rhetos.Dom.DefaultConcepts.GenericRepositories GenericRepositories {{ get {{ return _genericRepositories.Value; }} }}
 
@@ -147,14 +143,12 @@ namespace Rhetos.Dom.DefaultConcepts
             Lazy<Rhetos.Utilities.IUserInfo> userInfo,
             Lazy<Rhetos.Utilities.ISqlExecuter> sqlExecuter,
             Lazy<Rhetos.Security.IAuthorizationManager> authorizationManager,
-            Lazy<Rhetos.Utilities.ResourcesFolder> resourcesFolder,
             Lazy<Rhetos.Dom.DefaultConcepts.GenericRepositories> genericRepositories{5})
         {{
             _persistenceTransaction = persistenceTransaction;
             _userInfo = userInfo;
             _sqlExecuter = sqlExecuter;
             _authorizationManager = authorizationManager;
-            _resourcesFolder = resourcesFolder;
             _genericRepositories = genericRepositories;
             _repository = new Lazy<Common.DomRepository>(() => new Common.DomRepository(this));
             {6}
