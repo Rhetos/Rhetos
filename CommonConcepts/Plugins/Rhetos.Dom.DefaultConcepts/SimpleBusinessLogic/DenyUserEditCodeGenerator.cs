@@ -60,7 +60,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string CheckChangesOnInsertSnippet(DenyUserEditInfo info)
         {
             return string.Format(
-@"if (checkUserPermissions)
+@"            if (checkUserPermissions)
             {{
                 var invalidItem = insertedNew.Where(newItem => newItem.{3} != null).FirstOrDefault();
                 
@@ -80,7 +80,11 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format(
 @"            if (checkUserPermissions)
             {{
-                var invalidItem = updatedNew.Zip(updated, (newItem, oldItem) => new {{ newItem, oldItem }})
+                var changes = updatedNew.Zip(updated, (newItem, oldItem) => new {{ newItem, oldItem }});
+                foreach (var change in changes)
+                    if (change.newItem.{3} == null && change.oldItem.{3} != null)
+                        change.newItem.{3} = change.oldItem.{3};
+                var invalidItem = changes
                     .Where(change => change.newItem.{3} != null && !change.newItem.{3}.Equals(change.oldItem.{3}) || change.newItem.{3} == null && change.oldItem.{3} != null)
                     .Select(change => change.newItem)
                     .FirstOrDefault();

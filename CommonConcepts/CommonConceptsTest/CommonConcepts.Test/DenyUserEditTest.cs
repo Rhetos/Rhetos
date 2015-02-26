@@ -108,7 +108,7 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void NonEditablePropertyUpdateToNull()
+        public void NonEditablePropertyUpdateToNullIgnore()
         {
             using (var container = new RhetosTestContainer())
             {
@@ -123,8 +123,14 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
 
                 var simple = new TestDenyUserEdit.Simple { ID = simpleID, Editable = "a", NonEditable = null };
-                TestUtility.ShouldFail(() => repository.TestDenyUserEdit.Simple.Save(null, new[] { simple }, null, true),
-                    "Simple", "NonEditable", "not allowed");
+                //Client may ignore existence of the DenyUserEdit properties (the value will be null on save).
+                repository.TestDenyUserEdit.Simple.Save(null, new[] { simple }, null, true);
+                Assert.AreEqual("x", repository.TestDenyUserEdit.Simple.Query().Where(item => item.ID == simpleID).Select(item => item.NonEditable).Single(), "Old value should remain unchanged after client sends null.");
+
+                var simple2 = new TestDenyUserEdit.Simple { ID = simpleID, Editable = "a", NonEditable = null };
+                // Explicit server update to null value should work.
+                repository.TestDenyUserEdit.Simple.Save(null, new[] { simple2 }, null, false);
+                Assert.IsNull(repository.TestDenyUserEdit.Simple.Query().Where(item => item.ID == simpleID).Select(item => item.NonEditable).Single(), "Explicit server update to null value should work.");
             }
         }
 
