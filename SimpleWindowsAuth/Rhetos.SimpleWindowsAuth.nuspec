@@ -22,5 +22,7 @@
     <file src="Resources\**\*" target="Resources" />
     <file src="Plugins\Rhetos.SimpleWindowsAuth\bin\Debug\Rhetos.SimpleWindowsAuth.dll" target="Plugins" />
     <file src="Plugins\Rhetos.SimpleWindowsAuth\bin\Debug\Rhetos.SimpleWindowsAuth.pdb" target="Plugins" />
+    <file src="Plugins\Rhetos.Security.Service\bin\Debug\Rhetos.Security.Service.dll" target="Plugins" />
+    <file src="Plugins\Rhetos.Security.Service\bin\Debug\Rhetos.Security.Service.pdb" target="Plugins" />
   </files>
 </package>

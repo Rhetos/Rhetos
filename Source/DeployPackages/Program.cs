@@ -68,6 +68,7 @@ namespace DeployPackages
                 DownloadPackages(logger, arguments);
                 GenerateApplication(logger, arguments);
                 InitializeGeneratedApplication(logger);
+                logger.Trace("Done.");
             }
             catch (Exception ex)
             {
