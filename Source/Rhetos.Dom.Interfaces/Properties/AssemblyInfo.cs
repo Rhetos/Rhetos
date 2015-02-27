@@ -28,10 +28,7 @@ using System;
 [assembly: AssemblyTitle("Rhetos.Dom.Interfaces")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Omega software")]
 [assembly: AssemblyProduct("Rhetos.Dom.Interfaces")]
-[assembly: AssemblyCopyright("Copyright (C) Omega software 2015")]
-[assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
@@ -52,7 +49,5 @@ using System;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.9.26.1")]
-[assembly: AssemblyFileVersion("0.9.26.1")]
 
 [assembly: CLSCompliant(true)]

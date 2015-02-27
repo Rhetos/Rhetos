@@ -27,10 +27,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Rhetos.DatabaseGenerator.Test")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Omega software")]
 [assembly: AssemblyProduct("Rhetos.DatabaseGenerator.Test")]
-[assembly: AssemblyCopyright("Copyright (C) Omega software 2015")]
-[assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
@@ -50,5 +47,3 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can default the Revision and Build Numbers 
 // by using the '*' as shown below:
-[assembly: AssemblyVersion("0.9.26.1")]
-[assembly: AssemblyFileVersion("0.9.26.1")]

@@ -5,9 +5,9 @@ FOR /F "skip=1 tokens=1-3" %%A IN ('WMIC Path Win32_LocalTime Get Day^,Month^,Ye
 
 PUSHD %1 || GOTO ERROREXIT
 REM "%~dp0" is this script's folder.
-"%~dp0"Source\ReplaceRegEx\bin\Debug\ReplaceRegEx.exe AssemblyInfo.cs "^(\[assembly: Assembly(File|Informational)?Version(Attribute)?\(\").+(\"\)\])$" "${1}%2${4}" || GOTO ERROREXIT
-"%~dp0"Source\ReplaceRegEx\bin\Debug\ReplaceRegEx.exe AssemblyInfo.cs "^(\[assembly: AssemblyCompany\(\")(.*)(\"\)\])$" "${1}Omega software${3}" || GOTO ERROREXIT
-"%~dp0"Source\ReplaceRegEx\bin\Debug\ReplaceRegEx.exe AssemblyInfo.cs "^(\[assembly: AssemblyCopyright\(\")(.*)(\b\d{4}\b)(\"\)\])$" "${1}Copyright (C) Omega software %YEAR%${4}" || GOTO ERROREXIT
+"%~dp0"Source\ReplaceRegEx\bin\Debug\ReplaceRegEx.exe *AssemblyInfo.cs "^(\[assembly: Assembly(File|Informational)?Version(Attribute)?\(\").+(\"\)\])$" "${1}%2${4}" || GOTO ERROREXIT
+"%~dp0"Source\ReplaceRegEx\bin\Debug\ReplaceRegEx.exe *AssemblyInfo.cs "^(\[assembly: AssemblyCompany\(\")(.*)(\"\)\])$" "${1}Omega software${3}" || GOTO ERROREXIT
+"%~dp0"Source\ReplaceRegEx\bin\Debug\ReplaceRegEx.exe *AssemblyInfo.cs "^(\[assembly: AssemblyCopyright\(\")(.*)(\b\d{4}\b)(\"\)\])$" "${1}Copyright (C) Omega software %YEAR%${4}" || GOTO ERROREXIT
 "%~dp0"Source\ReplaceRegEx\bin\Debug\ReplaceRegEx.exe PackageInfo.xml "^(  \<Version\>).+(\<\/Version\>)$" "${1}%2${2}" || GOTO ERROREXIT
 "%~dp0"Source\ReplaceRegEx\bin\Debug\ReplaceRegEx.exe *.nuspec "^(\s*\<version\>).+(\<\/version\>\s*)$" "${1}%2${2}" /RootOnly || GOTO ERROREXIT
 POPD

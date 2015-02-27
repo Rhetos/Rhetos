@@ -98,8 +98,9 @@ namespace ReplaceRegEx
                             Console.WriteLine("Old text is same as new text.");
                     }
                     else
-                        throw new ApplicationException("No match found.");
+                        Console.WriteLine("No match found.");
                 }
+
                 return 0;
             }
             catch (ApplicationException applicationException)

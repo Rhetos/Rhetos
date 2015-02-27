@@ -102,6 +102,9 @@
     <Compile Include="IProcessingEngine.cs" />
     <Compile Include="ProcessingResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="..\Rhetos\Properties\GlobalAssemblyInfo.cs">
+      <Link>Properties\GlobalAssemblyInfo.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <CodeAnalysisDictionary Include="..\..\CodeAnalysisDictionary.xml">
