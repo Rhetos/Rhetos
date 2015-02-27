@@ -199,5 +199,25 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             return ((ReferencePropertyInfo)selectedProperty).Referenced;
         }
+
+        /// <summary>
+        /// Returns a writable data structure that can be used to monitor data changes (intercepting its Save function), in order to update a persisted data.
+        /// Returns null if a required data structure is not found.
+        /// </summary>
+        public static DataStructureInfo GetBaseChangesOnDependency(DataStructureInfo dependsOn, IDslModel existingConcepts)
+        {
+            if (dependsOn is IWritableOrmDataStructure)
+                return dependsOn;
+
+            if (existingConcepts.FindByReference<WriteInfo>(write => write.DataStructure, dependsOn).Any())
+                return dependsOn;
+
+            var baseDataStructure = existingConcepts.FindByReference<DataStructureExtendsInfo>(ex => ex.Extension, dependsOn)
+                .Select(ex => ex.Base).SingleOrDefault();
+            if (baseDataStructure != null)
+                return GetBaseChangesOnDependency(baseDataStructure, existingConcepts);
+
+            return null;
+        }
     }
 }

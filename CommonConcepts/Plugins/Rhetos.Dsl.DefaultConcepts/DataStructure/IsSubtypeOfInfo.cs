@@ -31,7 +31,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Is")]
-    public class IsSubtypeOfInfo : IConceptInfo, IAlternativeInitializationConcept
+    public class IsSubtypeOfInfo : IConceptInfo, IAlternativeInitializationConcept, IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo Subtype { get; set; }
@@ -118,6 +118,27 @@ FROM
                 return ",\r\n    SubtypeImplementationID = CONVERT(UNIQUEIDENTIFIER, CONVERT(BINARY(4), CONVERT(INT, CONVERT(BINARY(4), ID)) ^ " + hash + ") + SUBSTRING(CONVERT(BINARY(16), ID), 5, 12))";
             }
         }
+
+        public void CheckSemantics(IDslModel existingConcepts)
+        {
+            if (!(Subtype is IOrmDataStructure))
+                throw new DslSyntaxException(this, "Is (polymorphic) may only be used on a database-mapped data structure, such as Entity or SqlQueryable. "
+                    + this.Subtype.GetUserDescription() + " is not IOrmDataStructure.");
+
+            if (ImplementationName == null)
+                throw new DslSyntaxException(this, "ImplementationName must not be null (it is allowed to be an empty string).");
+
+            if (!string.IsNullOrEmpty(ImplementationName))
+                DslUtility.ValidateIdentifier(ImplementationName, this, "Invalid ImplementationName value.");
+
+            if (existingConcepts.FindByReference<PolymorphicMaterializedInfo>(pm => pm.Polymorphic, Supertype).Any())
+            {
+                // Verifying if the ChangesOnChangedItemsInfo can be created (see IsSubtypeOfMacro)
+                DataStructureInfo dependsOn = DslUtility.GetBaseChangesOnDependency(Subtype, existingConcepts);
+                if (dependsOn == null)
+                    throw new DslSyntaxException(this, Subtype.GetUserDescription() + " should be an *extension* of an entity. Otherwise it cannot be used in a materialized polymorphic entity because the system cannot detect when to update the persisted data.");
+            }
+        }
     }
 
     [Export(typeof(IConceptMacro))]
@@ -162,23 +183,30 @@ FROM
             newConcepts.AddRange(missingImplementations);
             newConcepts.AddRange(missingProperties);
 
+            // Add metadata for supertype computetion and subtype implementation
+
             newConcepts.Add(new SqlDependsOnDataStructureInfo { Dependent = conceptInfo.Dependency_ImplementationView, DependsOn = conceptInfo.Subtype });
 
-            string materializedUpdateSelector;
-            if (conceptInfo.ImplementationName == "")
-                materializedUpdateSelector = "changedItems => changedItems.Select(item => item.ID).ToArray()";
-            else
-                materializedUpdateSelector = string.Format(
-                    @"changedItems => changedItems.Select(item => DomUtility.GetSubtypeImplementationId(item.ID, {0})).ToArray()",
-                    DomUtility.GetSubtypeImplementationHash(conceptInfo.ImplementationName));
-
-            newConcepts.Add(new ChangesOnChangedItemsInfo
+            if (existingConcepts.FindByReference<PolymorphicMaterializedInfo>(pm => pm.Polymorphic, conceptInfo.Supertype).Any())
             {
-                Computation = conceptInfo.Supertype,
-                DependsOn = conceptInfo.Subtype,
-                FilterType = "System.Guid[]",
-                FilterFormula = materializedUpdateSelector
-            });
+                string materializedUpdateSelector;
+                if (conceptInfo.ImplementationName == "")
+                    materializedUpdateSelector = "changedItems => changedItems.Select(item => item.ID).ToArray()";
+                else
+                    materializedUpdateSelector = string.Format(
+                        @"changedItems => changedItems.Select(item => DomUtility.GetSubtypeImplementationId(item.ID, {0})).ToArray()",
+                        DomUtility.GetSubtypeImplementationHash(conceptInfo.ImplementationName));
+
+                DataStructureInfo dependsOn = DslUtility.GetBaseChangesOnDependency(conceptInfo.Subtype, existingConcepts);
+                if (dependsOn != null) // The dependent data structure may be created in a later macro iterations. The end result will be check by IValidatedConcept.
+                    newConcepts.Add(new ChangesOnChangedItemsInfo
+                    {
+                        Computation = conceptInfo.Supertype,
+                        DependsOn = dependsOn,
+                        FilterType = "System.Guid[]",
+                        FilterFormula = materializedUpdateSelector
+                    });
+            }
 
             if (conceptInfo.SupportsPersistedSubtypeImplementationColum())
             {

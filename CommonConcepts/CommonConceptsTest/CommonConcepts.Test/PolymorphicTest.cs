@@ -430,5 +430,40 @@ namespace CommonConcepts.Test
                     }
             }
         }
+
+        [TestMethod]
+        public void SubtypeInDifferentModule()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repositories = container.Resolve<GenericRepositories>();
+
+                var subtype1 = new TestPolymorphic.DifferentModule { ID = Guid.NewGuid(), Code = "a" };
+                var subtype2 = new TestPolymorphic2.DifferentModule { ID = Guid.NewGuid(), Code = "b" };
+
+                repositories.Save(new[] { subtype1 }, null, repositories.Read<TestPolymorphic.DifferentModule>());
+                repositories.Save(new[] { subtype2 }, null, repositories.Read<TestPolymorphic2.DifferentModule>());
+
+                Assert.AreEqual(
+                    "TestPolymorphic.DifferentModule a1, TestPolymorphic2.DifferentModule b2",
+                    TestUtility.DumpSorted(repositories.Query<TestPolymorphic.DifferentModuleBase>(), item => item.Subtype + " " + item.Name));
+            }
+        }
+
+        [TestMethod]
+        public void SpecificComplexSubtype()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repositories = container.Resolve<GenericRepositories>();
+
+                var subtype1 = new TestPolymorphic.ComplexImplementationData { ID = Guid.NewGuid(), a = "a" };
+                repositories.Save(new[] { subtype1 }, null, repositories.Read<TestPolymorphic.ComplexImplementationData>());
+
+                Assert.AreEqual(
+                    "TestPolymorphic.ComplexImplementationQuery abc1, TestPolymorphic.ComplexImplementationQuery q2 abc2",
+                    TestUtility.DumpSorted(repositories.Query<TestPolymorphic.ComplexBase>(), item => item.Subtype + " " + item.Name1));
+            }
+        }
     }
 }

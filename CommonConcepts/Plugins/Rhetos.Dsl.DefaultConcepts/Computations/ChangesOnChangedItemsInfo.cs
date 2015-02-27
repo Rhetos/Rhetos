@@ -44,8 +44,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
             if (!(DependsOn is IWritableOrmDataStructure))
-                throw new DslSyntaxException("Invalid use of " + this.GetKeywordOrTypeName() + ". DependsOn member '" + DependsOn.GetUserDescription()
-                    + "' must be IWritableOrmDataStructure, such as Entity.");
+                throw new DslSyntaxException(this, "DependsOn data structure must be IWritableOrmDataStructure (" + DependsOn.GetUserDescription() + ").");
         }
     }
 }

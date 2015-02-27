@@ -1,7 +1,9 @@
+
+//=========================================================
+// Simple test
+	
 Module TestPolymorphic
 {
-	//=========================================================
-	
 	Polymorphic SimpleBase
 	{
 		ShortString Name;
@@ -37,16 +39,24 @@ Module TestPolymorphic
 		Take Simple2;
 		Take 'Simple2.Name1';
 	}
+}	
+
+//=========================================================
+// Empty polymorphic
 	
-	//=========================================================
-	
+Module TestPolymorphic
+{
 	Polymorphic Empty
 	{
 		// Empty. No subtypes.
 	}
+}
 	
-	//=========================================================
+//=========================================================
+// Implementing multiple polymorphic types. Multiple implementations of a polymorphic.
 	
+Module TestPolymorphic
+{
 	Polymorphic SecondBase
 	{
 		LongString Info;
@@ -62,18 +72,22 @@ Module TestPolymorphic
 		Implements TestPolymorphic.SecondBase.Info "CONVERT(NVARCHAR(MAX), Name1) +  '/' + CONVERT(NVARCHAR(MAX), Name2) +  '/' + CONVERT(NVARCHAR(MAX), Finish, 126)";
 	}
 	
-	Is Second1 TestPolymorphic.SecondBase
-	{
-		Implements TestPolymorphic.SecondBase.Info "Info";
-	}
-
 	Entity Second1
 	{
 		LongString Info;
 	}
 	
-	//=========================================================
+	Is Second1 TestPolymorphic.SecondBase
+	{
+		Implements TestPolymorphic.SecondBase.Info "Info";
+	}
+}
+
+//=========================================================
+// Referencing polymorphic entity (foreing key constraint)
 	
+Module TestPolymorphic
+{
 	Entity Dependant
 	{
 		ShortString Name;
@@ -85,9 +99,13 @@ Module TestPolymorphic
 		Take Name;
 		Take 'SimpleBase.Name';
 	}
+}
+
+//=========================================================
+// Polymorphic implementations without common properties
 	
-	//=========================================================
-	
+Module TestPolymorphic
+{
 	Entity Disjunctive1
 	{
 		ShortString Name;
@@ -109,9 +127,13 @@ Module TestPolymorphic
 		Take 'Disjunctive2.ID';
 		Take 'Disjunctive2.Days';
 	}
+}
+
+//=========================================================
+// Multiple implementations of a same polymorphic type at the same entity.
 	
-	//=========================================================
-	
+Module TestPolymorphic
+{
 	Entity MultipleImplementations
 	{
 		Is TestPolymorphic.Base1;
@@ -147,75 +169,77 @@ Module TestPolymorphic
 	}
 }
 
-	//=========================================================
+//=========================================================
+// Subtype implementation in a different module.
+
+Module TestPolymorphic
+{
+	Polymorphic DifferentModuleBase
+	{
+		ShortString Name;
+	}
 	
-	// SqlQueryable QueryableImplementation "SELECT a = 'SqlQueryable'"
-	// {
-		// ShortString a;
-		// Is TestPolymorphic.Base1
-		// {
-			// Implements TestPolymorphic.Base1.Name1 "a";
-		// }
-		// Is TestPolymorphic.Base1 'Reverse'
-		// {
-			// Implements TestPolymorphic.Base1.Name1 "REVERSE(a)";
-		// }
-	// }
+	Entity DifferentModule
+	{
+		ShortString Code;
+		Is TestPolymorphic.DifferentModuleBase
+		{
+			Implements TestPolymorphic.DifferentModuleBase.Name "Code + '1'";
+		}
+	}
+}
+
+Module TestPolymorphic2
+{
+	Entity DifferentModule
+	{
+		ShortString Code;
+		Is TestPolymorphic.DifferentModuleBase
+		{
+			Implements TestPolymorphic.DifferentModuleBase.Name "Code + '2'";
+		}
+	}
+}
 	
-	//=========================================================
+//=========================================================
+// Specific complex subtype implementations
+
+Module TestPolymorphic
+{
+	Polymorphic ComplexBase
+	{
+		ShortString Name1;
+		Materialized;
+	}
 	
-	// Entity SqlImplementation
+	Entity ComplexImplementationData
+	{
+		ShortString a;
+	}
+	
+	SqlQueryable ComplexImplementationQuery "SELECT ID, a = 'abc' FROM TestPolymorphic.ComplexImplementationData"
+	{
+		Extends TestPolymorphic.ComplexImplementationData;
+		ShortString a;
+		
+		AutoDetectSqlDependencies;
+		Is TestPolymorphic.ComplexBase
+		{
+			Implements TestPolymorphic.ComplexBase.Name1 "a + '1'";
+		}
+		Is TestPolymorphic.ComplexBase 'q2'
+		{
+			Implements TestPolymorphic.ComplexBase.Name1 "a + '2'";
+		}
+	}
+
+	// Entity ComplexImplementationSql
 	// {
 		// ShortString s;
-		// Is TestPolymorphic.Base1 'SELECT ID, Name1 = s FROM TestPolymorphic.SqlImplementation';
+		// Is TestPolymorphic.ComplexBase '' 'SELECT ID, Name1 = s FROM TestPolymorphic.ComplexImplementationSql';
 	// }
+}
 	
-	//=========================================================
-	
-	// SqlQueryable QueryableImplementation "SELECT a = 'SqlQueryable'"
-	// {
-		// ShortString a;
-		// Is TestPolymorphic.Base1
-		// {
-			// Implements TestPolymorphic.Base1.Name1 "a";
-		// }
-		// Is TestPolymorphic.Base1 'Reverse'
-		// {
-			// Implements TestPolymorphic.Base1.Name1 "REVERSE(a)";
-		// }
-	// }
-	
-	//=========================================================
-
-// Module TestPolymorphic
-// {
-	// Polymorphic DifferentModuleBase
-	// {
-		// ShortString Name;
-	// }
-	
-	// Entity DifferentModule
-	// {
-		// ShortString Code;
-		// Is TestPolymorphic.DifferentModuleBase
-		// {
-			// Implements TestPolymorphic.DifferentModuleBase.Name "Code + '1'";
-		// }
-	// }
-// }
-
-// Module TestPolymorphic2
-// {
-	// Entity DifferentModule
-	// {
-		// ShortString Code;
-		// Is TestPolymorphic.DifferentModuleBase
-		// {
-			// Implements TestPolymorphic.DifferentModuleBase.Name "Code + '2'";
-		// }
-	// }
-// }
-
 	// //=========================================================
 	
 	// Polymorphic Writable
