@@ -30,11 +30,14 @@ using Rhetos.Dom.DefaultConcepts;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
+    /// Represents the persisted table column that captures the alternative ID for the subtype implementation.
+    /// The alternative ID is needed when a subtype implements the same supertype mutiple times, in order to disambiguate implementations without performance loss.
+    /// 
     /// This concept is separated from IsSubtypeOfInfo, because there is no need to create a new computed column
-    /// for each Supertype; only Subtype and ImplementationName are unique.
+    /// for each Supertype: only Subtype and ImplementationName need to be unique.
     /// </summary>
     [Export(typeof(IConceptInfo))]
-    public class SubtypeImplementationColumnInfo : IMacroConcept
+    public class PersistedSubtypeImplementationIdInfo : IMacroConcept
     {
         [ConceptKey]
         public DataStructureInfo Subtype { get; set; }
@@ -44,7 +47,13 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return new[] { GetSqlObject() };
+            var sqlObject = GetSqlObjectPrototype();
+            sqlObject.CreateSql = CreateComputedColumnSnippet();
+            sqlObject.RemoveSql = RemoveComputedColumnSnippet();
+
+            var sqlDependency = new SqlDependsOnDataStructureInfo { DependsOn = Subtype, Dependent = sqlObject };
+
+            return new IConceptInfo[] { sqlObject, sqlDependency };
         }
 
         public string GetComputedColumnName()
@@ -52,14 +61,13 @@ namespace Rhetos.Dsl.DefaultConcepts
             return "Subtype" + ImplementationName + "ID";
         }
 
-        public SqlObjectInfo GetSqlObject()
+        /// <summary>The returned prototype can be used as a reference to the actual object in the IDslModel.</summary>
+        public SqlObjectInfo GetSqlObjectPrototype()
         {
             return new SqlObjectInfo
             {
                 Module = Subtype.Module,
                 Name = Subtype.Name + "_" + GetComputedColumnName(),
-                CreateSql = CreateComputedColumnSnippet(),
-                RemoveSql = RemoveComputedColumnSnippet(),
             };
         }
 

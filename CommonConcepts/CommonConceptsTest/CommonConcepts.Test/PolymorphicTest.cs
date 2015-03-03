@@ -460,9 +460,42 @@ namespace CommonConcepts.Test
                 var subtype1 = new TestPolymorphic.ComplexImplementationData { ID = Guid.NewGuid(), a = "a" };
                 repositories.Save(new[] { subtype1 }, null, repositories.Read<TestPolymorphic.ComplexImplementationData>());
 
+                var subtype2 = new TestPolymorphic.ComplexImplementationSql { ID = Guid.NewGuid(), AlternativeId = Guid.NewGuid(), s = "s" };
+                repositories.Save(new[] { subtype2 }, null, repositories.Read<TestPolymorphic.ComplexImplementationSql>());
+
+                var all = repositories.Query<TestPolymorphic.ComplexBase>()
+                    .OrderBy(item => item.Subtype).ThenBy(item => item.Name1);
+
+                var expectedAll = new[]
+                {
+                    "TestPolymorphic.ComplexImplementationQuery abc1",
+                    "TestPolymorphic.ComplexImplementationQuery q2 abc2",
+                    "TestPolymorphic.ComplexImplementationSql s3",
+                    "TestPolymorphic.ComplexImplementationSql sql2 s4",
+                };
+
                 Assert.AreEqual(
-                    "TestPolymorphic.ComplexImplementationQuery abc1, TestPolymorphic.ComplexImplementationQuery q2 abc2",
-                    TestUtility.DumpSorted(repositories.Query<TestPolymorphic.ComplexBase>(), item => item.Subtype + " " + item.Name1));
+                    TestUtility.Dump(expectedAll),
+                    TestUtility.Dump(all, item => item.Subtype + " " + item.Name1));
+
+                var references = all.Select(item => new
+                {
+                    q = item.ComplexImplementationQuery.a,
+                    q2 = item.ComplexImplementationQueryq2.a,
+                    s = item.ComplexImplementationSql.s,
+                    s2 = item.ComplexImplementationSqlsql2.s,
+                }).ToList();
+
+                var expectedReferences = new[]
+                {
+                    "abc---",
+                    "-abc--",
+                    "--s-",
+                    "---s",
+                };
+                Assert.AreEqual(
+                    TestUtility.Dump(expectedReferences),
+                    TestUtility.Dump(references, item => (item.q ?? "-") + (item.q2 ?? "-") + (item.s ?? "-") + (item.s2 ?? "-")));
             }
         }
     }

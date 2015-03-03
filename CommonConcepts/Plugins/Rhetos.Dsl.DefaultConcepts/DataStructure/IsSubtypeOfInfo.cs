@@ -31,7 +31,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Is")]
-    public class IsSubtypeOfInfo : IConceptInfo, IAlternativeInitializationConcept, IValidatedConcept
+    public class IsSubtypeOfInfo : IConceptInfo, IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo Subtype { get; set; }
@@ -46,28 +46,12 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public string ImplementationName { get; set; }
 
-        //===========================================================
-        // Creating a view for the subtype's implementation of the supertype interface:
-
-        public SqlViewInfo Dependency_ImplementationView { get; set; }
-
-        public static readonly SqlTag<IsSubtypeOfInfo> PropertyImplementationTag = new SqlTag<IsSubtypeOfInfo>("PropertyImplementation");
-
-        public IEnumerable<string> DeclareNonparsableProperties()
+        public SqlViewInfo GetImplementationViewPrototype()
         {
-            return new[] { "Dependency_ImplementationView" };
-        }
-
-        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
-        {
-            Dependency_ImplementationView = new SqlViewInfo
-            {
-                Module = Subtype.Module,
-                Name = GetImplementationViewName(),
-                ViewSource = ImplementationViewSnippet()
-            };
-
-            createdConcepts = new[] { Dependency_ImplementationView };
+            string viewName = Subtype.Name + "_As_" + DslUtility.NameOptionalModule(Supertype, Subtype.Module);
+            if (ImplementationName != "")
+                viewName += "_" + ImplementationName;
+            return new SqlViewInfo { Module = Subtype.Module, Name = viewName, ViewSource = "<prototype>" };
         }
 
         public string GetSubtypeReferenceName()
@@ -75,48 +59,9 @@ namespace Rhetos.Dsl.DefaultConcepts
             return DslUtility.NameOptionalModule(Subtype, Supertype.Module) + ImplementationName;
         }
 
-        private string GetImplementationViewName()
-        {
-            string viewName = Subtype.Name + "_As_" + DslUtility.NameOptionalModule(Supertype, Subtype.Module);
-            if (ImplementationName != "")
-                viewName += "_" + ImplementationName;
-            return viewName;
-        }
-
-        private string ImplementationViewSnippet()
-        {
-            return string.Format(
-@"SELECT
-    ID{3}{2}
-FROM
-    {0}.{1}",
-                Subtype.Module.Name,
-                Subtype.Name,
-                PropertyImplementationTag.Evaluate(this),
-                GetSpecificImplementationId());
-        }
-
         public bool SupportsPersistedSubtypeImplementationColum()
         {
             return !string.IsNullOrEmpty(ImplementationName) && Subtype is EntityInfo;
-        }
-
-        /// <summary>
-        /// Same subtype may implement same supertype multiple time. Since ID of the supertype is usually same as subtype's ID,
-        /// that might result with multiple supertype records with the same ID. To avoid duplicate IDs and still keep the
-        /// deterministic ID values, the supertype's ID is XORed by a hash code taken from the ImplementationName.
-        /// </summary>
-        private string GetSpecificImplementationId()
-        {
-            if (ImplementationName == "")
-                return "";
-            else if (SupportsPersistedSubtypeImplementationColum())
-                return ",\r\n    SubtypeImplementationID = " + new SubtypeImplementationColumnInfo { Subtype = Subtype, ImplementationName = ImplementationName }.GetComputedColumnName();
-            else
-            {
-                int hash = DomUtility.GetSubtypeImplementationHash(ImplementationName);
-                return ",\r\n    SubtypeImplementationID = CONVERT(UNIQUEIDENTIFIER, CONVERT(BINARY(4), CONVERT(INT, CONVERT(BINARY(4), ID)) ^ " + hash + ") + SUBSTRING(CONVERT(BINARY(16), ID), 5, 12))";
-            }
         }
 
         public void CheckSemantics(IDslModel existingConcepts)
@@ -126,7 +71,7 @@ FROM
                     + this.Subtype.GetUserDescription() + " is not IOrmDataStructure.");
 
             if (ImplementationName == null)
-                throw new DslSyntaxException(this, "ImplementationName must not be null (it is allowed to be an empty string).");
+                throw new DslSyntaxException(this, "ImplementationName must not be null. It is allowed to be an empty string.");
 
             if (!string.IsNullOrEmpty(ImplementationName))
                 DslUtility.ValidateIdentifier(ImplementationName, this, "Invalid ImplementationName value.");
@@ -148,7 +93,7 @@ FROM
         {
             var newConcepts = new List<IConceptInfo>();
 
-            // Add a subtype reference (for each subtype) to the supertype data structure
+            // Add a subtype reference (for each subtype) to the supertype data structure:
 
             var subtypeReference = new ReferencePropertyInfo
             {
@@ -159,33 +104,16 @@ FROM
             newConcepts.Add(subtypeReference);
             newConcepts.Add(new PolymorphicPropertyInfo { Property = subtypeReference, SubtypeReference = conceptInfo.Subtype.GetKeyProperties() });
 
-            // Automatically add missing property implementations and missing properties to the subtype (automatic interface implementation)
+            // Append subtype implementation to the supertype union:
 
-            var implementableSupertypeProperties = existingConcepts.FindByType<PolymorphicPropertyInfo>()
-                .Where(pp => pp.Property.DataStructure == conceptInfo.Supertype && pp.IsImplementable())
-                .Select(pp => pp.Property).ToList();
-            var subtypeProperties = existingConcepts.FindByType<PropertyInfo>().Where(p => p.DataStructure == conceptInfo.Subtype).ToList();
-            var subtypeImplementsProperties = existingConcepts.FindByType<SubtypeImplementsPropertyInfo>().Where(subim => subim.IsSubtypeOf == conceptInfo).Select(subim => subim.Property).ToList();
+            newConcepts.Add(new SubtypeExtendPolymorphicInfo
+            {
+                IsSubtypeOf = conceptInfo,
+                SubtypeImplementationView = conceptInfo.GetImplementationViewPrototype(),
+                PolymorphicUnionView = conceptInfo.Supertype.GetUnionViewPrototype()
+            });
 
-            var missingImplementations = implementableSupertypeProperties.Except(subtypeImplementsProperties)
-                .Select(supp => new SubtypeImplementsPropertyInfo
-                {
-                    IsSubtypeOf = conceptInfo,
-                    Property = supp,
-                    Expression = supp.Name
-                })
-                .ToList();
-
-            var missingProperties = missingImplementations.Select(subim => subim.Property).Where(supp => !subtypeProperties.Any(subp => subp.Name == supp.Name))
-                .Select(supp => DslUtility.CreatePassiveClone(supp, conceptInfo.Subtype))
-                .ToList();
-
-            newConcepts.AddRange(missingImplementations);
-            newConcepts.AddRange(missingProperties);
-
-            // Add metadata for supertype computetion and subtype implementation
-
-            newConcepts.Add(new SqlDependsOnDataStructureInfo { Dependent = conceptInfo.Dependency_ImplementationView, DependsOn = conceptInfo.Subtype });
+            // Add metadata for supertype computation (union):
 
             if (existingConcepts.FindByReference<PolymorphicMaterializedInfo>(pm => pm.Polymorphic, conceptInfo.Supertype).Any())
             {
@@ -208,11 +136,29 @@ FROM
                     });
             }
 
+            // Add metadata for subtype implementation:
+
+            PersistedSubtypeImplementationIdInfo subtypeImplementationColumn = null;
             if (conceptInfo.SupportsPersistedSubtypeImplementationColum())
             {
-                var subtypeImplementationColumn = new SubtypeImplementationColumnInfo { Subtype = conceptInfo.Subtype, ImplementationName = conceptInfo.ImplementationName };
+                subtypeImplementationColumn = new PersistedSubtypeImplementationIdInfo { Subtype = conceptInfo.Subtype, ImplementationName = conceptInfo.ImplementationName };
                 newConcepts.Add(subtypeImplementationColumn);
-                newConcepts.Add(new SqlDependsOnSqlObjectInfo { Dependent = conceptInfo.Dependency_ImplementationView, DependsOn = subtypeImplementationColumn.GetSqlObject() });
+            }
+
+            // Automatic interface implementation:
+
+            if (existingConcepts.FindByKey(conceptInfo.GetImplementationViewPrototype().GetKey()) == null)
+            {
+                var extensibleSubtypeSqlView = new ExtensibleSubtypeSqlViewInfo { IsSubtypeOf = conceptInfo };
+                newConcepts.Add(extensibleSubtypeSqlView);
+
+                if (subtypeImplementationColumn != null)
+                    newConcepts.Add(new SqlDependsOnSqlObjectInfo
+                    {
+                        // The subtype implementation view will use the PersistedSubtypeImplementationColumn.
+                        DependsOn = subtypeImplementationColumn.GetSqlObjectPrototype(),
+                        Dependent = extensibleSubtypeSqlView
+                    });
             }
 
             return newConcepts;

@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Implements")]
-    public class SubtypeImplementsPropertyInfo : IValidationConcept
+    public class SubtypeImplementsPropertyInfo : IAlternativeInitializationConcept, IValidatedConcept
     {
         [ConceptKey]
         public IsSubtypeOfInfo IsSubtypeOf { get; set; }
@@ -38,9 +38,26 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public string Expression { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
+        public SqlViewInfo Dependency_ImplementationView { get; set; }
+
+        public IEnumerable<string> DeclareNonparsableProperties()
+        {
+            return new[] { "Dependency_ImplementationView" };
+        }
+
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            Dependency_ImplementationView = IsSubtypeOf.GetImplementationViewPrototype();
+            createdConcepts = null;
+        }
+
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             DslUtility.CheckIfPropertyBelongsToDataStructure(Property, IsSubtypeOf.Supertype, this);
+
+            if (!(Dependency_ImplementationView is ExtensibleSubtypeSqlViewInfo))
+                throw new DslSyntaxException(this, "This property implementation cannot be used together with '" + Dependency_ImplementationView.GetUserDescription()
+                    + "'. Use either " + this.GetKeywordOrTypeName() + " or " + Dependency_ImplementationView.GetKeywordOrTypeName() + ".");
         }
     }
 }

@@ -129,6 +129,10 @@
     <Compile Include="Computations\KeyPropertyComputedFromInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndexClusteredInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndexMultipleFollowingPropertyInfo.cs" />
+    <Compile Include="DataStructure\SubtypeExtendPolymorphicInfo.cs" />
+    <Compile Include="DataStructure\PolymorphicUnionViewInfo.cs" />
+    <Compile Include="DataStructure\SpecificSubtypeSqlViewInfo.cs" />
+    <Compile Include="DataStructure\ExtensibleSubtypeSqlViewInfo.cs" />
     <Compile Include="DataStructure\Writing\OnSaveUpdateInfo.cs" />
     <Compile Include="DataStructure\Writing\SaveMethodInfo.cs" />
     <Compile Include="DataStructure\Writing\LoadOldItemsInfo.cs" />
@@ -161,7 +165,7 @@
     <Compile Include="DatabaseWorkarounds\ModuleAutoSqlDependsOnInfo.cs" />
     <Compile Include="DataStructure\IsSubtypeOfDefaultNameInfo.cs" />
     <Compile Include="DataStructure\PolymorphicMaterializedInfo.cs" />
-    <Compile Include="DataStructure\SubtypeImplementationColumnInfo.cs" />
+    <Compile Include="DataStructure\PersistedSubtypeImplementationIdInfo.cs" />
     <Compile Include="DataStructure\PolymorphicPropertyInfo.cs" />
     <Compile Include="DataStructure\SubtypeImplementsPropertyInfo.cs" />
     <Compile Include="DataStructure\IsSubtypeOfInfo.cs" />

@@ -53,7 +53,9 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (SubtypeImplementsPropertyInfo)conceptInfo;
 
-            codeBuilder.InsertCode(PropertyImplementationSnippet(info), IsSubtypeOfInfo.PropertyImplementationTag, info.IsSubtypeOf);
+            codeBuilder.InsertCode(PropertyImplementationSnippet(info),
+                ExtensibleSubtypeSqlViewInfo.PropertyImplementationTag,
+                (ExtensibleSubtypeSqlViewInfo)info.Dependency_ImplementationView);
 
             createdDependencies = null;
         }

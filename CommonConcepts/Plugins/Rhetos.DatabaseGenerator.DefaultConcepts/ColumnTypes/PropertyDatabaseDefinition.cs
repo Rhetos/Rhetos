@@ -41,8 +41,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         /// <summary>Ordering of options may be important./summary>
         public static readonly SqlTag<PropertyInfo> Options2Tag = "Options2";
 
-        public static readonly ConceptMetadataType<List<string>> ColumnNamesMetadata = new ConceptMetadataType<List<string>>("ColumnNames");
-        public static readonly ConceptMetadataType<List<string>> ColumnTypesMetadata = new ConceptMetadataType<List<string>>("ColumnTypes");
+        public static readonly ConceptMetadataType<List<string>> ColumnNamesMetadata = "ColumnNames";
+        public static readonly ConceptMetadataType<List<string>> ColumnTypesMetadata = "ColumnTypes";
 
         public static void RegisterColumnMetadata(ConceptMetadata conceptMetadata, PropertyInfo property, string columnName, string columnType)
         {

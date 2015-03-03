@@ -29,16 +29,9 @@ using System.Linq;
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
     [Export(typeof(IConceptDatabaseDefinition))]
-    [ExportMetadata(MefProvider.Implements, typeof(IsSubtypeOfInfo))]
-    public class IsSubtypeOfDatabaseDefinition : IConceptDatabaseDefinitionExtension
+    [ExportMetadata(MefProvider.Implements, typeof(SubtypeExtendPolymorphicInfo))]
+    public class SubtypeExtendPolymorphicDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
-        ConceptMetadata _conceptMetadata;
-
-        public IsSubtypeOfDatabaseDefinition(ConceptMetadata conceptMetadata)
-        {
-            _conceptMetadata = conceptMetadata;
-        }
-
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
             return null;
@@ -51,26 +44,23 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
         public void ExtendDatabaseStructure(IConceptInfo conceptInfo, ICodeBuilder codeBuilder, out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
         {
-            var info = (IsSubtypeOfInfo)conceptInfo;
+            var info = (SubtypeExtendPolymorphicInfo)conceptInfo;
 
-            codeBuilder.InsertCode(UnionSubquerySnippet(info), PolymorphicInfo.SubtypeQueryTag, info.Supertype);
-
-            createdDependencies = new[] { Tuple.Create<IConceptInfo, IConceptInfo>(
-                info.Dependency_ImplementationView,
-                info.Supertype.Dependency_View) };
+            codeBuilder.InsertCode(UnionSubquerySnippet(info), PolymorphicUnionViewInfo.SubtypeQueryTag, info.PolymorphicUnionView);
+            createdDependencies = new[] { Tuple.Create<IConceptInfo, IConceptInfo>(info.SubtypeImplementationView, info.PolymorphicUnionView) };
         }
 
-        private string UnionSubquerySnippet(IsSubtypeOfInfo info)
+        private string UnionSubquerySnippet(SubtypeExtendPolymorphicInfo info)
         {
             return string.Format(@"UNION ALL
     SELECT {4}' + REPLACE(REPLACE(@columnList, ', Subtype = NULL', ', Subtype = ''{2}'''), ', {3} = NULL', ', {3} = ID') + '
     FROM {0}.{1}
 ",
-                info.Dependency_ImplementationView.Module.Name,
-                info.Dependency_ImplementationView.Name,
-                info.Subtype.Module.Name + "." + info.Subtype.Name + (info.ImplementationName != "" ? " " + info.ImplementationName : ""),
-                info.GetSubtypeReferenceName() + "ID",
-                info.ImplementationName == "" ? "ID" : "ID = SubtypeImplementationID");
+                info.SubtypeImplementationView.Module.Name,
+                info.SubtypeImplementationView.Name,
+                info.IsSubtypeOf.Subtype.Module.Name + "." + info.IsSubtypeOf.Subtype.Name + (info.IsSubtypeOf.ImplementationName != "" ? " " + info.IsSubtypeOf.ImplementationName : ""),
+                info.IsSubtypeOf.GetSubtypeReferenceName() + "ID",
+                info.IsSubtypeOf.ImplementationName == "" ? "ID" : "ID = SubtypeImplementationID");
         }
     }
 }

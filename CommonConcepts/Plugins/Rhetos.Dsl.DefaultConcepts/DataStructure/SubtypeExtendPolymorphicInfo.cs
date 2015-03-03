@@ -25,22 +25,18 @@ using Rhetos.Dsl;
 using System.ComponentModel.Composition;
 using Rhetos.Utilities;
 using Rhetos.Compiler;
+using Rhetos.Dom.DefaultConcepts;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("Is")]
-    public class IsSubtypeOfDefaultNameInfo : IsSubtypeOfInfo, IAlternativeInitializationConcept
+    public class SubtypeExtendPolymorphicInfo : IConceptInfo
     {
-        public IEnumerable<string> DeclareNonparsableProperties()
-        {
-            return new[] { "ImplementationName" };
-        }
+        [ConceptKey]
+        public IsSubtypeOfInfo IsSubtypeOf { get; set; }
 
-        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
-        {
-            ImplementationName = "";
-            createdConcepts = null;
-        }
+        public SqlViewInfo SubtypeImplementationView { get; set; }
+
+        public PolymorphicUnionViewInfo PolymorphicUnionView { get; set; }
     }
 }

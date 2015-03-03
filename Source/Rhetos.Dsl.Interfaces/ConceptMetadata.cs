@@ -74,9 +74,16 @@ namespace Rhetos.Dsl
             Name = name;
         }
 
+        public static implicit operator ConceptMetadataType<T>(string name)
+        {
+            return new ConceptMetadataType<T>(name);
+        }
+
         public override string ToString()
         {
-            return Name != null ? Name + ", " + Id.ToString() : Id.ToString();
+            return Name != null
+                ? Name + ", " + Id.ToString()
+                : Id.ToString();
         }
     }
 }

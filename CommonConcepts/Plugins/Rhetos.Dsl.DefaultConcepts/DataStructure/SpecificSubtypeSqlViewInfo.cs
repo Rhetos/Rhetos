@@ -23,38 +23,35 @@ using System.Linq;
 using System.Text;
 using Rhetos.Dsl;
 using System.ComponentModel.Composition;
+using Rhetos.Utilities;
 using Rhetos.Compiler;
+using Rhetos.Dom.DefaultConcepts;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class PolymorphicPropertyInfo : IConceptInfo, IAlternativeInitializationConcept
+    [ConceptKeyword("SqlImplementation")]
+    public class SpecificSubtypeSqlViewInfo : SqlViewInfo, IAlternativeInitializationConcept
     {
-        [ConceptKey]
-        public PropertyInfo Property { get; set; }
+        public IsSubtypeOfInfo IsSubtypeOf { get; set; }
 
-        /// <summary>
-        /// Set if the Property is an automatically generated reference to a subtype entity.
-        /// </summary>
-        public string SubtypeReference { get; set; }
-
-        /// <summary>This concept injects code in the PolymorphicUnionView.</summary>
-        public PolymorphicUnionViewInfo Dependency_PolymorphicUnionView { get; set; }
-
-        public bool IsImplementable()
-        {
-            return string.IsNullOrEmpty(SubtypeReference) && Property.Name != "Subtype";
-        }
+        /// <summary>Existing property ViewSource is replaced with SqlQuery to force that the property IsSubtypeOf is first when parsed,
+        /// so that this concept can be embedded within IsSubtypeOfInfo in a DSL script.</summary>
+        public string SqlQuery { get; set; }
 
         public IEnumerable<string> DeclareNonparsableProperties()
         {
-            return new[] { "Dependency_PolymorphicUnionView" };
+            return new[] { "Module", "Name", "ViewSource" };
         }
 
-        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        void IAlternativeInitializationConcept.InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
-            var polymorphic = (PolymorphicInfo)Property.DataStructure;
-            Dependency_PolymorphicUnionView = polymorphic.GetUnionViewPrototype();
+            var prototype = IsSubtypeOf.GetImplementationViewPrototype();
+
+            Module = prototype.Module;
+            Name = prototype.Name;
+            ViewSource = SqlQuery;
+
             createdConcepts = null;
         }
     }

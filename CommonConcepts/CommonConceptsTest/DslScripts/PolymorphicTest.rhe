@@ -233,21 +233,25 @@ Module TestPolymorphic
 		}
 	}
 
-	// Entity ComplexImplementationSql
-	// {
-		// ShortString s;
-		// Is TestPolymorphic.ComplexBase '' 'SELECT ID, Name1 = s FROM TestPolymorphic.ComplexImplementationSql';
-	// }
-}
-	
-	// //=========================================================
-	
-	// Polymorphic Writable
-	// {
-		// ShortString Name;
-		// Integer Days;
+	Entity ComplexImplementationSql
+	{
+		ShortString s;
+		Guid AlternativeId;
 		
-		// WriteToSubtype TestPolymorphic.StandardWritable;
-			// // Will Implements all properties as-is, without any transformations.
-			// // Write '(insert, update, delete) => _context.Repositories.TestPolymorphic.StandardWritable.Save(new ....)';
-	// }
+		Is TestPolymorphic.ComplexBase
+		{
+			SqlImplementation "SELECT ID, Name1 = s + '3' FROM TestPolymorphic.ComplexImplementationSql"
+			{
+				AutoDetectSqlDependencies;
+			}
+		}
+		
+		Is TestPolymorphic.ComplexBase 'sql2'
+		{
+			SqlImplementation "SELECT ID, SubtypeImplementationID = AlternativeId, Name1 = s + '4' FROM TestPolymorphic.ComplexImplementationSql"
+			{
+				AutoDetectSqlDependencies;
+			}
+		}
+	}
+}

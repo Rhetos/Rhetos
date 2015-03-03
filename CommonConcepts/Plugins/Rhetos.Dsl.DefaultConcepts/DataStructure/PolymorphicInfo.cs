@@ -30,79 +30,21 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Polymorphic")]
-    public class PolymorphicInfo : DataStructureInfo, IOrmDataStructure, IAlternativeInitializationConcept
+    public class PolymorphicInfo : DataStructureInfo, IOrmDataStructure
     {
-        public static readonly SqlTag<PolymorphicInfo> PolymorphicPropertyNameTag = new SqlTag<PolymorphicInfo>("PolymorphicPropertyName");
-        public static readonly SqlTag<PolymorphicInfo> PolymorphicPropertyInitializationTag = new SqlTag<PolymorphicInfo>("PolymorphicPropertyInitialization");
-        public static readonly SqlTag<PolymorphicInfo> SubtypeQueryTag = new SqlTag<PolymorphicInfo>("SubtypeQuery");
-
-        //===========================================================
-        // Creating SQL view - union of subtypes:
-
-        public SqlObjectInfo Dependency_View { get; set; }
-
-        public IEnumerable<string> DeclareNonparsableProperties()
+        public PolymorphicUnionViewInfo GetUnionViewPrototype()
         {
-            return new[] { "Dependency_View" };
-        }
-
-        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
-        {
-            Dependency_View = new SqlObjectInfo
-            {
-                Module = Module,
-                Name = Name,
-                CreateSql = CreateViewCodeSnippet(),
-                RemoveSql = RemoveViewCodeSnippet()
-            };
-
-            createdConcepts = new[] { Dependency_View };
-        }
-
-        private string CreateViewCodeSnippet()
-        {
-            // Column names list (@columnList) is separated from the create query (@sql)
-            // to be used in subqueryes, to make sure that the order of columns is the same
-            // in all the subqueries. This is necessary for UNION ALL.
-
-            return string.Format(
-@"
-DECLARE @columnList NVARCHAR(MAX);
-SET @columnList = N'{2}';
-
-DECLARE @sql NVARCHAR(MAX);
-SET @sql = N'CREATE VIEW {0}.{1}
-AS
-SELECT
-    ID = CONVERT(UNIQUEIDENTIFIER, NULL){3}
-WHERE
-    0=1
-{4}';
-
-
-PRINT @sql;
-EXEC (@sql);
-",
-                Module.Name,
-                Name,
-                PolymorphicPropertyNameTag.Evaluate(this),
-                PolymorphicPropertyInitializationTag.Evaluate(this),
-                SubtypeQueryTag.Evaluate(this));
-        }
-
-        private string RemoveViewCodeSnippet()
-        {
-            return string.Format("DROP VIEW {0}.{1};", Module.Name, Name);
+            return new PolymorphicUnionViewInfo { Module = Module, Name = Name };
         }
 
         public string GetOrmSchema()
         {
-            return Dependency_View.Module.Name;
+            return Module.Name; // ORM will be mapped to PolymorphicUnionViewInfo from the database.
         }
 
         public string GetOrmDatabaseObject()
         {
-            return Dependency_View.Name;
+            return Name; // ORM will be mapped to PolymorphicUnionViewInfo from the database.
         }
     }
 
@@ -113,9 +55,17 @@ EXEC (@sql);
         {
             var newConcepts = new List<IConceptInfo>();
 
+            // Create a supertype SQL view - union of subtypes:
+
+            newConcepts.Add(new PolymorphicUnionViewInfo(conceptInfo));
+
+            // Create a subtype name property:
+
             var subtypeString = new ShortStringPropertyInfo { DataStructure = conceptInfo, Name = "Subtype" };
             newConcepts.Add(subtypeString);
             newConcepts.Add(new PolymorphicPropertyInfo { Property = subtypeString });
+
+            // Mark polymorphic properties:
 
             var existingPolymorphicProperties = new HashSet<string>(
                 existingConcepts.FindByType<PolymorphicPropertyInfo>()
@@ -128,7 +78,8 @@ EXEC (@sql);
                 .Where(p => !existingPolymorphicProperties.Contains(p.Name))
                 .Select(p => new PolymorphicPropertyInfo { Property = p }));
 
-            // Automatically materialize the polymorphic entity if it is referenced or extended, so the polymorphic can be used in FK constraint.
+            // Automatically materialize the polymorphic entity if it is referenced or extended, so the polymorphic can be used in FK constraint:
+
             if (existingConcepts.FindByType<ReferencePropertyInfo>().Where(r => r.Referenced == conceptInfo && r.DataStructure is EntityInfo).Any()
                 || existingConcepts.FindByType<DataStructureExtendsInfo>().Where(e => e.Base == conceptInfo && e.Extension is EntityInfo).Any())
                 newConcepts.Add(new PolymorphicMaterializedInfo { Polymorphic = conceptInfo });

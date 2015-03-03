@@ -64,15 +64,15 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
                 codeBuilder.InsertCode(
                     columnImplementationsSelector,
-                    PolymorphicInfo.PolymorphicPropertyNameTag,
-                    (PolymorphicInfo)info.Property.DataStructure);
+                    PolymorphicUnionViewInfo.PolymorphicPropertyNameTag,
+                    info.Dependency_PolymorphicUnionView);
 
                 string columnInitialization = string.Format(",\r\n    {0} = CONVERT({1}, NULL)", column.name, column.type);
 
                 codeBuilder.InsertCode(
                     columnInitialization,
-                    PolymorphicInfo.PolymorphicPropertyInitializationTag,
-                    (PolymorphicInfo)info.Property.DataStructure);
+                    PolymorphicUnionViewInfo.PolymorphicPropertyInitializationTag,
+                    info.Dependency_PolymorphicUnionView);
             }
 
             createdDependencies = null;
