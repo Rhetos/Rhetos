@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ComposableFilterByReferenced")]
-    public class ComposableFilterByReferencedInfo : IValidationConcept, IMacroConcept
+    public class ComposableFilterByReferencedInfo : IValidatedConcept, IMacroConcept
     {
         [ConceptKey]
         public DataStructureInfo Source { get; set; }
@@ -43,18 +43,22 @@ namespace Rhetos.Dsl.DefaultConcepts
         /// </summary>
         public string SubFilterExpression { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel concepts)
         {
             if (ReferenceFromMe.DataStructure != Source)
                 throw new DslSyntaxException("'" + this.GetUserDescription()
                     + "' must use a reference property that is a member of it's own data structure. Try using FilterByLinkedItems instead.");
 
-            var referencedFilter = concepts.OfType<ComposableFilterByInfo>().Where(f => f.Source == ReferenceFromMe.Referenced)
-                .Where(f => f.Parameter == Parameter).SingleOrDefault();
+            var availableFilters = concepts.FindByReference<ComposableFilterByInfo>(f => f.Source, ReferenceFromMe.Referenced)
+                .Select(f => f.Parameter).ToList();
 
-            if (referencedFilter == null)
-                throw new DslSyntaxException(this, "There is no " + new ComposableFilterByInfo().GetKeywordOrTypeName()
-                    + " '" + Parameter + "' on " + ReferenceFromMe.Referenced.GetUserDescription() + ".");
+            if (!availableFilters.Contains(Parameter))
+                throw new DslSyntaxException(this, string.Format(
+                    "There is no {0} '{1}' on {2}. Available {0} filters are: {3}.",
+                    new ComposableFilterByInfo().GetKeywordOrTypeName(),
+                    Parameter,
+                    ReferenceFromMe.Referenced.GetUserDescription(),
+                    string.Join(", ", availableFilters.Select(parameter => "'" + parameter + "'"))));
         }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)

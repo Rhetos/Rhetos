@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ItemFilterReferenced")]
-    public class ItemFilterReferencedInfo : IValidationConcept, IMacroConcept
+    public class ItemFilterReferencedInfo : IValidatedConcept, IMacroConcept
     {
         [ConceptKey]
         public DataStructureInfo Source { get; set; }
@@ -43,18 +43,22 @@ namespace Rhetos.Dsl.DefaultConcepts
         /// </summary>
         public string SubFilterExpression { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel concepts)
         {
             if (ReferenceFromMe.DataStructure != Source)
                 throw new DslSyntaxException("'" + this.GetUserDescription()
                     + "' must use a reference property that is a member of it's own data structure. Try using FilterByLinkedItems instead.");
 
-            var referencedFilter = concepts.OfType<ItemFilterInfo>().Where(f => f.Source == ReferenceFromMe.Referenced)
-                .Where(f => f.FilterName == FilterName).SingleOrDefault();
+            var availableFilters = concepts.FindByReference<ItemFilterInfo>(f => f.Source, ReferenceFromMe.Referenced)
+                .Select(f => f.FilterName).ToList();
 
-            if (referencedFilter == null)
-                throw new DslSyntaxException(this, "There is no " + new ItemFilterInfo().GetKeywordOrTypeName()
-                    + " '" + FilterName + "' on " + ReferenceFromMe.Referenced.GetUserDescription() + ".");
+            if (!availableFilters.Contains(FilterName))
+                throw new DslSyntaxException(this, string.Format(
+                    "There is no {0} '{1}' on {2}. Available {0} filters are: {3}.",
+                    new ItemFilterInfo().GetKeywordOrTypeName(),
+                    FilterName,
+                    ReferenceFromMe.Referenced.GetUserDescription(),
+                    string.Join(", ", availableFilters.Select(name => "'" + name + "'"))));
         }
 
         private string ComposableFilterParameter()
