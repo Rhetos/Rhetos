@@ -80,6 +80,9 @@ There are two recommended ways of implementing *forgot password* functionality w
   Note that roles cannot be automatically imported because SimpleWindowsAuth depends on Active Directory user groups.
 * The login form and service allow anonymous access (it is a standard forms authentication feature).
 
+### Simple administration GUI
+
+For testing and administration, a simple web GUI is available at the Rhetos server homepage under *AspNetFormsAuth* header.
 
 ## Authentication service API
 

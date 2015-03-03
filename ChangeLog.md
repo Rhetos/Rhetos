@@ -1,6 +1,6 @@
 # 0.9.26 (2015-02-26)
 
-### Breaking changes:
+### Breaking changes
 
 * Removed obsolete class `Rhetos.Utilities.ResourcesFolder` (use `Paths.ResourcesFolder` instead).
 
