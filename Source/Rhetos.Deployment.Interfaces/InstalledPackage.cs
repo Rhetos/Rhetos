@@ -63,7 +63,7 @@ namespace Rhetos.Deployment
 
         public string Report()
         {
-            return Id + " " + Version + " (requested by " + Request.RequestedBy + ") in " + Folder + ".";
+            return Id + " " + Version + " (requested from " + Request.RequestedBy + ") in " + Folder + ".";
         }
     }
 }

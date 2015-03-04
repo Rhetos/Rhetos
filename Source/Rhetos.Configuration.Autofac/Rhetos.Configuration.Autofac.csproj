@@ -141,6 +141,14 @@
       <Project>{237ea20f-0bd0-45a7-be7a-8a43e58306a2}</Project>
       <Name>Rhetos.DatabaseGenerator</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Deployment.Interfaces\Rhetos.Deployment.Interfaces.csproj">
+      <Project>{945537dc-4af7-4def-b73c-07f19229efe6}</Project>
+      <Name>Rhetos.Deployment.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Deployment\Rhetos.Deployment.csproj">
+      <Project>{a7328bfa-a009-4f1e-b9a1-b51b2020f45c}</Project>
+      <Name>Rhetos.Deployment</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Dom.Interfaces\Rhetos.Dom.Interfaces.csproj">
       <Project>{91bdf488-0921-4969-8a53-32169338d8db}</Project>
       <Name>Rhetos.Dom.Interfaces</Name>

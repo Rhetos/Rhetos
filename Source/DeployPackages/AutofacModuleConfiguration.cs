@@ -42,7 +42,6 @@ namespace DeployPackages
             // Specific registrations and initialization:
             Plugins.SetInitializationLogging(DeploymentUtility.InitializationLogProvider);
 
-            builder.RegisterType<InstalledPackages>().As<IInstalledPackages>().SingleInstance();
             if (_deploymentTime)
             {
                 builder.RegisterModule(new DatabaseGeneratorModuleConfiguration());

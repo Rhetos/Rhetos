@@ -69,7 +69,8 @@ namespace ReplaceRegEx
 
                 var regex = new Regex(parameters.FindRegEx, RegexOptions.Compiled | RegexOptions.Singleline);
 
-                foreach (string file in Directory.GetFiles(".", parameters.FileName, parameters.RootOnly ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories))
+                var files = Directory.GetFiles(".", parameters.FileName, parameters.RootOnly ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories);
+                foreach (string file in files)
                 {
                     Console.Write("Replacing text in file " + file + " ... ");
 
@@ -100,6 +101,9 @@ namespace ReplaceRegEx
                     else
                         Console.WriteLine("No match found.");
                 }
+
+                if (files.Count() == 0)
+                    Console.WriteLine("No files found.");
 
                 return 0;
             }

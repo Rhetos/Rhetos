@@ -28,6 +28,7 @@ using System.Configuration;
 using System.IO;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
+using Rhetos.Deployment;
 
 namespace Rhetos.Configuration.Autofac
 {
@@ -42,6 +43,7 @@ namespace Rhetos.Configuration.Autofac
 
         protected override void Load(ContainerBuilder builder)
         {
+            builder.RegisterType<InstalledPackages>().As<IInstalledPackages>().SingleInstance();
             builder.RegisterModule(new DomModuleConfiguration(_deploymentTime));
             builder.RegisterModule(new NHibernateModuleConfiguration(_deploymentTime));
             builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));
