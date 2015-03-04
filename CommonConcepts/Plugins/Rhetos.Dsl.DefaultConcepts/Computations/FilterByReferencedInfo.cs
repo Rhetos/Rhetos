@@ -50,35 +50,15 @@ namespace Rhetos.Dsl.DefaultConcepts
                     + "' must use a reference property that is a member of it's own data structure. Try using FilterByLinkedItems instead.");
 
             var availableFilters = concepts.FindByReference<FilterByInfo>(f => f.Source, ReferenceFromMe.Referenced)
-                .Select(f => f.Parameter).ToList();
+                .Select(f => f.Parameter).OrderBy(f => f).ToList();
 
-            if (!LooseMatch(availableFilters, Parameter, Source.Module))
+            if (!availableFilters.Contains(Parameter))
                 throw new DslSyntaxException(this, string.Format(
                     "There is no {0} '{1}' on {2}. Available {0} filters are: {3}.",
-                    new FilterByInfo().GetKeywordOrTypeName(),
+                    ConceptInfoHelper.GetKeywordOrTypeName(typeof(FilterByInfo)),
                     Parameter,
                     ReferenceFromMe.Referenced.GetUserDescription(),
                     string.Join(", ", availableFilters.Select(parameter => "'" + parameter + "'"))));
-        }
-
-        [Obsolete("Provided for backward compatibility.")]
-        public static bool LooseMatch(IEnumerable<string> filterNames, string findFilterName, ModuleInfo moduleInfo)
-        {
-            CsUtility.Materialize(ref filterNames);
-
-            // Look for exact match:
-            if (filterNames.Contains(findFilterName))
-                return true;
-
-            // Look for findFilterName with added optional namespace 'moduleInfo.Name':
-            if (CsUtility.GetIdentifierError(findFilterName) == null)
-                if (filterNames.Contains(moduleInfo.Name + "." + findFilterName))
-                    return true;
-
-            // Look for findFilterName in filters collection with added optional namespace 'moduleInfo.Name':
-            return filterNames.Where(f => CsUtility.GetIdentifierError(f) == null)
-                .Select(f => moduleInfo.Name + "." + f)
-                .Any(f => f == findFilterName);
         }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)

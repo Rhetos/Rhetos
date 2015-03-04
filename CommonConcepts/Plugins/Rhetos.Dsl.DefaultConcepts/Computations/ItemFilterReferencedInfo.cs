@@ -50,12 +50,12 @@ namespace Rhetos.Dsl.DefaultConcepts
                     + "' must use a reference property that is a member of it's own data structure. Try using FilterByLinkedItems instead.");
 
             var availableFilters = concepts.FindByReference<ItemFilterInfo>(f => f.Source, ReferenceFromMe.Referenced)
-                .Select(f => f.FilterName).ToList();
+                .Select(f => f.FilterName).OrderBy(f => f).ToList();
 
             if (!availableFilters.Contains(FilterName))
                 throw new DslSyntaxException(this, string.Format(
                     "There is no {0} '{1}' on {2}. Available {0} filters are: {3}.",
-                    new ItemFilterInfo().GetKeywordOrTypeName(),
+                    ConceptInfoHelper.GetKeywordOrTypeName(typeof(ItemFilterInfo)),
                     FilterName,
                     ReferenceFromMe.Referenced.GetUserDescription(),
                     string.Join(", ", availableFilters.Select(name => "'" + name + "'"))));

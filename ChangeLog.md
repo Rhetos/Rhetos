@@ -31,6 +31,8 @@
 
 * `ExtractPackages.exe` tool is deleted. Its functionality is now part of `DeployPackages.exe`.
 * `CreatePackage.exe` tool is deleted. New Rhetos packages should be packed by [NuGet](https://www.nuget.org/).
+* **FilterByReferenced** will fail if the referenced filter name does not match exactly.
+  In previous versions, a difference was allowed by optional namespace.
 
 ### New features
 
