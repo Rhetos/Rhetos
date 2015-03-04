@@ -143,6 +143,7 @@
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ScriptPositionReporting.cs" />
+    <Compile Include="SystemUtility.cs" />
     <Compile Include="XmlUtility.cs" />
     <Compile Include="ValueOrError.cs" />
   </ItemGroup>

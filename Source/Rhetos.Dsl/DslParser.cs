@@ -65,7 +65,7 @@ namespace Rhetos.Dsl
         {
             return new InitializationConcept
             {
-                RhetosVersion = GetType().Assembly.GetName().Version.ToString()
+                RhetosVersion = SystemUtility.GetRhetosVersion()
             };
         }
 

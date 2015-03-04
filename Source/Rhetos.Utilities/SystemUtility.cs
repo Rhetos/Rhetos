@@ -20,22 +20,28 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
-namespace Rhetos.Dsl
+namespace Rhetos.Utilities
 {
-    /// <summary>
-    /// An instance of this concept is always present as the first concept in the DSL model.
-    /// This concept can be used for code generators that generate infrastructure classes and singletones.
-    /// </summary>
-    public class InitializationConcept : IConceptInfo
+    public class SystemUtility
     {
+        private static string _rhetosVersion = null;
+
         /// <summary>
         /// Version of the currently running Rhetos server.
         /// Note that it is not compatible with System.Version because Rhetos version may contain
         /// textual pre-release information and build metadata (see Semantic Versioning 2.0.0 for example).
         /// </summary>
-        [ConceptKey]
-        public string RhetosVersion { get; set; }
+        public static string GetRhetosVersion()
+        {
+            if (_rhetosVersion == null)
+            {
+                var versionAttributes = typeof(SystemUtility).Assembly.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false).Cast<AssemblyInformationalVersionAttribute>();
+                _rhetosVersion = versionAttributes.Single().InformationalVersion;
+            }
+            return _rhetosVersion;
+        }
     }
 }

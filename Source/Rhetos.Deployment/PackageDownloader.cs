@@ -164,7 +164,7 @@ namespace Rhetos.Deployment
                         "Package ID '{0}' at location '{1}' does not match package ID '{2}' requested from {3}.",
                         installedPackage.Id, installedPackage.Source, request.Id, request.RequestedBy));
 
-            var currentRhetosVersion = GetType().Assembly.GetName().Version.ToString();
+            var currentRhetosVersion = SystemUtility.GetRhetosVersion();
             if (installedPackage.RequiredRhetosVersion != null)
                 if (!VersionUtility.ParseVersionSpec(installedPackage.RequiredRhetosVersion).Satisfies(SemanticVersion.Parse(currentRhetosVersion)))
                     DependencyError(string.Format(

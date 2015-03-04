@@ -44,7 +44,7 @@ namespace Rhetos.DatabaseGenerator
         {
             ConceptImplementationVersionAttribute versionAttribute = implementationType
                 .GetCustomAttributes(typeof(ConceptImplementationVersionAttribute), false)
-                .FirstOrDefault()
+                .SingleOrDefault()
                 as ConceptImplementationVersionAttribute;
 
             if (versionAttribute != null)
