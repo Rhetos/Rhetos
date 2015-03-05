@@ -21,7 +21,7 @@
 %>    </tbody></table>
     <h2>Server status</h2>
     <p>
-        Local server time: <%=DateTime.Now %><br />
+        Local server time: <%=System.DateTime.Now %><br />
         Process start time: <%=System.Diagnostics.Process.GetCurrentProcess().StartTime %><br />
         User identity: <%=Context.User.Identity.Name %><br />
         User authentication type: <%=Context.User.Identity.AuthenticationType %><br />
