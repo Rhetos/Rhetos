@@ -492,7 +492,7 @@ namespace Rhetos.DatabaseGenerator
         {
             var newScripts = new List<string>();
 
-            toBeRemoved.Sort((ca1, ca2) => ca1.OldCreationOrder - ca2.OldCreationOrder); // TopologicalSort is stable sort, so it will keep this (original) order unless current dependencies direct otherwise.
+            toBeRemoved = toBeRemoved.OrderBy(ca => ca.OldCreationOrder).ToList(); // TopologicalSort is stable sort, so it will keep this (original) order unless current dependencies direct otherwise.
             Graph.TopologicalSort(toBeRemoved, GetDependencyPairs(oldApplications)); // Concept's dependencies might have changed, without dropping and recreating the concept. It is important to compute up-to-date remove order, otherwise FK constraint FK_AppliedConceptDependsOn_DependsOn might fail.
             toBeRemoved.Reverse();
 

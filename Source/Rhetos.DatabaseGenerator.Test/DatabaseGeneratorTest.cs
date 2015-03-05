@@ -690,7 +690,7 @@ namespace Rhetos.DatabaseGenerator.Test
             executedSql = ClearSqlForReport(executedSql);
 
             Assert.AreEqual(
-                "TRAN: remove A, NOTRAN: remove B, CommitMetadata, TRAN: remove C, create D, NOTRAN: create E, CommitMetadata, TRAN: create F",
+                "TRAN: remove C, NOTRAN: remove B, CommitMetadata, TRAN: remove A, create D, NOTRAN: create E, CommitMetadata, TRAN: create F",
                 executedSql);
         }
 
