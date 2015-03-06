@@ -71,7 +71,10 @@ namespace Rhetos.Processing
             _requestLogger.Trace(() => string.Format("User: {0}, Commands({1}): {2}.", _userInfo.UserName, commands.Count, string.Join(", ", commands.Select(a => a.GetType().Name))));
 
             var authorizationMessage = _authorizationManager.Authorize(commands);
+
+            var stopwatch = Stopwatch.StartNew();
             _persistenceTransaction.NHibernateSession.Clear(); // NHibernate cached data from AuthorizationManager may cause problems later with serializing arrays that mix cached proxies with POCO instance.
+            _performanceLogger.Write(stopwatch, "ProcessingEngine: Clear NHibernate cache.");
 
             if (!String.IsNullOrEmpty(authorizationMessage))
                 return new ProcessingResult
@@ -89,6 +92,7 @@ namespace Rhetos.Processing
                 {
                     _logger.Trace("Executing command {0}: {1}.", commandInfo.GetType().Name, commandInfo);
 
+                    stopwatch.Restart();
                     var implementations = _commandRepository.GetImplementations(commandInfo.GetType());
 
                     if (implementations.Count() == 0)
@@ -101,9 +105,9 @@ namespace Rhetos.Processing
 
                     var commandImplementation = implementations.Single();
                     _logger.Trace("Executing implementation {0}.", commandImplementation.GetType().Name);
+                    _performanceLogger.Write(stopwatch, "ProcessingEngine: Find command implementation.");
 
                     var commandObserversForThisCommand = _commandObservers.GetImplementations(commandInfo.GetType());
-                    var stopwatch = Stopwatch.StartNew();
 
                     foreach (var commandObeserver in commandObserversForThisCommand)
                     {
@@ -111,8 +115,8 @@ namespace Rhetos.Processing
                         _performanceLogger.Write(stopwatch, () => "ProcessingEngine: CommandObeserver.BeforeExecute " + commandObeserver.GetType().FullName);
                     }
 
+                    stopwatch.Restart();
                     var commandResult = commandImplementation.Execute(commandInfo);
-
                     _performanceLogger.Write(stopwatch, () => "ProcessingEngine: Command executed (" + commandInfo.GetType().FullName + ").");
                     _logger.Trace("Execution result message: {0}", commandResult.Message);
 
