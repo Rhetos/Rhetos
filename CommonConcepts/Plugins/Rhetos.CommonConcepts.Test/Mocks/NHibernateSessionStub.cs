@@ -465,5 +465,20 @@ namespace Rhetos.CommonConcepts.Test.Mocks
         public void Dispose()
         {
         }
+
+        public void Save(string entityName, object obj, object id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SaveOrUpdate(string entityName, object obj, object id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Update(string entityName, object obj, object id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -23,7 +23,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
-using Ionic.Zip;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Utilities;
 
@@ -165,43 +164,6 @@ namespace Rhetos.TestCommon
             var result = string.Join(", ", list.Select(element => selector((T)element).ToString()));
             Console.WriteLine("[Dump] " + result);
             return result;
-        }
-
-        public static string TextFromDocx(byte[] file)
-        {
-            using (var reader = new MemoryStream(file))
-                using (ZipFile zip = ZipFile.Read(reader))
-                    return TextFromDocxReadZip(zip);
-        }
-
-        public static string TextFromDocx(string fileName)
-        {
-            using (ZipFile zip = ZipFile.Read(fileName))
-                return TextFromDocxReadZip(zip);
-        }
-
-        private static string TextFromDocxReadZip(ZipFile zip)
-        {
-            MemoryStream stream = new MemoryStream();
-            zip.FlattenFoldersOnExtract = true;
-            const string xmlFile = @"document.xml";
-            if (File.Exists(xmlFile))
-                File.Delete(xmlFile);
-            zip.ExtractSelectedEntries(@"word/document.xml", ExtractExistingFileAction.OverwriteSilently);
-
-            var xml = XElement.Load(xmlFile);
-            XNamespace w = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
-
-            const string embedLineSeparator = "#embedLineSeparator#";
-            foreach (var lineBreakNode in xml.Descendants(w + "br"))
-                lineBreakNode.Value = embedLineSeparator;
-
-            return string.Join("|", xml.Descendants(w + "p")
-                                                        .Select(node => node.Value)
-                                                        .Where(line => !string.IsNullOrWhiteSpace(line))
-                                                        .SelectMany(line => line.Split(new[]{embedLineSeparator}, StringSplitOptions.RemoveEmptyEntries))
-                                                        .Where(line => !string.IsNullOrWhiteSpace(line))
-                                                        .Where(line => !line.Equals(@"Evaluation Warning : The document was created with Spire.Doc for .NET.")));
         }
 
         /// <summary>

@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Ionic.Zip;
 using NuGet;
 using Rhetos.Logging;
 using Rhetos.Utilities;
@@ -27,6 +26,7 @@ using System.IO;
 using System.Linq;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using Ionic.Zip;
 
 namespace Rhetos.Deployment
 {
