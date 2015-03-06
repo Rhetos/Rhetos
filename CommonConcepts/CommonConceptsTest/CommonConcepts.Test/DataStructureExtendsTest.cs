@@ -138,6 +138,22 @@ namespace CommonConcepts.Test
 
                 Assert.AreEqual("b1 b1Cs", TestUtility.DumpSorted(
                     repository.TestExtension.MissingExtensionCs.Query().Select(item => item.Base.Name + " " + item.Name)));
+
+                var b2missing = repository.TestExtension.SimpleBase.Filter(new[] { id2 }).Single();
+                b2missing.Name += "x";
+                repository.TestExtension.SimpleBase.Update(new[] { b2missing });
+
+                Assert.AreEqual("b1 e1 b1Sql, b2missingx <null> <null>", TestUtility.DumpSorted(
+                    repository.TestExtension.SimpleBase.Query().Select(item => new
+                    {
+                        baseName = item.Name,
+                        simpleExt = item.Extension_SimpleExtension.Name,
+                        sqlExt = item.Extension_MissingExtensionSql.Name
+                    }).ToArray(),
+                    data => data.baseName + " " + (data.simpleExt ?? "<null>") + " " + (data.sqlExt ?? "<null>")));
+
+                Assert.AreEqual("b1 b1Cs", TestUtility.DumpSorted(
+                    repository.TestExtension.MissingExtensionCs.Query().Select(item => item.Base.Name + " " + item.Name)));
             }
         }
 

@@ -67,9 +67,7 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 codeBuilder.InsertCode(
                     string.Format(CultureInfo.InvariantCulture,
-@"            foreach(var item in insertedNew)
-                item.{0} = _executionContext.NHibernateSession.Load<{1}>(item.ID);
-            foreach(var item in updatedNew)
+@"            foreach(var item in updatedNew)
                 item.{0} = _executionContext.NHibernateSession.Load<{1}>(item.ID);
             foreach(var item in deletedIds)
                 item.{0} = _executionContext.NHibernateSession.Load<{1}>(item.ID);
