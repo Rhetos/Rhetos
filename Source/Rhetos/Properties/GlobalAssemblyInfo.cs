@@ -26,6 +26,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright("Copyright (C) Omega software 2015")]
 [assembly: AssemblyTrademark("")]
 
-[assembly: AssemblyVersion("0.9.28")]
-[assembly: AssemblyFileVersion("0.9.28")]
-[assembly: AssemblyInformationalVersion("0.9.28-alpha001")]
+[assembly: AssemblyVersion("0.9.29")]
+[assembly: AssemblyFileVersion("0.9.29")]
+[assembly: AssemblyInformationalVersion("0.9.29-alpha001")]
