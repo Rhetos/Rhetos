@@ -1,5 +1,12 @@
 # Rhetos release notes
 
+## 0.9.28 (2015-03-06)
+
+### Breaking changes
+
+* Upgraded from .NET Framework 4.0 to .NET Framework 4.5.1.
+* Upgrading to the latest version of NHibernate, NLog, DotNetZip and Newtonsoft.Json.
+
 ## 0.9.27 (2015-03-05)
 
 ### New features
