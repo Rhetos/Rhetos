@@ -27,22 +27,28 @@ using System.Text;
 using Rhetos.Security;
 using System.Diagnostics;
 using Rhetos.Logging;
+using Rhetos.Extensibility;
+using Rhetos.Dom.DefaultConcepts;
 
 namespace Rhetos.SimpleWindowsAuth
 {
     [Export(typeof(IAuthorizationProvider))]
+    [ExportMetadata(MefProvider.DependsOn, typeof(CommonAuthorizationProvider))] // Overrides CommonAuthorizationProvider.
     public class SimpleWindowsAuthorizationProvider : IAuthorizationProvider
     {
         private readonly Lazy<IPermissionLoader> _permissionLoader;
+        private readonly Lazy<IQueryableRepository<IRole>> _roleRepository;
         private readonly WindowsSecurity _windowsSecurity;
         private readonly ILogger _logger;
 
         public SimpleWindowsAuthorizationProvider(
             Lazy<IPermissionLoader> permissionLoader,
+            Lazy<IQueryableRepository<IRole>> roleRepository,
             WindowsSecurity windowsSecurity,
             ILogProvider logProvider)
         {
             _permissionLoader = permissionLoader;
+            _roleRepository = roleRepository;
             _windowsSecurity = windowsSecurity;
             _logger = logProvider.GetLogger(GetType().Name);
         }
@@ -51,6 +57,9 @@ namespace Rhetos.SimpleWindowsAuth
         {
             if (!(userInfo is IWindowsUserInfo))
                 throw new FrameworkException("Unexpected userInfo type '" + userInfo.GetType().FullName + "'.");
+            if (_roleRepository.Value.Query().Take(1).Select(role => role.ID).ToList().Count > 0)
+                throw new FrameworkException("SimpleWindowsAuth does not support roles. Please delete roles from Common.Role or use a different security package.");
+
             IList<string> userMembership = _windowsSecurity.GetIdentityMembership((IWindowsUserInfo)userInfo);
             IList<IPermissionBrowse> userPermissions = _permissionLoader.Value.LoadPermissions(requiredClaims, userMembership);
 

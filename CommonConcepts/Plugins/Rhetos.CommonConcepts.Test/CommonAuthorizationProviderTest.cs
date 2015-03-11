@@ -26,10 +26,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Rhetos.AspNetFormsAuth.Test
+namespace Rhetos.CommonConcepts.Test
 {
     [TestClass]
-    public class AspNetFormsAuthorizationProviderTest
+    public class CommonAuthorizationProviderTest
     {
         private Lazy<IQueryableRepository<T>> InitRepos<T>(IList<T> items)
         {
@@ -65,13 +65,23 @@ namespace Rhetos.AspNetFormsAuth.Test
             public IRole InheritsFrom { get; set; }
         }
 
-        class MockPermission : IPermission
+        class MockRolePermission : IRolePermission
         {
             public Guid ID { get; set; }
             public IRole Role { get; set; }
             public ICommonClaim Claim { get; set; }
             public bool? IsAuthorized { get; set; }
             public Guid? RoleID { get; set; }
+            public Guid? ClaimID { get; set; }
+        }
+
+        class MockPrincipalPermission : IPrincipalPermission
+        {
+            public Guid ID { get; set; }
+            public IPrincipal Principal { get; set; }
+            public ICommonClaim Claim { get; set; }
+            public bool? IsAuthorized { get; set; }
+            public Guid? PrincipalID { get; set; }
             public Guid? ClaimID { get; set; }
         }
 
@@ -107,28 +117,50 @@ namespace Rhetos.AspNetFormsAuth.Test
             var roleRoles = new IRoleInheritsRole[] {
                 new MockRoleInheritsRole { Derived = roles[0], InheritsFrom = roles[1] } };
 
-            var claims = new Claim[] {
+            var claims = new Claim[]
+            {
                 new Claim("c0", "c0ri"),
                 new Claim("c1", "c1ri"),
-                new Claim("c2", "c2ri") };
+                new Claim("c2", "c2ri"),
+                new Claim("c3", "c3ri"),
+                new Claim("c4", "c4ri"),
+                new Claim("c5", "c5ri"),
+                new Claim("c6", "c6ri"),
+            };
 
-            var commonClaims = claims.Select(c => new MockClaim { ClaimResource = c.Resource, ClaimRight = c.Right }).ToArray<ICommonClaim>();
+            var commonClaims = claims.Select(c => new MockClaim { ClaimResource = c.Resource, ClaimRight = c.Right, Active = true }).ToArray<ICommonClaim>();
+            commonClaims[3].Active = false;
+            commonClaims[4].Active = null;
 
-            var permissions = new IPermission[] {
-                new MockPermission { Role = roles[0], Claim = commonClaims[0], IsAuthorized = true },
-                new MockPermission { Role = roles[1], Claim = commonClaims[1], IsAuthorized = true },
-                new MockPermission { Role = roles[0], Claim = commonClaims[2], IsAuthorized = true },
-                new MockPermission { Role = roles[1], Claim = commonClaims[2], IsAuthorized = false }};
+            var rolePermissions = new IRolePermission[]
+            {
+                new MockRolePermission { Role = roles[0], Claim = commonClaims[0], IsAuthorized = true },
+                new MockRolePermission { Role = roles[1], Claim = commonClaims[1], IsAuthorized = true }, // Also inherited to role0.
+                new MockRolePermission { Role = roles[0], Claim = commonClaims[2], IsAuthorized = true },
+                new MockRolePermission { Role = roles[1], Claim = commonClaims[2], IsAuthorized = false }, // Also denied to role0.
+                new MockRolePermission { Role = roles[0], Claim = commonClaims[3], IsAuthorized = true }, // Inactive claim.
+                new MockRolePermission { Role = roles[0], Claim = commonClaims[4], IsAuthorized = true }, // Inactive claim.
+                new MockRolePermission { Role = roles[1], Claim = commonClaims[6], IsAuthorized = true },
+            };
 
-            var provider = new AspNetFormsAuthorizationProvider(
+            var principalPermissions = new IPrincipalPermission[]
+            {
+                new MockPrincipalPermission { Principal = principals[0], Claim = commonClaims[5], IsAuthorized = true },
+                new MockPrincipalPermission { Principal = principals[0], Claim = commonClaims[6], IsAuthorized = false },
+            };
+
+            var provider = new CommonAuthorizationProvider(
                 InitRepos(principals),
                 InitRepos(principalRoles),
                 InitRepos(roleRoles),
-                InitRepos(permissions),
+                InitRepos(rolePermissions),
+                InitRepos(principalPermissions),
+                InitRepos(roles),
+                InitRepos(commonClaims),
                 new ConsoleLogProvider());
 
-            Assert.AreEqual("True, True, False", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr0"), claims)));
-            Assert.AreEqual("False, True, False", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr1"), claims)));
+            Assert.AreEqual("True, True, False, False, False, True, False", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr0"), claims)));
+            Assert.AreEqual("False, True, False, False, False, False, True", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr1"), claims)));
         }
 
         [TestMethod]
@@ -158,25 +190,30 @@ namespace Rhetos.AspNetFormsAuth.Test
                 new Claim("a4", "b.c"),
                 new Claim("a6", "b"),
                 new Claim("A6", "B"),
-                new Claim("a8", "b"),
-                new Claim("A8", "B")};
+                new Claim("A8", "B"),
+                new Claim("a8", "b") };
 
-            var commonClaims = claims.Select(c => new MockClaim { ClaimResource = c.Resource, ClaimRight = c.Right }).ToArray<ICommonClaim>();
+            var commonClaims = claims.Select(c => new MockClaim { ClaimResource = c.Resource, ClaimRight = c.Right, Active = true }).ToArray<ICommonClaim>();
 
-            var permissions = new IPermission[] {
-                new MockPermission { Role = roles[0], Claim = commonClaims[0], IsAuthorized = true },
-                new MockPermission { Role = roles[1], Claim = commonClaims[1], IsAuthorized = true },
-                new MockPermission { Role = roles[0], Claim = commonClaims[2], IsAuthorized = true },
-                new MockPermission { Role = roles[1], Claim = commonClaims[3], IsAuthorized = false },
-                new MockPermission { Role = roles[0], Claim = commonClaims[4], IsAuthorized = true},
-                new MockPermission { Role = roles[0], Claim = commonClaims[6], IsAuthorized = true },
-                new MockPermission { Role = roles[1], Claim = commonClaims[8], IsAuthorized = true }};
+            var rolePermissions = new IRolePermission[] {
+                new MockRolePermission { Role = roles[0], Claim = commonClaims[0], IsAuthorized = true },
+                new MockRolePermission { Role = roles[1], Claim = commonClaims[1], IsAuthorized = true },
+                new MockRolePermission { Role = roles[0], Claim = commonClaims[2], IsAuthorized = true },
+                new MockRolePermission { Role = roles[1], Claim = commonClaims[3], IsAuthorized = false },
+                new MockRolePermission { Role = roles[0], Claim = commonClaims[4], IsAuthorized = true},
+                new MockRolePermission { Role = roles[0], Claim = commonClaims[6], IsAuthorized = true },
+                new MockRolePermission { Role = roles[1], Claim = commonClaims[8], IsAuthorized = true } };
 
-            var provider = new AspNetFormsAuthorizationProvider(
+            var principalPermissions = new IPrincipalPermission[] { };
+
+            var provider = new CommonAuthorizationProvider(
                 InitRepos(principals),
                 InitRepos(principalRoles),
                 InitRepos(roleRoles),
-                InitRepos(permissions),
+                InitRepos(rolePermissions),
+                InitRepos(principalPermissions),
+                InitRepos(roles),
+                InitRepos(commonClaims),
                 new ConsoleLogProvider());
 
             Assert.AreEqual("True, True, True, False, True, False, True, True, True, True", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr0"), claims)));

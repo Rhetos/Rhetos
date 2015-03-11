@@ -79,7 +79,7 @@ namespace Rhetos.AspNetFormsAuth
                 commonClaim.ClaimRight = securityClaim.Right;
                 repositories.InsertOrReadId(commonClaim, item => new { item.ClaimResource, item.ClaimRight });
 
-                var permission = repositories.CreateInstance<IPermission>();
+                var permission = repositories.CreateInstance<IRolePermission>();
                 permission.RoleID = adminRole.ID;
                 permission.ClaimID = commonClaim.ID;
                 permission.IsAuthorized = true;

@@ -42,7 +42,8 @@ namespace Rhetos.Security
 
         public static int EquivalentHashCode(string resource, string right)
         {
-            return resource.ToLower().GetHashCode() ^ right.ToLower().GetHashCode();
+            return StringComparer.OrdinalIgnoreCase.GetHashCode(resource)
+                ^ StringComparer.OrdinalIgnoreCase.GetHashCode(right);
         }
 
         public Claim(string resource, string right)

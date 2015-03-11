@@ -23,14 +23,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Rhetos.AspNetFormsAuth
+namespace Rhetos.Dom.DefaultConcepts
 {
-    public interface IPermission : IEntity
+    public interface IPrincipal : IEntity
     {
-        IRole Role { get; }
-        ICommonClaim Claim { get; }
-        bool? IsAuthorized { get; set; }
-        Guid? RoleID { get; set; }
-        Guid? ClaimID { get; set; }
+        string Name { get; set; }
     }
 }

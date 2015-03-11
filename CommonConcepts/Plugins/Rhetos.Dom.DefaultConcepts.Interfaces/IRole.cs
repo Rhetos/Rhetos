@@ -17,16 +17,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using Rhetos.Dom.DefaultConcepts;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-namespace Rhetos.AspNetFormsAuth
+namespace Rhetos.Dom.DefaultConcepts
 {
-    public interface IPrincipalHasRole : IEntity
+    public interface IRole : IEntity
     {
-        IPrincipal Principal { get; }
-        IRole Role { get; }
-        Guid? PrincipalID { get; set; }
-        Guid? RoleID { get; set; }
+        string Name { get; set; }
     }
 }

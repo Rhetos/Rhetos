@@ -20,11 +20,13 @@
 using System;
 using Rhetos.Dom.DefaultConcepts;
 
-namespace Rhetos.AspNetFormsAuth
+namespace Rhetos.Dom.DefaultConcepts
 {
-    public interface IRoleInheritsRole : IEntity
+    public interface IPrincipalHasRole : IEntity
     {
-        IRole Derived { get; }
-        IRole InheritsFrom { get; }
+        IPrincipal Principal { get; }
+        IRole Role { get; }
+        Guid? PrincipalID { get; set; }
+        Guid? RoleID { get; set; }
     }
 }

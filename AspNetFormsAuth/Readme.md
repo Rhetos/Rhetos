@@ -44,16 +44,10 @@ to implement its own authentication or security mechanisms.
 * Forms authentication may be utilized for [sharing the authentication](#sharing-the-authentication-across-web-applications)
   across multiple web applications.
 
-### Authorization
-
-* Authorization is implemented internally using claim-based permissions system. 
-  The users' permissions may be configured for each action or data query, using Rhetos entities
-  in `Common` module: `Principal`, `Role`, `Permission`, `Claim`, `PrincipalHasRole` and `RoleInheritsRole`.
-
 ### Common administration activities
 
-* To create a new user, insert the record in the `Principal` entity.
-* To configure the user's permissions, enter the data in `PrincipalHasRole` or `Permission` entities.
+* To create a new user, insert the record in the `Common.Principal` entity.
+* To configure the user's permissions, enter the data in `Common.PrincipalHasRole` or `Common.PrincipalPermission`.
 * To set the user's password, the administrator may use [`SetPassword`](#setpassword)
   or [`GeneratePasswordResetToken`](#generatepasswordresettoken)  web service methods (see below).
   The user will later use [`ResetPassword`](#resetpassword) with the password reset token,
@@ -75,10 +69,7 @@ There are two recommended ways of implementing *forgot password* functionality w
 
 ### Technical notes
 
-* AspNetFormsAuth packages will automatically import all principals and permissions
-  form SimpleWindowsAuth package, if used before.
-  Note that roles cannot be automatically imported because SimpleWindowsAuth depends on Active Directory user groups.
-* The login form and service allow anonymous access (it is a standard forms authentication feature).
+* AspNetFormsAuth packages will automatically import all permissions from SimpleWindowsAuth package, if used before.
 
 ### Simple administration GUI
 
@@ -92,6 +83,7 @@ The JSON service is available at URI `<rhetos server>/Resources/AspNetFormsAuth/
 
 * Interface: `(string UserName, string Password, bool PersistCookie) -> bool`
 * Example of the request data: `{"UserName":"myusername","Password":"mypassword","PersistCookie":false}`.
+* The method does not require user authentication.
 * On successful log in, the server response will contain the standard authentication cookie.
   The client browser will automatically use the cookie for following requests.
 * Response data is boolean *true* if the login is successful,
@@ -151,8 +143,7 @@ Generates a password reset token and sends it to the user.
 * When using this method there is no need to directly call [`GeneratePasswordResetToken`](#generatepasswordresettoken)
   method (see [Forgot password](#forgot-password)).
 * The method does not require user authentication.
-* **NOTE:** *AspNetFormsAuth* package **does not contain** any implementation of sending
-  the token (by SMS or email, e.g.).
+* **NOTE:** *AspNetFormsAuth* package **does not contain** any implementation of sending  the token (by SMS or email, e.g.).
   The implementation must be provided by an additional plugin. For example:
     * Use the [SimpleSPRTEmail](https://github.com/Rhetos/SimpleSPRTEmail) plugin package for sending token by email,
     * or follow [Implementing SendPasswordResetToken](#implementing-sendpasswordresettoken) to implement a different sending method.

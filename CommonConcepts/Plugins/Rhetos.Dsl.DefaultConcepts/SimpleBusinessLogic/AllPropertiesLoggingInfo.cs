@@ -36,8 +36,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public IEnumerable<IConceptInfo> CreateNewConcepts(AllPropertiesLoggingInfo conceptInfo, IDslModel existingConcepts)
         {
-            return existingConcepts.FindByType<PropertyInfo>()
-                .Where(prop => prop.DataStructure == conceptInfo.EntityLogging.Entity)
+            return existingConcepts.FindByReference<PropertyInfo>(prop => prop.DataStructure, conceptInfo.EntityLogging.Entity)
                 .Select(prop => new PropertyLoggingInfo
                                     {
                                         EntityLogging = conceptInfo.EntityLogging,

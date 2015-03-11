@@ -1,66 +1,30 @@
 ﻿Module Common
 {
-    // Principal is a user, a client application or any other actor that can be authenticated.
+	// Obsolete. Will be removed in a future release.
+	LegacyEntity Permission 'Common.RolePermission'
+	{
+		Reference Role Common.Role { Required; LegacyProperty 'RoleID' 'Common.Role' 'ID'; }
+		Reference Claim Common.Claim { Required; LegacyProperty 'ClaimID' 'Common.Claim' 'ID'; }
+		Bool IsAuthorized { Required; }
+		
+		SqlDependsOn Common.RolePermission;
+	}
+	
+	// Adding ASP.NET user ID to the existing Common.Principal from CommonConcepts package.
     Entity Principal
     {
-        ShortString Name { Required; Unique; }
         Integer AspNetUserId { SystemRequired; Unique; } // Automatically generated, see SqlTrigger GenerateAspNetUserId.
-        
-        Implements 'Rhetos.AspNetFormsAuth.IPrincipal, Rhetos.AspNetFormsAuth' { RegisteredImplementation; }
-        Logging { AllProperties; }
     }
     
-    Entity PrincipalHasRole
-    {
-        Reference Principal { Required; Detail; }
-        Reference Role { Required; }
-        
-        Implements 'Rhetos.AspNetFormsAuth.IPrincipalHasRole, Rhetos.AspNetFormsAuth' { RegisteredImplementation; }
-        UniqueMultiple 'Principal Role';
-        Logging { AllProperties; }
-    }
-    
-    // Role is a set of permissions.
-    Entity Role
-    {
-        ShortString Name { Required; Unique; }
-        
-        Implements 'Rhetos.AspNetFormsAuth.IRole, Rhetos.AspNetFormsAuth' { RegisteredImplementation; }
-        Logging { AllProperties; }
-    }
-    
-    // "Derived" role inherits all permissions from the "InheritsFrom" role.
-    Entity RoleInheritsRole
-    {
-        Reference Derived Common.Role { Required; Detail; }
-        Reference InheritsFrom Common.Role { Required; }
-        
-        Implements 'Rhetos.AspNetFormsAuth.IRoleInheritsRole, Rhetos.AspNetFormsAuth' { RegisteredImplementation; }
-        UniqueMultiple 'Derived InheritsFrom';
-        Logging { AllProperties; }
-    }
-
-    Entity Permission
-    {
-        Reference Role { Required; Detail; }
-        Reference Claim { Required; Detail; }
-        Bool IsAuthorized { Required; } // If IsAuthorized is false then autorization is explicitly denied.
-        
-        Implements 'Rhetos.AspNetFormsAuth.IPermission, Rhetos.AspNetFormsAuth' { RegisteredImplementation; }
-        UniqueMultiple 'Role Claim';
-        Logging { AllProperties; }
-    }
-    
-    //===================================================
-    // SQL objects for ASP.NET SimpleMembershipProvider:
-    
-    SqlObject aspnet_Principal // SimpleMembershipProvider requires the user table to be in the default schema
+	// ASP.NET SimpleMembershipProvider requires the user table (view) to be in the dbo schema.
+    SqlObject aspnet_Principal 
         'CREATE VIEW dbo.aspnet_Principal AS SELECT * FROM Common.Principal'
         'DROP VIEW dbo.aspnet_Principal'
     {
         SqlDependsOn Common.Principal;
     }
     
+	// The trigger generates unique AspNetUserId that does not exist in webpages_Membership nor Principal.
     SqlTrigger Principal.'GenerateAspNetUserId' 'INSTEAD OF INSERT'
         "DECLARE @Error INT;
         

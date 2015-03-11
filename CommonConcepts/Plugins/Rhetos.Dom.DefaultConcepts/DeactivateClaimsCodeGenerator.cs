@@ -27,7 +27,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 
-namespace Rhetos.SimpleWindowsAuth
+namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
     [ExportMetadata(MefProvider.Implements, typeof(DataStructureInfo))]
@@ -38,16 +38,28 @@ namespace Rhetos.SimpleWindowsAuth
             @"{
                 // 'Used' claims are claims with permissions:
 
-                var permissionsQuery = _domRepository.Common.Permission.Query();
+                var permissionsQuery = _domRepository.Common.RolePermission.Query();
 
                 List<Guid> deletedIds = deletedClaimsId.Value;
-                if (deletedIds.Count < 1000)
+                if (deletedIds.Count < 1000) // If more than 1000 claims are delete, it could be faster to load all permissions from database. This also avoid NHibernate limit.
                     permissionsQuery = permissionsQuery.Where(p => deletedIds.Contains(p.Claim.ID));
 
                 List<Guid> usedIds = permissionsQuery.Select(p => p.Claim.ID).Distinct().ToList();
                 deactivateClaimsId.AddRange(usedIds);
             }
             
+            {
+                // 'Used' claims are claims with permissions:
+
+                var permissionsQuery = _domRepository.Common.PrincipalPermission.Query();
+
+                List<Guid> deletedIds = deletedClaimsId.Value;
+                if (deletedIds.Count < 1000) // If more than 1000 claims are delete, it could be faster to load all permissions from database. This also avoid NHibernate limit.
+                    permissionsQuery = permissionsQuery.Where(p => deletedIds.Contains(p.Claim.ID));
+
+                List<Guid> usedIds = permissionsQuery.Select(p => p.Claim.ID).Distinct().ToList();
+                deactivateClaimsId.AddRange(usedIds);
+            }
             ";
 
         public void GenerateCode(Dsl.IConceptInfo conceptInfo, ICodeBuilder codeBuilder)

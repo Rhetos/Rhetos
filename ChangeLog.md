@@ -1,5 +1,17 @@
 # Rhetos release notes
 
+## 0.9.29 (TO BE RELEASED)
+
+### New features
+
+* *CommonConcepts* package implements Windows user authorization.
+  *SimpleWindowsAuth* package is now obsolete, except for its GUI.
+* *CommonConcepts* package allows grouping permissions and users into roles.
+  A role can inherit permissions or include users from other roles.
+* New package *ActiveDirectorySync*: automatically maintains relations between principals and roles,
+  based on information from Active Directory.
+  See [ActiveDirectorySync\Readme.md](ActiveDirectorySync\Readme.md) for more info.
+
 ## 0.9.28 (2015-03-06)
 
 ### Breaking changes

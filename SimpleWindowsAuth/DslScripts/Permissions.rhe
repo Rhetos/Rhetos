@@ -1,31 +1,24 @@
 ﻿Module Common
 {
-    // Principal is a user, a client application or any other actor that can be authenticated.
-	Entity Principal
+	LegacyEntity Permission 'Common.PrincipalPermission'
 	{
-		ShortString Name { Required; Unique; }
-		Logging { AllProperties; }
-	}
-
-	Entity Permission
-	{
-		Reference Principal Common.Principal { Required; CascadeDelete; }
-		Reference Claim Common.Claim { Required; CascadeDelete; }
-		Unique Common.Permission.Principal Common.Permission.Claim;
-		Bool IsAuthorized { Required; } // If IsAuthorized equals false then the autorization is explicitly denied.
-		Logging { AllProperties; }
+		Reference Principal Common.Principal { Required; LegacyProperty 'PrincipalID' 'Common.Principal' 'ID'; }
+		Reference Claim Common.Claim { Required; LegacyProperty 'ClaimID' 'Common.Claim' 'ID'; }
+		Bool IsAuthorized { Required; }
+		
+		SqlDependsOn Common.PrincipalPermission;
 	}
 	
 	//=====================================================
 	// FILTERS AND HELPERS:
 	
-	Browse PermissionBrowse Common.Permission	
+	Browse PermissionBrowse Common.PrincipalPermission
 	{
 		Implements 'Rhetos.SimpleWindowsAuth.IPermissionBrowse, Rhetos.SimpleWindowsAuth';
 		
-		ShortString ClaimResource {From 'Claim.ClaimResource';}
-		ShortString ClaimRight {From 'Claim.ClaimRight';}
-		ShortString Principal {From 'Principal.Name';}
-		Bool IsAuthorized {From IsAuthorized;}
+		ShortString ClaimResource { From 'Claim.ClaimResource'; }
+		ShortString ClaimRight { From 'Claim.ClaimRight'; }
+		ShortString Principal { From 'Principal.Name'; }
+		Bool IsAuthorized { From IsAuthorized; }
 	}
 }

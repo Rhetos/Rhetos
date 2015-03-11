@@ -1,5 +1,8 @@
 ﻿Module Common
 {
+	//=====================================================
+	// CLAIMS:
+	
     // List of all available predefined resources and rights in the system.
 	Entity Claim
 	{
@@ -44,6 +47,79 @@
 			UseExecutionContext;
 		}
 	}
+	
+	//=====================================================
+	// PRINCIPALS:
+	
+	// Principal is a user, a client application or any other actor that can be authenticated.
+	Entity Principal
+	{
+		ShortString Name { Required; Unique; }
+		
+		Implements 'Rhetos.Dom.DefaultConcepts.IPrincipal, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
+		Logging { AllProperties; }
+	}
+	
+	//=====================================================
+	// ROLES:
+
+    Entity PrincipalHasRole
+    {
+        Reference Principal { Required; Detail; }
+        Reference Role { Required; }
+        
+        Implements 'Rhetos.Dom.DefaultConcepts.IPrincipalHasRole, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
+        UniqueMultiple 'Principal Role';
+        Logging { AllProperties; }
+    }
+    
+    // Role is a set of permissions.
+    Entity Role
+    {
+        ShortString Name { Required; Unique; }
+        
+        Implements 'Rhetos.Dom.DefaultConcepts.IRole, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
+        Logging { AllProperties; }
+    }
+    
+    // "Derived" role inherits all permissions from the "InheritsFrom" role.
+    Entity RoleInheritsRole
+    {
+        Reference Derived Common.Role { Required; Detail; }
+        Reference InheritsFrom Common.Role { Required; }
+        
+        Implements 'Rhetos.Dom.DefaultConcepts.IRoleInheritsRole, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
+        UniqueMultiple 'Derived InheritsFrom';
+        Logging { AllProperties; }
+    }
+	
+	//=====================================================
+	// PERMISSIONS:
+
+	Entity PrincipalPermission
+	{
+		Reference Principal Common.Principal { Required; Detail; }
+		Reference Claim Common.Claim { Required; Detail; }
+		Bool IsAuthorized { Required; } // If IsAuthorized is false then the autorization is explicitly denied.
+		
+		Implements 'Rhetos.Dom.DefaultConcepts.IPrincipalPermission, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
+		UniqueMultiple 'Principal Claim';
+		Logging { AllProperties; }
+	}
+	
+	Entity RolePermission
+    {
+        Reference Role { Required; Detail; }
+        Reference Claim { Required; Detail; }
+        Bool IsAuthorized { Required; } // If IsAuthorized is false then the autorization is explicitly denied.
+        
+        Implements 'Rhetos.Dom.DefaultConcepts.IRolePermission, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
+        UniqueMultiple 'Role Claim';
+        Logging { AllProperties; }
+    }
+    
+	//=====================================================
+	// ROW PERMISSIONS PARAMETERS:
 	
 	Parameter RowPermissionsReadItems;
 	Parameter RowPermissionsWriteItems;

@@ -69,6 +69,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="CommonAuthorizationProviderTest.cs" />
     <Compile Include="ClaimsTest.cs" />
     <Compile Include="DataStructureUtilityTest.cs" />
     <Compile Include="FilterExpressionTest.cs" />
