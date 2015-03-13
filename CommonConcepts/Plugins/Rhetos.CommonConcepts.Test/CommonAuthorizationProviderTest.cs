@@ -43,6 +43,18 @@ namespace Rhetos.CommonConcepts.Test
             public IQueryable<T> Query() { return _items.AsQueryable(); }
         }
 
+        private Lazy<IRepository> InitPrincipalRoleRepos(IList<IPrincipalHasRole> items)
+        {
+            return new Lazy<IRepository>(() => new MockPrincipalRoleRepos(items));
+        }
+
+        private class MockPrincipalRoleRepos : IQueryableRepository<IPrincipalHasRole, IPrincipal>
+        {
+            IList<IPrincipalHasRole> _items;
+            public MockPrincipalRoleRepos(IList<IPrincipalHasRole> items) { _items = items; }
+            public IQueryable<IPrincipalHasRole> Query(IPrincipal parameter) { return _items.AsQueryable().Where(item => item.Principal.Name == parameter.Name); }
+        }
+
         class MockPrincipal : IPrincipal
         {
             public Guid ID { get; set; }
@@ -61,8 +73,8 @@ namespace Rhetos.CommonConcepts.Test
         class MockRoleInheritsRole : IRoleInheritsRole
         {
             public Guid ID { get; set; }
-            public IRole Derived { get; set; }
-            public IRole InheritsFrom { get; set; }
+            public IRole UsersFrom { get; set; }
+            public IRole PermissionsFrom { get; set; }
         }
 
         class MockRolePermission : IRolePermission
@@ -115,7 +127,7 @@ namespace Rhetos.CommonConcepts.Test
                 new MockPrincipalHasRole { Principal = principals[1], Role = roles[1] } };
 
             var roleRoles = new IRoleInheritsRole[] {
-                new MockRoleInheritsRole { Derived = roles[0], InheritsFrom = roles[1] } };
+                new MockRoleInheritsRole { UsersFrom = roles[0], PermissionsFrom = roles[1] } };
 
             var claims = new Claim[]
             {
@@ -151,7 +163,7 @@ namespace Rhetos.CommonConcepts.Test
 
             var provider = new CommonAuthorizationProvider(
                 InitRepos(principals),
-                InitRepos(principalRoles),
+                InitPrincipalRoleRepos(principalRoles),
                 InitRepos(roleRoles),
                 InitRepos(rolePermissions),
                 InitRepos(principalPermissions),
@@ -179,7 +191,7 @@ namespace Rhetos.CommonConcepts.Test
                 new MockPrincipalHasRole { Principal = principals[1], Role = roles[1] } };
 
             var roleRoles = new IRoleInheritsRole[] {
-                new MockRoleInheritsRole { Derived = roles[0], InheritsFrom = roles[1] } };
+                new MockRoleInheritsRole { UsersFrom = roles[0], PermissionsFrom = roles[1] } };
 
             var claims = new Claim[] {
                 new Claim("a.b", "c"),
@@ -208,7 +220,7 @@ namespace Rhetos.CommonConcepts.Test
 
             var provider = new CommonAuthorizationProvider(
                 InitRepos(principals),
-                InitRepos(principalRoles),
+                InitPrincipalRoleRepos(principalRoles),
                 InitRepos(roleRoles),
                 InitRepos(rolePermissions),
                 InitRepos(principalPermissions),

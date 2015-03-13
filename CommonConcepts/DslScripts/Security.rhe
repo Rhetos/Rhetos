@@ -71,8 +71,12 @@
         Implements 'Rhetos.Dom.DefaultConcepts.IPrincipalHasRole, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
         UniqueMultiple 'Principal Role';
         Logging { AllProperties; }
+		
+		// Reading PrincipalHasRole using this filter allows an extension point for authorization plugins.
+		Query 'Rhetos.Dom.DefaultConcepts.IPrincipal'
+			'parameter => Query().Where(item => item.Principal.Name == parameter.Name)';
     }
-    
+	
     // Role is a set of permissions.
     Entity Role
     {
@@ -82,14 +86,16 @@
         Logging { AllProperties; }
     }
     
-    // "Derived" role inherits all permissions from the "InheritsFrom" role.
+	// The relation can be viewed in two ways:
+    // 1. The "UsersFrom" role inherits all permissions from the "PermissionsFrom" role.
+	// 2. The "PermissionsFrom" role includes all users from the "UsersFrom" role.
     Entity RoleInheritsRole
     {
-        Reference Derived Common.Role { Required; Detail; }
-        Reference InheritsFrom Common.Role { Required; }
+		Reference UsersFrom Common.Role { Required; Detail; }
+        Reference PermissionsFrom Common.Role { Required; }
         
         Implements 'Rhetos.Dom.DefaultConcepts.IRoleInheritsRole, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
-        UniqueMultiple 'Derived InheritsFrom';
+        UniqueMultiple 'UsersFrom PermissionsFrom';
         Logging { AllProperties; }
     }
 	

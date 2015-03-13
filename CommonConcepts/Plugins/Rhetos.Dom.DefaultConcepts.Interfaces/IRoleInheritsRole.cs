@@ -24,7 +24,7 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     public interface IRoleInheritsRole : IEntity
     {
-        IRole Derived { get; }
-        IRole InheritsFrom { get; }
+        IRole UsersFrom { get; }
+        IRole PermissionsFrom { get; }
     }
 }
