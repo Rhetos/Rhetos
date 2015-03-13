@@ -87,7 +87,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return a != null && b != null && a.ToLowerInvariant().Contains(b.ToLowerInvariant());
         }
 
-        public static bool Like(this string text, string pattern)
+        public static bool SqlLike(this string text, string pattern)
         {
             if (text == null || pattern == null)
                 return false;

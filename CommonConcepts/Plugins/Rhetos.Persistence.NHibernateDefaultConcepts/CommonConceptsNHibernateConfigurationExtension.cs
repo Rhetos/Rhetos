@@ -73,7 +73,7 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
                     new Rhetos.Persistence.NHibernateDefaultConcepts.StringIsGreaterThenOrEqualGenerator());
 
                 RegisterGenerator(ReflectionHelper.GetMethodDefinition(
-                    () => Rhetos.Dom.DefaultConcepts.DatabaseExtensionFunctions.Like(null, null)),
+                    () => Rhetos.Dom.DefaultConcepts.DatabaseExtensionFunctions.SqlLike(null, null)),
                     new Rhetos.Persistence.NHibernateDefaultConcepts.StringLikeGenerator());
 
                 int? _nullInt = 0;
@@ -284,13 +284,13 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
     }
 
     /// <summary>
-    /// LING2NH implementation of DatabaseExtensionFunctions.Like().
+    /// LING2NH implementation of DatabaseExtensionFunctions.SqlLike().
     /// </summary>
     public class StringLikeGenerator : BaseHqlGeneratorForMethod
     {
         public StringLikeGenerator()
         {
-            SupportedMethods = new[] { ReflectionHelper.GetMethodDefinition(() => DatabaseExtensionFunctions.Like(null, null)) };
+            SupportedMethods = new[] { ReflectionHelper.GetMethodDefinition(() => DatabaseExtensionFunctions.SqlLike(null, null)) };
         }
 
         public override HqlTreeNode BuildHql(MethodInfo method, Expression targetObject,

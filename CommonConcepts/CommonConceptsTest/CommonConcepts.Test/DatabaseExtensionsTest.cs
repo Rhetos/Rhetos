@@ -26,6 +26,7 @@ using Rhetos.TestCommon;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
+using NHibernate.Linq;
 
 namespace CommonConcepts.Test
 {
@@ -68,6 +69,13 @@ namespace CommonConcepts.Test
 
                 foreach (var test in BasicTests)
                 {
+                    var loaded = repository.TestDatabaseExtensions.Simple.Query().Where(item => item.Name.SqlLike(test[0])).ToList();
+                    Assert.AreEqual(test[1], TestUtility.DumpSorted(loaded, item => item.Name), "Pattern: '" + test[0] + "'");
+                }
+
+                foreach (var test in BasicTests)
+                {
+                    // NHibernate's Like function does not support C# evaluation.
                     var loaded = repository.TestDatabaseExtensions.Simple.Query().Where(item => item.Name.Like(test[0])).ToList();
                     Assert.AreEqual(test[1], TestUtility.DumpSorted(loaded, item => item.Name), "Pattern: '" + test[0] + "'");
                 }
@@ -81,7 +89,7 @@ namespace CommonConcepts.Test
 
             foreach (var test in BasicTests)
             {
-                var loaded = items.Where(item => item.Name.Like(test[0]));
+                var loaded = items.Where(item => item.Name.SqlLike(test[0]));
                 Assert.AreEqual(test[1], TestUtility.DumpSorted(loaded, item => item.Name), "Pattern: '" + test[0] + "'");
             }
         }
