@@ -114,6 +114,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Computations\ApplyFilterOnClientReadInfo.cs" />
+    <Compile Include="Computations\EntityComputedFromDefaultLoadFilterInfo.cs" />
     <Compile Include="Computations\InvalidDataInfo.cs" />
     <Compile Include="Computations\InvalidDataMarkPropertyInfo.cs" />
     <Compile Include="Computations\ItemFilterReferencedInfo.cs" />
@@ -133,10 +134,12 @@
     <Compile Include="Computations\KeyPropertyComputedFromInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndexClusteredInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndexMultipleFollowingPropertyInfo.cs" />
+    <Compile Include="DataStructure\BeforeQueryWithParameterInfo.cs" />
     <Compile Include="DataStructure\SubtypeExtendPolymorphicInfo.cs" />
     <Compile Include="DataStructure\PolymorphicUnionViewInfo.cs" />
     <Compile Include="DataStructure\SpecificSubtypeSqlViewInfo.cs" />
     <Compile Include="DataStructure\ExtensibleSubtypeSqlViewInfo.cs" />
+    <Compile Include="DataStructure\QueryWithParameterInfo.cs" />
     <Compile Include="DataStructure\Writing\OnSaveUpdateInfo.cs" />
     <Compile Include="DataStructure\Writing\SaveMethodInfo.cs" />
     <Compile Include="DataStructure\Writing\LoadOldItemsInfo.cs" />

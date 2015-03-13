@@ -40,34 +40,36 @@ namespace Rhetos.Dom.DefaultConcepts
             string uniqueName = (_uniqueNumber++).ToString();
 
             codeBuilder.InsertCode(
-                FilterOldItemsBeforeSaveSnippet(uniqueName, info.UpdateOnChange.FilterType),
+                FilterOldItemsBeforeSaveSnippet(info.UpdateOnChange.DependsOn, info.UpdateOnChange.FilterType, info.UpdateOnChange.FilterFormula, uniqueName),
                 WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.UpdateOnChange.DependsOn);
 
             codeBuilder.InsertCode(
                 FilterAndRecomputeAfterSave(info, uniqueName),
                 WritableOrmDataStructureCodeGenerator.OnSaveTag1, info.UpdateOnChange.DependsOn);
-
-            codeBuilder.InsertCode(
-                FilterLoadFunction(info.UpdateOnChange.DependsOn, info.UpdateOnChange.FilterType, info.UpdateOnChange.FilterFormula, uniqueName),
-                RepositoryHelper.RepositoryMembers, info.UpdateOnChange.DependsOn);
         }
 
         private static int _uniqueNumber = 1;
 
-        private static string FilterOldItemsBeforeSaveSnippet(string uniqueName, string fliterType)
+        private static string FilterOldItemsBeforeSaveSnippet(DataStructureInfo hookOnSaveEntity, string filterType, string filterFormula, string uniqueName)
         {
             return string.Format(
-@"            {1} filterKeepSynchronizedOnChangedItems{0}Old = _filterLoadKeepSynchronizedOnChangedItems{0}(updated.Concat(deleted).ToArray());
+@"            Func<IEnumerable<{0}.{1}>, {2}> filterLoadKeepSynchronizedOnChangedItems{3} =
+                {4};
+            {2} filterKeepSynchronizedOnChangedItems{3}Old = filterLoadKeepSynchronizedOnChangedItems{3}(updated.Concat(deleted).ToArray());
 
 ",
-                uniqueName, fliterType);
+                hookOnSaveEntity.Module.Name,
+                hookOnSaveEntity.Name,
+                filterType,
+                uniqueName,
+                filterFormula);
         }
 
         private static string FilterAndRecomputeAfterSave(KeepSynchronizedOnChangedItemsInfo info, string uniqueName)
         {
             return string.Format(
 @"            {{
-                var filteredNew = _filterLoadKeepSynchronizedOnChangedItems{0}(inserted.Concat(updated).ToList());
+                var filteredNew = filterLoadKeepSynchronizedOnChangedItems{0}(inserted.Concat(updated).ToList());
                 _domRepository.{1}.{2}.{5}(filterKeepSynchronizedOnChangedItems{0}Old);
                 _domRepository.{1}.{2}.{5}(filteredNew);
                 
@@ -82,20 +84,6 @@ namespace Rhetos.Dom.DefaultConcepts
                 info.UpdateOnChange.DependsOn.Module.Name,
                 info.UpdateOnChange.DependsOn.Name,
                 EntityComputedFromCodeGenerator.RecomputeFunctionName(info.KeepSynchronized.EntityComputedFrom));
-        }
-
-        private static string FilterLoadFunction(DataStructureInfo hookOnSaveEntity, string filterType, string filterFormula, string uniqueName)
-        {
-            return string.Format(
-@"        private static readonly Func<IEnumerable<{0}.{1}>, {2}> _filterLoadKeepSynchronizedOnChangedItems{3} =
-            {4};
-
-",
-                hookOnSaveEntity.Module.Name,
-                hookOnSaveEntity.Name,
-                filterType,
-                uniqueName,
-                filterFormula);
         }
     }
 }

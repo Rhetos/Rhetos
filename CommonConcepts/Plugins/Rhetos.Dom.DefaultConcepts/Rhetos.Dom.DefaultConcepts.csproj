@@ -70,6 +70,7 @@
     <Compile Include="Computations\ComposableFilterUseExecutionContextCodeGenerator.cs" />
     <Compile Include="Computations\ComputeForNewItemsCodeGenerator.cs" />
     <Compile Include="Computations\ApplyFilterOnClientReadCodeGenerator.cs" />
+    <Compile Include="Computations\EntityComputedFromDefaultLoadFilterCodeGenerator.cs" />
     <Compile Include="Computations\KeepSynchronizedCodeGenerator.cs" />
     <Compile Include="Computations\KeepSynchronizedRecomputeOnDeployInfrastructureCodeGenerator.cs" />
     <Compile Include="Computations\KeyPropertyIDComputedFromCodeGenerator.cs" />
@@ -79,7 +80,9 @@
     <Compile Include="DataStructure\FilterIdRepositoryCodeGenerator.cs" />
     <Compile Include="DataStructure\ImplementsInterfacePropertyCodeGenerator.cs" />
     <Compile Include="DataStructure\DomInitializationCodeGenerator.cs" />
+    <Compile Include="DataStructure\BeforeQueryWithParameterCodeGenerator.cs" />
     <Compile Include="DataStructure\RegisteredInterfaceImplementationCodeGenerator.cs" />
+    <Compile Include="DataStructure\QueryWithParameterCodeGenerator.cs" />
     <Compile Include="DataStructure\WriteCodeGenerator.cs" />
     <Compile Include="Advanced\EntityHistoryAllPropertiesCodeGenerator.cs" />
     <Compile Include="Advanced\EntityHistoryPropertyCodeGenerator.cs" />

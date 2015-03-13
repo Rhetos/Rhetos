@@ -65,7 +65,7 @@ namespace Rhetos.Dom.DefaultConcepts
             }}
         }}
 
-        public void {2}(object filterLoad = null, Func<IEnumerable<{0}>, IEnumerable<{0}>> filterSave = null)
+        public IEnumerable<{0}> {2}(object filterLoad = null, Func<IEnumerable<{0}>, IEnumerable<{0}>> filterSave = null)
         {{
             {7}
             filterLoad = filterLoad ?? new FilterAll();
@@ -97,6 +97,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     toUpdate = filterSave(toUpdate);
                     toDelete = filterSave(toDelete);
                 }});
+            return newItems;
         }}
 
 ",

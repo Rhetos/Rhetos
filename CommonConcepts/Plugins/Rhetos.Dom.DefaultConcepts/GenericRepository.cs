@@ -139,7 +139,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             CsUtility.Materialize(ref source);
             var newItems = CreateList(source.Count());
-            foreach (var pair in source.Zip(newItems, (sourceItem, newItem) => new { sourceItem, newItem}))
+            foreach (var pair in source.Zip(newItems, (sourceItem, newItem) => new { sourceItem, newItem }))
                 initializer(pair.sourceItem, pair.newItem);
             return newItems;
         }
@@ -962,7 +962,7 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
-        public void RecomputeFrom(
+        public IEnumerable<TEntityInterface> RecomputeFrom(
             string source,
             object filterLoad = null)
         {
@@ -973,7 +973,8 @@ namespace Rhetos.Dom.DefaultConcepts
                     "{0}'s repository does not implement the method to recompute from {1} ({2}).",
                     EntityName, source, Reflection.RepositoryRecomputeFromMethodName(source)));
 
-            recomputeMethod.InvokeEx(_repository.Value, filterLoad, null);
+            object newItems = recomputeMethod.InvokeEx(_repository.Value, filterLoad, null);
+            return (IEnumerable<TEntityInterface>)newItems;
         }
 
         #endregion

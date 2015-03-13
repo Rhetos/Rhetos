@@ -19,40 +19,27 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
-using Rhetos.Dom.DefaultConcepts;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
-using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl;
 using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(PersistedDataStructureInfo))]
-    public class PersistedDataStructureCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(EntityComputedFromDefaultLoadFilterInfo))]
+    public class EntityComputedFromDefaultLoadFilterCodeGenerator : IConceptCodeGenerator
     {
-        protected static string CodeSnippet(PersistedDataStructureInfo info)
-        {
-            return string.Format(
-@"        public IEnumerable<{0}> Recompute(object filterLoad = null, Func<IEnumerable<{0}>, IEnumerable<{0}>> filterSave = null)
-        {{
-            return {2}(filterLoad, filterSave);
-        }}
-
-",
-            info.GetKeyProperties(),
-            info.Source.GetKeyProperties(),
-            EntityComputedFromCodeGenerator.RecomputeFunctionName(new EntityComputedFromInfo { Source = info.Source, Target = info }));
-        }
-
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (PersistedDataStructureInfo)conceptInfo;
-            codeBuilder.InsertCode(CodeSnippet(info), RepositoryHelper.RepositoryMembers, info);
+            var info = (EntityComputedFromDefaultLoadFilterInfo)conceptInfo;
+            codeBuilder.InsertCode(
+                "filterLoad = filterLoad ?? new " + info.LoadFilter + "();\r\n            ",
+                EntityComputedFromCodeGenerator.OverrideDefaultFiltersTag,
+                info.EntityComputedFrom);
         }
     }
 }
