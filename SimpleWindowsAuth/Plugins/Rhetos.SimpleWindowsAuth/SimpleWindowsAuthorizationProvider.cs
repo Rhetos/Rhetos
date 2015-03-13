@@ -60,7 +60,7 @@ namespace Rhetos.SimpleWindowsAuth
             if (_roleRepository.Value.Query().Take(1).Select(role => role.ID).ToList().Count > 0)
                 throw new FrameworkException("SimpleWindowsAuth does not support roles. Please delete roles from Common.Role or use a different security package.");
 
-            IList<string> userMembership = _windowsSecurity.GetIdentityMembership((IWindowsUserInfo)userInfo);
+            IList<string> userMembership = _windowsSecurity.GetIdentityMembership(userInfo.UserName);
             IList<IPermissionBrowse> userPermissions = _permissionLoader.Value.LoadPermissions(requiredClaims, userMembership);
 
             _logger.Trace(() => "User " + userInfo.UserName + " has roles: " + string.Join(", ", userMembership) + ".");

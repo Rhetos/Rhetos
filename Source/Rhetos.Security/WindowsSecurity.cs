@@ -128,14 +128,11 @@ namespace Rhetos.Security
         /// <summary>
         /// Queries ActiveDirectory server to retrieve the user's Windows domain groups.
         /// </summary>
-        public IList<string> GetIdentityMembership(IWindowsUserInfo userInfo)
+        public IList<string> GetIdentityMembership(string username)
         {
             var stopwatch = Stopwatch.StartNew();
 
-            if (!userInfo.IsUserRecognized)
-                throw new ClientException("User is not authenticated.");
-
-            string accountName = RemoveDomainPrefix(userInfo.UserName);
+            string accountName = RemoveDomainPrefix(username);
 
             // Search user's domain groups:
 
@@ -218,7 +215,7 @@ namespace Rhetos.Security
 
             if (!username.StartsWith(domainPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                const string msg = "Current identity is not authenticated in current domain.";
+                const string msg = "The user is not authenticated in current domain.";
                 _logger.Trace(() => msg + " Identity: '" + username + "', domain: '" + Environment.UserDomainName + "'.");
                 throw new ClientException(msg);
             }
