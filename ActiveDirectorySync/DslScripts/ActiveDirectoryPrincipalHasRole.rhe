@@ -1,0 +1,150 @@
+﻿Module Common
+{
+	Computed ActiveDirectoryPrincipalHasRole 'repository => { throw new Rhetos.ClientException("This data structure cannot be read without a filter parameter."); }'
+	{
+		Reference Principal;
+        Reference Role;
+		
+		FilterBy 'Common.ActiveDirectoryUserParameter[]' '(repository, parameter, context) =>
+			{
+				var windowsSecurity = new Rhetos.Security.WindowsSecurity(context.LogProvider);
+				
+				return parameter.Select(p => p.UserName).SelectMany(username =>
+					{
+						List<string> userGroups = windowsSecurity.GetIdentityMembership(username)
+							.Select(domainGroup => Environment.UserDomainName + @"\" + domainGroup)
+							.ToList();
+
+						Guid principalId = repository.Common.Principal.Query().Where(principal => principal.Name == username).Select(principal => principal.ID).SingleOrDefault();
+						if (principalId == default(Guid))
+							throw new Rhetos.FrameworkException("There is no principal that matches the provided username.");
+							
+						return repository.Common.Role.Query()
+							.Where(role => userGroups.Contains(role.Name))
+							.Select(role => new ActiveDirectoryPrincipalHasRole { PrincipalID = principalId, RoleID = role.ID })
+							.ToArray();
+					}).ToArray();
+			}'
+		{
+			UseExecutionContext;
+		}
+		
+		FilterBy 'Common.ActiveDirectoryAllUsersParameter' '(repository, parameter) =>
+			{
+				string domainPrefix = Environment.UserDomainName + @"\";
+				ActiveDirectoryUserParameter[] domainUsers = repository.Common.Principal.Query()
+					.Where(principal => principal.Name.StartsWith(domainPrefix))
+					.Select(principal => new ActiveDirectoryUserParameter { UserName = principal.Name })
+					.ToArray();
+				return repository.Common.ActiveDirectoryPrincipalHasRole.Filter(domainUsers);
+			}';
+		
+		ChangesOnChangedItems Common.Principal 'Common.ActiveDirectoryUserParameter[]'
+			'changedItems => 
+			{
+				string domainPrefix = Environment.UserDomainName + @"\";
+				var domainUsers = changedItems.Where(principal => principal.Name.StartsWith(domainPrefix)).Select(principal => principal.Name).ToList();
+				return domainUsers.Select(username => new ActiveDirectoryUserParameter { UserName = username }).ToArray();
+			}';
+		
+		ChangesOnChangedItems Common.Role 'Common.ActiveDirectoryUserParameter[]'
+			'changedItems =>
+			{
+				string domainPrefix = Environment.UserDomainName + @"\";
+				var domainRoleIds = changedItems.Where(role => role.Name.StartsWith(domainPrefix)).Select(role => role.ID).ToList();
+				var domainUsers = _domRepository.Common.PrincipalHasRole.Query()
+					.Where(phr => domainRoleIds.Contains(phr.Role.ID) && phr.Principal.Name.StartsWith(domainPrefix))
+					.Select(phr => phr.Principal.Name).Distinct().ToList();
+				return domainUsers.Select(username => new ActiveDirectoryUserParameter { UserName = username }).ToArray();
+			}';
+	}
+	
+	ExternalReference 'Rhetos.Security.WindowsSecurity, Rhetos.Security';
+	
+	Parameter ActiveDirectoryUserParameter { ShortString UserName; }
+	Parameter ActiveDirectoryAllUsersParameter;
+	
+	Entity PrincipalHasRole // Extending the entity from CommonConcepts package.
+	{
+		ComputedFrom Principal Common.ActiveDirectoryPrincipalHasRole.Principal { KeyProperty; }
+		ComputedFrom Role Common.ActiveDirectoryPrincipalHasRole.Role { KeyProperty; }
+		ComputedFrom Common.ActiveDirectoryPrincipalHasRole
+		{
+			KeepSynchronized;
+			DefaultLoadFilter 'Common.ActiveDirectoryAllUsersParameter';
+		}
+		
+		BeforeQuery 'Rhetos.Dom.DefaultConcepts.IPrincipal'
+			'{
+				string domainPrefix = Environment.UserDomainName + @"\";
+				if (queryParameter.Name.StartsWith(domainPrefix))
+					return RecomputeFromActiveDirectoryPrincipalHasRole(new[] { new ActiveDirectoryUserParameter { UserName = queryParameter.Name } })
+						.AsQueryable();
+			}';
+		
+		FilterBy 'Common.ActiveDirectoryUserParameter[]' '(repository, parameter) =>
+			{
+				string domainPrefix = Environment.UserDomainName + @"\";
+				var usernames = parameter.Select(p => p.UserName).ToList();
+				return repository.Common.PrincipalHasRole.Query()
+					.Where(item => usernames.Contains(item.Principal.Name) && item.Role.Name.StartsWith(domainPrefix))
+					.ToArray();
+			}';
+		
+		FilterBy 'Common.ActiveDirectoryAllUsersParameter' '(repository, parameter) =>
+			{
+				string domainPrefix = Environment.UserDomainName + @"\";
+				return repository.Common.PrincipalHasRole.Query()
+					.Where(item => item.Principal.Name.StartsWith(domainPrefix) && item.Role.Name.StartsWith(domainPrefix))
+					.ToArray();
+			}';
+		
+		SaveMethod
+		{
+			LoadOldItems { Take 'Role.Name'; }
+
+			OnSaveValidate 'UserChangingActiveDirectoryRelations'
+				'if (checkUserPermissions)
+				{
+					string domainPrefix = Environment.UserDomainName + @"\";
+					string errorMessage = "It is not allowed to {0} the user membership here, because role {1} is synchronized with an Active Directory group. Please change the user membership on Active Directory instead.";
+					var invalidDeleted = deletedOld.Select(item => item.RoleName).Where(name => name.StartsWith(domainPrefix)).FirstOrDefault();
+					var invalidInserted = inserted.Select(item => item.Role.Name).Where(name => name.StartsWith(domainPrefix)).FirstOrDefault();
+					var invalidUpdatedOld = updatedOld.Select(item => item.RoleName).Where(name => name.StartsWith(domainPrefix)).FirstOrDefault();
+					var invalidUpdatedNew = updated.Select(item => item.Role.Name).Where(name => name.StartsWith(domainPrefix)).FirstOrDefault();
+					
+					if (invalidDeleted != null) throw new Rhetos.UserException(string.Format(errorMessage, "remove", invalidDeleted));
+					if (invalidInserted != null) throw new Rhetos.UserException(string.Format(errorMessage, "create", invalidInserted));
+					if (invalidUpdatedOld != null) throw new Rhetos.UserException(string.Format(errorMessage, "update", invalidUpdatedOld));
+					if (invalidUpdatedNew != null) throw new Rhetos.UserException(string.Format(errorMessage, "update", invalidUpdatedNew));
+				};';
+		}
+	}
+	
+	Entity RoleInheritsRole // Extending the entity from CommonConcepts package.
+	{
+		ComposableFilterBy 'Common.InvalidActiveDirectoryRelations' '(items, repository, parameter) =>
+			{
+				return items.Where(rir => rir.PermissionsFrom.Name.SqlLike(@"%_\_%"));
+			}';
+		
+		InvalidData 'Common.InvalidActiveDirectoryRelations'
+			"It is not allowed to add users or user groups here, because this role is synchronized with an Active Directory group. Please change the user membership on Active Directory instead.";
+	}
+	
+	Parameter InvalidActiveDirectoryRelations;
+	
+	Entity Role // Extending the entity from CommonConcepts package.
+	{
+		ComposableFilterBy 'Common.InvalidActiveDirectoryRelations' '(items, repository, parameter) =>
+			{
+				var domainRoles = items.Where(role => role.Name.SqlLike(@"%_\_%")).Select(role => role.Name).ToList();
+				return repository.Common.RoleInheritsRole.Query()
+					.Where(rir => domainRoles.Contains(rir.PermissionsFrom.Name))
+					.Select(rir => rir.PermissionsFrom);
+			}';
+		
+		InvalidData 'Common.InvalidActiveDirectoryRelations'
+			"Is is not allowed for this role to include users from other roles, because this role is synchronized with an Active Directory group. Please remove other user-roles from this role (Common.RoleInheritsRole) or remove the domain prefix from the role's name to stop AD synchronization.";
+	}
+}
