@@ -610,10 +610,10 @@ namespace Rhetos.CommonConcepts.Test
 
             TestUtility.AssertContains(repos.RepositoryMock.InsertedGroups.Single().GetType().FullName,
                 "System.Collections.Generic.List`1[[Rhetos.CommonConcepts.Test.GenericRepositoryWriteTest+DeacEntity",
-                "GenericRepository should prepare native type for saving  to the entity's repository.");
+                "GenericRepository should prepare native type for saving to the entity's repository.");
             TestUtility.AssertContains(repos.RepositoryMock.UpdatedGroups.Single().GetType().FullName,
                 "System.Collections.Generic.List`1[[Rhetos.CommonConcepts.Test.GenericRepositoryWriteTest+DeacEntity",
-                "GenericRepository should prepare native type for saving  to the entity's repository.");
+                "GenericRepository should prepare native type for saving to the entity's repository.");
         }
 
         [TestMethod]
@@ -646,10 +646,10 @@ namespace Rhetos.CommonConcepts.Test
 
             TestUtility.AssertContains(repos.RepositoryMock.InsertedGroups.Single().GetType().FullName,
                 "System.Collections.Generic.List`1[[Rhetos.CommonConcepts.Test.GenericRepositoryWriteTest+DeacEntity",
-                "GenericRepository should prepare native type for saving  to the entity's repository.");
+                "GenericRepository should prepare native type for saving to the entity's repository.");
             TestUtility.AssertContains(repos.RepositoryMock.UpdatedGroups.Single().GetType().FullName,
                 "System.Collections.Generic.List`1[[Rhetos.CommonConcepts.Test.GenericRepositoryWriteTest+DeacEntity",
-                "GenericRepository should prepare native type for saving  to the entity's repository.");
+                "GenericRepository should prepare native type for saving to the entity's repository.");
         }
 
         [TestMethod]
@@ -684,13 +684,13 @@ namespace Rhetos.CommonConcepts.Test
 
             TestUtility.AssertContains(repos.RepositoryMock.InsertedGroups.Single().GetType().FullName,
                 "System.Collections.Generic.List`1[[Rhetos.CommonConcepts.Test.GenericRepositoryWriteTest+DeacEntity",
-                "GenericRepository should prepare native type for saving  to the entity's repository.");
+                "GenericRepository should prepare native type for saving to the entity's repository.");
             TestUtility.AssertContains(repos.RepositoryMock.UpdatedGroups.Single().GetType().FullName,
                 "System.Collections.Generic.List`1[[Rhetos.CommonConcepts.Test.GenericRepositoryWriteTest+DeacEntity",
-                "GenericRepository should prepare native type for saving  to the entity's repository.");
+                "GenericRepository should prepare native type for saving to the entity's repository.");
             TestUtility.AssertContains(repos.RepositoryMock.DeletedGroups.Single().GetType().FullName,
                 "System.Collections.Generic.List`1[[Rhetos.CommonConcepts.Test.GenericRepositoryWriteTest+DeacEntity",
-                "GenericRepository should prepare native type for saving  to the entity's repository.");
+                "GenericRepository should prepare native type for saving to the entity's repository.");
         }
     }
 }

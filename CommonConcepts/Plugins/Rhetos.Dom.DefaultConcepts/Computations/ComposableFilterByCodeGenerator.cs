@@ -36,6 +36,7 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         public static readonly CsTag<ComposableFilterByInfo> AdditionalParametersTypeTag = "AdditionalParametersType";
         public static readonly CsTag<ComposableFilterByInfo> AdditionalParametersArgumentTag = "AdditionalParametersArgument";
+        public static readonly CsTag<ComposableFilterByInfo> BeforeFilterTag = "BeforeFilter";
 
         private static string FilterExpressionPropertyName(ComposableFilterByInfo info)
         {
@@ -50,6 +51,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public IQueryable<{0}> Filter(IQueryable<{0}> source, {1} parameter)
         {{
+            {6}
             return {2}(source, _domRepository, parameter{5});
         }}
 
@@ -59,7 +61,8 @@ namespace Rhetos.Dom.DefaultConcepts
             FilterExpressionPropertyName(info),
             info.Expression,
             AdditionalParametersTypeTag.Evaluate(info),
-            AdditionalParametersArgumentTag.Evaluate(info));
+            AdditionalParametersArgumentTag.Evaluate(info),
+            BeforeFilterTag.Evaluate(info));
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)

@@ -405,3 +405,17 @@ Module TestDataStructure
 		}
 	}
 }
+
+Module TestQueryable
+{
+	Parameter StartsWith
+	{
+		ShortString Prefix;
+	}
+	
+	Entity Simple
+	{
+		ShortString Name;
+		Query 'TestQueryable.StartsWith' 'parameter => Query().Where(item => item.Name.StartsWith(parameter.Prefix))';
+	}
+}

@@ -21,16 +21,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.ComponentModel.Composition;
+using Rhetos.Utilities;
+using Rhetos.Compiler;
+using System.Globalization;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Dsl.DefaultConcepts
 {
-    public interface IQueryableRepository<out TEntityInterface> : IRepository
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("BeforeQuery")]
+    public class BeforeQueryWithParameterInfo : IConceptInfo
     {
-        IQueryable<TEntityInterface> Query();
-    }
+        [ConceptKey]
+        public QueryWithParameterInfo QueryWithParameter { get; set; }
 
-    public interface IQueryableRepository<out TEntityInterface, in TParameter> : IRepository
-    {
-        IQueryable<TEntityInterface> Query(TParameter parameter);
+        public string Snippet { get; set; }
     }
 }

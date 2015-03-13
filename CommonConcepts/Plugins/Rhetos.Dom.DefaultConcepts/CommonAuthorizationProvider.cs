@@ -34,7 +34,7 @@ namespace Rhetos.Dom.DefaultConcepts
     public class CommonAuthorizationProvider : IAuthorizationProvider
     {
         private readonly Lazy<IQueryableRepository<IPrincipal>> _principalRepository;
-        private readonly Lazy<IQueryableRepository<IPrincipalHasRole>> _principalRolesRepository;
+        private readonly Lazy<IQueryableRepository<IPrincipalHasRole, IPrincipal>> _principalRolesRepository;
         private readonly Lazy<IQueryableRepository<IRoleInheritsRole>> _roleRolesRepository;
         private readonly Lazy<IQueryableRepository<IRolePermission>> _rolePermissionRepository;
         private readonly Lazy<IQueryableRepository<IPrincipalPermission>> _principalPermissionRepository;
@@ -44,7 +44,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public CommonAuthorizationProvider(
             Lazy<IQueryableRepository<IPrincipal>> principalRepository,
-            Lazy<IQueryableRepository<IPrincipalHasRole>> principalRolesRepository,
+            Lazy<IRepository> principalRolesRepository,
             Lazy<IQueryableRepository<IRoleInheritsRole>> roleRolesRepository,
             Lazy<IQueryableRepository<IRolePermission>> rolePermissionRepository,
             Lazy<IQueryableRepository<IPrincipalPermission>> principalPermissionRepository,
@@ -53,7 +53,7 @@ namespace Rhetos.Dom.DefaultConcepts
             ILogProvider logProvider)
         {
             _principalRepository = principalRepository;
-            _principalRolesRepository = principalRolesRepository;
+            _principalRolesRepository = new Lazy<IQueryableRepository<IPrincipalHasRole, IPrincipal>>(() => (IQueryableRepository<IPrincipalHasRole, IPrincipal>)principalRolesRepository.Value);
             _roleRolesRepository = roleRolesRepository;
             _rolePermissionRepository = rolePermissionRepository;
             _principalPermissionRepository = principalPermissionRepository;
@@ -82,13 +82,19 @@ namespace Rhetos.Dom.DefaultConcepts
             public Guid? PrincipalID;
         }
 
+        private class PrincipalParameter : IPrincipal
+        {
+            public Guid ID { get; set; }
+            public string Name { get; set; }
+        }
+
         /// <summary>Return direct and indirect user's roles.</summary>
         public IList<Guid> GetUsersRoles(string userName)
         {
-            IList<Guid> userDirectRoles = _principalRolesRepository.Value.Query().Where(pr => pr.Principal.Name == userName).Select(pr => pr.Role.ID).ToList();
+            IList<Guid> userDirectRoles = _principalRolesRepository.Value.Query(new PrincipalParameter { Name = userName }).Select(pr => pr.Role.ID).ToList();
             if (userDirectRoles.Count() == 0)
                 ValidateUser(userName);
-            IList<Tuple<Guid, Guid>> roleInheritsRole = _roleRolesRepository.Value.Query().Select(rr => Tuple.Create(rr.Derived.ID, rr.InheritsFrom.ID)).ToList();
+            IList<Tuple<Guid, Guid>> roleInheritsRole = _roleRolesRepository.Value.Query().Select(rr => Tuple.Create(rr.UsersFrom.ID, rr.PermissionsFrom.ID)).ToList();
             IList<Guid> userAllRoles = Graph.IncludeDependents(userDirectRoles, roleInheritsRole);
             return userAllRoles;
         }

@@ -21,16 +21,30 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.ComponentModel.Composition;
+using Rhetos.Utilities;
+using Rhetos.Compiler;
+using System.Globalization;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Dsl.DefaultConcepts
 {
-    public interface IQueryableRepository<out TEntityInterface> : IRepository
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("Query")]
+    public class QueryWithParameterInfo : IConceptInfo, IValidatedConcept
     {
-        IQueryable<TEntityInterface> Query();
-    }
+        [ConceptKey]
+        public DataStructureInfo DataStructure { get; set; }
 
-    public interface IQueryableRepository<out TEntityInterface, in TParameter> : IRepository
-    {
-        IQueryable<TEntityInterface> Query(TParameter parameter);
+        /// <summary>FullName of the parameter type.</summary>
+        [ConceptKey]
+        public string ParameterType { get; set; }
+
+        public string QueryImplementation { get; set; }
+
+        public void CheckSemantics(IDslModel existingConcepts)
+        {
+            if (!ParameterType.Contains('.'))
+                throw new DslSyntaxException(this, "ParameterType must be full type name, including Module name for a data structure, or C# namespace for other parameter types.");
+        }
     }
 }

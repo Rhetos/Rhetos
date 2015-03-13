@@ -43,7 +43,7 @@
 * New low-level BL object model concepts: **SaveMethod**, **OnSaveUpdateInfo**, **OnSaveInsert**, **LoadOldItems**.
   These are concepts for injecting business logic in the entity's repository.
   They should not be used directly in DSL scripts if the business requirements can be implemented
-  by using higher level concepts such as **Persisted**, **Lock**, **InvalidItems** (DenySave), **DenyUserEdit**, etc.
+  by using higher level concepts such as **Persisted**, **Lock**, **InvalidData** (DenySave), **DenyUserEdit**, etc.
 * `DeployPackages.exe /IgnoreDependencies` switch, allows installing incompatible package versions.
 
 ### Internal improvements

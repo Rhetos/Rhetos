@@ -21,16 +21,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Rhetos.Dsl.DefaultConcepts;
+using System.Globalization;
+using System.ComponentModel.Composition;
+using Rhetos.Compiler;
+using Rhetos.Extensibility;
+using Rhetos.Dsl;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public interface IQueryableRepository<out TEntityInterface> : IRepository
+    [Export(typeof(IConceptCodeGenerator))]
+    [ExportMetadata(MefProvider.Implements, typeof(BeforeQueryWithParameterInfo))]
+    public class BeforeQueryWithParameterCodeGenerator : IConceptCodeGenerator
     {
-        IQueryable<TEntityInterface> Query();
-    }
+        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        {
+            var info = (BeforeQueryWithParameterInfo)conceptInfo;
 
-    public interface IQueryableRepository<out TEntityInterface, in TParameter> : IRepository
-    {
-        IQueryable<TEntityInterface> Query(TParameter parameter);
+            codeBuilder.InsertCode(info.Snippet.Trim() + "\r\n            ", QueryWithParameterCodeGenerator.BeforeQueryTag, info.QueryWithParameter);
+        }
     }
 }
