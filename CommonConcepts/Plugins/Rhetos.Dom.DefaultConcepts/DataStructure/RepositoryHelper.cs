@@ -68,7 +68,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string RegisterRepository(DataStructureInfo info)
         {
             return string.Format(
-            @"builder.RegisterType<{0}._Helper.{1}_Repository>().Keyed<IRepository>(""{0}.{1}"");
+            @"builder.RegisterType<{0}._Helper.{1}_Repository>().Keyed<IRepository>(""{0}.{1}"").InstancePerLifetimeScope();
             ",
                 info.Module.Name,
                 info.Name);

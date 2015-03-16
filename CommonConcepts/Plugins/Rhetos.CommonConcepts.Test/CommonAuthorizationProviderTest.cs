@@ -19,6 +19,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Extensibility;
 using Rhetos.Security;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
@@ -43,9 +44,19 @@ namespace Rhetos.CommonConcepts.Test
             public IQueryable<T> Query() { return _items.AsQueryable(); }
         }
 
-        private Lazy<IRepository> InitPrincipalRoleRepos(IList<IPrincipalHasRole> items)
+        private class MockRepositories : INamedPlugins<IRepository>
         {
-            return new Lazy<IRepository>(() => new MockPrincipalRoleRepos(items));
+            MockPrincipalRoleRepos r1;
+            
+            public MockRepositories (IList<IPrincipalHasRole> items)
+	        {
+                r1 = new MockPrincipalRoleRepos(items);
+	        }
+        
+            public IEnumerable<IRepository> GetPlugins(string name)
+            {
+ 	            return new IRepository[] { r1 };
+            }
         }
 
         private class MockPrincipalRoleRepos : IQueryableRepository<IPrincipalHasRole, IPrincipal>
@@ -162,8 +173,8 @@ namespace Rhetos.CommonConcepts.Test
             };
 
             var provider = new CommonAuthorizationProvider(
+                new MockRepositories(principalRoles),
                 InitRepos(principals),
-                InitPrincipalRoleRepos(principalRoles),
                 InitRepos(roleRoles),
                 InitRepos(rolePermissions),
                 InitRepos(principalPermissions),
@@ -219,8 +230,8 @@ namespace Rhetos.CommonConcepts.Test
             var principalPermissions = new IPrincipalPermission[] { };
 
             var provider = new CommonAuthorizationProvider(
+                new MockRepositories(principalRoles),
                 InitRepos(principals),
-                InitPrincipalRoleRepos(principalRoles),
                 InitRepos(roleRoles),
                 InitRepos(rolePermissions),
                 InitRepos(principalPermissions),

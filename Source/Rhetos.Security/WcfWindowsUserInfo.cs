@@ -56,7 +56,7 @@ namespace Rhetos.Security
         private Lazy<string> _workstation;
         private Lazy<WindowsIdentity> _windowsIdentity;
 
-        public WcfWindowsUserInfo(ILogProvider logProvider, WindowsSecurity windowsSecurity)
+        public WcfWindowsUserInfo(ILogProvider logProvider, IWindowsSecurity windowsSecurity)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _performanceLogger = logProvider.GetLogger("Performance");

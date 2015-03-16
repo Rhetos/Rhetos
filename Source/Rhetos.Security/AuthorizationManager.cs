@@ -35,14 +35,14 @@ namespace Rhetos.Security
         private readonly ILogger _performanceLogger;
         private readonly bool _allowBuiltinAdminOverride;
         private readonly IAuthorizationProvider _authorizationProvider;
-        private readonly WindowsSecurity _windowsSecurity;
+        private readonly IWindowsSecurity _windowsSecurity;
 
         public AuthorizationManager(
             IPluginsContainer<IClaimProvider> claimProviders,
             IUserInfo userInfo,
             ILogProvider logProvider,
             IAuthorizationProvider authorizationProvider,
-            WindowsSecurity windowsSecurity)
+            IWindowsSecurity windowsSecurity)
         {
             _userInfo = userInfo;
             _claimProviders = claimProviders;

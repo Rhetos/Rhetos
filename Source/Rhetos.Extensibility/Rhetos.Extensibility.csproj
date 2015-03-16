@@ -122,6 +122,7 @@
     <Compile Include="InitializationLogging.cs" />
     <Compile Include="PluginInfo.cs" />
     <Compile Include="MefPluginScanner.cs" />
+    <Compile Include="NamedPlugins.cs" />
     <Compile Include="PluginsContainer.cs" />
     <Compile Include="PluginsMetadataCache.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -28,7 +28,7 @@ namespace Rhetos.Configuration.Autofac
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<WindowsSecurity>().InstancePerLifetimeScope();
+            builder.RegisterType<WindowsSecurity>().As<IWindowsSecurity>().SingleInstance();
             builder.RegisterType<AuthorizationManager>().As<IAuthorizationManager>().InstancePerLifetimeScope();
 
             // Default user authentication and authorization components. Custom plugins may override it by registering their own interface implementations.

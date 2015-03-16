@@ -69,7 +69,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string RegisterRepository(QueryWithParameterInfo info)
         {
-            return string.Format(@"builder.RegisterType<{0}._Helper.{1}_Repository>().As<{2}>();
+            return string.Format(@"builder.RegisterType<{0}._Helper.{1}_Repository>().As<{2}>().InstancePerLifetimeScope();
             ", info.DataStructure.Module.Name, info.DataStructure.Name, InterfaceName(info));
         }
 

@@ -43,7 +43,7 @@ namespace Rhetos.AspNetFormsAuth
         private Lazy<string> _userName;
         private Lazy<string> _workstation;
 
-        public AspNetUserInfo(WindowsSecurity windowsSecurity)
+        public AspNetUserInfo(IWindowsSecurity windowsSecurity)
         {
             _isUserRecognized = new Lazy<bool>(() =>
                 HttpContext.Current != null

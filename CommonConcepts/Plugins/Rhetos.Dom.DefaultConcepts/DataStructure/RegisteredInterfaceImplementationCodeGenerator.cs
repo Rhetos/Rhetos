@@ -48,7 +48,7 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string RegisterRepository(RegisteredInterfaceImplementationInfo info)
         {
             return string.Format(
-            @"builder.RegisterType<{0}._Helper.{1}_Repository>().As<IQueryableRepository<{2}>>();
+            @"builder.RegisterType<{0}._Helper.{1}_Repository>().As<IQueryableRepository<{2}>>().InstancePerLifetimeScope();
             ",
                 info.ImplementsInterface.DataStructure.Module.Name,
                 info.ImplementsInterface.DataStructure.Name,

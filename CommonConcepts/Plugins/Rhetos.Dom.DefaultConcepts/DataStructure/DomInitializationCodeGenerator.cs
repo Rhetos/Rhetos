@@ -60,6 +60,7 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.AddReferencesFromDependency(typeof(NHibernate.Cfg.Configuration));
             codeBuilder.AddReferencesFromDependency(typeof(NHibernate.Linq.Functions.DefaultLinqToHqlGeneratorsRegistry));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Logging.ILogProvider));
+            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Security.IWindowsSecurity));
         }
 
         private static string GenerateCommonClassesSnippet()
@@ -138,6 +139,9 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public Rhetos.Logging.ILogProvider LogProvider {{ get; private set; }}
 
+        protected Lazy<Rhetos.Security.IWindowsSecurity> _windowsSecurity;
+        public Rhetos.Security.IWindowsSecurity WindowsSecurity {{ get {{ return _windowsSecurity.Value; }} }}
+
         {4}
 
         // This constructor is used for automatic parameter injection with autofac.
@@ -147,7 +151,8 @@ namespace Rhetos.Dom.DefaultConcepts
             Lazy<Rhetos.Utilities.ISqlExecuter> sqlExecuter,
             Lazy<Rhetos.Security.IAuthorizationManager> authorizationManager,
             Lazy<Rhetos.Dom.DefaultConcepts.GenericRepositories> genericRepositories,
-            Rhetos.Logging.ILogProvider logProvider{5})
+            Rhetos.Logging.ILogProvider logProvider,
+            Lazy<Rhetos.Security.IWindowsSecurity> windowsSecurity{5})
         {{
             _persistenceTransaction = persistenceTransaction;
             _userInfo = userInfo;
@@ -156,6 +161,7 @@ namespace Rhetos.Dom.DefaultConcepts
             _genericRepositories = genericRepositories;
             _repository = new Lazy<Common.DomRepository>(() => new Common.DomRepository(this));
             LogProvider = logProvider;
+            _windowsSecurity = windowsSecurity;
             {6}
         }}
 

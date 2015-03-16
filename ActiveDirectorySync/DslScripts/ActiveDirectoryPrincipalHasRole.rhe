@@ -7,18 +7,16 @@
 		
 		FilterBy 'Common.ActiveDirectoryUserParameter[]' '(repository, parameter, context) =>
 			{
-				var windowsSecurity = new Rhetos.Security.WindowsSecurity(context.LogProvider);
-				
 				return parameter.Select(p => p.UserName).SelectMany(username =>
 					{
-						List<string> userGroups = windowsSecurity.GetIdentityMembership(username)
+						Guid principalId = repository.Common.Principal.Query().Where(principal => principal.Name == username).Select(principal => principal.ID).SingleOrDefault();
+						if (principalId == default(Guid))
+							return new ActiveDirectoryPrincipalHasRole[] { };
+							
+						List<string> userGroups = context.WindowsSecurity.GetIdentityMembership(username)
 							.Select(domainGroup => Environment.UserDomainName + @"\" + domainGroup)
 							.ToList();
 
-						Guid principalId = repository.Common.Principal.Query().Where(principal => principal.Name == username).Select(principal => principal.ID).SingleOrDefault();
-						if (principalId == default(Guid))
-							throw new Rhetos.FrameworkException("There is no principal that matches the provided username.");
-							
 						return repository.Common.Role.Query()
 							.Where(role => userGroups.Contains(role.Name))
 							.Select(role => new ActiveDirectoryPrincipalHasRole { PrincipalID = principalId, RoleID = role.ID })
@@ -33,7 +31,7 @@
 			{
 				string domainPrefix = Environment.UserDomainName + @"\";
 				ActiveDirectoryUserParameter[] domainUsers = repository.Common.Principal.Query()
-					.Where(principal => principal.Name.StartsWith(domainPrefix))
+					.Where(principal => principal.Name.StartsWithCaseInsensitive(domainPrefix))
 					.Select(principal => new ActiveDirectoryUserParameter { UserName = principal.Name })
 					.ToArray();
 				return repository.Common.ActiveDirectoryPrincipalHasRole.Filter(domainUsers);
@@ -43,7 +41,7 @@
 			'changedItems => 
 			{
 				string domainPrefix = Environment.UserDomainName + @"\";
-				var domainUsers = changedItems.Where(principal => principal.Name.StartsWith(domainPrefix)).Select(principal => principal.Name).ToList();
+				var domainUsers = changedItems.Where(principal => principal.Name.StartsWithCaseInsensitive(domainPrefix)).Select(principal => principal.Name).ToList();
 				return domainUsers.Select(username => new ActiveDirectoryUserParameter { UserName = username }).ToArray();
 			}';
 		
@@ -51,15 +49,13 @@
 			'changedItems =>
 			{
 				string domainPrefix = Environment.UserDomainName + @"\";
-				var domainRoleIds = changedItems.Where(role => role.Name.StartsWith(domainPrefix)).Select(role => role.ID).ToList();
+				var domainRoleIds = changedItems.Where(role => role.Name.StartsWithCaseInsensitive(domainPrefix)).Select(role => role.ID).ToList();
 				var domainUsers = _domRepository.Common.PrincipalHasRole.Query()
-					.Where(phr => domainRoleIds.Contains(phr.Role.ID) && phr.Principal.Name.StartsWith(domainPrefix))
+					.Where(phr => domainRoleIds.Contains(phr.Role.ID) && phr.Principal.Name.StartsWithCaseInsensitive(domainPrefix))
 					.Select(phr => phr.Principal.Name).Distinct().ToList();
 				return domainUsers.Select(username => new ActiveDirectoryUserParameter { UserName = username }).ToArray();
 			}';
 	}
-	
-	ExternalReference 'Rhetos.Security.WindowsSecurity, Rhetos.Security';
 	
 	Parameter ActiveDirectoryUserParameter { ShortString UserName; }
 	Parameter ActiveDirectoryAllUsersParameter;
@@ -77,7 +73,7 @@
 		BeforeQuery 'Rhetos.Dom.DefaultConcepts.IPrincipal'
 			'{
 				string domainPrefix = Environment.UserDomainName + @"\";
-				if (queryParameter.Name.StartsWith(domainPrefix))
+				if (queryParameter.Name.StartsWithCaseInsensitive(domainPrefix))
 					return RecomputeFromActiveDirectoryPrincipalHasRole(new[] { new ActiveDirectoryUserParameter { UserName = queryParameter.Name } })
 						.AsQueryable();
 			}';
@@ -87,7 +83,7 @@
 				string domainPrefix = Environment.UserDomainName + @"\";
 				var usernames = parameter.Select(p => p.UserName).ToList();
 				return repository.Common.PrincipalHasRole.Query()
-					.Where(item => usernames.Contains(item.Principal.Name) && item.Role.Name.StartsWith(domainPrefix))
+					.Where(item => usernames.Contains(item.Principal.Name) && item.Role.Name.StartsWithCaseInsensitive(domainPrefix))
 					.ToArray();
 			}';
 		
@@ -95,7 +91,7 @@
 			{
 				string domainPrefix = Environment.UserDomainName + @"\";
 				return repository.Common.PrincipalHasRole.Query()
-					.Where(item => item.Principal.Name.StartsWith(domainPrefix) && item.Role.Name.StartsWith(domainPrefix))
+					.Where(item => item.Principal.Name.StartsWithCaseInsensitive(domainPrefix) && item.Role.Name.StartsWithCaseInsensitive(domainPrefix))
 					.ToArray();
 			}';
 		
@@ -108,10 +104,10 @@
 				{
 					string domainPrefix = Environment.UserDomainName + @"\";
 					string errorMessage = "It is not allowed to {0} the user membership here, because role {1} is synchronized with an Active Directory group. Please change the user membership on Active Directory instead.";
-					var invalidDeleted = deletedOld.Select(item => item.RoleName).Where(name => name.StartsWith(domainPrefix)).FirstOrDefault();
-					var invalidInserted = inserted.Select(item => item.Role.Name).Where(name => name.StartsWith(domainPrefix)).FirstOrDefault();
-					var invalidUpdatedOld = updatedOld.Select(item => item.RoleName).Where(name => name.StartsWith(domainPrefix)).FirstOrDefault();
-					var invalidUpdatedNew = updated.Select(item => item.Role.Name).Where(name => name.StartsWith(domainPrefix)).FirstOrDefault();
+					var invalidDeleted = deletedOld.Select(item => item.RoleName).Where(name => name.StartsWithCaseInsensitive(domainPrefix)).FirstOrDefault();
+					var invalidInserted = inserted.Select(item => item.Role.Name).Where(name => name.StartsWithCaseInsensitive(domainPrefix)).FirstOrDefault();
+					var invalidUpdatedOld = updatedOld.Select(item => item.RoleName).Where(name => name.StartsWithCaseInsensitive(domainPrefix)).FirstOrDefault();
+					var invalidUpdatedNew = updated.Select(item => item.Role.Name).Where(name => name.StartsWithCaseInsensitive(domainPrefix)).FirstOrDefault();
 					
 					if (invalidDeleted != null) throw new Rhetos.UserException(string.Format(errorMessage, "remove", invalidDeleted));
 					if (invalidInserted != null) throw new Rhetos.UserException(string.Format(errorMessage, "create", invalidInserted));
@@ -129,7 +125,7 @@
 			}';
 		
 		InvalidData 'Common.InvalidActiveDirectoryRelations'
-			"It is not allowed to add users or user groups here, because this role is synchronized with an Active Directory group. Please change the user membership on Active Directory instead.";
+			"It is not allowed to add users or user groups here because this role is synchronized with an Active Directory group. Please change the user membership on Active Directory instead.";
 	}
 	
 	Parameter InvalidActiveDirectoryRelations;

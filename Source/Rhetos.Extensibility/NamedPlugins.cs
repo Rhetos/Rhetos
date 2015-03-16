@@ -17,29 +17,34 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac.Features.Indexed;
+using Autofac.Features.Metadata;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
-using Rhetos.Compiler;
-using Rhetos.Dsl;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Extensibility
 {
-    [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(EntityComputedFromDefaultLoadFilterInfo))]
-    public class EntityComputedFromDefaultLoadFilterCodeGenerator : IConceptCodeGenerator
+    /// <summary>
+    /// This is a wrapper around IIndex, allowing plugin projects to compile without referencing Autofac.
+    /// </summary>
+    public class NamedPlugins<TPlugin> : INamedPlugins<TPlugin>
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        IIndex<string, IEnumerable<TPlugin>> _pluginsByName;
+
+        public NamedPlugins(IIndex<string, IEnumerable<TPlugin>> pluginsByName)
         {
-            var info = (EntityComputedFromDefaultLoadFilterInfo)conceptInfo;
-            codeBuilder.InsertCode(
-                "\r\n            filterLoad = filterLoad ?? new " + info.LoadFilter + "();",
-                EntityComputedFromCodeGenerator.OverrideDefaultFiltersTag,
-                info.EntityComputedFrom);
+            _pluginsByName = pluginsByName;
+        }
+
+        public IEnumerable<TPlugin> GetPlugins(string name)
+        {
+            IEnumerable<TPlugin> plugins;
+            if (_pluginsByName.TryGetValue(name, out plugins))
+                return plugins;
+            return Enumerable.Empty<TPlugin>();
         }
     }
 }

@@ -17,24 +17,22 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac;
-using Rhetos.Extensibility;
-using System.Diagnostics.Contracts;
+using System;
+using System.Linq;
+using System.Collections.Generic;
 
-namespace Rhetos.Configuration.Autofac
+namespace Rhetos.Extensibility
 {
-    public class ExtensibilityModuleConfiguration : Module
+    public interface INamedPlugins<TPlugin>
     {
-        protected override void Load(ContainerBuilder builder)
+        IEnumerable<TPlugin> GetPlugins(string name);
+    }
+
+    public static class NamedPluginsExtensions
+    {
+        public static TPlugin GetPlugin<TPlugin>(this INamedPlugins<TPlugin> namedPlugins, string name)
         {
-            Contract.Requires(builder != null);
-
-            builder.RegisterGeneric(typeof(PluginsMetadataCache<>)).SingleInstance();
-            builder.RegisterGeneric(typeof(PluginsContainer<>)).As(typeof(IPluginsContainer<>)).InstancePerLifetimeScope();
-            builder.RegisterGeneric(typeof(NamedPlugins<>)).As(typeof(INamedPlugins<>)).InstancePerLifetimeScope();
-            Plugins.FindAndRegisterModules(builder);
-
-            base.Load(builder);
+            return namedPlugins.GetPlugins(name).Single();
         }
     }
 }

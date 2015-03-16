@@ -17,29 +17,31 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Security;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
-using Rhetos.Compiler;
-using Rhetos.Dsl;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
+using System.Threading.Tasks;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace ActiveDirectorySync.Test.Helpers
 {
-    [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(EntityComputedFromDefaultLoadFilterInfo))]
-    public class EntityComputedFromDefaultLoadFilterCodeGenerator : IConceptCodeGenerator
+    public class MockWindowsSecutiryRhetosContainer : RhetosTestContainer
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        const string RhetosServerFolder = @"..\..\..\..\Source\Rhetos";
+
+        public MockWindowsSecutiryRhetosContainer(string userGroupMembership, bool commitChanges = false)
+            : base(commitChanges, RhetosServerFolder)
         {
-            var info = (EntityComputedFromDefaultLoadFilterInfo)conceptInfo;
-            codeBuilder.InsertCode(
-                "\r\n            filterLoad = filterLoad ?? new " + info.LoadFilter + "();",
-                EntityComputedFromCodeGenerator.OverrideDefaultFiltersTag,
-                info.EntityComputedFrom);
+            _initializeSession += builder =>
+            {
+                builder.RegisterInstance(new MockWindowsSecurity(userGroupMembership)).As<IWindowsSecurity>();
+                // Test the CommonAuthorizationProvider even if another security package was deployed:
+                builder.RegisterType<CommonAuthorizationProvider>();
+            };
         }
     }
 }

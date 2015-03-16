@@ -38,13 +38,13 @@ namespace Rhetos.SimpleWindowsAuth
     {
         private readonly Lazy<IPermissionLoader> _permissionLoader;
         private readonly Lazy<IQueryableRepository<IRole>> _roleRepository;
-        private readonly WindowsSecurity _windowsSecurity;
+        private readonly IWindowsSecurity _windowsSecurity;
         private readonly ILogger _logger;
 
         public SimpleWindowsAuthorizationProvider(
             Lazy<IPermissionLoader> permissionLoader,
             Lazy<IQueryableRepository<IRole>> roleRepository,
-            WindowsSecurity windowsSecurity,
+            IWindowsSecurity windowsSecurity,
             ILogProvider logProvider)
         {
             _permissionLoader = permissionLoader;
@@ -60,8 +60,8 @@ namespace Rhetos.SimpleWindowsAuth
             if (_roleRepository.Value.Query().Take(1).Select(role => role.ID).ToList().Count > 0)
                 throw new FrameworkException("SimpleWindowsAuth does not support roles. Please delete roles from Common.Role or use a different security package.");
 
-            IList<string> userMembership = _windowsSecurity.GetIdentityMembership(userInfo.UserName);
-            IList<IPermissionBrowse> userPermissions = _permissionLoader.Value.LoadPermissions(requiredClaims, userMembership);
+            var userMembership = (IList<string>)_windowsSecurity.GetIdentityMembership(userInfo.UserName);
+            var userPermissions = _permissionLoader.Value.LoadPermissions(requiredClaims, userMembership);
 
             _logger.Trace(() => "User " + userInfo.UserName + " has roles: " + string.Join(", ", userMembership) + ".");
             _logger.Trace(() => ReportPermissions(userInfo, userPermissions, requiredClaims));

@@ -27,6 +27,7 @@ using System.Linq;
 using System.Text;
 using Rhetos.Security;
 using Rhetos.Logging;
+using Rhetos.Extensibility;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -43,8 +44,8 @@ namespace Rhetos.Dom.DefaultConcepts
         private readonly ILogger _logger;
 
         public CommonAuthorizationProvider(
+            INamedPlugins<IRepository> repositories,
             Lazy<IQueryableRepository<IPrincipal>> principalRepository,
-            Lazy<IRepository> principalRolesRepository,
             Lazy<IQueryableRepository<IRoleInheritsRole>> roleRolesRepository,
             Lazy<IQueryableRepository<IRolePermission>> rolePermissionRepository,
             Lazy<IQueryableRepository<IPrincipalPermission>> principalPermissionRepository,
@@ -53,7 +54,7 @@ namespace Rhetos.Dom.DefaultConcepts
             ILogProvider logProvider)
         {
             _principalRepository = principalRepository;
-            _principalRolesRepository = new Lazy<IQueryableRepository<IPrincipalHasRole, IPrincipal>>(() => (IQueryableRepository<IPrincipalHasRole, IPrincipal>)principalRolesRepository.Value);
+            _principalRolesRepository = new Lazy<IQueryableRepository<IPrincipalHasRole, IPrincipal>>(() => (IQueryableRepository<IPrincipalHasRole, IPrincipal>)repositories.GetPlugin("Common.PrincipalHasRole"));
             _roleRolesRepository = roleRolesRepository;
             _rolePermissionRepository = rolePermissionRepository;
             _principalPermissionRepository = principalPermissionRepository;

@@ -17,24 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac;
-using Rhetos.Extensibility;
-using System.Diagnostics.Contracts;
+using System;
+using System.Collections.Generic;
 
-namespace Rhetos.Configuration.Autofac
+namespace Rhetos.Security
 {
-    public class ExtensibilityModuleConfiguration : Module
+    /// <summary>
+    /// A utility class for common WCF and Active directory operations.
+    /// </summary>
+    public interface IWindowsSecurity
     {
-        protected override void Load(ContainerBuilder builder)
-        {
-            Contract.Requires(builder != null);
-
-            builder.RegisterGeneric(typeof(PluginsMetadataCache<>)).SingleInstance();
-            builder.RegisterGeneric(typeof(PluginsContainer<>)).As(typeof(IPluginsContainer<>)).InstancePerLifetimeScope();
-            builder.RegisterGeneric(typeof(NamedPlugins<>)).As(typeof(INamedPlugins<>)).InstancePerLifetimeScope();
-            Plugins.FindAndRegisterModules(builder);
-
-            base.Load(builder);
-        }
+        string GetClientWorkstation();
+        IEnumerable<string> GetIdentityMembership(string username);
+        bool IsBuiltInAdministrator(IWindowsUserInfo userInfo);
     }
 }

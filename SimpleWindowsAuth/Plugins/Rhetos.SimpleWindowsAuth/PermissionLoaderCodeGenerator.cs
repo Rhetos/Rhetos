@@ -49,7 +49,7 @@ namespace Rhetos.SimpleWindowsAuth
 
         protected static string RegisterRepository(DataStructureInfo info)
         {
-            return string.Format(@"builder.RegisterType<{0}._Helper.{1}_Repository>().As<Rhetos.SimpleWindowsAuth.IPermissionLoader>();
+            return string.Format(@"builder.RegisterType<{0}._Helper.{1}_Repository>().As<Rhetos.SimpleWindowsAuth.IPermissionLoader>().InstancePerLifetimeScope();
             ", info.Module.Name, info.Name);
         }
 

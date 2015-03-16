@@ -71,7 +71,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static string RegisterRepository(ReportFileInfo info)
         {
-            return string.Format(@"builder.RegisterType<{0}._Helper.{1}_Repository>().Keyed<IReportRepository>(""{0}.{1}"");
+            return string.Format(@"builder.RegisterType<{0}._Helper.{1}_Repository>().Keyed<IReportRepository>(""{0}.{1}"").InstancePerLifetimeScope();
             ", info.Module.Name, info.Name);
         }
 

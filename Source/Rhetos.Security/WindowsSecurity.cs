@@ -35,7 +35,7 @@ namespace Rhetos.Security
     /// <summary>
     /// A utility class for common WCF and Active directory operations.
     /// </summary>
-    public class WindowsSecurity
+    public class WindowsSecurity : IWindowsSecurity
     {
         private ILogger _logger;
         private ILogger _performanceLogger;
@@ -126,9 +126,11 @@ namespace Rhetos.Security
         }
 
         /// <summary>
-        /// Queries ActiveDirectory server to retrieve the user's Windows domain groups.
+        /// Queries Active Directory server to retrieve the user's Windows domain groups.
+        /// Throws an exception if the username does not have the current domain perfix.
+        /// Returns null if the user is not found on Active Directory (returns empty list is the user exists, but has no membership records).
         /// </summary>
-        public IList<string> GetIdentityMembership(string username)
+        public IEnumerable<string> GetIdentityMembership(string username)
         {
             var stopwatch = Stopwatch.StartNew();
 

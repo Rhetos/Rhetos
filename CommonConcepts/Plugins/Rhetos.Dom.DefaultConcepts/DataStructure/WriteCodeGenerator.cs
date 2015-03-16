@@ -102,7 +102,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         protected static string RegisterRepository(DataStructureInfo info)
         {
-            return string.Format(@"builder.RegisterType<{0}._Helper.{1}_Repository>().Keyed<IWritableRepository>(""{0}.{1}"");
+            return string.Format(@"builder.RegisterType<{0}._Helper.{1}_Repository>().Keyed<IWritableRepository>(""{0}.{1}"").InstancePerLifetimeScope();
             ", info.Module.Name, info.Name);
         }
 
