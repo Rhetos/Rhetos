@@ -30,27 +30,34 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(ReferenceCascadeDeleteInfo))]
     public class ReferenceCascadeDeleteCodeGenerator : IConceptCodeGenerator
     {
-        private static string CodeSnippetDeleteChildren(ReferencePropertyInfo reference)
+        private static string CodeSnippetDeleteChildren(ReferenceCascadeDeleteInfo info)
         {
             return string.Format(
 @"            if (deleted.Count() > 0)
             {{
                 {0}.{1}[] childItems = deleted.SelectMany(parent => _executionContext.NHibernateSession.Query<{0}.{1}>().Where(child => child.{2}.ID == parent.ID).ToArray()).ToArray();
                 if (childItems.Count() > 0)
+                {{
                     _domRepository.{0}.{1}.Delete(childItems);
+                    // Workaround to restore NH proxies after using NHSession.Clear() when deleting the detail entity.
+                    for (int i = 0; i < updated.Length; i++) updated[i] = _executionContext.NHibernateSession.Load<{3}.{4}>(updated[i].ID);
+                    for (int i = 0; i < deleted.Length; i++) deleted[i] = _executionContext.NHibernateSession.Load<{3}.{4}>(deleted[i].ID);
+                }}
             }}
 ",
-            reference.DataStructure.Module.Name,
-            reference.DataStructure.Name,
-            reference.Name);
+            info.Reference.DataStructure.Module.Name,
+            info.Reference.DataStructure.Name,
+            info.Reference.Name,
+            info.Reference.Referenced.Module.Name,
+            info.Reference.Referenced.Name);
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var reference = ((ReferenceCascadeDeleteInfo)conceptInfo).Reference;
+            var info = ((ReferenceCascadeDeleteInfo)conceptInfo);
 
-            if(reference.Referenced is IWritableOrmDataStructure)
-                codeBuilder.InsertCode(CodeSnippetDeleteChildren(reference), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, reference.Referenced);
+            if(info.Reference.Referenced is IWritableOrmDataStructure)
+                codeBuilder.InsertCode(CodeSnippetDeleteChildren(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Reference.Referenced);
         }
     }
 }
