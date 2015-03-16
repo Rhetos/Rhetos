@@ -54,7 +54,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var handle = Guid.NewGuid();
             string sqlInsertIdFormat = ""INSERT INTO Common.FilterId (Handle, Value) SELECT '"" + SqlUtility.GuidToString(handle) + ""', '{0}';"";
 
-            const int chunkSize = 10000; // Keeping a moderate SQL script size.
+            const int chunkSize = 1000; // Keeping a moderate SQL script size.
             for (int start = 0; start < ids.Count(); start += chunkSize)
             {
                 string sqlInsertIds = string.Join(""\r\n"", ids.Skip(start).Take(chunkSize)
