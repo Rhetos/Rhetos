@@ -69,8 +69,8 @@ namespace Rhetos.Dsl.DefaultConcepts
                 .Select(item => new SqlDependsOnSqlFunctionInfo { Dependent = conceptInfo.Dependent, DependsOn = item }));
 
             newConcepts.AddRange(existingConcepts.FindByType<SqlIndexMultipleInfo>()
-                .Where(item => item.Entity.Module == conceptInfo.DependsOn)
-                .Where(item => item != conceptInfo.Dependent && item.Entity != conceptInfo.Dependent)
+                .Where(item => item.DataStructure.Module == conceptInfo.DependsOn)
+                .Where(item => item != conceptInfo.Dependent && item.DataStructure != conceptInfo.Dependent)
                 .Select(item => new SqlDependsOnSqlIndexInfo { Dependent = conceptInfo.Dependent, DependsOn = item }));
 
             newConcepts.AddRange(existingConcepts.FindByType<SqlObjectInfo>()

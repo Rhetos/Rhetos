@@ -44,8 +44,7 @@ namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
 
         public static bool IsSupported(UniqueMultiplePropertiesInfo info)
         {
-            return !UniqueMultiplePropertiesInfo.SqlImplementation(info)
-                && info is IWritableOrmDataStructure;
+            return !info.SqlImplementation() && info.DataStructure is IWritableOrmDataStructure;
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
@@ -63,8 +62,8 @@ namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
         {
             return string.Format(@"            {{
                 const string sql = @""SELECT source.*
-                    FROM {0}.{1} source
-                    INNER JOIN (SELECT {2} FROM {0}.{1} GROUP BY {2} HAVING COUNT(*) > 1) doubles
+                    FROM {6}.{7} source
+                    INNER JOIN (SELECT {2} FROM {6}.{7} GROUP BY {2} HAVING COUNT(*) > 1) doubles
                         ON {3}"";
 
                 var nhSqlQuery = _executionContext.NHibernateSession.CreateSQLQuery(sql).AddEntity(typeof({0}.{1}));
@@ -76,9 +75,9 @@ namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
                 
                 if (invalidItems.Count() > 0)
                 {{
-                    string msg = ""It is not allowed to enter a duplicate record. A record with the same value ("" + {4} + "") already exists in the system: "";
+                    string msg = ""It is not allowed to enter a duplicate record in {0}.{1}. A record with the same value already exists in the system: "";
                     var invalidItem = invalidItems.First();
-                    msg += ""("" + {5} + "")."";
+                    msg += {4} + "" '"" + {5} + ""'."";
                     throw new Rhetos.UserException(msg);
                 }}
             }}
@@ -88,7 +87,9 @@ namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
             ColumnListTag.Evaluate(info),
             ColumnJoinTag.Evaluate(info),
             PropertyListTag.Evaluate(info),
-            PropertyValuesTag.Evaluate(info));
+            PropertyValuesTag.Evaluate(info),
+            ((IWritableOrmDataStructure)info.DataStructure).GetOrmSchema(),
+            ((IWritableOrmDataStructure)info.DataStructure).GetOrmDatabaseObject());
         }
     }
 }

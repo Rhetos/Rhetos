@@ -36,7 +36,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public new void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
             base.CheckSemantics(concepts);
-            DslUtility.CheckIfPropertyBelongsToDataStructure(PreviousIndexProperty.Property, SqlIndex.Entity, this);
+            DslUtility.CheckIfPropertyBelongsToDataStructure(PreviousIndexProperty.Property, SqlIndex.DataStructure, this);
         }
     }
 }

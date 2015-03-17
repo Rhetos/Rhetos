@@ -211,5 +211,33 @@ namespace CommonConcepts.Test
             TestIndexMultipleInsert("a", 1, 2, true);
             TestIndexMultipleInsert("a", 2, 1, true);
         }
+
+        //==========================================================
+
+        [TestMethod]
+        public void UniqueConstraintInApplication()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                // If a writable ORM data structure is not Entity, the constraint check will be done in the application.
+
+                var e = container.Resolve<GenericRepository<TestUnique.E>>();
+                var le = container.Resolve<GenericRepository<TestUnique.LE>>();
+                e.Delete(e.Read());
+                e.Insert(
+                    new TestUnique.E { I = 1, S = "aaa" },
+                    new TestUnique.E { I = 2, S = "aaa" });
+                Assert.AreEqual("1aaa, 2aaa", TestUtility.DumpSorted(le.Read(), item => item.I + item.S), "initial state");
+
+                le.Insert(
+                    new TestUnique.LE { I = 3, S = "bbb" },
+                    new TestUnique.LE { I = 4, S = "ccc" });
+                Assert.AreEqual("1aaa, 2aaa, 3bbb, 4ccc", TestUtility.DumpSorted(le.Read(), item => item.I + item.S), "inserting unique S values");
+
+                TestUtility.ShouldFail(
+                    () => le.Insert(new TestUnique.LE { I = 5, S = "aaa" }),
+                    "duplicate record", "TestUnique.LE", "aaa");
+            }
+        }
     }
 }

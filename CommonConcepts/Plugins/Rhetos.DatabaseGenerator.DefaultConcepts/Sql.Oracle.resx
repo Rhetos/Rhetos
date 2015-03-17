@@ -205,7 +205,7 @@ END;</value>
     <value>IX{0}{1}</value>
   </data>
   <data name="SqlUniqueMultipleDatabaseDefinition_ExtendOption1" xml:space="preserve">
-    <value>UNIQUE</value>
+    <value>UNIQUE </value>
   </data>
   <data name="DataStructureExtendsDatabaseDefinition_ConstraintName" xml:space="preserve">
     <value>FK_{0}_ID</value>

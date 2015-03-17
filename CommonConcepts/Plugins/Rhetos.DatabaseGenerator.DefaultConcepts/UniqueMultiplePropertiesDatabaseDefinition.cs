@@ -32,8 +32,8 @@ using Rhetos.Extensibility;
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
     [Export(typeof(IConceptDatabaseDefinition))]
-    [ExportMetadata(MefProvider.Implements, typeof(SqlUniqueMultipleInfo))]
-    public class SqlUniqueMultipleDatabaseDefinition : IConceptDatabaseDefinitionExtension
+    [ExportMetadata(MefProvider.Implements, typeof(UniqueMultiplePropertiesInfo))]
+    public class UniqueMultiplePropertiesDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
@@ -47,10 +47,11 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
         public void ExtendDatabaseStructure(IConceptInfo conceptInfo, ICodeBuilder codeBuilder, out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
         {
-            var info = (SqlUniqueMultipleInfo)conceptInfo;
+            var info = (UniqueMultiplePropertiesInfo)conceptInfo;
             createdDependencies = null;
 
-            codeBuilder.InsertCode(Sql.Get("SqlUniqueMultipleDatabaseDefinition_ExtendOption1"), SqlIndexMultipleDatabaseDefinition.Options1Tag, info.SqlIndex);
+            if (info.SqlImplementation())
+                codeBuilder.InsertCode(Sql.Get("SqlUniqueMultipleDatabaseDefinition_ExtendOption1"), SqlIndexMultipleDatabaseDefinition.Options1Tag, info);
         }
     }
 }

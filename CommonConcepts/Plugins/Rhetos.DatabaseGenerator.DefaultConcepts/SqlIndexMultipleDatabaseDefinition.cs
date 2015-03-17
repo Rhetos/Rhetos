@@ -54,24 +54,19 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var cleanColumnNames = info.PropertyNames.Split(' ').Select(name => name.Trim()).ToArray();
             var joinedColumnNames = string.Join("_", cleanColumnNames.Select(CsUtility.TextToIdentifier));
-            var basicConstraintName = Sql.Format("SqlIndexMultipleDatabaseDefinition_ConstraintName", info.Entity.Name, joinedColumnNames);
+            var basicConstraintName = Sql.Format("SqlIndexMultipleDatabaseDefinition_ConstraintName", info.DataStructure.Name, joinedColumnNames);
             return SqlUtility.Identifier(basicConstraintName);
-        }
-
-        public static bool IsSupported(SqlIndexMultipleInfo info)
-        {
-            return info.Entity is EntityInfo;
         }
 
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
             var info = (SqlIndexMultipleInfo)conceptInfo;
 
-            if (IsSupported(info))
+            if (info.SqlImplementation())
                 return Sql.Format("SqlIndexMultipleDatabaseDefinition_Create",
                     ConstraintName(info),
-                    SqlUtility.Identifier(info.Entity.Module.Name),
-                    SqlUtility.Identifier(info.Entity.Name),
+                    SqlUtility.Identifier(info.DataStructure.Module.Name),
+                    SqlUtility.Identifier(info.DataStructure.Name),
                     ColumnsTag.Evaluate(info),
                     Options1Tag.Evaluate(info),
                     Options2Tag.Evaluate(info));
@@ -82,10 +77,10 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (SqlIndexMultipleInfo)conceptInfo;
 
-            if (IsSupported(info))
+            if (info.SqlImplementation())
                 return Sql.Format("SqlIndexMultipleDatabaseDefinition_Remove",
-                    SqlUtility.Identifier(info.Entity.Module.Name),
-                    SqlUtility.Identifier(info.Entity.Name),
+                    SqlUtility.Identifier(info.DataStructure.Module.Name),
+                    SqlUtility.Identifier(info.DataStructure.Name),
                     ConstraintName(info));
 
             return null;

@@ -522,7 +522,7 @@ IF (NOT EXISTS(SELECT * FROM inserted)) AND (NOT EXISTS(SELECT * FROM deleted)) 
     <value>trg_{0}_{1}</value>
   </data>
   <data name="SqlUniqueMultipleDatabaseDefinition_ExtendOption1" xml:space="preserve">
-    <value>UNIQUE</value>
+    <value>UNIQUE </value>
   </data>
   <data name="SqlViewDatabaseDefinition_Create" xml:space="preserve">
     <value>CREATE VIEW {0}.{1}

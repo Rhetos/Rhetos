@@ -53,7 +53,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="Template.IISExpress.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>

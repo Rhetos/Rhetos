@@ -30,7 +30,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     public class SqlIndex2Info : IConceptInfo, IValidationConcept, IMacroConcept
     {
         [ConceptKey]
-        public EntityInfo Entity { get; set; } // TODO: Entity to DataStructure.
+        public EntityInfo DataStructure { get; set; }
         [ConceptKey]
         public PropertyInfo Property1 { get; set; }
         [ConceptKey]
@@ -38,28 +38,28 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
-            if (Property1.DataStructure != Entity)
+            if (Property1.DataStructure != DataStructure)
                 throw new Exception(string.Format(
                     "SqlIndex is not well defined because property {0}.{1}.{2} is not in entity {3}.{4}.",
                     Property1.DataStructure.Module.Name,
                     Property1.DataStructure.Name,
                     Property1.Name,
-                    Entity.Module.Name,
-                    Entity.Name));
+                    DataStructure.Module.Name,
+                    DataStructure.Name));
 
-            if (Property2.DataStructure != Entity)
+            if (Property2.DataStructure != DataStructure)
                 throw new Exception(string.Format(
                     "SqlIndex is not well defined because property {0}.{1}.{2} is not in entity {3}.{4}.",
                     Property2.DataStructure.Module.Name,
                     Property2.DataStructure.Name,
                     Property2.Name,
-                    Entity.Module.Name,
-                    Entity.Name));
+                    DataStructure.Module.Name,
+                    DataStructure.Name));
         }
 
         public SqlIndexMultipleInfo GetCreatedIndex()
         {
-            return new SqlIndexMultipleInfo { Entity = Entity, PropertyNames = Property1.Name + " " + Property2.Name };
+            return new SqlIndexMultipleInfo { DataStructure = DataStructure, PropertyNames = Property1.Name + " " + Property2.Name };
         }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)

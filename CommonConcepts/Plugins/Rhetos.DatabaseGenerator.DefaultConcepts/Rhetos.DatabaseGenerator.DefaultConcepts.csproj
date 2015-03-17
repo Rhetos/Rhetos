@@ -144,7 +144,7 @@
     <Compile Include="SqlDependsOnSqlFunctionDatabaseDefinition.cs" />
     <Compile Include="SqlFunctionDatabaseDefinition.cs" />
     <Compile Include="SqlIndexMultiplePropertyDatabaseDefinition.cs" />
-    <Compile Include="SqlUniqueMultipleDatabaseDefinition.cs" />
+    <Compile Include="UniqueMultiplePropertiesDatabaseDefinition.cs" />
     <Compile Include="SqlIndexMultipleDatabaseDefinition.cs" />
     <Compile Include="SqlDependsOnSqlViewDatabaseDefinition.cs" />
     <Compile Include="LegacyPropertyReadOnlyDatabaseDefinition.cs" />

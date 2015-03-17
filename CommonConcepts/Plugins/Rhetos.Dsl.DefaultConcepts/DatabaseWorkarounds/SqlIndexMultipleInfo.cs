@@ -30,7 +30,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     public class SqlIndexMultipleInfo : IValidationConcept, IMacroConcept
     {
         [ConceptKey]
-        public DataStructureInfo Entity { get; set; } // TODO: Rename to DataStructure.
+        public DataStructureInfo DataStructure { get; set; }
         [ConceptKey]
         public string PropertyNames { get; set; }
 
@@ -49,7 +49,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             SqlIndexMultiplePropertyInfo lastIndexProperty = null;
             for (int i = 0; i < names.Count(); i++)
             {
-                var property = new PropertyInfo { DataStructure = Entity, Name = names[i] };
+                var property = new PropertyInfo { DataStructure = DataStructure, Name = names[i] };
                 SqlIndexMultiplePropertyInfo indexProperty;
                 if (i == 0)
                     indexProperty = new SqlIndexMultiplePropertyInfo { SqlIndex = this, Property = property };
@@ -68,14 +68,22 @@ namespace Rhetos.Dsl.DefaultConcepts
             return dataStructure is IWritableOrmDataStructure;
         }
 
+        /// <summary>
+        /// Returns whether the data validation will be implemented in the database (using unique index) or in the application.
+        /// </summary>
+        public bool SqlImplementation()
+        {
+            return DataStructure is EntityInfo;
+        }
+
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
-            if (!IsSupported(Entity))
+            if (!IsSupported(DataStructure))
                 throw new DslSyntaxException(
                     string.Format("{0} must be used inside writable data structure. DateStructure {1} is of type {2}.",
                         this.GetUserDescription(),
-                        Entity,
-                        Entity.GetType().FullName));
+                        DataStructure,
+                        DataStructure.GetType().FullName));
 
             DslUtility.ValidatePropertyListSyntax(PropertyNames, this);
         }

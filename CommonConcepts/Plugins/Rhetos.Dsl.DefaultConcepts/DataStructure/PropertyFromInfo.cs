@@ -52,14 +52,14 @@ namespace Rhetos.Dsl.DefaultConcepts
                 newConcepts.Add(required);
 
             if (SqlIndexMultipleInfo.IsSupported(conceptInfo.Destination))
-                foreach (var sourceIndex in existingConcepts.FindByReference<SqlIndexMultipleInfo>(ci => ci.Entity, conceptInfo.Source.DataStructure))
+                foreach (var sourceIndex in existingConcepts.FindByReference<SqlIndexMultipleInfo>(ci => ci.DataStructure, conceptInfo.Source.DataStructure))
                 {
                     var indexProperties = sourceIndex.PropertyNames.Split(' ');
                     if (property.Name == indexProperties.FirstOrDefault()
                         && indexProperties.Skip(1).All(indexProperty =>
                             DslUtility.FindProperty(existingConcepts, conceptInfo.Destination, indexProperty) != null))
                     {
-                        newConcepts.Add(new SqlIndexMultipleInfo { Entity = conceptInfo.Destination, PropertyNames = sourceIndex.PropertyNames });
+                        newConcepts.Add(new SqlIndexMultipleInfo { DataStructure = conceptInfo.Destination, PropertyNames = sourceIndex.PropertyNames });
                     }
                 }
 

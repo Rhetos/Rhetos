@@ -49,8 +49,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (SqlIndexClusteredInfo)conceptInfo;
 
-            if (SqlIndexMultipleDatabaseDefinition.IsSupported(info.SqlIndex))
-                codeBuilder.InsertCode("CLUSTERED", SqlIndexMultipleDatabaseDefinition.Options1Tag, info.SqlIndex);
+            if (info.SqlIndex.SqlImplementation())
+                codeBuilder.InsertCode("CLUSTERED ", SqlIndexMultipleDatabaseDefinition.Options1Tag, info.SqlIndex);
 
             createdDependencies = null;
         }

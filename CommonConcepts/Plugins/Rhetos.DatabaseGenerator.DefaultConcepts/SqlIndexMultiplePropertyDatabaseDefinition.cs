@@ -50,7 +50,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             var info = (SqlIndexMultiplePropertyInfo)conceptInfo;
             createdDependencies = null;
 
-            if (SqlIndexMultipleDatabaseDefinition.IsSupported(info.SqlIndex))
+            if (info.SqlIndex.SqlImplementation())
             {
                 string nationalProperty = null;
                 if (!string.IsNullOrEmpty(SqlUtility.NationalLanguage))

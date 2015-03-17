@@ -312,6 +312,12 @@ Module TestUnique
 		UniqueMultiple 'S R';
 		UniqueMultiple 'I';
 	}
+	
+	LegacyEntity LE 'TestUnique.E' 'TestUnique.E'
+	{
+		ShortString S { Unique; } // Should be checked in the application, not in database.
+		Integer I;
+	}
 }
 
 Module TestCloning

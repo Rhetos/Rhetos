@@ -27,42 +27,18 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("UniqueMultiple")]
-    public class UniqueMultiplePropertiesInfo : IMacroConcept, IValidationConcept
+    public class UniqueMultiplePropertiesInfo : SqlIndexMultipleInfo, IMacroConcept
     {
-        [ConceptKey]
-        public DataStructureInfo DataStructure { get; set; }
-        [ConceptKey]
-        public string PropertyNames { get; set; }
-
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
-        {
-            DslUtility.ValidatePropertyListSyntax(PropertyNames, this);
-        }
-
-        public static bool SqlImplementation(UniqueMultiplePropertiesInfo info)
-        {
-            return info.DataStructure is EntityInfo;
-        }
-
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public new IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();
 
-            CheckSemantics(existingConcepts);
+            newConcepts.AddRange(base.CreateNewConcepts(existingConcepts));
 
-            var sqlIndex = new SqlIndexMultipleInfo { Entity = DataStructure, PropertyNames = PropertyNames };
-            newConcepts.Add(sqlIndex);
-
-            if (SqlImplementation(this))
-            {
-                var sqlUnique = new SqlUniqueMultipleInfo { SqlIndex = sqlIndex };
-                newConcepts.Add(sqlUnique);
-            }
-
-            var properties = PropertyNames.Split(' ')
+            var uniquePropertis = PropertyNames.Split(' ')
                 .Select(name => new PropertyInfo { DataStructure = DataStructure, Name = name })
                 .Select(property => new UniqueMultiplePropertyInfo { Unique = this, Property = property });
-            newConcepts.AddRange(properties);
+            newConcepts.AddRange(uniquePropertis);
 
             return newConcepts;
         }

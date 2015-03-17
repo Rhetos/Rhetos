@@ -236,7 +236,6 @@
     <Compile Include="DatabaseWorkarounds\SqlFunctionInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndexMultiplePropertyInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndexMultipleInfo.cs" />
-    <Compile Include="DatabaseWorkarounds\SqlUniqueMultipleInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlDependsOnSqlViewInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlDependsOnSqlIndexInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndex3Info.cs" />

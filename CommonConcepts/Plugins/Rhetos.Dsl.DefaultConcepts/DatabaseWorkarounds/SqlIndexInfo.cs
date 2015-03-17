@@ -43,7 +43,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public SqlIndexMultipleInfo GetCreatedIndex()
         {
-            return new SqlIndexMultipleInfo { Entity = Property.DataStructure, PropertyNames = Property.Name };
+            return new SqlIndexMultipleInfo { DataStructure = Property.DataStructure, PropertyNames = Property.Name };
         }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
