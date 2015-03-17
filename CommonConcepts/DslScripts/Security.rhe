@@ -69,7 +69,7 @@
         Reference Role { Required; }
         
         Implements 'Rhetos.Dom.DefaultConcepts.IPrincipalHasRole, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
-        UniqueMultiple 'Principal Role';
+        UniqueMultiple 'Principal Role' { Clustered; }
         Logging { AllProperties; }
 		
 		// Reading PrincipalHasRole using this filter allows an extension point for authorization plugins.
@@ -95,7 +95,7 @@
         Reference PermissionsFrom Common.Role { Required; }
         
         Implements 'Rhetos.Dom.DefaultConcepts.IRoleInheritsRole, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
-        UniqueMultiple 'UsersFrom PermissionsFrom';
+        UniqueMultiple 'UsersFrom PermissionsFrom' { Clustered; }
         Logging { AllProperties; }
     }
 	
@@ -109,7 +109,7 @@
 		Bool IsAuthorized { Required; } // If IsAuthorized is false then the autorization is explicitly denied.
 		
 		Implements 'Rhetos.Dom.DefaultConcepts.IPrincipalPermission, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
-		UniqueMultiple 'Principal Claim';
+		UniqueMultiple 'Principal Claim' { Clustered; }
 		Logging { AllProperties; }
 	}
 	
@@ -120,7 +120,7 @@
         Bool IsAuthorized { Required; } // If IsAuthorized is false then the autorization is explicitly denied.
         
         Implements 'Rhetos.Dom.DefaultConcepts.IRolePermission, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
-        UniqueMultiple 'Role Claim';
+        UniqueMultiple 'Role Claim' { Clustered; }
         Logging { AllProperties; }
     }
     

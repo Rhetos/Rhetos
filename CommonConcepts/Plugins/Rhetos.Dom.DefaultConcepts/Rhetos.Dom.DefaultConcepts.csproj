@@ -64,8 +64,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CommonAuthorizationProvider.cs" />
-    <Compile Include="ClaimGenerator.cs" />
+    <Compile Include="Authorization\CommonAuthorizationProvider.cs" />
+    <Compile Include="Authorization\ClaimGenerator.cs" />
     <Compile Include="AutofacModuleConfiguration.cs" />
     <Compile Include="Computations\ComposableFilterUseExecutionContextCodeGenerator.cs" />
     <Compile Include="Computations\ComputeForNewItemsCodeGenerator.cs" />
@@ -112,7 +112,7 @@
     <Compile Include="DataStructure\Writing\LoadOldItemsCodeGenerator.cs" />
     <Compile Include="DataStructure\Writing\OnSaveUpdateCodeGenerator.cs" />
     <Compile Include="DataStructure\Writing\OnSaveValidateCodeGenerator.cs" />
-    <Compile Include="DeactivateClaimsCodeGenerator.cs" />
+    <Compile Include="Authorization\DeactivateClaimsCodeGenerator.cs" />
     <Compile Include="FilterExpression.cs" />
     <Compile Include="GenericRepository.cs" />
     <Compile Include="GenericRepositories.cs" />
