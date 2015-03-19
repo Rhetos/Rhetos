@@ -32,18 +32,27 @@ namespace Rhetos.Utilities
         /// <param name="dependencies">Dependency: Item2 depends on Item1.</param>
         public static List<T> IncludeDependents<T>(IEnumerable<T> list, IEnumerable<Tuple<T, T>> dependencies)
         {
-            var result = new List<T>(list);
-            var alreadyInserted = new HashSet<T>(list);
-
             var dependents = new MultiDictionary<T, T>();
             foreach (var dependency in dependencies)
                 dependents.Add(dependency.Item1, dependency.Item2);
+
+            return IncludeDependents<T>(list, dependents.Get);
+        }
+
+        /// <summary>
+        /// Return a list that contains all elements from the given list and all elements that depend on them.
+        /// </summary>
+        /// <param name="dependencies">A function that returns direct dependents of the given item.</param>
+        public static List<T> IncludeDependents<T>(IEnumerable<T> list, Func<T, IEnumerable<T>> getDependents)
+        {
+            var result = new List<T>(list);
+            var alreadyInserted = new HashSet<T>(list);
 
             foreach (var element in list)
                 AddDependents(
                     element,
                     result,
-                    dependents,
+                    getDependents,
                     alreadyInserted);
 
             return result;
@@ -52,17 +61,16 @@ namespace Rhetos.Utilities
         private static void AddDependents<T>(
             T element,
             List<T> result,
-            Dictionary<T, List<T>> dependents,
+            Func<T, IEnumerable<T>> getDependents,
             HashSet<T> alreadyInserted)
         {
-            if (dependents.ContainsKey(element))
-                foreach (var dependent in dependents[element])
-                    if (!alreadyInserted.Contains(dependent))
-                    {
-                        result.Add(dependent);
-                        alreadyInserted.Add(dependent);
-                        AddDependents(dependent, result, dependents, alreadyInserted);
-                    }
+            foreach (var dependent in getDependents(element))
+                if (!alreadyInserted.Contains(dependent))
+                {
+                    result.Add(dependent);
+                    alreadyInserted.Add(dependent);
+                    AddDependents(dependent, result, getDependents, alreadyInserted);
+                }
         }
 
         //==============================================================================

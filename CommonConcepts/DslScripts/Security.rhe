@@ -74,7 +74,7 @@
 		
 		// Reading PrincipalHasRole using this filter allows an extension point for authorization plugins.
 		Query 'Rhetos.Dom.DefaultConcepts.IPrincipal'
-			'parameter => Query().Where(item => item.Principal.Name == parameter.Name)';
+			'parameter => Query().Where(item => item.Principal.ID == parameter.ID)';
     }
 	
     // Role is a set of permissions.

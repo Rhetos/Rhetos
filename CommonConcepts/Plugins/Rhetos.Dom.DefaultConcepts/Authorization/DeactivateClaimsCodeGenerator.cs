@@ -27,7 +27,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Dom.DefaultConcepts.Authorization
 {
     [Export(typeof(IConceptCodeGenerator))]
     [ExportMetadata(MefProvider.Implements, typeof(DataStructureInfo))]

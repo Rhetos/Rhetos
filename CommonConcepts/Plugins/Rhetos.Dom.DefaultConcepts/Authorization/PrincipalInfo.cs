@@ -17,31 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac;
-using Rhetos.Configuration.Autofac;
-using Rhetos.Dom.DefaultConcepts.Authorization;
-using Rhetos.Security;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ActiveDirectorySync.Test.Helpers
+namespace Rhetos.Dom.DefaultConcepts.Authorization
 {
-    public class MockWindowsSecutiryRhetosContainer : RhetosTestContainer
+    public class PrincipalInfo : IPrincipal
     {
-        const string RhetosServerFolder = @"..\..\..\..\Source\Rhetos";
-
-        public MockWindowsSecutiryRhetosContainer(string userGroupMembership, bool commitChanges = false)
-            : base(commitChanges, RhetosServerFolder)
-        {
-            _initializeSession += builder =>
-            {
-                builder.RegisterInstance(new MockWindowsSecurity(userGroupMembership)).As<IWindowsSecurity>();
-                // Test the CommonAuthorizationProvider even if another security package was deployed:
-                builder.RegisterType<CommonAuthorizationProvider>();
-            };
-        }
+        public Guid ID { get; set; }
+        public string Name { get; set; }
     }
 }

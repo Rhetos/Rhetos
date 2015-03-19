@@ -17,10 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.ComponentModel.Composition;
-using Rhetos.Dom.DefaultConcepts;
-using Rhetos.Extensibility;
 using Autofac;
+using Rhetos.Security;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -33,6 +32,12 @@ namespace Rhetos.Dom.DefaultConcepts
             builder.RegisterType<GenericRepositories>();
             builder.RegisterGeneric(typeof(GenericRepository<>));
             builder.RegisterType<GenericFilterHelper>();
+
+            // Permission loading is done with repositories that use the user's context (IUserInfo),
+            // but it is expected that the user's context will not affect the loading of permissions.
+            builder.RegisterType<Authorization.AuthorizationDataReader>();
+            builder.RegisterType<Authorization.CommonAuthorizationProvider>().As<IAuthorizationProvider>();
+
             base.Load(builder);
         }
     }

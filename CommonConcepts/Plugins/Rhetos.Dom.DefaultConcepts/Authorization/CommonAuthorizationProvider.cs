@@ -17,218 +17,132 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Dom;
-using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Logging;
+using Rhetos.Security;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
-using System.Text;
-using Rhetos.Security;
-using Rhetos.Logging;
-using Rhetos.Extensibility;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Dom.DefaultConcepts.Authorization
 {
-    [Export(typeof(IAuthorizationProvider))]
     public class CommonAuthorizationProvider : IAuthorizationProvider
     {
-        private readonly Lazy<IQueryableRepository<IPrincipal>> _principalRepository;
-        private readonly Lazy<IQueryableRepository<IPrincipalHasRole, IPrincipal>> _principalRolesRepository;
-        private readonly Lazy<IQueryableRepository<IRoleInheritsRole>> _roleRolesRepository;
-        private readonly Lazy<IQueryableRepository<IRolePermission>> _rolePermissionRepository;
-        private readonly Lazy<IQueryableRepository<IPrincipalPermission>> _principalPermissionRepository;
-        private readonly Lazy<IQueryableRepository<IRole>> _roleRepository;
-        private readonly Lazy<IQueryableRepository<ICommonClaim>> _claimRepository;
         private readonly ILogger _logger;
+        private readonly AuthorizationDataReader _authorizationData;
 
-        public CommonAuthorizationProvider(
-            INamedPlugins<IRepository> repositories,
-            Lazy<IQueryableRepository<IPrincipal>> principalRepository,
-            Lazy<IQueryableRepository<IRoleInheritsRole>> roleRolesRepository,
-            Lazy<IQueryableRepository<IRolePermission>> rolePermissionRepository,
-            Lazy<IQueryableRepository<IPrincipalPermission>> principalPermissionRepository,
-            Lazy<IQueryableRepository<IRole>> roleRepository,
-            Lazy<IQueryableRepository<ICommonClaim>> claimRepository,
-            ILogProvider logProvider)
+        public CommonAuthorizationProvider(ILogProvider logProvider, AuthorizationDataReader authorizationData)
         {
-            _principalRepository = principalRepository;
-            _principalRolesRepository = new Lazy<IQueryableRepository<IPrincipalHasRole, IPrincipal>>(() => (IQueryableRepository<IPrincipalHasRole, IPrincipal>)repositories.GetPlugin("Common.PrincipalHasRole"));
-            _roleRolesRepository = roleRolesRepository;
-            _rolePermissionRepository = rolePermissionRepository;
-            _principalPermissionRepository = principalPermissionRepository;
-            _roleRepository = roleRepository;
-            _claimRepository = claimRepository;
             _logger = logProvider.GetLogger(GetType().Name);
+            _authorizationData = authorizationData;
         }
 
         public IList<bool> GetAuthorizations(IUserInfo userInfo, IList<Claim> requiredClaims)
         {
-            IList<Guid> userAllRoles = GetUsersRoles(userInfo.UserName);
-            IList<PermissionValue> userPermissions = GetUsersPermissions(requiredClaims, userInfo.UserName, userAllRoles);
-            IList<bool> userHasClaims = GetUsersClaims(requiredClaims, userPermissions);
+            PrincipalInfo principal = _authorizationData.GetPrincipal(userInfo.UserName);
+            IList<Guid> userRoles = GetUsersRoles(principal);
 
-            _logger.Trace(() => ReportRoles(userInfo, userAllRoles));
-            _logger.Trace(() => ReportPermissions(userInfo, userPermissions, requiredClaims, userHasClaims));
+            IList<ClaimInfo> claims = _authorizationData.GetClaims(requiredClaims);
+            IList<Permission> userPermissions = GetUsersPermissions(claims, principal, userRoles);
+            IList<bool> userHasClaims = GetUsersClaims(claims, userPermissions);
+
+            var roleNamesIndex = new Lazy<Dictionary<Guid, string>>(() => GetRoleNamesIndex(userRoles));
+            _logger.Trace(() => ReportRoles(userInfo, roleNamesIndex));
+            _logger.Trace(() => ReportPermissions(userInfo, principal, roleNamesIndex, userPermissions, claims, userHasClaims));
 
             return userHasClaims;
         }
 
-        private class PermissionValue
-        {
-            public Claim Claim;
-            public bool IsAuthorized;
-            public Guid? RoleID;
-            public Guid? PrincipalID;
-        }
-
-        private class PrincipalParameter : IPrincipal
-        {
-            public Guid ID { get; set; }
-            public string Name { get; set; }
-        }
-
         /// <summary>Return direct and indirect user's roles.</summary>
-        public IList<Guid> GetUsersRoles(string userName)
+        public IList<Guid> GetUsersRoles(IPrincipal principal)
         {
-            IList<Guid> userDirectRoles = _principalRolesRepository.Value.Query(new PrincipalParameter { Name = userName }).Select(pr => pr.Role.ID).ToList();
-            if (userDirectRoles.Count() == 0)
-                ValidateUser(userName);
-            IList<Tuple<Guid, Guid>> roleInheritsRole = _roleRolesRepository.Value.Query().Select(rr => Tuple.Create(rr.UsersFrom.ID, rr.PermissionsFrom.ID)).ToList();
-            IList<Guid> userAllRoles = Graph.IncludeDependents(userDirectRoles, roleInheritsRole);
-            return userAllRoles;
+            IList<Guid> directUserRoles = _authorizationData.GetPrincipalRoles(principal);
+            IList<Guid> allUserRoles = Graph.IncludeDependents(directUserRoles, _authorizationData.GetRoleRoles);
+            return allUserRoles;
         }
 
-        private void ValidateUser(string userName)
+        private class Permission
         {
-            Guid userId = _principalRepository.Value.Query().Where(p => p.Name == userName).Select(p => p.ID).SingleOrDefault();
-            if (userId == default(Guid))
-            {
-                _logger.Error("There is no principal with the given username '" + userName + "' in Common.Principal.");
-                throw new ClientException("There is no principal with the given username.");
-            }
+            public Guid? PrincipalID { get; set; }
+            public Guid? RoleID { get; set; }
+            public Guid ClaimID { get; set; }
+            public bool IsAuthorized { get; set; }
         }
 
-        private IList<PermissionValue> GetUsersPermissions(IList<Claim> requiredClaims, string principalName, IList<Guid> userAllRoles)
+        private IList<Permission> GetUsersPermissions(IList<ClaimInfo> claims, IPrincipal principal, IList<Guid> userRoles)
         {
-            var claimsResources = requiredClaims.Select(claim => claim.Resource).ToList();
-            var claimsRights = requiredClaims.Select(claim => claim.Right).ToList();
+            var claimIds = claims.Where(claim => claim.ID != null).Select(claim => claim.ID.Value).ToList();
 
-            var principalPermissions = _principalPermissionRepository.Value.Query()
-                .Where(principalPermission =>
-                    principalPermission.Principal.Name == principalName
-                    && claimsResources.Contains(principalPermission.Claim.ClaimResource) // Loading more claims than necessary, but using some of the SQL indexes on Claim table.
-                    && claimsRights.Contains(principalPermission.Claim.ClaimRight)
-                    && principalPermission.Claim.Active == true
-                    && principalPermission.IsAuthorized != null)
-                .Select(principalPermission => new PermissionValue
-                {
-                    Claim = new Claim(principalPermission.Claim.ClaimResource, principalPermission.Claim.ClaimRight),
-                    IsAuthorized = principalPermission.IsAuthorized.Value,
-                    PrincipalID = principalPermission.Principal.ID
-                })
-                .ToList();
-
-            var rolePermissions = _rolePermissionRepository.Value.Query()
-                .Where(rolePermission =>
-                    userAllRoles.Contains(rolePermission.Role.ID)
-                    && claimsResources.Contains(rolePermission.Claim.ClaimResource) // Loading more claims than necessary, but using some of the SQL indexes on Claim table.
-                    && claimsRights.Contains(rolePermission.Claim.ClaimRight)
-                    && rolePermission.Claim.Active == true
-                    && rolePermission.IsAuthorized != null)
-                .Select(rolePermission => new PermissionValue
-                    {
-                        Claim = new Claim(rolePermission.Claim.ClaimResource, rolePermission.Claim.ClaimRight),
-                        IsAuthorized = rolePermission.IsAuthorized.Value,
-                        RoleID = rolePermission.Role.ID
-                    })
-                .ToList();
+            var principalPermissions = _authorizationData.GetPrincipalPermissions(principal, claimIds)
+                .Select(pp => new Permission { PrincipalID = pp.PrincipalID, ClaimID = pp.ClaimID, IsAuthorized = pp.IsAuthorized });
+            var rolePermissions = _authorizationData.GetRolePermissions(userRoles, claimIds)
+                .Select(rp => new Permission { RoleID = rp.RoleID, ClaimID = rp.ClaimID, IsAuthorized = rp.IsAuthorized });
 
             return principalPermissions.Concat(rolePermissions).ToList();
         }
 
-        private static IList<bool> GetUsersClaims(IList<Claim> requiredClaims, IList<PermissionValue> userPermissions)
+        private static IList<bool> GetUsersClaims(IList<ClaimInfo> claims, IList<Permission> userPermissions)
         {
-            var userClaims = new HashSet<Claim>();
+            var userClaims = new HashSet<Guid>();
 
             foreach (var permission in userPermissions)
                 if (permission.IsAuthorized)
-                    userClaims.Add(permission.Claim);
+                    userClaims.Add(permission.ClaimID);
 
             foreach (var permission in userPermissions)
                 if (!permission.IsAuthorized)
-                    userClaims.Remove(permission.Claim);
+                    userClaims.Remove(permission.ClaimID);
 
-            return requiredClaims.Select(requiredClaim => userClaims.Contains(requiredClaim)).ToList();
+            return claims.Select(claim => claim.ID != null && userClaims.Contains(claim.ID.Value)).ToList();
         }
 
-        private string ReportRoles(IUserInfo userInfo, IList<Guid> userAllRoles)
+        /// <summary>
+        /// Reporting is done in a function that returns a string, to avoid any performance impact when the trace log is not enabled.
+        /// </summary>
+        private string ReportRoles(IUserInfo userInfo, Lazy<Dictionary<Guid, string>> roleNamesIndex)
         {
-            // Reporting is done in a function that returns string, to avoid any performance impact when the trace log is not enabled.
-
-            return string.Format("User {0} has {1} roles: {2}.",
-                userInfo.UserName,
-                userAllRoles.Count,
-                string.Join(", ", _roleRepository.Value.Query().Where(role => userAllRoles.Contains(role.ID)).Select(role => role.Name)));
+            var roleNames = roleNamesIndex.Value.Values.ToList();
+            roleNames.Sort();
+            return string.Format("User {0} has {1} roles: {2}.", userInfo.UserName, roleNames.Count(), string.Join(", ", roleNames));
         }
 
-        private string ReportPermissions(IUserInfo userInfo, IList<PermissionValue> userPermissions, IList<Claim> requiredClaims, IList<bool> userHasClaims)
+        /// <summary>
+        /// Reporting is done in a function that returns a string, to avoid any performance impact when the trace log is not enabled.
+        /// </summary>
+        private string ReportPermissions(IUserInfo userInfo, PrincipalInfo principal, Lazy<Dictionary<Guid, string>> roleNamesIndex,
+            IList<Permission> userPermissions, IList<ClaimInfo> claims, IList<bool> userHasClaims)
         {
-            // Reporting is done in a function that returns string, to avoid any performance impact when the trace log is not enabled.
-
             var report = new List<string>();
 
-            var permissionsByClaim = new MultiDictionary<Claim, PermissionValue>();
+            // Create an index of permissions:
+
+            var permissionsByClaim = new MultiDictionary<Guid, Permission>();
             foreach (var permission in userPermissions)
-                permissionsByClaim.Add(permission.Claim, permission);
-
-            // Create an index of role and principal names:
-
-            var roleIds = userPermissions.Where(p => p.RoleID != null).Select(p => p.RoleID.Value).ToList();
-            var roleNames = _roleRepository.Value.Query().Where(role => roleIds.Contains(role.ID))
-                .Select(role => new { role.ID, role.Name }).ToList()
-                .ToDictionary(role => role.ID, role => role.Name);
-            foreach (var roleId in roleIds.Except(roleNames.Keys))
-                roleNames.Add(roleId, roleId.ToString());
-
-            var principalIds = userPermissions.Where(p => p.PrincipalID != null).Select(p => p.PrincipalID.Value).ToList();
-            var principalNames = _principalRepository.Value.Query().Where(principal => principalIds.Contains(principal.ID))
-                .Select(principal => new { principal.ID, principal.Name }).ToList()
-                .ToDictionary(principal => principal.ID, principal => principal.Name);
-            foreach (var principalId in principalIds.Except(principalNames.Keys))
-                principalNames.Add(principalId, principalId.ToString());
-
-            // Create an index of inactive claims:
-
-            var missingClaims = requiredClaims.Except(permissionsByClaim.Keys).ToList();
-            var missingClaimsResources = missingClaims.Select(claim => claim.Resource).ToList();
-            var missingClaimsRights = missingClaims.Select(claim => claim.Right).ToList();
-
-            var inactiveClaims = new HashSet<Claim>(
-                _claimRepository.Value.Query()
-                    .Where(claim =>
-                        missingClaimsResources.Contains(claim.ClaimResource) // Loading more claims than necessary, but using some of the SQL indexes on Claim table.
-                        && missingClaimsRights.Contains(claim.ClaimRight)
-                        && (claim.Active == null || claim.Active == false))
-                    .Select(claim => new Claim(claim.ClaimResource, claim.ClaimRight)));
+                permissionsByClaim.Add(permission.ClaimID, permission);
 
             // Analyze permissions for required claims:
 
-            foreach (var requiredClaim in requiredClaims.Zip(userHasClaims, (Claim, UserHasIt) => new { Claim, UserHasIt }))
+            foreach (var claimResult in claims.Zip(userHasClaims, (Claim, UserHasIt) => new { Claim, UserHasIt }))
             {
-                var claimPermissions = permissionsByClaim.Get(requiredClaim.Claim).Select(permission => new
-                {
-                    permission.IsAuthorized,
-                    PrincipalOrRoleName = permission.PrincipalID != null
-                        ? ("principal " + principalNames[permission.PrincipalID.Value])
-                        : ("role " + roleNames[permission.RoleID.Value])
-                }).ToList();
+                var claimPermissions = claimResult.Claim.ID != null
+                    ? permissionsByClaim.Get(claimResult.Claim.ID.Value)
+                    : new Permission[] { };
 
-                var allowedFor = claimPermissions.Where(p => p.IsAuthorized).Select(p => p.PrincipalOrRoleName).ToList();
-                var deniedFor = claimPermissions.Where(p => !p.IsAuthorized).Select(p => p.PrincipalOrRoleName).ToList();
+                var permissionsDescription = claimPermissions
+                    .Select(permission => new
+                        {
+                            permission.IsAuthorized,
+                            PrincipalOrRoleName = permission.PrincipalID != null
+                                ? ("principal " + (permission.PrincipalID.Value == principal.ID ? principal.Name : permission.PrincipalID.Value.ToString()))
+                                : ("role " + roleNamesIndex.Value[permission.RoleID.Value])
+                        })
+                    .ToList();
 
-                string explanation = "User " + userInfo.UserName + " " + (requiredClaim.UserHasIt ? "has" : "doesn't have") + " claim '" + requiredClaim.Claim.FullName + "'. It is ";
+                var allowedFor = permissionsDescription.Where(p => p.IsAuthorized).Select(p => p.PrincipalOrRoleName).ToList();
+                var deniedFor = permissionsDescription.Where(p => !p.IsAuthorized).Select(p => p.PrincipalOrRoleName).ToList();
+
+                string explanation = "User " + userInfo.UserName + " " + (claimResult.UserHasIt ? "has" : "doesn't have")
+                    + " claim '" + claimResult.Claim.Resource + " " + claimResult.Claim.Right + "'. It is ";
 
                 if (deniedFor.Count != 0)
                     if (allowedFor.Count != 0)
@@ -239,8 +153,8 @@ namespace Rhetos.Dom.DefaultConcepts
                     if (allowedFor.Count != 0)
                         explanation += "allowed for " + string.Join(", ", allowedFor) + ".";
                     else
-                        if (inactiveClaims.Contains(requiredClaim.Claim))
-                            explanation += "denied by default (the claim is no longer active).";
+                        if (claimResult.Claim.ID == null)
+                            explanation += "denied by default (the claim does not exist or is no longer active).";
                         else
                             explanation += "denied by default (no permissions defined).";
 
@@ -248,6 +162,15 @@ namespace Rhetos.Dom.DefaultConcepts
             }
 
             return string.Join("\r\n", report);
+        }
+
+        /// <summary>
+        /// The index returns role ID instead of role Name for roles that no longer exist, to achieve more robust implementaiton.
+        /// </summary>
+        private Dictionary<Guid, string> GetRoleNamesIndex(IList<Guid> userRoles)
+        {
+            return _authorizationData.GetRoles(userRoles)
+                .ToDictionary(role => role.ID, role => role.Name ?? role.ID.ToString());
         }
     }
 }

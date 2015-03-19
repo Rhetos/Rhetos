@@ -19,6 +19,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Dom.DefaultConcepts.Authorization;
 using Rhetos.Extensibility;
 using Rhetos.Security;
 using Rhetos.TestCommon;
@@ -32,9 +33,9 @@ namespace Rhetos.CommonConcepts.Test
     [TestClass]
     public class CommonAuthorizationProviderTest
     {
-        private Lazy<IQueryableRepository<T>> InitRepos<T>(IList<T> items)
+        private IQueryableRepository<T> InitRepos<T>(IList<T> items)
         {
-            return new Lazy<IQueryableRepository<T>>(() => new MockRepos<T>(items));
+            return new MockRepos<T>(items);
         }
 
         private class MockRepos<T> : IQueryableRepository<T>
@@ -90,6 +91,15 @@ namespace Rhetos.CommonConcepts.Test
 
         class MockRolePermission : IRolePermission
         {
+            public MockRolePermission(IRole role, ICommonClaim claim, bool? isAuthorized)
+            {
+                ID = Guid.NewGuid();
+                Role = role;
+                RoleID = role.ID;
+                Claim = claim;
+                ClaimID = claim.ID;
+                IsAuthorized = isAuthorized;
+            }
             public Guid ID { get; set; }
             public IRole Role { get; set; }
             public ICommonClaim Claim { get; set; }
@@ -116,6 +126,13 @@ namespace Rhetos.CommonConcepts.Test
 
         class MockClaim : ICommonClaim
         {
+            public MockClaim(string resource, string right, bool? active)
+            {
+                ID = Guid.NewGuid();
+                ClaimResource = resource;
+                ClaimRight = right;
+                Active = active;
+            }
             public Guid ID { get; set; }
             public string ClaimResource { get; set; }
             public string ClaimRight { get; set; }
@@ -149,21 +166,25 @@ namespace Rhetos.CommonConcepts.Test
                 new Claim("c4", "c4ri"),
                 new Claim("c5", "c5ri"),
                 new Claim("c6", "c6ri"),
+                new Claim("c7", "c7ri"),
             };
 
-            var commonClaims = claims.Select(c => new MockClaim { ClaimResource = c.Resource, ClaimRight = c.Right, Active = true }).ToArray<ICommonClaim>();
+            var commonClaims = claims
+                .Where(c => c.Resource != "c7")
+                .Select(c => new MockClaim(c.Resource, c.Right, true))
+                .ToArray<ICommonClaim>();
             commonClaims[3].Active = false;
             commonClaims[4].Active = null;
 
             var rolePermissions = new IRolePermission[]
             {
-                new MockRolePermission { Role = roles[0], Claim = commonClaims[0], IsAuthorized = true },
-                new MockRolePermission { Role = roles[1], Claim = commonClaims[1], IsAuthorized = true }, // Also inherited to role0.
-                new MockRolePermission { Role = roles[0], Claim = commonClaims[2], IsAuthorized = true },
-                new MockRolePermission { Role = roles[1], Claim = commonClaims[2], IsAuthorized = false }, // Also denied to role0.
-                new MockRolePermission { Role = roles[0], Claim = commonClaims[3], IsAuthorized = true }, // Inactive claim.
-                new MockRolePermission { Role = roles[0], Claim = commonClaims[4], IsAuthorized = true }, // Inactive claim.
-                new MockRolePermission { Role = roles[1], Claim = commonClaims[6], IsAuthorized = true },
+                new MockRolePermission(roles[0], commonClaims[0], true),
+                new MockRolePermission(roles[1], commonClaims[1], true), // Also inherited to role0.
+                new MockRolePermission(roles[0], commonClaims[2], true),
+                new MockRolePermission(roles[1], commonClaims[2], false), // Also denied to role0.
+                new MockRolePermission(roles[0], commonClaims[3], true), // Inactive claim (active = null)
+                new MockRolePermission(roles[0], commonClaims[4], true), // Inactive claim.
+                new MockRolePermission(roles[1], commonClaims[6], true),
             };
 
             var principalPermissions = new IPrincipalPermission[]
@@ -172,18 +193,25 @@ namespace Rhetos.CommonConcepts.Test
                 new MockPrincipalPermission { Principal = principals[0], Claim = commonClaims[6], IsAuthorized = false },
             };
 
-            var provider = new CommonAuthorizationProvider(
+            var provider = NewCommonAuthorizationProvider(principals, roles, principalRoles, roleRoles, commonClaims, rolePermissions, principalPermissions);
+
+            Assert.AreEqual("True, True, False, False, False, True, False, False", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr0"), claims)));
+            Assert.AreEqual("False, True, False, False, False, False, True, False", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr1"), claims)));
+        }
+
+        private CommonAuthorizationProvider NewCommonAuthorizationProvider(IPrincipal[] principals, IRole[] roles, IPrincipalHasRole[] principalRoles, IRoleInheritsRole[] roleRoles, ICommonClaim[] commonClaims, IRolePermission[] rolePermissions, IPrincipalPermission[] principalPermissions)
+        {
+            var authorizationData = new AuthorizationDataReader(
+                new ConsoleLogProvider(),
                 new MockRepositories(principalRoles),
                 InitRepos(principals),
                 InitRepos(roleRoles),
-                InitRepos(rolePermissions),
                 InitRepos(principalPermissions),
+                InitRepos(rolePermissions),
                 InitRepos(roles),
-                InitRepos(commonClaims),
-                new ConsoleLogProvider());
-
-            Assert.AreEqual("True, True, False, False, False, True, False", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr0"), claims)));
-            Assert.AreEqual("False, True, False, False, False, False, True", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr1"), claims)));
+                InitRepos(commonClaims));
+            var provider = new CommonAuthorizationProvider(new ConsoleLogProvider(), authorizationData);
+            return provider;
         }
 
         [TestMethod]
@@ -211,33 +239,31 @@ namespace Rhetos.CommonConcepts.Test
                 new Claim("a2", "b.c"),
                 new Claim("a4.b", "c"),
                 new Claim("a4", "b.c"),
-                new Claim("a6", "b"),
-                new Claim("A6", "B"),
-                new Claim("A8", "B"),
-                new Claim("a8", "b") };
+                new Claim("a6", "b"), // index 6, commonClaims[6]
+                new Claim("A6", "B"), // index 7
+                new Claim("A8", "B"), // commonClaims[7]
+                new Claim("a8", "b"), // index 9
+            };
 
-            var commonClaims = claims.Select(c => new MockClaim { ClaimResource = c.Resource, ClaimRight = c.Right, Active = true }).ToArray<ICommonClaim>();
+            var commonClaims = claims
+                .Where((claim, index) => index != 7 && index != 9)
+                .Select(c => new MockClaim(c.Resource, c.Right, true))
+                .ToArray<ICommonClaim>();
 
-            var rolePermissions = new IRolePermission[] {
-                new MockRolePermission { Role = roles[0], Claim = commonClaims[0], IsAuthorized = true },
-                new MockRolePermission { Role = roles[1], Claim = commonClaims[1], IsAuthorized = true },
-                new MockRolePermission { Role = roles[0], Claim = commonClaims[2], IsAuthorized = true },
-                new MockRolePermission { Role = roles[1], Claim = commonClaims[3], IsAuthorized = false },
-                new MockRolePermission { Role = roles[0], Claim = commonClaims[4], IsAuthorized = true},
-                new MockRolePermission { Role = roles[0], Claim = commonClaims[6], IsAuthorized = true },
-                new MockRolePermission { Role = roles[1], Claim = commonClaims[8], IsAuthorized = true } };
+            var rolePermissions = new IRolePermission[]
+            {
+                new MockRolePermission(roles[0], commonClaims[0], true),
+                new MockRolePermission(roles[1], commonClaims[1], true),
+                new MockRolePermission(roles[0], commonClaims[2], true),
+                new MockRolePermission(roles[1], commonClaims[3], false),
+                new MockRolePermission(roles[0], commonClaims[4], true),
+                new MockRolePermission(roles[0], commonClaims[6], true),
+                new MockRolePermission(roles[1], commonClaims[7], true),
+            };
 
             var principalPermissions = new IPrincipalPermission[] { };
 
-            var provider = new CommonAuthorizationProvider(
-                new MockRepositories(principalRoles),
-                InitRepos(principals),
-                InitRepos(roleRoles),
-                InitRepos(rolePermissions),
-                InitRepos(principalPermissions),
-                InitRepos(roles),
-                InitRepos(commonClaims),
-                new ConsoleLogProvider());
+            var provider = NewCommonAuthorizationProvider(principals, roles, principalRoles, roleRoles, commonClaims, rolePermissions, principalPermissions);
 
             Assert.AreEqual("True, True, True, False, True, False, True, True, True, True", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr0"), claims)));
             Assert.AreEqual("False, True, False, False, False, False, False, False, True, True", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr1"), claims)));

@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ActiveDirectorySync.Test.Helpers;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Dom.DefaultConcepts.Authorization;
 using Rhetos.TestCommon;
 
 namespace ActiveDirectorySync.Test
@@ -372,10 +373,10 @@ namespace ActiveDirectorySync.Test
                 membership.Delete(membership.Read());
                 Assert.AreEqual(@"", ReportMembership(container), "membership deleted");
 
-                authorizationProvider.GetUsersRoles(u1.Name);
+                authorizationProvider.GetUsersRoles(u1);
                 Assert.AreEqual(@"OS\u1-OS\r1", ReportMembership(container), "membership recomputed on authorization u1");
 
-                authorizationProvider.GetUsersRoles(u2.Name);
+                authorizationProvider.GetUsersRoles(u2);
                 Assert.AreEqual(@"OS\u1-OS\r1, OS\u2-OS\r2", ReportMembership(container), "membership recomputed on authorization u2");
             }
         }

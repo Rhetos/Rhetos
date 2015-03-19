@@ -64,8 +64,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Authorization\AuthorizationDataReader.cs" />
     <Compile Include="Authorization\CommonAuthorizationProvider.cs" />
     <Compile Include="Authorization\ClaimGenerator.cs" />
+    <Compile Include="Authorization\ClaimInfo.cs" />
+    <Compile Include="Authorization\PrincipalInfo.cs" />
+    <Compile Include="Authorization\RoleInfo.cs" />
+    <Compile Include="Authorization\RolePermissionInfo.cs" />
+    <Compile Include="Authorization\PrincipalPermissionInfo.cs" />
     <Compile Include="AutofacModuleConfiguration.cs" />
     <Compile Include="Computations\ComposableFilterUseExecutionContextCodeGenerator.cs" />
     <Compile Include="Computations\ComputeForNewItemsCodeGenerator.cs" />
