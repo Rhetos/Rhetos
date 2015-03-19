@@ -25,7 +25,6 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ActiveDirectorySync.Test.Helpers;
 using Rhetos.Dom.DefaultConcepts;
-using Rhetos.Dom.DefaultConcepts.Authorization;
 using Rhetos.TestCommon;
 
 namespace ActiveDirectorySync.Test

@@ -24,14 +24,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rhetos.Dom.DefaultConcepts.Authorization
+namespace Rhetos.Dom.DefaultConcepts
 {
     public class PrincipalPermissionInfo
     {
-        public Guid ID;
+        public Guid ID { get; set; }
 
-        public Guid PrincipalID;
-        public Guid ClaimID;
-        public bool IsAuthorized;
+        public Guid PrincipalID { get; set; }
+        public Guid ClaimID { get; set; }
+        public bool IsAuthorized { get; set; }
     }
 }

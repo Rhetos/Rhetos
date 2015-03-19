@@ -23,7 +23,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rhetos.Dom.DefaultConcepts.Authorization
+namespace Rhetos.Dom.DefaultConcepts
 {
     public class PrincipalInfo : IPrincipal
     {

@@ -20,11 +20,12 @@
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Security;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Rhetos.Dom.DefaultConcepts.Authorization
+namespace Rhetos.Dom.DefaultConcepts
 {
     public class AuthorizationDataReader
     {
@@ -84,11 +85,16 @@ namespace Rhetos.Dom.DefaultConcepts.Authorization
 
         public IList<PrincipalPermissionInfo> GetPrincipalPermissions(IPrincipal principal, IEnumerable<Guid> claimIds)
         {
-            return _principalPermissionRepository.Query()
+            var query = _principalPermissionRepository.Query()
                 .Where(principalPermission => principalPermission.IsAuthorized != null
-                    && principalPermission.Principal.ID == principal.ID
-                    && claimIds.Contains(principalPermission.Claim.ID))
-                .Select(principalPermission => new PrincipalPermissionInfo
+                    && principalPermission.Principal.ID == principal.ID);
+
+            CsUtility.Materialize(ref claimIds);
+            bool useSqlFilter = claimIds.Count() < 500; // Avoiding performance issue with large query parameter.
+            if (useSqlFilter)
+                query = query.Where(principalPermission => claimIds.Contains(principalPermission.Claim.ID));
+                
+            var loaded = query.Select(principalPermission => new PrincipalPermissionInfo
                     {
                         ID = principalPermission.ID,
                         PrincipalID = principalPermission.Principal.ID,
@@ -96,15 +102,28 @@ namespace Rhetos.Dom.DefaultConcepts.Authorization
                         IsAuthorized = principalPermission.IsAuthorized.Value,
                     })
                 .ToList();
+
+            if (!useSqlFilter)
+            {
+                var claimsIndex = new HashSet<Guid>(claimIds);
+                loaded = loaded.Where(principalPermission => claimsIndex.Contains(principalPermission.ClaimID)).ToList();
+            }
+
+            return loaded;
         }
 
         public IList<RolePermissionInfo> GetRolePermissions(IEnumerable<Guid> roleIds, IEnumerable<Guid> claimIds)
         {
-            return _rolePermissionRepository.Query()
+            var query = _rolePermissionRepository.Query()
                 .Where(rolePermission => rolePermission.IsAuthorized != null
-                    && roleIds.Contains(rolePermission.Role.ID)
-                    && claimIds.Contains(rolePermission.Claim.ID))
-                .Select(rolePermission => new RolePermissionInfo
+                    && roleIds.Contains(rolePermission.Role.ID));
+
+            CsUtility.Materialize(ref claimIds);
+            bool useSqlFilter = claimIds.Count() < 500; // Avoiding performance issue with large query parameter.
+            if (useSqlFilter)
+                query = query.Where(rolePermission => claimIds.Contains(rolePermission.Claim.ID));
+
+            var loaded = query.Select(rolePermission => new RolePermissionInfo
                     {
                         ID = rolePermission.ID,
                         RoleID = rolePermission.Role.ID,
@@ -112,6 +131,14 @@ namespace Rhetos.Dom.DefaultConcepts.Authorization
                         IsAuthorized = rolePermission.IsAuthorized.Value,
                     })
                 .ToList();
+
+            if (!useSqlFilter)
+            {
+                var claimsIndex = new HashSet<Guid>(claimIds);
+                loaded = loaded.Where(rolePermission => claimsIndex.Contains(rolePermission.ClaimID)).ToList();
+            }
+
+            return loaded;
         }
 
         /// <summary>
@@ -120,15 +147,16 @@ namespace Rhetos.Dom.DefaultConcepts.Authorization
         /// </summary>
         public IList<ClaimInfo> GetClaims(IEnumerable<Claim> requiredClaims)
         {
-            var claimsResources = requiredClaims.Select(claim => claim.Resource).ToList();
-            var claimsRights = requiredClaims.Select(claim => claim.Right).ToList();
+            var claimsResources = requiredClaims.Select(claim => claim.Resource).Distinct().ToList();
+            var claimsRights = requiredClaims.Select(claim => claim.Right).Distinct().ToList();
 
             // Loading more claims then necessary because of using the cartesian product of ClaimResource and ClaimRight,
             // in order to utilize an SQL index on Common.Claim.
-            var loadedClaims = _claimRepository.Query()
-                .Where(claim => claim.Active == true
-                    && claimsResources.Contains(claim.ClaimResource)
-                    && claimsRights.Contains(claim.ClaimRight))
+
+            var queryClaims = _claimRepository.Query().Where(claim => claim.Active != null && claim.Active.Value);
+            if (claimsResources.Count < 500 && claimsRights.Count < 500) // Avoiding performance issue with large query parameter.
+                queryClaims = queryClaims.Where(claim => claimsResources.Contains(claim.ClaimResource) && claimsRights.Contains(claim.ClaimRight));
+            var loadedClaims = queryClaims
                 .Select(claim => new ClaimInfo
                     {
                         ID = claim.ID,

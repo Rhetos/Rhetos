@@ -23,12 +23,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rhetos.Dom.DefaultConcepts.Authorization
+namespace Rhetos.Dom.DefaultConcepts
 {
     public class ClaimInfo
     {
-        public Guid? ID;
-        public string Resource;
-        public string Right;
+        public Guid? ID { get; set; }
+        public string Resource { get; set; }
+        public string Right { get; set; }
     }
 }

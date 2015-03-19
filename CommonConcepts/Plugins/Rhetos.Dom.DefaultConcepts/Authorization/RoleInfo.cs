@@ -23,11 +23,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rhetos.Dom.DefaultConcepts.Authorization
+namespace Rhetos.Dom.DefaultConcepts
 {
     public class RoleInfo
     {
-        public Guid ID;
-        public string Name;
+        public Guid ID { get; set; }
+        public string Name { get; set; }
     }
 }

@@ -19,7 +19,6 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
-using Rhetos.Dom.DefaultConcepts.Authorization;
 using Rhetos.Extensibility;
 using Rhetos.Security;
 using Rhetos.TestCommon;

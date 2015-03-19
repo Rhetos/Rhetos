@@ -35,8 +35,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
             // Permission loading is done with repositories that use the user's context (IUserInfo),
             // but it is expected that the user's context will not affect the loading of permissions.
-            builder.RegisterType<Authorization.AuthorizationDataReader>();
-            builder.RegisterType<Authorization.CommonAuthorizationProvider>().As<IAuthorizationProvider>();
+            builder.RegisterType<AuthorizationDataReader>();
+            builder.RegisterType<CommonAuthorizationProvider>().As<IAuthorizationProvider>();
 
             base.Load(builder);
         }

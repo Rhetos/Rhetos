@@ -19,7 +19,7 @@
 
 using Autofac;
 using Rhetos.Configuration.Autofac;
-using Rhetos.Dom.DefaultConcepts.Authorization;
+using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Security;
 using System;
 using System.Collections.Generic;

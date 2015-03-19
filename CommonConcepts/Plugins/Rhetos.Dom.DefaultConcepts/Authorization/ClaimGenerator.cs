@@ -34,7 +34,7 @@ using Rhetos.Security;
 using System.ComponentModel.Composition;
 using Rhetos.Processing.DefaultCommands;
 
-namespace Rhetos.Dom.DefaultConcepts.Authorization
+namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IServerInitializer))]
     public class ClaimGenerator : IServerInitializer

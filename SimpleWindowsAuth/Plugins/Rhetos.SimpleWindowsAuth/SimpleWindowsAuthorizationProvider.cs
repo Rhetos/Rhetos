@@ -29,7 +29,6 @@ using System.Diagnostics;
 using Rhetos.Logging;
 using Rhetos.Extensibility;
 using Rhetos.Dom.DefaultConcepts;
-using Rhetos.Dom.DefaultConcepts.Authorization;
 
 namespace Rhetos.SimpleWindowsAuth
 {
