@@ -17,23 +17,29 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Compiler;
-using Rhetos.Dsl;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Linq;
+using System.Text;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Dsl.DefaultConcepts
 {
-    [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(BeforeQueryWithParameterInfo))]
-    public class BeforeQueryWithParameterCodeGenerator : IConceptCodeGenerator
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("BeforeAction")]
+    public class BeforeActionInfo : IConceptInfo, IValidatedConcept
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
-        {
-            var info = (BeforeQueryWithParameterInfo)conceptInfo;
+        [ConceptKey]
+        public ActionInfo Action { get; set; }
 
-            codeBuilder.InsertCode(info.CodeSnippet.Trim() + "\r\n            ", QueryWithParameterCodeGenerator.BeforeQueryTag, info.QueryWithParameter);
+        [ConceptKey]
+        public string RuleName { get; set; }
+
+        public string CodeSnippet { get; set; }
+
+        public void CheckSemantics(IDslModel existingConcepts)
+        {
+            DslUtility.ValidateIdentifier(RuleName, this, "Invalid RuleName property value.");
         }
     }
 }

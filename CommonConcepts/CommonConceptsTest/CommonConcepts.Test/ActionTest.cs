@@ -78,5 +78,19 @@ namespace CommonConcepts.Test
                 repository.TestAction.RemoveAFromAllSimpleEntities.Execute(new TestAction.RemoveAFromAllSimpleEntities { });
             }
         }
+
+        [TestMethod]
+        public void BeforeAction()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                var username = container.Resolve<IUserInfo>().UserName;
+
+                TestUtility.ShouldFail<Rhetos.UserException>(
+                    () => repository.TestAction.TestBefore.Execute(new TestAction.TestBefore { S = "abc" }),
+                    "Test1 abc X " + username);
+            }
+        }
     }
 }

@@ -26,14 +26,14 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(BeforeQueryWithParameterInfo))]
-    public class BeforeQueryWithParameterCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(BeforeActionInfo))]
+    public class BeforeActionCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (BeforeQueryWithParameterInfo)conceptInfo;
+            var info = (BeforeActionInfo)conceptInfo;
 
-            codeBuilder.InsertCode(info.CodeSnippet.Trim() + "\r\n            ", QueryWithParameterCodeGenerator.BeforeQueryTag, info.QueryWithParameter);
+            codeBuilder.InsertCode("// " + info.RuleName + ":\r\n            " + info.CodeSnippet.Trim() + "\r\n            ", ActionCodeGenerator.BeforeActionTag, info.Action);
         }
     }
 }

@@ -59,5 +59,13 @@ Module TestAction
 	{
         UseExecutionContext;
 	}
-    
+	
+	Action TestBefore '(parameter, repository, userInfo) => {  throw new Rhetos.UserException("Test1 " + parameter.S); }'
+	{
+		ShortString S;
+		
+		BeforeAction AddXUserName
+			'actionParameter.S += " X";
+			actionParameter.S += " " + _executionContext.UserInfo.UserName;';
+	}
 }

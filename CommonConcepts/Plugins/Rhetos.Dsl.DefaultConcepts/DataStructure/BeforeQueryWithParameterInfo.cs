@@ -35,6 +35,6 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public QueryWithParameterInfo QueryWithParameter { get; set; }
 
-        public string Snippet { get; set; }
+        public string CodeSnippet { get; set; }
     }
 }
