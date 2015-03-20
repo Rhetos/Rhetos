@@ -498,5 +498,28 @@ namespace CommonConcepts.Test
                     TestUtility.Dump(references, item => (item.q ?? "-") + (item.q2 ?? "-") + (item.s ?? "-") + (item.s2 ?? "-")));
             }
         }
+
+        [TestMethod]
+        public void ReferenceTest()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repositories = container.Resolve<GenericRepositories>();
+                repositories.Delete(repositories.Read<TestPolymorphic.ChildA>());
+                repositories.Delete(repositories.Read<TestPolymorphic.ChildB>());
+                repositories.Delete(repositories.Read<TestPolymorphic.Parent>());
+
+                var p1 = new TestPolymorphic.Parent { ID = Guid.NewGuid(), Name = "p1" };
+                var ca1 = new TestPolymorphic.ChildA { ID = Guid.NewGuid(), Name = "ca1", Parent = p1 };
+                var cb1 = new TestPolymorphic.ChildB { ID = Guid.NewGuid(), Name = "cb1", ManualParentID = p1.ID };
+
+                repositories.Insert(p1);
+                repositories.Insert(ca1);
+                repositories.Insert(cb1);
+
+                Assert.AreEqual("ca1 p1, cb1 p1", TestUtility.DumpSorted(
+                    repositories.Query<TestPolymorphic.Child>().Select(c => c.Name + " " + c.Parent.Name)));
+            }
+        }
     }
 }

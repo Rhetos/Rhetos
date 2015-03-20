@@ -95,22 +95,29 @@ namespace Rhetos.Dsl.DefaultConcepts
                 .Select(subim => subim.Property).ToList();
 
             var missingImplementations = implementableSupertypeProperties.Except(subtypeImplementsProperties)
-                .Select(supp => new SubtypeImplementsPropertyInfo
+                .Select(missing => new SubtypeImplementsPropertyInfo
                 {
                     IsSubtypeOf = conceptInfo.IsSubtypeOf,
-                    Property = supp,
-                    Expression = supp.Name
+                    Property = missing,
+                    Expression = GetColumnName(missing)
                 })
                 .ToList();
 
             var missingProperties = missingImplementations.Select(subim => subim.Property).Where(supp => !subtypeProperties.Any(subp => subp.Name == supp.Name))
-                .Select(supp => DslUtility.CreatePassiveClone(supp, conceptInfo.IsSubtypeOf.Subtype))
+                .Select(missing => DslUtility.CreatePassiveClone(missing, conceptInfo.IsSubtypeOf.Subtype))
                 .ToList();
 
             newConcepts.AddRange(missingImplementations);
             newConcepts.AddRange(missingProperties);
 
             return newConcepts;
+        }
+
+        private static string GetColumnName(PropertyInfo property)
+        {
+            if (property is ReferencePropertyInfo)
+                return SqlUtility.Identifier(property.Name + "ID");
+            return SqlUtility.Identifier(property.Name);
         }
     }
 }

@@ -255,3 +255,41 @@ Module TestPolymorphic
 		}
 	}
 }
+
+//=========================================================
+// Reference test
+	
+Module TestPolymorphic
+{
+	Entity Parent
+	{
+		ShortString Name;
+	}
+	
+	Polymorphic Child
+	{
+		ShortString Name;
+		Reference Parent;
+	}
+	
+	Entity ChildA
+	{
+		Is TestPolymorphic.Child;
+	}
+	
+	Entity ChildB
+	{
+		Guid ManualParentID;
+		
+		Is TestPolymorphic.Child
+		{
+			Implements TestPolymorphic.Child.Parent "ManualParentID";
+		}
+	}
+	
+	Browse ChildBrowse TestPolymorphic.Child
+	{
+		Take Name;
+		Take 'Parent.Name';
+	}
+}

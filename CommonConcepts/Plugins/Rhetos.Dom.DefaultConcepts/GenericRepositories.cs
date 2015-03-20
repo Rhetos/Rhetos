@@ -164,6 +164,45 @@ namespace Rhetos.Dom.DefaultConcepts
             GetGenericRepository<TEntityInterface>().Save(insertedNew, updatedNew, deletedIds, checkUserPermissions);
         }
 
+        public void Insert<TEntityInterface>(IEnumerable<TEntityInterface> insertNew, bool checkUserPermissions = false)
+            where TEntityInterface : class, IEntity
+        {
+            GetGenericRepository<TEntityInterface>().Save(insertNew, null, null, checkUserPermissions);
+        }
+
+        public void Update<TEntityInterface>(IEnumerable<TEntityInterface> updateNew, bool checkUserPermissions = false)
+            where TEntityInterface : class, IEntity
+        {
+            GetGenericRepository<TEntityInterface>().Save(null, updateNew, null, checkUserPermissions);
+        }
+
+        public void Delete<TEntityInterface>(IEnumerable<TEntityInterface> deleteIds, bool checkUserPermissions = false)
+            where TEntityInterface : class, IEntity
+        {
+            GetGenericRepository<TEntityInterface>().Save(null, null, deleteIds, checkUserPermissions);
+        }
+
+        /// <summary>checkUserPermissions is set to false.</summary>
+        public void Insert<TEntityInterface>(params TEntityInterface[] insertNew)
+            where TEntityInterface : class, IEntity
+        {
+            GetGenericRepository<TEntityInterface>().Save(insertNew, null, null, false);
+        }
+
+        /// <summary>checkUserPermissions is set to false.</summary>
+        public void Update<TEntityInterface>(params TEntityInterface[] updateNew)
+            where TEntityInterface : class, IEntity
+        {
+            GetGenericRepository<TEntityInterface>().Save(null, updateNew, null, false);
+        }
+
+        /// <summary>checkUserPermissions is set to false.</summary>
+        public void Delete<TEntityInterface>(params TEntityInterface[] deleteIds)
+            where TEntityInterface : class, IEntity
+        {
+            GetGenericRepository<TEntityInterface>().Save(null, null, deleteIds, false);
+        }
+
         public void InsertOrReadId<TEntityInterface, TProperties>(TEntityInterface newItem, Expression<Func<TEntityInterface, TProperties>> propertiesSelector)
             where TEntityInterface : class, IEntity
         {
