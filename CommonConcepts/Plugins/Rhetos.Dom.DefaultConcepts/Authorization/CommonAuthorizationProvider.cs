@@ -29,9 +29,9 @@ namespace Rhetos.Dom.DefaultConcepts
     public class CommonAuthorizationProvider : IAuthorizationProvider
     {
         private readonly ILogger _logger;
-        private readonly AuthorizationDataReader _authorizationData;
+        private readonly IAuthorizationData _authorizationData;
 
-        public CommonAuthorizationProvider(ILogProvider logProvider, AuthorizationDataReader authorizationData)
+        public CommonAuthorizationProvider(ILogProvider logProvider, IAuthorizationData authorizationData)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _authorizationData = authorizationData;
@@ -40,13 +40,13 @@ namespace Rhetos.Dom.DefaultConcepts
         public IList<bool> GetAuthorizations(IUserInfo userInfo, IList<Claim> requiredClaims)
         {
             PrincipalInfo principal = _authorizationData.GetPrincipal(userInfo.UserName);
-            IList<Guid> userRoles = GetUsersRoles(principal);
+            IEnumerable<Guid> userRoles = GetUsersRoles(principal);
 
-            IList<ClaimInfo> claims = _authorizationData.GetClaims(requiredClaims);
-            IList<Permission> userPermissions = GetUsersPermissions(claims, principal, userRoles);
-            IList<bool> userHasClaims = GetUsersClaims(claims, userPermissions);
+            IEnumerable<ClaimInfo> claims = GetClaims(requiredClaims);
+            IEnumerable<Permission> userPermissions = GetUsersPermissions(claims, principal, userRoles);
+            IList<bool> userHasClaims = GetUserHasClaims(claims, userPermissions);
 
-            var roleNamesIndex = new Lazy<Dictionary<Guid, string>>(() => GetRoleNamesIndex(userRoles));
+            var roleNamesIndex = new Lazy<IDictionary<Guid, string>>(() => GetRoleNamesIndex(userRoles));
             _logger.Trace(() => ReportRoles(userInfo, roleNamesIndex));
             _logger.Trace(() => ReportPermissions(userInfo, principal, roleNamesIndex, userPermissions, claims, userHasClaims));
 
@@ -54,11 +54,26 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         /// <summary>Return direct and indirect user's roles.</summary>
-        public IList<Guid> GetUsersRoles(IPrincipal principal)
+        public IEnumerable<Guid> GetUsersRoles(IPrincipal principal)
         {
-            IList<Guid> directUserRoles = _authorizationData.GetPrincipalRoles(principal);
-            IList<Guid> allUserRoles = Graph.IncludeDependents(directUserRoles, _authorizationData.GetRoleRoles);
+            IEnumerable<Guid> directUserRoles = _authorizationData.GetPrincipalRoles(principal);
+            IEnumerable<Guid> allUserRoles = Graph.IncludeDependents(directUserRoles, _authorizationData.GetRoleRoles);
             return allUserRoles;
+        }
+
+        /// <summary>Inactive or nonexistent claims will have ID set to null.</summary>
+        private IEnumerable<ClaimInfo> GetClaims(IEnumerable<Claim> requiredClaims)
+        {
+            var claimsIndex = _authorizationData.GetClaims(requiredClaims);
+            return requiredClaims
+                .Select(claim =>
+                {
+                    ClaimInfo claimInfo;
+                    if (claimsIndex.TryGetValue(claim, out claimInfo))
+                        return claimInfo;
+                    return new ClaimInfo { ID = null, Resource = claim.Resource, Right = claim.Right };
+                })
+                .ToList();
         }
 
         private class Permission
@@ -69,19 +84,22 @@ namespace Rhetos.Dom.DefaultConcepts
             public bool IsAuthorized { get; set; }
         }
 
-        private IList<Permission> GetUsersPermissions(IList<ClaimInfo> claims, IPrincipal principal, IList<Guid> userRoles)
+        private IEnumerable<Permission> GetUsersPermissions(IEnumerable<ClaimInfo> claims, IPrincipal principal, IEnumerable<Guid> userRoles)
         {
-            var claimIds = claims.Where(claim => claim.ID != null).Select(claim => claim.ID.Value).ToList();
+            var claimIdsIndex = new HashSet<Guid>(claims.Where(claim => claim.ID != null).Select(claim => claim.ID.Value));
 
-            var principalPermissions = _authorizationData.GetPrincipalPermissions(principal, claimIds)
+            var principalPermissions = _authorizationData.GetPrincipalPermissions(principal, claimIdsIndex)
                 .Select(pp => new Permission { PrincipalID = pp.PrincipalID, ClaimID = pp.ClaimID, IsAuthorized = pp.IsAuthorized });
-            var rolePermissions = _authorizationData.GetRolePermissions(userRoles, claimIds)
+            var rolePermissions = _authorizationData.GetRolePermissions(userRoles, claimIdsIndex)
                 .Select(rp => new Permission { RoleID = rp.RoleID, ClaimID = rp.ClaimID, IsAuthorized = rp.IsAuthorized });
 
-            return principalPermissions.Concat(rolePermissions).ToList();
+            /// GetPrincipalPermissions and GetRolePermissions may return permissions for more claims than required.
+            return principalPermissions.Concat(rolePermissions)
+                .Where(p => claimIdsIndex.Contains(p.ClaimID))
+                .ToList();
         }
 
-        private static IList<bool> GetUsersClaims(IList<ClaimInfo> claims, IList<Permission> userPermissions)
+        private static IList<bool> GetUserHasClaims(IEnumerable<ClaimInfo> claims, IEnumerable<Permission> userPermissions)
         {
             var userClaims = new HashSet<Guid>();
 
@@ -99,7 +117,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// Reporting is done in a function that returns a string, to avoid any performance impact when the trace log is not enabled.
         /// </summary>
-        private string ReportRoles(IUserInfo userInfo, Lazy<Dictionary<Guid, string>> roleNamesIndex)
+        private string ReportRoles(IUserInfo userInfo, Lazy<IDictionary<Guid, string>> roleNamesIndex)
         {
             var roleNames = roleNamesIndex.Value.Values.ToList();
             roleNames.Sort();
@@ -109,8 +127,8 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// Reporting is done in a function that returns a string, to avoid any performance impact when the trace log is not enabled.
         /// </summary>
-        private string ReportPermissions(IUserInfo userInfo, PrincipalInfo principal, Lazy<Dictionary<Guid, string>> roleNamesIndex,
-            IList<Permission> userPermissions, IList<ClaimInfo> claims, IList<bool> userHasClaims)
+        private string ReportPermissions(IUserInfo userInfo, PrincipalInfo principal, Lazy<IDictionary<Guid, string>> roleNamesIndex,
+            IEnumerable<Permission> userPermissions, IEnumerable<ClaimInfo> claims, IEnumerable<bool> userHasClaims)
         {
             var report = new List<string>();
 
@@ -167,10 +185,15 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// The index returns role ID instead of role Name for roles that no longer exist, to achieve more robust implementaiton.
         /// </summary>
-        private Dictionary<Guid, string> GetRoleNamesIndex(IList<Guid> userRoles)
+        private IDictionary<Guid, string> GetRoleNamesIndex(IEnumerable<Guid> userRoles)
         {
-            return _authorizationData.GetRoles(userRoles)
-                .ToDictionary(role => role.ID, role => role.Name ?? role.ID.ToString());
+            var rolesIndex = _authorizationData.GetRoles(userRoles);
+
+            var nonexistentRoles = userRoles.Except(rolesIndex.Keys).ToList();
+            foreach (Guid nonexistentRole in nonexistentRoles)
+                rolesIndex.Add(nonexistentRole, nonexistentRole.ToString());
+
+            return rolesIndex;
         }
     }
 }

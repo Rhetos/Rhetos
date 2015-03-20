@@ -27,7 +27,7 @@ using System.Linq;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public class AuthorizationDataReader
+    public class AuthorizationDataReader : IAuthorizationData
     {
         private readonly ILogger _logger;
         private readonly IQueryableRepository<IPrincipal> _principalRepository;
@@ -73,28 +73,34 @@ namespace Rhetos.Dom.DefaultConcepts
             return principal;
         }
 
-        public IList<Guid> GetPrincipalRoles(IPrincipal principal)
+        public IEnumerable<Guid> GetPrincipalRoles(IPrincipal principal)
         {
             return _principalRolesRepository.Query(principal).Select(pr => pr.Role.ID).ToList();
         }
 
-        public IList<Guid> GetRoleRoles(Guid roleId)
+        public IEnumerable<Guid> GetRoleRoles(Guid roleId)
         {
             return _roleRolesRepository.Query().Where(rr => rr.UsersFrom.ID == roleId).Select(rr => rr.PermissionsFrom.ID).ToList();
         }
 
-        public IList<PrincipalPermissionInfo> GetPrincipalPermissions(IPrincipal principal, IEnumerable<Guid> claimIds)
+        /// <summary>
+        /// Avoiding performance issue with large query parameter.
+        /// </summary>
+        private const int _sqlFilterItemsLimit = 500;
+
+        /// <summary>
+        /// The function may return permissions for more claims than required.
+        /// </summary>
+        public IEnumerable<PrincipalPermissionInfo> GetPrincipalPermissions(IPrincipal principal, IEnumerable<Guid> claimIds = null)
         {
             var query = _principalPermissionRepository.Query()
                 .Where(principalPermission => principalPermission.IsAuthorized != null
                     && principalPermission.Principal.ID == principal.ID);
 
-            CsUtility.Materialize(ref claimIds);
-            bool useSqlFilter = claimIds.Count() < 500; // Avoiding performance issue with large query parameter.
-            if (useSqlFilter)
+            if (claimIds != null && claimIds.Count() < _sqlFilterItemsLimit)
                 query = query.Where(principalPermission => claimIds.Contains(principalPermission.Claim.ID));
                 
-            var loaded = query.Select(principalPermission => new PrincipalPermissionInfo
+            return query.Select(principalPermission => new PrincipalPermissionInfo
                     {
                         ID = principalPermission.ID,
                         PrincipalID = principalPermission.Principal.ID,
@@ -102,28 +108,21 @@ namespace Rhetos.Dom.DefaultConcepts
                         IsAuthorized = principalPermission.IsAuthorized.Value,
                     })
                 .ToList();
-
-            if (!useSqlFilter)
-            {
-                var claimsIndex = new HashSet<Guid>(claimIds);
-                loaded = loaded.Where(principalPermission => claimsIndex.Contains(principalPermission.ClaimID)).ToList();
-            }
-
-            return loaded;
         }
 
-        public IList<RolePermissionInfo> GetRolePermissions(IEnumerable<Guid> roleIds, IEnumerable<Guid> claimIds)
+        /// <summary>
+        /// The function may return permissions for more claims than required.
+        /// </summary>
+        public IEnumerable<RolePermissionInfo> GetRolePermissions(IEnumerable<Guid> roleIds, IEnumerable<Guid> claimIds = null)
         {
             var query = _rolePermissionRepository.Query()
                 .Where(rolePermission => rolePermission.IsAuthorized != null
                     && roleIds.Contains(rolePermission.Role.ID));
 
-            CsUtility.Materialize(ref claimIds);
-            bool useSqlFilter = claimIds.Count() < 500; // Avoiding performance issue with large query parameter.
-            if (useSqlFilter)
+            if (claimIds != null && claimIds.Count() < _sqlFilterItemsLimit)
                 query = query.Where(rolePermission => claimIds.Contains(rolePermission.Claim.ID));
 
-            var loaded = query.Select(rolePermission => new RolePermissionInfo
+            return query.Select(rolePermission => new RolePermissionInfo
                     {
                         ID = rolePermission.ID,
                         RoleID = rolePermission.Role.ID,
@@ -131,31 +130,40 @@ namespace Rhetos.Dom.DefaultConcepts
                         IsAuthorized = rolePermission.IsAuthorized.Value,
                     })
                 .ToList();
-
-            if (!useSqlFilter)
-            {
-                var claimsIndex = new HashSet<Guid>(claimIds);
-                loaded = loaded.Where(rolePermission => claimsIndex.Contains(rolePermission.ClaimID)).ToList();
-            }
-
-            return loaded;
         }
 
         /// <summary>
-        /// The result will always have same number and arrangement of elements as the requiredClaims parameter.
-        /// Inactive or nonexistent claims will have ID set to null.
+        /// Note that the result will not include roles that do not exist, and that the order of returned items might not match the parameter.
         /// </summary>
-        public IList<ClaimInfo> GetClaims(IEnumerable<Claim> requiredClaims)
+        public IDictionary<Guid, string> GetRoles(IEnumerable<Guid> roleIds = null)
         {
-            var claimsResources = requiredClaims.Select(claim => claim.Resource).Distinct().ToList();
-            var claimsRights = requiredClaims.Select(claim => claim.Right).Distinct().ToList();
+            var query = _roleRepository.Query();
+            if (roleIds != null)
+                query = query.Where(role => roleIds.Contains(role.ID));
 
-            // Loading more claims then necessary because of using the cartesian product of ClaimResource and ClaimRight,
-            // in order to utilize an SQL index on Common.Claim.
+            return query
+                .Select(role => new { ID = role.ID, Name = role.Name })
+                .ToList()
+                .ToDictionary(role => role.ID, role => role.Name);
+        }
 
+        /// <summary>
+        /// The function may return more claims than required.
+        /// Note that the result will not include claims that are inactive or do not exist, and that the order of returned items might not match the parameter.
+        /// </summary>
+        public IDictionary<Claim, ClaimInfo> GetClaims(IEnumerable<Claim> requiredClaims = null)
+        {
             var queryClaims = _claimRepository.Query().Where(claim => claim.Active != null && claim.Active.Value);
-            if (claimsResources.Count < 500 && claimsRights.Count < 500) // Avoiding performance issue with large query parameter.
-                queryClaims = queryClaims.Where(claim => claimsResources.Contains(claim.ClaimResource) && claimsRights.Contains(claim.ClaimRight));
+
+            if (requiredClaims != null)
+            {
+                var claimsResources = requiredClaims.Select(claim => claim.Resource).Distinct().ToList();
+                var claimsRights = requiredClaims.Select(claim => claim.Right).Distinct().ToList();
+
+                if (claimsResources.Count < _sqlFilterItemsLimit && claimsRights.Count < _sqlFilterItemsLimit)
+                    queryClaims = queryClaims.Where(claim => claimsResources.Contains(claim.ClaimResource) && claimsRights.Contains(claim.ClaimRight));
+            }
+
             var loadedClaims = queryClaims
                 .Select(claim => new ClaimInfo
                     {
@@ -182,37 +190,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 throw;
             }
 
-            return requiredClaims
-                .Select(claim =>
-                {
-                    ClaimInfo claimInfo;
-                    if (claimsIndex.TryGetValue(claim, out claimInfo))
-                        return claimInfo;
-                    return new ClaimInfo { ID = null, Resource = claim.Resource, Right = claim.Right };
-                })
-                .ToList();
-        }
-
-        /// <summary>
-        /// The result will always have same number and arrangement of elements as the roleIds parameter.
-        /// Nonexistent roles will have Name set to null.
-        /// </summary>
-        public IList<RoleInfo> GetRoles(IEnumerable<Guid> roleIds)
-        {
-            var loadedRoles = _roleRepository.Query()
-                .Where(role => roleIds.Contains(role.ID))
-                .Select(role => new { role.ID, role.Name })
-                .ToList()
-                .ToDictionary(role => role.ID, role => role.Name);
-
-            return roleIds.Select(id =>
-                {
-                    string name;
-                    if (!loadedRoles.TryGetValue(id, out name))
-                        name = null;
-                    return new RoleInfo { ID = id, Name = name };
-                })
-                .ToList();
+            return claimsIndex;
         }
     }
 }

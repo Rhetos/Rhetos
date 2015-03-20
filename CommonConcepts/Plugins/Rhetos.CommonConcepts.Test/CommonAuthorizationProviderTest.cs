@@ -26,6 +26,7 @@ using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Rhetos.CommonConcepts.Test
 {
@@ -138,8 +139,58 @@ namespace Rhetos.CommonConcepts.Test
             public bool? Active { get; set; }
         }
 
+        private CommonAuthorizationProvider NewCommonAuthorizationProviderWithReader(IPrincipal[] principals, IRole[] roles, IPrincipalHasRole[] principalRoles, IRoleInheritsRole[] roleRoles, ICommonClaim[] commonClaims, IRolePermission[] rolePermissions, IPrincipalPermission[] principalPermissions)
+        {
+            var authorizationDataReader = new AuthorizationDataReader(
+                new ConsoleLogProvider(),
+                new MockRepositories(principalRoles),
+                InitRepos(principals),
+                InitRepos(roleRoles),
+                InitRepos(principalPermissions),
+                InitRepos(rolePermissions),
+                InitRepos(roles),
+                InitRepos(commonClaims));
+            var provider = new CommonAuthorizationProvider(new ConsoleLogProvider(), authorizationDataReader);
+            return provider;
+        }
+
+        private CommonAuthorizationProvider NewCommonAuthorizationProviderWithCache(IPrincipal[] principals, IRole[] roles, IPrincipalHasRole[] principalRoles, IRoleInheritsRole[] roleRoles, ICommonClaim[] commonClaims, IRolePermission[] rolePermissions, IPrincipalPermission[] principalPermissions)
+        {
+            var authorizationDataReader = new AuthorizationDataReader(
+                new ConsoleLogProvider(),
+                new MockRepositories(principalRoles),
+                InitRepos(principals),
+                InitRepos(roleRoles),
+                InitRepos(principalPermissions),
+                InitRepos(rolePermissions),
+                InitRepos(roles),
+                InitRepos(commonClaims));
+            var authorizationCache = new AuthorizationDataCache(new ConsoleLogProvider(),
+                new Lazy<AuthorizationDataReader>(() => authorizationDataReader));
+            var provider = new CommonAuthorizationProvider(new ConsoleLogProvider(), authorizationCache);
+            return provider;
+        }
+
         [TestMethod]
-        public void SimpleTest()
+        public void SimpleTest_Reader()
+        {
+            SimpleTest(NewCommonAuthorizationProviderWithReader);
+        }
+
+        [TestMethod]
+        public void SimpleTest_Cache()
+        {
+            // Avoid loading setitng from web.config.
+            var expiration = typeof(AuthorizationDataCache).GetField("_defaultExpirationSeconds", BindingFlags.Static | BindingFlags.NonPublic);
+            expiration.SetValue(null, (double?)30);
+
+            AuthorizationDataCache.ClearCache();
+            SimpleTest(NewCommonAuthorizationProviderWithCache);
+            Console.WriteLine("Reusing cache");
+            SimpleTest(NewCommonAuthorizationProviderWithCache);
+        }
+
+        public void SimpleTest(Func<IPrincipal[], IRole[], IPrincipalHasRole[], IRoleInheritsRole[], ICommonClaim[], IRolePermission[], IPrincipalPermission[], IAuthorizationProvider> authProviderCreator)
         {
             var principals = new IPrincipal[] {
                 new MockPrincipal { ID = Guid.NewGuid(), Name = "pr0" },
@@ -192,29 +243,32 @@ namespace Rhetos.CommonConcepts.Test
                 new MockPrincipalPermission { Principal = principals[0], Claim = commonClaims[6], IsAuthorized = false },
             };
 
-            var provider = NewCommonAuthorizationProvider(principals, roles, principalRoles, roleRoles, commonClaims, rolePermissions, principalPermissions);
+            var provider = authProviderCreator(principals, roles, principalRoles, roleRoles, commonClaims, rolePermissions, principalPermissions);
 
             Assert.AreEqual("True, True, False, False, False, True, False, False", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr0"), claims)));
             Assert.AreEqual("False, True, False, False, False, False, True, False", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr1"), claims)));
         }
 
-        private CommonAuthorizationProvider NewCommonAuthorizationProvider(IPrincipal[] principals, IRole[] roles, IPrincipalHasRole[] principalRoles, IRoleInheritsRole[] roleRoles, ICommonClaim[] commonClaims, IRolePermission[] rolePermissions, IPrincipalPermission[] principalPermissions)
+        [TestMethod]
+        public void SimilarClaimsTestWithReader()
         {
-            var authorizationData = new AuthorizationDataReader(
-                new ConsoleLogProvider(),
-                new MockRepositories(principalRoles),
-                InitRepos(principals),
-                InitRepos(roleRoles),
-                InitRepos(principalPermissions),
-                InitRepos(rolePermissions),
-                InitRepos(roles),
-                InitRepos(commonClaims));
-            var provider = new CommonAuthorizationProvider(new ConsoleLogProvider(), authorizationData);
-            return provider;
+            SimilarClaimsTest(NewCommonAuthorizationProviderWithReader);
         }
 
         [TestMethod]
-        public void SimilarClaimsTest()
+        public void SimilarClaimsTestWithCache()
+        {
+            // Avoid loading setitng from web.config.
+            var expiration = typeof(AuthorizationDataCache).GetField("_defaultExpirationSeconds", BindingFlags.Static | BindingFlags.NonPublic);
+            expiration.SetValue(null, (double?)30);
+
+            AuthorizationDataCache.ClearCache();
+            SimilarClaimsTest(NewCommonAuthorizationProviderWithCache);
+            Console.WriteLine("Reusing cache");
+            SimilarClaimsTest(NewCommonAuthorizationProviderWithCache);
+        }
+
+        public void SimilarClaimsTest(Func<IPrincipal[], IRole[], IPrincipalHasRole[], IRoleInheritsRole[], ICommonClaim[], IRolePermission[], IPrincipalPermission[], IAuthorizationProvider> authProviderCreator)
         {
             var principals = new IPrincipal[] {
                 new MockPrincipal { ID = Guid.NewGuid(), Name = "pr0" },
@@ -262,7 +316,7 @@ namespace Rhetos.CommonConcepts.Test
 
             var principalPermissions = new IPrincipalPermission[] { };
 
-            var provider = NewCommonAuthorizationProvider(principals, roles, principalRoles, roleRoles, commonClaims, rolePermissions, principalPermissions);
+            var provider = authProviderCreator(principals, roles, principalRoles, roleRoles, commonClaims, rolePermissions, principalPermissions);
 
             Assert.AreEqual("True, True, True, False, True, False, True, True, True, True", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr0"), claims)));
             Assert.AreEqual("False, True, False, False, False, False, False, False, True, True", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr1"), claims)));
