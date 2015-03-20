@@ -31,12 +31,12 @@ namespace Rhetos.Dom.DefaultConcepts
     public class AuthorizationDataCache : IAuthorizationData
     {
         private readonly ILogger _logger;
-        private readonly Lazy<AuthorizationDataReader> _authorizationDataReader;
+        private readonly Lazy<AuthorizationDataLoader> _authorizationDataReader;
         private readonly ObjectCache _cache = MemoryCache.Default;
 
         public AuthorizationDataCache(
             ILogProvider logProvider,
-            Lazy<AuthorizationDataReader> authorizationDataReader)
+            Lazy<AuthorizationDataLoader> authorizationDataReader)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _authorizationDataReader = authorizationDataReader;

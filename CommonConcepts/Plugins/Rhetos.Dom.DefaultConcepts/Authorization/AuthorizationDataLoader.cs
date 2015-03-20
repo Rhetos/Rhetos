@@ -27,7 +27,7 @@ using System.Linq;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public class AuthorizationDataReader : IAuthorizationData
+    public class AuthorizationDataLoader : IAuthorizationData
     {
         private readonly ILogger _logger;
         private readonly IQueryableRepository<IPrincipal> _principalRepository;
@@ -38,7 +38,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private readonly IQueryableRepository<IRole> _roleRepository;
         private readonly IQueryableRepository<ICommonClaim> _claimRepository;
 
-        public AuthorizationDataReader(
+        public AuthorizationDataLoader(
             ILogProvider logProvider,
             INamedPlugins<IRepository> repositories,
             IQueryableRepository<IPrincipal> principalRepository,

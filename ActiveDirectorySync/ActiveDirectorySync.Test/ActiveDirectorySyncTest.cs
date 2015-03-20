@@ -26,6 +26,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ActiveDirectorySync.Test.Helpers;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
+using Rhetos.Utilities;
 
 namespace ActiveDirectorySync.Test
 {
@@ -55,6 +56,10 @@ namespace ActiveDirectorySync.Test
         {
             using (var container = new MockWindowsSecutiryRhetosContainer("u1-r1 u1-r12 u2-r12 u2-r2", commitChanges: false))
             {
+                container.Resolve<Common.ExecutionContext>().NHibernateSession
+                    .CreateSQLQuery("DELETE FROM Common.Principal; DELETE FROM Common.Role")
+                    .ExecuteUpdate();
+
                 // Insert test data:
 
                 var u1 = new Common.Principal { ID = Guid.NewGuid(), Name = System.Environment.UserDomainName + @"\" + "u1" };
@@ -69,8 +74,6 @@ namespace ActiveDirectorySync.Test
                 var roles = container.Resolve<GenericRepository<Common.Role>>();
                 var principals = container.Resolve<GenericRepository<Common.Principal>>();
                 var membership = container.Resolve<GenericRepository<Common.PrincipalHasRole>>();
-                principals.Delete(principals.Read());
-                roles.Delete(roles.Read());
 
                 roles.Insert(r1, r2, r25);
                 Assert.AreEqual(@"OS\r1, OS\r2, r25", TestUtility.DumpSorted(roles.Read(), role => role.Name), "roles created");
@@ -97,6 +100,10 @@ namespace ActiveDirectorySync.Test
         {
             using (var container = new MockWindowsSecutiryRhetosContainer("u1-r1 u1-r12 u2-r12 u2-r2", commitChanges: false))
             {
+                container.Resolve<Common.ExecutionContext>().NHibernateSession
+                    .CreateSQLQuery("DELETE FROM Common.Principal; DELETE FROM Common.Role")
+                    .ExecuteUpdate();
+
                 // Insert test data:
 
                 var u1 = new Common.Principal { ID = Guid.NewGuid(), Name = System.Environment.UserDomainName + @"\" + "u1" };
@@ -111,8 +118,6 @@ namespace ActiveDirectorySync.Test
                 var roles = container.Resolve<GenericRepository<Common.Role>>();
                 var principals = container.Resolve<GenericRepository<Common.Principal>>();
                 var membership = container.Resolve<GenericRepository<Common.PrincipalHasRole>>();
-                principals.Delete(principals.Read());
-                roles.Delete(roles.Read());
 
                 roles.Insert(r1, r2, r25);
                 principals.Insert(u1, u2, u3, u5);
@@ -139,6 +144,10 @@ namespace ActiveDirectorySync.Test
         {
             using (var container = new MockWindowsSecutiryRhetosContainer("u1-r1 u1-r12 u2-r12 u2-r2", commitChanges: false))
             {
+                container.Resolve<Common.ExecutionContext>().NHibernateSession
+                    .CreateSQLQuery("DELETE FROM Common.Principal; DELETE FROM Common.Role")
+                    .ExecuteUpdate();
+
                 // Insert test data:
 
                 var u1 = new Common.Principal { ID = Guid.NewGuid(), Name = System.Environment.UserDomainName + @"\" + "u1" };
@@ -153,8 +162,6 @@ namespace ActiveDirectorySync.Test
                 var roles = container.Resolve<GenericRepository<Common.Role>>();
                 var principals = container.Resolve<GenericRepository<Common.Principal>>();
                 var membership = container.Resolve<GenericRepository<Common.PrincipalHasRole>>();
-                principals.Delete(principals.Read());
-                roles.Delete(roles.Read());
 
                 roles.Insert(r1, r2, r25);
                 principals.Insert(u1, u2, u3, u5);
@@ -180,6 +187,10 @@ namespace ActiveDirectorySync.Test
         {
             using (var container = new MockWindowsSecutiryRhetosContainer("u1-r1 u1-r12 u2-r12 u2-r2", commitChanges: false))
             {
+                container.Resolve<Common.ExecutionContext>().NHibernateSession
+                    .CreateSQLQuery("DELETE FROM Common.Principal; DELETE FROM Common.Role")
+                    .ExecuteUpdate();
+
                 // Insert test data:
 
                 var u1 = new Common.Principal { ID = Guid.NewGuid(), Name = System.Environment.UserDomainName + @"\" + "u1" };
@@ -191,8 +202,6 @@ namespace ActiveDirectorySync.Test
                 var roles = container.Resolve<GenericRepository<Common.Role>>();
                 var principals = container.Resolve<GenericRepository<Common.Principal>>();
                 var membership = container.Resolve<GenericRepository<Common.PrincipalHasRole>>();
-                principals.Delete(principals.Read());
-                roles.Delete(roles.Read());
 
                 roles.Insert(r1, r2);
                 principals.Insert(u1, u2);
@@ -217,6 +226,10 @@ namespace ActiveDirectorySync.Test
         {
             using (var container = new MockWindowsSecutiryRhetosContainer("u1-r1 u1-r12 u2-r12 u2-r2", commitChanges: false))
             {
+                container.Resolve<Common.ExecutionContext>().NHibernateSession
+                    .CreateSQLQuery("DELETE FROM Common.Principal; DELETE FROM Common.Role")
+                    .ExecuteUpdate();
+
                 // Insert test data:
 
                 var u1 = new Common.Principal { ID = Guid.NewGuid(), Name = System.Environment.UserDomainName + @"\" + "u1" };
@@ -231,8 +244,6 @@ namespace ActiveDirectorySync.Test
                 var roles = container.Resolve<GenericRepository<Common.Role>>();
                 var principals = container.Resolve<GenericRepository<Common.Principal>>();
                 var membership = container.Resolve<GenericRepository<Common.PrincipalHasRole>>();
-                principals.Delete(principals.Read());
-                roles.Delete(roles.Read());
 
                 roles.Insert(r1, r2, r25);
                 principals.Insert(u1, u2, u3, u5);
@@ -256,6 +267,10 @@ namespace ActiveDirectorySync.Test
         {
             using (var container = new MockWindowsSecutiryRhetosContainer("u1-r1 u1-r12 u2-r12 u2-r2", commitChanges: false))
             {
+                container.Resolve<Common.ExecutionContext>().NHibernateSession
+                    .CreateSQLQuery("DELETE FROM Common.Principal; DELETE FROM Common.Role")
+                    .ExecuteUpdate();
+                
                 // Insert test data:
 
                 var u1 = new Common.Principal { ID = Guid.NewGuid(), Name = System.Environment.UserDomainName + @"\" + "u1" };
@@ -270,8 +285,6 @@ namespace ActiveDirectorySync.Test
                 var roles = container.Resolve<GenericRepository<Common.Role>>();
                 var principals = container.Resolve<GenericRepository<Common.Principal>>();
                 var membership = container.Resolve<GenericRepository<Common.PrincipalHasRole>>();
-                principals.Delete(principals.Read());
-                roles.Delete(roles.Read());
 
                 roles.Insert(r1, r2, r25);
                 principals.Insert(u1, u2, u3, u5);
@@ -302,6 +315,10 @@ namespace ActiveDirectorySync.Test
         {
             using (var container = new MockWindowsSecutiryRhetosContainer("u1-r1 u1-r12 u2-r12 u2-r2", commitChanges: false))
             {
+                container.Resolve<Common.ExecutionContext>().NHibernateSession
+                    .CreateSQLQuery("DELETE FROM Common.Principal; DELETE FROM Common.Role")
+                    .ExecuteUpdate();
+                
                 // Insert test data:
 
                 var u1 = new Common.Principal { ID = Guid.NewGuid(), Name = System.Environment.UserDomainName + @"\" + "u1" };
@@ -316,8 +333,6 @@ namespace ActiveDirectorySync.Test
                 var roles = container.Resolve<GenericRepository<Common.Role>>();
                 var principals = container.Resolve<GenericRepository<Common.Principal>>();
                 var membership = container.Resolve<GenericRepository<Common.PrincipalHasRole>>();
-                principals.Delete(principals.Read());
-                roles.Delete(roles.Read());
 
                 roles.Insert(r1, r2, r25);
                 principals.Insert(u1, u2, u3, u5);
@@ -342,6 +357,10 @@ namespace ActiveDirectorySync.Test
         {
             using (var container = new MockWindowsSecutiryRhetosContainer("u1-r1 u1-r12 u2-r12 u2-r2", commitChanges: false))
             {
+                container.Resolve<Common.ExecutionContext>().NHibernateSession
+                    .CreateSQLQuery("DELETE FROM Common.Principal; DELETE FROM Common.Role")
+                    .ExecuteUpdate();
+                
                 // Insert test data:
 
                 var u1 = new Common.Principal { ID = Guid.NewGuid(), Name = System.Environment.UserDomainName + @"\" + "u1" };
@@ -356,8 +375,6 @@ namespace ActiveDirectorySync.Test
                 var roles = container.Resolve<GenericRepository<Common.Role>>();
                 var principals = container.Resolve<GenericRepository<Common.Principal>>();
                 var membership = container.Resolve<GenericRepository<Common.PrincipalHasRole>>();
-                principals.Delete(principals.Read());
-                roles.Delete(roles.Read());
 
                 roles.Insert(r1, r2, r25);
                 principals.Insert(u1, u2, u3, u5);

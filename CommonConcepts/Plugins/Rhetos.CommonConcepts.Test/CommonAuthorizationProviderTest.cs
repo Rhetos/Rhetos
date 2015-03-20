@@ -141,7 +141,7 @@ namespace Rhetos.CommonConcepts.Test
 
         private CommonAuthorizationProvider NewCommonAuthorizationProviderWithReader(IPrincipal[] principals, IRole[] roles, IPrincipalHasRole[] principalRoles, IRoleInheritsRole[] roleRoles, ICommonClaim[] commonClaims, IRolePermission[] rolePermissions, IPrincipalPermission[] principalPermissions)
         {
-            var authorizationDataReader = new AuthorizationDataReader(
+            var authorizationDataReader = new AuthorizationDataLoader(
                 new ConsoleLogProvider(),
                 new MockRepositories(principalRoles),
                 InitRepos(principals),
@@ -156,7 +156,7 @@ namespace Rhetos.CommonConcepts.Test
 
         private CommonAuthorizationProvider NewCommonAuthorizationProviderWithCache(IPrincipal[] principals, IRole[] roles, IPrincipalHasRole[] principalRoles, IRoleInheritsRole[] roleRoles, ICommonClaim[] commonClaims, IRolePermission[] rolePermissions, IPrincipalPermission[] principalPermissions)
         {
-            var authorizationDataReader = new AuthorizationDataReader(
+            var authorizationDataReader = new AuthorizationDataLoader(
                 new ConsoleLogProvider(),
                 new MockRepositories(principalRoles),
                 InitRepos(principals),
@@ -166,7 +166,7 @@ namespace Rhetos.CommonConcepts.Test
                 InitRepos(roles),
                 InitRepos(commonClaims));
             var authorizationCache = new AuthorizationDataCache(new ConsoleLogProvider(),
-                new Lazy<AuthorizationDataReader>(() => authorizationDataReader));
+                new Lazy<AuthorizationDataLoader>(() => authorizationDataReader));
             var provider = new CommonAuthorizationProvider(new ConsoleLogProvider(), authorizationCache);
             return provider;
         }

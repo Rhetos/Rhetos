@@ -35,7 +35,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             // Permission loading is done with repositories that use the user's context (IUserInfo),
             // but it is expected that the user's context will not affect the loading of permissions.
-            builder.RegisterType<AuthorizationDataReader>().As<AuthorizationDataReader>().InstancePerLifetimeScope();
+            builder.RegisterType<AuthorizationDataLoader>().As<AuthorizationDataLoader>().InstancePerLifetimeScope();
 			// AuthorizationDataCache must not be "single instance" because it could result with leaving an open SQL connection when reading permissions.
             // AuthorizationDataCache must be set to InstancePerLifetimeScope to employ user-level locking (see AuthorizationDataCache._userLevelCacheUpdateLock).
             builder.RegisterType<AuthorizationDataCache>().As<IAuthorizationData>().InstancePerLifetimeScope();
