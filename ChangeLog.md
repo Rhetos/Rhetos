@@ -1,16 +1,25 @@
 # Rhetos release notes
 
-## 0.9.29 (TO BE RELEASED)
+## 0.9.29 (2015-03-23)
 
 ### New features
 
-* *CommonConcepts* package implements Windows user authorization.
-  *SimpleWindowsAuth* package is now obsolete, except for its GUI.
-* *CommonConcepts* package allows grouping permissions and users into roles.
-  A role can inherit permissions or include users from other roles.
-* New package *ActiveDirectorySync*: automatically maintains relations between principals and roles,
-  based on information from Active Directory.
+* Roles (`Common.Role`) can be used for grouping permissions and users. A role can also inherit permissions or include users from other roles.
+* User authorization (permissions) is now implemented in *CommonConcepts* package, instead of *SimpleWindowsAuth* and *AspNetFormsAuth*.
+* *SimpleWindowsAuth* package is now obsolete, except for its GUI, and should be used only for legacy applications.
+* New package *ActiveDirectorySync*: for synchronizing Rhetos principal-role membership with Active Directory.
   See [ActiveDirectorySync\Readme.md](ActiveDirectorySync\Readme.md) for more info.
+* Caching permissions. Configurable by `AuthorizationCacheExpirationSeconds` value in Web.config.
+
+### Internal improvements
+
+* New low-level concepts: **QueryWithParameter**, **BeforeQueryWithParameter**, **BeforeAction**.
+* New concept: **DefaultLoadFilter**, for limiting automatic computation on a subset of rows on **KeepSynchronized**.
+* Bugfix: `Like` function on string throws exception "The call is ambiguous...". Old implementation of the function is renamed to `SqlLike`.
+* Bugfix: SQL error when using **Polymorphic** for automatic implementation of **Reference** property.
+* Bugfix: Application-side verification of **Unique** constraint does not work (it can be used on LegacyEntity).
+* Bugfix: Creating an index that is both **Unique** and **Clustered** fails with an SQL syntax error.
+* Bugfix: NHibernate proxy error when using **KeepSynchronized** on entity with **Detail** entities.
 
 ## 0.9.28 (2015-03-06)
 

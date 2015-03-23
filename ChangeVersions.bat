@@ -1,7 +1,7 @@
 @REM HINT: SET THE FIRST ARGUMENT TO /NOPAUSE WHEN AUTOMATING THE BUILD.
 @SETLOCAL
 @REM //////////////////////////////////////////////////////
-SET BuildVersion=0.9.29
+SET BuildVersion=0.9.30
 SET PrereleaseVersion=alpha001
 @REM SET PrereleaseVersion TO EMPTY VALUE FOR THE OFFICIAL RELEASE.
 @REM \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -12,6 +12,7 @@ CALL ChangeRhetosPackageVersion.bat CommonConcepts %BuildVersion% %PrereleaseVer
 CALL ChangeRhetosPackageVersion.bat CommonConcepts\CommonConceptsTest %BuildVersion% %PrereleaseVersion% || GOTO Error1
 CALL ChangeRhetosPackageVersion.bat SimpleWindowsAuth %BuildVersion% %PrereleaseVersion% || GOTO Error1
 CALL ChangeRhetosPackageVersion.bat AspNetFormsAuth %BuildVersion% %PrereleaseVersion% || GOTO Error1
+CALL ChangeRhetosPackageVersion.bat ActiveDirectorySync %BuildVersion% %PrereleaseVersion% || GOTO Error1
 @POPD
 
 @REM ================================================
