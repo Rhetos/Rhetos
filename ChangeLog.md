@@ -2,18 +2,27 @@
 
 ## 0.9.29 (2015-03-23)
 
+### Breaking changes
+
+* *SimpleWindowsAuth* package is now obsolete, and should be used only for backward compatibility in legacy applications.
+  Removing the package from an existing application will still allow use of Windows authentication, with the following changes:
+  * Rhetos admin GUI for setting user's permissions is no longer available (`/Resources/Permissions.html`).
+  * User names in `Common.Principal` must start with domain name prefix (domainname\username).
+  * Domain user groups should be moved from `Common.Principal` to `Common.Role`.
+  * Deploy [*ActiveDirectorySync*](ActiveDirectorySync/Readme.md) package to automatically update principal-role membership (`Common.PrincipalHasRole`) for domain users and groups.
+
 ### New features
 
 * Roles (`Common.Role`) can be used for grouping permissions and users. A role can also inherit permissions or include users from other roles.
-* User authorization (permissions) is now implemented in *CommonConcepts* package, instead of *SimpleWindowsAuth* and *AspNetFormsAuth*.
-* *SimpleWindowsAuth* package is now obsolete, except for its GUI, and should be used only for legacy applications.
 * New package *ActiveDirectorySync*: for synchronizing Rhetos principal-role membership with Active Directory.
-  See [ActiveDirectorySync\Readme.md](ActiveDirectorySync\Readme.md) for more info.
-* Caching permissions. Configurable by `AuthorizationCacheExpirationSeconds` value in Web.config.
+  See [ActiveDirectorySync\Readme.md](ActiveDirectorySync/Readme.md) for more info.
+* Caching permissions, configurable by `AuthorizationCacheExpirationSeconds` value in *Web.config*.
 
 ### Internal improvements
 
-* New low-level concepts: **QueryWithParameter**, **BeforeQueryWithParameter**, **BeforeAction**.
+* User authorization (permissions) is now implemented in *CommonConcepts* package, instead of *SimpleWindowsAuth* and *AspNetFormsAuth*.
+* New concept: **Query** with parameter, for parametrized reading data using IQueryable.
+* New low-level concepts: **BeforeQuery** with parameter and **BeforeAction**, for injecting code in business object model.
 * New concept: **DefaultLoadFilter**, for limiting automatic computation on a subset of rows on **KeepSynchronized**.
 * Bugfix: `Like` function on string throws exception "The call is ambiguous...". Old implementation of the function is renamed to `SqlLike`.
 * Bugfix: SQL error when using **Polymorphic** for automatic implementation of **Reference** property.
@@ -277,7 +286,7 @@
 
 * New package: **AspNetFormsAuth**.
   It provides an implementation of ASP.NET forms authentication to Rhetos server applications.
-  See [AspNetFormsAuth\Readme.md](AspNetFormsAuth\Readme.md) for more info on features and installation.
+  See [AspNetFormsAuth\Readme.md](AspNetFormsAuth/Readme.md) for more info on features and installation.
 * New package: **SimpleWindowsAuth**.
   It contains the existing Windows authentication and authorization subsystem, extracted from Rhetos core framework and CommonConcepts package.
 * New concept: **RegisteredImplementation**,
