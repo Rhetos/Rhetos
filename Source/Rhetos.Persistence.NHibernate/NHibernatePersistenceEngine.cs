@@ -55,17 +55,14 @@ namespace Rhetos.Persistence.NHibernate
             _domainObjectModel = domainObjectModel;
             _connectionString = connectionString;
             _nHibernateConfigurationExtensions = nHibernateConfigurationExtensions;
+            _sessionFactory = new Lazy<ISessionFactory>(GenerateNHibernateSessionFactory, true);
         }
 
-        private ISessionFactory _sessionFactory;
-        private readonly object _sessionFactoryLock = new object();
+        private Lazy<ISessionFactory> _sessionFactory;
 
         public Tuple<ISession, ITransaction> BeginTransaction(IUserInfo userInfo)
         {
-            if (_sessionFactory == null)
-                _sessionFactory = PrepareNHSessionFactory();
-
-            ISession session = _sessionFactory.OpenSession();
+            ISession session = _sessionFactory.Value.OpenSession();
             ITransaction transaction = session.BeginTransaction();
 
             if (userInfo.IsUserRecognized)
@@ -108,61 +105,55 @@ namespace Rhetos.Persistence.NHibernate
                 throw new FrameworkException("Cannot load domain object model.");
         }
 
-        private ISessionFactory PrepareNHSessionFactory()
+        private ISessionFactory GenerateNHibernateSessionFactory()
         {
-            lock (_sessionFactoryLock)
+            var sw = Stopwatch.StartNew();
+
+            ForceLoadObjectModel(); // This is needed for "new Configuration()".
+            var configuration = new global::NHibernate.Cfg.Configuration();
+            configuration.SetProperty("connection.provider", "NHibernate.Connection.DriverConnectionProvider");
+            configuration.SetProperty("connection.connection_string", _connectionString);
+
+            // Set factory-level property:
+            configuration.SetProperty("command_timeout", SqlUtility.SqlCommandTimeout.ToString());
+            // Set system-level property:
+            // Note: Using NHibernate.Cfg.Environment.Properties does not allow setting properties becase the public property returns a copy of the dictionary.
+            var globalPropertiesField = typeof(global::NHibernate.Cfg.Environment).GetField("GlobalProperties", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            var globalProperties = (Dictionary<string, string>)globalPropertiesField.GetValue(null);
+            globalProperties.Add("command_timeout", SqlUtility.SqlCommandTimeout.ToString());
+
+            if (SqlUtility.DatabaseLanguage == "MsSql")
             {
-                if (_sessionFactory != null)
-                    return _sessionFactory;
-
-                var sw = Stopwatch.StartNew();
-
-                ForceLoadObjectModel(); // This is needed for "new Configuration()".
-                var configuration = new global::NHibernate.Cfg.Configuration();
-                configuration.SetProperty("connection.provider", "NHibernate.Connection.DriverConnectionProvider");
-                configuration.SetProperty("connection.connection_string", _connectionString);
-
-                // Set factory-level property:
-                configuration.SetProperty("command_timeout", SqlUtility.SqlCommandTimeout.ToString());
-                // Set system-level property:
-                // Note: Using NHibernate.Cfg.Environment.Properties does not allow setting properties becase the public property returns a copy of the dictionary.
-                var globalPropertiesField = typeof(global::NHibernate.Cfg.Environment).GetField("GlobalProperties", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-                var globalProperties = (Dictionary<string, string>)globalPropertiesField.GetValue(null);
-                globalProperties.Add("command_timeout", SqlUtility.SqlCommandTimeout.ToString());
-
-                if (SqlUtility.DatabaseLanguage == "MsSql")
-                {
-                    configuration.SetProperty("dialect", "NHibernate.Dialect.MsSql2005Dialect");
-                    configuration.SetProperty("connection.driver_class", "NHibernate.Driver.SqlClientDriver");
-                }
-                else if (SqlUtility.DatabaseLanguage == "Oracle")
-                {
-                    configuration.SetProperty("dialect", "NHibernate.Dialect.Oracle10gDialect");
-                    configuration.SetProperty("connection.driver_class", "NHibernate.Driver.OracleDataClientDriver");
-                }
-                else
-                    throw new FrameworkException(DatabaseLanguageError);
-
-                ResolveEventHandler resolveAssembly = (s, args) => _domainObjectModel.Assembly;
-                try
-                {
-                    AppDomain.CurrentDomain.AssemblyResolve += resolveAssembly;
-                    configuration.AddXmlString(_nHibernateMapping.GetMapping());
-                }
-                finally
-                {
-                    AppDomain.CurrentDomain.AssemblyResolve -= resolveAssembly;
-                }
-
-                foreach (var configurationExtension in _nHibernateConfigurationExtensions)
-                    configurationExtension.ExtendConfiguration(configuration);
-
-                SchemaMetadataUpdater.QuoteTableAndColumns(configuration);
-                var sessionFactory = configuration.BuildSessionFactory();
-
-                _performanceLogger.Write(sw, "NHibernatePersistenceEngine.PrepareNHSessionFactory");
-                return sessionFactory;
+                configuration.SetProperty("dialect", "NHibernate.Dialect.MsSql2005Dialect");
+                configuration.SetProperty("connection.driver_class", "NHibernate.Driver.SqlClientDriver");
             }
+            else if (SqlUtility.DatabaseLanguage == "Oracle")
+            {
+                configuration.SetProperty("dialect", "NHibernate.Dialect.Oracle10gDialect");
+                configuration.SetProperty("connection.driver_class", "NHibernate.Driver.OracleDataClientDriver");
+            }
+            else
+                throw new FrameworkException(DatabaseLanguageError);
+
+            ResolveEventHandler resolveAssembly = (s, args) => _domainObjectModel.Assembly;
+            try
+            {
+                AppDomain.CurrentDomain.AssemblyResolve += resolveAssembly;
+                configuration.AddXmlString(_nHibernateMapping.GetMapping());
+            }
+            finally
+            {
+                AppDomain.CurrentDomain.AssemblyResolve -= resolveAssembly;
+            }
+
+            foreach (var configurationExtension in _nHibernateConfigurationExtensions)
+                configurationExtension.ExtendConfiguration(configuration);
+
+            SchemaMetadataUpdater.QuoteTableAndColumns(configuration);
+            var sessionFactory = configuration.BuildSessionFactory();
+
+            _performanceLogger.Write(sw, "NHibernatePersistenceEngine.PrepareNHSessionFactory");
+            return sessionFactory;
         }
     }
 }
