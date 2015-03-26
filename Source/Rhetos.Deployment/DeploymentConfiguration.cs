@@ -73,6 +73,11 @@ namespace Rhetos.Deployment
                 throw new UserException("Invalid configuration file format '" + PackagesConfigurationFileName + "'. Missing attribute 'id'.");
             if (requests.Count == 0)
                 _logger.Error("No packages defined in '" + PackagesConfigurationFileName  + "'. " + configFileDescription);
+            Version dummy;
+            // Simple version format in config file will be converted to a specific version "[ver,ver]", instead of being used as a minimal version (as in NuGet dependencies) in order to conform to NuGet packages.config convention.
+            foreach (var request in requests)
+                if (request.VersionsRange != null && Version.TryParse(request.VersionsRange, out dummy))
+                    request.VersionsRange = string.Format("[{0},{0}]", request.VersionsRange);
             return requests;
         }
 

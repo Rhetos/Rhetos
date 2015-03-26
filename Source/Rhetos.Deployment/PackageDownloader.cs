@@ -109,11 +109,9 @@ namespace Rhetos.Deployment
 
             if (!requestVersionsRange.Satisfies(existingVersion))
                 DependencyError(string.Format(
-                    "Incompatible package version '{0}, version {1}, requested by {2}' conflicts with prevously downloaded package '{3}, version {4}, requested by {5} ({6})'."
-                    + " Try specifying newer version of the package at the beginning of {7}.",
+                    "Incompatible package version '{0}, version {1}, requested by {2}' conflicts with prevously downloaded package '{3}, version {4}, requested by {5} ({6})'.",
                     request.Id, request.VersionsRange ?? "not specified", request.RequestedBy,
-                    existing.Id, existing.Version, existing.Request.RequestedBy, existing.Request.VersionsRange,
-                    DeploymentConfiguration.PackagesConfigurationFileName));
+                    existing.Id, existing.Version, existing.Request.RequestedBy, existing.Request.VersionsRange));
 
             return true;
         }
