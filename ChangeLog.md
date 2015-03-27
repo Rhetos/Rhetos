@@ -5,11 +5,12 @@
 ### Breaking changes
 
 * *SimpleWindowsAuth* package is now obsolete, and should be used only for backward compatibility in legacy applications.
-  Removing the package from an existing application will still allow use of Windows authentication, with the following changes:
+  When removing the package from an existing application, the following changes will occur:
   * Rhetos admin GUI for setting user's permissions is no longer available (`/Resources/Permissions.html`).
   * User names in `Common.Principal` must start with domain name prefix (domainname\username).
   * Domain user groups should be moved from `Common.Principal` to `Common.Role`.
   * Deploy [*ActiveDirectorySync*](ActiveDirectorySync/Readme.md) package to automatically update principal-role membership (`Common.PrincipalHasRole`) for domain users and groups.
+  * Each user must be entered in `Common.Principal`, *SimpleWindowsAuth* allowed entering only user groups.
 
 ### New features
 
@@ -20,7 +21,7 @@
 
 ### Internal improvements
 
-* User authorization (permissions) is now implemented in *CommonConcepts* package, instead of *SimpleWindowsAuth* and *AspNetFormsAuth*.
+* User authorization (permissions) and Windows authentication is now implemented in *CommonConcepts* package, instead of *SimpleWindowsAuth* and *AspNetFormsAuth*.
 * New concept: **Query** with parameter, for parametrized reading data using IQueryable.
 * New low-level concepts: **BeforeQuery** with parameter and **BeforeAction**, for injecting code in business object model.
 * New concept: **DefaultLoadFilter**, for limiting automatic computation on a subset of rows on **KeepSynchronized**.

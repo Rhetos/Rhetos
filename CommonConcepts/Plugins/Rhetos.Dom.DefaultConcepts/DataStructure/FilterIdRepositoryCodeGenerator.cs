@@ -41,8 +41,6 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (info.Module.Name == "Common" && info.Name == "FilterId")
                 codeBuilder.InsertCode(snippet, RepositoryHelper.RepositoryMembers, info);
-
-            codeBuilder.AddReferencesFromDependency(typeof(DeactivateInsteadOfDelete));
         }
 
         const string snippet =
