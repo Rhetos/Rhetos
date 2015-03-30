@@ -174,7 +174,7 @@ in order for forms authentication to work.
 
 ### 1. Modify Web.config
 
-1. Comment out (or delete) the `security mode="TransportCredentialOnly` elements in all bindings.
+1. Comment out (or delete) the `security mode="TransportCredentialOnly"` elements in all bindings.
 2. Remove the `<authentication mode="Windows" />` element.
 3. Inside the `<system.web>` element add the following:
 
@@ -200,7 +200,7 @@ in order for forms authentication to work.
 
 *(Only if using IIS Express instead of IIS server)*
 
-If using IIS Express, after adding AspNetFormsAuth package to `ApplyPackages.txt` execute `SetupRhetosServer.bat`
+If using IIS Express, after deploying AspNetFormsAuth package, execute `SetupRhetosServer.bat`
 utility in Rhetos server's folder to automatically configure `IISExpress.config`,
 or manually apply the following lines in IISExpress configuration file inside `system.webServer` element
 or inside `location / system.webServer` (usually at the end of the file):

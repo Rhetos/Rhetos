@@ -1,5 +1,13 @@
 # Rhetos release notes
 
+## 0.9.30 (TO BE RELEASED)
+
+### Internal improvements
+
+* Bugfix: Installing a newer package version than specified in the *RhetosPackages.config*.
+* Bugfix: Error "There is no principal with the given username" when using *SimpleWindowsAuth* package.
+* Bugfix: Error "An item with the same key has already been added" in NHibernatePersistenceEngine.
+
 ## 0.9.29 (2015-03-23)
 
 ### Breaking changes

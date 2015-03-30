@@ -1,0 +1,43 @@
+﻿/*
+    Copyright (C) 2014 Omega software d.o.o.
+
+    This file is part of Rhetos.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+using System;
+using Autofac;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.ComponentModel.Composition;
+using Rhetos.Security;
+using Rhetos.Extensibility;
+using Rhetos.Dom.DefaultConcepts;
+
+namespace Rhetos.SimpleWindowsAuth
+{
+    [Export(typeof(Module))]
+    [ExportMetadata(MefProvider.DependsOn, typeof(Rhetos.Dom.DefaultConcepts.AutofacModuleConfiguration))] // SimpleWindowsAuth components must be registered after Rhetos.Dom.DefaultConcepts in order to override CommonAuthorizationProvider.
+    public class AutofacModuleConfiguration : Module
+    {
+        protected override void Load(ContainerBuilder builder)
+        {
+            Plugins.CheckOverride<IAuthorizationProvider, SimpleWindowsAuthorizationProvider>(builder, typeof(CommonAuthorizationProvider), typeof(NullAuthorizationProvider));
+            builder.RegisterType<SimpleWindowsAuthorizationProvider>().As<IAuthorizationProvider>().InstancePerLifetimeScope();
+            base.Load(builder);
+        }
+    }
+}

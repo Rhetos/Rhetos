@@ -32,8 +32,6 @@ using Rhetos.Dom.DefaultConcepts;
 
 namespace Rhetos.SimpleWindowsAuth
 {
-    [Export(typeof(IAuthorizationProvider))]
-    [ExportMetadata(MefProvider.DependsOn, typeof(CommonAuthorizationProvider))] // Overrides CommonAuthorizationProvider.
     public class SimpleWindowsAuthorizationProvider : IAuthorizationProvider
     {
         private readonly Lazy<IPermissionLoader> _permissionLoader;
