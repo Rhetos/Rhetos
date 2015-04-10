@@ -93,6 +93,10 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         public IEnumerable<PrincipalPermissionInfo> GetPrincipalPermissions(IPrincipal principal, IEnumerable<Guid> claimIds = null)
         {
+            CsUtility.Materialize(ref claimIds);
+            if (claimIds != null && claimIds.Count() == 0)
+                return Enumerable.Empty<PrincipalPermissionInfo>();
+
             var query = _principalPermissionRepository.Query()
                 .Where(principalPermission => principalPermission.IsAuthorized != null
                     && principalPermission.Principal.ID == principal.ID);
@@ -115,6 +119,11 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         public IEnumerable<RolePermissionInfo> GetRolePermissions(IEnumerable<Guid> roleIds, IEnumerable<Guid> claimIds = null)
         {
+            CsUtility.Materialize(ref roleIds);
+            CsUtility.Materialize(ref claimIds);
+            if (roleIds.Count() == 0 || (claimIds != null && claimIds.Count() == 0))
+                return Enumerable.Empty<RolePermissionInfo>();
+
             var query = _rolePermissionRepository.Query()
                 .Where(rolePermission => rolePermission.IsAuthorized != null
                     && roleIds.Contains(rolePermission.Role.ID));
@@ -137,6 +146,10 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         public IDictionary<Guid, string> GetRoles(IEnumerable<Guid> roleIds = null)
         {
+            CsUtility.Materialize(ref roleIds);
+            if (roleIds != null && roleIds.Count() == 0)
+                return new Dictionary<Guid, string>();
+
             var query = _roleRepository.Query();
             if (roleIds != null)
                 query = query.Where(role => roleIds.Contains(role.ID));
@@ -153,6 +166,10 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         public IDictionary<Claim, ClaimInfo> GetClaims(IEnumerable<Claim> requiredClaims = null)
         {
+            CsUtility.Materialize(ref requiredClaims);
+            if (requiredClaims != null && requiredClaims.Count() == 0)
+                return new Dictionary<Claim, ClaimInfo>();
+
             var queryClaims = _claimRepository.Query().Where(claim => claim.Active != null && claim.Active.Value);
 
             if (requiredClaims != null)

@@ -127,6 +127,7 @@ namespace Rhetos.Utilities
 
         /// <summary>
         /// If <paramref name="items"/> is not a List or an Array, converts it to a List&lt;<typeparamref name="T"/>&gt;.
+        /// If the parameter is null, it will remain null.
         /// Use this function to make sure that the <paramref name="items"/> is not a LINQ query
         /// before using it multiple times, in order to aviod the query evaluation every time
         /// (sometimes it means reading data from the database on every evaluation).
