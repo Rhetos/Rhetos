@@ -489,7 +489,7 @@ namespace CommonConcepts.Test
                     });
 
                 for (int x = 0; x < sqls.Count(); x++)
-                    Console.WriteLine("Exception " + x + ": " + x + ".");
+                    Console.WriteLine("Exception " + x + ": " + exceptions[x] + ".");
 
                 Assert.IsNull(exceptions[0]);
                 Assert.IsNotNull(exceptions[1]);

@@ -24,10 +24,11 @@ using NHibernate;
 
 namespace Rhetos.Persistence
 {
+    /// <summary>
+    /// Implementation similar to the "unit of work" pattern.
+    /// </summary>
     public interface IPersistenceTransaction : IDisposable
     {
-        ISession NHibernateSession { get; }
-
         /// <summary>
         /// DiscardChanges marks the transaction as invalid. The changes will be descarded (rollback executed) on Dispose.
         /// </summary>
@@ -38,5 +39,22 @@ namespace Rhetos.Persistence
         /// This event will not be invoked if the transaction rollback was executed (see <see cref="DiscardChanges()"/>).
         /// </summary>
         event Action BeforeClose;
+
+        /// <summary>
+        /// Drops the database connection and creates a new one to release the database locks.
+        /// This method should not be used during regular server run-time because it splits the unit of work
+        /// making it impossible to rollback the whole session in case of a need.
+        /// </summary>
+        void CommitAndReconnect();
+
+        /// <summary>
+        /// Clears in-memory cache that is used for lazy loading.
+        /// </summary>
+        void ClearCache();
+
+        /// <summary>
+        /// Clears the item from the in-memory cache that is used for lazy loading.
+        /// </summary>
+        void ClearCache(object item);
     }
 }

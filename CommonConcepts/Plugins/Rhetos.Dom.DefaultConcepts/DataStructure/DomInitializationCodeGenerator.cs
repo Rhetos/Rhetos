@@ -32,6 +32,8 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(InitializationConcept))]
     public class DomInitializationCodeGenerator : IConceptCodeGenerator
     {
+        public const string EntityFrameworkContextMembersTag = "/*EntityFrameworkContextMembers*/";
+
         public const string StandardNamespacesSnippet =
 @"using System;
     using System.Collections.Generic;
@@ -61,6 +63,7 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.AddReferencesFromDependency(typeof(NHibernate.Linq.Functions.DefaultLinqToHqlGeneratorsRegistry));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Logging.ILogProvider));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Security.IWindowsSecurity));
+            codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.DbContext));
         }
 
         private static string GenerateCommonClassesSnippet()
@@ -85,6 +88,11 @@ namespace Rhetos.Dom.DefaultConcepts
         {2}
     }}
 
+    public class EntityFrameworkContext : System.Data.Entity.DbContext
+    {{
+        {13}
+    }}
+
     public static class Infrastructure
     {{
         public static readonly RegisteredInterfaceImplementations RegisteredInterfaceImplementationName = new RegisteredInterfaceImplementations
@@ -103,7 +111,7 @@ namespace Rhetos.Dom.DefaultConcepts
     public class ExecutionContext
     {{
         protected Lazy<Rhetos.Persistence.IPersistenceTransaction> _persistenceTransaction;
-        public NHibernate.ISession NHibernateSession {{ get {{ return _persistenceTransaction.Value.NHibernateSession; }} }}
+        public NHibernate.ISession NHibernateSession {{ get {{ return ((Rhetos.Persistence.NHibernate.NHibernatePersistenceTransaction)_persistenceTransaction.Value).NHibernateSession; }} }}
 
         public Rhetos.Persistence.IPersistenceTransaction PersistenceTransaction {{ get {{ return _persistenceTransaction.Value; }} }}
 
@@ -142,6 +150,8 @@ namespace Rhetos.Dom.DefaultConcepts
         protected Lazy<Rhetos.Security.IWindowsSecurity> _windowsSecurity;
         public Rhetos.Security.IWindowsSecurity WindowsSecurity {{ get {{ return _windowsSecurity.Value; }} }}
 
+        public EntityFrameworkContext EntityFrameworkContext {{ get; private set; }}
+
         {4}
 
         // This constructor is used for automatic parameter injection with autofac.
@@ -152,7 +162,8 @@ namespace Rhetos.Dom.DefaultConcepts
             Lazy<Rhetos.Security.IAuthorizationManager> authorizationManager,
             Lazy<Rhetos.Dom.DefaultConcepts.GenericRepositories> genericRepositories,
             Rhetos.Logging.ILogProvider logProvider,
-            Lazy<Rhetos.Security.IWindowsSecurity> windowsSecurity{5})
+            Lazy<Rhetos.Security.IWindowsSecurity> windowsSecurity{5},
+            EntityFrameworkContext entityFrameworkContext)
         {{
             _persistenceTransaction = persistenceTransaction;
             _userInfo = userInfo;
@@ -162,6 +173,7 @@ namespace Rhetos.Dom.DefaultConcepts
             _repository = new Lazy<Common.DomRepository>(() => new Common.DomRepository(this));
             LogProvider = logProvider;
             _windowsSecurity = windowsSecurity;
+            EntityFrameworkContext = entityFrameworkContext;
             {6}
         }}
 
@@ -177,6 +189,7 @@ namespace Rhetos.Dom.DefaultConcepts
         protected override void Load(Autofac.ContainerBuilder builder)
         {{
             builder.RegisterType<DomRepository>().InstancePerLifetimeScope();
+            builder.RegisterType<EntityFrameworkContext>().As<EntityFrameworkContext>().As<System.Data.Entity.DbContext>().InstancePerLifetimeScope();
             builder.RegisterType<ExecutionContext>().InstancePerLifetimeScope();
             builder.RegisterInstance(Infrastructure.RegisteredInterfaceImplementationName).ExternallyOwned();
             builder.RegisterInstance(Infrastructure.ApplyFiltersOnClientRead).ExternallyOwned();
@@ -227,7 +240,8 @@ namespace Rhetos.Dom.DefaultConcepts
             ModuleCodeGenerator.LinqToHqlGeneratorsRegistryTag,
             ModuleCodeGenerator.ApplyFiltersOnClientReadTag,
             ModuleCodeGenerator.CommonNamespaceMembersTag,
-            ModuleCodeGenerator.CommonInfrastructureMembersTag);
+            ModuleCodeGenerator.CommonInfrastructureMembersTag,
+            EntityFrameworkContextMembersTag);
         }
     }
 }

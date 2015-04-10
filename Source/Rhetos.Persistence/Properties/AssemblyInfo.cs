@@ -24,10 +24,10 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Rhetos.Persistence.Interfaces")]
+[assembly: AssemblyTitle("Rhetos.Persistence")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyProduct("Rhetos.Persistence.Interfaces")]
+[assembly: AssemblyProduct("Rhetos.Persistence")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
@@ -36,7 +36,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("4379b610-f0ab-4027-a5f3-857afeb47d94")]
+[assembly: Guid("8777fa85-a693-4bea-828f-b91a001414ad")]
 
 // Version information for an assembly consists of the following four values:
 //

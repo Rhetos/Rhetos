@@ -154,5 +154,23 @@ namespace Rhetos.Persistence.NHibernate
                 _session = null;
             }
         }
+
+        public void ClearCache()
+        {
+            if (_disposed)
+                throw new FrameworkException("Trying to clear cache on a disposed persistence transaction.");
+
+            if (_session != null)
+                _session.Clear();
+        }
+
+        public void ClearCache(object item)
+        {
+            if (_disposed)
+                throw new FrameworkException("Trying to clear an item from the cache on a disposed persistence transaction.");
+
+            if (_session != null)
+                _session.Evict(item);
+        }
     }
 }

@@ -100,7 +100,7 @@ namespace Rhetos.AspNetFormsAuth
         private void InitializeAspNetDatabase()
         {
             // Committing the inserted user data so it can be used by InitAspNetDatabase.exe.
-            ((NHibernatePersistenceTransaction)_persistenceTransaction).CommitAndReconnect();
+            _persistenceTransaction.CommitAndReconnect();
 
             var path = Path.Combine(Paths.PluginsFolder, @"InitAspNetDatabase.exe");
             ExecuteApplication(path, "/nopause");

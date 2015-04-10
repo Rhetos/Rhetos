@@ -17,41 +17,32 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac;
 using Rhetos.Persistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace Rhetos.CommonConcepts.Test.Mocks
+namespace Rhetos.Configuration.Autofac
 {
-    class PersistenceTransactionStub : IPersistenceTransaction
+    public class PersistenceModuleConfiguration : Module
     {
-        public NHibernate.ISession NHibernateSession
+        private readonly bool _deploymentTime;
+
+        public PersistenceModuleConfiguration(bool deploymentTime)
         {
-            get { return new NHibernateSessionStub(); }
+            _deploymentTime = deploymentTime;
         }
 
-        public void DiscardChanges()
+        protected override void Load(ContainerBuilder builder)
         {
-        }
+            if (_deploymentTime)
+            {
+            }
+            else
+            {
+            	// TODO: Register as IPersistenceTransaction, instead of NHibernate implementation.
+                builder.RegisterType<EntityFrameworkPersistenceTransaction>().As<EntityFrameworkPersistenceTransaction>().InstancePerLifetimeScope();
+            }
 
-        public void Dispose()
-        {
-        }
-
-        public event Action BeforeClose;
-
-        public void CommitAndReconnect()
-        {
-        }
-
-        public void ClearCache()
-        {
-        }
-
-        public void ClearCache(object item)
-        {
+            base.Load(builder);
         }
     }
 }

@@ -62,7 +62,7 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string CodeSnippet(DataStructureInfo info)
         {
             return
-@"public override int GetHashCode()
+        @"public override int GetHashCode()
         {
             " + GetHashCodeTag.Evaluate(info) + @"
             return ID.GetHashCode();

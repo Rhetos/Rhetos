@@ -101,6 +101,7 @@
   <ItemGroup>
     <Compile Include="CompilerConfiguration.cs" />
     <Compile Include="DefaultAutofacConfiguration.cs" />
+    <Compile Include="PersistenceModuleConfiguration.cs" />
     <Compile Include="RhetosTestContainer.cs" />
     <Compile Include="UtilitiesModuleConfiguration.cs" />
     <Compile Include="LoggingConfiguration.cs" />
@@ -188,6 +189,10 @@
     <ProjectReference Include="..\Rhetos.Persistence.NHibernate\Rhetos.Persistence.NHibernate.csproj">
       <Project>{24238da8-70c5-4be5-85b3-359e60b40acf}</Project>
       <Name>Rhetos.Persistence.NHibernate</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Persistence\Rhetos.Persistence.csproj">
+      <Project>{02415b9e-fb00-451d-8b1a-b4a3ce150f2d}</Project>
+      <Name>Rhetos.Persistence</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rhetos.Processing\Rhetos.Processing.csproj">
       <Project>{eb4237c4-3d83-4632-b8c9-ac08c886720a}</Project>

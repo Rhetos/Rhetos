@@ -755,7 +755,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     {
                         if (!sameValue(oldEnum.Current, newEnum.Current))
                         {
-                            _persistenceTransaction.NHibernateSession.Evict(oldEnum.Current);
+                            _persistenceTransaction.ClearCache(oldEnum.Current);
                             assign(oldEnum.Current, newEnum.Current);
                             toUpdateList.Add(oldEnum.Current);
                         }
