@@ -65,11 +65,11 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             ReferencePropertyInfo info = (ReferencePropertyInfo)conceptInfo;
-            PropertyHelper.GenerateCodeForType(info, codeBuilder, info.Referenced.Module.Name + "." + info.Referenced.Name, false);
 
             var referenceGuid = new PropertyInfo { DataStructure = info.DataStructure, Name = info.Name + "ID" };
-            codeBuilder.InsertCode(ReferenceIDSnippet(info, referenceGuid), DataStructureCodeGenerator.BodyTag, info.DataStructure);
-            codeBuilder.InsertCode("[DataMember]", PropertyHelper.AttributeTag, referenceGuid);
+            PropertyHelper.GenerateCodeForType(referenceGuid, codeBuilder, "Guid?");
+
+            DataStructureQueryableCodeGenerator.AddProperty(codeBuilder, info.DataStructure, info.Name, info.DataStructure.Module.Name + "_" + info.DataStructure.Name);
 
             if (info.DataStructure is IWritableOrmDataStructure)
             {

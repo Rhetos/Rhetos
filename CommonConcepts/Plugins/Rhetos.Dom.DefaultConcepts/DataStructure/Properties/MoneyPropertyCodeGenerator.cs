@@ -36,7 +36,7 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            PropertyHelper.GenerateCodeForType((PropertyInfo)conceptInfo, codeBuilder, "decimal?", true);
+            PropertyHelper.GenerateCodeForType((PropertyInfo)conceptInfo, codeBuilder, "decimal?");
         }
     }
 }

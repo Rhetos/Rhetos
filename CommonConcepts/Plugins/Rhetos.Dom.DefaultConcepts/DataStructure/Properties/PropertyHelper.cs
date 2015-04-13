@@ -26,7 +26,6 @@ using Rhetos.Dsl.DefaultConcepts;
 using System.Globalization;
 using Rhetos.Compiler;
 
-
 namespace Rhetos.Dom.DefaultConcepts
 {
     public static class PropertyHelper
@@ -37,7 +36,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return string.Format(
 @"{2}
-        public virtual {1} {0} {{ get; set; }}
+        public {1} {0} {{ get; set; }}
 
         ",
             info.Name,
@@ -45,11 +44,18 @@ namespace Rhetos.Dom.DefaultConcepts
             AttributeTag.Evaluate(info));
         }
 
+        [Obsolete("Remove the 'serializable' argument. All regular properties are serializable.")]
         public static void GenerateCodeForType(PropertyInfo info, ICodeBuilder codeBuilder, string propertyType, bool serializable)
         {
             codeBuilder.InsertCode(PropertySnippet(info, propertyType), DataStructureCodeGenerator.BodyTag, info.DataStructure);
             if (serializable)
                 codeBuilder.InsertCode("[DataMember]", AttributeTag, info);
+        }
+
+        public static void GenerateCodeForType(PropertyInfo info, ICodeBuilder codeBuilder, string propertyType)
+        {
+            codeBuilder.InsertCode(PropertySnippet(info, propertyType), DataStructureCodeGenerator.BodyTag, info.DataStructure);
+            codeBuilder.InsertCode("[DataMember]", AttributeTag, info);
         }
     }
 }

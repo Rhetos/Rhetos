@@ -38,10 +38,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             DataStructureExtendsInfo info = (DataStructureExtendsInfo)conceptInfo;
 
-            {
-                PropertyInfo referenceInfo = new PropertyInfo { DataStructure = info.Extension, Name = "Base" };
-                PropertyHelper.GenerateCodeForType(referenceInfo, codeBuilder, info.Base.Module.Name + "." + info.Base.Name, false);
-            }
+            DataStructureQueryableCodeGenerator.AddProperty(codeBuilder, info.Extension, "Base", info.Base.Module.Name + "_" + info.Base.Name);
 
             if (info.Extension is IWritableOrmDataStructure && info.Base is IOrmDataStructure)
             {
@@ -58,10 +55,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     WritableOrmDataStructureCodeGenerator.InitializationTag.Evaluate(info.Extension));
             }
 
-            {
-                PropertyInfo extensionOnBase = new PropertyInfo {DataStructure = info.Base, Name = ExtensionPropertyName(info)};
-                PropertyHelper.GenerateCodeForType(extensionOnBase, codeBuilder, info.Extension.Module.Name + "." + info.Extension.Name, false);
-            }
+            DataStructureQueryableCodeGenerator.AddProperty(codeBuilder, info.Base, ExtensionPropertyName(info), info.Extension.Module.Name + "_" + info.Extension.Name);
 
             if (info.Base is IWritableOrmDataStructure && info.Extension is IOrmDataStructure)
             {

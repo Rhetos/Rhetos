@@ -43,23 +43,34 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (DataStructureInfo)conceptInfo;
+            var orm = info as IOrmDataStructure;
 
-            if (info is IOrmDataStructure)
+            if (orm != null)
             {
-                codeBuilder.InsertCode(CodeSnippet(info), DataStructureCodeGenerator.BodyTag, info);
-                codeBuilder.AddInterfaceAndReference(string.Format("System.IEquatable<{0}>", info.Name), typeof(System.IEquatable<>), info);
+                codeBuilder.InsertCode(SnippetEntityClassMembers(info), DataStructureCodeGenerator.BodyTag, info);
+                DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, string.Format("System.IEquatable<{0}>", info.Name), typeof(System.IEquatable<>), info);
 
                 PropertyInfo idProperty = new PropertyInfo { DataStructure = info, Name = "ID" };
-                PropertyHelper.GenerateCodeForType(idProperty, codeBuilder, "Guid", true);
-                codeBuilder.AddInterfaceAndReference(typeof(IEntity), info);
+                PropertyHelper.GenerateCodeForType(idProperty, codeBuilder, "Guid");
+                DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, typeof(IEntity), info);
 
                 RepositoryHelper.GenerateRepository(info, codeBuilder);
                 RepositoryHelper.GenerateQueryableRepositoryFunctions(info, codeBuilder, QuerySnippet(info));
                 codeBuilder.InsertCode(SnippetQueryableFilterById(info), RepositoryHelper.RepositoryMembers, info);
+
+                codeBuilder.InsertCode(
+                    string.Format("public System.Data.Entity.DbSet<Common.Queryable.{0}_{1}> {0}_{1} {{ get; set; }}\r\n        ",
+                        info.Module.Name, info.Name),
+                    DomInitializationCodeGenerator.EntityFrameworkContextMembersTag);
+                codeBuilder.InsertCode(
+                    string.Format("modelBuilder.Ignore<global::{0}.{1}>();\r\n            "
+                        + "modelBuilder.Entity<Common.Queryable.{0}_{1}>().Map(m => {{ m.MapInheritedProperties(); m.ToTable(\"{3}\", \"{2}\"); }});\r\n            ",
+                        info.Module.Name, info.Name, orm.GetOrmSchema(), orm.GetOrmDatabaseObject()),
+                    DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
             }
         }
 
-        protected static string CodeSnippet(DataStructureInfo info)
+        protected static string SnippetEntityClassMembers(DataStructureInfo info)
         {
             return
         @"public override int GetHashCode()

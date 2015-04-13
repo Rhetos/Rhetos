@@ -54,7 +54,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (LinkedItemsInfo)conceptInfo;
 
             string propertyType = string.Format("IList<{0}.{1}>", info.ReferenceProperty.DataStructure.Module.Name, info.ReferenceProperty.DataStructure.Name);
-            PropertyHelper.GenerateCodeForType(info, codeBuilder, propertyType, false);
+            DataStructureQueryableCodeGenerator.AddProperty(codeBuilder, info.DataStructure, info.Name, propertyType);
 
             codeBuilder.InsertCode(OrmMappingOnSaveSnippet(info), WritableOrmDataStructureCodeGenerator.InitializationTag, info.DataStructure);
         }

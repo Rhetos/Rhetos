@@ -40,7 +40,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             ImplementsInterfaceInfo info = (ImplementsInterfaceInfo)conceptInfo;
-            codeBuilder.AddInterfaceAndReference(info.GetInterfaceType(), info.DataStructure);
+            DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, info.GetInterfaceType(), info.DataStructure);
         }
     }
 }

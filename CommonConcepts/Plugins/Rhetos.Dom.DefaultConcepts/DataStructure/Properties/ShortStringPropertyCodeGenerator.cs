@@ -37,7 +37,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             PropertyInfo info = (PropertyInfo)conceptInfo;
-            PropertyHelper.GenerateCodeForType(info, codeBuilder, "string", true);
+            PropertyHelper.GenerateCodeForType(info, codeBuilder, "string");
 
             if (info.DataStructure is IWritableOrmDataStructure)
                 codeBuilder.InsertCode(LimitStringLengthOnSaveSnippet(info), WritableOrmDataStructureCodeGenerator.ArgumentValidationTag, info.DataStructure);

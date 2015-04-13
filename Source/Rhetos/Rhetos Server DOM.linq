@@ -1,4 +1,6 @@
 <Query Kind="Program">
+  <Reference Relative="bin\EntityFramework.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\EntityFramework.dll</Reference>
+  <Reference Relative="bin\EntityFramework.SqlServer.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\EntityFramework.SqlServer.dll</Reference>
   <Reference Relative="bin\Iesi.Collections.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Iesi.Collections.dll</Reference>
   <Reference Relative="bin\NHibernate.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\NHibernate.dll</Reference>
   <Reference Relative="bin\NLog.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\NLog.dll</Reference>
@@ -36,6 +38,7 @@
   <Namespace>Rhetos.Utilities</Namespace>
   <Namespace>System</Namespace>
   <Namespace>System.Collections.Generic</Namespace>
+  <Namespace>System.Data.Entity</Namespace>
   <Namespace>System.DirectoryServices</Namespace>
   <Namespace>System.DirectoryServices.AccountManagement</Namespace>
   <Namespace>System.IO</Namespace>

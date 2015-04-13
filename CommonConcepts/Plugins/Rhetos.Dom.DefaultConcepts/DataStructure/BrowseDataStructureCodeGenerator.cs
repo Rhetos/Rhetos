@@ -70,8 +70,8 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (BrowseDataStructureInfo)conceptInfo;
 
             PropertyInfo idProperty = new PropertyInfo { DataStructure = info, Name = "ID" };
-            PropertyHelper.GenerateCodeForType(idProperty, codeBuilder, "Guid", true);
-            codeBuilder.AddInterfaceAndReference(typeof(IEntity), info);
+            PropertyHelper.GenerateCodeForType(idProperty, codeBuilder, "Guid");
+            DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, typeof(IEntity), info);
 
             RepositoryHelper.GenerateRepository(info, codeBuilder);
             RepositoryHelper.GenerateQueryableRepositoryFunctions(info, codeBuilder, QuerySnippet(info));

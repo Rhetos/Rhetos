@@ -31,8 +31,7 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            PropertyHelper.GenerateCodeForType((PropertyInfo)conceptInfo, codeBuilder, "Guid?", true);
+            PropertyHelper.GenerateCodeForType((PropertyInfo)conceptInfo, codeBuilder, "Guid?");
         }
-
     }
 }

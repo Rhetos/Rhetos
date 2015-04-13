@@ -42,7 +42,7 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string CodeSnippet(DataStructureInfo info)
         {
             return AttributesTag.Evaluate(info) + @"
-    public partial class " + info.Name + InterfaceTag.Evaluate(info) + @"
+    public class " + info.Name + InterfaceTag.Evaluate(info) + @"
     {
         " + BodyTag.Evaluate(info) + @"
     }
@@ -56,17 +56,13 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode(CodeSnippet(info), ModuleCodeGenerator.NamespaceMembersTag, info.Module);
             codeBuilder.InsertCode("[DataContract]", AttributesTag, info);
         }
-    }
 
-
-    public static class DataStructureCodeBuilder
-    {
-        public static void AddInterfaceAndReference(this ICodeBuilder codeBuilder, Type type, DataStructureInfo dataStructureInfo)
+        public static void AddInterfaceAndReference(ICodeBuilder codeBuilder, Type type, DataStructureInfo dataStructureInfo)
         {
-            codeBuilder.AddInterfaceAndReference(type.FullName, type, dataStructureInfo);
+            AddInterfaceAndReference(codeBuilder, type.FullName, type, dataStructureInfo);
         }
 
-        public static void AddInterfaceAndReference(this ICodeBuilder codeBuilder, string typeName, Type type, DataStructureInfo dataStructureInfo)
+        public static void AddInterfaceAndReference(ICodeBuilder codeBuilder, string typeName, Type type, DataStructureInfo dataStructureInfo)
         {
             codeBuilder.InsertCode(typeName, DataStructureCodeGenerator.InterfaceTag, dataStructureInfo);
             codeBuilder.AddReferencesFromDependency(type);

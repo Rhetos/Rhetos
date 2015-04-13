@@ -92,6 +92,7 @@
     <Compile Include="Computations\KeyPropertyComputedFromCodeGenerator.cs" />
     <Compile Include="Computations\KeepSynchronizedRecomputeOnDeployCodeGenerator.cs" />
     <Compile Include="Computations\LockItemsLockPropertyCodeGenerator.cs" />
+    <Compile Include="DataStructure\DataStructureQueryableCodeGenerator.cs" />
     <Compile Include="DataStructure\FilterIdRepositoryCodeGenerator.cs" />
     <Compile Include="DataStructure\ImplementsInterfacePropertyCodeGenerator.cs" />
     <Compile Include="DataStructure\DomInitializationCodeGenerator.cs" />

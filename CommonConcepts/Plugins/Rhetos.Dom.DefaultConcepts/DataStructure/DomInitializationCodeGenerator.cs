@@ -33,6 +33,9 @@ namespace Rhetos.Dom.DefaultConcepts
     public class DomInitializationCodeGenerator : IConceptCodeGenerator
     {
         public const string EntityFrameworkContextMembersTag = "/*EntityFrameworkContextMembers*/";
+        public const string EntityFrameworkOnModelCreatingTag = "/*EntityFrameworkOnModelCreating*/";
+        public const string EntityFrameworkConfigurationTag = "/*EntityFrameworkConfiguration*/";
+        public const string CommonQueryableMemebersTag = "/*CommonQueryableMemebers*/";
 
         public const string StandardNamespacesSnippet =
 @"using System;
@@ -64,6 +67,7 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Logging.ILogProvider));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Security.IWindowsSecurity));
             codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.DbContext));
+            codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.SqlServer.SqlProviderServices));
         }
 
         private static string GenerateCommonClassesSnippet()
@@ -88,9 +92,29 @@ namespace Rhetos.Dom.DefaultConcepts
         {2}
     }}
 
+    [System.Data.Entity.DbConfigurationType(typeof(EntityFrameworkConfiguration))] 
     public class EntityFrameworkContext : System.Data.Entity.DbContext
     {{
+        public EntityFrameworkContext(ConnectionString connectionString)
+            : base(connectionString.ToString())
+        {{
+        }}
+
+        protected override void OnModelCreating(System.Data.Entity.DbModelBuilder modelBuilder)
+        {{
+            {14}
+        }}
+
         {13}
+    }}
+
+    public class EntityFrameworkConfiguration : System.Data.Entity.DbConfiguration 
+    {{
+        public EntityFrameworkConfiguration()
+        {{
+            SetProviderServices(""System.Data.SqlClient"", System.Data.Entity.SqlServer.SqlProviderServices.Instance);
+            {15}
+        }}
     }}
 
     public static class Infrastructure
@@ -227,7 +251,15 @@ namespace Rhetos.Dom.DefaultConcepts
     }}
 
     {11}
-}}",
+}}
+
+namespace Common.Queryable
+{{
+    {0}
+
+    {16}
+}}
+",
             StandardNamespacesSnippet,
             ModuleCodeGenerator.CommonUsingTag,
             ModuleCodeGenerator.CommonDomRepositoryMembersTag,
@@ -241,7 +273,10 @@ namespace Rhetos.Dom.DefaultConcepts
             ModuleCodeGenerator.ApplyFiltersOnClientReadTag,
             ModuleCodeGenerator.CommonNamespaceMembersTag,
             ModuleCodeGenerator.CommonInfrastructureMembersTag,
-            EntityFrameworkContextMembersTag);
+            EntityFrameworkContextMembersTag,
+            EntityFrameworkOnModelCreatingTag,
+            EntityFrameworkConfigurationTag,
+            CommonQueryableMemebersTag);
         }
     }
 }

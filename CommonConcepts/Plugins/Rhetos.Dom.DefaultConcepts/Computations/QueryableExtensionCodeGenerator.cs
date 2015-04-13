@@ -87,11 +87,11 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (QueryableExtensionInfo)conceptInfo;
 
             codeBuilder.InsertCode(CodeSnippet(info), DataStructureCodeGenerator.BodyTag, info);
-            codeBuilder.AddInterfaceAndReference(string.Format("System.IEquatable<{0}>", info.Name), typeof(IEquatable<>), info);
+            DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, string.Format("System.IEquatable<{0}>", info.Name), typeof(IEquatable<>), info);
 
             PropertyInfo idProperty = new PropertyInfo { DataStructure = info, Name = "ID" };
-            PropertyHelper.GenerateCodeForType(idProperty, codeBuilder, "Guid", true);
-            codeBuilder.AddInterfaceAndReference(typeof(IEntity), info);
+            PropertyHelper.GenerateCodeForType(idProperty, codeBuilder, "Guid");
+            DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, typeof(IEntity), info);
 
             RepositoryHelper.GenerateRepository(info, codeBuilder);
             RepositoryHelper.GenerateQueryableRepositoryFunctions(info, codeBuilder, QuerySnippet(info));
