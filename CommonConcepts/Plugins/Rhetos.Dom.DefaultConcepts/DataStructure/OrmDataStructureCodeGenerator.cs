@@ -98,14 +98,14 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string QuerySnippet(DataStructureInfo info)
         {
             return string.Format(
-                @"return _executionContext.NHibernateSession.Query<global::{0}.{1}>();",
+                @"return _executionContext.EntityFrameworkContext.{0}_{1};",
                 info.Module.Name, info.Name);
         }
 
         public static string SnippetQueryableFilterById(DataStructureInfo info)
         {
             return string.Format(
-@"        public IQueryable<{0}.{1}> Filter(IQueryable<{0}.{1}> items, IEnumerable<Guid> ids)
+@"        public IQueryable<Common.Queryable.{0}_{1}> Filter(IQueryable<Common.Queryable.{0}_{1}> items, IEnumerable<Guid> ids)
         {{
             if (!(ids is System.Collections.IList))
                 ids = ids.ToList();

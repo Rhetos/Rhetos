@@ -129,6 +129,11 @@ namespace Rhetos.Dom.DefaultConcepts
             {10}
         }};
 
+        public const string ErrorGetNavigationalPropertyWithoutOrm = ""The navigation property '{{0}}' can only be used in a LINQ query. Use a query to read the referenced data."";
+        public const string ErrorSetNavigationalPropertyWithoutOrm = ""The navigation property '{{0}}' is not writable."";
+        public const string ErrorGetNavigationalPropertyWithAlternativeWithoutOrm = ""The navigation property '{{0}}' can only be used in a LINQ query. Use '{{1}}' instead, or use a query to read the referenced data."";
+        public const string ErrorSetNavigationalPropertyWithAlternativeWithoutOrm = ""The navigation property '{{0}}' is not writable. Use '{{1}}' instead."";
+
         {12}
     }}
 
@@ -276,7 +281,7 @@ namespace Common.Queryable
             EntityFrameworkContextMembersTag,
             EntityFrameworkOnModelCreatingTag,
             EntityFrameworkConfigurationTag,
-            CommonQueryableMemebersTag);
+            CommonQueryableMemebersTag); // {16}
         }
     }
 }

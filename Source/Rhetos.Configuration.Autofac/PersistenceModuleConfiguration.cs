@@ -38,8 +38,7 @@ namespace Rhetos.Configuration.Autofac
             }
             else
             {
-            	// TODO: Register as IPersistenceTransaction, instead of NHibernate implementation.
-                builder.RegisterType<EntityFrameworkPersistenceTransaction>().As<EntityFrameworkPersistenceTransaction>().InstancePerLifetimeScope();
+                builder.RegisterType<EntityFrameworkPersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope();
             }
 
             base.Load(builder);

@@ -49,10 +49,10 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string MemberFunctionsSnippet(QueryWithParameterInfo info)
         {
             return string.Format(
-@"        public IQueryable<global::{0}.{1}> Query({2} queryParameter)
+@"        public IQueryable<Common.Queryable.{0}_{1}> Query({2} queryParameter)
         {{
             {4}
-            Func<{2}, IQueryable<global::{0}.{1}>> queryFunction = {3};
+            Func<{2}, IQueryable<Common.Queryable.{0}_{1}>> queryFunction = {3};
             var queryResult = queryFunction(queryParameter);
             {5}
             return queryResult;
@@ -75,7 +75,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string InterfaceName(QueryWithParameterInfo info)
         {
-            return string.Format("IQueryableRepository<global::{0}.{1}, {2}>", info.DataStructure.Module.Name, info.DataStructure.Name, info.ParameterType);
+            return string.Format("IQueryableRepository<Common.Queryable.{0}_{1}, {2}>", info.DataStructure.Module.Name, info.DataStructure.Name, info.ParameterType);
         }
     }
 }

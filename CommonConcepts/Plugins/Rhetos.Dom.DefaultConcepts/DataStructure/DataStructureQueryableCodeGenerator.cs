@@ -28,6 +28,7 @@ using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using System.Diagnostics.Contracts;
+using Rhetos.Utilities;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -67,16 +68,30 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format("/*PropertyAttribute {0}.{1}.{2}*/", dataStructure.Module.Name, dataStructure.Name, propertyName);
         }
 
-        public static void AddProperty(ICodeBuilder codeBuilder, DataStructureInfo dataStructure, string propertyName, string propertyType)
+        /// <param name="alternativeScalarPropertyName">
+        /// (Optional) Name of the scalar property that the navigational property is based on. It is used in the error message to the user.
+        /// </param>
+        public static void AddNavigationalProperty(ICodeBuilder codeBuilder, DataStructureInfo dataStructure, string propertyName, string propertyType, string alternativeScalarPropertyName)
         {
+            string getterSetterformat = string.IsNullOrEmpty(alternativeScalarPropertyName)
+                ? @"get {{ throw new Rhetos.FrameworkException(string.Format(Common.Infrastructure.ErrorGetNavigationalPropertyWithoutOrm, {3})); }}
+            set {{ throw new Rhetos.FrameworkException(string.Format(Common.Infrastructure.ErrorSetNavigationalPropertyWithoutOrm, {3})); }}"
+                : @"get {{ throw new Rhetos.FrameworkException(string.Format(Common.Infrastructure.ErrorGetNavigationalPropertyWithAlternativeWithoutOrm, {3}, {4})); }}
+            set {{ throw new Rhetos.FrameworkException(string.Format(Common.Infrastructure.ErrorSetNavigationalPropertyWithAlternativeWithoutOrm, {3}, {4})); }}";
+
             string propertySnippet = string.Format(
         @"{2}
-        public virtual {1} {0} {{ get; set; }}
+        public virtual {1} {0}
+        {{
+            " + getterSetterformat + @"
+        }}
 
         ",
                 propertyName,
                 propertyType,
-                GetPropertyAttributeTag(dataStructure, propertyName));
+                GetPropertyAttributeTag(dataStructure, propertyName),
+                CsUtility.QuotedString(propertyName),
+                CsUtility.QuotedString(alternativeScalarPropertyName));
 
             codeBuilder.InsertCode(propertySnippet, DataStructureQueryableCodeGenerator.MembersTag, dataStructure);
         }

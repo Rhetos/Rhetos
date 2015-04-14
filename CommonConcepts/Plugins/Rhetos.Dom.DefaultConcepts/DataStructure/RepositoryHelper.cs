@@ -34,6 +34,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<DataStructureInfo> RepositoryAttributes = "RepositoryAttributes";
         public static readonly CsTag<DataStructureInfo> RepositoryInterfaces = new CsTag<DataStructureInfo>("RepositoryInterface", TagType.Appendable, ",\r\n        {0}");
         public static readonly CsTag<DataStructureInfo> RepositoryMembers = "RepositoryMembers";
+        public static readonly CsTag<DataStructureInfo> QueryLoadedAssignPropertyTag = "QueryLoadedAssignProperty";
 
         private static string RepositorySnippet(DataStructureInfo info)
         {
@@ -106,11 +107,11 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string RepositoryQueryFunctionsSnippet(DataStructureInfo info, string queryFunctionBody)
         {
             return string.Format(
-@"        public global::{0}[] Filter(IEnumerable<Guid> identifiers)
+@"        public global::{0}.{1}[] Filter(IEnumerable<Guid> identifiers)
         {{
             const int BufferSize = 1000;
             int n = identifiers.Count();
-            var result = new List<{0}>(n);
+            var result = new List<{0}.{1}>(n);
             for (int i = 0; i < (n+BufferSize-1) / BufferSize; i++) {{
                 Guid[] idBuffer = identifiers.Skip(i*BufferSize).Take(BufferSize).ToArray();
                 var itemBuffer = Query().Where(item => idBuffer.Contains(item.ID)).ToArray();
@@ -119,14 +120,15 @@ namespace Rhetos.Dom.DefaultConcepts
             return result.ToArray();
         }}
 
-        public IQueryable<global::{0}> Query()
+        public IQueryable<Common.Queryable.{0}_{1}> Query()
         {{
-            {1}
             {2}
+            {3}
         }}
 
 ",
-                info.GetKeyProperties(),
+                info.Module.Name,
+                info.Name,
                 BeforeQueryTag.Evaluate(info),
                 queryFunctionBody);
         }
@@ -141,8 +143,37 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             GenerateReadableRepositoryFunctions(info, codeBuilder, "return Query().ToArray();\r\n            ");
             codeBuilder.InsertCode(RepositoryQueryFunctionsSnippet(info, queryFunctionBody), RepositoryMembers, info);
-            codeBuilder.InsertCode("IQueryableRepository<" + info.Module.Name + "." + info.Name + ">", RepositoryInterfaces, info);
+            codeBuilder.InsertCode("IQueryableRepository<Common.Queryable." + info.Module.Name + "_" + info.Name + ">", RepositoryInterfaces, info);
             codeBuilder.InsertCode("IFilterRepository<IEnumerable<Guid>, " + info.Module.Name + "." + info.Name + ">", RepositoryInterfaces, info);
+            codeBuilder.InsertCode(SnippetQueryList(info), RepositoryMembers, info);
+        }
+
+        private static string SnippetQueryList(DataStructureInfo info)
+        {
+            string filterByIds = (info is BrowseDataStructureInfo || info is IOrmDataStructure)
+                ? "Filter(Query(), ids)"
+                : "Query().Where(item => ids.Contains(item.ID))";
+
+            return string.Format(
+@"        public IQueryable<Common.Queryable.{0}_{1}> QueryLoaded(IList<{0}.{1}> items)
+        {{
+            return items.Select(item => new Common.Queryable.{0}_{1}
+            {{
+                ID = item.ID{2}
+            }}).AsQueryable();
+        }}
+
+        public IQueryable<Common.Queryable.{0}_{1}> QueryPersisted(IList<{0}.{1}> items)
+        {{
+            var ids = items.Select(item => item.ID).ToList();
+            return {3};
+        }}
+
+",
+            info.Module.Name,
+            info.Name,
+            QueryLoadedAssignPropertyTag.Evaluate(info),
+            filterByIds); // {3}
         }
     }
 }

@@ -57,7 +57,6 @@ namespace Rhetos.Configuration.Autofac
                 builder.RegisterType<NHibernateMappingLoader>().WithParameter("nHibernateMappingFile", Paths.NHibernateMappingFile).As<INHibernateMapping>().SingleInstance();
                 builder.RegisterType<NHibernatePersistenceEngine>().As<IPersistenceEngine>().SingleInstance();
                 Plugins.FindAndRegisterPlugins<INHibernateConfigurationExtension>(builder);
-                builder.RegisterType<NHibernatePersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope();
             }
 
             base.Load(builder);

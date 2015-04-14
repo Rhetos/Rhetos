@@ -35,7 +35,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format(
 @"            if (deleted.Count() > 0)
             {{
-                {0}.{1}[] childItems = deleted.SelectMany(parent => _executionContext.NHibernateSession.Query<{0}.{1}>().Where(child => child.{2}.ID == parent.ID).ToArray()).ToArray();
+                {0}.{1}[] childItems = deleted.SelectMany(parent => _executionContext.EntityFrameworkContext.{0}_{1}.Where(child => child.{2}.ID == parent.ID).ToArray()).ToArray();
                 if (childItems.Count() > 0)
                 {{
                     _domRepository.{0}.{1}.Delete(childItems);

@@ -50,12 +50,20 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode(PropertySnippet(info, propertyType), DataStructureCodeGenerator.BodyTag, info.DataStructure);
             if (serializable)
                 codeBuilder.InsertCode("[DataMember]", AttributeTag, info);
+
+            if (info.DataStructure is QueryableExtensionInfo
+                || info.DataStructure is BrowseDataStructureInfo
+                || info.DataStructure is ComputedInfo
+                || info.DataStructure is IOrmDataStructure)
+                if (info.Name != "ID")
+                    codeBuilder.InsertCode(
+                        string.Format(",\r\n                {0} = item.{0}", info.Name),
+                        RepositoryHelper.QueryLoadedAssignPropertyTag, info.DataStructure);
         }
 
         public static void GenerateCodeForType(PropertyInfo info, ICodeBuilder codeBuilder, string propertyType)
         {
-            codeBuilder.InsertCode(PropertySnippet(info, propertyType), DataStructureCodeGenerator.BodyTag, info.DataStructure);
-            codeBuilder.InsertCode("[DataMember]", AttributeTag, info);
+            GenerateCodeForType(info, codeBuilder, propertyType, true);
         }
     }
 }

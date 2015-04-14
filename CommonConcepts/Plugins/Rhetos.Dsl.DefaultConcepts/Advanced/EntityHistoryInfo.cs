@@ -225,7 +225,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 if(item.EntityID == Guid.Empty)
                     throw new Rhetos.UserException(""Inserting into History is not allowed because property EntityID is not set."");
 
-            _executionContext.NHibernateSession.Clear(); // Updating a modified persistent object could break old-data validations such as checking for locked items.
+            _executionContext.PersistenceTransaction.ClearCache(); // Updating a modified persistent object could break old-data validations such as checking for locked items.
             
             Guid[] distinctEntityIDs = insertedNew.Union(updatedNew).Select(x => x.EntityID.Value).Distinct().ToArray();
             Guid[] existingEntities = _domRepository.{1}.{0}.Filter(distinctEntityIDs).Select(x => x.ID).ToArray();

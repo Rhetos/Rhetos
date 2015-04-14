@@ -234,7 +234,7 @@ namespace CommonConcepts.Test
 
                 var nhs = container.Resolve<Common.ExecutionContext>().NHibernateSession;
                 
-                // NH terminology: "Transient object" - a simple instance that is not bound to other references instances.
+                // NH terminology: "Transient object" - a simple instance that is not bound to other referenced instances.
                 // NH terminology: "Persistent object" - an instance that is bound to its coresponding database record and other referenced instances in NH cache. Allows lazy evaluation of references and navigation by references.
                 
 

@@ -104,7 +104,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (item.ID == Guid.Empty)
                     item.ID = Guid.NewGuid();
 
-            _executionContext.NHibernateSession.Clear(); // Updating a modified persistent object could break old-data validations such as checking for locked items.
+            _executionContext.PersistenceTransaction.ClearCache(); // Updating a modified persistent object could break old-data validations such as checking for locked items.
 
             if (insertedNew.Count() > 0)
             {{
@@ -152,7 +152,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 _executionContext.NHibernateSession.Flush();
 
                 // Clearing lazy object cache to ensure loading fresh data from database, in case of data modifications by triggers.
-                _executionContext.NHibernateSession.Clear();
+                _executionContext.PersistenceTransaction.ClearCache();
                 for (int i=0; i<inserted.Length; i++) inserted[i] = _executionContext.NHibernateSession.Load<{0}>(inserted[i].ID);
                 for (int i=0; i<updated.Length; i++) updated[i] = _executionContext.NHibernateSession.Load<{0}>(updated[i].ID);
             }}

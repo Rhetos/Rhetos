@@ -46,7 +46,7 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string QueryFunctionBodySnippet(ComputedInfo info)
         {
             return string.Format(
-                @"return Compute(_domRepository{0}).AsQueryable();",
+                @"return QueryLoaded(Compute(_domRepository{0}));",
                 DataStructureUtility.ComputationAdditionalParametersArgumentTag.Evaluate(info));
         }
 

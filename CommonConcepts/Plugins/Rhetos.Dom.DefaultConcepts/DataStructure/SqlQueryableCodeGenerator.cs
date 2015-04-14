@@ -39,7 +39,7 @@ namespace Rhetos.Dom.DefaultConcepts.DataStructure
 
             codeBuilder.InsertCode(
 @"            _executionContext.NHibernateSession.Flush();
-            _executionContext.NHibernateSession.Clear();
+            _executionContext.PersistenceTransaction.ClearCache();
 ", RepositoryHelper.BeforeQueryTag, info);
         }
     }

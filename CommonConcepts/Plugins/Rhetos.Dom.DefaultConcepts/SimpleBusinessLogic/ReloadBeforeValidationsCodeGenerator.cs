@@ -42,7 +42,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string ReloadSnippet(ReloadBeforeValidationsInfo info)
         {
             return string.Format(
-@"                _executionContext.NHibernateSession.Clear();
+@"                _executionContext.PersistenceTransaction.ClearCache();
                 for (int i=0; i<inserted.Length; i++) inserted[i] = _executionContext.NHibernateSession.Load<{0}.{1}>(inserted[i].ID);
                 for (int i=0; i<updated.Length; i++) updated[i] = _executionContext.NHibernateSession.Load<{0}.{1}>(updated[i].ID);
 

@@ -69,7 +69,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var referenceGuid = new PropertyInfo { DataStructure = info.DataStructure, Name = info.Name + "ID" };
             PropertyHelper.GenerateCodeForType(referenceGuid, codeBuilder, "Guid?");
 
-            DataStructureQueryableCodeGenerator.AddProperty(codeBuilder, info.DataStructure, info.Name, info.Referenced.Module.Name + "_" + info.Referenced.Name);
+            DataStructureQueryableCodeGenerator.AddNavigationalProperty(codeBuilder, info.DataStructure, info.Name, info.Referenced.Module.Name + "_" + info.Referenced.Name, info.Name + "ID");
 
             if (info.DataStructure is IWritableOrmDataStructure)
             {
@@ -86,7 +86,9 @@ namespace Rhetos.Dom.DefaultConcepts
                     item.{0} = _executionContext.NHibernateSession.Load<{1}.{2}>(item.{0}ID);
 
 ",
-                                  info.Name, info.Referenced.Module.Name, info.Referenced.Name),
+                        info.Name,
+                        info.Referenced.Module.Name,
+                        info.Referenced.Name),
                     WritableOrmDataStructureCodeGenerator.InitializationTag.Evaluate(info.DataStructure));
             }
         }

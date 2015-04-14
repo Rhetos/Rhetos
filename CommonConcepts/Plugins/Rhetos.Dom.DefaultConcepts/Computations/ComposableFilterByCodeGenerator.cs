@@ -46,17 +46,18 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string FilterImplementationSnippet(ComposableFilterByInfo info)
         {
             return string.Format(
-@"        private static readonly Func<IQueryable<{0}>, Common.DomRepository, {1}{4}, IQueryable<{0}>> {2} =
-            {3};
+@"        private static readonly Func<IQueryable<Common.Queryable.{0}_{1}>, Common.DomRepository, {2}{5}, IQueryable<Common.Queryable.{0}_{1}>> {3} =
+            {4};
 
-        public IQueryable<{0}> Filter(IQueryable<{0}> source, {1} parameter)
+        public IQueryable<Common.Queryable.{0}_{1}> Filter(IQueryable<Common.Queryable.{0}_{1}> source, {2} parameter)
         {{
-            {6}
-            return {2}(source, _domRepository, parameter{5});
+            {7}
+            return {3}(source, _domRepository, parameter{6});
         }}
 
 ",
-            info.Source.GetKeyProperties(),
+            info.Source.Module.Name,
+            info.Source.Name,
             info.Parameter,
             FilterExpressionPropertyName(info),
             info.Expression,

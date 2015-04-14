@@ -38,9 +38,9 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return string.Format(
 @"            foreach(var item in insertedNew)
-                item.{0} = _executionContext.NHibernateSession.Query<{1}.{2}>().Where(it => it.{3} == item).ToList();
+                item.{0} = _executionContext.EntityFrameworkContext.{1}_{2}.Where(it => it.{3} == item).ToList();
             foreach(var item in updatedNew)
-                item.{0} = _executionContext.NHibernateSession.Query<{1}.{2}>().Where(it => it.{3} == item).ToList();
+                item.{0} = _executionContext.EntityFrameworkContext.{1}_{2}.Where(it => it.{3} == item).ToList();
 
 ",
                 info.Name,
@@ -54,7 +54,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (LinkedItemsInfo)conceptInfo;
 
             string propertyType = string.Format("IList<{0}.{1}>", info.ReferenceProperty.DataStructure.Module.Name, info.ReferenceProperty.DataStructure.Name);
-            DataStructureQueryableCodeGenerator.AddProperty(codeBuilder, info.DataStructure, info.Name, propertyType);
+            DataStructureQueryableCodeGenerator.AddNavigationalProperty(codeBuilder, info.DataStructure, info.Name, propertyType, null);
 
             codeBuilder.InsertCode(OrmMappingOnSaveSnippet(info), WritableOrmDataStructureCodeGenerator.InitializationTag, info.DataStructure);
         }
