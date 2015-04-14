@@ -40,30 +40,29 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (RegisteredInterfaceImplementationInfo)conceptInfo;
 
-            codeBuilder.InsertCode(RegisterRepository(info), ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
-            codeBuilder.InsertCode(RegisterImplementationName(info), ModuleCodeGenerator.RegisteredInterfaceImplementationNameTag);
-        }
+            var interfaceType = Type.GetType(info.InterfaceAssemblyQualifiedName);
+            if (interfaceType == null)
+                throw new DslSyntaxException(conceptInfo, "Could not find type '" + info.InterfaceAssemblyQualifiedName + "'.");
 
-        // TODO: Remove IQueryableRepository registration.  IQueryableRepository should be cast from repository object in Rhetos.Dom.DefaultConcepts.GenericRepositories class.
-        protected static string RegisterRepository(RegisteredInterfaceImplementationInfo info)
-        {
-            return string.Format(
-            @"builder.RegisterType<{0}._Helper.{1}_Repository>().As<IQueryableRepository<{2}>>().InstancePerLifetimeScope();
+            // TODO: Remove IQueryableRepository registration.  IQueryableRepository should be cast from repository object in Rhetos.Dom.DefaultConcepts.GenericRepositories class.
+            string registerRepository = string.Format(
+                @"builder.RegisterType<{0}._Helper.{1}_Repository>().As<IQueryableRepository<{2}>>().InstancePerLifetimeScope();
             ",
-                info.ImplementsInterface.DataStructure.Module.Name,
-                info.ImplementsInterface.DataStructure.Name,
-                info.ImplementsInterface.GetInterfaceType().FullName);
-        }
+                    info.DataStructure.Module.Name,
+                    info.DataStructure.Name,
+                    interfaceType.FullName);
 
-        protected static string RegisterImplementationName(RegisteredInterfaceImplementationInfo info)
-        {
-            return string.Format(
-            @"{{ typeof({0}), {1} }},
+            codeBuilder.InsertCode(registerRepository, ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
+
+            string registerImplementationName = string.Format(
+                @"{{ typeof({0}), {1} }},
             ",
-                info.ImplementsInterface.GetInterfaceType().FullName,
-                CsUtility.QuotedString(
-                    info.ImplementsInterface.DataStructure.Module.Name
-                    + "." + info.ImplementsInterface.DataStructure.Name));
+                    interfaceType.FullName,
+                    CsUtility.QuotedString(
+                        info.DataStructure.Module.Name
+                        + "." + info.DataStructure.Name));
+
+            codeBuilder.InsertCode(registerImplementationName, ModuleCodeGenerator.RegisteredInterfaceImplementationNameTag);
         }
     }
 }

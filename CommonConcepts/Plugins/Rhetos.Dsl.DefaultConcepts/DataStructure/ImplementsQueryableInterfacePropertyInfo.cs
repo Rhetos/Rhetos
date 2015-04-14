@@ -27,22 +27,14 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class RegisteredInterfaceImplementationInfo : IValidationConcept
+    public class ImplementsQueryableInterfacePropertyInfo : IConceptInfo
     {
         [ConceptKey]
-        public string InterfaceAssemblyQualifiedName { get; set; }
+        public ImplementsQueryableInterfaceInfo ImplementsQueryableInterface { get; set; }
 
-        public DataStructureInfo DataStructure { get; set; }
+        [ConceptKey]
+        public PropertyInfo Property { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            Type myType = Type.GetType(InterfaceAssemblyQualifiedName);
-            if (myType == null)
-                throw new DslSyntaxException(this, "Could not find type '" + InterfaceAssemblyQualifiedName + "'.");
-
-            if (InterfaceAssemblyQualifiedName != myType.AssemblyQualifiedName)
-                throw new DslSyntaxException(this, "Must use exact assembly qualified name '"
-                    + myType.AssemblyQualifiedName + "' instead of '" + InterfaceAssemblyQualifiedName + "'.");
-        }
+        public string PropertyInterfaceTypeName { get; set; }
     }
 }

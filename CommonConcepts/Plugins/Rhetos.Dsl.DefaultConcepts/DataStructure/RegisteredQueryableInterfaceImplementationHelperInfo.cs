@@ -26,23 +26,25 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Registers the data structure (and it's repository) as the main implementation of the given interface.
+    /// This allows for type-safe code in external business layer class library to have simple access to
+    /// the generated data structure's class and the repository using predifined intefaces.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
-    public class RegisteredInterfaceImplementationInfo : IValidationConcept
+    [ConceptKeyword("RegisteredImplementation")]
+    public class RegisteredQueryableInterfaceImplementationHelperInfo : IMacroConcept
     {
         [ConceptKey]
-        public string InterfaceAssemblyQualifiedName { get; set; }
+        public ImplementsQueryableInterfaceInfo ImplementsQueryableInterface { get; set; }
 
-        public DataStructureInfo DataStructure { get; set; }
-
-        public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            Type myType = Type.GetType(InterfaceAssemblyQualifiedName);
-            if (myType == null)
-                throw new DslSyntaxException(this, "Could not find type '" + InterfaceAssemblyQualifiedName + "'.");
-
-            if (InterfaceAssemblyQualifiedName != myType.AssemblyQualifiedName)
-                throw new DslSyntaxException(this, "Must use exact assembly qualified name '"
-                    + myType.AssemblyQualifiedName + "' instead of '" + InterfaceAssemblyQualifiedName + "'.");
+            return new[] { new RegisteredInterfaceImplementationInfo
+            {
+                InterfaceAssemblyQualifiedName = ImplementsQueryableInterface.GetInterfaceType().AssemblyQualifiedName,
+                DataStructure = ImplementsQueryableInterface.DataStructure
+            }};
         }
     }
 }

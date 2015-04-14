@@ -21,28 +21,26 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using System.Globalization;
 using System.ComponentModel.Composition;
+using Rhetos.Extensibility;
+using Rhetos.Dsl;
+using Rhetos.Compiler;
+using System.IO;
+using System.Reflection;
+using System.Diagnostics.Contracts;
 
-namespace Rhetos.Dsl.DefaultConcepts
+namespace Rhetos.Dom.DefaultConcepts
 {
-    [Export(typeof(IConceptInfo))]
-    public class RegisteredInterfaceImplementationInfo : IValidationConcept
+    [Export(typeof(IConceptCodeGenerator))]
+    [ExportMetadata(MefProvider.Implements, typeof(ImplementsQueryableInterfaceInfo))]
+    public class ImplementsQueryableInterfaceCodeGenerator : IConceptCodeGenerator
     {
-        [ConceptKey]
-        public string InterfaceAssemblyQualifiedName { get; set; }
-
-        public DataStructureInfo DataStructure { get; set; }
-
-        public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
+        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            Type myType = Type.GetType(InterfaceAssemblyQualifiedName);
-            if (myType == null)
-                throw new DslSyntaxException(this, "Could not find type '" + InterfaceAssemblyQualifiedName + "'.");
-
-            if (InterfaceAssemblyQualifiedName != myType.AssemblyQualifiedName)
-                throw new DslSyntaxException(this, "Must use exact assembly qualified name '"
-                    + myType.AssemblyQualifiedName + "' instead of '" + InterfaceAssemblyQualifiedName + "'.");
+            ImplementsQueryableInterfaceInfo info = (ImplementsQueryableInterfaceInfo)conceptInfo;
+            DataStructureQueryableCodeGenerator.AddInterfaceAndReference(codeBuilder, info.GetInterfaceType(), info.DataStructure);
         }
     }
 }

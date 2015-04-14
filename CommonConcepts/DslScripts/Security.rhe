@@ -68,7 +68,7 @@
         Reference Principal { Required; Detail; }
         Reference Role { Required; }
         
-        Implements 'Rhetos.Dom.DefaultConcepts.IPrincipalHasRole, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
+        ImplementsQueryable 'Rhetos.Dom.DefaultConcepts.IPrincipalHasRole, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
         UniqueMultiple 'Principal Role' { Clustered; }
         Logging { AllProperties; }
 		
@@ -94,7 +94,7 @@
 		Reference UsersFrom Common.Role { Required; Detail; }
         Reference PermissionsFrom Common.Role { Required; }
         
-        Implements 'Rhetos.Dom.DefaultConcepts.IRoleInheritsRole, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
+        ImplementsQueryable 'Rhetos.Dom.DefaultConcepts.IRoleInheritsRole, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
         UniqueMultiple 'UsersFrom PermissionsFrom' { Clustered; }
         Logging { AllProperties; }
     }
@@ -108,7 +108,7 @@
 		Reference Claim Common.Claim { Required; Detail; }
 		Bool IsAuthorized { Required; } // If IsAuthorized is false then the autorization is explicitly denied.
 		
-		Implements 'Rhetos.Dom.DefaultConcepts.IPrincipalPermission, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
+		ImplementsQueryable 'Rhetos.Dom.DefaultConcepts.IPrincipalPermission, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
 		UniqueMultiple 'Principal Claim' { Clustered; }
 		Logging { AllProperties; }
 	}
@@ -119,7 +119,7 @@
         Reference Claim { Required; Detail; }
         Bool IsAuthorized { Required; } // If IsAuthorized is false then the autorization is explicitly denied.
         
-        Implements 'Rhetos.Dom.DefaultConcepts.IRolePermission, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
+        ImplementsQueryable 'Rhetos.Dom.DefaultConcepts.IRolePermission, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
         UniqueMultiple 'Role Claim' { Clustered; }
         Logging { AllProperties; }
     }

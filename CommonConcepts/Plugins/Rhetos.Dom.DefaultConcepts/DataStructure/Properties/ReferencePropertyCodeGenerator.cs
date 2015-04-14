@@ -69,7 +69,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var referenceGuid = new PropertyInfo { DataStructure = info.DataStructure, Name = info.Name + "ID" };
             PropertyHelper.GenerateCodeForType(referenceGuid, codeBuilder, "Guid?");
 
-            DataStructureQueryableCodeGenerator.AddProperty(codeBuilder, info.DataStructure, info.Name, info.DataStructure.Module.Name + "_" + info.DataStructure.Name);
+            DataStructureQueryableCodeGenerator.AddProperty(codeBuilder, info.DataStructure, info.Name, info.Referenced.Module.Name + "_" + info.Referenced.Name);
 
             if (info.DataStructure is IWritableOrmDataStructure)
             {

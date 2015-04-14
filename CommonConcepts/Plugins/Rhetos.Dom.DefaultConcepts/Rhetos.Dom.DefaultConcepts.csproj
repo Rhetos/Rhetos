@@ -94,6 +94,7 @@
     <Compile Include="Computations\LockItemsLockPropertyCodeGenerator.cs" />
     <Compile Include="DataStructure\DataStructureQueryableCodeGenerator.cs" />
     <Compile Include="DataStructure\FilterIdRepositoryCodeGenerator.cs" />
+    <Compile Include="DataStructure\ImplementsQueryableInterfacePropertyCodeGeneratorQueryable.cs" />
     <Compile Include="DataStructure\ImplementsInterfacePropertyCodeGenerator.cs" />
     <Compile Include="DataStructure\DomInitializationCodeGenerator.cs" />
     <Compile Include="DataStructure\BeforeQueryWithParameterCodeGenerator.cs" />
@@ -150,6 +151,7 @@
     <Compile Include="RowPermissions\RowPermissionsWriteCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\BeforeActionCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ActionCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\ImplementsQueryableInterfaceCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ReloadBeforeValidationsCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\DenyUserEditDataStructureCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\DenyUserEditCodeGenerator.cs" />

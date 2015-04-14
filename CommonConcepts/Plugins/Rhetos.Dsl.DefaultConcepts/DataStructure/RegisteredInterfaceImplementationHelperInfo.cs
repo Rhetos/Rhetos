@@ -43,7 +43,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             return new[] { new RegisteredInterfaceImplementationInfo
             {
                 InterfaceAssemblyQualifiedName = ImplementsInterface.GetInterfaceType().AssemblyQualifiedName,
-                ImplementsInterface = ImplementsInterface
+                DataStructure = ImplementsInterface.DataStructure
             }};
         }
     }

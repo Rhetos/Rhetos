@@ -36,7 +36,7 @@ namespace Rhetos.Dom.DefaultConcepts
     public class DataStructureQueryableCodeGenerator : IConceptCodeGenerator
     {
         public static readonly CsTag<DataStructureInfo> AttributesTag = "QueryableClassAttributes";
-        public static readonly CsTag<DataStructureInfo> InterfaceTag = new CsTag<DataStructureInfo>("QueryableClassInterace", TagType.Appendable, " : {0}", ", {0}");
+        public static readonly CsTag<DataStructureInfo> InterfaceTag = new CsTag<DataStructureInfo>("QueryableClassInterace", TagType.Appendable, ", {0}");
         public static readonly CsTag<DataStructureInfo> MembersTag = "QueryableClassMembers";
 
         protected static string SnippetQueryableClass(DataStructureInfo info)
@@ -79,6 +79,17 @@ namespace Rhetos.Dom.DefaultConcepts
                 GetPropertyAttributeTag(dataStructure, propertyName));
 
             codeBuilder.InsertCode(propertySnippet, DataStructureQueryableCodeGenerator.MembersTag, dataStructure);
+        }
+
+        public static void AddInterfaceAndReference(ICodeBuilder codeBuilder, Type type, DataStructureInfo dataStructureInfo)
+        {
+            AddInterfaceAndReference(codeBuilder, type.FullName, type, dataStructureInfo);
+        }
+
+        public static void AddInterfaceAndReference(ICodeBuilder codeBuilder, string typeName, Type type, DataStructureInfo dataStructureInfo)
+        {
+            codeBuilder.InsertCode(typeName, DataStructureQueryableCodeGenerator.InterfaceTag, dataStructureInfo);
+            codeBuilder.AddReferencesFromDependency(type);
         }
     }
 }

@@ -26,8 +26,8 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("Implements")]
-    public class ImplementsInterfaceInfo : IConceptInfo, IValidationConcept
+    [ConceptKeyword("ImplementsQueryable")]
+    public class ImplementsQueryableInterfaceInfo : IConceptInfo, IValidationConcept
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }
@@ -50,9 +50,9 @@ namespace Rhetos.Dsl.DefaultConcepts
     }
 
     [Export(typeof(IConceptMacro))]
-    public class ImplementsInterfaceMacro : IConceptMacro<ImplementsInterfaceInfo>
+    public class ImplementsQueryableInterfaceMacro : IConceptMacro<ImplementsQueryableInterfaceInfo>
     {
-        public IEnumerable<IConceptInfo> CreateNewConcepts(ImplementsInterfaceInfo conceptInfo, IDslModel existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts(ImplementsQueryableInterfaceInfo conceptInfo, IDslModel existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();
             newConcepts.Add(new ModuleExternalReferenceInfo { Module = conceptInfo.DataStructure.Module, TypeOrAssembly = conceptInfo.InterfaceType });
@@ -66,9 +66,9 @@ namespace Rhetos.Dsl.DefaultConcepts
                 if (interfacePropertiesIndex.TryGetValue(property.Name, out interfaceProperty))
                 {
                     if (interfaceProperty.PropertyType.IsInterface)
-                        newConcepts.Add(new ImplementsInterfacePropertyInfo
+                        newConcepts.Add(new ImplementsQueryableInterfacePropertyInfo
                             {
-                                ImplementsInterface = conceptInfo,
+                                ImplementsQueryableInterface = conceptInfo,
                                 Property = property,
                                 PropertyInterfaceTypeName = interfaceProperty.PropertyType.FullName
                             });
