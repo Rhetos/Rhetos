@@ -31,6 +31,7 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         private readonly ILogger _logger;
         private readonly IQueryableRepository<IPrincipal> _principalRepository;
+        private readonly Lazy<GenericRepository<IPrincipal>> _principalGenericRepository; // Lazy because it's rarely used.
         private readonly IQueryableRepository<IPrincipalHasRole, IPrincipal> _principalRolesRepository;
         private readonly IQueryableRepository<IRoleInheritsRole> _roleRolesRepository;
         private readonly IQueryableRepository<IPrincipalPermission> _principalPermissionRepository;
@@ -41,34 +42,77 @@ namespace Rhetos.Dom.DefaultConcepts
         public AuthorizationDataLoader(
             ILogProvider logProvider,
             INamedPlugins<IRepository> repositories,
-            IQueryableRepository<IPrincipal> principalRepository,
-            IQueryableRepository<IRoleInheritsRole> roleRolesRepository,
-            IQueryableRepository<IPrincipalPermission> principalPermissionRepository,
-            IQueryableRepository<IRolePermission> rolePermissionRepository,
-            IQueryableRepository<IRole> roleRepository,
-            IQueryableRepository<ICommonClaim> claimRepository)
+            Lazy<GenericRepository<IPrincipal>> principalGenericRepository)
         {
             _logger = logProvider.GetLogger(GetType().Name);
-            _principalRepository = principalRepository;
+            _principalRepository = (IQueryableRepository<IPrincipal>)repositories.GetPlugin("Common.Principal");
+            _principalGenericRepository = principalGenericRepository;
             _principalRolesRepository = (IQueryableRepository<IPrincipalHasRole, IPrincipal>)repositories.GetPlugin("Common.PrincipalHasRole");
-            _roleRolesRepository = roleRolesRepository;
-            _principalPermissionRepository = principalPermissionRepository;
-            _rolePermissionRepository = rolePermissionRepository;
-            _roleRepository = roleRepository;
-            _claimRepository = claimRepository;
+            _roleRolesRepository = (IQueryableRepository<IRoleInheritsRole>)repositories.GetPlugin("Common.RoleInheritsRole");
+            _principalPermissionRepository = (IQueryableRepository<IPrincipalPermission>)repositories.GetPlugin("Common.PrincipalPermission");
+            _rolePermissionRepository = (IQueryableRepository<IRolePermission>)repositories.GetPlugin("Common.RolePermission");
+            _roleRepository = (IQueryableRepository<IRole>)repositories.GetPlugin("Common.Role");
+            _claimRepository = (IQueryableRepository<ICommonClaim>)repositories.GetPlugin("Common.Claim");
+        }
+
+        private static bool? _shouldAddUnregisteredPrincipal;
+
+        private static bool ShouldAddUnregisteredPrincipal()
+        {
+            if (_shouldAddUnregisteredPrincipal == null)
+            {
+                string setting = ConfigUtility.GetAppSetting("AuthorizationAddUnregisteredPrincipals");
+                if (!string.IsNullOrEmpty(setting))
+                    _shouldAddUnregisteredPrincipal = bool.Parse(setting);
+                else
+                    _shouldAddUnregisteredPrincipal = false;
+            }
+            return _shouldAddUnregisteredPrincipal.Value;
+        }
+
+        private Guid GetPrincipalID(string username)
+        {
+            return _principalRepository.Query()
+                .Where(p => p.Name == username)
+                .Select(p => p.ID)
+                .SingleOrDefault();
         }
 
         public PrincipalInfo GetPrincipal(string username)
         {
-            var principal = _principalRepository.Query()
-                .Where(p => p.Name == username)
-                .Select(p => new PrincipalInfo { ID = p.ID, Name = p.Name })
-                .SingleOrDefault();
+            var principal = new PrincipalInfo { ID = GetPrincipalID(username), Name = username };
 
-            if (principal == null)
+            if (principal.ID == default(Guid))
             {
-                _logger.Error("There is no principal with the given username '" + username + "' in Common.Principal.");
-                throw new ClientException("There is no principal with the given username.");
+                if (ShouldAddUnregisteredPrincipal())
+                {
+                    _logger.Info(() => "Adding unregistered principal '" + username + "'. See AuthorizationAddUnregisteredPrincipals in web.config.");
+                    var newPrincipal = _principalGenericRepository.Value.CreateInstance();
+                    newPrincipal.ID = Guid.NewGuid();
+                    newPrincipal.Name = username;
+                    try
+                    {
+                        _principalGenericRepository.Value.Insert(newPrincipal);
+                        principal.ID = newPrincipal.ID;
+                    }
+                    catch (System.Data.SqlClient.SqlException ex)
+                    {
+                        if (ex.Message.StartsWith("Cannot insert duplicate key row in object 'Common.Principal' with unique index 'IX_Principal_Name'"))
+                        {
+                            _logger.Info(() => "Ignoring concurrent principal creation: " + ex.GetType().Name + ": " + ex.Message);
+                            principal.ID = GetPrincipalID(username);
+                            if (principal.ID == default(Guid))
+                                throw new FrameworkException("Cannot create the principal record for '" + username + "'.", ex);
+                        }
+                        else
+                            throw;
+                    }
+                }
+                else
+                {
+                    _logger.Error("There is no principal with the given username '" + username + "' in Common.Principal.");
+                    throw new ClientException("There is no principal with the given username.");
+                }
             }
             return principal;
         }

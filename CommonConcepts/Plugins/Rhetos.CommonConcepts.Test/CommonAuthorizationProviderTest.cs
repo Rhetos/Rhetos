@@ -18,6 +18,7 @@
 */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.CommonConcepts.Test.Mocks;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Extensibility;
 using Rhetos.Security;
@@ -33,7 +34,7 @@ namespace Rhetos.CommonConcepts.Test
     [TestClass]
     public class CommonAuthorizationProviderTest
     {
-        private IQueryableRepository<T> InitRepos<T>(IList<T> items)
+        public static IQueryableRepository<T> InitRepos<T>(IList<T> items)
         {
             return new MockRepos<T>(items);
         }
@@ -47,16 +48,36 @@ namespace Rhetos.CommonConcepts.Test
 
         private class MockRepositories : INamedPlugins<IRepository>
         {
-            MockPrincipalRoleRepos r1;
-            
-            public MockRepositories (IList<IPrincipalHasRole> items)
-	        {
-                r1 = new MockPrincipalRoleRepos(items);
-	        }
-        
+            MockPrincipalRoleRepos principalRolesRepos;
+            IQueryableRepository<IPrincipal> principalsRepos;
+            IQueryableRepository<IRoleInheritsRole> roleRolesRepos;
+            IQueryableRepository<IPrincipalPermission> principalPermissionsRepos;
+            IQueryableRepository<IRolePermission> rolePermissionsRepos;
+            IQueryableRepository<IRole> rolesRepos;
+            IQueryableRepository<ICommonClaim> commonClaimsRepos;
+
+            public MockRepositories(IPrincipalHasRole[] principalRoles, IPrincipal[] principals, IRoleInheritsRole[] roleRoles, IPrincipalPermission[] principalPermissions, IRolePermission[] rolePermissions, IRole[] roles, ICommonClaim[] commonClaims)
+            {
+                principalRolesRepos = new MockPrincipalRoleRepos(principalRoles);
+                principalsRepos = CommonAuthorizationProviderTest.InitRepos(principals);
+                roleRolesRepos = InitRepos(roleRoles);
+                principalPermissionsRepos = InitRepos(principalPermissions);
+                rolePermissionsRepos = InitRepos(rolePermissions);
+                rolesRepos = InitRepos(roles);
+                commonClaimsRepos = InitRepos(commonClaims);
+            }
+
             public IEnumerable<IRepository> GetPlugins(string name)
             {
- 	            return new IRepository[] { r1 };
+                if (name == "Common.PrincipalHasRole") return new IRepository[] { principalRolesRepos };
+                if (name == "Common.Principal") return new IRepository[] { principalsRepos };
+                if (name == "Common.RoleInheritsRole") return new IRepository[] { roleRolesRepos };
+                if (name == "Common.PrincipalPermission") return new IRepository[] { principalPermissionsRepos };
+                if (name == "Common.RolePermission") return new IRepository[] { rolePermissionsRepos };
+                if (name == "Common.Role") return new IRepository[] { rolesRepos };
+                if (name == "Common.Claim") return new IRepository[] { commonClaimsRepos };
+
+                return new IRepository[] { };
             }
         }
 
@@ -143,13 +164,8 @@ namespace Rhetos.CommonConcepts.Test
         {
             var authorizationDataReader = new AuthorizationDataLoader(
                 new ConsoleLogProvider(),
-                new MockRepositories(principalRoles),
-                InitRepos(principals),
-                InitRepos(roleRoles),
-                InitRepos(principalPermissions),
-                InitRepos(rolePermissions),
-                InitRepos(roles),
-                InitRepos(commonClaims));
+                new MockRepositories(principalRoles, principals, roleRoles, principalPermissions, rolePermissions, roles, commonClaims),
+                new Lazy<GenericRepository<IPrincipal>>(() => new TestGenericRepository<IPrincipal, IPrincipal>(principals)));
             var provider = new CommonAuthorizationProvider(new ConsoleLogProvider(), authorizationDataReader);
             return provider;
         }
@@ -158,13 +174,8 @@ namespace Rhetos.CommonConcepts.Test
         {
             var authorizationDataReader = new AuthorizationDataLoader(
                 new ConsoleLogProvider(),
-                new MockRepositories(principalRoles),
-                InitRepos(principals),
-                InitRepos(roleRoles),
-                InitRepos(principalPermissions),
-                InitRepos(rolePermissions),
-                InitRepos(roles),
-                InitRepos(commonClaims));
+                new MockRepositories(principalRoles, principals, roleRoles, principalPermissions, rolePermissions, roles, commonClaims),
+                new Lazy<GenericRepository<IPrincipal>>(() => new TestGenericRepository<IPrincipal, IPrincipal>(principals)));
             var authorizationCache = new AuthorizationDataCache(new ConsoleLogProvider(),
                 new Lazy<AuthorizationDataLoader>(() => authorizationDataReader));
             var provider = new CommonAuthorizationProvider(new ConsoleLogProvider(), authorizationCache);

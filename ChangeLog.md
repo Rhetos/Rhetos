@@ -19,6 +19,7 @@
   * Domain user groups should be moved from `Common.Principal` to `Common.Role`.
   * Deploy [*ActiveDirectorySync*](ActiveDirectorySync/Readme.md) package to automatically update principal-role membership (`Common.PrincipalHasRole`) for domain users and groups.
   * Each user must be entered in `Common.Principal`, *SimpleWindowsAuth* allowed entering only user groups.
+    For backward compatibility enable `AuthorizationAddUnregisteredPrincipals` option in *web.config* on Rhetos v0.9.31 or later.
 
 ### New features
 
