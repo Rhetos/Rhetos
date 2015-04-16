@@ -1,5 +1,18 @@
 # Rhetos release notes
 
+## 0.9.31 (2015-04-16)
+
+### New features
+
+* To automatically add unregistered users to Rhetos users list,
+  enable `AuthorizationAddUnregisteredPrincipals` option in *web.config*.
+  This feature can be useful with Windows authentication and *ActiveDirectorySync* Rhetos plugin,
+  when configuring Rhetos permissions for domain user groups only.
+
+### Internal improvements
+
+* Minor performance improvements in user authorization.
+
 ## 0.9.30 (2015-03-31)
 
 ### Internal improvements
