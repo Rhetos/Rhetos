@@ -21,25 +21,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
-using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
 using Rhetos.Dsl;
-using Rhetos.Compiler;
+using System.ComponentModel.Composition;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Dsl.DefaultConcepts
 {
-    [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(LinkedItemsInfo))]
-    public class LinkedItemsCodeGenerator : IConceptCodeGenerator
+    /// <summary>
+    /// Enables lazy loading of the navigation property.
+    /// </summary>
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("LazyLoad")]
+    public class LazyLoadLinkedItemsInfo : IConceptInfo, IMacroConcept
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
-        {
-            var info = (LinkedItemsInfo)conceptInfo;
+        [ConceptKey]
+        public LinkedItemsInfo LinkedItems { get; set; }
 
-            string propertyType = string.Format("IList<{0}_{1}>", info.ReferenceProperty.DataStructure.Module.Name, info.ReferenceProperty.DataStructure.Name);
-            DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.DataStructure, info.Name, propertyType, null);
+        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        {
+            return new[] { new LazyLoadSupportInfo { DataStructure = LinkedItems.DataStructure } };
         }
     }
 }

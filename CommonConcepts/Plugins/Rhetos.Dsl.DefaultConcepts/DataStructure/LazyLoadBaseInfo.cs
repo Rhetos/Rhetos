@@ -19,27 +19,26 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
-using Rhetos.Compiler;
 using Rhetos.Dsl;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
+using System.ComponentModel.Composition;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Dsl.DefaultConcepts
 {
-    [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(ExtensionComputedFromInfo))]
-    public class ExtensionComputedFromCodeGenerator : IConceptCodeGenerator
+    /// <summary>
+    /// Enables lazy loading of the navigation property.
+    /// </summary>
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("LazyLoadBase")]
+    public class LazyLoadBaseInfo : IConceptInfo, IMacroConcept
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        [ConceptKey]
+        public DataStructureExtendsInfo Extends { get; set; }
+
+        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            var info = (ExtensionComputedFromInfo)conceptInfo;
-            codeBuilder.InsertCode(
-                "Base = sourceItem.Base,\r\n                ",
-                EntityComputedFromCodeGenerator.ClonePropertyTag,
-                info.EntityComputedFrom);
+            return new[] { new LazyLoadSupportInfo { DataStructure = Extends.Extension } };
         }
     }
 }

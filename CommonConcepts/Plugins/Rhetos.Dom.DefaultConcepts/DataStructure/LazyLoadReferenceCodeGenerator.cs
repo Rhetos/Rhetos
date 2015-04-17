@@ -31,17 +31,33 @@ using Rhetos.Compiler;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(ReferencePropertyInfo))]
-    public class ReferencePropertyCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(LazyLoadReferenceInfo))]
+    public class LazyLoadReferenceCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            ReferencePropertyInfo info = (ReferencePropertyInfo)conceptInfo;
+            var info = (LazyLoadReferenceInfo)conceptInfo;
 
-            var referenceGuid = new PropertyInfo { DataStructure = info.DataStructure, Name = info.Name + "ID" };
-            PropertyHelper.GenerateCodeForType(referenceGuid, codeBuilder, "Guid?");
+            var getterSnippet = string.Format(
+                @"if (_context != null)
+                    return {2}ID == null ? null : _context.Repository.{0}.{1}.Query().Where(item => item.ID == {2}ID.Value).SingleOrDefault();
+                ",
+                info.Reference.Referenced.Module.Name,
+                info.Reference.Referenced.Name,
+                info.Reference.Name);
 
-            DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.DataStructure, info.Name, info.Referenced.Module.Name + "_" + info.Referenced.Name, info.Name + "ID");
+            codeBuilder.InsertCode(getterSnippet, DataStructureQueryableCodeGenerator.PropertyGetterTag(info.Reference.DataStructure, info.Reference.Name));
+
+            var setterSnippet = string.Format(
+                @"if (value != null)
+                    {0}ID = value.ID;
+                else
+                    {0}ID = null;
+				return;
+                ",
+                info.Reference.Name);
+
+            codeBuilder.InsertCode(setterSnippet, DataStructureQueryableCodeGenerator.PropertySetterTag(info.Reference.DataStructure, info.Reference.Name));
         }
     }
 }

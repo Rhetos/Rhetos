@@ -219,5 +219,14 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             return null;
         }
+
+        // TODO: Remove this hack after implementing repository concept and cleaner queryable data structure configuration.
+        public static bool IsQueryable(DataStructureInfo dataStructure)
+        {
+            return dataStructure is QueryableExtensionInfo
+                || dataStructure is BrowseDataStructureInfo
+                || dataStructure is ComputedInfo
+                || dataStructure is IOrmDataStructure;
+        }
     }
 }

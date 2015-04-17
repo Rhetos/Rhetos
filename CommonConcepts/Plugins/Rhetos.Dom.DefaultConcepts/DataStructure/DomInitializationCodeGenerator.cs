@@ -129,10 +129,10 @@ namespace Rhetos.Dom.DefaultConcepts
             {10}
         }};
 
-        public const string ErrorGetNavigationalPropertyWithoutOrm = ""The navigation property '{{0}}' can only be used in a LINQ query. Use a query to read the referenced data."";
-        public const string ErrorSetNavigationalPropertyWithoutOrm = ""The navigation property '{{0}}' is not writable."";
-        public const string ErrorGetNavigationalPropertyWithAlternativeWithoutOrm = ""The navigation property '{{0}}' can only be used in a LINQ query. Use '{{1}}' instead, or use a query to read the referenced data."";
-        public const string ErrorSetNavigationalPropertyWithAlternativeWithoutOrm = ""The navigation property '{{0}}' is not writable. Use '{{1}}' instead."";
+        public const string ErrorGetNavigationPropertyWithoutOrm = ""The navigation property '{{0}}' can only be used in a LINQ query. Use a query to read the referenced data."";
+        public const string ErrorSetNavigationPropertyWithoutOrm = ""The navigation property '{{0}}' is not writable. It can only be assigned in a LINQ query that is mapped to the database."";
+        public const string ErrorGetNavigationPropertyWithAlternativeWithoutOrm = ""The navigation property '{{0}}' can only be used in a LINQ query. Use '{{1}}' instead, or use a query to read the referenced data."";
+        public const string ErrorSetNavigationPropertyWithAlternativeWithoutOrm = ""The navigation property '{{0}}' is not writable. Use '{{1}}' instead, or use the navigation property in a LINQ query that is mapped to the database."";
 
         {12}
     }}

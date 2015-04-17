@@ -19,17 +19,20 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
+using Rhetos.Dsl;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// An internal concept that adds the requered infrastructure for lazy loading.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("Extension")]
-    public class ExtensionComputedFromInfo : IConceptInfo
+    public class LazyLoadSupportInfo : IConceptInfo
     {
         [ConceptKey]
-        public EntityComputedFromInfo EntityComputedFrom { get; set; }
+        public DataStructureInfo DataStructure { get; set; }
     }
 }

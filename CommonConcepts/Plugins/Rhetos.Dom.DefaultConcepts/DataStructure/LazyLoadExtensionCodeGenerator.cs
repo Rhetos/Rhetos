@@ -31,17 +31,23 @@ using Rhetos.Compiler;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(ReferencePropertyInfo))]
-    public class ReferencePropertyCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(LazyLoadExtensionInfo))]
+    public class LazyLoadExtensionCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            ReferencePropertyInfo info = (ReferencePropertyInfo)conceptInfo;
+            var info = (LazyLoadExtensionInfo)conceptInfo;
 
-            var referenceGuid = new PropertyInfo { DataStructure = info.DataStructure, Name = info.Name + "ID" };
-            PropertyHelper.GenerateCodeForType(referenceGuid, codeBuilder, "Guid?");
+            string csPropertyName = DataStructureExtendsCodeGenerator.ExtensionPropertyName(info.Extends);
 
-            DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.DataStructure, info.Name, info.Referenced.Module.Name + "_" + info.Referenced.Name, info.Name + "ID");
+            var getterSnippet = string.Format(
+                @"if (_context != null)
+                    return ID == null ? null : _context.Repository.{0}.{1}.Query().Where(item => item.ID == ID).SingleOrDefault();
+                ",
+                info.Extends.Extension.Module.Name,
+                info.Extends.Extension.Name);
+
+            codeBuilder.InsertCode(getterSnippet, DataStructureQueryableCodeGenerator.PropertyGetterTag(info.Extends.Base, csPropertyName));
         }
     }
 }

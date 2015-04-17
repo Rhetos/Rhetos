@@ -72,7 +72,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                     }
                 }));
 
-            // Assign ComputedFrom to the target properties and extension:
+            // Assign ComputedFrom to the target properties:
 
             newConcepts.AddRange(newSourceProperties.Select(sp =>
                     new PropertyComputedFromInfo
@@ -81,14 +81,6 @@ namespace Rhetos.Dsl.DefaultConcepts
                         Source = sp,
                         Dependency_EntityComputedFrom = conceptInfo.EntityComputedFrom
                     }));
-
-            IConceptInfo extensionComputedFrom = existingConcepts.FindByType<DataStructureExtendsInfo>()
-                .Where(extension => extension.Extension == conceptInfo.EntityComputedFrom.Source)
-                .Select(extension => new ExtensionComputedFromInfo { EntityComputedFrom = conceptInfo.EntityComputedFrom })
-                .SingleOrDefault();
-
-            if (extensionComputedFrom != null)
-                newConcepts.Add(extensionComputedFrom);
 
             return newConcepts;
         }

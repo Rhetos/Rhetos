@@ -35,14 +35,14 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.DependsOn, typeof(OrmDataStructureCodeGenerator))]
     public class WritableOrmDataStructureCodeGenerator : IConceptCodeGenerator
     {
-        /// <summary>Inserted code can use enumerables "insertedNew", "updatedNew" and "deletedIds" but without navigation properties, because they are not binded to ORM.</summary>
+        /// <summary>Inserted code can use enumerables "insertedNew", "updatedNew" and "deletedIds".</summary>
         public static readonly CsTag<DataStructureInfo> ArgumentValidationTag = "WritableOrm ArgumentValidation";
 
-        /// <summary>Inserted code can use enumerables "insertedNew", "updatedNew" and "deletedIds" but without navigation properties, because they are not binded to ORM.</summary>
+        /// <summary>Inserted code can use enumerables "insertedNew", "updatedNew" and "deletedIds".</summary>
         public static readonly CsTag<DataStructureInfo> InitializationTag = "WritableOrm Initialization";
 
         /// <summary>Arrays "updated" and "deleted" contain OLD data.
-        /// Enumerables "insertedNew", "updatedNew" and "deletedIds" are not binded to ORM (do not use navigation properties).
+        /// Enumerables "insertedNew", "updatedNew" and "deletedIds" contain NEW data.
         /// Sample usage: 1. Verify that locked items are not goind to be updated or deleted, 2. Cascade delete.</summary>
         public static readonly CsTag<DataStructureInfo> OldDataLoadedTag = "WritableOrm OldDataLoaded";
 

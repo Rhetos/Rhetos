@@ -44,17 +44,14 @@ namespace Rhetos.Dom.DefaultConcepts
             AttributeTag.Evaluate(info));
         }
 
-        [Obsolete("Remove the 'serializable' argument. All regular properties are serializable.")]
+        [Obsolete("Use the GenerateCodeForType function without the 'serializable' argument. All regular properties are serializable.")]
         public static void GenerateCodeForType(PropertyInfo info, ICodeBuilder codeBuilder, string propertyType, bool serializable)
         {
             codeBuilder.InsertCode(PropertySnippet(info, propertyType), DataStructureCodeGenerator.BodyTag, info.DataStructure);
             if (serializable)
                 codeBuilder.InsertCode("[DataMember]", AttributeTag, info);
 
-            if (info.DataStructure is QueryableExtensionInfo
-                || info.DataStructure is BrowseDataStructureInfo
-                || info.DataStructure is ComputedInfo
-                || info.DataStructure is IOrmDataStructure)
+            if (DslUtility.IsQueryable(info.DataStructure))
                 if (info.Name != "ID")
                     codeBuilder.InsertCode(
                         string.Format(",\r\n                {0} = item.{0}", info.Name),

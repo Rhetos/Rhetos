@@ -63,35 +63,65 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode(SnippetQueryableClass(info), DomInitializationCodeGenerator.CommonQueryableMemebersTag);
         }
 
-        public static string GetPropertyAttributeTag(DataStructureInfo dataStructure, string propertyName)
+        /// <param name="csPropertyName">The csPropertyName argument refers to a C# class property, not the PropertyInfo concept.</param>
+        public static string PropertyAttributeTag(DataStructureInfo dataStructure, string csPropertyName)
         {
-            return string.Format("/*PropertyAttribute {0}.{1}.{2}*/", dataStructure.Module.Name, dataStructure.Name, propertyName);
+            return string.Format("/*DataStructureQueryable PropertyAttribute {0}.{1}.{2}*/", dataStructure.Module.Name, dataStructure.Name, csPropertyName);
         }
 
-        /// <param name="alternativeScalarPropertyName">
-        /// (Optional) Name of the scalar property that the navigational property is based on. It is used in the error message to the user.
-        /// </param>
-        public static void AddNavigationalProperty(ICodeBuilder codeBuilder, DataStructureInfo dataStructure, string propertyName, string propertyType, string alternativeScalarPropertyName)
+        /// <param name="csPropertyName">The csPropertyName argument refers to a C# class property, not the PropertyInfo concept.</param>
+        public static string PropertyGetterTag(DataStructureInfo dataStructure, string csPropertyName)
         {
-            string getterSetterformat = string.IsNullOrEmpty(alternativeScalarPropertyName)
-                ? @"get {{ throw new Rhetos.FrameworkException(string.Format(Common.Infrastructure.ErrorGetNavigationalPropertyWithoutOrm, {3})); }}
-            set {{ throw new Rhetos.FrameworkException(string.Format(Common.Infrastructure.ErrorSetNavigationalPropertyWithoutOrm, {3})); }}"
-                : @"get {{ throw new Rhetos.FrameworkException(string.Format(Common.Infrastructure.ErrorGetNavigationalPropertyWithAlternativeWithoutOrm, {3}, {4})); }}
-            set {{ throw new Rhetos.FrameworkException(string.Format(Common.Infrastructure.ErrorSetNavigationalPropertyWithAlternativeWithoutOrm, {3}, {4})); }}";
+            return string.Format("/*DataStructureQueryable Getter {0}.{1}.{2}*/", dataStructure.Module.Name, dataStructure.Name, csPropertyName);
+        }
+
+        /// <param name="csPropertyName">The csPropertyName argument refers to a C# class property, not the PropertyInfo concept.</param>
+        public static string PropertySetterTag(DataStructureInfo dataStructure, string csPropertyName)
+        {
+            return string.Format("/*DataStructureQueryable Setter {0}.{1}.{2}*/", dataStructure.Module.Name, dataStructure.Name, csPropertyName);
+        }
+
+        /// <param name="csPropertyName">
+        /// Name of the navigation property in a C# class. A PropertyInfo with that name might not exist in the DSL model.</param>
+        /// <param name="alternativeScalarPropertyName">
+        /// (Optional) Name of the scalar property that the navigation property is based on. It is used in the error message to the user.
+        /// </param>
+        public static void AddNavigationProperty(ICodeBuilder codeBuilder, DataStructureInfo dataStructure, string csPropertyName, string propertyType, string alternativeScalarPropertyName)
+        {
+            string quotedProperty = CsUtility.QuotedString(csPropertyName);
+            string quotedAlternative = CsUtility.QuotedString(alternativeScalarPropertyName);
+
+            string getter = string.IsNullOrEmpty(alternativeScalarPropertyName)
+                ? "throw new Rhetos.FrameworkException(string.Format(Common.Infrastructure.ErrorGetNavigationPropertyWithoutOrm, " + quotedProperty + "));"
+                : "throw new Rhetos.FrameworkException(string.Format(Common.Infrastructure.ErrorGetNavigationPropertyWithAlternativeWithoutOrm, " + quotedProperty + ", " + quotedAlternative + "));";
+            string setter = string.IsNullOrEmpty(alternativeScalarPropertyName)
+                ? @"throw new Rhetos.FrameworkException(string.Format(Common.Infrastructure.ErrorSetNavigationPropertyWithoutOrm, " + quotedProperty + "));"
+                : @"throw new Rhetos.FrameworkException(string.Format(Common.Infrastructure.ErrorSetNavigationPropertyWithAlternativeWithoutOrm, " + quotedProperty + ", " + quotedAlternative + "));";
 
             string propertySnippet = string.Format(
         @"{2}
         public virtual {1} {0}
         {{
-            " + getterSetterformat + @"
+            get
+            {{
+                {5}
+                {3}
+            }}
+            set
+            {{
+                {6}
+                {4}
+            }}
         }}
 
         ",
-                propertyName,
+                csPropertyName,
                 propertyType,
-                GetPropertyAttributeTag(dataStructure, propertyName),
-                CsUtility.QuotedString(propertyName),
-                CsUtility.QuotedString(alternativeScalarPropertyName));
+                PropertyAttributeTag(dataStructure, csPropertyName),
+                getter,
+                setter,
+                PropertyGetterTag(dataStructure, csPropertyName),
+                PropertySetterTag(dataStructure, csPropertyName)); // {6}
 
             codeBuilder.InsertCode(propertySnippet, DataStructureQueryableCodeGenerator.MembersTag, dataStructure);
         }

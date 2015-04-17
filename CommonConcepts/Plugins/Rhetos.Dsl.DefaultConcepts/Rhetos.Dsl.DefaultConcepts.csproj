@@ -135,6 +135,13 @@
     <Compile Include="DatabaseWorkarounds\SqlIndexClusteredInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndexMultipleFollowingPropertyInfo.cs" />
     <Compile Include="DataStructure\BeforeQueryWithParameterInfo.cs" />
+    <Compile Include="DataStructure\LazyLoadExtensionInfo.cs" />
+    <Compile Include="DataStructure\LazyLoadBaseInfo.cs" />
+    <Compile Include="DataStructure\LazyLoadSupportInfo.cs" />
+    <Compile Include="DataStructure\LazyLoadLinkedItemsInfo.cs" />
+    <Compile Include="DataStructure\LazyLoadReferenceInfo.cs" />
+    <Compile Include="DataStructure\LazyLoadModuleInfo.cs" />
+    <Compile Include="DataStructure\LazyLoadDataStructureInfo.cs" />
     <Compile Include="DataStructure\ImplementsQueryableInterfaceInfo.cs" />
     <Compile Include="DataStructure\ImplementsQueryableInterfacePropertyInfo.cs" />
     <Compile Include="DataStructure\RegisteredQueryableInterfaceImplementationHelperInfo.cs" />
@@ -230,7 +237,6 @@
     <Compile Include="Computations\ChangesOnChangedItemsInfo.cs" />
     <Compile Include="Computations\ComputeForNewBaseItemsInfo.cs" />
     <Compile Include="Computations\KeepSynchronizedWithoutFilteredSaveInfo.cs" />
-    <Compile Include="Computations\ExtensionComputedFromInfo.cs" />
     <Compile Include="Computations\PersistedDataStructureInfo.cs" />
     <Compile Include="Computations\PropertyComputedFromInfo.cs" />
     <Compile Include="Computations\QueryableExtensionInfo.cs" />

@@ -21,25 +21,30 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
-using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
 using Rhetos.Dsl;
-using Rhetos.Compiler;
+using System.ComponentModel.Composition;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Dsl.DefaultConcepts
 {
-    [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(LinkedItemsInfo))]
-    public class LinkedItemsCodeGenerator : IConceptCodeGenerator
+    /// <summary>
+    /// Enables lazy loading of navigation properties.
+    /// </summary>
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("LazyLoadReferences")]
+    public class LazyLoadModuleInfo : IConceptInfo
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
-        {
-            var info = (LinkedItemsInfo)conceptInfo;
+        [ConceptKey]
+        public ModuleInfo Module { get; set; }
+    }
 
-            string propertyType = string.Format("IList<{0}_{1}>", info.ReferenceProperty.DataStructure.Module.Name, info.ReferenceProperty.DataStructure.Name);
-            DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.DataStructure, info.Name, propertyType, null);
+    [Export(typeof(IConceptMacro))]
+    public class LazyLoadModuleMacro : IConceptMacro<LazyLoadModuleInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(LazyLoadModuleInfo conceptInfo, IDslModel existingConcepts)
+        {
+            return existingConcepts.FindByReference<DataStructureInfo>(ds => ds.Module, conceptInfo.Module)
+                .Where(ds => DslUtility.IsQueryable(ds))
+                .Select(ds => new LazyLoadDataStructureInfo { DataStructure = ds });
         }
     }
 }

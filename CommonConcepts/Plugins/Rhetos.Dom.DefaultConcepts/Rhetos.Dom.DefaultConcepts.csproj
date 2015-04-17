@@ -98,6 +98,11 @@
     <Compile Include="DataStructure\ImplementsInterfacePropertyCodeGenerator.cs" />
     <Compile Include="DataStructure\DomInitializationCodeGenerator.cs" />
     <Compile Include="DataStructure\BeforeQueryWithParameterCodeGenerator.cs" />
+    <Compile Include="DataStructure\LazyLoadLinkedItemsCodeGenerator.cs" />
+    <Compile Include="DataStructure\LazyLoadBaseCodeGenerator.cs" />
+    <Compile Include="DataStructure\LazyLoadExtensionCodeGenerator.cs" />
+    <Compile Include="DataStructure\LazyLoadSupportCodeGenerator.cs" />
+    <Compile Include="DataStructure\LazyLoadReferenceCodeGenerator.cs" />
     <Compile Include="DataStructure\RegisteredInterfaceImplementationCodeGenerator.cs" />
     <Compile Include="DataStructure\QueryWithParameterCodeGenerator.cs" />
     <Compile Include="DataStructure\WriteCodeGenerator.cs" />
@@ -158,7 +163,6 @@
     <Compile Include="SimpleBusinessLogic\CreationTimeCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\DeactivatableCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ReferenceCascadeDeleteCodeGenerator.cs" />
-    <Compile Include="Computations\ExtensionComputedFromCodeGenerator.cs" />
     <Compile Include="DataStructure\LinkedItemsCodeGenerator.cs" />
     <Compile Include="Computations\PersistedDataStructureCodeGenerator.cs" />
     <Compile Include="Computations\PropertyComputedFromCodeGenerator.cs" />

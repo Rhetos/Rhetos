@@ -38,37 +38,8 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             DataStructureExtendsInfo info = (DataStructureExtendsInfo)conceptInfo;
 
-            DataStructureQueryableCodeGenerator.AddNavigationalProperty(codeBuilder, info.Extension, "Base", info.Base.Module.Name + "_" + info.Base.Name, "ID");
-
-            if (info.Extension is IWritableOrmDataStructure && info.Base is IOrmDataStructure)
-            {
-                codeBuilder.InsertCode(
-                    string.Format(CultureInfo.InvariantCulture,
-@"            foreach(var item in insertedNew)
-                item.Base = _executionContext.NHibernateSession.Load<{0}>(item.ID);
-            foreach(var item in updatedNew)
-                item.Base = _executionContext.NHibernateSession.Load<{0}>(item.ID);
-            foreach(var item in deletedIds)
-                item.Base = _executionContext.NHibernateSession.Load<{0}>(item.ID);
-
-", info.Base.GetKeyProperties()),
-                    WritableOrmDataStructureCodeGenerator.InitializationTag.Evaluate(info.Extension));
-            }
-
-            DataStructureQueryableCodeGenerator.AddNavigationalProperty(codeBuilder, info.Base, ExtensionPropertyName(info), info.Extension.Module.Name + "_" + info.Extension.Name, null);
-
-            if (info.Base is IWritableOrmDataStructure && info.Extension is IOrmDataStructure)
-            {
-                codeBuilder.InsertCode(
-                    string.Format(CultureInfo.InvariantCulture,
-@"            foreach(var item in updatedNew)
-                item.{0} = _executionContext.NHibernateSession.Load<{1}>(item.ID);
-            foreach(var item in deletedIds)
-                item.{0} = _executionContext.NHibernateSession.Load<{1}>(item.ID);
-
-", ExtensionPropertyName(info), info.Extension.GetKeyProperties()),
-                    WritableOrmDataStructureCodeGenerator.InitializationTag.Evaluate(info.Base));
-            }
+            DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.Extension, "Base", info.Base.Module.Name + "_" + info.Base.Name, "ID");
+            DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.Base, ExtensionPropertyName(info), info.Extension.Module.Name + "_" + info.Extension.Name, null);
         }
 
         public static string ExtensionPropertyName(DataStructureExtendsInfo info)

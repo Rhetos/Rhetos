@@ -31,17 +31,22 @@ using Rhetos.Compiler;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(ReferencePropertyInfo))]
-    public class ReferencePropertyCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(LazyLoadLinkedItemsInfo))]
+    public class LazyLoadLinkedItemsCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            ReferencePropertyInfo info = (ReferencePropertyInfo)conceptInfo;
+            var info = (LazyLoadLinkedItemsInfo)conceptInfo;
 
-            var referenceGuid = new PropertyInfo { DataStructure = info.DataStructure, Name = info.Name + "ID" };
-            PropertyHelper.GenerateCodeForType(referenceGuid, codeBuilder, "Guid?");
+            var getterSnippet = string.Format(
+                @"if (_context != null)
+                    return _context.Repository.{0}.{1}.Query().Where(item => item.{2}ID == ID).ToList();
+                ",
+                info.LinkedItems.ReferenceProperty.DataStructure.Module.Name,
+                info.LinkedItems.ReferenceProperty.DataStructure.Name,
+                info.LinkedItems.ReferenceProperty.Name);
 
-            DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.DataStructure, info.Name, info.Referenced.Module.Name + "_" + info.Referenced.Name, info.Name + "ID");
+            codeBuilder.InsertCode(getterSnippet, DataStructureQueryableCodeGenerator.PropertyGetterTag(info.LinkedItems.DataStructure, info.LinkedItems.Name));
         }
     }
 }

@@ -35,6 +35,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<DataStructureInfo> RepositoryInterfaces = new CsTag<DataStructureInfo>("RepositoryInterface", TagType.Appendable, ",\r\n        {0}");
         public static readonly CsTag<DataStructureInfo> RepositoryMembers = "RepositoryMembers";
         public static readonly CsTag<DataStructureInfo> QueryLoadedAssignPropertyTag = "QueryLoadedAssignProperty";
+        public static readonly CsTag<DataStructureInfo> QueryLoadedConstructorTag = "QueryLoadedConstructor";
 
         private static string RepositorySnippet(DataStructureInfo info)
         {
@@ -155,15 +156,15 @@ namespace Rhetos.Dom.DefaultConcepts
                 : "Query().Where(item => ids.Contains(item.ID))";
 
             return string.Format(
-@"        public IQueryable<Common.Queryable.{0}_{1}> QueryLoaded(IList<{0}.{1}> items)
+@"        public IQueryable<Common.Queryable.{0}_{1}> QueryLoaded(IEnumerable<{0}.{1}> items)
         {{
-            return items.Select(item => new Common.Queryable.{0}_{1}
+            return items.Select(item => new Common.Queryable.{0}_{1}{4}
             {{
                 ID = item.ID{2}
             }}).AsQueryable();
         }}
 
-        public IQueryable<Common.Queryable.{0}_{1}> QueryPersisted(IList<{0}.{1}> items)
+        public IQueryable<Common.Queryable.{0}_{1}> QueryPersisted(IEnumerable<{0}.{1}> items)
         {{
             var ids = items.Select(item => item.ID).ToList();
             return {3};
@@ -173,7 +174,8 @@ namespace Rhetos.Dom.DefaultConcepts
             info.Module.Name,
             info.Name,
             QueryLoadedAssignPropertyTag.Evaluate(info),
-            filterByIds); // {3}
+            filterByIds,
+            QueryLoadedConstructorTag.Evaluate(info)); // {4}
         }
     }
 }
