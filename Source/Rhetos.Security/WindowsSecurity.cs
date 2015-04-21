@@ -39,15 +39,18 @@ namespace Rhetos.Security
     {
         private ILogger _logger;
         private ILogger _performanceLogger;
+        private Lazy<bool> _lookupClientHostname;
 
-        public WindowsSecurity(ILogProvider logProvider)
+        public WindowsSecurity(ILogProvider logProvider, IConfiguration configuration)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _performanceLogger = logProvider.GetLogger("Performance");
+            _lookupClientHostname = configuration.GetBool("Security.LookupClientHostname", false);
         }
 
         public string GetClientWorkstation()
         {
+            var stopwatch = Stopwatch.StartNew();
             RemoteEndpointMessageProperty endpointInfo;
             try
             {
@@ -69,21 +72,27 @@ namespace Rhetos.Security
 
             _logger.Trace(() => "RemoteEndpointMessageProperty: address " + endpointInfo.Address + ", port " + endpointInfo.Port);
 
-            string name = GetNameFromAddress(endpointInfo.Address, endpointInfo.Port);
+            string name = null;
 
-            if (string.IsNullOrEmpty(name))
+            if (_lookupClientHostname.Value)
             {
-                string ipv4 = IPv4FromIPv6.Match(endpointInfo.Address).Groups[1].Value;
-                if (!string.IsNullOrEmpty(ipv4))
+                name = GetNameFromAddress(endpointInfo.Address, endpointInfo.Port);
+
+                if (string.IsNullOrEmpty(name))
                 {
-                    _logger.Trace(() => "Extracted IPv4 address: " + ipv4);
-                    name = GetNameFromAddress(ipv4);
+                    string ipv4 = IPv4FromIPv6.Match(endpointInfo.Address).Groups[1].Value;
+                    if (!string.IsNullOrEmpty(ipv4))
+                    {
+                        _logger.Trace(() => "Extracted IPv4 address: " + ipv4);
+                        name = GetNameFromAddress(ipv4);
+                    }
                 }
             }
 
             if (string.IsNullOrEmpty(name))
                 name = endpointInfo.Address + " port " + endpointInfo.Port;
 
+            _performanceLogger.Write(stopwatch, "DomainPrincipalProvider.GetClientWorkstation");
             _logger.Trace(() => "Workstation: " + name + ".");
             return name;
         }
