@@ -19,7 +19,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Web.Configuration;
@@ -30,7 +29,7 @@ namespace Rhetos.Utilities
     {
         public static string GetAppSetting(string key)
         {
-            string settingValue = ConfigurationManager.AppSettings[key];
+            string settingValue = System.Configuration.ConfigurationManager.AppSettings[key];
 
             if (settingValue == null && !Paths.IsRhetosServer)
             {
@@ -44,9 +43,9 @@ namespace Rhetos.Utilities
 
         private const string ServerConnectionStringName = "ServerConnectionString";
 
-        public static ConnectionStringSettings GetConnectionString()
+        public static System.Configuration.ConnectionStringSettings GetConnectionString()
         {
-            ConnectionStringSettings connectionStringConfiguration = ConfigurationManager.ConnectionStrings[ServerConnectionStringName];
+            System.Configuration.ConnectionStringSettings connectionStringConfiguration = System.Configuration.ConfigurationManager.ConnectionStrings[ServerConnectionStringName];
 
             if (connectionStringConfiguration == null && !Paths.IsRhetosServer)
                 connectionStringConfiguration = RhetosWebConfig.Value.ConnectionStrings.ConnectionStrings[ServerConnectionStringName];
@@ -57,9 +56,9 @@ namespace Rhetos.Utilities
             return connectionStringConfiguration;
         }
 
-        private static Lazy<Configuration> RhetosWebConfig = new Lazy<Configuration>(InitializeWebConfiguration);
+        private static Lazy<System.Configuration.Configuration> RhetosWebConfig = new Lazy<System.Configuration.Configuration>(InitializeWebConfiguration);
 
-        private static Configuration InitializeWebConfiguration()
+        private static System.Configuration.Configuration InitializeWebConfiguration()
         {
             VirtualDirectoryMapping vdm = new VirtualDirectoryMapping(Paths.RhetosServerRootPath, true);
             WebConfigurationFileMap wcfm = new WebConfigurationFileMap();

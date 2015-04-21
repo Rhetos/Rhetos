@@ -36,6 +36,8 @@ namespace Rhetos.Configuration.Autofac
             Type sqlExecuterType = GetSqlExecuterImplementation();
             builder.RegisterType(sqlExecuterType).As<ISqlExecuter>().InstancePerLifetimeScope();
 
+            builder.RegisterType<Rhetos.Utilities.Configuration>().As<Rhetos.Utilities.IConfiguration>().SingleInstance();
+
             base.Load(builder);
         }
 
