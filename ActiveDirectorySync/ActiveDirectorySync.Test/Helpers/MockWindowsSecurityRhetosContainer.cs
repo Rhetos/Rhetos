@@ -29,11 +29,11 @@ using System.Threading.Tasks;
 
 namespace ActiveDirectorySync.Test.Helpers
 {
-    public class MockWindowsSecutiryRhetosContainer : RhetosTestContainer
+    public class MockWindowsSecurityRhetosContainer : RhetosTestContainer
     {
         const string RhetosServerFolder = @"..\..\..\..\Source\Rhetos";
 
-        public MockWindowsSecutiryRhetosContainer(string userGroupMembership, bool commitChanges = false)
+        public MockWindowsSecurityRhetosContainer(string userGroupMembership, bool commitChanges = false)
             : base(commitChanges, RhetosServerFolder)
         {
             _initializeSession += builder =>

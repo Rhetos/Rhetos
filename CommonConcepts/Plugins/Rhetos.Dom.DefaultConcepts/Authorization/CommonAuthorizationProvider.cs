@@ -46,8 +46,8 @@ namespace Rhetos.Dom.DefaultConcepts
             IEnumerable<Permission> userPermissions = GetUsersPermissions(claims, principal, userRoles);
             IList<bool> userHasClaims = GetUserHasClaims(claims, userPermissions);
 
-            var roleNamesIndex = new Lazy<IDictionary<Guid, string>>(() => GetRoleNamesIndex(userRoles));
-            _logger.Trace(() => ReportRoles(userInfo, roleNamesIndex));
+            var roleNamesIndex = new Lazy<IDictionary<Guid, string>>(() => _authorizationData.GetRoles(userRoles));
+            _logger.Trace(() => ReportRoles(userInfo, userRoles, roleNamesIndex));
             _logger.Trace(() => ReportPermissions(userInfo, principal, roleNamesIndex, userPermissions, claims, userHasClaims));
 
             return userHasClaims;
@@ -93,7 +93,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var rolePermissions = _authorizationData.GetRolePermissions(userRoles, claimIdsIndex)
                 .Select(rp => new Permission { RoleID = rp.RoleID, ClaimID = rp.ClaimID, IsAuthorized = rp.IsAuthorized });
 
-            /// GetPrincipalPermissions and GetRolePermissions may return permissions for more claims than required.
+            // GetPrincipalPermissions and GetRolePermissions may return permissions for more claims than required.
             return principalPermissions.Concat(rolePermissions)
                 .Where(p => claimIdsIndex.Contains(p.ClaimID))
                 .ToList();
@@ -117,11 +117,11 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// Reporting is done in a function that returns a string, to avoid any performance impact when the trace log is not enabled.
         /// </summary>
-        private string ReportRoles(IUserInfo userInfo, Lazy<IDictionary<Guid, string>> roleNamesIndex)
+        private string ReportRoles(IUserInfo userInfo, IEnumerable<Guid> userRoles, Lazy<IDictionary<Guid, string>> roleNamesIndex)
         {
-            var roleNames = roleNamesIndex.Value.Values.ToList();
+            var roleNames = userRoles.Select(roleId => GetRoleNameSafe(roleId, roleNamesIndex)).ToList();
             roleNames.Sort();
-            return string.Format("User {0} has {1} roles: {2}.", userInfo.UserName, roleNames.Count(), string.Join(", ", roleNames));
+            return string.Format("User {0} has {1} roles: {2}.", userInfo.UserName, roleNames.Count, string.Join(", ", roleNames));
         }
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace Rhetos.Dom.DefaultConcepts
                             permission.IsAuthorized,
                             PrincipalOrRoleName = permission.PrincipalID != null
                                 ? ("principal " + (permission.PrincipalID.Value == principal.ID ? principal.Name : permission.PrincipalID.Value.ToString()))
-                                : ("role " + roleNamesIndex.Value[permission.RoleID.Value])
+                                : ("role " + GetRoleNameSafe(permission.RoleID.Value, roleNamesIndex))
                         })
                     .ToList();
 
@@ -182,18 +182,13 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Join("\r\n", report);
         }
 
-        /// <summary>
-        /// The index returns role ID instead of role Name for roles that no longer exist, to achieve more robust implementaiton.
-        /// </summary>
-        private IDictionary<Guid, string> GetRoleNamesIndex(IEnumerable<Guid> userRoles)
+        /// <summary>Returns role ID instead of the role name, if the role does not exist in the index.</summary>
+        private string GetRoleNameSafe(Guid roleId, Lazy<IDictionary<Guid, string>> roleNamesIndex)
         {
-            var rolesIndex = _authorizationData.GetRoles(userRoles);
-
-            var nonexistentRoles = userRoles.Except(rolesIndex.Keys).ToList();
-            foreach (Guid nonexistentRole in nonexistentRoles)
-                rolesIndex.Add(nonexistentRole, nonexistentRole.ToString());
-
-            return rolesIndex;
+            string roleName;
+            if (roleNamesIndex.Value.TryGetValue(roleId, out roleName))
+                return roleName;
+            return roleId.ToString();
         }
     }
 }
