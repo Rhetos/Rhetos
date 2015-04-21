@@ -38,16 +38,15 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (LazyLoadSupportInfo)conceptInfo;
 
-            codeBuilder.InsertCode(SnippetConstructors(info), DataStructureQueryableCodeGenerator.MembersTag, info.DataStructure);
+            codeBuilder.InsertCode("protected Common.ExecutionContext _context;\r\n\r\n        ", DataStructureQueryableCodeGenerator.MembersTag, info.DataStructure);
+            codeBuilder.InsertCode(SnippetQueryableConstructors(info), DataStructureQueryableCodeGenerator.MembersTag, info.DataStructure);
             codeBuilder.InsertCode("(_executionContext)", RepositoryHelper.QueryLoadedConstructorTag, info.DataStructure);
         }
 
-        private static string SnippetConstructors(LazyLoadSupportInfo info)
+        private static string SnippetQueryableConstructors(LazyLoadSupportInfo info)
         {
             return string.Format(
-    @"private Common.ExecutionContext _context;
-
-        public {0}_{1}()
+    @"public {0}_{1}()
         {{
         }}
 

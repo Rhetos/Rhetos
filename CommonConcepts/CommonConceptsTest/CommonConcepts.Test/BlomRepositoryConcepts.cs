@@ -40,8 +40,10 @@ namespace CommonConcepts.Test
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDataStructure.SaveTesterBase" });
 
-                var baseRepos = container.Resolve<GenericRepository<TestDataStructure.SaveTesterBase>>();
-                var testerRepos = container.Resolve<GenericRepository<TestDataStructure.SaveTester>>();
+                var context = container.Resolve<Common.ExecutionContext>();
+
+                var baseRepos = context.Repository.TestDataStructure.SaveTesterBase;
+                var testerRepos = context.Repository.TestDataStructure.SaveTester;
 
                 var baseItems = new[] {
                     new TestDataStructure.SaveTesterBase { ID = Guid.NewGuid(), Name = "b1" },
@@ -54,15 +56,15 @@ namespace CommonConcepts.Test
                 baseRepos.Insert(baseItems);
                 testerRepos.Insert(testerItems);
 
-                Assert.AreEqual("b1, b2 locked", TestUtility.DumpSorted(baseRepos.Read(), item => item.Name));
-                Assert.AreEqual("b1/t1-11, b2 locked/t2-22", TestUtility.DumpSorted(testerRepos.Read(), item => item.Base.Name + "/" + item.Name + "-" + item.Code));
+                Assert.AreEqual("b1, b2 locked", TestUtility.DumpSorted(baseRepos.Load(), item => item.Name));
+                Assert.AreEqual("b1/t1-11, b2 locked/t2-22", TestUtility.DumpSorted(testerRepos.Query(), item => item.Base.Name + "/" + item.Name + "-" + item.Code));
 
                 testerItems[0].Name += " modified"; // Modifying Name property should update the base entity's name ("updated").
                 testerItems[1].Code = 222;
                 testerRepos.Update(testerItems);
 
-                Assert.AreEqual("b1 updated, b2 locked", TestUtility.DumpSorted(baseRepos.Read(), item => item.Name));
-                Assert.AreEqual("b1 updated/t1 modified-11, b2 locked/t2-222", TestUtility.DumpSorted(testerRepos.Read(), item => item.Base.Name + "/" + item.Name + "-" + item.Code));
+                Assert.AreEqual("b1 updated, b2 locked", TestUtility.DumpSorted(baseRepos.Load(), item => item.Name));
+                Assert.AreEqual("b1 updated/t1 modified-11, b2 locked/t2-222", TestUtility.DumpSorted(testerRepos.Query(), item => item.Base.Name + "/" + item.Name + "-" + item.Code));
 
                 testerItems[0].Code = 111;
                 testerItems[1].Name += " modified"; // Modifying Name property when base is locked should fail.

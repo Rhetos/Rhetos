@@ -42,7 +42,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
             Parameter = FilterName;
-            Expression = RowPermissionsInfo.CreateComposableFilterSnippet(PermissionsExpressionName, Source.GetKeyProperties());
+            Expression = RowPermissionsInfo.CreateComposableFilterSnippet(PermissionsExpressionName, Source);
             createdConcepts = null;
         }
 

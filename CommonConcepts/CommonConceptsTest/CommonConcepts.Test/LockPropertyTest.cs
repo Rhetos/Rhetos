@@ -25,6 +25,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
+using Rhetos.Dom.DefaultConcepts;
 
 namespace CommonConcepts.Test
 {
@@ -123,8 +124,8 @@ namespace CommonConcepts.Test
                 var s1 = new TestLockItems.Simple { ID = guids[0], Name = "s1", Count = -1 };
                 var s2 = new TestLockItems.Simple { ID = guids[1], Name = "s2", Count = 1 };
 
-                var t1 = new TestLockItems.Simple2 { ID = guids[2], Name = "t1", TestReference = s1, Count = -1 };
-                var t2 = new TestLockItems.Simple2 { ID = guids[3], Name = "t2", TestReference = s1, Count = 1 };
+                var t1 = new TestLockItems.Simple2 { ID = guids[2], Name = "t1", TestReferenceID = s1.ID, Count = -1 };
+                var t2 = new TestLockItems.Simple2 { ID = guids[3], Name = "t2", TestReferenceID = s1.ID, Count = 1 };
 
                 repository.TestLockItems.Simple.Insert(new[] { s1, s2 });
                 AssertData("s1, s2", repository);
@@ -132,12 +133,12 @@ namespace CommonConcepts.Test
                 AssertDataSimple2("t1, t2", repository);
 
                 foreach (var e in new[] { t1, t2 })
-                    e.TestReference = s1;
+                    e.TestReferenceID = s1.ID;
                 repository.TestLockItems.Simple2.Update(new[] { t1 });
 
                 AssertDataSimple2("t1, t2", repository);
                 foreach (var e in new[] { t1, t2 })
-                    e.TestReference = s2;
+                    e.TestReferenceID = s2.ID;
 
                 TestUtility.ShouldFail(() => repository.TestLockItems.Simple2.Update(new[] { t1 }), "TestReference is locked if count negative.");
                 TestUtility.ShouldFail(() => repository.TestLockItems.Simple2.Update(new[] { t2, t1 }), "TestReference is locked if count negative.");

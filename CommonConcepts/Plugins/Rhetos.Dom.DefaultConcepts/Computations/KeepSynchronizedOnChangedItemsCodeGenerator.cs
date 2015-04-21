@@ -53,9 +53,9 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string FilterOldItemsBeforeSaveSnippet(DataStructureInfo hookOnSaveEntity, string filterType, string filterFormula, string uniqueName)
         {
             return string.Format(
-@"            Func<IEnumerable<{0}.{1}>, {2}> filterLoadKeepSynchronizedOnChangedItems{3} =
+@"            Func<IEnumerable<Common.Queryable.{0}_{1}>, {2}> filterLoadKeepSynchronizedOnChangedItems{3} =
                 {4};
-            {2} filterKeepSynchronizedOnChangedItems{3}Old = filterLoadKeepSynchronizedOnChangedItems{3}(updated.Concat(deleted).ToArray());
+            {2} filterKeepSynchronizedOnChangedItems{3}Old = filterLoadKeepSynchronizedOnChangedItems{3}(QueryLoaded(updated.Concat(deleted).ToArray()));
 
 ",
                 hookOnSaveEntity.Module.Name,
@@ -69,7 +69,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return string.Format(
 @"            {{
-                var filteredNew = filterLoadKeepSynchronizedOnChangedItems{0}(inserted.Concat(updated).ToList());
+                var filteredNew = filterLoadKeepSynchronizedOnChangedItems{0}(QueryLoaded(inserted.Concat(updated).ToList()));
                 _domRepository.{1}.{2}.{5}(filterKeepSynchronizedOnChangedItems{0}Old);
                 _domRepository.{1}.{2}.{5}(filteredNew);
                 

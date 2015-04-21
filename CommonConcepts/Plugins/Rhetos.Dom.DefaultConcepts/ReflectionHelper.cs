@@ -21,6 +21,7 @@ using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Processing.DefaultCommands;
 using Rhetos.Utilities;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -264,6 +265,15 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var castItems = CastAsEntity(items);
             return (IEnumerable<TEntityInterface>)ToArrayOfEntityMethod.InvokeEx(null, castItems);
+        }
+
+        /// <summary>
+        /// If <paramref name="items"/> is not a list or an array, converts it to a list of entity type.
+        /// </summary>
+        public void MaterializeEntityList(ref IEnumerable<TEntityInterface> items)
+        {
+            if (items != null && !(items is IList))
+                items = ToListOfEntity(items);
         }
 
         #endregion

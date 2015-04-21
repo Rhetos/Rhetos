@@ -25,6 +25,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
+using Rhetos.Dom.DefaultConcepts;
 
 namespace CommonConcepts.Test
 {
@@ -52,17 +53,17 @@ namespace CommonConcepts.Test
                 items.Add(node.Child, new TestHierarchy.Simple { ID = Guid.NewGuid(), Name = node.Child });
 
             foreach (var node in parentChildEdges)
-                items[node.Child].Parent = items[node.Parent];
+                items[node.Child].ParentID = items[node.Parent].ID;
 
             repository.TestHierarchy.Simple.Insert(items.Values);
         }
 
         private static string ReportSimple(Common.DomRepository repository)
         {
-            return ReportSimple(repository.TestHierarchy.Simple.All());
+            return ReportSimple(repository.TestHierarchy.Simple.Query());
         }
 
-        private static string ReportSimple(IEnumerable<TestHierarchy.Simple> items)
+        private static string ReportSimple(IEnumerable<Common.Queryable.TestHierarchy_Simple> items)
         {
             return TestUtility.DumpSorted(items, item => item.Name + item.Extension_SimpleParentHierarchy.LeftIndex + "/" + item.Extension_SimpleParentHierarchy.RightIndex);
         }
@@ -81,13 +82,15 @@ namespace CommonConcepts.Test
                 PrepareSimpleData(repository, "a, a-b");
                 Assert.AreEqual("a1/4, b2/3", ReportSimple(repository));
 
+                var query = repository.TestHierarchy.Simple.Query();
+
                 PrepareSimpleData(repository, "a, a-b, b-c");
                 Assert.AreEqual("a1/6, b2/5, c3/4", ReportSimple(repository));
-                Assert.AreEqual("c3/4", ReportSimple(repository.TestHierarchy.Simple.Filter(new TestHierarchy.Level2OrDeeper())));
+                Assert.AreEqual("c3/4", ReportSimple(repository.TestHierarchy.Simple.Filter(query, new TestHierarchy.Level2OrDeeper())));
 
                 PrepareSimpleData(repository, "a, a-b, a-c");
                 Assert.AreEqual("a1/6, b2/3, c4/5", ReportSimple(repository));
-                Assert.AreEqual("", ReportSimple(repository.TestHierarchy.Simple.Filter(new TestHierarchy.Level2OrDeeper())));
+                Assert.AreEqual("", ReportSimple(repository.TestHierarchy.Simple.Filter(query, new TestHierarchy.Level2OrDeeper())));
             }
         }
 
@@ -99,11 +102,13 @@ namespace CommonConcepts.Test
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
 
+                var query = repository.TestHierarchy.Simple.Query();
+
                 PrepareSimpleData(repository, "a, a-b, b-c");
-                Assert.AreEqual("c3/4", ReportSimple(repository.TestHierarchy.Simple.Filter(new TestHierarchy.Level2OrDeeper())));
+                Assert.AreEqual("c3/4", ReportSimple(repository.TestHierarchy.Simple.Filter(query, new TestHierarchy.Level2OrDeeper())));
 
                 PrepareSimpleData(repository, "a, a-b, a-c");
-                Assert.AreEqual("", ReportSimple(repository.TestHierarchy.Simple.Filter(new TestHierarchy.Level2OrDeeper())));
+                Assert.AreEqual("", ReportSimple(repository.TestHierarchy.Simple.Filter(query, new TestHierarchy.Level2OrDeeper())));
             }
         }
 
@@ -115,10 +120,10 @@ namespace CommonConcepts.Test
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var h = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "h", Parent2 = null };
-                var h1 = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "h1", Parent2 = h };
-                var h2 = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "h2", Parent2 = h };
-                var h21 = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "h21", Parent2 = h2 };
+                var h = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "h", Parent2ID = null };
+                var h1 = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "h1", Parent2ID = h.ID };
+                var h2 = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "h2", Parent2ID = h.ID };
+                var h21 = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "h21", Parent2ID = h2.ID };
 
                 repository.TestHierarchy.Simple2.Insert(new[] { h, h1, h2, h21 });
 
@@ -162,8 +167,8 @@ namespace CommonConcepts.Test
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple2" });
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var h1 = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "h1", Parent2 = null };
-                var h2 = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "h2", Parent2 = null };
+                var h1 = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "h1", Parent2ID = null };
+                var h2 = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "h2", Parent2ID = null };
 
                 TestUtility.ShouldFail(() => repository.TestHierarchy.Simple2.Insert(new[] { h1, h2 }),
                     "root record", "TestHierarchy.Simple2", "Parent2");
@@ -210,7 +215,7 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
 
                 PrepareSimpleData(repository, "a, b, b-c");
-                Assert.AreEqual("a1/2, b3/6, c4/5", ReportSimple(repository.TestHierarchy.Simple.All()));
+                Assert.AreEqual("a1/2, b3/6, c4/5", ReportSimple(repository.TestHierarchy.Simple.Query()));
             }
         }
 
@@ -308,11 +313,11 @@ namespace CommonConcepts.Test
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.WithPath" });
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var h1 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = "h1", Group = null };
-                var h11 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = "h11", Group = h1 };
-                var h12 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = "h12", Group = h1 };
-                var h121 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = "h121", Group = h12 };
-                var h2 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = "h2", Group = null };
+                var h1 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = "h1", GroupID = null };
+                var h11 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = "h11", GroupID = h1.ID };
+                var h12 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = "h12", GroupID = h1.ID };
+                var h121 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = "h121", GroupID = h12.ID };
+                var h2 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = "h2", GroupID = null };
 
                 repository.TestHierarchy.WithPath.Insert(new[] { h1, h11, h12, h121, h2 });
 

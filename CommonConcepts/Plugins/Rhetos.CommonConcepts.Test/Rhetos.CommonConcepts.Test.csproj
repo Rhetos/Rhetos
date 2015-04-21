@@ -80,7 +80,7 @@
     <Compile Include="PropertySelectorExpressionTest.cs" />
     <Compile Include="GenericRepositoryInstantiationTest.cs" />
     <Compile Include="GenericRepositoryErrorsTest.cs" />
-    <Compile Include="GenericRepositoryReadTest.cs" />
+    <Compile Include="GenericRepositoryLoadTest.cs" />
     <Compile Include="Mocks\DomainObjectModelMock.cs" />
     <Compile Include="Mocks\NHibernateSessionStub.cs" />
     <Compile Include="Mocks\PersistenceTransactionStub.cs" />

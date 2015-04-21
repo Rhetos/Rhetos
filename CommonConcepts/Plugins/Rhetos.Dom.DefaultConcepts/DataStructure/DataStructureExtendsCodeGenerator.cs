@@ -37,9 +37,29 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             DataStructureExtendsInfo info = (DataStructureExtendsInfo)conceptInfo;
+            var extensionPropertyName = ExtensionPropertyName(info);
 
-            DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.Extension, "Base", info.Base.Module.Name + "_" + info.Base.Name, "ID");
-            DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.Base, ExtensionPropertyName(info), info.Extension.Module.Name + "_" + info.Extension.Name, null);
+            if (DslUtility.IsQueryable(info.Extension) && DslUtility.IsQueryable(info.Base))
+            {
+                DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.Extension, "Base", "Common.Queryable." + info.Base.Module.Name + "_" + info.Base.Name, "ID");
+                DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.Base, extensionPropertyName, "Common.Queryable." + info.Extension.Module.Name + "_" + info.Extension.Name, null);
+            }
+
+            if (info.Extension is IOrmDataStructure && info.Base is IOrmDataStructure)
+                codeBuilder.InsertCode(
+                    string.Format("modelBuilder.Entity<Common.Queryable.{0}_{1}>().HasRequired(t => t.Base).WithOptional(t => t.{2});\r\n            ",
+                        info.Extension.Module.Name, info.Extension.Name, extensionPropertyName),
+                    DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
+            else if (info.Extension is IOrmDataStructure)
+                codeBuilder.InsertCode(
+                    string.Format("modelBuilder.Entity<Common.Queryable.{0}_{1}>().Ignore(t => t.Base);\r\n",
+                        info.Extension.Module.Name, info.Extension.Name),
+                    DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
+            else if (info.Base is IOrmDataStructure)
+                codeBuilder.InsertCode(
+                    string.Format("modelBuilder.Entity<Common.Queryable.{0}_{1}>().Ignore(t => t.{2});\r\n            ",
+                        info.Base.Module.Name, info.Base.Name, extensionPropertyName),
+                    DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
         }
 
         public static string ExtensionPropertyName(DataStructureExtendsInfo info)

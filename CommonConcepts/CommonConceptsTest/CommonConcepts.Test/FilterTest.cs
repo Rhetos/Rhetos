@@ -50,22 +50,13 @@ namespace CommonConcepts.Test
             return (ReadCommandResult)readCommand.Execute(commandInfo).Data.Value;
         }
 
-        private static string ReportSource<T>(Common.DomRepository repository, T filter)
-        {
-            var filterRepository = (IFilterRepository<T, Test10.Source>) repository.Test10.Source;
-            var loaded = filterRepository.Filter(filter).Select(item => item.i + item.s);
-            var report = string.Join(", ", loaded.OrderBy(s => s));
-            Console.WriteLine("Report: " + report);
-            return report;
-        }
-
         [TestMethod]
         public void FilterAll()
         {
             using (var container = new RhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
-                Assert.AreEqual("1a, 2b", ReportSource<FilterAll>(repository, null));
+                Assert.AreEqual("1a, 2b", TestUtility.DumpSorted(repository.Test10.Source.All(), item => item.i + item.s));
             }
         }
 
@@ -76,7 +67,7 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var source = repository.Test10.Source.All().OrderBy(item => item.i).ToArray();
-                Assert.AreEqual("2b", ReportSource(repository, new [] {source[1].ID}));
+                Assert.AreEqual("2b", TestUtility.DumpSorted(repository.Test10.Source.Filter(new [] { source[1].ID }), item => item.i + item.s));
             }
         }
 
@@ -178,8 +169,7 @@ namespace CommonConcepts.Test
 
                 var repository = container.Resolve<Common.DomRepository>();
 
-                IFilterRepository<TestFilter.FilterByPrefix, TestFilter.Source> filterRepository = repository.TestFilter.Source;
-                var loaded = filterRepository.Filter(new TestFilter.FilterByPrefix { Prefix = "b" });
+                var loaded = repository.TestFilter.Source.Filter(new TestFilter.FilterByPrefix { Prefix = "b" });
                 Assert.AreEqual("b1, b2", TestUtility.DumpSorted(loaded, item => item.Name));
             }
         }
@@ -217,8 +207,7 @@ namespace CommonConcepts.Test
 
                 var repository = container.Resolve<Common.DomRepository>();
 
-                IFilterRepository<TestFilter.ComposableFilterByPrefix, TestFilter.Source> filterRepository = repository.TestFilter.Source;
-                var loaded = filterRepository.Filter(new TestFilter.ComposableFilterByPrefix { Prefix = "b" });
+                var loaded = repository.TestFilter.Source.Filter(new TestFilter.ComposableFilterByPrefix { Prefix = "b" });
                 Assert.AreEqual("b1, b2", TestUtility.DumpSorted(loaded, item => item.Name));
             }
         }
@@ -295,8 +284,8 @@ namespace CommonConcepts.Test
 
                 var s1 = new TestFilter.Source { Name = "A s1" };
                 var s2 = new TestFilter.Source { Name = "B s2" };
-                var d1 = new TestFilter.SourceDetail { Parent = s1, Name2 = "C d1" };
-                var d2 = new TestFilter.SourceDetail { Parent = s2, Name2 = "D d2" };
+                var d1 = new TestFilter.SourceDetail { ParentID = s1.ID, Name2 = "C d1" };
+                var d2 = new TestFilter.SourceDetail { ParentID = s2.ID, Name2 = "D d2" };
                 repository.TestFilter.Source.Insert(new[] { s1, s2 });
                 repository.TestFilter.SourceDetail.Insert(new[] { d1, d2 });
 
@@ -347,7 +336,7 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
                 var refEnt = new TestFilter.Simple { Name = "test" };
                 repository.TestFilter.Simple.Insert(new[] { refEnt });
-                var s1 = new TestFilter.CombinedFilters { Name = "Abeceda", Simple = refEnt };
+                var s1 = new TestFilter.CombinedFilters { Name = "Abeceda", SimpleID = refEnt.ID };
                 var s2 = new TestFilter.CombinedFilters { Name = "abeceda" };
                 repository.TestFilter.CombinedFilters.Insert(new[] { s1, s2 });
 
@@ -370,7 +359,7 @@ namespace CommonConcepts.Test
                 ExecuteCommand(queryDataSourceCommandInfo, container).Records,
                 item =>
                 {
-                    var x = (TestFilter.ComposableFilterBrowse)item;
+                    var x = (Common.Queryable.TestFilter_ComposableFilterBrowse)item;
                     if (x.Simple != null) return x.Name + " " + x.Simple.Name;
                     return x.Name + " null";
                 });
@@ -388,9 +377,9 @@ namespace CommonConcepts.Test
                 var parentB = new TestFilter.Simple { Name = "PB" };
                 repository.TestFilter.Simple.Insert(new[] { parentA, parentB });
 
-                var childA = new TestFilter.CombinedFilters { Name = "CA", Simple = parentA };
-                var childB = new TestFilter.CombinedFilters { Name = "CB", Simple = parentB };
-                var childNull = new TestFilter.CombinedFilters { Name = "CN", Simple = null };
+                var childA = new TestFilter.CombinedFilters { Name = "CA", SimpleID = parentA.ID };
+                var childB = new TestFilter.CombinedFilters { Name = "CB", SimpleID = parentB.ID };
+                var childNull = new TestFilter.CombinedFilters { Name = "CN", SimpleID = null };
                 repository.TestFilter.CombinedFilters.Insert(new[] { childA, childB, childNull });
 
                 container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
@@ -453,9 +442,9 @@ namespace CommonConcepts.Test
                 var parentB = new TestFilter.Simple { Name = "PB" };
                 repository.TestFilter.Simple.Insert(new[] { parentA, parentB });
 
-                var childA = new TestFilter.CombinedFilters { Name = "CA", Simple = parentA };
-                var childB = new TestFilter.CombinedFilters { Name = "CB", Simple = parentB };
-                var childNull = new TestFilter.CombinedFilters { Name = "CN", Simple = null };
+                var childA = new TestFilter.CombinedFilters { Name = "CA", SimpleID = parentA.ID };
+                var childB = new TestFilter.CombinedFilters { Name = "CB", SimpleID = parentB.ID };
+                var childNull = new TestFilter.CombinedFilters { Name = "CN", SimpleID = null };
                 repository.TestFilter.CombinedFilters.Insert(new[] { childA, childB, childNull });
 
                 container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
@@ -521,7 +510,7 @@ namespace CommonConcepts.Test
                     Console.WriteLine(testReport);
 
                     {
-                        var reposReadResult = gr.Read(test.Item2, filterType);
+                        var reposReadResult = gr.Load(test.Item2, filterType);
                         Assert.AreEqual(
                             test.Item3,
                             TestUtility.DumpSorted(reposReadResult, item => item.Name),
@@ -571,9 +560,9 @@ namespace CommonConcepts.Test
 
                 var gr = container.Resolve<GenericRepositories>();
 
-                Assert.AreEqual("a1, a2, b1, b2", TestUtility.DumpSorted(gr.GetGenericRepository<TestFilter.AutoFilter1>().Read(), item => item.Name));
-                Assert.AreEqual("a1, a2, b1, b2", TestUtility.DumpSorted(gr.GetGenericRepository<TestFilter.AutoFilter2>().Read(), item => item.Name));
-                Assert.AreEqual("a1, a2, b1, b2", TestUtility.DumpSorted(gr.GetGenericRepository<TestFilter.AutoFilter2Browse>().Read(), item => item.Name2));
+                Assert.AreEqual("a1, a2, b1, b2", TestUtility.DumpSorted(gr.GetGenericRepository<TestFilter.AutoFilter1>().Load(), item => item.Name));
+                Assert.AreEqual("a1, a2, b1, b2", TestUtility.DumpSorted(gr.GetGenericRepository<TestFilter.AutoFilter2>().Load(), item => item.Name));
+                Assert.AreEqual("a1, a2, b1, b2", TestUtility.DumpSorted(gr.GetGenericRepository<TestFilter.AutoFilter2Browse>().Load(), item => item.Name2));
             }
         }
 
@@ -709,16 +698,17 @@ namespace CommonConcepts.Test
         {
             using (var container = new RhetosTestContainer())
             {
-                var source = container.Resolve<GenericRepository<TestFilter.Source>>();
-                var detail = container.Resolve<GenericRepository<TestFilter.SourceDetail>>();
+                var repository = container.Resolve<Common.DomRepository>();
+                var source = repository.TestFilter.Source;
+                var detail = repository.TestFilter.SourceDetail;
 
                 var testSources = new[] { "a1", "a2", "b1", "b2" }.Select(name => new TestFilter.Source { Name = name }).ToList();
-                var testDetails = testSources.Select(s => new TestFilter.SourceDetail { Parent = s, Name2 = "d" }).ToList();
+                var testDetails = testSources.Select(s => new TestFilter.SourceDetail { ParentID = s.ID, Name2 = "d" }).ToList();
 
-                source.Save(testSources, null, source.Read());
-                detail.Save(testDetails, null, detail.Read());
+                source.Save(testSources, null, source.Load());
+                detail.Save(testDetails, null, detail.Load());
 
-                Assert.AreEqual("a1d, b1d", TestUtility.DumpSorted(detail.Query<TestFilter.Composable>(), d => d.Parent.Name + d.Name2));
+                Assert.AreEqual("a1d, b1d", TestUtility.DumpSorted(detail.Filter(detail.Query(), new TestFilter.Composable()), d => d.Parent.Name + d.Name2));
             }
         }
     }

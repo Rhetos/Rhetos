@@ -21,6 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Configuration.Autofac;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
+using Rhetos.Dom.DefaultConcepts;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -208,121 +209,36 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void Spike_NHibernateLoadMergeSavePersist()
+        public void InsertTransient()
         {
-            using (var container = new RhetosTestContainer())
-            {
-                var pe1id = Guid.NewGuid();
-                var pe2id = Guid.NewGuid();
-                var pr1id = Guid.NewGuid();
-                var pr2id = Guid.NewGuid();
-                var cl1id = Guid.NewGuid();
-                var cl2id = Guid.NewGuid();
-
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
-                    {
-                        "DELETE FROM TestEntity.Permission",
-                        "DELETE FROM TestEntity.Principal",
-                        "DELETE FROM TestEntity.Claim",
-                        "INSERT INTO TestEntity.Claim (ID, ClaimResource, ClaimRight) SELECT '"+cl1id+"', 'res1', 'rig1'",
-                        "INSERT INTO TestEntity.Claim (ID, ClaimResource, ClaimRight) SELECT '"+cl2id+"', 'res2', 'rig2'",
-                        "INSERT INTO TestEntity.Principal (ID, Name) SELECT '"+pr1id+"', 'pr1'",
-                        "INSERT INTO TestEntity.Principal (ID, Name) SELECT '"+pr2id+"', 'pr2'",
-                        "INSERT INTO TestEntity.Permission (ID, PrincipalID, ClaimID, IsAuthorized) SELECT '"+pe1id+"', '"+pr1id+"', '"+cl1id+"', 0",
-                        "INSERT INTO TestEntity.Permission (ID, PrincipalID, ClaimID, IsAuthorized) SELECT '"+pe2id+"', '"+pr1id+"', '"+cl2id+"', 1"
-                    });
-
-                var nhs = container.Resolve<Common.ExecutionContext>().NHibernateSession;
-                
-                // NH terminology: "Transient object" - a simple instance that is not bound to other referenced instances.
-                // NH terminology: "Persistent object" - an instance that is bound to its coresponding database record and other referenced instances in NH cache. Allows lazy evaluation of references and navigation by references.
-                
-
-                // ============= UPDATE:
-
-                {
-                    var pe1 = nhs.Load<TestEntity.Permission>(pe1id); // Lazy load (generates proxy and remembers just the given ID value). First use of the instance will throw an exception if ID doesn't exist.
-                    // 'Get' function would instantly load all properties (referenced instances are still lazy).
-                    Assert.AreEqual(false, pe1.IsAuthorized);
-                    Assert.AreEqual("pr1", pe1.Principal.Name);
-
-                    var pe1transient = new TestEntity.Permission { ID = pe1id, Principal = new TestEntity.Principal { ID = pr2id }, Claim = new TestEntity.Claim { ID = cl1id }, IsAuthorized = true };
-                    var newPe1 = (TestEntity.Permission)nhs.Merge(pe1transient); // If the record is already (lazy) loadad from the database, Merge will not load it again.
-                    pe1transient.IsAuthorized = false;
-                    Assert.AreEqual(true, newPe1.IsAuthorized);
-                    // If the record DOES NOT EXIST IN DB when the Merge is called, Flush will INSERT it.
-                    Assert.AreEqual("pr2", newPe1.Principal.Name); // Result of the Merge has successfully bound properties, there is NO NEED TO LOAD THEM EXPLICITLY!
-                    nhs.Flush();
-                    Assert.IsTrue(string.IsNullOrEmpty(pe1transient.Principal.Name)); // The original instance is still not a proxy object.
-                    // Update() does not replace Merge(); it seems that it will update the given instance, but not the database record. Update will thrown an error if the object is already loaded.
-                }
-
-
-                // ============= INSERT TRANSIENT (NOT BOUND TO ORM) OBJECT (PERSIST FUNCTION):
-
-                {
-                    nhs.Clear();
-
-                    var pe3id = Guid.NewGuid();
-                    var pe3transient = new TestEntity.Permission { ID = pe3id, Principal = new TestEntity.Principal { ID = pr1id }, Claim = new TestEntity.Claim { ID = cl1id }, IsAuthorized = true };
-                    // It the reference is not an INHibernateProxy, my Save function should sill Load the reference. Do it before calling Merge/Persist, so that Persist whould not need to check the detabase.
-
-                    nhs.Persist(pe3transient); // Save function (instead of Persist) would return ID in case of autoincrement integer which would be instantly loaded from the database. Persist isn't that eager.
-                    // If the referenced object is not bound, Save/Persist instantly reads it from db (like Get) to check if is exists, but it does not attach (bind) the loaded instance.
-                    // References are not automatically bound after Save/Persist, not even after Flush+Load. Only after Save+Flush+Clear+Load, the reference will be bound.
-
-                    // Save/Persist will instantly fail if that ID already exists in the NH session. Otherwise, Flush will fail if the record exists in the database.
-                    nhs.Flush(); // If a reference does not exist in db nor memory, Save/Persist+Flush will first insert a record with NULL reference,
-                    // expecting the referenced record to be inserted in the same session, and then update the reference. It will fail at that point if the reference is invalid.
-
-                    var loadedPe3 = nhs.Load<TestEntity.Permission>(pe3id);
-                    // Save/Persist does not generate a new proxy object!! It will keep in the 1st level cache the given instance (even if it's references are not bound), up until Clear/Refresh.
-                    Assert.AreSame(loadedPe3, pe3transient);
-                    Assert.IsTrue(string.IsNullOrEmpty(loadedPe3.Principal.Name));
-
-                    nhs.Refresh(loadedPe3); // Refresh before Flush would thrown an exception because the record does not exist in the database.
-                    Assert.AreEqual("pr1", loadedPe3.Principal.Name);
-                }
-
-                // ============= INSERT WITH MANUALLY CREATED NH PROXY OBJECT (PERSIST FUNCTION):
-
-                {
-                    nhs.Clear();
-
-                    var pe4id = Guid.NewGuid();
-                    var pr1 = nhs.Load<TestEntity.Principal>(pr1id); // If a reference is Loaded in advance, then Save/Persist will not check them explicitly => One less call to the database!!!
-                    var cl1 = nhs.Load<TestEntity.Claim>(cl1id);
-                    var pe4 = new TestEntity.Permission { ID = pe4id, Principal = pr1, Claim = cl1, IsAuthorized = true };
-
-                    // MANUALLY CREATING PROXY OBJECT BY EXPLICITLY CALLING Load FOR ALL NAVIGATION PROPERTIES, THEN USING Persist FUNCTION
-                    // IS FASTER THAN Merge, BECAUSE HN WILL NOT ONCE LOAD THE DATA FROM THE DATABASE.
-                    // ON THE OTHER HAND, USING Merge FUNCTION IS MUSH EASIER BECAUSE IT AUTOMATICALLY CREATES THE PROXY OBJECT.
-
-                    nhs.Persist(pe4);
-
-                    nhs.Flush();
-
-                    Assert.AreEqual("pr1", pe4.Principal.Name);
-                }
-
-                // ============= INSERT WITH AUTOMATICALLY CREATED NH PROXY OBJECT (MERGE FUNCTION):
-
-                {
-                    nhs.Clear();
-
-                    var pe5id = Guid.NewGuid();
-                    var pe5transient = new TestEntity.Permission { ID = pe5id, Principal = new TestEntity.Principal { ID = pr2id }, Claim = new TestEntity.Claim { ID = cl2id }, IsAuthorized = true };
-
-                    var pe5 = (TestEntity.Permission)nhs.Merge(pe5transient); // If I have called Save/Persist before Merge, I would get the original (not bound to ORM) instance instead of a new proxy object.
-                    // I will use Merge because Save/Persist does not automatically bind navigation properties (does not create a proxy object).
-                    // Calling Save/Persist on a transient object creates a confusion because it leaves in the NH session my object with properties that are not bound.
-                    Assert.AreEqual("pr2", pe5.Principal.Name);
-
-                    nhs.Flush();
-                }
-            }
+            throw new NotImplementedException();
         }
 
+        [TestMethod]
+        public void UpdateTransient()
+        {
+            throw new NotImplementedException();
+        }
+
+        [TestMethod]
+        public void InsertPersistent()
+        {
+            throw new NotImplementedException();
+        }
+
+        [TestMethod]
+        public void UpdatePersistent()
+        {
+            throw new NotImplementedException();
+        }
+
+        [TestMethod]
+        public void UpdatePersistentButDontSave()
+        {
+            // Update a persistent entity (with lazy evaluation), then save another entity. The first one should not be saved.
+            throw new NotImplementedException();
+        }
+        
         [TestMethod]
         public void CascadeDelete()
         {

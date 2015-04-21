@@ -37,7 +37,6 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format(
 @"{2}
         public {1} {0} {{ get; set; }}
-
         ",
             info.Name,
             propertyType,

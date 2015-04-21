@@ -37,18 +37,15 @@ namespace Rhetos.Processing.DefaultCommands
     [ExportMetadata(MefProvider.Implements, typeof(SaveEntityCommandInfo))]
     public class SaveEntityCommand : ICommandImplementation
     {
-        private readonly IIndex<string, IWritableRepository> _writableRepositories;
         private readonly GenericRepositories _genericRepositories;
         private readonly IPersistenceTransaction _persistenceTransaction;
         private readonly ServerCommandsUtility _serverCommandsUtility;
 
         public SaveEntityCommand(
-            IIndex<string, IWritableRepository> writableRepositories,
             GenericRepositories genericRepositories,
             IPersistenceTransaction persistenceTransaction,
             ServerCommandsUtility serverCommandsUtility)
         {
-            _writableRepositories = writableRepositories;
             _genericRepositories = genericRepositories;
             _persistenceTransaction = persistenceTransaction;
             _serverCommandsUtility = serverCommandsUtility;
@@ -75,8 +72,7 @@ namespace Rhetos.Processing.DefaultCommands
 
             if (valid)
             {
-                var repository = _writableRepositories[saveInfo.Entity];
-                repository.Save(saveInfo.DataToInsert, saveInfo.DataToUpdate, saveInfo.DataToDelete, true);
+                genericRepository.Save(saveInfo.DataToInsert, saveInfo.DataToUpdate, saveInfo.DataToDelete, true);
 
                 var insertUpdateItems = ConcatenateNullable(saveInfo.DataToInsert, saveInfo.DataToUpdate);
                 // We rely that this call will only use IDs of the items, because other data might be dirty.

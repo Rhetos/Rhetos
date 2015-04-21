@@ -25,6 +25,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using Rhetos.Configuration.Autofac;
+using Rhetos.Dom.DefaultConcepts;
 
 namespace CommonConcepts.Test
 {
@@ -164,7 +165,7 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
 
                 var parent = new TestDataStructure.Parent { ID = Guid.NewGuid() };
-                var child = new TestDataStructure.Child { ID = Guid.NewGuid(), Parent = parent };
+                var child = new TestDataStructure.Child { ID = Guid.NewGuid(), ParentID = parent.ID };
 
                 repository.TestDataStructure.Parent.Insert(new[] { parent });
                 repository.TestDataStructure.Child.Insert(new[] { child });

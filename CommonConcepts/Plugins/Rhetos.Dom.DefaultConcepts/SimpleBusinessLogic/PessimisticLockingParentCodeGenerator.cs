@@ -40,10 +40,10 @@ namespace Rhetos.Dom.DefaultConcepts
                 @"if (deniedLock == null)
                 {{
                     // Check locks for parent {3}.{4}:
-                    Guid[] parentResourceIDs = updated.Where(item => item.{2} != null).Select(item => item.{2}.ID)
-                        .Concat(deleted.Where(item => item.{2} != null).Select(item => item.{2}.ID))
-                        .Concat(insertedNew.Where(item => item.{2} != null).Select(item => item.{2}.ID))
-                        .Concat(updatedNew.Where(item => item.{2} != null).Select(item => item.{2}.ID))
+                    Guid[] parentResourceIDs = updated.Where(item => item.{2}ID != null).Select(item => item.{2}ID.Value)
+                        .Concat(deleted.Where(item => item.{2}ID != null).Select(item => item.{2}ID.Value))
+                        .Concat(insertedNew.Where(item => item.{2}ID != null).Select(item => item.{2}ID.Value))
+                        .Concat(updatedNew.Where(item => item.{2}ID != null).Select(item => item.{2}ID.Value))
                             .Distinct().ToArray();
 
                     if (parentResourceIDs.Count() > 0)

@@ -45,7 +45,6 @@ namespace Rhetos.CommonConcepts.Test.Mocks
                     LogProvider = new ConsoleLogProvider(),
                     PersistenceTransaction = new PersistenceTransactionStub(),
                     GenericFilterHelper = new GenericFilterHelper(new DomainObjectModelMock()),
-                    FilterIdRepository = null
                 },
                 new RegisteredInterfaceImplementations { { typeof(TEntityInterface), typeof(TEntity).FullName }})
         {
@@ -60,7 +59,6 @@ namespace Rhetos.CommonConcepts.Test.Mocks
                     LogProvider = new ConsoleLogProvider(),
                     PersistenceTransaction = new PersistenceTransactionStub(),
                     GenericFilterHelper = new GenericFilterHelper(new DomainObjectModelMock()),
-                    FilterIdRepository = null
                 },
                 new RegisteredInterfaceImplementations { { typeof(TEntityInterface), typeof(TEntity).FullName } })
         {

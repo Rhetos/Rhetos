@@ -24,8 +24,44 @@ using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public interface IWritableRepository : IRepository
+    public interface IWritableRepository<in TEntity>
     {
-        void Save(IEnumerable<object> insertedNew, IEnumerable<object> updatedNew, IEnumerable<object> deletedIds, bool checkUserPermissions = false);
+        void Save(IEnumerable<TEntity> insertedNew, IEnumerable<TEntity> updatedNew, IEnumerable<TEntity> deletedIds, bool checkUserPermissions = false);
+    }
+
+    public static class WritableRepositoryExtensions
+    {
+        public static void Insert<TEntity>(this IWritableRepository<TEntity> repository, IEnumerable<TEntity> insertNew, bool checkUserPermissions = false)
+        {
+            repository.Save(insertNew, null, null, checkUserPermissions);
+        }
+
+        /// <summary>checkUserPermissions is set to false.</summary>
+        public static void Insert<TEntity>(this IWritableRepository<TEntity> repository, params TEntity[] insertNew)
+        {
+            repository.Save(insertNew, null, null, false);
+        }
+
+        public static void Update<TEntity>(this IWritableRepository<TEntity> repository, IEnumerable<TEntity> updateNew, bool checkUserPermissions = false)
+        {
+            repository.Save(null, updateNew, null, checkUserPermissions);
+        }
+
+        /// <summary>checkUserPermissions is set to false.</summary>
+        public static void Update<TEntity>(this IWritableRepository<TEntity> repository, params TEntity[] updateNew)
+        {
+            repository.Save(null, updateNew, null, false);
+        }
+
+        public static void Delete<TEntity>(this IWritableRepository<TEntity> repository, IEnumerable<TEntity> deleteIds, bool checkUserPermissions = false)
+        {
+            repository.Save(null, null, deleteIds, checkUserPermissions);
+        }
+
+        /// <summary>checkUserPermissions is set to false.</summary>
+        public static void Delete<TEntity>(this IWritableRepository<TEntity> repository, params TEntity[] deleteIds)
+        {
+            repository.Save(null, null, deleteIds, false);
+        }
     }
 }

@@ -21,26 +21,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
-using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl;
-using Rhetos.Compiler;
+using System.Threading.Tasks;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Utilities
 {
-    [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(LinkedItemsInfo))]
-    public class LinkedItemsCodeGenerator : IConceptCodeGenerator
+    public interface IConfiguration
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
-        {
-            var info = (LinkedItemsInfo)conceptInfo;
-
-            string propertyType = string.Format("IList<Common.Queryable.{0}_{1}>", info.ReferenceProperty.DataStructure.Module.Name, info.ReferenceProperty.DataStructure.Name);
-
-            DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.DataStructure, info.Name, propertyType, null);
-        }
+        Lazy<int> GetInt(string key, int defaultValue);
+        Lazy<bool> GetBool(string key, bool defaultValue);
     }
 }

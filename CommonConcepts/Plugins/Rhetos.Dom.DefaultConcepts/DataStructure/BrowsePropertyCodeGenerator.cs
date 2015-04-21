@@ -47,11 +47,9 @@ namespace Rhetos.Dom.DefaultConcepts
             var browse = (BrowseDataStructureInfo)info.PropertyInfo.DataStructure;
 
             codeBuilder.InsertCode(
-                 string.Format(CultureInfo.InvariantCulture, @"
-                    {0} = item.{1},",
-                          info.PropertyInfo.Name,
-                          info.Path),
-                 BrowseDataStructureCodeGenerator.BrowsePropertiesTag, browse);
+                 string.Format("{0} = item.{1},\r\n                    ", info.PropertyInfo.Name, info.Path),
+                 BrowseDataStructureCodeGenerator.BrowsePropertiesTag,
+                 browse);
         }
     }
 }

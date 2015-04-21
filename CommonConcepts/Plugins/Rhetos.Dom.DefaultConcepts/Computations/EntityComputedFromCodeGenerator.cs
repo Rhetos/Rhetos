@@ -72,7 +72,7 @@ namespace Rhetos.Dom.DefaultConcepts
             filterSave = filterSave ?? (x => x);
 
             var sourceRepository = _executionContext.GenericRepositories.GetGenericRepository<{1}>();
-            var sourceItems = sourceRepository.Read(filterLoad);
+            var sourceItems = sourceRepository.Load(filterLoad);
             var newItems = sourceItems.Select(sourceItem => new {0} {{
                 ID = sourceItem.ID,
                 {4} }}).ToList();

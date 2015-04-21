@@ -26,6 +26,7 @@ using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System.Text.RegularExpressions;
 using Rhetos.Configuration.Autofac;
+using Rhetos.Dom.DefaultConcepts;
 
 namespace CommonConcepts.Test
 {

@@ -139,7 +139,7 @@ namespace CommonConcepts.Test
                 container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
                 var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
-                var h = repository.TestHistory.Minimal_Changes.All().Single();
+                var h = repository.TestHistory.Minimal_Changes.Query().Single();
 
                 Assert.AreEqual(11, h.Entity.Code);
                 AssertIsRecently(h.Entity.ActiveSince, now);
@@ -762,7 +762,7 @@ namespace CommonConcepts.Test
                 var e = new TestHistory.Simple { Code = 1, ActiveSince = future2 };
                 repository.TestHistory.Simple.Insert(new[] { e });
 
-                repository.TestHistory.Simple_Changes.Insert(new[] { new TestHistory.Simple_Changes { Entity = e, ActiveSince = future1 } });
+                repository.TestHistory.Simple_Changes.Insert(new[] { new TestHistory.Simple_Changes { EntityID = e.ID, ActiveSince = future1 } });
                 Assert.AreEqual("1  " + future2.Dump(), DumpFull(repository.TestHistory.Simple.All()));
             }
         }

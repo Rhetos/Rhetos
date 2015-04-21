@@ -66,9 +66,6 @@ Module TestSqlWorkarounds
 							PersonID = SqlUtility.ReadGuid(sqlReader, 2) // Works for both Oracle and MsSql.
 						}));
 				
-				foreach (var item in result) // Binding the reference property.
-					item.Person = executionContext.NHibernateSession.Load<TestSqlWorkarounds.Person>(item.PersonID);
-					
 				return result.ToArray();
 			}'
 		{

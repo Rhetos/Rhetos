@@ -38,13 +38,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (EntityHistoryAllPropertiesInfo)conceptInfo;
-            codeBuilder.InsertCode(FilterInterfaceSnippet(info), RepositoryHelper.RepositoryInterfaces, info.EntityHistory.Entity);
             codeBuilder.InsertCode(FilterImplementationSnippet(info), RepositoryHelper.RepositoryMembers, info.EntityHistory.Entity);
-        }
-
-        private static string FilterInterfaceSnippet(EntityHistoryAllPropertiesInfo info)
-        {
-            return "IFilterRepository<System.DateTime, " + info.EntityHistory.Entity.Module.Name + "." + info.EntityHistory.Entity.Name + ">";
         }
 
         /// <summary>

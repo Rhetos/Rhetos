@@ -28,6 +28,7 @@ using Rhetos.TestCommon;
 using System.Security.Principal;
 using System.Text.RegularExpressions;
 using Rhetos.Configuration.Autofac;
+using Rhetos.Dom.DefaultConcepts;
 
 namespace CommonConcepts.Test
 {
@@ -244,7 +245,7 @@ namespace CommonConcepts.Test
                     g = Guid.NewGuid(),
                     ls = "abc",
                     m = 11.22m,
-                    r = simple
+                    rID = simple.ID
                 };
                 repository.TestLogging.Complex.Insert(new[] { complex });
                 complex.ls = "def";

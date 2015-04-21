@@ -67,14 +67,8 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             return string.Format(@"(repository, parameter) =>
 	        {{
-                var baseDataSourceRepositiory = repository.{3}.{4} as IFilterRepository<{2}, {3}.{4}>;
-                if (baseDataSourceRepositiory == null)
-                {{
-                    const string userDescription = {6};
-                    throw new Rhetos.UserException(""Invalid use of "" + userDescription + "". Filter's base data source '{3}.{4}' does not implement a filter for '{2}'."");
-                }}
-
-                Guid[] references = baseDataSourceRepositiory.Filter(parameter).Select(item => item.{5}ID)
+                var baseRepositiory = repository.{3}.{4};
+                Guid[] references = baseRepositiory.Filter(parameter).Select(item => item.{5}ID)
                     .Where(reference => reference.HasValue).Select(reference => reference.Value)
                     .Distinct().ToArray();
                 {0}.{1}[] result = repository.{0}.{1}.Filter(references);

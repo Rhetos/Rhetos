@@ -112,13 +112,13 @@ namespace CommonConcepts.Test
                 InitializeData(container);
                 Assert.AreEqual("a ax sx, a ay sy", ReportLegacy2(container, repository), "initial");
 
-                repository.Test13.Legacy2.Insert(new[] { new Test13.Legacy2 { NameNew = "bnew", Leg1 = new Test13.Legacy1 { ID = GuidB }, Same = "snew" } });
+                repository.Test13.Legacy2.Insert(new[] { new Test13.Legacy2 { NameNew = "bnew", Leg1ID = GuidB, Same = "snew" } });
                 Assert.AreEqual("a ax sx, a ay sy, b bnew snew", ReportLegacy2(container, repository), "insert");
 
                 var updated = repository.Test13.Legacy2.Query().Where(item => item.NameNew == "ax").Single();
                 container.Resolve<Common.ExecutionContext>().NHibernateSession.Evict(updated);
                 updated.NameNew += "2";
-                updated.Leg1 = new Test13.Legacy1 { ID = GuidB };
+                updated.Leg1ID = GuidB;
                 updated.Same += "2";
                 repository.Test13.Legacy2.Update(new[] { updated });
                 Assert.AreEqual("a ay sy, b ax2 sx2, b bnew snew", ReportLegacy2(container, repository), "update");

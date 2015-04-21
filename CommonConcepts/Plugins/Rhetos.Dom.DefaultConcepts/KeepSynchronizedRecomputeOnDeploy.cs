@@ -53,7 +53,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var sw = Stopwatch.StartNew();
 
             var keepSyncRepos = _genericRepositories.GetGenericRepository<IKeepSynchronizedMetadata>();
-            var oldItems = keepSyncRepos.Read();
+            var oldItems = keepSyncRepos.Load();
             var avoidRecompute = new HashSet<string>(oldItems.Where(item => item.Context == "NORECOMPUTE").Select(GetKey));
 
             IEnumerable<IKeepSynchronizedMetadata> toInsert, toUpdate, toDelete;

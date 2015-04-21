@@ -154,8 +154,8 @@ Module Test11
 	}
 	
 	QueryableExtension QE Test11.Source
-		'(IQueryable<Test11.Source> source, Common.DomRepository repository) =>
-			source.Select(item => new Test11.QE
+		'(IQueryable<Common.Queryable.Test11_Source> source, Common.DomRepository repository) =>
+			source.Select(item => new Common.Queryable.Test11_QE
 				{
                     ID = item.ID,
 					Base = item,
@@ -166,8 +166,8 @@ Module Test11
 	}
 	
 	QueryableExtension QEContext Test11.Source
-		'(IQueryable<Test11.Source> source, Common.DomRepository repository, Common.ExecutionContext executionContext) =>
-			source.Select(item => new Test11.QEContext
+		'(IQueryable<Common.Queryable.Test11_Source> source, Common.DomRepository repository, Common.ExecutionContext executionContext) =>
+			source.Select(item => new Common.Queryable.Test11_QEContext
 				{
                     ID = item.ID,
 					Base = item,
@@ -253,7 +253,7 @@ Module TestFilter
 		Integer Num;
         
         ComposableFilterBy ComposableFilterWithContext '(items, repository, parameter, context) =>
-            new FixedData[] { new FixedData { Name = context.UserInfo.UserName } }.AsQueryable()'
+            new Common.Queryable.TestFilter_FixedData[] { new Common.Queryable.TestFilter_FixedData { Name = context.UserInfo.UserName } }.AsQueryable()'
         {
             UseExecutionContext;
         }
@@ -300,7 +300,7 @@ Module TestFilter
 	{
 		Take Name2 'Name';
 		ComposableFilterBy 'System.String' '(source, repository, parameter) => source.Where(item => item.Name2.StartsWith("b")).Select(item =>
-			new TestFilter.AutoFilter2Browse { ID = item.ID, Base = item.Base, Name2 = item.Name2 + "x"})';
+			new Common.Queryable.TestFilter_AutoFilter2Browse { ID = item.ID, Base = item.Base, Name2 = item.Name2 + "x"})';
 		ApplyFilterOnClientRead 'System.String';
 	}
 }
@@ -531,9 +531,9 @@ Module TestComputedFrom
     Entity Base1 { ShortString Name1; ShortString Info; }
     Entity Base2 { ShortString Name2; }
     
-    QueryableExtension Comp1a TestComputedFrom.Base1 '(items, repos) => items.Select(item => new Comp1a { ID = item.ID, Base = item, Name1a = item.Name1 + "a" })' { ShortString Name1a; ChangesOnBaseItem; }
-    QueryableExtension Comp1b TestComputedFrom.Base1 '(items, repos) => items.Select(item => new Comp1b { ID = item.ID, Base = item, Name1b = item.Name1 + "b" })' { ShortString Name1b; ChangesOnBaseItem; }
-    QueryableExtension Comp2a TestComputedFrom.Base2 '(items, repos) => items.Select(item => new Comp2a { ID = item.ID, Base = item, Name2a = item.Name2 + "a" })' { ShortString Name2a; ChangesOnBaseItem; }
+    QueryableExtension Comp1a TestComputedFrom.Base1 '(items, repos) => items.Select(item => new Common.Queryable.TestComputedFrom_Comp1a { ID = item.ID, Base = item, Name1a = item.Name1 + "a" })' { ShortString Name1a; ChangesOnBaseItem; }
+    QueryableExtension Comp1b TestComputedFrom.Base1 '(items, repos) => items.Select(item => new Common.Queryable.TestComputedFrom_Comp1b { ID = item.ID, Base = item, Name1b = item.Name1 + "b" })' { ShortString Name1b; ChangesOnBaseItem; }
+    QueryableExtension Comp2a TestComputedFrom.Base2 '(items, repos) => items.Select(item => new Common.Queryable.TestComputedFrom_Comp2a { ID = item.ID, Base = item, Name2a = item.Name2 + "a" })' { ShortString Name2a; ChangesOnBaseItem; }
     
     Entity MultiSync
     {

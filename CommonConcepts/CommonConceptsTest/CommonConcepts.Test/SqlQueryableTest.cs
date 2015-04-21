@@ -24,6 +24,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
+using Rhetos.Dom.DefaultConcepts;
 
 namespace CommonConcepts.Test
 {
@@ -80,12 +81,12 @@ namespace CommonConcepts.Test
 
                 var doc = new TestSqlQueryable.Document { ID = Guid.NewGuid(), Name = "abc" };
                 documentRepository.Insert(new[] { doc });
-                Assert.AreEqual(3, documentRepository.All().Single().Extension_DocumentInfo.NameLen);
+                Assert.AreEqual(3, documentRepository.Query().Single().Extension_DocumentInfo.NameLen);
 
                 doc.Name = "abcd";
                 documentRepository.Update(new[] { doc });
 
-                Assert.AreEqual(4, documentRepository.All().Single().Extension_DocumentInfo.NameLen);
+                Assert.AreEqual(4, documentRepository.Query().ToList().Single().Extension_DocumentInfo.NameLen);
             }
         }
 

@@ -46,6 +46,7 @@ namespace Rhetos.Configuration.Autofac
             builder.RegisterType<InstalledPackages>().As<IInstalledPackages>().SingleInstance();
             builder.RegisterModule(new DomModuleConfiguration(_deploymentTime));
             builder.RegisterModule(new NHibernateModuleConfiguration(_deploymentTime));
+            builder.RegisterModule(new PersistenceModuleConfiguration(_deploymentTime));
             builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));
             builder.RegisterModule(new SecurityModuleConfiguration());
             builder.RegisterModule(new UtilitiesModuleConfiguration());

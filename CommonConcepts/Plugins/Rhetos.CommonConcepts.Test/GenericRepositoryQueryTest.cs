@@ -78,7 +78,7 @@ namespace Rhetos.CommonConcepts.Test
             var repos = NewRepos(new NullRepository());
 
             TestUtility.ShouldFail(() => repos.Query(),
-                "does not implement the Query() method",
+                "does not implement", "query",
                 typeof(SimpleEntity).FullName);
 
             TestUtility.ShouldFail(() => repos.Query("abc"),
@@ -140,28 +140,28 @@ namespace Rhetos.CommonConcepts.Test
 
             Assert.AreEqual("qb", repos.Query(item => item.Name.Contains("b")).Single().Name);
 
-            TestUtility.ShouldFail(() => repos.Query<Parameter1>(),
+            TestUtility.ShouldFail(() => repos.Query(null, typeof(Parameter1)),
                 "does not implement a loader, a query or a filter with parameter",
                 typeof(SimpleEntity).FullName,
                 typeof(Parameter1).FullName);
 
-            TestUtility.ShouldFail(() => repos.Query<Parameter2>(),
+            TestUtility.ShouldFail(() => repos.Query(null, typeof(Parameter2)),
                 "does not implement a query method or a filter with parameter",
                 "IQueryable",
-                "Try using the Read function instead",
+                "Try using the Load function instead",
                 typeof(SimpleEntity).FullName,
                 typeof(Parameter2).FullName);
 
-            TestUtility.ShouldFail(() => repos.Query<Parameter3>(),
+            TestUtility.ShouldFail(() => repos.Query(null, typeof(Parameter3)),
                 "does not implement a query method or a filter with parameter",
                 "IQueryable",
-                "Try using the Read function instead",
+                "Try using the Load function instead",
                 typeof(SimpleEntity).FullName,
                 typeof(Parameter3).FullName);
 
-            Assert.AreEqual("q4", repos.Query<Parameter4>().Single().Name);
+            Assert.AreEqual("q4", repos.Query(null, typeof(Parameter4)).Single().Name);
 
-            Assert.AreEqual("qf5", repos.Query<Parameter5>().Single().Name);
+            Assert.AreEqual("qf5", repos.Query(null, typeof(Parameter5)).Single().Name);
 
             Assert.AreEqual("qb", repos.Query(new Parameter6 { Pattern = "b" }).Single().Name);
         }
@@ -172,9 +172,9 @@ namespace Rhetos.CommonConcepts.Test
             var repos = NewRepos(new SimpleRepository());
 
             var guids = new[] { new Guid(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) };
-            Assert.AreEqual("qb", repos.Read(guids).Single().Name);
-            Assert.AreEqual("qb", repos.Read(guids.ToList()).Single().Name);
-            Assert.AreEqual("qb", repos.Read(guids.AsQueryable()).Single().Name);
+            Assert.AreEqual("qb", repos.Load(guids).Single().Name);
+            Assert.AreEqual("qb", repos.Load(guids.ToList()).Single().Name);
+            Assert.AreEqual("qb", repos.Load(guids.AsQueryable()).Single().Name);
             Assert.AreEqual("qb", repos.Query(guids).Single().Name);
             Assert.AreEqual("qb", repos.Query(guids.ToList()).Single().Name);
             Assert.AreEqual("qb", repos.Query(guids.AsQueryable()).Single().Name);
@@ -184,7 +184,7 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual("qb", repos.Filter(q, guids.ToList()).Single().Name);
             Assert.AreEqual("qb", repos.Filter(q, guids.AsQueryable()).Single().Name);
 
-            var a = repos.Read();
+            var a = repos.Load();
             Assert.AreEqual("qb", repos.Filter(a, guids).Single().Name);
             Assert.AreEqual("qb", repos.Filter(a, guids.ToList()).Single().Name);
             Assert.AreEqual("qb", repos.Filter(a, guids.AsQueryable()).Single().Name);

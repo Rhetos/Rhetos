@@ -60,7 +60,7 @@ namespace CommonConcepts.Test
             using (var container = new RhetosTestContainer())
             {
                 var gRepository = container.Resolve<GenericRepository<NoRP>>();
-                gRepository.Save(Enumerable.Range(0, 50).Select(a => new NoRP() { value = a }), null, gRepository.Read());
+                gRepository.Save(Enumerable.Range(0, 50).Select(a => new NoRP() { value = a }), null, gRepository.Load());
 
                 {
                     var all = new ReadCommandInfo()
@@ -110,7 +110,7 @@ namespace CommonConcepts.Test
             {
                 var gRepository = container.Resolve<GenericRepository<SimpleRP>>();
                 var items = Enumerable.Range(0, 4001).Select(a => new SimpleRP() { ID = Guid.NewGuid(), value = a }).ToList();
-                gRepository.Save(items, null, gRepository.Read());
+                gRepository.Save(items, null, gRepository.Load());
 
                 {
                     var cReadAll = new ReadCommandInfo()
@@ -271,11 +271,11 @@ namespace CommonConcepts.Test
                     new ComplexRPPermissions() { userName = currentUserName, minVal = 5, maxVal = 90 },
                     new ComplexRPPermissions() { userName = "__non_existant_user2__", minVal = 9, maxVal = 1 },
                 };
-                permRepository.Save(perms, null, permRepository.Read());
+                permRepository.Save(perms, null, permRepository.Load());
 
                 var gRepository = container.Resolve<GenericRepository<TestRowPermissions.ComplexRP>>();
                 var items = Enumerable.Range(0, 101).Select(a => new ComplexRP() { ID = Guid.NewGuid(), value = a }).ToList();
-                gRepository.Save(items, null, gRepository.Read());
+                gRepository.Save(items, null, gRepository.Load());
 
                 // first test results with explicit RP filter calls
                 {
@@ -410,7 +410,7 @@ namespace CommonConcepts.Test
                 var gr = container.Resolve<GenericRepository<SimpleRP>>();
 
                 var items = new[] { 1000, 2000 }.Select(a => new SimpleRP() { ID = Guid.NewGuid(), value = a }).ToList();
-                gr.Save(items, null, gr.Read());
+                gr.Save(items, null, gr.Load());
 
                 {
                     var cReadAll = new ReadCommandInfo()
@@ -452,7 +452,7 @@ namespace CommonConcepts.Test
                     .Where(log => log.TableName == "TestRowPermissions.AutoFilter" && log.Action == "RowPermissionsReadItems filter");
 
                 var testData = new[] { "a1", "a2", "b1", "b2" }.Select(name => new TestRowPermissions.AutoFilter { Name = name });
-                gr.Save(testData, null, gr.Read());
+                gr.Save(testData, null, gr.Load());
 
                 int lastFilterCount = logFilterQuery.Count();
 
@@ -534,7 +534,7 @@ namespace CommonConcepts.Test
             {
                 var gr = container.Resolve<GenericRepository<ErrorData>>();
                 var newItems = new[] { "a", "b", "c" }.Select(name => new ErrorData { ID = Guid.NewGuid(), Name = name }).ToList();
-                gr.Save(newItems, null, gr.Read());
+                gr.Save(newItems, null, gr.Load());
 
                 Assert.AreEqual("a, b, c", ReadErrorData(container, ""));
 
@@ -559,7 +559,7 @@ namespace CommonConcepts.Test
             {
                 var gRepository = container.Resolve<GenericRepository<T>>();
                 // clear the repository
-                gRepository.Save(null, null, gRepository.Read());
+                gRepository.Save(null, null, gRepository.Load());
 
                 // save initial data
                 gRepository.Save(initial, null, null);
@@ -587,7 +587,7 @@ namespace CommonConcepts.Test
             using (var container = new RhetosTestContainer(true))
             {
                 var finalRepository = container.Resolve<GenericRepository<T>>();
-                var allData = finalRepository.Read().ToArray();
+                var allData = finalRepository.Load().ToArray();
 
                 // cleanup
                 finalRepository.Save(null, null, allData);
@@ -688,10 +688,10 @@ namespace CommonConcepts.Test
                     new ComplexRPPermissions() { userName = currentUserName, minVal = 5, maxVal = 90 },
                     new ComplexRPPermissions() { userName = "__non_existant_user2__", minVal = 9, maxVal = 1 },
                 };
-                permRepository.Save(perms, null, permRepository.Read());
+                permRepository.Save(perms, null, permRepository.Load());
 
                 var gRepository = container.Resolve<GenericRepository<TestRowPermissions.ComplexRP>>();
-                gRepository.Save(items, null, gRepository.Read());
+                gRepository.Save(items, null, gRepository.Load());
 
                 // first test results with explicit RP write filter calls
                 {

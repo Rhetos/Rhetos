@@ -441,8 +441,8 @@ namespace CommonConcepts.Test
                 var subtype1 = new TestPolymorphic.DifferentModule { ID = Guid.NewGuid(), Code = "a" };
                 var subtype2 = new TestPolymorphic2.DifferentModule { ID = Guid.NewGuid(), Code = "b" };
 
-                repositories.Save(new[] { subtype1 }, null, repositories.Read<TestPolymorphic.DifferentModule>());
-                repositories.Save(new[] { subtype2 }, null, repositories.Read<TestPolymorphic2.DifferentModule>());
+                repositories.Save(new[] { subtype1 }, null, repositories.Load<TestPolymorphic.DifferentModule>());
+                repositories.Save(new[] { subtype2 }, null, repositories.Load<TestPolymorphic2.DifferentModule>());
 
                 Assert.AreEqual(
                     "TestPolymorphic.DifferentModule a1, TestPolymorphic2.DifferentModule b2",
@@ -458,12 +458,12 @@ namespace CommonConcepts.Test
                 var repositories = container.Resolve<GenericRepositories>();
 
                 var subtype1 = new TestPolymorphic.ComplexImplementationData { ID = Guid.NewGuid(), a = "a" };
-                repositories.Save(new[] { subtype1 }, null, repositories.Read<TestPolymorphic.ComplexImplementationData>());
+                repositories.Save(new[] { subtype1 }, null, repositories.Load<TestPolymorphic.ComplexImplementationData>());
 
                 var subtype2 = new TestPolymorphic.ComplexImplementationSql { ID = Guid.NewGuid(), AlternativeId = Guid.NewGuid(), s = "s" };
-                repositories.Save(new[] { subtype2 }, null, repositories.Read<TestPolymorphic.ComplexImplementationSql>());
+                repositories.Save(new[] { subtype2 }, null, repositories.Load<TestPolymorphic.ComplexImplementationSql>());
 
-                var all = repositories.Query<TestPolymorphic.ComplexBase>()
+                var all = repositories.Query<Common.Queryable.TestPolymorphic_ComplexBase>()
                     .OrderBy(item => item.Subtype).ThenBy(item => item.Name1);
 
                 var expectedAll = new[]
@@ -505,12 +505,12 @@ namespace CommonConcepts.Test
             using (var container = new RhetosTestContainer())
             {
                 var repositories = container.Resolve<GenericRepositories>();
-                repositories.Delete(repositories.Read<TestPolymorphic.ChildA>());
-                repositories.Delete(repositories.Read<TestPolymorphic.ChildB>());
-                repositories.Delete(repositories.Read<TestPolymorphic.Parent>());
+                repositories.Delete(repositories.Load<TestPolymorphic.ChildA>());
+                repositories.Delete(repositories.Load<TestPolymorphic.ChildB>());
+                repositories.Delete(repositories.Load<TestPolymorphic.Parent>());
 
                 var p1 = new TestPolymorphic.Parent { ID = Guid.NewGuid(), Name = "p1" };
-                var ca1 = new TestPolymorphic.ChildA { ID = Guid.NewGuid(), Name = "ca1", Parent = p1 };
+                var ca1 = new TestPolymorphic.ChildA { ID = Guid.NewGuid(), Name = "ca1", ParentID = p1.ID };
                 var cb1 = new TestPolymorphic.ChildB { ID = Guid.NewGuid(), Name = "cb1", ManualParentID = p1.ID };
 
                 repositories.Insert(p1);
@@ -518,7 +518,7 @@ namespace CommonConcepts.Test
                 repositories.Insert(cb1);
 
                 Assert.AreEqual("ca1 p1, cb1 p1", TestUtility.DumpSorted(
-                    repositories.Query<TestPolymorphic.Child>().Select(c => c.Name + " " + c.Parent.Name)));
+                    repositories.Query<Common.Queryable.TestPolymorphic_Child>().Select(c => c.Name + " " + c.Parent.Name)));
             }
         }
     }

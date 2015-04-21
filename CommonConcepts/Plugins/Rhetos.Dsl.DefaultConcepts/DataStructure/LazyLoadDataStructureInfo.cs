@@ -31,10 +31,16 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("LazyLoadReferences")]
-    public class LazyLoadDataStructureInfo : IConceptInfo
+    public class LazyLoadDataStructureInfo : IConceptInfo, IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }
+
+        public void CheckSemantics(IDslModel existingConcepts)
+        {
+            if (!DslUtility.IsQueryable(DataStructure))
+                throw new DslSyntaxException(this, this.GetKeywordOrTypeName() + " can only be used on a queryable data structure, such as Entity. " + DataStructure.GetKeywordOrTypeName() + " is not queryable.");
+        }
     }
 
     [Export(typeof(IConceptMacro))]

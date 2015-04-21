@@ -260,8 +260,8 @@ namespace CommonConcepts.Test
 
                 var s1a = new TestLockItems.Simple { Name = "a" };
                 var s1b = new TestLockItems.Simple { Name = "b" };
-                var s2a = new TestLockItems.Simple2 { Name = "aa", Count = 100, TestReference = s1a };
-                var s2b = new TestLockItems.Simple2 { Name = "LockExceptName", Count = 200, TestReference = s1b };
+                var s2a = new TestLockItems.Simple2 { Name = "aa", Count = 100, TestReferenceID = s1a.ID };
+                var s2b = new TestLockItems.Simple2 { Name = "LockExceptName", Count = 200, TestReferenceID = s1b.ID };
 
                 simpleRepos.Insert(s1a, s1b);
                 simple2Repos.Insert(s2a, s2b);
@@ -273,8 +273,8 @@ namespace CommonConcepts.Test
                 if (updateShouldPass)
                 {
                     simple2Repos.Update(s2a, s2b);
-                    TestUtility.DumpSorted(simple2Repos.Read(), item => item.Name + " " + item.Count);
-                    Assert.AreEqual(s2b.Name, simple2Repos.Read(new[] { s2b.ID }).Single().Name);
+                    TestUtility.DumpSorted(simple2Repos.Load(), item => item.Name + " " + item.Count);
+                    Assert.AreEqual(s2b.Name, simple2Repos.Load(new[] { s2b.ID }).Single().Name);
                 }
                 else
                     TestUtility.ShouldFail(() => simple2Repos.Update(s2a, s2b),

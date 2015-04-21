@@ -82,14 +82,14 @@ namespace CommonConcepts.Test
                 var emp1 = new DemoRowPermissions1.Employee
                 {
                     UserName = context.UserInfo.UserName,
-                    Division = div1
+                    DivisionID = div1.ID
                 };
                 repository.DemoRowPermissions1.Employee.Insert(new[] { emp1 });
 
                 // The user can access doc1, because it's in the same division:
-                var doc1 = new DemoRowPermissions1.Document { Title = "doc1", Division = div1 };
+                var doc1 = new DemoRowPermissions1.Document { Title = "doc1", DivisionID = div1.ID };
                 // The user cannot access doc2:
-                var doc2 = new DemoRowPermissions1.Document { Title = "doc2", Division = div2 };
+                var doc2 = new DemoRowPermissions1.Document { Title = "doc2", DivisionID = div2.ID };
                 repository.DemoRowPermissions1.Document.Insert(new[] { doc1, doc2 });
             }
 
@@ -151,32 +151,32 @@ namespace CommonConcepts.Test
 
                 var div1 = new DemoRowPermissions2.Division { Name = "div1" };
                 var div2 = new DemoRowPermissions2.Division { Name = "div2" };
-                var div3 = new DemoRowPermissions2.Division { Name = "div3", Region = reg3 };
+                var div3 = new DemoRowPermissions2.Division { Name = "div3", RegionID = reg3.ID };
                 repository.DemoRowPermissions2.Division.Insert(new[] { div1, div2, div3 });
 
                 // The current user:
                 var emp1 = new DemoRowPermissions2.Employee
                 {
                     UserName = context.UserInfo.UserName,
-                    Division = div1
+                    DivisionID = div1.ID
                 };
                 repository.DemoRowPermissions2.Employee.Insert(new[] { emp1 });
 
                 var sup3 = new DemoRowPermissions2.RegionSupervisor
                 {
-                    Employee = emp1,
-                    Region = reg3
+                    EmployeeID = emp1.ID,
+                    RegionID = reg3.ID
                 };
                 repository.DemoRowPermissions2.RegionSupervisor.Insert(new[] { sup3 });
 
                 // The user can access doc1, because it's in the same division:
-                var doc1 = new DemoRowPermissions2.Document { Title = "doc1", Division = div1 };
+                var doc1 = new DemoRowPermissions2.Document { Title = "doc1", DivisionID = div1.ID };
                 // The user cannot access doc2:
-                var doc2 = new DemoRowPermissions2.Document { Title = "doc2", Division = div2 };
+                var doc2 = new DemoRowPermissions2.Document { Title = "doc2", DivisionID = div2.ID };
                 // The user can access doc3, because it's in the region he supervises:
-                var doc3 = new DemoRowPermissions2.Document { Title = "doc3", Division = div3 };
+                var doc3 = new DemoRowPermissions2.Document { Title = "doc3", DivisionID = div3.ID };
                 // The user can access doc4 (same division), but cannot edit it (previous year):
-                var doc4 = new DemoRowPermissions2.Document { Title = "doc4", Division = div1, Created = DateTime.Now.AddYears(-1) };
+                var doc4 = new DemoRowPermissions2.Document { Title = "doc4", DivisionID = div1.ID, Created = DateTime.Now.AddYears(-1) };
                 repository.DemoRowPermissions2.Document.Insert(new[] { doc1, doc2, doc3, doc4 });
             }
 
@@ -282,14 +282,14 @@ namespace CommonConcepts.Test
 
                 var div1 = new DemoRowPermissions2.Division { Name = "div1" };
                 var div2 = new DemoRowPermissions2.Division { Name = "div2" };
-                var div3 = new DemoRowPermissions2.Division { Name = "div3", Region = reg3 };
+                var div3 = new DemoRowPermissions2.Division { Name = "div3", RegionID = reg3.ID };
                 repository.DemoRowPermissions2.Division.Insert(new[] { div1, div2, div3 });
 
                 // The current user:
                 var emp1 = new DemoRowPermissions2.Employee
                 {
                     UserName = context.UserInfo.UserName,
-                    Division = div1
+                    DivisionID = div1.ID
                 };
                 var emp2 = new DemoRowPermissions2.Employee
                 {
@@ -299,31 +299,31 @@ namespace CommonConcepts.Test
 
                 var sup3 = new DemoRowPermissions2.RegionSupervisor
                 {
-                    Employee = emp1,
-                    Region = reg3
+                    EmployeeID = emp1.ID,
+                    RegionID = reg3.ID
                 };
                 repository.DemoRowPermissions2.RegionSupervisor.Insert(new[] { sup3 });
 
                 // The current user can access doc1, because it's in the same division:
-                var doc1 = new DemoRowPermissions2.Document { Title = "doc1", Division = div1 };
+                var doc1 = new DemoRowPermissions2.Document { Title = "doc1", DivisionID = div1.ID };
                 // The current user cannot access doc2:
-                var doc2 = new DemoRowPermissions2.Document { Title = "doc2", Division = div2 };
+                var doc2 = new DemoRowPermissions2.Document { Title = "doc2", DivisionID = div2.ID };
                 // The current user can access doc3, because it's in the region he supervises:
-                var doc3 = new DemoRowPermissions2.Document { Title = "doc3", Division = div3 };
+                var doc3 = new DemoRowPermissions2.Document { Title = "doc3", DivisionID = div3.ID };
                 repository.DemoRowPermissions2.Document.Insert(new[] { doc1, doc2, doc3 });
 
                 // The current user can access com1, because it is related to his document:
-                var com1 = new DemoRowPermissions2.DocumentComment { Document = doc1, Comment = "com1" };
+                var com1 = new DemoRowPermissions2.DocumentComment { DocumentID = doc1.ID, Comment = "com1" };
                 // The current user cannot access com2:
-                var com2 = new DemoRowPermissions2.DocumentComment { Document = doc2, Comment = "com2" };
+                var com2 = new DemoRowPermissions2.DocumentComment { DocumentID = doc2.ID, Comment = "com2" };
                 repository.DemoRowPermissions2.DocumentComment.Insert(new[] { com1, com2 });
 
                 // The current user can access app1, because it is related to his document:
-                var app1 = new DemoRowPermissions2.DocumentApproval { ID = doc1.ID, ApprovedBy = emp1, Note = "app1" };
+                var app1 = new DemoRowPermissions2.DocumentApproval { ID = doc1.ID, ApprovedByID = emp1.ID, Note = "app1" };
                 // The current user cannot access app2:
-                var app2 = new DemoRowPermissions2.DocumentApproval { ID = doc2.ID, ApprovedBy = emp1, Note = "app2" };
+                var app2 = new DemoRowPermissions2.DocumentApproval { ID = doc2.ID, ApprovedByID = emp1.ID, Note = "app2" };
                 // The current user can read app3, but cannot write it, because it is approved by a different user:
-                var app3 = new DemoRowPermissions2.DocumentApproval { ID = doc3.ID, ApprovedBy = emp2, Note = "app3" };
+                var app3 = new DemoRowPermissions2.DocumentApproval { ID = doc3.ID, ApprovedByID = emp2.ID, Note = "app3" };
                 repository.DemoRowPermissions2.DocumentApproval.Insert(new[] { app1, app2, app3 });
             }
 
@@ -334,22 +334,22 @@ namespace CommonConcepts.Test
             {
                 var allowedReadBrowse =
                     container.Resolve<GenericRepository<DemoRowPermissions2.DocumentBrowse>>()
-                    .Read<Common.RowPermissionsReadItems>();
+                    .Load<Common.RowPermissionsReadItems>();
                 Assert.AreEqual("doc1, doc3", TestUtility.DumpSorted(allowedReadBrowse, browse => browse.Title));
 
                 var allowedReadComment =
                     container.Resolve<GenericRepository<DemoRowPermissions2.DocumentComment>>()
-                    .Read<Common.RowPermissionsReadItems>();
+                    .Load<Common.RowPermissionsReadItems>();
                 Assert.AreEqual("com1", TestUtility.DumpSorted(allowedReadComment, comment => comment.Comment));
 
                 var allowedReadApproval =
                     container.Resolve<GenericRepository<DemoRowPermissions2.DocumentApproval>>()
-                    .Read<Common.RowPermissionsReadItems>();
+                    .Load<Common.RowPermissionsReadItems>();
                 Assert.AreEqual("app1, app3", TestUtility.DumpSorted(allowedReadApproval, approval => approval.Note));
 
                 var allowedWriteApproval =
                     container.Resolve<GenericRepository<DemoRowPermissions2.DocumentApproval>>()
-                    .Read<Common.RowPermissionsWriteItems>();
+                    .Load<Common.RowPermissionsWriteItems>();
                 Assert.AreEqual("app1", TestUtility.DumpSorted(allowedWriteApproval, approval => approval.Note));
             }
         }
@@ -368,13 +368,13 @@ namespace CommonConcepts.Test
                 // package extend the class with specific interfaces, requiring this project
                 // to reference those plugins.
 
-                dynamic principal = principalRepository.Read().Where(p => ((dynamic)p).Name == userAccount).SingleOrDefault();
+                dynamic principal = principalRepository.Load().Where(p => ((dynamic)p).Name == userAccount).SingleOrDefault();
 
                 if (principal == null)
                 {
                     principal = principalRepository.CreateInstance();
                     principal.Name = userAccount;
-                    principalRepository.Insert(principal);
+                    principalRepository.Insert((IEntity)principal);
                 }
             }
         }

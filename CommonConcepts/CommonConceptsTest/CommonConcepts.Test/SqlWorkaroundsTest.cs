@@ -26,6 +26,7 @@ using Rhetos.Utilities;
 using Rhetos.TestCommon;
 using Rhetos;
 using Rhetos.Configuration.Autofac;
+using Rhetos.Dom.DefaultConcepts;
 
 namespace CommonConcepts.Test
 {
@@ -96,7 +97,9 @@ namespace CommonConcepts.Test
                 TestUtility.ShouldFail(() => repository.TestSqlWorkarounds.PersonInfo.All(), "filter", "PersonFilter", "must be used");
 
                 var result = repository.TestSqlWorkarounds.PersonInfo.Filter(new TestSqlWorkarounds.PersonFilter { NamePattern = "%1%", LimitResultCount = 4 });
-                Assert.AreEqual("User1 5, User10 6, User100 7, User11 6", TestUtility.Dump(result, item => item.Person.Name + " " + item.NameLength));
+                Assert.AreEqual("User1 5, User10 6, User100 7, User11 6", TestUtility.Dump(
+                    repository.TestSqlWorkarounds.PersonInfo.QueryLoaded(result),
+                    item => item.Person.Name + " " + item.NameLength));
             }
         }
 

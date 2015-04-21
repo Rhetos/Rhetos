@@ -137,6 +137,7 @@
     <Compile Include="DataStructure\BeforeQueryWithParameterInfo.cs" />
     <Compile Include="DataStructure\LazyLoadExtensionInfo.cs" />
     <Compile Include="DataStructure\LazyLoadBaseInfo.cs" />
+    <Compile Include="DataStructure\LazyLoadAllMacro.cs" />
     <Compile Include="DataStructure\LazyLoadSupportInfo.cs" />
     <Compile Include="DataStructure\LazyLoadLinkedItemsInfo.cs" />
     <Compile Include="DataStructure\LazyLoadReferenceInfo.cs" />

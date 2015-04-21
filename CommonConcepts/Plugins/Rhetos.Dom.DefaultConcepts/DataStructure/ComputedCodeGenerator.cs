@@ -36,7 +36,7 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string RepositoryFunctionsSnippet(ComputedInfo info)
         {
             return string.Format(
-@"        public static readonly Func<Common.DomRepository{2}, global::{0}.{1}[]> Compute =
+@"        public readonly Func<Common.DomRepository{2}, global::{0}.{1}[]> Compute =
             {3};
 
 ",

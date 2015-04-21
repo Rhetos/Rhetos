@@ -21,16 +21,30 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Rhetos.Dsl;
+using System.ComponentModel.Composition;
+using Rhetos.Utilities;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// Every readable repository is expected to implement IFilterRepository for
-    /// patametar type FilterAll (the filter is expected to return all records from the repository)
-    /// and patametar type IEnumerable(Guid) (the filter is expected to return the records with given primary keys).
+    /// Enables lazy loading of navigation properties an all data structures, if the configuration property is set.
     /// </summary>
-    public interface IFilterRepository<in TParameters, out TResult> : IRepository
+    [Export(typeof(IConceptMacro))]
+    public class LazyLoadAllMacro : IConceptMacro<InitializationConcept>
     {
-        TResult[] Filter(TParameters parameters);
+        private readonly Lazy<bool> _lazyLoadAll;
+
+        public LazyLoadAllMacro(IConfiguration configuration)
+        {
+            _lazyLoadAll = configuration.GetBool("CommonConcepts.LazyLoadAll", false);
+        }
+
+        public IEnumerable<IConceptInfo> CreateNewConcepts(InitializationConcept conceptInfo, IDslModel existingConcepts)
+        {
+            if (_lazyLoadAll.Value)
+                return existingConcepts.FindByType<ModuleInfo>().Select(m => new LazyLoadModuleInfo { Module = m });
+            return null;
+        }
     }
 }

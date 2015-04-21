@@ -90,7 +90,17 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string RepositoryReadFunctionsSnippet(DataStructureInfo info, string readFunctionBody)
         {
             return string.Format(
-@"        public global::{0}[] All()
+@"        public IEnumerable<{0}> Load(object parameter, Type parameterType)
+        {{
+            throw new NotImplementedException(""Use any of Load or Filter functions, or use GenericRepository class instead."");
+        }}
+
+        public IEnumerable<{0}> Read(object parameter, Type parameterType, bool preferQuery)
+        {{
+            throw new NotImplementedException(""Use any of Query, Load or Filter functions, or use GenericRepository class instead."");
+        }}
+
+        public global::{0}[] All()
         {{
             {1}
         }}
@@ -127,6 +137,11 @@ namespace Rhetos.Dom.DefaultConcepts
             {3}
         }}
 
+        public IQueryable<Common.Queryable.{0}_{1}> Query(object parameter, Type parameterType)
+        {{
+            throw new NotImplementedException(""Use the Query() function, or use GenericRepository class instead."");
+        }}
+
 ",
                 info.Module.Name,
                 info.Name,
@@ -137,7 +152,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public static void GenerateReadableRepositoryFunctions(DataStructureInfo info, ICodeBuilder codeBuilder, string readFunctionBody)
         {
             codeBuilder.InsertCode(RepositoryReadFunctionsSnippet(info, readFunctionBody), RepositoryMembers, info);
-            codeBuilder.InsertCode("IFilterRepository<FilterAll, " + info.Module.Name + "." + info.Name + ">", RepositoryInterfaces, info);
+            codeBuilder.InsertCode("IReadableRepository<" + info.Module.Name + "." + info.Name + ">", RepositoryInterfaces, info);
         }
 
         public static void GenerateQueryableRepositoryFunctions(DataStructureInfo info, ICodeBuilder codeBuilder, string queryFunctionBody)
@@ -145,7 +160,6 @@ namespace Rhetos.Dom.DefaultConcepts
             GenerateReadableRepositoryFunctions(info, codeBuilder, "return Query().ToArray();\r\n            ");
             codeBuilder.InsertCode(RepositoryQueryFunctionsSnippet(info, queryFunctionBody), RepositoryMembers, info);
             codeBuilder.InsertCode("IQueryableRepository<Common.Queryable." + info.Module.Name + "_" + info.Name + ">", RepositoryInterfaces, info);
-            codeBuilder.InsertCode("IFilterRepository<IEnumerable<Guid>, " + info.Module.Name + "." + info.Name + ">", RepositoryInterfaces, info);
             codeBuilder.InsertCode(SnippetQueryList(info), RepositoryMembers, info);
         }
 

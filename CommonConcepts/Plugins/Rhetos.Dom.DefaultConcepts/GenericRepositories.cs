@@ -20,6 +20,7 @@
 using Autofac.Features.Indexed;
 using Rhetos.Logging;
 using Rhetos.Persistence;
+using Rhetos.Dom.DefaultConcepts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -114,28 +115,28 @@ namespace Rhetos.Dom.DefaultConcepts
             return GetGenericRepository<TEntityInterface>().Query();
         }
 
-        public IEnumerable<TEntityInterface> Read<TEntityInterface>()
+        public IEnumerable<TEntityInterface> Load<TEntityInterface>()
             where TEntityInterface : class, IEntity
         {
-            return GetGenericRepository<TEntityInterface>().Read();
+            return GetGenericRepository<TEntityInterface>().Load();
         }
 
-        public IEnumerable<TEntityInterface> Read<TEntityInterface>(Expression<Func<TEntityInterface, bool>> filter)
+        public IEnumerable<TEntityInterface> Load<TEntityInterface>(Expression<Func<TEntityInterface, bool>> filter)
             where TEntityInterface : class, IEntity
         {
-            return GetGenericRepository<TEntityInterface>().Read(filter);
+            return GetGenericRepository<TEntityInterface>().Load(filter);
         }
 
-        public IEnumerable<TEntityInterface> Read<TEntityInterface, TParameter>(TParameter parameter)
+        public IEnumerable<TEntityInterface> Load<TEntityInterface, TParameter>(TParameter parameter)
             where TEntityInterface : class, IEntity
         {
-            return GetGenericRepository<TEntityInterface>().Read<TParameter>(parameter);
+            return GetGenericRepository<TEntityInterface>().Load<TEntityInterface, TParameter>(parameter);
         }
 
-        public IEnumerable<TEntityInterface> Read<TEntityInterface>(object parameter, Type parameterType)
+        public IEnumerable<TEntityInterface> Load<TEntityInterface>(object parameter, Type parameterType)
             where TEntityInterface : class, IEntity
         {
-            return GetGenericRepository<TEntityInterface>().Read(parameter, parameterType);
+            return GetGenericRepository<TEntityInterface>().Load(parameter, parameterType);
         }
 
         #endregion

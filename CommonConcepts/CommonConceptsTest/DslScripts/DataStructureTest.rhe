@@ -64,7 +64,7 @@ Module TestExtension
 	SqlQueryable MissingExtensionSql "SELECT sb.ID, Name = sb.Name + 'Sql' FROM TestExtension.SimpleBase sb WHERE sb.Name NOT LIKE '%missing%'" { Extends TestExtension.SimpleBase; ShortString Name; }
 	QueryableExtension MissingExtensionCs TestExtension.SimpleBase '(source, repository) => source
 		.Where(item => !item.Name.Contains("missing"))
-		.Select(item => new MissingExtensionCs { Base = item, Name = item.Name + "Cs" })' { ShortString Name; }
+		.Select(item => new Common.Queryable.TestExtension_MissingExtensionCs { ID = item.ID, Name = item.Name + "Cs" })' { ShortString Name; }
 	SqlQueryable InvalidExtension 'SELECT ID, Data = 1/0 FROM TestExtension.SimpleBase' { Extends TestExtension.SimpleBase; Integer Data; }
 }
 
@@ -313,7 +313,7 @@ Module TestUnique
 		UniqueMultiple 'I';
 	}
 	
-	LegacyEntity LE 'TestUnique.E' 'TestUnique.E'
+	LegacyEntity LE 'TestUnique.E'
 	{
 		ShortString S { Unique; } // Should be checked in the application, not in database.
 		Integer I;
@@ -389,8 +389,8 @@ Module TestDataStructure
 					.Where(change => change.oldItem.Name == null && change.newItem.Name != null || change.oldItem.Name != null && !change.oldItem.Name.Equals(change.newItem.Name))
 					.ToList();
 				
-				var updateBaseIds = changedItemsName.Select(change => change.newItem.Base.ID);
-				var updateBaseItems = _executionContext.Repository.TestDataStructure.SaveTesterBase.Filter(updateBaseIds);
+				var updateIds = changedItemsName.Select(change => change.newItem.ID);
+				var updateBaseItems = _executionContext.Repository.TestDataStructure.SaveTesterBase.Filter(updateIds);
 				foreach (var baseItem in updateBaseItems)
 					baseItem.Name += " updated";
 				_executionContext.Repository.TestDataStructure.SaveTesterBase.Update(updateBaseItems);';
@@ -423,5 +423,27 @@ Module TestQueryable
 	{
 		ShortString Name;
 		Query 'TestQueryable.StartsWith' 'parameter => Query().Where(item => item.Name.StartsWith(parameter.Prefix))';
+	}
+}
+
+Module TestLazyLoad
+{
+	LazyLoadReferences;
+	
+	Entity Parent
+	{
+		ShortString Name;
+		LinkedItems Simples TestLazyLoad.Simple.Parent;
+	}
+	
+	Entity SimpleBase
+	{
+		ShortString Name;
+	}
+	
+	Entity Simple
+	{
+		Extends TestLazyLoad.SimpleBase;
+		Reference Parent;
 	}
 }

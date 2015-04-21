@@ -66,7 +66,7 @@ namespace Rhetos.Processing.DefaultCommands
                         genericRepository.EntityName, duplicateId, filterType.Name));
 
                 var allowedGivenItemsFilter = new[] { new FilterCriteria { Filter = filterName }, new FilterCriteria(itemsIds) };
-                var allowedGivenItemsQuery = (IQueryable<IEntity>)genericRepository.ReadOrQuery(allowedGivenItemsFilter, preferQuery: true);
+                var allowedGivenItemsQuery = (IQueryable<IEntity>)genericRepository.Read(allowedGivenItemsFilter, preferQuery: true);
                 int allowedItemsCount = allowedGivenItemsQuery.Count();
 
                 _logger.Trace(() => string.Format("Filter validation {0} test; requested: {1}, allowed: {2}.", filterType.Name, itemsIds.Count, allowedItemsCount));
@@ -109,7 +109,7 @@ namespace Rhetos.Processing.DefaultCommands
             {
                 bool pagingIsUsed = commandInfo.Top > 0 || commandInfo.Skip > 0;
 
-                IEnumerable<IEntity> filtered = genericRepository.ReadOrQuery(commandInfo.Filters ?? new FilterCriteria[] { }, preferQuery: pagingIsUsed || !commandInfo.ReadRecords);
+                IEnumerable<IEntity> filtered = genericRepository.Read(commandInfo.Filters ?? new FilterCriteria[] { }, preferQuery: pagingIsUsed || !commandInfo.ReadRecords);
 
                 IEntity[] resultRecords = null;
                 int? totalCount = null;

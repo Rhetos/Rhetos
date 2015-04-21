@@ -41,7 +41,19 @@ namespace Rhetos.Dom.DefaultConcepts
             var referenceGuid = new PropertyInfo { DataStructure = info.DataStructure, Name = info.Name + "ID" };
             PropertyHelper.GenerateCodeForType(referenceGuid, codeBuilder, "Guid?");
 
-            DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.DataStructure, info.Name, info.Referenced.Module.Name + "_" + info.Referenced.Name, info.Name + "ID");
+            if (DslUtility.IsQueryable(info.DataStructure) && DslUtility.IsQueryable(info.Referenced))
+                DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.DataStructure, info.Name, "Common.Queryable." + info.Referenced.Module.Name + "_" + info.Referenced.Name, info.Name + "ID");
+
+            if (info.DataStructure is IOrmDataStructure && info.Referenced is IOrmDataStructure)
+                codeBuilder.InsertCode(
+                    string.Format("modelBuilder.Entity<Common.Queryable.{0}_{1}>().HasOptional(t => t.{2}).WithMany().HasForeignKey(t => t.{2}ID);\r\n            ",
+                        info.DataStructure.Module.Name, info.DataStructure.Name, info.Name),
+                    DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
+            else if (info.DataStructure is IOrmDataStructure)
+                codeBuilder.InsertCode(
+                    string.Format("modelBuilder.Entity<Common.Queryable.{0}_{1}>().Ignore(t => t.{2});\r\n            ",
+                        info.DataStructure.Module.Name, info.DataStructure.Name, info.Name),
+                    DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
         }
     }
 }

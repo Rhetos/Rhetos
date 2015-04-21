@@ -37,7 +37,7 @@ namespace CommonConcepts.Test
         private static string Dump(TestComputedFrom.PersistPartial item) { return item.Name; }
         private static string Dump(TestComputedFrom.PersistCustom item) { return item.NamePersist + " " + item.Code; }
         private static string Dump(TestComputedFrom.PersistComplex item) { return item.Name + " " + item.Name2 + " " + item.Code; }
-        private static string Dump(TestComputedFrom.MultiSync item) { return item.Base.Name1 + " " + item.Name1a + " " + item.Name1bx + " " + item.Name2a; }
+        private static string Dump(Common.Queryable.TestComputedFrom_MultiSync item) { return item.Base.Name1 + " " + item.Name1a + " " + item.Name1bx + " " + item.Name2a; }
 
 
         [TestMethod]
@@ -157,12 +157,12 @@ namespace CommonConcepts.Test
                 container.Resolve<ISqlExecuter>().ExecuteSql(deleteTables.Select(t => "DELETE FROM TestComputedFrom." + t));
                 var repository = container.Resolve<Common.DomRepository>();
 
-                Assert.AreEqual("", TestUtility.DumpSorted(repository.TestComputedFrom.MultiSync.All(), Dump));
+                Assert.AreEqual("", TestUtility.DumpSorted(repository.TestComputedFrom.MultiSync.Query(), Dump));
 
                 var b = new TestComputedFrom.Base1 { ID = Guid.NewGuid(), Name1 = "b1" };
                 repository.TestComputedFrom.Base1.Insert(new[] { b });
                 container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
-                Assert.AreEqual("b1 b1a b1b ", TestUtility.DumpSorted(repository.TestComputedFrom.MultiSync.All(), Dump));
+                Assert.AreEqual("b1 b1a b1b ", TestUtility.DumpSorted(repository.TestComputedFrom.MultiSync.Query(), Dump));
 
                 var ms = repository.TestComputedFrom.MultiSync.All().Single();
                 AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()));
@@ -186,7 +186,7 @@ namespace CommonConcepts.Test
                 b.Name1 = "b1new";
                 repository.TestComputedFrom.Base1.Update(new[] { b });
                 container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
-                Assert.AreEqual("b1new b1newa b1newb ", TestUtility.DumpSorted(repository.TestComputedFrom.MultiSync.All(), Dump));
+                Assert.AreEqual("b1new b1newa b1newb ", TestUtility.DumpSorted(repository.TestComputedFrom.MultiSync.Query(), Dump));
                 ms = repository.TestComputedFrom.MultiSync.All().Single();
                 AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()), false);
                 AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()));
@@ -202,9 +202,9 @@ namespace CommonConcepts.Test
                 var computedSourceRepos = container.Resolve<GenericRepository<TestComputedFrom.ComputedWithAutoCodeSource>>();
 
                 var item1 = new TestComputedFrom.ComputedWithAutoCode { ID = Guid.NewGuid(), Code = "+" };
-                computedRepos.Save(new[] { item1 }, null, computedRepos.Read());
+                computedRepos.Save(new[] { item1 }, null, computedRepos.Load());
 
-                Assert.AreEqual("1 abc", TestUtility.DumpSorted(computedRepos.Read(), item => item.Code + " " + item.Comp));
+                Assert.AreEqual("1 abc", TestUtility.DumpSorted(computedRepos.Load(), item => item.Code + " " + item.Comp));
             }
         }
 

@@ -34,11 +34,13 @@ namespace Rhetos.Compiler
     {
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
+        private readonly Lazy<int> _errorReportLimit;
 
-        public AssemblyGenerator(ILogProvider logProvider)
+        public AssemblyGenerator(ILogProvider logProvider, IConfiguration configuration)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("AssemblyGenerator");
+            _errorReportLimit = configuration.GetInt("AssemblyGenerator.ErrorReportLimit", 5);
         }
 
         public Assembly Generate(IAssemblySource assemblySource, CompilerParameters compilerParameters)
@@ -98,23 +100,35 @@ namespace Rhetos.Compiler
                     ex.LoaderExceptions[0])));
         }
 
-        private static string GetErrorDescription(CompilerResults results, string generatedCode, string filePath)
+        private string GetErrorDescription(CompilerResults results, string generatedCode, string filePath)
         {
-            StringBuilder sb = new StringBuilder("Error while generating assembly.");
-            sb.AppendLine();
-            var errors = (from System.CodeDom.Compiler.CompilerError err in results.Errors
-                          where !err.IsWarning
-                          select err);
-            foreach (var err in errors.Take(5))
+            var errors = (from System.CodeDom.Compiler.CompilerError error in results.Errors
+                          where !error.IsWarning
+                          select error).ToList();
+
+            var report = new StringBuilder();
+            report.Append(errors.Count + " errors while generating assembly");
+
+            if (errors.Count > _errorReportLimit.Value)
+                report.AppendLine(". The first " + _errorReportLimit.Value + " errors:");
+            else
+                report.AppendLine(":");
+
+            foreach (var error in errors.Take(_errorReportLimit.Value))
             {
-                sb.AppendLine();
-                sb.AppendLine(err.ErrorText);
-                if (err.Line > 0 || err.Column > 0)
-                    sb.AppendLine(ScriptPositionReporting.ReportPosition(generatedCode, err.Line, err.Column, filePath));
+                report.AppendLine();
+                report.AppendLine(error.ErrorText);
+                if (error.Line > 0 || error.Column > 0)
+                    report.AppendLine(ScriptPositionReporting.ReportPosition(generatedCode, error.Line, error.Column, filePath));
             }
-            if (errors.Count() > 5)
-                sb.AppendLine("...");
-            return sb.ToString().Trim();
+
+            if (errors.Count() > _errorReportLimit.Value)
+            {
+                report.AppendLine();
+                report.AppendLine("...");
+            }
+
+            return report.ToString().Trim();
         }
     }
 }

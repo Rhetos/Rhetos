@@ -122,16 +122,16 @@ namespace CommonConcepts.Test.OldConcepts
             public string RefID { get; set; }
         }
 
-        static IQueryable<TestBrowse.Source> FilterSource(IQueryable<TestBrowse.Source> source, FilterParameters parameters)
+        static IQueryable<Common.Queryable.TestBrowse_Source> FilterSource(IQueryable<Common.Queryable.TestBrowse_Source> source, FilterParameters parameters)
         {
             return source.Where(item =>
                 parameters.Code == null || parameters.Code == item.Code
-                && parameters.RefID == "00000000-0000-0000-0000-000000000000" || new Guid(parameters.RefID) == item.Ref.ID);
+                && parameters.RefID == "00000000-0000-0000-0000-000000000000" || new Guid(parameters.RefID) == item.RefID);
         }
 
-        static IQueryable<TestBrowse.SF> GenerateBrowse(IQueryable<TestBrowse.Source> source)
+        static IQueryable<TestBrowse.SF> GenerateBrowse(IQueryable<Common.Queryable.TestBrowse_Source> source)
         {
-            return source.Select(item => new TestBrowse.SF {RefName = item.Ref.Name});
+            return source.Select(item => new TestBrowse.SF { RefName = item.Ref.Name });
         }
 
         [TestMethod]
@@ -178,7 +178,7 @@ namespace CommonConcepts.Test.OldConcepts
                     repository.TestBrowse.SFTake.All(),
                     item => item.Code + " " + item.RefName + " " + item.RefName2 + " " + item.RefName3 + " " + item.RefBaseName + " " + item.RefExtension_ParentExtension2Name2));
 
-                Assert.AreEqual("complex", TestUtility.DumpSorted(repository.TestBrowse.SFTake.All(), item => item.Base.Code));
+                Assert.AreEqual("complex", TestUtility.DumpSorted(repository.TestBrowse.SFTake.Query(), item => item.Base.Code));
 
                 Assert.AreEqual(parentID, repository.TestBrowse.SFTake.Query().Single().RefID);
                 Assert.AreEqual(parentID, repository.TestBrowse.SFTake.Query().Single().ParentReferenceID);
@@ -209,7 +209,7 @@ namespace CommonConcepts.Test.OldConcepts
                 Assert.AreEqual("abc", repository.TestBrowse.SF.Query().Where(item => ids.Contains(item.ID)).Single().RefName);
 
                 {
-                    Assert.AreEqual("abc", genericRepository.Read(ids).Single().RefName);
+                    Assert.AreEqual("abc", genericRepository.Load(ids).Single().RefName);
 
                     var q = genericRepository.Query(ids);
                     Assert.IsTrue(q is IQueryable, q.GetType().FullName);
@@ -219,7 +219,7 @@ namespace CommonConcepts.Test.OldConcepts
                 var manyIds = Enumerable.Range(0, 5000).Select(x => Guid.NewGuid()).Concat(ids).ToList();
 
                 {
-                    Assert.AreEqual("abc", genericRepository.Read(manyIds).Single().RefName);
+                    Assert.AreEqual("abc", genericRepository.Load(manyIds).Single().RefName);
 
                     var q = genericRepository.Query(manyIds);
                     Assert.IsTrue(q is IQueryable, q.GetType().FullName);

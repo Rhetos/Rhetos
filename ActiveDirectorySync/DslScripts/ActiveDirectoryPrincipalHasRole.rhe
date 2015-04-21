@@ -74,8 +74,7 @@
 			'{
 				string domainPrefix = Environment.UserDomainName + @"\";
 				if (queryParameter.Name.StartsWithCaseInsensitive(domainPrefix))
-					return RecomputeFromActiveDirectoryPrincipalHasRole(new[] { new ActiveDirectoryUserParameter { UserName = queryParameter.Name } })
-						.AsQueryable();
+					return QueryLoaded(RecomputeFromActiveDirectoryPrincipalHasRole(new[] { new ActiveDirectoryUserParameter { UserName = queryParameter.Name } }));
 			}';
 		
 		FilterBy 'Common.ActiveDirectoryUserParameter[]' '(repository, parameter) =>
@@ -105,9 +104,9 @@
 					string domainPrefix = Environment.UserDomainName + @"\";
 					string errorMessage = "It is not allowed to {0} the user membership here, because role {1} is synchronized with an Active Directory group. Please change the user membership on Active Directory instead.";
 					var invalidDeleted = deletedOld.Select(item => item.RoleName).Where(name => name.StartsWithCaseInsensitive(domainPrefix)).FirstOrDefault();
-					var invalidInserted = inserted.Select(item => item.Role.Name).Where(name => name.StartsWithCaseInsensitive(domainPrefix)).FirstOrDefault();
+					var invalidInserted = QueryPersisted(insertedNew).Select(item => item.Role.Name).Where(name => name.StartsWithCaseInsensitive(domainPrefix)).FirstOrDefault();
 					var invalidUpdatedOld = updatedOld.Select(item => item.RoleName).Where(name => name.StartsWithCaseInsensitive(domainPrefix)).FirstOrDefault();
-					var invalidUpdatedNew = updated.Select(item => item.Role.Name).Where(name => name.StartsWithCaseInsensitive(domainPrefix)).FirstOrDefault();
+					var invalidUpdatedNew = QueryPersisted(updatedNew).Select(item => item.Role.Name).Where(name => name.StartsWithCaseInsensitive(domainPrefix)).FirstOrDefault();
 					
 					if (invalidDeleted != null) throw new Rhetos.UserException(string.Format(errorMessage, "remove", invalidDeleted));
 					if (invalidInserted != null) throw new Rhetos.UserException(string.Format(errorMessage, "create", invalidInserted));

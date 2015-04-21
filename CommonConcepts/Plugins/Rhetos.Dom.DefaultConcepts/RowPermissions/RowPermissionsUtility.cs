@@ -32,9 +32,9 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return string.Format(
             @"{{
-				Func<Common.ExecutionContext, Expression<Func<{0}.{1}, bool>>> getRuleFilter =
+				Func<Common.ExecutionContext, Expression<Func<Common.Queryable.{0}_{1}, bool>>> getRuleFilter =
                     {2};
-				Expression<Func<{0}.{1}, bool>> ruleFilter = getRuleFilter.Invoke(executionContext);
+				Expression<Func<Common.Queryable.{0}_{1}, bool>> ruleFilter = getRuleFilter.Invoke(executionContext);
 				filterExpression.{3}(ruleFilter);
 			}}
             ",
@@ -50,14 +50,15 @@ namespace Rhetos.Dom.DefaultConcepts
             @"{{
                 var parentRepository = executionContext.Repository.{0}.{1};
                 var parentRowPermissionsExpression = {0}._Helper.{1}_Repository.{2}(parentRepository.Query(), repository, executionContext);
-                var replacedExpression = new ReplaceWithReference<{0}.{1}, {3}>(parentRowPermissionsExpression, ""{4}"" , ""{5}"").NewExpression;
+                var replacedExpression = new ReplaceWithReference<Common.Queryable.{0}_{1}, Common.Queryable.{3}_{4}>(parentRowPermissionsExpression, ""{5}"" , ""{6}"").NewExpression;
                 filterExpression.Include(replacedExpression);
             }}
             ",
                 info.Source.Module,
                 info.Source.Name,
                 permissionExpressionName,
-                info.RowPermissionsFilters.DataStructure.GetKeyProperties(),
+                info.RowPermissionsFilters.DataStructure.Module.Name,
+                info.RowPermissionsFilters.DataStructure.Name,
                 info.SourceSelector,
                 info.RowPermissionsFilters.DataStructure.Name.ToLower() + "Item");
         }

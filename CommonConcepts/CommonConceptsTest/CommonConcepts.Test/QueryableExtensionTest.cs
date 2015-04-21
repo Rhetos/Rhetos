@@ -47,7 +47,7 @@ namespace CommonConcepts.Test
                         "INSERT INTO Test11.Source (ID, Name) SELECT '" + id2 + "', 'b';"
                     });
 
-                var all = repository.Test11.QE.All();
+                var all = repository.Test11.QE.Query().ToArray();
                 Array.Sort(all, (a, b) => string.Compare(a.Info, b.Info));
 
                 Assert.AreEqual(2, all.Length);

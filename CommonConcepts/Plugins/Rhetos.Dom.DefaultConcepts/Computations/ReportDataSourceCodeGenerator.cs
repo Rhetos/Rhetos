@@ -45,10 +45,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return string.Format(@"
 	        {{
-                var dataSourceRepositiory = _domRepository.{1} as IFilterRepository<{0}, {1}>;
-                if (dataSourceRepositiory == null)
-                    throw new Rhetos.UserException(""Report's data source '{1}' does not implement the filter for '{0}'."");
-                
+                var dataSourceRepositiory = _domRepository.{1};
                 var data = dataSourceRepositiory.Filter(parameter);
                 var order = {2};
 	            reportData.Add(order, data);

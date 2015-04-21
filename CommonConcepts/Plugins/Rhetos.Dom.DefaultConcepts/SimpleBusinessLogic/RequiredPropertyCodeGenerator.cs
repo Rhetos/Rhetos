@@ -37,15 +37,21 @@ namespace Rhetos.Dom.DefaultConcepts
         private string CheckDataSnippet(RequiredPropertyInfo info)
         {
             return string.Format(
-@"            {{ 
-                var invalid = insertedNew.Concat(updatedNew).FirstOrDefault(item => item.{2} == null);
+@"            {{
+                var invalid = insertedNew.Concat(updatedNew).FirstOrDefault(item => item.{3} == null);
                 if (invalid != null)
                     throw new Rhetos.UserException(""It is not allowed to enter {0}.{1} because the required property {2} is not set."", ""DataStructure:{0}.{1},ID:"" + invalid.ID.ToString() + "",Property:{2}"");
             }}
 ",
                 info.Property.DataStructure.Module.Name,
                 info.Property.DataStructure.Name,
-                info.Property.Name);
+                info.Property.Name,
+                CsPropertyName(info.Property));
+        }
+
+        private string CsPropertyName(PropertyInfo property)
+        {
+            return property is ReferencePropertyInfo ? property.Name + "ID" : property.Name;
         }
 
         public static bool IsSupported(PropertyInfo info)

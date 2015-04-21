@@ -20,17 +20,32 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public interface IQueryableRepository<out TEntityInterface> : IRepository
+    public interface IQueryableRepository<out TEntity>
     {
-        IQueryable<TEntityInterface> Query();
+        IQueryable<TEntity> Query(object parameter, Type parameterType);
     }
 
-    public interface IQueryableRepository<out TEntityInterface, in TParameter> : IRepository
+    public static class QueryableRepositoryExtensions
     {
-        IQueryable<TEntityInterface> Query(TParameter parameter);
+        public static IQueryable<TEntity> Query<TEntity>(this IQueryableRepository<TEntity> repository)
+        {
+            return repository.Query(null, typeof(FilterAll));
+        }
+
+        public static IQueryable<TEntity> Query<TEntity>(this IQueryableRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter)
+        {
+            return repository.Query(null, typeof(FilterAll)).Where(filter);
+        }
+
+        public static IQueryable<TEntity> Query<TEntity, TParameter>(this IQueryableRepository<TEntity> repository, TParameter parameter)
+        {
+            Type filterType = parameter != null ? parameter.GetType() : typeof(TParameter);
+            return repository.Query(parameter, filterType);
+        }
     }
 }

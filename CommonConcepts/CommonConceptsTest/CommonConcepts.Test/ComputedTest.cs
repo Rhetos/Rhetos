@@ -32,7 +32,7 @@ namespace CommonConcepts.Test
     public class ComputedTest
     {
         [TestMethod]
-        public void Read()
+        public void SimpleRead()
         {
             using (var container = new RhetosTestContainer())
             {

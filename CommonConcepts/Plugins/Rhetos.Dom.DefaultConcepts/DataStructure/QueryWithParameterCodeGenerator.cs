@@ -41,9 +41,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (QueryWithParameterInfo)conceptInfo;
 
-            codeBuilder.InsertCode(InterfaceName(info), RepositoryHelper.RepositoryInterfaces, info.DataStructure);
             codeBuilder.InsertCode(MemberFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info.DataStructure);
-            codeBuilder.InsertCode(RegisterRepository(info), ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
         }
 
         private static string MemberFunctionsSnippet(QueryWithParameterInfo info)
@@ -65,17 +63,6 @@ namespace Rhetos.Dom.DefaultConcepts
                 info.QueryImplementation.Trim(),
                 BeforeQueryTag.Evaluate(info),
                 AfterQueryTag.Evaluate(info));
-        }
-
-        private static string RegisterRepository(QueryWithParameterInfo info)
-        {
-            return string.Format(@"builder.RegisterType<{0}._Helper.{1}_Repository>().As<{2}>().InstancePerLifetimeScope();
-            ", info.DataStructure.Module.Name, info.DataStructure.Name, InterfaceName(info));
-        }
-
-        private static string InterfaceName(QueryWithParameterInfo info)
-        {
-            return string.Format("IQueryableRepository<Common.Queryable.{0}_{1}, {2}>", info.DataStructure.Module.Name, info.DataStructure.Name, info.ParameterType);
         }
     }
 }

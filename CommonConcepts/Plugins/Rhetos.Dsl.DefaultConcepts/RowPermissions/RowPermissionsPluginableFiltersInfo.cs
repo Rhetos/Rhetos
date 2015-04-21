@@ -74,7 +74,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             return string.Format(@"(items, repository, executionContext) =>
 		{{
-            var filterExpression = new FilterExpression<{0}.{1}>();
+            var filterExpression = new FilterExpression<Common.Queryable.{0}_{1}>();
 			{2}
 			return filterExpression.GetFilter();
 		}}",

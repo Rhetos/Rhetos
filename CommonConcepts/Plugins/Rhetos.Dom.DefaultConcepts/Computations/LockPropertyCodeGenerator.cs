@@ -56,7 +56,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 if (changedItems != null && changedItems.Length > 0)
                 {{
-                    var lockedItems = _domRepository.{0}.Filter(changedItems.AsQueryable(), new {1}());
+                    var lockedItems = _domRepository.{0}.Filter(QueryPersisted(changedItems), new {1}());
                     if (lockedItems.Count() > 0)
                         throw new Rhetos.UserException({2}, ""DataStructure:{0},ID:"" + lockedItems.First().ID.ToString() + "",Property:{3}"");
 

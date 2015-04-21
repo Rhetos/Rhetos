@@ -31,7 +31,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("LazyLoadExtension")]
-    public class LazyLoadExtensionInfo : IConceptInfo, IMacroConcept
+    public class LazyLoadExtensionInfo : IConceptInfo, IMacroConcept, IValidatedConcept
     {
         [ConceptKey]
         public DataStructureExtendsInfo Extends { get; set; }
@@ -39,6 +39,15 @@ namespace Rhetos.Dsl.DefaultConcepts
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
             return new[] { new LazyLoadSupportInfo { DataStructure = Extends.Base } };
+        }
+
+        public void CheckSemantics(IDslModel existingConcepts)
+        {
+            if (!DslUtility.IsQueryable(Extends.Base))
+                throw new DslSyntaxException(this, this.GetKeywordOrTypeName() + " can only be used on a queryable base data structure, such as Entity. " + Extends.Base.GetKeywordOrTypeName() + " is not queryable.");
+
+            if (!DslUtility.IsQueryable(Extends.Extension))
+                throw new DslSyntaxException(this, this.GetKeywordOrTypeName() + " can only be used on an extension that is a queryable data structure, such as Entity. " + Extends.Extension.GetKeywordOrTypeName() + " is not queryable.");
         }
     }
 }

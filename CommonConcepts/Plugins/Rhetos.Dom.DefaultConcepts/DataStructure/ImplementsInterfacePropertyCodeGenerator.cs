@@ -45,9 +45,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         protected static string ExplicitPropertyImplemenetation(ImplementsInterfacePropertyInfo info)
         {
-            return string.Format(@"
-        {0} {1}.{2} {{ get {{ return {2}; }} }}
-",
+            return string.Format("{0} {1}.{2} {{ get {{ return {2}; }} }}\r\n        ",
                 info.PropertyInterfaceTypeName,
                 info.ImplementsInterface.GetInterfaceType().FullName,
                 info.Property.Name);

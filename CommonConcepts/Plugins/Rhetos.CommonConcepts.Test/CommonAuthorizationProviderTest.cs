@@ -43,6 +43,12 @@ namespace Rhetos.CommonConcepts.Test
             IList<T> _items;
             public MockRepos(IList<T> items) { _items = items; }
             public IQueryable<T> Query() { return _items.AsQueryable(); }
+            public IQueryable<T> Query(object parameter, Type parameterType)
+            {
+                if (parameterType == typeof(FilterAll))
+                    return Query();
+                throw new NotImplementedException();
+            }
         }
 
         private class MockRepositories : INamedPlugins<IRepository>
@@ -60,11 +66,19 @@ namespace Rhetos.CommonConcepts.Test
             }
         }
 
-        private class MockPrincipalRoleRepos : IQueryableRepository<IPrincipalHasRole, IPrincipal>
+        private class MockPrincipalRoleRepos : IQueryableRepository<IPrincipalHasRole>, IRepository
         {
             IList<IPrincipalHasRole> _items;
             public MockPrincipalRoleRepos(IList<IPrincipalHasRole> items) { _items = items; }
-            public IQueryable<IPrincipalHasRole> Query(IPrincipal parameter) { return _items.AsQueryable().Where(item => item.Principal.Name == parameter.Name); }
+            public IQueryable<IPrincipalHasRole> Query(object parameter, Type parameterType)
+            {
+                {
+                    var principal = parameter as IPrincipal;
+                    if (principal != null)
+                        return _items.AsQueryable().Where(item => item.Principal.Name == principal.Name);
+                }
+                throw new NotImplementedException();
+            }
         }
 
         class MockPrincipal : IPrincipal

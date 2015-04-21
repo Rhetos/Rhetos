@@ -65,8 +65,8 @@ namespace Rhetos.Dsl.DefaultConcepts
                             DependsOn = (EntityInfo)conceptInfo.LinkedItemsReference.DataStructure,
                             FilterType = "Guid[]",
                             FilterFormula = @"changedItems => changedItems.Where(item => item."
-                                + conceptInfo.LinkedItemsReference.Name + " != null).Select(item => item."
-                                + conceptInfo.LinkedItemsReference.Name + ".ID).Distinct().ToArray()"
+                                + conceptInfo.LinkedItemsReference.Name + "ID != null).Select(item => item."
+                                + conceptInfo.LinkedItemsReference.Name + "ID.Value).Distinct().ToArray()"
                         }
                 };
         }

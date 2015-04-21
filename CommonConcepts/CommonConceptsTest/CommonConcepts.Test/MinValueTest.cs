@@ -24,6 +24,7 @@ using System.Linq;
 using TestMinValue;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Configuration.Autofac;
+using Rhetos.Dom.DefaultConcepts;
 
 namespace CommonConcepts.Test
 {
@@ -38,7 +39,7 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleInteger { Value = 1 };
-                repository.TestMinValue.SimpleInteger.Insert(new[] { entity });
+                repository.TestMinValue.SimpleInteger.Insert(entity);
             }
         }
 
@@ -49,7 +50,7 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleInteger { Value = 3 };
-                repository.TestMinValue.SimpleInteger.Insert(new[] { entity });
+                repository.TestMinValue.SimpleInteger.Insert(entity);
             }
         }
         
@@ -61,10 +62,10 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleInteger { Value = 10 };
-                repository.TestMinValue.SimpleInteger.Insert(new[] { entity });
+                repository.TestMinValue.SimpleInteger.Insert(entity);
 
                 entity.Value = 1;
-                repository.TestMinValue.SimpleInteger.Update(new[] { entity });
+                repository.TestMinValue.SimpleInteger.Update(entity);
             }
         }
 
@@ -76,7 +77,7 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleDecimal { Value = (decimal)2.33 };
-                repository.TestMinValue.SimpleDecimal.Insert(new[] { entity });
+                repository.TestMinValue.SimpleDecimal.Insert(entity);
             }
         }
 
@@ -87,7 +88,7 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleDecimal { Value = (decimal)12.35 };
-                repository.TestMinValue.SimpleDecimal.Insert(new[] { entity });
+                repository.TestMinValue.SimpleDecimal.Insert(entity);
             }
         }
 
@@ -100,7 +101,7 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleMoney { Value = (decimal)2.33 };
-                repository.TestMinValue.SimpleMoney.Insert(new[] { entity });
+                repository.TestMinValue.SimpleMoney.Insert(entity);
             }
         }
 
@@ -111,7 +112,7 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleMoney { Value = (decimal)2.35 };
-                repository.TestMinValue.SimpleMoney.Insert(new[] { entity });
+                repository.TestMinValue.SimpleMoney.Insert(entity);
             }
         }
 
@@ -123,7 +124,7 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleDate { Value = new DateTime(2013, 7, 4) };
-                repository.TestMinValue.SimpleDate.Insert(new[] { entity });
+                repository.TestMinValue.SimpleDate.Insert(entity);
             }
         }
 
@@ -134,7 +135,7 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleDate { Value = new DateTime(2013, 7, 5) };
-                repository.TestMinValue.SimpleDate.Insert(new[] { entity });
+                repository.TestMinValue.SimpleDate.Insert(entity);
             }
         }
 
@@ -146,7 +147,7 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleDateTime { Value = new DateTime(2013, 7, 5, 12, 33, 59) };
-                repository.TestMinValue.SimpleDateTime.Insert(new[] { entity });
+                repository.TestMinValue.SimpleDateTime.Insert(entity);
             }
         }
 
@@ -157,7 +158,7 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleDateTime { Value = new DateTime(2013, 7, 5, 12, 34, 1) };
-                repository.TestMinValue.SimpleDateTime.Insert(new[] { entity });
+                repository.TestMinValue.SimpleDateTime.Insert(entity);
             }
         }
 
@@ -168,7 +169,7 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleInteger { ID = Guid.NewGuid(), Value = null };
-                repository.TestMinValue.SimpleInteger.Insert(new[] { entity });
+                repository.TestMinValue.SimpleInteger.Insert(entity);
                 Assert.IsNull(repository.TestMinValue.SimpleInteger.Filter(new[] { entity.ID }).Single().Value);
             }
         }

@@ -43,11 +43,6 @@ namespace Rhetos.Dom.DefaultConcepts
             return "_filterExpression_" + CsUtility.TextToIdentifier(info.Parameter);
         }
 
-        private static string FilterInterfaceSnippet(FilterByInfo info)
-        {
-            return "IFilterRepository<" + info.Parameter + ", " + info.Source.GetKeyProperties() + ">";
-        }
-
         private static string FilterImplementationSnippet(FilterByInfo info)
         {
             return string.Format(
@@ -71,7 +66,6 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (FilterByInfo)conceptInfo;
-            codeBuilder.InsertCode(FilterInterfaceSnippet(info), RepositoryHelper.RepositoryInterfaces, info.Source);
             codeBuilder.InsertCode(FilterImplementationSnippet(info), RepositoryHelper.RepositoryMembers, info.Source);
         }
     }

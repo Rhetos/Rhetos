@@ -68,7 +68,7 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string RepositoryFunctionsSnippet(QueryableExtensionInfo info)
         {
             return string.Format(
-@"        public static readonly Func<IQueryable<{2}.{3}>, Common.DomRepository{4}, IQueryable<global::{0}.{1}>> Compute =
+@"        public readonly Func<IQueryable<Common.Queryable.{2}_{3}>, Common.DomRepository{4}, IQueryable<Common.Queryable.{0}_{1}>> Compute =
             {5};
 
 ",

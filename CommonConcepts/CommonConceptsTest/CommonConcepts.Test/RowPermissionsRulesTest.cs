@@ -50,10 +50,10 @@ namespace CommonConcepts.Test
 
                 var g1 = new RPRulesGroup { ID = Guid.NewGuid(), Name = "g1" };
                 var g2 = new RPRulesGroup { ID = Guid.NewGuid(), Name = "g2" };
-                var i1 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i1", Group = g1 };
-                var i2 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i2", Group = g1 };
-                var i3 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i3", Group = g2 };
-                var i4 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i4", Group = g2 };
+                var i1 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i1", GroupID = g1.ID };
+                var i2 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i2", GroupID = g1.ID };
+                var i3 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i3", GroupID = g2.ID };
+                var i4 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i4", GroupID = g2.ID };
 
                 groupsRepository.Insert(new[] { g1, g2 });
                 itemsRepository.Insert(new[] { i1, i2, i3, i4 });
@@ -80,22 +80,22 @@ namespace CommonConcepts.Test
 
                 var g1 = new RPRulesGroup { ID = Guid.NewGuid(), Name = "g1" };
                 var g2 = new RPRulesGroup { ID = Guid.NewGuid(), Name = "g2" };
-                var i1 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i1", Group = g1 };
-                var i2 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i2", Group = g1 };
-                var i3 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i3", Group = g2 };
-                var i4 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i4", Group = g2 };
+                var i1 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i1", GroupID = g1.ID };
+                var i2 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i2", GroupID = g1.ID };
+                var i3 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i3", GroupID = g2.ID };
+                var i4 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i4", GroupID = g2.ID };
 
                 groupsRepository.Insert(new[] { g1, g2 });
                 itemsRepository.Insert(new[] { i1, i2, i3, i4 });
 
                 repositories.TestRowPermissions.RpRulesAllowGroup.Insert(new[] {
-                    new TestRowPermissions.RpRulesAllowGroup { UserName = currentUserName, Group = g2 } });
+                    new TestRowPermissions.RpRulesAllowGroup { UserName = currentUserName, GroupID = g2.ID } });
 
                 repositories.TestRowPermissions.RpRulesAllowItem.Insert(new[] {
-                    new TestRowPermissions.RpRulesAllowItem { UserName = currentUserName, Item = i2 } });
+                    new TestRowPermissions.RpRulesAllowItem { UserName = currentUserName, ItemID = i2.ID } });
 
                 repositories.TestRowPermissions.RpRulesDenyItem.Insert(new[] {
-                    new TestRowPermissions.RpRulesDenyItem { UserName = currentUserName, Item = i3 } });
+                    new TestRowPermissions.RpRulesDenyItem { UserName = currentUserName, ItemID = i3.ID } });
 
                 var allowedItems = itemsRepository.Filter(itemsRepository.Query(), new Common.RowPermissionsReadItems());
                 Console.WriteLine(itemsRepository.Query().Expression.ToString());
@@ -118,21 +118,21 @@ namespace CommonConcepts.Test
 
                 var g1 = new RPRulesGroup { ID = Guid.NewGuid(), Name = "g1" };
                 var g2 = new RPRulesGroup { ID = Guid.NewGuid(), Name = "g2" };
-                var i1 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i1", Group = g1 };
-                var i2 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i2", Group = g1 };
-                var i3 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i3", Group = g2 };
-                var i4 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i4", Group = g2 };
+                var i1 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i1", GroupID = g1.ID };
+                var i2 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i2", GroupID = g1.ID };
+                var i3 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i3", GroupID = g2.ID };
+                var i4 = new RPRulesItem { ID = Guid.NewGuid(), Name = "i4", GroupID = g2.ID };
 
                 groupsRepository.Insert(new[] { g1, g2 });
                 itemsRepository.Insert(new[] { i1, i2, i3, i4 });
 
                 repositories.TestRowPermissions.RpRulesAllowGroup.Insert(new[] {
-                    new TestRowPermissions.RpRulesAllowGroup { UserName = currentUserName, Group = g1 },
-                    new TestRowPermissions.RpRulesAllowGroup { UserName = currentUserName, Group = g2 } });
+                    new TestRowPermissions.RpRulesAllowGroup { UserName = currentUserName, GroupID = g1.ID },
+                    new TestRowPermissions.RpRulesAllowGroup { UserName = currentUserName, GroupID = g2.ID } });
 
                 repositories.TestRowPermissions.RpRulesAllowItem.Insert(new[] {
-                    new TestRowPermissions.RpRulesAllowItem { UserName = currentUserName, Item = i1 },
-                    new TestRowPermissions.RpRulesAllowItem { UserName = currentUserName, Item = i2 } });
+                    new TestRowPermissions.RpRulesAllowItem { UserName = currentUserName, ItemID = i1.ID },
+                    new TestRowPermissions.RpRulesAllowItem { UserName = currentUserName, ItemID = i2.ID } });
 
                 var allowedItems = itemsRepository.Filter(itemsRepository.Query(), new Common.RowPermissionsReadItems());
                 Console.WriteLine(itemsRepository.Query().Expression.ToString());
@@ -252,7 +252,7 @@ namespace CommonConcepts.Test
                     writeRP.Delete(writeRP.All());
                     var saveInfo = new SaveEntityCommandInfo() { Entity = "TestRowPermissions.RPWriteRules" };
                     saveInfo.DataToDelete = (new[] { 7 }).Select(item => new RPWriteRules() { value = item, ID = Guid.NewGuid()}).ToArray();
-                    writeRP.Insert(saveInfo.DataToDelete);
+                    writeRP.Insert((RPWriteRules[])saveInfo.DataToDelete);
 
                     TestUtility.ShouldFail(() => saveCommand.Execute(saveInfo), _writeException);
                 }
@@ -322,13 +322,13 @@ namespace CommonConcepts.Test
                     .Split(' ')
                     .Select(name => new RPCombinedRulesItems { Name = name })
                     .ToList();
-                itemsRepos.Save(items, null, itemsRepos.Read());
+                itemsRepos.Save(items, null, itemsRepos.Load());
 
                 {
                     // Test read allow/deny without conditional rules:
 
                     var settings = new RPCombinedRulesSettings { Settings = "no conditional rules" };
-                    settingsRepos.Save(new[] { settings }, null, settingsRepos.Read());
+                    settingsRepos.Save(new[] { settings }, null, settingsRepos.Load());
 
                     var allowRead = itemsRepos.Query<Common.RowPermissionsReadItems>().Select(item => item.Name).ToList();
                     Assert.AreEqual("a, a2, ab, ab2, r", TestUtility.DumpSorted(allowRead));
@@ -338,7 +338,7 @@ namespace CommonConcepts.Test
                     // Test read allow/deny with conditional rules:
 
                     var settings = new RPCombinedRulesSettings { Settings = "add conditional rules" };
-                    settingsRepos.Save(new[] { settings }, null, settingsRepos.Read());
+                    settingsRepos.Save(new[] { settings }, null, settingsRepos.Load());
 
                     var allowRead = itemsRepos.Query<Common.RowPermissionsReadItems>().Select(item => item.Name).ToList();
                     Assert.AreEqual("a, ab, b, r", TestUtility.DumpSorted(allowRead));
@@ -348,7 +348,7 @@ namespace CommonConcepts.Test
                     // Test write allow/deny without conditional rules:
 
                     var settings = new RPCombinedRulesSettings { Settings = "no conditional rules" };
-                    settingsRepos.Save(new[] { settings }, null, settingsRepos.Read());
+                    settingsRepos.Save(new[] { settings }, null, settingsRepos.Load());
 
                     var allowWrite = itemsRepos.Query<Common.RowPermissionsWriteItems>().Select(item => item.Name).ToList();
                     Assert.AreEqual("a, a2, ab, ab2, w", TestUtility.DumpSorted(allowWrite));
@@ -358,7 +358,7 @@ namespace CommonConcepts.Test
                     // Test write allow/deny with conditional rules:
 
                     var settings = new RPCombinedRulesSettings { Settings = "add conditional rules" };
-                    settingsRepos.Save(new[] { settings }, null, settingsRepos.Read());
+                    settingsRepos.Save(new[] { settings }, null, settingsRepos.Load());
 
                     var allowWrite = itemsRepos.Query<Common.RowPermissionsWriteItems>().Select(item => item.Name).ToList();
                     Assert.AreEqual("a, ab, b, w", TestUtility.DumpSorted(allowWrite));
@@ -373,28 +373,28 @@ namespace CommonConcepts.Test
             {
                 var names = new[] { "1", "1b", "2", "3", "4" };
                 var itemsE4 = names.Select(name => new TestRowPermissions4.E4 { ID = Guid.NewGuid(), Name4 = name }).ToList();
-                var itemsE3 = names.Select((name, x) => new TestRowPermissions3.E3 { ID = Guid.NewGuid(), Name3 = name, E4 = itemsE4[x] }).ToList();
-                var itemsE2 = names.Select((name, x) => new TestRowPermissions2.E2 { ID = Guid.NewGuid(), Name2 = name, E3 = itemsE3[x] }).ToList();
-                var itemsE1 = names.Select((name, x) => new TestRowPermissions1.E1 { ID = Guid.NewGuid(), Name1 = name, E2 = itemsE2[x] }).ToList();
+                var itemsE3 = names.Select((name, x) => new TestRowPermissions3.E3 { ID = Guid.NewGuid(), Name3 = name, E4ID = itemsE4[x].ID }).ToList();
+                var itemsE2 = names.Select((name, x) => new TestRowPermissions2.E2 { ID = Guid.NewGuid(), Name2 = name, E3ID = itemsE3[x].ID }).ToList();
+                var itemsE1 = names.Select((name, x) => new TestRowPermissions1.E1 { ID = Guid.NewGuid(), Name1 = name, E2ID = itemsE2[x].ID }).ToList();
 
                 var reposE1 = container.Resolve<GenericRepository<TestRowPermissions1.E1>>();
                 var reposE1Browse = container.Resolve<GenericRepository<TestRowPermissions1.E1Browse>>();
                 var reposE1BrowseRP = container.Resolve<GenericRepository<TestRowPermissions1.E1BrowseRP>>();
                 var reposE2 = container.Resolve<GenericRepository<TestRowPermissions2.E2>>();
-                var reposE3 = container.Resolve<GenericRepository<TestRowPermissions3.E3>>();
+                var reposE3 = container.Resolve<Common.DomRepository>().TestRowPermissions3.E3;
                 var reposE4 = container.Resolve<GenericRepository<TestRowPermissions4.E4>>();
 
-                reposE4.Save(itemsE4, null, reposE4.Read());
-                reposE3.Save(itemsE3, null, reposE3.Read());
-                reposE2.Save(itemsE2, null, reposE2.Read());
-                reposE1.Save(itemsE1, null, reposE1.Read());
+                reposE4.Save(itemsE4, null, reposE4.Load());
+                reposE3.Save(itemsE3, null, reposE3.Load());
+                reposE2.Save(itemsE2, null, reposE2.Load());
+                reposE1.Save(itemsE1, null, reposE1.Load());
 
-                Assert.AreEqual("4", TestUtility.DumpSorted(reposE4.Read<Common.RowPermissionsReadItems>(), item => item.Name4));
-                Assert.AreEqual("3->3", TestUtility.DumpSorted(reposE3.Read<Common.RowPermissionsReadItems>(), item => item.Name3 + "->" + item.E4.Name4));
-                Assert.AreEqual("2, 3", TestUtility.DumpSorted(reposE2.Read<Common.RowPermissionsReadItems>(), item => item.Name2));
-                Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(reposE1.Read<Common.RowPermissionsReadItems>(), item => item.Name1));
-                Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(reposE1Browse.Read<Common.RowPermissionsReadItems>(), item => item.Name1Browse));
-                Assert.AreEqual("1, 1b, 2, 3", TestUtility.DumpSorted(reposE1BrowseRP.Read<Common.RowPermissionsReadItems>(), item => item.Name1Browse));
+                Assert.AreEqual("4", TestUtility.DumpSorted(reposE4.Load<Common.RowPermissionsReadItems>(), item => item.Name4));
+                Assert.AreEqual("3->3", TestUtility.DumpSorted(reposE3.Query(null, typeof(Common.RowPermissionsReadItems)), item => item.Name3 + "->" + item.E4.Name4));
+                Assert.AreEqual("2, 3", TestUtility.DumpSorted(reposE2.Load<Common.RowPermissionsReadItems>(), item => item.Name2));
+                Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(reposE1.Load<Common.RowPermissionsReadItems>(), item => item.Name1));
+                Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(reposE1Browse.Load<Common.RowPermissionsReadItems>(), item => item.Name1Browse));
+                Assert.AreEqual("1, 1b, 2, 3", TestUtility.DumpSorted(reposE1BrowseRP.Load<Common.RowPermissionsReadItems>(), item => item.Name1Browse));
             }
         }
     }

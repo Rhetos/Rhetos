@@ -31,7 +31,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("LazyLoad")]
-    public class LazyLoadReferenceInfo : IConceptInfo, IMacroConcept
+    public class LazyLoadReferenceInfo : IConceptInfo, IMacroConcept, IValidatedConcept
     {
         [ConceptKey]
         public ReferencePropertyInfo Reference { get; set; }
@@ -39,6 +39,15 @@ namespace Rhetos.Dsl.DefaultConcepts
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
             return new[] { new LazyLoadSupportInfo { DataStructure = Reference.DataStructure } };
+        }
+
+        public void CheckSemantics(IDslModel existingConcepts)
+        {
+            if (!DslUtility.IsQueryable(Reference.DataStructure))
+                throw new DslSyntaxException(this, this.GetKeywordOrTypeName() + " can only be used on a queryable data structure, such as Entity. " + Reference.DataStructure.GetKeywordOrTypeName() + " is not queryable.");
+
+            if (!DslUtility.IsQueryable(Reference.Referenced))
+                throw new DslSyntaxException(this, this.GetKeywordOrTypeName() + " can only be used on a reference to a queryable data structure, such as Entity. " + Reference.Referenced.GetKeywordOrTypeName() + " is not queryable.");
         }
     }
 }

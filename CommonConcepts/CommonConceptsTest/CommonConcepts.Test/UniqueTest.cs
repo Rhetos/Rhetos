@@ -45,7 +45,7 @@ namespace CommonConcepts.Test
 
             public void Insert(string s, int i, TestUnique.R r, Guid? id = null)
             {
-                _repository.TestUnique.E.Insert(new[] { new TestUnique.E { S = s, I = i, R = r, ID = id ?? Guid.NewGuid() } });
+                _repository.TestUnique.E.Insert(new[] { new TestUnique.E { S = s, I = i, RID = r.ID, ID = id ?? Guid.NewGuid() } });
             }
 
             public void InsertShouldFail(string s, int i, TestUnique.R r)
@@ -66,7 +66,7 @@ namespace CommonConcepts.Test
 
             public void Update(string s, int i, TestUnique.R r, Guid id)
             {
-                _repository.TestUnique.E.Update(new[] { new TestUnique.E { S = s, I = i, R = r, ID = id } });
+                _repository.TestUnique.E.Update(new[] { new TestUnique.E { S = s, I = i, RID = r.ID, ID = id } });
             }
 
             public void UpdateShouldFail(string s, int i, TestUnique.R r, Guid id)
@@ -153,7 +153,7 @@ namespace CommonConcepts.Test
             public void Insert(string s, int i, TestUnique.R r, bool shouldFail = false)
             {
                 string error = null;
-                var newItem = new TestUnique.Multi { S = s, I = i, R = r, ID = Guid.NewGuid() };
+                var newItem = new TestUnique.Multi { S = s, I = i, RID = r.ID, ID = Guid.NewGuid() };
                 try
                 {
                     Console.WriteLine("Inserting " + s + ", " + i + " ...");
@@ -223,16 +223,16 @@ namespace CommonConcepts.Test
 
                 var e = container.Resolve<GenericRepository<TestUnique.E>>();
                 var le = container.Resolve<GenericRepository<TestUnique.LE>>();
-                e.Delete(e.Read());
+                e.Delete(e.Load());
                 e.Insert(
                     new TestUnique.E { I = 1, S = "aaa" },
                     new TestUnique.E { I = 2, S = "aaa" });
-                Assert.AreEqual("1aaa, 2aaa", TestUtility.DumpSorted(le.Read(), item => item.I + item.S), "initial state");
+                Assert.AreEqual("1aaa, 2aaa", TestUtility.DumpSorted(le.Load(), item => item.I + item.S), "initial state");
 
                 le.Insert(
                     new TestUnique.LE { I = 3, S = "bbb" },
                     new TestUnique.LE { I = 4, S = "ccc" });
-                Assert.AreEqual("1aaa, 2aaa, 3bbb, 4ccc", TestUtility.DumpSorted(le.Read(), item => item.I + item.S), "inserting unique S values");
+                Assert.AreEqual("1aaa, 2aaa, 3bbb, 4ccc", TestUtility.DumpSorted(le.Load(), item => item.I + item.S), "inserting unique S values");
 
                 TestUtility.ShouldFail(
                     () => le.Insert(new TestUnique.LE { I = 5, S = "aaa" }),

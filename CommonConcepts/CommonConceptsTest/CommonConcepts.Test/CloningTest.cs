@@ -25,6 +25,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
+using Rhetos.Dom.DefaultConcepts;
 
 namespace CommonConcepts.Test
 {
@@ -112,9 +113,9 @@ Clone3.Start
                 var p = new TestCloning.Parent { Name = "p" };
                 var p2 = new TestCloning.Parent { Name = "p2" };
                 var p3 = new TestCloning.Parent { Name = "p3" };
-                var c = new TestCloning.Clone3 { ID = b.ID, Name = "c", Parent = p };
-                var c2 = new TestCloning.Clone3 { ID = b2.ID, Name = "c2", Parent = p2 };
-                var c3 = new TestCloning.Clone3 { ID = b3.ID, Name = "c3", Parent = p3 };
+                var c = new TestCloning.Clone3 { ID = b.ID, Name = "c", ParentID = p.ID };
+                var c2 = new TestCloning.Clone3 { ID = b2.ID, Name = "c2", ParentID = p2.ID };
+                var c3 = new TestCloning.Clone3 { ID = b3.ID, Name = "c3", ParentID = p3.ID };
                 repository.TestCloning.Base.Insert(new[] { b, b2, b3 });
                 repository.TestCloning.Parent.Insert(new[] { p, p2, p3 });
                 repository.TestCloning.Clone3.Insert(new[] { c, c2, c3 });

@@ -31,7 +31,7 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         private readonly ILogger _logger;
         private readonly IQueryableRepository<IPrincipal> _principalRepository;
-        private readonly IQueryableRepository<IPrincipalHasRole, IPrincipal> _principalRolesRepository;
+        private readonly IQueryableRepository<IPrincipalHasRole> _principalRolesRepository;
         private readonly IQueryableRepository<IRoleInheritsRole> _roleRolesRepository;
         private readonly IQueryableRepository<IPrincipalPermission> _principalPermissionRepository;
         private readonly IQueryableRepository<IRolePermission> _rolePermissionRepository;
@@ -50,7 +50,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _principalRepository = principalRepository;
-            _principalRolesRepository = (IQueryableRepository<IPrincipalHasRole, IPrincipal>)repositories.GetPlugin("Common.PrincipalHasRole");
+            _principalRolesRepository = (IQueryableRepository<IPrincipalHasRole>)repositories.GetPlugin("Common.PrincipalHasRole");
             _roleRolesRepository = roleRolesRepository;
             _principalPermissionRepository = principalPermissionRepository;
             _rolePermissionRepository = rolePermissionRepository;

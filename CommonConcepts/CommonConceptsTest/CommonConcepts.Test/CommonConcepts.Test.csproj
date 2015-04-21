@@ -195,7 +195,6 @@
     <Compile Include="PersistedAllPropertiesTest.cs" />
     <Compile Include="InvalidDataTest.cs" />
     <Compile Include="RequiredPropertyTest.cs" />
-    <Compile Include="SqlFilterTest.cs" />
     <Compile Include="SqlWorkaroundsTest.cs" />
     <Compile Include="UniqueTest.cs" />
     <Compile Include="EntityTest.cs" />

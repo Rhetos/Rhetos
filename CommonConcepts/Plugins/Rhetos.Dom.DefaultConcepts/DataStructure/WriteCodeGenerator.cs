@@ -39,31 +39,7 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string MemberFunctionsSnippet(WriteInfo info)
         {
             return string.Format(
-@"        void Rhetos.Dom.DefaultConcepts.IWritableRepository.Save(IEnumerable<object> insertedNew, IEnumerable<object> updatedNew, IEnumerable<object> deletedIds, bool checkUserPermissions = false)
-        {{
-            Save(
-                insertedNew != null ? insertedNew.Cast<{0}>() : null,
-                updatedNew != null ? updatedNew.Cast<{0}>() : null,
-                deletedIds != null ? deletedIds.Cast<{0}>() : null,
-                checkUserPermissions);
-        }}
-
-        public void Insert(IEnumerable<object> items)
-        {{
-            Save(items.Cast<{0}>(), null, null);
-        }}
-
-        public void Update(IEnumerable<object> items)
-        {{
-            Save(null, items.Cast<{0}>(), null);
-        }}
-
-        public void Delete(IEnumerable<object> items)
-        {{
-            Save(null, null, items.Cast<{0}>());
-        }}
-
-        public void Save(IEnumerable<{0}> insertedNew, IEnumerable<{0}> updatedNew, IEnumerable<{0}> deletedIds, bool checkUserPermissions = false)
+@"        public void Save(IEnumerable<{0}> insertedNew, IEnumerable<{0}> updatedNew, IEnumerable<{0}> deletedIds, bool checkUserPermissions = false)
         {{
             if (insertedNew != null && !(insertedNew is System.Collections.IList)) insertedNew = insertedNew.ToList();
             if (updatedNew != null && !(updatedNew is System.Collections.IList)) updatedNew = updatedNew.ToList();
@@ -100,19 +76,12 @@ namespace Rhetos.Dom.DefaultConcepts
                 WritableOrmDataStructureCodeGenerator.ArgumentValidationTag.Evaluate(info.DataStructure));
         }
 
-        protected static string RegisterRepository(DataStructureInfo info)
-        {
-            return string.Format(@"builder.RegisterType<{0}._Helper.{1}_Repository>().Keyed<IWritableRepository>(""{0}.{1}"").InstancePerLifetimeScope();
-            ", info.Module.Name, info.Name);
-        }
-
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (WriteInfo)conceptInfo;
 
-            codeBuilder.InsertCode("IWritableRepository", RepositoryHelper.RepositoryInterfaces, info.DataStructure);
+            codeBuilder.InsertCode("IWritableRepository<" + info.DataStructure.Module.Name + "." + info.DataStructure.Name + ">", RepositoryHelper.RepositoryInterfaces, info.DataStructure);
             codeBuilder.InsertCode(MemberFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info.DataStructure);
-            codeBuilder.InsertCode(RegisterRepository(info.DataStructure), ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
         }
     }
 }

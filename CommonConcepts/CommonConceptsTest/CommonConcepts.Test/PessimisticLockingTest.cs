@@ -25,6 +25,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
+using Rhetos.Dom.DefaultConcepts;
 
 namespace CommonConcepts.Test
 {
@@ -154,9 +155,9 @@ namespace CommonConcepts.Test
 
                 myLock.UserName = "OtherUser";
                 lockRepos.Update(new[] { myLock });
-                articles[0].Parent = groups[1];
+                articles[0].ParentID = groups[1].ID;
 
-                Assert.IsTrue(articles.All(item => item.Parent.ID != myLock.ResourceID), "New values do not contain locked parents, but old values do");
+                Assert.IsTrue(articles.All(item => item.ParentID != myLock.ResourceID), "New values do not contain locked parents, but old values do");
                 TestUtility.ShouldFail(() => articleRepos.Update(articles), parentId0.ToString(), "OtherUser");
 
                 TestUtility.ShouldFail(() => articleRepos.Delete(new[] { articles[0] }), parentId0.ToString(), "OtherUser");
@@ -170,7 +171,7 @@ namespace CommonConcepts.Test
 
                 myLock.UserName = "OtherUser";
                 lockRepos.Update(new[] { myLock });
-                var newArticle = new TestPessimisticLocking.Article { ID = Guid.NewGuid(), Name = "ccc", Parent = groups[0] };
+                var newArticle = new TestPessimisticLocking.Article { ID = Guid.NewGuid(), Name = "ccc", ParentID = groups[0].ID };
                 TestUtility.ShouldFail(() => articleRepos.Insert(new[] { newArticle }), parentId0.ToString(), "OtherUser");
 
                 myLock.UserName = container.Resolve<IUserInfo>().UserName;

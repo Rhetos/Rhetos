@@ -202,21 +202,21 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(0, SimpleNumParts(repository, "doc1"), "initial");
                 container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
-                var st1 = new Test9.Part { Head = doc1, Name = "st1" };
+                var st1 = new Test9.Part { HeadID = doc1.ID, Name = "st1" };
                 repository.Test9.Part.Insert(new[] { st1 });
                 container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
                 Assert.AreEqual(1, SimpleNumParts(repository, "doc1"), "after insert detail");
                 container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
-                var st2 = new Test9.Part { Head = doc1, Name = "st2" };
+                var st2 = new Test9.Part { HeadID = doc1.ID, Name = "st2" };
                 repository.Test9.Part.Insert(new[] { st2 });
                 container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
                 Assert.AreEqual(2, SimpleNumParts(repository, "doc1"), "after insert detail 2");
                 container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
-                st1.Head = doc2;
+                st1.HeadID = doc2.ID;
                 repository.Test9.Part.Update(new[] { st1 });
                 container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 

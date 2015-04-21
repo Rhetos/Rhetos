@@ -45,6 +45,8 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
         {
+            if (!DslUtility.IsQueryable(DataStructure))
+                throw new DslSyntaxException(this, "This concept can only be used on a queryable data structure, such as Entity. " + DataStructure.GetKeywordOrTypeName() + " is not queryable.");
             GetInterfaceType();
         }
     }

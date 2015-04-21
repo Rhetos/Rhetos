@@ -29,6 +29,7 @@ using Rhetos.TestCommon;
 using TestReport;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
+using Rhetos.Dom.DefaultConcepts;
 
 namespace CommonConcepts.Test
 {
@@ -49,18 +50,18 @@ namespace CommonConcepts.Test
                 var d4 = new Document { ID = Guid.NewGuid(), Name = "d4" };
                 repository.TestReport.Document.Insert(new[] { d1, d2, d3, d4 });
 
-                var s11 = new Part1 { Parent = d1, Name = "A s11" };
-                var s12 = new Part1 { Parent = d2, Name = "A s12" };
-                var s13 = new Part1 { Parent = d1, Name = "A s13" };
-                var s14 = new Part1 { Parent = d3, Name = "A s14" };
-                var s15 = new Part1 { Parent = d4, Name = "B s15" };
+                var s11 = new Part1 { ParentID = d1.ID, Name = "A s11" };
+                var s12 = new Part1 { ParentID = d2.ID, Name = "A s12" };
+                var s13 = new Part1 { ParentID = d1.ID, Name = "A s13" };
+                var s14 = new Part1 { ParentID = d3.ID, Name = "A s14" };
+                var s15 = new Part1 { ParentID = d4.ID, Name = "B s15" };
                 repository.TestReport.Part1.Insert(new[] { s11, s12, s13, s14, s15 });
 
-                var s21 = new Part2 { Parent = d1, Name = "s21" };
-                var s22 = new Part2 { Parent = d3, Name = "s22 xx" };
-                var s23 = new Part2 { Parent = d3, Name = "s23 xxx" };
-                var s24 = new Part2 { Parent = d3, Name = "s24 x" };
-                var s25 = new Part2 { Parent = d4, Name = "s25" };
+                var s21 = new Part2 { ParentID = d1.ID, Name = "s21" };
+                var s22 = new Part2 { ParentID = d3.ID, Name = "s22 xx" };
+                var s23 = new Part2 { ParentID = d3.ID, Name = "s23 xxx" };
+                var s24 = new Part2 { ParentID = d3.ID, Name = "s24 x" };
+                var s25 = new Part2 { ParentID = d4.ID, Name = "s25" };
                 repository.TestReport.Part2.Insert(new[] { s21, s22, s23, s24, s25 });
 
                 var reportData = repository.TestReport.MultipleSourcesReport.GetReportData(
@@ -94,9 +95,9 @@ namespace CommonConcepts.Test
                 var d2 = new Document { ID = Guid.NewGuid(), Name = "d2" };
                 repository.TestReport.Document.Insert(new[] { d1, d2 });
 
-                var s11 = new Part1 { Parent = d1, Name = "A s11" };
-                var s12 = new Part1 { Parent = d1, Name = "B s12" };
-                var s13 = new Part1 { Parent = d2, Name = "B s13" };
+                var s11 = new Part1 { ParentID = d1.ID, Name = "A s11" };
+                var s12 = new Part1 { ParentID = d1.ID, Name = "B s12" };
+                var s13 = new Part1 { ParentID = d2.ID, Name = "B s13" };
                 repository.TestReport.Part1.Insert(new[] { s11, s12, s13 });
 
                 var report = repository.TestReport.CustomFileReport.GenerateReport(new CustomFileReport { Prefix = "B" });

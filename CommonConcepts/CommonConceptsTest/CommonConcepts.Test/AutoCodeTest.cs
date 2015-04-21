@@ -245,24 +245,23 @@ namespace CommonConcepts.Test
         }
 
         private static void TestGroup<TEntity, TGroup>(
-            RhetosTestContainer container, object entityRepository,
+            RhetosTestContainer container, IQueryableRepository<TEntity> entityRepository,
             TGroup group, string format, string expectedCode)
-                where TEntity : new()
+                where TEntity : IEntity, new()
         {
-            var writeableRepository = (IWritableRepository) entityRepository;
+            var writeableRepository = (IWritableRepository<TEntity>) entityRepository;
 
             Guid id = Guid.NewGuid();
             dynamic entity = new TEntity();
             entity.ID = id;
             entity.Code = format;
             entity.Grouping = group;
-            writeableRepository.Save(new[] { entity }, null, null);
+            writeableRepository.Insert((TEntity)entity);
 
             container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
             container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
-            var filterRepository = (IFilterRepository<IEnumerable<Guid>, TEntity>)entityRepository;
-            dynamic loaded = filterRepository.Filter(new[] {id}).Single();
+            dynamic loaded = entityRepository.Query().Where(e => e.ID == id).Single();
             string generatedCode = loaded.Code;
 
             Console.WriteLine(format + " => " + generatedCode);
@@ -442,7 +441,7 @@ namespace CommonConcepts.Test
 
                 var simpleRepository = container.Resolve<GenericRepository<TestAutoCode.Simple>>();
 
-                var generatedCodes = simpleRepository.Read(insertedIds).Select(item => Int32.Parse(item.Code));
+                var generatedCodes = simpleRepository.Load(insertedIds).Select(item => Int32.Parse(item.Code));
                 Console.WriteLine("generatedCodes: " + string.Join(", ", generatedCodes.Select(x => x.ToString())));
 
                 Assert.AreEqual(insertedIds.Count(), generatedCodes.Count());

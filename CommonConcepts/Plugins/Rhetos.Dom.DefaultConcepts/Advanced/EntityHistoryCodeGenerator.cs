@@ -40,15 +40,9 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (EntityHistoryInfo)conceptInfo;
-            codeBuilder.InsertCode(FilterInterfaceSnippet(info), RepositoryHelper.RepositoryInterfaces, info.Dependency_ChangesEntity);
             codeBuilder.InsertCode(FilterImplementationSnippet(info), RepositoryHelper.RepositoryMembers, info.Dependency_ChangesEntity);
             codeBuilder.InsertCode(AdditionalParameterSnippet(info), DataStructureCodeGenerator.BodyTag, info.Entity);
             codeBuilder.InsertCode(CreateHistoryOnUpdateSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Entity);
-        }
-
-        private static string FilterInterfaceSnippet(EntityHistoryInfo info)
-        {
-            return "IFilterRepository<System.DateTime, " + info.Dependency_ChangesEntity.Module.Name + "." + info.Dependency_ChangesEntity.Name + ">";
         }
 
         /// <summary>

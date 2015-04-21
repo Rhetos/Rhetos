@@ -50,7 +50,7 @@ namespace CommonConcepts.Test
 
                 var genericRepository = container.Resolve<GenericRepository<TestQueryable.Simple>>();
                 Assert.AreEqual("a1, a2", TestUtility.DumpSorted(genericRepository.Query(parameter), item => item.Name));
-                Assert.AreEqual("a1, a2", TestUtility.DumpSorted(genericRepository.Read(parameter), item => item.Name));
+                Assert.AreEqual("a1, a2", TestUtility.DumpSorted(genericRepository.Load(parameter), item => item.Name));
                 TestUtility.ShouldFail(() => genericRepository.Filter(genericRepository.Query(), parameter), "does not implement", "TestQueryable.StartsWith");
             }
         }

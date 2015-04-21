@@ -38,9 +38,14 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (EntityHistoryPropertyInfo)conceptInfo;
-            codeBuilder.InsertCode(string.Format(",\r\n							    {0} = olditem.{0}", info.Property.Name),
+
+            string csPropertyName = info.Property is ReferencePropertyInfo
+                ? info.Property.Name + "ID"
+                : info.Property.Name;
+
+            codeBuilder.InsertCode(string.Format(",\r\n							    {0} = olditem.{0}", csPropertyName),
                 EntityHistoryCodeGenerator.ClonePropertiesTag, info.Dependency_EntityHistory);
-            codeBuilder.InsertCode(string.Format("\r\n                        ret.{0} = item.{0};", info.Property.Name),
+            codeBuilder.InsertCode(string.Format("\r\n                        ret.{0} = item.{0};", csPropertyName),
                 EntityHistoryInfo.ClonePropertiesTag, info.Dependency_EntityHistory);
         }
     }

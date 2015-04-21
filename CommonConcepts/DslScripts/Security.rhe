@@ -16,7 +16,7 @@
 	}
     
     // For each claim, MyClaim determines whether the claim applies to the current user, i.e., whether user has the permission.
-	QueryableExtension MyClaim Common.Claim '(IQueryable<Common.Claim> source, Common.DomRepository repository) =>
+	QueryableExtension MyClaim Common.Claim '(query, repository) =>
 		{ throw new Rhetos.UserException("Reading Common.MyClaim without filter is not permitted. Use filter by Common.Claim or Common.Claim[]."); }'
 	{
 		Bool Applies;
@@ -39,7 +39,7 @@
                 var authorizations = executionContext.AuthorizationManager.GetAuthorizations(securityClaims);
 			
                 return claims.Zip(authorizations, (claim, authorized) => new Common.MyClaim {
-                        Base = claim,
+                        ID = claim.ID,
                         Applies = authorized
                     }).ToArray();
              }'

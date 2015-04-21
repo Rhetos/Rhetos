@@ -25,7 +25,7 @@ using System.Text;
 
 namespace Rhetos.CommonConcepts.Test.Mocks
 {
-    class RepositoryMock<TEntityInterface, TEntity> : IRepository, IQueryableRepository<TEntityInterface>, IWritableRepository
+    class RepositoryMock<TEntityInterface, TEntity> : IRepository, IQueryableRepository<TEntityInterface>, IWritableRepository<TEntity>
         where TEntityInterface : class, IEntity
         where TEntity : TEntityInterface
     {
@@ -36,18 +36,16 @@ namespace Rhetos.CommonConcepts.Test.Mocks
             _items = items;
         }
 
+        public IQueryable<TEntityInterface> Query(object parameter, Type parameterType)
+        {
+            if (parameterType == typeof(FilterAll))
+                return Query();
+            throw new NotImplementedException();
+        }
+
         public IQueryable<TEntityInterface> Query()
         {
             return (IQueryable<TEntityInterface>)_items.AsQueryable();
-        }
-
-        public void Save(IEnumerable<object> insertedNew, IEnumerable<object> updatedNew, IEnumerable<object> deletedIds, bool checkUserPermissions = false)
-        {
-            Save(
-                insertedNew != null ? insertedNew.Cast<TEntity>() : null,
-                updatedNew != null ? updatedNew.Cast<TEntity>() : null,
-                deletedIds != null ? deletedIds.Cast<TEntity>() : null,
-                checkUserPermissions);
         }
 
         public List<object> InsertedGroups = new List<object>();
@@ -55,7 +53,7 @@ namespace Rhetos.CommonConcepts.Test.Mocks
         public List<object> DeletedGroups = new List<object>();
         public StringBuilder Log = new StringBuilder();
 
-        private void Save(IEnumerable<TEntity> insertedNew, IEnumerable<TEntity> updatedNew, IEnumerable<TEntity> deletedIds, bool checkUserPermissions = false)
+        public void Save(IEnumerable<TEntity> insertedNew, IEnumerable<TEntity> updatedNew, IEnumerable<TEntity> deletedIds, bool checkUserPermissions = false)
         {
             if (insertedNew != null) InsertedGroups.Add(insertedNew);
             if (updatedNew != null) UpdatedGroups.Add(updatedNew);

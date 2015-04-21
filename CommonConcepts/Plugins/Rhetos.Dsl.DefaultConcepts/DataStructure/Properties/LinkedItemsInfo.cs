@@ -33,18 +33,19 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
-            if (!(DataStructure is EntityInfo))
-                throw new DslSyntaxException(
-                    string.Format("LinkedItems (Parent-child) must be used inside Entity. DateStructure {0} is of type {1}, expected type is {2}.",
-                        DataStructure.ToString(),
-                        DataStructure.GetType().FullName,
-                        typeof(EntityInfo).FullName));
-            if(ReferenceProperty.Referenced != DataStructure)
-                throw new DslSyntaxException(
-                    string.Format("LinkedItems (Parent-child) references {0} which is reference to {1}. Expected reference is {2}.",
-                        ReferenceProperty.ToString(),
-                        ReferenceProperty.Referenced.ToString(),
-                        DataStructure.ToString()));
+            if (!DslUtility.IsQueryable(DataStructure))
+                throw new DslSyntaxException(this, this.GetKeywordOrTypeName() + " can only be used on a queryable data structure, such as Entity. " + DataStructure.GetKeywordOrTypeName() + " is not queryable.");
+
+            if (!DslUtility.IsQueryable(ReferenceProperty.DataStructure))
+                throw new DslSyntaxException(this, this.GetKeywordOrTypeName() + " must reference a queryable data structure, such as Entity. " + ReferenceProperty.DataStructure.GetKeywordOrTypeName() + " is not queryable.");
+
+            if (ReferenceProperty.Referenced != DataStructure)
+                throw new DslSyntaxException(this, string.Format(
+                    "{0} references '{1}' which is a reference to '{2}'. Expected is a reference back to '{3}'.",
+                    this.GetKeywordOrTypeName(),
+                    ReferenceProperty.GetUserDescription(),
+                    ReferenceProperty.Referenced.GetUserDescription(),
+                    DataStructure.GetUserDescription()));
         }
     }
 }

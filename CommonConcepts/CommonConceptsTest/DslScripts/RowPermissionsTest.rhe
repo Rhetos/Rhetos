@@ -88,7 +88,7 @@ Module TestRowPermissions
         {
             AllowRead DirectlyAlllowedItems 'context =>
                 {
-                    var DirectlyAlllowedItems = context.GenericRepository<RpRulesAllowItem>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Item.ID).ToList();
+                    var DirectlyAlllowedItems = context.GenericRepository<Common.Queryable.TestRowPermissions_RpRulesAllowItem>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.ItemID.Value).ToList();
                     if (DirectlyAlllowedItems.Count == 0)
                         return item => false;
                     return item => DirectlyAlllowedItems.Contains(item.ID);
@@ -96,7 +96,7 @@ Module TestRowPermissions
 
             AllowRead DirectlyAlllowedGroups 'context =>
                 {
-                    var DirectlyAlllowedGroups = context.GenericRepository<RpRulesAllowGroup>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Group.ID).ToList();
+                    var DirectlyAlllowedGroups = context.GenericRepository<Common.Queryable.TestRowPermissions_RpRulesAllowGroup>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Group.ID).ToList();
                     if (DirectlyAlllowedGroups.Count == 0)
                         return item => false;
                     return item => DirectlyAlllowedGroups.Contains(item.Group.ID);
@@ -104,8 +104,8 @@ Module TestRowPermissions
             
             AllowRead AllowedAllGroups 'context =>
                 {
-                    int totalGroupsCount = context.GenericRepository<RPRulesGroup>().Query().Count();
-                    int allowedGroupsCount = context.GenericRepository<RpRulesAllowGroup>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Group.ID).Distinct().Count();
+                    int totalGroupsCount = context.GenericRepository<Common.Queryable.TestRowPermissions_RPRulesGroup>().Query().Count();
+                    int allowedGroupsCount = context.GenericRepository<Common.Queryable.TestRowPermissions_RpRulesAllowGroup>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Group.ID).Distinct().Count();
                     if (allowedGroupsCount == totalGroupsCount)
                         return item => true; // This specific filter will be optimized. If it is active, there is no need to check other rules when querying RPRulesItem.
                     else
@@ -114,7 +114,7 @@ Module TestRowPermissions
             
             DenyRead DirectlyDeniedItems 'context =>
                 {
-                    var DirectlyDeniedItems = context.GenericRepository<RpRulesDenyItem>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Item.ID).ToList();
+                    var DirectlyDeniedItems = context.GenericRepository<Common.Queryable.TestRowPermissions_RpRulesDenyItem>().Query(rule => rule.UserName == context.UserInfo.UserName).Select(rule => rule.Item.ID).ToList();
                     if (DirectlyDeniedItems.Count == 0)
                         return item => false;
                     return item => DirectlyDeniedItems.Contains(item.ID);

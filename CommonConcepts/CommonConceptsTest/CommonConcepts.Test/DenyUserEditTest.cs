@@ -34,7 +34,7 @@ namespace CommonConcepts.Test
         private string DumpSimple(Common.DomRepository repository)
         {
             return TestUtility.DumpSorted(
-                repository.TestDenyUserEdit.Simple.All(),
+                repository.TestDenyUserEdit.Simple.Query(),
                 item => (item.Editable ?? "null")
                     + " " + (item.NonEditable ?? "null")
                     + " " + (item.NonEditableReference != null ? item.NonEditableReference.Name : "null"));
@@ -170,7 +170,7 @@ namespace CommonConcepts.Test
                 var parent = new TestDenyUserEdit.Parent { Name = "p" };
                 repository.TestDenyUserEdit.Parent.Save(new[] { parent }, null, null, true);
 
-                var simple = new TestDenyUserEdit.Simple { Editable = "a", NonEditableReference = parent };
+                var simple = new TestDenyUserEdit.Simple { Editable = "a", NonEditableReferenceID = parent.ID };
                 TestUtility.ShouldFail(() => repository.TestDenyUserEdit.Simple.Save(new[] { simple }, null, null, true),
                     "Simple", "NonEditableReference", "not allowed");
             }
