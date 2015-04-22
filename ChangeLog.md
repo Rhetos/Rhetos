@@ -1,5 +1,15 @@
 # Rhetos release notes
 
+## 0.9.32 (2015-04-22)
+
+### Internal improvements
+
+* Bugfix: User sometimes gets reduced permissions when using ActiveDirectorySync with non-domain roles.
+* Bugfix: CommonAuthorizationProvider log reports more roles than the user has.
+* Performance: Use `Security.LookupClientHostname` option to turn off reverse DNS lookup.
+  The client hostname can be used for logging in an enterprise environment.
+  If the option is turned off in *Web.config*, the client IP address will be used instead of the hostname.
+
 ## 0.9.31 (2015-04-16)
 
 ### New features
