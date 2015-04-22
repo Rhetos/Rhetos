@@ -104,7 +104,7 @@
   Example: `executionContext.GenericRepository<IDeactivatable>("Common.Claim").Query(item => item.Active == false)`.
 * Added "Rhetos." prefix to standard Rhetos packages. The generated `Resources\<PackageName>` subfolder for each package is named without the prefix, to keep backward compatibility.
 * Checking package dependency on Rhetos framework version using `frameworkAssembly` element in *.nuspec* file.
-* Bugfix: Case insensitive and *null* comparison in *GenericFilter* sometime do not work (REST API and ReadCommand filters).
+* Bugfix: Case insensitive and *null* comparison in *GenericFilter* sometimes do not work (REST API and ReadCommand filters).
 * Bugfix: *Read* claim is generated for some non-readable data structures (**Action**, for example).
 * Bugfix: Logging Rhetos server commands and results works only for SOAP web API, not for REST (see `TraceCommandsXml` in *web.config*).
 * Client application may ignore properties marked with **DenyUserEdit**, the server will accept *null* value from client and keep the old value unchanged.
@@ -117,6 +117,8 @@
 
 * `ExtractPackages.exe` tool is deleted. Its functionality is now part of `DeployPackages.exe`.
 * `CreatePackage.exe` tool is deleted. New Rhetos packages should be packed by [NuGet](https://www.nuget.org/).
+* `DeployPackages.exe` reads the package list from *RhetosPackages.config* and *RhetosPackageSources.config*.
+  Empty prototypes of those files are created on first deploy.
 * **FilterByReferenced** will yield syntax error if the referenced filter name does not match exactly.
   In previous versions, a different filter name was allowed by optional namespace.
 
@@ -331,7 +333,7 @@
 * Bugfix: Absolute URI (localhost Rhetos server) removed from *Web.config*.
 * Bugfix: **DenyUserEdit** and **SystemRequired** concepts denied saving valid data entries when using automatic value initialization.
 * Bugfix: `SetupRhetosServer.bat` sometimes reported incorrect error "IIS Express is not installed".
-* Performance: First call of the *DownloadReport* server command sometime takes more time (building DslModel instance).
+* Performance: First call of the *DownloadReport* server command sometimes takes more time (building DslModel instance).
 * New plugin type: *IHomePageSnippet*, for adding development and administration content to Rhetos homepage.
 * New plugin type: *ICommandObserver*, for extending server's command handling.
 
