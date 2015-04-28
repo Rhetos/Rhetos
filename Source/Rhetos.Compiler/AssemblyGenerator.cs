@@ -67,37 +67,17 @@ namespace Rhetos.Compiler
 
             if (results.Errors.HasErrors)
                 throw new FrameworkException(GetErrorDescription(results, assemblySource.GeneratedCode, sourceFile));
+
             try
             {
                 results.CompiledAssembly.GetTypes();
             }
             catch (ReflectionTypeLoadException ex)
             {
-                if (ex.LoaderExceptions.Any())
-                    LogAndRethrowLoaderExceptions(ex);
-                else
-                    throw;
+                throw new FrameworkException(CsUtility.ReportTypeLoadException(ex, "Error while compiling " + compilerParameters.OutputAssembly + "."), ex);
             }
 
             return results.CompiledAssembly;
-        }
-
-        private void LogAndRethrowLoaderExceptions(ReflectionTypeLoadException ex)
-        {
-            // Log all loader exceptions
-            _logger.Error(ex.ToString());
-            foreach (string le in ex.LoaderExceptions.Select(le => le.ToString()).Distinct())
-                _logger.Error(le);
-
-            // Rethrows exception in simplified format so that enough basic information can be seen from client application
-            string errors = string.Join("\r\n", ex.LoaderExceptions.Select(le => le.Message).Distinct());
-            if (errors.Length > 1500)
-                errors = errors.Substring(0, 1500) + "...";
-            throw new FrameworkException("Unable to resolve one or more types from assembly. Reason:\r\n" + errors,
-                new FrameworkException(string.Format("{0}\r\n\r\nFirst of {1} loader exceptions:\r\n{2}",
-                    ex.Message,
-                    ex.LoaderExceptions.Count(),
-                    ex.LoaderExceptions[0])));
         }
 
         private string GetErrorDescription(CompilerResults results, string generatedCode, string filePath)

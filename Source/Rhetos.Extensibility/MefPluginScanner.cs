@@ -27,6 +27,7 @@ using System.ComponentModel.Composition.ReflectionModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace Rhetos.Extensibility
@@ -57,9 +58,9 @@ namespace Rhetos.Extensibility
                     return _pluginsByExport.Get(pluginInterface.FullName);
                 }
             }
-            catch (System.Reflection.ReflectionTypeLoadException ex)
+            catch (ReflectionTypeLoadException ex)
             {
-                throw new FrameworkException(ReportLoaderExceptions(ex), ex);
+                throw new FrameworkException(CsUtility.ReportTypeLoadException(ex, "Cannot load plugins."), ex);
             }
         }
 
@@ -125,30 +126,6 @@ namespace Rhetos.Extensibility
 
             InitializationLogging.PerformanceLogger.Write(stopwatch, "MefPluginScanner: Loaded plugins (" + pluginsCount + ").");
             return pluginsByExport;
-        }
-
-        private static string ReportLoaderExceptions(System.Reflection.ReflectionTypeLoadException rtle)
-        {
-            var report = new StringBuilder();
-            report.Append("Cannot load plugins. Check for missing assembly or unsupported assembly version:");
-            bool first = true;
-            foreach (var innerException in rtle.LoaderExceptions.Take(5))
-            {
-                report.AppendLine();
-                report.Append(innerException.Message);
-
-                if (first)
-                {
-                    var fileLoadException = innerException as FileLoadException;
-                    if (fileLoadException != null && !string.IsNullOrEmpty(fileLoadException.FusionLog))
-                    {
-                        report.AppendLine();
-                        report.Append(fileLoadException.FusionLog);
-                    }
-                }
-                first = false;
-            }
-            return report.ToString();
         }
 
         private static void SortByDependency(List<PluginInfo> plugins)

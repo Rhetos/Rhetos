@@ -20,7 +20,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -158,5 +160,45 @@ namespace Rhetos.Utilities
         }
 
         private static readonly Regex _splitNumericGroups = new Regex(@"(\d+|\D+)");
+
+        /// <summary>
+        /// Creates a detailed report message for the ReflectionTypeLoadException.
+        /// </summary>
+        public static string ReportTypeLoadException(ReflectionTypeLoadException rtle, string errorContext = null)
+        {
+            var report = new StringBuilder();
+
+            if (string.IsNullOrEmpty(errorContext))
+                report.Append(errorContext + " ");
+
+            report.Append("Check for missing assembly or unsupported assembly version. " + rtle.Message);
+
+            var distinctLoaderExceptions = rtle.LoaderExceptions.GroupBy(exception => exception.Message).Select(group => group.First()).ToList();
+
+            const int maxErrors = 5;
+
+            bool fusionLogReported = false;
+            foreach (var loaderException in distinctLoaderExceptions.Take(maxErrors))
+            {
+                report.AppendLine().Append(loaderException.GetType().Name + ": " + loaderException.Message);
+
+                if (!fusionLogReported && loaderException is FileLoadException && !string.IsNullOrEmpty(((FileLoadException)loaderException).FusionLog))
+                {
+                    report.AppendLine().Append(((FileLoadException)loaderException).FusionLog);
+                    fusionLogReported = true;
+                }
+
+                if (!fusionLogReported && loaderException is FileNotFoundException && !string.IsNullOrEmpty(((FileNotFoundException)loaderException).FusionLog))
+                {
+                    report.AppendLine().Append(((FileNotFoundException)loaderException).FusionLog);
+                    fusionLogReported = true;
+                }
+            }
+
+            if (distinctLoaderExceptions.Count > maxErrors)
+                report.AppendLine().Append("... ");
+
+            return report.ToString();
+        }
     }
 }

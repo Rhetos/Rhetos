@@ -72,116 +72,116 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GenerateCommonClassesSnippet()
         {
-            return string.Format(
+            return
 @"namespace Common
-{{
-    {0}
+{
+    " + StandardNamespacesSnippet + @"
 
     using Autofac;
-    {1}
+    " + ModuleCodeGenerator.CommonUsingTag + @"
 
     public class DomRepository
-    {{
+    {
         private readonly ExecutionContext _executionContext;
 
         public DomRepository(ExecutionContext executionContext)
-        {{
+        {
             _executionContext = executionContext;
-        }}
+        }
 
-        {2}
-    }}
+        " + ModuleCodeGenerator.CommonDomRepositoryMembersTag + @"
+    }
 
     [System.Data.Entity.DbConfigurationType(typeof(EntityFrameworkConfiguration))] 
     public class EntityFrameworkContext : System.Data.Entity.DbContext
-    {{
+    {
         public EntityFrameworkContext(ConnectionString connectionString)
             : base(connectionString.ToString())
-        {{
-        }}
+        {
+        }
 
         protected override void OnModelCreating(System.Data.Entity.DbModelBuilder modelBuilder)
-        {{
-            {14}
-        }}
+        {
+            " + EntityFrameworkOnModelCreatingTag + @"
+        }
 
-        {13}
-    }}
+        " + EntityFrameworkContextMembersTag + @"
+    }
 
     public class EntityFrameworkConfiguration : System.Data.Entity.DbConfiguration 
-    {{
+    {
         public EntityFrameworkConfiguration()
-        {{
+        {
             SetProviderServices(""System.Data.SqlClient"", System.Data.Entity.SqlServer.SqlProviderServices.Instance);
-            {15}
-        }}
-    }}
+            " + EntityFrameworkConfigurationTag + @"
+        }
+    }
 
     public static class Infrastructure
-    {{
+    {
         public static readonly RegisteredInterfaceImplementations RegisteredInterfaceImplementationName = new RegisteredInterfaceImplementations
-        {{
-            {7}
-        }};
+        {
+            " + ModuleCodeGenerator.RegisteredInterfaceImplementationNameTag + @"
+        };
 
         public static readonly ApplyFiltersOnClientRead ApplyFiltersOnClientRead = new ApplyFiltersOnClientRead
-        {{
-            {10}
-        }};
+        {
+            " + ModuleCodeGenerator.ApplyFiltersOnClientReadTag + @"
+        };
 
-        public const string ErrorGetNavigationPropertyWithoutOrm = ""The navigation property '{{0}}' can only be used in a LINQ query. Use a query to read the referenced data."";
-        public const string ErrorSetNavigationPropertyWithoutOrm = ""The navigation property '{{0}}' is not writable. It can only be assigned in a LINQ query that is mapped to the database."";
-        public const string ErrorGetNavigationPropertyWithAlternativeWithoutOrm = ""The navigation property '{{0}}' can only be used in a LINQ query. Use '{{1}}' instead, or use a query to read the referenced data."";
-        public const string ErrorSetNavigationPropertyWithAlternativeWithoutOrm = ""The navigation property '{{0}}' is not writable. Use '{{1}}' instead, or use the navigation property in a LINQ query that is mapped to the database."";
+        public const string ErrorGetNavigationPropertyWithoutOrm = ""The navigation property '{0}' can only be used in a LINQ query. Use a query to read the referenced data."";
+        public const string ErrorSetNavigationPropertyWithoutOrm = ""The navigation property '{0}' is not writable. It can only be assigned in a LINQ query that is mapped to the database."";
+        public const string ErrorGetNavigationPropertyWithAlternativeWithoutOrm = ""The navigation property '{0}' can only be used in a LINQ query. Use '{1}' instead, or use a query to read the referenced data."";
+        public const string ErrorSetNavigationPropertyWithAlternativeWithoutOrm = ""The navigation property '{0}' is not writable. Use '{1}' instead, or use the navigation property in a LINQ query that is mapped to the database."";
 
-        {12}
-    }}
+        " + ModuleCodeGenerator.CommonInfrastructureMembersTag + @"
+    }
 
     public class ExecutionContext
-    {{
+    {
         protected Lazy<Rhetos.Persistence.IPersistenceTransaction> _persistenceTransaction;
-        public NHibernate.ISession NHibernateSession {{ get {{ return ((Rhetos.Persistence.NHibernate.NHibernatePersistenceTransaction)_persistenceTransaction.Value).NHibernateSession; }} }}
+        public NHibernate.ISession NHibernateSession { get { return ((Rhetos.Persistence.NHibernate.NHibernatePersistenceTransaction)_persistenceTransaction.Value).NHibernateSession; } }
 
-        public Rhetos.Persistence.IPersistenceTransaction PersistenceTransaction {{ get {{ return _persistenceTransaction.Value; }} }}
+        public Rhetos.Persistence.IPersistenceTransaction PersistenceTransaction { get { return _persistenceTransaction.Value; } }
 
         protected Lazy<Rhetos.Utilities.IUserInfo> _userInfo;
-        public Rhetos.Utilities.IUserInfo UserInfo {{ get {{ return _userInfo.Value; }} }}
+        public Rhetos.Utilities.IUserInfo UserInfo { get { return _userInfo.Value; } }
 
         protected Lazy<Rhetos.Utilities.ISqlExecuter> _sqlExecuter;
-        public Rhetos.Utilities.ISqlExecuter SqlExecuter {{ get {{ return _sqlExecuter.Value; }} }}
+        public Rhetos.Utilities.ISqlExecuter SqlExecuter { get { return _sqlExecuter.Value; } }
 
         protected Lazy<Rhetos.Security.IAuthorizationManager> _authorizationManager;
-        public Rhetos.Security.IAuthorizationManager AuthorizationManager {{ get {{ return _authorizationManager.Value; }} }}
+        public Rhetos.Security.IAuthorizationManager AuthorizationManager { get { return _authorizationManager.Value; } }
 
         protected Lazy<Rhetos.Dom.DefaultConcepts.GenericRepositories> _genericRepositories;
-        public Rhetos.Dom.DefaultConcepts.GenericRepositories GenericRepositories {{ get {{ return _genericRepositories.Value; }} }}
+        public Rhetos.Dom.DefaultConcepts.GenericRepositories GenericRepositories { get { return _genericRepositories.Value; } }
 
         public Rhetos.Dom.DefaultConcepts.GenericRepository<TEntity> GenericRepository<TEntity>() where TEntity : class, IEntity
-        {{
+        {
             return GenericRepositories.GetGenericRepository<TEntity>();
-        }}
+        }
 
         public Rhetos.Dom.DefaultConcepts.GenericRepository<TEntity> GenericRepository<TEntity>(string entityName) where TEntity : class, IEntity
-        {{
+        {
             return GenericRepositories.GetGenericRepository<TEntity>(entityName);
-        }}
+        }
 
         public Rhetos.Dom.DefaultConcepts.GenericRepository<IEntity> GenericRepository(string entityName)
-        {{
+        {
             return GenericRepositories.GetGenericRepository(entityName);
-        }}
+        }
 
         protected Lazy<Common.DomRepository> _repository;
-        public Common.DomRepository Repository {{ get {{ return _repository.Value; }} }}
+        public Common.DomRepository Repository { get { return _repository.Value; } }
 
-        public Rhetos.Logging.ILogProvider LogProvider {{ get; private set; }}
+        public Rhetos.Logging.ILogProvider LogProvider { get; private set; }
 
         protected Lazy<Rhetos.Security.IWindowsSecurity> _windowsSecurity;
-        public Rhetos.Security.IWindowsSecurity WindowsSecurity {{ get {{ return _windowsSecurity.Value; }} }}
+        public Rhetos.Security.IWindowsSecurity WindowsSecurity { get { return _windowsSecurity.Value; } }
 
-        public EntityFrameworkContext EntityFrameworkContext {{ get; private set; }}
+        public EntityFrameworkContext EntityFrameworkContext { get; private set; }
 
-        {4}
+        " + ModuleCodeGenerator.ExecutionContextMemberTag + @"
 
         // This constructor is used for automatic parameter injection with autofac.
         public ExecutionContext(
@@ -191,9 +191,9 @@ namespace Rhetos.Dom.DefaultConcepts
             Lazy<Rhetos.Security.IAuthorizationManager> authorizationManager,
             Lazy<Rhetos.Dom.DefaultConcepts.GenericRepositories> genericRepositories,
             Rhetos.Logging.ILogProvider logProvider,
-            Lazy<Rhetos.Security.IWindowsSecurity> windowsSecurity{5},
+            Lazy<Rhetos.Security.IWindowsSecurity> windowsSecurity" + ModuleCodeGenerator.ExecutionContextConstructorArgumentTag + @",
             EntityFrameworkContext entityFrameworkContext)
-        {{
+        {
             _persistenceTransaction = persistenceTransaction;
             _userInfo = userInfo;
             _sqlExecuter = sqlExecuter;
@@ -203,33 +203,33 @@ namespace Rhetos.Dom.DefaultConcepts
             LogProvider = logProvider;
             _windowsSecurity = windowsSecurity;
             EntityFrameworkContext = entityFrameworkContext;
-            {6}
-        }}
+            " + ModuleCodeGenerator.ExecutionContextConstructorAssignmentTag + @"
+        }
 
         // This constructor is used for manual context creation (unit testing)
         public ExecutionContext()
-        {{
-        }}
-    }}
+        {
+        }
+    }
 
     [System.ComponentModel.Composition.Export(typeof(Autofac.Module))]
     public class AutofacModuleConfiguration : Autofac.Module
-    {{
+    {
         protected override void Load(Autofac.ContainerBuilder builder)
-        {{
+        {
             builder.RegisterType<DomRepository>().InstancePerLifetimeScope();
             builder.RegisterType<EntityFrameworkContext>().As<EntityFrameworkContext>().As<System.Data.Entity.DbContext>().InstancePerLifetimeScope();
             builder.RegisterType<ExecutionContext>().InstancePerLifetimeScope();
             builder.RegisterInstance(Infrastructure.RegisteredInterfaceImplementationName).ExternallyOwned();
             builder.RegisterInstance(Infrastructure.ApplyFiltersOnClientRead).ExternallyOwned();
-            {3}
+            " + ModuleCodeGenerator.CommonAutofacConfigurationMembersTag + @"
 
             base.Load(builder);
-        }}
-    }}
+        }
+    }
 
     namespace NHibernateConfiguration
-    {{
+    {
         using NHibernate.Cfg;
         using NHibernate.Hql.Ast;
         using NHibernate.Linq;
@@ -238,50 +238,33 @@ namespace Rhetos.Dom.DefaultConcepts
 
         [System.ComponentModel.Composition.Export(typeof(Rhetos.Persistence.NHibernate.INHibernateConfigurationExtension))]
         public sealed class NHibernateConfigurationExtension : Rhetos.Persistence.NHibernate.INHibernateConfigurationExtension
-        {{
+        {
             public void ExtendConfiguration(NHibernate.Cfg.Configuration configuration)
-            {{
-                {8}
+            {
+                " + ModuleCodeGenerator.NHibernateConfigurationExtensionTag + @"
                 configuration.LinqToHqlGeneratorsRegistry<LinqToHqlGeneratorsRegistry>();
-            }}
-        }}
+            }
+        }
 
         public sealed class LinqToHqlGeneratorsRegistry : NHibernate.Linq.Functions.DefaultLinqToHqlGeneratorsRegistry
-        {{
+        {
             public LinqToHqlGeneratorsRegistry()
-            {{
-                {9}
-            }}
-        }}
-    }}
+            {
+                " + ModuleCodeGenerator.LinqToHqlGeneratorsRegistryTag + @"
+            }
+        }
+    }
 
-    {11}
-}}
+    " + ModuleCodeGenerator.CommonNamespaceMembersTag + @"
+}
 
 namespace Common.Queryable
-{{
-    {0}
+{
+    " + StandardNamespacesSnippet + @"
 
-    {16}
-}}
-",
-            StandardNamespacesSnippet,
-            ModuleCodeGenerator.CommonUsingTag,
-            ModuleCodeGenerator.CommonDomRepositoryMembersTag,
-            ModuleCodeGenerator.CommonAutofacConfigurationMembersTag,
-            ModuleCodeGenerator.ExecutionContextMemberTag,
-            ModuleCodeGenerator.ExecutionContextConstructorArgumentTag,
-            ModuleCodeGenerator.ExecutionContextConstructorAssignmentTag,
-            ModuleCodeGenerator.RegisteredInterfaceImplementationNameTag,
-            ModuleCodeGenerator.NHibernateConfigurationExtensionTag,
-            ModuleCodeGenerator.LinqToHqlGeneratorsRegistryTag,
-            ModuleCodeGenerator.ApplyFiltersOnClientReadTag,
-            ModuleCodeGenerator.CommonNamespaceMembersTag,
-            ModuleCodeGenerator.CommonInfrastructureMembersTag,
-            EntityFrameworkContextMembersTag,
-            EntityFrameworkOnModelCreatingTag,
-            EntityFrameworkConfigurationTag,
-            CommonQueryableMemebersTag); // {16}
+    " + CommonQueryableMemebersTag + @"
+}
+";
         }
     }
 }

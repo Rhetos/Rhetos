@@ -75,10 +75,7 @@ namespace DeployPackages
                 logger.Error(ex.ToString());
 
                 if (ex is ReflectionTypeLoadException)
-                {
-                    string loaderMessages = string.Join("\r\n", ((ReflectionTypeLoadException)ex).LoaderExceptions.Select(le => le.Message).Distinct());
-                    logger.Error(loaderMessages);
-                }
+                    logger.Error(CsUtility.ReportTypeLoadException((ReflectionTypeLoadException)ex));
 
                 if (Environment.UserInteractive)
                 {
