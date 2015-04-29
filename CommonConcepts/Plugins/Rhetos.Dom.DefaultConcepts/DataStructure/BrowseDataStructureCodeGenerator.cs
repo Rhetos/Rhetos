@@ -38,12 +38,12 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(BrowseDataStructureInfo))]
     public class BrowseDataStructureCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly CsTag<BrowseDataStructureInfo> BrowsePropertiesTag = "properties";
+        public static readonly CsTag<BrowseDataStructureInfo> BrowsePropertiesTag = "BrowseProperties";
 
         protected static string RepositoryFunctionsSnippet(BrowseDataStructureInfo info)
         {
             return string.Format(
-@"        public static IQueryable<Common.Queryable.{0}_{1}> Compute(IQueryable<Common.Queryable.{2}_{3}> source)
+@"        public IQueryable<Common.Queryable.{0}_{1}> Compute(IQueryable<Common.Queryable.{2}_{3}> source)
         {{
             return
                 from item in source
@@ -56,7 +56,8 @@ namespace Rhetos.Dom.DefaultConcepts
         }}
 
 ",
-            info.Module.Name, info.Name, info.Source.Module.Name, info.Source.Name, BrowsePropertiesTag.Evaluate(info));
+            info.Module.Name, info.Name, info.Source.Module.Name, info.Source.Name,
+            BrowsePropertiesTag.Evaluate(info));
         }
 
         protected static string QuerySnippet(BrowseDataStructureInfo info)

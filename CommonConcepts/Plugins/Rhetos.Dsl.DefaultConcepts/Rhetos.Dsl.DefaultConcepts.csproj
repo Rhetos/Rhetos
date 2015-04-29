@@ -267,7 +267,6 @@
     <Compile Include="SimpleBusinessLogic\BeforeActionInfo.cs" />
     <Compile Include="SimpleBusinessLogic\BrowseTakeNamedPropertyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\AutoCodeTriggerInfo.cs" />
-    <Compile Include="SimpleBusinessLogic\ReloadBeforeValidationsInfo.cs" />
     <Compile Include="SimpleBusinessLogic\RegExMatchDefaultMessage.cs" />
     <Compile Include="SimpleBusinessLogic\LoggingRelatedItemInfo.cs" />
     <Compile Include="SimpleBusinessLogic\DenyUserEditDataStructureInfo.cs" />

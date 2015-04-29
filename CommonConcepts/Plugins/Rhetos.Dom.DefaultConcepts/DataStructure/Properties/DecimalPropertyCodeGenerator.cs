@@ -36,7 +36,15 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            PropertyHelper.GenerateCodeForType((PropertyInfo)conceptInfo, codeBuilder, "decimal?");
+            var info = (PropertyInfo)conceptInfo;
+
+            PropertyHelper.GenerateCodeForType(info, codeBuilder, "decimal?");
+
+            if (info.DataStructure is IOrmDataStructure)
+                codeBuilder.InsertCode(
+                    string.Format("modelBuilder.Entity<Common.Queryable.{0}_{1}>().Property(t => t.{2}).HasPrecision(28, 10);\r\n            ",
+                        info.DataStructure.Module.Name, info.DataStructure.Name, info.Name),
+                    DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
         }
     }
 }

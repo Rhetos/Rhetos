@@ -45,11 +45,6 @@ namespace Rhetos.Utilities
             _performanceLogger = logProvider.GetLogger("Performance");
         }
 
-        public void ExecuteSql(IEnumerable<string> commands)
-        {
-            ExecuteSql(commands, useTransaction: true);
-        }
-
         public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
         {
             _logger.Trace(() => "Executing " + commands.Count() + " commands" + (useTransaction ? "" : " without transaction") + ".");

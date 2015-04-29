@@ -69,13 +69,13 @@ namespace CommonConcepts.Test
                 var itemA = new TestAction.Simple { Name = "testA" };
                 var itemB = new TestAction.Simple { Name = "testB" };
                 repository.TestAction.Simple.Insert(new[] { itemA, itemB });
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
                 repository.TestAction.RemoveAFromAllSimpleEntities.Execute(new TestAction.RemoveAFromAllSimpleEntities { });
 
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
 
                 repository.TestAction.Simple.Insert(new[] { new TestAction.Simple { Name = "testA" } });
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
                 repository.TestAction.RemoveAFromAllSimpleEntities.Execute(new TestAction.RemoveAFromAllSimpleEntities { });
             }
         }

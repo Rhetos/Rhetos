@@ -95,9 +95,25 @@ namespace Rhetos.Dom.DefaultConcepts
     [System.Data.Entity.DbConfigurationType(typeof(EntityFrameworkConfiguration))] 
     public class EntityFrameworkContext : System.Data.Entity.DbContext
     {
-        public EntityFrameworkContext(ConnectionString connectionString)
+        private readonly IUserInfo _userInfo;
+
+        public EntityFrameworkContext(ConnectionString connectionString, IUserInfo userInfo)
             : base(connectionString.ToString())
         {
+            _userInfo = userInfo;
+            this.Database.Connection.StateChange += Connection_StateChange;
+        }
+
+        private void Connection_StateChange(object sender, System.Data.StateChangeEventArgs e)
+        {
+            if (e.CurrentState == System.Data.ConnectionState.Open && _userInfo.IsUserRecognized)
+            {
+                using (var sqlCommand = Database.Connection.CreateCommand())
+                {
+                    sqlCommand.CommandText = MsSqlUtility.SetUserContextInfoQuery(_userInfo);
+                    sqlCommand.ExecuteNonQuery();
+                }
+            }
         }
 
         protected override void OnModelCreating(System.Data.Entity.DbModelBuilder modelBuilder)
@@ -140,9 +156,9 @@ namespace Rhetos.Dom.DefaultConcepts
     public class ExecutionContext
     {
         protected Lazy<Rhetos.Persistence.IPersistenceTransaction> _persistenceTransaction;
-        public NHibernate.ISession NHibernateSession { get { return ((Rhetos.Persistence.NHibernate.NHibernatePersistenceTransaction)_persistenceTransaction.Value).NHibernateSession; } }
-
         public Rhetos.Persistence.IPersistenceTransaction PersistenceTransaction { get { return _persistenceTransaction.Value; } }
+
+        public NHibernate.ISession NHibernateSession { get { return ((Rhetos.Persistence.NHibernate.NHibernatePersistenceTransaction)_persistenceTransaction.Value).NHibernateSession; } }
 
         protected Lazy<Rhetos.Utilities.IUserInfo> _userInfo;
         public Rhetos.Utilities.IUserInfo UserInfo { get { return _userInfo.Value; } }

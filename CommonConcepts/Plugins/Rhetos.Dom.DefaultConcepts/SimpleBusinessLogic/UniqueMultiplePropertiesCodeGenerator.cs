@@ -66,8 +66,7 @@ namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
                     INNER JOIN (SELECT {2} FROM {6}.{7} GROUP BY {2} HAVING COUNT(*) > 1) doubles
                         ON {3}"";
 
-                var nhSqlQuery = _executionContext.NHibernateSession.CreateSQLQuery(sql).AddEntity(typeof({0}.{1}));
-                var invalidItems = nhSqlQuery.List<{0}.{1}>();
+                var invalidItems = _executionContext.EntityFrameworkContext.Database.SqlQuery<{0}.{1}>(sql).ToList();
 
                 IEnumerable<Guid> changesItems = inserted.Select(item => item.ID).Union(updated.Select(item => item.ID));
                 var changesItemsSet = new HashSet<Guid>(changesItems);

@@ -38,24 +38,8 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (LazyLoadBaseInfo)conceptInfo;
 
-            var getterSnippet = string.Format(
-                @"if (_context != null)
-                    return ID == null ? null : _context.Repository.{0}.{1}.Query().Where(item => item.ID == ID).SingleOrDefault();
-                ",
-                info.Extends.Base.Module.Name,
-                info.Extends.Base.Name);
-
-            codeBuilder.InsertCode(getterSnippet, DataStructureQueryableCodeGenerator.PropertyGetterTag(info.Extends.Extension, "Base"));
-
-            var setterSnippet =
-                @"if (value != null)
-                    ID = value.ID;
-                else
-                    ID = default(Guid);
-				return;
-                ";
-
-            codeBuilder.InsertCode(setterSnippet, DataStructureQueryableCodeGenerator.PropertySetterTag(info.Extends.Extension, "Base"));
+            codeBuilder.InsertCode("get; set;", DataStructureQueryableCodeGenerator.GetterSetterTag(info.Extends.Extension, "Base"));
+            codeBuilder.InsertCode("//", DataStructureQueryableCodeGenerator.EnableLazyLoadTag(info.Extends.Extension, "Base"));
         }
     }
 }

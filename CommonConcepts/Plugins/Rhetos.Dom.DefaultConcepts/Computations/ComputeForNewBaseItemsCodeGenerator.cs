@@ -67,10 +67,6 @@ namespace Rhetos.Dom.DefaultConcepts
                 IEnumerable<{0}.{1}> changedItems = inserted;
                 var filter = _filterComputeForNewBaseItems_{2}(changedItems);
                 _domRepository.{3}.{4}.{6}(filter{5});
-
-                // Workaround to restore NH proxies after using NHSession.Clear() when saving data in Recompute().
-                for (int i=0; i<inserted.Length; i++) inserted[i] = _executionContext.NHibernateSession.Load<{0}.{1}>(inserted[i].ID);
-                for (int i=0; i<updated.Length; i++) updated[i] = _executionContext.NHibernateSession.Load<{0}.{1}>(updated[i].ID);
             }}
 ",
                 hookOnSave.Module.Name,

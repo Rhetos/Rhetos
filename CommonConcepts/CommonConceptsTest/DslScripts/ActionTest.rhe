@@ -18,8 +18,8 @@ Module TestAction
     "
         SELECT
             ID,
-            ContainsA = CASE WHEN Name LIKE '%A%' THEN 1 ELSE 0 END
-        FROM 
+            ContainsA = CASE WHEN Name LIKE '%A%' THEN CONVERT(BIT, 1) ELSE CONVERT(BIT, 0) END
+        FROM
             TestAction.Simple
     "
     {

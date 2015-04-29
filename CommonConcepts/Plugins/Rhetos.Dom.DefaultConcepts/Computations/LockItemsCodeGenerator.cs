@@ -47,17 +47,13 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string CheckLockedItemsSnippet(LockItemsInfo info)
         {
             return string.Format(
-@"            if (updated.Length > 0 || deleted.Length > 0)
+@"            if (updatedNew.Count() > 0 || deletedIds.Count() > 0)
             {{
                 {0}[] changedItems = updated.Concat(deleted).ToArray();
 
                 var lockedItems = _domRepository.{0}.Filter(QueryPersisted(changedItems), new {1}());
                 if (lockedItems.Count() > 0)
                     throw new Rhetos.UserException({2}, ""DataStructure:{0},ID:"" + lockedItems.First().ID.ToString(){3});
-
-                // Workaround to restore NH proxies if NHSession.Clear() is called inside filter.
-                for (int i=0; i<updated.Length; i++) updated[i] = _executionContext.NHibernateSession.Load<{0}>(updated[i].ID);
-                for (int i=0; i<deleted.Length; i++) deleted[i] = _executionContext.NHibernateSession.Load<{0}>(deleted[i].ID);
             }}
 ",
                 info.Source.GetKeyProperties(),

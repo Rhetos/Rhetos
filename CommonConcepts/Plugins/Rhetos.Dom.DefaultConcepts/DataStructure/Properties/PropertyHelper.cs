@@ -46,20 +46,25 @@ namespace Rhetos.Dom.DefaultConcepts
         [Obsolete("Use the GenerateCodeForType function without the 'serializable' argument. All regular properties are serializable.")]
         public static void GenerateCodeForType(PropertyInfo info, ICodeBuilder codeBuilder, string propertyType, bool serializable)
         {
-            codeBuilder.InsertCode(PropertySnippet(info, propertyType), DataStructureCodeGenerator.BodyTag, info.DataStructure);
-            if (serializable)
-                codeBuilder.InsertCode("[DataMember]", AttributeTag, info);
-
-            if (DslUtility.IsQueryable(info.DataStructure))
-                if (info.Name != "ID")
-                    codeBuilder.InsertCode(
-                        string.Format(",\r\n                {0} = item.{0}", info.Name),
-                        RepositoryHelper.QueryLoadedAssignPropertyTag, info.DataStructure);
+            if (!serializable)
+                throw new FrameworkException("All regular properties should be serializable.");
         }
 
         public static void GenerateCodeForType(PropertyInfo info, ICodeBuilder codeBuilder, string propertyType)
         {
-            GenerateCodeForType(info, codeBuilder, propertyType, true);
+            codeBuilder.InsertCode(PropertySnippet(info, propertyType), DataStructureCodeGenerator.BodyTag, info.DataStructure);
+            codeBuilder.InsertCode("[DataMember]", AttributeTag, info);
+
+            if (DslUtility.IsQueryable(info.DataStructure))
+                if (info.Name != "ID")
+                {
+                    codeBuilder.InsertCode(
+                        string.Format("\r\n                q.{0} = item.{0};", info.Name),
+                        RepositoryHelper.QueryLoadedAssignPropertyTag, info.DataStructure);
+                    codeBuilder.InsertCode(
+                        string.Format(",\r\n                {0} = item.{0}", info.Name),
+                        RepositoryHelper.LoadQueryAssignPropertyTag, info.DataStructure);
+                }
         }
     }
 }

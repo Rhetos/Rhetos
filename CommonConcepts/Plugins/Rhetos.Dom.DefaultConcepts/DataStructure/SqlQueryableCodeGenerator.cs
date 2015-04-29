@@ -38,8 +38,7 @@ namespace Rhetos.Dom.DefaultConcepts.DataStructure
             var info = (SqlQueryableInfo) conceptInfo;
 
             codeBuilder.InsertCode(
-@"            _executionContext.NHibernateSession.Flush();
-            _executionContext.PersistenceTransaction.ClearCache();
+@"            _executionContext.PersistenceTransaction.ClearCache();
 ", RepositoryHelper.BeforeQueryTag, info);
         }
     }

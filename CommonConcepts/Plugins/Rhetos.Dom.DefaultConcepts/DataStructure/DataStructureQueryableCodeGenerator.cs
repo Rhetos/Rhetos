@@ -43,18 +43,20 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string SnippetQueryableClass(DataStructureInfo info)
         {
             return string.Format(
-    @"{0}
-    public class {1}_{2} : global::{1}.{2}{3}
+    AttributesTag.Evaluate(info) + @"
+    public class {0}_{1} : global::{0}.{1}, System.IEquatable<{0}_{1}>" + InterfaceTag.Evaluate(info) + @"
     {{
-        {4}
+        " + MembersTag.Evaluate(info) + @"
+
+        public bool Equals({0}_{1} other)
+        {{
+            return other != null && other.ID == ID;
+        }}
     }}
 
     ",
-            AttributesTag.Evaluate(info),
             info.Module.Name,
-            info.Name,
-            InterfaceTag.Evaluate(info),
-            MembersTag.Evaluate(info));
+            info.Name);
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
@@ -72,15 +74,15 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         /// <param name="csPropertyName">The csPropertyName argument refers to a C# class property, not the PropertyInfo concept.</param>
-        public static string PropertyGetterTag(DataStructureInfo dataStructure, string csPropertyName)
+        public static string EnableLazyLoadTag(DataStructureInfo dataStructure, string csPropertyName)
         {
-            return string.Format("/*DataStructureQueryable Getter {0}.{1}.{2}*/", dataStructure.Module.Name, dataStructure.Name, csPropertyName);
+            return string.Format("/*DataStructureQueryable EnableLazyLoad {0}.{1}.{2}*/", dataStructure.Module.Name, dataStructure.Name, csPropertyName);
         }
 
         /// <param name="csPropertyName">The csPropertyName argument refers to a C# class property, not the PropertyInfo concept.</param>
-        public static string PropertySetterTag(DataStructureInfo dataStructure, string csPropertyName)
+        public static string GetterSetterTag(DataStructureInfo dataStructure, string csPropertyName)
         {
-            return string.Format("/*DataStructureQueryable Setter {0}.{1}.{2}*/", dataStructure.Module.Name, dataStructure.Name, csPropertyName);
+            return string.Format("/*DataStructureQueryable GetterSetter {0}.{1}.{2}*/", dataStructure.Module.Name, dataStructure.Name, csPropertyName);
         }
 
         /// <param name="csPropertyName">
@@ -104,16 +106,9 @@ namespace Rhetos.Dom.DefaultConcepts
         @"{2}
         public virtual {1} {0}
         {{
-            get
-            {{
-                {5}
-                {3}
-            }}
-            set
-            {{
-                {6}
-                {4}
-            }}
+            {5}
+            {6}get {{ {3} }}
+            {6}set {{ {4} }}
         }}
 
         ",
@@ -122,8 +117,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 PropertyAttributeTag(dataStructure, csPropertyName),
                 getter,
                 setter,
-                PropertyGetterTag(dataStructure, csPropertyName),
-                PropertySetterTag(dataStructure, csPropertyName)); // {6}
+                GetterSetterTag(dataStructure, csPropertyName),
+                EnableLazyLoadTag(dataStructure, csPropertyName));
 
             codeBuilder.InsertCode(propertySnippet, DataStructureQueryableCodeGenerator.MembersTag, dataStructure);
         }

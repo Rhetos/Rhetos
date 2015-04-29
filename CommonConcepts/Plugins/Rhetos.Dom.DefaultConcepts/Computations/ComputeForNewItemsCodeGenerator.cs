@@ -62,9 +62,6 @@ namespace Rhetos.Dom.DefaultConcepts
             {{
                 var filter = inserted.Select(item => item.ID).ToArray();
                 {4}(filter{3});
-
-                // Workaround to restore NH proxies after using NHSession.Clear() when saving data in Recompute().
-                for (int i=0; i<inserted.Length; i++) inserted[i] = _executionContext.NHibernateSession.Load<{0}.{1}>(inserted[i].ID);
             }}
 ",
                 hookOnSave.Module.Name,

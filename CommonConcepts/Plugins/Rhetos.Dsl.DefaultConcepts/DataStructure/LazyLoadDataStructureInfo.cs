@@ -50,6 +50,8 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var newConcepts = new List<IConceptInfo>();
 
+            newConcepts.Add(new LazyLoadSupportInfo { DataStructure = conceptInfo.DataStructure });
+
             newConcepts.AddRange(existingConcepts.FindByReference<ReferencePropertyInfo>(rp => rp.DataStructure, conceptInfo.DataStructure)
                 .Where(rp => DslUtility.IsQueryable(rp.DataStructure) && DslUtility.IsQueryable(rp.Referenced))
                 .Select(rp => new LazyLoadReferenceInfo { Reference = rp }));

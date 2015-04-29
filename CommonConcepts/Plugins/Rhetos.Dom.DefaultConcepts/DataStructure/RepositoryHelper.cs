@@ -35,7 +35,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<DataStructureInfo> RepositoryInterfaces = new CsTag<DataStructureInfo>("RepositoryInterface", TagType.Appendable, ",\r\n        {0}");
         public static readonly CsTag<DataStructureInfo> RepositoryMembers = "RepositoryMembers";
         public static readonly CsTag<DataStructureInfo> QueryLoadedAssignPropertyTag = "QueryLoadedAssignProperty";
-        public static readonly CsTag<DataStructureInfo> QueryLoadedConstructorTag = "QueryLoadedConstructor";
+        public static readonly CsTag<DataStructureInfo> LoadQueryAssignPropertyTag = "LoadQueryAssignProperty";
 
         private static string RepositorySnippet(DataStructureInfo info)
         {
@@ -92,12 +92,14 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format(
 @"        public IEnumerable<{0}> Load(object parameter, Type parameterType)
         {{
-            throw new NotImplementedException(""Use any of Load or Filter functions, or use GenericRepository class instead."");
+            var items = _executionContext.GenericRepository(""{0}"").Load(parameter, parameterType);
+            return (IEnumerable<{0}>)items;
         }}
 
         public IEnumerable<{0}> Read(object parameter, Type parameterType, bool preferQuery)
         {{
-            throw new NotImplementedException(""Use any of Query, Load or Filter functions, or use GenericRepository class instead."");
+            var items = _executionContext.GenericRepository(""{0}"").Read(parameter, parameterType, preferQuery);
+            return (IEnumerable<{0}>)items;
         }}
 
         public global::{0}[] All()
@@ -137,9 +139,13 @@ namespace Rhetos.Dom.DefaultConcepts
             {3}
         }}
 
+        // LINQ to Entity does not support Query() method in subqueries.
+        public IQueryable<Common.Queryable.{0}_{1}> Subquery {{ get {{ return Query(); }} }}
+
         public IQueryable<Common.Queryable.{0}_{1}> Query(object parameter, Type parameterType)
         {{
-            throw new NotImplementedException(""Use the Query() function, or use GenericRepository class instead."");
+            var query = _executionContext.GenericRepository(""{0}.{1}"").Query(parameter, parameterType);
+            return (IQueryable<Common.Queryable.{0}_{1}>)query;
         }}
 
 ",
@@ -160,36 +166,73 @@ namespace Rhetos.Dom.DefaultConcepts
             GenerateReadableRepositoryFunctions(info, codeBuilder, "return Query().ToArray();\r\n            ");
             codeBuilder.InsertCode(RepositoryQueryFunctionsSnippet(info, queryFunctionBody), RepositoryMembers, info);
             codeBuilder.InsertCode("IQueryableRepository<Common.Queryable." + info.Module.Name + "_" + info.Name + ">", RepositoryInterfaces, info);
-            codeBuilder.InsertCode(SnippetQueryList(info), RepositoryMembers, info);
+            codeBuilder.InsertCode(SnippetQueryListConversion(info), RepositoryMembers, info);
+            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.Graph));
         }
 
-        private static string SnippetQueryList(DataStructureInfo info)
+        private static string SnippetQueryListConversion(DataStructureInfo info)
         {
+            string queryableConstruction = (info is IOrmDataStructure)
+                ? "_executionContext.EntityFrameworkContext.{0}_{1}.Create()"
+                : "new Common.Queryable.{0}_{1}()";
+
             string filterByIds = (info is BrowseDataStructureInfo || info is IOrmDataStructure)
                 ? "Filter(Query(), ids)"
                 : "Query().Where(item => ids.Contains(item.ID))";
 
+            string mapNavigationProperties = (info is IOrmDataStructure)
+                ? "_executionContext.EntityFrameworkContext.{0}_{1}.Attach(q);\r\n                "
+                : "";
+
             return string.Format(
 @"        public IQueryable<Common.Queryable.{0}_{1}> QueryLoaded(IEnumerable<{0}.{1}> items)
         {{
-            return items.Select(item => new Common.Queryable.{0}_{1}{4}
+            return items.Select(item =>
             {{
-                ID = item.ID{2}
+                var q = " + queryableConstruction + @";
+                q.ID = item.ID;" + QueryLoadedAssignPropertyTag.Evaluate(info) + @"
+                " + mapNavigationProperties + @"return q;
             }}).AsQueryable();
         }}
 
         public IQueryable<Common.Queryable.{0}_{1}> QueryPersisted(IEnumerable<{0}.{1}> items)
         {{
             var ids = items.Select(item => item.ID).ToList();
-            return {3};
+            return " + filterByIds + @";
+        }}
+
+        public IEnumerable<{0}.{1}> Items(IEnumerable<Common.Queryable.{0}_{1}> items)
+        {{
+            var query = items as IQueryable<Common.Queryable.{0}_{1}>;
+            if (query != null)
+                return Items(query); // The IQueryable.Select(Expression<>) function allows ORM optimizations over IEnumerable.Select(Func<>).
+
+            return items.Select(item => new {0}.{1}
+            {{
+                ID = item.ID" + LoadQueryAssignPropertyTag.Evaluate(info) + @"
+            }});
+        }}
+        
+        public IQueryable<{0}.{1}> Items(IQueryable<Common.Queryable.{0}_{1}> query)
+        {{
+            return query.Select(item => new {0}.{1}
+            {{
+                ID = item.ID" + LoadQueryAssignPropertyTag.Evaluate(info) + @"
+            }});
+        }}
+
+        public List<Common.Queryable.{0}_{1}> LoadPersistedWithReferences(IEnumerable<{0}.{1}> items)
+        {{
+            var ids = items.Select(item => item.ID).ToList();
+            var query = " + filterByIds + @";
+            var loaded = query.ToList();
+            Rhetos.Utilities.Graph.SortByGivenOrder(loaded, ids, item => item.ID);
+            return loaded;
         }}
 
 ",
             info.Module.Name,
-            info.Name,
-            QueryLoadedAssignPropertyTag.Evaluate(info),
-            filterByIds,
-            QueryLoadedConstructorTag.Evaluate(info)); // {4}
+            info.Name);
         }
     }
 }

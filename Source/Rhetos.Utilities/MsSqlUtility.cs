@@ -18,6 +18,8 @@
 */
 
 using System;
+using System.Data.Entity.Core;
+using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -56,20 +58,25 @@ namespace Rhetos.Utilities
         /// </summary>
         public static Exception ProcessSqlException(Exception ex)
         {
-            if (ex == null || !(ex is SqlException))
+            if (ex == null)
+                return null;
+            if (ex is DbUpdateException)
+                return ProcessSqlException(ex.InnerException);
+            if (ex is UpdateException)
+                return ProcessSqlException(ex.InnerException);
+            if (!(ex is SqlException))
                 return null;
 
             var sqlException = (SqlException)ex;
-
             SqlError[] errorArray = new SqlError[sqlException.Errors.Count];
             sqlException.Errors.CopyTo(errorArray, 0);
             var errors = from e in errorArray
                          orderby e.LineNumber
                          select e;
+
             foreach (var err in errors)
                 if (err.State == 101) // Rhetos convention for an error raised in SQL that is intended as a message to the end user.
                     return new UserException(err.Message, ex);
-
             return sqlException;
         }
 

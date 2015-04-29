@@ -37,7 +37,7 @@ namespace CommonConcepts.Test
         {
             start = new DateTime(start.Year, start.Month, start.Day, start.Hour, start.Minute, start.Second); // ORM may trim milliseconds.
 
-            container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+            container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
             var repository = container.Resolve<Common.DomRepository>();
             DateTime? generatedCreationTime = repository.TestAuditable.Simple.All().Single().Started;
             Assert.IsNotNull(generatedCreationTime, "Generated CreationTime is null.");
@@ -57,7 +57,6 @@ namespace CommonConcepts.Test
 
                 var start = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
                 repository.TestAuditable.Simple.Insert(new[] { new TestAuditable.Simple { Name = "app" } });
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
                 var finish = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
                 CheckCreatedDate(container, start, finish);
@@ -74,7 +73,6 @@ namespace CommonConcepts.Test
 
                 var explicitDateTime = new DateTime(2001, 2, 3, 4, 5, 6);
                 repository.TestAuditable.Simple.Insert(new[] { new TestAuditable.Simple { Name = "exp", Started = explicitDateTime } });
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
 
                 CheckCreatedDate(container, explicitDateTime, explicitDateTime);
             }
@@ -129,8 +127,7 @@ namespace CommonConcepts.Test
                     var start = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
                     repository.TestAuditable.Simple.Insert(new[] { ReadInstance(insertData) });
 
-                    container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
-                    container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                    container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
                     DateTime? generatedModificationTime = propertySelector(repository.TestAuditable.Simple.All().Single());
                     Assert.IsNotNull(generatedModificationTime, testInfo + " Insert: Generated ModificationTime is null.");
 
@@ -145,8 +142,7 @@ namespace CommonConcepts.Test
                     var start = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
                     repository.TestAuditable.Simple.Update(new[] { ReadInstance(updateData) });
 
-                    container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
-                    container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                    container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
                     DateTime? generatedModificationTime = propertySelector(repository.TestAuditable.Simple.All().Single());
                     Assert.IsNotNull(generatedModificationTime, testInfo + " Update: Generated ModificationTime is null.");
 

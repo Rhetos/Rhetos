@@ -59,7 +59,7 @@ namespace CommonConcepts.Test
                 {
                     Console.WriteLine(ex.GetType().Name + ": " + ex.Message);
                     error = ex.Message;
-                    _executionContext.NHibernateSession.Clear();
+                    _executionContext.PersistenceTransaction.ClearCache();
                 }
                 Assert.IsNotNull(error, "Insert should have failed with an exception.");
             }
@@ -80,7 +80,7 @@ namespace CommonConcepts.Test
                 {
                     Console.WriteLine(ex.GetType().Name + ": " + ex.Message);
                     error = ex.Message;
-                    _executionContext.NHibernateSession.Clear();
+                    _executionContext.PersistenceTransaction.ClearCache();
                 }
                 Assert.IsNotNull(error, "Update should have failed with an exception.");
             }

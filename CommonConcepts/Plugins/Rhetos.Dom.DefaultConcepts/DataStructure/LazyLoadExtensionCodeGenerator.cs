@@ -40,14 +40,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
             string csPropertyName = DataStructureExtendsCodeGenerator.ExtensionPropertyName(info.Extends);
 
-            var getterSnippet = string.Format(
-                @"if (_context != null)
-                    return ID == null ? null : _context.Repository.{0}.{1}.Query().Where(item => item.ID == ID).SingleOrDefault();
-                ",
-                info.Extends.Extension.Module.Name,
-                info.Extends.Extension.Name);
-
-            codeBuilder.InsertCode(getterSnippet, DataStructureQueryableCodeGenerator.PropertyGetterTag(info.Extends.Base, csPropertyName));
+            codeBuilder.InsertCode("get; set;", DataStructureQueryableCodeGenerator.GetterSetterTag(info.Extends.Base, csPropertyName));
+            codeBuilder.InsertCode("//", DataStructureQueryableCodeGenerator.EnableLazyLoadTag(info.Extends.Base, csPropertyName));
         }
     }
 }

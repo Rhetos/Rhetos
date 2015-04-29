@@ -88,7 +88,7 @@ namespace Rhetos.Deployment.Test
             public List<string> DroppedTables = new List<string>();
             public List<string> DroppedSchemas = new List<string>();
 
-            public void ExecuteSql(System.Collections.Generic.IEnumerable<string> commands)
+            public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
             {
                 foreach (var command in commands)
                 {
@@ -117,11 +117,6 @@ namespace Rhetos.Deployment.Test
 
                     throw new Exception("Unexpected SQL command in MockSqlExecuter.");
                 }
-            }
-
-            public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
-            {
-                ExecuteSql(commands);
             }
         }
 

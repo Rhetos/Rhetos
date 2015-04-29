@@ -21,6 +21,7 @@ using Rhetos.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Text;
@@ -103,8 +104,10 @@ namespace Rhetos.Persistence
             if (_disposed)
                 throw new FrameworkException("Trying to clear cache on a disposed persistence transaction.");
 
+            _dbContext.Configuration.AutoDetectChangesEnabled = false;
             foreach (var item in _dbContext.ChangeTracker.Entries().ToList())
                 ((IObjectContextAdapter)_dbContext).ObjectContext.Detach(item.Entity);
+            _dbContext.Configuration.AutoDetectChangesEnabled = true;
         }
 
         public void ClearCache(object item)
@@ -112,7 +115,16 @@ namespace Rhetos.Persistence
             if (_disposed)
                 throw new FrameworkException("Trying to clear an item from the cache on a disposed persistence transaction.");
 
-            ((IObjectContextAdapter)_dbContext).ObjectContext.Detach(item);
+            var objectContext = ((IObjectContextAdapter)_dbContext).ObjectContext;
+            ObjectStateEntry stateEntry;
+            bool isCached = objectContext.ObjectStateManager.TryGetObjectStateEntry(item, out stateEntry);
+
+            if (isCached)
+            {
+                _dbContext.Configuration.AutoDetectChangesEnabled = false;
+                objectContext.Detach(item);
+                _dbContext.Configuration.AutoDetectChangesEnabled = true;
+            }
         }
     }
 }

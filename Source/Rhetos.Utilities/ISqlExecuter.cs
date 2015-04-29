@@ -27,8 +27,26 @@ namespace Rhetos.Utilities
     public interface ISqlExecuter
     {
         void ExecuteReader(string command, Action<DbDataReader> action);
-        void ExecuteSql(IEnumerable<string> commands);
         void ExecuteSql(IEnumerable<string> commands, bool useTransaction);
+    }
+
+    public static class SqlExecuterExtensions
+    {
+        /// <summary>
+        /// Executes the SQL queries in a transaction.
+        /// </summary>
+        public static void ExecuteSql(this ISqlExecuter sqlExecuter, params string[] commands)
+        {
+            sqlExecuter.ExecuteSql(commands, useTransaction: true);
+        }
+
+        /// <summary>
+        /// Executes the SQL queries in a transaction.
+        /// </summary>
+        public static void ExecuteSql(this ISqlExecuter sqlExecuter, IEnumerable<string> commands)
+        {
+            sqlExecuter.ExecuteSql(commands, useTransaction: true);
+        }
     }
 
     public class NullSqlExecuter : ISqlExecuter
@@ -36,15 +54,6 @@ namespace Rhetos.Utilities
         const string message = "SQL executer in not avaliable.";
 
         public void ExecuteReader(string command, Action<DbDataReader> action)
-        {
-            throw new FrameworkException(message);
-        }
-
-        /// <summary>
-        /// Executes the SQL queries in a transaction.
-        /// </summary>
-        /// <param name="commands"></param>
-        public void ExecuteSql(IEnumerable<string> commands)
         {
             throw new FrameworkException(message);
         }

@@ -35,19 +35,26 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.DependsOn, typeof(OrmDataStructureCodeGenerator))]
     public class WriteCodeGenerator : IConceptCodeGenerator
     {
+        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        {
+            var info = (WriteInfo)conceptInfo;
+
+            codeBuilder.InsertCode("IWritableRepository<" + info.DataStructure.Module.Name + "." + info.DataStructure.Name + ">", RepositoryHelper.RepositoryInterfaces, info.DataStructure);
+            codeBuilder.InsertCode(MemberFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info.DataStructure);
+        }
 
         protected static string MemberFunctionsSnippet(WriteInfo info)
         {
             return string.Format(
-@"        public void Save(IEnumerable<{0}> insertedNew, IEnumerable<{0}> updatedNew, IEnumerable<{0}> deletedIds, bool checkUserPermissions = false)
+@"        public void Save(IEnumerable<{0}.{1}> insertedNew, IEnumerable<{0}.{1}> updatedNew, IEnumerable<{0}.{1}> deletedIds, bool checkUserPermissions = false)
         {{
-            if (insertedNew != null && !(insertedNew is System.Collections.IList)) insertedNew = insertedNew.ToList();
-            if (updatedNew != null && !(updatedNew is System.Collections.IList)) updatedNew = updatedNew.ToList();
-            if (deletedIds != null && !(deletedIds is System.Collections.IList)) deletedIds = deletedIds.ToList();
+            Rhetos.Utilities.CsUtility.Materialize(ref insertedNew);
+            Rhetos.Utilities.CsUtility.Materialize(ref updatedNew);
+            Rhetos.Utilities.CsUtility.Materialize(ref deletedIds);
 
-            if (insertedNew == null) insertedNew = new {0}[] {{ }};
-            if (updatedNew == null) updatedNew = new {0}[] {{ }};
-            if (deletedIds == null) deletedIds = new {0}[] {{ }};
+            if (insertedNew == null) insertedNew = Enumerable.Empty<{0}.{1}>();
+            if (updatedNew == null) updatedNew = Enumerable.Empty<{0}.{1}>();
+            if (deletedIds == null) deletedIds = Enumerable.Empty<{0}.{1}>();
 
             if (insertedNew.Count() == 0 && updatedNew.Count() == 0 && deletedIds.Count() == 0)
                 return;
@@ -56,32 +63,21 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (item.ID == Guid.Empty)
                     item.ID = Guid.NewGuid();
 
-            {5}
+            " + WritableOrmDataStructureCodeGenerator.ArgumentValidationTag.Evaluate(info.DataStructure) + @"
+
+            " + WritableOrmDataStructureCodeGenerator.InitializationTag.Evaluate(info.DataStructure) + @"
 
             {2}
 
-            {1}
+            " + WritableOrmDataStructureCodeGenerator.OnSaveTag1.Evaluate(info.DataStructure) + @"
 
-            {3}
-
-            {4}
+            " + WritableOrmDataStructureCodeGenerator.OnSaveTag2.Evaluate(info.DataStructure) + @"
         }}
 
 ",
-                info.DataStructure.GetKeyProperties(),
-                info.SaveImplementation,
-                WritableOrmDataStructureCodeGenerator.InitializationTag.Evaluate(info.DataStructure),
-                WritableOrmDataStructureCodeGenerator.OnSaveTag1.Evaluate(info.DataStructure),
-                WritableOrmDataStructureCodeGenerator.OnSaveTag2.Evaluate(info.DataStructure),
-                WritableOrmDataStructureCodeGenerator.ArgumentValidationTag.Evaluate(info.DataStructure));
-        }
-
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
-        {
-            var info = (WriteInfo)conceptInfo;
-
-            codeBuilder.InsertCode("IWritableRepository<" + info.DataStructure.Module.Name + "." + info.DataStructure.Name + ">", RepositoryHelper.RepositoryInterfaces, info.DataStructure);
-            codeBuilder.InsertCode(MemberFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info.DataStructure);
+                info.DataStructure.Module.Name,
+                info.DataStructure.Name,
+                info.SaveImplementation);
         }
     }
 }

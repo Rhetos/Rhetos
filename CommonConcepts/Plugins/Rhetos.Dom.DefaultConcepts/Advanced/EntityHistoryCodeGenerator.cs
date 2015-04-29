@@ -54,12 +54,9 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format(
 @"        public global::{0}.{1}[] Filter(System.DateTime parameter)
         {{
-            var sql = ""SELECT * FROM {2}.{3}(:dateTime)"";
-            var result = _executionContext.NHibernateSession.CreateSQLQuery(sql)
-                .AddEntity(typeof({0}.{1}))
-                .SetTimestamp(""dateTime"", parameter)
-                .List<{0}.{1}>();
-            return result.ToArray();
+            var sql = ""SELECT * FROM {2}.{3}(@p0)"";
+            var query = _executionContext.EntityFrameworkContext.Database.SqlQuery<{0}.{1}>(sql, parameter);
+            return query.ToArray();
         }}
 
 ",
@@ -112,10 +109,6 @@ namespace Rhetos.Dom.DefaultConcepts
 							    EntityID = olditem.ID{2}
 						    }}).ToArray());
 			    }}
-
-                // Workaround to restore NH proxies if NHSession.Clear() is called inside filter.
-                for (int i=0; i<updated.Length; i++) updated[i] = _executionContext.NHibernateSession.Load<{0}.{1}>(updated[i].ID);
-                for (int i=0; i<deleted.Length; i++) deleted[i] = _executionContext.NHibernateSession.Load<{0}.{1}>(deleted[i].ID);
             }}
 
 ",

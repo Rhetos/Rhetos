@@ -48,6 +48,7 @@ namespace Rhetos.Dom.DefaultConcepts
         #region Types
 
         private Type _entityType = null;
+
         public Type EntityType
         {
             get
@@ -68,7 +69,26 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
+        private Type _entityNavigationType = null;
+
+        public Type EntityNavigationType
+        {
+            get
+            {
+                if (_entityNavigationType == null)
+                {
+                    string entityQueryableName = "Common.Queryable." + _entityName.Replace(".", "_");
+                    _entityNavigationType = _domainObjectModel.Assembly.GetType(entityQueryableName);
+
+                    if (_entityNavigationType == null)
+                        _entityNavigationType = EntityType;
+                }
+                return _entityNavigationType;
+            }
+        }
+
         private Type _enumerableType = null;
+
         public Type EnumerableType
         {
             get
@@ -79,7 +99,20 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
+        private Type _enumerableNavigationType = null;
+
+        public Type EnumerableNavigationType
+        {
+            get
+            {
+                if (_enumerableNavigationType == null)
+                    _enumerableNavigationType = typeof(IEnumerable<>).MakeGenericType(new[] { EntityNavigationType });
+                return _enumerableNavigationType;
+            }
+        }
+
         private Type _listType = null;
+
         public Type ListType
         {
             get
@@ -90,29 +123,32 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
+        private Type _arrayType = null;
+
+        public Type ArrayType
+        {
+            get
+            {
+                if (_arrayType == null)
+                    _arrayType = EntityType.MakeArrayType();
+                return _arrayType;
+            }
+        }
+
         private Type _queryableType = null;
+
         public Type QueryableType
         {
             get
             {
                 if (_queryableType == null)
-                    _queryableType = typeof(IQueryable<>).MakeGenericType(new[] { EntityType });
+                    _queryableType = typeof(IQueryable<>).MakeGenericType(new[] { EntityNavigationType });
                 return _queryableType;
             }
         }
 
-        private Type _nhQueryableType = null;
-        public Type NhQueryableType
-        {
-            get
-            {
-                if (_nhQueryableType == null)
-                    _nhQueryableType = typeof(NHibernate.Linq.NhQueryable<>).MakeGenericType(new[] { EntityType });
-                return _nhQueryableType;
-            }
-        }
-
         private Type _repositoryType = null;
+
         public Type RepositoryType
         {
             get
@@ -125,7 +161,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public bool IsPredicateExpression(Type expressionType)
         {
-            return IsPredicateExpression(expressionType, EntityType);
+            return IsPredicateExpression(expressionType, EntityNavigationType);
         }
 
         public static bool IsPredicateExpression(Type expressionType, Type acceptingArgument)
@@ -157,6 +193,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Expression&lt;Func&lt;parameter, result&gt;&gt; does not support contravariant parameter type,
         /// so a specific function type is needed for each parameter type.</param>
         private MethodInfo _queryableWhereMethod = null;
+
         public MethodInfo QueryableWhereMethod(Type parameterType)
         {
             if (_queryableWhereMethod == null)
@@ -166,6 +203,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             return _queryableWhereMethod.MakeGenericMethod(parameterType);
         }
+
         /// <param name="predicateExpression">
         /// Expression&lt;Func&lt;parameter, result&gt;&gt; does not support contravariant parameter type,
         /// so the object is used for predicateExpression.</param>
@@ -173,11 +211,12 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             Type predicateParameter = GetPredicateExpressionParameter(predicateExpression.GetType());
             MethodInfo whereMethod = QueryableWhereMethod(predicateParameter);
-            object result = whereMethod.InvokeEx(null, items, predicateExpression);
-            return (IQueryable<TEntityInterface>)result;
+            var result = (IQueryable<TEntityInterface>)whereMethod.InvokeEx(null, items, predicateExpression);
+            return CastAsEntityNavigation(result);
         }
 
         private MethodInfo _addRangeMethod = null;
+
         public MethodInfo AddRangeMethod
         {
             get
@@ -187,12 +226,14 @@ namespace Rhetos.Dom.DefaultConcepts
                 return _addRangeMethod;
             }
         }
+
         public void AddRange(IEnumerable<TEntityInterface> list, IEnumerable<TEntityInterface> items)
         {
             AddRangeMethod.InvokeEx(list, items);
         }
 
         private MethodInfo _castAsEntityMethod = null;
+
         public MethodInfo CastAsEntityMethod
         {
             get
@@ -203,12 +244,32 @@ namespace Rhetos.Dom.DefaultConcepts
                 return _castAsEntityMethod;
             }
         }
+
         public IEnumerable<TEntityInterface> CastAsEntity(IEnumerable<object> items)
         {
             return (IEnumerable<TEntityInterface>)CastAsEntityMethod.InvokeEx(null, items);
         }
 
+        private MethodInfo _castAsEntityNavigationMethod = null;
+
+        public MethodInfo CastAsEntityNavigationMethod
+        {
+            get
+            {
+                if (_castAsEntityNavigationMethod == null)
+                    _castAsEntityNavigationMethod = typeof(Queryable).GetMethod("Cast", BindingFlags.Public | BindingFlags.Static)
+                        .MakeGenericMethod(new[] { EntityNavigationType });
+                return _castAsEntityNavigationMethod;
+            }
+        }
+
+        public IQueryable<TEntityInterface> CastAsEntityNavigation(IQueryable<object> items)
+        {
+            return (IQueryable<TEntityInterface>)CastAsEntityNavigationMethod.InvokeEx(null, items);
+        }
+
         private MethodInfo _asQueryableMethod = null;
+
         public MethodInfo AsQueryableMethod
         {
             get
@@ -218,6 +279,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 return _asQueryableMethod;
             }
         }
+
         /// <summary>
         /// Casts items to the entity type before calling AsQueryable.
         /// </summary>
@@ -228,6 +290,7 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         private MethodInfo _toListOfEntityMethod = null;
+
         public MethodInfo ToListOfEntityMethod
         {
             get
@@ -238,16 +301,22 @@ namespace Rhetos.Dom.DefaultConcepts
                 return _toListOfEntityMethod;
             }
         }
+
         /// <summary>
         /// Casts items to the entity type before calling ToList.
         /// </summary>
         public IEnumerable<TEntityInterface> ToListOfEntity(IEnumerable<TEntityInterface> items)
         {
-            var castItems = CastAsEntity(items);
-            return (IEnumerable<TEntityInterface>)ToListOfEntityMethod.InvokeEx(null, castItems);
+            if (RepositoryItemsMethod != null && items.GetType().GetInterface("IEnumerable`1").GetGenericArguments()[0].FullName.StartsWith("Common.Queryable."))
+                items = (IEnumerable<TEntityInterface>)RepositoryItemsMethod.InvokeEx(_repository.Value, items);
+            else
+                items = CastAsEntity(items);
+
+            return (IEnumerable<TEntityInterface>)ToListOfEntityMethod.InvokeEx(null, items);
         }
 
         private MethodInfo _toArrayOfEntityMethod = null;
+
         public MethodInfo ToArrayOfEntityMethod
         {
             get
@@ -258,13 +327,18 @@ namespace Rhetos.Dom.DefaultConcepts
                 return _toArrayOfEntityMethod;
             }
         }
+
         /// <summary>
         /// Casts items to the entity type before calling ToArray.
         /// </summary>
         public IEnumerable<TEntityInterface> ToArrayOfEntity(IEnumerable<TEntityInterface> items)
         {
-            var castItems = CastAsEntity(items);
-            return (IEnumerable<TEntityInterface>)ToArrayOfEntityMethod.InvokeEx(null, castItems);
+            if (RepositoryItemsMethod != null && items.GetType().GetInterface("IEnumerable`1").GetGenericArguments()[0].FullName.StartsWith("Common.Queryable."))
+                items = (IEnumerable<TEntityInterface>)RepositoryItemsMethod.InvokeEx(_repository.Value, items);
+            else
+                items = CastAsEntity(items);
+
+            return (IEnumerable<TEntityInterface>)ToArrayOfEntityMethod.InvokeEx(null, items);
         }
 
         /// <summary>
@@ -272,8 +346,12 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         public void MaterializeEntityList(ref IEnumerable<TEntityInterface> items)
         {
-            if (items != null && !(items is IList))
-                items = ToListOfEntity(items);
+            if (items != null)
+            {
+                var itemsType = items.GetType();
+                if (itemsType != ArrayType && itemsType != ListType)
+                    items = ToListOfEntity(items);
+            }
         }
 
         #endregion
@@ -281,6 +359,7 @@ namespace Rhetos.Dom.DefaultConcepts
         #region Repository methods
 
         private MethodInfo _repositoryLoadMethod = null;
+
         public MethodInfo RepositoryLoadMethod
         {
             get
@@ -292,6 +371,7 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         private MethodInfo _repositoryQueryMethod = null;
+
         public MethodInfo RepositoryQueryMethod
         {
             get
@@ -303,6 +383,7 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         private Dictionary<Type, MethodInfo> _repositoryLoadWithParameterMethod = null;
+
         public MethodInfo RepositoryLoadWithParameterMethod(Type parameterType)
         {
             MethodInfo method = null;
@@ -323,6 +404,7 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         private Dictionary<Type, MethodInfo> _repositoryQueryWithParameterMethod = null;
+
         public MethodInfo RepositoryQueryWithParameterMethod(Type parameterType)
         {
             MethodInfo method = null;
@@ -343,6 +425,7 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         private Dictionary<Type, MethodInfo> _repositoryEnumerableFilterMethod = null;
+
         public MethodInfo RepositoryEnumerableFilterMethod(Type parameterType)
         {
             MethodInfo method = null;
@@ -363,6 +446,7 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         private Dictionary<Type, MethodInfo> _repositoryQueryableFilterMethod = null;
+
         /// <summary>
         /// Retrieves MethodInfo for Queryable Filter on the Entity with the specified parameterType, returns null if none exists
         /// </summary>
@@ -390,6 +474,7 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         private MethodInfo _repositorySaveMethod = null;
+
         public MethodInfo RepositorySaveMethod
         {
             get
@@ -401,6 +486,7 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         private MethodInfo _repositoryReadCommandMethod = null;
+
         public MethodInfo RepositoryReadCommandMethod
         {
             get
@@ -412,6 +498,7 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         private Dictionary<string, MethodInfo> _repositoryRecomputeFromMethod = null;
+
         public MethodInfo RepositoryRecomputeFromMethod(string sourceDataStructure)
         {
             MethodInfo method = null;
@@ -442,6 +529,18 @@ namespace Rhetos.Dom.DefaultConcepts
                 Target = new EntityInfo { Module = new ModuleInfo { Name = entityModuleName.Item1 }, Name = entityModuleName.Item2 }
             };
             return EntityComputedFromCodeGenerator.RecomputeFunctionName(computedConcept);
+        }
+
+        private MethodInfo _repositoryItemsMethod = null;
+
+        public MethodInfo RepositoryItemsMethod
+        {
+            get
+            {
+                if (_repositoryItemsMethod == null)
+                    _repositoryItemsMethod = RepositoryType.GetMethod("Items", new[] { EnumerableNavigationType });
+                return _repositoryItemsMethod;
+            }
         }
 
         #endregion

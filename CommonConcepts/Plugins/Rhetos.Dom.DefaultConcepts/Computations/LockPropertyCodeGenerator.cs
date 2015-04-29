@@ -49,7 +49,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 propertyName += "ID";
 
             return string.Format(
-@"            if (updated.Length > 0 || deleted.Length > 0)
+@"            if (updatedNew.Count() > 0 || deletedIds.Count() > 0)
             {{
                 {0}[] changedItems = updated.Zip(updatedNew, (i, j) => ({4})
                     ? i : null).Where(x => x != null).ToArray();
@@ -59,10 +59,6 @@ namespace Rhetos.Dom.DefaultConcepts
                     var lockedItems = _domRepository.{0}.Filter(QueryPersisted(changedItems), new {1}());
                     if (lockedItems.Count() > 0)
                         throw new Rhetos.UserException({2}, ""DataStructure:{0},ID:"" + lockedItems.First().ID.ToString() + "",Property:{3}"");
-
-                    // Workaround to restore NH proxies if NHSession.Clear() is called inside filter.
-                    for (int i=0; i<updated.Length; i++) updated[i] = _executionContext.NHibernateSession.Load<{0}>(updated[i].ID);
-                    for (int i=0; i<deleted.Length; i++) deleted[i] = _executionContext.NHibernateSession.Load<{0}>(deleted[i].ID);
                 }}
             }}
 ",

@@ -45,7 +45,8 @@ namespace CommonConcepts.Test
                     DELETE FROM TestAutoCode.Simple;
                     DELETE FROM TestAutoCode.DoubleAutoCode;
                     DELETE FROM TestAutoCode.DoubleAutoCodeWithGroup;
-                    DELETE FROM TestAutoCode.IntegerAutoCode;"
+                    DELETE FROM TestAutoCode.IntegerAutoCode;
+                    DELETE FROM TestAutoCode.Grouping"
                 });
         }
 
@@ -54,8 +55,7 @@ namespace CommonConcepts.Test
             Guid id = Guid.NewGuid();
             repository.TestAutoCode.Simple.Insert(new[] { new TestAutoCode.Simple { ID = id, Code = format } });
 
-            container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
-            container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+            container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
 
             string generatedCode = repository.TestAutoCode.Simple.Query().Where(item => item.ID == id).Select(item => item.Code).Single();
             Console.WriteLine(format + " => " + generatedCode);
@@ -67,8 +67,7 @@ namespace CommonConcepts.Test
             Guid id = Guid.NewGuid();
             repository.TestAutoCode.IntegerAutoCode.Insert(new[] { new TestAutoCode.IntegerAutoCode { ID = id, Code = input } });
 
-            container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
-            container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+            container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
 
             int? generatedCode = repository.TestAutoCode.IntegerAutoCode.Query().Where(item => item.ID == id).Select(item => item.Code).Single();
             Console.WriteLine(input.ToString() + " => " + generatedCode.ToString());
@@ -80,8 +79,7 @@ namespace CommonConcepts.Test
             Guid id = Guid.NewGuid();
             repository.TestAutoCode.DoubleAutoCode.Insert(new[] { new TestAutoCode.DoubleAutoCode { ID = id, CodeA = formatA, CodeB = formatB } });
 
-            container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
-            container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+            container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
 
             string generatedCodes = repository.TestAutoCode.DoubleAutoCode.Query().Where(item => item.ID == id).Select(item => item.CodeA + "," + item.CodeB).Single();
             Console.WriteLine(formatA + "," + formatB + " => " + generatedCodes);
@@ -93,8 +91,7 @@ namespace CommonConcepts.Test
             Guid id = Guid.NewGuid();
             repository.TestAutoCode.DoubleAutoCodeWithGroup.Insert(new[] { new TestAutoCode.DoubleAutoCodeWithGroup { ID = id, Grouping = group, CodeA = formatA, CodeB = formatB } });
 
-            container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
-            container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+            container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
 
             string generatedCodes = repository.TestAutoCode.DoubleAutoCodeWithGroup.Query().Where(item => item.ID == id).Select(item => item.CodeA + "," + item.CodeB).Single();
             Console.WriteLine(formatA + "," + formatB + " => " + generatedCodes);
@@ -106,8 +103,7 @@ namespace CommonConcepts.Test
             Guid id = Guid.NewGuid();
             repository.TestAutoCode.IntegerAutoCodeForEach.Insert(new[] { new TestAutoCode.IntegerAutoCodeForEach { ID = id, Grouping = group, CodeA = codeA, CodeB = codeB } });
 
-            container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
-            container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+            container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
 
             string generatedCodes = repository.TestAutoCode.IntegerAutoCodeForEach.Query().Where(item => item.ID == id).Select(item => item.CodeA.ToString() + "," + item.CodeB.ToString()).Single();
             Console.WriteLine(codeA.ToString() + "," + codeB.ToString() + " => " + generatedCodes);
@@ -245,7 +241,7 @@ namespace CommonConcepts.Test
         }
 
         private static void TestGroup<TEntity, TGroup>(
-            RhetosTestContainer container, IQueryableRepository<TEntity> entityRepository,
+            RhetosTestContainer container, IQueryableRepository<IEntity> entityRepository,
             TGroup group, string format, string expectedCode)
                 where TEntity : IEntity, new()
         {
@@ -255,13 +251,25 @@ namespace CommonConcepts.Test
             dynamic entity = new TEntity();
             entity.ID = id;
             entity.Code = format;
-            entity.Grouping = group;
+            try
+            {
+                entity.Grouping = group;
+            }
+            catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)
+            {
+                entity.GroupingID = ((dynamic)group).ID;
+            }
+            
             writeableRepository.Insert((TEntity)entity);
 
-            container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
-            container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+            container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
 
-            dynamic loaded = entityRepository.Query().Where(e => e.ID == id).Single();
+            var query = entityRepository.Query().Where(e => e.ID == id);
+            Console.WriteLine(query.GetType().FullName);
+            Console.WriteLine(query.Expression.ToString());
+            Console.WriteLine(query.ToString());
+            
+            dynamic loaded = query.Single();
             string generatedCode = loaded.Code;
 
             Console.WriteLine(format + " => " + generatedCode);
@@ -289,7 +297,6 @@ namespace CommonConcepts.Test
                 var simple1 = new TestAutoCode.Simple { ID = Guid.NewGuid(), Code = "1" };
                 var simple2 = new TestAutoCode.Simple { ID = Guid.NewGuid(), Code = "2" };
                 repository.TestAutoCode.Simple.Insert(new[] { simple1, simple2 });
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
 
                 TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(container, repository.TestAutoCode.ReferenceGroup, simple1, "+", "1");
                 TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(container, repository.TestAutoCode.ReferenceGroup, simple1, "+", "2");
@@ -299,7 +306,6 @@ namespace CommonConcepts.Test
                 var grouping1 = new TestAutoCode.Grouping { ID = Guid.NewGuid(), Code = "1" };
                 var grouping2 = new TestAutoCode.Grouping { ID = Guid.NewGuid(), Code = "2" };
                 repository.TestAutoCode.Grouping.Insert(new[] { grouping1, grouping2 });
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
 
                 TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(container, repository.TestAutoCode.ShortReferenceGroup, grouping1, "+", "1");
                 TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(container, repository.TestAutoCode.ShortReferenceGroup, grouping1, "+", "2");

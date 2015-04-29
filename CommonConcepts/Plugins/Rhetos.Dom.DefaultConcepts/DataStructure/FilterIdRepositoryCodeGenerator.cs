@@ -57,17 +57,16 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 string sqlInsertIds = string.Join(""\r\n"", ids.Skip(start).Take(chunkSize)
                     .Select(id => string.Format(sqlInsertIdFormat, SqlUtility.GuidToString(id))));
-                _executionContext.NHibernateSession.CreateSQLQuery(sqlInsertIds).ExecuteUpdate();
+                _executionContext.EntityFrameworkContext.Database.ExecuteSqlCommand(sqlInsertIds);
             }
 
             // Delete temporary data when closing the connection. The data must remain in the database until the returned query is used.
             string deleteFilterIds = ""DELETE FROM Common.FilterId WHERE Handle = "" + SqlUtility.QuoteGuid(handle);
-            var deleteFilterIdsQuery = _executionContext.NHibernateSession.CreateSQLQuery(deleteFilterIds);
             _executionContext.PersistenceTransaction.BeforeClose += () =>
                 {
                     try
                     {
-                        deleteFilterIdsQuery.ExecuteUpdate();
+                        _executionContext.EntityFrameworkContext.Database.ExecuteSqlCommand(deleteFilterIds);
                     }
                     catch
                     {

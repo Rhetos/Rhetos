@@ -35,13 +35,12 @@
 			if (parameter.Action == null)
 				throw new Rhetos.UserException("Parameter Action is required.");
 			string sql = @"INSERT INTO Common.Log (Action, TableName, ItemId, Description)
-                SELECT :action, :tableName, :itemId, :description";
-			context.NHibernateSession.CreateSQLQuery(sql)
-				.SetString("action", parameter.Action)
-				.SetString("tableName", parameter.TableName)
-				.SetParameter<Guid?>("itemId", parameter.ItemId)
-				.SetString("description", parameter.Description)
-				.UniqueResult();
+                SELECT @p0, @p1, @p2, @p3";
+			context.EntityFrameworkContext.Database.ExecuteSqlCommand(sql,
+				parameter.Action,
+				parameter.TableName,
+				parameter.ItemId,
+				parameter.Description);
 		}'
 	{
 		ShortString Action;

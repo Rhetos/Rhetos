@@ -43,11 +43,6 @@ namespace Rhetos.Utilities
             _logger = logProvider.GetLogger("OracleSqlExecuter");
         }
 
-        public void ExecuteSql(IEnumerable<string> commands)
-        {
-            ExecuteSql(commands, useTransaction: true);
-        }
-
         public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
         {
             _logger.Trace("Executing {0} commands.", commands.Count());

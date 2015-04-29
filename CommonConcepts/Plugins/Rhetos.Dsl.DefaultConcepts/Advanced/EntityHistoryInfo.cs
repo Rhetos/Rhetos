@@ -75,7 +75,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 Source = Entity,
                 Expression = String.Format(
                     @"(items, repository, parameter) => items.Where(item => 
-                                repository.{0}.{1}_Changes.Query().Where(his => his.ActiveSince >= item.ActiveSince && his.Entity == item).Count() > 0)", 
+                                repository.{0}.{1}_Changes.Subquery.Where(his => his.ActiveSince >= item.ActiveSince && his.Entity == item).Count() > 0)", 
                                 Entity.Module.Name, 
                                 Entity.Name) 
             };

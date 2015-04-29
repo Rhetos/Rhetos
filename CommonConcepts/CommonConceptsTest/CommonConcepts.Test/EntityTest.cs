@@ -70,9 +70,11 @@ namespace CommonConcepts.Test
                         "INSERT INTO TestEntity.Permission (ID, PrincipalID, ClaimID, IsAuthorized) SELECT 'B7F19BA7-C70F-46ED-BFC7-29A44DFECA9B', 'A45F7194-7288-4B25-BC77-4FCC920A1479', 'A45F7194-7288-4B25-BC77-4FCC920A1479', 1"
                     });
 
+                var q1 = repository.TestEntity.Principal.Query();
+                var q2 = repository.TestEntity.Permission.Query();
                 var loaded =
-                    from principal in repository.TestEntity.Principal.Query()
-                    from permission in repository.TestEntity.Permission.Query()
+                    from principal in q1
+                    from permission in q2
                     where principal.Name == "p1" && permission.Principal == principal && permission.IsAuthorized.Value
                     select permission.Claim.ClaimResource + "." + permission.Claim.ClaimRight;
 
@@ -105,8 +107,7 @@ namespace CommonConcepts.Test
 
                 var permission2 = repository.TestEntity.Permission.Query().Where(perm => perm.IsAuthorized == false).Single();
                 Assert.AreEqual(false, permission2.IsAuthorized);
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
-                Assert.AreEqual("p1", permission2.Principal.Name, "after NHibernateSession.Clear");
+                Assert.AreEqual("p1", permission2.Principal.Name);
             }
         }
 
@@ -146,7 +147,7 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void UpdateDelete_PersistendInstances()
+        public void UpdateDelete_PersistentInstances()
         {
             using (var container = new RhetosTestContainer())
             {
@@ -164,7 +165,7 @@ namespace CommonConcepts.Test
                 claims.Insert(newClaims);
                 Assert.AreEqual("r1-cr1, r2-cr2", ReportClaims(repository), "initial insert");
 
-                var loaded = repository.TestEntity.Claim.All();
+                var loaded = repository.TestEntity.Claim.All().OrderBy(c => c.ClaimResource).ToList();
                 Assert.AreEqual(2, loaded.Count());
 
                 loaded[1].ClaimResource = "x2";
@@ -196,13 +197,13 @@ namespace CommonConcepts.Test
 
                 var extensions = repository.TestEntity.Extension;
 
-                extensions.Delete(repository.TestEntity.Extension.Query().Where(item => item.ID == Guid.Parse("5B08EE49-3FC3-47B7-9E1D-4B162E7CFF00")));
+                extensions.Delete(repository.TestEntity.Extension.Query().Where(item => item.ID == new Guid("5B08EE49-3FC3-47B7-9E1D-4B162E7CFF00")));
                 Assert.AreEqual(0, repository.TestEntity.Extension.Query().ToList().Count());
 
-                extensions.Insert(new[] { new TestEntity.Extension { ID = Guid.Parse("0BA6DC94-C146-4E81-B80F-4F5A9D2205E5"), Title = "bbb" } });
+                extensions.Insert(new[] { new TestEntity.Extension { ID = new Guid("0BA6DC94-C146-4E81-B80F-4F5A9D2205E5"), Title = "bbb" } });
                 Assert.AreEqual(1, repository.TestEntity.Extension.Query().ToList().Count());
 
-                extensions.Update(new[] { new TestEntity.Extension { ID = Guid.Parse("0BA6DC94-C146-4E81-B80F-4F5A9D2205E5"), Title = "xxx" } });
+                extensions.Update(new[] { new TestEntity.Extension { ID = new Guid("0BA6DC94-C146-4E81-B80F-4F5A9D2205E5"), Title = "xxx" } });
                 Assert.AreEqual(1, repository.TestEntity.Extension.Query().ToList().Count());
                 Assert.AreEqual("xxx", repository.TestEntity.Extension.Query().Single().Title);
             }
@@ -211,32 +212,108 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertTransient()
         {
-            throw new NotImplementedException();
+            using (var container = new RhetosTestContainer())
+            {
+                var context = container.Resolve<Common.ExecutionContext>();
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var b = new TestEntity.BaseEntity { ID = Guid.NewGuid(), Name = "b" };
+                var c = new TestEntity.Child { Name = "c", ParentID = b.ID };
+                repository.TestEntity.BaseEntity.Insert(b);
+                repository.TestEntity.Child.Insert(c);
+
+                context.PersistenceTransaction.ClearCache();
+
+                Assert.AreNotEqual(default(Guid), c.ID);
+
+                var report = repository.TestEntity.Child.Query().Where(item => item.ID == c.ID)
+                    .Select(item => item.Name + " " + item.Parent.Name);
+                Assert.AreEqual("c b", TestUtility.DumpSorted(report));
+            }
         }
 
         [TestMethod]
         public void UpdateTransient()
         {
-            throw new NotImplementedException();
+            using (var container = new RhetosTestContainer())
+            {
+                var context = container.Resolve<Common.ExecutionContext>();
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var b = new TestEntity.BaseEntity { ID = Guid.NewGuid(), Name = "b" };
+                var c = new TestEntity.Child { Name = "c", ParentID = b.ID };
+                repository.TestEntity.BaseEntity.Insert(b);
+                repository.TestEntity.Child.Insert(c);
+
+                var c2 = new TestEntity.Child { ID = c.ID, Name = "c2", ParentID = b.ID };
+                repository.TestEntity.Child.Update(c2);
+
+                context.PersistenceTransaction.ClearCache();
+
+                var report = repository.TestEntity.Child.Query().Where(item => item.ID == c.ID)
+                    .Select(item => item.Name + " " + item.Parent.Name);
+                Assert.AreEqual("c2 b", TestUtility.DumpSorted(report));
+            }
         }
 
         [TestMethod]
         public void InsertPersistent()
         {
-            throw new NotImplementedException();
+            using (var container = new RhetosTestContainer())
+            {
+                var context = container.Resolve<Common.ExecutionContext>();
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var b = new TestEntity.BaseEntity { ID = Guid.NewGuid(), Name = "b" };
+                var c = new TestEntity.Child { Name = "c", ParentID = b.ID };
+                repository.TestEntity.BaseEntity.Insert(b);
+                repository.TestEntity.Child.Insert(c);
+
+                var c2 = repository.TestEntity.Child.Query().Where(item => item.ID == c.ID).Single();
+                c2.ID = Guid.NewGuid();
+                c2.Name = "c2";
+                repository.TestEntity.Child.Insert(c2);
+
+                context.PersistenceTransaction.ClearCache();
+
+                Assert.AreNotEqual(default(Guid), c.ID);
+                Assert.AreNotEqual(c2.ID, c.ID);
+
+                var ids = new[] { c.ID, c2.ID };
+                var report = repository.TestEntity.Child.Query().Where(item => ids.Contains(item.ID))
+                    .Select(item => item.Name + " " + item.Parent.Name);
+                Assert.AreEqual("c b, c2 b", TestUtility.DumpSorted(report));
+            }
         }
 
         [TestMethod]
         public void UpdatePersistent()
         {
-            throw new NotImplementedException();
-        }
+            using (var container = new RhetosTestContainer())
+            {
+                var context = container.Resolve<Common.ExecutionContext>();
+                var repository = container.Resolve<Common.DomRepository>();
 
-        [TestMethod]
-        public void UpdatePersistentButDontSave()
-        {
-            // Update a persistent entity (with lazy evaluation), then save another entity. The first one should not be saved.
-            throw new NotImplementedException();
+                var b = new TestEntity.BaseEntity { ID = Guid.NewGuid(), Name = "b" };
+                var c = new TestEntity.Child { Name = "c", ParentID = b.ID };
+                repository.TestEntity.BaseEntity.Insert(b);
+                repository.TestEntity.Child.Insert(c);
+
+                var b2 = repository.TestEntity.BaseEntity.Query().Where(item => item.ID == b.ID).Single();
+                b2.Name = "b2"; // Should not be saved when calling Child.Update.
+
+                var c2 = repository.TestEntity.Child.Query().Where(item => item.ID == c.ID).Single();
+                Console.WriteLine("c2.GetType().FullName: " + c2.GetType().FullName);
+                c2.Name = "c2";
+                c2.Parent.Name = "b3"; // Should not be saved when calling Child.Update.
+                repository.TestEntity.Child.Update(c2);
+
+                context.PersistenceTransaction.ClearCache();
+
+                var report = repository.TestEntity.Child.Query().Where(item => item.ID == c.ID)
+                    .Select(item => item.Name + " " + item.Parent.Name);
+                Assert.AreEqual("c2 b", TestUtility.DumpSorted(report));
+            }
         }
         
         [TestMethod]
@@ -427,7 +504,7 @@ namespace CommonConcepts.Test
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestEntity.UniqueEntity" });
                 var r = container.Resolve<Common.DomRepository>().TestEntity.UniqueEntity;
-                var nhSession = container.Resolve<Common.ExecutionContext>().NHibernateSession;
+                var persistenceTransaction = container.Resolve<Common.ExecutionContext>().PersistenceTransaction;
 
                 var ia = new TestEntity.UniqueEntity { Name = "a", ID = Guid.NewGuid() };
                 var ib = new TestEntity.UniqueEntity { Name = "b", ID = Guid.NewGuid() };
@@ -441,7 +518,7 @@ namespace CommonConcepts.Test
                 var ic2 = new TestEntity.UniqueEntity { Name = "c", ID = Guid.NewGuid() };
 
                 r.Save(new[] { ic2 }, null, new[] { ic1 });
-                nhSession.Clear();
+                persistenceTransaction.ClearCache();
                 Assert.AreEqual("a, b, c", TestUtility.DumpSorted(r.All(), item => item.Name + item.Data));
                 Guid currentCID = r.Query().Where(item => item.Name == "c").Select(item => item.ID).Single();
                 Assert.AreEqual(ic2.ID, currentCID, "new inserted item 'c'");
@@ -452,7 +529,7 @@ namespace CommonConcepts.Test
                 var ic3 = new TestEntity.UniqueEntity { Name = "c", Data = "x", ID = ic2.ID };
 
                 r.Save(new[] { ic3 }, null, new[] { ic2 });
-                nhSession.Clear();
+                persistenceTransaction.ClearCache();
                 Assert.AreEqual("a, b, cx", TestUtility.DumpSorted(r.All(), item => item.Name + item.Data));
 
                 // Renaming old 'c' and inserting new 'c'. Possible conflict on unique constraint for property Name.
@@ -461,7 +538,7 @@ namespace CommonConcepts.Test
                 var ic4 = new TestEntity.UniqueEntity { Name = "c", ID = Guid.NewGuid() };
 
                 r.Save(new[] { ic4 }, new[] { ic3 }, null);
-                nhSession.Clear();
+                persistenceTransaction.ClearCache();
                 Assert.AreEqual("a, b, c, oldcx", TestUtility.DumpSorted(r.All(), item => item.Name + item.Data));
             }
         }

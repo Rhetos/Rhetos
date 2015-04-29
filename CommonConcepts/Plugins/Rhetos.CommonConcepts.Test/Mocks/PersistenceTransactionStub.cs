@@ -27,16 +27,7 @@ namespace Rhetos.CommonConcepts.Test.Mocks
 {
     class PersistenceTransactionStub : IPersistenceTransaction
     {
-        public NHibernate.ISession NHibernateSession
-        {
-            get { return new NHibernateSessionStub(); }
-        }
-
         public void DiscardChanges()
-        {
-        }
-
-        public void Dispose()
         {
         }
 
@@ -51,6 +42,10 @@ namespace Rhetos.CommonConcepts.Test.Mocks
         }
 
         public void ClearCache(object item)
+        {
+        }
+
+        public void Dispose()
         {
         }
     }

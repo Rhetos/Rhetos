@@ -52,7 +52,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
             else if (info.Extension is IOrmDataStructure)
                 codeBuilder.InsertCode(
-                    string.Format("modelBuilder.Entity<Common.Queryable.{0}_{1}>().Ignore(t => t.Base);\r\n",
+                    string.Format("modelBuilder.Entity<Common.Queryable.{0}_{1}>().Ignore(t => t.Base);\r\n            ",
                         info.Extension.Module.Name, info.Extension.Name),
                     DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
             else if (info.Base is IOrmDataStructure)

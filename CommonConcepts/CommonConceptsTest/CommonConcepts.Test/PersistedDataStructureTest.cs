@@ -197,37 +197,37 @@ namespace CommonConcepts.Test
                 var doc1 = new Test9.Document { Name = "doc1" };
                 var doc2 = new Test9.Document { Name = "doc2" };
                 repository.Test9.Document.Insert(new[] { doc1, doc2 });
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
 
                 Assert.AreEqual(0, SimpleNumParts(repository, "doc1"), "initial");
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
 
                 var st1 = new Test9.Part { HeadID = doc1.ID, Name = "st1" };
                 repository.Test9.Part.Insert(new[] { st1 });
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
 
                 Assert.AreEqual(1, SimpleNumParts(repository, "doc1"), "after insert detail");
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
 
                 var st2 = new Test9.Part { HeadID = doc1.ID, Name = "st2" };
                 repository.Test9.Part.Insert(new[] { st2 });
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
 
                 Assert.AreEqual(2, SimpleNumParts(repository, "doc1"), "after insert detail 2");
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
 
                 st1.HeadID = doc2.ID;
                 repository.Test9.Part.Update(new[] { st1 });
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
 
                 Assert.AreEqual(1, SimpleNumParts(repository, "doc1"), "after update detail");
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
 
                 repository.Test9.Part.Delete(new[] { st2 });
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
 
                 Assert.AreEqual(0, SimpleNumParts(repository, "doc1"), "after delete detail 2");
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
             }
         }
 

@@ -157,7 +157,6 @@
     <Compile Include="SimpleBusinessLogic\BeforeActionCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ActionCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ImplementsQueryableInterfaceCodeGenerator.cs" />
-    <Compile Include="SimpleBusinessLogic\ReloadBeforeValidationsCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\DenyUserEditDataStructureCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\DenyUserEditCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\CreationTimeCodeGenerator.cs" />

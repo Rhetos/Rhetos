@@ -115,7 +115,10 @@ namespace Rhetos.Processing.DefaultCommands
                 int? totalCount = null;
 
                 if (commandInfo.ReadRecords)
-                    resultRecords = (IEntity[])genericRepository.Reflection.ToArrayOfEntity(GenericFilterHelper.SortAndPaginate(genericRepository.Reflection.AsQueryable(filtered), commandInfo));
+                {
+                    var sortedAndPaginated = GenericFilterHelper.SortAndPaginate(genericRepository.Reflection.AsQueryable(filtered), commandInfo);
+                    resultRecords = (IEntity[])genericRepository.Reflection.ToArrayOfEntity(sortedAndPaginated);
+                }
 
                 if (commandInfo.ReadTotalCount)
                     if (pagingIsUsed)

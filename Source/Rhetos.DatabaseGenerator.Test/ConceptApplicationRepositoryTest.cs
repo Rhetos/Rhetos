@@ -166,11 +166,6 @@ namespace Rhetos.DatabaseGenerator.Test
                     ca.OldCreationOrder);
             }
 
-            public void ExecuteSql(IEnumerable<string> commands)
-            {
-                throw new NotImplementedException();
-            }
-
             public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
             {
                 throw new NotImplementedException();

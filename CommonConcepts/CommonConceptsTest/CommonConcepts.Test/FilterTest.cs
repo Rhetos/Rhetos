@@ -141,7 +141,7 @@ namespace CommonConcepts.Test
                     throw new Exception(limitedLengthReport.ToString());
                 }
 
-                context.NHibernateSession.CreateSQLQuery("DELETE FROM Test10.Simple").ExecuteUpdate();
+                context.EntityFrameworkContext.Database.ExecuteSqlCommand("DELETE FROM Test10.Simple");
                 repository.Test10.Simple.Insert(new[] { new Test10.Simple { ID = commitCheckId } });
             }
 
@@ -382,7 +382,7 @@ namespace CommonConcepts.Test
                 var childNull = new TestFilter.CombinedFilters { Name = "CN", SimpleID = null };
                 repository.TestFilter.CombinedFilters.Insert(new[] { childA, childB, childNull });
 
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
 
                 Assert.AreEqual("CA PA", ReportFilteredBrowse(container, new QueryDataSourceCommandInfo
                 {
@@ -447,7 +447,7 @@ namespace CommonConcepts.Test
                 var childNull = new TestFilter.CombinedFilters { Name = "CN", SimpleID = null };
                 repository.TestFilter.CombinedFilters.Insert(new[] { childA, childB, childNull });
 
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
 
                 Assert.AreEqual("CA PA", ReportFilteredBrowse(container, new QueryDataSourceCommandInfo
                 {

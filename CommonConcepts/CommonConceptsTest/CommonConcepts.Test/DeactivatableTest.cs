@@ -55,21 +55,29 @@ namespace CommonConcepts.Test
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
+                var id4 = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestDeactivatable.BasicEnt",
                     "INSERT INTO TestDeactivatable.BasicEnt (ID, Name) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 'a')",
                     "INSERT INTO TestDeactivatable.BasicEnt (ID, Name, Active) VALUES (" + SqlUtility.QuoteGuid(id2) + ", 'b', 0)",
-                    "INSERT INTO TestDeactivatable.BasicEnt (ID, Name) VALUES (" + SqlUtility.QuoteGuid(id3) + ", 'c')"
+                    "INSERT INTO TestDeactivatable.BasicEnt (ID, Name) VALUES (" + SqlUtility.QuoteGuid(id3) + ", 'c')",
+                    "INSERT INTO TestDeactivatable.BasicEnt (ID, Name, Active) VALUES (" + SqlUtility.QuoteGuid(id4) + ", 'd', 1)",
                 });
                 var repository = container.Resolve<Common.DomRepository>();
+
+                Assert.AreEqual(
+                    "a , b False, c , d True",
+                    TestUtility.DumpSorted(repository.TestDeactivatable.BasicEnt.All(), item => item.Name + " " + item.Active));
+
                 var e1 = new BasicEnt { ID = id1, Name = "a2", Active = false };
                 var e2 = new BasicEnt { ID = id2, Name = "b2" };
                 var e3 = new BasicEnt { ID = id3, Name = "c2" };
-                repository.TestDeactivatable.BasicEnt.Update(new[] { e1, e2, e3});
+                var e4 = new BasicEnt { ID = id4, Name = "d2" };
+                repository.TestDeactivatable.BasicEnt.Update(new[] { e1, e2, e3, e4 });
 
                 var afterUpdate = repository.TestDeactivatable.BasicEnt.All();
                 Assert.AreEqual(
-                    "a2 False, b2 False, c2 True",
+                    "a2 False, b2 False, c2 True, d2 True",
                     TestUtility.DumpSorted(afterUpdate, item => item.Name + " " + item.Active));
             }
         }

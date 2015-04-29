@@ -33,15 +33,12 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string CodeSnippetDeleteChildren(ReferenceCascadeDeleteInfo info)
         {
             return string.Format(
-@"            if (deleted.Count() > 0)
+@"            if (deletedIds.Count() > 0)
             {{
-                {0}.{1}[] childItems = deleted.SelectMany(parent => _executionContext.EntityFrameworkContext.{0}_{1}.Where(child => child.{2}.ID == parent.ID).ToArray()).ToArray();
+                {0}.{1}[] childItems = deletedIds.SelectMany(parent => _executionContext.Repository.{0}.{1}.Query().Where(child => child.{2}ID == parent.ID).ToArray()).ToArray();
                 if (childItems.Count() > 0)
                 {{
                     _domRepository.{0}.{1}.Delete(childItems);
-                    // Workaround to restore NH proxies after using NHSession.Clear() when deleting the detail entity.
-                    for (int i = 0; i < updated.Length; i++) updated[i] = _executionContext.NHibernateSession.Load<{3}.{4}>(updated[i].ID);
-                    for (int i = 0; i < deleted.Length; i++) deleted[i] = _executionContext.NHibernateSession.Load<{3}.{4}>(deleted[i].ID);
                 }}
             }}
 ",

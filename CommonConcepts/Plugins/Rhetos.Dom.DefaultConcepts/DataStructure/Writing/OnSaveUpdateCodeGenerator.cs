@@ -46,8 +46,6 @@ namespace Rhetos.Dom.DefaultConcepts
 @"                {{ // {2}
                     {3}
                 }}
-                for (int i=0; i<inserted.Length; i++) inserted[i] = _executionContext.NHibernateSession.Load<{0}.{1}>(inserted[i].ID);
-                for (int i=0; i<updated.Length; i++) updated[i] = _executionContext.NHibernateSession.Load<{0}.{1}>(updated[i].ID);
 
 ",
                     info.SaveMethod.Entity.Module.Name,

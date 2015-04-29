@@ -148,7 +148,7 @@ namespace CommonConcepts.Test
                     repository.TestLockItems.Simple.Insert(new[] { s3Lock });
 
                     AssertData("s3_lock", repository);
-                    container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                    container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
                     AssertData("s3_lock", repository);
                 }
 
@@ -159,30 +159,36 @@ namespace CommonConcepts.Test
                         "Name contains lock mark");
 
                     AssertData("s3_lock", repository);
-                    container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                    container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
                     AssertData("s3_lock", repository);
                 }
             }
         }
 
         [TestMethod]
-        public void Spike_EvictContains()
+        public void Spike_ClearCache()
         {
             using (var container = new RhetosTestContainer())
             {
+                var ef = container.Resolve<Common.ExecutionContext>().EntityFrameworkContext;
+                var objectStateManager = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)ef).ObjectContext.ObjectStateManager;
+                System.Data.Entity.Core.Objects.ObjectStateEntry stateEntry;
+                
+
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
                 var repository = container.Resolve<Common.DomRepository>();
 
                 var s = new TestLockItems.Simple { ID = Guid.NewGuid(), Name = "abc" };
                 repository.TestLockItems.Simple.Insert(new[] { s });
                 AssertData("abc", repository);
-                Assert.IsFalse(container.Resolve<Common.ExecutionContext>().NHibernateSession.Contains(s));
+
+                Assert.IsFalse(objectStateManager.TryGetObjectStateEntry(s, out stateEntry));
 
                 var s2 = repository.TestLockItems.Simple.All().Single();
-                Assert.IsTrue(container.Resolve<Common.ExecutionContext>().NHibernateSession.Contains(s2));
+                Assert.IsTrue(objectStateManager.TryGetObjectStateEntry(s2, out stateEntry));
 
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Evict(s2);
-                Assert.IsFalse(container.Resolve<Common.ExecutionContext>().NHibernateSession.Contains(s2));
+                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache(s2);
+                Assert.IsFalse(objectStateManager.TryGetObjectStateEntry(s2, out stateEntry));
             }
         }
 
@@ -199,9 +205,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("abc locked", s1.Name);
                 s1.Name = "def";
 
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear(); // Same with Evict(s2)
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
-                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache(); // Same with Evict(s2)
 
                 Assert.AreEqual("def", s1.Name);
                 var s2 = repository.TestLockItems.Simple.All().Single();

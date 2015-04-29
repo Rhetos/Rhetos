@@ -39,6 +39,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<DataStructureInfo> GetHashCodeTag = "Orm GetHashCode";
         public static readonly CsTag<DataStructureInfo> EqualsBaseTag = "Orm EqualsBase";
         public static readonly CsTag<DataStructureInfo> EqualsInterfaceTag = "Orm EqualsInterface";
+        public static readonly CsTag<DataStructureInfo> EnableLazyLoadTag = new CsTag<DataStructureInfo>("Orm EnableLazyLoad", TagType.Single);
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
@@ -86,7 +87,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return other != null && other.ID == ID;
         }
 
-        bool System.IEquatable<" + info.Name + @">.Equals(" + info.Name + @" other)
+        public bool Equals(" + info.Name + @" other)
         {
             " + EqualsInterfaceTag.Evaluate(info) + @"
             return other != null && other.ID == ID;
@@ -98,8 +99,8 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string QuerySnippet(DataStructureInfo info)
         {
             return string.Format(
-                @"return _executionContext.EntityFrameworkContext.{0}_{1};",
-                info.Module.Name, info.Name);
+                @"return _executionContext.EntityFrameworkContext.{0}_{1}{2}.AsNoTracking();",
+                info.Module.Name, info.Name, EnableLazyLoadTag.Evaluate(info));
         }
 
         public static string SnippetQueryableFilterById(DataStructureInfo info)

@@ -41,7 +41,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>Inserted code can use enumerables "insertedNew", "updatedNew" and "deletedIds".</summary>
         public static readonly CsTag<DataStructureInfo> InitializationTag = "WritableOrm Initialization";
 
-        /// <summary>Arrays "updated" and "deleted" contain OLD data.
+        /// <summary>Lists "updated" and "deleted" contain OLD data.
         /// Enumerables "insertedNew", "updatedNew" and "deletedIds" contain NEW data.
         /// Sample usage: 1. Verify that locked items are not goind to be updated or deleted, 2. Cascade delete.</summary>
         public static readonly CsTag<DataStructureInfo> OldDataLoadedTag = "WritableOrm OldDataLoaded";
@@ -49,29 +49,29 @@ namespace Rhetos.Dom.DefaultConcepts
         [Obsolete]
         public static readonly CsTag<DataStructureInfo> ProcessedOldDataTag = "WritableOrm ProcessedOldData";
 
-        /// <summary> Recommended usage: Recompute items that depend on changes items.
-        /// Arrays "inserted" and "updated" contain NEW data.
-        /// Data is saved to the database (but the SQL transaction has not yet been commited) so SQL validations and computations CAN be used.</summary>
+        /// <summary>Insert code here to recompute (insert/update/delete) other entities that depend on the changes items.
+        /// Queries "inserted" and "updated" will return NEW data.
+        /// Data is already saved to the database (but the SQL transaction has not yet been commited) so SQL validations and computations can be used.</summary>
         public static readonly CsTag<DataStructureInfo> OnSaveTag1 = "WritableOrm OnSaveTag1";
 
-        /// <summary>Recommended usage: Verify that invalid items are not going to be inserted or updated.
-        /// Arrays "inserted" and "updated" contain NEW data.
-        /// Data is saved to the database (but the SQL transaction has not yet been commited) so SQL validations and computations CAN be used.</summary>
+        /// <summary>Insert code here to verify that invalid items are not going to be inserted or updated.
+        /// Queries "inserted" and "updated" will return NEW data.
+        /// Data is already saved to the database (but the SQL transaction has not yet been commited) so SQL validations and computations can be used.</summary>
         public static readonly CsTag<DataStructureInfo> OnSaveTag2 = "WritableOrm OnSaveTag2";
 
         // TODO: Remove "duplicateObjects" check after implementing NHibernate stateless session with "manual" saving.
         protected static string MemberFunctionsSnippet(DataStructureInfo info)
         {
             return string.Format(
-@"        public void Save(IEnumerable<{0}> insertedNew, IEnumerable<{0}> updatedNew, IEnumerable<{0}> deletedIds, bool checkUserPermissions = false)
+@"        public void Save(IEnumerable<{0}.{1}> insertedNew, IEnumerable<{0}.{1}> updatedNew, IEnumerable<{0}.{1}> deletedIds, bool checkUserPermissions = false)
         {{
-            if (insertedNew != null && !(insertedNew is System.Collections.IList)) insertedNew = insertedNew.ToList();
-            if (updatedNew != null && !(updatedNew is System.Collections.IList)) updatedNew = updatedNew.ToList();
-            if (deletedIds != null && !(deletedIds is System.Collections.IList)) deletedIds = deletedIds.ToList();
+            Rhetos.Utilities.CsUtility.Materialize(ref insertedNew);
+            Rhetos.Utilities.CsUtility.Materialize(ref updatedNew);
+            Rhetos.Utilities.CsUtility.Materialize(ref deletedIds);
 
-            if (insertedNew == null) insertedNew = new {0}[] {{ }};
-            if (updatedNew == null) updatedNew = new {0}[] {{ }};
-            if (deletedIds == null) deletedIds = new {0}[] {{ }};
+            if (insertedNew == null) insertedNew = Enumerable.Empty<{0}.{1}>();
+            if (updatedNew == null) updatedNew = Enumerable.Empty<{0}.{1}>();
+            if (deletedIds == null) deletedIds = Enumerable.Empty<{0}.{1}>();
 
             if (insertedNew.Count() == 0 && updatedNew.Count() == 0 && deletedIds.Count() == 0)
                 return;
@@ -100,52 +100,71 @@ namespace Rhetos.Dom.DefaultConcepts
                 }}
             }}
 
-            {6}
+            " + ArgumentValidationTag.Evaluate(info) + @"
 
-{1}
+            " + InitializationTag.Evaluate(info) + @"
 
             // Using old data:
-            {0}[] updated = updatedNew.Select(item => _executionContext.NHibernateSession.Load<{0}>(item.ID)).ToArray();
-            {0}[] deleted = deletedIds.Select(item => _executionContext.NHibernateSession.Load<{0}>(item.ID)).ToArray();
+            IEnumerable<Common.Queryable.{0}_{1}> deleted = LoadPersistedWithReferences(deletedIds).ToList();
+            IEnumerable<Common.Queryable.{0}_{1}> updated = LoadPersistedWithReferences(updatedNew).ToList();
 
-{2}
+            " + OldDataLoadedTag.Evaluate(info) + @"
 
-{3}
+            " + ProcessedOldDataTag.Evaluate(info) + @"
 
-            {0}[] inserted;
+            deleted = QueryLoaded(deletedIds);
+            updated = QueryLoaded(updatedNew);
+            IEnumerable<Common.Queryable.{0}_{1}> inserted = QueryLoaded(insertedNew);
 
             try
             {{
-                foreach (var item in deleted)
-                    _executionContext.NHibernateSession.Delete(item);
-                deleted = null;
-                _executionContext.NHibernateSession.Flush();
+                if (deletedIds.Count() > 0)
+                {{
+                    _executionContext.PersistenceTransaction.ClearCache();
+                    _executionContext.EntityFrameworkContext.Configuration.AutoDetectChangesEnabled = false;
+                    foreach (var item in deleted)
+                        _executionContext.EntityFrameworkContext.Entry(item).State = System.Data.Entity.EntityState.Deleted;
+                    _executionContext.EntityFrameworkContext.Configuration.AutoDetectChangesEnabled = true;
+                    _executionContext.EntityFrameworkContext.SaveChanges();
+                }}
 
-                updated = updatedNew.Select(item => ({0})_executionContext.NHibernateSession.Merge(item)).ToArray();
-                _executionContext.NHibernateSession.Flush();
+                if (updatedNew.Count() > 0)
+                {{
+                    _executionContext.PersistenceTransaction.ClearCache();
+                    _executionContext.EntityFrameworkContext.Configuration.AutoDetectChangesEnabled = false;
+                    foreach (var item in updated)
+                        _executionContext.EntityFrameworkContext.Entry(item).State = System.Data.Entity.EntityState.Modified;
+                    _executionContext.EntityFrameworkContext.Configuration.AutoDetectChangesEnabled = true;
+                    _executionContext.EntityFrameworkContext.SaveChanges();
+                }}
 
-                inserted = insertedNew.Select(item => ({0})_executionContext.NHibernateSession.Merge(item)).ToArray();
-                _executionContext.NHibernateSession.Flush();
+                if (insertedNew.Count() > 0)
+                {{
+                    _executionContext.PersistenceTransaction.ClearCache();
+                    _executionContext.EntityFrameworkContext.{0}_{1}.AddRange(inserted);
+                    _executionContext.EntityFrameworkContext.SaveChanges();
+                }}
 
-                // Clearing lazy object cache to ensure loading fresh data from database, in case of data modifications by triggers.
                 _executionContext.PersistenceTransaction.ClearCache();
-                for (int i=0; i<inserted.Length; i++) inserted[i] = _executionContext.NHibernateSession.Load<{0}>(inserted[i].ID);
-                for (int i=0; i<updated.Length; i++) updated[i] = _executionContext.NHibernateSession.Load<{0}>(updated[i].ID);
             }}
-            catch (NHibernate.Exceptions.GenericADOException nhException)
+            catch (System.Data.Entity.Infrastructure.DbUpdateException dbException)
             {{
-                var sqlException = Rhetos.Utilities.MsSqlUtility.ProcessSqlException(nhException.InnerException);
+                var sqlException = Rhetos.Utilities.MsSqlUtility.ProcessSqlException(dbException);
                 if (sqlException != null)
-                    throw sqlException;
+                    Rhetos.Utilities.ExceptionsUtility.Rethrow(sqlException);
                 throw;
             }}
+
+            deleted = null;
+            updated = QueryPersisted(updatedNew);
+            inserted = QueryPersisted(insertedNew);
 
             bool allEffectsCompleted = false;
             try
             {{
-{4}
+                " + OnSaveTag1.Evaluate(info) + @"
 
-{5}
+                " + OnSaveTag2.Evaluate(info) + @"
 
                 allEffectsCompleted = true;
             }}
@@ -157,13 +176,8 @@ namespace Rhetos.Dom.DefaultConcepts
         }}
 
 ",
-                info.GetKeyProperties(),
-                InitializationTag.Evaluate(info),
-                OldDataLoadedTag.Evaluate(info),
-                ProcessedOldDataTag.Evaluate(info),
-                OnSaveTag1.Evaluate(info),
-                OnSaveTag2.Evaluate(info),
-                ArgumentValidationTag.Evaluate(info));
+                info.Module.Name,
+                info.Name);
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
@@ -175,6 +189,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 codeBuilder.InsertCode("IWritableRepository<" + info.Module.Name + "." + info.Name + ">", RepositoryHelper.RepositoryInterfaces, info);
                 codeBuilder.InsertCode(MemberFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info);
                 codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.ExceptionsUtility));
+                codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.CsUtility));
             }
         }
     }

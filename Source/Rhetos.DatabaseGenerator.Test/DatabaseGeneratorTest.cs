@@ -711,11 +711,6 @@ namespace Rhetos.DatabaseGenerator.Test
                 throw new NotImplementedException();
             }
 
-            public void ExecuteSql(IEnumerable<string> commands)
-            {
-                executedScriptsWithTransaction.Add(Tuple.Create(commands.ToList(), true));
-            }
-
             public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
             {
                 executedScriptsWithTransaction.Add(Tuple.Create(commands.ToList(), useTransaction));

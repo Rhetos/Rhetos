@@ -38,26 +38,8 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (LazyLoadSupportInfo)conceptInfo;
 
-            codeBuilder.InsertCode("protected Common.ExecutionContext _context;\r\n\r\n        ", DataStructureQueryableCodeGenerator.MembersTag, info.DataStructure);
-            codeBuilder.InsertCode(SnippetQueryableConstructors(info), DataStructureQueryableCodeGenerator.MembersTag, info.DataStructure);
-            codeBuilder.InsertCode("(_executionContext)", RepositoryHelper.QueryLoadedConstructorTag, info.DataStructure);
-        }
-
-        private static string SnippetQueryableConstructors(LazyLoadSupportInfo info)
-        {
-            return string.Format(
-    @"public {0}_{1}()
-        {{
-        }}
-
-        public {0}_{1}(Common.ExecutionContext context)
-        {{
-            _context = context;
-        }}
-
-        ",
-                info.DataStructure.Module.Name,
-                info.DataStructure.Name);
+            if (info.DataStructure is IOrmDataStructure)
+                codeBuilder.InsertCode(";//", OrmDataStructureCodeGenerator.EnableLazyLoadTag, info.DataStructure);
         }
     }
 }
