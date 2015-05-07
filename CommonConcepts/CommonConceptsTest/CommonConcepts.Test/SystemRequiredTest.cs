@@ -38,8 +38,8 @@ namespace CommonConcepts.Test
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
+                        "DELETE FROM TestSystemRequired.Child",
                         "DELETE FROM TestSystemRequired.Parent",
-                        "DELETE FROM TestSystemRequired.Child"
                     });
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -80,8 +80,8 @@ namespace CommonConcepts.Test
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
+                        "DELETE FROM TestSystemRequired.Child",
                         "DELETE FROM TestSystemRequired.Parent",
-                        "DELETE FROM TestSystemRequired.Child"
                     });
                 var repository = container.Resolve<Common.DomRepository>();
 

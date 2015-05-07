@@ -65,13 +65,29 @@ namespace Rhetos.Dom.DefaultConcepts
                 filterFormula);
         }
 
+        private static bool FilterIsEnumerableGuid(string typeSnippet)
+        {
+            typeSnippet = typeSnippet.Replace("System.Collections.Generic.", "");
+			typeSnippet = typeSnippet.Replace("System.Linq.", "");
+            typeSnippet = typeSnippet.Replace("System.Guid", "Guid");
+            return new[] { "Guid[]", "List<Guid>", "IEnumerable<Guid>", "IQueryable<Guid>" }.Contains(typeSnippet);
+        }
+
         private static string FilterAndRecomputeAfterSave(KeepSynchronizedOnChangedItemsInfo info, string uniqueName)
         {
+            string recomputeCall;
+            if (FilterIsEnumerableGuid(info.UpdateOnChange.FilterType))
+                recomputeCall =
+                @"_domRepository.{1}.{2}.{5}(filteredNew.Union(filterKeepSynchronizedOnChangedItems{0}Old).ToList());";
+            else
+                recomputeCall =
+                @"_domRepository.{1}.{2}.{5}(filterKeepSynchronizedOnChangedItems{0}Old);
+                _domRepository.{1}.{2}.{5}(filteredNew);";
+            
             return string.Format(
 @"            {{
                 var filteredNew = filterLoadKeepSynchronizedOnChangedItems{0}(inserted.Concat(updated).ToList());
-                _domRepository.{1}.{2}.{5}(filterKeepSynchronizedOnChangedItems{0}Old);
-                _domRepository.{1}.{2}.{5}(filteredNew);
+                " + recomputeCall + @"
                 
                 // Workaround to restore NH proxies after using NHSession.Clear() when saving data in Recompute().
                 for (int i=0; i<inserted.Length; i++) inserted[i] = _executionContext.NHibernateSession.Load<{3}.{4}>(inserted[i].ID);

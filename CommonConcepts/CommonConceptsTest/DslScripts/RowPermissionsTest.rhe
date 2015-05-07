@@ -78,9 +78,9 @@ Module TestRowPermissions
     Entity RPRulesGroup { ShortString Name; }
     Entity RPRulesItem { ShortString Name; Reference Group TestRowPermissions.RPRulesGroup { Detail; } }
     
-    Entity RpRulesAllowItem { ShortString UserName; Reference Item TestRowPermissions.RPRulesItem; }
-    Entity RpRulesAllowGroup { ShortString UserName; Reference Group TestRowPermissions.RPRulesGroup; }
-    Entity RpRulesDenyItem { ShortString UserName; Reference Item TestRowPermissions.RPRulesItem; }
+    Entity RpRulesAllowItem { ShortString UserName; Reference Item TestRowPermissions.RPRulesItem { Detail; } }
+    Entity RpRulesAllowGroup { ShortString UserName; Reference Group TestRowPermissions.RPRulesGroup { Detail; } }
+    Entity RpRulesDenyItem { ShortString UserName; Reference Item TestRowPermissions.RPRulesItem { Detail; } }
     
     Entity RPRulesItem
     {
