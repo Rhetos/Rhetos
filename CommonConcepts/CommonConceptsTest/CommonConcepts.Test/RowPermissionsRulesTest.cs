@@ -35,7 +35,7 @@ namespace CommonConcepts.Test
     [TestClass]
     public class RowPermissionsRulesTest
     {
-        static string _writeException = "Insufficient permissions to write some or all of the data";
+        static string _writeException = "You are not authorized to write";
 
         [TestMethod]
         public void FilterNoPermissions()

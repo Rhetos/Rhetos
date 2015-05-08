@@ -62,8 +62,8 @@ namespace Rhetos.Processing.DefaultCommands
             if (result.Records != null && !AlreadyFilteredByRowPermissions(readInfo))
             {
                 var valid = _serverCommandsUtility.CheckAllItemsWithinFilter(result.Records, RowPermissionsReadInfo.FilterName, genericRepository);
-                if (!valid) 
-                    throw new UserException("Insufficient permissions to access some or all of the data requested.", "DataStructure:" + readInfo.DataSource + ".");
+                if (!valid)
+                    throw new UserException("You are not authorized to access some or all of the data requested.", "DataStructure:" + readInfo.DataSource + ".");
             }
 
             return new CommandResult
