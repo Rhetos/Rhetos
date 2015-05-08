@@ -36,9 +36,20 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(ReferencePropertyInfo))]
     public class ReferencePropertyMappingGenerator : IConceptMappingCodeGenerator
     {
-        private const string CodeSnippet =
-@"        <many-to-one {2} class=""{0}.{1}, " + NHibernateMappingGenerator.AssemblyTag + @""" {3} />
-";
+		// NH does not allow both Guid and navigation properties to be mapped to the same table column, unless one of the properties is not writable (insert and update mapping set to "false").
+		// If the Guid property was defined *after* the navigation property in the .xml mapping file, the lazy loading of the reference would not work.
+        private string SnippetMapping(ReferencePropertyInfo info)
+        {
+            return string.Format(
+@"        <property {4} update=""false"" insert=""false"" />
+        <many-to-one {2} class=""{0}.{1}, " + NHibernateMappingGenerator.AssemblyTag + @""" {3} />
+",
+                info.Referenced.Module.Name,
+                info.Referenced.Name,
+                NhUtility.PropertyAndColumnNameMapping(info.Name, info.Name + "ID"),
+                string.Format(MappingTag, info.DataStructure.Module.Name, info.DataStructure.Name, info.Name),
+                NhUtility.PropertyAndColumnNameMapping(info.Name + "ID"));
+        }
 
         public const string MappingTag = "<!-- reference {0}.{1}.{2} -->";
         
@@ -46,20 +57,7 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
         {
             var info = (ReferencePropertyInfo)conceptInfo;
             if (info.DataStructure is IOrmDataStructure)
-            {
-                codeBuilder.InsertCode(
-                    string.Format(CultureInfo.InvariantCulture,
-                        CodeSnippet,
-                            info.Referenced.Module.Name,
-                            info.Referenced.Name,
-                            NhUtility.PropertyAndColumnNameMapping(info.Name, info.Name + "ID"),
-                            string.Format(CultureInfo.InvariantCulture,
-                                MappingTag,
-                                info.DataStructure.Module.Name,
-                                info.DataStructure.Name,
-                                info.Name)),
-                    OrmDataStructureMappingGenerator.MembersTag, info.DataStructure);
-            }
+                codeBuilder.InsertCode(SnippetMapping(info), OrmDataStructureMappingGenerator.MembersTag, info.DataStructure);
         }
     }
 }

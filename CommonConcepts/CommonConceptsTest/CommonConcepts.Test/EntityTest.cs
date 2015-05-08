@@ -549,5 +549,45 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("a, b, c, oldcx", TestUtility.DumpSorted(r.All(), item => item.Name + item.Data));
             }
         }
+
+        [TestMethod]
+        public void GuidAndReferenceNavigation()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestEntity.BaseEntity" });
+                var repository = container.Resolve<Common.DomRepository>();
+                var context = container.Resolve<Common.ExecutionContext>();
+
+                var b1 = new TestEntity.BaseEntity { Name = "b1" };
+                var b2 = new TestEntity.BaseEntity { Name = "b2" };
+                repository.TestEntity.BaseEntity.Insert(new[] { b1, b2 });
+
+                var c1 = new TestEntity.Child { Name = "c1", Parent = b1 }; // Insert by navigation property.
+                var c2 = new TestEntity.Child { Name = "c2", ParentID = b2.ID }; // Insert by Guid property.
+                repository.TestEntity.Child.Insert(new[] { c1, c2 });
+                Assert.AreEqual("c1b1, c2b2", TestUtility.DumpSorted(repository.TestEntity.Child.Query(), item => item.Name + item.Parent.Name));
+
+                context.NHibernateSession.Clear();
+                b1 = repository.TestEntity.BaseEntity.Query().Where(item => item.ID == b1.ID).Single();
+                b2 = repository.TestEntity.BaseEntity.Query().Where(item => item.ID == b2.ID).Single();
+                c1 = repository.TestEntity.Child.Query().Where(item => item.ID == c1.ID).Single();
+                c2 = repository.TestEntity.Child.Query().Where(item => item.ID == c2.ID).Single();
+
+                // Query by navigation property.
+                Assert.AreEqual("c1b1", TestUtility.DumpSorted(repository.TestEntity.Child.Query()
+                    .Where(c => c.Parent == b1), item => item.Name + item.Parent.Name));
+
+                // Query by Guid property.
+                Assert.AreEqual("c1b1", TestUtility.DumpSorted(repository.TestEntity.Child.Query()
+                    .Where(c => c.ParentID == b1.ID), item => item.Name + item.Parent.Name));
+
+                c1.Parent = b2; // Update by navigation property.
+                c2.ParentID = b1.ID; // Update by Guid property.
+
+                repository.TestEntity.Child.Update(new[] { c1, c2 });
+                Assert.AreEqual("c1b2, c2b1", TestUtility.DumpSorted(repository.TestEntity.Child.Query(), item => item.Name + item.Parent.Name), "Update by navigation property.");
+            }
+        }
     }
 }
