@@ -35,6 +35,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public IsSubtypeOfInfo IsSubtypeOf { get; set; }
 
         public static readonly SqlTag<ExtensibleSubtypeSqlViewInfo> PropertyImplementationTag = "PropertyImplementation";
+        public static readonly SqlTag<ExtensibleSubtypeSqlViewInfo> WherePartTag = "WherePart";
 
         public IEnumerable<string> DeclareNonparsableProperties()
         {
@@ -47,11 +48,15 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             Module = prototype.Module;
             Name = prototype.Name;
-            ViewSource = string.Format("SELECT\r\n    ID{3}{2}\r\nFROM\r\n    {0}.{1}",
-                IsSubtypeOf.Subtype.Module.Name,
-                IsSubtypeOf.Subtype.Name,
-                PropertyImplementationTag.Evaluate(this),
-                GetSubtypeImplementationIdSnippet());
+
+            string viewFormat =
+@"SELECT
+    ID" + GetSubtypeImplementationIdSnippet() + PropertyImplementationTag.Evaluate(this) + @"
+FROM
+    {0}.{1}
+" + WherePartTag.Evaluate(this);
+
+            ViewSource = string.Format(viewFormat, IsSubtypeOf.Subtype.Module.Name, IsSubtypeOf.Subtype.Name);
 
             createdConcepts = null;
         }

@@ -140,6 +140,7 @@
     <Compile Include="DataStructure\SpecificSubtypeSqlViewInfo.cs" />
     <Compile Include="DataStructure\ExtensibleSubtypeSqlViewInfo.cs" />
     <Compile Include="DataStructure\QueryWithParameterInfo.cs" />
+    <Compile Include="DataStructure\SubtypeWhereInfo.cs" />
     <Compile Include="DataStructure\Writing\OnSaveUpdateInfo.cs" />
     <Compile Include="DataStructure\Writing\SaveMethodInfo.cs" />
     <Compile Include="DataStructure\Writing\LoadOldItemsInfo.cs" />

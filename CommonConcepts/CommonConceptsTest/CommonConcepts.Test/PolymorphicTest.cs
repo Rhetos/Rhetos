@@ -521,5 +521,34 @@ namespace CommonConcepts.Test
                     repositories.Query<TestPolymorphic.Child>().Select(c => c.Name + " " + c.Parent.Name)));
             }
         }
+
+        [TestMethod]
+        public void WhereTest()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                repository.TestPolymorphic.DeactivatableEntity.Delete(repository.TestPolymorphic.DeactivatableEntity.All());
+                Assert.AreEqual("", TestUtility.DumpSorted(repository.TestPolymorphic.ActiveRecords.Query(), item => item.Name));
+
+                var d1 = new TestPolymorphic.DeactivatableEntity { Active = true, Name = "d1" };
+                var d2 = new TestPolymorphic.DeactivatableEntity { Active = true, Name = "d2" };
+                var d3 = new TestPolymorphic.DeactivatableEntity { Active = false, Name = "d3" };
+                repository.TestPolymorphic.DeactivatableEntity.Insert(new[] { d1, d2, d3 });
+                Assert.AreEqual("d1, d2", TestUtility.DumpSorted(repository.TestPolymorphic.ActiveRecords.Query(), item => item.Name));
+                Assert.AreEqual(
+                    TestUtility.DumpSorted(repository.TestPolymorphic.ActiveRecords.Query().Select(item => item.ID)),
+                    TestUtility.DumpSorted(repository.TestPolymorphic.ActiveRecords_Materialized.Query().Select(item => item.ID)));
+
+                d2.Active = false;
+                d3.Active = true;
+                var d4 = new TestPolymorphic.DeactivatableEntity { Active = true, Name = "d4" };
+                repository.TestPolymorphic.DeactivatableEntity.Save(new[] { d4 }, new[] { d2, d3 }, new[] { d1 });
+                Assert.AreEqual("d3, d4", TestUtility.DumpSorted(repository.TestPolymorphic.ActiveRecords.Query(), item => item.Name));
+                Assert.AreEqual(
+                    TestUtility.DumpSorted(repository.TestPolymorphic.ActiveRecords.Query().Select(item => item.ID)),
+                    TestUtility.DumpSorted(repository.TestPolymorphic.ActiveRecords_Materialized.Query().Select(item => item.ID)));
+            }
+        }
     }
 }

@@ -293,3 +293,25 @@ Module TestPolymorphic
 		Take 'Parent.Name';
 	}
 }
+
+//=========================================================
+// Limit the implementation with filter (where)
+
+Module TestPolymorphic
+{
+	Polymorphic ActiveRecords
+	{
+		ShortString Name;
+		Materialized;
+	}
+	
+	Entity DeactivatableEntity
+	{
+		Deactivatable;
+		
+		Is TestPolymorphic.ActiveRecords
+		{
+			Where 'Active = 1';
+		}
+	}
+}
