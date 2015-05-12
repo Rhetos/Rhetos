@@ -2,7 +2,7 @@
 @SETLOCAL
 @REM //////////////////////////////////////////////////////
 SET BuildVersion=0.9.34
-SET PrereleaseVersion=alpha001
+SET PrereleaseVersion=alpha003
 @REM SET PrereleaseVersion TO EMPTY VALUE FOR THE OFFICIAL RELEASE.
 @REM \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
