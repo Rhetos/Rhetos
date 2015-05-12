@@ -48,10 +48,11 @@ namespace Rhetos.Dom.DefaultConcepts
             }}
             set
             {{
-                if(value == null)
+                if (value == null)
                     {0} = null;
                 else
-                    {0} = new {1}.{2} {{ ID = value.Value }};
+                    if ({0} == null || {0}.ID != value)
+                        {0} = new {1}.{2} {{ ID = value.Value }};
             }}
         }}
 

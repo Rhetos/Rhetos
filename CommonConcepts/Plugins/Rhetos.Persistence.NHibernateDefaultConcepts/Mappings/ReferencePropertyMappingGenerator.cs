@@ -41,8 +41,8 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
         private string SnippetMapping(ReferencePropertyInfo info)
         {
             return string.Format(
-@"        <property {4} update=""false"" insert=""false"" />
-        <many-to-one {2} class=""{0}.{1}, " + NHibernateMappingGenerator.AssemblyTag + @""" {3} />
+@"        <many-to-one {2} class=""{0}.{1}, " + NHibernateMappingGenerator.AssemblyTag + @""" {3} />
+        <property {4} update=""false"" insert=""false"" />
 ",
                 info.Referenced.Module.Name,
                 info.Referenced.Name,
