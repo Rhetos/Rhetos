@@ -1,5 +1,22 @@
 # Rhetos release notes
 
+## 0.9.33 (2015-05-12)
+
+### Breaking changes
+
+* Modified error messages for **RowPermissions** read and write access errors.
+  Different error messages are used to separate denied access to modify existing data from denied access to apply new data.
+
+### New features
+
+* New concept: **Where**, for filtering **Polymorphic** subtype implementation.
+
+### Internal improvements
+
+* Allowed use of the GUID property associated with **Reference** property, in LINQ queries and generic property filters (web API).
+  For example, `Where(item => item.ParentID != null)` is now allowed, along with the old code `Where(item => item.Parent.ID != null)`.
+* Performance: **KeepSynchronized** concept sometimes called *Recompute* function twice for same ID.
+
 ## 0.9.32 (2015-04-22)
 
 ### Internal improvements
