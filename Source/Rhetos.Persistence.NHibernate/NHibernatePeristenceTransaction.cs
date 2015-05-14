@@ -27,7 +27,7 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Persistence.NHibernate
 {
-    public class NHibernatePersistenceTransaction : IPersistenceTransaction
+    public class NHibernatePersistenceTransaction : IPersistenceTransaction, IPersistenceCache
     {
         private readonly IPersistenceEngine _persistenceEngine;
         private readonly ILogger _logger;
@@ -171,6 +171,16 @@ namespace Rhetos.Persistence.NHibernate
 
             if (_session != null)
                 _session.Evict(item);
+        }
+
+        public System.Data.Common.DbConnection Connection
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public System.Data.Common.DbTransaction Transaction
+        {
+            get { throw new NotImplementedException(); }
         }
     }
 }

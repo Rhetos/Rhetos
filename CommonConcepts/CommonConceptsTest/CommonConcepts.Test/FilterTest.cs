@@ -382,7 +382,7 @@ namespace CommonConcepts.Test
                 var childNull = new TestFilter.CombinedFilters { Name = "CN", SimpleID = null };
                 repository.TestFilter.CombinedFilters.Insert(new[] { childA, childB, childNull });
 
-                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
+                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
 
                 Assert.AreEqual("CA PA", ReportFilteredBrowse(container, new QueryDataSourceCommandInfo
                 {
@@ -447,7 +447,7 @@ namespace CommonConcepts.Test
                 var childNull = new TestFilter.CombinedFilters { Name = "CN", SimpleID = null };
                 repository.TestFilter.CombinedFilters.Insert(new[] { childA, childB, childNull });
 
-                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
+                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
 
                 Assert.AreEqual("CA PA", ReportFilteredBrowse(container, new QueryDataSourceCommandInfo
                 {

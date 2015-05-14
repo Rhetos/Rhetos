@@ -25,6 +25,7 @@ using Rhetos.TestCommon;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Data;
 
 namespace Rhetos.Utilities.Test
 {
@@ -126,13 +127,35 @@ namespace Rhetos.Utilities.Test
             }
         }
 
+        class MockSqlExecuter : ISqlExecuter
+        {
+            public void ExecuteReader(string command, Action<System.Data.Common.DbDataReader> action)
+            {
+                if (command == "SELECT GETDATE()")
+                {
+                    var dataTable = new DataTable("mocktable");
+                    dataTable.Columns.Add("column0", typeof(DateTime));
+                    dataTable.Rows.Add(new DateTime(2001, 2, 3, 4, 5, 6, 7));
+
+                    var dataReader = new DataTableReader(dataTable);
+                    while (dataReader.Read())
+                        action(dataReader);
+                    dataReader.Close();
+                }
+                else
+                    throw new NotImplementedException();
+            }
+
+            public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         [TestMethod]
-        [DeploymentItem("ConnectionStrings.config")]
         public void GetDatabaseTimeTest()
         {
-            TestUtility.CheckDatabaseAvailability("MsSql");
-
-            var sqlExecuter = new MsSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), new NullUserInfo());
+            var sqlExecuter = new MockSqlExecuter();
 
             SqlUtility.GetDatabaseTime(sqlExecuter); // First run, might not be cached.
 

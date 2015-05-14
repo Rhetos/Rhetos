@@ -56,7 +56,7 @@ namespace CommonConcepts.Test
 
                 var articles = articleRepos.All();
                 foreach (var article in articles)
-                    container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache(article);
+                    container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache(article);
 
                 foreach (var article in articles)
                     article.Name = article.Name + "1";
@@ -117,7 +117,7 @@ namespace CommonConcepts.Test
                 var groups = repository.TestPessimisticLocking.ArticleGroup.All().OrderBy(item => item.Name).ToArray();
                 var articles = articleRepos.All().OrderBy(item => item.Name).ToArray();
                 foreach (var article in articles)
-                    container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache(article);
+                    container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache(article);
 
                 foreach (var article in articles)
                     article.Name = article.Name + "1";
@@ -203,8 +203,8 @@ namespace CommonConcepts.Test
 
                 var group = repository.TestPessimisticLocking.ArticleGroup.All().Single();
                 var article = articleRepos.All().Single();
-                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache(group);
-                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache(article);
+                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache(group);
+                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache(article);
 
                 // Active and past lock:
 

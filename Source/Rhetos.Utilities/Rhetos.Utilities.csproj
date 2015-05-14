@@ -147,7 +147,6 @@
     <Compile Include="FastReplacerSnippet.cs" />
     <Compile Include="ISqlExecuter.cs" />
     <Compile Include="IUserInfo.cs" />
-    <Compile Include="MsSqlExecuter.cs" />
     <Compile Include="MsSqlUtility.cs" />
     <Compile Include="ConsoleLogProvider.cs" />
     <Compile Include="OracleSqlExecuter.cs" />

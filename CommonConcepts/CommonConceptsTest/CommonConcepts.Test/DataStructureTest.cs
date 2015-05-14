@@ -170,12 +170,12 @@ namespace CommonConcepts.Test
                 repository.TestDataStructure.Parent.Insert(new[] { parent });
                 repository.TestDataStructure.Child.Insert(new[] { child });
 
-                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
+                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
                 Assert.AreEqual(child.ID + " " + parent.ID, repository.TestDataStructure.Child.Query().Select(c => c.ID + " " + c.Parent.ID).Single(),
                     "Testing if the Reference concept was properly implemented while using late initialization of the Reference property.");
 
                 repository.TestDataStructure.Parent.Delete(new[] { parent });
-                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
+                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
                 Assert.AreEqual(0, repository.TestDataStructure.Child.Query().Count(),
                     "Testing if the CascadeDelete concept was properly implemented while using a Reference concept with late initialization of the Reference property.");
             }

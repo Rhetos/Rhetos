@@ -26,9 +26,10 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Globalization;
 using Rhetos.Logging;
+using Rhetos.Utilities;
 using System.Diagnostics;
 
-namespace Rhetos.Utilities
+namespace Rhetos.Persistence
 {
     public class MsSqlExecuter : ISqlExecuter
     {
@@ -96,25 +97,25 @@ namespace Rhetos.Utilities
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
-        public void ExecuteReader(string command, Action<DbDataReader> action)
+        public void ExecuteReader(string commandText, Action<DbDataReader> action)
         {
-            _logger.Trace(() => "Executing reader: " + command);
+            _logger.Trace(() => "Executing reader: " + commandText);
 
             SafeExecuteCommand(
-                com =>
+                sqlCommand =>
                 {
                     var sw = Stopwatch.StartNew();
                     try
                     {
-                        com.CommandText = command;
-                        var dr = com.ExecuteReader();
-                        while (dr.Read())
-                            action(dr);
-                        dr.Close();
+                        sqlCommand.CommandText = commandText;
+                        var dataReader = sqlCommand.ExecuteReader();
+                        while (dataReader.Read())
+                            action(dataReader);
+                        dataReader.Close();
                     }
                     finally
                     {
-                        LogPerformanceIssue(sw, command);
+                        LogPerformanceIssue(sw, commandText);
                     }
                 },
                 false);

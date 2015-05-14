@@ -24,6 +24,7 @@ using System.Linq;
 using System.Text;
 using Autofac;
 using Rhetos.Utilities;
+using Rhetos.Persistence;
 
 namespace Rhetos.Configuration.Autofac
 {

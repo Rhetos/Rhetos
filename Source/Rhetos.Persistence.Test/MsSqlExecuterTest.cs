@@ -19,12 +19,13 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 
-namespace Rhetos.Utilities.Test
+namespace Rhetos.Persistence.Test
 {
     [TestClass]
     [DeploymentItem("ConnectionStrings.config")]

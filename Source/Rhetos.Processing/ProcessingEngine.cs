@@ -88,7 +88,6 @@ namespace Rhetos.Processing
         public ProcessingResult ExecuteInner(IList<ICommandInfo> commands)
         {
             var authorizationMessage = _authorizationManager.Authorize(commands);
-            _persistenceTransaction.ClearCache(); // NHibernate cached data from AuthorizationManager may cause problems later with serializing arrays that mix cached proxies with POCO instance.
 
             if (!String.IsNullOrEmpty(authorizationMessage))
                 return new ProcessingResult

@@ -80,7 +80,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (item.ID == Guid.Empty)
                     item.ID = Guid.NewGuid();
 
-            _executionContext.PersistenceTransaction.ClearCache(); // Updating a modified persistent object could break old-data validations such as checking for locked items.
+            _executionContext.EntityFrameworkContext.ClearCache(); // Updating a modified persistent object could break old-data validations such as checking for locked items.
 
             if (insertedNew.Count() > 0)
             {{
@@ -120,7 +120,7 @@ namespace Rhetos.Dom.DefaultConcepts
             {{
                 if (deletedIds.Count() > 0)
                 {{
-                    _executionContext.PersistenceTransaction.ClearCache();
+                    _executionContext.EntityFrameworkContext.ClearCache();
                     _executionContext.EntityFrameworkContext.Configuration.AutoDetectChangesEnabled = false;
                     foreach (var item in deleted)
                         _executionContext.EntityFrameworkContext.Entry(item).State = System.Data.Entity.EntityState.Deleted;
@@ -130,7 +130,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 if (updatedNew.Count() > 0)
                 {{
-                    _executionContext.PersistenceTransaction.ClearCache();
+                    _executionContext.EntityFrameworkContext.ClearCache();
                     _executionContext.EntityFrameworkContext.Configuration.AutoDetectChangesEnabled = false;
                     foreach (var item in updated)
                         _executionContext.EntityFrameworkContext.Entry(item).State = System.Data.Entity.EntityState.Modified;
@@ -140,12 +140,12 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 if (insertedNew.Count() > 0)
                 {{
-                    _executionContext.PersistenceTransaction.ClearCache();
+                    _executionContext.EntityFrameworkContext.ClearCache();
                     _executionContext.EntityFrameworkContext.{0}_{1}.AddRange(inserted);
                     _executionContext.EntityFrameworkContext.SaveChanges();
                 }}
 
-                _executionContext.PersistenceTransaction.ClearCache();
+                _executionContext.EntityFrameworkContext.ClearCache();
             }}
             catch (System.Data.Entity.Infrastructure.DbUpdateException dbException)
             {{

@@ -148,7 +148,7 @@ namespace CommonConcepts.Test
                     repository.TestLockItems.Simple.Insert(new[] { s3Lock });
 
                     AssertData("s3_lock", repository);
-                    container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
+                    container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
                     AssertData("s3_lock", repository);
                 }
 
@@ -159,7 +159,7 @@ namespace CommonConcepts.Test
                         "Name contains lock mark");
 
                     AssertData("s3_lock", repository);
-                    container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache();
+                    container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
                     AssertData("s3_lock", repository);
                 }
             }
@@ -187,7 +187,7 @@ namespace CommonConcepts.Test
                 var s2 = repository.TestLockItems.Simple.All().Single();
                 Assert.IsTrue(objectStateManager.TryGetObjectStateEntry(s2, out stateEntry));
 
-                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache(s2);
+                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache(s2);
                 Assert.IsFalse(objectStateManager.TryGetObjectStateEntry(s2, out stateEntry));
             }
         }
@@ -205,7 +205,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("abc locked", s1.Name);
                 s1.Name = "def";
 
-                container.Resolve<Common.ExecutionContext>().PersistenceTransaction.ClearCache(); // Same with Evict(s2)
+                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache(); // Same with Evict(s2)
 
                 Assert.AreEqual("def", s1.Name);
                 var s2 = repository.TestLockItems.Simple.All().Single();

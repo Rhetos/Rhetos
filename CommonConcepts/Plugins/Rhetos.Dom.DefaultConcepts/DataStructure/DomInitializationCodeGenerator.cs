@@ -68,6 +68,12 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Security.IWindowsSecurity));
             codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.DbContext));
             codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.SqlServer.SqlProviderServices));
+            codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.Core.EntityClient.EntityConnection));
+            codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.Core.Metadata.Edm.MetadataWorkspace));
+            codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.Infrastructure.IObjectContextAdapter));
+            codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.Core.Objects.ObjectStateEntry));
+            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.IPersistenceCache));
+            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.IPersistenceTransaction));
         }
 
         private static string GenerateCommonClassesSnippet()
@@ -92,27 +98,41 @@ namespace Rhetos.Dom.DefaultConcepts
         " + ModuleCodeGenerator.CommonDomRepositoryMembersTag + @"
     }
 
-    [System.Data.Entity.DbConfigurationType(typeof(EntityFrameworkConfiguration))] 
-    public class EntityFrameworkContext : System.Data.Entity.DbContext
+    [System.Data.Entity.DbConfigurationType(typeof(EntityFrameworkConfiguration))]
+    public class EntityFrameworkContext : System.Data.Entity.DbContext, Rhetos.Persistence.IPersistenceCache
     {
-        private readonly IUserInfo _userInfo;
-
-        public EntityFrameworkContext(ConnectionString connectionString, IUserInfo userInfo)
-            : base(connectionString.ToString())
+        public EntityFrameworkContext(Rhetos.Persistence.IPersistenceTransaction persistenceTransaction)
+            : base(CreateEntityConnection(persistenceTransaction), false)
         {
-            _userInfo = userInfo;
-            this.Database.Connection.StateChange += Connection_StateChange;
+            Database.UseTransaction(persistenceTransaction.Transaction);
         }
 
-        private void Connection_StateChange(object sender, System.Data.StateChangeEventArgs e)
+        private static System.Data.Common.DbConnection CreateEntityConnection(Rhetos.Persistence.IPersistenceTransaction persistenceTransaction)
         {
-            if (e.CurrentState == System.Data.ConnectionState.Open && _userInfo.IsUserRecognized)
+            return persistenceTransaction.Connection;
+        }
+
+        public void ClearCache()
+        {
+            var objectContext = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)this).ObjectContext;
+
+            Configuration.AutoDetectChangesEnabled = false;
+            foreach (var item in ChangeTracker.Entries().ToList())
+                objectContext.Detach(item.Entity);
+            Configuration.AutoDetectChangesEnabled = true;
+        }
+
+        public void ClearCache(object item)
+        {
+            var objectContext = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)this).ObjectContext;
+            System.Data.Entity.Core.Objects.ObjectStateEntry stateEntry;
+            bool isCached = objectContext.ObjectStateManager.TryGetObjectStateEntry(item, out stateEntry);
+
+            if (isCached)
             {
-                using (var sqlCommand = Database.Connection.CreateCommand())
-                {
-                    sqlCommand.CommandText = MsSqlUtility.SetUserContextInfoQuery(_userInfo);
-                    sqlCommand.ExecuteNonQuery();
-                }
+                Configuration.AutoDetectChangesEnabled = false;
+                objectContext.Detach(item);
+                Configuration.AutoDetectChangesEnabled = true;
             }
         }
 
@@ -234,7 +254,7 @@ namespace Rhetos.Dom.DefaultConcepts
         protected override void Load(Autofac.ContainerBuilder builder)
         {
             builder.RegisterType<DomRepository>().InstancePerLifetimeScope();
-            builder.RegisterType<EntityFrameworkContext>().As<EntityFrameworkContext>().As<System.Data.Entity.DbContext>().InstancePerLifetimeScope();
+            builder.RegisterType<EntityFrameworkContext>().As<EntityFrameworkContext>().As<System.Data.Entity.DbContext>().As<Rhetos.Persistence.IPersistenceCache>().InstancePerLifetimeScope();
             builder.RegisterType<ExecutionContext>().InstancePerLifetimeScope();
             builder.RegisterInstance(Infrastructure.RegisteredInterfaceImplementationName).ExternallyOwned();
             builder.RegisterInstance(Infrastructure.ApplyFiltersOnClientRead).ExternallyOwned();

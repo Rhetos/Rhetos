@@ -17,36 +17,21 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Persistence;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Data.Common;
 
-namespace Rhetos.CommonConcepts.Test.Mocks
+namespace Rhetos.Persistence
 {
-    class PersistenceTransactionStub : IPersistenceTransaction
+    public interface IPersistenceCache
     {
-        public void DiscardChanges()
-        {
-        }
+        /// <summary>
+        /// Clears in-memory cache that is used for lazy loading.
+        /// </summary>
+        void ClearCache();
 
-        public event Action BeforeClose;
-
-        public void CommitAndReconnect()
-        {
-        }
-
-        public void ClearCache()
-        {
-        }
-
-        public void ClearCache(object item)
-        {
-        }
-
-        public void Dispose()
-        {
-        }
+        /// <summary>
+        /// Clears the item from the in-memory cache that is used for lazy loading.
+        /// </summary>
+        void ClearCache(object item);
     }
 }

@@ -43,7 +43,7 @@ namespace Rhetos.CommonConcepts.Test.Mocks
                     DomainObjectModel = new DomainObjectModelMock(),
                     Repositories = new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock<TEntityInterface, TEntity>(items)),
                     LogProvider = new ConsoleLogProvider(),
-                    PersistenceTransaction = new PersistenceTransactionStub(),
+                    PersistenceCache = new PersistenceCacheStub(),
                     GenericFilterHelper = new GenericFilterHelper(new DomainObjectModelMock()),
                 },
                 new RegisteredInterfaceImplementations { { typeof(TEntityInterface), typeof(TEntity).FullName }})
@@ -57,7 +57,7 @@ namespace Rhetos.CommonConcepts.Test.Mocks
                     DomainObjectModel = new DomainObjectModelMock(),
                     Repositories = new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock(typeof(TEntity), repository)),
                     LogProvider = new ConsoleLogProvider(),
-                    PersistenceTransaction = new PersistenceTransactionStub(),
+                    PersistenceCache = new PersistenceCacheStub(),
                     GenericFilterHelper = new GenericFilterHelper(new DomainObjectModelMock()),
                 },
                 new RegisteredInterfaceImplementations { { typeof(TEntityInterface), typeof(TEntity).FullName } })

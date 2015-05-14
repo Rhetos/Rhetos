@@ -18,14 +18,12 @@
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using NHibernate;
+using System.Data.Common;
 
 namespace Rhetos.Persistence
 {
     /// <summary>
-    /// Implementation similar to the "unit of work" pattern.
+    /// Similar to the "unit of work" pattern.
     /// </summary>
     public interface IPersistenceTransaction : IDisposable
     {
@@ -48,13 +46,18 @@ namespace Rhetos.Persistence
         void CommitAndReconnect();
 
         /// <summary>
-        /// Clears in-memory cache that is used for lazy loading.
-        /// </summary>
-        void ClearCache();
+        /// When reading this property the database connection will be automatically opened and a transaction started.
+        /// Do not close or modify this connection directly.
+        /// A single server request will be executed in one transaction. If the server request fails, the transaction will be rolled back.
+        /// If you need to execute an SQL query outside of the server request's transaction, create a new database connection using Rhetos.Utilities.SqlUtility.ConnectionString.
+        /// </remarks>
+        DbConnection Connection { get; }
 
         /// <summary>
-        /// Clears the item from the in-memory cache that is used for lazy loading.
+        /// Returns null if the <see cref="Connection"/> is not used yet.
+        /// Do not close or modify this transaction directly.
+        /// See the <see cref="Connection"/> property for more details.
         /// </summary>
-        void ClearCache(object item);
+        DbTransaction Transaction { get; }
     }
 }

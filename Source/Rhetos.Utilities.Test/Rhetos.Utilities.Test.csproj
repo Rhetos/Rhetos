@@ -67,7 +67,6 @@
     <Compile Include="OracleSqlExecuterTest.cs" />
     <Compile Include="GraphTest.cs" />
     <Compile Include="FastReplacerTest.cs" />
-    <Compile Include="MsSqlExecuterTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="..\Rhetos\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>

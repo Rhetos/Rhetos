@@ -222,7 +222,7 @@ namespace CommonConcepts.Test
                 repository.TestEntity.BaseEntity.Insert(b);
                 repository.TestEntity.Child.Insert(c);
 
-                context.PersistenceTransaction.ClearCache();
+                context.EntityFrameworkContext.ClearCache();
 
                 Assert.AreNotEqual(default(Guid), c.ID);
 
@@ -248,7 +248,7 @@ namespace CommonConcepts.Test
                 var c2 = new TestEntity.Child { ID = c.ID, Name = "c2", ParentID = b.ID };
                 repository.TestEntity.Child.Update(c2);
 
-                context.PersistenceTransaction.ClearCache();
+                context.EntityFrameworkContext.ClearCache();
 
                 var report = repository.TestEntity.Child.Query().Where(item => item.ID == c.ID)
                     .Select(item => item.Name + " " + item.Parent.Name);
@@ -274,7 +274,7 @@ namespace CommonConcepts.Test
                 c2.Name = "c2";
                 repository.TestEntity.Child.Insert(c2);
 
-                context.PersistenceTransaction.ClearCache();
+                context.EntityFrameworkContext.ClearCache();
 
                 Assert.AreNotEqual(default(Guid), c.ID);
                 Assert.AreNotEqual(c2.ID, c.ID);
@@ -308,7 +308,7 @@ namespace CommonConcepts.Test
                 c2.Parent.Name = "b3"; // Should not be saved when calling Child.Update.
                 repository.TestEntity.Child.Update(c2);
 
-                context.PersistenceTransaction.ClearCache();
+                context.EntityFrameworkContext.ClearCache();
 
                 var report = repository.TestEntity.Child.Query().Where(item => item.ID == c.ID)
                     .Select(item => item.Name + " " + item.Parent.Name);
@@ -504,7 +504,7 @@ namespace CommonConcepts.Test
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestEntity.UniqueEntity" });
                 var r = container.Resolve<Common.DomRepository>().TestEntity.UniqueEntity;
-                var persistenceTransaction = container.Resolve<Common.ExecutionContext>().PersistenceTransaction;
+                var context = container.Resolve<Common.ExecutionContext>();
 
                 var ia = new TestEntity.UniqueEntity { Name = "a", ID = Guid.NewGuid() };
                 var ib = new TestEntity.UniqueEntity { Name = "b", ID = Guid.NewGuid() };
@@ -518,7 +518,7 @@ namespace CommonConcepts.Test
                 var ic2 = new TestEntity.UniqueEntity { Name = "c", ID = Guid.NewGuid() };
 
                 r.Save(new[] { ic2 }, null, new[] { ic1 });
-                persistenceTransaction.ClearCache();
+                context.EntityFrameworkContext.ClearCache();
                 Assert.AreEqual("a, b, c", TestUtility.DumpSorted(r.All(), item => item.Name + item.Data));
                 Guid currentCID = r.Query().Where(item => item.Name == "c").Select(item => item.ID).Single();
                 Assert.AreEqual(ic2.ID, currentCID, "new inserted item 'c'");
@@ -529,7 +529,7 @@ namespace CommonConcepts.Test
                 var ic3 = new TestEntity.UniqueEntity { Name = "c", Data = "x", ID = ic2.ID };
 
                 r.Save(new[] { ic3 }, null, new[] { ic2 });
-                persistenceTransaction.ClearCache();
+                context.EntityFrameworkContext.ClearCache();
                 Assert.AreEqual("a, b, cx", TestUtility.DumpSorted(r.All(), item => item.Name + item.Data));
 
                 // Renaming old 'c' and inserting new 'c'. Possible conflict on unique constraint for property Name.
@@ -538,7 +538,7 @@ namespace CommonConcepts.Test
                 var ic4 = new TestEntity.UniqueEntity { Name = "c", ID = Guid.NewGuid() };
 
                 r.Save(new[] { ic4 }, new[] { ic3 }, null);
-                persistenceTransaction.ClearCache();
+                context.EntityFrameworkContext.ClearCache();
                 Assert.AreEqual("a, b, c, oldcx", TestUtility.DumpSorted(r.All(), item => item.Name + item.Data));
             }
         }

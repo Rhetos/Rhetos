@@ -38,7 +38,7 @@ namespace Rhetos.Configuration.Autofac
             }
             else
             {
-                builder.RegisterType<EntityFrameworkPersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope();
+                builder.RegisterType<PersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope();
             }
 
             base.Load(builder);

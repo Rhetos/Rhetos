@@ -17,29 +17,22 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Persistence;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
-using Rhetos.Compiler;
-using Rhetos.Dsl;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
 
-namespace Rhetos.Dom.DefaultConcepts.DataStructure
+namespace Rhetos.CommonConcepts.Test.Mocks
 {
-    [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(SqlQueryableInfo))]
-    public class SqlQueryableCodeGenerator : IConceptCodeGenerator
+    class PersistenceCacheStub : IPersistenceCache
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        public void ClearCache()
         {
-            var info = (SqlQueryableInfo) conceptInfo;
+        }
 
-            codeBuilder.InsertCode(
-@"            _executionContext.EntityFrameworkContext.ClearCache();
-", RepositoryHelper.BeforeQueryTag, info);
+        public void ClearCache(object item)
+        {
         }
     }
 }

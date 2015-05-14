@@ -19,6 +19,7 @@
 
 using Rhetos;
 using Rhetos.Deployment;
+using Rhetos.Persistence;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;

@@ -100,6 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IConceptMappingCodeGenerator.cs" />
+    <Compile Include="IPersistenceCache.cs" />
     <Compile Include="IPersistenceTransaction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="..\Rhetos\Properties\GlobalAssemblyInfo.cs">
