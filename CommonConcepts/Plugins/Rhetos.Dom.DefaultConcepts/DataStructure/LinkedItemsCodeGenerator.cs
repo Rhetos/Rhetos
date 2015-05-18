@@ -37,10 +37,21 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (LinkedItemsInfo)conceptInfo;
-
             string propertyType = string.Format("IList<Common.Queryable.{0}_{1}>", info.ReferenceProperty.DataStructure.Module.Name, info.ReferenceProperty.DataStructure.Name);
 
-            DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.DataStructure, info.Name, propertyType, null);
+            if (DslUtility.IsQueryable(info.ReferenceProperty.DataStructure) && DslUtility.IsQueryable(info.DataStructure))
+                DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.DataStructure, info.Name, propertyType, null);
+
+            if (info.ReferenceProperty.DataStructure is IOrmDataStructure && info.DataStructure is IOrmDataStructure)
+                codeBuilder.InsertCode(
+                    string.Format("modelBuilder.Entity<Common.Queryable.{0}_{1}>().HasOptional(t => t.{2}).WithMany(t => t.{3}).HasForeignKey(t => t.{2}ID);\r\n            ",
+                        info.ReferenceProperty.DataStructure.Module.Name, info.ReferenceProperty.DataStructure.Name, info.ReferenceProperty.Name, info.Name),
+                    DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
+            else if (info.DataStructure is IOrmDataStructure)
+                codeBuilder.InsertCode(
+                    string.Format("modelBuilder.Entity<Common.Queryable.{0}_{1}>().Ignore(t => t.{2});\r\n            ",
+                        info.DataStructure.Module.Name, info.DataStructure.Name, info.Name),
+                    DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
         }
     }
 }

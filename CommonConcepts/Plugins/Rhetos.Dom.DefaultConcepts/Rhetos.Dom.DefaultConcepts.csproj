@@ -135,6 +135,8 @@
     <Compile Include="DataStructure\Writing\OnSaveUpdateCodeGenerator.cs" />
     <Compile Include="DataStructure\Writing\OnSaveValidateCodeGenerator.cs" />
     <Compile Include="Authorization\DeactivateClaimsCodeGenerator.cs" />
+    <Compile Include="EntityFrameworkGenerateMetadataFiles.cs" />
+    <Compile Include="EntityFrameworkMetadata.cs" />
     <Compile Include="FilterExpression.cs" />
     <Compile Include="GenericRepository.cs" />
     <Compile Include="GenericRepositories.cs" />

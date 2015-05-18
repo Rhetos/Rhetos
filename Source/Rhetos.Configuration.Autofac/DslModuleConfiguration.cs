@@ -38,7 +38,7 @@ namespace Rhetos.Configuration.Autofac
             if (_deploymentTime)
             {
                 builder.RegisterType<DiskDslScriptLoader>().As<IDslScriptsProvider>().SingleInstance();
-                builder.RegisterType<Tokenizer>().As<Tokenizer>().SingleInstance();
+                builder.RegisterType<Tokenizer>().SingleInstance();
                 builder.RegisterType<DslModel>().As<IDslModel>().SingleInstance();
                 builder.RegisterType<DslModelFile>().As<IDslModelFile>().SingleInstance();
                 builder.RegisterType<DslParser>().As<IDslParser>();
@@ -53,7 +53,7 @@ namespace Rhetos.Configuration.Autofac
                 builder.RegisterType<DslModelFile>().As<IDslModel>().SingleInstance();
             }
 
-            builder.RegisterType<DslContainer>().As<DslContainer>();
+            builder.RegisterType<DslContainer>();
             Plugins.FindAndRegisterPlugins<IDslModelIndex>(builder);
             builder.RegisterType<DslModelIndexByType>().As<IDslModelIndex>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos dlls.
             builder.RegisterType<DslModelIndexByReference>().As<IDslModelIndex>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos dlls.

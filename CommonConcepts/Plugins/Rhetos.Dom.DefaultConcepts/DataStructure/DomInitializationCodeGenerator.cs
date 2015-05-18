@@ -98,18 +98,22 @@ namespace Rhetos.Dom.DefaultConcepts
         " + ModuleCodeGenerator.CommonDomRepositoryMembersTag + @"
     }
 
-    [System.Data.Entity.DbConfigurationType(typeof(EntityFrameworkConfiguration))]
     public class EntityFrameworkContext : System.Data.Entity.DbContext, Rhetos.Persistence.IPersistenceCache
     {
-        public EntityFrameworkContext(Rhetos.Persistence.IPersistenceTransaction persistenceTransaction)
-            : base(CreateEntityConnection(persistenceTransaction), false)
+        public EntityFrameworkContext(Rhetos.Persistence.IPersistenceTransaction persistenceTransaction, EntityFrameworkMetadata metadata, EntityFrameworkConfiguration configuration)
+            : base(CreateEntityConnection(persistenceTransaction, metadata), false)
         {
+            if (configuration == null) // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
+                throw new Rhetos.FrameworkException(""DbConfiguration should be created and initialized before this context."");
             Database.UseTransaction(persistenceTransaction.Transaction);
         }
 
-        private static System.Data.Common.DbConnection CreateEntityConnection(Rhetos.Persistence.IPersistenceTransaction persistenceTransaction)
+        private static System.Data.Common.DbConnection CreateEntityConnection(Rhetos.Persistence.IPersistenceTransaction persistenceTransaction, EntityFrameworkMetadata metadata)
         {
-            return persistenceTransaction.Connection;
+            if (metadata.MetadataWorkspace != null)
+                return new System.Data.Entity.Core.EntityClient.EntityConnection(metadata.MetadataWorkspace, persistenceTransaction.Connection);
+            else
+                return persistenceTransaction.Connection;
         }
 
         public void ClearCache()
@@ -144,12 +148,14 @@ namespace Rhetos.Dom.DefaultConcepts
         " + EntityFrameworkContextMembersTag + @"
     }
 
-    public class EntityFrameworkConfiguration : System.Data.Entity.DbConfiguration 
+    public class EntityFrameworkConfiguration : System.Data.Entity.DbConfiguration
     {
         public EntityFrameworkConfiguration()
         {
             SetProviderServices(""System.Data.SqlClient"", System.Data.Entity.SqlServer.SqlProviderServices.Instance);
             " + EntityFrameworkConfigurationTag + @"
+
+            System.Data.Entity.DbConfiguration.SetConfiguration(this);
         }
     }
 
@@ -254,7 +260,12 @@ namespace Rhetos.Dom.DefaultConcepts
         protected override void Load(Autofac.ContainerBuilder builder)
         {
             builder.RegisterType<DomRepository>().InstancePerLifetimeScope();
-            builder.RegisterType<EntityFrameworkContext>().As<EntityFrameworkContext>().As<System.Data.Entity.DbContext>().As<Rhetos.Persistence.IPersistenceCache>().InstancePerLifetimeScope();
+            builder.RegisterType<EntityFrameworkConfiguration>().SingleInstance();
+            builder.RegisterType<EntityFrameworkContext>()
+                .As<EntityFrameworkContext>()
+                .As<System.Data.Entity.DbContext>()
+                .As<Rhetos.Persistence.IPersistenceCache>()
+                .InstancePerLifetimeScope();
             builder.RegisterType<ExecutionContext>().InstancePerLifetimeScope();
             builder.RegisterInstance(Infrastructure.RegisteredInterfaceImplementationName).ExternallyOwned();
             builder.RegisterInstance(Infrastructure.ApplyFiltersOnClientRead).ExternallyOwned();
