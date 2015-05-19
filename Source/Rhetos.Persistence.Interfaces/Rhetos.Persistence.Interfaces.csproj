@@ -99,6 +99,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IConceptMapping.cs" />
     <Compile Include="IConceptMappingCodeGenerator.cs" />
     <Compile Include="IPersistenceCache.cs" />
     <Compile Include="IPersistenceTransaction.cs" />

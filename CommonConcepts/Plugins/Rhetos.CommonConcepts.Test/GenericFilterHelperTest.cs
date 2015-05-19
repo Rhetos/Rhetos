@@ -53,7 +53,7 @@ namespace Rhetos.CommonConcepts.Test
             TestFilterByName("b1, B2", items, "contains", "b");
             TestFilterByName("b1, B2", items, "contains", "B");
             TestFilterByName("A2", items, "equal", "a2");
-            TestFilterByName("a1, a3, A4, b1, B2", items, "notequal", "a2");
+            TestFilterByName("<null>, a1, a3, A4, b1, B2", items, "notequal", "a2");
             TestFilterByName("a1, A2", items, "less", "A3");
             TestFilterByName("a1, A2, a3", items, "lessequal", "A3");
             TestFilterByName("a3, A4, b1, B2", items, "greater", "a2");
@@ -63,7 +63,7 @@ namespace Rhetos.CommonConcepts.Test
 
             TestFilterByName("", items, "equal", "");
             TestFilterByName("<null>", items, "equal", null);
-            TestFilterByName("a1, A2, a3, A4, b1, B2", items, "notequal", "");
+            TestFilterByName("<null>, a1, A2, a3, A4, b1, B2", items, "notequal", "");
             TestFilterByName(", a1, A2, a3, A4, b1, B2", items, "notequal", null);
         }
 

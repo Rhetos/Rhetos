@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Rhetos.Extensibility;
 using Rhetos.Persistence;
 
 namespace Rhetos.Configuration.Autofac
@@ -35,6 +36,8 @@ namespace Rhetos.Configuration.Autofac
         {
             if (_deploymentTime)
             {
+                builder.RegisterType<EntityFrameworkMappingGenerator>().As<IGenerator>();
+                Plugins.FindAndRegisterPlugins<IConceptMapping>(builder, typeof(ConceptMapping<>));
             }
             else
             {

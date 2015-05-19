@@ -290,7 +290,7 @@ namespace Rhetos.Persistence.NHibernateDefaultConcepts
     {
         public StringLikeGenerator()
         {
-            SupportedMethods = new[] { ReflectionHelper.GetMethodDefinition(() => DatabaseExtensionFunctions.SqlLike(null, null)) };
+            SupportedMethods = new[] { ReflectionHelper.GetMethodDefinition(() => DatabaseExtensionFunctions.Like(null, null)) };
         }
 
         public override HqlTreeNode BuildHql(MethodInfo method, Expression targetObject,

@@ -26,19 +26,8 @@ using System.Diagnostics.Contracts;
 
 namespace Rhetos.Compiler
 {
-    [ContractClass(typeof(ConceptCodeGeneratorContract))]
     public interface IConceptCodeGenerator
     {
         void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder);
-    }
-
-    [ContractClassFor(typeof(IConceptCodeGenerator))]
-    sealed class ConceptCodeGeneratorContract : IConceptCodeGenerator
-    {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
-        {
-            Contract.Requires(conceptInfo != null);
-            Contract.Requires(codeBuilder != null);
-        }
     }
 }

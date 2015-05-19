@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MsSqlExecuter.cs" />
+    <Compile Include="EntityFrameworkMappingGenerator.cs" />
     <Compile Include="PersistenceTransaction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -56,6 +57,14 @@
     <ProjectReference Include="..\Rhetos.Compiler.Interfaces\Rhetos.Compiler.Interfaces.csproj">
       <Project>{fcad7f9a-4c31-4d5a-8699-c291ae09d006}</Project>
       <Name>Rhetos.Compiler.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Dsl.Interfaces\Rhetos.Dsl.Interfaces.csproj">
+      <Project>{f4acd412-2782-4191-8708-c7ae99b0cee9}</Project>
+      <Name>Rhetos.Dsl.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Extensibility.Interfaces\Rhetos.Extensibility.Interfaces.csproj">
+      <Project>{ddc73f5f-bb0e-4944-92cc-4ac937398499}</Project>
+      <Name>Rhetos.Extensibility.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj">
       <Project>{bb7e5668-1b43-4fce-a832-444cc57fee80}</Project>

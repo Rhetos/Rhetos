@@ -25,6 +25,7 @@ using System.IO;
 using System.Xml;
 using System.Runtime.Serialization;
 using Rhetos.Dom;
+using System.Text.RegularExpressions;
 
 namespace Rhetos.Utilities
 {
@@ -102,5 +103,19 @@ namespace Rhetos.Utilities
         {
             return DeserializeFromXml(element.MakeArrayType(), xml);
         }
+
+        /// <summary>
+        /// This method removes both valid XML comments and the provisional comments inside elements and attributes,
+        /// that were used as placeholders for generating the XML string.
+        /// </summary>
+        public static string RemoveComments(string xml)
+        {
+            xml = Regex.Replace(xml, _lineTagRegex, "\n");
+            xml = Regex.Replace(xml, _tagRegex, "");
+            return xml;
+        }
+
+        private const string _lineTagRegex = @"\n\s*<!--.*?-->\s*\r?\n";
+        private const string _tagRegex = @"<!--.*?-->";
     }
 }

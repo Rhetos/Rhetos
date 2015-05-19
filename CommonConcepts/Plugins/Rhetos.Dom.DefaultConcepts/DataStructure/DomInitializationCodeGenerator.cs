@@ -100,7 +100,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
     public class EntityFrameworkContext : System.Data.Entity.DbContext, Rhetos.Persistence.IPersistenceCache
     {
-        public EntityFrameworkContext(Rhetos.Persistence.IPersistenceTransaction persistenceTransaction, EntityFrameworkMetadata metadata, EntityFrameworkConfiguration configuration)
+        public EntityFrameworkContext(Rhetos.Persistence.IPersistenceTransaction persistenceTransaction, Rhetos.Dom.DefaultConcepts.Persistence.EntityFrameworkMetadata metadata, EntityFrameworkConfiguration configuration)
             : base(CreateEntityConnection(persistenceTransaction, metadata), false)
         {
             if (configuration == null) // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
@@ -108,7 +108,7 @@ namespace Rhetos.Dom.DefaultConcepts
             Database.UseTransaction(persistenceTransaction.Transaction);
         }
 
-        private static System.Data.Common.DbConnection CreateEntityConnection(Rhetos.Persistence.IPersistenceTransaction persistenceTransaction, EntityFrameworkMetadata metadata)
+        private static System.Data.Common.DbConnection CreateEntityConnection(Rhetos.Persistence.IPersistenceTransaction persistenceTransaction, Rhetos.Dom.DefaultConcepts.Persistence.EntityFrameworkMetadata metadata)
         {
             if (metadata.MetadataWorkspace != null)
                 return new System.Data.Entity.Core.EntityClient.EntityConnection(metadata.MetadataWorkspace, persistenceTransaction.Connection);

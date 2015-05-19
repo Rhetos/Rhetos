@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -33,6 +34,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// If b is null, SQL query will use IS NULL instead of the equality operator.
         /// </summary>
+        [DbFunction("Rhetos", "StringEqualsCaseInsensitive")]
         public static bool EqualsCaseInsensitive(this string a, string b)
         {
             if (b == null)
@@ -44,50 +46,66 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// If b is null, SQL query will use IS NOT NULL instead of the inequality operator.
         /// </summary>
+        [DbFunction("Rhetos", "StringNotEqualsCaseInsensitive")]
         public static bool NotEqualsCaseInsensitive(this string a, string b)
         {
             if (b == null)
                 return a != null;
             else
-                return a != null && !a.Equals(b, StringComparison.InvariantCultureIgnoreCase);
+                return a == null || !a.Equals(b, StringComparison.InvariantCultureIgnoreCase);
         }
 
+        [DbFunction("Rhetos", "StringIsLessThen")]
         public static bool IsLessThen(this string a, string b)
         {
             return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) < 0;
         }
 
+        [DbFunction("Rhetos", "StringIsLessThenOrEqual")]
         public static bool IsLessThenOrEqual(this string a, string b)
         {
             return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) <= 0;
         }
 
+        [DbFunction("Rhetos", "StringIsGreaterThen")]
         public static bool IsGreaterThen(this string a, string b)
         {
             return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) > 0;
         }
 
+        [DbFunction("Rhetos", "StringIsGreaterThenOrEqual")]
         public static bool IsGreaterThenOrEqual(this string a, string b)
         {
             return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) >= 0;
         }
 
+        [DbFunction("Rhetos", "IntStartsWith")]
         public static bool StartsWith(this int? a, string b)
         {
             return a != null && b != null && a.ToString().StartsWith(b);
         }
 
+        [DbFunction("Rhetos", "StringStartsWithCaseInsensitive")]
         public static bool StartsWithCaseInsensitive(this string a, string b)
         {
             return a != null && b != null && a.StartsWith(b, StringComparison.InvariantCultureIgnoreCase);
         }
 
+        [DbFunction("Rhetos", "StringContainsCaseInsensitive")]
         public static bool ContainsCaseInsensitive(this string a, string b)
         {
             return a != null && b != null && a.ToLowerInvariant().Contains(b.ToLowerInvariant());
         }
 
+        [DbFunction("Rhetos", "StringLike")]
+        [Obsolete("Use the Like() method instead")]
         public static bool SqlLike(this string text, string pattern)
+        {
+            return Like(text, pattern);
+        }
+
+        [DbFunction("Rhetos", "StringLike")]
+        public static bool Like(this string text, string pattern)
         {
             if (text == null || pattern == null)
                 return false;
@@ -96,11 +114,12 @@ namespace Rhetos.Dom.DefaultConcepts
             pattern = pattern.Replace("%", ".*");
             pattern = pattern.Replace("_", ".");
             pattern = "^" + pattern + "$";
-           
+
             var regex = new Regex(pattern, RegexOptions.IgnoreCase);
             return regex.IsMatch(text);
         }
 
+        [DbFunction("Rhetos", "IntCastToString")]
         public static string CastToString(this int? a)
         {
             if (a == null)

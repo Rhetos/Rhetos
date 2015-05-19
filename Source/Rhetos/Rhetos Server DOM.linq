@@ -76,11 +76,8 @@ void Main()
         // PRINT LOGGED EVENTS FOR THE 'Common.Principal' INSTANCE:
         repository.Common.LogReader.Query()
             .Where(log => log.TableName == "Common.Principal" && log.ItemId == testUser.ID)
-            /*.Select(log => new {
-                log.Created,
-                log.Action,
-                Client = SqlUtility.ExtractUserInfo(log.ContextInfo).UserName,
-                log.Description })*/
-            .ToList().Dump();
+            .ToList()
+            //.Select(log => new { log.Created, log.Action, ClientUser = SqlUtility.ExtractUserInfo(log.ContextInfo).UserName, log.Description })
+            .Dump();
     }
 }

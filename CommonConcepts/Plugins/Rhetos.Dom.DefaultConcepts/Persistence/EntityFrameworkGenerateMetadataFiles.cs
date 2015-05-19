@@ -32,7 +32,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Dom.DefaultConcepts.Persistence
 {
     /// <summary>
     /// The generated EntityFrameworkContext will work with or without these metadata files,

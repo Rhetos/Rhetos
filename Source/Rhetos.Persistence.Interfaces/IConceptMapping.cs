@@ -22,11 +22,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Rhetos.Compiler;
+using Rhetos.Dsl;
 
 namespace Rhetos.Persistence
 {
-    [Obsolete("Use IConceptMapping instead, for Entity Framework mapping. NHibernate is not longer used.")]
-    public interface IConceptMappingCodeGenerator : IConceptCodeGenerator
+    public interface IConceptMapping : IConceptCodeGenerator
     {
+    }
+
+    public abstract class ConceptMapping<TConceptInfo> : IConceptMapping
+        where TConceptInfo : IConceptInfo
+    {
+        public abstract void GenerateCode(TConceptInfo conceptInfo, ICodeBuilder codeBuilder);
+
+        void IConceptCodeGenerator.GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        {
+            GenerateCode((TConceptInfo)conceptInfo, codeBuilder);
+        }
     }
 }

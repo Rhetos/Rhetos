@@ -135,8 +135,9 @@
     <Compile Include="DataStructure\Writing\OnSaveUpdateCodeGenerator.cs" />
     <Compile Include="DataStructure\Writing\OnSaveValidateCodeGenerator.cs" />
     <Compile Include="Authorization\DeactivateClaimsCodeGenerator.cs" />
-    <Compile Include="EntityFrameworkGenerateMetadataFiles.cs" />
-    <Compile Include="EntityFrameworkMetadata.cs" />
+    <Compile Include="Persistence\DatabaseExtensionFunctionsMapping.cs" />
+    <Compile Include="Persistence\EntityFrameworkGenerateMetadataFiles.cs" />
+    <Compile Include="Persistence\EntityFrameworkMetadata.cs" />
     <Compile Include="FilterExpression.cs" />
     <Compile Include="GenericRepository.cs" />
     <Compile Include="GenericRepositories.cs" />
@@ -211,6 +212,10 @@
     <ProjectReference Include="..\..\..\Source\Rhetos.Persistence.NHibernate\Rhetos.Persistence.NHibernate.csproj">
       <Project>{24238da8-70c5-4be5-85b3-359e60b40acf}</Project>
       <Name>Rhetos.Persistence.NHibernate</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Persistence\Rhetos.Persistence.csproj">
+      <Project>{02415b9e-fb00-451d-8b1a-b4a3ce150f2d}</Project>
+      <Name>Rhetos.Persistence</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Source\Rhetos.Security\Rhetos.Security.csproj">
       <Project>{f3480d1e-1c20-448d-b2f6-133472ceeb93}</Project>

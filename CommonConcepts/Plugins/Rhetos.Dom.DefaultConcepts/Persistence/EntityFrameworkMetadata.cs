@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Logging;
+using Rhetos.Persistence;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
@@ -32,7 +33,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Dom.DefaultConcepts.Persistence
 {
     public class EntityFrameworkMetadata
     {
@@ -58,11 +59,19 @@ namespace Rhetos.Dom.DefaultConcepts
                         if (!_initialized)
                         {
                             var sw = Stopwatch.StartNew();
-                            var files = _segments.Select(segment => Path.Combine(Paths.GeneratedFolder, segment.FileName)).ToList();
 
-                            if (File.Exists(files.First()))
+                            var filesFromCode = _segmentsFromCode.Select(segment => segment.FileName)
+                                .Select(fileName => Path.Combine(Paths.GeneratedFolder, fileName))
+                                .ToList();
+
+                            if (File.Exists(filesFromCode.First()))
                             {
-                                _metadataWorkspace = new MetadataWorkspace(files, new Assembly[] { });
+                                var filesFromGenerator = EntityFrameworkMappingGenerator.ModelFiles
+                                    .Select(fileName => Path.Combine(Paths.GeneratedFolder, fileName));
+                                var loadFiles = filesFromGenerator.Concat(filesFromCode)
+                                    .Where(file => File.Exists(file))
+                                    .ToList();
+                                _metadataWorkspace = new MetadataWorkspace(loadFiles, new Assembly[] { });
                                 _performanceLogger.Write(sw, "EntityFrameworkMetadata: Load EDM files.");
                             }
                             else
@@ -81,11 +90,11 @@ namespace Rhetos.Dom.DefaultConcepts
             public string FileName;
         }
 
-        private static readonly Segment[] _segments = new Segment[]
+        private static readonly Segment[] _segmentsFromCode = new Segment[]
         {
-            new Segment { FileName = "ServerDom.ssdl", TagName = "StorageModels"},
-            new Segment { FileName = "ServerDom.msl", TagName = "Mappings"},
-            new Segment { FileName = "ServerDom.csdl", TagName = "ConceptualModels"},
+            new Segment { FileName = "ServerDomEdmFromCode.csdl", TagName = "ConceptualModels" },
+            new Segment { FileName = "ServerDomEdmFromCode.msl", TagName = "Mappings" },
+            new Segment { FileName = "ServerDomEdmFromCode.ssdl", TagName = "StorageModels" },
         };
 
         public void SaveMetadata(DbContext dbContext)
@@ -103,7 +112,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             _performanceLogger.Write(sw, "EntityFrameworkMetadata: Extract EDMX.");
 
-            foreach (var segment in _segments)
+            foreach (var segment in _segmentsFromCode)
             {
                 string startTag = "\r\n    <" + segment.TagName + ">\r\n";
                 string endTag = "\r\n    </" + segment.TagName + ">\r\n";

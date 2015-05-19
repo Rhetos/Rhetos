@@ -77,16 +77,17 @@ namespace Rhetos.Extensibility
         /// Scans for plugins that implement the given export type (it is usually the plugin's interface), and registers them.
         /// The function should be called from a plugin module initialization (from Autofac.Module implementation).
         /// </summary>
-        /// <param name="genericImplementationInterface">
-        /// Argument type that the plugin handles is automatically extracted from the provided genericImplementationInterface parameter.
+        /// <param name="genericImplementationBase">
+        /// The genericImplementationBase is a generic interface or a generic abstract class that the plugin implements.
+        /// The concept type that the plugin handles will be automatically extracted from the generic argument of the genericImplementationBase.
         /// This is an alternative to using MefProvider.Implements in the plugin's ExportMetadata attribute.
         /// </param>
-        public static void FindAndRegisterPlugins<TPluginInterface>(ContainerBuilder builder, Type genericImplementationInterface)
+        public static void FindAndRegisterPlugins<TPluginInterface>(ContainerBuilder builder, Type genericImplementationBase)
         {
             var matchingPlugins = MefPluginScanner.FindPlugins(builder, typeof(TPluginInterface));
 
             foreach (var plugin in matchingPlugins)
-                ExtractGenericPluginImplementsMetadata(plugin, genericImplementationInterface);
+                ExtractGenericPluginImplementsMetadata(plugin, genericImplementationBase);
 
             RegisterPlugins(builder, matchingPlugins, typeof(TPluginInterface));
         }
@@ -149,20 +150,20 @@ namespace Rhetos.Extensibility
         }
 
         /// <summary>
-        /// Updates the plugin's metadata (MefProvider.Implements) to match concept type that is given as the generic interface argument.
+        /// Updates the plugin's metadata (MefProvider.Implements) to match concept type that is given as the generic argument of the given interface or abstract class.
         /// </summary>
-        private static void ExtractGenericPluginImplementsMetadata(PluginInfo plugin, Type genericImplementationInterface)
+        private static void ExtractGenericPluginImplementsMetadata(PluginInfo plugin, Type genericImplementationBase)
         {
-            var implementsTypes = plugin.Type.GetInterfaces()
-                .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == genericImplementationInterface)
+            var implementsTypes = plugin.Type.GetInterfaces().Concat(new[] { plugin.Type.BaseType })
+                .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == genericImplementationBase)
                 .Select(i => i.GetGenericArguments()[0])
                 .ToList();
 
             if (implementsTypes.Count == 0)
                 throw new FrameworkException(string.Format(
-                    "Plugin {0} does not implement generic interface {1}.",
+                    "Plugin {0} does not implement or inherit generic type {1}.",
                     plugin.Type.FullName,
-                    genericImplementationInterface.FullName));
+                    genericImplementationBase.FullName));
 
             foreach (Type implements in implementsTypes)
                 plugin.Metadata.Add(MefProvider.Implements, implements);
