@@ -167,6 +167,7 @@
     <Compile Include="ComputedTest.cs" />
     <Compile Include="AuditablePropertiesTest.cs" />
     <Compile Include="CloningTest.cs" />
+    <Compile Include="FullTextSearchTest.cs" />
     <Compile Include="Helpers\RhetosTestContainerWithLogMonitor.cs" />
     <Compile Include="QueryableRepositoryTest.cs" />
     <Compile Include="Helpers\DateTimeHelper.cs" />

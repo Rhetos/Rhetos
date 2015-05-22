@@ -61,6 +61,7 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.AddReferencesFromDependency(typeof(NHibernate.Linq.Functions.DefaultLinqToHqlGeneratorsRegistry));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Logging.ILogProvider));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Security.IWindowsSecurity));
+            codeBuilder.AddReferencesFromDependency(typeof(NHibernate.Dialect.MsSql2008Dialect));
         }
 
         private static string GenerateCommonClassesSnippet()
@@ -200,6 +201,7 @@ namespace Rhetos.Dom.DefaultConcepts
             public void ExtendConfiguration(NHibernate.Cfg.Configuration configuration)
             {{
                 {8}
+                configuration.DataBaseIntegration(db => db.Dialect<DatabaseDialect>());
                 configuration.LinqToHqlGeneratorsRegistry<LinqToHqlGeneratorsRegistry>();
             }}
         }}
@@ -209,6 +211,14 @@ namespace Rhetos.Dom.DefaultConcepts
             public LinqToHqlGeneratorsRegistry()
             {{
                 {9}
+            }}
+        }}
+
+        public class DatabaseDialect : NHibernate.Dialect.MsSql2008Dialect
+        {{
+            public DatabaseDialect()
+            {{
+                " + ModuleCodeGenerator.NHibernateDatabaseDialectTag + @"
             }}
         }}
     }}

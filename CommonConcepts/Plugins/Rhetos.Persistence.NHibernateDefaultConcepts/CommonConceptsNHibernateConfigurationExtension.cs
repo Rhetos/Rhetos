@@ -24,6 +24,7 @@ using NHibernate.Linq.Visitors;
 using Rhetos.Compiler;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
@@ -33,18 +34,12 @@ using System.Reflection;
 namespace Rhetos.Persistence.NHibernateDefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(ModuleInfo))] // TODO: Initial code generator
-    [ExportMetadata(MefProvider.DependsOn, typeof(ModuleCodeGenerator))] // TODO: Initial code generator
+    [ExportMetadata(MefProvider.Implements, typeof(InitializationConcept))]
+    [ExportMetadata(MefProvider.DependsOn, typeof(DomInitializationCodeGenerator))]
     public class CommonConceptsNHibernateConfigurationExtension : IConceptCodeGenerator
     {
-        private static bool _initialized;
-
-        public void GenerateCode(Dsl.IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            if (_initialized)
-                return;
-            _initialized = true;
-
             codeBuilder.InsertCode(
 
             @"{

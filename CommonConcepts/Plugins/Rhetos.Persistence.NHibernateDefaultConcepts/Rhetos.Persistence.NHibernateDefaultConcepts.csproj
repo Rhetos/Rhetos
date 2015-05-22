@@ -101,6 +101,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FullTextSearchNHibernateExtension.cs" />
     <Compile Include="Mappings\DecimalPropertyMappingGenerator.cs" />
     <Compile Include="Mappings\LargePropertyMappingGenerator.cs" />
     <Compile Include="Mappings\LegacyPropertyReadOnlyMappingGenerator.cs" />

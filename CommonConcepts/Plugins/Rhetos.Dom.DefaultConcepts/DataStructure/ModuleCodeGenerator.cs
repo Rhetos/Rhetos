@@ -125,6 +125,7 @@ namespace {0}._Helper
         public const string CommonInfrastructureMembersTag = "/*CommonInfrastructureMembers*/";
         public const string NHibernateConfigurationExtensionTag = "/*NHibernateConfigurationExtension*/";
         public const string LinqToHqlGeneratorsRegistryTag = "/*LinqToHqlGeneratorsRegistry*/"; // Instead of calling Configuration.LinqToHqlGeneratorsRegistry() function, add the registry code using ModuleCodeGenerator.LinqToHqlGeneratorsRegistryTag. NHibernate supports only one LinqToHqlGeneratorsRegistry, so it cannot be registered in more than one plugin.
+        public const string NHibernateDatabaseDialectTag = "/*NHibernateDatabaseDialect*/";
 
     }
 }
