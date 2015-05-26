@@ -1,5 +1,12 @@
 # Rhetos release notes
 
+## 0.9.34 (2015-05-26)
+
+### Internal improvements
+
+* Allowed use of full-text search in LINQ queries through NHibernate extensions. Limited use on Browse data structure: *FullTextSearch* must be used on Base property.
+* Bugfix: Using the GUID property associated with a **Reference** property on **Browse** does not work in LINQ queries and generic property filters.
+
 ## 0.9.33 (2015-05-12)
 
 ### Breaking changes
