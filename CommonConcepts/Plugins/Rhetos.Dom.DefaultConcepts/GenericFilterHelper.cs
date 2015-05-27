@@ -46,23 +46,21 @@ namespace Rhetos.Dom.DefaultConcepts
         //================================================================
         #region Property filters
 
-        class PropertyFilter
+        public Expression<Func<T, bool>> ToExpression<T>(IEnumerable<PropertyFilter> propertyFilters)
         {
-            public string Property;
-            public string Operation;
-            public object Value;
+            return (Expression<Func<T, bool>>)ToExpression(propertyFilters, typeof(T));
         }
 
-        private LambdaExpression ToExpression(IEnumerable<PropertyFilter> filterCriterias, Type parameterType)
+        public LambdaExpression ToExpression(IEnumerable<PropertyFilter> propertyFilters, Type parameterType)
         {
             ParameterExpression parameter = Expression.Parameter(parameterType, "p");
 
-            if (filterCriterias == null || filterCriterias.Count() == 0)
+            if (propertyFilters == null || propertyFilters.Count() == 0)
                 return Expression.Lambda(Expression.Constant(true), parameter);
 
             Expression resultCondition = null;
 
-            foreach (var criteria in filterCriterias)
+            foreach (var criteria in propertyFilters)
             {
                 if (string.IsNullOrEmpty(criteria.Property))
                     continue;
@@ -266,11 +264,21 @@ namespace Rhetos.Dom.DefaultConcepts
                 foreach (var order in commandInfo.OrderByProperties)
                     query = Sort(query, order.Property, ascending: !order.Descending);
 
+            Type itemType = query.GetType().GetInterface("IQueryable`1").GetGenericArguments().Single();
+
             if (commandInfo.Skip > 0)
-                query = query.Skip(commandInfo.Skip);
+            {
+                // "query.Skip(commandInfo.Skip)" would convert the result IQueryable<T> and not use the actual queryable generic type.
+                var skipMethod = typeof(Queryable).GetMethod("Skip").MakeGenericMethod(itemType);
+                query = (IQueryable<T>)skipMethod.InvokeEx(null, query, commandInfo.Skip);
+            }
 
             if (commandInfo.Top > 0)
-                query = query.Take(commandInfo.Top);
+            {
+                // "query.Take(commandInfo.Top)" would convert the result IQueryable<T> and not use the actual queryable generic type.
+                var takeMethod = typeof(Queryable).GetMethod("Take").MakeGenericMethod(itemType);
+                query = (IQueryable<T>)takeMethod.InvokeEx(null, query, commandInfo.Top);
+            }
 
             return query;
         }
@@ -280,7 +288,7 @@ namespace Rhetos.Dom.DefaultConcepts
             if (string.IsNullOrEmpty(orderByProperty))
                 return source;
 
-            Type itemType = source.GetType().GetGenericArguments().Single();
+            Type itemType = source.GetType().GetInterface("IQueryable`1").GetGenericArguments().Single();
 
             ParameterExpression parameter = Expression.Parameter(itemType, "posting");
             Expression property = Expression.Property(parameter, orderByProperty);
@@ -365,10 +373,9 @@ namespace Rhetos.Dom.DefaultConcepts
             public object Parameter;
         }
 
-        public IList<FilterObject> ToFilterObjects(IEnumerable<FilterCriteria> genericFilter, Type parameterType)
+        public IList<FilterObject> ToFilterObjects(IEnumerable<FilterCriteria> genericFilter)
         {
-            if (!(genericFilter is IList))
-                genericFilter = genericFilter.ToList();
+            CsUtility.Materialize(ref genericFilter);
 
             foreach (var filter in genericFilter)
                 ValidateAndPrepare(filter);
@@ -384,7 +391,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     if (!handledPropertyFilter)
                     {
                         handledPropertyFilter = true;
-                        filterObjects.Add(CombinePropertyFilters(genericFilter, parameterType));
+                        filterObjects.Add(CombinePropertyFilters(genericFilter));
                     }
                 }
                 else
@@ -393,11 +400,10 @@ namespace Rhetos.Dom.DefaultConcepts
 
                     if (string.Equals(filter.Operation, FilterOperationNotMatches, StringComparison.OrdinalIgnoreCase))
                     {
-                        if (ReflectionHelper<IEntity>.IsPredicateExpression(filterType, parameterType))
+                        if (ReflectionHelper<IEntity>.GetPredicateExpressionParameter(filterType) != null)
                             filter.Value = Not((LambdaExpression)filter.Value);
                         else
-                            throw new FrameworkException(FilterOperationNotMatches + " operation is only allowed on filter that is a lambda expression that accepts argument " +
-                                parameterType + " and returns bool.");
+                            throw new FrameworkException(FilterOperationNotMatches + " operation is only allowed on a filter expression: Expression<Func<T, bool>>.");
                     }
 
                     filterObjects.Add(new FilterObject { FilterType = filterType, Parameter = filter.Value });
@@ -417,18 +423,16 @@ namespace Rhetos.Dom.DefaultConcepts
             return !string.IsNullOrEmpty(filter.Property);
         }
 
-        private FilterObject CombinePropertyFilters(IEnumerable<FilterCriteria> genericFilter, Type parameterType)
+        private FilterObject CombinePropertyFilters(IEnumerable<FilterCriteria> genericFilter)
         {
             var propertyFilters = genericFilter.Where(IsPropertyFilter)
                 .Select(fc => new PropertyFilter { Property = fc.Property, Operation = fc.Operation, Value = fc.Value })
                 .ToList();
 
-            var propertyFilterExpression = ToExpression(propertyFilters, parameterType);
-
             return new FilterObject
             {
-                Parameter = propertyFilterExpression,
-                FilterType = propertyFilterExpression.GetType()
+                Parameter = propertyFilters,
+                FilterType = propertyFilters.GetType()
             };
         }
 

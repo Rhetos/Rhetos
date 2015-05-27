@@ -126,6 +126,7 @@
     <Compile Include="IRole.cs" />
     <Compile Include="IRoleInheritsRole.cs" />
     <Compile Include="IReadableRepository.cs" />
+    <Compile Include="PropertyFilter.cs" />
     <Compile Include="RegisteredInterfaceImplementations.cs" />
     <Compile Include="IReportRepository.cs" />
     <Compile Include="IRepository.cs" />

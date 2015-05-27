@@ -265,7 +265,10 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public IQueryable<TEntityInterface> CastAsEntityNavigation(IQueryable<object> items)
         {
-            return (IQueryable<TEntityInterface>)CastAsEntityNavigationMethod.InvokeEx(null, items);
+            if (EntityNavigationType.IsAssignableFrom(items.GetType().GetInterface("IQueryable`1").GetGenericArguments()[0]))
+                return (IQueryable<TEntityInterface>)items;
+            else
+                return (IQueryable<TEntityInterface>)CastAsEntityNavigationMethod.InvokeEx(null, items);
         }
 
         private MethodInfo _asQueryableMethod = null;
@@ -285,8 +288,14 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         public IQueryable<TEntityInterface> AsQueryable(IEnumerable<TEntityInterface> items)
         {
-            var castItems = CastAsEntity(items);
-            return (IQueryable<TEntityInterface>)AsQueryableMethod.InvokeEx(null, castItems);
+            var iQueryable = items.GetType().GetInterface("IQueryable`1");
+            if (iQueryable != null && EntityType.IsAssignableFrom(iQueryable.GetGenericArguments()[0]))
+                return (IQueryable<TEntityInterface>)items;
+            else
+            {
+                var castItems = CastAsEntity(items);
+                return (IQueryable<TEntityInterface>)AsQueryableMethod.InvokeEx(null, castItems);
+            }
         }
 
         private MethodInfo _toListOfEntityMethod = null;

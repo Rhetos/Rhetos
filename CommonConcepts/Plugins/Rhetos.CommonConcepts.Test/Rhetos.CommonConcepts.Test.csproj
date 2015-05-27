@@ -91,6 +91,7 @@
     <Compile Include="..\..\..\Source\Rhetos\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="ReflectionHelperTest.cs" />
     <Compile Include="ReplaceWithReferenceTest.cs" />
     <Compile Include="ServerCommandsUtilityTest.cs" />
     <Compile Include="SqlAnalysisTest.cs" />

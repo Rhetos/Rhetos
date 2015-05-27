@@ -20,6 +20,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.CommonConcepts.Test.Mocks;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Processing.DefaultCommands;
 using Rhetos.TestCommon;
 using System;
 using System.Collections.Generic;
@@ -73,12 +74,32 @@ namespace Rhetos.CommonConcepts.Test
             Console.WriteLine("genericFilter: " + genericFilter.Property + " " + genericFilter.Operation + " " + genericFilter.Value);
 
             var genericFilterHelper = new GenericFilterHelper(new DomainObjectModelMock());
-            var filterObject = genericFilterHelper.ToFilterObjects(new FilterCriteria[] { genericFilter }, typeof(C)).Single();
+            var filterObject = genericFilterHelper.ToFilterObjects(new FilterCriteria[] { genericFilter }).Single();
             Console.WriteLine("filterObject.FilterType: " + filterObject.FilterType.FullName);
-            var filterExpression = (Expression<Func<C, bool>>)filterObject.Parameter;
+            var filterExpression = genericFilterHelper.ToExpression<C>((IEnumerable<PropertyFilter>)filterObject.Parameter);
 
             var filteredItems = items.AsQueryable().Where(filterExpression).ToList();
             Assert.AreEqual(expected, TestUtility.DumpSorted(filteredItems, item => item.Name ?? "<null>"), "Testing '" + operation + " " + value + "'.");
+        }
+
+        [TestMethod]
+        public void SortAndPaginateKeepsOriginalQueryableType()
+        {
+            var readCommand = new ReadCommandInfo
+            {
+                OrderByProperties = new[] { new OrderByProperty { Property = "Name", Descending = true } },
+                Skip = 1,
+                Top = 2,
+            };
+
+            IQueryable<object> query = new[] { "a", "b", "c", "d" }.AsQueryable().Select(name => new C { Name = name });
+            Console.WriteLine(query.GetType());
+            Assert.IsTrue(query is IQueryable<C>);
+
+            var result = GenericFilterHelper.SortAndPaginate<object>(query, readCommand);
+            Assert.AreEqual("c, b", TestUtility.Dump(result, item => ((C)item).Name));
+            Console.WriteLine(result.GetType());
+            Assert.IsTrue(result is IQueryable<C>);
         }
     }
 }

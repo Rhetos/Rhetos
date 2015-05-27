@@ -92,16 +92,18 @@ namespace CommonConcepts.Test
             public static IQueryable<TestPermissionBrowse> Query() { return TestData.AsQueryable(); }
         }
 
-        private static Expression<Func<TEntity, bool>> GenericFilterHelperToExpression<TEntity>(IEnumerable<FilterCriteria> propertyFilters)
+        private static Expression<Func<TEntity, bool>> GenericFilterHelperToExpression<TEntity>(IEnumerable<FilterCriteria> propertyFiltersCriteria)
         {
+            if (propertyFiltersCriteria.Count() == 0)
+                return item => true;
+
             using (var container = new RhetosTestContainer())
             {
                 var gfh = container.Resolve<GenericFilterHelper>();
-                var filters = gfh.ToFilterObjects(propertyFilters, typeof(TEntity));
-                var expr = (Expression<Func<TEntity, bool>>)filters.Select(f => f.Parameter).SingleOrDefault();
-                if (expr == null)
-                    expr = item => true;
-                return expr;
+                var filters = gfh.ToFilterObjects(propertyFiltersCriteria);
+                var propertyFilters = (IEnumerable<PropertyFilter>)filters.Single().Parameter;
+                var propertyFilterExpression = (Expression<Func<TEntity, bool>>)gfh.ToExpression(propertyFilters, typeof(TEntity));
+                return propertyFilterExpression;
             }
         }
 
@@ -404,7 +406,7 @@ namespace CommonConcepts.Test
 
                 filter = new FilterCriteria { Property = "Parentt", Operation = "equal", Value = null };
                 TestUtility.ShouldFail<ClientException>(() => GenericFilterHelperFilter(childQuery, new[] { filter }).ToList(),
-                    "generic filter", "property 'Parentt'", "Type 'TestGenericFilter.Child'");
+                    "generic filter", "property 'Parentt'", "TestGenericFilter", "Child'");
             }
         }
     }

@@ -321,7 +321,7 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual("True, True, False", TestUtility.Dump(new object[] { exp, exp2, imp }.Select(o => o is IList)));
             Assert.AreEqual("False, False, True", TestUtility.Dump(new object[] { exp, exp2, imp }.Select(o => o is IQueryable)));
 
-            TestUtility.ShouldFail(() => NewRepos(new NullRepository()).Load(gf), "SimpleEntity", "does not implement", "Expression");
+            TestUtility.ShouldFail(() => NewRepos(new NullRepository()).Load(gf), "SimpleEntity", "does not implement", "PropertyFilter");
         }
 
         public class NamedFilter { }

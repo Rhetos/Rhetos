@@ -290,6 +290,15 @@ namespace Rhetos.Dom.DefaultConcepts
                 return ExecuteGenericFilter((IEnumerable<FilterCriteria>)parameter, preferQuery);
             }
 
+            // If the parameter is a generic property filter, unless explicitly implemented above, use Query().Where(property filter)
+            if (Reflection.RepositoryQueryMethod != null && typeof(IEnumerable<PropertyFilter>).IsAssignableFrom(parameterType))
+            {
+                _logger.Trace(() => "Reading using Query().Where(property filter");
+                var query = (IQueryable<TEntityInterface>)Reflection.RepositoryQueryMethod.InvokeEx(_repository.Value);
+                var filterExpression = _genericFilterHelper.ToExpression((IEnumerable<PropertyFilter>)parameter, Reflection.EntityNavigationType);
+                return Reflection.Where(query, filterExpression);
+            }
+
             // If the parameter is a filter expression, unless explicitly implemented above, use Query().Where(parameter)
             if (Reflection.RepositoryQueryMethod != null && Reflection.IsPredicateExpression(parameterType))
             {
@@ -350,7 +359,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private IEnumerable<TEntityInterface> ExecuteGenericFilter(IEnumerable<FilterCriteria> genericFilter, bool preferQuery, IEnumerable<TEntityInterface> items = null)
         {
-            var filterObjects = _genericFilterHelper.ToFilterObjects(genericFilter, Reflection.EntityType);
+            var filterObjects = _genericFilterHelper.ToFilterObjects(genericFilter);
 
             foreach (var filter in filterObjects)
             {
@@ -452,6 +461,17 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 _logger.Trace(() => "Filtering using generic filter");
                 return ExecuteGenericFilter((IEnumerable<FilterCriteria>)parameter, preferQuery, items);
+            }
+
+            // If the parameter is a generic property filter, unless explicitly implemented above, use queryable items.Where(property filter)
+            if (typeof(IEnumerable<PropertyFilter>).IsAssignableFrom(parameterType))
+            {
+                _logger.Trace(() => "Reading using items.AsQueryable().Where(property filter");
+                var query = Reflection.AsQueryable(items);
+                var itemType = query.GetType().GetInterface("IEnumerable`1").GetGenericArguments()[0];
+                // The expression must use EntityType or EntityNavigationType, depending on the provided query.
+                var filterExpression = _genericFilterHelper.ToExpression((IEnumerable<PropertyFilter>)parameter, itemType);
+                return Reflection.Where(query, filterExpression);
             }
 
             // If the parameter is a filter expression, unless explicitly implemented above, use queryable items.Where(parameter)
