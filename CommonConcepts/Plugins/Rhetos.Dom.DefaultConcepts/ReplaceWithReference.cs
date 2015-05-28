@@ -54,7 +54,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         protected override Expression VisitMember(MemberExpression node)
         {
-            if (node.Member.DeclaringType == typeof(TFrom))
+            if ((node.Expression != null && node.Expression.Type == typeof(TFrom))
+                || (node.Member.DeclaringType == typeof(TFrom)))
             {
                 var referenceInfo = typeof(TTo).GetProperty(_referenceName);
                 var referenceExp = Expression.MakeMemberAccess(Visit(node.Expression), referenceInfo);
@@ -69,5 +70,4 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
     }
-
 }

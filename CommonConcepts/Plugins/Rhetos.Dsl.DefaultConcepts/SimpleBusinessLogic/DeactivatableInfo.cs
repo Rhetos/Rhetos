@@ -38,10 +38,10 @@ namespace Rhetos.Dsl.DefaultConcepts
             
             var composableFilterActiveAndThis = new ComposableFilterByInfo
             {
-                Expression = @"(items, repository, filterParameter) =>
+                Expression = @"(items, repository, parameter) =>
                     {
-                        if (filterParameter != null && filterParameter.ItemID.HasValue)
-                            return items.Where(item => item.Active == null || item.Active.Value || item.ID == filterParameter.ItemID.Value);
+                        if (parameter != null && parameter.ItemID.HasValue)
+                            return items.Where(item => item.Active == null || item.Active.Value || item.ID == parameter.ItemID.Value);
                         else
                             return items.Where(item => item.Active == null || item.Active.Value);
                     }",

@@ -237,6 +237,7 @@ Module TestFilter
     Browse ComposableFilterBrowse TestFilter.CombinedFilters
     {
         Take Name;
+		Take DebugInfoSimpleName 'Simple.Name';
         Take Simple;
         ItemFilter SimpleNameA 'item => item.Simple.Name.Contains("a")';
         ItemFilter NameN 'item => item.Name.Contains("n")';

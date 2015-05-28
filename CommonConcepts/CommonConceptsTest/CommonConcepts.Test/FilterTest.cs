@@ -284,9 +284,9 @@ namespace CommonConcepts.Test
 
                 var s1 = new TestFilter.Source { Name = "A s1" };
                 var s2 = new TestFilter.Source { Name = "B s2" };
+                repository.TestFilter.Source.Insert(new[] { s1, s2 });
                 var d1 = new TestFilter.SourceDetail { ParentID = s1.ID, Name2 = "C d1" };
                 var d2 = new TestFilter.SourceDetail { ParentID = s2.ID, Name2 = "D d2" };
-                repository.TestFilter.Source.Insert(new[] { s1, s2 });
                 repository.TestFilter.SourceDetail.Insert(new[] { d1, d2 });
 
                 var filteredDetailByMaster = repository.TestFilter.SourceDetail.Filter(new TestFilter.FilterByPrefix { Prefix = "A" });
@@ -359,9 +359,8 @@ namespace CommonConcepts.Test
                 ExecuteCommand(queryDataSourceCommandInfo, container).Records,
                 item =>
                 {
-                    var x = (Common.Queryable.TestFilter_ComposableFilterBrowse)item;
-                    if (x.Simple != null) return x.Name + " " + x.Simple.Name;
-                    return x.Name + " null";
+                    var x = (TestFilter.ComposableFilterBrowse)item;
+                    return x.Name + " " + (x.DebugInfoSimpleName ?? "null");
                 });
         }
 

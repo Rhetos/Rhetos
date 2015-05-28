@@ -38,32 +38,23 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<ComposableFilterByInfo> AdditionalParametersArgumentTag = "AdditionalParametersArgument";
         public static readonly CsTag<ComposableFilterByInfo> BeforeFilterTag = "BeforeFilter";
 
-        private static string FilterExpressionPropertyName(ComposableFilterByInfo info)
-        {
-            return "_composableFilterExpression_" + CsUtility.TextToIdentifier(info.Parameter);
-        }
-
         private static string FilterImplementationSnippet(ComposableFilterByInfo info)
         {
             return string.Format(
-@"        private static readonly Func<IQueryable<Common.Queryable.{0}_{1}>, Common.DomRepository, {2}{5}, IQueryable<Common.Queryable.{0}_{1}>> {3} =
-            {4};
-
-        public IQueryable<Common.Queryable.{0}_{1}> Filter(IQueryable<Common.Queryable.{0}_{1}> source, {2} parameter)
+@"        public IQueryable<Common.Queryable.{0}_{1}> Filter(IQueryable<Common.Queryable.{0}_{1}> localSource, {2} localParameter)
         {{
-            {7}
-            return {3}(source, _domRepository, parameter{6});
+            Func<IQueryable<Common.Queryable.{0}_{1}>, Common.DomRepository, {2}" + AdditionalParametersTypeTag.Evaluate(info) + @", IQueryable<Common.Queryable.{0}_{1}>> filterFunction =
+            {3};
+
+            " + BeforeFilterTag.Evaluate(info) + @"
+            return filterFunction(localSource, _domRepository, localParameter" + AdditionalParametersArgumentTag.Evaluate(info) + @");
         }}
 
 ",
             info.Source.Module.Name,
             info.Source.Name,
             info.Parameter,
-            FilterExpressionPropertyName(info),
-            info.Expression,
-            AdditionalParametersTypeTag.Evaluate(info),
-            AdditionalParametersArgumentTag.Evaluate(info),
-            BeforeFilterTag.Evaluate(info));
+            info.Expression);
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)

@@ -106,11 +106,11 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public virtual string FilterAncestorsExpression()
         {
-            return string.Format(@"(items, repository, filterParameter) =>
+            return string.Format(@"(items, repository, parameter) =>
             {{
-                var child = repository.{0}.{1}.Query().Where(item => item.ID == filterParameter.ID).SingleOrDefault();
+                var child = repository.{0}.{1}.Query().Where(item => item.ID == parameter.ID).SingleOrDefault();
                 if (child == null)
-                    throw new Rhetos.UserException(""Given record does not exist: {0}.{1}, ID "" + filterParameter.ID + ""."");
+                    throw new Rhetos.UserException(""Given record does not exist: {0}.{1}, ID "" + parameter.ID + ""."");
                 int leftIndex = child.Extension_{1}{2}Hierarchy.LeftIndex.Value;
 
                 return items.Where(item =>
@@ -124,11 +124,11 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public virtual string FilterDescendantsExpression()
         {
-            return string.Format(@"(items, repository, filterParameter) =>
+            return string.Format(@"(items, repository, parameter) =>
             {{
-                var parent = repository.{0}.{1}.Query().Where(item => item.ID == filterParameter.ID).SingleOrDefault();
+                var parent = repository.{0}.{1}.Query().Where(item => item.ID == parameter.ID).SingleOrDefault();
                 if (parent == null)
-                    throw new Rhetos.UserException(""Given record does not exist: {0}.{1}, ID "" + filterParameter.ID + ""."");
+                    throw new Rhetos.UserException(""Given record does not exist: {0}.{1}, ID "" + parameter.ID + ""."");
                 int leftIndex = parent.Extension_{1}{2}Hierarchy.LeftIndex.Value;
                 int rightIndex = parent.Extension_{1}{2}Hierarchy.RightIndex.Value;
 

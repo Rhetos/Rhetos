@@ -89,7 +89,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("c3/4", ReportSimple(repository.TestHierarchy.Simple.Filter(query, new TestHierarchy.Level2OrDeeper())));
 
                 PrepareSimpleData(repository, "a, a-b, a-c");
-                Assert.AreEqual("a1/6, b2/3, c4/5", ReportSimple(repository));
+                Assert.IsTrue(new[] { "a1/6, b2/3, c4/5", "a1/6, b4/5, c2/3" }.Contains(ReportSimple(repository)));
                 Assert.AreEqual("", ReportSimple(repository.TestHierarchy.Simple.Filter(query, new TestHierarchy.Level2OrDeeper())));
             }
         }
@@ -233,7 +233,10 @@ namespace CommonConcepts.Test
                 PrepareSimpleData(repository, "a, a-b");
                 Assert.AreEqual("a1/4, b2/3", ReportSimple(repository));
 
-                repository.TestHierarchy.Simple.Delete(repository.TestHierarchy.Simple.All());
+                var toDelete = repository.TestHierarchy.Simple.Query()
+                    .OrderByDescending(item => item.Extension_SimpleParentHierarchy.LeftIndex)
+                    .ToList();
+                repository.TestHierarchy.Simple.Delete(toDelete);
                 Assert.AreEqual("", ReportSimple(repository), "Empty after delete.");
             }
         }

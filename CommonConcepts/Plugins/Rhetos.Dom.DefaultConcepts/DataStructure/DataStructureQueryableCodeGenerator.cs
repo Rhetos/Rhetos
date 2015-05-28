@@ -74,15 +74,15 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         /// <param name="csPropertyName">The csPropertyName argument refers to a C# class property, not the PropertyInfo concept.</param>
-        public static string EnableLazyLoadTag(DataStructureInfo dataStructure, string csPropertyName)
+        public static string GetterTag(DataStructureInfo dataStructure, string csPropertyName)
         {
-            return string.Format("/*DataStructureQueryable EnableLazyLoad {0}.{1}.{2}*/", dataStructure.Module.Name, dataStructure.Name, csPropertyName);
+            return string.Format("/*DataStructureQueryable Getter {0}.{1}.{2}*/", dataStructure.Module.Name, dataStructure.Name, csPropertyName);
         }
 
         /// <param name="csPropertyName">The csPropertyName argument refers to a C# class property, not the PropertyInfo concept.</param>
-        public static string GetterSetterTag(DataStructureInfo dataStructure, string csPropertyName)
+        public static string SetterTag(DataStructureInfo dataStructure, string csPropertyName)
         {
-            return string.Format("/*DataStructureQueryable GetterSetter {0}.{1}.{2}*/", dataStructure.Module.Name, dataStructure.Name, csPropertyName);
+            return string.Format("/*DataStructureQueryable Setter {0}.{1}.{2}*/", dataStructure.Module.Name, dataStructure.Name, csPropertyName);
         }
 
         /// <param name="csPropertyName">
@@ -106,9 +106,14 @@ namespace Rhetos.Dom.DefaultConcepts
         @"{2}
         public virtual {1} {0}
         {{
-            {5}
-            {6}get {{ {3} }}
-            {6}set {{ {4} }}
+            get
+            {{
+                {5}{3}
+            }}
+            set
+            {{
+                {6}{4}
+            }}
         }}
 
         ",
@@ -117,10 +122,30 @@ namespace Rhetos.Dom.DefaultConcepts
                 PropertyAttributeTag(dataStructure, csPropertyName),
                 getter,
                 setter,
-                GetterSetterTag(dataStructure, csPropertyName),
-                EnableLazyLoadTag(dataStructure, csPropertyName));
+                GetterTag(dataStructure, csPropertyName),
+                SetterTag(dataStructure, csPropertyName));
 
             codeBuilder.InsertCode(propertySnippet, DataStructureQueryableCodeGenerator.MembersTag, dataStructure);
+        }
+
+        public static void AddNavigationPropertyBackingField(ICodeBuilder codeBuilder, DataStructureInfo dataStructure, string csPropertyName, string propertyType, string additionalCode)
+        {
+            codeBuilder.InsertCode(
+                "private " + propertyType + " " + BackingFieldName(csPropertyName) + ";\r\n\r\n        ",
+                DataStructureQueryableCodeGenerator.MembersTag, dataStructure);
+
+            codeBuilder.InsertCode(
+                "return " + BackingFieldName(csPropertyName) + ";\r\n                //",
+                DataStructureQueryableCodeGenerator.GetterTag(dataStructure, csPropertyName));
+
+            codeBuilder.InsertCode(
+                BackingFieldName(csPropertyName) + " = value;\r\n                " + additionalCode + (string.IsNullOrEmpty(additionalCode) ? "" : "\r\n                ") + "//",
+                DataStructureQueryableCodeGenerator.SetterTag(dataStructure, csPropertyName));
+        }
+
+        private static string BackingFieldName(string csPropertyName)
+        {
+            return "_" + char.ToLower(csPropertyName.First()) + csPropertyName.Substring(1);
         }
 
         public static void AddInterfaceAndReference(ICodeBuilder codeBuilder, Type type, DataStructureInfo dataStructureInfo)

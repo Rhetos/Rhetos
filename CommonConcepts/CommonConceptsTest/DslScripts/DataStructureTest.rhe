@@ -433,7 +433,7 @@ Module TestLazyLoad
 	Entity Parent
 	{
 		ShortString Name;
-		LinkedItems Simples TestLazyLoad.Simple.Parent;
+		LinkedItems Children TestLazyLoad.Simple.Parent;
 	}
 	
 	Entity SimpleBase

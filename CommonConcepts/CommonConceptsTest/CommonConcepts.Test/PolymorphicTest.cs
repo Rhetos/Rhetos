@@ -49,8 +49,8 @@ namespace CommonConcepts.Test
                 repository.TestPolymorphic.Simple1.Insert(new[] {
                     new TestPolymorphic.Simple1 { Name = "a", Days = 1 },
                     new TestPolymorphic.Simple1 { Name = "b", Days = 2 },
-                    new TestPolymorphic.Simple1 { Name = "b3", Days = 2.3m },
-                    new TestPolymorphic.Simple1 { Name = "b7", Days = 2.7m },
+                    new TestPolymorphic.Simple1 { Name = "b3", Days = 2 },
+                    new TestPolymorphic.Simple1 { Name = "b7", Days = 3 },
                 });
                 repository.TestPolymorphic.Simple2.Insert(new[] {
                     new TestPolymorphic.Simple2 { Name1 = "aa", Name2 = 11, Finish = new DateTime(2000, 1, 1) },
@@ -149,8 +149,8 @@ namespace CommonConcepts.Test
                 repository.TestPolymorphic.Simple1.Insert(new[] {
                     new TestPolymorphic.Simple1 { Name = "a", Days = 1 },
                     new TestPolymorphic.Simple1 { Name = "b", Days = 2 },
-                    new TestPolymorphic.Simple1 { Name = "b3", Days = 2.3m },
-                    new TestPolymorphic.Simple1 { Name = "b7", Days = 2.7m },
+                    new TestPolymorphic.Simple1 { Name = "b3", Days = 2 },
+                    new TestPolymorphic.Simple1 { Name = "b7", Days = 3 },
                 });
                 repository.TestPolymorphic.Simple2.Insert(new[] {
                     new TestPolymorphic.Simple2 { Name1 = "aa", Name2 = 11, Finish = new DateTime(2000, 1, 1) },

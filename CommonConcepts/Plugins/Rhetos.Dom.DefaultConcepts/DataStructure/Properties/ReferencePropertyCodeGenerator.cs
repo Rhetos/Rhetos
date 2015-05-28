@@ -42,7 +42,16 @@ namespace Rhetos.Dom.DefaultConcepts
             PropertyHelper.GenerateCodeForType(referenceGuid, codeBuilder, "Guid?");
 
             if (DslUtility.IsQueryable(info.DataStructure) && DslUtility.IsQueryable(info.Referenced))
-                DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.DataStructure, info.Name, "Common.Queryable." + info.Referenced.Module.Name + "_" + info.Referenced.Name, info.Name + "ID");
+            {
+                DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.DataStructure, info.Name,
+                    "Common.Queryable." + info.Referenced.Module.Name + "_" + info.Referenced.Name, info.Name + "ID");
+
+                if (!(info.DataStructure is IOrmDataStructure) && info.Referenced is IOrmDataStructure)
+                    codeBuilder.InsertCode(
+                        string.Format("\r\n                q.{0} = _domRepository.{1}.{2}.Query().Where(referenced => referenced.ID == item.{0}ID).SingleOrDefault();",
+                            info.Name, info.Referenced.Module.Name, info.Referenced.Name),
+                        RepositoryHelper.QueryLoadedAssignPropertyTag, info.DataStructure);
+            }
 
             if (info.DataStructure is IOrmDataStructure && info.Referenced is IOrmDataStructure)
                 codeBuilder.InsertCode(

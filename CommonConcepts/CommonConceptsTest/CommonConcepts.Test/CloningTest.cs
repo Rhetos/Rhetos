@@ -110,9 +110,9 @@ Clone3.Start
                 var b = new TestCloning.Base { ID = Guid.NewGuid(), Name = "b" };
                 var b2 = new TestCloning.Base { ID = Guid.NewGuid(), Name = "b2" };
                 var b3 = new TestCloning.Base { ID = Guid.NewGuid(), Name = "b3" };
-                var p = new TestCloning.Parent { Name = "p" };
-                var p2 = new TestCloning.Parent { Name = "p2" };
-                var p3 = new TestCloning.Parent { Name = "p3" };
+                var p = new TestCloning.Parent { ID = Guid.NewGuid(), Name = "p" };
+                var p2 = new TestCloning.Parent { ID = Guid.NewGuid(), Name = "p2" };
+                var p3 = new TestCloning.Parent { ID = Guid.NewGuid(), Name = "p3" };
                 var c = new TestCloning.Clone3 { ID = b.ID, Name = "c", ParentID = p.ID };
                 var c2 = new TestCloning.Clone3 { ID = b2.ID, Name = "c2", ParentID = p2.ID };
                 var c3 = new TestCloning.Clone3 { ID = b3.ID, Name = "c3", ParentID = p3.ID };

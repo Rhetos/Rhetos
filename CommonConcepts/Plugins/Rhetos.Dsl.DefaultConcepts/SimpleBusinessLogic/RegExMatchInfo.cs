@@ -40,22 +40,38 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            var itemFilterRegExMatchProperty = new ItemFilterInfo
+            var filterParameter = new ParameterInfo
             {
-                Expression = String.Format(@"item => !String.IsNullOrEmpty(item.{0}) && !(new System.Text.RegularExpressions.Regex({1})).IsMatch(item.{0})",
-                    Property.Name,
-                    CsUtility.QuotedString("^" + RegularExpression + "$")),
-                FilterName = Property.Name + "_RegExMatchFilter",
+                Module = Property.DataStructure.Module,
+                Name = Property.Name + "_RegExMatchFilter",
+            };
+
+            string filterExpression = string.Format(@"(source, repository, parameter) =>
+                {{
+                    var items = source.Where(item => !string.IsNullOrEmpty(item.{0})).Select(item => new {{ item.ID, item.{0} }}).ToList();
+                    var regex = new System.Text.RegularExpressions.Regex({1});
+                    var invalidItemIds = items.Where(item => !regex.IsMatch(item.{0})).Select(item => item.ID).ToList();
+                    return Filter(source, invalidItemIds);
+                }}",
+                Property.Name,
+                CsUtility.QuotedString("^" + RegularExpression + "$"));
+
+            var itemFilterRegExMatchProperty = new ComposableFilterByInfo
+            {
+                Expression = filterExpression,
+                Parameter = filterParameter.Module.Name + "." + filterParameter.Name,
                 Source = Property.DataStructure
             };
+
             var invalidDataRegExMatchProperty = new InvalidDataMarkPropertyInfo
             {
                 DependedProperty = Property,
-                FilterType = itemFilterRegExMatchProperty.FilterName,
+                FilterType = itemFilterRegExMatchProperty.Parameter,
                 ErrorMessage = ErrorMessage,
                 Source = Property.DataStructure
             };
-            return new IConceptInfo[] { itemFilterRegExMatchProperty, invalidDataRegExMatchProperty };
+
+            return new IConceptInfo[] { filterParameter, itemFilterRegExMatchProperty, invalidDataRegExMatchProperty };
         }
 
         public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)

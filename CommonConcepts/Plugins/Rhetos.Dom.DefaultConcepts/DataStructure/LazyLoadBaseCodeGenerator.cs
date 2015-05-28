@@ -38,8 +38,10 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (LazyLoadBaseInfo)conceptInfo;
 
-            codeBuilder.InsertCode("get; set;", DataStructureQueryableCodeGenerator.GetterSetterTag(info.Extends.Extension, "Base"));
-            codeBuilder.InsertCode("//", DataStructureQueryableCodeGenerator.EnableLazyLoadTag(info.Extends.Extension, "Base"));
+            DataStructureQueryableCodeGenerator.AddNavigationPropertyBackingField(codeBuilder, info.Extends.Extension,
+                csPropertyName: "Base",
+                propertyType: "Common.Queryable." + info.Extends.Base.Module.Name + "_" + info.Extends.Base.Name,
+                additionalCode: "ID = value != null ? value.ID : Guid.Empty;");
         }
     }
 }

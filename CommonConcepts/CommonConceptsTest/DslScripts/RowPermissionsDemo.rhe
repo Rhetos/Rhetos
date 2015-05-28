@@ -98,7 +98,8 @@
                 
                 DenyWrite PreviousYears 'context =>
                     {
-                        return item => item.Created < new DateTime(DateTime.Today.Year, 1, 1);
+						var currentYear = new DateTime(DateTime.Today.Year, 1, 1);
+						return item => item.Created < currentYear;
                     }';
             }
         }

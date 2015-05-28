@@ -50,6 +50,12 @@ namespace Rhetos.Dom.DefaultConcepts
                  string.Format("{0} = item.{1},\r\n                    ", info.PropertyInfo.Name, info.Path),
                  BrowseDataStructureCodeGenerator.BrowsePropertiesTag,
                  browse);
+
+            if (info.PropertyInfo is ReferencePropertyInfo)
+                codeBuilder.InsertCode(
+                 string.Format("{0}ID = item.{1}ID,\r\n                    ", info.PropertyInfo.Name, info.Path),
+                 BrowseDataStructureCodeGenerator.BrowsePropertiesTag,
+                 browse);
         }
     }
 }

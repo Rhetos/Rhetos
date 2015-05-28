@@ -77,6 +77,10 @@
       <Project>{A7328BFA-A009-4F1E-B9A1-B51B2020F45C}</Project>
       <Name>Rhetos.Deployment</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Persistence.Interfaces\Rhetos.Persistence.Interfaces.csproj">
+      <Project>{5e3bbd83-91cb-4fba-81b2-79a81ec94d70}</Project>
+      <Name>Rhetos.Persistence.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Persistence\Rhetos.Persistence.csproj">
       <Project>{02415b9e-fb00-451d-8b1a-b4a3ce150f2d}</Project>
       <Name>Rhetos.Persistence</Name>

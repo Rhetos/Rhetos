@@ -12,7 +12,7 @@ Module TestPolymorphic
 	
 	Entity Simple1
 	{
-		Decimal Days; // Should automatically match Days implementation by name.
+		Integer Days; // Should automatically match Days implementation by name.
 		Is TestPolymorphic.SimpleBase; // Should automatically add Name property.
 	}
 	
