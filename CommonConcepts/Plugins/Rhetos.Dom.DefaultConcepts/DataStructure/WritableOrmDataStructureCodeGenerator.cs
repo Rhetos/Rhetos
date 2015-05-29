@@ -35,6 +35,9 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.DependsOn, typeof(OrmDataStructureCodeGenerator))]
     public class WritableOrmDataStructureCodeGenerator : IConceptCodeGenerator
     {
+        /// <summary>Clear objects and context from any state other than new values to be saved.</summary>
+        public static readonly CsTag<DataStructureInfo> ClearContextTag = "WritableOrm ClearContext";
+
         /// <summary>Inserted code can use enumerables "insertedNew", "updatedNew" and "deletedIds".</summary>
         public static readonly CsTag<DataStructureInfo> ArgumentValidationTag = "WritableOrm ArgumentValidation";
 
@@ -79,6 +82,8 @@ namespace Rhetos.Dom.DefaultConcepts
             foreach (var item in insertedNew)
                 if (item.ID == Guid.Empty)
                     item.ID = Guid.NewGuid();
+
+            " + ClearContextTag.Evaluate(info) + @"
 
             _executionContext.EntityFrameworkContext.ClearCache(); // Updating a modified persistent object could break old-data validations such as checking for locked items.
 

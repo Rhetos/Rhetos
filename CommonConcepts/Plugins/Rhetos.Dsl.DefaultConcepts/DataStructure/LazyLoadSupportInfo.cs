@@ -23,6 +23,7 @@ using System.Linq;
 using System.Text;
 using Rhetos.Dsl;
 using System.ComponentModel.Composition;
+using Rhetos.Dsl.DefaultConcepts;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -34,5 +35,23 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }
+    }
+
+    [Export(typeof(IConceptMacro))]
+    public class LazyLoadSupportMacro : IConceptMacro<LazyLoadSupportInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(LazyLoadSupportInfo conceptInfo, IDslModel existingConcepts)
+        {
+            var newConcepts = new List<IConceptInfo>();
+
+            if (conceptInfo.DataStructure is IWritableOrmDataStructure)
+                newConcepts.Add(new LazyLoadWritableSupportInfo { DataStructure = conceptInfo.DataStructure });
+
+            newConcepts.AddRange(existingConcepts
+                .FindByReference<WriteInfo>(write => write.DataStructure, conceptInfo.DataStructure)
+                .Select(write => new LazyLoadWriteSupportInfo { Write = write }));
+
+            return newConcepts;
+        }
     }
 }

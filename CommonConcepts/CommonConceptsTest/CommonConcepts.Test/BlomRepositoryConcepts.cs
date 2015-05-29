@@ -70,7 +70,7 @@ namespace CommonConcepts.Test
                 testerItems[1].Name += " modified"; // Modifying Name property when base is locked should fail.
                 TestUtility.ShouldFail<Rhetos.UserException>(
                     () => testerRepos.Update(testerItems),
-                    "It is not allow to modify locked item's name 't2' => 't2 modified'.");
+                    "It is not allowed to modify locked item's name 't2' => 't2 modified'.");
             }
         }
     }

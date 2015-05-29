@@ -63,6 +63,10 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (item.ID == Guid.Empty)
                     item.ID = Guid.NewGuid();
 
+            " + WritableOrmDataStructureCodeGenerator.ClearContextTag.Evaluate(info.DataStructure) + @"
+
+            _executionContext.EntityFrameworkContext.ClearCache(); // Updating a modified persistent object could break old-data validations such as checking for locked items.
+
             " + WritableOrmDataStructureCodeGenerator.ArgumentValidationTag.Evaluate(info.DataStructure) + @"
 
             " + WritableOrmDataStructureCodeGenerator.InitializationTag.Evaluate(info.DataStructure) + @"

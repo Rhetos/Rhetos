@@ -27,7 +27,7 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// Enables lazy loading of navigation properties.
+    /// Enables lazy loading of all navigation properties on the data structure.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("LazyLoadReferences")]

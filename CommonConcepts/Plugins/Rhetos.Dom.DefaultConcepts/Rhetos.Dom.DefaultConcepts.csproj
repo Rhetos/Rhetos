@@ -101,6 +101,8 @@
     <Compile Include="DataStructure\LazyLoadLinkedItemsCodeGenerator.cs" />
     <Compile Include="DataStructure\LazyLoadBaseCodeGenerator.cs" />
     <Compile Include="DataStructure\LazyLoadExtensionCodeGenerator.cs" />
+    <Compile Include="DataStructure\LazyLoadWriteSupportCodeGenerator.cs" />
+    <Compile Include="DataStructure\LazyLoadWritableSupportCodeGenerator.cs" />
     <Compile Include="DataStructure\LazyLoadSupportCodeGenerator.cs" />
     <Compile Include="DataStructure\LazyLoadReferenceCodeGenerator.cs" />
     <Compile Include="DataStructure\RegisteredInterfaceImplementationCodeGenerator.cs" />

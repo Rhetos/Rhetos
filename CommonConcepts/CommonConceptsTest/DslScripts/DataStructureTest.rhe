@@ -405,7 +405,7 @@ Module TestDataStructure
 				
 				if (lockedItemModifyName != null)
 					throw new Rhetos.UserException(string.Format(
-						"It is not allow to modify locked item''s name ''{0}'' => ''{1}''.",
+						"It is not allowed to modify locked item''s name ''{0}'' => ''{1}''.",
 						lockedItemModifyName.oldItem.Name,
 						lockedItemModifyName.newItem.Name));';
 		}

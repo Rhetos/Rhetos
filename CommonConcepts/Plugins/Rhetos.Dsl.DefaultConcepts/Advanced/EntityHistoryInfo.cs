@@ -275,30 +275,34 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             // SAVE IN BASE AND HISTORY
             _domRepository.{1}.{0}_Changes.Save(
-                    insertedHist.Select(item => {{
+                insertedHist.Select(item =>
+                    {{
                         var ret = new {0}_Changes();
                         ret.ID = item.ID;
                         ret.EntityID = item.EntityID;{2}
                         return ret;
-                    }}).ToArray()
-                    ,updateHist.Select(item => {{
-                        var ret = _domRepository.{1}.{0}_Changes.Filter(new [] {{item.ID}}).Single();{2}
+                    }}),
+                updateHist.Select(item =>
+                    {{
+                        var ret = _domRepository.{1}.{0}_Changes.Filter(new [] {{ item.ID }}).Single();{2}
                         return ret;
-                    }}).ToArray()
-                    , _domRepository.{1}.{0}_Changes.Filter(deletedHist.Select(de => de.ID).ToArray()));
+                    }}),
+                _domRepository.{1}.{0}_Changes.Filter(deletedHist.Select(de => de.ID)));
 
-            _domRepository.{1}.{0}.Save(null
-                , insertedEnt.Select(item => {{
-                        var ret = _domRepository.{1}.{0}.Filter(new [] {{item.EntityID.Value}}).Single();{2}
+            _domRepository.{1}.{0}.Save(
+                null,
+                insertedEnt.Select(item =>
+                    {{
+                        var ret = _domRepository.{1}.{0}.Filter(new [] {{ item.EntityID.Value }}).Single();{2}
                         return ret;
-                    }}).ToArray().Concat(
-                        updateEnt.Select(item => {{
-                            var ret = _domRepository.{1}.{0}.Filter(new [] {{item.EntityID.Value}}).Single();
-                            ret.SetOverwriteCurrentRecordOnUpdate(true);{2}
-                            return ret;
-                        }}).ToArray()
-                    )
-                , deletedEnt.Select(de => new {1}.{0} {{ ID = de.EntityID.Value }}).ToArray());
+                    }})
+                    .Concat(updateEnt.Select(item =>
+                    {{
+                        var ret = _domRepository.{1}.{0}.Filter(new [] {{ item.EntityID.Value }}).Single();
+                        ret.SetOverwriteCurrentRecordOnUpdate(true);{2}
+                        return ret;
+                    }})),
+                deletedEnt.Select(de => new {1}.{0} {{ ID = de.EntityID.Value }}));
 
             ",
              Entity.Name,

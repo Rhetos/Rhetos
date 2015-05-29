@@ -145,6 +145,8 @@
     <Compile Include="DataStructure\LazyLoadDataStructureInfo.cs" />
     <Compile Include="DataStructure\ImplementsQueryableInterfaceInfo.cs" />
     <Compile Include="DataStructure\ImplementsQueryableInterfacePropertyInfo.cs" />
+    <Compile Include="DataStructure\LazyLoadWriteSupportInfo.cs" />
+    <Compile Include="DataStructure\LazyLoadWritableSupportInfo.cs" />
     <Compile Include="DataStructure\RegisteredQueryableInterfaceImplementationHelperInfo.cs" />
     <Compile Include="DataStructure\SubtypeExtendPolymorphicInfo.cs" />
     <Compile Include="DataStructure\PolymorphicUnionViewInfo.cs" />

@@ -79,20 +79,21 @@ namespace CommonConcepts.Test
                 var filterByProperty = repository.TestPolymorphic.SimpleBase.Query()
                     .Where(item => item.Days == 2)
                     .Select(item => item.Name);
-                Assert.AreEqual("b, bb-22", TestUtility.DumpSorted(filterByProperty), "filterByProperty");
+                Assert.AreEqual("b, b3, bb-22", TestUtility.DumpSorted(filterByProperty), "filterByProperty");
 
+                Guid aId = repository.TestPolymorphic.SimpleBase.Query().Where(item => item.Name == "a").Single().ID;
                 var filterByID = repository.TestPolymorphic.SimpleBase.Query()
-                    .Where(item => item.ID == all[0].ID)
+                    .Where(item => item.ID == aId)
                     .Select(item => item.Name);
                 Assert.AreEqual("a", TestUtility.DumpSorted(filterByID), "filterByID");
 
                 var filterBySubtypeID = repository.TestPolymorphic.SimpleBase.Query()
-                    .Where(item => item.Simple1.ID == all[0].ID)
+                    .Where(item => item.Simple1.ID == aId)
                     .Select(item => item.Name);
                 Assert.AreEqual("a", TestUtility.DumpSorted(filterBySubtypeID), "filterBySubtypeID");
 
                 var filterByOtherSubtypeID = repository.TestPolymorphic.SimpleBase.Query()
-                    .Where(item => item.Simple2.ID == all[0].ID)
+                    .Where(item => item.Simple2.ID == aId)
                     .Select(item => item.Name);
                 Assert.AreEqual("", TestUtility.DumpSorted(filterByOtherSubtypeID), "filterByOtherSubtypeID");
             }

@@ -121,7 +121,8 @@ namespace Rhetos.Dom.DefaultConcepts
             var objectContext = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)this).ObjectContext;
 
             Configuration.AutoDetectChangesEnabled = false;
-            foreach (var item in ChangeTracker.Entries().ToList())
+            var trackedItems = ChangeTracker.Entries().ToList();
+            foreach (var item in trackedItems)
                 objectContext.Detach(item.Entity);
             Configuration.AutoDetectChangesEnabled = true;
         }

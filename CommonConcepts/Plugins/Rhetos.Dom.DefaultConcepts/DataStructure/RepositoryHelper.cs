@@ -201,19 +201,45 @@ namespace Rhetos.Dom.DefaultConcepts
             return " + filterByIds + @";
         }}
 
-        public IEnumerable<{0}.{1}> Items(IEnumerable<Common.Queryable.{0}_{1}> items)
+        public {0}.{1} ToItem(Common.Queryable.{0}_{1} item)
+        {{
+            return new {0}.{1}
+            {{
+                ID = item.ID" + LoadQueryAssignPropertyTag.Evaluate(info) + @"
+            }};
+        }}
+
+        public void ToItems(ref IEnumerable<{0}.{1}> items)
+        {{
+            var queriedItems = items as IEnumerable<Common.Queryable.{0}_{1}>;
+            if (queriedItems != null)
+            {{
+                items = ToItems(queriedItems);
+                Rhetos.Utilities.CsUtility.Materialize(ref items);
+            }}
+            else
+            {{
+                Rhetos.Utilities.CsUtility.Materialize(ref items);
+                var itemsList = (IList<{0}.{1}>)items;
+                for (int i = 0; i < itemsList.Count(); i ++)
+                {{
+                    var queriedItem = itemsList[i] as Common.Queryable.{0}_{1};
+                    if (queriedItem != null)
+                        itemsList[i] = ToItem(queriedItem);
+                }}
+            }}
+        }}
+
+        public IEnumerable<{0}.{1}> ToItems(IEnumerable<Common.Queryable.{0}_{1}> items)
         {{
             var query = items as IQueryable<Common.Queryable.{0}_{1}>;
             if (query != null)
-                return Items(query); // The IQueryable.Select(Expression<>) function allows ORM optimizations over IEnumerable.Select(Func<>).
+                return ToItems(query); // The IQueryable.Select(Expression<>) function allows ORM optimizations over IEnumerable.Select(Func<>).
 
-            return items.Select(item => new {0}.{1}
-            {{
-                ID = item.ID" + LoadQueryAssignPropertyTag.Evaluate(info) + @"
-            }});
+            return items.Select(ToItem);
         }}
         
-        public IQueryable<{0}.{1}> Items(IQueryable<Common.Queryable.{0}_{1}> query)
+        public IQueryable<{0}.{1}> ToItems(IQueryable<Common.Queryable.{0}_{1}> query)
         {{
             return query.Select(item => new {0}.{1}
             {{

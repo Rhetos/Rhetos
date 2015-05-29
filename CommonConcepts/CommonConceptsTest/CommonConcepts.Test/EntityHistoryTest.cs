@@ -1216,7 +1216,7 @@ namespace CommonConcepts.Test
 
                 var h = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
 
-                Assert.AreEqual("3 2001-01-01T00:00:00,1 2011-01-01T00:00:00", h.Select(item => item.Code + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
+                Assert.AreEqual("3 2001-01-01T00:00:00,1 2011-01-01T00:00:00", h.ToList().Select(item => item.Code + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
             }
         }
 
@@ -1265,7 +1265,7 @@ namespace CommonConcepts.Test
 
                 var h = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
 
-                Assert.AreEqual("3 2010-01-01T00:00:00,1 2011-01-01T00:00:00", h.Select(item => item.Code + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
+                Assert.AreEqual("3 2010-01-01T00:00:00,1 2011-01-01T00:00:00", h.ToList().Select(item => item.Code + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
             }
         }
 
@@ -1293,7 +1293,7 @@ namespace CommonConcepts.Test
 
                 var h = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
 
-                Assert.AreEqual("2 2001-01-01T00:00:00,3 2010-01-01T00:00:00", h.Select(item => item.Code + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
+                Assert.AreEqual("2 2001-01-01T00:00:00,3 2010-01-01T00:00:00", h.ToList().Select(item => item.Code + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
             }
         }
 
@@ -1316,11 +1316,9 @@ namespace CommonConcepts.Test
                 repository.TestHistory.Simple_History.Update(new[] { a1 });
 
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
-                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
-
                 var h = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
-
-                Assert.AreEqual("2 2001-01-01T00:00:00,1 2012-01-01T00:00:00", h.Select(item => item.Code + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
+                Assert.AreEqual("2 2001-01-01T00:00:00,1 2012-01-01T00:00:00", h.ToList()
+                    .Select(item => item.Code + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
             }
         }
 
@@ -1370,7 +1368,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(1, fh.Count());
                 var currentItem = repository.TestHistory.Simple.All();
 
-                Assert.AreEqual("2 a 2001-01-01T00:00:00", currentItem.Select(item => item.Code + " " + item.Name + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
+                Assert.AreEqual("2 a 2001-01-01T00:00:00", currentItem.ToList().Select(item => item.Code + " " + item.Name + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
             }
         }
 
@@ -1426,7 +1424,7 @@ namespace CommonConcepts.Test
                 var ent = repository.TestHistory.Simple.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(1, ent.Count());
 
-                Assert.AreEqual("1 2011-01-01T00:00:00", fh.Select(item => item.Code + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
+                Assert.AreEqual("1 2011-01-01T00:00:00", fh.ToList().Select(item => item.Code + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
             }
         }
 
@@ -1461,7 +1459,7 @@ namespace CommonConcepts.Test
                 var ent = repository.TestHistory.Simple.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(1, ent.Count());
 
-                Assert.AreEqual("3 2000-01-01T00:00:00,1 2011-01-01T00:00:00", fh.Select(item => item.Code + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
+                Assert.AreEqual("3 2000-01-01T00:00:00,1 2011-01-01T00:00:00", fh.ToList().Select(item => item.Code + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
             }
         }
 
@@ -1498,8 +1496,8 @@ namespace CommonConcepts.Test
                 var currentItem = repository.TestHistory.Simple.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(1, currentItem.Count());
 
-                Assert.AreEqual("4 a 2013-01-01T00:00:00", currentItem.Select(item => item.Code + " " + item.Name + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
-                Assert.AreEqual("3 2000-01-01T00:00:00,2 2001-01-01T00:00:00,1 2011-01-01T00:00:00,4 2013-01-01T00:00:00", fh.Select(item => item.Code + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
+                Assert.AreEqual("4 a 2013-01-01T00:00:00", currentItem.ToList().Select(item => item.Code + " " + item.Name + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
+                Assert.AreEqual("3 2000-01-01T00:00:00,2 2001-01-01T00:00:00,1 2011-01-01T00:00:00,4 2013-01-01T00:00:00", fh.ToList().Select(item => item.Code + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
             }
         }
 
@@ -1536,8 +1534,8 @@ namespace CommonConcepts.Test
                 var currentItem = repository.TestHistory.Simple.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(1, currentItem.Count());
 
-                Assert.AreEqual("1 a 2011-01-01T00:00:00", currentItem.Select(item => item.Code + " " + item.Name + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
-                Assert.AreEqual("3 2000-01-01T00:00:00,2 2001-01-01T00:00:00,4 2010-01-01T00:00:00,1 2011-01-01T00:00:00", fh.Select(item => item.Code + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
+                Assert.AreEqual("1 a 2011-01-01T00:00:00", currentItem.ToList().Select(item => item.Code + " " + item.Name + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
+                Assert.AreEqual("3 2000-01-01T00:00:00,2 2001-01-01T00:00:00,4 2010-01-01T00:00:00,1 2011-01-01T00:00:00", fh.ToList().Select(item => item.Code + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
             }
         }
 
@@ -1573,7 +1571,7 @@ namespace CommonConcepts.Test
                 var ent = repository.TestHistory.Simple.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(1, ent.Count());
 
-                Assert.AreEqual("3 2000-01-01T00:00:00", fh.Select(item => item.Code + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
+                Assert.AreEqual("3 2000-01-01T00:00:00", fh.ToList().Select(item => item.Code + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
             }
         }
 

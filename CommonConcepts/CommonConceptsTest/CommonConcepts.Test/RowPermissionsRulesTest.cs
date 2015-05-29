@@ -62,7 +62,7 @@ namespace CommonConcepts.Test
                 Console.WriteLine(itemsRepository.Query().Expression.ToString());
                 Console.WriteLine(allowedItems.Expression.ToString());
                 Assert.AreEqual("", TestUtility.DumpSorted(allowedItems, item => item.Name));
-                Assert.AreEqual("TestRowPermissions.RPRulesItem[]", allowedItems.Expression.ToString(), "No need for query, an empty array should be returned.");
+                Assert.AreEqual("Common.Queryable.TestRowPermissions_RPRulesItem[]", allowedItems.Expression.ToString(), "No need for query, an empty array should be returned.");
             }
         }
 

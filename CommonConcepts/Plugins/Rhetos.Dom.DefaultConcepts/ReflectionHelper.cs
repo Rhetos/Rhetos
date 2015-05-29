@@ -316,8 +316,8 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         public IEnumerable<TEntityInterface> ToListOfEntity(IEnumerable<TEntityInterface> items)
         {
-            if (RepositoryItemsMethod != null && items.GetType().GetInterface("IEnumerable`1").GetGenericArguments()[0].FullName.StartsWith("Common.Queryable."))
-                items = (IEnumerable<TEntityInterface>)RepositoryItemsMethod.InvokeEx(_repository.Value, items);
+            if (RepositoryToItemsRefMethod != null && items.GetType().GetInterface("IEnumerable`1").GetGenericArguments()[0].FullName.StartsWith("Common.Queryable."))
+                RepositoryToItems(ref items);
             else
                 items = CastAsEntity(items);
 
@@ -342,8 +342,8 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         public IEnumerable<TEntityInterface> ToArrayOfEntity(IEnumerable<TEntityInterface> items)
         {
-            if (RepositoryItemsMethod != null && items.GetType().GetInterface("IEnumerable`1").GetGenericArguments()[0].FullName.StartsWith("Common.Queryable."))
-                items = (IEnumerable<TEntityInterface>)RepositoryItemsMethod.InvokeEx(_repository.Value, items);
+            if (RepositoryToItemsRefMethod != null && items.GetType().GetInterface("IEnumerable`1").GetGenericArguments()[0].FullName.StartsWith("Common.Queryable."))
+                RepositoryToItems(ref items);
             else
                 items = CastAsEntity(items);
 
@@ -540,16 +540,24 @@ namespace Rhetos.Dom.DefaultConcepts
             return EntityComputedFromCodeGenerator.RecomputeFunctionName(computedConcept);
         }
 
-        private MethodInfo _repositoryItemsMethod = null;
+        private MethodInfo _repositoryItemsRefMethod = null;
 
-        public MethodInfo RepositoryItemsMethod
+        public MethodInfo RepositoryToItemsRefMethod
         {
             get
             {
-                if (_repositoryItemsMethod == null)
-                    _repositoryItemsMethod = RepositoryType.GetMethod("Items", new[] { EnumerableNavigationType });
-                return _repositoryItemsMethod;
+                if (_repositoryItemsRefMethod == null)
+                    _repositoryItemsRefMethod = RepositoryType.GetMethod("ToItems", new[] { EnumerableNavigationType.MakeByRefType() });
+                return _repositoryItemsRefMethod;
             }
+        }
+
+        public void RepositoryToItems(ref IEnumerable<TEntityInterface> items)
+        {
+            var method = RepositoryToItemsRefMethod;
+            var parameters = new[] { items };
+            method.InvokeEx(_repository.Value, parameters);
+            items = parameters.Single();
         }
 
         #endregion
