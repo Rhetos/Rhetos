@@ -37,13 +37,27 @@ namespace Rhetos.Persistence
         private readonly IUserInfo _userInfo;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
+        private readonly IPersistenceTransaction _persistenceTransaction;
 
+        /// <summary>
+        /// This constructor is typically used in deployment time, when persistence transaction does not exist.
+        /// </summary>
         public MsSqlExecuter(ConnectionString connectionString, ILogProvider logProvider, IUserInfo userInfo)
+            : this(connectionString, logProvider, userInfo, null)
+        {
+        }
+
+        /// <summary>
+        /// This constructor is typically used in run-time, when persistence transaction is active, in order to execute
+        /// the SQL queries in the same transaction.
+        /// </summary>
+        public MsSqlExecuter(ConnectionString connectionString, ILogProvider logProvider, IUserInfo userInfo, IPersistenceTransaction persistenceTransaction)
         {
             _connectionString = connectionString;
             _userInfo = userInfo;
             _logger = logProvider.GetLogger("MsSqlExecuter");
             _performanceLogger = logProvider.GetLogger("Performance");
+            _persistenceTransaction = persistenceTransaction;
         }
 
         public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
@@ -118,28 +132,41 @@ namespace Rhetos.Persistence
                         LogPerformanceIssue(sw, commandText);
                     }
                 },
-                false);
+                _persistenceTransaction != null);
         }
 
-        private void SafeExecuteCommand(Action<SqlCommand> action, bool useTransaction)
+        private void SafeExecuteCommand(Action<DbCommand> action, bool useTransaction)
         {
-            using (var dbConnection = new SqlConnection(_connectionString))
+            bool createOwnConnection = _persistenceTransaction == null || !useTransaction;
+
+            var connection = createOwnConnection ? new SqlConnection(_connectionString) : _persistenceTransaction.Connection;
+
+            try
             {
-                SqlTransaction tran = null;
-                SqlCommand com;
+                DbTransaction createdTransaction = null;
+                DbCommand command;
 
                 try
                 {
-                    dbConnection.Open();
-                    com = dbConnection.CreateCommand();
-                    com.CommandTimeout = SqlUtility.SqlCommandTimeout;
-                    if (useTransaction)
-                    {
-                        tran = dbConnection.BeginTransaction();
-                        com.Transaction = tran;
-                    }
+                    if (createOwnConnection)
+                        connection.Open();
 
-                    SetContextInfo(com);
+                    command = connection.CreateCommand();
+                    command.CommandTimeout = SqlUtility.SqlCommandTimeout;
+                    if (createOwnConnection)
+                    {
+                        if (useTransaction)
+                        {
+                            createdTransaction = connection.BeginTransaction();
+                            command.Transaction = createdTransaction;
+                        }
+                    }
+                    else
+                        if (useTransaction)
+                            command.Transaction = _persistenceTransaction.Transaction;
+
+                    if (createOwnConnection)
+                        SetContextInfo(command);
                 }
                 catch (SqlException ex)
                 {
@@ -156,19 +183,25 @@ namespace Rhetos.Persistence
 
                 try
                 {
-                    action(com);
-                    if (tran != null)
-                        tran.Commit();
+                    action(command);
+                    if (createdTransaction != null)
+                        createdTransaction.Commit();
                 }
                 catch (SqlException ex)
                 {
                     string msg = "SqlException has occurred:\r\n" + ReportSqlErrors(ex);
-                    if (com != null && !string.IsNullOrWhiteSpace(com.CommandText))
-                        _logger.Error("Unable to execute SQL query:\r\n" + com.CommandText);
+                    if (command != null && !string.IsNullOrWhiteSpace(command.CommandText))
+                        _logger.Error("Unable to execute SQL query:\r\n" + command.CommandText);
 
                     _logger.Error("{0} {1}", msg, ex);
                     throw new FrameworkException(msg, ex);
                 }
+            }
+            finally
+            {
+                if (createOwnConnection)
+                    if (connection != null)
+                        ((IDisposable)connection).Dispose();
             }
         }
 
@@ -180,7 +213,7 @@ namespace Rhetos.Persistence
                 sw.Restart(); // _performanceLogger.Write would restart the stopwatch.
         }
 
-        private void SetContextInfo(SqlCommand sqlCommand)
+        private void SetContextInfo(DbCommand sqlCommand)
         {
             if (_userInfo.IsUserRecognized)
             {

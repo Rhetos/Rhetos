@@ -29,7 +29,8 @@ using System.Data;
 
 namespace Rhetos.Utilities.Test
 {
-    [TestClass()]
+    [TestClass]
+    [DeploymentItem("ConnectionStrings.config")]
     public class SqlUtilityTest
     {
         [TestMethod]
@@ -63,7 +64,6 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
-        [DeploymentItem("ConnectionStrings.config")]
         public void SqlObjectName()
         {
             TestUtility.CheckDatabaseAvailability();
@@ -76,7 +76,6 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
-        [DeploymentItem("ConnectionStrings.config")]
         public void MsSqlObjectName()
         {
             TestUtility.CheckDatabaseAvailability("MsSql");
@@ -86,7 +85,6 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
-        [DeploymentItem("ConnectionStrings.config")]
         public void OracleObjectName()
         {
             TestUtility.CheckDatabaseAvailability("Oracle");

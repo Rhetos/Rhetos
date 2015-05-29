@@ -423,11 +423,15 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ParallelInserts()
         {
-            using (var container = new RhetosTestContainer())
+            using (var container = new RhetosTestContainer(true))
             {
                 var sqlExecuter = container.Resolve<ISqlExecuter>();
                 sqlExecuter.ExecuteSql(new[] { "DELETE FROM TestAutoCode.Simple" });
+            }
 
+            using (var container = new RhetosTestContainer())
+            {
+                var sqlExecuter = container.Resolve<ISqlExecuter>();
                 var sqlInsert = "INSERT INTO TestAutoCode.Simple (ID, Code) SELECT '{0}', '+'";
                 var insertedIds = new List<Guid>();
 
@@ -435,14 +439,14 @@ namespace CommonConcepts.Test
                 {
                     Console.WriteLine("Test: " + test);
 
-                    var sqlQueries = Enumerable.Range(0, 2).Select(x =>
+                    string[] sqlQueries = Enumerable.Range(0, 2).Select(x =>
                     {
                         var id = Guid.NewGuid();
                         insertedIds.Add(id);
-                        return new[] { string.Format(sqlInsert, id) };
-                    }).ToList();
+                        return string.Format(sqlInsert, id);
+                    }).ToArray();
 
-                    Parallel.For(0, 2, x => sqlExecuter.ExecuteSql(sqlQueries[x]));
+                    Parallel.For(0, 2, process => sqlExecuter.ExecuteSql(new[] { sqlQueries[process] }, useTransaction: false));
                 }
 
                 var simpleRepository = container.Resolve<GenericRepository<TestAutoCode.Simple>>();
@@ -458,11 +462,19 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ParallelInsertsLockErrorHandling()
         {
-            using (var container = new RhetosTestContainer())
+            const int testProcessCount = 4;
+
+            using (var container = new RhetosTestContainer(true))
             {
                 var sqlExecuter = container.Resolve<ISqlExecuter>();
                 sqlExecuter.ExecuteSql(new[] { "DELETE FROM TestAutoCode.Simple", "INSERT INTO TestAutoCode.Simple (Code) SELECT '1'" });
+            }
 
+            using (RhetosTestContainer container0 = new RhetosTestContainer(),
+                container1 = new RhetosTestContainer(),
+                container2 = new RhetosTestContainer(),
+                container3 = new RhetosTestContainer())
+            {
                 // Starts at 0 ms, ends at 400ms.
                 var sql0 = new[] { "WAITFOR DELAY '00:00:00.000'", "SET LOCK_TIMEOUT 0", "INSERT INTO TestAutoCode.Simple (Code) SELECT '+'", "WAITFOR DELAY '00:00:00.400'" };
 
@@ -475,25 +487,28 @@ namespace CommonConcepts.Test
                 // Starts at 200 ms, ends at 200ms.
                 var sql3 = new[] { "WAITFOR DELAY '00:00:00.200'", "SET LOCK_TIMEOUT 0", "SELECT * FROM TestAutoCode.Simple WHERE Code = '1'" };
 
-                var sqls = new[] { sql0, sql1, sql2, sql3 };
+                var sqls = new [] { sql0, sql1, sql2, sql3 };
+                Assert.AreEqual(testProcessCount, sqls.Count());
 
-                CheckForParallelism(sqlExecuter, sqls.Count());
+                var containers = new[] { container0, container1, container2, container3 };
+                var sqlExecuters = containers.Select(c => c.Resolve<ISqlExecuter>()).ToArray();
+                CheckForParallelism(sqlExecuters);
 
-                Exception[] exceptions = sqls.Select(sql => (Exception)null).ToArray();
+                Exception[] exceptions = new Exception[testProcessCount];
 
-                Parallel.For(0, sqls.Count(), x =>
+                Parallel.For(0, testProcessCount, process =>
                     {
                         try
                         {
-                            sqlExecuter.ExecuteSql(sqls[x]);
+                            sqlExecuters[process].ExecuteSql(sqls[process]);
                         }
                         catch (Exception ex)
                         {
-                            exceptions[x] = ex;
+                            exceptions[process] = ex;
                         }
                     });
 
-                for (int x = 0; x < sqls.Count(); x++)
+                for (int x = 0; x < testProcessCount; x++)
                     Console.WriteLine("Exception " + x + ": " + exceptions[x] + ".");
 
                 Assert.IsNull(exceptions[0]);
@@ -509,14 +524,15 @@ namespace CommonConcepts.Test
             }
         }
 
-        private void CheckForParallelism(ISqlExecuter sqlExecuter, int requiredNumberOfThreads)
+        private void CheckForParallelism(ISqlExecuter[] sqlExecuters)
         {
  	        string sqlDelay01 = "WAITFOR DELAY '00:00:00.100'";
             var sqls = new[] { sqlDelay01 };
-            sqlExecuter.ExecuteSql(sqls); // Possible cold start.
+            // Cold start.
+            Parallel.ForEach(sqlExecuters, sqlExecuter => { sqlExecuter.ExecuteSql(sqls); });
 
             var sw = Stopwatch.StartNew();
-            Parallel.For(0, requiredNumberOfThreads, x => { sqlExecuter.ExecuteSql(sqls); });
+            Parallel.ForEach(sqlExecuters, sqlExecuter => { sqlExecuter.ExecuteSql(sqls); });
             sw.Stop();
 
             Console.WriteLine("CheckForParallelism: " + sw.ElapsedMilliseconds + " ms.");
@@ -527,7 +543,7 @@ namespace CommonConcepts.Test
             if (sw.Elapsed.TotalMilliseconds > 190)
                 Assert.Inconclusive(string.Format(
                     "This test requires {0} parallel SQL queries. {0} parallel delays for 100 ms are executed in {1} ms.",
-                    requiredNumberOfThreads,
+                    sqlExecuters.Count(),
                     sw.ElapsedMilliseconds));
         }
     }

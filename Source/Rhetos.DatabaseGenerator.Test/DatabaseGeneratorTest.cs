@@ -326,7 +326,6 @@ namespace Rhetos.DatabaseGenerator.Test
         //============================================================================
 
         [TestMethod]
-        [DeploymentItem("Rhetos.DatabaseGenerator.dll")]
         public void DatabaseGenerator_NoChange()
         {
             var oldApplications = new List<ConceptApplication> { SimpleCi.CreateApplication("unchanged") };
@@ -341,7 +340,6 @@ namespace Rhetos.DatabaseGenerator.Test
         }
 
         [TestMethod]
-        [DeploymentItem("Rhetos.DatabaseGenerator.dll")]
         public void DatabaseGenerator_SimpleChange()
         {
             var oldApplications = new List<ConceptApplication> { SimpleCi.CreateApplication("A", "old"), SimpleCi.CreateApplication("B", "unchanged") };
@@ -358,7 +356,6 @@ namespace Rhetos.DatabaseGenerator.Test
         }
 
         [TestMethod]
-        [DeploymentItem("Rhetos.DatabaseGenerator.dll")]
         public void DatabaseGenerator_MustRecreateDependentConcept()
         {
             var simpleV1 = SimpleCi.CreateApplication("v1");
@@ -381,7 +378,6 @@ namespace Rhetos.DatabaseGenerator.Test
         }
 
         [TestMethod]
-        [DeploymentItem("Rhetos.DatabaseGenerator.dll")]
         public void DatabaseGenerator_RecreatedDependentConceptReferencesNewVersion()
         {
             var simpleV1 = SimpleCi.CreateApplication("name", "v1", "data1");
@@ -405,7 +401,6 @@ namespace Rhetos.DatabaseGenerator.Test
         }
 
         [TestMethod]
-        [DeploymentItem("Rhetos.DatabaseGenerator.dll")]
         public void DatabaseGenerator_MustRecreateDependentConceptWhereBaseIsCreatedAndDeletedWithSameKey()
         {
             var simpleC1 = SimpleCi.CreateApplication("same", new SimpleConceptImplementation());
@@ -436,7 +431,6 @@ namespace Rhetos.DatabaseGenerator.Test
         }
 
         [TestMethod]
-        [DeploymentItem("Rhetos.DatabaseGenerator.dll")]
         public void DatabaseGenerator_MustRecreateDependentConceptWithNewConceptInfoReference()
         {
             var simpleV1 = SimpleCi.CreateApplication("v1");
@@ -455,7 +449,6 @@ namespace Rhetos.DatabaseGenerator.Test
         }
 
         [TestMethod]
-        [DeploymentItem("Rhetos.DatabaseGenerator.dll")]
         public void DatabaseGenerator_MustRecreateDependentConceptInCorrectOrder()
         {
             var simpleV1 = SimpleCi.CreateApplication("v1");
@@ -480,7 +473,6 @@ namespace Rhetos.DatabaseGenerator.Test
         }
 
         [TestMethod]
-        [DeploymentItem("Rhetos.DatabaseGenerator.dll")]
         public void ExtractDependenciesFromConceptInfosTest()
         {
             var a = BaseCi.CreateApplication("A");
@@ -504,7 +496,6 @@ namespace Rhetos.DatabaseGenerator.Test
         }
 
         [TestMethod]
-        [DeploymentItem("Rhetos.DatabaseGenerator.dll")]
         public void DatabaseGenerator_UnchangedMiddleReference()
         {
             var aold = SimpleCi.CreateApplication("a", "old");
@@ -528,7 +519,6 @@ namespace Rhetos.DatabaseGenerator.Test
         }
 
         [TestMethod]
-        [DeploymentItem("Rhetos.DatabaseGenerator.dll")]
         public void ExtractCreateQueries()
         {
             var sqlCodeBuilder = new CodeBuilder("/*", "*/");
@@ -562,7 +552,6 @@ namespace Rhetos.DatabaseGenerator.Test
         }
 
         [TestMethod]
-        [DeploymentItem("Rhetos.DatabaseGenerator.dll")]
         public void ExtractCreateQueries_Empty1()
         {
             var sqlCodeBuilder = new CodeBuilder("/*", "*/");
@@ -572,7 +561,6 @@ namespace Rhetos.DatabaseGenerator.Test
         }
 
         [TestMethod]
-        [DeploymentItem("Rhetos.DatabaseGenerator.dll")]
         public void ExtractCreateQueries_Empty2()
         {
             var sqlCodeBuilder = new CodeBuilder("/*", "*/");
@@ -584,7 +572,6 @@ namespace Rhetos.DatabaseGenerator.Test
         }
 
         [TestMethod]
-        [DeploymentItem("Rhetos.DatabaseGenerator.dll")]
         public void GetConceptApplicationDependencies_SimpleTest()
         {
             IConceptInfo ci1 = new SimpleCi { Name = "1" };
@@ -632,7 +619,6 @@ namespace Rhetos.DatabaseGenerator.Test
         private static IEnumerable<Tuple<IConceptInfo, IConceptInfo>> tempConceptInfoDependencies;
 
         [TestMethod]
-        [DeploymentItem("Rhetos.DatabaseGenerator.dll")]
         public void CreateNewApplications_MissingMiddleApplications()
         {
             IConceptInfo ci1 = new SimpleCi { Name = "1" };
@@ -668,7 +654,6 @@ namespace Rhetos.DatabaseGenerator.Test
         }
 
         [TestMethod]
-        [DeploymentItem("Rhetos.DatabaseGenerator.dll")]
         public void DatabaseGenerator_NoTransaction()
         {
             var oldApplications = new List<ConceptApplication> {

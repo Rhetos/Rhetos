@@ -170,6 +170,8 @@
     <Compile Include="ComputedTest.cs" />
     <Compile Include="AuditablePropertiesTest.cs" />
     <Compile Include="CloningTest.cs" />
+    <Compile Include="SqlExecuterTransactionTest.cs" />
+    <Compile Include="LazyLoadTest.cs" />
     <Compile Include="QueryableRepositoryTest.cs" />
     <Compile Include="Helpers\DateTimeHelper.cs" />
     <Compile Include="PolymorphicTest.cs" />

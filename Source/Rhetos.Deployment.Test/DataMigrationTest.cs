@@ -44,7 +44,6 @@ namespace Rhetos.Deployment.Test
         }
 
         [TestMethod]
-        [DeploymentItem("Rhetos.Deployment.dll")]
         public void SkipOldScriptsThatAreNotExecuted()
         {
             var oldIndex = new HashSet<string> { "s2", "s4", "s6" };
@@ -56,7 +55,6 @@ namespace Rhetos.Deployment.Test
         }
 
         [TestMethod]
-        [DeploymentItem("Rhetos.Deployment.dll")]
         public void SkipOldScriptsThatAreNotExecuted_SubfoldersAndNumericSort()
         {
             var oldIndex = new HashSet<string> { "s2", "s5" };
@@ -78,7 +76,6 @@ namespace Rhetos.Deployment.Test
         }
 
         [TestMethod]
-        [DeploymentItem("Rhetos.Deployment.dll")]
         public void SkipOldScriptsThatAreNotExecuted_ComplexNumeric()
         {
             const string newScripts = @"s1:1\9.9\x, s2:1\9.10\x, s3:1\10.9\x, s4:1\10.10\x, s5:1\11\x, s6:1\11.next\x";

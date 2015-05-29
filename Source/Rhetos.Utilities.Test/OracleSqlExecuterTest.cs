@@ -28,7 +28,7 @@ using Rhetos.TestCommon;
 
 namespace Rhetos.Utilities.Test
 {
-    [TestClass()]
+    [TestClass]
     [DeploymentItem("ConnectionStrings.config")]
     public class OracleSqlExecuterTest
     {

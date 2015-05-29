@@ -31,14 +31,21 @@ namespace Rhetos.Persistence.Test
     [DeploymentItem("ConnectionStrings.config")]
     public class MsSqlExecuterTest
     {
-        private static MsSqlExecuter GetSqlExecuter()
+        private static MsSqlExecuter NewSqlExecuter(string connectionString = null, IUserInfo testUser = null)
         {
-            return new MsSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), new NullUserInfo());
+            connectionString = connectionString ?? SqlUtility.ConnectionString;
+            testUser = testUser ?? new NullUserInfo();
+            return new MsSqlExecuter(connectionString, new ConsoleLogProvider(), testUser, null);
+        }
+
+        private static MsSqlExecuter NewSqlExecuter(IUserInfo testUser)
+        {
+            return NewSqlExecuter(null, testUser);
         }
 
         private string GetRandomTableName()
         {
-            GetSqlExecuter().ExecuteSql(new[] { "IF SCHEMA_ID('RhetosUnitTest') IS NULL EXEC('CREATE SCHEMA RhetosUnitTest')" });
+            NewSqlExecuter().ExecuteSql(new[] { "IF SCHEMA_ID('RhetosUnitTest') IS NULL EXEC('CREATE SCHEMA RhetosUnitTest')" });
             var newTableName = "RhetosUnitTest.T" + Guid.NewGuid().ToString().Replace("-", "");
             Console.WriteLine("Generated random table name: " + newTableName);
             return newTableName;
@@ -56,7 +63,7 @@ namespace Rhetos.Persistence.Test
             try { TestUtility.CheckDatabaseAvailability("MsSql"); }
             catch { return; }
 
-            GetSqlExecuter().ExecuteSql(new[] { 
+            NewSqlExecuter().ExecuteSql(new[] { 
                 @"DECLARE @sql NVARCHAR(MAX)
                     SET @sql = ''
                     SELECT @sql = @sql + 'DROP TABLE RhetosUnitTest.' + QUOTENAME(name) + ';' + CHAR(13) + CHAR(10)
@@ -68,7 +75,7 @@ namespace Rhetos.Persistence.Test
         [TestMethod()]
         public void ExecuteSql_SaveLoadTest()
         {
-            MsSqlExecuter sqlExecuter = GetSqlExecuter();
+            MsSqlExecuter sqlExecuter = NewSqlExecuter();
             string table = GetRandomTableName();
 
             IEnumerable<string> commands = new[]
@@ -85,20 +92,20 @@ namespace Rhetos.Persistence.Test
         [TestMethod()]
         public void ExecuteSql_SimpleSqlError()
         {
-            TestUtility.ShouldFail(() => GetSqlExecuter().ExecuteSql(new[] { "raiserror('aaa', 16, 100)" }),
+            TestUtility.ShouldFail(() => NewSqlExecuter().ExecuteSql(new[] { "raiserror('aaa', 16, 100)" }),
                 "aaa", "16", "100");
         }
 
         [TestMethod()]
         public void ExecuteSql_InfoMessageIsNotError()
         {
-            GetSqlExecuter().ExecuteSql(new[] { "raiserror('aaa', 0, 100)" }); // Exception not expected here.
+            NewSqlExecuter().ExecuteSql(new[] { "raiserror('aaa', 0, 100)" }); // Exception not expected here.
         }
 
         [TestMethod()]
         public void ExecuteSql_ErrorDescriptions()
         {
-            MsSqlExecuter sqlExecuter = GetSqlExecuter();
+            MsSqlExecuter sqlExecuter = NewSqlExecuter();
               
             IEnumerable<string> commands = new[]
                 {
@@ -126,7 +133,7 @@ raiserror('fff', 18, 118)"
             connectionStringBuilder.IntegratedSecurity = true;
             string nonexistentDatabaseConnectionString = connectionStringBuilder.ConnectionString;
 
-            MsSqlExecuter sqlExecuter = new MsSqlExecuter(nonexistentDatabaseConnectionString, new ConsoleLogProvider(), new NullUserInfo());
+            MsSqlExecuter sqlExecuter = NewSqlExecuter(nonexistentDatabaseConnectionString);
             TestUtility.ShouldFail(() => sqlExecuter.ExecuteSql(new[] { "print 123" }),
                 connectionStringBuilder.DataSource, connectionStringBuilder.InitialCatalog, Environment.UserName);
         }
@@ -135,9 +142,9 @@ raiserror('fff', 18, 118)"
         public void ExecuteSql_CommitImmediately()
         {
             string table = GetRandomTableName();
-            GetSqlExecuter().ExecuteSql(new[] {
+            NewSqlExecuter().ExecuteSql(new[] {
                 "create table " + table + " ( a integer )" });
-            GetSqlExecuter().ExecuteSql(new[] {
+            NewSqlExecuter().ExecuteSql(new[] {
                 "set lock_timeout 0",
                 "select * from " + table }); // Exception not expected here.
         }
@@ -148,14 +155,14 @@ raiserror('fff', 18, 118)"
             string table = GetRandomTableName();
             try
             {
-                GetSqlExecuter().ExecuteSql(new[] {
+                NewSqlExecuter().ExecuteSql(new[] {
                     "create table " + table + " ( a integer )",
                     "create table forcederror" });
             }
             catch
             {
             }
-            GetSqlExecuter().ExecuteSql(new[] {
+            NewSqlExecuter().ExecuteSql(new[] {
                 "set lock_timeout 0",
                 "create table " + table + " ( a integer )" }); // Lock timeout exception not expected here.
         }
@@ -166,14 +173,14 @@ raiserror('fff', 18, 118)"
             string table = GetRandomTableName();
             try
             {
-                GetSqlExecuter().ExecuteSql(new[] {
+                NewSqlExecuter().ExecuteSql(new[] {
                     "create table forcederror",
                     "create table " + table + " ( a integer )" });
             }
             catch
             {
             }
-            GetSqlExecuter().ExecuteSql(new[] {
+            NewSqlExecuter().ExecuteSql(new[] {
                 "create table " + table + " ( a integer )" }); // Exception not expected here.
         }
 
@@ -182,7 +189,7 @@ raiserror('fff', 18, 118)"
         {
             try
             {
-                GetSqlExecuter().ExecuteSql(new[] {
+                NewSqlExecuter().ExecuteSql(new[] {
                     "rollback",
                     "raiserror('abc', 16, 10)" });
             }
@@ -198,7 +205,7 @@ raiserror('fff', 18, 118)"
         {
             try
             {
-                GetSqlExecuter().ExecuteSql(new[] {
+                NewSqlExecuter().ExecuteSql(new[] {
                     "begin tran",
                     "raiserror('abc', 16, 10)" });
             }
@@ -213,7 +220,7 @@ raiserror('fff', 18, 118)"
         public void SendUserInfoInSqlContext_NoUser()
         {
             var testUser = new TestUserInfo(null, null, false);
-            var sqlExecuter = new MsSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), testUser);
+            var sqlExecuter = NewSqlExecuter(SqlUtility.ConnectionString, testUser);
             var result = new List<object>();
             sqlExecuter.ExecuteReader("SELECT context_info()", reader => result.Add(reader[0]));
             Console.WriteLine(result.Single());
@@ -224,7 +231,7 @@ raiserror('fff', 18, 118)"
         public void SendUserInfoInSqlContext_ReadWithUser()
         {
             var testUser = new TestUserInfo("Bob", "HAL9000");
-            var sqlExecuter = new MsSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), testUser);
+            var sqlExecuter = NewSqlExecuter(testUser);
             var result = new List<string>();
             sqlExecuter.ExecuteReader(
                 @"SELECT (CONVERT([varchar](128),left(context_info(),isnull(nullif(charindex(0x00,context_info())-(1),(-1)),(128))),(0)))",
@@ -238,7 +245,7 @@ raiserror('fff', 18, 118)"
         public void SendUserInfoInSqlContext_WriteWithUser()
         {
             var testUser = new TestUserInfo("Bob", "HAL9000");
-            var sqlExecuter = new MsSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), testUser);
+            var sqlExecuter = NewSqlExecuter(testUser);
             string table = GetRandomTableName();
 
             var result = new List<string>();

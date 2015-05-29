@@ -97,7 +97,6 @@ namespace Rhetos.Dsl.Test
         }
 
         [TestMethod()]
-        [DeploymentItem("Rhetos.Dsl.dll")]
         public void ParseNextConcept_DontDescribeExceptionIfConceptNotRecognized()
         {
             string dsl = "a";
@@ -112,7 +111,6 @@ namespace Rhetos.Dsl.Test
         }
 
         [TestMethod()]
-        [DeploymentItem("Rhetos.Dsl.dll")]
         public void ParseNextConcept_PropagateErrorIfKeywordRecognized()
         {
             string dsl = "a";

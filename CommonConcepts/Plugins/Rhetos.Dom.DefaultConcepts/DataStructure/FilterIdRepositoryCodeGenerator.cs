@@ -57,7 +57,7 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 string sqlInsertIds = string.Join(""\r\n"", ids.Skip(start).Take(chunkSize)
                     .Select(id => string.Format(sqlInsertIdFormat, SqlUtility.GuidToString(id))));
-                _executionContext.EntityFrameworkContext.Database.ExecuteSqlCommand(sqlInsertIds);
+                _executionContext.SqlExecuter.ExecuteSql(sqlInsertIds);
             }
 
             // Delete temporary data when closing the connection. The data must remain in the database until the returned query is used.
@@ -66,7 +66,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 {
                     try
                     {
-                        _executionContext.EntityFrameworkContext.Database.ExecuteSqlCommand(deleteFilterIds);
+                        _executionContext.SqlExecuter.ExecuteSql(deleteFilterIds);
                     }
                     catch
                     {
