@@ -270,5 +270,30 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("WithoutTransaction_0, WithTransaction_1", TestUtility.DumpSorted(createdViews));
             }
         }
+
+        [TestMethod]
+        public void NotNullColumn()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var sqlExecuter = container.Resolve<ISqlExecuter>();
+                sqlExecuter.ExecuteSql(new[] {
+                    "DELETE FROM TestSqlWorkarounds.HasNotNullProperty",
+                    "INSERT INTO TestSqlWorkarounds.HasNotNullProperty (Name, Code) SELECT 'a', 1" });
+
+                var repository = container.Resolve<Common.DomRepository>();
+
+                Assert.AreEqual("a1", TestUtility.DumpSorted(repository.TestSqlWorkarounds.HasNotNullProperty.All(), item => item.Name + item.Code));
+
+                TestUtility.ShouldFail(
+                    () => sqlExecuter.ExecuteSql(new[] { "INSERT INTO TestSqlWorkarounds.HasNotNullProperty (Name) SELECT 'b'" }),
+                    "Cannot insert the value NULL into column 'Code', table 'Rhetos.TestSqlWorkarounds.HasNotNullProperty'");
+
+                TestUtility.ShouldFail(
+                    () => sqlExecuter.ExecuteSql(new[] { "INSERT INTO TestSqlWorkarounds.HasNotNullProperty (Code) SELECT 2" }),
+                    "Cannot insert the value NULL into column 'Name', table 'Rhetos.TestSqlWorkarounds.HasNotNullProperty'");
+
+            }
+        }
     }
 }

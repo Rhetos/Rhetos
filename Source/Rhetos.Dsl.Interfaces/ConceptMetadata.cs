@@ -60,6 +60,11 @@ namespace Rhetos.Dsl
             var metadataValue = conceptMetadataByType.GetValue(metadataType.Id, missingMetadataMessage);
             return (T)metadataValue;
         }
+
+        public bool Contains<T>(IConceptInfo conceptInfo, ConceptMetadataType<T> metadataType)
+        {
+            return _metadata.ContainsKey(conceptInfo.GetKey());
+        }
     }
 
     public class ConceptMetadataType<T>

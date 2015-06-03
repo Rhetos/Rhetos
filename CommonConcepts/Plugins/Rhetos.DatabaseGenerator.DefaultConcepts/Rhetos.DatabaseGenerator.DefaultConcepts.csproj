@@ -129,6 +129,7 @@
     <Compile Include="AutoCodeForEachDatabaseDefinition.cs" />
     <Compile Include="AutoCodeTriggerDatabaseDefinition.cs" />
     <Compile Include="LoggingRelatedItemDatabaseDefinition.cs" />
+    <Compile Include="SqlNotNullDatabaseDefinition.cs" />
     <Compile Include="SubtypeExtendPolymorphicDatabaseDefinition.cs" />
     <Compile Include="SqlDependsOnDataStructureDatabaseDefinition.cs" />
     <Compile Include="SqlDependsOnModuleDatabaseDefinition.cs" />
