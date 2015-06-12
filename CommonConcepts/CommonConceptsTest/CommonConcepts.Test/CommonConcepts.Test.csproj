@@ -160,6 +160,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActionTest.cs" />
+    <Compile Include="AutoCodeCachedTest.cs" />
     <Compile Include="BinaryTest.cs" />
     <Compile Include="AutoCodeTest.cs" />
     <Compile Include="BlomRepositoryConcepts.cs" />

@@ -36,7 +36,7 @@ Module TestAutoCode
     
     Entity Grouping
 	{
-		ShortString Code {  AutoCode; }
+		ShortString Code;
 	}
 	
 	Entity ShortReferenceGroup
@@ -68,6 +68,21 @@ Module TestAutoCode
 		Integer Grouping;
 		Integer CodeA {  AutoCode; }
 		Integer CodeB {  AutoCodeForEach TestAutoCode.IntegerAutoCodeForEach.Grouping; }
+	}
+}
+
+Module TestAutoCodeCached
+{
+	Entity Simple
+	{
+		ShortString Code {  AutoCodeCached; }
+		ShortString Data;
+	}
+    
+   Entity DoubleAutoCode
+	{
+		ShortString CodeA {  AutoCodeCached; }
+		ShortString CodeB {  AutoCodeCached; }
 	}
 }
 
