@@ -23,106 +23,6 @@ Module TestDataStructure
     Entity ReferenceView { Reference SqlQueryable1; }
 }
 
-Module TestExtension
-{
-    AutodetectSqlDependencies;
-    
-	SqlQueryable SqlQueryableBase1 "SELECT ID = '5D089327-97EF-418D-A7DF-783D3873A5B4', i = 1, s = 'a' UNION ALL SELECT 'DB97EA5F-FB8C-408F-B35B-AD6642C593D7', 2, 'b'"
-	{
-		Integer i;
-		ShortString s;
-	}
-
-	SqlQueryable SqlQueryableExtenson1 "SELECT ID, info = CAST(i AS varchar(20)) + '-' + s FROM TestExtension.SqlQueryableBase1"
-	{
-		Extends TestExtension.SqlQueryableBase1;
-		ShortString info;
-	}
-
-	Entity Old1
-	{
-		Integer i;
-		ShortString s;
-	}
-	
-	SqlView Old1View 'SELECT * FROM TestExtension.Old1';
-	
-	LegacyEntity Legacy1 'TestExtension.Old1' 'TestExtension.Old1View'
-	{
-		Integer i;
-		ShortString s;
-	}
-
-	Entity EntityExtension1
-	{
-		Extends TestExtension.Legacy1;
-		ShortString info;
-	}
-	
-	Entity SimpleBase { ShortString Name; }
-	Entity SimpleExtension { Extends TestExtension.SimpleBase; ShortString Name; }
-	SqlQueryable MissingExtensionSql "SELECT sb.ID, Name = sb.Name + 'Sql' FROM TestExtension.SimpleBase sb WHERE sb.Name NOT LIKE '%missing%'" { Extends TestExtension.SimpleBase; ShortString Name; }
-	QueryableExtension MissingExtensionCs TestExtension.SimpleBase '(source, repository) => source
-		.Where(item => !item.Name.Contains("missing"))
-		.Select(item => new Common.Queryable.TestExtension_MissingExtensionCs { ID = item.ID, Name = item.Name + "Cs" })' { ShortString Name; }
-	SqlQueryable InvalidExtension 'SELECT ID, Data = 1/0 FROM TestExtension.SimpleBase' { Extends TestExtension.SimpleBase; Integer Data; }
-}
-
-Module TestEntity
-{
-	Entity Principal
-	{
-		ShortString Name;
-	}
-	
-	Entity Claim
-	{
-		ShortString ClaimResource;
-		ShortString ClaimRight;
-	}
-	
-	Entity Permission
-	{
-		Reference Principal TestEntity.Principal { CascadeDelete; }
-		Reference Claim TestEntity.Claim { CascadeDelete; }
-		Bool IsAuthorized;
-	}
-
-	Entity BaseEntity
-	{
-		ShortString Name;
-	}
-
-	Entity Extension
-	{
-		Extends TestEntity.BaseEntity;
-		ShortString Title;
-	}
-	
-	Entity Child
-	{
-		ShortString Name;
-		Reference Parent TestEntity.BaseEntity { Detail; }
-	}
-	
-	Browse ChildBrowse TestEntity.Child
-	{
-		ShortString Name { From 'Name'; }
-		ShortString ParentName { From 'Parent.Name'; }
-	}
-    
-    Entity Large
-    {
-        LongString Text;
-    }
-    
-    Entity UniqueEntity
-    {
-        ShortString Name { Required; Unique; }
-        ShortString Data;
-    }
-}
-
 Module TestBrowse
 {
 	Entity Other
@@ -317,6 +217,8 @@ Module TestUnique
 	{
 		ShortString S { Unique; } // Should be checked in the application, not in database.
 		Integer I;
+		
+		SqlDependsOn TestUnique.E;
 	}
 }
 
@@ -384,7 +286,7 @@ Module TestDataStructure
 			
 			OnSaveUpdate 'UnitTestingUpdate'
 				'var changedItemsName = updatedOld
-					.Zip(updated, (oldItem, newItem) => new { oldItem, newItem})
+					.Zip(updatedNew, (oldItem, newItem) => new { oldItem, newItem})
 					// Safe universal property comparison:
 					.Where(change => change.oldItem.Name == null && change.newItem.Name != null || change.oldItem.Name != null && !change.oldItem.Name.Equals(change.newItem.Name))
 					.ToList();
@@ -396,18 +298,18 @@ Module TestDataStructure
 				_executionContext.Repository.TestDataStructure.SaveTesterBase.Update(updateBaseItems);';
 				
 			OnSaveValidate 'UnitTestingValidate'
-				'var lockedItemModifyName = updatedOld
-					.Zip(updated, (oldItem, newItem) => new { oldItem, newItem})
+				'var lockedItemModifiedName = updatedOld
+					.Zip(updatedNew, (oldItem, newItem) => new { oldItem, newItem})
 					// Safe universal property comparison:
 					.Where(change => change.oldItem.Name == null && change.newItem.Name != null || change.oldItem.Name != null && !change.oldItem.Name.Equals(change.newItem.Name))
 					.Where(change => change.oldItem.BaseName != null && change.oldItem.BaseName.Contains("lock"))
-					.SingleOrDefault();
+					.FirstOrDefault();
 				
-				if (lockedItemModifyName != null)
+				if (lockedItemModifiedName != null)
 					throw new Rhetos.UserException(string.Format(
 						"It is not allowed to modify locked item''s name ''{0}'' => ''{1}''.",
-						lockedItemModifyName.oldItem.Name,
-						lockedItemModifyName.newItem.Name));';
+						lockedItemModifiedName.oldItem.Name,
+						lockedItemModifiedName.newItem.Name));';
 		}
 	}
 }

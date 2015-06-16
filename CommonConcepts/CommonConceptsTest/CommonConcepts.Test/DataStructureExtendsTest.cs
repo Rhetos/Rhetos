@@ -187,19 +187,13 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("b1X, b2missingX, b3", TestUtility.DumpSorted(repository.TestExtension.SimpleBase.All(), item => item.Name),
                     "InvalidExtension should not fail because there is no need to load those records.");
 
+                Assert.IsNotNull(repository.TestExtension.SimpleBase.Query().Select(item => item.Extension_InvalidExtension.ID).First());
+
                 var s = repository.TestExtension.SimpleBase.Query().First();
-                Assert.IsNotNull(s.Extension_InvalidExtension.ID);
-                Exception actualException = null;
-                try
-                {
-                    Assert.IsNotNull(s.Extension_InvalidExtension.Data);
-                }
-                catch (Exception ex)
-                {
-                    actualException = ex;
-                }
-                Assert.IsNotNull(actualException, "Lazy loading a property that intentionally throws an exception");
-                TestUtility.AssertContains(actualException.InnerException.Message, "divide by zero");
+
+                var ex = TestUtility.ShouldFail<System.Data.Entity.Core.EntityCommandExecutionException>(
+                    () => Console.WriteLine(s.Extension_InvalidExtension.Data));
+                TestUtility.AssertContains(ex.InnerException.Message, "divide by zero");
             }
         }
     }

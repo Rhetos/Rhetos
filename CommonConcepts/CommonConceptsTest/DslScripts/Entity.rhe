@@ -1,0 +1,54 @@
+﻿Module TestEntity
+{
+	Entity Principal
+	{
+		ShortString Name;
+	}
+	
+	Entity Claim
+	{
+		ShortString ClaimResource;
+		ShortString ClaimRight;
+	}
+	
+	Entity Permission
+	{
+		Reference Principal TestEntity.Principal { CascadeDelete; }
+		Reference Claim TestEntity.Claim { CascadeDelete; }
+		Bool IsAuthorized;
+	}
+
+	Entity BaseEntity
+	{
+		ShortString Name;
+	}
+
+	Entity Extension
+	{
+		Extends TestEntity.BaseEntity;
+		ShortString Title;
+	}
+	
+	Entity Child
+	{
+		ShortString Name;
+		Reference Parent TestEntity.BaseEntity { Detail; }
+	}
+	
+	Browse ChildBrowse TestEntity.Child
+	{
+		ShortString Name { From 'Name'; }
+		ShortString ParentName { From 'Parent.Name'; }
+	}
+    
+    Entity Large
+    {
+        LongString Text;
+    }
+    
+    Entity UniqueEntity
+    {
+        ShortString Name { Required; Unique; }
+        ShortString Data;
+    }
+}

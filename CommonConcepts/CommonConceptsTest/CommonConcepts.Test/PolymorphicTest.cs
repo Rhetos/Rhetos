@@ -127,7 +127,7 @@ namespace CommonConcepts.Test
         {
             List<string> baseProperties = typeof(TestPolymorphic.SimpleBase).GetProperties().Select(p => p.Name).ToList();
 
-            string expectedProperties = "ID, Days, Name, Subtype, Simple1, Simple1ID, Simple2, Simple2ID";
+            string expectedProperties = "ID, Days, Name, Subtype, Simple1ID, Simple2ID";
 
             Assert.AreEqual(
                 TestUtility.DumpSorted(expectedProperties.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)),
@@ -167,7 +167,7 @@ namespace CommonConcepts.Test
                     .ToList();
 
                 Assert.AreEqual(
-                    "b/2(b//), bb-22/2(/bb/22)",
+                    "b/2(b//), b3/2(b3//), bb-22/2(/bb/22)",
                     TestUtility.DumpSorted(report));
             }
         }
@@ -213,7 +213,7 @@ namespace CommonConcepts.Test
 
                 var all = repository.TestPolymorphic.SecondBase.All();
                 Assert.AreEqual(
-                    "a/1.0000000000, b/2/2000-01-22T00:00:00, c",
+                    "a/1, b/2/2000-01-22T00:00:00, c",
                     TestUtility.DumpSorted(all, item => item.Info));
             }
         }

@@ -220,8 +220,7 @@ namespace CommonConcepts.Test
 
                 Assert.AreEqual(
                     "Child123abc-Parent123abc, Child456def-Parent456def",
-                    TestUtility.DumpSorted(repository.Test13.LegacyMultiChild.Query(),
-                        child => child.Name + "-" + child.Parent.Name));
+                    TestUtility.DumpSorted(repository.Test13.LegacyMultiChild.Query().Select(child => child.Name + "-" + child.Parent.Name)));
 
                 var c1 = repository.Test13.LegacyMultiChild.Filter(new[] { c1id }).Single();
                 c1.ParentID = p2id;
@@ -230,8 +229,7 @@ namespace CommonConcepts.Test
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
                 Assert.AreEqual(
                     "Child123abc-Parent456def, Child456def-Parent456def",
-                    TestUtility.DumpSorted(repository.Test13.LegacyMultiChild.Query(),
-                        child => child.Name + "-" + child.Parent.Name));
+                    TestUtility.DumpSorted(repository.Test13.LegacyMultiChild.Query().Select(child => child.Name + "-" + child.Parent.Name)));
             }
         }
     }

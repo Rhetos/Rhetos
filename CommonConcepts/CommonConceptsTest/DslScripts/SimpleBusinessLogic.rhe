@@ -125,22 +125,6 @@ Module TestLogging
     }
 }
 
-Module TestPessimisticLocking
-{
-	Entity Article
-	{
-		ShortString Name;
-        Reference Parent TestPessimisticLocking.ArticleGroup { Detail; }
-        PessimisticLocking;
-	}
-    
-	Entity ArticleGroup
-	{
-		ShortString Name;
-        PessimisticLocking;
-	}
-}
-
 Module TestDatabaseExtensions
 {
 	Entity Simple
@@ -370,7 +354,10 @@ Module TestMultipleLock
         ShortString UserName;
         Reference PassDependency;
         
-        ItemFilter PassValidation 'item => !repository.TestMultipleLock.SimpleChecks.Filter(new[]{item.ID}).SingleOrDefault().ContainsAlphabetic.Value || !repository.TestMultipleLock.SimpleChecks.Filter(new[]{item.ID}).SingleOrDefault().ContainsNumeric.Value || !repository.TestMultipleLock.SimpleChecks.Filter(new[]{item.ID}).SingleOrDefault().ContainsNonAlphaNumeric.Value';
+        ItemFilter PassValidation 'item =>
+			!item.Extension_SimpleChecks.ContainsAlphabetic.Value
+			|| !item.Extension_SimpleChecks.ContainsNumeric.Value
+			|| !item.Extension_SimpleChecks.ContainsNonAlphaNumeric.Value';
         InvalidData PassValidation 'Pass is not valid.';
 
         ItemFilter PassContainsName 'item => item.Pass.Contains(item.UserName)';

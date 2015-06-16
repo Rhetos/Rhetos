@@ -26,6 +26,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.TestCommon;
 
 namespace CommonConcepts.Test
 {
@@ -33,14 +34,16 @@ namespace CommonConcepts.Test
     public class MinLengthTest
     {
         [TestMethod]
-        [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnInsert()
         {
             using (var container = new RhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleMinLength { StringMoreThan2Chars = "." };
-                repository.TestLengthLimit.SimpleMinLength.Insert(new[] { entity });
+
+                TestUtility.ShouldFail<Rhetos.UserException>(
+                    () => repository.TestLengthLimit.SimpleMinLength.Insert(entity),
+                    "StringMoreThan2Chars", "minimum", "3");
             }
         }
         
@@ -72,14 +75,18 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnUpdate()
         {
             using (var container = new RhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
-                var entity = new SimpleMinLength { StringMoreThan2Chars = "." };
-                repository.TestLengthLimit.SimpleMinLength.Update(new[] { entity });
+                var entity = new SimpleMinLength { StringMoreThan2Chars = "1234" };
+                repository.TestLengthLimit.SimpleMinLength.Insert(entity);
+                entity.StringMoreThan2Chars = "1";
+
+                TestUtility.ShouldFail<Rhetos.UserException>(
+                    () => repository.TestLengthLimit.SimpleMinLength.Update(entity),
+                    "StringMoreThan2Chars", "minimum", "3");
             }
         }
     }

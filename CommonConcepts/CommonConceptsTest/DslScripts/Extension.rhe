@@ -1,0 +1,45 @@
+﻿Module TestExtension
+{
+    AutodetectSqlDependencies;
+    
+	SqlQueryable SqlQueryableBase1 "SELECT ID = CONVERT(uniqueidentifier, '5D089327-97EF-418D-A7DF-783D3873A5B4'), i = 1, s = 'a'
+		UNION ALL SELECT 'DB97EA5F-FB8C-408F-B35B-AD6642C593D7', 2, 'b'"
+	{
+		Integer i;
+		ShortString s;
+	}
+
+	SqlQueryable SqlQueryableExtenson1 "SELECT ID, info = CAST(i AS varchar(20)) + '-' + s FROM TestExtension.SqlQueryableBase1"
+	{
+		Extends TestExtension.SqlQueryableBase1;
+		ShortString info;
+	}
+
+	Entity Old1
+	{
+		Integer i;
+		ShortString s;
+	}
+	
+	SqlView Old1View 'SELECT * FROM TestExtension.Old1';
+	
+	LegacyEntity Legacy1 'TestExtension.Old1' 'TestExtension.Old1View'
+	{
+		Integer i;
+		ShortString s;
+	}
+
+	Entity EntityExtension1
+	{
+		Extends TestExtension.Legacy1;
+		ShortString info;
+	}
+	
+	Entity SimpleBase { ShortString Name; }
+	Entity SimpleExtension { Extends TestExtension.SimpleBase; ShortString Name; }
+	SqlQueryable MissingExtensionSql "SELECT sb.ID, Name = sb.Name + 'Sql' FROM TestExtension.SimpleBase sb WHERE sb.Name NOT LIKE '%missing%'" { Extends TestExtension.SimpleBase; ShortString Name; }
+	QueryableExtension MissingExtensionCs TestExtension.SimpleBase '(source, repository) => source
+		.Where(item => !item.Name.Contains("missing"))
+		.Select(item => new Common.Queryable.TestExtension_MissingExtensionCs { ID = item.ID, Base = item, Name = item.Name + "Cs" })' { ShortString Name; }
+	SqlQueryable InvalidExtension 'SELECT ID, Data = 1/0 FROM TestExtension.SimpleBase' { Extends TestExtension.SimpleBase; Integer Data; }
+}

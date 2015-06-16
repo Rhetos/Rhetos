@@ -1,0 +1,15 @@
+﻿Module TestPessimisticLocking
+{
+	Entity Article
+	{
+		ShortString Name;
+        Reference Parent TestPessimisticLocking.ArticleGroup { Detail; }
+        PessimisticLocking;
+	}
+    
+	Entity ArticleGroup
+	{
+		ShortString Name;
+        PessimisticLocking;
+	}
+}

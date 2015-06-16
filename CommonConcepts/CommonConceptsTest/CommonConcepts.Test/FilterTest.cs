@@ -702,12 +702,12 @@ namespace CommonConcepts.Test
                 var detail = repository.TestFilter.SourceDetail;
 
                 var testSources = new[] { "a1", "a2", "b1", "b2" }.Select(name => new TestFilter.Source { Name = name }).ToList();
-                var testDetails = testSources.Select(s => new TestFilter.SourceDetail { ParentID = s.ID, Name2 = "d" }).ToList();
-
                 source.Save(testSources, null, source.Load());
+
+                var testDetails = testSources.Select(s => new TestFilter.SourceDetail { ParentID = s.ID, Name2 = "d" }).ToList();
                 detail.Save(testDetails, null, detail.Load());
 
-                Assert.AreEqual("a1d, b1d", TestUtility.DumpSorted(detail.Filter(detail.Query(), new TestFilter.Composable()), d => d.Parent.Name + d.Name2));
+                Assert.AreEqual("a1d, b1d", TestUtility.DumpSorted(detail.Filter(detail.Query(), new TestFilter.Composable()).Select(d => d.Parent.Name + d.Name2)));
             }
         }
     }

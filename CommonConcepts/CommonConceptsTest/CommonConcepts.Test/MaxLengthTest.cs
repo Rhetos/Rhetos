@@ -26,6 +26,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.TestCommon;
 
 namespace CommonConcepts.Test
 {
@@ -33,14 +34,16 @@ namespace CommonConcepts.Test
     public class MaxLengthTest
     {
         [TestMethod]
-        [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnInsert()
         {
             using (var container = new RhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleMaxLength { StringLessThan10Chars = "More than 10 characters." };
-                repository.TestLengthLimit.SimpleMaxLength.Insert(new[] { entity });
+
+                TestUtility.ShouldFail<Rhetos.UserException>(
+                    () => repository.TestLengthLimit.SimpleMaxLength.Insert(entity),
+                    "StringLessThan10Chars", "maximum", "10");
             }
         }
 
@@ -77,14 +80,18 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnUpdate()
         {
             using (var container = new RhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
-                var entity = new SimpleMaxLength { LongStringLessThan10Chars = "More than 10 characters." };
-                repository.TestLengthLimit.SimpleMaxLength.Update(new[] { entity });
+                var entity = new SimpleMaxLength { LongStringLessThan10Chars = "123" };
+                repository.TestLengthLimit.SimpleMaxLength.Insert(entity);
+
+                entity.LongStringLessThan10Chars = "More than 10 characters.";
+                TestUtility.ShouldFail<Rhetos.UserException>(
+                    () => repository.TestLengthLimit.SimpleMaxLength.Update(entity),
+                    "StringLessThan10Chars", "maximum", "10");
             }
         }
     }

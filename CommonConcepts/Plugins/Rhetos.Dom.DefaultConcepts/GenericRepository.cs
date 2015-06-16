@@ -99,7 +99,20 @@ namespace Rhetos.Dom.DefaultConcepts
                     "There is no registered implementation of " + typeof(TEntityInterface).FullName + " in domain object model."
                     + " Try using " + new RegisteredInterfaceImplementationHelperInfo().GetKeyword() + " DSL concept.");
 
-            return typeof(TEntityInterface).FullName;
+            string fullName = typeof(TEntityInterface).FullName;
+
+            const string queryablePrefix = "Common.Queryable.";
+            if (fullName.StartsWith(queryablePrefix))
+            {
+                int separator = fullName.IndexOf('_');
+                if (separator < 0)
+                    throw new FrameworkException("Unexpected queryable type \"" + fullName + "\".");
+                string module = fullName.Substring(queryablePrefix.Length, separator - queryablePrefix.Length);
+                string dataStructure = fullName.Substring(separator + 1);
+                return module + "." + dataStructure;
+            }
+
+            return fullName;
         }
 
         private IRepository InitializeRepository(Lazy<IIndex<string, IRepository>> repositories)

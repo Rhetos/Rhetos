@@ -264,10 +264,10 @@ namespace CommonConcepts.Test
 
                 var s1a = new TestLockItems.Simple { Name = "a" };
                 var s1b = new TestLockItems.Simple { Name = "b" };
+                simpleRepos.Insert(s1a, s1b);
+
                 var s2a = new TestLockItems.Simple2 { Name = "aa", Count = 100, TestReferenceID = s1a.ID };
                 var s2b = new TestLockItems.Simple2 { Name = "LockExceptName", Count = 200, TestReferenceID = s1b.ID };
-
-                simpleRepos.Insert(s1a, s1b);
                 simple2Repos.Insert(s2a, s2b);
 
                 s2a.Name += "X";

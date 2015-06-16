@@ -215,7 +215,8 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
 
                 PrepareSimpleData(repository, "a, b, b-c");
-                Assert.AreEqual("a1/2, b3/6, c4/5", ReportSimple(repository.TestHierarchy.Simple.Query()));
+                var report = ReportSimple(repository.TestHierarchy.Simple.Query());
+                Assert.IsTrue(report == "a1/2, b3/6, c4/5" || report == "a5/6, b1/4, c2/3");
             }
         }
 

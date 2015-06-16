@@ -35,7 +35,7 @@ namespace Rhetos.TestCommon
             return ShouldFail<Exception>(action, expectedErrorContent);
         }
 
-        public static Exception ShouldFail<TExpectedException>(Action action, params string[] expectedErrorContent)
+        public static TExpectedException ShouldFail<TExpectedException>(Action action, params string[] expectedErrorContent)
             where TExpectedException : Exception
         {
             Exception exception = null;
@@ -65,7 +65,7 @@ namespace Rhetos.TestCommon
 
             AssertContains(message, expectedErrorContent, "Exception message is incorrect: " + message, exception.ToString());
 
-            return exception;
+            return (TExpectedException)exception;
         }
 
         /// <summary>

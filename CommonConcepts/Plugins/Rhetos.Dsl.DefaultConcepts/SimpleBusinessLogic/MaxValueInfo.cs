@@ -38,24 +38,30 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            string propertyPrepared = (this.Property is IntegerPropertyInfo) ? Value :
-                                      (this.Property is DecimalPropertyInfo) ? "(decimal)" + Value :
-                                      (this.Property is MoneyPropertyInfo) ? "(decimal)" + Value :
-                                      (this.Property is DatePropertyInfo) ? String.Format(@"DateTime.Parse({0})", CsUtility.QuotedString(Value)) :
-                                      (this.Property is DateTimePropertyInfo) ? String.Format(@"DateTime.Parse({0})", CsUtility.QuotedString(Value)) : "";
-            // Expand the base entity:
-            var itemFilterMinValueProperty = new ItemFilterInfo {
-                    Expression = String.Format(@"item => item.{0} != null && item.{0} > {1}", Property.Name, propertyPrepared),
-                    FilterName = Property.Name + "_MaxValueFilter", 
-                    Source = Property.DataStructure 
+            string limitSnippet = MinValueInfo.LimitSnippetByType
+                .Where(snippet => snippet.Key.IsAssignableFrom(Property.GetType()))
+                .Select(snippet => snippet.Value.Invoke(Value))
+                .Single();
+
+            var filterParameter = new ParameterInfo
+            {
+                Module = Property.DataStructure.Module,
+                Name = Property.Name + "_MaxValueFilter"
             };
-            var invalidDataMinValueProperty = new InvalidDataMarkPropertyInfo { 
-                    DependedProperty = Property,
-                    FilterType = itemFilterMinValueProperty.FilterName,
-                    ErrorMessage = String.Format("Maximum value of {0} is {1}.", Property.Name, Value), 
-                    Source = Property.DataStructure 
+            var filter = new ComposableFilterByInfo
+            {
+                Expression = String.Format(@"(items, repository, parameter) => {{ {1}; return items.Where(item => item.{0} != null && item.{0} > limit); }}", Property.Name, limitSnippet),
+                Parameter = filterParameter.Module.Name + "." + filterParameter.Name,
+                Source = Property.DataStructure
             };
-            return new IConceptInfo[] { itemFilterMinValueProperty, invalidDataMinValueProperty };
+            var invalidData = new InvalidDataMarkPropertyInfo
+            {
+                DependedProperty = Property,
+                FilterType = filter.Parameter,
+                ErrorMessage = String.Format("Maximum value of {0} is {1}.", Property.Name, Value),
+                Source = Property.DataStructure
+            };
+            return new IConceptInfo[] { filterParameter, filter, invalidData };
         }
 
         private static readonly Regex DecimalChecker = new Regex(@"^[+-]?(\d+(\.\d*)?|\.\d+)$");

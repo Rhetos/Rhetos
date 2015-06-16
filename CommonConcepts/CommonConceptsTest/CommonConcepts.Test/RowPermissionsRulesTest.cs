@@ -165,9 +165,9 @@ namespace CommonConcepts.Test
                 var babyRepo = repositories.TestRowPermissions.Baby;
                 var browseRepo = repositories.TestRowPermissions.ParentBrowse;
 
-                parentRepo.Delete(parentRepo.All());
-                childRepo.Delete(childRepo.All());
                 babyRepo.Delete(babyRepo.All());
+                childRepo.Delete(childRepo.All());
+                parentRepo.Delete(parentRepo.All());
 
                 parentRepo.Insert(new Parent[] { pReadAllow, pReadDeny, pWriteAllow, pWriteDeny });
                 childRepo.Insert(new Child[] { cParentReadAllow, cParentReadDeny, cParentWriteAllow, cParentWriteDeny });
