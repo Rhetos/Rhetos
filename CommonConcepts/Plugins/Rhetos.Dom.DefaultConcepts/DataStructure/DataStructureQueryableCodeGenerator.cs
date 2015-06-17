@@ -139,7 +139,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 DataStructureQueryableCodeGenerator.GetterTag(dataStructure, csPropertyName));
 
             codeBuilder.InsertCode(
-                BackingFieldName(csPropertyName) + " = value;\r\n                " + additionalCode + (string.IsNullOrEmpty(additionalCode) ? "" : "\r\n                ") + "//",
+                "if (((IDetachOverride)this).Detaching) return;\r\n                " + BackingFieldName(csPropertyName) + " = value;\r\n                " + additionalCode + (string.IsNullOrEmpty(additionalCode) ? "" : "\r\n                ") + "//",
                 DataStructureQueryableCodeGenerator.SetterTag(dataStructure, csPropertyName));
         }
 

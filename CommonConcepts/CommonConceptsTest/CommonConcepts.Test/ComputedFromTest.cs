@@ -162,7 +162,7 @@ namespace CommonConcepts.Test
                 var b = new TestComputedFrom.Base1 { ID = Guid.NewGuid(), Name1 = "b1" };
                 repository.TestComputedFrom.Base1.Insert(new[] { b });
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
-                Assert.AreEqual("b1 b1a b1b ", TestUtility.DumpSorted(repository.TestComputedFrom.MultiSync.Query(), Dump));
+                Assert.AreEqual("b1 b1a b1b ", TestUtility.DumpSorted(repository.TestComputedFrom.MultiSync.Query().ToList(), Dump));
 
                 var ms = repository.TestComputedFrom.MultiSync.All().Single();
                 AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()));
@@ -186,7 +186,7 @@ namespace CommonConcepts.Test
                 b.Name1 = "b1new";
                 repository.TestComputedFrom.Base1.Update(new[] { b });
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
-                Assert.AreEqual("b1new b1newa b1newb ", TestUtility.DumpSorted(repository.TestComputedFrom.MultiSync.Query(), Dump));
+                Assert.AreEqual("b1new b1newa b1newb ", TestUtility.DumpSorted(repository.TestComputedFrom.MultiSync.Query().ToList(), Dump));
                 ms = repository.TestComputedFrom.MultiSync.All().Single();
                 AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()), false);
                 AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()));

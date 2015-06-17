@@ -115,6 +115,7 @@
     <Compile Include="FilterCriteria.cs" />
     <Compile Include="IActionRepository.cs" />
     <Compile Include="ICommonClaim.cs" />
+    <Compile Include="IDetachOverride.cs" />
     <Compile Include="IKeepSynchronizedMetadata.cs" />
     <Compile Include="IPrincipalPermission.cs" />
     <Compile Include="IRolePermission.cs" />

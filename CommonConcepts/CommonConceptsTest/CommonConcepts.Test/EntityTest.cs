@@ -263,23 +263,27 @@ namespace CommonConcepts.Test
                 var context = container.Resolve<Common.ExecutionContext>();
                 var repository = container.Resolve<Common.DomRepository>();
 
+                repository.TestEntity.Child.Delete(repository.TestEntity.Child.Load());
+                repository.TestEntity.BaseEntity.Delete(repository.TestEntity.BaseEntity.Load());
+
                 var b = new TestEntity.BaseEntity { ID = Guid.NewGuid(), Name = "b" };
                 var c = new TestEntity.Child { Name = "c", ParentID = b.ID };
                 repository.TestEntity.BaseEntity.Insert(b);
                 repository.TestEntity.Child.Insert(c);
 
-                var c2 = repository.TestEntity.Child.Query().Where(item => item.ID == c.ID).Single();
-                c2.ID = Guid.NewGuid();
-                c2.Name = "c2";
+                var c2 = repository.TestEntity.Child.Query()
+                    .Select(child => new TestEntity.Child { ID = Guid.NewGuid(), Name = "c2", ParentID = child.ParentID });
                 repository.TestEntity.Child.Insert(c2);
 
                 context.EntityFrameworkContext.ClearCache();
 
-                Assert.AreNotEqual(default(Guid), c.ID);
-                Assert.AreNotEqual(c2.ID, c.ID);
+                var ids = repository.TestEntity.Child.Query().Select(child => child.ID).ToList();
+                Assert.AreEqual(2, ids.Count());
+                Assert.AreNotEqual(default(Guid), ids[0]);
+                Assert.AreNotEqual(default(Guid), ids[1]);
+                Assert.AreNotEqual(ids[0], ids[1]);
 
-                var ids = new[] { c.ID, c2.ID };
-                var report = repository.TestEntity.Child.Query().Where(item => ids.Contains(item.ID))
+                var report = repository.TestEntity.Child.Query()
                     .Select(item => item.Name + " " + item.Parent.Name);
                 Assert.AreEqual("c b, c2 b", TestUtility.DumpSorted(report));
             }

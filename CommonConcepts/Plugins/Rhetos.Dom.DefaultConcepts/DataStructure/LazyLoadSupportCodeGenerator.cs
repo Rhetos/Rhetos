@@ -40,6 +40,10 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (info.DataStructure is IOrmDataStructure)
                 codeBuilder.InsertCode(";//", OrmDataStructureCodeGenerator.EnableLazyLoadTag, info.DataStructure);
+
+            codeBuilder.InsertCode("IDetachOverride", DataStructureQueryableCodeGenerator.InterfaceTag, info.DataStructure);
+
+            codeBuilder.InsertCode("bool IDetachOverride.Detaching { get; set; }\r\n\r\n        ", DataStructureQueryableCodeGenerator.MembersTag, info.DataStructure);
         }
     }
 }

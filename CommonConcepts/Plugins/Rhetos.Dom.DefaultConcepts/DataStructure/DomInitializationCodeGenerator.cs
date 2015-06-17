@@ -120,11 +120,19 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var objectContext = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)this).ObjectContext;
 
-            Configuration.AutoDetectChangesEnabled = false;
-            var trackedItems = ChangeTracker.Entries().ToList();
-            foreach (var item in trackedItems)
-                objectContext.Detach(item.Entity);
-            Configuration.AutoDetectChangesEnabled = true;
+            SetDetaching(true);
+            try
+            {
+                Configuration.AutoDetectChangesEnabled = false;
+                var trackedItems = ChangeTracker.Entries().ToList();
+                foreach (var item in trackedItems)
+                    objectContext.Detach(item.Entity);
+                Configuration.AutoDetectChangesEnabled = true;
+            }
+            finally
+            {
+                SetDetaching(false);
+            }
         }
 
         public void ClearCache(object item)
@@ -135,10 +143,24 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (isCached)
             {
-                Configuration.AutoDetectChangesEnabled = false;
-                objectContext.Detach(item);
-                Configuration.AutoDetectChangesEnabled = true;
+                SetDetaching(true);
+                try
+                {
+                    Configuration.AutoDetectChangesEnabled = false;
+                    objectContext.Detach(item);
+                    Configuration.AutoDetectChangesEnabled = true;
+                }
+                finally
+                {
+                    SetDetaching(false);
+                }
             }
+        }
+
+        private void SetDetaching(bool detaching)
+        {
+            foreach (var item in ChangeTracker.Entries().Select(entry => entry.Entity).OfType<IDetachOverride>())
+                item.Detaching = detaching;
         }
 
         protected override void OnModelCreating(System.Data.Entity.DbModelBuilder modelBuilder)
