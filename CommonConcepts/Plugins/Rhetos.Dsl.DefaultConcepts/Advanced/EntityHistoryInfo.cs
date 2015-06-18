@@ -289,20 +289,19 @@ namespace Rhetos.Dsl.DefaultConcepts
                     }}),
                 _domRepository.{1}.{0}_Changes.Filter(deletedHist.Select(de => de.ID)));
 
-            _domRepository.{1}.{0}.Save(
-                null,
-                insertedEnt.Select(item =>
-                    {{
-                        var ret = _domRepository.{1}.{0}.Filter(new [] {{ item.EntityID.Value }}).Single();{2}
-                        return ret;
-                    }})
-                    .Concat(updateEnt.Select(item =>
-                    {{
-                        var ret = _domRepository.{1}.{0}.Filter(new [] {{ item.EntityID.Value }}).Single();
-                        ret.SetOverwriteCurrentRecordOnUpdate(true);{2}
-                        return ret;
-                    }})),
-                deletedEnt.Select(de => new {1}.{0} {{ ID = de.EntityID.Value }}));
+            var updateCurrentAndAddHistory = insertedEnt.Select(item =>
+                {{
+                    var ret = _domRepository.{1}.{0}.Filter(new [] {{ item.EntityID.Value }}).Single();{2}
+                    return ret;
+                }});
+            var updateCurrentItemsOnly = new Common.DontTrackHistory<{1}.{0}>();
+            updateCurrentItemsOnly.AddRange(updateEnt.Select(item =>
+                {{
+                    var ret = _domRepository.{1}.{0}.Filter(new [] {{ item.EntityID.Value }}).Single();{2}
+                    return ret;
+                }}));
+            _domRepository.{1}.{0}.Save(null, updateCurrentAndAddHistory, deletedEnt.Select(de => new {1}.{0} {{ ID = de.EntityID.Value }}));
+            _domRepository.{1}.{0}.Save(null, updateCurrentItemsOnly, null);
 
             ",
              Entity.Name,

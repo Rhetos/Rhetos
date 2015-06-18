@@ -1479,8 +1479,6 @@ namespace CommonConcepts.Test
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
                 var repository = container.Resolve<Common.DomRepository>();
 
-                // take entry that is in the middle of history
-                var a2 = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).Skip(1).Take(1).Single();
                 repository.TestHistory.Simple_History.Insert(new[] { new TestHistory.Simple_History() {
                     ActiveSince = new DateTime(2013, 1, 1),
                     Code = 4,
@@ -1490,14 +1488,13 @@ namespace CommonConcepts.Test
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
                 var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
-                var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
-                Assert.AreEqual(4, fh.Count());
+                var currentItems = repository.TestHistory.Simple.Query().ToList();
+                var fullHistory = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).ToList();
 
-                var currentItem = repository.TestHistory.Simple.Query().OrderBy(x => x.ActiveSince);
-                Assert.AreEqual(1, currentItem.Count());
-
-                Assert.AreEqual("4 a 2013-01-01T00:00:00", currentItem.ToList().Select(item => item.Code + " " + item.Name + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
-                Assert.AreEqual("3 2000-01-01T00:00:00,2 2001-01-01T00:00:00,1 2011-01-01T00:00:00,4 2013-01-01T00:00:00", fh.ToList().Select(item => item.Code + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
+                Assert.AreEqual("4 a 2013-01-01T00:00:00",
+                    TestUtility.Dump(currentItems, item => item.Code + " " + item.Name + " " + item.ActiveSince.Dump()));
+                Assert.AreEqual("3 2000-01-01T00:00:00, 2 2001-01-01T00:00:00, 1 2011-01-01T00:00:00, 4 2013-01-01T00:00:00",
+                    TestUtility.Dump(fullHistory, item => item.Code + " " + item.ActiveSince.Dump()));
             }
         }
 

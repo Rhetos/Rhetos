@@ -32,6 +32,19 @@ using Rhetos.Utilities;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
+    [ExportMetadata(MefProvider.Implements, typeof(InitializationConcept))]
+    [ExportMetadata(MefProvider.DependsOn, typeof(DomInitializationCodeGenerator))]
+    public class EntityHistoryInfractructureCodeGenerator : IConceptCodeGenerator
+    {
+        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        {
+            codeBuilder.InsertCode(
+                "internal class DontTrackHistory<T> : List<T>\r\n    {\r\n    }\r\n    ",
+                ModuleCodeGenerator.CommonNamespaceMembersTag);
+        }
+    }
+
+    [Export(typeof(IConceptCodeGenerator))]
     [ExportMetadata(MefProvider.Implements, typeof(EntityHistoryInfo))]
     public class EntityHistoryCodeGenerator : IConceptCodeGenerator
     {
@@ -41,7 +54,6 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (EntityHistoryInfo)conceptInfo;
             codeBuilder.InsertCode(FilterImplementationSnippet(info), RepositoryHelper.RepositoryMembers, info.Dependency_ChangesEntity);
-            codeBuilder.InsertCode(AdditionalParameterSnippet(info), DataStructureCodeGenerator.BodyTag, info.Entity);
             codeBuilder.InsertCode(CreateHistoryOnUpdateSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Entity);
         }
 
@@ -66,20 +78,6 @@ namespace Rhetos.Dom.DefaultConcepts
             SqlUtility.Identifier(info.Entity.Name + "_AtTime"));
         }
 
-        /// <summary>
-        /// Additional parameter _createChangesEntryOnEdit. It is used in History update.
-        /// If active item is edited through history, it should not create new entry in Changes table.
-        /// </summary>
-        private static string AdditionalParameterSnippet(EntityHistoryInfo info)
-        {
-            return
-@"        private bool _overwriteCurrentRecordOnUpdate;
-        public virtual void SetOverwriteCurrentRecordOnUpdate(bool value) { this._overwriteCurrentRecordOnUpdate = value; }
-        public virtual bool GetOverwriteCurrentRecordOnUpdate() { return this._overwriteCurrentRecordOnUpdate; }
-
-";
-        }
-
         private static string CreateHistoryOnUpdateSnippet(EntityHistoryInfo info)
         {
             return string.Format(
@@ -93,11 +91,10 @@ namespace Rhetos.Dom.DefaultConcepts
                     if (newItem.ActiveSince == null)
                         newItem.ActiveSince = now;
 
-                if (updatedNew.Count() > 0)
+                if (updatedNew.Count() > 0 && !(updatedNew is Common.DontTrackHistory<{0}.{1}>))
 			    {{
 				    var createHistory = updatedNew.Zip(updated, (newItem, oldItem) => new {{ newItem, oldItem }})
-					    .Where(change => (change.oldItem.ActiveSince == null || change.newItem.ActiveSince > change.oldItem.ActiveSince.Value.AddSeconds(errorMarginSeconds))
-                            && !change.newItem.GetOverwriteCurrentRecordOnUpdate())
+					    .Where(change => (change.oldItem.ActiveSince == null || change.newItem.ActiveSince > change.oldItem.ActiveSince.Value.AddSeconds(errorMarginSeconds)))
 					    .Select(change => change.oldItem)
 					    .ToArray();
 					
