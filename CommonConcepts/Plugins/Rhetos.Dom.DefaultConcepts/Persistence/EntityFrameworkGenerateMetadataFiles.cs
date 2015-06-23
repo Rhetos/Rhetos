@@ -18,18 +18,20 @@
 */
 
 using Rhetos.Extensibility;
+using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Data.Common;
 using System.Data.Entity;
-using System.Data.Entity.Core.Metadata.Edm;
 using System.Data.Entity.Infrastructure;
+using System.Data.SqlClient;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace Rhetos.Dom.DefaultConcepts.Persistence
@@ -38,26 +40,67 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
     /// The generated EntityFrameworkContext will work with or without these metadata files,
     /// but context initialization is faster when loading metadata from the pregenerated files.
     /// </summary>
-    [Export(typeof(IServerInitializer))]
-    public class EntityFrameworkGenerateMetadataFiles : IServerInitializer
+    [Export(typeof(IGenerator))]
+    public class EntityFrameworkGenerateMetadataFiles : IGenerator
     {
-        private readonly Lazy<DbContext> _dbContext;
-        private readonly Lazy<EntityFrameworkMetadata> _metadata;
+        private readonly ILogger _performanceLogger;
+        private readonly IDomainObjectModel _dom;
+        private readonly ConnectionString _connectionString;
 
-        public EntityFrameworkGenerateMetadataFiles(Lazy<DbContext> dbContext, Lazy<EntityFrameworkMetadata> metadata)
+        public EntityFrameworkGenerateMetadataFiles(ILogProvider logProvider, IDomainObjectModel dom, ConnectionString connectionString)
         {
-            _dbContext = dbContext;
-            _metadata = metadata;
-        }
-
-        public void Initialize()
-        {
-            _metadata.Value.SaveMetadata(_dbContext.Value);
+            _performanceLogger = logProvider.GetLogger("Performance");
+            _dom = dom;
+            _connectionString = connectionString;
         }
 
         public IEnumerable<string> Dependencies
         {
             get { return null; }
+        }
+
+        public void Generate()
+        {
+            var sw = Stopwatch.StartNew();
+
+            var connection = new SqlConnection(_connectionString);
+
+            var dbConfiguration = (DbConfiguration)_dom.Assembly.GetType("Common.EntityFrameworkConfiguration")
+                .GetConstructor(new Type[] { })
+                .Invoke(new object[] { });
+
+            var dbContext = (DbContext)_dom.Assembly.GetType("Common.EntityFrameworkContext")
+                .GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(DbConnection), dbConfiguration.GetType() }, null)
+                .Invoke(new object[] { connection, dbConfiguration });
+
+            string edmx;
+            using (var stringWriter = new StringWriter())
+            using (var xmlWriter = new XmlTextWriter(stringWriter))
+            {
+                xmlWriter.Formatting = System.Xml.Formatting.Indented;
+                EdmxWriter.WriteEdmx(dbContext, xmlWriter);
+                edmx = stringWriter.ToString();
+            }
+
+            _performanceLogger.Write(sw, "EntityFrameworkMetadata: Extract EDMX.");
+
+            foreach (var segment in EntityFrameworkMetadata.SegmentsFromCode)
+            {
+                string startTag = "\r\n    <" + segment.TagName + ">\r\n";
+                string endTag = "\r\n    </" + segment.TagName + ">\r\n";
+
+                int start = edmx.IndexOf(startTag, StringComparison.Ordinal);
+                int end = edmx.IndexOf(endTag, StringComparison.Ordinal);
+                int alternativeStart = edmx.IndexOf(startTag, start + 1, StringComparison.Ordinal);
+                int alternativeEnd = edmx.IndexOf(endTag, end + 1, StringComparison.Ordinal);
+                if (start == -1 || alternativeStart != -1 || end == -1 || alternativeEnd != -1)
+                    throw new Exception("Unexcepted EDMX format. " + segment.TagName + " tag locations: start=" + start + " alternativeStart=" + alternativeStart + " end=" + end + " alternativeEnd=" + alternativeEnd + ".");
+
+                string segmentXml = edmx.Substring(start + startTag.Length, end - start - startTag.Length);
+                File.WriteAllText(Path.Combine(Paths.GeneratedFolder, segment.FileName), segmentXml, Encoding.UTF8);
+            }
+
+            _performanceLogger.Write(sw, "EntityFrameworkMetadata: Save EDM files.");
         }
     }
 }

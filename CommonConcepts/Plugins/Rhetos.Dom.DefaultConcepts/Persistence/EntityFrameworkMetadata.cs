@@ -22,16 +22,12 @@ using Rhetos.Persistence;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Data.Entity.Core.Metadata.Edm;
-using System.Data.Entity.Infrastructure;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
 
 namespace Rhetos.Dom.DefaultConcepts.Persistence
 {
@@ -47,9 +43,6 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
             _performanceLogger = logProvider.GetLogger("Performance");
         }
 
-        /// <summary>
-        /// Returns null if the pre-generated metadata is not available.
-        /// </summary>
         public MetadataWorkspace MetadataWorkspace
         {
             get
@@ -60,7 +53,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                         {
                             var sw = Stopwatch.StartNew();
 
-                            var filesFromCode = _segmentsFromCode.Select(segment => segment.FileName)
+                            var filesFromCode = SegmentsFromCode.Select(segment => segment.FileName)
                                 .Select(fileName => Path.Combine(Paths.GeneratedFolder, fileName))
                                 .ToList();
 
@@ -75,7 +68,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                                 _performanceLogger.Write(sw, "EntityFrameworkMetadata: Load EDM files.");
                             }
                             else
-                                _metadataWorkspace = null;
+                                throw new FrameworkException("Entity Framework metadata files are not yet generated.");
 
                             _initialized = true;
                         }
@@ -84,51 +77,17 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
             }
         }
 
-        private class Segment
+        internal class Segment
         {
             public string TagName;
             public string FileName;
         }
 
-        private static readonly Segment[] _segmentsFromCode = new Segment[]
+        internal static readonly Segment[] SegmentsFromCode = new Segment[]
         {
             new Segment { FileName = "ServerDomEdmFromCode.csdl", TagName = "ConceptualModels" },
             new Segment { FileName = "ServerDomEdmFromCode.msl", TagName = "Mappings" },
             new Segment { FileName = "ServerDomEdmFromCode.ssdl", TagName = "StorageModels" },
         };
-
-        public void SaveMetadata(DbContext dbContext)
-        {
-            var sw = Stopwatch.StartNew();
-
-            string edmx;
-            using (var stringWriter = new StringWriter())
-            using (var xmlWriter = new XmlTextWriter(stringWriter))
-            {
-                xmlWriter.Formatting = System.Xml.Formatting.Indented;
-                EdmxWriter.WriteEdmx(dbContext, xmlWriter);
-                edmx = stringWriter.ToString();
-            }
-
-            _performanceLogger.Write(sw, "EntityFrameworkMetadata: Extract EDMX.");
-
-            foreach (var segment in _segmentsFromCode)
-            {
-                string startTag = "\r\n    <" + segment.TagName + ">\r\n";
-                string endTag = "\r\n    </" + segment.TagName + ">\r\n";
-
-                int start = edmx.IndexOf(startTag, StringComparison.Ordinal);
-                int end = edmx.IndexOf(endTag, StringComparison.Ordinal);
-                int alternativeStart = edmx.IndexOf(startTag, start + 1, StringComparison.Ordinal);
-                int alternativeEnd = edmx.IndexOf(endTag, end + 1, StringComparison.Ordinal);
-                if (start == -1 || alternativeStart != -1 || end == -1 || alternativeEnd != -1)
-                    throw new Exception("Unexcepted EDMX format. " + segment.TagName + " tag locations: start=" + start + " alternativeStart=" + alternativeStart + " end=" + end + " alternativeEnd=" + alternativeEnd + ".");
-
-                string segmentXml = edmx.Substring(start + startTag.Length, end - start - startTag.Length);
-                File.WriteAllText(Path.Combine(Paths.GeneratedFolder, segment.FileName), segmentXml, Encoding.UTF8);
-            }
-
-            _performanceLogger.Write(sw, "EntityFrameworkMetadata: Save EDM files.");
-        }
     }
 }

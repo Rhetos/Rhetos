@@ -100,20 +100,24 @@ namespace Rhetos.Dom.DefaultConcepts
 
     public class EntityFrameworkContext : System.Data.Entity.DbContext, Rhetos.Persistence.IPersistenceCache
     {
-        public EntityFrameworkContext(Rhetos.Persistence.IPersistenceTransaction persistenceTransaction, Rhetos.Dom.DefaultConcepts.Persistence.EntityFrameworkMetadata metadata, EntityFrameworkConfiguration configuration)
-            : base(CreateEntityConnection(persistenceTransaction, metadata), false)
+        public EntityFrameworkContext(
+            Rhetos.Persistence.IPersistenceTransaction persistenceTransaction,
+            Rhetos.Dom.DefaultConcepts.Persistence.EntityFrameworkMetadata metadata,
+            EntityFrameworkConfiguration configuration) // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
+            : base(new System.Data.Entity.Core.EntityClient.EntityConnection(metadata.MetadataWorkspace, persistenceTransaction.Connection), false)
         {
-            if (configuration == null) // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
-                throw new Rhetos.FrameworkException(""DbConfiguration should be created and initialized before this context."");
             Database.UseTransaction(persistenceTransaction.Transaction);
         }
 
-        private static System.Data.Common.DbConnection CreateEntityConnection(Rhetos.Persistence.IPersistenceTransaction persistenceTransaction, Rhetos.Dom.DefaultConcepts.Persistence.EntityFrameworkMetadata metadata)
+        /// <summary>
+        /// This constructor is used at deployment-time to create slow EntityFrameworkContext instance before the metadata files are generated.
+        /// The instance is used by EntityFrameworkGenerateMetadataFiles to generate the metadata files.
+        /// </summary>
+        protected EntityFrameworkContext(
+            System.Data.Common.DbConnection connection,
+            EntityFrameworkConfiguration configuration) // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
+            : base(connection, true)
         {
-            if (metadata.MetadataWorkspace != null)
-                return new System.Data.Entity.Core.EntityClient.EntityConnection(metadata.MetadataWorkspace, persistenceTransaction.Connection);
-            else
-                return persistenceTransaction.Connection;
         }
 
         public void ClearCache()
