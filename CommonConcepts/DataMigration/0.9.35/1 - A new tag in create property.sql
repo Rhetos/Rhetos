@@ -5,5 +5,6 @@ UPDATE
 SET
 	CreateQuery = CreateQuery + CHAR(13) + CHAR(10) + '/*PropertyInfo AfterCreate ' + SUBSTRING(ConceptInfoKey, 14, 256) + '*/'
 WHERE
-	ConceptInfoKey LIKE 'PropertyInfo%'
+	ConceptInfoKey LIKE 'PropertyInfo %'
 	AND CreateQuery LIKE '%ALTER TABLE%DataMigrationApply%'
+	AND CreateQuery NOT LIKE '%/*PropertyInfo AfterCreate ' + SUBSTRING(ConceptInfoKey, 14, 256) + '*/%'
