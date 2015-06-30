@@ -47,7 +47,7 @@ namespace ActiveDirectorySync.Test
 
         private string ReportMembership(MockWindowsSecutiryRhetosContainer container)
         {
-            var membership = container.Resolve<GenericRepository<Common.PrincipalHasRole>>();
+            var membership = container.Resolve<GenericRepository<Common.Queryable.Common_PrincipalHasRole>>();
             return TestUtility.DumpSorted(membership.Query(), phr => phr.Principal.Name + "-" + phr.Role.Name);
         }
 
@@ -56,9 +56,8 @@ namespace ActiveDirectorySync.Test
         {
             using (var container = new MockWindowsSecutiryRhetosContainer("u1-r1 u1-r12 u2-r12 u2-r2", commitChanges: false))
             {
-                container.Resolve<Common.ExecutionContext>().NHibernateSession
-                    .CreateSQLQuery("DELETE FROM Common.Principal; DELETE FROM Common.Role")
-                    .ExecuteUpdate();
+                container.Resolve<ISqlExecuter>()
+                    .ExecuteSql("DELETE FROM Common.Principal; DELETE FROM Common.Role");
 
                 // Insert test data:
 
@@ -76,10 +75,10 @@ namespace ActiveDirectorySync.Test
                 var membership = container.Resolve<GenericRepository<Common.PrincipalHasRole>>();
 
                 roles.Insert(r1, r2, r25);
-                Assert.AreEqual(@"OS\r1, OS\r2, r25", TestUtility.DumpSorted(roles.Read(), role => role.Name), "roles created");
+                Assert.AreEqual(@"OS\r1, OS\r2, r25", TestUtility.DumpSorted(roles.Query(), role => role.Name), "roles created");
 
                 principals.Insert(u1, u2, u3, u5);
-                Assert.AreEqual(@"OS\u1, OS\u2, OS\u3, u5", TestUtility.DumpSorted(principals.Read(), principal => principal.Name), "principals created");
+                Assert.AreEqual(@"OS\u1, OS\u2, OS\u3, u5", TestUtility.DumpSorted(principals.Query(), principal => principal.Name), "principals created");
 
                 // Recompute membership on insert domain users:
 
@@ -88,8 +87,8 @@ namespace ActiveDirectorySync.Test
                 // Inserting non-domain users and roles:
 
                 membership.Insert(new[] {
-                    new Common.PrincipalHasRole { Principal = u2, Role = r25 },
-                    new Common.PrincipalHasRole { Principal = u5, Role = r25 } },
+                    new Common.PrincipalHasRole { PrincipalID = u2.ID, RoleID = r25.ID },
+                    new Common.PrincipalHasRole { PrincipalID = u5.ID, RoleID = r25.ID } },
                     checkUserPermissions: true);
                 Assert.AreEqual(@"OS\u1-OS\r1, OS\u2-OS\r2, OS\u2-r25, u5-r25", ReportMembership(container), "non-domain users and roles");
             }
@@ -100,9 +99,8 @@ namespace ActiveDirectorySync.Test
         {
             using (var container = new MockWindowsSecutiryRhetosContainer("u1-r1 u1-r12 u2-r12 u2-r2", commitChanges: false))
             {
-                container.Resolve<Common.ExecutionContext>().NHibernateSession
-                    .CreateSQLQuery("DELETE FROM Common.Principal; DELETE FROM Common.Role")
-                    .ExecuteUpdate();
+                container.Resolve<ISqlExecuter>()
+                    .ExecuteSql("DELETE FROM Common.Principal; DELETE FROM Common.Role");
 
                 // Insert test data:
 
@@ -122,8 +120,8 @@ namespace ActiveDirectorySync.Test
                 roles.Insert(r1, r2, r25);
                 principals.Insert(u1, u2, u3, u5);
                 membership.Insert(new[] { // Non-domain users and roles.
-                    new Common.PrincipalHasRole { Principal = u2, Role = r25 },
-                    new Common.PrincipalHasRole { Principal = u5, Role = r25 } });
+                    new Common.PrincipalHasRole { PrincipalID = u2.ID, RoleID = r25.ID },
+                    new Common.PrincipalHasRole { PrincipalID = u5.ID, RoleID = r25.ID } });
 
                 // Recompute membership on update principal (domain users only):
 
@@ -144,9 +142,8 @@ namespace ActiveDirectorySync.Test
         {
             using (var container = new MockWindowsSecutiryRhetosContainer("u1-r1 u1-r12 u2-r12 u2-r2", commitChanges: false))
             {
-                container.Resolve<Common.ExecutionContext>().NHibernateSession
-                    .CreateSQLQuery("DELETE FROM Common.Principal; DELETE FROM Common.Role")
-                    .ExecuteUpdate();
+                container.Resolve<ISqlExecuter>()
+                    .ExecuteSql("DELETE FROM Common.Principal; DELETE FROM Common.Role");
 
                 // Insert test data:
 
@@ -161,23 +158,25 @@ namespace ActiveDirectorySync.Test
                 var repository = container.Resolve<Common.DomRepository>();
                 var roles = container.Resolve<GenericRepository<Common.Role>>();
                 var principals = container.Resolve<GenericRepository<Common.Principal>>();
-                var membership = container.Resolve<GenericRepository<Common.PrincipalHasRole>>();
+                var membership = repository.Common.PrincipalHasRole;
 
                 roles.Insert(r1, r2, r25);
                 principals.Insert(u1, u2, u3, u5);
                 membership.Insert(new[] { // Non-domain users and roles.
-                    new Common.PrincipalHasRole { Principal = u2, Role = r25 },
-                    new Common.PrincipalHasRole { Principal = u5, Role = r25 } });
+                    new Common.PrincipalHasRole { PrincipalID = u2.ID, RoleID = r25.ID },
+                    new Common.PrincipalHasRole { PrincipalID = u5.ID, RoleID = r25.ID } });
 
                 // Common filters:
 
                 var filter1 = new Common.ActiveDirectoryAllUsersParameter();
                 Assert.AreEqual(@"OS\u1-OS\r1, OS\u2-OS\r2",
-                    TestUtility.DumpSorted(membership.Read(filter1), phr => phr.Principal.Name + "-" + phr.Role.Name),
+                    TestUtility.DumpSorted(membership.Query(membership.Load(filter1).Select(m => m.ID)),
+                    phr => phr.Principal.Name + "-" + phr.Role.Name),
                     "filter ActiveDirectoryAllUsersParameter");
                 var filter2 = new[] { u1.Name, u2.Name }.Select(name => new Common.ActiveDirectoryUserParameter { UserName = name }).ToArray();
                 Assert.AreEqual(@"OS\u1-OS\r1, OS\u2-OS\r2",
-                    TestUtility.DumpSorted(membership.Read(filter2), phr => phr.Principal.Name + "-" + phr.Role.Name),
+                    TestUtility.DumpSorted(membership.Query(membership.Load(filter2).Select(m => m.ID)),
+                    phr => phr.Principal.Name + "-" + phr.Role.Name),
                     "filter ActiveDirectoryUserParameter");
             }
         }
@@ -187,9 +186,8 @@ namespace ActiveDirectorySync.Test
         {
             using (var container = new MockWindowsSecutiryRhetosContainer("u1-r1 u1-r12 u2-r12 u2-r2", commitChanges: false))
             {
-                container.Resolve<Common.ExecutionContext>().NHibernateSession
-                    .CreateSQLQuery("DELETE FROM Common.Principal; DELETE FROM Common.Role")
-                    .ExecuteUpdate();
+                container.Resolve<ISqlExecuter>()
+                    .ExecuteSql("DELETE FROM Common.Principal; DELETE FROM Common.Role");
 
                 // Insert test data:
 
@@ -201,7 +199,7 @@ namespace ActiveDirectorySync.Test
                 var repository = container.Resolve<Common.DomRepository>();
                 var roles = container.Resolve<GenericRepository<Common.Role>>();
                 var principals = container.Resolve<GenericRepository<Common.Principal>>();
-                var membership = container.Resolve<GenericRepository<Common.PrincipalHasRole>>();
+                var membership = repository.Common.PrincipalHasRole;
 
                 roles.Insert(r1, r2);
                 principals.Insert(u1, u2);
@@ -210,11 +208,11 @@ namespace ActiveDirectorySync.Test
 
                 Assert.AreEqual(@"OS\u1-OS\r1, OS\u2-OS\r2", ReportMembership(container));
 
-                var u2r2 = membership.Read(m => m.Principal.Name.Contains(@"\u2")).Single();
+                var u2r2 = membership.Query(m => m.Principal.Name.Contains(@"\u2")).Single();
                 membership.Delete(new[] { u2r2 }, checkUserPermissions: false);
                 Assert.AreEqual(@"OS\u1-OS\r1", ReportMembership(container));
 
-                var u1r1 = membership.Read(m => m.Principal.Name.Contains(@"\u1")).Single();
+                var u1r1 = membership.Query(m => m.Principal.Name.Contains(@"\u1")).Single();
                 TestUtility.ShouldFail(
                     () => membership.Delete(new[] { u1r1 }, checkUserPermissions: true),
                     @"It is not allowed to remove the user membership here, because role OS\r1 is synchronized with an Active Directory group");
@@ -226,9 +224,8 @@ namespace ActiveDirectorySync.Test
         {
             using (var container = new MockWindowsSecutiryRhetosContainer("u1-r1 u1-r12 u2-r12 u2-r2", commitChanges: false))
             {
-                container.Resolve<Common.ExecutionContext>().NHibernateSession
-                    .CreateSQLQuery("DELETE FROM Common.Principal; DELETE FROM Common.Role")
-                    .ExecuteUpdate();
+                container.Resolve<ISqlExecuter>()
+                    .ExecuteSql("DELETE FROM Common.Principal; DELETE FROM Common.Role");
 
                 // Insert test data:
 
@@ -243,17 +240,17 @@ namespace ActiveDirectorySync.Test
                 var repository = container.Resolve<Common.DomRepository>();
                 var roles = container.Resolve<GenericRepository<Common.Role>>();
                 var principals = container.Resolve<GenericRepository<Common.Principal>>();
-                var membership = container.Resolve<GenericRepository<Common.PrincipalHasRole>>();
+                var membership = repository.Common.PrincipalHasRole;
 
                 roles.Insert(r1, r2, r25);
                 principals.Insert(u1, u2, u3, u5);
                 membership.Insert(new[] { // Non-domain users and roles.
-                    new Common.PrincipalHasRole { Principal = u2, Role = r25 },
-                    new Common.PrincipalHasRole { Principal = u5, Role = r25 } });
+                    new Common.PrincipalHasRole { PrincipalID = u2.ID, RoleID = r25.ID },
+                    new Common.PrincipalHasRole { PrincipalID = u5.ID, RoleID = r25.ID } });
 
                 // Recompute membership relations:
 
-                var u1r1 = membership.Read(m => m.Principal.Name.Contains(@"\u1")).Single();
+                var u1r1 = membership.Query(m => m.Principal.Name.Contains(@"\u1")).Single();
                 membership.Delete(new[] { u1r1 }, checkUserPermissions: false);
                 Assert.AreEqual(@"OS\u2-OS\r2, OS\u2-r25, u5-r25", ReportMembership(container), "modified membership");
 
@@ -267,9 +264,8 @@ namespace ActiveDirectorySync.Test
         {
             using (var container = new MockWindowsSecutiryRhetosContainer("u1-r1 u1-r12 u2-r12 u2-r2", commitChanges: false))
             {
-                container.Resolve<Common.ExecutionContext>().NHibernateSession
-                    .CreateSQLQuery("DELETE FROM Common.Principal; DELETE FROM Common.Role")
-                    .ExecuteUpdate();
+                container.Resolve<ISqlExecuter>()
+                    .ExecuteSql("DELETE FROM Common.Principal; DELETE FROM Common.Role");
                 
                 // Insert test data:
 
@@ -289,8 +285,8 @@ namespace ActiveDirectorySync.Test
                 roles.Insert(r1, r2, r25);
                 principals.Insert(u1, u2, u3, u5);
                 membership.Insert(new[] { // Non-domain users and roles.
-                    new Common.PrincipalHasRole { Principal = u2, Role = r25 },
-                    new Common.PrincipalHasRole { Principal = u5, Role = r25 } });
+                    new Common.PrincipalHasRole { PrincipalID = u2.ID, RoleID = r25.ID },
+                    new Common.PrincipalHasRole { PrincipalID = u5.ID, RoleID = r25.ID } });
 
                 // Recompute membership on modified role should remove obsolete memebers:
 
@@ -315,9 +311,8 @@ namespace ActiveDirectorySync.Test
         {
             using (var container = new MockWindowsSecutiryRhetosContainer("u1-r1 u1-r12 u2-r12 u2-r2", commitChanges: false))
             {
-                container.Resolve<Common.ExecutionContext>().NHibernateSession
-                    .CreateSQLQuery("DELETE FROM Common.Principal; DELETE FROM Common.Role")
-                    .ExecuteUpdate();
+                container.Resolve<ISqlExecuter>()
+                    .ExecuteSql("DELETE FROM Common.Principal; DELETE FROM Common.Role");
                 
                 // Insert test data:
 
@@ -337,16 +332,16 @@ namespace ActiveDirectorySync.Test
                 roles.Insert(r1, r2, r25);
                 principals.Insert(u1, u2, u3, u5);
                 membership.Insert(new[] { // Non-domain users and roles.
-                    new Common.PrincipalHasRole { Principal = u2, Role = r25 },
-                    new Common.PrincipalHasRole { Principal = u5, Role = r25 } });
+                    new Common.PrincipalHasRole { PrincipalID = u2.ID, RoleID = r25.ID },
+                    new Common.PrincipalHasRole { PrincipalID = u5.ID, RoleID = r25.ID } });
 
                 // Modify role inheritance:
 
                 repository.Common.RoleInheritsRole.Insert(new[] { new Common.RoleInheritsRole {
-                    UsersFrom = r1, PermissionsFrom = r25 } });
+                    UsersFromID = r1.ID, PermissionsFromID = r25.ID } });
 
                 TestUtility.ShouldFail(() => repository.Common.RoleInheritsRole.Insert(new[] { new Common.RoleInheritsRole {
-                    UsersFrom = r25, PermissionsFrom = r2 } }), "UserException",
+                    UsersFromID = r25.ID, PermissionsFromID = r2.ID } }), "UserException",
                     "It is not allowed to add users or user groups here because this role is synchronized with an Active Directory group.",
                     "Please change the user membership on Active Directory instead.");
             }
@@ -357,9 +352,8 @@ namespace ActiveDirectorySync.Test
         {
             using (var container = new MockWindowsSecutiryRhetosContainer("u1-r1 u1-r12 u2-r12 u2-r2", commitChanges: false))
             {
-                container.Resolve<Common.ExecutionContext>().NHibernateSession
-                    .CreateSQLQuery("DELETE FROM Common.Principal; DELETE FROM Common.Role")
-                    .ExecuteUpdate();
+                container.Resolve<ISqlExecuter>()
+                    .ExecuteSql("DELETE FROM Common.Principal; DELETE FROM Common.Role");
                 
                 // Insert test data:
 
@@ -379,14 +373,14 @@ namespace ActiveDirectorySync.Test
                 roles.Insert(r1, r2, r25);
                 principals.Insert(u1, u2, u3, u5);
                 membership.Insert(new[] { // Non-domain users and roles.
-                    new Common.PrincipalHasRole { Principal = u2, Role = r25 },
-                    new Common.PrincipalHasRole { Principal = u5, Role = r25 } });
+                    new Common.PrincipalHasRole { PrincipalID = u2.ID, RoleID = r25.ID },
+                    new Common.PrincipalHasRole { PrincipalID = u5.ID, RoleID = r25.ID } });
 
                 // Recompute membership on authorization:
 
                 var authorizationProvider = container.Resolve<CommonAuthorizationProvider>();
 
-                membership.Delete(membership.Read());
+                membership.Delete(membership.Load());
                 Assert.AreEqual(@"", ReportMembership(container), "membership deleted");
 
                 authorizationProvider.GetUsersRoles(u1);

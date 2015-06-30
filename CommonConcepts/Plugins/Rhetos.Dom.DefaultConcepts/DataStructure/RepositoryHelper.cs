@@ -102,6 +102,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return (IEnumerable<{0}>)items;
         }}
 
+        [Obsolete(""Use Load() or Query() method."")]
         public global::{0}[] All()
         {{
             {1}

@@ -25,6 +25,7 @@ using System.Text;
 using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Utilities;
+using System.Linq.Expressions;
 
 namespace Rhetos.TestCommon
 {
@@ -157,6 +158,14 @@ namespace Rhetos.TestCommon
             return result;
         }
 
+        public static string DumpSorted<T, T2>(IQueryable<T> query, Expression<Func<T, T2>> selector = null)
+        {
+            if (selector != null)
+                return DumpSorted(query.Select(selector).ToList(), null);
+            else
+                return DumpSorted(query.ToList(), null);
+        }
+
         public static string Dump<T>(IEnumerable<T> list, Func<T, object> selector = null)
         {
             if (selector == null)
@@ -164,6 +173,15 @@ namespace Rhetos.TestCommon
             var result = string.Join(", ", list.Select(element => selector((T)element).ToString()));
             Console.WriteLine("[Dump] " + result);
             return result;
+        }
+
+        public static string Dump<T, T2>(IQueryable<T> query, Expression<Func<T, T2>> selector = null)
+        {
+            if (selector != null)
+                return Dump(query.Select(selector).ToList(), null);
+            else
+                return Dump(query.ToList(), null);
+            
         }
 
         /// <summary>
