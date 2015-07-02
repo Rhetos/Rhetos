@@ -24,6 +24,9 @@ namespace Rhetos.Deployment
 {
     public interface IInstalledPackages
     {
+        /// <summary>
+        /// The packages are sorted by dependencies.
+        /// </summary>
         IEnumerable<InstalledPackage> Packages { get; }
     }
 }

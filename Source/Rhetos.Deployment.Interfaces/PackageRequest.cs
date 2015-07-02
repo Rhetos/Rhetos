@@ -19,12 +19,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 
 namespace Rhetos.Deployment
 {
+    [DebuggerDisplay("{Id}")]
     public class PackageRequest
     {
         /// <summary>Package name.</summary>

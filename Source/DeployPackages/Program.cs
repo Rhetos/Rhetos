@@ -113,6 +113,7 @@ namespace DeployPackages
             var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = arguments.IgnorePackageDependencies };
             var packageDownloader = new PackageDownloader(config, DeploymentUtility.InitializationLogProvider, packageDownloaderOptions);
             var packages = packageDownloader.GetPackages();
+
             InstalledPackages.Save(packages);
         }
 
