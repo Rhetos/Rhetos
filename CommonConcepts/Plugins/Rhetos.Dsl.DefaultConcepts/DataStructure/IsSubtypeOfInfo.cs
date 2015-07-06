@@ -79,8 +79,8 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (existingConcepts.FindByReference<PolymorphicMaterializedInfo>(pm => pm.Polymorphic, Supertype).Any())
             {
                 // Verifying if the ChangesOnChangedItemsInfo can be created (see IsSubtypeOfMacro)
-                DataStructureInfo dependsOn = DslUtility.GetBaseChangesOnDependency(Subtype, existingConcepts);
-                if (dependsOn == null)
+                var dependsOn = DslUtility.GetBaseChangesOnDependency(Subtype, existingConcepts);
+                if (dependsOn.Count() == 0)
                     throw new DslSyntaxException(this, Subtype.GetUserDescription() + " should be an *extension* of an entity. Otherwise it cannot be used in a materialized polymorphic entity because the system cannot detect when to update the persisted data.");
             }
         }
@@ -115,26 +115,22 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             // Add metadata for supertype computation (union):
 
-            if (existingConcepts.FindByReference<PolymorphicMaterializedInfo>(pm => pm.Polymorphic, conceptInfo.Supertype).Any())
-            {
-                string materializedUpdateSelector;
-                if (conceptInfo.ImplementationName == "")
-                    materializedUpdateSelector = "changedItems => changedItems.Select(item => item.ID).ToArray()";
-                else
-                    materializedUpdateSelector = string.Format(
-                        @"changedItems => changedItems.Select(item => DomUtility.GetSubtypeImplementationId(item.ID, {0})).ToArray()",
-                        DomUtility.GetSubtypeImplementationHash(conceptInfo.ImplementationName));
+            string materializedUpdateSelector;
+            if (conceptInfo.ImplementationName == "")
+                materializedUpdateSelector = "changedItems => changedItems.Select(item => item.ID).ToArray()";
+            else
+                materializedUpdateSelector = string.Format(
+                    @"changedItems => changedItems.Select(item => DomUtility.GetSubtypeImplementationId(item.ID, {0})).ToArray()",
+                    DomUtility.GetSubtypeImplementationHash(conceptInfo.ImplementationName));
 
-                DataStructureInfo dependsOn = DslUtility.GetBaseChangesOnDependency(conceptInfo.Subtype, existingConcepts);
-                if (dependsOn != null) // The dependent data structure may be created in a later macro iterations. The end result will be check by IValidatedConcept.
-                    newConcepts.Add(new ChangesOnChangedItemsInfo
-                    {
-                        Computation = conceptInfo.Supertype,
-                        DependsOn = dependsOn,
-                        FilterType = "System.Guid[]",
-                        FilterFormula = materializedUpdateSelector
-                    });
-            }
+            foreach (DataStructureInfo dependsOn in DslUtility.GetBaseChangesOnDependency(conceptInfo.Subtype, existingConcepts))
+                newConcepts.Add(new ChangesOnChangedItemsInfo
+                {
+                    Computation = conceptInfo.Supertype,
+                    DependsOn = dependsOn,
+                    FilterType = "System.Guid[]",
+                    FilterFormula = materializedUpdateSelector
+                });
 
             // Add metadata for subtype implementation:
 
