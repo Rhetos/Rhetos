@@ -25,10 +25,18 @@ namespace Rhetos.Configuration.Autofac
 {
     public class DatabaseGeneratorModuleConfiguration : Module
     {
+        private readonly bool _shortTransactions;
+
+        public DatabaseGeneratorModuleConfiguration(bool shortTransactions)
+        {
+            _shortTransactions = shortTransactions;
+        }
+
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<ConceptApplicationRepository>().As<IConceptApplicationRepository>();
             builder.RegisterType<DatabaseGenerator.DatabaseGenerator>().As<IDatabaseGenerator>();
+            builder.RegisterInstance(new DatabaseGeneratorOptions { ShortTransactions = _shortTransactions });
             Plugins.FindAndRegisterPlugins<IConceptDatabaseDefinition>(builder);
             builder.RegisterType<NullImplementation>().As<IConceptDatabaseDefinition>();
 

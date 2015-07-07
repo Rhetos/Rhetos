@@ -33,19 +33,19 @@ namespace Rhetos.DatabaseGenerator.Test
     class DatabaseGenerator_Accessor : DatabaseGenerator
     {
         public DatabaseGenerator_Accessor()
-            : base(null, null, new NullPluginsContainer<IConceptDatabaseDefinition>(), null, new ConsoleLogProvider())
+            : base(null, null, new NullPluginsContainer<IConceptDatabaseDefinition>(), null, new ConsoleLogProvider(), new DatabaseGeneratorOptions { ShortTransactions = false })
         {
         }
 
         public DatabaseGenerator_Accessor(IDslModel dslModel, PluginsContainer<IConceptDatabaseDefinition> plugins)
-            : base(null, dslModel, plugins, null, new ConsoleLogProvider())
+            : base(null, dslModel, plugins, null, new ConsoleLogProvider(), new DatabaseGeneratorOptions { ShortTransactions = false })
         {
         }
 
         public DatabaseGenerator_Accessor(ISqlExecuter sqlExecuter)
             : base(sqlExecuter, null, new NullPluginsContainer<IConceptDatabaseDefinition>(),
             new MockConceptApplicationRepository(),
-            new ConsoleLogProvider())
+            new ConsoleLogProvider(), new DatabaseGeneratorOptions { ShortTransactions = false })
         {
         }
 

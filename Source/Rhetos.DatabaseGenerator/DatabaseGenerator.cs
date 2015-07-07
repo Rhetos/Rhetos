@@ -41,6 +41,7 @@ namespace Rhetos.DatabaseGenerator
         protected readonly ILogger _conceptsLogger;
         protected readonly ILogger _deployPackagesLogger;
         protected readonly ILogger _performanceLogger;
+        protected readonly DatabaseGeneratorOptions _options;
 
         protected bool DatabaseUpdated = false;
 
@@ -51,7 +52,8 @@ namespace Rhetos.DatabaseGenerator
             IDslModel dslModel,
             IPluginsContainer<IConceptDatabaseDefinition> plugins,
             IConceptApplicationRepository conceptApplicationRepository,
-            ILogProvider logProvider)
+            ILogProvider logProvider,
+            DatabaseGeneratorOptions options)
         {
             _sqlExecuter = sqlExecuter;
             _dslModel = dslModel;
@@ -61,6 +63,7 @@ namespace Rhetos.DatabaseGenerator
             _conceptsLogger = logProvider.GetLogger("DatabaseGenerator Concepts");
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _performanceLogger = logProvider.GetLogger("Performance");
+            _options = options;
         }
 
         public void UpdateDatabaseStructure()
@@ -483,7 +486,7 @@ namespace Rhetos.DatabaseGenerator
             sqlScripts.AddRange(ApplyChangesToDatabase_Insert(toBeInserted, newApplications));
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Prepared SQL scripts for inserting concept applications.");
 
-            foreach (var batchOfScripts in SqlBatch.FormBatches(sqlScripts.Where(sql => sql != "")))
+            foreach (var batchOfScripts in SqlBatch.FormBatches(sqlScripts.Where(sql => !string.IsNullOrWhiteSpace(sql))))
                 _sqlExecuter.ExecuteSql(batchOfScripts, batchOfScripts.UseTransacion);
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Executed " + sqlScripts.Count + " SQL scripts.");
         }
@@ -508,7 +511,7 @@ namespace Rhetos.DatabaseGenerator
 
                 newScripts.AddRange(removeSqlScripts);
                 newScripts.AddRange(_conceptApplicationRepository.DeleteMetadataSql(ca));
-                newScripts.AddRange(CommitMetadataIfModifyingWithoutTransaction(removeSqlScripts));
+                newScripts.AddRange(MaybeCommitMetadataAfterDdl(removeSqlScripts));
             }
 
             var logLevel = removedCACount > 0 ? EventType.Info : EventType.Trace;
@@ -534,7 +537,7 @@ namespace Rhetos.DatabaseGenerator
 
                 newScripts.AddRange(createSqlScripts);
                 newScripts.AddRange(_conceptApplicationRepository.InsertMetadataSql(ca));
-                newScripts.AddRange(CommitMetadataIfModifyingWithoutTransaction(createSqlScripts));
+                newScripts.AddRange(MaybeCommitMetadataAfterDdl(createSqlScripts));
             }
 
             var logLevel = insertedCACount > 0 ? EventType.Info : EventType.Trace;
@@ -542,12 +545,15 @@ namespace Rhetos.DatabaseGenerator
             return newScripts;
         }
 
-        private IEnumerable<string> CommitMetadataIfModifyingWithoutTransaction(string[] databaseModificationScripts)
+        private IEnumerable<string> MaybeCommitMetadataAfterDdl(string[] databaseModificationScripts)
         {
+            if (_options.ShortTransactions)
+                yield return SqlUtility.NoTransactionTag; // The NoTransaction script will force commit of the previous (metadata) scripts.
+
             // If a DDL script is executed out of transaction, its metadata should also be committed immediately,
             // to avoid rolling back the concept application's metadata in case of any error that might occur later in the transaction.
             if (databaseModificationScripts.Any(script => script.StartsWith(SqlUtility.NoTransactionTag)))
-                yield return SqlUtility.NoTransactionTag + Sql.Get("DatabaseGenerator_DummyScript"); // The NoTransaction script will force commit of the previous (metadata) scripts.
+                yield return SqlUtility.NoTransactionTag;
 
             // Oracle must commit metadata changes before modifying next database object, to ensure metadata consistency if next DDL command fails
             // (Oracle db automatically commits changes on DDL commands, so the previous DDL command has already been committed).

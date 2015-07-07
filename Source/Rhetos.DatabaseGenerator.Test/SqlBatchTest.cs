@@ -33,21 +33,24 @@ namespace Rhetos.DatabaseGenerator.Test
         [TestMethod]
         public void Batches()
         {
-            var tests = new Dictionary<string,string[]>
+            var tests = new List<Tuple<string[], string>>
             {
-                { "1t, 1n, 3t, 2n", new[] { "a", "#a", "a", "a", "a", "#a", "#a" } },
-                { "", new string[] {} },
-                { "1t", new[] { "a" } },
-                { "1n", new[] { "#" } },
-                { "4t", new[] { "a", "a", "a#", "a#a" } },
-                { "2n", new[] { "#", "#" } },
+                Tuple.Create(new[] { "a", "#a", "a", "a", "a", "#a", "#a" }, "1t, 1n, 3t, 2n"),
+                Tuple.Create(new[] { "a" }, "1t"),
+                Tuple.Create(new[] { "#a" }, "1n"),
+                Tuple.Create(new string[] {}, ""),
+                Tuple.Create(new[] { "#" }, ""),
+                Tuple.Create(new[] { "a", "a", "a#", "a#a" }, "4t"),
+                Tuple.Create(new[] { "#a", "#a" }, "2n"),
+                Tuple.Create(new[] { "a", "a", "#", "a", "a" }, "2t, 2t"),
+                Tuple.Create(new[] { "#a", "#a", "#", "#a", "#a" }, "4n"),
             };
 
             foreach (var test in tests)
             {
-                var batches = SqlBatch.FormBatches(test.Value.Select(sql => sql.Replace("#", SqlUtility.NoTransactionTag)));
+                var batches = SqlBatch.FormBatches(test.Item1.Select(sql => sql.Replace("#", SqlUtility.NoTransactionTag)));
                 string report = TestUtility.Dump(batches, batch => batch.Count + (batch.UseTransacion ? "t" : "n"));
-                Assert.AreEqual(test.Key, report);
+                Assert.AreEqual(test.Item2, report, "Test: " + TestUtility.Dump(test.Item1) + ".");
             }
         }
     }

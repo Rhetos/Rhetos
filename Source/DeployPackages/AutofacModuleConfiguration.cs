@@ -31,10 +31,12 @@ namespace DeployPackages
     public class AutofacModuleConfiguration : Module
     {
         private readonly bool _deploymentTime;
+        private readonly bool _shortTransaction;
 
-        public AutofacModuleConfiguration(bool deploymentTime)
+        public AutofacModuleConfiguration(bool deploymentTime, bool shortTransaction)
         {
             _deploymentTime = deploymentTime;
+            _shortTransaction = shortTransaction;
         }
 
         protected override void Load(ContainerBuilder builder)
@@ -44,7 +46,7 @@ namespace DeployPackages
 
             if (_deploymentTime)
             {
-                builder.RegisterModule(new DatabaseGeneratorModuleConfiguration());
+                builder.RegisterModule(new DatabaseGeneratorModuleConfiguration(_shortTransaction));
                 builder.RegisterType<DataMigration>();
                 builder.RegisterType<DatabaseCleaner>();
                 builder.RegisterType<ApplicationGenerator>();

@@ -690,7 +690,7 @@ namespace Rhetos.DatabaseGenerator.Test
             executedSql = ClearSqlForReport(executedSql);
 
             Assert.AreEqual(
-                "TRAN: remove C, NOTRAN: remove B, CommitMetadata, TRAN: remove A, create D, NOTRAN: create E, CommitMetadata, TRAN: create F",
+                "TRAN: remove C, NOTRAN: remove B, TRAN: remove A, create D, NOTRAN: create E, TRAN: create F",
                 executedSql);
         }
 
@@ -698,8 +698,7 @@ namespace Rhetos.DatabaseGenerator.Test
         {
             Console.WriteLine("ClearSqlForReport: " + sql);
             return sql
-                .Replace(SqlUtility.NoTransactionTag, "")
-                .Replace("PRINT 'DummyScript'", "CommitMetadata");
+                .Replace(SqlUtility.NoTransactionTag, "");
         }
 
         class MockSqlExecuter : ISqlExecuter

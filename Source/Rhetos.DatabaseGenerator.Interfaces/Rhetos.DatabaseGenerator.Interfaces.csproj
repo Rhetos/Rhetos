@@ -113,6 +113,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConceptImplementationVersionAttribute.cs" />
+    <Compile Include="DatabaseGeneratorOptions.cs" />
     <Compile Include="IConceptDatabaseDefinition.cs" />
     <Compile Include="IConceptDatabaseDefinitionExtension.cs" />
     <Compile Include="IDatabaseGenerator.cs" />

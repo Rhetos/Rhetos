@@ -31,6 +31,7 @@ namespace DeployPackages
         public bool Debug { get; private set; }
         public bool NoPauseOnError { get; private set; }
         public bool IgnorePackageDependencies { get; private set; }
+        public bool ShortTransactions { get; private set; }
 
         public Arguments(string[] args)
         {
@@ -47,6 +48,7 @@ namespace DeployPackages
             Debug = Pop(arguments, "/Debug");
             NoPauseOnError = Pop(arguments, "/NoPause");
             IgnorePackageDependencies = Pop(arguments, "/IgnoreDependencies");
+            ShortTransactions = Pop(arguments, "/ShortTransactions");
 
             if (arguments.Count > 0)
             {
@@ -62,6 +64,7 @@ namespace DeployPackages
             Console.WriteLine("/Debug         Generates nonoptimized dlls (ServerDom.dll, e.g.) for debuging.");
             Console.WriteLine("/NoPause       Don't pause on error. Use this switch for build automation.");
             Console.WriteLine("/IgnoreDependencies  Allow installing incompatible versions of Rhetos packages.");
+            Console.WriteLine("/ShortTransactions  Commit transaction after creating or dropping each database object.");
         }
 
         /// <summary>
