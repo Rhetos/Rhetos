@@ -1,5 +1,28 @@
 # Rhetos release notes
 
+## 0.9.36 (TO BE RELEASED)
+
+### Internal improvements
+
+* New *DeployPackages.exe* argument `/ShortTransactions`, for upgrading large databases.
+* SqlDependesOn* concepts can be used on polymorphic subtype (**Is**) to define dependencies for the generated view.
+* Bugfix: Error "DependsOn data structure must be IWritableOrmDataStructure" when using an entity with History as a Polymorphic subtype.
+* Logging detailed information on refreshing a dependent database object.
+
+## 0.9.35 (2015-07-03)
+
+### New features
+
+* New concept: **AutoCodeCached**, an optimized version of **AutoCode** for large tables.
+  **AutoCodeCached** stores the latest used code, so it does not need to read the existing records when generating a new code,
+  but it requires manual initialization the persisted data at initial deployment or import database records.
+
+### Internal improvements
+
+* Data-migration scripts from a dependent package will be executed *after* the scripts from the package it depends on,
+  instead of alphabetically by the module name.
+* New internal concept: SqlNotNull.
+
 ## 0.9.34 (2015-05-26)
 
 ### Internal improvements
