@@ -143,19 +143,43 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             // Automatic interface implementation:
 
-            if (existingConcepts.FindByKey(conceptInfo.GetImplementationViewPrototype().GetKey()) == null)
+            var implementationView = (SqlViewInfo)existingConcepts.FindByKey(conceptInfo.GetImplementationViewPrototype().GetKey());
+            if (implementationView == null)
             {
-                var extensibleSubtypeSqlView = new ExtensibleSubtypeSqlViewInfo { IsSubtypeOf = conceptInfo };
-                newConcepts.Add(extensibleSubtypeSqlView);
+                implementationView = new ExtensibleSubtypeSqlViewInfo { IsSubtypeOf = conceptInfo };
+                newConcepts.Add(implementationView);
 
                 if (subtypeImplementationColumn != null)
                     newConcepts.Add(new SqlDependsOnSqlObjectInfo
                     {
                         // The subtype implementation view will use the PersistedSubtypeImplementationColumn.
                         DependsOn = subtypeImplementationColumn.GetSqlObjectPrototype(),
-                        Dependent = extensibleSubtypeSqlView
+                        Dependent = implementationView
                     });
             }
+
+            // Redirect the developer-provided SQL dependencies from the "Is" concept to the implementation view:
+
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnDataStructureInfo>(dep => dep.Dependent, conceptInfo)
+                .Select(dep => new SqlDependsOnDataStructureInfo { Dependent = implementationView, DependsOn = dep.DependsOn }));
+
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnModuleInfo>(dep => dep.Dependent, conceptInfo)
+                .Select(dep => new SqlDependsOnModuleInfo { Dependent = implementationView, DependsOn = dep.DependsOn }));
+
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnPropertyInfo>(dep => dep.Dependent, conceptInfo)
+                .Select(dep => new SqlDependsOnPropertyInfo { Dependent = implementationView, DependsOn = dep.DependsOn }));
+
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnSqlFunctionInfo>(dep => dep.Dependent, conceptInfo)
+                .Select(dep => new SqlDependsOnSqlFunctionInfo { Dependent = implementationView, DependsOn = dep.DependsOn }));
+
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnSqlIndexInfo>(dep => dep.Dependent, conceptInfo)
+                .Select(dep => new SqlDependsOnSqlIndexInfo { Dependent = implementationView, DependsOn = dep.DependsOn }));
+
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnSqlObjectInfo>(dep => dep.Dependent, conceptInfo)
+                .Select(dep => new SqlDependsOnSqlObjectInfo { Dependent = implementationView, DependsOn = dep.DependsOn }));
+
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnSqlViewInfo>(dep => dep.Dependent, conceptInfo)
+                .Select(dep => new SqlDependsOnSqlViewInfo { Dependent = implementationView, DependsOn = dep.DependsOn }));
 
             return newConcepts;
         }
