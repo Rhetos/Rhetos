@@ -92,7 +92,7 @@ namespace Rhetos.DatabaseGenerator
 
                 List<ConceptApplication> toBeRemoved;
                 List<NewConceptApplication> toBeInserted;
-                CalculateApplicationsToBeRemovedAndInserted(oldApplications, newApplications, out toBeRemoved, out toBeInserted, _logger);
+                CalculateApplicationsToBeRemovedAndInserted(oldApplications, newApplications, out toBeRemoved, out toBeInserted);
                 _performanceLogger.Write(stopwatch, "DatabaseGenerator: Analized differences in database structure.");
 
                 ApplyChangesToDatabase(oldApplications, newApplications, toBeRemoved, toBeInserted);
@@ -417,10 +417,9 @@ namespace Rhetos.DatabaseGenerator
             }
         }
 
-        protected static void CalculateApplicationsToBeRemovedAndInserted(
+        protected void CalculateApplicationsToBeRemovedAndInserted(
             IEnumerable<ConceptApplication> oldApplications, IEnumerable<NewConceptApplication> newApplications,
-            out List<ConceptApplication> toBeRemoved, out List<NewConceptApplication> toBeInserted,
-            ILogger logger)
+            out List<ConceptApplication> toBeRemoved, out List<NewConceptApplication> toBeInserted)
         {
             var oldApplicationsByKey = oldApplications.ToDictionary(a => a.GetConceptApplicationKey());
             var newApplicationsByKey = newApplications.ToDictionary(a => a.GetConceptApplicationKey());
@@ -431,9 +430,9 @@ namespace Rhetos.DatabaseGenerator
             var directlyInserted = newApplicationsByKey.Keys.Except(oldApplicationsByKey.Keys).ToList();
 
             foreach (string ca in directlyRemoved)
-                logger.Trace("Directly removed concept application: " + ca);
+                _logger.Trace("Directly removed concept application: " + ca);
             foreach (string ca in directlyInserted)
-                logger.Trace("Directly inserted concept application: " + ca);
+                _logger.Trace("Directly inserted concept application: " + ca);
             
 
             // Find changed concept applications (different create sql query):
@@ -443,7 +442,7 @@ namespace Rhetos.DatabaseGenerator
                 newApplicationsByKey[appKey].CreateQuery)).ToList();
 
             foreach (string ca in changedApplications)
-                logger.Trace("Changed concept application: " + ca);
+                _logger.Trace("Changed concept application: " + ca);
 
 
             // Find dependent concepts applications to be regenerated:
@@ -459,8 +458,34 @@ namespace Rhetos.DatabaseGenerator
             toBeRemovedKeys.AddRange(refreshDependents.Intersect(oldApplicationsByKey.Keys));
             toBeInsertedKeys.AddRange(refreshDependents.Intersect(newApplicationsByKey.Keys));
 
-            foreach (string ca in refreshDependents)
-                logger.Trace("Dependent on changed concept application: " + ca);
+
+            // Log dependencies for items that need to be refreshed:
+            var newDependenciesByDependent = newDependencies.GroupBy(dep => dep.Item2, dep => dep.Item1).ToDictionary(group => group.Key, group => group.ToList());
+            var oldDependenciesByDependent = oldDependencies.GroupBy(dep => dep.Item2, dep => dep.Item1).ToDictionary(group => group.Key, group => group.ToList());
+            var toBeInsertedIndex = new HashSet<string>(toBeInsertedKeys);
+            var toBeRemovedIndex = new HashSet<string>(toBeRemovedKeys);
+            var changedApplicationsIndex = new HashSet<string>(changedApplications);
+            foreach (string ca in refreshDependents.Intersect(newApplicationsByKey.Keys))
+                LogDatabaseChanges(newApplicationsByKey[ca], "Refresh", () =>
+                    {
+                        var report = new List<string>();
+                        var refreshBecauseNew = new HashSet<string>(newDependenciesByDependent[ca].Intersect(toBeInsertedIndex));
+                        var refreshBecauseOld = new HashSet<string>(oldDependenciesByDependent[ca].Intersect(toBeRemovedIndex));
+                        var dependsOnNew = string.Join(", ", refreshBecauseNew.Except(refreshBecauseOld));
+                        var dependsOnOld = string.Join(", ", refreshBecauseOld.Except(refreshBecauseNew));
+                        var dependsOnExisting = refreshBecauseNew.Intersect(refreshBecauseOld);
+                        var dependsOnChanged = string.Join(", ", dependsOnExisting.Intersect(changedApplicationsIndex));
+                        var dependsOnRefreshed = string.Join(", ", dependsOnExisting.Except(changedApplicationsIndex));
+                        if (!string.IsNullOrEmpty(dependsOnNew))
+                            report.Add("It depends on new concepts: " + dependsOnNew + ".");
+                        if (!string.IsNullOrEmpty(dependsOnChanged))
+                            report.Add("It depends on changed concepts: " + dependsOnChanged + ".");
+                        if (!string.IsNullOrEmpty(dependsOnRefreshed))
+                            report.Add("It depends on refreshed concepts: " + dependsOnRefreshed + ".");
+                        if (!string.IsNullOrEmpty(dependsOnOld))
+                            report.Add("It depended on removed concepts: " + dependsOnOld + ".");
+                        return string.Join(" ", report);
+                    });
 
 
             // Result:
@@ -505,7 +530,7 @@ namespace Rhetos.DatabaseGenerator
                 string[] removeSqlScripts = SplitSqlScript(ca.RemoveQuery);
                 if (removeSqlScripts.Length > 0)
                 {
-                    Log(ca, "Removing");
+                    LogDatabaseChanges(ca, "Removing");
                     removedCACount++;
                 }
 
@@ -531,7 +556,7 @@ namespace Rhetos.DatabaseGenerator
                 string[] createSqlScripts = SplitSqlScript(ca.CreateQuery);
                 if (createSqlScripts.Length > 0)
                 {
-                    Log(ca, "Creating");
+                    LogDatabaseChanges(ca, "Creating");
                     insertedCACount++;
                 }
 
@@ -575,7 +600,7 @@ namespace Rhetos.DatabaseGenerator
                 var updateMetadataSql = _conceptApplicationRepository.UpdateMetadataSql(ca, oldApplicationsByKey[ca.GetConceptApplicationKey()]);
                 if (updateMetadataSql.Count() > 0)
                 {
-                    Log(ca, "Updating metadata");
+                    LogDatabaseChanges(ca, "Updating metadata");
                     newScripts.AddRange(updateMetadataSql);
                 }
             }
@@ -592,9 +617,14 @@ namespace Rhetos.DatabaseGenerator
                 .Select(query => query.Trim()).ToArray();
         }
 
-        protected void Log(ConceptApplication conceptApplication, string action)
+        protected void LogDatabaseChanges(ConceptApplication conceptApplication, string action, Func<string> additionalInfo = null)
         {
-            _conceptsLogger.Trace("{0} {1}, ID={2}.", action, conceptApplication.GetConceptApplicationKey(), SqlUtility.GuidToString(conceptApplication.Id));
+            _conceptsLogger.Trace("{0} {1}, ID={2}.{3}{4}",
+                action,
+                conceptApplication.GetConceptApplicationKey(),
+                SqlUtility.GuidToString(conceptApplication.Id),
+                additionalInfo != null ? " " : null,
+                additionalInfo != null ? additionalInfo() : null);
         }
 
         protected void VerifyIntegrity()
