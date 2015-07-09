@@ -76,9 +76,18 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string FilterAndRecomputeAfterSave(KeepSynchronizedOnChangedItemsInfo info, string uniqueName)
         {
             string recomputeCall;
+
             if (FilterIsEnumerableGuid(info.UpdateOnChange.FilterType))
                 recomputeCall =
                 @"_domRepository.{1}.{2}.{5}(filteredNew.Union(filterKeepSynchronizedOnChangedItems{0}Old).ToList());";
+            else if (info.UpdateOnChange.FilterType == "Rhetos.Dom.DefaultConcepts.FilterSubtype")
+                recomputeCall =
+                @"_domRepository.{1}.{2}.{5}(new Rhetos.Dom.DefaultConcepts.FilterSubtype
+                    {{
+                        Ids = filteredNew.Ids.Union(filterKeepSynchronizedOnChangedItems{0}Old.Ids).ToList(),
+                        Subtype = filteredNew.Subtype,
+                        ImplementationName = filteredNew.ImplementationName
+                    }});";
             else
                 recomputeCall =
                 @"_domRepository.{1}.{2}.{5}(filterKeepSynchronizedOnChangedItems{0}Old);

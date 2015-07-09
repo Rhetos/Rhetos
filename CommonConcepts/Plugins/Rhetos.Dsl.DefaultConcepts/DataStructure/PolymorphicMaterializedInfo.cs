@@ -42,6 +42,16 @@ namespace Rhetos.Dsl.DefaultConcepts
             newConcepts.Add(persisted);
             newConcepts.Add(new PersistedKeepSynchronizedInfo { Persisted = persisted });
 
+            // Optimized filter by subtype allows efficient queryies on the polymophic's view,
+            // but it does not need to use the subtype name (and persist it) when querying the materialized data.
+
+            newConcepts.Add(new FilterByInfo
+            {
+                Source = persisted,
+                Parameter = "Rhetos.Dom.DefaultConcepts.FilterSubtype",
+                Expression = @"(repository, parameter) => Filter(parameter.Ids)"
+            });
+
             return newConcepts;
         }
     }

@@ -20,6 +20,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
@@ -534,8 +535,11 @@ namespace CommonConcepts.Test
                 var d1 = new TestPolymorphic.DeactivatableEntity { Active = true, Name = "d1" };
                 var d2 = new TestPolymorphic.DeactivatableEntity { Active = true, Name = "d2" };
                 var d3 = new TestPolymorphic.DeactivatableEntity { Active = false, Name = "d3" };
-                repository.TestPolymorphic.DeactivatableEntity.Insert(new[] { d1, d2, d3 });
-                Assert.AreEqual("d1, d2", TestUtility.DumpSorted(repository.TestPolymorphic.ActiveRecords.Query(), item => item.Name));
+                var d5 = new TestPolymorphic.DeactivatableEntity { Active = true, Name = "xd5" };
+                var d6 = new TestPolymorphic.DeactivatableEntity { Active = true, Name = "xd6" };
+                var d7 = new TestPolymorphic.DeactivatableEntity { Active = true, Name = "d7" };
+                repository.TestPolymorphic.DeactivatableEntity.Insert(new[] { d1, d2, d3, d5, d6, d7 });
+                Assert.AreEqual("d1, d2, d7", TestUtility.DumpSorted(repository.TestPolymorphic.ActiveRecords.Query(), item => item.Name));
                 Assert.AreEqual(
                     TestUtility.DumpSorted(repository.TestPolymorphic.ActiveRecords.Query().Select(item => item.ID)),
                     TestUtility.DumpSorted(repository.TestPolymorphic.ActiveRecords_Materialized.Query().Select(item => item.ID)));
@@ -543,11 +547,94 @@ namespace CommonConcepts.Test
                 d2.Active = false;
                 d3.Active = true;
                 var d4 = new TestPolymorphic.DeactivatableEntity { Active = true, Name = "d4" };
-                repository.TestPolymorphic.DeactivatableEntity.Save(new[] { d4 }, new[] { d2, d3 }, new[] { d1 });
-                Assert.AreEqual("d3, d4", TestUtility.DumpSorted(repository.TestPolymorphic.ActiveRecords.Query(), item => item.Name));
+                d6.Name = "d6";
+                d7.Name = "xd7";
+                repository.TestPolymorphic.DeactivatableEntity.Save(new[] { d4 }, new[] { d2, d3, d6, d7 }, new[] { d1 });
+                Assert.AreEqual("d3, d4, d6", TestUtility.DumpSorted(repository.TestPolymorphic.ActiveRecords.Query(), item => item.Name));
                 Assert.AreEqual(
                     TestUtility.DumpSorted(repository.TestPolymorphic.ActiveRecords.Query().Select(item => item.ID)),
                     TestUtility.DumpSorted(repository.TestPolymorphic.ActiveRecords_Materialized.Query().Select(item => item.ID)));
+            }
+        }
+
+        [TestMethod]
+        public void FilterSubtype()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                repository.TestPolymorphic.ComplexImplementationData.Delete(repository.TestPolymorphic.ComplexImplementationData.All());
+                repository.TestPolymorphic.ComplexImplementationSql.Delete(repository.TestPolymorphic.ComplexImplementationSql.All());
+
+                Func<Guid, string, Guid> hash = (id, implementation) =>
+                    DomUtility.GetSubtypeImplementationId(id,
+                        DomUtility.GetSubtypeImplementationHash(implementation));
+
+                var d = new TestPolymorphic.ComplexImplementationData { a = "d", ID = Guid.NewGuid() };
+                var sx = new TestPolymorphic.ComplexImplementationSql { s = "sx", ID = Guid.NewGuid() };
+                var sy = new TestPolymorphic.ComplexImplementationSql { s = "sy", ID = Guid.NewGuid() };
+                // Automatic update of _Materialized entity will not work if AlternativeId does not match ID hashed with implementation name.
+                sx.AlternativeId = hash(sx.ID, "sql2");
+                sy.AlternativeId = hash(sy.ID, "sql2");
+
+                repository.TestPolymorphic.ComplexImplementationData.Insert(new[] { d });
+                repository.TestPolymorphic.ComplexImplementationSql.Insert(new[] { sx, sy });
+
+                Assert.AreEqual("abc1, abc2, sx3, sx4, sy3, sy4",
+                    TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase.Query(), item => item.Name1));
+
+                Action<string, IEnumerable<Guid>, string, string> test =
+                    (expected, ids, subtype, implementationName) => Assert.AreEqual(expected,
+                        TestUtility.DumpSorted(
+                            repository.TestPolymorphic.ComplexBase.Filter(new FilterSubtype { Ids = ids, Subtype = subtype, ImplementationName = implementationName }),
+                            item => item.Name1));
+
+                // Testing filter:
+
+                test("abc1", new[] { d.ID }, "TestPolymorphic.ComplexImplementationQuery", null);
+                test("abc1", new[] { d.ID }, "TestPolymorphic.ComplexImplementationQuery", "");
+                test("abc2", new[] { hash(d.ID, "q2") }, "TestPolymorphic.ComplexImplementationQuery", "q2");
+                test("", new[] { d.ID }, "TestPolymorphic.ComplexImplementationSql", null);
+                test("sx3", new[] { sx.ID }, "TestPolymorphic.ComplexImplementationSql", null);
+                test("sx4", new[] { sx.AlternativeId.Value }, "TestPolymorphic.ComplexImplementationSql", "sql2");
+
+                TestUtility.ShouldFail<Rhetos.ClientException>(() => repository.TestPolymorphic.ComplexBase.Filter(new FilterSubtype { Ids = new Guid[] {},
+                    Subtype = "nonexisting", ImplementationName = "" }), "nonexisting");
+
+                // Testing update of materialized data (it uses the Subtype filter):
+
+                Assert.AreEqual(
+                    TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase.Query(), item => item.ID),
+                    TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase_Materialized.Query(), item => item.ID));
+
+                sx.s = "sxx";
+                repository.TestPolymorphic.ComplexImplementationSql.Update(new[] { sx });
+                Assert.AreEqual("abc1, abc2, sxx3, sxx4, sy3, sy4",
+                    TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase.Query(), item => item.Name1));
+                Assert.AreEqual(
+                    TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase.Query(), item => item.ID),
+                    TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase_Materialized.Query(), item => item.ID));
+
+                repository.TestPolymorphic.ComplexImplementationSql.Delete(new[] { sx });
+                Assert.AreEqual("abc1, abc2, sy3, sy4",
+                    TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase.Query(), item => item.Name1));
+                Assert.AreEqual(
+                    TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase.Query(), item => item.ID),
+                    TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase_Materialized.Query(), item => item.ID));
+
+                repository.TestPolymorphic.ComplexImplementationData.Delete(new[] { d });
+                Assert.AreEqual("sy3, sy4",
+                    TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase.Query(), item => item.Name1));
+                Assert.AreEqual(
+                    TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase.Query(), item => item.ID),
+                    TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase_Materialized.Query(), item => item.ID));
+
+                repository.TestPolymorphic.ComplexImplementationSql.Delete(new[] { sy });
+                Assert.AreEqual("",
+                    TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase.Query(), item => item.Name1));
+                Assert.AreEqual(
+                    TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase.Query(), item => item.ID),
+                    TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase_Materialized.Query(), item => item.ID));
             }
         }
     }

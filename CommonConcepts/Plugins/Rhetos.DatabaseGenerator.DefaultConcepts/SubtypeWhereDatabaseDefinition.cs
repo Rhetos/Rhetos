@@ -46,7 +46,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (SubtypeWhereInfo)conceptInfo;
 
-            codeBuilder.InsertCode("WHERE\r\n    (" + info.Expression + ")\r\n",
+            codeBuilder.InsertCode(info.Expression,
                 ExtensibleSubtypeSqlViewInfo.WherePartTag,
                 (ExtensibleSubtypeSqlViewInfo)info.Dependency_ImplementationView);
 

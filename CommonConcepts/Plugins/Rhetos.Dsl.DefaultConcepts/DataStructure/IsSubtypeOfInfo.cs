@@ -113,23 +113,30 @@ namespace Rhetos.Dsl.DefaultConcepts
                 PolymorphicUnionView = conceptInfo.Supertype.GetUnionViewPrototype()
             });
 
+            var filterBySubtypePrototype = new FilterByInfo { Source = conceptInfo.Supertype, Parameter = "Rhetos.Dom.DefaultConcepts.FilterSubtype" };
+            newConcepts.Add(new SubtypeExtendFilterInfo
+            {
+                IsSubtypeOf = conceptInfo,
+                FilterBySubtype = filterBySubtypePrototype
+            });
+
             // Add metadata for supertype computation (union):
 
-            string materializedUpdateSelector;
-            if (conceptInfo.ImplementationName == "")
-                materializedUpdateSelector = "changedItems => changedItems.Select(item => item.ID).ToArray()";
-            else
-                materializedUpdateSelector = string.Format(
-                    @"changedItems => changedItems.Select(item => DomUtility.GetSubtypeImplementationId(item.ID, {0})).ToArray()",
-                    DomUtility.GetSubtypeImplementationHash(conceptInfo.ImplementationName));
+            string hashId = conceptInfo.ImplementationName == "" ? "item.ID"
+                : "DomUtility.GetSubtypeImplementationId(item.ID, " + DomUtility.GetSubtypeImplementationHash(conceptInfo.ImplementationName) + ")";
 
             foreach (DataStructureInfo dependsOn in DslUtility.GetBaseChangesOnDependency(conceptInfo.Subtype, existingConcepts))
                 newConcepts.Add(new ChangesOnChangedItemsInfo
                 {
                     Computation = conceptInfo.Supertype,
                     DependsOn = dependsOn,
-                    FilterType = "System.Guid[]",
-                    FilterFormula = materializedUpdateSelector
+                    FilterType = "Rhetos.Dom.DefaultConcepts.FilterSubtype",
+                    FilterFormula = @"changedItems => new Rhetos.Dom.DefaultConcepts.FilterSubtype
+                        {
+                            Ids = changedItems.Select(item => " + hashId + @").ToArray(),
+                            Subtype = " + CsUtility.QuotedString(conceptInfo.Subtype.Module.Name + "." + conceptInfo.Subtype.Name) + @",
+                            ImplementationName = " + CsUtility.QuotedString(conceptInfo.ImplementationName) + @"
+                        }"
                 });
 
             // Add metadata for subtype implementation:

@@ -35,7 +35,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public IsSubtypeOfInfo IsSubtypeOf { get; set; }
 
         public static readonly SqlTag<ExtensibleSubtypeSqlViewInfo> PropertyImplementationTag = "PropertyImplementation";
-        public static readonly SqlTag<ExtensibleSubtypeSqlViewInfo> WherePartTag = "WherePart";
+        public static readonly SqlTag<ExtensibleSubtypeSqlViewInfo> WherePartTag = new SqlTag<ExtensibleSubtypeSqlViewInfo>("WherePart", TagType.Appendable, "WHERE\r\n    ({0})\r\n", "    AND ({0})\r\n");
 
         public IEnumerable<string> DeclareNonparsableProperties()
         {

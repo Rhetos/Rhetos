@@ -51,6 +51,8 @@ namespace Rhetos.Dsl.DefaultConcepts
     [Export(typeof(IConceptMacro))]
     public class PolymorphicMacro : IConceptMacro<PolymorphicInfo>
     {
+        public static readonly CsTag<PolymorphicInfo> SetFilterExpressionTag = "SetFilterExpression";
+
         public IEnumerable<IConceptInfo> CreateNewConcepts(PolymorphicInfo conceptInfo, IDslModel existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();
@@ -83,6 +85,24 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (existingConcepts.FindByType<ReferencePropertyInfo>().Where(r => r.Referenced == conceptInfo && r.DataStructure is EntityInfo).Any()
                 || existingConcepts.FindByType<DataStructureExtendsInfo>().Where(e => e.Base == conceptInfo && e.Extension is EntityInfo).Any())
                 newConcepts.Add(new PolymorphicMaterializedInfo { Polymorphic = conceptInfo });
+
+            // Optimized filter by subtype allows better SQL server optimization of the execution plan:
+
+            newConcepts.Add(new FilterByInfo
+            {
+                Source = conceptInfo,
+                Parameter = "Rhetos.Dom.DefaultConcepts.FilterSubtype",
+                Expression = @"(repository, parameter) =>
+                {{
+                    Expression<Func<" + conceptInfo.Module.Name + @"." + conceptInfo.Name + @", bool>> filterExpression = null;
+                    parameter.ImplementationName = parameter.ImplementationName ?? """";
+                    " + SetFilterExpressionTag.Evaluate(conceptInfo) + @"
+                    if (filterExpression == null)
+                        throw new Rhetos.ClientException(string.Format(""Invalid subtype name or implementation name provided: '{0}', '{1}'."",
+                            parameter.Subtype, parameter.ImplementationName));
+                    return Filter(Query().Where(filterExpression), parameter.Ids).ToArray();
+                }}"
+            });
 
             return newConcepts;
         }

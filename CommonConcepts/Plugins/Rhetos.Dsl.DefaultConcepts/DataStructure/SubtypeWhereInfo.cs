@@ -33,6 +33,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public IsSubtypeOfInfo IsSubtypeOf { get; set; }
 
+        [ConceptKey]
         public string Expression { get; set; }
 
         public SqlViewInfo Dependency_ImplementationView { get; set; }
