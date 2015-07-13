@@ -179,7 +179,9 @@
     <Compile Include="HierarchyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\ModuleExternalReferenceCodeGenerator.cs" />
     <Compile Include="DataStructure\BrowsePropertyCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\UserRequiredPropertyCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\RequiredPropertyCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\UserRequiredStringPropertyCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\RequiredStringPropertyCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\UniqueMultiplePropertyCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\UniqueMultiplePropertiesCodeGenerator.cs" />

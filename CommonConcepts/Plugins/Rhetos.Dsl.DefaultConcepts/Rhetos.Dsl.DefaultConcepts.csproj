@@ -285,6 +285,7 @@
     <Compile Include="SimpleBusinessLogic\PessimisticLockingInfo.cs" />
     <Compile Include="SimpleBusinessLogic\CustomClaimInfo.cs" />
     <Compile Include="SimpleBusinessLogic\BrowseTakePropertyInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\UserRequiredPropertyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\SimpleReferencePropertyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\SystemRequiredInfo.cs" />
     <Compile Include="SimpleBusinessLogic\UniqueMultiplePropertyInfo.cs" />

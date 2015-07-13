@@ -95,6 +95,15 @@ Module TestRequired
 	}
 }
 
+Module TestUserRequired
+{
+	Entity Simple
+	{
+		Integer Count { UserRequired; }
+		ShortString Name { UserRequired; }
+	}
+}
+
 Module TestLogging
 {
 	Entity Simple
