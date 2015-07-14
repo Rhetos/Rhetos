@@ -33,6 +33,13 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(KeepSynchronizedOnChangedItemsInfo))]
     public class KeepSynchronizedOnChangedItemsCodeGenerator : IConceptCodeGenerator
     {
+        public static string OverrideRecomputeTag(KeepSynchronizedOnChangedItemsInfo info)
+        {
+            return string.Format("/*OverrideRecompute {0}.{1}*/",
+                info.KeepSynchronized.GetKey(),
+                info.UpdateOnChange.GetAlternativeKey());
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (KeepSynchronizedOnChangedItemsInfo) conceptInfo;
@@ -94,7 +101,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 _domRepository.{1}.{2}.{5}(filteredNew);";
             
             return string.Format(
-@"            {{
+@"            " + OverrideRecomputeTag(info) + @"
+            {{
                 var filteredNew = filterLoadKeepSynchronizedOnChangedItems{0}(inserted.Concat(updated).ToList());
                 " + recomputeCall + @"
                 

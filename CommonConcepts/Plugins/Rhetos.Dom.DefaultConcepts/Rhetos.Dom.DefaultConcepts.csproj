@@ -80,6 +80,7 @@
     <Compile Include="Computations\ApplyFilterOnClientReadCodeGenerator.cs" />
     <Compile Include="Computations\EntityComputedFromDefaultLoadFilterCodeGenerator.cs" />
     <Compile Include="Computations\KeepSynchronizedCodeGenerator.cs" />
+    <Compile Include="Computations\SuppressSynchronizationOnChangesItemsCodeGenerator.cs" />
     <Compile Include="Computations\KeepSynchronizedRecomputeOnDeployInfrastructureCodeGenerator.cs" />
     <Compile Include="Computations\KeyPropertyIDComputedFromCodeGenerator.cs" />
     <Compile Include="Computations\KeyPropertyComputedFromCodeGenerator.cs" />

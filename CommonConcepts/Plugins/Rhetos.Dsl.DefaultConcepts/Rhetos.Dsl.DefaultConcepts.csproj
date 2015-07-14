@@ -127,6 +127,7 @@
     <Compile Include="Computations\ComputeForNewItemsWithoutFilterInfo.cs" />
     <Compile Include="Computations\ComputeForNewItemsInfo.cs" />
     <Compile Include="Computations\ComposableFilterApplyOnClientReadInfo.cs" />
+    <Compile Include="Computations\SuppressSynchronizationInfo.cs" />
     <Compile Include="Computations\KeyPropertyIDComputedFromInfo.cs" />
     <Compile Include="Computations\LockItemsExceptPropertiesInfo.cs" />
     <Compile Include="Computations\LockItemsLockPropertyInfo.cs" />

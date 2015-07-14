@@ -26,36 +26,28 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("ChangesOnChangedItems")]
-    public class ChangesOnChangedItemsInfo : IConceptInfo, IValidationConcept
+    [ConceptKeyword("SuppressSynchronization")]
+    public class SuppressSynchronizationInfo : IConceptInfo
     {
         [ConceptKey]
-        public DataStructureInfo Computation { get; set; }
+        public KeepSynchronizedInfo KeepSynchronized { get; set; }
+    }
 
-        [ConceptKey]
-        public DataStructureInfo DependsOn { get; set; }
-
-        [ConceptKey]
-        public string FilterType { get; set; }
-
-        [ConceptKey]
-        public string FilterFormula { get; set; }
-
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+    [Export(typeof(IConceptMacro))]
+    public class SuppressSynchronizationMacro : IConceptMacro<SuppressSynchronizationInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(SuppressSynchronizationInfo conceptInfo, IDslModel existingConcepts)
         {
-            if (!(DependsOn is IWritableOrmDataStructure))
-                throw new DslSyntaxException(this, "DependsOn data structure must be IWritableOrmDataStructure (" + DependsOn.GetUserDescription() + ").");
+            return existingConcepts
+                .FindByReference<KeepSynchronizedOnChangedItemsInfo>(ksci => ksci.KeepSynchronized, conceptInfo.KeepSynchronized)
+                .Select(ksci => new SuppressSynchronizationOnChangesItemsInfo { KeepSynchronizedOnChangedItems = ksci });
         }
+    }
 
-        private static int _nextKey = 1;
-
-        private int _alternativeKey = 0;
-
-        public int GetAlternativeKey()
-        {
-            if (_alternativeKey == 0)
-                _alternativeKey = _nextKey++;
-            return _alternativeKey;
-        }
+    [Export(typeof(IConceptInfo))]
+    public class SuppressSynchronizationOnChangesItemsInfo : IConceptInfo
+    {
+        [ConceptKey]
+        public KeepSynchronizedOnChangedItemsInfo KeepSynchronizedOnChangedItems { get; set; }
     }
 }
