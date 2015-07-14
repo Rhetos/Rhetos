@@ -57,18 +57,28 @@ void Main()
         var context = container.Resolve<Common.ExecutionContext>();
         var repository = context.Repository;
         
-        var hs = repository.Mod.Ent.Query()
-            .OrderBy(Ent => Ent.Str)
-            .ToList();
+        // PRINT 3 CLAIMS:
+        var claimsAll = repository.Common.Claim.Query();
+        claimsAll.Take(3).Dump();
         
-        //hs[0].Str = "h1x";
-        var h4 = new Mod.Ent { Str = "h4", ID = Guid.NewGuid() };
+        // PRINT CLAIM RESOURCES FROM COMMON MODULE, THAT HAVE 'New' CLAIM RIGHT:
+        string.Join(", ", claimsAll
+            .Where(c => c.ClaimResource.StartsWith("Common.") && c.ClaimRight == "New")
+            .Select(c => c.ClaimResource)).Dump("Claim resources:");
         
-        repository.Mod.Ent.Save(new[] { h4 }, null/*new[] { hs[0] }*/, null);
+        // ADD AND REMOVE A PRINCIPAL:
+        var testUser = new Common.Principal { Name = "Test123ABC", ID = Guid.NewGuid() };
+        repository.Common.Principal.Insert(new[] { testUser });
+        repository.Common.Principal.Delete(new[] { testUser });
         
-        repository.Mod.EntParentHierarchy.Query()
-            .OrderBy(hh => hh.LeftIndex)
-            .Select(hh => new { hh.Base.Str, hh.LeftIndex, hh.RightIndex, hh.Level })
-            .Dump();
+        // PRINT LOGGED EVENTS FOR THE 'Common.Principal' INSTANCE:
+        repository.Common.LogReader.Query()
+            .Where(log => log.TableName == "Common.Principal" && log.ItemId == testUser.ID)
+            /*.Select(log => new {
+                log.Created,
+                log.Action,
+                Client = SqlUtility.ExtractUserInfo(log.ContextInfo).UserName,
+                log.Description })*/
+            .ToList().Dump();
     }
 }
