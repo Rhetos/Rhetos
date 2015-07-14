@@ -95,6 +95,9 @@ namespace Rhetos.Dom.DefaultConcepts
                         Subtype = filteredNew.Subtype,
                         ImplementationName = filteredNew.ImplementationName
                     }});";
+            else if (info.UpdateOnChange.FilterType == "FilterAll" || info.UpdateOnChange.FilterType == "Rhetos.Dom.DefaultConcepts.FilterAll")
+                recomputeCall =
+                @"_domRepository.{1}.{2}.{5}(new Rhetos.Dom.DefaultConcepts.FilterAll());";
             else
                 recomputeCall =
                 @"_domRepository.{1}.{2}.{5}(filterKeepSynchronizedOnChangedItems{0}Old);
