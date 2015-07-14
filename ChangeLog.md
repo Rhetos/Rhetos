@@ -1,13 +1,21 @@
 # Rhetos release notes
 
-## 0.9.36 (TO BE RELEASED)
+## 0.9.36 (2015-07-14)
+
+### New features
+
+* New concept: **UserRequired**, for validating input to the Save method.
 
 ### Internal improvements
 
 * New *DeployPackages.exe* argument `/ShortTransactions`, for upgrading large databases.
+* Improved **Polymorphic**: multiple **Where** allowed, optimized update of *Materialized* extension.
+* Bugfix: **Polymorphic** does not update *Materialized* extension for *named* implementations.
 * SqlDependesOn* concepts can be used on polymorphic subtype (**Is**) to define dependencies for the generated view.
-* Bugfix: Error "DependsOn data structure must be IWritableOrmDataStructure" when using an entity with History as a Polymorphic subtype.
-* Logging detailed information on refreshing a dependent database object.
+* Bugfix: Error "DependsOn data structure must be IWritableOrmDataStructure" when using an entity with **History** as a **Polymorphic** subtype.
+* DeployPackages is logging more detailed information when refreshing a dependent database object.
+* **FilterBy** expression is allowed to use the repository's member methods.
+* New internal concept **SuppressSynchronization**, for turning off automatic recompute of an entity with KeepSynchronized.
 
 ## 0.9.35 (2015-07-03)
 
