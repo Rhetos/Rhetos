@@ -103,7 +103,6 @@ namespace Rhetos.Utilities
         public static string PluginsFolder { get { return Path.Combine(RhetosServerRootPath, "bin\\Plugins"); } }
 
         public static string RhetosServerWebConfigFile { get { return Path.Combine(RhetosServerRootPath, "Web.config"); } }
-        public static string NHibernateMappingFile { get { return Path.Combine(RhetosServerRootPath, "bin\\ServerDomNHibernateMapping.xml"); } }
         public static string DomAssemblyFile { get { return Path.Combine(RhetosServerRootPath, "bin", DomAssemblyName + ".dll"); } }
         public static string ConnectionStringsFile { get { return Path.Combine(RhetosServerRootPath, @"bin\ConnectionStrings.config"); } }
 

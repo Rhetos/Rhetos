@@ -51,16 +51,8 @@
     <Reference Include="EntityFramework">
       <HintPath>..\..\..\Source\Rhetos\bin\EntityFramework.dll</HintPath>
     </Reference>
-    <Reference Include="Iesi.Collections, Version=1.0.1.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Source\Rhetos\bin\Iesi.Collections.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="NHibernate, Version=3.1.0.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Source\Rhetos\bin\NHibernate.dll</HintPath>
-    </Reference>
     <Reference Include="Rhetos.Configuration.Autofac">
       <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Configuration.Autofac.dll</HintPath>
     </Reference>
@@ -107,14 +99,6 @@
     <Reference Include="Rhetos.Persistence.Interfaces, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Persistence.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="Rhetos.Persistence.NHibernate, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Persistence.NHibernate.dll</HintPath>
-    </Reference>
-    <Reference Include="Rhetos.Persistence.NHibernateDefaultConcepts, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Source\Rhetos\bin\Plugins\Rhetos.Persistence.NHibernateDefaultConcepts.dll</HintPath>
     </Reference>
     <Reference Include="Rhetos.Processing.DefaultCommands, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

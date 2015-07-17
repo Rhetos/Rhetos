@@ -21,19 +21,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Rhetos.Utilities;
+using System.Threading.Tasks;
 
-namespace Rhetos.Persistence.NHibernateDefaultConcepts
+namespace Rhetos.Persistence
 {
-    public static class NhUtility
+    public static class EntityFrameworkMapping
     {
-        public static string PropertyAndColumnNameMapping(string name, string columnBaseName = null)
-        {
-            var columnName = SqlUtility.Identifier(columnBaseName ?? name);
-            string format = columnName.Equals(name)
-                ? @"name=""{0}"""
-                : @"name=""{0}"" column=""{1}""";
-            return string.Format(format, name, columnName);
-        }
+        public static readonly string ConceptualModelTag = "<!--ConceptualModel-->";
+        public static readonly string MappingTag = "<!--Mapping-->";
+        public static readonly string StorageModelTag = "<!--StorageModel-->";
+        public static readonly string[] ModelFiles = new[] { "ServerDomEdm.csdl", "ServerDomEdm.msl", "ServerDomEdm.ssdl" };
     }
 }

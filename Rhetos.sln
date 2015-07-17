@@ -47,8 +47,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Compiler", "Source\R
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Compiler.Interfaces", "Source\Rhetos.Compiler.Interfaces\Rhetos.Compiler.Interfaces.csproj", "{FCAD7F9A-4C31-4D5A-8699-C291AE09D006}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Persistence.NHibernate", "Source\Rhetos.Persistence.NHibernate\Rhetos.Persistence.NHibernate.csproj", "{24238DA8-70C5-4BE5-85B3-359E60B40ACF}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Extensibility.Interfaces", "Source\Rhetos.Extensibility.Interfaces\Rhetos.Extensibility.Interfaces.csproj", "{DDC73F5F-BB0E-4944-92CC-4AC937398499}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.XmlSerialization", "Source\Rhetos.XmlSerialization\Rhetos.XmlSerialization.csproj", "{726CA0FB-70E7-44F3-9FCA-E703598BFC7E}"
@@ -108,8 +106,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Configuration.Autofa
 		{AA08ECFA-2AD6-4B0C-86B9-C5D8754A2073} = {AA08ECFA-2AD6-4B0C-86B9-C5D8754A2073}
 		{726CA0FB-70E7-44F3-9FCA-E703598BFC7E} = {726CA0FB-70E7-44F3-9FCA-E703598BFC7E}
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Persistence.NHibernateDefaultConcepts", "CommonConcepts\Plugins\Rhetos.Persistence.NHibernateDefaultConcepts\Rhetos.Persistence.NHibernateDefaultConcepts.csproj", "{A0E3A4D3-8D14-436F-886B-7454335180D3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.TestCommon", "Source\Rhetos.TestCommon\Rhetos.TestCommon.csproj", "{43BA178B-7642-473C-A43A-DBF58294635A}"
 EndProject

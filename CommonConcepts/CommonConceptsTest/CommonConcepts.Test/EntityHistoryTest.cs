@@ -26,8 +26,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Utilities;
-using NHibernate;
-using NHibernate.Transform;
 using System.Diagnostics;
 using Rhetos.Configuration.Autofac;
 
@@ -550,7 +548,7 @@ namespace CommonConcepts.Test
         /// In addition, ORM may round the time to a second to decrease the resolution.
         /// </summary>
         [TestMethod]
-        public void FastUpdateNHibernate()
+        public void FastUpdate()
         {
             using (var container = new RhetosTestContainer())
             {

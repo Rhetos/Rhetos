@@ -43,13 +43,7 @@
     <Reference Include="Autofac">
       <HintPath>..\..\..\packages\Autofac.3.5.2\lib\net40\Autofac.dll</HintPath>
     </Reference>
-    <Reference Include="Iesi.Collections">
-      <HintPath>..\..\..\packages\Iesi.Collections.4.0.1.4000\lib\net40\Iesi.Collections.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="NHibernate">
-      <HintPath>..\..\..\packages\NHibernate.4.0.3.4000\lib\net40\NHibernate.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -82,7 +76,6 @@
     <Compile Include="GenericRepositoryErrorsTest.cs" />
     <Compile Include="GenericRepositoryLoadTest.cs" />
     <Compile Include="Mocks\DomainObjectModelMock.cs" />
-    <Compile Include="Mocks\NHibernateSessionStub.cs" />
     <Compile Include="Mocks\PersistenceCacheStub.cs" />
     <Compile Include="Mocks\RepositoryIndexMock.cs" />
     <Compile Include="Mocks\RepositoryMock.cs" />

@@ -19,7 +19,7 @@ REM Delete build logs:
 @DEL *.log
 
 REM Delete unit testing logs:
-@RD /S/Q TestResults
+@FOR /F "delims=" %%i IN ('dir TestResults /s/b/ad') DO DEL /F/S/Q "%%i" && RD /S/Q "%%i"
 
 REM Delete build installation resut:
 @RD /S/Q Install

@@ -99,7 +99,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
     <DefiningExpression>CAST(a as Edm.String)</DefiningExpression>
   </Function>
 
-", EntityFrameworkMappingGenerator.ConceptualModelTag);
+", EntityFrameworkMapping.ConceptualModelTag);
         }
     }
 }

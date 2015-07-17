@@ -42,7 +42,6 @@ namespace Rhetos.Dom.DefaultConcepts
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-    using NHibernate.Linq;
     using System.Linq.Expressions;
     using System.Runtime.Serialization;
     using Rhetos.Dom.DefaultConcepts;
@@ -55,15 +54,11 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode(GenerateCommonClassesSnippet());
             // Types used in the preceding code snippet:
             codeBuilder.AddReferencesFromDependency(typeof(Autofac.Module)); // Includes a reference to Autofac.dll.
-            codeBuilder.AddReferencesFromDependency(typeof(NHibernate.ISession));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.IUserInfo));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.ISqlExecuter));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Security.IAuthorizationManager));
             codeBuilder.AddReferencesFromDependency(typeof(System.ComponentModel.Composition.ExportAttribute));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.GenericRepositories));
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.NHibernate.INHibernateConfigurationExtension));
-            codeBuilder.AddReferencesFromDependency(typeof(NHibernate.Cfg.Configuration));
-            codeBuilder.AddReferencesFromDependency(typeof(NHibernate.Linq.Functions.DefaultLinqToHqlGeneratorsRegistry));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Logging.ILogProvider));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Security.IWindowsSecurity));
             codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.DbContext));
@@ -211,8 +206,6 @@ namespace Rhetos.Dom.DefaultConcepts
         protected Lazy<Rhetos.Persistence.IPersistenceTransaction> _persistenceTransaction;
         public Rhetos.Persistence.IPersistenceTransaction PersistenceTransaction { get { return _persistenceTransaction.Value; } }
 
-        public NHibernate.ISession NHibernateSession { get { return ((Rhetos.Persistence.NHibernate.NHibernatePersistenceTransaction)_persistenceTransaction.Value).NHibernateSession; } }
-
         protected Lazy<Rhetos.Utilities.IUserInfo> _userInfo;
         public Rhetos.Utilities.IUserInfo UserInfo { get { return _userInfo.Value; } }
 
@@ -299,33 +292,6 @@ namespace Rhetos.Dom.DefaultConcepts
             " + ModuleCodeGenerator.CommonAutofacConfigurationMembersTag + @"
 
             base.Load(builder);
-        }
-    }
-
-    namespace NHibernateConfiguration
-    {
-        using NHibernate.Cfg;
-        using NHibernate.Hql.Ast;
-        using NHibernate.Linq;
-        using NHibernate.Linq.Functions;
-        using NHibernate.Linq.Visitors;
-
-        [System.ComponentModel.Composition.Export(typeof(Rhetos.Persistence.NHibernate.INHibernateConfigurationExtension))]
-        public sealed class NHibernateConfigurationExtension : Rhetos.Persistence.NHibernate.INHibernateConfigurationExtension
-        {
-            public void ExtendConfiguration(NHibernate.Cfg.Configuration configuration)
-            {
-                " + ModuleCodeGenerator.NHibernateConfigurationExtensionTag + @"
-                configuration.LinqToHqlGeneratorsRegistry<LinqToHqlGeneratorsRegistry>();
-            }
-        }
-
-        public sealed class LinqToHqlGeneratorsRegistry : NHibernate.Linq.Functions.DefaultLinqToHqlGeneratorsRegistry
-        {
-            public LinqToHqlGeneratorsRegistry()
-            {
-                " + ModuleCodeGenerator.LinqToHqlGeneratorsRegistryTag + @"
-            }
         }
     }
 

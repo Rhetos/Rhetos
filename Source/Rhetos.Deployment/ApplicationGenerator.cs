@@ -22,7 +22,6 @@ using Rhetos.Dom;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
-using Rhetos.Persistence.NHibernate;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
@@ -44,7 +43,6 @@ namespace Rhetos.Deployment
         private readonly DataMigration _dataMigration;
         private readonly IDatabaseGenerator _databaseGenerator;
         private readonly IDslScriptsProvider _dslScriptsLoader;
-        private readonly INHibernateMapping _nHibernateMapping;
 
         public ApplicationGenerator(
             ILogProvider logProvider,
@@ -55,8 +53,7 @@ namespace Rhetos.Deployment
             DatabaseCleaner databaseCleaner,
             DataMigration dataMigration,
             IDatabaseGenerator databaseGenerator,
-            IDslScriptsProvider dslScriptsLoader,
-            INHibernateMapping nHibernateMapping)
+            IDslScriptsProvider dslScriptsLoader)
         {
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _performanceLogger = logProvider.GetLogger("Performance");
@@ -68,7 +65,6 @@ namespace Rhetos.Deployment
             _dataMigration = dataMigration;
             _databaseGenerator = databaseGenerator;
             _dslScriptsLoader = dslScriptsLoader;
-            _nHibernateMapping = nHibernateMapping;
         }
 
         public void ExecuteGenerators()
@@ -132,9 +128,6 @@ namespace Rhetos.Deployment
 
             _deployPackagesLogger.Trace("Uploading DSL scripts.");
             UploadDslScriptsToServer();
-
-            _deployPackagesLogger.Trace("Generating NHibernate mapping.");
-            File.WriteAllText(Paths.NHibernateMappingFile, _nHibernateMapping.GetMapping(), Encoding.Unicode);
         }
 
         private void ValidateDbConnection()

@@ -109,7 +109,6 @@
     <Compile Include="DomModuleConfiguration.cs" />
     <Compile Include="DslModuleConfiguration.cs" />
     <Compile Include="ExtensibilityModuleConfiguration.cs" />
-    <Compile Include="NHibernateModuleConfiguration.cs" />
     <Compile Include="ProcessingModuleConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="..\Rhetos\Properties\GlobalAssemblyInfo.cs">
@@ -185,10 +184,6 @@
     <ProjectReference Include="..\Rhetos.Persistence.Interfaces\Rhetos.Persistence.Interfaces.csproj">
       <Project>{5e3bbd83-91cb-4fba-81b2-79a81ec94d70}</Project>
       <Name>Rhetos.Persistence.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Persistence.NHibernate\Rhetos.Persistence.NHibernate.csproj">
-      <Project>{24238da8-70c5-4be5-85b3-359e60b40acf}</Project>
-      <Name>Rhetos.Persistence.NHibernate</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rhetos.Persistence\Rhetos.Persistence.csproj">
       <Project>{02415b9e-fb00-451d-8b1a-b4a3ce150f2d}</Project>

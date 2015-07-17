@@ -123,10 +123,6 @@
       <Project>{5e3bbd83-91cb-4fba-81b2-79a81ec94d70}</Project>
       <Name>Rhetos.Persistence.Interfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Source\Rhetos.Persistence.NHibernate\Rhetos.Persistence.NHibernate.csproj">
-      <Project>{24238da8-70c5-4be5-85b3-359e60b40acf}</Project>
-      <Name>Rhetos.Persistence.NHibernate</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\Source\Rhetos.Processing.Interfaces\Rhetos.Processing.Interfaces.csproj">
       <Project>{4d2fcd7f-d9bb-4e55-b9c6-fdf352f6dcf3}</Project>
       <Name>Rhetos.Processing.Interfaces</Name>

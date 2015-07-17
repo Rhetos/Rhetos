@@ -59,7 +59,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
 
                             if (File.Exists(filesFromCode.First()))
                             {
-                                var filesFromGenerator = EntityFrameworkMappingGenerator.ModelFiles
+                                var filesFromGenerator = EntityFrameworkMapping.ModelFiles
                                     .Select(fileName => Path.Combine(Paths.GeneratedFolder, fileName));
                                 var loadFiles = filesFromGenerator.Concat(filesFromCode)
                                     .Where(file => File.Exists(file))

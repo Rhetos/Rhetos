@@ -27,6 +27,7 @@ using System.Text;
 using Microsoft.CSharp;
 using Rhetos.Utilities;
 using Rhetos.Logging;
+using System.Text.RegularExpressions;
 
 namespace Rhetos.Compiler
 {
@@ -45,11 +46,14 @@ namespace Rhetos.Compiler
 
         public Assembly Generate(IAssemblySource assemblySource, CompilerParameters compilerParameters)
         {
-            compilerParameters.ReferencedAssemblies.AddRange(assemblySource.RegisteredReferences.ToArray());
             var stopwatch = Stopwatch.StartNew();
-            CompilerResults results;
+
+            compilerParameters.ReferencedAssemblies.AddRange(assemblySource.RegisteredReferences.ToArray());
+            if (compilerParameters.WarningLevel == -1)
+                compilerParameters.WarningLevel = 4;
 
             string sourceFile = null;
+            CompilerResults results;
             if (compilerParameters.GenerateInMemory)
             {
                 using (CSharpCodeProvider codeProvider = new CSharpCodeProvider())
@@ -66,7 +70,7 @@ namespace Rhetos.Compiler
             _performanceLogger.Write(stopwatch, "CSharpCodeProvider.CompileAssemblyFromSource");
 
             if (results.Errors.HasErrors)
-                throw new FrameworkException(GetErrorDescription(results, assemblySource.GeneratedCode, sourceFile));
+                throw new FrameworkException(ReportErrors(results, assemblySource.GeneratedCode, sourceFile));
 
             try
             {
@@ -77,17 +81,19 @@ namespace Rhetos.Compiler
                 throw new FrameworkException(CsUtility.ReportTypeLoadException(ex, "Error while compiling " + compilerParameters.OutputAssembly + "."), ex);
             }
 
+            ReportWarnings(results, sourceFile);
+
             return results.CompiledAssembly;
         }
 
-        private string GetErrorDescription(CompilerResults results, string generatedCode, string filePath)
+        private string ReportErrors(CompilerResults results, string generatedCode, string filePath)
         {
             var errors = (from System.CodeDom.Compiler.CompilerError error in results.Errors
                           where !error.IsWarning
                           select error).ToList();
 
             var report = new StringBuilder();
-            report.Append(errors.Count + " errors while generating assembly");
+            report.Append(errors.Count + " errors while compiling '" + Path.GetFileName(filePath) + "'.");
 
             if (errors.Count > _errorReportLimit.Value)
                 report.AppendLine(". The first " + _errorReportLimit.Value + " errors:");
@@ -109,6 +115,44 @@ namespace Rhetos.Compiler
             }
 
             return report.ToString().Trim();
+        }
+
+        private void ReportWarnings(CompilerResults results, string filePath)
+        {
+            var warnings = (from System.CodeDom.Compiler.CompilerError error in results.Errors
+                            where error.IsWarning
+                            select error).ToList();
+
+            var warningGroups = warnings.GroupBy(warning =>
+                {
+                    string groupKey = warning.ErrorNumber;
+                    if (groupKey == "CS0618")
+                    {
+                        const string obsoleteInfo = "is obsolete: ";
+                        int obsoleteInfoStart = warning.ErrorText.IndexOf(obsoleteInfo);
+                        if (obsoleteInfoStart != -1)
+                            groupKey += " " + warning.ErrorText.Substring(obsoleteInfoStart + obsoleteInfo.Length);
+                    }
+                    return groupKey;
+                });
+
+            foreach (var warningGroup in warningGroups)
+            {
+                var warning = warningGroup.First();
+                var report = new StringBuilder();
+
+                if (warningGroup.Count() > 1)
+                    report.AppendFormat("{0} warnings", warningGroup.Count());
+                else
+                    report.Append("Warning");
+
+                report.AppendFormat(" {0}: {1}.", warning.ErrorNumber, warning.ErrorText);
+
+                if (!string.IsNullOrEmpty(warning.FileName))
+                    report.AppendFormat(" At line {0}, column {1}, file '{2}'.", warning.Line, warning.Column, warning.FileName);
+                
+                _logger.Info(report.ToString());
+            }
         }
     }
 }

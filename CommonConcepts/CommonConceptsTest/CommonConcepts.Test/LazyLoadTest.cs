@@ -39,9 +39,9 @@ namespace CommonConcepts.Test
             using (var container = new RhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
-                repository.TestLazyLoad.Simple.Delete(repository.TestLazyLoad.Simple.All());
-                repository.TestLazyLoad.SimpleBase.Delete(repository.TestLazyLoad.SimpleBase.All());
-                repository.TestLazyLoad.Parent.Delete(repository.TestLazyLoad.Parent.All());
+                repository.TestLazyLoad.Simple.Delete(repository.TestLazyLoad.Simple.Load());
+                repository.TestLazyLoad.SimpleBase.Delete(repository.TestLazyLoad.SimpleBase.Load());
+                repository.TestLazyLoad.Parent.Delete(repository.TestLazyLoad.Parent.Load());
 
                 var p1 = new TestLazyLoad.Parent { ID = Guid.NewGuid(), Name = "p1" };
                 var sb1 = new TestLazyLoad.SimpleBase { ID = Guid.NewGuid(), Name = "sb1" };
@@ -63,6 +63,48 @@ namespace CommonConcepts.Test
                 container.Resolve<IPersistenceCache>().ClearCache();
                 var loadedParent = repository.TestLazyLoad.Parent.Query().ToList().Single();
                 Assert.AreEqual("p1/sb1, p1/sb2", TestUtility.DumpSorted(loadedParent.Children, item => item.Parent.Name + "/" + item.Base.Name));
+            }
+        }
+
+        [TestMethod]
+        public void LinkedItems()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                repository.TestLazyLoad.Simple.Delete(repository.TestLazyLoad.Simple.Load());
+                repository.TestLazyLoad.SimpleBase.Delete(repository.TestLazyLoad.SimpleBase.Load());
+                repository.TestLazyLoad.Parent.Delete(repository.TestLazyLoad.Parent.Load());
+
+                var p1 = new TestLazyLoad.Parent { ID = Guid.NewGuid(), Name = "p1" };
+                var p2 = new TestLazyLoad.Parent { ID = Guid.NewGuid(), Name = "p2" };
+                repository.TestLazyLoad.Parent.Insert(p1, p2);
+
+                var sb11 = new TestLazyLoad.SimpleBase { ID = Guid.NewGuid(), Name = "sb11" };
+                var sb12 = new TestLazyLoad.SimpleBase { ID = Guid.NewGuid(), Name = "sb12" };
+                var sb2 = new TestLazyLoad.SimpleBase { ID = Guid.NewGuid(), Name = "sb2" };
+                repository.TestLazyLoad.SimpleBase.Insert(sb11, sb12, sb2);
+
+                var s11 = new TestLazyLoad.Simple { ID = sb11.ID, ParentID = p1.ID };
+                var s12 = new TestLazyLoad.Simple { ID = sb12.ID, ParentID = p1.ID };
+                var s2 = new TestLazyLoad.Simple { ID = sb2.ID, ParentID = p2.ID };
+                repository.TestLazyLoad.Simple.Insert(s11, s12, s2);
+
+                {
+                    // Using "parentsQuery", reading children's names results with a single SQL query.
+                    var parentsQuery = repository.TestLazyLoad.Parent.Query();
+                    var childrenNames = parentsQuery.SelectMany(parent => parent.Children.Select(child => child.Base.Name)).ToArray();
+                    Assert.AreEqual("sb11, sb12, sb2", TestUtility.DumpSorted(childrenNames));
+                }
+
+                {
+                    // Using "ToList()" in the following query results with lazy loading the "Children" members (2 additional SQL queryes,
+                    // one for each parent), and lazy lading the "Base.Name" property (3 additional SQL queryes, one for each child).
+                    var parentsList = repository.TestLazyLoad.Parent.Query().ToList();
+                    var childrenNames = parentsList.SelectMany(parent => parent.Children.Select(child => child.Base.Name)).ToArray();
+                    Assert.AreEqual("sb11, sb12, sb2", TestUtility.DumpSorted(childrenNames));
+                }
             }
         }
     }

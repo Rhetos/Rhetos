@@ -53,12 +53,6 @@
     <Reference Include="EntityFramework.SqlServer">
       <HintPath>..\..\..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
-    <Reference Include="Iesi.Collections">
-      <HintPath>..\..\..\packages\Iesi.Collections.4.0.1.4000\lib\net40\Iesi.Collections.dll</HintPath>
-    </Reference>
-    <Reference Include="NHibernate">
-      <HintPath>..\..\..\packages\NHibernate.4.0.3.4000\lib\net40\NHibernate.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -210,14 +204,6 @@
     <ProjectReference Include="..\..\..\Source\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj">
       <Project>{bb7e5668-1b43-4fce-a832-444cc57fee80}</Project>
       <Name>Rhetos.Logging.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Source\Rhetos.Persistence.NHibernate\Rhetos.Persistence.NHibernate.csproj">
-      <Project>{24238da8-70c5-4be5-85b3-359e60b40acf}</Project>
-      <Name>Rhetos.Persistence.NHibernate</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Source\Rhetos.Persistence\Rhetos.Persistence.csproj">
-      <Project>{02415b9e-fb00-451d-8b1a-b4a3ce150f2d}</Project>
-      <Name>Rhetos.Persistence</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Source\Rhetos.Security\Rhetos.Security.csproj">
       <Project>{f3480d1e-1c20-448d-b2f6-133472ceeb93}</Project>

@@ -27,8 +27,6 @@
     <file src="Plugins\Rhetos.Dom.DefaultConcepts.Interfaces\bin\Debug\Rhetos.Dom.DefaultConcepts.Interfaces.pdb" target="Plugins" />
     <file src="Plugins\Rhetos.DatabaseGenerator.DefaultConcepts\bin\Debug\Rhetos.DatabaseGenerator.DefaultConcepts.dll" target="Plugins" />
     <file src="Plugins\Rhetos.DatabaseGenerator.DefaultConcepts\bin\Debug\Rhetos.DatabaseGenerator.DefaultConcepts.pdb" target="Plugins" />
-    <file src="Plugins\Rhetos.Persistence.NHibernateDefaultConcepts\bin\Debug\Rhetos.Persistence.NHibernateDefaultConcepts.dll" target="Plugins" />
-    <file src="Plugins\Rhetos.Persistence.NHibernateDefaultConcepts\bin\Debug\Rhetos.Persistence.NHibernateDefaultConcepts.pdb" target="Plugins" />
     <file src="Plugins\Rhetos.Processing.DefaultCommands\bin\Debug\Rhetos.Processing.DefaultCommands.dll" target="Plugins" />
     <file src="Plugins\Rhetos.Processing.DefaultCommands\bin\Debug\Rhetos.Processing.DefaultCommands.pdb" target="Plugins" />
     <file src="Plugins\Rhetos.Processing.DefaultCommands.Interfaces\bin\Debug\Rhetos.Processing.DefaultCommands.Interfaces.dll" target="Plugins" />

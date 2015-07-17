@@ -33,12 +33,6 @@ namespace Rhetos.Persistence
 {
     public class EntityFrameworkMappingGenerator : IGenerator
     {
-        public static readonly string ConceptualModelTag = "<!--ConceptualModel-->";
-        public static readonly string MappingTag = "<!--Mapping-->";
-        public static readonly string StorageModelTag = "<!--StorageModel-->";
-
-        public static readonly string[] ModelFiles = new[] { "ServerDomEdm.csdl", "ServerDomEdm.msl", "ServerDomEdm.ssdl" };
-
         private const string _segmentSplitter = "<!--SegmentSplitter-->";
         private readonly ICodeGenerator _codeGenerator;
         private readonly IPluginsContainer<IConceptMapping> _plugins;
@@ -61,8 +55,8 @@ namespace Rhetos.Persistence
             string xml = _codeGenerator.ExecutePlugins(_plugins, "<!--", "-->", new InitialSnippet()).GeneratedCode;
             string[] segments = xml.Split(new[] { _segmentSplitter }, System.StringSplitOptions.None);
 
-            if (segments.Count() != ModelFiles.Count())
-                throw new FrameworkException("Unexpected number of metadata segments: " + segments.Count() + ", expected " + ModelFiles.Count() + ".");
+            if (segments.Count() != EntityFrameworkMapping.ModelFiles.Count())
+                throw new FrameworkException("Unexpected number of metadata segments: " + segments.Count() + ", expected " + EntityFrameworkMapping.ModelFiles.Count() + ".");
 
             for (int s = 0; s < segments.Count(); s++)
             {
@@ -70,7 +64,7 @@ namespace Rhetos.Persistence
                 if (!string.IsNullOrWhiteSpace(clearedXml))
                 {
                     clearedXml = string.Format(_xmlRootElements[s], clearedXml);
-                    string filePath = Path.Combine(Paths.GeneratedFolder, ModelFiles[s]);
+                    string filePath = Path.Combine(Paths.GeneratedFolder, EntityFrameworkMapping.ModelFiles[s]);
                     File.WriteAllText(filePath, clearedXml, Encoding.UTF8);
                 }
             }
@@ -91,11 +85,11 @@ namespace Rhetos.Persistence
 </Schema>"
         };
 
-        class InitialSnippet : IConceptCodeGenerator
+        private class InitialSnippet : IConceptCodeGenerator
         {
             public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
             {
-                codeBuilder.InsertCode(string.Join("\r\n", new[] { ConceptualModelTag, _segmentSplitter, MappingTag, _segmentSplitter, StorageModelTag }));
+                codeBuilder.InsertCode(string.Join("\r\n", new[] { EntityFrameworkMapping.ConceptualModelTag, _segmentSplitter, EntityFrameworkMapping.MappingTag, _segmentSplitter, EntityFrameworkMapping.StorageModelTag }));
             }
         }
 

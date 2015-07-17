@@ -105,7 +105,6 @@ namespace {0}._Helper
             // Commonly used Rhetos classes:
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.FilterAll)); // Includes reference to Rhetos.Dom.DefaultConcepts.dll
             // Other classes used in domain object model:
-            codeBuilder.AddReferencesFromDependency(typeof(NHibernate.Linq.LinqExtensionMethods)); // Includes reference to NHibernate.dll.
             codeBuilder.AddReferencesFromDependency(typeof(System.Runtime.Serialization.DataContractAttribute)); // Includes reference to System.Runtime.Serialization.dll.
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.IPersistenceTransaction));
 
@@ -123,8 +122,6 @@ namespace {0}._Helper
         public const string ApplyFiltersOnClientReadTag = "/*ApplyFiltersOnClientRead*/";
         public const string CommonNamespaceMembersTag = "/*CommonNamespaceMembers*/";
         public const string CommonInfrastructureMembersTag = "/*CommonInfrastructureMembers*/";
-        public const string NHibernateConfigurationExtensionTag = "/*NHibernateConfigurationExtension*/";
-        public const string LinqToHqlGeneratorsRegistryTag = "/*LinqToHqlGeneratorsRegistry*/"; // Instead of calling Configuration.LinqToHqlGeneratorsRegistry() function, add the registry code using ModuleCodeGenerator.LinqToHqlGeneratorsRegistryTag. NHibernate supports only one LinqToHqlGeneratorsRegistry, so it cannot be registered in more than one plugin.
 
     }
 }

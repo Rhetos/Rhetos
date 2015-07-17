@@ -1,8 +1,6 @@
 <Query Kind="Program">
   <Reference Relative="bin\EntityFramework.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\EntityFramework.dll</Reference>
   <Reference Relative="bin\EntityFramework.SqlServer.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\EntityFramework.SqlServer.dll</Reference>
-  <Reference Relative="bin\Iesi.Collections.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Iesi.Collections.dll</Reference>
-  <Reference Relative="bin\NHibernate.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\NHibernate.dll</Reference>
   <Reference Relative="bin\NLog.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\NLog.dll</Reference>
   <Reference Relative="bin\Oracle.DataAccess.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Oracle.DataAccess.dll</Reference>
   <Reference Relative="bin\Plugins\Rhetos.AspNetFormsAuth.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.AspNetFormsAuth.dll</Reference>
@@ -13,8 +11,6 @@
   <Reference Relative="bin\Rhetos.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Interfaces.dll</Reference>
   <Reference Relative="bin\Rhetos.Logging.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Logging.Interfaces.dll</Reference>
   <Reference Relative="bin\Rhetos.Persistence.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Persistence.Interfaces.dll</Reference>
-  <Reference Relative="bin\Rhetos.Persistence.NHibernate.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Persistence.NHibernate.dll</Reference>
-  <Reference Relative="bin\Plugins\Rhetos.Persistence.NHibernateDefaultConcepts.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Persistence.NHibernateDefaultConcepts.dll</Reference>
   <Reference Relative="bin\Plugins\Rhetos.Processing.DefaultCommands.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Processing.DefaultCommands.Interfaces.dll</Reference>
   <Reference Relative="bin\Rhetos.Processing.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Processing.Interfaces.dll</Reference>
   <Reference Relative="bin\Rhetos.Security.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Security.Interfaces.dll</Reference>
@@ -23,17 +19,12 @@
   <Reference>&lt;RuntimeDirectory&gt;\System.DirectoryServices.AccountManagement.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.DirectoryServices.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.Runtime.Serialization.dll</Reference>
-  <Namespace>NHibernate</Namespace>
-  <Namespace>NHibernate.Cfg</Namespace>
-  <Namespace>NHibernate.Tool.hbm2ddl</Namespace>
   <Namespace>Oracle.DataAccess.Client</Namespace>
   <Namespace>Rhetos.Configuration.Autofac</Namespace>
   <Namespace>Rhetos.Dom</Namespace>
   <Namespace>Rhetos.Dom.DefaultConcepts</Namespace>
   <Namespace>Rhetos.Logging</Namespace>
   <Namespace>Rhetos.Persistence</Namespace>
-  <Namespace>Rhetos.Persistence.NHibernate</Namespace>
-  <Namespace>Rhetos.Persistence.NHibernateDefaultConcepts</Namespace>
   <Namespace>Rhetos.Security</Namespace>
   <Namespace>Rhetos.Utilities</Namespace>
   <Namespace>System</Namespace>
