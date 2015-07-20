@@ -111,7 +111,7 @@ namespace Rhetos.Dom.DefaultConcepts
             if (!(ids is System.Collections.IList))
                 ids = ids.ToList();
 
-            if (ids.Count() < 2000) // NHibernate limit for Contains function.
+            if (ids.Count() < 2000) // EF 6.1.3. has performance issues on Contains function with large lists. It seems to have O(n^2) time complexity.
                 return items.Where(item => ids.Contains(item.ID));
             else
             {{

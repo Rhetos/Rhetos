@@ -732,7 +732,7 @@ namespace CommonConcepts.Test
 
 //                const string v1 = "1 a 2001-02-03T04:05:06";
 //                const string v2 = "2 b 2002-02-03T04:05:06";
-//                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache(); // TODO: Turn off NHibernate caching to have a more robust reading without Clear(). The problem is disabling caching but keeping the reference evaluation enabled (Entity Framework?).
+//                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
 //                Assert.AreEqual(v1, DumpSorted(repository.TestHistory.Simple.Filter(t1)));
 //                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
 //                Assert.AreEqual(v2, DumpSorted(repository.TestHistory.Simple.Filter(t2)));

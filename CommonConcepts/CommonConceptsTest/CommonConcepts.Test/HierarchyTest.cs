@@ -63,7 +63,7 @@ namespace CommonConcepts.Test
             return ReportSimple(repository.TestHierarchy.Simple.Query());
         }
 
-        private static string ReportSimple(IEnumerable<Common.Queryable.TestHierarchy_Simple> items)
+        private static string ReportSimple(IQueryable<Common.Queryable.TestHierarchy_Simple> items)
         {
             return TestUtility.DumpSorted(items, item => item.Name + item.Extension_SimpleParentHierarchy.LeftIndex + "/" + item.Extension_SimpleParentHierarchy.RightIndex);
         }

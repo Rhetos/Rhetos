@@ -36,12 +36,12 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         const string DeactivateInsteadOfDelete =
             @"{
-                // 'Used' claims are claims with permissions:
+                // Don't delete claims that are referenced from RolePermission:
 
                 var permissionsQuery = _domRepository.Common.RolePermission.Query();
 
                 List<Guid> deletedIds = deletedClaimsId.Value;
-                if (deletedIds.Count < 1000) // If more than 1000 claims are delete, it could be faster to load all permissions from database. This also avoid NHibernate limit.
+                if (deletedIds.Count < 1000) // If more than 1000 claims are deleted, it could be faster to load all permissions from database.
                     permissionsQuery = permissionsQuery.Where(p => deletedIds.Contains(p.Claim.ID));
 
                 List<Guid> usedIds = permissionsQuery.Select(p => p.Claim.ID).Distinct().ToList();
@@ -49,12 +49,12 @@ namespace Rhetos.Dom.DefaultConcepts
             }
             
             {
-                // 'Used' claims are claims with permissions:
+                // Don't delete claims that are referenced from PrincipalPermission:
 
                 var permissionsQuery = _domRepository.Common.PrincipalPermission.Query();
 
                 List<Guid> deletedIds = deletedClaimsId.Value;
-                if (deletedIds.Count < 1000) // If more than 1000 claims are delete, it could be faster to load all permissions from database. This also avoid NHibernate limit.
+                if (deletedIds.Count < 1000) // If more than 1000 claims are deleted, it could be faster to load all permissions from database.
                     permissionsQuery = permissionsQuery.Where(p => deletedIds.Contains(p.Claim.ID));
 
                 List<Guid> usedIds = permissionsQuery.Select(p => p.Claim.ID).Distinct().ToList();

@@ -44,12 +44,14 @@ namespace CommonConcepts.Test
                 repository.TestLazyLoad.Parent.Delete(repository.TestLazyLoad.Parent.Load());
 
                 var p1 = new TestLazyLoad.Parent { ID = Guid.NewGuid(), Name = "p1" };
+                repository.TestLazyLoad.Parent.Insert(p1);
+
                 var sb1 = new TestLazyLoad.SimpleBase { ID = Guid.NewGuid(), Name = "sb1" };
                 var sb2 = new TestLazyLoad.SimpleBase { ID = Guid.NewGuid(), Name = "sb2" };
+                repository.TestLazyLoad.SimpleBase.Insert(sb1, sb2);
+
                 var s1 = new TestLazyLoad.Simple { ID = sb1.ID, ParentID = p1.ID };
                 var s2 = new TestLazyLoad.Simple { ID = sb2.ID, ParentID = p1.ID };
-                repository.TestLazyLoad.Parent.Insert(p1);
-                repository.TestLazyLoad.SimpleBase.Insert(sb1, sb2);
                 repository.TestLazyLoad.Simple.Insert(s1, s2);
 
                 container.Resolve<IPersistenceCache>().ClearCache();
@@ -105,6 +107,76 @@ namespace CommonConcepts.Test
                     var childrenNames = parentsList.SelectMany(parent => parent.Children.Select(child => child.Base.Name)).ToArray();
                     Assert.AreEqual("sb11, sb12, sb2", TestUtility.DumpSorted(childrenNames));
                 }
+            }
+        }
+
+        [TestMethod]
+        public void UsableObjectsAfterClearCache()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                repository.TestLazyLoad.Simple.Delete(repository.TestLazyLoad.Simple.Load());
+                repository.TestLazyLoad.SimpleBase.Delete(repository.TestLazyLoad.SimpleBase.Load());
+                repository.TestLazyLoad.Parent.Delete(repository.TestLazyLoad.Parent.Load());
+
+                var p0 = new TestLazyLoad.Parent { ID = Guid.NewGuid(), Name = "p0" };
+                repository.TestLazyLoad.Parent.Insert(p0);
+
+                var sb0 = new TestLazyLoad.SimpleBase { ID = Guid.NewGuid(), Name = "sb0" };
+                var sb1 = new TestLazyLoad.SimpleBase { ID = Guid.NewGuid(), Name = "sb1" };
+                repository.TestLazyLoad.SimpleBase.Insert(sb0, sb1);
+
+                var s0 = new TestLazyLoad.Simple { ID = sb0.ID, ParentID = p0.ID };
+                var s1 = new TestLazyLoad.Simple { ID = sb1.ID, ParentID = p0.ID };
+                repository.TestLazyLoad.Simple.Insert(s0, s1);
+
+                container.Resolve<IPersistenceCache>().ClearCache();
+
+                var parents = repository.TestLazyLoad.Parent.Query().OrderBy(sb => sb.Name).ToList();
+                var simpleBases = repository.TestLazyLoad.SimpleBase.Query().OrderBy(sb => sb.Name).ToList();
+                var simples = repository.TestLazyLoad.Simple.Query().OrderBy(s => s.Base.Name).ToList();
+
+                Assert.AreEqual("sb0", simples[0].Base.Name);
+                Assert.AreEqual("p0", simples[0].Parent.Name);
+                Assert.AreEqual("sb0, sb1", TestUtility.DumpSorted(parents[0].Children.Select(c => c.Base.Name)));
+
+                // When removing objects from Entity Framwork's cache, the EF will automatically set references
+                // between objects to null. Rhetos includes a hack to keep the references, so some data will
+                // be available even though the proxies will probably not work.
+                container.Resolve<IPersistenceCache>().ClearCache();
+
+                Assert.AreEqual("sb0", simples[0].Base.Name);
+                Assert.AreEqual("p0", simples[0].Parent.Name);
+
+                // The LinkedItems navigation propertydoes not work after ClearCache(). The data is probably not cached,
+                // but a working proxy is needed to load the linked items.
+                Assert.AreEqual("", TestUtility.DumpSorted(parents[0].Children.Select(c => c.Base.Name)), "This is not ");
+            }
+        }
+
+        [TestMethod]
+        public void LoadAndFilterShouldNotReturnNavigationProperties()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var simpleBase = container.Resolve<Common.DomRepository>().TestLazyLoad.SimpleBase;
+                simpleBase.Delete(simpleBase.Load());
+
+                var sb0 = new TestLazyLoad.SimpleBase { ID = Guid.NewGuid(), Name = "sb0" };
+                simpleBase.Insert(sb0);
+
+                Action<string, IEnumerable<object>> testType = (testName, items) =>
+                    Assert.AreEqual("TestLazyLoad.SimpleBase", items.First().GetType().ToString(), testName);
+
+                testType("All", simpleBase.All());
+                testType("Load", simpleBase.Load());
+                testType("Load Expression", simpleBase.Load(item => true));
+                testType("Load FilterAll", simpleBase.Load(new FilterAll()));
+                testType("Load Guid[]", simpleBase.Load(new[] { sb0.ID }));
+                testType("Load FilterCriteria[]", simpleBase.Load(new[] { new FilterCriteria("ID", "equal", sb0.ID) }));
+                testType("FilterLoad FilterAll", simpleBase.Filter(new FilterAll()));
+                testType("FilterLoad Guid[]", simpleBase.Filter(new[] { sb0.ID }));
             }
         }
     }

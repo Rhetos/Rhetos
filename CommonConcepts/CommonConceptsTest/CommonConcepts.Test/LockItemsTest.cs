@@ -184,7 +184,7 @@ namespace CommonConcepts.Test
 
                 Assert.IsFalse(objectStateManager.TryGetObjectStateEntry(s, out stateEntry));
 
-                var s2 = repository.TestLockItems.Simple.All().Single();
+                var s2 = repository.TestLockItems.Simple.Query().Single();
                 Assert.IsTrue(objectStateManager.TryGetObjectStateEntry(s2, out stateEntry));
 
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache(s2);

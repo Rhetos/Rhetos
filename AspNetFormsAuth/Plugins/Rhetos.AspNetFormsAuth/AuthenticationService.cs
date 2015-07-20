@@ -147,7 +147,8 @@ namespace Rhetos.AspNetFormsAuth
         }
     }
 
-    // TODO: Delete when NHibernate stateless session is implemented. A separate PasswordAttemptsLimit class is needed to allow editing of the loaded data (TimeoutInSeconds) that is not bound to the ORM. 
+    // TODO: Delete when stateless session is implemented.
+    // A separate PasswordAttemptsLimit class is needed to allow editing of the loaded data (TimeoutInSeconds) that is not bound to the ORM. 
     class PasswordAttemptsLimit : IPasswordAttemptsLimit
     {
         public Guid ID { get; set; }

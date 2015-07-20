@@ -424,7 +424,7 @@ namespace CommonConcepts.Test
                     var item = new TestTypes.Simple { Start = testTime };
                     repository.TestTypes.Simple.Insert(new[] { item });
 
-                    var loaded = repository.TestTypes.Reader.All().Single();
+                    var loaded = repository.TestTypes.Reader.Load().Single();
                     AssertIsNear(testTime, loaded.Start.Value);
 
                     repository.TestTypes.Simple.Delete(new[] { item });
@@ -433,36 +433,19 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void DecimalSizeTest()
+        public void DecimalTest()
         {
             using (var container = new RhetosTestContainer())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestTypes.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var s = new TestTypes.Simple { Length = 1234567890123456789012345678m };
-                Assert.AreEqual("1234567890123456789012345678", s.Length.Value.ToString());
-                Assert.Inconclusive("NHibernate's limit");
+                // Decimal(28,10) allows 18 digits before the decimal point and 10 digits after.
+                var s = new TestTypes.Simple { Length = 123456789012345678.0123456789m };
+                Assert.AreEqual("123456789012345678.0123456789", s.Length.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
                 repository.TestTypes.Simple.Insert(new[] { s });
 
-                var loaded = repository.TestTypes.Reader.All().Single();
-                Assert.AreEqual(s.Length, loaded.Length);
-            }
-        }
-
-        [TestMethod]
-        public void DecimalPrecisionTest()
-        {
-            using (var container = new RhetosTestContainer())
-            {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestTypes.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
-
-                var s = new TestTypes.Simple { Length = 0.0123456789m };
-                Assert.AreEqual("0.0123456789", s.Length.Value.ToString("F10", System.Globalization.CultureInfo.InvariantCulture));
-                repository.TestTypes.Simple.Insert(new[] { s });
-
-                var loaded = repository.TestTypes.Reader.All().Single();
+                var loaded = repository.TestTypes.Reader.Load().Single();
                 Assert.AreEqual(s.Length, loaded.Length);
             }
         }

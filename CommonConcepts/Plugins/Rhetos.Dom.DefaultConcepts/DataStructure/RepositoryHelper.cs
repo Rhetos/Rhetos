@@ -108,6 +108,7 @@ namespace Rhetos.Dom.DefaultConcepts
             {1}
         }}
 
+        [Obsolete(""Use Load() or Query() method."")]
         public global::{0}[] Filter(FilterAll filterAll)
         {{
             return All();
@@ -121,14 +122,16 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string RepositoryQueryFunctionsSnippet(DataStructureInfo info, string queryFunctionBody)
         {
             return string.Format(
-@"        public global::{0}.{1}[] Filter(IEnumerable<Guid> identifiers)
+@"        [Obsolete(""Use Load(identifiers) or Query(identifiers) method."")]
+        public global::{0}.{1}[] Filter(IEnumerable<Guid> identifiers)
         {{
-            const int BufferSize = 1000;
+            const int BufferSize = 500; // EF 6.1.3 LINQ query has O(n^2) time complexity. Batch size of 500 results with optimal total time on the test system.
             int n = identifiers.Count();
             var result = new List<{0}.{1}>(n);
-            for (int i = 0; i < (n+BufferSize-1) / BufferSize; i++) {{
+            for (int i = 0; i < (n+BufferSize-1) / BufferSize; i++)
+            {{
                 Guid[] idBuffer = identifiers.Skip(i*BufferSize).Take(BufferSize).ToArray();
-                var itemBuffer = Query().Where(item => idBuffer.Contains(item.ID)).ToArray();
+                var itemBuffer = ToItems(Query().Where(item => idBuffer.Contains(item.ID))).ToArray();
                 result.AddRange(itemBuffer);
             }}
             return result.ToArray();
@@ -136,8 +139,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public IQueryable<Common.Queryable.{0}_{1}> Query()
         {{
-            {2}
-            {3}
+            " + BeforeQueryTag.Evaluate(info) + @"
+            " + queryFunctionBody + @"
         }}
 
         // LINQ to Entity does not support Query() method in subqueries.
@@ -151,9 +154,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
 ",
                 info.Module.Name,
-                info.Name,
-                BeforeQueryTag.Evaluate(info),
-                queryFunctionBody);
+                info.Name);
         }
 
         public static void GenerateReadableRepositoryFunctions(DataStructureInfo info, ICodeBuilder codeBuilder, string readFunctionBody)
@@ -164,7 +165,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static void GenerateQueryableRepositoryFunctions(DataStructureInfo info, ICodeBuilder codeBuilder, string queryFunctionBody)
         {
-            GenerateReadableRepositoryFunctions(info, codeBuilder, "return Query().ToArray();\r\n            ");
+            GenerateReadableRepositoryFunctions(info, codeBuilder, "return ToItems(Query()).ToArray();\r\n            ");
             codeBuilder.InsertCode(RepositoryQueryFunctionsSnippet(info, queryFunctionBody), RepositoryMembers, info);
             codeBuilder.InsertCode("IQueryableRepository<Common.Queryable." + info.Module.Name + "_" + info.Name + ">", RepositoryInterfaces, info);
             codeBuilder.InsertCode(SnippetQueryListConversion(info), RepositoryMembers, info);

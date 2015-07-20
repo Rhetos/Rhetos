@@ -62,7 +62,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Data is already saved to the database (but the SQL transaction has not yet been commited) so SQL validations and computations can be used.</summary>
         public static readonly CsTag<DataStructureInfo> OnSaveTag2 = "WritableOrm OnSaveTag2";
 
-        // TODO: Remove "duplicateObjects" check after implementing NHibernate stateless session with "manual" saving.
+        // TODO: Remove "duplicateObjects" check after implementing stateless session with "manual" saving.
         protected static string MemberFunctionsSnippet(DataStructureInfo info)
         {
             return string.Format(

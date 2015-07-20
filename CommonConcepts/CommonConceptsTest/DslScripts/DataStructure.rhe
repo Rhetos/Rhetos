@@ -183,6 +183,7 @@ Module TestTypes
     // TestTypes.Reader is used to avoid TestTypes.Simple caching side effects.
     SqlQueryable Reader 'SELECT * FROM TestTypes.Simple'
     {
+		AutodetectSqlDependencies;
         AllPropertiesFrom TestTypes.Simple;
     }
 }
