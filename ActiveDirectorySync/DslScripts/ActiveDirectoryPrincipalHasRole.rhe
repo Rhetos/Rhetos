@@ -120,7 +120,7 @@
 	{
 		ComposableFilterBy 'Common.InvalidActiveDirectoryRelations' '(items, repository, parameter) =>
 			{
-				return items.Where(rir => rir.PermissionsFrom.Name.SqlLike(@"%_\_%"));
+				return items.Where(rir => rir.PermissionsFrom.Name.Like(@"%_\_%"));
 			}';
 		
 		InvalidData 'Common.InvalidActiveDirectoryRelations'
@@ -133,7 +133,7 @@
 	{
 		ComposableFilterBy 'Common.InvalidActiveDirectoryRelations' '(items, repository, parameter) =>
 			{
-				var domainRoles = items.Where(role => role.Name.SqlLike(@"%_\_%")).Select(role => role.Name).ToList();
+				var domainRoles = items.Where(role => role.Name.Like(@"%_\_%")).Select(role => role.Name).ToList();
 				return repository.Common.RoleInheritsRole.Query()
 					.Where(rir => domainRoles.Contains(rir.PermissionsFrom.Name))
 					.Select(rir => rir.PermissionsFrom);

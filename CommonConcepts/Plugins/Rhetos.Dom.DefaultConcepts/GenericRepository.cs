@@ -39,7 +39,6 @@ namespace Rhetos.Dom.DefaultConcepts
         public IDomainObjectModel DomainObjectModel { get; set; }
         public Lazy<IIndex<string, IRepository>> Repositories { get; set; }
         public ILogProvider LogProvider { get; set; }
-        public IPersistenceCache PersistenceCache { get; set; }
         public GenericFilterHelper GenericFilterHelper { get; set; }
     }
 
@@ -63,7 +62,6 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
-        private readonly IPersistenceCache _persistenceCache;
         private readonly GenericFilterHelper _genericFilterHelper;
 
         private readonly string _repositoryName;
@@ -85,7 +83,6 @@ namespace Rhetos.Dom.DefaultConcepts
 
             _logger = parameters.LogProvider.GetLogger(_repositoryName);
             _performanceLogger = parameters.LogProvider.GetLogger("Performance");
-            _persistenceCache = parameters.PersistenceCache;
             _genericFilterHelper = parameters.GenericFilterHelper;
 
             _repository = new Lazy<IRepository>(() => InitializeRepository(parameters.Repositories));
@@ -695,7 +692,6 @@ namespace Rhetos.Dom.DefaultConcepts
                     {
                         if (!sameValue(oldEnum.Current, newEnum.Current))
                         {
-                            _persistenceCache.ClearCache(oldEnum.Current);
                             assign(oldEnum.Current, newEnum.Current);
                             toUpdateList.Add(oldEnum.Current);
                         }
@@ -705,13 +701,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     }
                     else if (keyDiff < 0)
                     {
-                        // In some scenarios it is not enough to Evict the newEnum.Current before saving it (a problem with NHibernate lazy references?)
-                        // TODO: After NHibernate lazy objects are removed, check if there is a need for copying newEnum.Current
-                        var newItemFullyLoadedWithoutOrmBinding = CreateInstance();
-                        newItemFullyLoadedWithoutOrmBinding.ID = newEnum.Current.ID;
-                        assign(newItemFullyLoadedWithoutOrmBinding, newEnum.Current);
-                        toInsertList.Add(newItemFullyLoadedWithoutOrmBinding);
-
+                        toInsertList.Add(newEnum.Current);
                         newExists = newEnum.MoveNext();
                     }
                     else

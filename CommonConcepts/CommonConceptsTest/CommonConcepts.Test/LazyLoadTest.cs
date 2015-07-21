@@ -148,10 +148,7 @@ namespace CommonConcepts.Test
 
                 Assert.AreEqual("sb0", simples[0].Base.Name);
                 Assert.AreEqual("p0", simples[0].Parent.Name);
-
-                // The LinkedItems navigation propertydoes not work after ClearCache(). The data is probably not cached,
-                // but a working proxy is needed to load the linked items.
-                Assert.AreEqual("", TestUtility.DumpSorted(parents[0].Children.Select(c => c.Base.Name)), "This is not ");
+                Assert.AreEqual("sb0, sb1", TestUtility.DumpSorted(parents[0].Children.Select(c => c.Base.Name)));
             }
         }
 

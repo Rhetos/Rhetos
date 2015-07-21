@@ -85,8 +85,6 @@ namespace Rhetos.Dom.DefaultConcepts
 
             " + ClearContextTag.Evaluate(info) + @"
 
-            _executionContext.EntityFrameworkContext.ClearCache(); // Updating a modified persistent object could break old-data validations such as checking for locked items.
-
             if (insertedNew.Count() > 0)
             {{
                 var duplicateObjects = Filter(insertedNew.Select(item => item.ID).ToArray());
@@ -125,7 +123,6 @@ namespace Rhetos.Dom.DefaultConcepts
             {{
                 if (deletedIds.Count() > 0)
                 {{
-                    _executionContext.EntityFrameworkContext.ClearCache();
                     _executionContext.EntityFrameworkContext.Configuration.AutoDetectChangesEnabled = false;
                     foreach (var item in deleted)
                         _executionContext.EntityFrameworkContext.Entry(item).State = System.Data.Entity.EntityState.Deleted;
@@ -135,7 +132,6 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 if (updatedNew.Count() > 0)
                 {{
-                    _executionContext.EntityFrameworkContext.ClearCache();
                     _executionContext.EntityFrameworkContext.Configuration.AutoDetectChangesEnabled = false;
                     foreach (var item in updated)
                         _executionContext.EntityFrameworkContext.Entry(item).State = System.Data.Entity.EntityState.Modified;
@@ -145,7 +141,6 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 if (insertedNew.Count() > 0)
                 {{
-                    _executionContext.EntityFrameworkContext.ClearCache();
                     _executionContext.EntityFrameworkContext.{0}_{1}.AddRange(inserted);
                     _executionContext.EntityFrameworkContext.SaveChanges();
                 }}

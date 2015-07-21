@@ -166,34 +166,7 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void Spike_ClearCache()
-        {
-            using (var container = new RhetosTestContainer())
-            {
-                var ef = container.Resolve<Common.ExecutionContext>().EntityFrameworkContext;
-                var objectStateManager = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)ef).ObjectContext.ObjectStateManager;
-                System.Data.Entity.Core.Objects.ObjectStateEntry stateEntry;
-                
-
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
-                var repository = container.Resolve<Common.DomRepository>();
-
-                var s = new TestLockItems.Simple { ID = Guid.NewGuid(), Name = "abc" };
-                repository.TestLockItems.Simple.Insert(new[] { s });
-                AssertData("abc", repository);
-
-                Assert.IsFalse(objectStateManager.TryGetObjectStateEntry(s, out stateEntry));
-
-                var s2 = repository.TestLockItems.Simple.Query().Single();
-                Assert.IsTrue(objectStateManager.TryGetObjectStateEntry(s2, out stateEntry));
-
-                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache(s2);
-                Assert.IsFalse(objectStateManager.TryGetObjectStateEntry(s2, out stateEntry));
-            }
-        }
-
-        [TestMethod]
-        public void Spike_EvictKeepsChangedData()
+        public void ClearCacheKeepsChangedData()
         {
             using (var container = new RhetosTestContainer())
             {

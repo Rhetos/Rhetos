@@ -65,8 +65,6 @@ namespace Rhetos.Dom.DefaultConcepts
 
             " + WritableOrmDataStructureCodeGenerator.ClearContextTag.Evaluate(info.DataStructure) + @"
 
-            _executionContext.EntityFrameworkContext.ClearCache(); // Updating a modified persistent object could break old-data validations such as checking for locked items.
-
             " + WritableOrmDataStructureCodeGenerator.ArgumentValidationTag.Evaluate(info.DataStructure) + @"
 
             " + WritableOrmDataStructureCodeGenerator.InitializationTag.Evaluate(info.DataStructure) + @"

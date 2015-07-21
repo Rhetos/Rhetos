@@ -76,7 +76,6 @@
     <Compile Include="GenericRepositoryErrorsTest.cs" />
     <Compile Include="GenericRepositoryLoadTest.cs" />
     <Compile Include="Mocks\DomainObjectModelMock.cs" />
-    <Compile Include="Mocks\PersistenceCacheStub.cs" />
     <Compile Include="Mocks\RepositoryIndexMock.cs" />
     <Compile Include="Mocks\RepositoryMock.cs" />
     <Compile Include="Mocks\TestGenericRepository.cs" />

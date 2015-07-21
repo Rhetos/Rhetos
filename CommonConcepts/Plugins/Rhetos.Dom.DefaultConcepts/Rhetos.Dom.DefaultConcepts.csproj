@@ -182,7 +182,6 @@
     <Compile Include="DataStructure\Properties\ShortStringPropertyCodeGenerator.cs" />
     <Compile Include="DataStructure\WritableOrmDataStructureCodeGenerator.cs" />
     <Compile Include="DataStructure\RepositoryHelper.cs" />
-    <Compile Include="DataStructure\SqlQueryableCodeGenerator.cs" />
     <Compile Include="DataStructure\BrowseDataStructureCodeGenerator.cs" />
     <Compile Include="GenericFilterHelper.cs" />
     <Compile Include="HierarchyInfo.cs" />

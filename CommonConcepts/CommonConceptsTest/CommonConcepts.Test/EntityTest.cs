@@ -318,7 +318,50 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("c2 b", TestUtility.DumpSorted(report));
             }
         }
-        
+
+        [TestMethod]
+        public void DeleteInsertSame()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var context = container.Resolve<Common.ExecutionContext>();
+                var repository = container.Resolve<Common.DomRepository>();
+                repository.TestEntity.BaseEntity.Delete(repository.TestEntity.BaseEntity.Load());
+
+                var b = new TestEntity.BaseEntity { ID = Guid.NewGuid(), Name = "b" };
+                repository.TestEntity.BaseEntity.Insert(b);
+
+                Assert.AreEqual("b", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Query(), item => item.Name));
+
+                var b2 = new TestEntity.BaseEntity { ID = b.ID, Name = "b2" };
+                repository.TestEntity.BaseEntity.Save(new[] { b2 }, null, new[] { b });
+
+                Assert.AreEqual("b2", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Query(), item => item.Name));
+            }
+        }
+
+        [TestMethod]
+        public void DeleteInsertSamePersisted()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var context = container.Resolve<Common.ExecutionContext>();
+                var repository = container.Resolve<Common.DomRepository>();
+                repository.TestEntity.BaseEntity.Delete(repository.TestEntity.BaseEntity.Load());
+
+                var b = new TestEntity.BaseEntity { ID = Guid.NewGuid(), Name = "b" };
+                repository.TestEntity.BaseEntity.Insert(b);
+
+                Assert.AreEqual("b", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Query(), item => item.Name));
+
+                var b2 = repository.TestEntity.BaseEntity.Query().Where(item => item.ID == b.ID).Single();
+                b2.Name = "b2";
+                repository.TestEntity.BaseEntity.Save(new[] { b2 }, null, new[] { b });
+
+                Assert.AreEqual("b2", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Query(), item => item.Name));
+            }
+        }
+
         [TestMethod]
         public void CascadeDelete()
         {

@@ -46,7 +46,6 @@ Module TestAction
     Action RemoveAFromAllSimpleEntities
         '(parameters, repository, userInfo, executionContext) =>
             { 
-                var testLoad = repository.TestAction.ComputeNameContainsA.All();
                 var simpleEntities = repository.TestAction.Simple.Query().Where(item => item.Name.Length > 0).ToList();
                 foreach(var entity in simpleEntities)
                 {

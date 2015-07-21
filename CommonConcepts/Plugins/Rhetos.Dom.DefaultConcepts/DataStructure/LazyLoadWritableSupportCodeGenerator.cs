@@ -37,16 +37,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (LazyLoadWritableSupportInfo)conceptInfo;
-
-            if (info.DataStructure is IWritableOrmDataStructure)
-            {
-                string queryableToObjectsSnippet = string.Format(
-                    "QueryExtensions.LoadItems(ref insertedNew);\r\n            QueryExtensions.LoadItems(ref updatedNew);\r\n            QueryExtensions.LoadItems(ref deletedIds);\r\n\r\n            ",
-                    info.DataStructure.Module.Name,
-                    info.DataStructure.Name);
-
-                codeBuilder.InsertCode(queryableToObjectsSnippet, WritableOrmDataStructureCodeGenerator.ClearContextTag, info.DataStructure);
-            }
+            // TODO: Delete the concept without implementation.
         }
     }
 }
