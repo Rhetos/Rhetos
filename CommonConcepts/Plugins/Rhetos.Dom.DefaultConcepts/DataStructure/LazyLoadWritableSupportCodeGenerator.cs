@@ -41,7 +41,7 @@ namespace Rhetos.Dom.DefaultConcepts
             if (info.DataStructure is IWritableOrmDataStructure)
             {
                 string queryableToObjectsSnippet = string.Format(
-                    "ToItems(ref insertedNew);\r\n            ToItems(ref updatedNew);\r\n            ToItems(ref deletedIds);\r\n\r\n            ",
+                    "QueryExtensions.LoadItems(ref insertedNew);\r\n            QueryExtensions.LoadItems(ref updatedNew);\r\n            QueryExtensions.LoadItems(ref deletedIds);\r\n\r\n            ",
                     info.DataStructure.Module.Name,
                     info.DataStructure.Name);
 

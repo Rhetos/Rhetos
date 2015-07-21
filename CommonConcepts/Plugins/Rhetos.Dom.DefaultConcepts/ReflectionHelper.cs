@@ -316,8 +316,8 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         public IEnumerable<TEntityInterface> ToListOfEntity(IEnumerable<TEntityInterface> items)
         {
-            if (RepositoryToItemsRefMethod != null && items.GetType().GetInterface("IEnumerable`1").GetGenericArguments()[0].FullName.StartsWith("Common.Queryable."))
-                RepositoryToItems(ref items);
+            if (LoadItemsMethod != null && items.GetType().GetInterface("IEnumerable`1").GetGenericArguments()[0].FullName.StartsWith("Common.Queryable."))
+                LoadItems(ref items);
             else
                 items = CastAsEntity(items);
 
@@ -342,8 +342,8 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         public IEnumerable<TEntityInterface> ToArrayOfEntity(IEnumerable<TEntityInterface> items)
         {
-            if (RepositoryToItemsRefMethod != null && items.GetType().GetInterface("IEnumerable`1").GetGenericArguments()[0].FullName.StartsWith("Common.Queryable."))
-                RepositoryToItems(ref items);
+            if (LoadItemsMethod != null && items.GetType().GetInterface("IEnumerable`1").GetGenericArguments()[0].FullName.StartsWith("Common.Queryable."))
+                LoadItems(ref items);
             else
                 items = CastAsEntity(items);
 
@@ -540,23 +540,52 @@ namespace Rhetos.Dom.DefaultConcepts
             return EntityComputedFromCodeGenerator.RecomputeFunctionName(computedConcept);
         }
 
-        private MethodInfo _repositoryItemsRefMethod = null;
+        private MethodInfo _queryToItemsMethod = null;
+        private bool _queryToItemsMethodLookedFor = false;
 
-        public MethodInfo RepositoryToItemsRefMethod
+        public MethodInfo QueryToItemsMethod
         {
             get
             {
-                if (_repositoryItemsRefMethod == null)
-                    _repositoryItemsRefMethod = RepositoryType.GetMethod("ToItems", new[] { EnumerableNavigationType.MakeByRefType() });
-                return _repositoryItemsRefMethod;
+                if (!_queryToItemsMethodLookedFor)
+                {
+                    Type queryExtensions = _domainObjectModel.Assembly.GetType("Rhetos.Dom.DefaultConcepts.QueryExtensions");
+                    _queryToItemsMethod = queryExtensions.GetMethod("ToItems", new[] { QueryableType });
+
+                    _queryToItemsMethodLookedFor = true;
+                }
+                return _queryToItemsMethod;
             }
         }
 
-        public void RepositoryToItems(ref IEnumerable<TEntityInterface> items)
+        public IQueryable<TEntityInterface> QueryToItems(IQueryable<TEntityInterface> query)
         {
-            var method = RepositoryToItemsRefMethod;
+            var result = QueryToItemsMethod.InvokeEx(null, new[] { query });
+            return (IQueryable<TEntityInterface>)result;
+        }
+
+        private MethodInfo _loadItemsMethod = null;
+        private bool _loadItemsMethodLookedFor = false;
+
+        public MethodInfo LoadItemsMethod
+        {
+            get
+            {
+                if (!_loadItemsMethodLookedFor)
+                {
+                    Type queryExtensions = _domainObjectModel.Assembly.GetType("Rhetos.Dom.DefaultConcepts.QueryExtensions");
+                    _loadItemsMethod = queryExtensions.GetMethod("LoadItems", new[] { EnumerableType.MakeByRefType() });
+
+                    _loadItemsMethodLookedFor = true;
+                }
+                return _loadItemsMethod;
+            }
+        }
+
+        public void LoadItems(ref IEnumerable<TEntityInterface> items)
+        {
             var parameters = new[] { items };
-            method.InvokeEx(_repository.Value, parameters);
+            LoadItemsMethod.InvokeEx(null, parameters);
             items = parameters.Single();
         }
 

@@ -35,7 +35,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<DataStructureInfo> RepositoryInterfaces = new CsTag<DataStructureInfo>("RepositoryInterface", TagType.Appendable, ",\r\n        {0}");
         public static readonly CsTag<DataStructureInfo> RepositoryMembers = "RepositoryMembers";
         public static readonly CsTag<DataStructureInfo> QueryLoadedAssignPropertyTag = "QueryLoadedAssignProperty";
-        public static readonly CsTag<DataStructureInfo> LoadQueryAssignPropertyTag = "LoadQueryAssignProperty";
+        public static readonly CsTag<DataStructureInfo> ToItemsAssignPropertyTag = "ToItemsAssignProperty";
 
         private static string RepositorySnippet(DataStructureInfo info)
         {
@@ -131,7 +131,7 @@ namespace Rhetos.Dom.DefaultConcepts
             for (int i = 0; i < (n+BufferSize-1) / BufferSize; i++)
             {{
                 Guid[] idBuffer = identifiers.Skip(i*BufferSize).Take(BufferSize).ToArray();
-                var itemBuffer = ToItems(Query().Where(item => idBuffer.Contains(item.ID))).ToArray();
+                var itemBuffer = Query().Where(item => idBuffer.Contains(item.ID)).ToItems().ToArray();
                 result.AddRange(itemBuffer);
             }}
             return result.ToArray();
@@ -165,10 +165,14 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static void GenerateQueryableRepositoryFunctions(DataStructureInfo info, ICodeBuilder codeBuilder, string queryFunctionBody)
         {
-            GenerateReadableRepositoryFunctions(info, codeBuilder, "return ToItems(Query()).ToArray();\r\n            ");
+            GenerateReadableRepositoryFunctions(info, codeBuilder, "return Query().ToItems().ToArray();");
             codeBuilder.InsertCode(RepositoryQueryFunctionsSnippet(info, queryFunctionBody), RepositoryMembers, info);
             codeBuilder.InsertCode("IQueryableRepository<Common.Queryable." + info.Module.Name + "_" + info.Name + ">", RepositoryInterfaces, info);
+
             codeBuilder.InsertCode(SnippetQueryListConversion(info), RepositoryMembers, info);
+            codeBuilder.InsertCode(SnippetToItemsConversion(info), DomInitializationCodeGenerator.QueryExtensionsMembersTag);
+            codeBuilder.InsertCode(SnippetToItemConversion(info), DataStructureQueryableCodeGenerator.MembersTag, info);
+            codeBuilder.InsertCode(SnippetLoadItemsConversion(info), DomInitializationCodeGenerator.QueryExtensionsMembersTag);
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.Graph));
         }
 
@@ -203,52 +207,6 @@ namespace Rhetos.Dom.DefaultConcepts
             return " + filterByIds + @";
         }}
 
-        public {0}.{1} ToItem(Common.Queryable.{0}_{1} item)
-        {{
-            return new {0}.{1}
-            {{
-                ID = item.ID" + LoadQueryAssignPropertyTag.Evaluate(info) + @"
-            }};
-        }}
-
-        public void ToItems(ref IEnumerable<{0}.{1}> items)
-        {{
-            var queriedItems = items as IEnumerable<Common.Queryable.{0}_{1}>;
-            if (queriedItems != null)
-            {{
-                items = ToItems(queriedItems);
-                Rhetos.Utilities.CsUtility.Materialize(ref items);
-            }}
-            else
-            {{
-                Rhetos.Utilities.CsUtility.Materialize(ref items);
-                var itemsList = (IList<{0}.{1}>)items;
-                for (int i = 0; i < itemsList.Count(); i ++)
-                {{
-                    var queriedItem = itemsList[i] as Common.Queryable.{0}_{1};
-                    if (queriedItem != null)
-                        itemsList[i] = ToItem(queriedItem);
-                }}
-            }}
-        }}
-
-        public IEnumerable<{0}.{1}> ToItems(IEnumerable<Common.Queryable.{0}_{1}> items)
-        {{
-            var query = items as IQueryable<Common.Queryable.{0}_{1}>;
-            if (query != null)
-                return ToItems(query); // The IQueryable.Select(Expression<>) function allows ORM optimizations over IEnumerable.Select(Func<>).
-
-            return items.Select(ToItem);
-        }}
-        
-        public IQueryable<{0}.{1}> ToItems(IQueryable<Common.Queryable.{0}_{1}> query)
-        {{
-            return query.Select(item => new {0}.{1}
-            {{
-                ID = item.ID" + LoadQueryAssignPropertyTag.Evaluate(info) + @"
-            }});
-        }}
-
         public List<Common.Queryable.{0}_{1}> LoadPersistedWithReferences(IEnumerable<{0}.{1}> items)
         {{
             var ids = items.Select(item => item.ID).ToList();
@@ -259,6 +217,66 @@ namespace Rhetos.Dom.DefaultConcepts
         }}
 
 ",
+            info.Module.Name,
+            info.Name);
+        }
+
+        private static string SnippetToItemsConversion(DataStructureInfo info)
+        {
+            return string.Format(@"public static IQueryable<{0}.{1}> ToItems(this IQueryable<Common.Queryable.{0}_{1}> query)
+        {{
+            return query.Select(item => new {0}.{1}
+            {{
+                ID = item.ID" + ToItemsAssignPropertyTag.Evaluate(info) + @"
+            }});
+        }}
+        ",
+            info.Module.Name,
+            info.Name);
+        }
+
+        private static string SnippetToItemConversion(DataStructureInfo info)
+        {
+            return string.Format(@"// For data structure with lazy loading enabled.
+        public {0}.{1} ToItem()
+        {{
+            var item = this;
+            return new {0}.{1}
+            {{
+                ID = item.ID" + RepositoryHelper.ToItemsAssignPropertyTag.Evaluate(info) + @"
+            }};
+        }}
+
+        ",
+            info.Module.Name,
+            info.Name);
+        }
+
+        private static string SnippetLoadItemsConversion(DataStructureInfo info)
+        {
+            return string.Format(@"// For data structure with lazy loading enabled.
+        public static void LoadItems(ref IEnumerable<{0}.{1}> items)
+        {{
+            var query = items as IQueryable<Common.Queryable.{0}_{1}>;
+            var navigationItems = items as IEnumerable<Common.Queryable.{0}_{1}>;
+
+            if (query != null)
+                items = query.ToItems().ToList(); // The IQueryable function allows ORM optimizations.
+            else if (navigationItems != null)
+                items = navigationItems.Select(item => item.ToItem()).ToList();
+            else
+            {{
+                Rhetos.Utilities.CsUtility.Materialize(ref items);
+                var itemsList = (IList<{0}.{1}>)items;
+                for (int i = 0; i < itemsList.Count(); i++)
+                {{
+                    var navigationItem = itemsList[i] as Common.Queryable.{0}_{1};
+                    if (navigationItem != null)
+                        itemsList[i] = navigationItem.ToItem();
+                }}
+            }}
+        }}
+        ",
             info.Module.Name,
             info.Name);
         }

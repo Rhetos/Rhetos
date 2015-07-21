@@ -32,12 +32,13 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(InitializationConcept))]
     public class DomInitializationCodeGenerator : IConceptCodeGenerator
     {
-        public const string EntityFrameworkContextMembersTag = "/*EntityFrameworkContextMembers*/";
-        public const string EntityFrameworkOnModelCreatingTag = "/*EntityFrameworkOnModelCreating*/";
-        public const string EntityFrameworkConfigurationTag = "/*EntityFrameworkConfiguration*/";
-        public const string CommonQueryableMemebersTag = "/*CommonQueryableMemebers*/";
+        public static readonly string EntityFrameworkContextMembersTag = "/*EntityFrameworkContextMembers*/";
+        public static readonly string EntityFrameworkOnModelCreatingTag = "/*EntityFrameworkOnModelCreating*/";
+        public static readonly string EntityFrameworkConfigurationTag = "/*EntityFrameworkConfiguration*/";
+        public static readonly string CommonQueryableMemebersTag = "/*CommonQueryableMemebers*/";
+        public static readonly string QueryExtensionsMembersTag = "/*QueryExtensionsMembers*/";
 
-        public const string StandardNamespacesSnippet =
+        public static readonly string StandardNamespacesSnippet =
 @"using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -194,9 +195,7 @@ namespace Rhetos.Dom.DefaultConcepts
         };
 
         public const string ErrorGetNavigationPropertyWithoutOrm = ""The navigation property '{0}' can only be used in a LINQ query. Use a query to read the referenced data."";
-        public const string ErrorSetNavigationPropertyWithoutOrm = ""The navigation property '{0}' is not writable. It can only be assigned in a LINQ query that is mapped to the database."";
         public const string ErrorGetNavigationPropertyWithAlternativeWithoutOrm = ""The navigation property '{0}' can only be used in a LINQ query. Use '{1}' instead, or use a query to read the referenced data."";
-        public const string ErrorSetNavigationPropertyWithAlternativeWithoutOrm = ""The navigation property '{0}' is not writable. Use '{1}' instead, or use the navigation property in a LINQ query that is mapped to the database."";
 
         " + ModuleCodeGenerator.CommonInfrastructureMembersTag + @"
     }
@@ -303,6 +302,16 @@ namespace Common.Queryable
     " + StandardNamespacesSnippet + @"
 
     " + CommonQueryableMemebersTag + @"
+}
+
+namespace Rhetos.Dom.DefaultConcepts
+{
+    " + StandardNamespacesSnippet + @"
+
+    public static class QueryExtensions
+    {
+        " + QueryExtensionsMembersTag + @"
+    }
 }
 ";
         }

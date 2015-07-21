@@ -89,13 +89,13 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode(CodeSnippet(info), DataStructureCodeGenerator.BodyTag, info);
             DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, string.Format("System.IEquatable<{0}>", info.Name), typeof(IEquatable<>), info);
 
-            PropertyInfo idProperty = new PropertyInfo { DataStructure = info, Name = "ID" };
-            PropertyHelper.GenerateCodeForType(idProperty, codeBuilder, "Guid");
-            DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, typeof(IEntity), info);
-
             RepositoryHelper.GenerateRepository(info, codeBuilder);
             RepositoryHelper.GenerateQueryableRepositoryFunctions(info, codeBuilder, QuerySnippet(info));
             codeBuilder.InsertCode(RepositoryFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info);
+
+            PropertyInfo idProperty = new PropertyInfo { DataStructure = info, Name = "ID" };
+            PropertyHelper.GenerateCodeForType(idProperty, codeBuilder, "Guid");
+            DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, typeof(IEntity), info);
         }
     }
 }

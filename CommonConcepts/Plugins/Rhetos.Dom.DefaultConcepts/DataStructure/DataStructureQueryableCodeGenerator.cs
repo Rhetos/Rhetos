@@ -34,6 +34,7 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
     [ExportMetadata(MefProvider.Implements, typeof(DataStructureInfo))]
+    [ExportMetadata(MefProvider.DependsOn, typeof(DataStructureCodeGenerator))]
     public class DataStructureQueryableCodeGenerator : IConceptCodeGenerator
     {
         public static readonly CsTag<DataStructureInfo> AttributesTag = "QueryableClassAttributes";
@@ -74,7 +75,7 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         /// <param name="csPropertyName">The csPropertyName argument refers to a C# class property, not the PropertyInfo concept.</param>
-        public static string GetterTag(DataStructureInfo dataStructure, string csPropertyName)
+        public static string GetterBodyTag(DataStructureInfo dataStructure, string csPropertyName)
         {
             return string.Format("/*DataStructureQueryable Getter {0}.{1}.{2}*/", dataStructure.Module.Name, dataStructure.Name, csPropertyName);
         }
@@ -95,35 +96,22 @@ namespace Rhetos.Dom.DefaultConcepts
             string quotedProperty = CsUtility.QuotedString(csPropertyName);
             string quotedAlternative = CsUtility.QuotedString(alternativeScalarPropertyName);
 
-            string getter = string.IsNullOrEmpty(alternativeScalarPropertyName)
+            string instanceGetterException = string.IsNullOrEmpty(alternativeScalarPropertyName)
                 ? "throw new Rhetos.FrameworkException(string.Format(Common.Infrastructure.ErrorGetNavigationPropertyWithoutOrm, " + quotedProperty + "));"
                 : "throw new Rhetos.FrameworkException(string.Format(Common.Infrastructure.ErrorGetNavigationPropertyWithAlternativeWithoutOrm, " + quotedProperty + ", " + quotedAlternative + "));";
-            string setter = string.IsNullOrEmpty(alternativeScalarPropertyName)
-                ? @"throw new Rhetos.FrameworkException(string.Format(Common.Infrastructure.ErrorSetNavigationPropertyWithoutOrm, " + quotedProperty + "));"
-                : @"throw new Rhetos.FrameworkException(string.Format(Common.Infrastructure.ErrorSetNavigationPropertyWithAlternativeWithoutOrm, " + quotedProperty + ", " + quotedAlternative + "));";
 
-            string propertySnippet = string.Format(
-        @"{2}
-        public virtual {1} {0}
-        {{
+            string propertySnippet =
+                PropertyAttributeTag(dataStructure, csPropertyName) + @"
+        public virtual " + propertyType + @" " + csPropertyName + @"
+        {
             get
-            {{
-                {5}{3}
-            }}
-            set
-            {{
-                {6}{4}
-            }}
-        }}
+            {
+                " + GetterBodyTag(dataStructure, csPropertyName) + instanceGetterException + @"
+            }
+            " + SetterTag(dataStructure, csPropertyName) + @"
+        }
 
-        ",
-                csPropertyName,
-                propertyType,
-                PropertyAttributeTag(dataStructure, csPropertyName),
-                getter,
-                setter,
-                GetterTag(dataStructure, csPropertyName),
-                SetterTag(dataStructure, csPropertyName));
+        ";
 
             codeBuilder.InsertCode(propertySnippet, DataStructureQueryableCodeGenerator.MembersTag, dataStructure);
         }
@@ -136,11 +124,14 @@ namespace Rhetos.Dom.DefaultConcepts
 
             codeBuilder.InsertCode(
                 "return " + BackingFieldName(csPropertyName) + ";\r\n                //",
-                DataStructureQueryableCodeGenerator.GetterTag(dataStructure, csPropertyName));
+                DataStructureQueryableCodeGenerator.GetterBodyTag(dataStructure, csPropertyName));
 
-            codeBuilder.InsertCode(
-                "if (((IDetachOverride)this).Detaching) return;\r\n                " + BackingFieldName(csPropertyName) + " = value;\r\n                " + additionalCode + (string.IsNullOrEmpty(additionalCode) ? "" : "\r\n                ") + "//",
-                DataStructureQueryableCodeGenerator.SetterTag(dataStructure, csPropertyName));
+            string setter = @"set
+            {
+                if (((IDetachOverride)this).Detaching) return;
+                " + BackingFieldName(csPropertyName) + @" = value;" + (!string.IsNullOrEmpty(additionalCode) ? "\r\n                " + additionalCode : "") + @"
+            }";
+            codeBuilder.InsertCode(setter, DataStructureQueryableCodeGenerator.SetterTag(dataStructure, csPropertyName));
         }
 
         private static string BackingFieldName(string csPropertyName)

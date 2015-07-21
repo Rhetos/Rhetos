@@ -63,7 +63,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         RepositoryHelper.QueryLoadedAssignPropertyTag, info.DataStructure);
                     codeBuilder.InsertCode(
                         string.Format(",\r\n                {0} = item.{0}", info.Name),
-                        RepositoryHelper.LoadQueryAssignPropertyTag, info.DataStructure);
+                        RepositoryHelper.ToItemsAssignPropertyTag, info.DataStructure);
                 }
         }
     }
