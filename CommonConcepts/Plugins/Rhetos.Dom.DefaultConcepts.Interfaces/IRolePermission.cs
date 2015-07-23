@@ -27,8 +27,6 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     public interface IRolePermission : IEntity
     {
-        IRole Role { get; }
-        ICommonClaim Claim { get; }
         bool? IsAuthorized { get; set; }
         Guid? RoleID { get; set; }
         Guid? ClaimID { get; set; }

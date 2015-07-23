@@ -75,12 +75,12 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public IEnumerable<Guid> GetPrincipalRoles(IPrincipal principal)
         {
-            return _principalRolesRepository.Query(principal).Select(pr => pr.Role.ID).ToList();
+            return _principalRolesRepository.Query(principal).Select(pr => pr.RoleID.Value).ToList();
         }
 
         public IEnumerable<Guid> GetRoleRoles(Guid roleId)
         {
-            return _roleRolesRepository.Query().Where(rr => rr.UsersFrom.ID == roleId).Select(rr => rr.PermissionsFrom.ID).ToList();
+            return _roleRolesRepository.Query().Where(rr => rr.UsersFromID == roleId).Select(rr => rr.PermissionsFromID.Value).ToList();
         }
 
         /// <summary>
@@ -99,16 +99,16 @@ namespace Rhetos.Dom.DefaultConcepts
 
             var query = _principalPermissionRepository.Query()
                 .Where(principalPermission => principalPermission.IsAuthorized != null
-                    && principalPermission.Principal.ID == principal.ID);
+                    && principalPermission.PrincipalID == principal.ID);
 
             if (claimIds != null && claimIds.Count() < _sqlFilterItemsLimit)
-                query = query.Where(principalPermission => claimIds.Contains(principalPermission.Claim.ID));
+                query = query.Where(principalPermission => claimIds.Contains(principalPermission.ClaimID.Value));
                 
             return query.Select(principalPermission => new PrincipalPermissionInfo
                     {
                         ID = principalPermission.ID,
-                        PrincipalID = principalPermission.Principal.ID,
-                        ClaimID = principalPermission.Claim.ID,
+                        PrincipalID = principalPermission.PrincipalID.Value,
+                        ClaimID = principalPermission.ClaimID.Value,
                         IsAuthorized = principalPermission.IsAuthorized.Value,
                     })
                 .ToList();
@@ -126,16 +126,16 @@ namespace Rhetos.Dom.DefaultConcepts
 
             var query = _rolePermissionRepository.Query()
                 .Where(rolePermission => rolePermission.IsAuthorized != null
-                    && roleIds.Contains(rolePermission.Role.ID));
+                    && roleIds.Contains(rolePermission.RoleID.Value));
 
             if (claimIds != null && claimIds.Count() < _sqlFilterItemsLimit)
-                query = query.Where(rolePermission => claimIds.Contains(rolePermission.Claim.ID));
+                query = query.Where(rolePermission => claimIds.Contains(rolePermission.ClaimID.Value));
 
             return query.Select(rolePermission => new RolePermissionInfo
                     {
                         ID = rolePermission.ID,
-                        RoleID = rolePermission.Role.ID,
-                        ClaimID = rolePermission.Claim.ID,
+                        RoleID = rolePermission.RoleID.Value,
+                        ClaimID = rolePermission.ClaimID.Value,
                         IsAuthorized = rolePermission.IsAuthorized.Value,
                     })
                 .ToList();

@@ -147,15 +147,6 @@ namespace Rhetos.AspNetFormsAuth
         }
     }
 
-    // TODO: Delete when stateless session is implemented.
-    // A separate PasswordAttemptsLimit class is needed to allow editing of the loaded data (TimeoutInSeconds) that is not bound to the ORM. 
-    class PasswordAttemptsLimit : IPasswordAttemptsLimit
-    {
-        public Guid ID { get; set; }
-        public int? MaxInvalidPasswordAttempts { get; set; }
-        public int? TimeoutInSeconds { get; set; }
-    }
-
     #endregion
 
     [ServiceContract]
@@ -164,16 +155,15 @@ namespace Rhetos.AspNetFormsAuth
     {
         private readonly ILogger _logger;
         private readonly Lazy<IAuthorizationManager> _authorizationManager;
-        private readonly Lazy<IQueryableRepository<IPasswordStrength>> _passwordStrengthRules;
-        private readonly Lazy<IList<PasswordAttemptsLimit>> _passwordAttemptsLimits;
+        private readonly Lazy<IEnumerable<IPasswordStrength>> _passwordStrengthRules;
+        private readonly Lazy<IEnumerable<IPasswordAttemptsLimit>> _passwordAttemptsLimits;
         private readonly Lazy<ISqlExecuter> _sqlExecuter;
         private readonly Lazy<ISendPasswordResetToken> _sendPasswordResetTokenPlugin;
 
         public AuthenticationService(
             ILogProvider logProvider,
             Lazy<IAuthorizationManager> authorizationManager,
-            Lazy<IQueryableRepository<IPasswordStrength>> passwordStrengthRules,
-            Lazy<IQueryableRepository<IPasswordAttemptsLimit>> passwordAttemptsLimitRepository,
+            GenericRepositories repositories,
             Lazy<ISqlExecuter> sqlExecuter,
             Lazy<IEnumerable<ISendPasswordResetToken>> sendPasswordResetTokenPlugins)
         {
@@ -182,13 +172,10 @@ namespace Rhetos.AspNetFormsAuth
             _sqlExecuter = sqlExecuter;
             _sendPasswordResetTokenPlugin = new Lazy<ISendPasswordResetToken>(() => SinglePlugin(sendPasswordResetTokenPlugins));
 
-            _passwordStrengthRules = passwordStrengthRules;
-            _passwordAttemptsLimits = new Lazy<IList<PasswordAttemptsLimit>>(
-                () =>
+            _passwordStrengthRules = new Lazy<IEnumerable<IPasswordStrength>>(() => repositories.Load<IPasswordStrength>());
+            _passwordAttemptsLimits = new Lazy<IEnumerable<IPasswordAttemptsLimit>>(() =>
                 {
-                    var limits = passwordAttemptsLimitRepository.Value.Query()
-                        .Select(l => new PasswordAttemptsLimit { MaxInvalidPasswordAttempts = l.MaxInvalidPasswordAttempts, TimeoutInSeconds = l.TimeoutInSeconds })
-                        .ToList();
+                    var limits = repositories.Load<IPasswordAttemptsLimit>();
                     foreach (var limit in limits)
                         if (limit.TimeoutInSeconds == null || limit.TimeoutInSeconds <= 0)
                             limit.TimeoutInSeconds = int.MaxValue;
@@ -316,7 +303,7 @@ namespace Rhetos.AspNetFormsAuth
 
         private void CheckPasswordStrength(string password)
         {
-            foreach (var rule in _passwordStrengthRules.Value.Query().ToList())
+            foreach (var rule in _passwordStrengthRules.Value)
             {
                 var regex = new Regex(rule.RegularExpression);
                 if (!regex.IsMatch(password))

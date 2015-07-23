@@ -176,5 +176,47 @@ namespace CommonConcepts.Test
                 testType("FilterLoad Guid[]", simpleBase.Filter(new[] { sb0.ID }));
             }
         }
+
+        [TestMethod]
+        public void QueryLoaded()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                repository.TestLazyLoad.Simple.Delete(repository.TestLazyLoad.Simple.Load());
+                repository.TestLazyLoad.SimpleBase.Delete(repository.TestLazyLoad.SimpleBase.Load());
+                repository.TestLazyLoad.Parent.Delete(repository.TestLazyLoad.Parent.Load());
+
+                var p0 = new TestLazyLoad.Parent { ID = Guid.NewGuid(), Name = "p0" };
+                var p1 = new TestLazyLoad.Parent { ID = Guid.NewGuid(), Name = "p1" };
+                var p2 = new TestLazyLoad.Parent { ID = Guid.NewGuid(), Name = "p2" };
+                repository.TestLazyLoad.Parent.Insert(p0, p1, p2);
+
+                var sb0 = new TestLazyLoad.SimpleBase { ID = Guid.NewGuid(), Name = "sb0" };
+                var sb1 = new TestLazyLoad.SimpleBase { ID = Guid.NewGuid(), Name = "sb1" };
+                repository.TestLazyLoad.SimpleBase.Insert(sb0, sb1);
+
+                var s0 = new TestLazyLoad.Simple { ID = sb0.ID, ParentID = p0.ID };
+                var s1 = new TestLazyLoad.Simple { ID = sb1.ID, ParentID = p0.ID };
+                repository.TestLazyLoad.Simple.Insert(s0, s1);
+
+                var loadedSimple = repository.TestLazyLoad.Simple.Query().OrderBy(item => item.Base.Name).ToList();
+                Assert.AreEqual("p0/sb0, p0/sb1", TestUtility.DumpSorted(loadedSimple, item => item.Parent.Name + "/" + item.Base.Name));
+
+                {
+                    loadedSimple[0].ParentID = p1.ID;
+                    var s1x = new TestLazyLoad.Simple { ID = sb1.ID, ParentID = p1.ID };
+                    var queryLoaded = repository.TestLazyLoad.Simple.QueryLoaded(new[] { loadedSimple[0], s1x });
+                    Assert.AreEqual("p1/sb0, p1/sb1", TestUtility.DumpSorted(queryLoaded, item => item.Parent.Name + "/" + item.Base.Name));
+                }
+
+                Assert.Inconclusive("Calling QueryLoaded second time cases a problem with ORM cache.");
+                {
+                    var s1x = new TestLazyLoad.Simple { ID = sb1.ID, ParentID = p2.ID };
+                    var queryLoaded = repository.TestLazyLoad.Simple.QueryLoaded(new[] { loadedSimple[0], s1x });
+                    Assert.AreEqual("p1/sb0, p2/sb1", TestUtility.DumpSorted(queryLoaded, item => item.Parent.Name + "/" + item.Base.Name));
+                }
+            }
+        }
     }
 }

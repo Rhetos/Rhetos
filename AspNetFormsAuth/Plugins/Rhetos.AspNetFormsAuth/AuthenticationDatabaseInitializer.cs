@@ -69,7 +69,7 @@ namespace Rhetos.AspNetFormsAuth
             var adminPrincipalHasRole = repositories.CreateInstance<IPrincipalHasRole>();
             adminPrincipalHasRole.PrincipalID = adminPrincipal.ID;
             adminPrincipalHasRole.RoleID = adminRole.ID;
-            repositories.InsertOrReadId(adminPrincipalHasRole, item => new { PrincipalID = item.Principal.ID, RoleID = item.Role.ID });
+            repositories.InsertOrReadId(adminPrincipalHasRole, item => new { PrincipalID = item.PrincipalID, RoleID = item.RoleID });
 
             foreach (var securityClaim in AuthenticationServiceClaims.GetDefaultAdminClaims())
             {
@@ -82,7 +82,7 @@ namespace Rhetos.AspNetFormsAuth
                 permission.RoleID = adminRole.ID;
                 permission.ClaimID = commonClaim.ID;
                 permission.IsAuthorized = true;
-                repositories.InsertOrUpdateReadId(permission, item => new { RoleID = item.Role.ID, ClaimID = item.Claim.ID }, item => item.IsAuthorized);
+                repositories.InsertOrUpdateReadId(permission, item => new { item.RoleID, item.ClaimID }, item => item.IsAuthorized);
             }
         }
 

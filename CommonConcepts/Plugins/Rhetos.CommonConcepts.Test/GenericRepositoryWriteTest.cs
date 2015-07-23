@@ -422,8 +422,8 @@ namespace Rhetos.CommonConcepts.Test
             repos.InsertOrUpdateOrDelete(newItems, new SimpleEntityCompareName(), SimpleEntityEqualSize, new FilterAll(),
                 (dest, src) => { dest.Name = src.Name; dest.Size = src.Size; });
 
-            Assert.AreEqual("DELETE a 1, UPDATE b 22 p2, INSERT c 33", repos.RepositoryMock.Log.ToString(),
-                "Parent property should not be updated or inserted because it is not considered a key nor a value property in the provided comparers and assigners.");
+            Assert.AreEqual("DELETE a 1, UPDATE b 22 p2, INSERT c 33 p33", repos.RepositoryMock.Log.ToString());
+            // Actually, the Parent property (p33) should not be updated or inserted because it is not considered a key nor a value property in the provided comparers and assigners. The current behavior has better performance for large inserts.
 
             Assert.AreEqual(Id(2), (repos.RepositoryMock.UpdatedGroups[0] as IEnumerable<SimpleEntity>).First().ID);
             Assert.AreEqual(Id(103), (repos.RepositoryMock.InsertedGroups[0] as IEnumerable<SimpleEntity>).First().ID);

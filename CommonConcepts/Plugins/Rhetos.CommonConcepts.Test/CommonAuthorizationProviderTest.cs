@@ -68,8 +68,8 @@ namespace Rhetos.CommonConcepts.Test
 
         private class MockPrincipalRoleRepos : IQueryableRepository<IPrincipalHasRole>, IRepository
         {
-            IList<IPrincipalHasRole> _items;
-            public MockPrincipalRoleRepos(IList<IPrincipalHasRole> items) { _items = items; }
+            IList<MockPrincipalHasRole> _items;
+            public MockPrincipalRoleRepos(IList<IPrincipalHasRole> items) { _items = items.Cast<MockPrincipalHasRole>().ToList(); }
             public IQueryable<IPrincipalHasRole> Query(object parameter, Type parameterType)
             {
                 {
@@ -89,6 +89,14 @@ namespace Rhetos.CommonConcepts.Test
 
         class MockPrincipalHasRole : IPrincipalHasRole
         {
+            public MockPrincipalHasRole(IPrincipal principal, IRole role)
+            {
+                ID = Guid.NewGuid();
+                Principal = principal;
+                Role = role;
+                PrincipalID = principal.ID;
+                RoleID = role.ID;
+            }
             public Guid ID { get; set; }
             public IPrincipal Principal { get; set; }
             public IRole Role { get; set; }
@@ -98,9 +106,19 @@ namespace Rhetos.CommonConcepts.Test
 
         class MockRoleInheritsRole : IRoleInheritsRole
         {
+            public MockRoleInheritsRole(IRole usersFrom, IRole permissionsFrom)
+            {
+                ID = Guid.NewGuid();
+                UsersFrom = usersFrom;
+                PermissionsFrom = permissionsFrom;
+                UsersFromID = usersFrom.ID;
+                PermissionsFromID = permissionsFrom.ID;
+            }
             public Guid ID { get; set; }
             public IRole UsersFrom { get; set; }
             public IRole PermissionsFrom { get; set; }
+            public Guid? UsersFromID { get; set; }
+            public Guid? PermissionsFromID { get; set; }
         }
 
         class MockRolePermission : IRolePermission
@@ -124,6 +142,15 @@ namespace Rhetos.CommonConcepts.Test
 
         class MockPrincipalPermission : IPrincipalPermission
         {
+            public MockPrincipalPermission(IPrincipal principal, ICommonClaim claim, bool? isAuthorized)
+            {
+                ID = Guid.NewGuid();
+                Principal = principal;
+                PrincipalID = principal.ID;
+                Claim = claim;
+                ClaimID = claim.ID;
+                IsAuthorized = isAuthorized;
+            }
             public Guid ID { get; set; }
             public IPrincipal Principal { get; set; }
             public ICommonClaim Claim { get; set; }
@@ -215,11 +242,11 @@ namespace Rhetos.CommonConcepts.Test
                 new MockRole { ID = Guid.NewGuid(), Name = "r1" } };
 
             var principalRoles = new IPrincipalHasRole[] {
-                new MockPrincipalHasRole { Principal = principals[0], Role = roles[0] },
-                new MockPrincipalHasRole { Principal = principals[1], Role = roles[1] } };
+                new MockPrincipalHasRole(principals[0], roles[0]),
+                new MockPrincipalHasRole(principals[1], roles[1]) };
 
             var roleRoles = new IRoleInheritsRole[] {
-                new MockRoleInheritsRole { UsersFrom = roles[0], PermissionsFrom = roles[1] } };
+                new MockRoleInheritsRole(usersFrom: roles[0], permissionsFrom: roles[1]) };
 
             var claims = new Claim[]
             {
@@ -253,8 +280,8 @@ namespace Rhetos.CommonConcepts.Test
 
             var principalPermissions = new IPrincipalPermission[]
             {
-                new MockPrincipalPermission { Principal = principals[0], Claim = commonClaims[5], IsAuthorized = true },
-                new MockPrincipalPermission { Principal = principals[0], Claim = commonClaims[6], IsAuthorized = false },
+                new MockPrincipalPermission(principals[0], commonClaims[5], true),
+                new MockPrincipalPermission(principals[0], commonClaims[6], false),
             };
 
             var provider = authProviderCreator(principals, roles, principalRoles, roleRoles, commonClaims, rolePermissions, principalPermissions);
@@ -293,11 +320,11 @@ namespace Rhetos.CommonConcepts.Test
                 new MockRole { ID = Guid.NewGuid(), Name = "r1" } };
 
             var principalRoles = new IPrincipalHasRole[] {
-                new MockPrincipalHasRole { Principal = principals[0], Role = roles[0] },
-                new MockPrincipalHasRole { Principal = principals[1], Role = roles[1] } };
+                new MockPrincipalHasRole(principals[0], roles[0]),
+                new MockPrincipalHasRole(principals[1], roles[1]) };
 
             var roleRoles = new IRoleInheritsRole[] {
-                new MockRoleInheritsRole { UsersFrom = roles[0], PermissionsFrom = roles[1] } };
+                new MockRoleInheritsRole(usersFrom: roles[0], permissionsFrom: roles[1]) };
 
             var claims = new Claim[] {
                 new Claim("a.b", "c"),

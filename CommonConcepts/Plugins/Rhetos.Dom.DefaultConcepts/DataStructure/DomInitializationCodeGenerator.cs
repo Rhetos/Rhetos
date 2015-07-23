@@ -197,6 +197,24 @@ namespace Rhetos.Dom.DefaultConcepts
         public const string ErrorGetNavigationPropertyWithoutOrm = ""The navigation property '{0}' can only be used in a LINQ query. Use a query to read the referenced data."";
         public const string ErrorGetNavigationPropertyWithAlternativeWithoutOrm = ""The navigation property '{0}' can only be used in a LINQ query. Use '{1}' instead, or use a query to read the referenced data."";
 
+        public static void MaterializeItemsToSave<T>(ref IEnumerable<T> items) where T : IEntity, new()
+        {
+            if (items == null)
+                items = Enumerable.Empty<T>();
+            else if (items is System.Linq.IQueryable)
+                throw new Rhetos.FrameworkException(""The Save method for '"" + typeof(T).FullName + ""' does not support the argument type '"" + items.GetType().Name + ""'. Use a List or an Array."");
+            else if (!(items is System.Collections.IList))
+                items = items.ToList();
+        }
+
+        public static void MaterializeItemsToDelete<T>(ref IEnumerable<T> items) where T : IEntity, new()
+        {
+            if (items == null)
+                items = Enumerable.Empty<T>();
+            else if (!(items is System.Collections.IList))
+                items = items.Select(item => new T { ID = item.ID }).ToList();
+        }
+
         " + ModuleCodeGenerator.CommonInfrastructureMembersTag + @"
     }
 

@@ -39,12 +39,12 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
 
                 {
-                    var loaded = repository.TestComputed.Simple.All();
+                    var loaded = repository.TestComputed.Simple.Load();
                     Assert.AreEqual("a, b", TestUtility.DumpSorted(loaded, item => item.Name));
                 }
 
                 {
-                    var loaded = repository.TestComputed.Simple.Filter(new FilterAll());
+                    var loaded = repository.TestComputed.Simple.Load(new FilterAll());
                     Assert.AreEqual("a, b", TestUtility.DumpSorted(loaded, item => item.Name));
                 }
             }

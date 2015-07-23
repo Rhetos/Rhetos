@@ -550,7 +550,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (!_queryToItemsMethodLookedFor)
                 {
                     Type queryExtensions = _domainObjectModel.Assembly.GetType("Rhetos.Dom.DefaultConcepts.QueryExtensions");
-                    _queryToItemsMethod = queryExtensions.GetMethod("ToItems", new[] { QueryableType });
+                    if (queryExtensions != null)
+                        _queryToItemsMethod = queryExtensions.GetMethod("ToItems", new[] { QueryableType });
 
                     _queryToItemsMethodLookedFor = true;
                 }
@@ -574,7 +575,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (!_loadItemsMethodLookedFor)
                 {
                     Type queryExtensions = _domainObjectModel.Assembly.GetType("Rhetos.Dom.DefaultConcepts.QueryExtensions");
-                    _loadItemsMethod = queryExtensions.GetMethod("LoadItems", new[] { EnumerableType.MakeByRefType() });
+                    if (queryExtensions != null)
+                        _loadItemsMethod = queryExtensions.GetMethod("LoadItems", new[] { EnumerableType.MakeByRefType() });
 
                     _loadItemsMethodLookedFor = true;
                 }

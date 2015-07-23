@@ -22,6 +22,7 @@ using Rhetos.Utilities;
 using System;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Threading;
 
 namespace Rhetos.Persistence
 {
@@ -35,12 +36,15 @@ namespace Rhetos.Persistence
         private DbTransaction _transaction;
         private bool _disposed;
         private bool _discard;
+        private int _persistenceTransactionId;
+        static int _counter = 0;
 
         public PersistenceTransaction(ILogProvider logProvider, ConnectionString connectionString, IUserInfo userInfo)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _connectionString = connectionString;
             _userInfo = userInfo;
+            _persistenceTransactionId = Interlocked.Increment(ref _counter);
         }
 
         public void DiscardChanges()
@@ -54,6 +58,7 @@ namespace Rhetos.Persistence
         {
             if (!_disposed)
             {
+                _logger.Trace(() => "Disposing (" + _persistenceTransactionId + ").");
                 if (_discard)
                     Rollback();
                 else
@@ -71,11 +76,13 @@ namespace Rhetos.Persistence
             if (_discard)
                 throw new FrameworkException("Trying to commit and reconnect a discarded persistence transaction.");
 
+            _logger.Trace(() => "CommitAndReconnect (" + _persistenceTransactionId + ").");
             Commit();
         }
 
         private void Commit()
         {
+            _logger.Trace(() => "Committing (" + _persistenceTransactionId + ").");
             if (BeforeClose != null)
             {
                 BeforeClose();
@@ -83,18 +90,30 @@ namespace Rhetos.Persistence
             }
 
             if (_transaction != null)
+            {
+                _logger.Trace(() => "Committing transaction (" + _persistenceTransactionId + ").");
                 _transaction.Commit();
+                _transaction = null;
+            }
             if (_connection != null)
+            {
+                _logger.Trace(() => "Closing connection (" + _persistenceTransactionId + ").");
                 _connection.Close();
+                _connection = null;
+            }
         }
 
         private void Rollback()
         {
+            _logger.Trace(() => "Rolling back (" + _persistenceTransactionId + ").");
             BeforeClose = null;
             try
             {
                 if (_transaction != null)
+                {
+                    _logger.Trace(() => "Rolling back transaction (" + _persistenceTransactionId + ").");
                     _transaction.Rollback();
+                }
             }
             catch (Exception ex)
             {
@@ -102,17 +121,28 @@ namespace Rhetos.Persistence
                 _logger.Error("Error on transaction rollback when canceling persistence transaction. " + ex);
                 throw; // TODO: Remove this.
             }
+            finally
+            {
+                _transaction = null;
+            }
 
             try
             {
                 if (_connection != null)
+                {
+                    _logger.Trace(() => "Closing connection (" + _persistenceTransactionId + ").");
                     _connection.Close();
+                }
             }
             catch (Exception ex)
             {
                 // Failure when canceling connection should be ignored to allow other cleanup code to be executed. Also, a previously handled database connection error may have triggered the rollback.
                 _logger.Error("Error on connection close when canceling persistence transaction. " + ex);
                 throw; // TODO: Remove this.
+            }
+            finally
+            {
+                _connection = null;
             }
         }
 
@@ -125,6 +155,7 @@ namespace Rhetos.Persistence
 
                 if (_connection == null)
                 {
+                    _logger.Trace(() => "Opening connection (" + _persistenceTransactionId + ").");
                     _connection = new SqlConnection(_connectionString);
                     _connection.Open();
 
@@ -135,6 +166,7 @@ namespace Rhetos.Persistence
                             sqlCommand.ExecuteNonQuery();
                         }
 
+                    _logger.Trace(() => "Beginning transaction (" + _persistenceTransactionId + ").");
                     _transaction = _connection.BeginTransaction();
                 }
 

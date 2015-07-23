@@ -27,8 +27,6 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     public interface IPrincipalPermission : IEntity
     {
-        IPrincipal Principal { get; }
-        ICommonClaim Claim { get; }
         bool? IsAuthorized { get; set; }
         Guid? PrincipalID { get; set; }
         Guid? ClaimID { get; set; }

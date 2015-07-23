@@ -24,8 +24,6 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     public interface IPrincipalHasRole : IEntity
     {
-        IPrincipal Principal { get; }
-        IRole Role { get; }
         Guid? PrincipalID { get; set; }
         Guid? RoleID { get; set; }
     }

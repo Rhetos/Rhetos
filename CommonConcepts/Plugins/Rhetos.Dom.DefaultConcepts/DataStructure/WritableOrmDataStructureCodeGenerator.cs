@@ -68,13 +68,9 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format(
 @"        public void Save(IEnumerable<{0}.{1}> insertedNew, IEnumerable<{0}.{1}> updatedNew, IEnumerable<{0}.{1}> deletedIds, bool checkUserPermissions = false)
         {{
-            Rhetos.Utilities.CsUtility.Materialize(ref insertedNew);
-            Rhetos.Utilities.CsUtility.Materialize(ref updatedNew);
-            Rhetos.Utilities.CsUtility.Materialize(ref deletedIds);
-
-            if (insertedNew == null) insertedNew = Enumerable.Empty<{0}.{1}>();
-            if (updatedNew == null) updatedNew = Enumerable.Empty<{0}.{1}>();
-            if (deletedIds == null) deletedIds = Enumerable.Empty<{0}.{1}>();
+            Common.Infrastructure.MaterializeItemsToSave(ref insertedNew);
+            Common.Infrastructure.MaterializeItemsToSave(ref updatedNew);
+            Common.Infrastructure.MaterializeItemsToDelete(ref deletedIds);
 
             if (insertedNew.Count() == 0 && updatedNew.Count() == 0 && deletedIds.Count() == 0)
                 return;
@@ -115,16 +111,12 @@ namespace Rhetos.Dom.DefaultConcepts
 
             " + ProcessedOldDataTag.Evaluate(info) + @"
 
-            deleted = QueryLoaded(deletedIds);
-            updated = QueryLoaded(updatedNew);
-            IEnumerable<Common.Queryable.{0}_{1}> inserted = QueryLoaded(insertedNew);
-
             try
             {{
                 if (deletedIds.Count() > 0)
                 {{
                     _executionContext.EntityFrameworkContext.Configuration.AutoDetectChangesEnabled = false;
-                    foreach (var item in deleted)
+                    foreach (var item in deletedIds.Select(item => item.ToNavigation()))
                         _executionContext.EntityFrameworkContext.Entry(item).State = System.Data.Entity.EntityState.Deleted;
                     _executionContext.EntityFrameworkContext.Configuration.AutoDetectChangesEnabled = true;
                     _executionContext.EntityFrameworkContext.SaveChanges();
@@ -133,7 +125,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (updatedNew.Count() > 0)
                 {{
                     _executionContext.EntityFrameworkContext.Configuration.AutoDetectChangesEnabled = false;
-                    foreach (var item in updated)
+                    foreach (var item in updatedNew.Select(item => item.ToNavigation()))
                         _executionContext.EntityFrameworkContext.Entry(item).State = System.Data.Entity.EntityState.Modified;
                     _executionContext.EntityFrameworkContext.Configuration.AutoDetectChangesEnabled = true;
                     _executionContext.EntityFrameworkContext.SaveChanges();
@@ -141,7 +133,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 if (insertedNew.Count() > 0)
                 {{
-                    _executionContext.EntityFrameworkContext.{0}_{1}.AddRange(inserted);
+                    _executionContext.EntityFrameworkContext.{0}_{1}.AddRange(insertedNew.Select(item => item.ToNavigation()));
                     _executionContext.EntityFrameworkContext.SaveChanges();
                 }}
 
@@ -157,7 +149,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             deleted = null;
             updated = QueryPersisted(updatedNew);
-            inserted = QueryPersisted(insertedNew);
+            IEnumerable<Common.Queryable.{0}_{1}> inserted = QueryPersisted(insertedNew);
 
             bool allEffectsCompleted = false;
             try

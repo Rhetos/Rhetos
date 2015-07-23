@@ -272,7 +272,8 @@ namespace CommonConcepts.Test
                 repository.TestEntity.Child.Insert(c);
 
                 var c2 = repository.TestEntity.Child.Query()
-                    .Select(child => new TestEntity.Child { ID = Guid.NewGuid(), Name = "c2", ParentID = child.ParentID });
+                    .Select(child => new TestEntity.Child { ID = Guid.NewGuid(), Name = "c2", ParentID = child.ParentID })
+                    .ToList();
                 repository.TestEntity.Child.Insert(c2);
 
                 context.EntityFrameworkContext.ClearCache();

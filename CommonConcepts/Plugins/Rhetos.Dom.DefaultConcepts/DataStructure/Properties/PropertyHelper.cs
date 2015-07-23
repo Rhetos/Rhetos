@@ -59,11 +59,11 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (info.Name != "ID")
                 {
                     codeBuilder.InsertCode(
+                        string.Format(",\r\n                {0} = item.{0}", info.Name),
+                        RepositoryHelper.AssignSimplePropertyTag, info.DataStructure);
+                    codeBuilder.InsertCode(
                         string.Format("\r\n                q.{0} = item.{0};", info.Name),
                         RepositoryHelper.QueryLoadedAssignPropertyTag, info.DataStructure);
-                    codeBuilder.InsertCode(
-                        string.Format(",\r\n                {0} = item.{0}", info.Name),
-                        RepositoryHelper.ToItemsAssignPropertyTag, info.DataStructure);
                 }
         }
     }

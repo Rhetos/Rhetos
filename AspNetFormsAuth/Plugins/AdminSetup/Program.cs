@@ -120,9 +120,8 @@ namespace AdminSetup
                 using (var container = CreateRhetosContainer())
                 {
                     var repositories = container.Resolve<GenericRepositories>();
-                    ConsoleLogger.MinLevel = EventType.Trace;
-                    AuthenticationDatabaseInitializer.CreateAdminUserAndPermissions(repositories);
                     ConsoleLogger.MinLevel = EventType.Info;
+                    AuthenticationDatabaseInitializer.CreateAdminUserAndPermissions(repositories);
                 }
             }
             finally

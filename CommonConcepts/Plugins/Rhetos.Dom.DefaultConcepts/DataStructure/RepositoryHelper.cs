@@ -35,7 +35,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<DataStructureInfo> RepositoryInterfaces = new CsTag<DataStructureInfo>("RepositoryInterface", TagType.Appendable, ",\r\n        {0}");
         public static readonly CsTag<DataStructureInfo> RepositoryMembers = "RepositoryMembers";
         public static readonly CsTag<DataStructureInfo> QueryLoadedAssignPropertyTag = "QueryLoadedAssignProperty";
-        public static readonly CsTag<DataStructureInfo> ToItemsAssignPropertyTag = "ToItemsAssignProperty";
+        public static readonly CsTag<DataStructureInfo> AssignSimplePropertyTag = "AssignSimpleProperty";
 
         private static string RepositorySnippet(DataStructureInfo info)
         {
@@ -157,20 +157,23 @@ namespace Rhetos.Dom.DefaultConcepts
                 info.Name);
         }
 
-        public static void GenerateReadableRepositoryFunctions(DataStructureInfo info, ICodeBuilder codeBuilder, string readFunctionBody)
+        public static void GenerateReadableRepositoryFunctions(DataStructureInfo info, ICodeBuilder codeBuilder, string loadFunctionBody)
         {
-            codeBuilder.InsertCode(RepositoryReadFunctionsSnippet(info, readFunctionBody), RepositoryMembers, info);
+            codeBuilder.InsertCode(RepositoryReadFunctionsSnippet(info, loadFunctionBody), RepositoryMembers, info);
             codeBuilder.InsertCode("IReadableRepository<" + info.Module.Name + "." + info.Name + ">", RepositoryInterfaces, info);
         }
 
-        public static void GenerateQueryableRepositoryFunctions(DataStructureInfo info, ICodeBuilder codeBuilder, string queryFunctionBody)
+        public static void GenerateQueryableRepositoryFunctions(DataStructureInfo info, ICodeBuilder codeBuilder, string queryFunctionBody, string loadFunctionBody = null)
         {
-            GenerateReadableRepositoryFunctions(info, codeBuilder, "return Query().ToItems().ToArray();");
+            if (loadFunctionBody == null)
+                loadFunctionBody = "return Query().ToItems().ToArray();";
+            GenerateReadableRepositoryFunctions(info, codeBuilder, loadFunctionBody);
             codeBuilder.InsertCode(RepositoryQueryFunctionsSnippet(info, queryFunctionBody), RepositoryMembers, info);
             codeBuilder.InsertCode("IQueryableRepository<Common.Queryable." + info.Module.Name + "_" + info.Name + ">", RepositoryInterfaces, info);
 
             codeBuilder.InsertCode(SnippetQueryListConversion(info), RepositoryMembers, info);
             codeBuilder.InsertCode(SnippetToItemsConversion(info), DomInitializationCodeGenerator.QueryExtensionsMembersTag);
+            codeBuilder.InsertCode(SnippetToNavigationConversion(info), DataStructureCodeGenerator.BodyTag, info);
             codeBuilder.InsertCode(SnippetToItemConversion(info), DataStructureQueryableCodeGenerator.MembersTag, info);
             codeBuilder.InsertCode(SnippetLoadItemsConversion(info), DomInitializationCodeGenerator.QueryExtensionsMembersTag);
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.Graph));
@@ -187,7 +190,10 @@ namespace Rhetos.Dom.DefaultConcepts
                 : "Query().Where(item => ids.Contains(item.ID))";
 
             string mapNavigationProperties = (info is IOrmDataStructure)
-                ? "_executionContext.EntityFrameworkContext.{0}_{1}.Attach(q);\r\n                "
+                ? @"if (item.ID == default(Guid))
+                    q.ID = item.ID = Guid.NewGuid();
+                _executionContext.EntityFrameworkContext.{0}_{1}.Attach(q);
+                "
                 : "";
 
             return string.Format(
@@ -227,7 +233,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {{
             return query.Select(item => new {0}.{1}
             {{
-                ID = item.ID" + ToItemsAssignPropertyTag.Evaluate(info) + @"
+                ID = item.ID" + AssignSimplePropertyTag.Evaluate(info) + @"
             }});
         }}
         ",
@@ -235,15 +241,31 @@ namespace Rhetos.Dom.DefaultConcepts
             info.Name);
         }
 
+        private static string SnippetToNavigationConversion(DataStructureInfo info)
+        {
+            return string.Format(@"/// <summary>Converts a simple object to a navigation object, and copies its simple properties. Navigation properties are set to null.</summary>
+        public Common.Queryable.{0}_{1} ToNavigation()
+        {{
+            var item = this;
+            return new Common.Queryable.{0}_{1}
+            {{
+                ID = item.ID" + RepositoryHelper.AssignSimplePropertyTag.Evaluate(info) + @"
+            }};
+        }}
+
+        ",
+            info.Module.Name,
+            info.Name);
+        }
+
         private static string SnippetToItemConversion(DataStructureInfo info)
         {
-            return string.Format(@"// For data structure with lazy loading enabled.
-        public {0}.{1} ToItem()
+            return string.Format(@"public {0}.{1} ToItem()
         {{
             var item = this;
             return new {0}.{1}
             {{
-                ID = item.ID" + RepositoryHelper.ToItemsAssignPropertyTag.Evaluate(info) + @"
+                ID = item.ID" + RepositoryHelper.AssignSimplePropertyTag.Evaluate(info) + @"
             }};
         }}
 
@@ -254,8 +276,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string SnippetLoadItemsConversion(DataStructureInfo info)
         {
-            return string.Format(@"// For data structure with lazy loading enabled.
-        public static void LoadItems(ref IEnumerable<{0}.{1}> items)
+            return string.Format(@"public static void LoadItems(ref IEnumerable<{0}.{1}> items)
         {{
             var query = items as IQueryable<Common.Queryable.{0}_{1}>;
             var navigationItems = items as IEnumerable<Common.Queryable.{0}_{1}>;
