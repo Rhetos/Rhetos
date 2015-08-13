@@ -298,7 +298,8 @@ namespace CommonConcepts.Test
             {
                 { "select a.b from c.d, x.y", "SqlDependsOnDataStructureInfo c.d" },
                 { "select * from a.b, c.d, e.f, g.h", "SqlDependsOnDataStructureInfo a.b, SqlDependsOnDataStructureInfo c.d, "
-                    + "SqlDependsOnSqlViewInfo e.f, SqlDependsOnSqlFunctionInfo g.h" }
+                    + "SqlDependsOnSqlViewInfo e.f, SqlDependsOnSqlFunctionInfo g.h" },
+                { "with x.y as (select * from a.b) select * from x.y", "SqlDependsOnDataStructureInfo a.b" }
             };
 
             foreach (var test in tests)
