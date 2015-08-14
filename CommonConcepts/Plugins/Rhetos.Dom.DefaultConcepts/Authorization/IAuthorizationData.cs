@@ -35,6 +35,7 @@ namespace Rhetos.Dom.DefaultConcepts
         IEnumerable<PrincipalPermissionInfo> GetPrincipalPermissions(IPrincipal principal, IEnumerable<Guid> claimIds = null);
 
         /// <summary>
+        /// The function may return more items than required.
         /// Note that the result will not include roles that do not exist, and that the order of returned items might not match the parameter.
         /// </summary>
         IDictionary<Guid, string> GetRoles(IEnumerable<Guid> roleIds = null);
@@ -47,7 +48,7 @@ namespace Rhetos.Dom.DefaultConcepts
         IEnumerable<RolePermissionInfo> GetRolePermissions(IEnumerable<Guid> roleIds, IEnumerable<Guid> claimIds = null);
 
         /// <summary>
-        /// The function may return more claims than required.
+        /// The function may return more items than required.
         /// Note that the result will not include claims that are inactive or do not exist, and that the order of returned items might not match the parameter.
         /// </summary>
         IDictionary<Claim, ClaimInfo> GetClaims(IEnumerable<Claim> requiredClaims = null);

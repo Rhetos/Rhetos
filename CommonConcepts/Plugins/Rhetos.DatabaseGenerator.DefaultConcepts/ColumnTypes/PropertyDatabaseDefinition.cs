@@ -40,6 +40,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         public static readonly SqlTag<PropertyInfo> Options1Tag = "Options1";
         /// <summary>Ordering of options may be important./summary>
         public static readonly SqlTag<PropertyInfo> Options2Tag = "Options2";
+        public static readonly SqlTag<PropertyInfo> AfterCreateTag = "AfterCreate";
+        public static readonly SqlTag<PropertyInfo> BeforeRemoveTag = "BeforeRemove";
 
         public static readonly ConceptMetadataType<List<string>> ColumnNamesMetadata = "ColumnNames";
         public static readonly ConceptMetadataType<List<string>> ColumnTypesMetadata = "ColumnTypes";
@@ -61,7 +63,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                 conceptMetadata.Get(property, ColumnTypesMetadata).Single(),
                 options,
                 Options1Tag.Evaluate(property),
-                Options2Tag.Evaluate(property));
+                Options2Tag.Evaluate(property),
+                AfterCreateTag.Evaluate(property)).Trim();
         }
 
         public static string RemoveColumn(PropertyInfo property, string columnName)
@@ -69,7 +72,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             return Sql.Format("PropertyDatabaseDefinition_RemoveColumn",
                 SqlUtility.Identifier(property.DataStructure.Module.Name),
                 SqlUtility.Identifier(property.DataStructure.Name),
-                DslUtility.ValidateIdentifier(columnName, property, "Invalid column name."));
+                DslUtility.ValidateIdentifier(columnName, property, "Invalid column name."),
+                BeforeRemoveTag.Evaluate(property)).Trim();
         }
     }
 }

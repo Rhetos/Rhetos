@@ -38,26 +38,19 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<FilterByInfo> AdditionalParametersTypeTag = "AdditionalParametersType";
         public static readonly CsTag<FilterByInfo> AdditionalParametersArgumentTag = "AdditionalParametersArgument";
 
-        private static string FilterExpressionPropertyName(FilterByInfo info)
-        {
-            return "_filterExpression_" + CsUtility.TextToIdentifier(info.Parameter);
-        }
-
         private static string FilterImplementationSnippet(FilterByInfo info)
         {
             return string.Format(
-@"        private static readonly Func<Common.DomRepository, {1}{4}, {0}[]> {2} =
-            {3};
-
-        public global::{0}[] Filter({1} parameter)
+@"        public global::{0}[] Filter({1} filter_Parameter)
         {{
-            return {2}(_domRepository, parameter{5});
+            Func<Common.DomRepository, {1}{3}, {0}[]> filter_Function =
+                {2};
+            return filter_Function(_domRepository, filter_Parameter{4});
         }}
 
 ",
             info.Source.GetKeyProperties(),
             info.Parameter,
-            FilterExpressionPropertyName(info),
             info.Expression,
             AdditionalParametersTypeTag.Evaluate(info),
             AdditionalParametersArgumentTag.Evaluate(info));

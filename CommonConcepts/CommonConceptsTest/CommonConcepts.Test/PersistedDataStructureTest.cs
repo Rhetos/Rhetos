@@ -28,6 +28,8 @@ using Rhetos.TestCommon;
 using Test9._Helper;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
+using CommonConcepts.Test.Helpers;
+using System.Text.RegularExpressions;
 
 namespace CommonConcepts.Test
 {
@@ -189,7 +191,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void KeepSynchronizedSimple()
         {
-            using (var container = new RhetosTestContainer())
+            using (var container = new RhetosTestContainerWithLogMonitor())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -216,11 +218,24 @@ namespace CommonConcepts.Test
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
 
                 st1.HeadID = doc2.ID;
+                container.Log.Clear();
                 repository.Test9.Part.Update(new[] { st1 });
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
 
+                Assert.AreEqual("DocumentAggregates i0 u2 d0, DocumentSimpleAggregate i0 u2 d0",
+                    ReportRecompute(container.Log)); // Optimized IEnumerable<Guid> filters in ChangesOnChangedItems merges IDs retrieved before and after save, to avoid two calls to the Recompute() function.
                 Assert.AreEqual(1, SimpleNumParts(repository, "doc1"), "after update detail");
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
+
+                st1.Name += "x";
+                container.Log.Clear();
+                repository.Test9.Part.Update(new[] { st1 });
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+
+                Assert.AreEqual("DocumentAggregates i0 u0 d0, DocumentSimpleAggregate i0 u0 d0",
+                    ReportRecompute(container.Log)); // Optimized IEnumerable<Guid> filters in ChangesOnChangedItems merges IDs retrieved before and after save, to avoid two calls to the Recompute() function.
+                Assert.AreEqual(1, SimpleNumParts(repository, "doc1"), "after update detail");
+                container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
 
                 repository.Test9.Part.Delete(new[] { st2 });
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
@@ -228,6 +243,24 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(0, SimpleNumParts(repository, "doc1"), "after delete detail 2");
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
             }
+        }
+
+        private string ReportRecompute(List<string> log)
+        {
+            var report = new StringBuilder();
+            var simplifyLog = new Regex(@"GenericRepository\(\w+.(\w+)\)\.InsertOrUpdateOrDelete: Save \(\d+ new items, \d+ old items, (\d+) to insert, (\d+) to update, (\d+) to delete\)");
+            foreach (string entry in log)
+            {
+                var match = simplifyLog.Match(entry);
+                if (match.Success)
+                {
+                    var matchGroups = match.Groups.Cast<Group>().Select(g => g.Value).ToArray();
+                    if (report.Length > 0)
+                        report.Append(", ");
+                    report.Append(string.Format("{1} i{2} u{3} d{4}", matchGroups));
+                }
+            }
+            return report.ToString();
         }
 
         [TestMethod]

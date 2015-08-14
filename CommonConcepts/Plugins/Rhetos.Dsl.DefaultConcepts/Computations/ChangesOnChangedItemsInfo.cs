@@ -46,5 +46,16 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (!(DependsOn is IWritableOrmDataStructure))
                 throw new DslSyntaxException(this, "DependsOn data structure must be IWritableOrmDataStructure (" + DependsOn.GetUserDescription() + ").");
         }
+
+        private static int _nextKey = 1;
+
+        private int _alternativeKey = 0;
+
+        public int GetAlternativeKey()
+        {
+            if (_alternativeKey == 0)
+                _alternativeKey = _nextKey++;
+            return _alternativeKey;
+        }
     }
 }

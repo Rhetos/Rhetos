@@ -33,19 +33,19 @@ namespace Rhetos.DatabaseGenerator.Test
     class DatabaseGenerator_Accessor : DatabaseGenerator
     {
         public DatabaseGenerator_Accessor()
-            : base(null, null, new NullPluginsContainer<IConceptDatabaseDefinition>(), null, new ConsoleLogProvider())
+            : base(null, null, new NullPluginsContainer<IConceptDatabaseDefinition>(), null, new ConsoleLogProvider(), new DatabaseGeneratorOptions { ShortTransactions = false })
         {
         }
 
         public DatabaseGenerator_Accessor(IDslModel dslModel, PluginsContainer<IConceptDatabaseDefinition> plugins)
-            : base(null, dslModel, plugins, null, new ConsoleLogProvider())
+            : base(null, dslModel, plugins, null, new ConsoleLogProvider(), new DatabaseGeneratorOptions { ShortTransactions = false })
         {
         }
 
         public DatabaseGenerator_Accessor(ISqlExecuter sqlExecuter)
             : base(sqlExecuter, null, new NullPluginsContainer<IConceptDatabaseDefinition>(),
             new MockConceptApplicationRepository(),
-            new ConsoleLogProvider())
+            new ConsoleLogProvider(), new DatabaseGeneratorOptions { ShortTransactions = false })
         {
         }
 
@@ -77,9 +77,9 @@ namespace Rhetos.DatabaseGenerator.Test
             base.ComputeDependsOn(newConceptApplications);
         }
 
-        new public static void CalculateApplicationsToBeRemovedAndInserted(IEnumerable<ConceptApplication> oldApplications, IEnumerable<NewConceptApplication> newApplications, out List<ConceptApplication> toBeRemoved, out List<NewConceptApplication> toBeInserted, ILogger consoleLogger)
+        new public void CalculateApplicationsToBeRemovedAndInserted(IEnumerable<ConceptApplication> oldApplications, IEnumerable<NewConceptApplication> newApplications, out List<ConceptApplication> toBeRemoved, out List<NewConceptApplication> toBeInserted)
         {
-            DatabaseGenerator.CalculateApplicationsToBeRemovedAndInserted(oldApplications, newApplications, out toBeRemoved, out toBeInserted, consoleLogger);
+            base.CalculateApplicationsToBeRemovedAndInserted(oldApplications, newApplications, out toBeRemoved, out toBeInserted);
         }
 
         new public static List<Tuple<NewConceptApplication, NewConceptApplication>> GetDependencyPairs(IEnumerable<NewConceptApplication> conceptApplications)

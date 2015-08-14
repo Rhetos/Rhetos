@@ -81,12 +81,14 @@
     <Compile Include="Computations\ApplyFilterOnClientReadCodeGenerator.cs" />
     <Compile Include="Computations\EntityComputedFromDefaultLoadFilterCodeGenerator.cs" />
     <Compile Include="Computations\KeepSynchronizedCodeGenerator.cs" />
+    <Compile Include="Computations\SuppressSynchronizationOnChangesItemsCodeGenerator.cs" />
     <Compile Include="Computations\KeepSynchronizedRecomputeOnDeployInfrastructureCodeGenerator.cs" />
     <Compile Include="Computations\KeyPropertyIDComputedFromCodeGenerator.cs" />
     <Compile Include="Computations\KeyPropertyComputedFromCodeGenerator.cs" />
     <Compile Include="Computations\KeepSynchronizedRecomputeOnDeployCodeGenerator.cs" />
     <Compile Include="Computations\LockItemsLockPropertyCodeGenerator.cs" />
     <Compile Include="DataStructure\DataStructureQueryableCodeGenerator.cs" />
+    <Compile Include="DataStructure\SubtypeExtendFilterCodeGenerator.cs" />
     <Compile Include="DataStructure\FilterIdRepositoryCodeGenerator.cs" />
     <Compile Include="DataStructure\ImplementsQueryableInterfacePropertyCodeGeneratorQueryable.cs" />
     <Compile Include="DataStructure\ImplementsInterfacePropertyCodeGenerator.cs" />
@@ -153,9 +155,11 @@
     <Compile Include="RowPermissions\RowPermissionsReadCodeGenerator.cs" />
     <Compile Include="RowPermissions\RowPermissionsUtility.cs" />
     <Compile Include="RowPermissions\RowPermissionsWriteCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\AutoCodeHelper.cs" />
     <Compile Include="SimpleBusinessLogic\BeforeActionCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ActionCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ImplementsQueryableInterfaceCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\AutoCodeCachedCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\DenyUserEditDataStructureCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\DenyUserEditCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\CreationTimeCodeGenerator.cs" />
@@ -187,7 +191,9 @@
     <Compile Include="HierarchyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\ModuleExternalReferenceCodeGenerator.cs" />
     <Compile Include="DataStructure\BrowsePropertyCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\UserRequiredPropertyCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\RequiredPropertyCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\UserRequiredStringPropertyCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\RequiredStringPropertyCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\UniqueMultiplePropertyCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\UniqueMultiplePropertiesCodeGenerator.cs" />

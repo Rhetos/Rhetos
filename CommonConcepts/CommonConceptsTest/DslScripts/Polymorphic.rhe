@@ -236,7 +236,7 @@ Module TestPolymorphic
 	Entity ComplexImplementationSql
 	{
 		ShortString s;
-		Guid AlternativeId;
+		Guid AlternativeId; // Update of ComplexBase_Materialized might not be supported if AlternativeId does not match ID value hashed with the implementation name.
 		
 		Is TestPolymorphic.ComplexBase
 		{
@@ -291,5 +291,28 @@ Module TestPolymorphic
 	{
 		Take Name;
 		Take 'Parent.Name';
+	}
+}
+
+//=========================================================
+// Limit the implementation with filter (where)
+
+Module TestPolymorphic
+{
+	Polymorphic ActiveRecords
+	{
+		ShortString Name;
+		Materialized;
+	}
+	
+	Entity DeactivatableEntity
+	{
+		Deactivatable;
+		
+		Is TestPolymorphic.ActiveRecords
+		{
+			Where "Active = 1";
+			Where "Name LIKE 'd%'";
+		}
 	}
 }

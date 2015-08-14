@@ -228,7 +228,11 @@ namespace CommonConcepts.Test
         {
             using (var container = new RhetosTestContainer())
             {
-                DeleteOldData(container);
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                {
+                    @"DELETE FROM TestAutoCode.IntegerAutoCodeForEach;"
+                });
+
                 var repository = container.Resolve<Common.DomRepository>();
 
                 TestDoubleIntegerAutoCodeWithGroup(container, repository, 1, 0, 0, "1,1");

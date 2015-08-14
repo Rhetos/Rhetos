@@ -1,0 +1,47 @@
+Module TestFullTextSearch
+{
+	Entity Simple
+	{
+		ShortString Name;
+		Integer Code;
+	}
+	
+	Browse SimpleBrowse TestFullTextSearch.Simple
+	{
+		Take Name;
+		Take Code;
+	}
+	
+	SqlQueryable Compute_Simple_Search
+		"SELECT ID, Text = Name + '/' + CONVERT(NVARCHAR(100), Code) FROM TestFullTextSearch.Simple"
+	{
+		AutoDetectSqlDependencies;
+		Extends TestFullTextSearch.Simple;
+		LongString Text;
+	}
+	
+	Persisted Simple_Search TestFullTextSearch.Compute_Simple_Search
+	{
+		AllProperties;
+		KeepSynchronized;
+	}
+	
+	SqlObject TestFullTextSearchCatalog
+		'/*DatabaseGenerator:NoTransaction*/
+		CREATE FULLTEXT CATALOG TestFullTextSearchCatalog'
+		'/*DatabaseGenerator:NoTransaction*/
+		DROP FULLTEXT CATALOG TestFullTextSearchCatalog';
+	
+	SqlObject TestFullTextSearchSimple
+		'/*DatabaseGenerator:NoTransaction*/
+		CREATE FULLTEXT INDEX ON TestFullTextSearch.Simple_Search(Text)
+			KEY INDEX PK_Simple_Search
+			ON TestFullTextSearchCatalog
+			WITH STOPLIST = SYSTEM'
+	   '/*DatabaseGenerator:NoTransaction*/
+	   DROP FULLTEXT INDEX ON TestFullTextSearch.Simple_Search'
+	{
+		SqlDependsOnSqlObject TestFullTextSearch.TestFullTextSearchCatalog;
+		SqlDependsOn TestFullTextSearch.Simple_Search.Text;
+	}
+}

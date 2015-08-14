@@ -26,7 +26,7 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     public class HierarchyCircularReferenceException : Exception { }
 
-    public class HierarchyInfo
+    public class HierarchyInfo // TODO: Rename to HierarchyIndexes
     {
         public Guid ID;
         public int LeftIndex;

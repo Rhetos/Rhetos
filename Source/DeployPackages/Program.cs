@@ -67,7 +67,7 @@ namespace DeployPackages
 
                 DownloadPackages(logger, arguments);
                 GenerateApplication(logger, arguments);
-                InitializeGeneratedApplication(logger);
+                InitializeGeneratedApplication(logger, arguments);
                 logger.Trace("Done.");
             }
             catch (Exception ex)
@@ -110,6 +110,7 @@ namespace DeployPackages
             var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = arguments.IgnorePackageDependencies };
             var packageDownloader = new PackageDownloader(config, DeploymentUtility.InitializationLogProvider, packageDownloaderOptions);
             var packages = packageDownloader.GetPackages();
+
             InstalledPackages.Save(packages);
         }
 
@@ -124,7 +125,7 @@ namespace DeployPackages
             var stopwatch = Stopwatch.StartNew();
 
             var builder = new ContainerBuilder();
-            builder.RegisterModule(new AutofacModuleConfiguration(deploymentTime: true));
+            builder.RegisterModule(new AutofacModuleConfiguration(deploymentTime: true, shortTransaction: arguments.ShortTransactions));
             using (var container = builder.Build())
             {
                 var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
@@ -138,7 +139,7 @@ namespace DeployPackages
             }
         }
 
-        private static void InitializeGeneratedApplication(ILogger logger)
+        private static void InitializeGeneratedApplication(ILogger logger, Arguments arguments)
         {
             // Creating a new container builder instead of using builder.Update, because of severe performance issues with the Update method.
             Plugins.ClearCache();
@@ -147,7 +148,7 @@ namespace DeployPackages
             var stopwatch = Stopwatch.StartNew();
 
             var builder = new ContainerBuilder();
-            builder.RegisterModule(new AutofacModuleConfiguration(deploymentTime: false));
+            builder.RegisterModule(new AutofacModuleConfiguration(deploymentTime: false, shortTransaction: arguments.ShortTransactions));
             using (var container = builder.Build())
             {
                 var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");

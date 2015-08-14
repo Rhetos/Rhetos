@@ -127,6 +127,7 @@
     <Compile Include="Computations\ComputeForNewItemsWithoutFilterInfo.cs" />
     <Compile Include="Computations\ComputeForNewItemsInfo.cs" />
     <Compile Include="Computations\ComposableFilterApplyOnClientReadInfo.cs" />
+    <Compile Include="Computations\SuppressSynchronizationInfo.cs" />
     <Compile Include="Computations\KeyPropertyIDComputedFromInfo.cs" />
     <Compile Include="Computations\LockItemsExceptPropertiesInfo.cs" />
     <Compile Include="Computations\LockItemsLockPropertyInfo.cs" />
@@ -134,7 +135,9 @@
     <Compile Include="Computations\KeyPropertyComputedFromInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndexClusteredInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndexMultipleFollowingPropertyInfo.cs" />
+    <Compile Include="DatabaseWorkarounds\SqlNotNullInfo.cs" />
     <Compile Include="DataStructure\BeforeQueryWithParameterInfo.cs" />
+    <Compile Include="DataStructure\SubtypeExtendFilterInfo.cs" />
     <Compile Include="DataStructure\LazyLoadExtensionInfo.cs" />
     <Compile Include="DataStructure\LazyLoadBaseInfo.cs" />
     <Compile Include="DataStructure\LazyLoadAllMacro.cs" />
@@ -153,6 +156,7 @@
     <Compile Include="DataStructure\SpecificSubtypeSqlViewInfo.cs" />
     <Compile Include="DataStructure\ExtensibleSubtypeSqlViewInfo.cs" />
     <Compile Include="DataStructure\QueryWithParameterInfo.cs" />
+    <Compile Include="DataStructure\SubtypeWhereInfo.cs" />
     <Compile Include="DataStructure\Writing\OnSaveUpdateInfo.cs" />
     <Compile Include="DataStructure\Writing\SaveMethodInfo.cs" />
     <Compile Include="DataStructure\Writing\LoadOldItemsInfo.cs" />
@@ -266,6 +270,7 @@
     <Compile Include="DataStructure\Properties\MoneyPropertyInfo.cs" />
     <Compile Include="DataStructure\Properties\DateTimePropertyInfo.cs" />
     <Compile Include="DataStructure\Properties\LongStringPropertyInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\AutoCodeCachedInfo.cs" />
     <Compile Include="SimpleBusinessLogic\BeforeActionInfo.cs" />
     <Compile Include="SimpleBusinessLogic\BrowseTakeNamedPropertyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\AutoCodeTriggerInfo.cs" />
@@ -292,6 +297,7 @@
     <Compile Include="SimpleBusinessLogic\PessimisticLockingInfo.cs" />
     <Compile Include="SimpleBusinessLogic\CustomClaimInfo.cs" />
     <Compile Include="SimpleBusinessLogic\BrowseTakePropertyInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\UserRequiredPropertyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\SimpleReferencePropertyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\SystemRequiredInfo.cs" />
     <Compile Include="SimpleBusinessLogic\UniqueMultiplePropertyInfo.cs" />

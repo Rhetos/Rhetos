@@ -106,7 +106,7 @@ namespace CommonConcepts.Test
                 var serverResponse = processingEngine.Execute(new[] { serverCommand });
                 var report = GenerateReport(serverResponse);
                 Console.WriteLine("Server response: " + report);
-                Assert.IsTrue(report.Contains("Insufficient permissions"));
+                Assert.IsTrue(report.Contains("You are not authorized"));
             }
 
             // Simulate client request: Reading the user's documents
@@ -193,7 +193,7 @@ namespace CommonConcepts.Test
                 var serverResponse = processingEngine.Execute(new[] { serverCommand });
                 var report = GenerateReport(serverResponse);
                 Console.WriteLine("Server response: " + report);
-                Assert.IsTrue(report.Contains("Insufficient permissions"));
+                Assert.IsTrue(report.Contains("You are not authorized"));
             }
 
             // Simulate client request: Reading the user's documents

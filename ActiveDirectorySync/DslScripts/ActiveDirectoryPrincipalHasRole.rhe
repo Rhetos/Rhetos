@@ -74,7 +74,7 @@
 			'{
 				string domainPrefix = Environment.UserDomainName + @"\";
 				if (queryParameter.Name.StartsWithCaseInsensitive(domainPrefix))
-					return QueryLoaded(RecomputeFromActiveDirectoryPrincipalHasRole(new[] { new ActiveDirectoryUserParameter { UserName = queryParameter.Name } }));
+					RecomputeFromActiveDirectoryPrincipalHasRole(new[] { new ActiveDirectoryUserParameter { UserName = queryParameter.Name } });
 			}';
 		
 		FilterBy 'Common.ActiveDirectoryUserParameter[]' '(repository, parameter) =>

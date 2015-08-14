@@ -43,10 +43,12 @@ namespace Rhetos.DatabaseGenerator
                     currentBatch = new SqlBatch { UseTransacion = scriptUsesTransaction };
                     batches.Add(currentBatch);
                 }
-                currentBatch.Add(sqlScript);
+
+                if (!string.IsNullOrWhiteSpace(sqlScript.Replace(SqlUtility.NoTransactionTag, "")))
+                    currentBatch.Add(sqlScript);
             }
 
-            return batches;
+            return batches.Where(batch => batch.Count > 0).ToList();
         }
     }
 }

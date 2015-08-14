@@ -64,28 +64,26 @@ namespace Rhetos.Processing.DefaultCommands
             // We need to check delete permissions before actually deleting items 
             // and update items before AND after they are updated.
             var genericRepository = _genericRepositories.GetGenericRepository(saveInfo.Entity);
-            bool valid = true;
 
             var updateDeleteItems = ConcatenateNullable(saveInfo.DataToDelete, saveInfo.DataToUpdate);
             if (updateDeleteItems != null)
-                valid = _serverCommandsUtility.CheckAllItemsWithinFilter(updateDeleteItems, RowPermissionsWriteInfo.FilterName, genericRepository);
+                if (!_serverCommandsUtility.CheckAllItemsWithinFilter(updateDeleteItems, RowPermissionsWriteInfo.FilterName, genericRepository))
+                {
+                    _persistenceTransaction.DiscardChanges();
+                    throw new UserException("You are not authorized to write some or all of the provided data. Insufficient permissions to modify the existing data.", "DataStructure:" + saveInfo.Entity + ".");
+                }
 
-            if (valid)
-            {
-                genericRepository.Save(saveInfo.DataToInsert, saveInfo.DataToUpdate, saveInfo.DataToDelete, true);
+            genericRepository.Save(saveInfo.DataToInsert, saveInfo.DataToUpdate, saveInfo.DataToDelete, true);
 
-                var insertUpdateItems = ConcatenateNullable(saveInfo.DataToInsert, saveInfo.DataToUpdate);
-                // We rely that this call will only use IDs of the items, because other data might be dirty.
-                if (insertUpdateItems != null)
-                    valid = _serverCommandsUtility.CheckAllItemsWithinFilter(insertUpdateItems, RowPermissionsWriteInfo.FilterName, genericRepository);
-            }
+            var insertUpdateItems = ConcatenateNullable(saveInfo.DataToInsert, saveInfo.DataToUpdate);
+            // We rely that this call will only use IDs of the items, because other data might be dirty.
+            if (insertUpdateItems != null)
+                if (!_serverCommandsUtility.CheckAllItemsWithinFilter(insertUpdateItems, RowPermissionsWriteInfo.FilterName, genericRepository))
+                {
+                    _persistenceTransaction.DiscardChanges();
+                    throw new UserException("You are not authorized to write some or all of the provided data. Insufficient permissions to apply the new data.", "DataStructure:" + saveInfo.Entity + ".");
+                }
 
-            if (!valid)
-            {
-                _persistenceTransaction.DiscardChanges();
-                throw new UserException("Insufficient permissions to write some or all of the data.", "DataStructure:" + saveInfo.Entity + ".");
-            }
-            
             return new CommandResult
             {
                 Message = "Comand executed",

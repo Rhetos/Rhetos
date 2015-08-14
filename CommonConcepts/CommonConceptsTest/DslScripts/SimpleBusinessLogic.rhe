@@ -36,7 +36,7 @@ Module TestAutoCode
     
     Entity Grouping
 	{
-		ShortString Code {  AutoCode; }
+		ShortString Code;
 	}
 	
 	Entity ShortReferenceGroup
@@ -71,12 +71,36 @@ Module TestAutoCode
 	}
 }
 
+Module TestAutoCodeCached
+{
+	Entity Simple
+	{
+		ShortString Code {  AutoCodeCached; }
+		ShortString Data;
+	}
+    
+   Entity DoubleAutoCode
+	{
+		ShortString CodeA {  AutoCodeCached; }
+		ShortString CodeB {  AutoCodeCached; }
+	}
+}
+
 Module TestRequired
 {
 	Entity Simple
 	{
 		Integer Count { Required; }
 		ShortString Name { Required; }
+	}
+}
+
+Module TestUserRequired
+{
+	Entity Simple
+	{
+		Integer Count { UserRequired; }
+		ShortString Name { UserRequired; }
 	}
 }
 

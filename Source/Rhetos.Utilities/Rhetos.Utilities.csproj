@@ -130,10 +130,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration.cs" />
     <Compile Include="ConfigUtility.cs" />
     <Compile Include="ConnectionString.cs" />
     <Compile Include="FilesUtility.cs" />
-    <Compile Include="Configuration.cs" />
     <Compile Include="IConfiguration.cs" />
     <Compile Include="MultiDictionary.cs" />
     <Compile Include="ExceptionsUtility.cs" />

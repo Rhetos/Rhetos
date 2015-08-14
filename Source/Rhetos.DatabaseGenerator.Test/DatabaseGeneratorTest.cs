@@ -312,10 +312,9 @@ namespace Rhetos.DatabaseGenerator.Test
             databaseGenerator.ComputeDependsOn(oldApplications.Cast<NewConceptApplication>());
             databaseGenerator.ComputeDependsOn(newApplications);
 
-            DatabaseGenerator_Accessor.CalculateApplicationsToBeRemovedAndInserted(
+            databaseGenerator.CalculateApplicationsToBeRemovedAndInserted(
                 oldApplications, newApplications,
-                out toBeRemoved, out toBeInserted,
-                new ConsoleLogger());
+                out toBeRemoved, out toBeInserted);
             Graph.TopologicalSort(toBeRemoved, DatabaseGenerator_Accessor.GetDependencyPairs(oldApplications));
             toBeRemoved.Reverse();
             Graph.TopologicalSort(toBeInserted, DatabaseGenerator_Accessor.GetDependencyPairs(newApplications));
@@ -675,7 +674,7 @@ namespace Rhetos.DatabaseGenerator.Test
             executedSql = ClearSqlForReport(executedSql);
 
             Assert.AreEqual(
-                "TRAN: remove C, NOTRAN: remove B, CommitMetadata, TRAN: remove A, create D, NOTRAN: create E, CommitMetadata, TRAN: create F",
+                "TRAN: remove C, NOTRAN: remove B, TRAN: remove A, create D, NOTRAN: create E, TRAN: create F",
                 executedSql);
         }
 
@@ -683,8 +682,7 @@ namespace Rhetos.DatabaseGenerator.Test
         {
             Console.WriteLine("ClearSqlForReport: " + sql);
             return sql
-                .Replace(SqlUtility.NoTransactionTag, "")
-                .Replace("PRINT 'DummyScript'", "CommitMetadata");
+                .Replace(SqlUtility.NoTransactionTag, "");
         }
 
         class MockSqlExecuter : ISqlExecuter

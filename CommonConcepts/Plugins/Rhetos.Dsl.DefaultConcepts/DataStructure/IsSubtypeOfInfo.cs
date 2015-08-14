@@ -79,8 +79,8 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (existingConcepts.FindByReference<PolymorphicMaterializedInfo>(pm => pm.Polymorphic, Supertype).Any())
             {
                 // Verifying if the ChangesOnChangedItemsInfo can be created (see IsSubtypeOfMacro)
-                DataStructureInfo dependsOn = DslUtility.GetBaseChangesOnDependency(Subtype, existingConcepts);
-                if (dependsOn == null)
+                var dependsOn = DslUtility.GetBaseChangesOnDependency(Subtype, existingConcepts);
+                if (dependsOn.Count() == 0)
                     throw new DslSyntaxException(this, Subtype.GetUserDescription() + " should be an *extension* of an entity. Otherwise it cannot be used in a materialized polymorphic entity because the system cannot detect when to update the persisted data.");
             }
         }
@@ -113,28 +113,31 @@ namespace Rhetos.Dsl.DefaultConcepts
                 PolymorphicUnionView = conceptInfo.Supertype.GetUnionViewPrototype()
             });
 
+            var filterBySubtypePrototype = new FilterByInfo { Source = conceptInfo.Supertype, Parameter = "Rhetos.Dom.DefaultConcepts.FilterSubtype" };
+            newConcepts.Add(new SubtypeExtendFilterInfo
+            {
+                IsSubtypeOf = conceptInfo,
+                FilterBySubtype = filterBySubtypePrototype
+            });
+
             // Add metadata for supertype computation (union):
 
-            if (existingConcepts.FindByReference<PolymorphicMaterializedInfo>(pm => pm.Polymorphic, conceptInfo.Supertype).Any())
-            {
-                string materializedUpdateSelector;
-                if (conceptInfo.ImplementationName == "")
-                    materializedUpdateSelector = "changedItems => changedItems.Select(item => item.ID).ToArray()";
-                else
-                    materializedUpdateSelector = string.Format(
-                        @"changedItems => changedItems.Select(item => DomUtility.GetSubtypeImplementationId(item.ID, {0})).ToArray()",
-                        DomUtility.GetSubtypeImplementationHash(conceptInfo.ImplementationName));
+            string hashId = conceptInfo.ImplementationName == "" ? "item.ID"
+                : "DomUtility.GetSubtypeImplementationId(item.ID, " + DomUtility.GetSubtypeImplementationHash(conceptInfo.ImplementationName) + ")";
 
-                DataStructureInfo dependsOn = DslUtility.GetBaseChangesOnDependency(conceptInfo.Subtype, existingConcepts);
-                if (dependsOn != null) // The dependent data structure may be created in a later macro iterations. The end result will be check by IValidatedConcept.
-                    newConcepts.Add(new ChangesOnChangedItemsInfo
-                    {
-                        Computation = conceptInfo.Supertype,
-                        DependsOn = dependsOn,
-                        FilterType = "System.Guid[]",
-                        FilterFormula = materializedUpdateSelector
-                    });
-            }
+            foreach (DataStructureInfo dependsOn in DslUtility.GetBaseChangesOnDependency(conceptInfo.Subtype, existingConcepts))
+                newConcepts.Add(new ChangesOnChangedItemsInfo
+                {
+                    Computation = conceptInfo.Supertype,
+                    DependsOn = dependsOn,
+                    FilterType = "Rhetos.Dom.DefaultConcepts.FilterSubtype",
+                    FilterFormula = @"changedItems => new Rhetos.Dom.DefaultConcepts.FilterSubtype
+                        {
+                            Ids = changedItems.Select(item => " + hashId + @").ToArray(),
+                            Subtype = " + CsUtility.QuotedString(conceptInfo.Subtype.Module.Name + "." + conceptInfo.Subtype.Name) + @",
+                            ImplementationName = " + CsUtility.QuotedString(conceptInfo.ImplementationName) + @"
+                        }"
+                });
 
             // Add metadata for subtype implementation:
 
@@ -147,19 +150,43 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             // Automatic interface implementation:
 
-            if (existingConcepts.FindByKey(conceptInfo.GetImplementationViewPrototype().GetKey()) == null)
+            var implementationView = (SqlViewInfo)existingConcepts.FindByKey(conceptInfo.GetImplementationViewPrototype().GetKey());
+            if (implementationView == null)
             {
-                var extensibleSubtypeSqlView = new ExtensibleSubtypeSqlViewInfo { IsSubtypeOf = conceptInfo };
-                newConcepts.Add(extensibleSubtypeSqlView);
+                implementationView = new ExtensibleSubtypeSqlViewInfo { IsSubtypeOf = conceptInfo };
+                newConcepts.Add(implementationView);
 
                 if (subtypeImplementationColumn != null)
                     newConcepts.Add(new SqlDependsOnSqlObjectInfo
                     {
                         // The subtype implementation view will use the PersistedSubtypeImplementationColumn.
                         DependsOn = subtypeImplementationColumn.GetSqlObjectPrototype(),
-                        Dependent = extensibleSubtypeSqlView
+                        Dependent = implementationView
                     });
             }
+
+            // Redirect the developer-provided SQL dependencies from the "Is" concept to the implementation view:
+
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnDataStructureInfo>(dep => dep.Dependent, conceptInfo)
+                .Select(dep => new SqlDependsOnDataStructureInfo { Dependent = implementationView, DependsOn = dep.DependsOn }));
+
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnModuleInfo>(dep => dep.Dependent, conceptInfo)
+                .Select(dep => new SqlDependsOnModuleInfo { Dependent = implementationView, DependsOn = dep.DependsOn }));
+
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnPropertyInfo>(dep => dep.Dependent, conceptInfo)
+                .Select(dep => new SqlDependsOnPropertyInfo { Dependent = implementationView, DependsOn = dep.DependsOn }));
+
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnSqlFunctionInfo>(dep => dep.Dependent, conceptInfo)
+                .Select(dep => new SqlDependsOnSqlFunctionInfo { Dependent = implementationView, DependsOn = dep.DependsOn }));
+
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnSqlIndexInfo>(dep => dep.Dependent, conceptInfo)
+                .Select(dep => new SqlDependsOnSqlIndexInfo { Dependent = implementationView, DependsOn = dep.DependsOn }));
+
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnSqlObjectInfo>(dep => dep.Dependent, conceptInfo)
+                .Select(dep => new SqlDependsOnSqlObjectInfo { Dependent = implementationView, DependsOn = dep.DependsOn }));
+
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnSqlViewInfo>(dep => dep.Dependent, conceptInfo)
+                .Select(dep => new SqlDependsOnSqlViewInfo { Dependent = implementationView, DependsOn = dep.DependsOn }));
 
             return newConcepts;
         }

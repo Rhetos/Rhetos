@@ -67,8 +67,6 @@ namespace Rhetos.Deployment
             List<DataMigrationScript> toRemove = oldScripts.Where(os => !newIndex.Contains(os.Tag)).ToList();
             List<DataMigrationScript> toExecute = newScripts.Where(ns => !oldIndex.Contains(ns.Tag)).Except(skipped).ToList();
             LogScripts("Skipped older script", skipped, EventType.Info);
-            LogScripts("Removing", toRemove, EventType.Info);
-            LogScripts("Executing", toExecute, EventType.Info);
 
             ApplyToDatabase(toRemove, toExecute);
 
@@ -99,11 +97,13 @@ namespace Rhetos.Deployment
 
         protected void ApplyToDatabase(List<DataMigrationScript> toRemove, List<DataMigrationScript> toExecute)
         {
+            LogScripts("Removing", toRemove, EventType.Info);
             UndoDataMigrationScripts(toRemove.Select(s => s.Tag).ToList());
 
             var sql = new List<string>();
             foreach (var script in toExecute)
             {
+                LogScript("Executing", script, EventType.Info);
                 sql.AddRange(script.Content
                                  .Split(new[] { "\r\nGO\r\n" }, StringSplitOptions.RemoveEmptyEntries)
                                  .Where(c => !string.IsNullOrWhiteSpace(c)));
@@ -158,10 +158,12 @@ namespace Rhetos.Deployment
         protected void LogScripts(string msg, IEnumerable<DataMigrationScript> scripts, EventType eventType = EventType.Trace)
         {
             foreach (var script in scripts)
-            {
-                var s = script;
-                _logger.Write(eventType, () => msg + " " + s.Path + " (" + s.Tag + ")");
-            }
+                LogScript(msg, script, eventType);
+        }
+
+        protected void LogScript(string msg, DataMigrationScript script, EventType eventType = EventType.Trace)
+        {
+            _logger.Write(eventType, () => msg + " " + script.Path + " (" + script.Tag + ")");
         }
 
         protected List<DataMigrationScript> LoadScriptsFromDatabase()
@@ -184,6 +186,7 @@ namespace Rhetos.Deployment
         {
             var allScripts = new List<DataMigrationScript>();
 
+            // The packages are sorted by their dependencies, so the data migration scripts from one module may use the data that was prepared by the module it depends on.
             foreach (var package in _installedPackages.Packages)
             {
                 string dataMigrationScriptsFolder = Path.Combine(package.Folder, DataMigrationScriptsSubfolder);
@@ -209,6 +212,7 @@ namespace Rhetos.Deployment
                                                   Content = scriptContent
                                               }).ToList();
 
+                    packageScripts.Sort();
                     allScripts.AddRange(packageScripts);
                 }
             }
@@ -219,7 +223,7 @@ namespace Rhetos.Deployment
                     "Data migration scripts '{0}' and '{1}' have same tag '{2}' in their headers.",
                     badGroup.First().Path, badGroup.ElementAt(1).Path, badGroup.Key));
 
-            return allScripts.OrderBy(s => s).ToList();
+            return allScripts;
         }
 
         protected static int GetFullPathLength(string dataMigrationScriptsFolder)

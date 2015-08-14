@@ -38,9 +38,26 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var newConcepts = new List<IConceptInfo>();
 
-            var persisted = new PersistedDataStructureInfo { Module = Polymorphic.Module, Name = Polymorphic.Name + "_Materialized", Source = Polymorphic };
+            var persisted = new EntityInfo { Module = Polymorphic.Module, Name = Polymorphic.Name + "_Materialized" };
             newConcepts.Add(persisted);
-            newConcepts.Add(new PersistedKeepSynchronizedInfo { Persisted = persisted });
+
+            var computedFrom = new EntityComputedFromInfo { Target = persisted, Source = Polymorphic };
+            newConcepts.Add(computedFrom);
+
+            newConcepts.Add(new KeepSynchronizedInfo
+            {
+                EntityComputedFrom = computedFrom,
+                FilterSaveExpression = ""
+            });
+
+            // Optimized filter by subtype allows efficient queryies on the polymophic's view,
+            // but it does not need to use the subtype name (and persist it) when querying the materialized data.
+            newConcepts.Add(new FilterByInfo
+            {
+                Source = persisted,
+                Parameter = "Rhetos.Dom.DefaultConcepts.FilterSubtype",
+                Expression = @"(repository, parameter) => Filter(parameter.Ids)"
+            });
 
             return newConcepts;
         }

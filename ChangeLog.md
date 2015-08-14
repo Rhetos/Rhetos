@@ -1,5 +1,83 @@
 # Rhetos release notes
 
+## 0.9.36 (2015-07-14)
+
+### New features
+
+* New concept: **UserRequired**, for validating input to the Save method.
+
+### Internal improvements
+
+* New *DeployPackages.exe* argument `/ShortTransactions`, for upgrading large databases.
+* Improved **Polymorphic**: multiple **Where** allowed, optimized update of *Materialized* extension.
+* Bugfix: **Polymorphic** does not update *Materialized* extension for *named* implementations.
+* SqlDependesOn* concepts can be used on polymorphic subtype (**Is**) to define dependencies for the generated view.
+* Bugfix: Error "DependsOn data structure must be IWritableOrmDataStructure" when using an entity with **History** as a **Polymorphic** subtype.
+* DeployPackages is logging more detailed information when refreshing a dependent database object.
+* **FilterBy** expression is allowed to use the repository's member methods.
+* New internal concept **SuppressSynchronization**, for turning off automatic recompute of an entity with KeepSynchronized.
+
+## 0.9.35 (2015-07-03)
+
+### New features
+
+* New concept: **AutoCodeCached**, an optimized version of **AutoCode** for large tables.
+  **AutoCodeCached** stores the latest used code, so it does not need to read the existing records when generating a new code,
+  but it requires manual initialization the persisted data at initial deployment or import database records.
+
+### Internal improvements
+
+* Data-migration scripts from a dependent package will be executed *after* the scripts from the package it depends on,
+  instead of alphabetically by the module name.
+* New internal concept: SqlNotNull.
+
+## 0.9.34 (2015-05-26)
+
+### Internal improvements
+
+* Allowed use of full-text search in LINQ queries through NHibernate extensions. Limited use on Browse data structure: *FullTextSearch* must be used on Base property.
+* Bugfix: Using the GUID property associated with a **Reference** property on **Browse** does not work in LINQ queries and generic property filters.
+
+## 0.9.33 (2015-05-12)
+
+### Breaking changes
+
+* Modified error messages for **RowPermissions** read and write access errors.
+  Different error messages are used to separate denied access to modify existing data from denied access to apply new data.
+
+### New features
+
+* New concept: **Where**, for filtering **Polymorphic** subtype implementation.
+
+### Internal improvements
+
+* Allowed use of the GUID property associated with **Reference** property, in LINQ queries and generic property filters (web API).
+  For example, `Where(item => item.ParentID != null)` is now allowed, along with the old code `Where(item => item.Parent.ID != null)`.
+* Performance: **KeepSynchronized** concept sometimes called *Recompute* function twice for same ID.
+
+## 0.9.32 (2015-04-22)
+
+### Internal improvements
+
+* Bugfix: User sometimes gets reduced permissions when using ActiveDirectorySync with non-domain roles.
+* Bugfix: CommonAuthorizationProvider log reports more roles than the user has.
+* Performance: Use `Security.LookupClientHostname` option to turn off reverse DNS lookup.
+  The client hostname can be used for logging in an enterprise environment.
+  If the option is turned off in *Web.config*, the client IP address will be used instead of the hostname.
+
+## 0.9.31 (2015-04-16)
+
+### New features
+
+* To automatically add unregistered users to Rhetos users list,
+  enable `AuthorizationAddUnregisteredPrincipals` option in *web.config*.
+  This feature can be useful with Windows authentication and *ActiveDirectorySync* Rhetos plugin,
+  when configuring Rhetos permissions for domain user groups only.
+
+### Internal improvements
+
+* Minor performance improvements in user authorization.
+
 ## 0.9.30 (2015-03-31)
 
 ### Internal improvements
@@ -19,6 +97,7 @@
   * Domain user groups should be moved from `Common.Principal` to `Common.Role`.
   * Deploy [*ActiveDirectorySync*](ActiveDirectorySync/Readme.md) package to automatically update principal-role membership (`Common.PrincipalHasRole`) for domain users and groups.
   * Each user must be entered in `Common.Principal`, *SimpleWindowsAuth* allowed entering only user groups.
+    For backward compatibility enable `AuthorizationAddUnregisteredPrincipals` option in *web.config* on Rhetos v0.9.31 or later.
 
 ### New features
 
@@ -80,7 +159,7 @@
   Example: `executionContext.GenericRepository<IDeactivatable>("Common.Claim").Query(item => item.Active == false)`.
 * Added "Rhetos." prefix to standard Rhetos packages. The generated `Resources\<PackageName>` subfolder for each package is named without the prefix, to keep backward compatibility.
 * Checking package dependency on Rhetos framework version using `frameworkAssembly` element in *.nuspec* file.
-* Bugfix: Case insensitive and *null* comparison in *GenericFilter* sometime do not work (REST API and ReadCommand filters).
+* Bugfix: Case insensitive and *null* comparison in *GenericFilter* sometimes do not work (REST API and ReadCommand filters).
 * Bugfix: *Read* claim is generated for some non-readable data structures (**Action**, for example).
 * Bugfix: Logging Rhetos server commands and results works only for SOAP web API, not for REST (see `TraceCommandsXml` in *web.config*).
 * Client application may ignore properties marked with **DenyUserEdit**, the server will accept *null* value from client and keep the old value unchanged.
@@ -93,6 +172,8 @@
 
 * `ExtractPackages.exe` tool is deleted. Its functionality is now part of `DeployPackages.exe`.
 * `CreatePackage.exe` tool is deleted. New Rhetos packages should be packed by [NuGet](https://www.nuget.org/).
+* `DeployPackages.exe` reads the package list from *RhetosPackages.config* and *RhetosPackageSources.config*.
+  Empty prototypes of those files are created on first deploy.
 * **FilterByReferenced** will yield syntax error if the referenced filter name does not match exactly.
   In previous versions, a different filter name was allowed by optional namespace.
 
@@ -307,7 +388,7 @@
 * Bugfix: Absolute URI (localhost Rhetos server) removed from *Web.config*.
 * Bugfix: **DenyUserEdit** and **SystemRequired** concepts denied saving valid data entries when using automatic value initialization.
 * Bugfix: `SetupRhetosServer.bat` sometimes reported incorrect error "IIS Express is not installed".
-* Performance: First call of the *DownloadReport* server command sometime takes more time (building DslModel instance).
+* Performance: First call of the *DownloadReport* server command sometimes takes more time (building DslModel instance).
 * New plugin type: *IHomePageSnippet*, for adding development and administration content to Rhetos homepage.
 * New plugin type: *ICommandObserver*, for extending server's command handling.
 

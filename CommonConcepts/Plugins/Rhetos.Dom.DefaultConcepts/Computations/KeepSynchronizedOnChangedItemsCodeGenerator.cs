@@ -33,6 +33,13 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(KeepSynchronizedOnChangedItemsInfo))]
     public class KeepSynchronizedOnChangedItemsCodeGenerator : IConceptCodeGenerator
     {
+        public static string OverrideRecomputeTag(KeepSynchronizedOnChangedItemsInfo info)
+        {
+            return string.Format("/*OverrideRecompute {0}.{1}*/",
+                info.KeepSynchronized.GetKey(),
+                info.UpdateOnChange.GetAlternativeKey());
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (KeepSynchronizedOnChangedItemsInfo) conceptInfo;
@@ -65,13 +72,42 @@ namespace Rhetos.Dom.DefaultConcepts
                 filterFormula);
         }
 
+        private static bool FilterIsEnumerableGuid(string typeSnippet)
+        {
+            typeSnippet = typeSnippet.Replace("System.Collections.Generic.", "");
+			typeSnippet = typeSnippet.Replace("System.Linq.", "");
+            typeSnippet = typeSnippet.Replace("System.Guid", "Guid");
+            return new[] { "Guid[]", "List<Guid>", "IEnumerable<Guid>", "IQueryable<Guid>" }.Contains(typeSnippet);
+        }
+
         private static string FilterAndRecomputeAfterSave(KeepSynchronizedOnChangedItemsInfo info, string uniqueName)
         {
+            string recomputeCall;
+
+            if (FilterIsEnumerableGuid(info.UpdateOnChange.FilterType))
+                recomputeCall =
+                @"_domRepository.{1}.{2}.{5}(filteredNew.Union(filterKeepSynchronizedOnChangedItems{0}Old).ToList());";
+            else if (info.UpdateOnChange.FilterType == "Rhetos.Dom.DefaultConcepts.FilterSubtype")
+                recomputeCall =
+                @"_domRepository.{1}.{2}.{5}(new Rhetos.Dom.DefaultConcepts.FilterSubtype
+                    {{
+                        Ids = filteredNew.Ids.Union(filterKeepSynchronizedOnChangedItems{0}Old.Ids).ToList(),
+                        Subtype = filteredNew.Subtype,
+                        ImplementationName = filteredNew.ImplementationName
+                    }});";
+            else if (info.UpdateOnChange.FilterType == "FilterAll" || info.UpdateOnChange.FilterType == "Rhetos.Dom.DefaultConcepts.FilterAll")
+                recomputeCall =
+                @"_domRepository.{1}.{2}.{5}(new Rhetos.Dom.DefaultConcepts.FilterAll());";
+            else
+                recomputeCall =
+                @"_domRepository.{1}.{2}.{5}(filterKeepSynchronizedOnChangedItems{0}Old);
+                _domRepository.{1}.{2}.{5}(filteredNew);";
+            
             return string.Format(
-@"            {{
+@"            " + OverrideRecomputeTag(info) + @"
+            {{
                 var filteredNew = filterLoadKeepSynchronizedOnChangedItems{0}(inserted.Concat(updated));
-                _domRepository.{1}.{2}.{5}(filterKeepSynchronizedOnChangedItems{0}Old);
-                _domRepository.{1}.{2}.{5}(filteredNew);
+                " + recomputeCall + @"
             }}
 ",
                 uniqueName,

@@ -95,7 +95,18 @@ namespace Rhetos.Deployment
             foreach (var package in installedPackages)
                 _packagesLogger.Trace(() => package.Report());
             _performanceLogger.Write(sw, "PackageDownloader.GetPackages.");
+
+            SortByDependencies(installedPackages);
             return installedPackages;
+        }
+
+        private static void SortByDependencies(List<InstalledPackage> installedPackages)
+        {
+            installedPackages.Sort((a, b) => string.Compare(a.Id, b.Id, true));
+
+            var packagesById = installedPackages.ToDictionary(p => p.Id, StringComparer.OrdinalIgnoreCase);
+            var dependencies = installedPackages.SelectMany(p => p.Dependencies.Select(d => Tuple.Create(packagesById[d.Id], p))).ToList();
+            Graph.TopologicalSort(installedPackages, dependencies);
         }
 
         private bool CheckAlreadyDownloaded(PackageRequest request, List<InstalledPackage> installedPackages)

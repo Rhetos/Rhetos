@@ -202,22 +202,29 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         /// <summary>
         /// Returns a writable data structure that can be used to monitor data changes (intercepting its Save function), in order to update a persisted data.
-        /// Returns null if a required data structure is not found.
+        /// Returns empty array if a required data structure is not found.
         /// </summary>
-        public static DataStructureInfo GetBaseChangesOnDependency(DataStructureInfo dependsOn, IDslModel existingConcepts)
+        public static IEnumerable<DataStructureInfo> GetBaseChangesOnDependency(DataStructureInfo dependsOn, IDslModel existingConcepts)
         {
+            if (dependsOn.Name.EndsWith("_History"))
+            {
+                var history = existingConcepts.FindByReference<EntityHistoryInfo>(h => h.Dependency_HistorySqlQueryable, dependsOn).SingleOrDefault();
+                if (history != null)
+                    return new DataStructureInfo[] { history.Entity, history.Dependency_ChangesEntity };
+            }
+
             if (dependsOn is IWritableOrmDataStructure)
-                return dependsOn;
+                return new[] { dependsOn };
 
             if (existingConcepts.FindByReference<WriteInfo>(write => write.DataStructure, dependsOn).Any())
-                return dependsOn;
+                return new[] { dependsOn };
 
             var baseDataStructure = existingConcepts.FindByReference<DataStructureExtendsInfo>(ex => ex.Extension, dependsOn)
                 .Select(ex => ex.Base).SingleOrDefault();
             if (baseDataStructure != null)
                 return GetBaseChangesOnDependency(baseDataStructure, existingConcepts);
 
-            return null;
+            return Enumerable.Empty<DataStructureInfo>();
         }
 
         // TODO: Remove this hack after implementing repository concept and cleaner queryable data structure configuration.

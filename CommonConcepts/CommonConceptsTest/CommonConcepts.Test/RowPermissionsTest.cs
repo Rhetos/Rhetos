@@ -39,8 +39,8 @@ namespace CommonConcepts.Test
     [TestClass]
     public class RowPermissionsTest
     {
-        static string _readException = "Insufficient permissions to access some or all of the data requested.";
-        static string _writeException = "Insufficient permissions to write some or all of the data";
+        static string _readException = "You are not authorized to access";
+        static string _writeException = "You are not authorized to write";
         static string _rowPermissionsReadFilter = "Common.RowPermissionsReadItems";
         static string _rowPermissionsWriteFilter = "Common.RowPermissionsWriteItems";
 

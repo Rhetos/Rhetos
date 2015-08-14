@@ -75,12 +75,13 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             return string.Format(
 @"ALTER TABLE {0}.{1} ADD {2}
-	AS CONVERT(UNIQUEIDENTIFIER, CONVERT(BINARY(4), CONVERT(INT, CONVERT(BINARY(4), ID)) ^ 881400495) + SUBSTRING(CONVERT(BINARY(16), ID), 5, 12))
+	AS CONVERT(UNIQUEIDENTIFIER, CONVERT(BINARY(4), CONVERT(INT, CONVERT(BINARY(4), ID)) ^ {3}) + SUBSTRING(CONVERT(BINARY(16), ID), 5, 12))
 	PERSISTED NOT NULL;
 CREATE UNIQUE INDEX IX_{1}_{2} ON {0}.{1}({2});",
                 Subtype.Module.Name,
                 Subtype.Name,
-                GetComputedColumnName());
+                GetComputedColumnName(),
+                DomUtility.GetSubtypeImplementationHash(ImplementationName));
         }
 
         private string RemoveComputedColumnSnippet()

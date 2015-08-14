@@ -129,10 +129,12 @@
     <Compile Include="AutoCodeForEachDatabaseDefinition.cs" />
     <Compile Include="AutoCodeTriggerDatabaseDefinition.cs" />
     <Compile Include="LoggingRelatedItemDatabaseDefinition.cs" />
+    <Compile Include="SqlNotNullDatabaseDefinition.cs" />
     <Compile Include="SubtypeExtendPolymorphicDatabaseDefinition.cs" />
     <Compile Include="SqlDependsOnDataStructureDatabaseDefinition.cs" />
     <Compile Include="SqlDependsOnModuleDatabaseDefinition.cs" />
     <Compile Include="SqlIndexClusteredDatabaseDefinition.cs" />
+    <Compile Include="SubtypeWhereDatabaseDefinition.cs" />
     <Compile Include="SubtypeImplementsPropertyDatabaseDefinition.cs" />
     <Compile Include="PolymorphicPropertyDatabaseDefinition.cs" />
     <Compile Include="SqlDependsOnSqlIndexDatabaseDefinition.cs" />

@@ -143,9 +143,6 @@ WHERE ID = {0}</value>
   <data name="DatabaseGenerator_CommitAfterDDL" xml:space="preserve">
     <value />
   </data>
-  <data name="DatabaseGenerator_DummyScript" xml:space="preserve">
-    <value>PRINT 'DummyScript'</value>
-  </data>
   <data name="ConceptApplicationRepository_InsertDependency" xml:space="preserve">
     <value>INSERT INTO Rhetos.AppliedConceptDependsOn (DependentID, DependsOnID) VALUES ({0}, {1})</value>
   </data>
