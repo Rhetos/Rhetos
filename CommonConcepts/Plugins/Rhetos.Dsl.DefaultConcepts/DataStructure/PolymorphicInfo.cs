@@ -100,7 +100,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                     if (filterExpression == null)
                         throw new Rhetos.ClientException(string.Format(""Invalid subtype name or implementation name provided: '{0}', '{1}'."",
                             parameter.Subtype, parameter.ImplementationName));
-                    return Filter(Query().Where(filterExpression), parameter.Ids).ToItems().ToArray();
+                    return Filter(Query().Where(filterExpression), parameter.Ids).ToSimple().ToArray();
                 }}"
             });
 
