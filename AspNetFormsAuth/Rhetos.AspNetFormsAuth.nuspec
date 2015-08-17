@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>Rhetos.AspNetFormsAuth</id>
-    <version>1.0.0-alpha003</version>
+    <version>1.0.0-alpha005</version>
     <authors>Omega software</authors>
     <owners>Omega software</owners>
     <licenseUrl>http://opensource.org/licenses/AGPL-3.0</licenseUrl>
@@ -12,10 +12,10 @@
     <copyright>Copyright Omega software 2015</copyright>
     <tags>Rhetos</tags>
     <frameworkAssemblies>
-      <frameworkAssembly assemblyName="Rhetos, Version=1.0.0-alpha002" />
+      <frameworkAssembly assemblyName="Rhetos, Version=1.0.0-alpha004" />
     </frameworkAssemblies>
     <dependencies>
-      <dependency id="Rhetos.CommonConcepts" version="1.0.0-alpha002" />
+      <dependency id="Rhetos.CommonConcepts" version="1.0.0-alpha004" />
     </dependencies>
   </metadata>
   <files>
