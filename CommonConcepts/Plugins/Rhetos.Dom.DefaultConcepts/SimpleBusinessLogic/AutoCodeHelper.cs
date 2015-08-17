@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using NHibernate;
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
@@ -41,7 +40,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
     public class AutoCodeHelper
     {
-        public static void UpdateCodes<T>(ISession nHibernateSession, string entityName, string propertyName, IEnumerable<AutoCodeItem<T>> autoCodeItems, Action<T, string> setCode)
+        public static void UpdateCodes<T>(ISqlExecuter sqlExecuter, string entityName, string propertyName, IEnumerable<AutoCodeItem<T>> autoCodeItems, Action<T, string> setCode)
             where T : IEntity
         {
             CsUtility.Materialize(ref autoCodeItems);
@@ -103,7 +102,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         autoCodeGroup.MinDigits,
                         autoCodeGroup.MaxProvidedCode);
 
-                    nHibernateSession.CreateSQLQuery(sql).ExecuteUpdate();
+                    sqlExecuter.ExecuteSql(sql);
                 }
 
                 if (autoCodeGroup.ItemsToGenerateCode.Count > 0)
@@ -116,15 +115,19 @@ namespace Rhetos.Dom.DefaultConcepts
                         autoCodeGroup.MinDigits,
                         autoCodeGroup.ItemsToGenerateCode.Count);
 
-                    object[] generatedCodeInfo = nHibernateSession.CreateSQLQuery(sql).List<object[]>().Single();
-                    int minDigits = (int)generatedCodeInfo[0];
-                    int lastCode = (int)generatedCodeInfo[1];
+                    int? minDigits = null;
+                    int? lastCode = null;
+                    sqlExecuter.ExecuteReader(sql, reader =>
+                        {
+                            minDigits = reader.GetInt32(0);
+                            lastCode = reader.GetInt32(1);
+                        });
 
                     for (int i = 0; i < autoCodeGroup.ItemsToGenerateCode.Count; i++)
                     {
-                        string codeSuffix = (lastCode - autoCodeGroup.ItemsToGenerateCode.Count + i + 1).ToString();
-                        if (codeSuffix.Length < minDigits)
-                            codeSuffix = new string('0', minDigits - codeSuffix.Length) + codeSuffix;
+                        string codeSuffix = (lastCode.Value - autoCodeGroup.ItemsToGenerateCode.Count + i + 1).ToString();
+                        if (codeSuffix.Length < minDigits.Value)
+                            codeSuffix = new string('0', minDigits.Value - codeSuffix.Length) + codeSuffix;
 
                         setCode(autoCodeGroup.ItemsToGenerateCode[i], autoCodeGroup.Prefix + codeSuffix);
                     }

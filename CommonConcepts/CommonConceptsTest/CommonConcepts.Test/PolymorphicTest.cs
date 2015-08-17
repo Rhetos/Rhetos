@@ -564,8 +564,8 @@ namespace CommonConcepts.Test
             using (var container = new RhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
-                repository.TestPolymorphic.ComplexImplementationData.Delete(repository.TestPolymorphic.ComplexImplementationData.All());
-                repository.TestPolymorphic.ComplexImplementationSql.Delete(repository.TestPolymorphic.ComplexImplementationSql.All());
+                repository.TestPolymorphic.ComplexImplementationData.Delete(repository.TestPolymorphic.ComplexImplementationData.Load());
+                repository.TestPolymorphic.ComplexImplementationSql.Delete(repository.TestPolymorphic.ComplexImplementationSql.Load());
 
                 Func<Guid, string, Guid> hash = (id, implementation) =>
                     DomUtility.GetSubtypeImplementationId(id,

@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using NHibernate;
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
@@ -40,7 +39,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             string snippet = string.Format(
                 @"Rhetos.Dom.DefaultConcepts.AutoCodeHelper.UpdateCodes(
-                _executionContext.NHibernateSession, ""{0}.{1}"", ""{2}"",
+                _executionContext.SqlExecuter, ""{0}.{1}"", ""{2}"",
                 insertedNew.Select(item => new Rhetos.Dom.DefaultConcepts.AutoCodeItem<{0}.{1}> {{ Item = item, Code = item.{2}, Grouping = """" }}),
                 (item, newCode) => item.{2} = newCode);
 

@@ -94,13 +94,13 @@ namespace Rhetos.Dsl.DefaultConcepts
                 Parameter = "Rhetos.Dom.DefaultConcepts.FilterSubtype",
                 Expression = @"(repository, parameter) =>
                 {{
-                    Expression<Func<" + conceptInfo.Module.Name + @"." + conceptInfo.Name + @", bool>> filterExpression = null;
+                    Expression<Func<Common.Queryable." + conceptInfo.Module.Name + @"_" + conceptInfo.Name + @", bool>> filterExpression = null;
                     parameter.ImplementationName = parameter.ImplementationName ?? """";
                     " + SetFilterExpressionTag.Evaluate(conceptInfo) + @"
                     if (filterExpression == null)
                         throw new Rhetos.ClientException(string.Format(""Invalid subtype name or implementation name provided: '{0}', '{1}'."",
                             parameter.Subtype, parameter.ImplementationName));
-                    return Filter(Query().Where(filterExpression), parameter.Ids).ToArray();
+                    return Filter(Query().Where(filterExpression), parameter.Ids).ToItems().ToArray();
                 }}"
             });
 

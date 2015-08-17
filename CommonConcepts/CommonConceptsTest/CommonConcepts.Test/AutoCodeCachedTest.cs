@@ -49,8 +49,7 @@ namespace CommonConcepts.Test
             Guid id = Guid.NewGuid();
             repository.TestAutoCodeCached.Simple.Insert(new[] { new TestAutoCodeCached.Simple { ID = id, Code = format } });
 
-            container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
-            container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+            container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
 
             string generatedCode = repository.TestAutoCodeCached.Simple.Query().Where(item => item.ID == id).Select(item => item.Code).Single();
             Console.WriteLine(format + " => " + generatedCode);
@@ -62,8 +61,7 @@ namespace CommonConcepts.Test
             Guid id = Guid.NewGuid();
             repository.TestAutoCodeCached.DoubleAutoCode.Insert(new[] { new TestAutoCodeCached.DoubleAutoCode { ID = id, CodeA = formatA, CodeB = formatB } });
 
-            container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
-            container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
+            container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
 
             string generatedCodes = repository.TestAutoCodeCached.DoubleAutoCode.Query().Where(item => item.ID == id).Select(item => item.CodeA + "," + item.CodeB).Single();
             Console.WriteLine(formatA + "," + formatB + " => " + generatedCodes);
@@ -122,7 +120,7 @@ namespace CommonConcepts.Test
                 repository.TestAutoCodeCached.Simple.Insert(
                     tests.Select((test, index) => new TestAutoCodeCached.Simple { ID = Guid.NewGuid(), Code = test.Item1, Data = index.ToString() }));
 
-                IEnumerable<string> generatedCodes = repository.TestAutoCodeCached.Simple.All()
+                IEnumerable<string> generatedCodes = repository.TestAutoCodeCached.Simple.Load()
                     .OrderBy(item => int.Parse(item.Data))
                     .Select(item => item.Code);
 
@@ -175,31 +173,6 @@ namespace CommonConcepts.Test
             }
         }
 
-        private static void TestGroup<TEntity, TGroup>(
-            RhetosTestContainer container, object entityRepository,
-            TGroup group, string format, string expectedCode)
-                where TEntity : new()
-        {
-            var writeableRepository = (IWritableRepository) entityRepository;
-
-            Guid id = Guid.NewGuid();
-            dynamic entity = new TEntity();
-            entity.ID = id;
-            entity.Code = format;
-            entity.Grouping = group;
-            writeableRepository.Save(new[] { entity }, null, null);
-
-            container.Resolve<Common.ExecutionContext>().NHibernateSession.Flush();
-            container.Resolve<Common.ExecutionContext>().NHibernateSession.Clear();
-
-            var filterRepository = (IFilterRepository<IEnumerable<Guid>, TEntity>)entityRepository;
-            dynamic loaded = filterRepository.Filter(new[] {id}).Single();
-            string generatedCode = loaded.Code;
-
-            Console.WriteLine(format + " => " + generatedCode);
-            Assert.AreEqual(expectedCode, generatedCode);
-        }
-        
         [TestMethod]
         public void AllowedNullValueInternally()
         {
@@ -212,7 +185,7 @@ namespace CommonConcepts.Test
                 var s1 = new TestAutoCodeCached.Simple { ID = Guid.NewGuid(), Code = null };
 
                 AutoCodeHelper.UpdateCodes(
-                    context.NHibernateSession, "TestAutoCodeCached.Simple", "Code",
+                    context.SqlExecuter, "TestAutoCodeCached.Simple", "Code",
                     new[] { new Rhetos.Dom.DefaultConcepts.AutoCodeItem<TestAutoCodeCached.Simple> { Item = s1, Code = s1.Code, Grouping = "" } },
                     (item, newCode) => item.Code = newCode);
 
@@ -498,7 +471,7 @@ namespace CommonConcepts.Test
             sqlExecuter.ExecuteSql(sqls); // Possible cold start.
 
             var sw = Stopwatch.StartNew();
-            Parallel.For(0, requiredNumberOfThreads, x => { sqlExecuter.ExecuteSql(sqls); });
+            Parallel.For(0, requiredNumberOfThreads, x => { sqlExecuter.ExecuteSql(sqls, false); });
             sw.Stop();
 
             Console.WriteLine("CheckForParallelism: " + sw.ElapsedMilliseconds + " ms.");

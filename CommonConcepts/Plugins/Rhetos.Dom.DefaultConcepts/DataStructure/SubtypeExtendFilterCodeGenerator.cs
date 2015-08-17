@@ -40,7 +40,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             string snippet = string.Format(
                 @"if (parameter.Subtype == {0} && parameter.ImplementationName == {1})
-                        filterExpression = item => item.{2} != null;
+                        filterExpression = item => item.{2}ID != null;
                     ",
                 CsUtility.QuotedString(info.IsSubtypeOf.Subtype.Module.Name + "." + info.IsSubtypeOf.Subtype.Name),
                 CsUtility.QuotedString(info.IsSubtypeOf.ImplementationName),

@@ -24,6 +24,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Configuration.Autofac;
+using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
@@ -41,7 +42,7 @@ namespace CommonConcepts.Test
 
                 repository.TestUserRequired.Simple.Insert(new[] { new TestUserRequired.Simple { Count = 1, Name = "test1" } });
                 repository.TestUserRequired.Simple.Insert(new[] { new TestUserRequired.Simple { Count = 0, Name = "test2" } });
-                Assert.AreEqual("0-test2, 1-test1", TestUtility.DumpSorted(repository.TestUserRequired.Simple.All(), item => item.Count + "-" + item.Name));
+                Assert.AreEqual("0-test2, 1-test1", TestUtility.DumpSorted(repository.TestUserRequired.Simple.Load(), item => item.Count + "-" + item.Name));
             }
         }
 

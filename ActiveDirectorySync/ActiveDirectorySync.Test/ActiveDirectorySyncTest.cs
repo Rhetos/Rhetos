@@ -48,9 +48,11 @@ namespace ActiveDirectorySync.Test
         /// <summary>Shortens and sorts the names.</summary>
         private string ReportMembership(MockWindowsSecurityRhetosContainer container, object filter = null)
         {
-            var membership = container.Resolve<GenericRepository<Common.Queryable.Common_PrincipalHasRole>>();
-            var query = filter == null ? membership.Read() : membership.Read(filter);
-            string report = TestUtility.DumpSorted(query, phr => Shorten(phr.Principal.Name) + "-" + Shorten(phr.Role.Name));
+            var context = container.Resolve<Common.ExecutionContext>();
+            var membership = context.Repository.Common.PrincipalHasRole;
+            var query = filter == null ? membership.Query() : membership.Query(membership.Load(filter).Select(item => item.ID));
+            var reportData = query.Select(phr => new { PrincipalName = phr.Principal.Name, RoleName = phr.Role.Name }).ToList();
+            string report = TestUtility.DumpSorted(reportData, phr => Shorten(phr.PrincipalName) + "-" + Shorten(phr.RoleName));
             Console.WriteLine("[ReportMembership] " + report);
             return report;
         }
@@ -92,7 +94,7 @@ namespace ActiveDirectorySync.Test
 
         private string ReportRoles(IEnumerable<Guid> roles, MockWindowsSecurityRhetosContainer container)
         {
-            var roleNames = container.Resolve<GenericRepository<Common.Role>>().Read().ToDictionary(r => r.ID, r => r.Name);
+            var roleNames = container.Resolve<GenericRepository<Common.Role>>().Load().ToDictionary(r => r.ID, r => r.Name);
             return ReportRoles(roles.Select(id => roleNames[id]));
         }
 
@@ -120,10 +122,10 @@ namespace ActiveDirectorySync.Test
                 var membership = container.Resolve<GenericRepository<Common.PrincipalHasRole>>();
 
                 roles.Insert(r1, r2, r25);
-                Assert.AreEqual(@"\r1, \r2, r25", ReportRoles(roles.Read()), "roles created");
+                Assert.AreEqual(@"\r1, \r2, r25", ReportRoles(roles.Load()), "roles created");
 
                 principals.Insert(u1, u2, u3, u5);
-                Assert.AreEqual(@"\u1, \u2, \u3, u5", ReportPrincipals(principals.Read()), "principals created");
+                Assert.AreEqual(@"\u1, \u2, \u3, u5", ReportPrincipals(principals.Load()), "principals created");
 
                 // Recompute membership on insert domain users:
 
@@ -416,7 +418,7 @@ namespace ActiveDirectorySync.Test
 
                 roles.Insert(r1, r2, r25);
                 principals.Insert(u1, u2, u3, u5);
-                membership.Delete(membership.Read());
+                membership.Delete(membership.Load());
                 membership.Insert(new[] { // Non-domain users and roles.
                     new Common.PrincipalHasRole { PrincipalID = u2.ID, RoleID = r25.ID },
                     new Common.PrincipalHasRole { PrincipalID = u5.ID, RoleID = r25.ID } });
@@ -440,7 +442,7 @@ namespace ActiveDirectorySync.Test
                 }
 
                 AuthorizationDataCache.ClearCache();
-                membership.Delete(membership.Read());
+                membership.Delete(membership.Load());
                 Assert.AreEqual(@"", ReportMembership(container), "membership deleted");
 
                 {

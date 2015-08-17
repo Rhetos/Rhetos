@@ -31,7 +31,7 @@ namespace Rhetos.Dom.DefaultConcepts
     /// Query() returns a LINQ query.
     /// Read() returns loaded data or a linq query, depending on the available repository's functions and the preferQuery parameter.
     /// </summary>
-    public interface IReadableRepository<out TEntity>
+    public interface IReadableRepository<out TEntity> : IRepository
     {
         /// <summary>
         /// This function returns loaded data (a List or an array), using available repository's Load, Query and Filter functions.

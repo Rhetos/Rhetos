@@ -25,7 +25,7 @@ using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public interface IQueryableRepository<out TEntity>
+    public interface IQueryableRepository<out TEntity> : IRepository
     {
         IQueryable<TEntity> Query(object parameter, Type parameterType);
     }
