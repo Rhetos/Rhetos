@@ -247,7 +247,7 @@ namespace CommonConcepts.Test
         private static void TestGroup<TEntity, TGroup>(
             RhetosTestContainer container, IQueryableRepository<IEntity> entityRepository,
             TGroup group, string format, string expectedCode)
-                where TEntity : IEntity, new()
+                where TEntity : class, IEntity, new()
         {
             var writeableRepository = (IWritableRepository<TEntity>) entityRepository;
 

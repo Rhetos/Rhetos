@@ -27,7 +27,7 @@ namespace Rhetos.CommonConcepts.Test.Mocks
 {
     class RepositoryMock<TEntityInterface, TEntity> : IRepository, IQueryableRepository<TEntityInterface>, IWritableRepository<TEntity>
         where TEntityInterface : class, IEntity
-        where TEntity : TEntityInterface
+        where TEntity : class, TEntityInterface
     {
         IEnumerable<TEntity> _items;
 

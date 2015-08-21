@@ -32,6 +32,7 @@ namespace Rhetos.Dom.DefaultConcepts
     /// Read() returns loaded data or a linq query, depending on the available repository's functions and the preferQuery parameter.
     /// </summary>
     public interface IReadableRepository<out TEntity> : IRepository
+        where TEntity : class
     {
         /// <summary>
         /// This function returns loaded data (a List or an array), using available repository's Load, Query and Filter functions.
@@ -54,22 +55,26 @@ namespace Rhetos.Dom.DefaultConcepts
     public static class ReadableRepositoryExtensions
     {
         public static IEnumerable<TEntity> Load<TEntity>(this IReadableRepository<TEntity> repository)
+            where TEntity : class
         {
             return repository.Load(null, typeof(FilterAll));
         }
 
         public static IEnumerable<TEntity> Load<TEntity>(this IReadableRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter)
+            where TEntity : class
         {
             return repository.Load(filter, filter.GetType());
         }
 
         public static IEnumerable<TEntity> Load<TEntity, TParameter>(this IReadableRepository<TEntity> repository, TParameter parameter)
+            where TEntity : class
         {
             Type filterType = parameter != null ? parameter.GetType() : typeof(TParameter);
             return repository.Load(parameter, filterType);
         }
 
         public static IEnumerable<TEntity> Read<TEntity, TParameter>(this IReadableRepository<TEntity> repository, TParameter parameter, bool preferQuery)
+            where TEntity : class
         {
             Type filterType = parameter != null ? parameter.GetType() : typeof(TParameter);
             return repository.Read(parameter, filterType, preferQuery);

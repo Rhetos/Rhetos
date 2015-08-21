@@ -25,6 +25,7 @@ using System.Text;
 namespace Rhetos.Dom.DefaultConcepts
 {
     public interface IWritableRepository<in TEntity> : IRepository
+        where TEntity : class
     {
         void Save(IEnumerable<TEntity> insertedNew, IEnumerable<TEntity> updatedNew, IEnumerable<TEntity> deletedIds, bool checkUserPermissions = false);
     }
@@ -32,34 +33,40 @@ namespace Rhetos.Dom.DefaultConcepts
     public static class WritableRepositoryExtensions
     {
         public static void Insert<TEntity>(this IWritableRepository<TEntity> repository, IEnumerable<TEntity> insertNew, bool checkUserPermissions = false)
+            where TEntity : class
         {
             repository.Save(insertNew, null, null, checkUserPermissions);
         }
 
         /// <summary>checkUserPermissions is set to false.</summary>
         public static void Insert<TEntity>(this IWritableRepository<TEntity> repository, params TEntity[] insertNew)
+            where TEntity : class
         {
             repository.Save(insertNew, null, null, false);
         }
 
         public static void Update<TEntity>(this IWritableRepository<TEntity> repository, IEnumerable<TEntity> updateNew, bool checkUserPermissions = false)
+            where TEntity : class
         {
             repository.Save(null, updateNew, null, checkUserPermissions);
         }
 
         /// <summary>checkUserPermissions is set to false.</summary>
         public static void Update<TEntity>(this IWritableRepository<TEntity> repository, params TEntity[] updateNew)
+            where TEntity : class
         {
             repository.Save(null, updateNew, null, false);
         }
 
         public static void Delete<TEntity>(this IWritableRepository<TEntity> repository, IEnumerable<TEntity> deleteIds, bool checkUserPermissions = false)
+            where TEntity : class
         {
             repository.Save(null, null, deleteIds, checkUserPermissions);
         }
 
         /// <summary>checkUserPermissions is set to false.</summary>
         public static void Delete<TEntity>(this IWritableRepository<TEntity> repository, params TEntity[] deleteIds)
+            where TEntity : class
         {
             repository.Save(null, null, deleteIds, false);
         }

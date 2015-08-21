@@ -36,7 +36,7 @@ namespace Rhetos.CommonConcepts.Test.Mocks
 
     class RepositoryIndexMock<TEntityInterface, TEntity> : Dictionary<string, IRepository>, IIndex<string, IRepository>
         where TEntityInterface : class, IEntity
-        where TEntity : TEntityInterface
+        where TEntity : class, TEntityInterface
     {
         public RepositoryIndexMock(IEnumerable<TEntity> items = null)
         {

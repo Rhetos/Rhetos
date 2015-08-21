@@ -26,6 +26,7 @@ using System.Text;
 namespace Rhetos.Dom.DefaultConcepts
 {
     public interface IQueryableRepository<out TEntity> : IRepository
+        where TEntity : class
     {
         IQueryable<TEntity> Query(object parameter, Type parameterType);
     }
@@ -33,16 +34,19 @@ namespace Rhetos.Dom.DefaultConcepts
     public static class QueryableRepositoryExtensions
     {
         public static IQueryable<TEntity> Query<TEntity>(this IQueryableRepository<TEntity> repository)
+            where TEntity : class
         {
             return repository.Query(null, typeof(FilterAll));
         }
 
         public static IQueryable<TEntity> Query<TEntity>(this IQueryableRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter)
+            where TEntity : class
         {
             return repository.Query(null, typeof(FilterAll)).Where(filter);
         }
 
         public static IQueryable<TEntity> Query<TEntity, TParameter>(this IQueryableRepository<TEntity> repository, TParameter parameter)
+            where TEntity : class
         {
             Type filterType = parameter != null ? parameter.GetType() : typeof(TParameter);
             return repository.Query(parameter, filterType);

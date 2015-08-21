@@ -39,10 +39,11 @@ namespace CommonConcepts.Test
             using (var container = new RhetosTestContainer())
             {
                 var testData = new[] { "a1", "a2", "b1" }
-                    .Select(name => new TestQueryable.Simple { Name = name });
+                    .Select(name => new TestQueryable.Simple { Name = name })
+                    .ToList();
 
                 var simpleRepository = container.Resolve<Common.DomRepository>().TestQueryable.Simple;
-                simpleRepository.Delete(simpleRepository.All());
+                simpleRepository.Delete(simpleRepository.Load());
                 simpleRepository.Insert(testData);
 
                 var parameter = new TestQueryable.StartsWith { Prefix = "a" };
@@ -53,6 +54,34 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("a1, a2", TestUtility.DumpSorted(genericRepository.Load(parameter), item => item.Name));
                 TestUtility.ShouldFail(() => genericRepository.Filter(genericRepository.Query(), parameter), "does not implement", "TestQueryable.StartsWith");
             }
+        }
+
+        [TestMethod]
+        public void QueryCovariance()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var testData = new[] { "a1", "a2", "b1" }
+                    .Select((name, x) => new TestQueryable.Simple { Name = name, ID = Guid.NewGuid() })
+                    .ToList();
+
+                var simpleRepository = container.Resolve<Common.DomRepository>().TestQueryable.Simple;
+                simpleRepository.Delete(simpleRepository.Load());
+                simpleRepository.Insert(testData);
+
+                Assert.AreEqual("a2", ((TestQueryable.Simple)QueryCovarianceIEntity(simpleRepository, testData[1].ID)).Name);
+                Assert.AreEqual("a2", ((TestQueryable.Simple)QueryCovarianceGeneric(simpleRepository, testData[1].ID)).Name);
+            }
+        }
+
+        private object QueryCovarianceIEntity(IQueryableRepository<IEntity> repository, Guid id)
+        {
+            return repository.Query().Where(item => item.ID == id).FirstOrDefault();
+        }
+
+        private object QueryCovarianceGeneric<TEntity>(IQueryableRepository<TEntity> repository, Guid id) where TEntity : class, IEntity
+        {
+            return repository.Query().Where(item => item.ID == id).FirstOrDefault();
         }
     }
 }

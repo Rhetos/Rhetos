@@ -34,7 +34,7 @@ namespace Rhetos.CommonConcepts.Test.Mocks
 {
     class TestGenericRepository<TEntityInterface, TEntity> : GenericRepository<TEntityInterface>
         where TEntityInterface : class, IEntity
-        where TEntity : TEntityInterface
+        where TEntity : class, TEntityInterface
     {
         public TestGenericRepository(IEnumerable<TEntity> items = null)
             : base(

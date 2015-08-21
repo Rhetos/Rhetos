@@ -118,8 +118,7 @@ namespace Rhetos.Persistence
             catch (Exception ex)
             {
                 // Failure on rollback should be ignored to allow other cleanup code to be executed. Also, a previously handled database connection error may have triggered the rollback.
-                _logger.Error("Error on transaction rollback when canceling persistence transaction. " + ex);
-                throw; // TODO: Remove this.
+                _logger.Trace("Error on transaction rollback when canceling persistence transaction, it can be safely ignored. " + ex);
             }
             finally
             {
@@ -137,8 +136,7 @@ namespace Rhetos.Persistence
             catch (Exception ex)
             {
                 // Failure when canceling connection should be ignored to allow other cleanup code to be executed. Also, a previously handled database connection error may have triggered the rollback.
-                _logger.Error("Error on connection close when canceling persistence transaction. " + ex);
-                throw; // TODO: Remove this.
+                _logger.Trace("Error on connection close when canceling persistence transaction, it can be safely ignored. " + ex);
             }
             finally
             {
