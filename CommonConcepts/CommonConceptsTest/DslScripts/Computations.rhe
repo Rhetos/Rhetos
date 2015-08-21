@@ -492,6 +492,7 @@ Module TestComputedFrom
     {
         ShortString Name;
         Integer Code;
+		FilterBy 'IEnumerable<Guid>' '(repository, parameter) => this.Load().Where(item => parameter.Contains(item.ID)).ToArray()';
     }
     
     Entity PersistAll

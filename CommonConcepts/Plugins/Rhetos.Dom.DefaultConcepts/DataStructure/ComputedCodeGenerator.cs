@@ -43,13 +43,6 @@ namespace Rhetos.Dom.DefaultConcepts
                 info.Module.Name, info.Name, DataStructureUtility.ComputationAdditionalParametersTypeTag.Evaluate(info), info.Expression);
         }
 
-        protected static string QueryFunctionBodySnippet(ComputedInfo info)
-        {
-            return string.Format(
-                @"return QueryLoaded(All());",
-                DataStructureUtility.ComputationAdditionalParametersArgumentTag.Evaluate(info));
-        }
-
         protected static string LoadFunctionBodySnippet(ComputedInfo info)
         {
             return string.Format(
@@ -62,7 +55,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (ComputedInfo)conceptInfo;
 
             RepositoryHelper.GenerateRepository(info, codeBuilder);
-            RepositoryHelper.GenerateQueryableRepositoryFunctions(info, codeBuilder, QueryFunctionBodySnippet(info), LoadFunctionBodySnippet(info));
+            RepositoryHelper.GenerateQueryableRepositoryFunctions(info, codeBuilder, null, LoadFunctionBodySnippet(info));
             codeBuilder.InsertCode(RepositoryFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info);
 
             PropertyInfo idProperty = new PropertyInfo { DataStructure = info, Name = "ID" };

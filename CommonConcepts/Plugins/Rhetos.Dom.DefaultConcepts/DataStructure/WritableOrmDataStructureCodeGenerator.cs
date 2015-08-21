@@ -103,9 +103,11 @@ namespace Rhetos.Dom.DefaultConcepts
 
             " + InitializationTag.Evaluate(info) + @"
 
-            // Using old data:
-            IEnumerable<Common.Queryable.{0}_{1}> deleted = LoadPersistedWithReferences(deletedIds).ToList();
-            IEnumerable<Common.Queryable.{0}_{1}> updated = LoadPersistedWithReferences(updatedNew).ToList();
+            // Using old data, including lazy loading of navigation properties:
+            IEnumerable<Common.Queryable.{0}_{1}> deleted = this.Query(deletedIds.Select(item => item.ID)).ToList();
+            Rhetos.Utilities.Graph.SortByGivenOrder((List<Common.Queryable.{0}_{1}>)deleted, deletedIds.Select(item => item.ID), item => item.ID);
+            IEnumerable<Common.Queryable.{0}_{1}> updated = this.Query(updatedNew.Select(item => item.ID)).ToList();
+            Rhetos.Utilities.Graph.SortByGivenOrder((List<Common.Queryable.{0}_{1}>)updated, updatedNew.Select(item => item.ID), item => item.ID);
 
             " + OldDataLoadedTag.Evaluate(info) + @"
 
@@ -148,8 +150,8 @@ namespace Rhetos.Dom.DefaultConcepts
             }}
 
             deleted = null;
-            updated = QueryPersisted(updatedNew);
-            IEnumerable<Common.Queryable.{0}_{1}> inserted = QueryPersisted(insertedNew);
+            updated = this.Query(updatedNew.Select(item => item.ID));
+            IEnumerable<Common.Queryable.{0}_{1}> inserted = this.Query(insertedNew.Select(item => item.ID));
 
             bool allEffectsCompleted = false;
             try

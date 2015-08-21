@@ -41,6 +41,18 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<DataStructureInfo> InterfaceTag = new CsTag<DataStructureInfo>("QueryableClassInterace", TagType.Appendable, ", {0}");
         public static readonly CsTag<DataStructureInfo> MembersTag = "QueryableClassMembers";
 
+        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        {
+            DataStructureInfo info = (DataStructureInfo)conceptInfo;
+
+            if (DslUtility.IsQueryable(info))
+            {
+                codeBuilder.InsertCode(SnippetQueryableClass(info), DomInitializationCodeGenerator.CommonQueryableMemebersTag);
+                codeBuilder.InsertCode("IDetachOverride", DataStructureQueryableCodeGenerator.InterfaceTag, info);
+                codeBuilder.InsertCode("bool IDetachOverride.Detaching { get; set; }\r\n\r\n        ", DataStructureQueryableCodeGenerator.MembersTag, info);
+            }
+        }
+
         protected static string SnippetQueryableClass(DataStructureInfo info)
         {
             return string.Format(
@@ -60,14 +72,6 @@ namespace Rhetos.Dom.DefaultConcepts
             info.Name);
         }
 
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
-        {
-            DataStructureInfo info = (DataStructureInfo)conceptInfo;
-
-            if (DslUtility.IsQueryable(info))
-                codeBuilder.InsertCode(SnippetQueryableClass(info), DomInitializationCodeGenerator.CommonQueryableMemebersTag);
-        }
-
         /// <param name="csPropertyName">The csPropertyName argument refers to a C# class property, not the PropertyInfo concept.</param>
         public static string PropertyAttributeTag(DataStructureInfo dataStructure, string csPropertyName)
         {
@@ -81,57 +85,37 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         /// <param name="csPropertyName">The csPropertyName argument refers to a C# class property, not the PropertyInfo concept.</param>
-        public static string SetterTag(DataStructureInfo dataStructure, string csPropertyName)
+        public static string SetterBodyTag(DataStructureInfo dataStructure, string csPropertyName)
         {
             return string.Format("/*DataStructureQueryable Setter {0}.{1}.{2}*/", dataStructure.Module.Name, dataStructure.Name, csPropertyName);
         }
 
-        /// <param name="csPropertyName">
-        /// Name of the navigation property in a C# class. A PropertyInfo with that name might not exist in the DSL model.</param>
-        /// <param name="alternativeScalarPropertyName">
-        /// (Optional) Name of the scalar property that the navigation property is based on. It is used in the error message to the user.
-        /// </param>
-        public static void AddNavigationProperty(ICodeBuilder codeBuilder, DataStructureInfo dataStructure, string csPropertyName, string propertyType, string alternativeScalarPropertyName)
+        /// <param name="csPropertyName">Name of the navigation property in a C# class. A PropertyInfo with that name might not exist in the DSL model.</param>
+        /// <param name="additionalSetterCode">Optional.</param>
+        public static void AddNavigationPropertyWithBackingField(ICodeBuilder codeBuilder, DataStructureInfo dataStructure, string csPropertyName, string propertyType, string additionalSetterCode)
         {
-            string quotedProperty = CsUtility.QuotedString(csPropertyName);
-            string quotedAlternative = CsUtility.QuotedString(alternativeScalarPropertyName);
-
-            string instanceGetterException = string.IsNullOrEmpty(alternativeScalarPropertyName)
-                ? "throw new Rhetos.FrameworkException(string.Format(Common.Infrastructure.ErrorGetNavigationPropertyWithoutOrm, " + quotedProperty + "));"
-                : "throw new Rhetos.FrameworkException(string.Format(Common.Infrastructure.ErrorGetNavigationPropertyWithAlternativeWithoutOrm, " + quotedProperty + ", " + quotedAlternative + "));";
-
             string propertySnippet =
-                PropertyAttributeTag(dataStructure, csPropertyName) + @"
+                "private " + propertyType + " " + BackingFieldName(csPropertyName) + @";
+
+        " + PropertyAttributeTag(dataStructure, csPropertyName) + @"
         public virtual " + propertyType + @" " + csPropertyName + @"
         {
             get
             {
-                " + GetterBodyTag(dataStructure, csPropertyName) + instanceGetterException + @"
+                " + GetterBodyTag(dataStructure, csPropertyName) + @"
+                return " + BackingFieldName(csPropertyName) + @";
             }
-            " + SetterTag(dataStructure, csPropertyName) + @"
+            set
+            {
+                if (((IDetachOverride)this).Detaching) return;
+                " + SetterBodyTag(dataStructure, csPropertyName) + @"
+                " + BackingFieldName(csPropertyName) + @" = value;" + (!string.IsNullOrEmpty(additionalSetterCode) ? "\r\n                " + additionalSetterCode : "") + @"
+            }
         }
 
         ";
 
             codeBuilder.InsertCode(propertySnippet, DataStructureQueryableCodeGenerator.MembersTag, dataStructure);
-        }
-
-        public static void AddNavigationPropertyBackingField(ICodeBuilder codeBuilder, DataStructureInfo dataStructure, string csPropertyName, string propertyType, string additionalCode)
-        {
-            codeBuilder.InsertCode(
-                "private " + propertyType + " " + BackingFieldName(csPropertyName) + ";\r\n\r\n        ",
-                DataStructureQueryableCodeGenerator.MembersTag, dataStructure);
-
-            codeBuilder.InsertCode(
-                "return " + BackingFieldName(csPropertyName) + ";\r\n                //",
-                DataStructureQueryableCodeGenerator.GetterBodyTag(dataStructure, csPropertyName));
-
-            string setter = @"set
-            {
-                if (((IDetachOverride)this).Detaching) return;
-                " + BackingFieldName(csPropertyName) + @" = value;" + (!string.IsNullOrEmpty(additionalCode) ? "\r\n                " + additionalCode : "") + @"
-            }";
-            codeBuilder.InsertCode(setter, DataStructureQueryableCodeGenerator.SetterTag(dataStructure, csPropertyName));
         }
 
         private static string BackingFieldName(string csPropertyName)

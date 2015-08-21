@@ -202,20 +202,6 @@ namespace CommonConcepts.Test
 
                 var loadedSimple = repository.TestLazyLoad.Simple.Query().OrderBy(item => item.Base.Name).ToList();
                 Assert.AreEqual("p0/sb0, p0/sb1", TestUtility.DumpSorted(loadedSimple, item => item.Parent.Name + "/" + item.Base.Name));
-
-                {
-                    loadedSimple[0].ParentID = p1.ID;
-                    var s1x = new TestLazyLoad.Simple { ID = sb1.ID, ParentID = p1.ID };
-                    var queryLoaded = repository.TestLazyLoad.Simple.QueryLoaded(new[] { loadedSimple[0], s1x });
-                    Assert.AreEqual("p1/sb0, p1/sb1", TestUtility.DumpSorted(queryLoaded, item => item.Parent.Name + "/" + item.Base.Name));
-                }
-
-                Assert.Inconclusive("Calling QueryLoaded second time cases a problem with ORM cache.");
-                {
-                    var s1x = new TestLazyLoad.Simple { ID = sb1.ID, ParentID = p2.ID };
-                    var queryLoaded = repository.TestLazyLoad.Simple.QueryLoaded(new[] { loadedSimple[0], s1x });
-                    Assert.AreEqual("p1/sb0, p2/sb1", TestUtility.DumpSorted(queryLoaded, item => item.Parent.Name + "/" + item.Base.Name));
-                }
             }
         }
     }

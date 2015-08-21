@@ -194,9 +194,6 @@ namespace Rhetos.Dom.DefaultConcepts
             " + ModuleCodeGenerator.ApplyFiltersOnClientReadTag + @"
         };
 
-        public const string ErrorGetNavigationPropertyWithoutOrm = ""The navigation property '{0}' can only be used in a LINQ query. Use a query to read the referenced data."";
-        public const string ErrorGetNavigationPropertyWithAlternativeWithoutOrm = ""The navigation property '{0}' can only be used in a LINQ query. Use '{1}' instead, or use a query to read the referenced data."";
-
         public static void MaterializeItemsToSave<T>(ref IEnumerable<T> items) where T : IEntity, new()
         {
             if (items == null)

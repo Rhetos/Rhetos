@@ -34,7 +34,6 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<DataStructureInfo> RepositoryAttributes = "RepositoryAttributes";
         public static readonly CsTag<DataStructureInfo> RepositoryInterfaces = new CsTag<DataStructureInfo>("RepositoryInterface", TagType.Appendable, ",\r\n        {0}");
         public static readonly CsTag<DataStructureInfo> RepositoryMembers = "RepositoryMembers";
-        public static readonly CsTag<DataStructureInfo> QueryLoadedAssignPropertyTag = "QueryLoadedAssignProperty";
         public static readonly CsTag<DataStructureInfo> AssignSimplePropertyTag = "AssignSimpleProperty";
 
         private static string RepositorySnippet(DataStructureInfo info)
@@ -168,63 +167,18 @@ namespace Rhetos.Dom.DefaultConcepts
             if (loadFunctionBody == null)
                 loadFunctionBody = "return Query().ToSimple().ToArray();";
             GenerateReadableRepositoryFunctions(info, codeBuilder, loadFunctionBody);
-            codeBuilder.InsertCode(RepositoryQueryFunctionsSnippet(info, queryFunctionBody), RepositoryMembers, info);
-            codeBuilder.InsertCode("IQueryableRepository<Common.Queryable." + info.Module.Name + "_" + info.Name + ">", RepositoryInterfaces, info);
 
-            codeBuilder.InsertCode(SnippetQueryListConversion(info), RepositoryMembers, info);
+            if (queryFunctionBody != null)
+            {
+                codeBuilder.InsertCode(RepositoryQueryFunctionsSnippet(info, queryFunctionBody), RepositoryMembers, info);
+                codeBuilder.InsertCode("IQueryableRepository<Common.Queryable." + info.Module.Name + "_" + info.Name + ">", RepositoryInterfaces, info);
+            }
+
             codeBuilder.InsertCode(SnippetToSimpleObjectsConversion(info), DomInitializationCodeGenerator.QueryExtensionsMembersTag);
             codeBuilder.InsertCode(SnippetToNavigationConversion(info), DataStructureCodeGenerator.BodyTag, info);
             codeBuilder.InsertCode(SnippetToSimpleObjectConversion(info), DataStructureQueryableCodeGenerator.MembersTag, info);
             codeBuilder.InsertCode(SnippetLoadSimpleObjectsConversion(info), DomInitializationCodeGenerator.QueryExtensionsMembersTag);
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.Graph));
-        }
-
-        private static string SnippetQueryListConversion(DataStructureInfo info)
-        {
-            string queryableConstruction = (info is IOrmDataStructure)
-                ? "_executionContext.EntityFrameworkContext.{0}_{1}.Create()"
-                : "new Common.Queryable.{0}_{1}()";
-
-            string filterByIds = (info is BrowseDataStructureInfo || info is IOrmDataStructure)
-                ? "Filter(Query(), ids)"
-                : "Query().Where(item => ids.Contains(item.ID))";
-
-            string mapNavigationProperties = (info is IOrmDataStructure)
-                ? @"if (item.ID == default(Guid))
-                    q.ID = item.ID = Guid.NewGuid();
-                _executionContext.EntityFrameworkContext.{0}_{1}.Attach(q);
-                "
-                : "";
-
-            return string.Format(
-@"        public IQueryable<Common.Queryable.{0}_{1}> QueryLoaded(IEnumerable<{0}.{1}> items)
-        {{
-            return items.Select(item =>
-            {{
-                var q = " + queryableConstruction + @";
-                q.ID = item.ID;" + QueryLoadedAssignPropertyTag.Evaluate(info) + @"
-                " + mapNavigationProperties + @"return q;
-            }}).AsQueryable();
-        }}
-
-        public IQueryable<Common.Queryable.{0}_{1}> QueryPersisted(IEnumerable<{0}.{1}> items)
-        {{
-            var ids = items.Select(item => item.ID).ToList();
-            return " + filterByIds + @";
-        }}
-
-        public List<Common.Queryable.{0}_{1}> LoadPersistedWithReferences(IEnumerable<{0}.{1}> items)
-        {{
-            var ids = items.Select(item => item.ID).ToList();
-            var query = " + filterByIds + @";
-            var loaded = query.ToList();
-            Rhetos.Utilities.Graph.SortByGivenOrder(loaded, ids, item => item.ID);
-            return loaded;
-        }}
-
-",
-            info.Module.Name,
-            info.Name);
         }
 
         private static string SnippetToSimpleObjectsConversion(DataStructureInfo info)

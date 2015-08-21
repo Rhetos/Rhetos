@@ -40,15 +40,10 @@ namespace Rhetos.Dom.DefaultConcepts
             string propertyType = string.Format("IList<Common.Queryable.{0}_{1}>", info.ReferenceProperty.DataStructure.Module.Name, info.ReferenceProperty.DataStructure.Name);
 
             if (DslUtility.IsQueryable(info.ReferenceProperty.DataStructure) && DslUtility.IsQueryable(info.DataStructure))
-            {
-                DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.DataStructure, info.Name, propertyType, null);
-
-                if (!(info.DataStructure is IOrmDataStructure) && info.ReferenceProperty.DataStructure is IOrmDataStructure)
-                    codeBuilder.InsertCode(
-                        string.Format("\r\n                q.{0} = _domRepository.{1}.{2}.Query().Where(linked => linked.{3}ID == item.ID);",
-                            info.Name, info.ReferenceProperty.DataStructure.Module.Name, info.ReferenceProperty.DataStructure.Name, info.ReferenceProperty.Name),
-                        RepositoryHelper.QueryLoadedAssignPropertyTag, info.DataStructure);
-            }
+                DataStructureQueryableCodeGenerator.AddNavigationPropertyWithBackingField(codeBuilder, info.DataStructure,
+                    csPropertyName: info.Name,
+                    propertyType: propertyType,
+                    additionalSetterCode: null);
 
             if (info.ReferenceProperty.DataStructure is IOrmDataStructure && info.DataStructure is IOrmDataStructure)
                 codeBuilder.InsertCode(

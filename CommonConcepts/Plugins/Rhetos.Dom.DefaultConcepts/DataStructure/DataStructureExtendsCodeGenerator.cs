@@ -41,20 +41,14 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (DslUtility.IsQueryable(info.Extension) && DslUtility.IsQueryable(info.Base))
             {
-                DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.Extension, "Base", "Common.Queryable." + info.Base.Module.Name + "_" + info.Base.Name, "ID");
-                DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.Base, extensionPropertyName, "Common.Queryable." + info.Extension.Module.Name + "_" + info.Extension.Name, null);
-
-                if (!(info.Extension is IOrmDataStructure) && info.Base is IOrmDataStructure)
-                    codeBuilder.InsertCode(
-                        string.Format("\r\n                q.{0} = _domRepository.{1}.{2}.Query().Where(referenced => referenced.ID == item.ID).SingleOrDefault();",
-                            "Base", info.Base.Module.Name, info.Base.Name),
-                        RepositoryHelper.QueryLoadedAssignPropertyTag, info.Extension);
-
-                if (!(info.Base is IOrmDataStructure) && info.Extension is IOrmDataStructure)
-                    codeBuilder.InsertCode(
-                        string.Format("\r\n                q.{0} = _domRepository.{1}.{2}.Query().Where(referenced => referenced.ID == item.ID).SingleOrDefault();",
-                            extensionPropertyName, info.Extension.Module.Name, info.Extension.Name),
-                        RepositoryHelper.QueryLoadedAssignPropertyTag, info.Base);
+                DataStructureQueryableCodeGenerator.AddNavigationPropertyWithBackingField(codeBuilder, info.Extension,
+                    csPropertyName: "Base",
+                    propertyType: "Common.Queryable." + info.Base.Module.Name + "_" + info.Base.Name,
+                    additionalSetterCode: "ID = value != null ? value.ID : Guid.Empty;");
+                DataStructureQueryableCodeGenerator.AddNavigationPropertyWithBackingField(codeBuilder, info.Base,
+                    csPropertyName: extensionPropertyName,
+                    propertyType: "Common.Queryable." + info.Extension.Module.Name + "_" + info.Extension.Name,
+                    additionalSetterCode: null);
             }
 
             if (info.Extension is IOrmDataStructure && info.Base is IOrmDataStructure)

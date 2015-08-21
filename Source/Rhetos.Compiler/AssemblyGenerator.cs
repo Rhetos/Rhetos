@@ -93,7 +93,7 @@ namespace Rhetos.Compiler
                           select error).ToList();
 
             var report = new StringBuilder();
-            report.Append(errors.Count + " errors while compiling '" + Path.GetFileName(filePath) + "'.");
+            report.Append(errors.Count + " errors while compiling '" + Path.GetFileName(filePath) + "'");
 
             if (errors.Count > _errorReportLimit.Value)
                 report.AppendLine(". The first " + _errorReportLimit.Value + " errors:");

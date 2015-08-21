@@ -331,8 +331,6 @@ Module TestQueryable
 
 Module TestLazyLoad
 {
-	LazyLoadReferences;
-	
 	Entity Parent
 	{
 		ShortString Name;

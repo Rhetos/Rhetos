@@ -94,12 +94,11 @@ namespace CommonConcepts.Test
                     "INSERT INTO TestSqlWorkarounds.Person (Name) VALUES ('User" + x.ToString() +"')"));
 
                 var repository = container.Resolve<Common.DomRepository>();
-                TestUtility.ShouldFail(() => repository.TestSqlWorkarounds.PersonInfo.All(), "filter", "PersonFilter", "must be used");
+                TestUtility.ShouldFail(() => repository.TestSqlWorkarounds.PersonInfo.Load(), "filter", "PersonFilter", "must be used");
 
-                var result = repository.TestSqlWorkarounds.PersonInfo.Filter(new TestSqlWorkarounds.PersonFilter { NamePattern = "%1%", LimitResultCount = 4 });
-                Assert.AreEqual("User1 5, User10 6, User100 7, User11 6", TestUtility.Dump(
-                    repository.TestSqlWorkarounds.PersonInfo.QueryLoaded(result),
-                    item => item.Person.Name + " " + item.NameLength));
+                var result = repository.TestSqlWorkarounds.PersonInfo.Load(new TestSqlWorkarounds.PersonFilter { NamePattern = "%1%", LimitResultCount = 4 });
+                var personRepos = repository.TestSqlWorkarounds.Person;
+                Assert.AreEqual("User1 5, User10 6, User100 7, User11 6", TestUtility.Dump(result, item => personRepos.Load(new[] { item.PersonID.Value }).Single().Name + " " + item.NameLength));
             }
         }
 
