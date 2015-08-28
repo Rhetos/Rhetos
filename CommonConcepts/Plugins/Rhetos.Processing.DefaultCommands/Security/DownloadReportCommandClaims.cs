@@ -35,27 +35,12 @@ namespace Rhetos.Processing.DefaultCommands
     [ExportMetadata(MefProvider.Implements, typeof(DownloadReportCommandInfo))]
     public class DownloadReportCommandClaims : IClaimProvider
     {
-        private readonly IIndex<string, IReportRepository> _reportIndex;
-
-        public DownloadReportCommandClaims(IIndex<string, IReportRepository> reportIndex)
-        {
-            _reportIndex = reportIndex;
-        }
-
         public IList<Claim> GetRequiredClaims(ICommandInfo commandInfo)
         {
             var info = (DownloadReportCommandInfo)commandInfo;
-
-            var claims = new List<Claim>();
-
             string reportName = info.Report.GetType().FullName;
-            claims.Add(new Claim(reportName, "DownloadReport"));
 
-            IReportRepository reportRepository = _reportIndex[reportName];
-            claims.AddRange(reportRepository.DataSourcesNames
-                .Select(dataSourceName => new Claim(dataSourceName, "Read")));
-
-            return claims;
+            return new[] { new Claim(reportName, "DownloadReport") };
         }
 
         public IList<Claim> GetAllClaims(IDslModel dslModel)

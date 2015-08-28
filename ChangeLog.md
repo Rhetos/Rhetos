@@ -1,5 +1,12 @@
 # Rhetos release notes
 
+## 1.0.0 (TO BE RELEASED)
+
+### Breaking changes
+
+* *DownloadReport* server command no longer requires additional *Read* permissions for all the data sources,
+  only the existing *DownloadReport* permission for the report.
+
 ## 0.9.36 (2015-07-14)
 
 ### New features
