@@ -16,15 +16,21 @@ Rhetos is based on Microsoft .NET technology stack.
 
 See [rhetos.org](http://www.rhetos.org/) for more information.
 
-Recommended Rhetos DSL packages
+Recommended plugins
 -------------------------------
+
+DSL packages:
 
 * *CommonConcepts* (placed inside the Rhetos repository) contains basic concepts for building applications.
 * *SimpleWindowsAuth* or *AspNetFormsAuth* (placed inside the Rhetos repository) provides authentication and authorization features to Rhetos applications. Both packages cannot be used at the same time.
 * [RestGenerator](https://github.com/Rhetos/RestGenerator) automatically generates REST API for all entities and other readable or writable data structures that are defined in a Rhetos application.
 * [MvcModelGenerator](https://github.com/Rhetos/MvcModelGenerator) automatically generates ASP.NET MVC model for all entities and other queryable data structures that are defined in a Rhetos application.
 * [ODataGenerator](https://github.com/Rhetos/ODataGenerator) automatically generates OData interface (Open Data Protocol) for all entities and other queryable data structures that are defined in a Rhetos application.
-* [LegacyRestGenerator](https://github.com/Rhetos/LegacyRestGenerator) old version of REST API, available for backward compatibility.
+* [LegacyRestGenerator](https://github.com/Rhetos/LegacyRestGenerator), an old version of REST API, available for backward compatibility.
+
+Other tools:
+
+* [RhetosDSLSyntax](https://github.com/Hugibeer/RhetosDSLSyntax), syntax highlighting for Sublime Text.
 
 Installation
 ============
