@@ -4,6 +4,7 @@
 
 ### Breaking changes
 
+* **Entity Framework** 6.1.3 is used for ORM, instead of **NHibernate**.
 * *DownloadReport* server command no longer requires additional *Read* permissions for all the data sources,
   only the existing *DownloadReport* permission for the report.
 
