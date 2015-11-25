@@ -82,6 +82,12 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
     <DefiningExpression>a LIKE b + '%'</DefiningExpression>
   </Function>
 
+  <Function Name=""StringEndsWithCaseInsensitive"" ReturnType=""Edm.Boolean"">
+    <Parameter Name=""a"" Type=""Edm.String"" />
+    <Parameter Name=""b"" Type=""Edm.String"" />
+    <DefiningExpression>a LIKE '%' + b</DefiningExpression>
+  </Function>
+
   <Function Name=""StringContainsCaseInsensitive"" ReturnType=""Edm.Boolean"">
     <Parameter Name=""a"" Type=""Edm.String"" />
     <Parameter Name=""b"" Type=""Edm.String"" />

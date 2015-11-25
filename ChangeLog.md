@@ -5,8 +5,29 @@
 ### Breaking changes
 
 * **Entity Framework** 6.1.3 is used for ORM, instead of **NHibernate**.
+  See [Migrating Rhetos applications from NH to EF](https://github.com/Rhetos/Rhetos/wiki/Migrating-Rhetos-applications-from-NHibernate-to-Entity-Framework).
 * *DownloadReport* server command no longer requires additional *Read* permissions for all the data sources,
   only the existing *DownloadReport* permission for the report.
+
+### New features
+
+* Query or load data from repositories using `Query()`, `Query(filter)`, `Load()` or `Load(filter)` methods.
+  The `filter` can be a lambda expression (`item => ...`) or an instance of any filter parameter that is supported for this data structure.
+* `query.ToSimple()` method, for removing navigation properties when querying a Rhetos data structure from repository.
+  For better memory and CPU performance when materializing a LINQ query, instead of `query.ToList()`, use `query.ToSimple().ToList()`.
+  If only few properties are used, a better solution would be `query.Select(new { .. properties the will be used .. }).ToList()`.
+* New generic property filters: `EndsWith`, `NotContains`, `DateNotIn`.
+  Also available in [REST API](https://github.com/rhetos/restgenerator#filters).
+
+### Internal improvements
+
+* In the business layer object model (ServerDom) for each data structure there are 2 classes created:
+    - A simple class (`SomeModule.SomeEntity`), for working with entity instances in `FilterBy` concept or `Load(filter)` function.
+        That class does not contain navigation properties for references to another data structures. It contains simple Guid properties for those references.
+    - A queryable class (`Common.Queryable.SomeModule_SomeEntity`), for working with LINQ queries in `ComposableFilterBy` or `ItemFilter` concept, or `Query(filter)` function.
+* For reference properties, the scalar Guid property is mapped to the database.
+  Previously only navigation properties were available in LINQ queries and in REST filter parameters.
+  For example, the client had to use `SomeReference.ID` instead of `SomeReferenceID` in filters; now both options are available and `ReferenceID` is the preferred option.
 
 ## 0.9.36 (2015-07-14)
 

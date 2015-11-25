@@ -166,16 +166,7 @@ namespace CommonConcepts.Test
             Assert.AreEqual(expectedCodes, TestUtility.DumpSorted(result, item => item.Code.ToString()));
         }
 
-        private static readonly string[] ComperisonOperations = new[] { "equal", "notequal", "less", "lessequal", "greater", "greaterequal" };
-
-        private static void FilterCode(Common.DomRepository repository, string operation, string value, string expectedCodes)
-        {
-            Console.WriteLine("TEST CODE: " + operation + " " + value);
-            var source = repository.TestGenericFilter.Simple.Query();
-            var result = GenericFilterHelperFilter(source, new[] { new FilterCriteria { Property = "Code", Operation = operation, Value =
-                ComperisonOperations.Contains(operation) ? (object) int.Parse(value) : value } });
-            Assert.AreEqual(expectedCodes, TestUtility.DumpSorted(result, item => item.Code.ToString()));
-        }
+        private static readonly string[] SameTypeOperations = new[] { "equals", "equal", "notequals", "notequal", "less", "lessequal", "greater", "greaterequal" };
 
         [TestMethod]
         public void FilterStringOperations()
@@ -191,8 +182,8 @@ namespace CommonConcepts.Test
                     });
 
                 var repository = container.Resolve<Common.DomRepository>();
-                FilterName(repository, "equal", "abc2", "2");
-                FilterName(repository, "notequal", "abc2", "1, 3");
+                FilterName(repository, "equals", "abc2", "2");
+                FilterName(repository, "notequals", "abc2", "1, 3");
                 FilterName(repository, "less", "abc2", "1");
                 FilterName(repository, "lessequal", "abc2", "1, 2");
                 FilterName(repository, "less", "a", "");
@@ -205,11 +196,21 @@ namespace CommonConcepts.Test
                 FilterName(repository, "startswith", "abc", "1, 2");
                 FilterName(repository, "startswith", "abc2", "2");
                 FilterName(repository, "startswith", "", "1, 2, 3");
+                FilterName(repository, "endswith", "a", "");
+                FilterName(repository, "endswith", "1", "1");
+                FilterName(repository, "endswith", "def3", "3");
+                FilterName(repository, "endswith", "", "1, 2, 3");
                 FilterName(repository, "contains", "b", "1, 2");
                 FilterName(repository, "contains", "c2", "2");
                 FilterName(repository, "contains", "abc2", "2");
                 FilterName(repository, "contains", "d", "3");
+                FilterName(repository, "contains", "x", "");
                 FilterName(repository, "contains", "", "1, 2, 3");
+                FilterName(repository, "notcontains", "b", "3");
+                FilterName(repository, "notcontains", "c2", "1, 3");
+                FilterName(repository, "notcontains", "abc2", "1, 3");
+                FilterName(repository, "notcontains", "d", "1, 2");
+                FilterName(repository, "notcontains", "", "");
             }
         }
 
@@ -223,26 +224,46 @@ namespace CommonConcepts.Test
                         "DELETE FROM TestGenericFilter.Simple;",
                         "INSERT INTO TestGenericFilter.Simple (Code, Name) SELECT 1, 'abc1';",
                         "INSERT INTO TestGenericFilter.Simple (Code, Name) SELECT 2, 'abc2';",
+                        "INSERT INTO TestGenericFilter.Simple (Code, Name) SELECT 12, 'abc12';",
                         "INSERT INTO TestGenericFilter.Simple (Code, Name) SELECT 3, 'def3';",
                     });
 
                 var repository = container.Resolve<Common.DomRepository>();
-                FilterCode(repository, "equal", "2", "2");
-                FilterCode(repository, "notequal", "2", "1, 3");
+                FilterCode(repository, "equals", "2", "2");
+                FilterCode(repository, "notequals", "2", "1, 12, 3");
                 FilterCode(repository, "less", "2", "1");
                 FilterCode(repository, "lessequal", "2", "1, 2");
-                FilterCode(repository, "greater", "2", "3");
-                FilterCode(repository, "greaterequal", "2", "2, 3");
-                FilterCode(repository, "startswith", "2", "2");
-                FilterCode(repository, "startswith", "", "1, 2, 3");
+                FilterCode(repository, "greater", "2", "12, 3");
+                FilterCode(repository, "greaterequal", "2", "12, 2, 3");
+                FilterCode(repository, "startswith", "1", "1, 12");
+                FilterCode(repository, "startswith", "12", "12");
+                FilterCode(repository, "startswith", "", "1, 12, 2, 3");
                 FilterCode(repository, "startswith", "7", "");
-                FilterCode(repository, "contains", "2", "2");
-                FilterCode(repository, "contains", "", "1, 2, 3");
+                FilterCode(repository, "endswith", "2", "12, 2");
+                FilterCode(repository, "endswith", "12", "12");
+                FilterCode(repository, "endswith", "", "1, 12, 2, 3");
+                FilterCode(repository, "endswith", "7", "");
+                FilterCode(repository, "contains", "2", "12, 2");
+                FilterCode(repository, "contains", "12", "12");
+                FilterCode(repository, "contains", "", "1, 12, 2, 3");
                 FilterCode(repository, "contains", "7", "");
+                FilterCode(repository, "notcontains", "2", "1, 3");
+                FilterCode(repository, "notcontains", "12", "1, 2, 3");
+                FilterCode(repository, "notcontains", "", "");
+                FilterCode(repository, "notcontains", "7", "1, 12, 2, 3");
             }
         }
 
-        private static void FilterStart(Common.DomRepository repository, string value, string expectedCodes)
+        private static void FilterCode(Common.DomRepository repository, string operation, string value, string expectedCodes)
+        {
+            Console.WriteLine("TEST CODE: " + operation + " " + value);
+            var source = repository.TestGenericFilter.Simple.Query();
+            var result = GenericFilterHelperFilter(source, new[] { new FilterCriteria { Property = "Code", Operation = operation, Value =
+                SameTypeOperations.Contains(operation) ? (object) int.Parse(value) : value } });
+            Assert.AreEqual(expectedCodes, TestUtility.DumpSorted(result, item => item.Code.ToString()));
+        }
+
+        private static void FilterStartDateIn(Common.DomRepository repository, string value, string expectedCodes)
         {
             Console.WriteLine("TEST DateIn: " + value);
             var source = repository.TestGenericFilter.Simple.Query();
@@ -269,52 +290,110 @@ namespace CommonConcepts.Test
 
                 var repository = container.Resolve<Common.DomRepository>();
 
-                FilterStart(repository, "2010", "");
-                FilterStart(repository, "2011", "1");
-                FilterStart(repository, "2012", "2, 3, 4, 5, 6");
-                FilterStart(repository, "2013", "7");
-                FilterStart(repository, "2014", "");
+                FilterStartDateIn(repository, "2010", "");
+                FilterStartDateIn(repository, "2011", "1");
+                FilterStartDateIn(repository, "2012", "2, 3, 4, 5, 6");
+                FilterStartDateIn(repository, "2013", "7");
+                FilterStartDateIn(repository, "2014", "");
 
-                FilterStart(repository, "2011-02", "");
-                FilterStart(repository, "2012-01", "2");
-                FilterStart(repository, "2012-02", "3, 4, 5");
-                FilterStart(repository, "2012-03", "6");
+                FilterStartDateIn(repository, "2011-02", "");
+                FilterStartDateIn(repository, "2012-01", "2");
+                FilterStartDateIn(repository, "2012-02", "3, 4, 5");
+                FilterStartDateIn(repository, "2012-03", "6");
 
-                FilterStart(repository, "2012-01-31", "2");
-                FilterStart(repository, "2012-02-01", "");
-                FilterStart(repository, "2012-02-02", "3, 4");
-                FilterStart(repository, "2012-02-03", "");
-                FilterStart(repository, "2012-02-29", "5");
-                FilterStart(repository, "2012-03-01", "6");
-                FilterStart(repository, "2012-12-31", "");
+                FilterStartDateIn(repository, "2012-01-31", "2");
+                FilterStartDateIn(repository, "2012-02-01", "");
+                FilterStartDateIn(repository, "2012-02-02", "3, 4");
+                FilterStartDateIn(repository, "2012-02-03", "");
+                FilterStartDateIn(repository, "2012-02-29", "5");
+                FilterStartDateIn(repository, "2012-03-01", "6");
+                FilterStartDateIn(repository, "2012-12-31", "");
 
                 // Valid alternative formats:
-                FilterStart(repository, "2012-3", "6");
-                FilterStart(repository, "2012-03-1", "6");
-                FilterStart(repository, "2012-3-01", "6");
-                FilterStart(repository, "2012-3-1", "6");
+                FilterStartDateIn(repository, "2012-3", "6");
+                FilterStartDateIn(repository, "2012-03-1", "6");
+                FilterStartDateIn(repository, "2012-3-01", "6");
+                FilterStartDateIn(repository, "2012-3-1", "6");
 
                 // Error handling:
-                TestUtility.ShouldFail(() => FilterStart(repository, "123", ""), "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "12345", ""), "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "1234-", ""), "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "1234-123", ""), "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "1234-1-", ""), "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "1234-12-", ""), "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "1234-11-11-", ""), "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "1234-11-11-11", ""), "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "1234-1-1-1", ""), "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "1234-234-12", ""), "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "1234-12-234", ""), "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "12345-1", ""), "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "12345-11", ""), "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "12345-1-1", ""), "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "12345-11-11", ""), "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "11-11-11", ""), "format");
-                TestUtility.ShouldFail(() => FilterStart(repository, "11-11-1112", ""), "format");
+                TestUtility.ShouldFail(() => FilterStartDateIn(repository, "123", ""), "invalid format");
+                TestUtility.ShouldFail(() => FilterStartDateIn(repository, "12345", ""), "invalid format");
+                TestUtility.ShouldFail(() => FilterStartDateIn(repository, "1234-", ""), "invalid format");
+                TestUtility.ShouldFail(() => FilterStartDateIn(repository, "1234-123", ""), "invalid format");
+                TestUtility.ShouldFail(() => FilterStartDateIn(repository, "1234-1-", ""), "invalid format");
+                TestUtility.ShouldFail(() => FilterStartDateIn(repository, "1234-12-", ""), "invalid format");
+                TestUtility.ShouldFail(() => FilterStartDateIn(repository, "1234-11-11-", ""), "invalid format");
+                TestUtility.ShouldFail(() => FilterStartDateIn(repository, "1234-11-11-11", ""), "invalid format");
+                TestUtility.ShouldFail(() => FilterStartDateIn(repository, "1234-1-1-1", ""), "invalid format");
+                TestUtility.ShouldFail(() => FilterStartDateIn(repository, "1234-234-12", ""), "invalid format");
+                TestUtility.ShouldFail(() => FilterStartDateIn(repository, "1234-12-234", ""), "invalid format");
+                TestUtility.ShouldFail(() => FilterStartDateIn(repository, "12345-1", ""), "invalid format");
+                TestUtility.ShouldFail(() => FilterStartDateIn(repository, "12345-11", ""), "invalid format");
+                TestUtility.ShouldFail(() => FilterStartDateIn(repository, "12345-1-1", ""), "invalid format");
+                TestUtility.ShouldFail(() => FilterStartDateIn(repository, "12345-11-11", ""), "invalid format");
+                TestUtility.ShouldFail(() => FilterStartDateIn(repository, "11-11-11", ""), "invalid format");
+                TestUtility.ShouldFail(() => FilterStartDateIn(repository, "11-11-1112", ""), "invalid format");
 
-                TestUtility.ShouldFail(() => FilterStart(repository, "2011-02-29", ""));
-                TestUtility.ShouldFail(() => FilterStart(repository, "2011-13-01", ""));
+                TestUtility.ShouldFail(() => FilterStartDateIn(repository, "2011-02-29", ""), "un-representable DateTime");
+                TestUtility.ShouldFail(() => FilterStartDateIn(repository, "2011-13-01", ""), "un-representable DateTime");
+            }
+        }
+
+        private static void FilterStartDateNotIn(Common.DomRepository repository, string value, string expectedCodes)
+        {
+            Console.WriteLine("TEST DateIn: " + value);
+            var source = repository.TestGenericFilter.Simple.Query();
+            var result = GenericFilterHelperFilter(source, new[] { new FilterCriteria { Property = "Start", Operation = "DateNotIn", Value = value } });
+            Assert.AreEqual(expectedCodes, TestUtility.DumpSorted(result, item => item.Code.ToString()));
+        }
+
+        [TestMethod]
+        public void FilterDateNotIn()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                    {
+                        "DELETE FROM TestGenericFilter.Simple;",
+                        "INSERT INTO TestGenericFilter.Simple (Code, Start) SELECT 1, '2011-12-31';",
+                        "INSERT INTO TestGenericFilter.Simple (Code, Start) SELECT 2, '2012-01-31';",
+                        "INSERT INTO TestGenericFilter.Simple (Code, Start) SELECT 3, '2012-02-02';",
+                        "INSERT INTO TestGenericFilter.Simple (Code, Start) SELECT 4, '2012-02-02 01:02:03';",
+                        "INSERT INTO TestGenericFilter.Simple (Code, Start) SELECT 5, '2012-02-29';",
+                        "INSERT INTO TestGenericFilter.Simple (Code, Start) SELECT 6, '2012-03-01';",
+                        "INSERT INTO TestGenericFilter.Simple (Code, Start) SELECT 7, '2013-01-01';",
+                    });
+
+                var repository = container.Resolve<Common.DomRepository>();
+
+                FilterStartDateNotIn(repository, "2010", "1, 2, 3, 4, 5, 6, 7");
+                FilterStartDateNotIn(repository, "2011", "2, 3, 4, 5, 6, 7");
+                FilterStartDateNotIn(repository, "2012", "1, 7");
+                FilterStartDateNotIn(repository, "2013", "1, 2, 3, 4, 5, 6");
+                FilterStartDateNotIn(repository, "2014", "1, 2, 3, 4, 5, 6, 7");
+
+                FilterStartDateNotIn(repository, "2011-02", "1, 2, 3, 4, 5, 6, 7");
+                FilterStartDateNotIn(repository, "2012-01", "1, 3, 4, 5, 6, 7");
+                FilterStartDateNotIn(repository, "2012-02", "1, 2, 6, 7");
+                FilterStartDateNotIn(repository, "2012-03", "1, 2, 3, 4, 5, 7");
+
+                FilterStartDateNotIn(repository, "2012-01-31", "1, 3, 4, 5, 6, 7");
+                FilterStartDateNotIn(repository, "2012-02-01", "1, 2, 3, 4, 5, 6, 7");
+                FilterStartDateNotIn(repository, "2012-02-02", "1, 2, 5, 6, 7");
+                FilterStartDateNotIn(repository, "2012-02-03", "1, 2, 3, 4, 5, 6, 7");
+                FilterStartDateNotIn(repository, "2012-02-29", "1, 2, 3, 4, 6, 7");
+                FilterStartDateNotIn(repository, "2012-03-01", "1, 2, 3, 4, 5, 7");
+                FilterStartDateNotIn(repository, "2012-12-31", "1, 2, 3, 4, 5, 6, 7");
+
+                // Valid alternative formats:
+                FilterStartDateNotIn(repository, "2012-3", "1, 2, 3, 4, 5, 7");
+                FilterStartDateNotIn(repository, "2012-03-1", "1, 2, 3, 4, 5, 7");
+                FilterStartDateNotIn(repository, "2012-3-01", "1, 2, 3, 4, 5, 7");
+                FilterStartDateNotIn(repository, "2012-3-1", "1, 2, 3, 4, 5, 7");
+
+                // Error handling:
+                TestUtility.ShouldFail(() => FilterStartDateNotIn(repository, "123", ""), "invalid format");
+                TestUtility.ShouldFail(() => FilterStartDateNotIn(repository, "2011-02-29", ""), "un-representable DateTime");
             }
         }
 

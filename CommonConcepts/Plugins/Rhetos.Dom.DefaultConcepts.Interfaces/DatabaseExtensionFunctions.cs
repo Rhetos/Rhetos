@@ -91,6 +91,12 @@ namespace Rhetos.Dom.DefaultConcepts
             return a != null && b != null && a.StartsWith(b, StringComparison.InvariantCultureIgnoreCase);
         }
 
+        [DbFunction("Rhetos", "StringEndsWithCaseInsensitive")]
+        public static bool EndsWithCaseInsensitive(this string a, string b)
+        {
+            return a != null && b != null && a.EndsWith(b, StringComparison.InvariantCultureIgnoreCase);
+        }
+
         [DbFunction("Rhetos", "StringContainsCaseInsensitive")]
         public static bool ContainsCaseInsensitive(this string a, string b)
         {

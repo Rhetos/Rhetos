@@ -80,7 +80,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 Type basicType = memberIsNullableValueType ? memberAccess.Type.GetGenericArguments().Single() : memberAccess.Type;
 
                 ConstantExpression constant;
-                if (new[] { "equal", "notequal", "greater", "greaterequal", "less", "lessequal" }.Contains(criteria.Operation.ToLower()))
+                // Operations 'equal' and 'notequal' are supported for backward compatibility.
+                if (new[] { "equals", "equal", "notequals", "notequal", "greater", "greaterequal", "less", "lessequal" }.Contains(criteria.Operation, StringComparer.OrdinalIgnoreCase))
                 {
                     // Constant value should be of same type as the member it is compared to.
 
@@ -118,12 +119,12 @@ namespace Rhetos.Dom.DefaultConcepts
 
                     constant = Expression.Constant(convertedValue, memberAccess.Type);
                 }
-                else if (new[] { "startswith", "contains" }.Contains(criteria.Operation.ToLower()))
+                else if (new[] { "startswith", "endswith", "contains", "notcontains" }.Contains(criteria.Operation, StringComparer.OrdinalIgnoreCase))
                 {
                     // Constant value should be string.
                     constant = Expression.Constant(criteria.Value.ToString(), typeof(string));
                 }
-                else if (new[] { "datein" }.Contains(criteria.Operation.ToLower()))
+                else if (new[] { "datein", "datenotin" }.Contains(criteria.Operation, StringComparer.OrdinalIgnoreCase))
                 {
                     constant = null;
                 }
@@ -133,12 +134,14 @@ namespace Rhetos.Dom.DefaultConcepts
                 Expression expression;
                 switch (criteria.Operation.ToLower())
                 {
+                    case "equals":
                     case "equal":
                         if (basicType == typeof(string))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("EqualsCaseInsensitive"), memberAccess, constant);
                         else
                             expression = Expression.Equal(memberAccess, constant);
                         break;
+                    case "notequals":
                     case "notequal":
                         if (basicType == typeof(string))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("NotEqualsCaseInsensitive"), memberAccess, constant);
@@ -170,6 +173,7 @@ namespace Rhetos.Dom.DefaultConcepts
                             expression = Expression.LessThanOrEqual(memberAccess, constant);
                         break;
                     case "startswith":
+                    case "endswith":
                         {
                             Expression stringMember;
                             if (basicType == typeof(string))
@@ -181,10 +185,12 @@ namespace Rhetos.Dom.DefaultConcepts
                                     throw new FrameworkException("Generic filter operation '" + criteria.Operation + "' is not supported on property type '" + basicType.Name + "'. There is no overload of 'DatabaseExtensionFunctions.CastToString' function for the type.");
                                 stringMember = Expression.Call(castMethod, memberAccess);
                             }
-                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("StartsWithCaseInsensitive"), stringMember, constant);
+                            string dbMethodName = criteria.Operation.Equals("startswith", StringComparison.OrdinalIgnoreCase) ? "StartsWithCaseInsensitive" : "EndsWithCaseInsensitive";
+                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod(dbMethodName), stringMember, constant);
                             break;
                         }
                     case "contains":
+                    case "notcontains":
                         {
                             Expression stringMember;
                             if (basicType == typeof(string))
@@ -197,9 +203,13 @@ namespace Rhetos.Dom.DefaultConcepts
                                 stringMember = Expression.Call(castMethod, memberAccess);
                             }
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("ContainsCaseInsensitive"), stringMember, constant);
+
+                            if (criteria.Operation.Equals("notcontains", StringComparison.OrdinalIgnoreCase))
+                                expression = Expression.Not(expression);
                             break;
                         }
                     case "datein":
+                    case "datenotin":
                         {
                             if (basicType != typeof(DateTime))
                                 throw new FrameworkException("Generic filter operation '" + criteria.Operation
@@ -235,6 +245,9 @@ namespace Rhetos.Dom.DefaultConcepts
                             expression = Expression.AndAlso(
                                 Expression.GreaterThanOrEqual(memberAccess, Expression.Constant(date1, typeof(DateTime?))),
                                 Expression.LessThan(memberAccess, Expression.Constant(date2, typeof(DateTime?))));
+
+                            if (criteria.Operation.Equals("datenotin", StringComparison.OrdinalIgnoreCase))
+                                expression = Expression.Not(expression);
                             break;
                         }
                     default:
