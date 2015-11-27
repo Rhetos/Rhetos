@@ -26,6 +26,9 @@ using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
+using Rhetos.Processing;
+using Rhetos.Processing.DefaultCommands;
+using CommonConcepts.Test.Helpers;
 
 namespace CommonConcepts.Test
 {
@@ -237,6 +240,27 @@ namespace CommonConcepts.Test
                 TestUtility.ShouldFail(
                     () => le.Insert(new TestUnique.LE { I = 5, S = "aaa" }),
                     "duplicate record", "TestUnique.LE", "aaa");
+            }
+        }
+
+        [TestMethod]
+        public void ProcessingEngineUniqueConstraintError()
+        {
+            using (var container = new NoClaimsRhetosTestContainer())
+            {
+                var processingEngine = container.Resolve<IProcessingEngine>();
+                var saveDuplicates = new SaveEntityCommandInfo
+                {
+                    Entity = "TestUnique.E",
+                    DataToInsert = new[]
+                    {
+                        new TestUnique.E { I = 123, S = "abc" },
+                        new TestUnique.E { I = 123, S = "abc" },
+                    }
+                };
+                var processingEngineResult = processingEngine.Execute(new[] { saveDuplicates });
+                Assert.IsFalse(processingEngineResult.Success);
+                TestUtility.AssertContains(processingEngineResult.UserMessage, "duplicate");
             }
         }
     }

@@ -17,15 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac;
+using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Processing;
 using Rhetos.Processing.DefaultCommands;
-using Rhetos.Security;
 using Rhetos.TestCommon;
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,30 +33,6 @@ namespace CommonConcepts.Test
     [TestClass]
     public class RowPermissionsDemo
     {
-        /// <summary>
-        /// Overrides deployed IAuthorizationProvider (windows or forms authorization) to turn off checking user security claims.
-        /// Not related to row permissions.
-        /// </summary>
-        private class NoClaimsRhetosTestContainer : RhetosTestContainer
-        {
-            public NoClaimsRhetosTestContainer(bool commitChanges = false)
-                : base(commitChanges: commitChanges)
-            {
-                this._initializeSession += builder =>
-                    builder.RegisterType<IgnoreAuthorizationProvider>().As<IAuthorizationProvider>();
-           }
-        }
-
-        public class IgnoreAuthorizationProvider : IAuthorizationProvider
-        {
-            public IgnoreAuthorizationProvider() { }
-
-            public IList<bool> GetAuthorizations(IUserInfo userInfo, IList<Claim> requiredClaims)
-            {
-                return requiredClaims.Select(c => true).ToList();
-            }
-        }
-
         [TestMethod]
         public void SimpleRowPermissionRules()
         {

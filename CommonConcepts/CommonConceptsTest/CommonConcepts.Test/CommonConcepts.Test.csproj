@@ -156,6 +156,7 @@
     <Compile Include="AuditablePropertiesTest.cs" />
     <Compile Include="CloningTest.cs" />
     <Compile Include="FullTextSearchTest.cs" />
+    <Compile Include="Helpers\NoClaimsRhetosTestContainer.cs" />
     <Compile Include="Helpers\RhetosTestContainerWithLogMonitor.cs" />
     <Compile Include="SqlExecuterTransactionTest.cs" />
     <Compile Include="LazyLoadTest.cs" />
