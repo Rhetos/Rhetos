@@ -25,39 +25,57 @@ using Rhetos.Logging;
 
 namespace Rhetos.Utilities
 {
+    public delegate void LogMonitor(EventType eventType, string eventName, Func<string> message);
+
     public class ConsoleLogProvider : ILogProvider
     {
+        public ConsoleLogProvider()
+        {
+        }
+
+        public ConsoleLogProvider(LogMonitor logMonitor)
+        {
+            _logMonitor = logMonitor;
+        }
+
         public ILogger GetLogger(string eventName)
         {
-            return new ConsoleLogger(eventName);
+            return new ConsoleLogger(eventName, _logMonitor);
         }
+
+        private LogMonitor _logMonitor;
     }
 
     public class ConsoleLogger : ILogger
     {
         private readonly string _eventName;
-        private readonly ILogger _decoratedLogger;
+        private readonly LogMonitor _logMonitor;
 
-        public ConsoleLogger(string eventName = null, ILogger decoratedLogger = null)
+        public ConsoleLogger(string eventName = null, LogMonitor logMonitor = null)
         {
             _eventName = eventName;
-            _decoratedLogger = decoratedLogger;
+            _logMonitor = logMonitor;
         }
 
         public void Write(EventType eventType, Func<string> logMessage)
         {
+            string message = null;
+
             if (eventType >= _minLevel)
             {
-                string message;
                 try
                 {
                     message = logMessage();
-                    const int maxLogMessageLength = 10000;
-                    if (message.Length > maxLogMessageLength)
-                        message = message.Substring(0, maxLogMessageLength)
-                            + " ... (trimmed to max " + GetType().Name + " message length of " + maxLogMessageLength + ")";
 
-                    Write(eventType, _eventName, message);
+                    const int maxLogMessageLength = 10000;
+                    string shortenedMessage;
+                    if (message.Length > maxLogMessageLength)
+                        shortenedMessage = message.Substring(0, maxLogMessageLength)
+                            + " ... (trimmed to max " + GetType().Name + " message length of " + maxLogMessageLength + ")";
+                    else
+                        shortenedMessage = message;
+
+                    Write(eventType, _eventName, shortenedMessage);
                 }
                 catch (Exception ex)
                 {
@@ -67,8 +85,8 @@ namespace Rhetos.Utilities
                 }
             }
 
-            if (_decoratedLogger != null)
-                _decoratedLogger.Write(eventType, logMessage);
+            if (_logMonitor != null)
+                _logMonitor(eventType, _eventName, message != null ? () => message : logMessage); // Ensures only one evaluation of the logMessage function.
         }
 
         private static void Write(EventType eventType, string eventName, string message)

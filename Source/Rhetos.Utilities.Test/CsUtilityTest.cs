@@ -155,5 +155,44 @@ namespace Rhetos.Utilities.Test
             foreach (var test in tests)
                 Assert.AreEqual(test, CsUtility.GetNaturalSortString(test));
         }
+
+        [TestMethod]
+        public void MatchPrefixes()
+        {
+            // Exact match:
+            TestMatchPrefixes("a b c", "b", "b");
+            TestMatchPrefixes("b", "b", "b");
+            TestMatchPrefixes("a c", "b", "");
+
+            // Simple:
+            TestMatchPrefixes("a1 b1 b21 b22 c1", "b", "b1 b21 b22");
+            TestMatchPrefixes("a1 b1 b21 b22 c1", "b2", "b21 b22");
+            TestMatchPrefixes("a1 b1 b21 b22 c1", "b21", "b21");
+
+            // Empty lists:
+            TestMatchPrefixes("", "b", "");
+            TestMatchPrefixes("b", "", "");
+            TestMatchPrefixes("", "", "");
+
+            // Case insensitive:
+            TestMatchPrefixes("a1 b1 B21 b22 c1", "B", "b1 B21 b22");
+            TestMatchPrefixes("A1 B1 b21 B22 C1", "b2", "b21 B22");
+
+            // Complex:
+            TestMatchPrefixes("a1 a1. a1.b1 a1.b2 a1.c a1b", "a1.b", "a1.b1 a1.b2");
+            TestMatchPrefixes("a1 a1. a1.b1 a1.b2 a1.c a1b", "a1.b2", "a1.b2");
+            TestMatchPrefixes("a1 a1. a1.b1 a1.b2 a1.c a1b", "a1.", "a1. a1.b1 a1.b2 a1.c");
+        }
+
+        private void TestMatchPrefixes(string strings, string prefixes, string expected)
+        {
+            var listStrings = strings.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            var listPrefixes = prefixes.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            var listExpected = expected.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+
+            var listActual = CsUtility.MatchPrefixes(listStrings, listPrefixes);
+
+            Assert.AreEqual(TestUtility.DumpSorted(listExpected), TestUtility.DumpSorted(listActual), "Matching strings '" + strings + "' for prefixes '" + prefixes + "'.");
+        }
     }
 }

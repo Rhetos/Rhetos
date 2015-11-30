@@ -200,5 +200,36 @@ namespace Rhetos.Utilities
 
             return report.ToString();
         }
+
+        /// <summary>
+        /// Returns a subset of the given strings that match the given prefixes.
+        /// String comparison is oridinal, case insensitive.
+        /// </summary>
+        public static List<string> MatchPrefixes(List<string> strings, List<string> prefixes)
+        {
+            strings.Sort(StringComparer.OrdinalIgnoreCase);
+            prefixes.Sort(StringComparer.OrdinalIgnoreCase);
+
+            int strIndex = 0;
+            int prefixIndex = 0;
+            var matches = new List<string>();
+            while (strIndex < strings.Count() && prefixIndex < prefixes.Count())
+            {
+                string str = strings[strIndex];
+                string prefix = prefixes[prefixIndex];
+
+                if (str.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    matches.Add(str);
+                    strIndex++;
+                }
+                else if (string.Compare(str, prefix, StringComparison.OrdinalIgnoreCase) < 0)
+                    strIndex++;
+                else
+                    prefixIndex++;
+            }
+
+            return matches;
+        }
     }
 }

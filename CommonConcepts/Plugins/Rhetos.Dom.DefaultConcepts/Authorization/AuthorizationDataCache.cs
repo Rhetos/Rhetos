@@ -49,8 +49,46 @@ namespace Rhetos.Dom.DefaultConcepts
         public static void ClearCache()
         {
             var cache = MemoryCache.Default;
-            var killList = cache.Where(item => item.Key.StartsWith("AuthorizationDataCache.")).Select(item => item.Key).ToList();
-            foreach (string key in killList)
+            var deleteKeys = cache.Select(item => item.Key)
+                .Where(key => key.StartsWith("AuthorizationDataCache.", StringComparison.Ordinal))
+                .ToList();
+            foreach (string key in deleteKeys)
+                cache.Remove(key);
+        }
+
+        /// <summary>
+        /// Clears the principals' authorization data from the cache: Principal, PrincipalRoles and PrincipalPermissions.
+        /// </summary>
+        public void ClearCachePrincipals(IEnumerable<IPrincipal> principals)
+        {
+            CsUtility.Materialize(ref principals);
+            _logger.Trace(() => "ClearCachePrincipals: " + string.Join(", ", principals.Select(p => p.Name + " " + p.ID.ToString())) + ".");
+
+            var deleteKeys =
+                principals.Select(principal => "AuthorizationDataCache.Principal." + principal.Name)
+                .Concat(principals.Select(principal => "AuthorizationDataCache.PrincipalRoles." + principal.Name + "." + principal.ID.ToString()))
+                .Concat(principals.Select(principal => "AuthorizationDataCache.PrincipalPermissions." + principal.Name + "." + principal.ID.ToString()));
+
+            var cache = MemoryCache.Default;
+            foreach (string key in deleteKeys)
+                cache.Remove(key);
+        }
+
+        /// <summary>
+        /// Clears the roles' authorization data from the cache: RoleRoles, RolePermissions and Role (full list).
+        /// </summary>
+        public void ClearCacheRoles(IEnumerable<Guid> roleIds)
+        {
+            CsUtility.Materialize(ref roleIds);
+            _logger.Trace(() => "ClearCacheRoles: " + string.Join(", ", roleIds) + ".");
+
+            var deleteKeys =
+                roleIds.Select(roleId => "AuthorizationDataCache.RoleRoles." + roleId.ToString())
+                .Concat(roleIds.Select(roleId => "AuthorizationDataCache.RolePermissions." + roleId.ToString()))
+                .Concat(new[] { "AuthorizationDataCache.Roles" });
+
+            var cache = MemoryCache.Default;
+            foreach (string key in deleteKeys)
                 cache.Remove(key);
         }
 
@@ -78,9 +116,12 @@ namespace Rhetos.Dom.DefaultConcepts
                     value = (T)_cache.Get(key);
                     if (value == null)
                     {
+                        _logger.Trace(() => "Cache miss: " + key + ".");
                         value = valueCreator();
                         if (value != null)
                             _cache.Set(key, value, DateTimeOffset.Now.AddSeconds(absoluteExpirationInSeconds));
+                        else
+                            _logger.Trace(() => "Not caching null value: " + key + ".");
                     }
                 }
             return value;
@@ -130,18 +171,27 @@ namespace Rhetos.Dom.DefaultConcepts
 
             foreach (Guid roleId in roleIds)
             {
-                var rolePermissions = (IEnumerable<RolePermissionInfo>)_cache.Get(cacheKey(roleId));
+                string key = cacheKey(roleId);
+                var rolePermissions = (IEnumerable<RolePermissionInfo>)_cache.Get(key);
                 if (rolePermissions != null)
                     result = result == null ? rolePermissions : result.Concat(rolePermissions);
                 else
+                {
                     missingCache.Add(roleId);
+                    _logger.Trace(() => "Cache miss: " + key + ".");
+                }
             }
 
             var freshPermissions = _authorizationDataReader.Value.GetRolePermissions(missingCache, null);
             result = result == null ? freshPermissions : result.Concat(freshPermissions);
 
-            foreach (var rolePermissions in freshPermissions.GroupBy(p => p.RoleID))
-                _cache.Set(cacheKey(rolePermissions.Key), rolePermissions.ToList(), DateTimeOffset.Now.AddSeconds(GetDefaultExpirationSeconds()));
+            var freshPermissionsByRole = freshPermissions.GroupBy(p => p.RoleID).ToDictionary(group => group.Key, group => group.ToList());
+            foreach (Guid roleId in missingCache)
+                if (!freshPermissionsByRole.ContainsKey(roleId))
+                    freshPermissionsByRole.Add(roleId, new List<RolePermissionInfo>());
+
+            foreach (var rolePermissions in freshPermissionsByRole)
+                _cache.Set(cacheKey(rolePermissions.Key), rolePermissions.Value, DateTimeOffset.Now.AddSeconds(GetDefaultExpirationSeconds()));
 
             return result ?? Enumerable.Empty<RolePermissionInfo>();
         }
@@ -165,7 +215,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return CacheGetOrAdd("AuthorizationDataCache.Claims",
                 () => _authorizationDataReader.Value.GetClaims(null),
-                GetDefaultExpirationSeconds() > 0 ? 60*60*24*365 : 0);
+                GetDefaultExpirationSeconds() > 0 ? 60*60*24*365 : 0); // Claims do not expire. They cannot be modified at run-time, only at deploy-time.
         }
     }
 }

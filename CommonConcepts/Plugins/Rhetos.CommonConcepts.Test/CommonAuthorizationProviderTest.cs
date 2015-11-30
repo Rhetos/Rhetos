@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace Rhetos.CommonConcepts.Test
 {
@@ -192,7 +193,7 @@ namespace Rhetos.CommonConcepts.Test
         {
             public MockClaim(string resource, string right, bool? active)
             {
-                ID = Guid.NewGuid();
+                ID = new Guid((resource.ToLower() + ".///." + right.ToLower()).GetHashCode(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
                 ClaimResource = resource;
                 ClaimRight = right;
                 Active = active;
@@ -203,32 +204,52 @@ namespace Rhetos.CommonConcepts.Test
             public bool? Active { get; set; }
         }
 
-        private CommonAuthorizationProvider NewCommonAuthorizationProviderWithReader(IPrincipal[] principals, IRole[] roles, IPrincipalHasRole[] principalRoles, IRoleInheritsRole[] roleRoles, ICommonClaim[] commonClaims, IRolePermission[] rolePermissions, IPrincipalPermission[] principalPermissions)
+        private class AuthorizationContext
         {
-            var authorizationDataReader = new AuthorizationDataLoader(
-                new ConsoleLogProvider(),
+            public List<string> Log = new List<string>();
+            public ConsoleLogProvider ConsoleLogProvider;
+            public AuthorizationDataLoader AuthorizationDataLoader;
+            public AuthorizationDataCache AuthorizationDataCache;
+            public CommonAuthorizationProvider CommonAuthorizationProvider;
+        };
+
+        private AuthorizationContext NewAuthorizationContext(IPrincipal[] principals, IRole[] roles, IPrincipalHasRole[] principalRoles, IRoleInheritsRole[] roleRoles, ICommonClaim[] commonClaims, IRolePermission[] rolePermissions, IPrincipalPermission[] principalPermissions,
+            bool useCache)
+        {
+            var context = new AuthorizationContext();
+            context.ConsoleLogProvider = new ConsoleLogProvider((eventType, eventName, message) =>
+                {
+                    context.Log.Add("[" + eventType + "] " + (eventName != null ? (eventName + ": ") : "") + message());
+                });
+            context.AuthorizationDataLoader = new AuthorizationDataLoader(
+                context.ConsoleLogProvider,
                 new MockRepositories(principalRoles, principals, roleRoles, principalPermissions, rolePermissions, roles, commonClaims),
                 new Lazy<GenericRepository<IPrincipal>>(() => new TestGenericRepository<IPrincipal, IPrincipal>(principals)));
-            var provider = new CommonAuthorizationProvider(new ConsoleLogProvider(), authorizationDataReader);
-            return provider;
+
+            if (useCache)
+                context.AuthorizationDataCache = new AuthorizationDataCache(context.ConsoleLogProvider, new Lazy<AuthorizationDataLoader>(() => context.AuthorizationDataLoader));
+            else
+                context.AuthorizationDataCache = null;
+
+            context.CommonAuthorizationProvider = new CommonAuthorizationProvider(context.ConsoleLogProvider,
+                (IAuthorizationData)context.AuthorizationDataCache ?? context.AuthorizationDataLoader);
+            return context;
         }
 
-        private CommonAuthorizationProvider NewCommonAuthorizationProviderWithCache(IPrincipal[] principals, IRole[] roles, IPrincipalHasRole[] principalRoles, IRoleInheritsRole[] roleRoles, ICommonClaim[] commonClaims, IRolePermission[] rolePermissions, IPrincipalPermission[] principalPermissions)
+        private string ReportCaching(List<string> log)
         {
-            var authorizationDataReader = new AuthorizationDataLoader(
-                new ConsoleLogProvider(),
-                new MockRepositories(principalRoles, principals, roleRoles, principalPermissions, rolePermissions, roles, commonClaims),
-                new Lazy<GenericRepository<IPrincipal>>(() => new TestGenericRepository<IPrincipal, IPrincipal>(principals)));
-            var authorizationCache = new AuthorizationDataCache(new ConsoleLogProvider(),
-                new Lazy<AuthorizationDataLoader>(() => authorizationDataReader));
-            var provider = new CommonAuthorizationProvider(new ConsoleLogProvider(), authorizationCache);
-            return provider;
+            const string pattern = "AuthorizationDataCache: Cache miss: AuthorizationDataCache.";
+            return string.Join("\r\n",
+                log.Select(line => new { line, patternIndex = line.IndexOf(pattern) })
+                    .Where(lineInfo => lineInfo.patternIndex >= 0)
+                    .Select(lineInfo => lineInfo.line.Substring(lineInfo.patternIndex + pattern.Length)));
         }
 
         [TestMethod]
         public void SimpleTest_Reader()
         {
-            SimpleTest(NewCommonAuthorizationProviderWithReader);
+            var log = SimpleTest(useCache: false);
+            Assert.AreEqual("", ReportCaching(log));
         }
 
         [TestMethod]
@@ -236,23 +257,234 @@ namespace Rhetos.CommonConcepts.Test
         {
             // Avoid loading setitng from web.config.
             var expiration = typeof(AuthorizationDataCache).GetField("_defaultExpirationSeconds", BindingFlags.Static | BindingFlags.NonPublic);
-            expiration.SetValue(null, (double?)30);
+            expiration.SetValue(null, (double?)60 * 60 * 24 * 365); // Very long expiration time for simpler debugging.
 
             AuthorizationDataCache.ClearCache();
-            SimpleTest(NewCommonAuthorizationProviderWithCache);
+
+            var log1 = SimpleTest(useCache: true);
+            Assert.AreEqual(@"Principal.pr0.
+PrincipalRoles.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+RoleRoles.33395e07-8d14-4db9-bd79-c0c3e8407feb.
+RoleRoles.44495e07-8d14-4db9-bd79-c0c3e8407feb.
+Claims.
+PrincipalPermissions.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+RolePermissions.33395e07-8d14-4db9-bd79-c0c3e8407feb.
+RolePermissions.44495e07-8d14-4db9-bd79-c0c3e8407feb.
+Roles.
+Principal.pr1.
+PrincipalRoles.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
+RoleRoles.55595e07-8d14-4db9-bd79-c0c3e8407feb.
+PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
+RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCaching(log1));
+
             Console.WriteLine("Reusing cache");
-            SimpleTest(NewCommonAuthorizationProviderWithCache);
+
+            var log2 = SimpleTest(useCache: true);
+            Assert.AreEqual("", ReportCaching(log2));
         }
 
-        public void SimpleTest(Func<IPrincipal[], IRole[], IPrincipalHasRole[], IRoleInheritsRole[], ICommonClaim[], IRolePermission[], IPrincipalPermission[], IAuthorizationProvider> authProviderCreator)
+        public List<string> SimpleTest(bool useCache)
         {
             var principals = new IPrincipal[] {
-                new MockPrincipal { ID = Guid.NewGuid(), Name = "pr0" },
-                new MockPrincipal { ID = Guid.NewGuid(), Name = "pr1" } };
+                new MockPrincipal { ID = new Guid("11195e07-8d14-4db9-bd79-c0c3e8407feb"), Name = "pr0" },
+                new MockPrincipal { ID = new Guid("22295e07-8d14-4db9-bd79-c0c3e8407feb"), Name = "pr1" } };
 
             var roles = new IRole[] {
-                new MockRole { ID = Guid.NewGuid(), Name = "r0" },
-                new MockRole { ID = Guid.NewGuid(), Name = "r1" } };
+                new MockRole { ID = new Guid("33395e07-8d14-4db9-bd79-c0c3e8407feb"), Name = "r0" },
+                new MockRole { ID = new Guid("44495e07-8d14-4db9-bd79-c0c3e8407feb"), Name = "r1" },
+                new MockRole { ID = new Guid("55595e07-8d14-4db9-bd79-c0c3e8407feb"), Name = "r2" }};
+
+            var principalRoles = new IPrincipalHasRole[] {
+                new MockPrincipalHasRole(principals[0], roles[0]),
+                new MockPrincipalHasRole(principals[1], roles[1]),
+                new MockPrincipalHasRole(principals[1], roles[2]) };
+
+            var roleRoles = new IRoleInheritsRole[] {
+                new MockRoleInheritsRole(usersFrom: roles[0], permissionsFrom: roles[1]) };
+
+            var claims = new Claim[]
+            {
+                new Claim("c0", "c0ri"),
+                new Claim("c1", "c1ri"),
+                new Claim("c2", "c2ri"),
+                new Claim("c3", "c3ri"),
+                new Claim("c4", "c4ri"),
+                new Claim("c5", "c5ri"),
+                new Claim("c6", "c6ri"),
+                new Claim("c7", "c7ri"),
+            };
+
+            var commonClaims = claims
+                .Where(c => c.Resource != "c7")
+                .Select(c => new MockClaim(c.Resource, c.Right, true))
+                .ToArray<ICommonClaim>();
+            commonClaims[3].Active = false;
+            commonClaims[4].Active = null;
+
+            var rolePermissions = new IRolePermission[]
+            {
+                new MockRolePermission(roles[0], commonClaims[0], true),
+                new MockRolePermission(roles[1], commonClaims[1], true), // Also inherited to role0.
+                new MockRolePermission(roles[0], commonClaims[2], true),
+                new MockRolePermission(roles[1], commonClaims[2], false), // Also denied to role0.
+                new MockRolePermission(roles[0], commonClaims[3], true), // Inactive claim (active = null)
+                new MockRolePermission(roles[0], commonClaims[4], true), // Inactive claim.
+                new MockRolePermission(roles[1], commonClaims[6], true),
+            };
+
+            var principalPermissions = new IPrincipalPermission[]
+            {
+                new MockPrincipalPermission(principals[0], commonClaims[5], true),
+                new MockPrincipalPermission(principals[0], commonClaims[6], false),
+            };
+
+            var authorizationContext = NewAuthorizationContext(principals, roles, principalRoles, roleRoles, commonClaims, rolePermissions, principalPermissions,
+                useCache);
+            var provider = authorizationContext.CommonAuthorizationProvider;
+
+            Assert.AreEqual("True, True, False, False, False, True, False, False", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr0"), claims)));
+            Assert.AreEqual("False, True, False, False, False, False, True, False", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr1"), claims)));
+
+            return authorizationContext.Log;
+        }
+
+        [TestMethod]
+        public void SimilarClaimsTestWithReader()
+        {
+            var log = SimilarClaimsTest(useCache: false);
+            Assert.AreEqual("", ReportCaching(log));
+        }
+
+        [TestMethod]
+        public void SimilarClaimsTestWithCache()
+        {
+            // Avoid loading setitng from web.config.
+            var expiration = typeof(AuthorizationDataCache).GetField("_defaultExpirationSeconds", BindingFlags.Static | BindingFlags.NonPublic);
+            expiration.SetValue(null, (double?)60 * 60 * 24 * 365); // Very long expiration time for simpler debugging.
+
+            AuthorizationDataCache.ClearCache();
+
+            var log1 = SimilarClaimsTest(useCache: true);
+            Assert.AreEqual(@"Principal.pr0.
+PrincipalRoles.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+RoleRoles.33395e07-8d14-4db9-bd79-c0c3e8407feb.
+RoleRoles.44495e07-8d14-4db9-bd79-c0c3e8407feb.
+Claims.
+PrincipalPermissions.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+RolePermissions.33395e07-8d14-4db9-bd79-c0c3e8407feb.
+RolePermissions.44495e07-8d14-4db9-bd79-c0c3e8407feb.
+Roles.
+Principal.pr1.
+PrincipalRoles.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
+PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCaching(log1));
+
+            Console.WriteLine("Reusing cache");
+
+            var log2 = SimilarClaimsTest(useCache: true);
+            Assert.AreEqual("", ReportCaching(log2));
+        }
+
+        public List<string> SimilarClaimsTest(bool useCache)
+        {
+            var principals = new IPrincipal[] {
+                new MockPrincipal { ID = new Guid("11195E07-8D14-4DB9-BD79-C0C3E8407FEB"), Name = "pr0" },
+                new MockPrincipal { ID = new Guid("22295E07-8D14-4DB9-BD79-C0C3E8407FEB"), Name = "pr1" } };
+
+            var roles = new IRole[] {
+                new MockRole { ID = new Guid("33395E07-8D14-4DB9-BD79-C0C3E8407FEB"), Name = "r0" },
+                new MockRole { ID = new Guid("44495E07-8D14-4DB9-BD79-C0C3E8407FEB"), Name = "r1" } };
+
+            var principalRoles = new IPrincipalHasRole[] {
+                new MockPrincipalHasRole(principals[0], roles[0]),
+                new MockPrincipalHasRole(principals[1], roles[1]) };
+
+            var roleRoles = new IRoleInheritsRole[] {
+                new MockRoleInheritsRole(usersFrom: roles[0], permissionsFrom: roles[1]) };
+
+            var claims = new Claim[] {
+                new Claim("a.b", "c"),
+                new Claim("a", "b.c"),
+                new Claim("a2.b", "c"),
+                new Claim("a2", "b.c"),
+                new Claim("a4.b", "c"),
+                new Claim("a4", "b.c"),
+                new Claim("a6", "b"), // index 6, commonClaims[6]
+                new Claim("A6", "B"), // index 7
+                new Claim("A8", "B"), // commonClaims[7]
+                new Claim("a8", "b"), // index 9
+            };
+
+            var commonClaims = claims
+                .Where((claim, index) => index != 7 && index != 9)
+                .Select(c => new MockClaim(c.Resource, c.Right, true))
+                .ToArray<ICommonClaim>();
+
+            var rolePermissions = new IRolePermission[]
+            {
+                new MockRolePermission(roles[0], commonClaims[0], true),
+                new MockRolePermission(roles[1], commonClaims[1], true),
+                new MockRolePermission(roles[0], commonClaims[2], true),
+                new MockRolePermission(roles[1], commonClaims[3], false),
+                new MockRolePermission(roles[0], commonClaims[4], true),
+                new MockRolePermission(roles[0], commonClaims[6], true),
+                new MockRolePermission(roles[1], commonClaims[7], true),
+            };
+
+            var principalPermissions = new IPrincipalPermission[] { };
+
+            var authorizationContext = NewAuthorizationContext(principals, roles, principalRoles, roleRoles, commonClaims, rolePermissions, principalPermissions,
+                useCache);
+            var provider = authorizationContext.CommonAuthorizationProvider;
+
+            Assert.AreEqual("True, True, True, False, True, False, True, True, True, True", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr0"), claims)));
+            Assert.AreEqual("False, True, False, False, False, False, False, False, True, True", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr1"), claims)));
+
+            return authorizationContext.Log;
+        }
+
+        [TestMethod]
+        public void ClearCachePrincipalsRoles()
+        {
+            // Avoid loading setitng from web.config.
+            var expiration = typeof(AuthorizationDataCache).GetField("_defaultExpirationSeconds", BindingFlags.Static | BindingFlags.NonPublic);
+            expiration.SetValue(null, (double?)60 * 60 * 24 * 365); // Very long expiration time for simpler debugging.
+
+            AuthorizationDataCache.ClearCache();
+
+            var log1 = ClearCachePrincipalsRoles_GetAuthorization();
+            Assert.AreEqual(@"Principal.pr0.
+PrincipalRoles.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+RoleRoles.33395e07-8d14-4db9-bd79-c0c3e8407feb.
+RoleRoles.44495e07-8d14-4db9-bd79-c0c3e8407feb.
+Claims.
+PrincipalPermissions.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+RolePermissions.33395e07-8d14-4db9-bd79-c0c3e8407feb.
+RolePermissions.44495e07-8d14-4db9-bd79-c0c3e8407feb.
+Roles.
+Principal.pr1.
+PrincipalRoles.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
+PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCaching(log1));
+
+            Console.WriteLine("Reusing some parts of cache.");
+
+            var log2 = ClearCachePrincipalsRoles_GetAuthorization();
+            Assert.AreEqual(@"Principal.pr0.
+PrincipalRoles.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+RoleRoles.33395e07-8d14-4db9-bd79-c0c3e8407feb.
+PrincipalPermissions.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+RolePermissions.33395e07-8d14-4db9-bd79-c0c3e8407feb.
+Roles.", ReportCaching(log2));
+        }
+
+        public List<string> ClearCachePrincipalsRoles_GetAuthorization()
+        {
+            var principals = new IPrincipal[] {
+                new MockPrincipal { ID = new Guid("11195E07-8D14-4DB9-BD79-C0C3E8407FEB"), Name = "pr0" },
+                new MockPrincipal { ID = new Guid("22295E07-8D14-4DB9-BD79-C0C3E8407FEB"), Name = "pr1" } };
+
+            var roles = new IRole[] {
+                new MockRole { ID = new Guid("33395E07-8D14-4DB9-BD79-C0C3E8407FEB"), Name = "r0" },
+                new MockRole { ID = new Guid("44495E07-8D14-4DB9-BD79-C0C3E8407FEB"), Name = "r1" } };
 
             var principalRoles = new IPrincipalHasRole[] {
                 new MockPrincipalHasRole(principals[0], roles[0]),
@@ -297,83 +529,18 @@ namespace Rhetos.CommonConcepts.Test
                 new MockPrincipalPermission(principals[0], commonClaims[6], false),
             };
 
-            var provider = authProviderCreator(principals, roles, principalRoles, roleRoles, commonClaims, rolePermissions, principalPermissions);
+            var authorizationContext = NewAuthorizationContext(principals, roles, principalRoles, roleRoles, commonClaims, rolePermissions, principalPermissions,
+                useCache: true);
 
+            var cache = authorizationContext.AuthorizationDataCache;
+            cache.ClearCachePrincipals(new[] { principals[0] });
+            cache.ClearCacheRoles(new[] { roles[0].ID });
+
+            var provider = authorizationContext.CommonAuthorizationProvider;
             Assert.AreEqual("True, True, False, False, False, True, False, False", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr0"), claims)));
             Assert.AreEqual("False, True, False, False, False, False, True, False", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr1"), claims)));
-        }
 
-        [TestMethod]
-        public void SimilarClaimsTestWithReader()
-        {
-            SimilarClaimsTest(NewCommonAuthorizationProviderWithReader);
-        }
-
-        [TestMethod]
-        public void SimilarClaimsTestWithCache()
-        {
-            // Avoid loading setitng from web.config.
-            var expiration = typeof(AuthorizationDataCache).GetField("_defaultExpirationSeconds", BindingFlags.Static | BindingFlags.NonPublic);
-            expiration.SetValue(null, (double?)30);
-
-            AuthorizationDataCache.ClearCache();
-            SimilarClaimsTest(NewCommonAuthorizationProviderWithCache);
-            Console.WriteLine("Reusing cache");
-            SimilarClaimsTest(NewCommonAuthorizationProviderWithCache);
-        }
-
-        public void SimilarClaimsTest(Func<IPrincipal[], IRole[], IPrincipalHasRole[], IRoleInheritsRole[], ICommonClaim[], IRolePermission[], IPrincipalPermission[], IAuthorizationProvider> authProviderCreator)
-        {
-            var principals = new IPrincipal[] {
-                new MockPrincipal { ID = Guid.NewGuid(), Name = "pr0" },
-                new MockPrincipal { ID = Guid.NewGuid(), Name = "pr1" } };
-
-            var roles = new IRole[] {
-                new MockRole { ID = Guid.NewGuid(), Name = "r0" },
-                new MockRole { ID = Guid.NewGuid(), Name = "r1" } };
-
-            var principalRoles = new IPrincipalHasRole[] {
-                new MockPrincipalHasRole(principals[0], roles[0]),
-                new MockPrincipalHasRole(principals[1], roles[1]) };
-
-            var roleRoles = new IRoleInheritsRole[] {
-                new MockRoleInheritsRole(usersFrom: roles[0], permissionsFrom: roles[1]) };
-
-            var claims = new Claim[] {
-                new Claim("a.b", "c"),
-                new Claim("a", "b.c"),
-                new Claim("a2.b", "c"),
-                new Claim("a2", "b.c"),
-                new Claim("a4.b", "c"),
-                new Claim("a4", "b.c"),
-                new Claim("a6", "b"), // index 6, commonClaims[6]
-                new Claim("A6", "B"), // index 7
-                new Claim("A8", "B"), // commonClaims[7]
-                new Claim("a8", "b"), // index 9
-            };
-
-            var commonClaims = claims
-                .Where((claim, index) => index != 7 && index != 9)
-                .Select(c => new MockClaim(c.Resource, c.Right, true))
-                .ToArray<ICommonClaim>();
-
-            var rolePermissions = new IRolePermission[]
-            {
-                new MockRolePermission(roles[0], commonClaims[0], true),
-                new MockRolePermission(roles[1], commonClaims[1], true),
-                new MockRolePermission(roles[0], commonClaims[2], true),
-                new MockRolePermission(roles[1], commonClaims[3], false),
-                new MockRolePermission(roles[0], commonClaims[4], true),
-                new MockRolePermission(roles[0], commonClaims[6], true),
-                new MockRolePermission(roles[1], commonClaims[7], true),
-            };
-
-            var principalPermissions = new IPrincipalPermission[] { };
-
-            var provider = authProviderCreator(principals, roles, principalRoles, roleRoles, commonClaims, rolePermissions, principalPermissions);
-
-            Assert.AreEqual("True, True, True, False, True, False, True, True, True, True", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr0"), claims)));
-            Assert.AreEqual("False, True, False, False, False, False, False, False, True, True", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr1"), claims)));
+            return authorizationContext.Log;
         }
     }
 }
