@@ -36,7 +36,7 @@ namespace ActiveDirectorySync.Test.Helpers
         public MockWindowsSecurityRhetosContainer(string userGroupMembership, bool commitChanges = false)
             : base(commitChanges, RhetosServerFolder)
         {
-            _initializeSession += builder =>
+            InitializeSession += builder =>
             {
                 builder.RegisterInstance(new MockWindowsSecurity(userGroupMembership)).As<IWindowsSecurity>();
                 // Test the CommonAuthorizationProvider even if another security package was deployed:

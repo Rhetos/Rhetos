@@ -191,8 +191,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void KeepSynchronizedSimple()
         {
-            using (var container = new RhetosTestContainerWithLogMonitor())
+            using (var container = new RhetosTestContainer())
             {
+                var log = new List<string>();
+                container.AddLogMonitor(log);
+
                 var repository = container.Resolve<Common.DomRepository>();
 
                 var doc1 = new Test9.Document { Name = "doc1" };
@@ -218,22 +221,22 @@ namespace CommonConcepts.Test
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
 
                 st1.HeadID = doc2.ID;
-                container.Log.Clear();
+                log.Clear();
                 repository.Test9.Part.Update(new[] { st1 });
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
 
                 Assert.AreEqual("DocumentAggregates i0 u2 d0, DocumentSimpleAggregate i0 u2 d0",
-                    ReportRecompute(container.Log)); // Optimized IEnumerable<Guid> filters in ChangesOnChangedItems merges IDs retrieved before and after save, to avoid two calls to the Recompute() function.
+                    ReportRecompute(log)); // Optimized IEnumerable<Guid> filters in ChangesOnChangedItems merges IDs retrieved before and after save, to avoid two calls to the Recompute() function.
                 Assert.AreEqual(1, SimpleNumParts(repository, "doc1"), "after update detail");
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
 
                 st1.Name += "x";
-                container.Log.Clear();
+                log.Clear();
                 repository.Test9.Part.Update(new[] { st1 });
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
 
                 Assert.AreEqual("DocumentAggregates i0 u0 d0, DocumentSimpleAggregate i0 u0 d0",
-                    ReportRecompute(container.Log)); // Optimized IEnumerable<Guid> filters in ChangesOnChangedItems merges IDs retrieved before and after save, to avoid two calls to the Recompute() function.
+                    ReportRecompute(log)); // Optimized IEnumerable<Guid> filters in ChangesOnChangedItems merges IDs retrieved before and after save, to avoid two calls to the Recompute() function.
                 Assert.AreEqual(1, SimpleNumParts(repository, "doc1"), "after update detail");
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
 

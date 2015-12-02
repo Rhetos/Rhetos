@@ -125,7 +125,8 @@ namespace Rhetos.Dsl.DefaultConcepts
             return (PropertyInfo)dslModel.FindByKey(propertyKey);
         }
 
-        public static ValueOrError<PropertyInfo> GetPropertyByPath(DataStructureInfo source, string path, IDslModel existingConcepts)
+        /// <param name="allowSystemProperties">Allows path to end with a C# property that does not have a representation in the DSL model (ID property or the Guid property used for a Reference).</param>
+        public static ValueOrError<PropertyInfo> GetPropertyByPath(DataStructureInfo source, string path, IDslModel existingConcepts, bool allowSystemProperties = true)
         {
             if (path.Contains(" "))
                 return ValueOrError.CreateError("The path contains a space character.");
@@ -147,8 +148,16 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             PropertyInfo selectedProperty = FindProperty(existingConcepts, selectedDataStructure.Value, lastPropertyName);
 
-            if (selectedProperty == null && lastPropertyName == "ID")
+            if (allowSystemProperties && selectedProperty == null && lastPropertyName == "ID")
                 return new GuidPropertyInfo { DataStructure = selectedDataStructure.Value, Name = "ID" };
+
+            if (allowSystemProperties && selectedProperty == null && lastPropertyName.EndsWith("ID"))
+            {
+                string referenceName = lastPropertyName.Substring(0, lastPropertyName.Length - 2);
+                var referencePrototype = new PropertyInfo { DataStructure = selectedDataStructure.Value, Name = referenceName };
+                if (existingConcepts.FindByKey(referencePrototype.GetKey()) != null)
+                    return new GuidPropertyInfo { DataStructure = selectedDataStructure.Value, Name = lastPropertyName };
+            }
 
             if (selectedProperty == null)
                 return ValueOrError.CreateError("There is no property '" + lastPropertyName + "' on " + selectedDataStructure.Value.GetUserDescription() + ".");

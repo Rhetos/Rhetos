@@ -58,14 +58,13 @@ namespace {0}._Helper
 
     public class _ModuleRepository
     {{
-        private readonly Common.DomRepository _domRepository;
-        private readonly Common.ExecutionContext _executionContext;
+        private readonly Rhetos.Extensibility.INamedPlugins<IRepository> _repositories;
 
-        public _ModuleRepository(Common.DomRepository domRepository, Common.ExecutionContext executionContext)
+        public _ModuleRepository(Rhetos.Extensibility.INamedPlugins<IRepository> repositories)
         {{
-            _domRepository = domRepository;
-            _executionContext = executionContext;
+            _repositories = repositories;
         }}
+
         {4}
     }}
     {5}
@@ -82,7 +81,7 @@ namespace {0}._Helper
         {
             return string.Format(
                 @"private {0}._Helper._ModuleRepository _{0};
-        public {0}._Helper._ModuleRepository {0} {{ get {{ return _{0} ?? (_{0} = new {0}._Helper._ModuleRepository(this, _executionContext)); }} }}
+        public {0}._Helper._ModuleRepository {0} {{ get {{ return _{0} ?? (_{0} = new {0}._Helper._ModuleRepository(_repositories)); }} }}
 
         ",
                 info.Name);
@@ -104,6 +103,7 @@ namespace {0}._Helper
             codeBuilder.AddReferencesFromDependency(typeof(System.Xml.Linq.XElement)); // Includes reference to System.Xml.Linq.
             // Commonly used Rhetos classes:
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.FilterAll)); // Includes reference to Rhetos.Dom.DefaultConcepts.dll
+            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Extensibility.INamedPlugins<>));
             // Other classes used in domain object model:
             codeBuilder.AddReferencesFromDependency(typeof(System.Runtime.Serialization.DataContractAttribute)); // Includes reference to System.Runtime.Serialization.dll.
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.IPersistenceTransaction));

@@ -69,8 +69,9 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Reading all documents (access denied)
 
-            using (var container = new NoClaimsRhetosTestContainer())
+            using (var container = new RhetosTestContainer())
             {
+                container.AddIgnoreClaims();
                 var processingEngine = container.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
                 {
@@ -85,8 +86,9 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Reading the user's documents
 
-            using (var container = new NoClaimsRhetosTestContainer())
+            using (var container = new RhetosTestContainer())
             {
+                container.AddIgnoreClaims();
                 var processingEngine = container.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
                 {
@@ -156,8 +158,9 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Reading all documents (access denied)
 
-            using (var container = new NoClaimsRhetosTestContainer())
+            using (var container = new RhetosTestContainer())
             {
+                container.AddIgnoreClaims();
                 var processingEngine = container.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
                 {
@@ -172,8 +175,9 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Reading the user's documents
 
-            using (var container = new NoClaimsRhetosTestContainer())
+            using (var container = new RhetosTestContainer())
             {
+                container.AddIgnoreClaims();
                 var processingEngine = container.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
                 {
@@ -189,8 +193,9 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Edit doc1 (ok)
 
-            using (var container = new NoClaimsRhetosTestContainer())
+            using (var container = new RhetosTestContainer())
             {
+                container.AddIgnoreClaims();
                 var repository = container.Resolve<Common.DomRepository>();
                 var doc1 = repository.DemoRowPermissions2.Document.Query().Where(d => d.Title == "doc1").Single();
                 doc1.Title += "x";
@@ -212,8 +217,9 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Edit doc4 (acces denied)
 
-            using (var container = new NoClaimsRhetosTestContainer())
+            using (var container = new RhetosTestContainer())
             {
+                container.AddIgnoreClaims();
                 var repository = container.Resolve<Common.DomRepository>();
                 var doc4 = repository.DemoRowPermissions2.Document.Query().Where(d => d.Title == "doc4").Single();
                 doc4.Title += "x";

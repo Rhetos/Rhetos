@@ -39,6 +39,6 @@ namespace Rhetos.Dsl.DefaultConcepts
         public override int GetHashCode()
         {
             return TypeOrAssembly.GetHashCode();
-        }        
+        }
     }
 }

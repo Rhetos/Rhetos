@@ -246,8 +246,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ProcessingEngineUniqueConstraintError()
         {
-            using (var container = new NoClaimsRhetosTestContainer())
+            using (var container = new RhetosTestContainer())
             {
+                container.AddIgnoreClaims();
                 var processingEngine = container.Resolve<IProcessingEngine>();
                 var saveDuplicates = new SaveEntityCommandInfo
                 {

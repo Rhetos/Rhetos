@@ -65,9 +65,10 @@ namespace Rhetos.Dom.DefaultConcepts
             _logger.Trace(() => "ClearCachePrincipals: " + string.Join(", ", principals.Select(p => p.Name + " " + p.ID.ToString())) + ".");
 
             var deleteKeys =
-                principals.Select(principal => "AuthorizationDataCache.Principal." + principal.Name)
-                .Concat(principals.Select(principal => "AuthorizationDataCache.PrincipalRoles." + principal.Name + "." + principal.ID.ToString()))
-                .Concat(principals.Select(principal => "AuthorizationDataCache.PrincipalPermissions." + principal.Name + "." + principal.ID.ToString()));
+                principals.Select(principal => "AuthorizationDataCache.Principal." + principal.Name.ToLower())
+                .Concat(principals.Select(principal => "AuthorizationDataCache.PrincipalRoles." + principal.Name.ToLower() + "." + principal.ID.ToString()))
+                .Concat(principals.Select(principal => "AuthorizationDataCache.PrincipalPermissions." + principal.Name.ToLower() + "." + principal.ID.ToString()))
+                .Distinct();
 
             var cache = MemoryCache.Default;
             foreach (string key in deleteKeys)
@@ -83,7 +84,8 @@ namespace Rhetos.Dom.DefaultConcepts
             _logger.Trace(() => "ClearCacheRoles: " + string.Join(", ", roleIds) + ".");
 
             var deleteKeys =
-                roleIds.Select(roleId => "AuthorizationDataCache.RoleRoles." + roleId.ToString())
+                roleIds.Distinct()
+                .Select(roleId => "AuthorizationDataCache.RoleRoles." + roleId.ToString())
                 .Concat(roleIds.Select(roleId => "AuthorizationDataCache.RolePermissions." + roleId.ToString()))
                 .Concat(new[] { "AuthorizationDataCache.Roles" });
 
@@ -129,14 +131,14 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public PrincipalInfo GetPrincipal(string username)
         {
-            return CacheGetOrAdd("AuthorizationDataCache.Principal." + username,
+            return CacheGetOrAdd("AuthorizationDataCache.Principal." + username.ToLower(),
                 () => _authorizationDataReader.Value.GetPrincipal(username),
                 GetDefaultExpirationSeconds());
         }
 
         public IEnumerable<Guid> GetPrincipalRoles(IPrincipal principal)
         {
-            return CacheGetOrAdd("AuthorizationDataCache.PrincipalRoles." + principal.Name + "." + principal.ID.ToString(),
+            return CacheGetOrAdd("AuthorizationDataCache.PrincipalRoles." + principal.Name.ToLower() + "." + principal.ID.ToString(),
                 () => _authorizationDataReader.Value.GetPrincipalRoles(principal),
                 GetDefaultExpirationSeconds());
         }
@@ -153,7 +155,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         public IEnumerable<PrincipalPermissionInfo> GetPrincipalPermissions(IPrincipal principal, IEnumerable<Guid> claimIds = null)
         {
-            return CacheGetOrAdd("AuthorizationDataCache.PrincipalPermissions." + principal.Name + "." + principal.ID.ToString(),
+            return CacheGetOrAdd("AuthorizationDataCache.PrincipalPermissions." + principal.Name.ToLower() + "." + principal.ID.ToString(),
                 () => _authorizationDataReader.Value.GetPrincipalPermissions(principal, null),
                 GetDefaultExpirationSeconds());
         }

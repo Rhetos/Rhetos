@@ -39,7 +39,7 @@ namespace Rhetos.Dom.DefaultConcepts
             builder.RegisterType<AuthorizationDataLoader>().InstancePerLifetimeScope();
 			// AuthorizationDataCache must not be "single instance" because it could result with leaving an open SQL connection when reading permissions.
             // AuthorizationDataCache must be set to InstancePerLifetimeScope to employ user-level locking (see AuthorizationDataCache._userLevelCacheUpdateLock).
-            builder.RegisterType<AuthorizationDataCache>().As<IAuthorizationData>().InstancePerLifetimeScope();
+            builder.RegisterType<AuthorizationDataCache>().As<AuthorizationDataCache>().As<IAuthorizationData>().InstancePerLifetimeScope();
             builder.RegisterType<CommonAuthorizationProvider>().As<IAuthorizationProvider>().InstancePerLifetimeScope();
             builder.RegisterType<EntityFrameworkMetadata>().SingleInstance();
 

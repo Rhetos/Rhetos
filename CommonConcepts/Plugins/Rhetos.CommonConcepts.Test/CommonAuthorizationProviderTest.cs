@@ -236,7 +236,7 @@ namespace Rhetos.CommonConcepts.Test
             return context;
         }
 
-        private string ReportCaching(List<string> log)
+        private string ReportCacheMisses(List<string> log)
         {
             const string pattern = "AuthorizationDataCache: Cache miss: AuthorizationDataCache.";
             return string.Join("\r\n",
@@ -249,7 +249,7 @@ namespace Rhetos.CommonConcepts.Test
         public void SimpleTest_Reader()
         {
             var log = SimpleTest(useCache: false);
-            Assert.AreEqual("", ReportCaching(log));
+            Assert.AreEqual("", ReportCacheMisses(log));
         }
 
         [TestMethod]
@@ -275,12 +275,12 @@ Principal.pr1.
 PrincipalRoles.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
 RoleRoles.55595e07-8d14-4db9-bd79-c0c3e8407feb.
 PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
-RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCaching(log1));
+RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMisses(log1));
 
             Console.WriteLine("Reusing cache");
 
             var log2 = SimpleTest(useCache: true);
-            Assert.AreEqual("", ReportCaching(log2));
+            Assert.AreEqual("", ReportCacheMisses(log2));
         }
 
         public List<string> SimpleTest(bool useCache)
@@ -352,7 +352,7 @@ RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCaching(log1));
         public void SimilarClaimsTestWithReader()
         {
             var log = SimilarClaimsTest(useCache: false);
-            Assert.AreEqual("", ReportCaching(log));
+            Assert.AreEqual("", ReportCacheMisses(log));
         }
 
         [TestMethod]
@@ -376,12 +376,12 @@ RolePermissions.44495e07-8d14-4db9-bd79-c0c3e8407feb.
 Roles.
 Principal.pr1.
 PrincipalRoles.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
-PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCaching(log1));
+PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMisses(log1));
 
             Console.WriteLine("Reusing cache");
 
             var log2 = SimilarClaimsTest(useCache: true);
-            Assert.AreEqual("", ReportCaching(log2));
+            Assert.AreEqual("", ReportCacheMisses(log2));
         }
 
         public List<string> SimilarClaimsTest(bool useCache)
@@ -463,7 +463,7 @@ RolePermissions.44495e07-8d14-4db9-bd79-c0c3e8407feb.
 Roles.
 Principal.pr1.
 PrincipalRoles.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
-PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCaching(log1));
+PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMisses(log1));
 
             Console.WriteLine("Reusing some parts of cache.");
 
@@ -473,7 +473,7 @@ PrincipalRoles.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 RoleRoles.33395e07-8d14-4db9-bd79-c0c3e8407feb.
 PrincipalPermissions.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 RolePermissions.33395e07-8d14-4db9-bd79-c0c3e8407feb.
-Roles.", ReportCaching(log2));
+Roles.", ReportCacheMisses(log2));
         }
 
         public List<string> ClearCachePrincipalsRoles_GetAuthorization()

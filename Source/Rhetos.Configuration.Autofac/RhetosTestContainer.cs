@@ -46,7 +46,7 @@ namespace Rhetos.Configuration.Autofac
         protected ILifetimeScope _lifetimeScope;
         protected bool _commitChanges;
         protected string _explicitRhetosServerFolder;
-        protected event Action<ContainerBuilder> _initializeSession;
+        public event Action<ContainerBuilder> InitializeSession;
 
         /// <param name="commitChanges">
         /// Whether database updates (by ORM repositories) will be committed or rollbacked.
@@ -103,8 +103,8 @@ namespace Rhetos.Configuration.Autofac
                         }
                 }
 
-                if (_initializeSession != null)
-                    _lifetimeScope = _iocContainer.BeginLifetimeScope(_initializeSession);
+                if (InitializeSession != null)
+                    _lifetimeScope = _iocContainer.BeginLifetimeScope(InitializeSession);
                 else
                     _lifetimeScope = _iocContainer.BeginLifetimeScope();
 

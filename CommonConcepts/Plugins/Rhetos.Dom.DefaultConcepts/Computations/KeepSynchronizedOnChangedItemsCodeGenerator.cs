@@ -101,15 +101,16 @@ namespace Rhetos.Dom.DefaultConcepts
             else
                 recomputeCall =
                 @"_domRepository.{1}.{2}.{5}(filterKeepSynchronizedOnChangedItems{0}Old);
-                _domRepository.{1}.{2}.{5}(filteredNew);";
+                    _domRepository.{1}.{2}.{5}(filteredNew);";
             
             return string.Format(
-@"            " + OverrideRecomputeTag(info) + @"
-            {{
-                var filteredNew = filterLoadKeepSynchronizedOnChangedItems{0}(inserted.Concat(updated));
-                " + recomputeCall + @"
-            }}
-",
+                OverrideRecomputeTag(info) + @"
+                {{
+                    var filteredNew = filterLoadKeepSynchronizedOnChangedItems{0}(inserted.Concat(updated));
+                    " + recomputeCall + @"
+                }}
+
+                ",
                 uniqueName,
                 info.KeepSynchronized.EntityComputedFrom.Target.Module.Name,
                 info.KeepSynchronized.EntityComputedFrom.Target.Name,

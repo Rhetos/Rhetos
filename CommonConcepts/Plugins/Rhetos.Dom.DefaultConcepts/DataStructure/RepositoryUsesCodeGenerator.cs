@@ -17,41 +17,33 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Microsoft.CSharp.RuntimeBinder;
+using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
 using System.ComponentModel.Composition;
-using Rhetos.Compiler;
-using Rhetos.Extensibility;
-using Rhetos.Dsl;
+using System.Linq;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(OnSaveUpdateInfo))]
-    public class OnSaveUpdateCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(RepositoryUsesInfo))]
+    public class RepositoryUsesCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (OnSaveUpdateInfo)conceptInfo;
-            codeBuilder.InsertCode(GetSnippet(info), WritableOrmDataStructureCodeGenerator.OnSaveTag1, info.SaveMethod.Entity);
-        }
+            var info = (RepositoryUsesInfo)conceptInfo;
 
-        private string GetSnippet(OnSaveUpdateInfo info)
-        {
-            return string.Format(
-            @"{{ // {2}
-                    {3}
-                }}
+            var type = Type.GetType(info.PropertyType);
+            if (type == null)
+                throw new DslSyntaxException(info, "Could not find type '" + info.PropertyType + "'.");
 
-                ",
-                    info.SaveMethod.Entity.Module.Name,
-                    info.SaveMethod.Entity.Name,
-                    info.RuleName,
-                    info.CsCodeSnippet.Trim());
+            codeBuilder.InsertCode("private readonly " + type.FullName + " " + info.PropertyName + ";\r\n        ", RepositoryHelper.RepositoryPrivateMembers, info.DataStructure);
+            codeBuilder.InsertCode(", " + type.FullName + " " + info.PropertyName, RepositoryHelper.ConstructorArguments, info.DataStructure);
+            codeBuilder.InsertCode("this." + info.PropertyName + " = " + info.PropertyName + ";\r\n            ", RepositoryHelper.ConstructorCode, info.DataStructure);
         }
     }
 }

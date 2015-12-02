@@ -26,6 +26,7 @@ using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Dsl;
 using Rhetos.Processing;
 using Rhetos.Processing.DefaultCommands;
+using Rhetos.Utilities;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -33,37 +34,45 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         public static readonly CsTag<DataStructureInfo> RepositoryAttributes = "RepositoryAttributes";
         public static readonly CsTag<DataStructureInfo> RepositoryInterfaces = new CsTag<DataStructureInfo>("RepositoryInterface", TagType.Appendable, ",\r\n        {0}");
+        public static readonly CsTag<DataStructureInfo> RepositoryPrivateMembers = "RepositoryPrivateMembers";
         public static readonly CsTag<DataStructureInfo> RepositoryMembers = "RepositoryMembers";
         public static readonly CsTag<DataStructureInfo> AssignSimplePropertyTag = "AssignSimpleProperty";
+        public static readonly CsTag<DataStructureInfo> ConstructorArguments = "RepositoryConstructorArguments";
+        public static readonly CsTag<DataStructureInfo> ConstructorCode = "RepositoryConstructorCode";
 
         private static string RepositorySnippet(DataStructureInfo info)
         {
             return string.Format(
-@"{1}
-    public class {0}_Repository : IRepository{2}
+    RepositoryAttributes.Evaluate(info) + @"
+    public class {0}_Repository : IRepository" + RepositoryInterfaces.Evaluate(info) + @"
     {{
         private readonly Common.DomRepository _domRepository;
         private readonly Common.ExecutionContext _executionContext;
+        " + RepositoryPrivateMembers.Evaluate(info) + @"
 
-        public {0}_Repository(Common.DomRepository domRepository, Common.ExecutionContext executionContext)
+        public {0}_Repository(Common.DomRepository domRepository, Common.ExecutionContext executionContext" + ConstructorArguments.Evaluate(info) + @")
         {{
             _domRepository = domRepository;
             _executionContext = executionContext;
+            " + ConstructorCode.Evaluate(info) + @"
         }}
 
-{3}
+        " + RepositoryMembers.Evaluate(info) + @"
     }}
 
-", info.Name, RepositoryAttributes.Evaluate(info), RepositoryInterfaces.Evaluate(info), RepositoryMembers.Evaluate(info));
+    ",
+                info.Name);
         }
 
         private static string CallFromModuleRepostiorySnippet(DataStructureInfo info)
         {
             return string.Format(
-@"        private {0}_Repository _{0}_Repository;
-        public {0}_Repository {0} {{ get {{ return _{0}_Repository ?? (_{0}_Repository = new {0}_Repository(_domRepository, _executionContext)); }} }}
+        @"private {0}_Repository _{0}_Repository;
+        public {0}_Repository {0} {{ get {{ return _{0}_Repository ?? (_{0}_Repository = ({0}_Repository)Rhetos.Extensibility.NamedPluginsExtensions.GetPlugin(_repositories, {1})); }} }}
 
-", info.Name);
+        ",
+                info.Name,
+                CsUtility.QuotedString(info.Module.Name + "." + info.Name));
         }
 
         private static string RegisterRepository(DataStructureInfo info)
@@ -80,6 +89,7 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode(RepositorySnippet(info), ModuleCodeGenerator.HelperNamespaceMembersTag, info.Module);
             codeBuilder.InsertCode(CallFromModuleRepostiorySnippet(info), ModuleCodeGenerator.RepositoryMembersTag, info.Module);
             codeBuilder.InsertCode(RegisterRepository(info), ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
+            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Extensibility.NamedPluginsExtensions));
         }
         
         //==============================================================
@@ -89,7 +99,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string RepositoryReadFunctionsSnippet(DataStructureInfo info, string readFunctionBody)
         {
             return string.Format(
-@"        public IEnumerable<{0}> Load(object parameter, Type parameterType)
+        @"public IEnumerable<{0}> Load(object parameter, Type parameterType)
         {{
             var items = _executionContext.GenericRepository(""{0}"").Load(parameter, parameterType);
             return (IEnumerable<{0}>)items;
@@ -113,7 +123,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return All();
         }}
 
-",
+        ",
                 info.GetKeyProperties(),
                 readFunctionBody);
         }
@@ -121,7 +131,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string RepositoryQueryFunctionsSnippet(DataStructureInfo info, string queryFunctionBody)
         {
             return string.Format(
-@"        [Obsolete(""Use Load(identifiers) or Query(identifiers) method."")]
+        @"[Obsolete(""Use Load(identifiers) or Query(identifiers) method."")]
         public global::{0}.{1}[] Filter(IEnumerable<Guid> identifiers)
         {{
             const int BufferSize = 500; // EF 6.1.3 LINQ query has O(n^2) time complexity. Batch size of 500 results with optimal total time on the test system.
@@ -151,7 +161,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return (IQueryable<Common.Queryable.{0}_{1}>)query;
         }}
 
-",
+        ",
                 info.Module.Name,
                 info.Name);
         }

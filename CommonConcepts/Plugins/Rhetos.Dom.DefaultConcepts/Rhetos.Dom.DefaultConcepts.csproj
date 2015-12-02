@@ -71,6 +71,7 @@
     <Compile Include="Authorization\CommonAuthorizationProvider.cs" />
     <Compile Include="Authorization\ClaimGenerator.cs" />
     <Compile Include="Authorization\ClaimInfo.cs" />
+    <Compile Include="Authorization\ClearAuthenticationCacheMacro.cs" />
     <Compile Include="Authorization\IAuthorizationData.cs" />
     <Compile Include="Authorization\PrincipalInfo.cs" />
     <Compile Include="Authorization\RolePermissionInfo.cs" />
@@ -88,6 +89,7 @@
     <Compile Include="Computations\KeepSynchronizedRecomputeOnDeployCodeGenerator.cs" />
     <Compile Include="Computations\LockItemsLockPropertyCodeGenerator.cs" />
     <Compile Include="DataStructure\DataStructureQueryableCodeGenerator.cs" />
+    <Compile Include="DataStructure\RepositoryUsesCodeGenerator.cs" />
     <Compile Include="DataStructure\SubtypeExtendFilterCodeGenerator.cs" />
     <Compile Include="DataStructure\FilterIdRepositoryCodeGenerator.cs" />
     <Compile Include="DataStructure\ImplementsQueryableInterfacePropertyCodeGeneratorQueryable.cs" />
@@ -112,7 +114,7 @@
     <Compile Include="Computations\FilterUseExecutionContextCodeGenerator.cs" />
     <Compile Include="Computations\ReportDataCodeGenerator.cs" />
     <Compile Include="DataStructure\ComputedCodeGenerator.cs" />
-    <Compile Include="DataStructure\ClaimRepositoryCodeGenerator.cs" />
+    <Compile Include="Authorization\ClaimRepositoryCodeGenerator.cs" />
     <Compile Include="DataStructureUtility.cs" />
     <Compile Include="Computations\ComposableFilterByCodeGenerator.cs" />
     <Compile Include="Computations\ComputationUseExecutionContextCodeGenerator.cs" />

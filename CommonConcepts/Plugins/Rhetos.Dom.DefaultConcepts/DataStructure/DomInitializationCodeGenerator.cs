@@ -55,6 +55,7 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode(GenerateCommonClassesSnippet());
             // Types used in the preceding code snippet:
             codeBuilder.AddReferencesFromDependency(typeof(Autofac.Module)); // Includes a reference to Autofac.dll.
+            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Extensibility.INamedPlugins<>));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.IUserInfo));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.ISqlExecuter));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Security.IAuthorizationManager));
@@ -84,11 +85,11 @@ namespace Rhetos.Dom.DefaultConcepts
 
     public class DomRepository
     {
-        private readonly ExecutionContext _executionContext;
+        private readonly Rhetos.Extensibility.INamedPlugins<IRepository> _repositories;
 
-        public DomRepository(ExecutionContext executionContext)
+        public DomRepository(Rhetos.Extensibility.INamedPlugins<IRepository> repositories)
         {
-            _executionContext = executionContext;
+            _repositories = repositories;
         }
 
         " + ModuleCodeGenerator.CommonDomRepositoryMembersTag + @"
@@ -266,6 +267,7 @@ namespace Rhetos.Dom.DefaultConcepts
             Lazy<Rhetos.Utilities.ISqlExecuter> sqlExecuter,
             Lazy<Rhetos.Security.IAuthorizationManager> authorizationManager,
             Lazy<Rhetos.Dom.DefaultConcepts.GenericRepositories> genericRepositories,
+            Lazy<Common.DomRepository> repository,
             Rhetos.Logging.ILogProvider logProvider,
             Lazy<Rhetos.Security.IWindowsSecurity> windowsSecurity" + ModuleCodeGenerator.ExecutionContextConstructorArgumentTag + @",
             EntityFrameworkContext entityFrameworkContext)
@@ -275,7 +277,7 @@ namespace Rhetos.Dom.DefaultConcepts
             _sqlExecuter = sqlExecuter;
             _authorizationManager = authorizationManager;
             _genericRepositories = genericRepositories;
-            _repository = new Lazy<Common.DomRepository>(() => new Common.DomRepository(this));
+            _repository = repository;
             LogProvider = logProvider;
             _windowsSecurity = windowsSecurity;
             EntityFrameworkContext = entityFrameworkContext;
