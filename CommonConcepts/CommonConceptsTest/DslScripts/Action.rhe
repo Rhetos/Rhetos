@@ -1,18 +1,18 @@
 Module TestAction
 {
-	Action ThrowException
+    Action ThrowException
         '(TestAction.ThrowException parameters, Common.DomRepository repository, IUserInfo userInfo) =>
             { throw new ApplicationException("TestAction exception " + parameters.Message); }'
-	{
-		ShortString Message;
-	}
+    {
+        ShortString Message;
+    }
     
     Action UEC
         '(parameters, repository, userInfo, executionContext) =>
             { throw new ApplicationException("User " + executionContext.UserInfo.UserName); }'
-	{
+    {
         UseExecutionContext;
-	}
+    }
     
     SqlQueryable ComputeNameContainsA
     "
@@ -23,6 +23,7 @@ Module TestAction
             TestAction.Simple
     "
     {
+        AutodetectSqlDependencies;
         Extends TestAction.Simple;
         ChangesOnChangedItems TestAction.Simple 'Guid[]' 'changedItems => changedItems.Select(item => item.ID).ToArray()';
         Bool ContainsA;
@@ -55,16 +56,16 @@ Module TestAction
                 
                 repository.TestAction.Simple.Update(simpleEntities);
             }'
-	{
+    {
         UseExecutionContext;
-	}
-	
-	Action TestBefore '(parameter, repository, userInfo) => {  throw new Rhetos.UserException("Test1 " + parameter.S); }'
-	{
-		ShortString S;
-		
-		BeforeAction AddXUserName
-			'actionParameter.S += " X";
-			actionParameter.S += " " + _executionContext.UserInfo.UserName;';
-	}
+    }
+    
+    Action TestBefore '(parameter, repository, userInfo) => {  throw new Rhetos.UserException("Test1 " + parameter.S); }'
+    {
+        ShortString S;
+        
+        BeforeAction AddXUserName
+            'actionParameter.S += " X";
+            actionParameter.S += " " + _executionContext.UserInfo.UserName;';
+    }
 }

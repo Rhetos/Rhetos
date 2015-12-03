@@ -34,19 +34,18 @@ namespace Rhetos.Dsl.DefaultConcepts
     }
 
     [Export(typeof(IConceptMacro))]
-    [ConceptKeyword("AutodetectSqlDependencies")]
     public class ModuleAutoSqlDependsOnMacro : IConceptMacro<ModuleAutoSqlDependsOnInfo>
     {
         public IEnumerable<IConceptInfo> CreateNewConcepts(ModuleAutoSqlDependsOnInfo conceptInfo, IDslModel existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();
 
-            newConcepts.AddRange(existingConcepts.FindByType<SqlViewInfo>().Select(ci => new AutoSqlViewDependsOnInfo { Dependent = ci }));
-            newConcepts.AddRange(existingConcepts.FindByType<SqlFunctionInfo>().Select(ci => new AutoSqlFunctionDependsOnInfo { Dependent = ci }));
-            newConcepts.AddRange(existingConcepts.FindByType<SqlQueryableInfo>().Select(ci => new AutoSqlQueryableDependsOnInfo { Dependent = ci }));
-            newConcepts.AddRange(existingConcepts.FindByType<SqlTriggerInfo>().Select(ci => new AutoSqlTriggerDependsOnInfo { Dependent = ci }));
-            newConcepts.AddRange(existingConcepts.FindByType<SqlProcedureInfo>().Select(ci => new AutoSqlProcedureDependsOnInfo { Dependent = ci }));
-            newConcepts.AddRange(existingConcepts.FindByType<LegacyEntityInfo>().Select(ci => new AutoLegacyEntityDependsOnInfo { Dependent = ci }));
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlViewInfo>(ci => ci.Module, conceptInfo.Module).Select(ci => new AutoSqlViewDependsOnInfo { Dependent = ci }));
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlFunctionInfo>(ci => ci.Module, conceptInfo.Module).Select(ci => new AutoSqlFunctionDependsOnInfo { Dependent = ci }));
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlQueryableInfo>(ci => ci.Module, conceptInfo.Module).Select(ci => new AutoSqlQueryableDependsOnInfo { Dependent = ci }));
+            newConcepts.AddRange(existingConcepts.FindByType<SqlTriggerInfo>().Where(ci => ci.Structure.Module == conceptInfo.Module).Select(ci => new AutoSqlTriggerDependsOnInfo { Dependent = ci }));
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlProcedureInfo>(ci => ci.Module, conceptInfo.Module).Select(ci => new AutoSqlProcedureDependsOnInfo { Dependent = ci }));
+            newConcepts.AddRange(existingConcepts.FindByReference<LegacyEntityInfo>(ci => ci.Module, conceptInfo.Module).Select(ci => new AutoLegacyEntityDependsOnInfo { Dependent = ci }));
 
             return newConcepts;
         }
