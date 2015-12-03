@@ -80,7 +80,7 @@ namespace Rhetos.DatabaseGenerator.Test
                 {
                     CreateQuery = implementation.CreateDatabaseStructure(conceptInfo),
                     RemoveQuery = implementation.RemoveDatabaseStructure(conceptInfo),
-                    DependsOn = new ConceptApplication[] { },
+                    DependsOn = new ConceptApplicationDependency[] { },
                     ConceptImplementationType = implementation.GetType(),
                 };
             }
@@ -106,7 +106,7 @@ namespace Rhetos.DatabaseGenerator.Test
                 return new NewConceptApplication(new BaseCi { Name = name }, implementation)
                 {
                     CreateQuery = "sql",
-                    DependsOn = new ConceptApplication[] { }
+                    DependsOn = new ConceptApplicationDependency[] { }
                 };
             }
         }
@@ -125,7 +125,7 @@ namespace Rhetos.DatabaseGenerator.Test
                 return new NewConceptApplication(new SimpleCi { Name = "name", Data = "data" }, new SimpleConceptImplementation())
                 {
                     CreateQuery = sql,
-                    DependsOn = new ConceptApplication[] { }
+                    DependsOn = new ConceptApplicationDependency[] { }
                 };
             }
 
@@ -134,7 +134,7 @@ namespace Rhetos.DatabaseGenerator.Test
                 return new NewConceptApplication(new SimpleCi { Name = name, Data = "data" }, new SimpleConceptImplementation())
                 {
                     CreateQuery = sql,
-                    DependsOn = new ConceptApplication[] { }
+                    DependsOn = new ConceptApplicationDependency[] { }
                 };
             }
 
@@ -143,7 +143,7 @@ namespace Rhetos.DatabaseGenerator.Test
                 return new NewConceptApplication(new SimpleCi { Name = name, Data = "data" }, implementation)
                 {
                     CreateQuery = "sql",
-                    DependsOn = new ConceptApplication[] { }
+                    DependsOn = new ConceptApplicationDependency[] { }
                 };
             }
 
@@ -152,7 +152,7 @@ namespace Rhetos.DatabaseGenerator.Test
                 return new NewConceptApplication(new SimpleCi { Name = name, Data = data }, new SimpleConceptImplementation())
                 {
                     CreateQuery = sql,
-                    DependsOn = new ConceptApplication[] { }
+                    DependsOn = new ConceptApplicationDependency[] { }
                 };
             }
         }
@@ -195,7 +195,7 @@ namespace Rhetos.DatabaseGenerator.Test
                     new SimpleConceptImplementation())
                 {
                     CreateQuery = sql,
-                    DependsOn = new ConceptApplication[] { }
+                    DependsOn = new ConceptApplicationDependency[] { }
                 };
             }
         }
@@ -218,7 +218,7 @@ namespace Rhetos.DatabaseGenerator.Test
                     new SimpleConceptImplementation())
                 {
                     CreateQuery = sql,
-                    DependsOn = new ConceptApplication[] { }
+                    DependsOn = new ConceptApplicationDependency[] { }
                 };
             }
         }
@@ -240,7 +240,7 @@ namespace Rhetos.DatabaseGenerator.Test
                     new SimpleConceptImplementation())
                 {
                     CreateQuery = "sql",
-                    DependsOn = new ConceptApplication[] { }
+                    DependsOn = new ConceptApplicationDependency[] { }
                 };
             }
         }
@@ -484,7 +484,7 @@ namespace Rhetos.DatabaseGenerator.Test
             var r4 = MultipleReferencingCi.CreateApplication("4", c, r5);
 
             var all = new List<NewConceptApplication> { a, b, c, r1, r2, r3, r4, r5 };
-            var dependencies = DatabaseGenerator_Accessor.ExtractDependenciesFromConceptInfos(all);
+            var dependencies = new DatabaseGenerator_Accessor().ExtractDependenciesFromConceptInfos(all);
 
             string result = string.Join(" ", dependencies
                 .Select(d => ((dynamic)d).DependsOn.ConceptInfo.Name + "<" + ((dynamic)d).Dependent.ConceptInfo.Name)
@@ -527,7 +527,7 @@ namespace Rhetos.DatabaseGenerator.Test
             {
                 Id = Guid.NewGuid(),
                 CreateQuery = "sql",
-                DependsOn = new ConceptApplication[] { }
+                DependsOn = new ConceptApplicationDependency[] { }
             };
             DatabaseGenerator_Accessor.AddConceptApplicationSeparator(ca1, sqlCodeBuilder);
             const string createQuery1 = "create query 1";
@@ -537,7 +537,7 @@ namespace Rhetos.DatabaseGenerator.Test
             {
                 Id = Guid.NewGuid(),
                 CreateQuery = "sql",
-                DependsOn = new ConceptApplication[] { }
+                DependsOn = new ConceptApplicationDependency[] { }
             };
             DatabaseGenerator_Accessor.AddConceptApplicationSeparator(ca2, sqlCodeBuilder);
             const string createQuery2 = "create query 2";
@@ -580,7 +580,7 @@ namespace Rhetos.DatabaseGenerator.Test
             ConceptApplication ca2a = new NewConceptApplication(ci2, new SimpleConceptImplementation()) { CreateQuery = "2a" };
             ConceptApplication ca2b = new NewConceptApplication(ci2, new SimpleConceptImplementation()) { CreateQuery = "2b" };
 
-            IEnumerable<Tuple<IConceptInfo, IConceptInfo>> conceptInfoDependencies = new[] { Tuple.Create(ci2, ci1) };
+            IEnumerable<Tuple<IConceptInfo, IConceptInfo, string>> conceptInfoDependencies = new[] { Tuple.Create(ci2, ci1, "") };
 
             IEnumerable<Dependency> actual = DatabaseGenerator_Accessor.GetConceptApplicationDependencies(conceptInfoDependencies, new[] { ca1a, ca1b, ca2a, ca2b });
 
@@ -649,7 +649,9 @@ namespace Rhetos.DatabaseGenerator.Test
 
         private static IEnumerable<ConceptApplication> DirectAndIndirectDependencies(ConceptApplication ca)
         {
-            return ca.DependsOn.Union(ca.DependsOn.SelectMany(DirectAndIndirectDependencies));
+            return ca.DependsOn.Select(cad => cad.ConceptApplication)
+                .Union(ca.DependsOn.Select(cad => cad.ConceptApplication)
+                    .SelectMany(DirectAndIndirectDependencies));
         }
 
         [TestMethod]

@@ -36,7 +36,7 @@ namespace Rhetos.DatabaseGenerator
 
         public string CreateQuery; // SQL query used to create the concept in database.
         public string RemoveQuery; // SQL query used to remove the concept in database.
-        public ConceptApplication[] DependsOn;
+        public ConceptApplicationDependency[] DependsOn;
         public int OldCreationOrder;
 
         private string _conceptApplicationKey;
@@ -51,7 +51,7 @@ namespace Rhetos.DatabaseGenerator
         public override string ToString()
         {
             if (_toString == null)
-                _toString = GetUserFriendlyTypeName(ConceptInfoTypeName) + ":" + ConceptInfoKey + "/" + GetUserFriendlyTypeName(ConceptImplementationTypeName);
+                _toString = ConceptInfoKey + "/" + GetUserFriendlyTypeName(ConceptImplementationTypeName);
             return _toString;
         }
 

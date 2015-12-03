@@ -97,12 +97,12 @@ namespace Rhetos.DatabaseGenerator.Test
             return base.CreateNewApplications(oldApplications);
         }
 
-        new public static IEnumerable<Dependency> ExtractDependenciesFromConceptInfos(IEnumerable<NewConceptApplication> all)
+        new public IEnumerable<Dependency> ExtractDependenciesFromConceptInfos(IEnumerable<NewConceptApplication> all)
         {
-            return DatabaseGenerator.ExtractDependenciesFromConceptInfos(all);
+            return base.ExtractDependenciesFromConceptInfos(all);
         }
 
-        new public static IEnumerable<Dependency> GetConceptApplicationDependencies(IEnumerable<Tuple<IConceptInfo, IConceptInfo>> conceptInfoDependencies, IEnumerable<ConceptApplication> conceptApplications)
+        new public static IEnumerable<Dependency> GetConceptApplicationDependencies(IEnumerable<Tuple<IConceptInfo, IConceptInfo, string>> conceptInfoDependencies, IEnumerable<ConceptApplication> conceptApplications)
         {
             return DatabaseGenerator.GetConceptApplicationDependencies(conceptInfoDependencies, conceptApplications);
         }

@@ -27,6 +27,7 @@ using System.Globalization;
 using Rhetos.Utilities;
 using Rhetos.Compiler;
 using Rhetos.Logging;
+using System.Text;
 
 namespace Rhetos.DatabaseGenerator
 {
@@ -155,6 +156,8 @@ namespace Rhetos.DatabaseGenerator
             ComputeCreateAndRemoveQuery(conceptApplications, _dslModel.Concepts);
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: Generated SQL queries for new concept applications.");
 
+            _logger.Trace(() => ReportDependencies(conceptApplications));
+
             return conceptApplications;
         }
 
@@ -162,7 +165,7 @@ namespace Rhetos.DatabaseGenerator
         {
             var stopwatch = Stopwatch.StartNew();
             foreach (var conceptApplication in newConceptApplications)
-                conceptApplication.DependsOn = new ConceptApplication[] {};
+                conceptApplication.DependsOn = new ConceptApplicationDependency[] {};
 
             var dependencies = ExtractDependencies(newConceptApplications);
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: ExtractDependencies executed.");
@@ -176,7 +179,7 @@ namespace Rhetos.DatabaseGenerator
         protected static void UpdateConceptApplicationsFromDependencyList(IEnumerable<Dependency> dependencies)
         {
             var dependenciesByConceptApplication = dependencies
-                .GroupBy(d => d.Dependent, d => d.DependsOn);
+                .GroupBy(d => d.Dependent, d => new ConceptApplicationDependency { ConceptApplication = d.DependsOn, DebugInfo = d.DebugInfo });
 
             foreach (var dependencyGroup in dependenciesByConceptApplication)
             {
@@ -203,23 +206,23 @@ namespace Rhetos.DatabaseGenerator
             return combined;
         }
 
-        protected static IEnumerable<Dependency> ExtractDependenciesFromConceptInfos(IEnumerable<NewConceptApplication> newConceptApplications)
+        protected IEnumerable<Dependency> ExtractDependenciesFromConceptInfos(IEnumerable<NewConceptApplication> newConceptApplications)
         {
             var conceptInfos = newConceptApplications.Select(conceptApplication => conceptApplication.ConceptInfo).Distinct();
 
             var conceptInfoDependencies = conceptInfos.SelectMany(conceptInfo => conceptInfo.GetAllDependencies()
-                    .Select(dependency => Tuple.Create(dependency, conceptInfo)));
+                .Select(dependency => Tuple.Create(dependency, conceptInfo, "Direct or indirect IConceptInfo reference")));
 
             return GetConceptApplicationDependencies(conceptInfoDependencies, newConceptApplications);
         }
 
-        protected static IEnumerable<Dependency> GetConceptApplicationDependencies(IEnumerable<Tuple<IConceptInfo, IConceptInfo>> conceptInfoDependencies, IEnumerable<ConceptApplication> conceptApplications)
+        protected static IEnumerable<Dependency> GetConceptApplicationDependencies(IEnumerable<Tuple<IConceptInfo, IConceptInfo, string>> conceptInfoDependencies, IEnumerable<ConceptApplication> conceptApplications)
         {
             var conceptApplicationsByConceptInfoKey = conceptApplications
                 .GroupBy(ca => ca.ConceptInfoKey)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
-            var conceptInfoKeyDependencies = conceptInfoDependencies.Select(dep => Tuple.Create(dep.Item1.GetKey(), dep.Item2.GetKey()));
+            var conceptInfoKeyDependencies = conceptInfoDependencies.Select(dep => Tuple.Create(dep.Item1.GetKey(), dep.Item2.GetKey(), dep.Item3));
 
             var conceptApplicationDependencies =
                 from conceptInfoKeyDependency in conceptInfoKeyDependencies
@@ -228,10 +231,11 @@ namespace Rhetos.DatabaseGenerator
                 from dependsOnConceptApplication in conceptApplicationsByConceptInfoKey[conceptInfoKeyDependency.Item1]
                 from dependentConceptApplication in conceptApplicationsByConceptInfoKey[conceptInfoKeyDependency.Item2]
                 select new Dependency
-                           {
-                               DependsOn = dependsOnConceptApplication,
-                               Dependent = dependentConceptApplication
-                           };
+                    {
+                        DependsOn = dependsOnConceptApplication,
+                        Dependent = dependentConceptApplication,
+                        DebugInfo = conceptInfoKeyDependency.Item3
+                    };
 
             return conceptApplicationDependencies.ToList();
         }
@@ -254,14 +258,15 @@ namespace Rhetos.DatabaseGenerator
                     AddDependenciesOnSameConceptInfo(
                         conceptApplicationsByImplementation[implementationDependency.Item1],
                         conceptApplicationsByImplementation[implementationDependency.Item2],
+                        implementationDependency.Item3,
                         dependencies);
 
             return dependencies.Distinct().ToList();
         }
 
-        protected static IEnumerable<Tuple<Type, Type>> GetImplementationDependencies(IPluginsContainer<IConceptDatabaseDefinition> plugins, IEnumerable<Type> conceptImplementations)
+        protected static IEnumerable<Tuple<Type, Type, string>> GetImplementationDependencies(IPluginsContainer<IConceptDatabaseDefinition> plugins, IEnumerable<Type> conceptImplementations)
         {
-            var dependencies = new List<Tuple<Type, Type>>();
+            var dependencies = new List<Tuple<Type, Type, string>>();
 
             foreach (Type conceptImplementation in conceptImplementations)
             {
@@ -287,7 +292,7 @@ namespace Rhetos.DatabaseGenerator
                         dependency.Name,
                         dependencyImplements.FullName));
 
-                dependencies.Add(Tuple.Create(dependency, conceptImplementation));
+                dependencies.Add(Tuple.Create(dependency, conceptImplementation, "DependsOn metadata"));
             }
 
             return dependencies;
@@ -296,15 +301,18 @@ namespace Rhetos.DatabaseGenerator
         protected static void AddDependenciesOnSameConceptInfo(
             IEnumerable<ConceptApplication> applications1,
             IEnumerable<ConceptApplication> applications2,
+            string debugInfo,
             List<Dependency> dependencies)
         {
             var applications2ByConceptInfoKey = applications2.ToDictionary(a => a.ConceptInfoKey);
             dependencies.AddRange(from application1 in applications1
                 where applications2ByConceptInfoKey.ContainsKey(application1.ConceptInfoKey)
                 select new Dependency
-                           {
-                               DependsOn = application1, Dependent = applications2ByConceptInfoKey[application1.ConceptInfoKey]
-                           });
+                    {
+                        DependsOn = application1,
+                        Dependent = applications2ByConceptInfoKey[application1.ConceptInfoKey],
+                        DebugInfo = debugInfo
+                    });
         }
 
         protected void ComputeCreateAndRemoveQuery(List<NewConceptApplication> newConceptApplications, IEnumerable<IConceptInfo> allConceptInfos)
@@ -314,7 +322,7 @@ namespace Rhetos.DatabaseGenerator
             var conceptInfosByKey = allConceptInfos.ToDictionary(ci => ci.GetKey());
 
             var sqlCodeBuilder = new CodeBuilder("/*", "*/");
-            var createdDependencies = new List<Tuple<IConceptInfo, IConceptInfo>>();
+            var createdDependencies = new List<Tuple<IConceptInfo, IConceptInfo, string>>();
             foreach (var ca in newConceptApplications)
             {
                 AddConceptApplicationSeparator(ca, sqlCodeBuilder);
@@ -334,14 +342,10 @@ namespace Rhetos.DatabaseGenerator
 
                     if (pluginCreatedDependencies != null)
                     {
-                        var caLocal = ca;
-
                         var resolvedDependencies = pluginCreatedDependencies.Select(dep => Tuple.Create(
-                            GetValidConceptInfo(dep.Item1.GetKey(), conceptInfosByKey, caLocal),
-                            GetValidConceptInfo(dep.Item2.GetKey(), conceptInfosByKey, caLocal))).ToList();
-
-                        _logger.Trace(() => "Created dependencies for " + caLocal + " are: " + string.Join(", ", resolvedDependencies.Select(
-                            dep => dep.Item1.GetShortDescription() + "-" + dep.Item2.GetShortDescription())) + ".");
+                            GetValidConceptInfo(dep.Item1.GetKey(), conceptInfosByKey, ca),
+                            GetValidConceptInfo(dep.Item2.GetKey(), conceptInfosByKey, ca),
+                            "ExtendDatabaseStructure " + ca.ToString())).ToList();
                         
                         createdDependencies.AddRange(resolvedDependencies);
                     }
@@ -377,7 +381,7 @@ namespace Rhetos.DatabaseGenerator
         protected static List<Tuple<NewConceptApplication, NewConceptApplication>> GetDependencyPairs(IEnumerable<NewConceptApplication> conceptApplications)
         {
             return conceptApplications
-                .SelectMany(dependent => dependent.DependsOn.Select(dependency => Tuple.Create((NewConceptApplication)dependency, dependent)))
+                .SelectMany(dependent => dependent.DependsOn.Select(dependency => Tuple.Create((NewConceptApplication)dependency.ConceptApplication, dependent)))
                 .Where(dependency => dependency.Item1 != dependency.Item2)
                 .ToList();
         }
@@ -386,7 +390,7 @@ namespace Rhetos.DatabaseGenerator
         protected static List<Tuple<ConceptApplication, ConceptApplication>> GetDependencyPairs(IEnumerable<ConceptApplication> conceptApplications)
         {
             return conceptApplications.SelectMany(
-                dependent => dependent.DependsOn.Select(dependency => Tuple.Create(dependency, dependent))
+                dependent => dependent.DependsOn.Select(dependsOn => Tuple.Create(dependsOn.ConceptApplication, dependent))
                 ).ToList();
         }
 
@@ -415,6 +419,19 @@ namespace Rhetos.DatabaseGenerator
                     .Substring(NextConceptApplicationIdPrefix.Length + guidLength +NextConceptApplicationIdSuffix.Length)
                     .Trim();
             }
+        }
+
+        private string ReportDependencies(List<NewConceptApplication> conceptApplications)
+        {
+            var report = new StringBuilder();
+            report.Append("Dependencies:");
+            foreach (var ca in conceptApplications.Where(x => x.DependsOn.Count() > 0))
+            {
+                report.AppendLine().Append(ca.ToString()).Append(" depends on:");
+                foreach (var dep in ca.DependsOn)
+                    report.Append("\r\n  ").Append(dep.ConceptApplication.ToString()).Append(" (").Append(dep.DebugInfo).Append(")");
+            };
+            return report.ToString();
         }
 
         protected void CalculateApplicationsToBeRemovedAndInserted(

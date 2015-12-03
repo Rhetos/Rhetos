@@ -113,6 +113,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConceptApplicationDependency.cs" />
     <Compile Include="ConceptApplication.cs" />
     <Compile Include="IConceptApplicationRepository.cs" />
     <Compile Include="NewConceptApplication.cs" />

@@ -74,14 +74,14 @@ namespace Rhetos.DatabaseGenerator.Test
             { 
                 Id = Guid.Parse("88CAD02E-5869-4028-B528-4A4723B47C85"),
                 CreateQuery = "dep 1 create query",
-                DependsOn = new ConceptApplication[] {},
+                DependsOn = new ConceptApplicationDependency[] {},
                 OldCreationOrder = 1
             };
             public static readonly NewConceptApplication DependencyCa2 = new NewConceptApplication(new TestConceptInfo { Name = "dep2" }, new TestConceptImplementation())
             {
                 Id = Guid.Parse("2567A911-4DA4-4737-B68B-3A51364E667B"),
                 CreateQuery = "dep 2 create query",
-                DependsOn = new ConceptApplication[] { },
+                DependsOn = new ConceptApplicationDependency[] { },
                 OldCreationOrder = 2
             };
 
@@ -89,7 +89,7 @@ namespace Rhetos.DatabaseGenerator.Test
             {
                 Id = Guid.Parse("E687F635-E5B4-4DEA-8079-F9F17B7237D6"),
                 CreateQuery = "create query",
-                DependsOn = new[] { DependencyCa1, DependencyCa2 },
+                DependsOn = new[] { new ConceptApplicationDependency { ConceptApplication = DependencyCa1 }, new ConceptApplicationDependency { ConceptApplication = DependencyCa2 } },
                 OldCreationOrder = 3
             };
 
@@ -105,7 +105,7 @@ namespace Rhetos.DatabaseGenerator.Test
             {
                 Id = Guid.Parse("FCAC6CA0-5A8F-4848-980B-573C32710374"),
                 CreateQuery = "create query",
-                DependsOn = new[] { DependencyCa2 },
+                DependsOn = new[] { new ConceptApplicationDependency { ConceptApplication = DependencyCa2 } },
                 OldCreationOrder = 5
             };
 
@@ -143,7 +143,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
                     foreach (var ca in Expected)
                         foreach (var dependsOn in ca.DependsOn)
-                            table.Rows.Add(ca.Id, dependsOn.Id);
+                            table.Rows.Add(ca.Id, dependsOn.ConceptApplication.Id);
                 }
                 else
                     throw new NotImplementedException();

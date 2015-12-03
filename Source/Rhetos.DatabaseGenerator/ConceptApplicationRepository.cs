@@ -86,17 +86,18 @@ namespace Rhetos.DatabaseGenerator
 
         private const string ObsoleteConceptApplicationMark = "/*UNKNOWN*/";
 
-        private List<Dependency> LoadDependenciesFromDatabase()
+        private List<DependencyGuids> LoadDependenciesFromDatabase()
         {
-            var dependencies = new List<Dependency>();
+            var dependencies = new List<DependencyGuids>();
             _sqlExecuter.ExecuteReader(
                 "SELECT DependentID, DependsOnID FROM Rhetos.AppliedConceptDependsOn",
                 dataReader =>
                 {
-                    dependencies.Add(new Dependency
+                    dependencies.Add(new DependencyGuids
                     {
                         Dependent = SqlUtility.ReadGuid(dataReader, 0),
                         DependsOn = SqlUtility.ReadGuid(dataReader, 1),
+                        DebugInfo = "From database"
                     });
                 });
             return dependencies;
@@ -110,21 +111,24 @@ namespace Rhetos.DatabaseGenerator
                     firstError.Key, string.Join(", ", firstError.Select(ca => SqlUtility.QuoteGuid(ca.Id))), errorContext));
         }
 
-        private static void EvaluateDependencies(List<ConceptApplication> previoslyAppliedConcepts, List<Dependency> dependencies)
+        private static void EvaluateDependencies(List<ConceptApplication> previoslyAppliedConcepts, List<DependencyGuids> dependencies)
         {
-            Dictionary<Guid, Guid[]> dependenciesByDependent = dependencies.GroupBy(d => d.Dependent).ToDictionary(g => g.Key, g => g.Select(item => item.DependsOn).ToArray());
+            var dependenciesByDependent = dependencies.GroupBy(d => d.Dependent).ToDictionary(g => g.Key, g => g.Select(item => new { Id = item.DependsOn, item.DebugInfo }).ToArray());
             var conceptApplicationsById = previoslyAppliedConcepts.ToDictionary(ca => ca.Id);
 
             foreach (var dependent in previoslyAppliedConcepts)
             {
-                Guid[] dependsOnIds;
-                if (dependenciesByDependent.TryGetValue(dependent.Id, out dependsOnIds))
-                    dependent.DependsOn = dependsOnIds.Select(
-                        dependsOnId => conceptApplicationsById.GetValue(dependsOnId,
-                            "Nonexistent dependency on Rhetos.AppliedConcept, ID={0}, referenced from table Rhetos.AppliedConceptDependsOn column DependsOn."))
+                var dependsOns = dependenciesByDependent.GetValueOrDefault(dependent.Id);
+                if (dependsOns != null)
+                    dependent.DependsOn = dependsOns
+                        .Select(dependsOn => new ConceptApplicationDependency
+                            {
+                                ConceptApplication = conceptApplicationsById.GetValue(dependsOn.Id, "Nonexistent dependency on Rhetos.AppliedConcept, ID={0}, referenced from table Rhetos.AppliedConceptDependsOn column DependsOn."),
+                                DebugInfo = dependsOn.DebugInfo
+                            })
                         .ToArray();
                 else
-                    dependent.DependsOn = new ConceptApplication[] { };
+                    dependent.DependsOn = new ConceptApplicationDependency[] { };
             }
 
             var invalidDependentId = dependenciesByDependent.Keys.Except(previoslyAppliedConcepts.Select(ca => ca.Id)).ToArray();
@@ -133,7 +137,12 @@ namespace Rhetos.DatabaseGenerator
                     invalidDependentId.First()));
         }
 
-        private class Dependency { public Guid Dependent; public Guid DependsOn; }
+        private class DependencyGuids
+        {
+            public Guid Dependent;
+            public Guid DependsOn;
+            public string DebugInfo;
+        }
 
         public static string DeleteAllMetadataSql()
         {
@@ -162,10 +171,10 @@ namespace Rhetos.DatabaseGenerator
                 SqlUtility.QuoteText(ca.RemoveQuery),
                 SqlUtility.QuoteText(ca.ConceptImplementationVersion.ToString())));
 
-            foreach (var dependsOn in ca.DependsOn)
+            foreach (var dependsOnId in ca.DependsOn.Select(d => d.ConceptApplication.Id).Distinct())
                 sql.Add(Sql.Format("ConceptApplicationRepository_InsertDependency",
                     SqlUtility.QuoteGuid(ca.Id),
-                    SqlUtility.QuoteGuid(dependsOn.Id)));
+                    SqlUtility.QuoteGuid(dependsOnId)));
 
             return sql;
         }
@@ -184,20 +193,20 @@ namespace Rhetos.DatabaseGenerator
                     SqlUtility.QuoteText(ca.RemoveQuery),
                     SqlUtility.QuoteText(ca.ConceptImplementationVersion.ToString())));
 
-            HashSet<Guid> oldDependsOn = new HashSet<Guid>(oldApp.DependsOn.Select(depOn => depOn.Id));
-            HashSet<Guid> newDependsOn = new HashSet<Guid>(ca.DependsOn.Select(depOn => depOn.Id));
+            HashSet<Guid> oldDependsOn = new HashSet<Guid>(oldApp.DependsOn.Select(depOn => depOn.ConceptApplication.Id));
+            HashSet<Guid> newDependsOn = new HashSet<Guid>(ca.DependsOn.Select(depOn => depOn.ConceptApplication.Id));
 
-            foreach (var dependsOn in ca.DependsOn)
-                if (!oldDependsOn.Contains(dependsOn.Id))
+            foreach (var dependsOnId in ca.DependsOn.Select(d => d.ConceptApplication.Id).Distinct())
+                if (!oldDependsOn.Contains(dependsOnId))
                     sql.Add(Sql.Format("ConceptApplicationRepository_InsertDependency",
                         SqlUtility.QuoteGuid(ca.Id),
-                        SqlUtility.QuoteGuid(dependsOn.Id)));
+                        SqlUtility.QuoteGuid(dependsOnId)));
 
-            foreach (var dependsOn in oldApp.DependsOn)
-                if (!newDependsOn.Contains(dependsOn.Id))
+            foreach (var dependsOnId in oldApp.DependsOn.Select(d => d.ConceptApplication.Id).Distinct())
+                if (!newDependsOn.Contains(dependsOnId))
                     sql.Add(Sql.Format("ConceptApplicationRepository_DeleteDependency",
                         SqlUtility.QuoteGuid(ca.Id),
-                        SqlUtility.QuoteGuid(dependsOn.Id)));
+                        SqlUtility.QuoteGuid(dependsOnId)));
 
             return sql;
         }
