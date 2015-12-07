@@ -35,12 +35,6 @@ namespace CommonConcepts.Test
     [TestClass]
     public class SqlAnalysisTest
     {
-        private static string RemoveCommentsAndText_Accessor(string sql)
-        {
-            var method = typeof(SqlAnalysis).GetMethod("RemoveCommentsAndText", BindingFlags.Static | BindingFlags.NonPublic);
-            return (string)method.Invoke(null, new object[] { sql });
-        }
-
         private static Regex TextStart = new Regex(@"--|/\*|\'|\[|""");
         private static Regex MultilineNext = new Regex(@"\*/|/\*");
         private static char[] EolCharacters = new[] { '\r', '\n' };
@@ -203,7 +197,7 @@ namespace CommonConcepts.Test
 
             foreach (var test in tests)
             {
-                string result = RemoveCommentsAndText_Accessor(test.Key);
+                string result = SqlAnalysis.RemoveCommentsAndText(test.Key);
                 string alternativeResult = RemoveCommentsAndText_AlternativeImplementation(test.Key);
                 Assert.AreEqual(test.Value ?? test.Key, result, "Input: " + test.Key);
                 Assert.AreEqual(alternativeResult, result, "Alternative implementation.");
@@ -222,7 +216,7 @@ namespace CommonConcepts.Test
                     sb.Append(elements[random.Next(elements.Length)]);
                 string sql = sb.ToString();
 
-                string result = RemoveCommentsAndText_Accessor(sql);
+                string result = SqlAnalysis.RemoveCommentsAndText(sql);
                 string alternativeResult = RemoveCommentsAndText_AlternativeImplementation(sql);
                 Console.WriteLine(string.Format("seed, sql, result, alternativeResult: {0}, {1}, {2}, {3}.", seed, sql.Length, result.Length, alternativeResult.Length));
                 Assert.AreEqual(alternativeResult, result);

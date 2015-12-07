@@ -30,6 +30,7 @@
         
         SELECT * INTO #t FROM inserted;
 
+        -- Inserting specified AspNetUserId values, to include them in later analysis of the maximum value.
         INSERT INTO Common.Principal SELECT * FROM #t WHERE AspNetUserId IS NOT NULL;
         SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION RETURN END
 
@@ -40,7 +41,7 @@
         BEGIN
             EXEC @Error = sp_executesql
                 N'SELECT @lastId = ISNULL(MAX(AspNetUserId), 0)
-                    FROM (SELECT AspNetUserId FROM Common.Principal
+                    FROM (SELECT AspNetUserId FROM Common.Principal WITH (UPDLOCK)
                         UNION ALL SELECT UserId FROM webpages_Membership) x', N'@lastId INTEGER OUTPUT', @lastId OUTPUT;
             SET @Error = ISNULL(NULLIF(@Error, 0), @@ERROR) IF @Error > 0 BEGIN ROLLBACK TRANSACTION RAISERROR('Error finding maximal AspNetUserId.',16,10) RETURN END;
         END
