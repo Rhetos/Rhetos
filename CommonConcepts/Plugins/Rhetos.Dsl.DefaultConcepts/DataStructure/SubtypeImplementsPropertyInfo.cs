@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Rhetos.Dsl;
+using Rhetos.Utilities;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
@@ -58,6 +59,25 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (!(Dependency_ImplementationView is ExtensibleSubtypeSqlViewInfo))
                 throw new DslSyntaxException(this, "This property implementation cannot be used together with '" + Dependency_ImplementationView.GetUserDescription()
                     + "'. Use either " + this.GetKeywordOrTypeName() + " or " + Dependency_ImplementationView.GetKeywordOrTypeName() + ".");
+        }
+    }
+
+    [Export(typeof(IConceptMacro))]
+    public class SubtypeImplementsPropertyMacro : IConceptMacro<SubtypeImplementsPropertyInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(SubtypeImplementsPropertyInfo conceptInfo, IDslModel existingConcepts)
+        {
+            var allProperties = existingConcepts.FindByReference<PropertyInfo>(p => p.DataStructure, conceptInfo.IsSubtypeOf.Subtype)
+                .ToDictionary(p => p is ReferencePropertyInfo ? p.Name + "ID" : p.Name);
+
+            var usedColumns = SqlAnalysis.ExtractPossibleColumnNames(conceptInfo.Expression);
+            var usedProperties = usedColumns.Select(c => allProperties.GetValueOrDefault(c)).Where(p => p != null);
+
+            return usedProperties.Select(p => new SqlDependsOnPropertyInfo
+                {
+                    Dependent = conceptInfo.Dependency_ImplementationView,
+                    DependsOn = p
+                });
         }
     }
 }

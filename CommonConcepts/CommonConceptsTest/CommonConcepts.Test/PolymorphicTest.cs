@@ -20,6 +20,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
@@ -636,6 +637,24 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(
                     TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase.Query(), item => item.ID),
                     TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase_Materialized.Query(), item => item.ID));
+            }
+        }
+
+        [TestMethod]
+        public void AutomaticPropertySqlDependency()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var dslModel = container.Resolve<IDslModel>();
+
+                //var simpleBase = dslModel.FindByKey("DataStructureInfo TestPolymorphic.SimpleBase");
+                var simple1SqlView = dslModel.FindByKey("SqlViewInfo TestPolymorphic.Simple1_As_SimpleBase");
+                var sqlViewDependsOnProperty = dslModel.FindByReference<SqlDependsOnPropertyInfo>(p => p.Dependent, simple1SqlView)
+                    .Select(dep => dep.DependsOn.GetKeyProperties()).ToList();
+
+                TestUtility.AssertContains(
+                    TestUtility.DumpSorted(sqlViewDependsOnProperty),
+                    new[] { "TestPolymorphic.Simple1.Days", "TestPolymorphic.Simple1.Name" });
             }
         }
     }

@@ -105,7 +105,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         static readonly char[] EolChars = new[] { '\r', '\n' };
         static readonly char[] MultilineCommentChars = new[] { '/', '*' };
 
-        private static string RemoveCommentsAndText(string sql)
+        public static string RemoveCommentsAndText(string sql)
         {
             var result = new StringBuilder(sql.Length);
             int begin = 0;
@@ -191,6 +191,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         private static Regex scalarFunctionRegex = new Regex(sqlName + @"\s*\(");
         private static Regex crossJoinFromRegex = new Regex(@"\bFROM\b", RegexOptions.IgnoreCase);
         private static Regex crossJoinRegex = new Regex(@",\s*" + sqlName);
+        private static Regex identifierRegex = new Regex(sqlIdentifier);
 
         private static List<string> ExtractPossibleObjects(string sql)
         {
@@ -220,6 +221,14 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (name.StartsWith("[") || name.StartsWith("\""))
                 return name.Substring(1, name.Length - 2);
             return name;
+        }
+
+        public static List<string> ExtractPossibleColumnNames(string sql)
+        {
+            sql = RemoveCommentsAndText(sql);
+            return identifierRegex.Matches(sql).Cast<Match>()
+                .Select(match => RemoveQuotes(match.Value))
+                .Distinct().ToList();
         }
     }
 }
