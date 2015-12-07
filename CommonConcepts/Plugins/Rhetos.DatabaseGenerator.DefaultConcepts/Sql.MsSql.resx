@@ -156,6 +156,9 @@ FROM #t
 ) enumAutoCodeValues ORDER BY ID, Property DESC -- Order by ID ASC, then Property name in DESC order. This will ensure that all required
 						--	columns gets their AutoCode value calculated before entire row is saved
 
+-- The manual locking is used here in order to:
+-- 1. allow other users to read the existing records (no exclusive locks), and
+-- 2. avoid deadlocks (no shared locks that will be upgraded to exclusive locks).
 DECLARE @lockResult int;
 EXEC @lockResult = sp_getapplock 'AutoCode {0}.{1}', 'Exclusive';
 IF @lockResult &lt; 0
@@ -223,10 +226,8 @@ BEGIN
 
     FETCH NEXT FROM cur INTO @PropertyName, @CodeFormat, @id, @GroupColumn, @GroupValue
 END
-CLOSE cur
-DEALLOCATE cur
-
-EXEC sp_releaseapplock 'AutoCode {0}.{1}';
+CLOSE cur;
+DEALLOCATE cur;
 </value>
   </data>
   <data name="AutoCodeDatabaseDefinition_Remove" xml:space="preserve">
