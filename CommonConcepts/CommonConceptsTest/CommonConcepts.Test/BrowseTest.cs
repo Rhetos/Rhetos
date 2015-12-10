@@ -192,7 +192,11 @@ namespace CommonConcepts.Test.OldConcepts
             using (var container = new RhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
-                var genericRepository = container.Resolve<GenericRepository<TestBrowse.SF>>();                    
+                var genericRepository = container.Resolve<GenericRepository<TestBrowse.SF>>();
+
+                //Assert.AreEqual(0, genericRepository.Load(item => item.ID == Guid.Empty).Count(), "Generic repository: Simple loader with filter expression.");
+                //Assert.AreEqual(0, repository.TestBrowse.SF.Query().Where(item => item.ID == Guid.Empty).ToSimple().ToList().Count(), "Simple query.");
+                //Assert.AreEqual(0, repository.TestBrowse.SF.Load(item => item.ID == Guid.Empty).Count(), "Simple loader with filter expression."); // Same query as above, using different infrastructure
 
                 Guid sourceId = Guid.NewGuid();
                 Guid refId = Guid.NewGuid();

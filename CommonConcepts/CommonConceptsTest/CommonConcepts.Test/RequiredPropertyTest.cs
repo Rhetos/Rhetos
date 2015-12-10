@@ -81,5 +81,25 @@ namespace CommonConcepts.Test
                 TestUtility.ShouldFail(() => repository.TestRequired.Simple.Insert(new[] { new TestRequired.Simple { Count = 5, Name = "" } }), "required", "Name");
             }
         }
+
+        [TestMethod]
+        public void BoolProperty()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                repository.TestRequired.Simple2.Delete(repository.TestRequired.Simple2.Load());
+
+                repository.TestRequired.Simple2.Insert(new TestRequired.Simple2 { Name = "a", Tagged = false });
+                repository.TestRequired.Simple2.Insert(new TestRequired.Simple2 { Name = "b", Tagged = true });
+
+                Assert.AreEqual("a False, b True", TestUtility.DumpSorted(repository.TestRequired.Simple2.Query(), item => item.Name + " " + item.Tagged));
+
+                var invalidItem = new TestRequired.Simple2 { ID = Guid.NewGuid(), Name = "c" };
+                TestUtility.ShouldFail<Rhetos.UserException>(
+                    () => repository.TestRequired.Simple2.Insert(invalidItem),
+                    "required", "TestRequired", "Simple2", "Tagged", invalidItem.ID.ToString());
+            }
+        }
     }
 }

@@ -1,139 +1,151 @@
 ﻿Module TestMaxLength
 {
-	Entity Old1
-	{
-		Integer IDOld1;
-		ShortString Name { MaxLength 5; }
-		ShortString Name2;
-		Binary Blob;
-	}
+    Entity Old1
+    {
+        Integer IDOld1;
+        ShortString Name { MaxLength 5; }
+        ShortString Name2;
+        Binary Blob;
+    }
 }
 
 Module TestAutoCode
 {
-	Entity Simple
-	{
-		ShortString Code {  AutoCode; }
-	}
-	
-	Entity IntGroup
-	{
-		Integer Grouping;
-		ShortString Code {  AutoCodeForEach TestAutoCode.IntGroup.Grouping; }
-	}
-	
-	Entity StringGroup
-	{
-		ShortString Grouping;
-		ShortString Code {  AutoCodeForEach TestAutoCode.StringGroup.Grouping; }
-	}
-	
-	Entity ReferenceGroup
-	{
-		Reference Grouping TestAutoCode.Simple;
-		ShortString Code {  AutoCodeForEach TestAutoCode.ReferenceGroup.Grouping; }
-	}
+    Entity Simple
+    {
+        ShortString Code {  AutoCode; }
+    }
+    
+    Entity IntGroup
+    {
+        Integer Grouping;
+        ShortString Code {  AutoCodeForEach TestAutoCode.IntGroup.Grouping; }
+    }
+    
+    Entity StringGroup
+    {
+        ShortString Grouping;
+        ShortString Code {  AutoCodeForEach TestAutoCode.StringGroup.Grouping; }
+    }
+    
+    Entity ReferenceGroup
+    {
+        Reference Grouping TestAutoCode.Simple;
+        ShortString Code {  AutoCodeForEach TestAutoCode.ReferenceGroup.Grouping; }
+    }
     
     Entity Grouping
-	{
-		ShortString Code;
-	}
-	
-	Entity ShortReferenceGroup
-	{
-		Reference Grouping;
-		ShortString Code {  AutoCodeForEach TestAutoCode.ShortReferenceGroup.Grouping; }
-	}
+    {
+        ShortString Code;
+    }
+    
+    Entity ShortReferenceGroup
+    {
+        Reference Grouping;
+        ShortString Code {  AutoCodeForEach TestAutoCode.ShortReferenceGroup.Grouping; }
+    }
    
    Entity DoubleAutoCode
-	{
-		ShortString CodeA {  AutoCode; }
-		ShortString CodeB {  AutoCode; }
-	}
+    {
+        ShortString CodeA {  AutoCode; }
+        ShortString CodeB {  AutoCode; }
+    }
    
    Entity DoubleAutoCodeWithGroup
-	{
-		ShortString Grouping;
-		ShortString CodeA {  AutoCode; }
-		ShortString CodeB {  AutoCodeForEach TestAutoCode.DoubleAutoCodeWithGroup.Grouping; }
-	}
+    {
+        ShortString Grouping;
+        ShortString CodeA {  AutoCode; }
+        ShortString CodeB {  AutoCodeForEach TestAutoCode.DoubleAutoCodeWithGroup.Grouping; }
+    }
     
    Entity IntegerAutoCode
-	{
-		Integer Code {  AutoCode; }
-	}
+    {
+        Integer Code {  AutoCode; }
+    }
     
    Entity IntegerAutoCodeForEach
-	{
-		Integer Grouping;
-		Integer CodeA {  AutoCode; }
-		Integer CodeB {  AutoCodeForEach TestAutoCode.IntegerAutoCodeForEach.Grouping; }
-	}
+    {
+        Integer Grouping;
+        Integer CodeA {  AutoCode; }
+        Integer CodeB {  AutoCodeForEach TestAutoCode.IntegerAutoCodeForEach.Grouping; }
+    }
 }
 
 Module TestAutoCodeCached
 {
-	Entity Simple
-	{
-		ShortString Code {  AutoCodeCached; }
-		ShortString Data;
-	}
+    Entity Simple
+    {
+        ShortString Code {  AutoCodeCached; }
+        ShortString Data;
+    }
     
    Entity DoubleAutoCode
-	{
-		ShortString CodeA {  AutoCodeCached; }
-		ShortString CodeB {  AutoCodeCached; }
-	}
+    {
+        ShortString CodeA {  AutoCodeCached; }
+        ShortString CodeB {  AutoCodeCached; }
+    }
 }
 
 Module TestRequired
 {
-	Entity Simple
-	{
-		Integer Count { Required; }
-		ShortString Name { Required; }
-	}
+    Entity Simple
+    {
+        Integer Count { Required; }
+        ShortString Name { Required; }
+    }
+
+    Entity Simple2
+    {
+        ShortString Name;
+        Bool Tagged { Required; }
+    }
 }
 
 Module TestUserRequired
 {
-	Entity Simple
-	{
-		Integer Count { UserRequired; }
-		ShortString Name { UserRequired; }
-	}
+    Entity Simple
+    {
+        Integer Count { UserRequired; }
+        ShortString Name { UserRequired; }
+    }
+
+    Entity Simple2
+    {
+        ShortString Name;
+        Bool Tagged { UserRequired; }
+    }
 }
 
 Module TestLogging
 {
-	Entity Simple
-	{
-		Logging { AllProperties; }
-		Integer Count;
-		ShortString Name;
-		DateTime Created;
-	}
-	
-	Entity Complex
-	{
-		Logging
+    Entity Simple
+    {
+        Logging { AllProperties; }
+        Integer Count;
+        ShortString Name;
+        DateTime Created;
+    }
+    
+    Entity Complex
+    {
+        Logging
         {
             AllProperties;
             RelatedItem 'TestLogging.Simple' 'r2ID' 'SomeReference';
         }
-		Binary bi;
-		Bool bo;
-		Date da;
-		DateTime t;
-		Decimal de;
-		Guid g;
-		Integer i;
-		LongString ls;
-		Money m;
-		Reference r TestLogging.Simple { Detail; }
+        Binary bi;
+        Bool bo;
+        Date da;
+        DateTime t;
+        Decimal de;
+        Guid g;
+        Integer i;
+        LongString ls;
+        Money m;
+        Reference r TestLogging.Simple { Detail; }
         Reference r2 TestLogging.Simple;
         Reference r3 TestLogging.Simple;
-	}
+    }
     
     Entity Base
     {
@@ -151,28 +163,28 @@ Module TestLogging
 
 Module TestDatabaseExtensions
 {
-	Entity Simple
-	{
-		ShortString Name;
-		Integer Code;
-	}
+    Entity Simple
+    {
+        ShortString Name;
+        Integer Code;
+    }
 }
 
 Module TestAuditable
 {
-	Entity Parent
-	{
-		ShortString Name;
-	}
-	
-	Entity Simple
-	{
-		ShortString Name;
-		Reference Parent TestAuditable.Parent;
-		DateTime Started { CreationTime; }
-		DateTime ModifiedParentProperty { ModificationTimeOf TestAuditable.Simple.Parent; }
-		DateTime ModifiedNameOrParentModification { ModificationTimeOf TestAuditable.Simple.Name; ModificationTimeOf TestAuditable.Simple.ModifiedParentProperty; }
-	}
+    Entity Parent
+    {
+        ShortString Name;
+    }
+    
+    Entity Simple
+    {
+        ShortString Name;
+        Reference Parent TestAuditable.Parent;
+        DateTime Started { CreationTime; }
+        DateTime ModifiedParentProperty { ModificationTimeOf TestAuditable.Simple.Parent; }
+        DateTime ModifiedNameOrParentModification { ModificationTimeOf TestAuditable.Simple.Name; ModificationTimeOf TestAuditable.Simple.ModifiedParentProperty; }
+    }
 }
 
 Module TestRange
@@ -221,23 +233,6 @@ Module TestLengthLimit
     Entity ExactlyLength
     {
         ShortString StringExactly5Chars { MinLength 5; MaxLength 5; }
-    }
-}
-
-Module TestRegex
-{
-    Entity Simple 
-    {      
-        ShortString StringFrom200To249 { RegExMatch "2[0-4][0-9]" "StringFrom200To249 must be between 200 and 249."; }
-        ShortString UnicodeTest { RegExMatch "čćČĆテスト" "UnicodeTest must match unicode regex."; }
-        ShortString WhitespaceTest { RegExMatch "a\r\nb\tc" "WhitespaceTest must match whitespace regex."; }
-        ShortString SpecialCharTest { RegExMatch "a\!\@\#\$\%\^\&\*\(\)_\+\-\=\[\]\\\{\}\|\;\'\:\""\,\.\/\<\>\?" "SpecialCharTest must match special character regex."; }
-        ShortString DefaultErrorMessageTest { RegExMatch "123"; }
-    }
-    
-    Entity SimpleRequired 
-    {      
-        ShortString StringFrom200To249 { Required; RegExMatch "2[0-4][0-9]" "Value must be between 200 and 249."; }
     }
 }
 
@@ -308,15 +303,21 @@ Module TestDeactivatable
 
 Module TestSystemRequired
 {
-	Entity Parent
-	{
-		ShortString Name { SystemRequired; }
-	}
+    Entity Parent
+    {
+        ShortString Name { SystemRequired; }
+    }
 
     Entity Child
     {
         ShortString Name;
-		Reference Parent TestSystemRequired.Parent { SystemRequired; }
+        Reference Parent TestSystemRequired.Parent { SystemRequired; }
+    }
+
+    Entity Simple2
+    {
+        ShortString Name;
+        Bool Tagged { SystemRequired; }
     }
 }
 
@@ -379,9 +380,9 @@ Module TestMultipleLock
         Reference PassDependency;
         
         ItemFilter PassValidation 'item =>
-			!item.Extension_SimpleChecks.ContainsAlphabetic.Value
-			|| !item.Extension_SimpleChecks.ContainsNumeric.Value
-			|| !item.Extension_SimpleChecks.ContainsNonAlphaNumeric.Value';
+            !item.Extension_SimpleChecks.ContainsAlphabetic.Value
+            || !item.Extension_SimpleChecks.ContainsNumeric.Value
+            || !item.Extension_SimpleChecks.ContainsNonAlphaNumeric.Value';
         InvalidData PassValidation 'Pass is not valid.';
 
         ItemFilter PassContainsName 'item => item.Pass.Contains(item.UserName)';
@@ -389,5 +390,22 @@ Module TestMultipleLock
 
         ItemFilter PassTooShort 'item => item.Pass.Length < item.PassDependency.MinPassLength';
         InvalidData PassTooShort 'Pass is too short.';
+    }
+}
+
+Module TestRegex
+{
+    Entity Simple 
+    {      
+        ShortString StringFrom200To249 { RegExMatch "2[0-4][0-9]" "StringFrom200To249 must be between 200 and 249."; }
+        ShortString UnicodeTest { RegExMatch "čćČĆテスト" "UnicodeTest must match unicode regex."; }
+        ShortString WhitespaceTest { RegExMatch "a\r\nb\tc" "WhitespaceTest must match whitespace regex."; }
+        ShortString SpecialCharTest { RegExMatch "a\!\@\#\$\%\^\&\*\(\)_\+\-\=\[\]\\\{\}\|\;\'\:\""\,\.\/\<\>\?" "SpecialCharTest must match special character regex."; }
+        ShortString DefaultErrorMessageTest { RegExMatch "123"; }
+    }
+    
+    Entity SimpleRequired 
+    {      
+        ShortString StringFrom200To249 { Required; RegExMatch "2[0-4][0-9]" "Value must be between 200 and 249."; }
     }
 }

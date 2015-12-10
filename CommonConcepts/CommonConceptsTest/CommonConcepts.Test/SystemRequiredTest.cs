@@ -95,5 +95,25 @@ namespace CommonConcepts.Test
                     "Child", "System required");
             }
         }
+
+        [TestMethod]
+        public void BoolProperty()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                repository.TestSystemRequired.Simple2.Delete(repository.TestSystemRequired.Simple2.Load());
+
+                repository.TestSystemRequired.Simple2.Insert(new TestSystemRequired.Simple2 { Name = "a", Tagged = false });
+                repository.TestSystemRequired.Simple2.Insert(new TestSystemRequired.Simple2 { Name = "b", Tagged = true });
+
+                Assert.AreEqual("a False, b True", TestUtility.DumpSorted(repository.TestSystemRequired.Simple2.Query(), item => item.Name + " " + item.Tagged));
+
+                var invalidItem = new TestSystemRequired.Simple2 { ID = Guid.NewGuid(), Name = "c" };
+                TestUtility.ShouldFail<Rhetos.UserException>(
+                    () => repository.TestSystemRequired.Simple2.Insert(invalidItem),
+                    "required", "TestSystemRequired", "Simple2", "Tagged", invalidItem.ID.ToString());
+            }
+        }
     }
 }
