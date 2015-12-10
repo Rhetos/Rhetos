@@ -2,12 +2,33 @@
 
 ## 1.0.0 (TO BE RELEASED)
 
+## 1.0.0-alpha006 (2015-10-12)
+
+### Breaking changes
+
+* The *DownloadReport* server command no longer requires additional *Read* permissions for all the data sources,
+  only the existing *DownloadReport* permission for the report.
+
+### New features
+
+* Automatic authentication cache invalidation when modifying principals, roles and permissions.
+  The `AuthorizationCacheExpirationSeconds` option in *web.config* can now be increased, if Active Directory integration is not used.
+* New generic property filters: `EndsWith`, `NotContains`, `DateNotIn`.
+  Also available in [REST API](https://github.com/rhetos/restgenerator#filters).
+
+### Internal improvements
+
+* Bugfix: Concurrent inserts to *Common.Principal* may result with unique constraint violation on AspNetUserId, when using *AspNetFormsAuth*.
+* Bugfix: **AutoCode** may cause unique constraint violation when READ_COMMITTED_SNAPSHOT is enabled.
+* Bugfix: "Invalid column name" error may occur on **Polymorphic** automatic property implementation (missing SQL dependency).
+* Bugfix: **AutodetectSqlDependencies** applied on one **Module** also creates SQL dependencies on other modules.
+
+## 1.0.0-alpha004 (2015-08-17)
+
 ### Breaking changes
 
 * **Entity Framework** 6.1.3 is used for ORM, instead of **NHibernate**.
   See [Migrating Rhetos applications from NH to EF](https://github.com/Rhetos/Rhetos/wiki/Migrating-Rhetos-applications-from-NHibernate-to-Entity-Framework).
-* *DownloadReport* server command no longer requires additional *Read* permissions for all the data sources,
-  only the existing *DownloadReport* permission for the report.
 
 ### New features
 
@@ -16,8 +37,6 @@
 * `query.ToSimple()` method, for removing navigation properties when querying a Rhetos data structure from repository.
   For better memory and CPU performance when materializing a LINQ query, instead of `query.ToList()`, use `query.ToSimple().ToList()`.
   If only few properties are used, a better solution would be `query.Select(new { .. properties the will be used .. }).ToList()`.
-* New generic property filters: `EndsWith`, `NotContains`, `DateNotIn`.
-  Also available in [REST API](https://github.com/rhetos/restgenerator#filters).
 
 ### Internal improvements
 
