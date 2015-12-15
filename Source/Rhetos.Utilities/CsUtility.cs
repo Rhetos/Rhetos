@@ -92,9 +92,20 @@ namespace Rhetos.Utilities
         public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
         {
             TValue value;
-            if (!dictionary.TryGetValue(key, out value))
-                return default(TValue);
-            return value;
+            if (dictionary.TryGetValue(key, out value))
+                return value;
+            return default(TValue);
+        }
+
+        /// <summary>
+        /// Reads a value from the dictionary or returns an empty List if the dictionary does not contain the key.
+        /// </summary>
+        public static List<TValue> GetValueOrEmpty<TKey, TValue>(this IDictionary<TKey, List<TValue>> dictionary, TKey key)
+        {
+            List<TValue> value;
+            if (dictionary.TryGetValue(key, out value))
+                return value;
+            return new List<TValue>();
         }
 
         /// <summary>

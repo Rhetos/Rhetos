@@ -8,6 +8,7 @@
 
 * The *DownloadReport* server command no longer requires additional *Read* permissions for all the data sources,
   only the existing *DownloadReport* permission for the report.
+* Bugfix: **AutodetectSqlDependencies** applied on one **Module** also creates SQL dependencies on other modules.
 
 ### New features
 
@@ -21,7 +22,6 @@
 * Bugfix: Concurrent inserts to *Common.Principal* may result with unique constraint violation on AspNetUserId, when using *AspNetFormsAuth*.
 * Bugfix: **AutoCode** may cause unique constraint violation when READ_COMMITTED_SNAPSHOT is enabled.
 * Bugfix: "Invalid column name" error may occur on **Polymorphic** automatic property implementation (missing SQL dependency).
-* Bugfix: **AutodetectSqlDependencies** applied on one **Module** also creates SQL dependencies on other modules.
 
 ## 1.0.0-alpha004 (2015-08-17)
 

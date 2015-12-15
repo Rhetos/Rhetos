@@ -116,10 +116,10 @@ namespace Rhetos.Utilities
                 return new UserException("It is not allowed to delete a record that is referenced by other records.", exception); // TODO: Internationalization.
 
             if (sqlException.Message.StartsWith("The INSERT statement conflicted with the FOREIGN KEY constraint"))
-                return new UserException("It is not allowed to enter the record. An entered value references nonexistent record.", exception); // TODO: Internationalization.
+                return new UserException("It is not allowed to enter the record. The entered value references nonexistent record.", exception); // TODO: Internationalization.
 
             if (sqlException.Message.StartsWith("The UPDATE statement conflicted with the FOREIGN KEY constraint"))
-                return new UserException("It is not allowed to edit the record. An entered value references nonexistent record.", exception); // TODO: Internationalization.
+                return new UserException("It is not allowed to edit the record. The entered value references nonexistent record.", exception); // TODO: Internationalization.
 
             return null;
         }

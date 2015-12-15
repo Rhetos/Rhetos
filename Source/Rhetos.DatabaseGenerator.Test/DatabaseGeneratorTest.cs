@@ -138,6 +138,15 @@ namespace Rhetos.DatabaseGenerator.Test
                 };
             }
 
+            public static NewConceptApplication CreateApplication(string name, string sql, ConceptApplication dependsOn)
+            {
+                return new NewConceptApplication(new SimpleCi { Name = name, Data = "data" }, new SimpleConceptImplementation())
+                {
+                    CreateQuery = sql,
+                    DependsOn = new [] { new ConceptApplicationDependency { ConceptApplication = dependsOn } }
+                };
+            }
+
             new public static NewConceptApplication CreateApplication(string name, IConceptDatabaseDefinition implementation)
             {
                 return new NewConceptApplication(new SimpleCi { Name = name, Data = "data" }, implementation)
@@ -299,7 +308,8 @@ namespace Rhetos.DatabaseGenerator.Test
             IEnumerable<ConceptApplication> oldApplications,
             IEnumerable<NewConceptApplication> newApplications,
             out List<ConceptApplication> toBeRemoved,
-            out List<NewConceptApplication> toBeInserted)
+            out List<NewConceptApplication> toBeInserted,
+            bool computeDependencies = true)
         {
             var plugins = CreatePluginsContainer(new PluginsMetadataList
                 {
@@ -309,8 +319,11 @@ namespace Rhetos.DatabaseGenerator.Test
                 });
             var databaseGenerator = new DatabaseGenerator_Accessor(null, plugins);
 
-            databaseGenerator.ComputeDependsOn(oldApplications.Cast<NewConceptApplication>());
-            databaseGenerator.ComputeDependsOn(newApplications);
+            if (computeDependencies)
+            {
+                databaseGenerator.ComputeDependsOn(oldApplications.Cast<NewConceptApplication>());
+                databaseGenerator.ComputeDependsOn(newApplications);
+            }
 
             databaseGenerator.CalculateApplicationsToBeRemovedAndInserted(
                 oldApplications, newApplications,
@@ -432,16 +445,17 @@ namespace Rhetos.DatabaseGenerator.Test
         [TestMethod]
         public void DatabaseGenerator_MustRecreateDependentConceptWithNewConceptInfoReference()
         {
-            var simpleV1 = SimpleCi.CreateApplication("v1");
-            var simpleV2 = SimpleCi.CreateApplication("v2");
-            var dependent = ReferencingCi.CreateApplication("", simpleV1);
+            var simple1a = SimpleCi.CreateApplication("a", "sqla1");
+            var simple1b = SimpleCi.CreateApplication("b", "sqlb");
+            var simple2a = SimpleCi.CreateApplication("a", "sqla2"); // Object modified in version 2.
+            var simple2b = SimpleCi.CreateApplication("b", "sqlb", simple2a); // Adding a dependency that did not exist in the version 1.
 
-            var oldApplications = new List<ConceptApplication> { simpleV1, dependent };
-            var newApplications = new List<NewConceptApplication> { simpleV2, dependent };
+            var oldApplications = new List<ConceptApplication> { simple1a, simple1b};
+            var newApplications = new List<NewConceptApplication> { simple2a, simple2b };
 
             List<ConceptApplication> toBeRemoved;
             List<NewConceptApplication> toBeInserted;
-            TestDatabaseGenerator(oldApplications, newApplications, out toBeRemoved, out toBeInserted);
+            TestDatabaseGenerator(oldApplications, newApplications, out toBeRemoved, out toBeInserted, computeDependencies: false);
 
             Assert.AreEqual(2, toBeRemoved.Count);
             Assert.AreEqual(2, toBeInserted.Count);

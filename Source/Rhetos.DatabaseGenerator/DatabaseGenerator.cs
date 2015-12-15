@@ -486,8 +486,8 @@ namespace Rhetos.DatabaseGenerator
                 LogDatabaseChanges(newApplicationsByKey[ca], "Refresh", () =>
                     {
                         var report = new List<string>();
-                        var refreshBecauseNew = new HashSet<string>(newDependenciesByDependent[ca].Intersect(toBeInsertedIndex));
-                        var refreshBecauseOld = new HashSet<string>(oldDependenciesByDependent[ca].Intersect(toBeRemovedIndex));
+                        var refreshBecauseNew = new HashSet<string>(newDependenciesByDependent.GetValueOrEmpty(ca).Intersect(toBeInsertedIndex));
+                        var refreshBecauseOld = new HashSet<string>(oldDependenciesByDependent.GetValueOrEmpty(ca).Intersect(toBeRemovedIndex));
                         var dependsOnNew = string.Join(", ", refreshBecauseNew.Except(refreshBecauseOld));
                         var dependsOnOld = string.Join(", ", refreshBecauseOld.Except(refreshBecauseNew));
                         var dependsOnExisting = refreshBecauseNew.Intersect(refreshBecauseOld);
