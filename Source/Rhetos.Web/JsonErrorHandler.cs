@@ -75,7 +75,7 @@ namespace Rhetos.Web
                 new HttpResponseMessageProperty {StatusCode = responseStatusCode});
 
             var response = WebOperationContext.Current.OutgoingResponse;
-            response.ContentType = "application/json";
+            response.ContentType = "application/json; charset=" + response.BindingWriteEncoding.WebName;
             response.StatusCode = responseStatusCode;
         }
     }
