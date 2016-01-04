@@ -12,8 +12,15 @@ CALL "%VSTOOLS%\..\..\VC\vcvarsall.bat" x86 || GOTO Error0
 @ECHO ON
 :SkipVcvarsall
 
+DevEnv.com "Source\ReplaceRegEx\ReplaceRegEx.csproj" /rebuild || GOTO Error0
+CALL ChangeVersions.bat /NOPAUSE || GOTO Error0
+
 IF EXIST Build.log DEL Build.log || GOTO Error0
 DevEnv.com "Rhetos.sln" /rebuild %Config% /out Build.log || TYPE Build.log && GOTO Error0
+
+CALL CreateInstallationPackage.bat %Config% /NOPAUSE || GOTO Error0
+
+CALL ChangeVersions.bat /NOPAUSE /RESTORE || GOTO Error0
 
 @REM ================================================
 
