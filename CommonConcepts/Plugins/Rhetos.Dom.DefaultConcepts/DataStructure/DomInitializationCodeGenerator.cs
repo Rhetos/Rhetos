@@ -22,6 +22,7 @@ using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using Rhetos.Utilities;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -33,6 +34,7 @@ namespace Rhetos.Dom.DefaultConcepts
     public class DomInitializationCodeGenerator : IConceptCodeGenerator
     {
         public static readonly string EntityFrameworkContextMembersTag = "/*EntityFrameworkContextMembers*/";
+        public static readonly string EntityFrameworkContextInitializeTag = "/*EntityFrameworkContextInitialize*/";
         public static readonly string EntityFrameworkOnModelCreatingTag = "/*EntityFrameworkOnModelCreating*/";
         public static readonly string EntityFrameworkConfigurationTag = "/*EntityFrameworkConfiguration*/";
         public static readonly string CommonQueryableMemebersTag = "/*CommonQueryableMemebers*/";
@@ -48,11 +50,21 @@ namespace Rhetos.Dom.DefaultConcepts
     using Rhetos.Dom.DefaultConcepts;
     using Rhetos.Utilities;";
 
+        private readonly IConfiguration _configuration;
+
+        public DomInitializationCodeGenerator(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (InitializationConcept)conceptInfo;
 
             codeBuilder.InsertCode(GenerateCommonClassesSnippet());
+            if (_configuration.GetBool("EntityFramework.UseDatabaseNullSemantics", false).Value == true)
+                codeBuilder.InsertCode("this.Configuration.UseDatabaseNullSemantics = true;\r\n            ", EntityFrameworkContextInitializeTag);
+
             // Types used in the preceding code snippet:
             codeBuilder.AddReferencesFromDependency(typeof(Autofac.Module)); // Includes a reference to Autofac.dll.
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Extensibility.INamedPlugins<>));
@@ -103,6 +115,7 @@ namespace Rhetos.Dom.DefaultConcepts
             EntityFrameworkConfiguration configuration) // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
             : base(new System.Data.Entity.Core.EntityClient.EntityConnection(metadata.MetadataWorkspace, persistenceTransaction.Connection), false)
         {
+            Initialize();
             Database.UseTransaction(persistenceTransaction.Transaction);
         }
 
@@ -115,6 +128,12 @@ namespace Rhetos.Dom.DefaultConcepts
             EntityFrameworkConfiguration configuration) // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
             : base(connection, true)
         {
+            Initialize();
+        }
+
+        private void Initialize()
+        {
+            " + EntityFrameworkContextInitializeTag + @"
         }
 
         public void ClearCache()

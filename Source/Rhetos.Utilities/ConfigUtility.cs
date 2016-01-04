@@ -28,6 +28,7 @@ namespace Rhetos.Utilities
     public static class ConfigUtility
     {
         /// <summary>
+        /// Use "Configuration.GetInt" or "Configuration.GetBool" instead.
         /// Reads the web service configuration from appSettings group in web.config file.
         /// When used in another application (for example, DeployPackages.exe),
         /// the application's ".config" file can be used to override the default settings from the web.config.
