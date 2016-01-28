@@ -136,6 +136,9 @@
     <Compile Include="Exceptions\LegacyClientException.cs" />
     <Compile Include="FilesUtility.cs" />
     <Compile Include="IConfiguration.cs" />
+    <Compile Include="ISqlUtility.cs" />
+    <Compile Include="NoLocalizer.cs" />
+    <Compile Include="ILocalizer.cs" />
     <Compile Include="MultiDictionary.cs" />
     <Compile Include="ExceptionsUtility.cs" />
     <Compile Include="Exceptions\ClientException.cs" />

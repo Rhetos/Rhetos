@@ -44,6 +44,7 @@ namespace Rhetos.Processing
         private readonly IAuthorizationManager _authorizationManager;
         private readonly XmlUtility _xmlUtility;
         private readonly IUserInfo _userInfo;
+        private readonly ISqlUtility _sqlUtility;
 
         private static string _clientExceptionUserMessage = "Operation could not be completed because the request sent to the server was not valid or not properly formatted.";
 
@@ -54,7 +55,8 @@ namespace Rhetos.Processing
             IPersistenceTransaction persistenceTransaction,
             IAuthorizationManager authorizationManager,
             XmlUtility xmlUtility,
-            IUserInfo userInfo)
+            IUserInfo userInfo,
+            ISqlUtility sqlUtility)
         {
             _commandRepository = commandRepository;
             _commandObservers = commandObservers;
@@ -67,6 +69,7 @@ namespace Rhetos.Processing
             _authorizationManager = authorizationManager;
             _xmlUtility = xmlUtility;
             _userInfo = userInfo;
+            _sqlUtility = sqlUtility;
         }
 
         public ProcessingResult Execute(IList<ICommandInfo> commands)
@@ -170,8 +173,7 @@ namespace Rhetos.Processing
                 string userMessage = null;
                 string systemMessage = null;
 
-                var sqlException = SqlUtility.InterpretSqlException(ex);
-                if (sqlException != null) ex = sqlException;
+                ex = _sqlUtility.InterpretSqlException(ex) ?? ex;
 
                 if (ex is UserException)
                 {

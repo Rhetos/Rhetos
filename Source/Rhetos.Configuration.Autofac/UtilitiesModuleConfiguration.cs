@@ -33,29 +33,24 @@ namespace Rhetos.Configuration.Autofac
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<XmlUtility>().SingleInstance();
-
-            Type sqlExecuterType = GetSqlExecuterImplementation();
-            builder.RegisterType(sqlExecuterType).As<ISqlExecuter>().InstancePerLifetimeScope();
-
             builder.RegisterType<Rhetos.Utilities.Configuration>().As<Rhetos.Utilities.IConfiguration>().SingleInstance();
+            builder.RegisterType<NoLocalizer>().As<ILocalizer>().SingleInstance().PreserveExistingDefaults();
+
+            var sqlImplementation = _sqlImplementations.GetValueOrDefault(SqlUtility.DatabaseLanguage);
+            if (sqlImplementation == null)
+                throw new FrameworkException("Unsupported database language '" + SqlUtility.DatabaseLanguage
+                    + "'. Supported languages are: " + string.Join(", ", _sqlImplementations.Keys) + ".");
+
+            builder.RegisterType(sqlImplementation.Item1).As<ISqlExecuter>().InstancePerLifetimeScope();
+            builder.RegisterType(sqlImplementation.Item2).As<ISqlUtility>().InstancePerLifetimeScope();
 
             base.Load(builder);
         }
 
-        private static Type GetSqlExecuterImplementation()
-        {
-            var sqlExecuterImplementations = new Dictionary<string, Type>()
+        private static readonly Dictionary<string, Tuple<Type, Type>> _sqlImplementations = new Dictionary<string, Tuple<Type, Type>>()
             {
-                { "MsSql", typeof(MsSqlExecuter) },
-                { "Oracle", typeof(OracleSqlExecuter) }
+                { "MsSql", Tuple.Create(typeof(MsSqlExecuter), typeof(MsSqlUtility)) },
+                { "Oracle", Tuple.Create(typeof(OracleSqlExecuter), typeof(OracleSqlUtility)) }
             };
-
-            Type sqlExecuterType;
-            if (!sqlExecuterImplementations.TryGetValue(SqlUtility.DatabaseLanguage, out sqlExecuterType))
-                throw new FrameworkException("Unsupported database language '" + SqlUtility.DatabaseLanguage
-                    + "'. Supported languages are: " + string.Join(", ", sqlExecuterImplementations.Keys) + ".");
-
-            return sqlExecuterType;
-        }
     }
 }

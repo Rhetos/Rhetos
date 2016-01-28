@@ -63,6 +63,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NoLocalizerTest.cs" />
     <Compile Include="CsUtilityTest.cs" />
     <Compile Include="OracleSqlExecuterTest.cs" />
     <Compile Include="GraphTest.cs" />
