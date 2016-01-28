@@ -21,21 +21,27 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using Rhetos.Dsl;
+using System.ComponentModel.Composition;
 
-namespace Rhetos.Utilities
+namespace Rhetos.Dsl.DefaultConcepts
 {
-    public interface ISqlUtility
+    [Export(typeof(IConceptMacro))]
+    public class WritableOrmDataStructureMacro : IConceptMacro<DataStructureInfo>
     {
-        /// <summary>
-        /// Checks the exception for database errors and attempts to transform it to a RhetosException.
-        /// It the function returns null, the original exception should be used.
-        /// </summary>
-        RhetosException InterpretSqlException(Exception exception);
-
-        /// <summary>
-        /// Simplifies ORM exception by detecting the SQL exception that caused it.
-        /// </summary>
-        Exception ExtractSqlException(Exception exception);
+        public IEnumerable<IConceptInfo> CreateNewConcepts(DataStructureInfo conceptInfo, IDslModel existingConcepts)
+        {
+            if (conceptInfo is IWritableOrmDataStructure)
+                return new[]
+                {
+                    new RepositoryUsesInfo
+                    {
+                        DataStructure = conceptInfo,
+                        PropertyType = "Rhetos.Utilities.ISqlUtility, Rhetos.Utilities",
+                        PropertyName = "_sqlUtility"
+                    }
+                };
+            return null;
+        }
     }
 }

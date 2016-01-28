@@ -18,16 +18,23 @@
 */
 
 using System;
-using System.Data.Entity.Core;
-using System.Data.Entity.Infrastructure;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Rhetos.Utilities
 {
-    public static class MsSqlUtility
+    public class MsSqlUtility : ISqlUtility
     {
+        private readonly ILocalizer _localizer;
+
+        public MsSqlUtility(ILocalizer localizer)
+        {
+            _localizer = localizer;
+        }
+
         /// <summary>
         /// Creates an SQL query that sets context_info connection variable to contain data about the user.
         /// The context_info variable can be used in SQL server to extract user info in certain situations such as logging trigger.
@@ -53,33 +60,6 @@ namespace Rhetos.Utilities
             return query.ToString();
         }
 
-        /// <summary>
-        /// It the function returns null, the exception should not be changed. In that case simply use "throw;".
-        /// </summary>
-        public static Exception ProcessSqlException(Exception ex)
-        {
-            if (ex == null)
-                return null;
-            if (ex is DbUpdateException)
-                return ProcessSqlException(ex.InnerException);
-            if (ex is UpdateException)
-                return ProcessSqlException(ex.InnerException);
-            if (!(ex is SqlException))
-                return null;
-
-            var sqlException = (SqlException)ex;
-            SqlError[] errorArray = new SqlError[sqlException.Errors.Count];
-            sqlException.Errors.CopyTo(errorArray, 0);
-            var errors = from e in errorArray
-                         orderby e.LineNumber
-                         select e;
-
-            foreach (var err in errors)
-                if (err.State == 101) // Rhetos convention for an error raised in SQL that is intended as a message to the end user.
-                    return new UserException(err.Message, ex);
-            return sqlException;
-        }
-
         public static DateTime GetDatabaseTime(ISqlExecuter sqlExecuter)
         {
             DateTime databaseTime = DateTime.MinValue;
@@ -91,40 +71,100 @@ namespace Rhetos.Utilities
         }
 
         /// <summary>
-        /// Checks exception for Sql related exceptions and attempts to transform it to RhetosException
+        /// See ISqlUtility.InterpretSqlException.
         /// </summary>
-        public static RhetosException InterpretSqlException(Exception exception)
+        public RhetosException InterpretSqlException(Exception exception)
         {
-            var sqlException = ExtractSqlException(exception);
+            if (exception == null || exception is RhetosException)
+                return null;
+
+            var sqlException = (SqlException)ExtractSqlException(exception);
             if (sqlException == null)
                 return null;
 
-            if (sqlException.State == 101) // Rhetos convention for an error raised in SQL that is intended as a message to the end user.
+            //=========================
+            // Detect user message in SQL error:
+
+            const int userErrorCode = 101; // Rhetos convention for an error raised in SQL that is intended as a message to the end user.
+
+            if (sqlException.State == userErrorCode)
                 return new UserException(sqlException.Message, exception);
+
+            if (sqlException.Errors != null)
+            foreach (var sqlError in sqlException.Errors.Cast<SqlError>().OrderBy(e => e.LineNumber))
+                if (sqlError.State == userErrorCode)
+                    return new UserException(sqlError.Message, exception);
+
+            //=========================
+            // Detect system errors:
 
             if (sqlException.Number == 229 || sqlException.Number == 230)
                 if (sqlException.Message.Contains("permission was denied"))
                     return new FrameworkException("Rhetos server lacks sufficient database permissions for this operation. Please make sure that Rhetos Server process has db_owner role for the database.", exception);
 
-            if (sqlException.Message.StartsWith("Cannot insert duplicate key"))
-                return new UserException("It is not allowed to enter a duplicate record.", exception); // TODO: Internationalization.
+            //=========================
+            // Detect UNIQUE constaint:
 
-            if (sqlException.Message.StartsWith("The DELETE statement conflicted with the REFERENCE constraint"))
-                return new UserException("It is not allowed to delete a record that is referenced by other records.", exception); // TODO: Internationalization.
+            if (sqlException.Number == 2601)
+            {
+                // See the InterpretUniqueConstraint unit test for regex coverage.
+                Regex messageParser = new Regex(@"^Cannot insert duplicate key row in object '(.+)' with unique index '(.+)'\.( The duplicate key value is \((.+)\)\.)?");
+                var parts = messageParser.Match(sqlException.Message).Groups;
 
-            if (sqlException.Message.StartsWith("The DELETE statement conflicted with the SAME TABLE REFERENCE constraint"))
-                return new UserException("It is not allowed to delete a record that is referenced by other records.", exception); // TODO: Internationalization.
+                var interpretedException = new UserException(_localizer["It is not allowed to enter a duplicate record."], exception);
 
-            if (sqlException.Message.StartsWith("The INSERT statement conflicted with the FOREIGN KEY constraint"))
-                return new UserException("It is not allowed to enter the record. The entered value references nonexistent record.", exception); // TODO: Internationalization.
+                interpretedException.Info["Constraint"] = "Unique";
+                if (parts[1].Success)
+                    interpretedException.Info["Table"] = parts[1].Value;
+                if (parts[2].Success)
+                    interpretedException.Info["ConstraintName"] = parts[2].Value;
+                if (parts[4].Success)
+                    interpretedException.Info["DuplicateValue"] = parts[4].Value;
 
-            if (sqlException.Message.StartsWith("The UPDATE statement conflicted with the FOREIGN KEY constraint"))
-                return new UserException("It is not allowed to edit the record. The entered value references nonexistent record.", exception); // TODO: Internationalization.
+                return interpretedException;
+            }
+
+            //=========================
+            // Detect REFERENCE constaint:
+
+            if (sqlException.Number == 547)
+            {
+                // See the InterpretReferenceConstraint unit test for regex coverage.
+                Regex messageParser = new Regex(@"^(The )?(.+) statement conflicted with (the )?(.+) constraint [""'](.+)[""']. The conflict occurred in database [""'](.+)[""'], table [""'](.+?)[""'](, column [""'](.+?)[""'])?");
+                var parts = messageParser.Match(sqlException.Message).Groups;
+                string action = parts[2].Value ?? "";
+                string constraintType = parts[4].Value ?? "";
+
+                if (_referenceConstraintTypes.Contains(constraintType) && _referenceConstraintMessageByAction.ContainsKey(action))
+                {
+                    var interpretedException = new UserException(_localizer[_referenceConstraintMessageByAction[action]], exception);
+
+                    interpretedException.Info["Constraint"] = "Reference";
+                    interpretedException.Info["Action"] = action;
+                    if (parts[5].Success)
+                        interpretedException.Info["ConstraintName"] = parts[5].Value; // The FK constraint name is ambiguous: The error does not show the schema name and the base table that the INSERT or UPDATE acctually happened.
+                    if (parts[7].Success)
+                        interpretedException.Info[action == "DELETE" ? "DependentTable" : "ReferencedTable"] = parts[7].Value;
+                    if (parts[9].Success)
+                        interpretedException.Info[action == "DELETE" ? "DependentColumn" : "ReferencedColumn"] = parts[9].Value;
+
+                    return interpretedException;
+                }
+            }
 
             return null;
         }
+        
+        private static readonly string[] _referenceConstraintTypes = new string[] { "REFERENCE", "SAME TABLE REFERENCE", "FOREIGN KEY", "COLUMN FOREIGN KEY" };
 
-        private static SqlException ExtractSqlException(Exception exception)
+        private static readonly Dictionary<string, string> _referenceConstraintMessageByAction = new Dictionary<string, string>
+        {
+            { "DELETE", "It is not allowed to delete a record that is referenced by other records." },
+            { "UPDATE", "It is not allowed to edit the record. The entered value references nonexistent record." },
+            { "INSERT", "It is not allowed to enter the record. The entered value references nonexistent record." }
+        };
+
+        public Exception ExtractSqlException(Exception exception)
         {
             if (exception is SqlException)
                 return (SqlException)exception;
@@ -132,6 +172,5 @@ namespace Rhetos.Utilities
                 return ExtractSqlException(exception.InnerException);
             return null;
         }
-
     }
 }

@@ -62,6 +62,8 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Data is already saved to the database (but the SQL transaction has not yet been commited) so SQL validations and computations can be used.</summary>
         public static readonly CsTag<DataStructureInfo> OnSaveTag2 = "WritableOrm OnSaveTag2";
 
+        public static readonly CsTag<DataStructureInfo> OnDatabaseErrorTag = "WritableOrm OnDatabaseError";
+
         // TODO: Remove "duplicateObjects" check after implementing stateless session with "manual" saving.
         protected static string MemberFunctionsSnippet(DataStructureInfo info)
         {
@@ -141,9 +143,14 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 _executionContext.EntityFrameworkContext.ClearCache();
             }}
-            catch (System.Data.Entity.Infrastructure.DbUpdateException dbException)
+            catch (System.Data.Entity.Infrastructure.DbUpdateException saveException)
             {{
-                var sqlException = Rhetos.Utilities.MsSqlUtility.ProcessSqlException(dbException);
+        		var interpretedException = _sqlUtility.InterpretSqlException(saveException);
+        		" + OnDatabaseErrorTag.Evaluate(info) + @"
+
+        		if (interpretedException != null)
+        			Rhetos.Utilities.ExceptionsUtility.Rethrow(interpretedException);
+                var sqlException = _sqlUtility.ExtractSqlException(saveException);
                 if (sqlException != null)
                     Rhetos.Utilities.ExceptionsUtility.Rethrow(sqlException);
                 throw;

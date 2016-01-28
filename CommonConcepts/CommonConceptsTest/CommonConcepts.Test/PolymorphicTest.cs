@@ -233,12 +233,13 @@ namespace CommonConcepts.Test
                 var dep = new TestPolymorphic.Dependant { ID = Guid.NewGuid(), Name = "dep", SimpleBaseID = s1.ID };
                 repository.TestPolymorphic.Dependant.Insert(new[] { dep });
                 Assert.AreEqual("dep-a", TestUtility.DumpSorted(
-                    repository.TestPolymorphic.DependantBrowse.Filter(new[] { dep.ID }),
+                    repository.TestPolymorphic.DependantBrowse.Query(new[] { dep.ID }),
                     item => item.Name + "-" + item.SimpleBaseName));
 
-                TestUtility.ShouldFail(
+                var ex = TestUtility.ShouldFail<Rhetos.UserException>(
                     () => repository.TestPolymorphic.Simple1.Delete(new[] { s1 }),
-                    "Dependant", "REFERENCE", "SimpleBase");
+                    "It is not allowed to delete");
+                TestUtility.AssertContains(ex.ToString(), new[] { "Dependant", "REFERENCE", "SimpleBase" }, "Expected inner SQL exception");
             }
         }
 
@@ -256,9 +257,10 @@ namespace CommonConcepts.Test
                 repository.TestPolymorphic.Dependant.Insert(new[] { dep });
 
                 var depInvalidReference = new TestPolymorphic.Dependant { ID = Guid.NewGuid(), Name = "depInvalidReference", SimpleBaseID = Guid.NewGuid() };
-                TestUtility.ShouldFail(
+                var ex = TestUtility.ShouldFail<Rhetos.UserException>(
                     () => repository.TestPolymorphic.Dependant.Insert(new[] { depInvalidReference }),
-                    "Dependant", "FOREIGN KEY", "SimpleBase");
+                    "It is not allowed to enter the record.");
+                TestUtility.AssertContains(ex.ToString(), new[] { "Dependant", "FOREIGN KEY", "SimpleBase" }, "Expected inner SQL exception");
             }
         }
 
@@ -277,9 +279,10 @@ namespace CommonConcepts.Test
 
                 dep.SimpleBaseID = Guid.NewGuid();
 
-                TestUtility.ShouldFail(
+                var ex = TestUtility.ShouldFail<Rhetos.UserException>(
                     () => repository.TestPolymorphic.Dependant.Update(new[] { dep }),
-                    "Dependant", "FOREIGN KEY", "SimpleBase");
+                    "It is not allowed to edit the record.");
+                TestUtility.AssertContains(ex.ToString(), new[] { "Dependant", "FOREIGN KEY", "SimpleBase" }, "Expected inner SQL exception");
             }
         }
 
@@ -290,9 +293,9 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
-                repository.TestPolymorphic.Disjunctive1.Delete(repository.TestPolymorphic.Disjunctive1.All());
-                repository.TestPolymorphic.Disjunctive2.Delete(repository.TestPolymorphic.Disjunctive2.All());
-                Assert.AreEqual(0, repository.TestPolymorphic.Disjunctive.All().Count());
+                repository.TestPolymorphic.Disjunctive1.Delete(repository.TestPolymorphic.Disjunctive1.Load());
+                repository.TestPolymorphic.Disjunctive2.Delete(repository.TestPolymorphic.Disjunctive2.Load());
+                Assert.AreEqual(0, repository.TestPolymorphic.Disjunctive.Load().Count());
 
                 var d1 = new TestPolymorphic.Disjunctive1 { ID = Guid.NewGuid(), Name = "abc" };
                 repository.TestPolymorphic.Disjunctive1.Insert(new[] { d1 });

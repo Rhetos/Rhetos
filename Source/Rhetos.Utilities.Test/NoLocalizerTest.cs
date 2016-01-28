@@ -42,17 +42,17 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual("Hello", localizer["Hello"]);
             Assert.AreEqual("Hello, world.", localizer["Hello, {0}.", "world"]);
             Assert.AreEqual("abc123", localizer["{0}{1}{2}", null, "abc", "123"]);
+            Assert.AreEqual("123456", localizer["{0}{1}", "123", 456, 789]);
         }
 
         [TestMethod]
-        public void Errors()
+        public void ErrorHandling()
         {
             ILocalizer localizer = new NoLocalizer();
 
             // Expecting the same behavior as string.Format().
             TestUtility.ShouldFail<NullReferenceException>(() => { string msg = localizer[null]; });
             TestUtility.ShouldFail<FormatException>(() => { string msg = localizer["{0}{1}", 123]; });
-            Assert.AreEqual("123456", localizer["{0}{1}", 123, 456, 789]);            
         }
     }
 }

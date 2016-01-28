@@ -144,39 +144,6 @@ namespace CommonConcepts.Test
 
         //================================================================
 
-        private class EntityHelperMultiple
-        {
-            private readonly Common.DomRepository _repository;
-
-            public EntityHelperMultiple(RhetosTestContainer container, Common.DomRepository repository)
-            {
-                _repository = container.Resolve<Common.DomRepository>();
-            }
-
-            public void Insert(string s, int i, TestUnique.R r, bool shouldFail = false)
-            {
-                string error = null;
-                var newItem = new TestUnique.Multi { S = s, I = i, RID = r.ID, ID = Guid.NewGuid() };
-                try
-                {
-                    Console.WriteLine("Inserting " + s + ", " + i + " ...");
-                    _repository.TestUnique.Multi.Insert(new[] { newItem });
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.GetType().Name + ": " + ex.Message);
-                    error = ex.Message;
-                    if (!shouldFail)
-                        throw;
-                }
-                if (shouldFail)
-                {
-                    Assert.IsNotNull(error, "Insert should have failed with an exception.");
-                    TestUtility.AssertContains(error, "Cannot insert duplicate key");
-                }
-            }
-        }
-
         private void TestIndexMultipleInsert(string s, int i, int r, bool shouldFail = false)
         {
             using (var container = new RhetosTestContainer())
@@ -188,14 +155,21 @@ namespace CommonConcepts.Test
                     });
 
                 var repository = container.Resolve<Common.DomRepository>();
-                var helper = new EntityHelperMultiple(container, repository);
 
                 var r1 = new TestUnique.R { S = "r1" };
                 var r2 = new TestUnique.R { S = "r2" };
                 repository.TestUnique.R.Insert(new[] { r1, r2 });
 
-                helper.Insert("a", 1, r1);
-                helper.Insert(s, i, r == 1 ? r1 : r2, shouldFail);
+                repository.TestUnique.Multi.Insert(new TestUnique.Multi { S = "a", I = 1, RID = r1.ID, ID = Guid.NewGuid() });
+
+                Action insert = () => repository.TestUnique.Multi.Insert(new TestUnique.Multi { S = s, I = i, RID = (r == 1) ? r1.ID : r2.ID, ID = Guid.NewGuid() });
+                if (shouldFail)
+                {
+                    var ex = TestUtility.ShouldFail(insert, "It is not allowed to enter a duplicate record.");
+                    TestUtility.AssertContains(ex.ToString(), "Cannot insert duplicate key", "Original SQL exception should be included.");
+                }
+                else
+                    insert();
             }
         }
 

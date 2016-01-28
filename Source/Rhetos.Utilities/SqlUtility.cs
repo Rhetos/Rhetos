@@ -34,6 +34,8 @@ namespace Rhetos.Utilities
 {
     public static class SqlUtility
     {
+        // TODO: Move most of the methods to ISqlUtility.
+
         private static int? _sqlCommandTimeout = null;
         /// <summary>
         /// In seconds.
@@ -420,19 +422,6 @@ namespace Rhetos.Utilities
             else
                 throw new FrameworkException(UnsupportedLanguageError);
             return DateTime.SpecifyKind(now, DateTimeKind.Local);
-        }
-
-        /// <summary>
-        /// Checks exception for Sql related exceptions and attempts to transform it to RhetosException
-        /// </summary>
-        public static RhetosException InterpretSqlException(Exception exception)
-        {
-            if (DatabaseLanguageIsMsSql.Value)
-                return MsSqlUtility.InterpretSqlException(exception);
-            else if (DatabaseLanguageIsOracle.Value)
-                return OracleSqlUtility.InterpretSqlException(exception);
-            else
-                return null;
         }
     }
 }

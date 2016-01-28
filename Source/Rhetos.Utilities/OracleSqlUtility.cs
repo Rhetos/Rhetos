@@ -25,7 +25,7 @@ using Oracle.DataAccess.Client;
 
 namespace Rhetos.Utilities
 {
-    public static class OracleSqlUtility
+    public class OracleSqlUtility : ISqlUtility
     {
         public static string LimitIdentifierLength(string name)
         {
@@ -80,9 +80,14 @@ END;", SqlUtility.NationalLanguage);
         }
 
         /// <summary>
-        /// Checks exception for Sql related exceptions and attempts to transform it to RhetosException
+        /// See ISqlUtility.InterpretSqlException.
         /// </summary>
-        public static RhetosException InterpretSqlException(Exception exception)
+        public RhetosException InterpretSqlException(Exception exception)
+        {
+            return null;
+        }
+
+        public Exception ExtractSqlException(Exception exception)
         {
             return null;
         }

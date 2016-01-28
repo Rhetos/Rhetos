@@ -27,6 +27,14 @@ namespace Rhetos
     [global::System.Serializable]
     public abstract class RhetosException : Exception
     {
+        private Dictionary<string, object> _info = new Dictionary<string, object>();
+        /// <summary>
+        /// Additional error context. It will be sent to the client if the excetion is UserException or ClientException.
+        /// The Info property is used instead of the existing "Data" dictionary to avoid security issue when sending data to the client,
+        /// since other tools might use the Data for internal debugging data.
+        /// </summary>
+        public Dictionary<string, object> Info { get { return _info; } }
+
         public RhetosException() { }
         public RhetosException(string message) : base(message) { }
         public RhetosException(string message, Exception inner) : base(message, inner) { }

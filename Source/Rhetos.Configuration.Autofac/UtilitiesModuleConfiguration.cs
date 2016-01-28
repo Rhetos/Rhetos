@@ -19,7 +19,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Text;
 using Autofac;
@@ -36,21 +35,20 @@ namespace Rhetos.Configuration.Autofac
             builder.RegisterType<Rhetos.Utilities.Configuration>().As<Rhetos.Utilities.IConfiguration>().SingleInstance();
             builder.RegisterType<NoLocalizer>().As<ILocalizer>().SingleInstance().PreserveExistingDefaults();
 
-            var sqlImplementation = _sqlImplementations.GetValueOrDefault(SqlUtility.DatabaseLanguage);
-            if (sqlImplementation == null)
-                throw new FrameworkException("Unsupported database language '" + SqlUtility.DatabaseLanguage
-                    + "'. Supported languages are: " + string.Join(", ", _sqlImplementations.Keys) + ".");
+            var sqlImplementations = new[]
+            {
+                new { Dialect = "MsSql", SqlExecuter = typeof(MsSqlExecuter), SqlUtility = typeof(MsSqlUtility) },
+                new { Dialect = "Oracle", SqlExecuter = typeof(OracleSqlExecuter), SqlUtility = typeof(OracleSqlUtility) },
+            }.ToDictionary(imp => imp.Dialect);
 
-            builder.RegisterType(sqlImplementation.Item1).As<ISqlExecuter>().InstancePerLifetimeScope();
-            builder.RegisterType(sqlImplementation.Item2).As<ISqlUtility>().InstancePerLifetimeScope();
+            var sqlImplementation = sqlImplementations.GetValue(SqlUtility.DatabaseLanguage,
+                () => "Unsupported database language '" + SqlUtility.DatabaseLanguage
+                    + "'. Supported languages are: " + string.Join(", ", sqlImplementations.Keys) + ".");
+
+            builder.RegisterType(sqlImplementation.SqlExecuter).As<ISqlExecuter>().InstancePerLifetimeScope();
+            builder.RegisterType(sqlImplementation.SqlUtility).As<ISqlUtility>().InstancePerLifetimeScope();
 
             base.Load(builder);
         }
-
-        private static readonly Dictionary<string, Tuple<Type, Type>> _sqlImplementations = new Dictionary<string, Tuple<Type, Type>>()
-            {
-                { "MsSql", Tuple.Create(typeof(MsSqlExecuter), typeof(MsSqlUtility)) },
-                { "Oracle", Tuple.Create(typeof(OracleSqlExecuter), typeof(OracleSqlUtility)) }
-            };
     }
 }

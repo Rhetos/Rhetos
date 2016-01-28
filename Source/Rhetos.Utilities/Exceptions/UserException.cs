@@ -28,7 +28,7 @@ namespace Rhetos
     [global::System.Serializable]
     public class UserException : RhetosException
     {
-        public string SystemMessage;
+        public string SystemMessage; // TODO: Remove this property. Use RhetosException.Info property instead.
         public UserException() { }
         public UserException(string message) : base(message) { }
         public UserException(string message, string systemMessage) : base(message) { SystemMessage = systemMessage; }
