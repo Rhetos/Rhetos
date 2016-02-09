@@ -44,6 +44,16 @@ namespace Rhetos.Web
             return false;
         }
 
+        public class ResponseMessage
+        {
+            public string UserMessage;
+            public string SystemMessage;
+            public override string ToString()
+            {
+                return "SystemMessage: " + (SystemMessage ?? "<null>") + ", UserMessage: " + (UserMessage ?? "<null>");
+            }
+        }
+
         public void ProvideFault(
             Exception error,
             MessageVersion version,
@@ -54,15 +64,25 @@ namespace Rhetos.Web
 
             object responseMessage;
             HttpStatusCode responseStatusCode;
-            if (error is UserException || error is ClientException)
+            if (error is UserException)
             {
                 responseStatusCode = HttpStatusCode.BadRequest;
+                responseMessage = new ResponseMessage { UserMessage = error.Message, SystemMessage = ((UserException)error).SystemMessage };
+            }
+            else if (error is LegacyClientException)
+            {
+                responseStatusCode = ((LegacyClientException)error).HttpStatusCode;
                 responseMessage = error.Message;
+            }
+            else if (error is ClientException)
+            {
+                responseStatusCode = HttpStatusCode.BadRequest;
+                responseMessage = new ResponseMessage { SystemMessage = error.Message };
             }
             else
             {
                 responseStatusCode = HttpStatusCode.InternalServerError;
-                responseMessage = "Internal server error occurred (" + error.GetType().Name + "). See RhetosServer.log for more information.";
+                responseMessage = new ResponseMessage { SystemMessage = "Internal server error occurred (" + error.GetType().Name + "). See RhetosServer.log for more information." };
             }
 
             fault = Message.CreateMessage(version, "", responseMessage,

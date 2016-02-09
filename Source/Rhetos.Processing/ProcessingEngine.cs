@@ -173,7 +173,7 @@ namespace Rhetos.Processing
                 var sqlException = SqlUtility.InterpretSqlException(ex);
                 if (sqlException != null) ex = sqlException;
 
-                if (ex is UserException) 
+                if (ex is UserException)
                 {
                     userMessage = ex.Message;
                     systemMessage = (ex as UserException).SystemMessage;

@@ -133,6 +133,7 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="ConfigUtility.cs" />
     <Compile Include="ConnectionString.cs" />
+    <Compile Include="Exceptions\LegacyClientException.cs" />
     <Compile Include="FilesUtility.cs" />
     <Compile Include="IConfiguration.cs" />
     <Compile Include="MultiDictionary.cs" />
