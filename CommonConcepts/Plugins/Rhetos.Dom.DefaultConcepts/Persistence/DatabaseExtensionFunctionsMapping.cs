@@ -105,6 +105,16 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
     <DefiningExpression>CAST(a as Edm.String)</DefiningExpression>
   </Function>
 
+  <Function Name=""FullTextSearchId"" ReturnType=""Edm.Boolean"">
+    <Parameter Name=""itemId"" Type=""Edm.Guid"" />
+    <Parameter Name=""pattern"" Type=""Edm.String"" />
+    <Parameter Name=""table"" Type=""Edm.String"" />
+    <Parameter Name=""searchColumns"" Type=""Edm.String"" />
+    <DefiningExpression>
+      NewGuid() = itemID &amp;&amp; pattern + '#' + table + '#' + searchColumns = '" + FullTextSearchInterceptor.InterceptorTag + @"'
+    </DefiningExpression>
+  </Function>
+
 ", EntityFrameworkMapping.ConceptualModelTag);
         }
     }

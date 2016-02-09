@@ -2,6 +2,15 @@
 
 ## 1.0.0 (TO BE RELEASED)
 
+### Breaking changes
+
+* Modified parameters of `DatabaseExtensionFunctions.FullTextSearch` method.
+
+### Internal improvements
+
+* Full-text search support on Entity Framework.
+* Bugfix: FullTextSearch method now works on a Browse data structure.
+
 ## 1.0.0-alpha006 (2015-10-12)
 
 ### Breaking changes

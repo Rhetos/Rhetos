@@ -71,5 +71,6 @@ void Main()
             .ToList()
             //.Select(log => new { log.Created, log.Action, ClientUser = SqlUtility.ExtractUserInfo(log.ContextInfo).UserName, log.Description })
             .Dump();
+		Console.WriteLine("Done.");
     }
 }

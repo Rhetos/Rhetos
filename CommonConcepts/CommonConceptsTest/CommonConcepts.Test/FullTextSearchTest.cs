@@ -48,7 +48,7 @@ namespace CommonConcepts.Test
                 };
 
                 var repository = container.Resolve<Common.DomRepository>();
-                repository.TestFullTextSearch.Simple.Save(testData, null, repository.TestFullTextSearch.Simple.All());
+                repository.TestFullTextSearch.Simple.Save(testData, null, repository.TestFullTextSearch.Simple.Load());
             }
 
             using (var container = new RhetosTestContainer(true))
@@ -67,7 +67,7 @@ namespace CommonConcepts.Test
                             Assert.Inconclusive("Full-text search index is not populated within " + timeout + " seconds.");
 
                         Console.WriteLine("Waiting for full-text search index to refresh.");
-                        System.Threading.Thread.Sleep(500);
+                        System.Threading.Thread.Sleep(200);
                     }
                     else
                     {
@@ -79,7 +79,6 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        [Ignore] // TODO: Implement ORM mapping for to FullTextSearch function.
         public void SearchOnIndexTable()
         {
             Assert.IsTrue(dataPrepared.Value);
@@ -90,6 +89,8 @@ namespace CommonConcepts.Test
                 {
                     { "\"ab*\"", "ab, abc, cd ab" },
                     { "\"12*\"", "123, ab, xy" },
+                    { "a'b", "" },
+                    { "a'#'b", "" },
                 };
 
                 var repository = container.Resolve<Common.DomRepository>();
@@ -98,15 +99,13 @@ namespace CommonConcepts.Test
                 {
                     Console.WriteLine("Searching '" + test.Key + "'");
 
-                    string columns = "*";
                     var filtered = repository.TestFullTextSearch.Simple_Search.Query()
-                        .Where(item => item.FullTextSearch(test.Key, "TestFullTextSearch.Simple_Search", columns))
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, test.Key, "TestFullTextSearch.Simple_Search", "*"))
                         .Select(item => item.Base.Name).ToList();
                     Assert.AreEqual(test.Value, TestUtility.DumpSorted(filtered), "Searching '" + test.Key + "'.");
 
-                    columns = "Text";
                     filtered = repository.TestFullTextSearch.Simple_Search.Query()
-                        .Where(item => item.FullTextSearch(test.Key, "TestFullTextSearch.Simple_Search", columns))
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, test.Key, "TestFullTextSearch.Simple_Search", "Text"))
                         .Select(item => item.Base.Name).ToList();
                     Assert.AreEqual(test.Value, TestUtility.DumpSorted(filtered), "Searching '" + test.Key + "'.");
                 }
@@ -114,7 +113,22 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        [Ignore] // TODO: Implement ORM mapping for to FullTextSearch function.
+        public void SearchOnIndexTable_StringLiteralPattern()
+        {
+            Assert.IsTrue(dataPrepared.Value);
+
+            using (var container = new RhetosTestContainer(false))
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var filtered = repository.TestFullTextSearch.Simple_Search.Query()
+                    .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, "\"ab*\"", "TestFullTextSearch.Simple_Search", "*"))
+                    .Select(item => item.Base.Name).ToList();
+                Assert.AreEqual("ab, abc, cd ab", TestUtility.DumpSorted(filtered));
+            }
+        }
+
+        [TestMethod]
         public void SearchOnBaseEntity()
         {
             Assert.IsTrue(dataPrepared.Value);
@@ -134,7 +148,7 @@ namespace CommonConcepts.Test
                     Console.WriteLine("Searching '" + test.Key + "'");
 
                     var filtered = repository.TestFullTextSearch.Simple.Query()
-                        .Where(item => item.FullTextSearch(test.Key, "TestFullTextSearch.Simple_Search", "*"))
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, test.Key, "TestFullTextSearch.Simple_Search", "*"))
                         .Select(item => item.Name).ToList();
                     Assert.AreEqual(test.Value, TestUtility.DumpSorted(filtered), "Searching '" + test.Key + "'.");
                 }
@@ -142,7 +156,6 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        [Ignore] // Not yet supported by NHibernate.
         public void SearchOnBrowse()
         {
             Assert.IsTrue(dataPrepared.Value);
@@ -162,15 +175,15 @@ namespace CommonConcepts.Test
                     Console.WriteLine("Searching '" + test.Key + "'");
 
                     var filtered = repository.TestFullTextSearch.SimpleBrowse.Query()
-                        .Where(item => item.FullTextSearch(test.Key, "TestFullTextSearch.Simple_Search", "*"))
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, test.Key, "TestFullTextSearch.Simple_Search", "*"))
                         .Select(item => item.Name).ToList();
+                    
                     Assert.AreEqual(test.Value, TestUtility.DumpSorted(filtered), "Searching '" + test.Key + "'.");
                 }
             }
         }
 
         [TestMethod]
-        [Ignore] // TODO: Implement ORM mapping for to FullTextSearch function.
         public void SearchOnBaseEntityWithSortAndPaging()
         {
             Assert.IsTrue(dataPrepared.Value);
@@ -185,7 +198,7 @@ namespace CommonConcepts.Test
 
                     Console.WriteLine("Searching '" + pattern + "'");
                     var filtered = repository.TestFullTextSearch.Simple.Query()
-                        .Where(item => item.FullTextSearch(pattern, "TestFullTextSearch.Simple_Search", "*"))
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, pattern, "TestFullTextSearch.Simple_Search", "*"))
                         .OrderByDescending(item => item.Name)
                         .Select(item => item.Name).ToList();
                     Assert.AreEqual(result, TestUtility.Dump(filtered), "Searching '" + pattern + "'.");
@@ -197,13 +210,57 @@ namespace CommonConcepts.Test
 
                     Console.WriteLine("Searching '" + pattern + "'");
                     var filtered = repository.TestFullTextSearch.Simple.Query()
-                        .Where(item => item.FullTextSearch(pattern, "TestFullTextSearch.Simple_Search", "*"))
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, pattern, "TestFullTextSearch.Simple_Search", "*"))
                         .OrderByDescending(item => item.Name)
                         .Skip(1)
                         .Take(1)
                         .Select(item => item.Name).ToList();
                     Assert.AreEqual(result, TestUtility.Dump(filtered), "Searching '" + pattern + "'.");
                 }
+            }
+        }
+
+        [TestMethod]
+        public void NullArgument()
+        {
+            using (var container = new RhetosTestContainer(false))
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                var ex = TestUtility.ShouldFail(
+                    () => repository.TestFullTextSearch.Simple_Search.Query()
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, null, "TestFullTextSearch.Simple_Search", "*"))
+                        .Select(item => item.Base.Name).ToList());
+                TestUtility.AssertContains(ex.ToString(), "Search pattern must not be NULL.");
+            }
+        }
+
+        [TestMethod]
+        public void TableParameter()
+        {
+            using (var container = new RhetosTestContainer(false))
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                string table = "TestFullTextSearch.Simple_Search";
+                var ex = TestUtility.ShouldFail(
+                    () => repository.TestFullTextSearch.Simple_Search.Query()
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, "a", table, "*"))
+                        .Select(item => item.Base.Name).ToList());
+                TestUtility.AssertContains(ex.ToString(), "The table name must be a string literal");
+            }
+        }
+
+        [TestMethod]
+        public void ColumnsParameter()
+        {
+            using (var container = new RhetosTestContainer(false))
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                string columns = "*";
+                var ex = TestUtility.ShouldFail(
+                    () => repository.TestFullTextSearch.Simple_Search.Query()
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, "a", "TestFullTextSearch.Simple_Search", columns))
+                        .Select(item => item.Base.Name).ToList());
+                TestUtility.AssertContains(ex.ToString(), "The columns list must be a string literal");
             }
         }
     }

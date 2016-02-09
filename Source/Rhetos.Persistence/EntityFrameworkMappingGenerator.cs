@@ -89,7 +89,14 @@ namespace Rhetos.Persistence
         {
             public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
             {
-                codeBuilder.InsertCode(string.Join("\r\n", new[] { EntityFrameworkMapping.ConceptualModelTag, _segmentSplitter, EntityFrameworkMapping.MappingTag, _segmentSplitter, EntityFrameworkMapping.StorageModelTag }));
+                codeBuilder.InsertCode(string.Join("\r\n", new[]
+                {
+                    EntityFrameworkMapping.ConceptualModelTag,
+                    _segmentSplitter,
+                    EntityFrameworkMapping.MappingTag,
+                    _segmentSplitter,
+                    EntityFrameworkMapping.StorageModelTag
+                }));
             }
         }
 

@@ -27,7 +27,7 @@ using System.Text.RegularExpressions;
 namespace Rhetos.Dom.DefaultConcepts
 {
     /// <summary>
-    /// This class contains a set of SQL-compatible functions that can be evaluated in both LINQ2HN and SQL.
+    /// This class contains a set of SQL-compatible functions that can be evaluated in both LINQ and SQL.
     /// </summary>
     public static class DatabaseExtensionFunctions
     {
@@ -136,7 +136,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         /// <param name="table">Table that contains the full-text search indexed columns. It is usually the entity's table or a table that references the entity's table.</param>
         /// <param name="searchColumns">Full-text search indexed columns. See the columns list parameter on CONTAINSTABLE function for Microsoft SQL server database.</param>
-        public static bool FullTextSearch(this IEntity item, string pattern, string table, string searchColumns)
+        [DbFunction("Rhetos", "FullTextSearchId")]
+        public static bool FullTextSearch(Guid itemId, string pattern, string table, string searchColumns)
         {
             throw new ClientException("Full-text search cannot be executed on loaded data. Use this function in a LINQ query to execute FTS on database.");
         }
