@@ -7,6 +7,7 @@ PUSHD "%~dp0"
 
 XCOPY /Y/D/R ..\..\Source\CreateIISExpressSite\bin\%Config%\CreateIISExpressSite.??? bin\ || GOTO Error1
 XCOPY /Y/D/R ..\..\Source\CreateIISExpressSite\bin\%Config%\CreateIISExpressSite.exe.config bin\ || GOTO Error1
+XCOPY /Y/D/R ..\..\Source\CreateIISExpressSite\bin\%Config%\Template.IISExpress.config bin\ || GOTO Error1
 XCOPY /Y/D/R ..\..\Source\CreateIISExpressSite\bin\%Config%\*.dll bin\ || GOTO Error1
 XCOPY /Y/D/R ..\..\Source\CreateIISExpressSite\bin\%Config%\*.pdb bin\ || GOTO Error1
 

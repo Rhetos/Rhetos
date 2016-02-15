@@ -10,14 +10,13 @@ PUSHD bin
 CALL "CreateAndSetDatabase.exe" %3 %4  || GOTO Error1
 
 @echo.
-@echo ---- ApplyPackages ----
+@echo ---- DeployPackages ----
 @echo.
 
+
+CALL "DeployPackages.exe"  || GOTO Error0
+
 POPD
-
-IF NOT EXIST ApplyPackages.txt COPY Template.ApplyPackages.txt ApplyPackages.txt  || GOTO Error0
-
-CALL "ApplyPackages.bat"  || GOTO Error0
 
 PUSHD bin
 
