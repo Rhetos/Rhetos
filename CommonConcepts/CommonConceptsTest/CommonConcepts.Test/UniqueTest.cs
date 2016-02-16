@@ -238,5 +238,22 @@ namespace CommonConcepts.Test
                 TestUtility.AssertContains(processingEngineResult.UserMessage, "duplicate");
             }
         }
+
+        [TestMethod]
+        public void ErrorMetadata()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var e = container.Resolve<GenericRepository<TestUnique.E>>();
+
+                var ex = TestUtility.ShouldFail<Rhetos.UserException>(
+                    () => e.Insert(
+                        new TestUnique.E { I = 123, S = "abc" },
+                        new TestUnique.E { I = 123, S = "abc" }),
+                    "It is not allowed to enter a duplicate record.");
+
+                Assert.AreEqual("DataStructure:TestUnique.E,Property:S I R", ex.SystemMessage);
+            }
+        }
     }
 }

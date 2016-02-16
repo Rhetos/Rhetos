@@ -172,5 +172,17 @@ namespace Rhetos.Utilities
                 return ExtractSqlException(exception.InnerException);
             return null;
         }
+
+        public static bool IsUniqueError(RhetosException interpretedException, string table, string constraintName)
+        {
+            if (interpretedException == null)
+                return false;
+            var info = interpretedException.Info;
+            return
+                info != null
+                && (info.GetValueOrDefault("Constraint") as string) == "Unique"
+                && (info.GetValueOrDefault("Table") as string) == table
+                && (info.GetValueOrDefault("ConstraintName") as string) == constraintName;
+        }
     }
 }

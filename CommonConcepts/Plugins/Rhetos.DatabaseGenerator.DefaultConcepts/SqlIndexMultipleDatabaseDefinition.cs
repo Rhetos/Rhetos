@@ -50,7 +50,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         public static readonly SqlTag<SqlIndexMultipleInfo> ColumnsTag = new SqlTag<SqlIndexMultipleInfo>("Columns", TagType.Appendable, "{0}", ", {0}");
 
 
-        private static string ConstraintName(SqlIndexMultipleInfo info)
+        public static string ConstraintName(SqlIndexMultipleInfo info)
         {
             var cleanColumnNames = info.PropertyNames.Split(' ').Select(name => name.Trim()).ToArray();
             var joinedColumnNames = string.Join("_", cleanColumnNames.Select(CsUtility.TextToIdentifier));

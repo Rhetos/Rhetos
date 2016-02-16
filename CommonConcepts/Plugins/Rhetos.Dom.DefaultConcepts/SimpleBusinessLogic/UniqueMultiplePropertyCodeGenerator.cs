@@ -39,7 +39,7 @@ namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
         {
             var info = (UniqueMultiplePropertyInfo)conceptInfo;
 
-            if (UniqueMultiplePropertiesCodeGenerator.IsSupported(info.Unique))
+            if (UniqueMultiplePropertiesCodeGenerator.ImplementInObjectModel(info.Unique))
             {
                 var column = GetColumnName(info.Property);
 

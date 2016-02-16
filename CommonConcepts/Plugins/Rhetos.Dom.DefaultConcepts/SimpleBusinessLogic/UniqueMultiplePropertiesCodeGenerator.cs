@@ -28,6 +28,7 @@ using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
 using Rhetos.Utilities;
 using System.Globalization;
+using Rhetos.DatabaseGenerator.DefaultConcepts;
 
 namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
 {
@@ -41,8 +42,7 @@ namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
         public static readonly CsTag<UniqueMultiplePropertiesInfo> PropertyListTag = new CsTag<UniqueMultiplePropertiesInfo>("PropertyList", TagType.Appendable, "{0}", " + \", \" + {0}");
         public static readonly CsTag<UniqueMultiplePropertiesInfo> PropertyValuesTag = new CsTag<UniqueMultiplePropertiesInfo>("PropertyValues", TagType.Appendable, "{0}", " + \", \" + {0}");
 
-
-        public static bool IsSupported(UniqueMultiplePropertiesInfo info)
+        public static bool ImplementInObjectModel(UniqueMultiplePropertiesInfo info)
         {
             return !info.SqlImplementation() && info.DataStructure is IWritableOrmDataStructure;
         }
@@ -51,10 +51,22 @@ namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
         {
             var info = (UniqueMultiplePropertiesInfo)conceptInfo;
 
-            if (IsSupported(info))
+            if (ImplementInObjectModel(info))
             {
                 codeBuilder.InsertCode(CheckSavedItemsSnippet(info), WritableOrmDataStructureCodeGenerator.OnSaveTag2, info.DataStructure);
                 codeBuilder.AddReferencesFromDependency(typeof(UserException));
+            }
+
+            if (info.SqlImplementation() && info.DataStructure is IWritableOrmDataStructure)
+            {
+                var ormDataStructure = (IWritableOrmDataStructure)info.DataStructure;
+                string systemMessage = "DataStructure:" + info.DataStructure + ",Property:" + info.PropertyNames;
+                string interpretSqlError = @"if (interpretedException is Rhetos.UserException && Rhetos.Utilities.MsSqlUtility.IsUniqueError(interpretedException, "
+                        + CsUtility.QuotedString(ormDataStructure.GetOrmSchema() + "." + ormDataStructure.GetOrmDatabaseObject()) + @", "
+                        + CsUtility.QuotedString(SqlIndexMultipleDatabaseDefinition.ConstraintName(info)) + @"))
+                    ((Rhetos.UserException)interpretedException).SystemMessage = " + CsUtility.QuotedString(systemMessage) + @";
+                ";
+                codeBuilder.InsertCode(interpretSqlError, WritableOrmDataStructureCodeGenerator.OnDatabaseErrorTag, info.DataStructure);
             }
         }
 
