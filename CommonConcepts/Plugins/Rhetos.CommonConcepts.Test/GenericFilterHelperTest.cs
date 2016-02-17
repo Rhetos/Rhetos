@@ -20,6 +20,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.CommonConcepts.Test.Mocks;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Processing.DefaultCommands;
 using Rhetos.TestCommon;
 using System;
 using System.Collections.Generic;
@@ -79,6 +80,44 @@ namespace Rhetos.CommonConcepts.Test
 
             var filteredItems = items.AsQueryable().Where(filterExpression).ToList();
             Assert.AreEqual(expected, TestUtility.DumpSorted(filteredItems, item => item.Name ?? "<null>"), "Testing '" + operation + " " + value + "'.");
+        }
+
+        class Entity2
+        {
+            public string Name { get; set; }
+            public int Size { get; set; }
+            public int Ignore { get; set; }
+        }
+
+        [TestMethod]
+        public void Sort()
+        {
+            var readCommand = new ReadCommandInfo
+            {
+                OrderByProperties = new[]
+                {
+                    new OrderByProperty { Property = "Name", Descending = true },
+                    new OrderByProperty { Property = "Size", Descending = false },
+                }
+            };
+
+            IQueryable<Entity2> query = new[]
+            {
+                new Entity2 { Name = "b", Size = 2, Ignore = 1 },
+                new Entity2 { Name = "b", Size = 2, Ignore = 2 },
+                new Entity2 { Name = "b", Size = 3, Ignore = 3 },
+                new Entity2 { Name = "b", Size = 1, Ignore = 4 },
+                new Entity2 { Name = "a", Size = 1, Ignore = 5 },
+                new Entity2 { Name = "c", Size = 3, Ignore = 6 }
+            }.AsQueryable();
+
+            query = query.OrderBy(item => item.Ignore); // SortAndPaginate should ignore previous ordering, not append to it.
+
+            var result = GenericFilterHelper.SortAndPaginate(query, readCommand);
+            Console.WriteLine(result.ToString());
+            Assert.AreEqual(
+                "c3, b1, b2, b2, b3, a1",
+                TestUtility.Dump(result, item => item.Name + item.Size));
         }
     }
 }
