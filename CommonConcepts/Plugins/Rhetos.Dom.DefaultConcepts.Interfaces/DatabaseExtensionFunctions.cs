@@ -134,10 +134,10 @@ namespace Rhetos.Dom.DefaultConcepts
             return a.ToString();
         }
 
-        /// <param name="table">Table that contains the full-text search indexed columns. It is usually the entity's table or a table that references the entity's table.</param>
+        /// <param name="tableName">Table that contains the full-text search indexed columns. It is usually the entity's table or a table that references the entity's table.</param>
         /// <param name="searchColumns">Full-text search indexed columns. See the columns list parameter on CONTAINSTABLE function for Microsoft SQL server database.</param>
         [DbFunction("Rhetos", "FullTextSearchId")]
-        public static bool FullTextSearch(Guid itemId, string pattern, string table, string searchColumns)
+        public static bool FullTextSearch(Guid itemId, string pattern, string tableName, string searchColumns)
         {
             throw new ClientException("Full-text search cannot be executed on loaded data. Use this function in a LINQ query to execute FTS on database.");
         }

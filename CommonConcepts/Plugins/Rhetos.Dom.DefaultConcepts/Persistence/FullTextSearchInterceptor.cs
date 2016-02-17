@@ -72,14 +72,15 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
         {
             if (cmd.CommandText.Contains(InterceptorTag))
             {
-                var parseFtsQuery = new Regex(@"\(\(NEWID\(\)\) = (?<itemId>.+?)\) AND \(\((?<pattern>.*?) \+ '#' \+ (?<table>.*?) \+ '#' \+ (?<searchColumns>.*?)\) = '" + InterceptorTag + @"'\)", RegexOptions.Singleline);
+                var parseFtsQuery = new Regex(@"\(\(NEWID\(\)\) = (?<itemId>.+?)\) AND \(\((?<pattern>.*?) \+ '#' \+ (?<tableName>.*?) \+ '##' \+ (?<searchColumns>.*?)\) = '" + InterceptorTag + @"'\)", RegexOptions.Singleline);
 
                 var ftsQueries = parseFtsQuery.Matches(cmd.CommandText).Cast<Match>();
 
-                var itemIdFormat = new Regex(@"^(\[\w+\]|\w+)(\.(\[\w+\]|\w+))+$", RegexOptions.Singleline); // Multi-part identifier.
-                var tableFormat = new Regex(@"^N'(?<unqouted>(\[\w+\]|\w+)(\.(\[\w+\]|\w+))+)'$", RegexOptions.Singleline); // Quoted multi-part identifier.
-                var columnsFormat = new Regex(@"^N'(?<unqouted>(\w+|\(\w+(\s*,\s*\w+)*\)|\*))'$", RegexOptions.Singleline); // Quoted column, column list or *.
-                var patternFormat = new Regex(@"^(\@\w+|N'([^']*('')*)*')$", RegexOptions.Singleline); // SQL query parameter or quoted string without quotes.
+                // Note: When modifying regex, update the error description below!
+                var itemIdFormat = new Regex(@"^(\[\w+\]|\w+)(\.(\[\w+\]|\w+))+$", RegexOptions.Singleline);
+                var tableNameFormat = new Regex(@"^N'(?<unqouted>(\[\w+\]|\w+)(\.(\[\w+\]|\w+))+)'$", RegexOptions.Singleline);
+                var searchColumnsFormat = new Regex(@"^N'(?<unqouted>(\w+|\(\w+(\s*,\s*\w+)*\)|\*))'$", RegexOptions.Singleline);
+                var patternFormat = new Regex(@"^(\@\w+|N'([^']*('')*)*')$", RegexOptions.Singleline);
 
                 foreach (var ftsQuery in ftsQueries.OrderByDescending(m => m.Index))
                 {
@@ -88,35 +89,39 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                     // Formatting validations are used here to avoid SQL injection.
 
                     string itemId = ftsQuery.Groups["itemId"].Value;
-                    string table = ftsQuery.Groups["table"].Value;
+                    string tableName = ftsQuery.Groups["tableName"].Value;
                     string searchColumns = ftsQuery.Groups["searchColumns"].Value;
                     string pattern = ftsQuery.Groups["pattern"].Value;
 
-                    if (!itemIdFormat.IsMatch(itemId))
-                        throw new FrameworkException("Invalid FTS item ID format: '" + itemId + "'. Supported format is '" + itemIdFormat.ToString() + "'.");
+                    if (pattern == "CAST(NULL AS varchar(1))")
+                        throw new FrameworkException("Invalid FTS search pattern format. Search pattern must not be NULL.");
 
-                    if (!tableFormat.IsMatch(table))
-                        if (table.StartsWith("@"))
-                            throw new FrameworkException("Invalid FTS table name format. The table name must be a string literal in the LINQ query or expression, not a variable.");
-                        else
-                            throw new FrameworkException("Invalid FTS table name format: '" + table + "'. Supported format is '" + tableFormat.ToString() + "'.");
+                    var validations = new[]
+                    {
+                        new { Parameter = "itemId", GeneratedSql = itemId, Format = itemIdFormat,
+                            InfoSql = "a multi-part identifier",
+                            InfoLinq = "a simple property of the queried data structure" },
+                        new { Parameter = "tableName", GeneratedSql = tableName, Format = tableNameFormat,
+                            InfoSql = "a quoted multi-part identifier",
+                            InfoLinq = "a string literal, not a variable," },
+                        new { Parameter = "searchColumns", GeneratedSql = searchColumns, Format = searchColumnsFormat,
+                            InfoSql = "a quoted column, column list or '*' (see CONTAINSTABLE on MSDN)",
+                            InfoLinq = "a string literal, not a variable," },
+                        new { Parameter = "pattern", GeneratedSql = pattern, Format = patternFormat,
+                            InfoSql = "an SQL query parameter or a quoted string without single-quote characters",
+                            InfoLinq = "a simple string variable, not an expression," }, // Not mentioning string literals to simplify the message.
+                    };
 
-                    if (!columnsFormat.IsMatch(searchColumns))
-                        if (searchColumns.StartsWith("@"))
-                            throw new FrameworkException("Invalid FTS columns list format. The columns list must be a string literal in the LINQ query or expression, not a variable.");
-                        else
-                            throw new FrameworkException("Invalid FTS columns list format: '" + searchColumns + "'. Supported format is '" + columnsFormat.ToString() + "'.");
-
-                    if (!patternFormat.IsMatch(pattern))
-                        if (pattern == "CAST(NULL AS varchar(1))")
-                            throw new FrameworkException("Invalid FTS search pattern format. Search pattern must not be NULL.");
-                        else
-                            throw new FrameworkException("Invalid FTS search pattern format: '" + pattern + "'. Supported format is '" + patternFormat.ToString() + "'.");
+                    foreach (var test in validations)
+                        if (!test.Format.IsMatch(test.GeneratedSql))
+                            throw new FrameworkException("Invalid FullTextSearch '" + test.Parameter + "' parameter format in LINQ query."
+                                + " Please use " + test.InfoLinq + " for the '" + test.Parameter + "' parameter of the FullTextSeach method."
+                                + " The resulting SQL expression (" + test.GeneratedSql + ") should be " + test.InfoSql + ".");
 
                     string ftsSql = string.Format("{0} IN (SELECT [KEY] FROM CONTAINSTABLE({1}, {2}, {3}))",
                         itemId,
-                        tableFormat.Match(table).Groups["unqouted"].Value,
-                        columnsFormat.Match(searchColumns).Groups["unqouted"].Value,
+                        tableNameFormat.Match(tableName).Groups["unqouted"].Value,
+                        searchColumnsFormat.Match(searchColumns).Groups["unqouted"].Value,
                         pattern);
 
                     cmd.CommandText =

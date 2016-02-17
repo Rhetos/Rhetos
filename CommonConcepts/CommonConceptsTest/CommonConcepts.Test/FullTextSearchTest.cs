@@ -245,7 +245,7 @@ namespace CommonConcepts.Test
                     () => repository.TestFullTextSearch.Simple_Search.Query()
                         .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, "a", table, "*"))
                         .Select(item => item.Base.Name).ToList());
-                TestUtility.AssertContains(ex.ToString(), "The table name must be a string literal");
+                TestUtility.AssertContains(ex.ToString(), new[] { "Please use a string literal", "tableName" });
             }
         }
 
@@ -260,7 +260,7 @@ namespace CommonConcepts.Test
                     () => repository.TestFullTextSearch.Simple_Search.Query()
                         .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, "a", "TestFullTextSearch.Simple_Search", columns))
                         .Select(item => item.Base.Name).ToList());
-                TestUtility.AssertContains(ex.ToString(), "The columns list must be a string literal");
+                TestUtility.AssertContains(ex.ToString(), new[] { "Please use a string literal", "searchColumns" });
             }
         }
     }
