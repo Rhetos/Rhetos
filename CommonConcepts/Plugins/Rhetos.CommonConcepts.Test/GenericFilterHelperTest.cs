@@ -101,5 +101,43 @@ namespace Rhetos.CommonConcepts.Test
             Console.WriteLine(result.GetType());
             Assert.IsTrue(result is IQueryable<C>);
         }
+
+        class Entity2
+        {
+            public string Name { get; set; }
+            public int Size { get; set; }
+            public int Ignore { get; set; }
+        }
+
+        [TestMethod]
+        public void Sort()
+        {
+            var readCommand = new ReadCommandInfo
+            {
+                OrderByProperties = new[]
+                {
+                    new OrderByProperty { Property = "Name", Descending = true },
+                    new OrderByProperty { Property = "Size", Descending = false },
+                }
+            };
+
+            IQueryable<Entity2> query = new[]
+            {
+                new Entity2 { Name = "b", Size = 2, Ignore = 1 },
+                new Entity2 { Name = "b", Size = 2, Ignore = 2 },
+                new Entity2 { Name = "b", Size = 3, Ignore = 3 },
+                new Entity2 { Name = "b", Size = 1, Ignore = 4 },
+                new Entity2 { Name = "a", Size = 1, Ignore = 5 },
+                new Entity2 { Name = "c", Size = 3, Ignore = 6 }
+            }.AsQueryable();
+
+            query = query.OrderBy(item => item.Ignore); // SortAndPaginate should ignore previous ordering, not append to it.
+
+            var result = GenericFilterHelper.SortAndPaginate(query, readCommand);
+            Console.WriteLine(result.ToString());
+            Assert.AreEqual(
+                "c3, b1, b2, b2, b3, a1",
+                TestUtility.Dump(result, item => item.Name + item.Size));
+        }
     }
 }

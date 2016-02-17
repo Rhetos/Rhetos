@@ -275,7 +275,9 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (commandInfo.OrderByProperties != null)
                 foreach (var order in commandInfo.OrderByProperties)
-                    query = Sort(query, order.Property, ascending: !order.Descending);
+                    query = Sort(query, order.Property,
+                        ascending: !order.Descending,
+                        firstProperty: order == commandInfo.OrderByProperties.First());
 
             Type itemType = query.GetType().GetInterface("IQueryable`1").GetGenericArguments().Single();
 
@@ -296,7 +298,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return query;
         }
 
-        public static IQueryable<T> Sort<T>(IQueryable<T> source, string orderByProperty, bool ascending = true)
+        public static IQueryable<T> Sort<T>(IQueryable<T> source, string orderByProperty, bool ascending = true, bool firstProperty = false)
         {
             if (string.IsNullOrEmpty(orderByProperty))
                 return source;
@@ -307,7 +309,9 @@ namespace Rhetos.Dom.DefaultConcepts
             Expression property = Expression.Property(parameter, orderByProperty);
             LambdaExpression propertySelector = Expression.Lambda(property, new[] { parameter });
 
-            MethodInfo orderMethod = ascending ? OrderByAscendingMethod : OrderByDescendingMethod;
+            MethodInfo orderMethod = firstProperty
+                    ? (ascending ? OrderByAscendingMethod : OrderByDescendingMethod)
+                    : (ascending ? ThenByAscendingMethod : ThenByDescendingMethod);
             MethodInfo genericOrderMethod = orderMethod.MakeGenericMethod(new[] { itemType, property.Type });
 
             return (IQueryable<T>)genericOrderMethod.InvokeEx(null, source, propertySelector);
@@ -322,6 +326,18 @@ namespace Rhetos.Dom.DefaultConcepts
         private static readonly MethodInfo OrderByDescendingMethod =
             typeof(Queryable).GetMethods()
                 .Where(method => method.Name == "OrderByDescending")
+                .Where(method => method.GetParameters().Length == 2)
+                .Single();
+
+        private static readonly MethodInfo ThenByAscendingMethod =
+            typeof(Queryable).GetMethods()
+                .Where(method => method.Name == "ThenBy")
+                .Where(method => method.GetParameters().Length == 2)
+                .Single();
+
+        private static readonly MethodInfo ThenByDescendingMethod =
+            typeof(Queryable).GetMethods()
+                .Where(method => method.Name == "ThenByDescending")
                 .Where(method => method.GetParameters().Length == 2)
                 .Single();
 
