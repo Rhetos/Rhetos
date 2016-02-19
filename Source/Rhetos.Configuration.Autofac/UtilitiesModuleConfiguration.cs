@@ -24,6 +24,7 @@ using System.Text;
 using Autofac;
 using Rhetos.Utilities;
 using Rhetos.Persistence;
+using Rhetos.Extensibility;
 
 namespace Rhetos.Configuration.Autofac
 {
@@ -33,6 +34,7 @@ namespace Rhetos.Configuration.Autofac
         {
             builder.RegisterType<XmlUtility>().SingleInstance();
             builder.RegisterType<Rhetos.Utilities.Configuration>().As<Rhetos.Utilities.IConfiguration>().SingleInstance();
+            Plugins.FindAndRegisterPlugins<ILocalizer>(builder);
             builder.RegisterType<NoLocalizer>().As<ILocalizer>().SingleInstance().PreserveExistingDefaults();
 
             var sqlImplementations = new[]

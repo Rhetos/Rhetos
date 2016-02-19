@@ -42,7 +42,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void InterpretSqlExceptionUserMessage()
         {
-            var msSqlUtility = new MsSqlUtility(new NoLocalizer());
+            var msSqlUtility = new MsSqlUtility();
             var interpretedException = msSqlUtility.InterpretSqlException(
                 NewSqlException("test message", 50000, 16, 101)); // State 101 is Rhetos convention for user error message.
             Assert.AreEqual("UserException: test message", interpretedException.GetType().Name + ": " + interpretedException.Message);
@@ -133,7 +133,7 @@ namespace Rhetos.Utilities.Test
 
         private void TestInterpretedException(ListOfTuples<Exception, string> tests)
         {
-            var msSqlUtility = new MsSqlUtility(new NoLocalizer());
+            var msSqlUtility = new MsSqlUtility();
             foreach (var test in tests)
             {
                 string reportInput = "Input: " + (test.Item1 != null ? test.Item1.ToString() : "null");

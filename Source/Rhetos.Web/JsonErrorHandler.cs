@@ -30,6 +30,9 @@ using Rhetos;
 using Rhetos.Logging;
 using System.ServiceModel.Description;
 using System.ServiceModel.Channels;
+using Autofac;
+using Autofac.Integration.Wcf;
+using Rhetos.Utilities;
 
 namespace Rhetos.Web
 {
@@ -66,8 +69,11 @@ namespace Rhetos.Web
             HttpStatusCode responseStatusCode;
             if (error is UserException)
             {
+                var userError = (UserException)error;
+                var localizer = AutofacServiceHostFactory.Container.Resolve<ILocalizer>();
+
                 responseStatusCode = HttpStatusCode.BadRequest;
-                responseMessage = new ResponseMessage { UserMessage = error.Message, SystemMessage = ((UserException)error).SystemMessage };
+                responseMessage = new ResponseMessage { UserMessage = localizer[userError.Message], SystemMessage = userError.SystemMessage };
             }
             else if (error is LegacyClientException)
             {

@@ -28,13 +28,6 @@ namespace Rhetos.Utilities
 {
     public class MsSqlUtility : ISqlUtility
     {
-        private readonly ILocalizer _localizer;
-
-        public MsSqlUtility(ILocalizer localizer)
-        {
-            _localizer = localizer;
-        }
-
         /// <summary>
         /// Creates an SQL query that sets context_info connection variable to contain data about the user.
         /// The context_info variable can be used in SQL server to extract user info in certain situations such as logging trigger.
@@ -111,7 +104,7 @@ namespace Rhetos.Utilities
                 Regex messageParser = new Regex(@"^Cannot insert duplicate key row in object '(.+)' with unique index '(.+)'\.( The duplicate key value is \((.+)\)\.)?");
                 var parts = messageParser.Match(sqlException.Message).Groups;
 
-                var interpretedException = new UserException(_localizer["It is not allowed to enter a duplicate record."], exception);
+                var interpretedException = new UserException("It is not allowed to enter a duplicate record.", exception);
 
                 interpretedException.Info["Constraint"] = "Unique";
                 if (parts[1].Success)
@@ -137,7 +130,7 @@ namespace Rhetos.Utilities
 
                 if (_referenceConstraintTypes.Contains(constraintType) && _referenceConstraintMessageByAction.ContainsKey(action))
                 {
-                    var interpretedException = new UserException(_localizer[_referenceConstraintMessageByAction[action]], exception);
+                    var interpretedException = new UserException(_referenceConstraintMessageByAction[action], exception);
 
                     interpretedException.Info["Constraint"] = "Reference";
                     interpretedException.Info["Action"] = action;
@@ -157,11 +150,11 @@ namespace Rhetos.Utilities
         
         private static readonly string[] _referenceConstraintTypes = new string[] { "REFERENCE", "SAME TABLE REFERENCE", "FOREIGN KEY", "COLUMN FOREIGN KEY" };
 
-        private static readonly Dictionary<string, string> _referenceConstraintMessageByAction = new Dictionary<string, string>
+        private static readonly SortedDictionary<string, string> _referenceConstraintMessageByAction = new SortedDictionary<string, string>
         {
             { "DELETE", "It is not allowed to delete a record that is referenced by other records." },
+            { "INSERT", "It is not allowed to enter the record. The entered value references nonexistent record." },
             { "UPDATE", "It is not allowed to edit the record. The entered value references nonexistent record." },
-            { "INSERT", "It is not allowed to enter the record. The entered value references nonexistent record." }
         };
 
         public Exception ExtractSqlException(Exception exception)
