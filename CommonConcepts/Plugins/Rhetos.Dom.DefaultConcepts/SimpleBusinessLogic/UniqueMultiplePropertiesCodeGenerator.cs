@@ -62,8 +62,8 @@ namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
                 var ormDataStructure = (IWritableOrmDataStructure)info.DataStructure;
                 string systemMessage = "DataStructure:" + info.DataStructure + ",Property:" + info.PropertyNames;
                 string interpretSqlError = @"if (interpretedException is Rhetos.UserException && Rhetos.Utilities.MsSqlUtility.IsUniqueError(interpretedException, "
-                        + CsUtility.QuotedString(ormDataStructure.GetOrmSchema() + "." + ormDataStructure.GetOrmDatabaseObject()) + @", "
-                        + CsUtility.QuotedString(SqlIndexMultipleDatabaseDefinition.ConstraintName(info)) + @"))
+                    + CsUtility.QuotedString(ormDataStructure.GetOrmSchema() + "." + ormDataStructure.GetOrmDatabaseObject()) + @", "
+                    + CsUtility.QuotedString(SqlIndexMultipleDatabaseDefinition.ConstraintName(info)) + @"))
                     ((Rhetos.UserException)interpretedException).SystemMessage = " + CsUtility.QuotedString(systemMessage) + @";
                 ";
                 codeBuilder.InsertCode(interpretSqlError, WritableOrmDataStructureCodeGenerator.OnDatabaseErrorTag, info.DataStructure);

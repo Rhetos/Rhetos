@@ -348,3 +348,17 @@ Module TestLazyLoad
 		Reference Parent;
 	}
 }
+
+Module TestReference
+{
+	Entity Parent
+	{
+		ShortString Name;
+	}
+
+	Entity Child
+	{
+		Reference Parent;
+		ShortString Name;
+	}
+}

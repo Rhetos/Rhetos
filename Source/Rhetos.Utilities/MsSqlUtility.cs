@@ -177,5 +177,32 @@ namespace Rhetos.Utilities
                 && (info.GetValueOrDefault("Table") as string) == table
                 && (info.GetValueOrDefault("ConstraintName") as string) == constraintName;
         }
+
+        public static bool IsReferenceErrorOnInsertUpdate(RhetosException interpretedException, string referencedTable, string referencedColumn, string constraintName)
+        {
+            if (interpretedException == null)
+                return false;
+            var info = interpretedException.Info;
+            return
+                info != null
+                && (info.GetValueOrDefault("Constraint") as string) == "Reference"
+                && ((info.GetValueOrDefault("Action") as string) == "INSERT" || (info.GetValueOrDefault("Action") as string) == "UPDATE")
+                && (info.GetValueOrDefault("ReferencedTable") as string) == referencedTable
+                && (info.GetValueOrDefault("ReferencedColumn") as string) == referencedColumn
+                && (info.GetValueOrDefault("ConstraintName") as string) == constraintName;
+        }
+        public static bool IsReferenceErrorOnDelete(RhetosException interpretedException, string dependentTable, string dependentColumn, string constraintName)
+        {
+            if (interpretedException == null)
+                return false;
+            var info = interpretedException.Info;
+            return
+                info != null
+                && (info.GetValueOrDefault("Constraint") as string) == "Reference"
+                && (info.GetValueOrDefault("Action") as string) == "DELETE"
+                && (info.GetValueOrDefault("DependentTable") as string) == dependentTable
+                && (info.GetValueOrDefault("DependentColumn") as string) == dependentColumn
+                && (info.GetValueOrDefault("ConstraintName") as string) == constraintName;
+        }
     }
 }
