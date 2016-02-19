@@ -33,7 +33,7 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
     [ExportMetadata(MefProvider.Implements, typeof(InvalidDataMarkPropertyInfo))]
-    public class InvalidDataForPropertyCodeGenerator : IConceptCodeGenerator
+    public class InvalidDataMarkPropertyCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {

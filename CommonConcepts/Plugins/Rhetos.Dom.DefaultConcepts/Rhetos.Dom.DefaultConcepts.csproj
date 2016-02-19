@@ -104,7 +104,7 @@
     <Compile Include="Advanced\EntityHistoryCodeGenerator.cs" />
     <Compile Include="Computations\EntityComputedFromCodeGenerator.cs" />
     <Compile Include="Computations\LockItemsMarkPropertyCodeGenerator.cs" />
-    <Compile Include="Computations\InvalidDataForPropertyCodeGenerator.cs" />
+    <Compile Include="Computations\InvalidDataMarkPropertyCodeGenerator.cs" />
     <Compile Include="Computations\LockPropertyCodeGenerator.cs" />
     <Compile Include="Computations\HierarchySingleRootInternalCodeGenerator.cs" />
     <Compile Include="Computations\ReportFileCodeGenerator.cs" />

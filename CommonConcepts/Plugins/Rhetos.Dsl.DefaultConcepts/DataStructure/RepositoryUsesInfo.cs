@@ -38,17 +38,17 @@ namespace Rhetos.Dsl.DefaultConcepts
         public DataStructureInfo DataStructure { get; set; }
 
         /// <summary>
+        /// Member property name.
+        /// </summary>
+        [ConceptKey]
+        public string PropertyName { get; set; }
+
+        /// <summary>
         /// Assembly qualified name (loosely defined).
         /// The type name does not need to contain Version, Culture or PublicKeyToken if you are referencing a local assembly in the application's folder.
         /// The type will be resolved from IoC container.
         /// </summary>
-        [ConceptKey]
         public string PropertyType { get; set; }
-
-        /// <summary>
-        /// Member property name.
-        /// </summary>
-        public string PropertyName { get; set; }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
