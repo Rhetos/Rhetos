@@ -34,19 +34,21 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(RequiredPropertyInfo))]
     public class RequiredPropertyCodeGenerator : IConceptCodeGenerator
     {
+        public static readonly CsTag<RequiredPropertyInfo> OrCondition = "OrCondition";
+
         private string CheckDataSnippet(RequiredPropertyInfo info)
         {
-            return string.Format(
-@"            {{
-                var invalid = insertedNew.Concat(updatedNew).FirstOrDefault(item => item.{3} == null);
+            string dataStructureFullName = info.Property.DataStructure.Module.Name + "." + info.Property.DataStructure.Name;
+
+            return
+            @"{
+                var invalid = insertedNew.Concat(updatedNew).FirstOrDefault(item => item." + CsPropertyName(info.Property) + @" == null " + OrCondition.Evaluate(info) + @");
                 if (invalid != null)
-                    throw new Rhetos.UserException(""It is not allowed to enter {0}.{1} because the required property {2} is not set."", ""DataStructure:{0}.{1},ID:"" + invalid.ID.ToString() + "",Property:{2}"");
-            }}
-",
-                info.Property.DataStructure.Module.Name,
-                info.Property.DataStructure.Name,
-                info.Property.Name,
-                CsPropertyName(info.Property));
+                    throw new Rhetos.UserException(""It is not allowed to enter {0} because the required property {1} is not set."",
+                        new[] { """ + dataStructureFullName + @""", """ + info.Property.Name + @""" },
+                        ""DataStructure:" + dataStructureFullName + @",ID:"" + invalid.ID.ToString() + "",Property:" + CsPropertyName(info.Property) + @""", null);
+            }
+            ";
         }
 
         private string CsPropertyName(PropertyInfo property)

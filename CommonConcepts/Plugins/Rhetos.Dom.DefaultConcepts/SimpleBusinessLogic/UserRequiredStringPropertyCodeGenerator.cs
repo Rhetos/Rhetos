@@ -32,30 +32,17 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
     [ExportMetadata(MefProvider.Implements, typeof(UserRequiredPropertyInfo))]
+    [ExportMetadata(MefProvider.DependsOn, typeof(UserRequiredPropertyCodeGenerator))]
     public class UserRequiredStringPropertyCodeGenerator : IConceptCodeGenerator
     {
-        private string CheckDataSnippet(UserRequiredPropertyInfo info)
-        {
-            return string.Format(
-@"            {{ 
-                var invalid = insertedNew.Concat(updatedNew).FirstOrDefault(item => string.IsNullOrWhiteSpace(item.{2}));
-                if (invalid != null)
-                    throw new Rhetos.UserException(""It is not allowed to enter {0}.{1} because the required property {2} is not set."", ""DataStructure:{0}.{1},ID:"" + invalid.ID.ToString() + "",Property:{2}"");
-            }}
-",
-                info.Property.DataStructure.Module.Name,
-                info.Property.DataStructure.Name,
-                info.Property.Name);
-        }
-
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (UserRequiredPropertyInfo)conceptInfo;
+
             if (UserRequiredPropertyCodeGenerator.IsSupported(info.Property)
                 && (info.Property is ShortStringPropertyInfo || info.Property is LongStringPropertyInfo))
             {
-                codeBuilder.InsertCode(CheckDataSnippet(info), WritableOrmDataStructureCodeGenerator.ArgumentValidationTag, info.Property.DataStructure);
-                codeBuilder.AddReferencesFromDependency(typeof(UserException));
+                codeBuilder.InsertCode("|| string.IsNullOrWhiteSpace(item." + info.Property.Name + ") ", UserRequiredPropertyCodeGenerator.OrCondition, info);
             }
         }
     }
