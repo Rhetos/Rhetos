@@ -41,5 +41,11 @@ namespace Rhetos
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context)
             : base(info, context) { }
+
+        public override string ToString()
+        {
+            return base.ToString()
+                + "\r\nInfo: " + (Info != null ? string.Join(", ", Info.Select(info => info.Key.ToString() + "=" + info.Value.ToString())) : "null");
+        }
     }
 }

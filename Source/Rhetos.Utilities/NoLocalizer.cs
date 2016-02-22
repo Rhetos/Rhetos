@@ -36,7 +36,10 @@ namespace Rhetos.Utilities
         {
             get
             {
-                return string.Format(CultureInfo.InvariantCulture, message.ToString(), args);
+                if (args != null)
+                    return string.Format(CultureInfo.InvariantCulture, message.ToString(), args ?? new object[] { });
+                else
+                    return message.ToString();
             }
         }
     }

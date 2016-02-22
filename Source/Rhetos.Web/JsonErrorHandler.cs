@@ -73,7 +73,7 @@ namespace Rhetos.Web
                 var localizer = AutofacServiceHostFactory.Container.Resolve<ILocalizer>();
 
                 responseStatusCode = HttpStatusCode.BadRequest;
-                responseMessage = new ResponseMessage { UserMessage = localizer[userError.Message], SystemMessage = userError.SystemMessage };
+                responseMessage = new ResponseMessage { UserMessage = localizer[userError.Message, userError.MessageParameters], SystemMessage = userError.SystemMessage };
             }
             else if (error is LegacyClientException)
             {

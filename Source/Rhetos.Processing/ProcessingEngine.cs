@@ -45,6 +45,7 @@ namespace Rhetos.Processing
         private readonly XmlUtility _xmlUtility;
         private readonly IUserInfo _userInfo;
         private readonly ISqlUtility _sqlUtility;
+        private readonly ILocalizer _localizer;
 
         private static string _clientExceptionUserMessage = "Operation could not be completed because the request sent to the server was not valid or not properly formatted.";
 
@@ -56,7 +57,8 @@ namespace Rhetos.Processing
             IAuthorizationManager authorizationManager,
             XmlUtility xmlUtility,
             IUserInfo userInfo,
-            ISqlUtility sqlUtility)
+            ISqlUtility sqlUtility,
+            ILocalizer localizer)
         {
             _commandRepository = commandRepository;
             _commandObservers = commandObservers;
@@ -70,6 +72,7 @@ namespace Rhetos.Processing
             _xmlUtility = xmlUtility;
             _userInfo = userInfo;
             _sqlUtility = sqlUtility;
+            _localizer = localizer;
         }
 
         public ProcessingResult Execute(IList<ICommandInfo> commands)
@@ -177,8 +180,9 @@ namespace Rhetos.Processing
 
                 if (ex is UserException)
                 {
-                    userMessage = ex.Message;
-                    systemMessage = (ex as UserException).SystemMessage;
+                    var userException = (UserException)ex;
+                    userMessage = _localizer[userException.Message, userException.MessageParameters]; // TODO: Remove this code aftear cleaning the double layer of exceptions in the server response call stack.
+                    systemMessage = userException.SystemMessage;
                 }
                 else if (ex is ClientException)
                 {

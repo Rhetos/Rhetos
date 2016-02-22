@@ -29,18 +29,44 @@ namespace Rhetos
     public class UserException : RhetosException
     {
         public string SystemMessage; // TODO: Remove this property. Use RhetosException.Info property instead.
+
+        /// <summary>
+        /// The MessageParameters are used with the Message property, matching the arguments of the string.Format(Message, MessageParameters) method.
+        /// </summary>
+        public readonly string[] MessageParameters;
+
         public UserException() { }
+
         public UserException(string message) : base(message) { }
-        public UserException(string message, string systemMessage) : base(message) { SystemMessage = systemMessage; }
+
+        public UserException(string message, string systemMessage) : base(message)
+        {
+            SystemMessage = systemMessage;
+        }
+
         public UserException(string message, Exception inner) : base(message, inner) { }
-        public UserException(string message, string systemMessage, Exception inner) : base(message, inner) { SystemMessage = systemMessage; }
+
+        public UserException(string message, string systemMessage, Exception inner) : base(message, inner)
+        {
+            SystemMessage = systemMessage;
+        }
+
+        public UserException(string message, string[] messageParameters, string systemMessage, Exception inner) : base(message, inner)
+        {
+            MessageParameters = messageParameters;
+            SystemMessage = systemMessage;
+        }
+
         protected UserException(
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context)
             : base(info, context) { }
+
         public override string ToString()
         {
-            return base.ToString() + "\r\nSystemMessage: " + SystemMessage;
+            return base.ToString()
+                + "\r\nMessageParameters: " + (MessageParameters != null ? string.Join(", ", MessageParameters) : "null")
+                + "\r\nSystemMessage: " + SystemMessage;
         }
     }
 }
