@@ -159,13 +159,15 @@ namespace Rhetos.AspNetFormsAuth
         private readonly Lazy<IEnumerable<IPasswordAttemptsLimit>> _passwordAttemptsLimits;
         private readonly Lazy<ISqlExecuter> _sqlExecuter;
         private readonly Lazy<ISendPasswordResetToken> _sendPasswordResetTokenPlugin;
+        private readonly ILocalizer _localizer;
 
         public AuthenticationService(
             ILogProvider logProvider,
             Lazy<IAuthorizationManager> authorizationManager,
             GenericRepositories repositories,
             Lazy<ISqlExecuter> sqlExecuter,
-            Lazy<IEnumerable<ISendPasswordResetToken>> sendPasswordResetTokenPlugins)
+            Lazy<IEnumerable<ISendPasswordResetToken>> sendPasswordResetTokenPlugins,
+            ILocalizer localizer)
         {
             _logger = logProvider.GetLogger("AspNetFormsAuth.AuthenticationService");
             _authorizationManager = authorizationManager;
@@ -181,6 +183,7 @@ namespace Rhetos.AspNetFormsAuth
                             limit.TimeoutInSeconds = int.MaxValue;
                     return limits;
                 });
+            _localizer = localizer;
         }
 
         private ISendPasswordResetToken SinglePlugin(Lazy<IEnumerable<ISendPasswordResetToken>> plugins)
@@ -199,9 +202,10 @@ namespace Rhetos.AspNetFormsAuth
         {
             bool allowed = _authorizationManager.Value.GetAuthorizations(new[] { claim }).Single();
             if (!allowed)
-                throw new UserException(string.Format(
+                throw new UserException(
                     "You are not authorized for action '{0}' on resource '{1}', user '{2}'. The required security claim is not set.",
-                    claim.Right, claim.Resource, WebSecurity.CurrentUserName));
+                    new[] { claim.Right, claim.Resource, WebSecurity.CurrentUserName },
+                    null, null);
         }
 
         [OperationContract]
@@ -231,16 +235,16 @@ namespace Rhetos.AspNetFormsAuth
                             + WebSecurity.GetPasswordFailuresSinceLastSuccess(userName) + "/" + limit.MaxInvalidPasswordAttempts
                             + ", timeout " + limit.TimeoutInSeconds + ".");
 
-                        string userMessage = "Your account is temporarily locked out because of too many failed login attempts.";
+                        string localizedMessage = _localizer["Your account is temporarily locked out because of too many failed login attempts."];
                         int timeoutMinutes = (int)Math.Ceiling((double)limit.TimeoutInSeconds / 60);
                         if (timeoutMinutes == 1)
-                            userMessage += " Please try again in a minute or contact your system administrator.";
+                            localizedMessage += " " + _localizer["Please try again in a minute or contact your system administrator."];
                         else if (timeoutMinutes > 1 && timeoutMinutes <= 300)
-                            userMessage += " Please try again in " + timeoutMinutes + " minutes or contact your system administrator.";
+                            localizedMessage += " " + _localizer["Please try again in {0} minutes or contact your system administrator.", timeoutMinutes];
                         else
-                            userMessage += " Please contact your system administrator.";
+                            localizedMessage += " " + _localizer["Please contact your system administrator."];
 
-                        throw new UserException(userMessage);
+                        throw new UserException(localizedMessage);
                     }
             }
         }
@@ -269,7 +273,7 @@ namespace Rhetos.AspNetFormsAuth
                 CheckPasswordStrength(parameters.Password);
 
             if (!WebSecurity.UserExists(parameters.UserName))
-                throw new UserException("User '" + parameters.UserName + "' is not registered."); // Providing this information is not a security issue, because this method requires admin credentials (SetPasswordClaim).
+                throw new UserException("User '{0}' is not registered.", new[] { parameters.UserName }, null, null); // Providing this information is not a security issue, because this method requires admin credentials (SetPasswordClaim).
 
             if (!IsAccountCreated(parameters.UserName))
             {
@@ -354,7 +358,7 @@ namespace Rhetos.AspNetFormsAuth
         private string GeneratePasswordResetTokenInternal(GeneratePasswordResetTokenParameters parameters)
         {
             if (!WebSecurity.UserExists(parameters.UserName)) // Providing this information is not a security issue, because this method requires admin credentials (GeneratePasswordResetTokenClaim).
-                throw new UserException("User '" + parameters.UserName + "' is not registered.");
+                throw new UserException("User '{0}' is not registered.", new[] { parameters.UserName }, null, null);
 
             if (!IsAccountCreated(parameters.UserName))
             {

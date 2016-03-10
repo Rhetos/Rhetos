@@ -36,13 +36,15 @@ namespace Rhetos.Security
         private readonly bool _allowBuiltinAdminOverride;
         private readonly IAuthorizationProvider _authorizationProvider;
         private readonly IWindowsSecurity _windowsSecurity;
+        private readonly ILocalizer _localizer;
 
         public AuthorizationManager(
             IPluginsContainer<IClaimProvider> claimProviders,
             IUserInfo userInfo,
             ILogProvider logProvider,
             IAuthorizationProvider authorizationProvider,
-            IWindowsSecurity windowsSecurity)
+            IWindowsSecurity windowsSecurity,
+            ILocalizer localizer)
         {
             _userInfo = userInfo;
             _claimProviders = claimProviders;
@@ -50,8 +52,8 @@ namespace Rhetos.Security
             _windowsSecurity = windowsSecurity;
             _logger = logProvider.GetLogger(GetType().Name);
             _performanceLogger = logProvider.GetLogger("Performance");
-
             _allowBuiltinAdminOverride = FromConfigAllowBuiltinAdminOverride();
+            _localizer = localizer;
         }
 
         private static bool FromConfigAllowBuiltinAdminOverride()
@@ -100,9 +102,8 @@ namespace Rhetos.Security
             {
                 _logger.Trace(() => string.Format("User {0} does not posses claim {1}.", _userInfo.UserName, unauthorized.claim.FullName));
 
-                return string.Format(
-                    "You are not authorized for action '{0}' on resource '{1}', user '{2}'.",
-                    unauthorized.claim.Right, unauthorized.claim.Resource, _userInfo.UserName);
+                return _localizer["You are not authorized for action '{0}' on resource '{1}', user '{2}'.",
+                    unauthorized.claim.Right, unauthorized.claim.Resource, _userInfo.UserName];
             }
 
             return null;

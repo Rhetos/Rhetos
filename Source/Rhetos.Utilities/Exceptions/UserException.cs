@@ -33,7 +33,7 @@ namespace Rhetos
         /// <summary>
         /// The MessageParameters are used with the Message property, matching the arguments of the string.Format(Message, MessageParameters) method.
         /// </summary>
-        public readonly string[] MessageParameters;
+        public readonly object[] MessageParameters;
 
         public UserException() { }
 
@@ -51,7 +51,7 @@ namespace Rhetos
             SystemMessage = systemMessage;
         }
 
-        public UserException(string message, string[] messageParameters, string systemMessage, Exception inner) : base(message, inner)
+        public UserException(string message, object[] messageParameters, string systemMessage, Exception inner) : base(message, inner)
         {
             MessageParameters = messageParameters;
             SystemMessage = systemMessage;

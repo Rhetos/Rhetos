@@ -35,24 +35,24 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void StringFormat()
         {
-            ILocalizer localizer = new NoLocalizer();
+            ILocalizer testLocalizer = new NoLocalizer();
 
             // Expecting the same behavior as string.Format().
-            Assert.AreEqual("123", localizer[123]);
-            Assert.AreEqual("Hello", localizer["Hello"]);
-            Assert.AreEqual("Hello, world.", localizer["Hello, {0}.", "world"]);
-            Assert.AreEqual("abc123", localizer["{0}{1}{2}", null, "abc", "123"]);
-            Assert.AreEqual("123456", localizer["{0}{1}", "123", 456, 789]);
+            Assert.AreEqual("123", testLocalizer[123]);
+            Assert.AreEqual("Hello", testLocalizer["Hello"]);
+            Assert.AreEqual("Hello, world.", testLocalizer["Hello, {0}.", "world"]);
+            Assert.AreEqual("abc123", testLocalizer["{0}{1}{2}", null, "abc", "123"]);
+            Assert.AreEqual("123456", testLocalizer["{0}{1}", "123", 456, 789]);
         }
 
         [TestMethod]
         public void ErrorHandling()
         {
-            ILocalizer localizer = new NoLocalizer();
+            ILocalizer testLocalizer = new NoLocalizer();
 
             // Expecting the same behavior as string.Format().
-            TestUtility.ShouldFail<NullReferenceException>(() => { string msg = localizer[null]; });
-            TestUtility.ShouldFail<FormatException>(() => { string msg = localizer["{0}{1}", 123]; });
+            TestUtility.ShouldFail<NullReferenceException>(() => { string msg = testLocalizer[null]; });
+            TestUtility.ShouldFail<FormatException>(() => { string msg = testLocalizer["{0}{1}", 123]; });
         }
     }
 }
