@@ -63,7 +63,9 @@ namespace Rhetos.Dsl.DefaultConcepts
                 }}
                 catch (Rhetos.Dom.DefaultConcepts.HierarchyCircularReferenceException)
                 {{
-                    throw new Rhetos.UserException(""It is not allowed to enter a circular dependency between records in hierarchy {0}.{1} by {2}."");
+                    throw new Rhetos.UserException(
+                        ""It is not allowed to enter a circular dependency between records in hierarchy {{0}} by {{1}}."",
+                        new[] {{ ""{0}.{1}"", ""{2}"" }}, null, null);
                 }}
             }}",
                DataStructure.Module.Name,

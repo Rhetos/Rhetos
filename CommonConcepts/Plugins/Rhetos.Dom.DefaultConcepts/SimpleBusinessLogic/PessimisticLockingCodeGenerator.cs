@@ -66,18 +66,23 @@ namespace Rhetos.Dom.DefaultConcepts
                 {{
                     string lockInfo;
                     if (deniedLock.ResourceType == ""{0}.{1}"")
-                        lockInfo = ""Locked record "" + deniedLock.ResourceType + "", ID "" + deniedLock.ResourceID + ""."";
+                        lockInfo = _localizer[""Locked record {{0}}, ID {{1}}."",
+                            deniedLock.ResourceType, deniedLock.ResourceID];
                     else
-                        lockInfo = ""Locked record "" + deniedLock.ResourceType + "", ID "" + deniedLock.ResourceID + "" prevents the changes in '{0}.{1}'."";
+                        lockInfo = _localizer[""Locked record {{0}}, ID {{1}} prevents the changes in '{{2}}'."",
+                            deniedLock.ResourceType, deniedLock.ResourceID, ""{0}.{1}""];
 
+                    string errorInfo;
                     if (_executionContext.UserInfo.IsUserRecognized
                         && deniedLock.UserName.Equals(_executionContext.UserInfo.UserName, StringComparison.InvariantCultureIgnoreCase))
-                            throw new Rhetos.UserException(""It is not allowed to enter the record at client workstation '"" + _executionContext.UserInfo.Workstation
-                            + ""' because the data entry is in progress at workstation '"" + deniedLock.Workstation + ""'.""
-                            + ""\r\n"" + lockInfo);
+                            errorInfo = _localizer[""It is not allowed to enter the record at client workstation '{{0}}' because the data entry is in progress at workstation '{{1}}'."",
+                                _executionContext.UserInfo.Workstation, deniedLock.Workstation];
                     else
-                        throw new Rhetos.UserException(""It is not allowed to enter the record because the data entry is in progress by user '"" + deniedLock.UserName + ""'.""
-                            + ""\r\n"" + lockInfo);
+                        errorInfo = _localizer[""It is not allowed to enter the record because the data entry is in progress by user '{{0}}'."",
+                            deniedLock.UserName];
+
+                    string localizedMessage = errorInfo + ""\r\n"" + lockInfo;
+                    throw new Rhetos.UserException(localizedMessage);
                 }}
             }}
 ",

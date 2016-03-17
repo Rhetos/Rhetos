@@ -95,7 +95,9 @@ namespace Rhetos.Dsl.DefaultConcepts
                 }}
                 catch (Rhetos.Dom.DefaultConcepts.HierarchyCircularReferenceException)
                 {{
-                    throw new Rhetos.UserException(""It is not allowed to enter a circular dependency between records in hierarchy {0}.{1} by {2}."");
+                    throw new Rhetos.UserException(
+                        ""It is not allowed to enter a circular dependency between records in hierarchy {{0}} by {{1}}."",
+                        new[] {{ ""{0}.{1}"", ""{2}"" }}, null, null);
                 }}
             }}",
                DataStructure.Module.Name,
@@ -110,7 +112,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             {{
                 var child = repository.{0}.{1}.Query().Where(item => item.ID == parameter.ID).SingleOrDefault();
                 if (child == null)
-                    throw new Rhetos.UserException(""Given record does not exist: {0}.{1}, ID "" + parameter.ID + ""."");
+                    throw new Rhetos.UserException(""Given record does not exist: {{0}}, ID {{1}}."", new object[] {{ ""{0}.{1}"", parameter.ID }}, null, null);
                 int leftIndex = child.Extension_{1}{2}Hierarchy.LeftIndex.Value;
 
                 return items.Where(item =>
@@ -128,7 +130,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             {{
                 var parent = repository.{0}.{1}.Query().Where(item => item.ID == parameter.ID).SingleOrDefault();
                 if (parent == null)
-                    throw new Rhetos.UserException(""Given record does not exist: {0}.{1}, ID "" + parameter.ID + ""."");
+                    throw new Rhetos.UserException(""Given record does not exist: {{0}}, ID {{1}}."", new object[] {{ ""{0}.{1}"", parameter.ID }}, null, null);
                 int leftIndex = parent.Extension_{1}{2}Hierarchy.LeftIndex.Value;
                 int rightIndex = parent.Extension_{1}{2}Hierarchy.RightIndex.Value;
 

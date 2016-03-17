@@ -72,27 +72,31 @@ namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
 
         private string CheckSavedItemsSnippet(UniqueMultiplePropertiesInfo info)
         {
-            return string.Format(@"            {{
-                const string sql = @""SELECT source.*
-                    FROM {6}.{7} source
-                    INNER JOIN (SELECT {2} FROM {6}.{7} GROUP BY {2} HAVING COUNT(*) > 1) doubles
-                        ON {3}"";
+            return string.Format(
+            @"{{
+                    const string sql = @""SELECT source.*
+                        FROM {6}.{7} source
+                        INNER JOIN (SELECT {2} FROM {6}.{7} GROUP BY {2} HAVING COUNT(*) > 1) doubles
+                            ON {3}"";
 
-                var invalidItems = _executionContext.EntityFrameworkContext.Database.SqlQuery<{0}.{1}>(sql).ToList();
+                    IEnumerable<Guid> changesItems = inserted.Select(item => item.ID).Union(updated.Select(item => item.ID));
+                    var changesItemsSet = new HashSet<Guid>(changesItems);
 
-                IEnumerable<Guid> changesItems = inserted.Select(item => item.ID).Union(updated.Select(item => item.ID));
-                var changesItemsSet = new HashSet<Guid>(changesItems);
-                invalidItems = invalidItems.Where(invalidItem => changesItemsSet.Contains(invalidItem.ID)).ToList();
+                    var invalidItems = _executionContext.EntityFrameworkContext.Database
+                        .SqlQuery<{0}.{1}>(sql).ToList()
+                        .Where(invalidItem => changesItemsSet.Contains(invalidItem.ID)).ToList();
                 
-                if (invalidItems.Count() > 0)
-                {{
-                    string msg = ""It is not allowed to enter a duplicate record in {0}.{1}. A record with the same value already exists in the system: "";
-                    var invalidItem = invalidItems.First();
-                    msg += {4} + "" '"" + {5} + ""'."";
-                    throw new Rhetos.UserException(msg);
+                    if (invalidItems.Count() > 0)
+                    {{
+                        var invalidItem = invalidItems.First();
+                        string duplicateValue = {4}
+                            + "" '"" + {5} + ""'"";
+                        throw new Rhetos.UserException(
+                            ""It is not allowed to enter a duplicate record in {{0}}. A record with the same value already exists: {{1}}."",
+                            new[] {{ ""{0}.{1}"", duplicateValue }}, null, null);
+                    }}
                 }}
-            }}
-",
+                ",
             info.DataStructure.Module.Name,
             info.DataStructure.Name,
             ColumnListTag.Evaluate(info),

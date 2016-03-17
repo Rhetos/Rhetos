@@ -43,7 +43,7 @@ Module TestSqlWorkarounds
 		Integer LimitResultCount;
 	}
 	
-	Computed PersonInfo 'repository => { throw new Rhetos.UserException("A filter \"TestSqlWorkarounds.PersonFilter\" must be used."); }'
+	Computed PersonInfo 'repository => { throw new Rhetos.UserException("[Test] A filter \"TestSqlWorkarounds.PersonFilter\" must be used."); }'
 	{
 		ShortString Name;
 		Integer NameLength;

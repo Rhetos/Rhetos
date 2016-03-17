@@ -44,10 +44,10 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string CheckChangesSnippet(DenyUserEditDataStructureInfo info)
         {
             return string.Format(
-@"            if (checkUserPermissions)
+            @"if (checkUserPermissions)
                 throw new Rhetos.UserException(
-                    ""It is not allowed to directly modify {0}.{1}."");
-",
+                    ""It is not allowed to directly modify {{0}}."", new[] {{ ""{0}.{1}"" }}, null, null);
+            ",
                 info.DataStructure.Module.Name,
                 info.DataStructure.Name);
         }

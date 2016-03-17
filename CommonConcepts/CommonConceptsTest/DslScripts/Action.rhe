@@ -40,7 +40,7 @@ Module TestAction
         ShortString Name;
         
         ItemFilter NameHasLessThanThreeChars 'item => item.Name.Length < 3';
-        InvalidData NameHasLessThanThreeChars 'Name have to be longer than 2 chars.';
+        InvalidData NameHasLessThanThreeChars '[Test] Name have to be longer than 2 chars.';
         
     }
     
@@ -60,7 +60,7 @@ Module TestAction
         UseExecutionContext;
     }
     
-    Action TestBefore '(parameter, repository, userInfo) => {  throw new Rhetos.UserException("Test1 " + parameter.S); }'
+    Action TestBefore '(parameter, repository, userInfo) => {  throw new Rhetos.UserException("[Test] " + parameter.S); }'
     {
         ShortString S;
         

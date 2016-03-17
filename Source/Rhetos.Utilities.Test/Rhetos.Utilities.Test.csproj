@@ -76,6 +76,7 @@
     <Compile Include="ScriptPositionReportingTest.cs" />
     <Compile Include="SqlUtilityTest.cs" />
     <Compile Include="EventTypeTest.cs" />
+    <Compile Include="UserExceptionTest.cs" />
     <Compile Include="XmlUtilityTest.cs" />
   </ItemGroup>
   <ItemGroup>

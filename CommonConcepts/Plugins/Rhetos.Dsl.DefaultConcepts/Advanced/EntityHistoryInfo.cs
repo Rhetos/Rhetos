@@ -227,9 +227,9 @@ namespace Rhetos.Dsl.DefaultConcepts
             
             Guid[] distinctEntityIDs = insertedNew.Union(updatedNew).Select(x => x.EntityID.Value).Distinct().ToArray();
             Guid[] existingEntities = _domRepository.{1}.{0}.Filter(distinctEntityIDs).Select(x => x.ID).ToArray();
-            var nonExistentEntity = distinctEntityIDs.Except(existingEntities).FirstOrDefault();
-            if (nonExistentEntity != default(Guid))
-                throw new Rhetos.UserException(""Insert or update of History is not allowed because there is no entity with EntityID: "" + nonExistentEntity.ToString());
+            Guid nonExistentEntityID = distinctEntityIDs.Except(existingEntities).FirstOrDefault();
+            if (nonExistentEntityID != default(Guid))
+                throw new Rhetos.UserException(""Insert or update of History is not allowed because there is no entity with EntityID: {{0}}"", new[] {{ nonExistentEntityID.ToString() }}, null, null);
             
             // INSERT
             insertedEnt.AddRange(insertedNew

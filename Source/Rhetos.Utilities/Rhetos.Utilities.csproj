@@ -137,6 +137,7 @@
     <Compile Include="FilesUtility.cs" />
     <Compile Include="IConfiguration.cs" />
     <Compile Include="ISqlUtility.cs" />
+    <Compile Include="ListOfTuples.cs" />
     <Compile Include="NoLocalizer.cs" />
     <Compile Include="ILocalizer.cs" />
     <Compile Include="MultiDictionary.cs" />

@@ -56,5 +56,27 @@ namespace Rhetos.Utilities
                 .Invoke(exception, new object[0]);
             throw exception;
         }
+
+        /// <summary>
+        /// It the exception is a UserException, this function evaluates the message parameters using string.Format.
+        /// Use this method in error logging to make sure every error is logger even if it's message format is not valid.
+        /// </summary>
+        public static string SafeFormatUserMessage(Exception ex)
+        {
+            var userEx = ex as UserException;
+            if (userEx == null)
+                return ex.Message;
+            try
+            {
+                return string.Format(userEx.Message, userEx.MessageParameters ?? new object[] { });
+            }
+            catch
+            {
+                return "Invalid error message format."
+                    + " Message: " + (ex.Message ?? "null")
+                    + ", Parameters: " + (userEx.MessageParameters != null ? string.Join(", ", userEx.MessageParameters) : "null")
+                    + ".";
+            }
+        }
     }
 }

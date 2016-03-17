@@ -47,8 +47,10 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format(
 @"            if (invalidItem != null)
                     throw new Rhetos.UserException(
-                        ""It is not allowed to directly enter {2} property of {0}.{1}."",
-                        ""DataStructure:{0}.{1},ID:"" + invalidItem.ID + "",Property:{2}"");
+                        ""It is not allowed to directly enter {{0}} property of {{1}}."",
+                        new[] {{ ""{2}"", ""{0}.{1}"" }},
+                        ""DataStructure:{0}.{1},ID:"" + invalidItem.ID + "",Property:{2}"",
+                        null);
 ",
                 info.Property.DataStructure.Module.Name,
                 info.Property.DataStructure.Name,

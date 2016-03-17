@@ -128,20 +128,29 @@ namespace Rhetos.Utilities
                 string action = parts[2].Value ?? "";
                 string constraintType = parts[4].Value ?? "";
 
-                if (_referenceConstraintTypes.Contains(constraintType) && _referenceConstraintMessageByAction.ContainsKey(action))
+                if (_referenceConstraintTypes.Contains(constraintType))
                 {
-                    var interpretedException = new UserException(_referenceConstraintMessageByAction[action], exception);
+                    UserException interpretedException = null;
+                    if (action == "DELETE")
+                        interpretedException = new UserException("It is not allowed to delete a record that is referenced by other records.", exception);
+                    else if (action == "INSERT")
+                        interpretedException = new UserException("It is not allowed to enter the record. The entered value references nonexistent record.", exception);
+                    else if (action == "UPDATE")
+                        interpretedException = new UserException("It is not allowed to edit the record. The entered value references nonexistent record.", exception);
 
-                    interpretedException.Info["Constraint"] = "Reference";
-                    interpretedException.Info["Action"] = action;
-                    if (parts[5].Success)
-                        interpretedException.Info["ConstraintName"] = parts[5].Value; // The FK constraint name is ambiguous: The error does not show the schema name and the base table that the INSERT or UPDATE acctually happened.
-                    if (parts[7].Success)
-                        interpretedException.Info[action == "DELETE" ? "DependentTable" : "ReferencedTable"] = parts[7].Value;
-                    if (parts[9].Success)
-                        interpretedException.Info[action == "DELETE" ? "DependentColumn" : "ReferencedColumn"] = parts[9].Value;
+                    if (interpretedException != null)
+                    {
+                        interpretedException.Info["Constraint"] = "Reference";
+                        interpretedException.Info["Action"] = action;
+                        if (parts[5].Success)
+                            interpretedException.Info["ConstraintName"] = parts[5].Value; // The FK constraint name is ambiguous: The error does not show the schema name and the base table that the INSERT or UPDATE acctually happened.
+                        if (parts[7].Success)
+                            interpretedException.Info[action == "DELETE" ? "DependentTable" : "ReferencedTable"] = parts[7].Value;
+                        if (parts[9].Success)
+                            interpretedException.Info[action == "DELETE" ? "DependentColumn" : "ReferencedColumn"] = parts[9].Value;
 
-                    return interpretedException;
+                        return interpretedException;
+                    }
                 }
             }
 
@@ -149,13 +158,6 @@ namespace Rhetos.Utilities
         }
         
         private static readonly string[] _referenceConstraintTypes = new string[] { "REFERENCE", "SAME TABLE REFERENCE", "FOREIGN KEY", "COLUMN FOREIGN KEY" };
-
-        private static readonly SortedDictionary<string, string> _referenceConstraintMessageByAction = new SortedDictionary<string, string>
-        {
-            { "DELETE", "It is not allowed to delete a record that is referenced by other records." },
-            { "INSERT", "It is not allowed to enter the record. The entered value references nonexistent record." },
-            { "UPDATE", "It is not allowed to edit the record. The entered value references nonexistent record." },
-        };
 
         public Exception ExtractSqlException(Exception exception)
         {

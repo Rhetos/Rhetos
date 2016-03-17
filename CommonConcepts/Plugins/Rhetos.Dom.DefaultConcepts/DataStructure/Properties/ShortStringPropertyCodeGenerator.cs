@@ -47,13 +47,17 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private string LimitStringLengthOnSaveSnippet(PropertyInfo info)
         {
-            return string.Format(@"
-            {{
+            return string.Format(
+            @"{{
                 var invalidItem = insertedNew.Concat(updatedNew).Where(newItem => newItem.{2} != null && newItem.{2}.Length > {3}).FirstOrDefault();
                 if (invalidItem != null)
-                    throw new Rhetos.UserException(""Maximum length of property {1}.{2} is {3}."", ""DataStructure:{0}.{1},ID:"" + invalidItem.ID.ToString() + "",Property:{2}"");
+                    throw new Rhetos.UserException(
+                        ""Maximum length of property {{0}} is {{1}}."",
+                        new[] {{ ""{1}.{2}"", ""{3}"" }},
+                        ""DataStructure:{0}.{1},ID:"" + invalidItem.ID.ToString() + "",Property:{2}"",
+                        null);
             }}
-",
+            ",
                     info.DataStructure.Module.Name,
                     info.DataStructure.Name,
                     info.Name,

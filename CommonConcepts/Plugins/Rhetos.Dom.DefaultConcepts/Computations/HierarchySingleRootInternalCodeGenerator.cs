@@ -44,7 +44,9 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string CheckInvalidItemsSnippet(HierarchySingleRootInternalInfo info)
         {
             return string.Format(@"if (hierarchyItems.Count(item => item.ParentID == null) > 1)
-                        throw new Rhetos.UserException(""It is not allowed to enter more than one root record in the hierarchy {0}.{1} by {2}."");
+                        throw new Rhetos.UserException(
+                            ""It is not allowed to enter more than one root record in the hierarchy {{0}} by {{1}}."",
+                            new[] {{ ""{0}.{1}"", ""{2}"" }}, null, null);
 
                     ",
                 info.Hierarchy.DataStructure.Module.Name,

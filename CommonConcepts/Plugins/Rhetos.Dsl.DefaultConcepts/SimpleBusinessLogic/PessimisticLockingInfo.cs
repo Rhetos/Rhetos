@@ -36,6 +36,8 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public IEnumerable<IConceptInfo> CreateNewConcepts(PessimisticLockingInfo conceptInfo, IDslModel existingConcepts)
         {
+            var newConcepts = new List<IConceptInfo>();
+
             Dictionary<string, PessimisticLockingInfo> PessimisticLockingByDataStructureIndex =
                 existingConcepts.FindByType<PessimisticLockingInfo>()
                     .ToDictionary(locking => locking.Resource.GetKey());
@@ -45,12 +47,21 @@ namespace Rhetos.Dsl.DefaultConcepts
                 .Where(detailReference => PessimisticLockingByDataStructureIndex.ContainsKey(detailReference.Reference.Referenced.GetKey()))
                 .Select(detailReference => detailReference.Reference).ToArray();
 
-            return myParentsWithPessimisticLocking.Select(
+            newConcepts.AddRange(myParentsWithPessimisticLocking.Select(
                 reference => new PessimisticLockingParentInfo
-                    {
-                        Detail = PessimisticLockingByDataStructureIndex[conceptInfo.Resource.GetKey()],
-                        Reference = reference
-                    }).ToList();
+                {
+                    Detail = PessimisticLockingByDataStructureIndex[conceptInfo.Resource.GetKey()],
+                    Reference = reference
+                }));
+
+            newConcepts.Add(new RepositoryUsesInfo
+            {
+                DataStructure = conceptInfo.Resource,
+                PropertyName = "_localizer",
+                PropertyType = "Rhetos.Utilities.ILocalizer, Rhetos.Utilities"
+            });
+
+            return newConcepts;
         }
     }
 }

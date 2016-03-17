@@ -25,7 +25,8 @@
 			{
 				var claim = repository.Common.Claim.Query().Where(item => item.ClaimResource == parameter.ClaimResource && item.ClaimRight == parameter.ClaimRight).SingleOrDefault();
 				if (claim == null)
-					throw new Rhetos.UserException("Claim " + parameter.ClaimResource + "-" + parameter.ClaimRight + " does not exist.");
+					throw new Rhetos.UserException("Claim {0}-{1} does not exist.",
+						new[] { parameter.ClaimResource, parameter.ClaimRight }, null, null);
 				
 				return repository.Common.MyClaim.Filter(new[] { claim });
 			}'

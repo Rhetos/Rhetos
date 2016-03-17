@@ -31,14 +31,6 @@ namespace Rhetos.Utilities.Test
     [TestClass]
     public class MsSqlUtilityTest
     {
-        private class ListOfTuples<T1, T2> : List<Tuple<T1, T2>>
-        {
-            public void Add(T1 e1, T2 e2)
-            {
-                Add(Tuple.Create(e1, e2));
-            }
-        }
-
         [TestMethod]
         public void InterpretSqlExceptionUserMessage()
         {

@@ -45,20 +45,25 @@
                     }});
              else
              {
-                string lockInfo = "Locked record: " + oldLock.ResourceType + ", ID " + oldLock.ResourceID + ".";
+                string lockInfo = _localizer["Locked record {0}, ID {1}.", oldLock.ResourceType, oldLock.ResourceID];
 
+                string errorInfo;
                 if (oldLock.UserName.Equals(userInfo.UserName, StringComparison.InvariantCultureIgnoreCase))
-                    throw new Rhetos.UserException("It is not allowed to enter the record at client workstation ''''" + userInfo.Workstation
-                        + "'''' because the data entry is in progress at workstation ''''" + oldLock.Workstation + "''''."
-                        + "\r\n" + lockInfo);
+                    errorInfo = _localizer["It is not allowed to enter the record at client workstation ''{0}'' because the data entry is in progress at workstation ''{1}''.",
+                        userInfo.Workstation, oldLock.Workstation];
                 else
-                    throw new Rhetos.UserException("It is not allowed to enter the record because the data entry is in progress by user ''''" + oldLock.UserName + "''''."
-                        + "\r\n" + lockInfo);
+                    errorInfo = _localizer["It is not allowed to enter the record because the data entry is in progress by user ''{0}''.",
+                        oldLock.UserName];
+                
+                string localizedMessage = errorInfo + "\r\n" + lockInfo;
+                throw new Rhetos.UserException(localizedMessage);
              }
         }'
     {
 		ShortString ResourceType;
 		Guid ResourceID;
+
+        RepositoryUses '_localizer' 'Rhetos.Utilities.ILocalizer, Rhetos.Utilities';
     }
     
     Action ReleaseLock '(parameters, repository, userInfo) =>

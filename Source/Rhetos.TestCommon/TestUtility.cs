@@ -40,7 +40,6 @@ namespace Rhetos.TestCommon
             where TExpectedException : Exception
         {
             Exception exception = null;
-            string message = null;
             try
             {
                 action();
@@ -48,16 +47,14 @@ namespace Rhetos.TestCommon
             catch (Exception ex)
             {
                 exception = ex;
-                message = ex.Message;
-                if (ex is UserException && ((UserException)ex).SystemMessage != null)
-                    message += "\r\n    SystemMessage: " + ((UserException)ex).SystemMessage;
-
-                Console.WriteLine("[" + ex.GetType().Name + "] " + message);
-
-                message = ex.GetType().Name + ": " + message;
             }
 
             Assert.IsNotNull(exception, "Expected exception did not happen.");
+
+            string message = exception.GetType().Name + ": " + ExceptionsUtility.SafeFormatUserMessage(exception);
+            if (exception is UserException && ((UserException)exception).SystemMessage != null)
+                message += "\r\n  SystemMessage: " + ((UserException)exception).SystemMessage;
+            Console.WriteLine("[ShouldFail] " + message);
 
             if (!(exception is TExpectedException))
                 Assert.Fail(string.Format("Unexpected exception type: {0} instead of a {1}.",

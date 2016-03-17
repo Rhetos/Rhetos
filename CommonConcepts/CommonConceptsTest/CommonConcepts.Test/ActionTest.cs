@@ -90,7 +90,7 @@ namespace CommonConcepts.Test
 
                 TestUtility.ShouldFail<Rhetos.UserException>(
                     () => repository.TestAction.TestBefore.Execute(new TestAction.TestBefore { S = "abc" }),
-                    "Test1 abc X " + username);
+                    "[Test] abc X " + username);
             }
         }
     }

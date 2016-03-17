@@ -344,7 +344,7 @@ Module TestLockItems
 		Integer Count;
 		
 		ItemFilter ContainsLockMark 'item => item.Name.Contains("lock")';
-		Lock ContainsLockMark 'Name contains lock mark.';
+		Lock ContainsLockMark '[Test] Name contains lock mark.';
 		
 		ItemFilter CountNegative 'item => item.Count < 0';
 		LockProperty Name.CountNegative 'Name is locked if count negative.';
