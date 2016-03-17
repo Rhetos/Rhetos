@@ -38,13 +38,14 @@ namespace Rhetos.Dom.DefaultConcepts
 
         protected static string RepositoryFunctionsSnippet(ActionInfo info)
         {
+            // Strange naming of variables is to avoid name clashes with existing code.
             return string.Format(
-@"        private static readonly Action<{0}.{1}, Common.DomRepository, IUserInfo{3}> _action = {2};
-
-        public void Execute({0}.{1} actionParameter)
+@"        public void Execute({0}.{1} actionParameter)
         {{
+            Action<{0}.{1}, Common.DomRepository, IUserInfo{3}> action_Object = {2};
+
             {5}
-            _action(actionParameter, _domRepository, _executionContext.UserInfo{4});
+            action_Object(actionParameter, _domRepository, _executionContext.UserInfo{4});
             {6}
         }}
 
