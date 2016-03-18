@@ -118,6 +118,8 @@
     <Compile Include="ICommonClaim.cs" />
     <Compile Include="IDetachOverride.cs" />
     <Compile Include="IKeepSynchronizedMetadata.cs" />
+    <Compile Include="InvalidDataHelper.cs" />
+    <Compile Include="InvalidDataMessage.cs" />
     <Compile Include="IPrincipalPermission.cs" />
     <Compile Include="IRolePermission.cs" />
     <Compile Include="IPrincipal.cs" />

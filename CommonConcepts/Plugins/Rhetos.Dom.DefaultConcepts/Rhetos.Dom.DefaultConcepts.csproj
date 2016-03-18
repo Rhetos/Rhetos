@@ -81,6 +81,9 @@
     <Compile Include="Computations\ComputeForNewItemsCodeGenerator.cs" />
     <Compile Include="Computations\ApplyFilterOnClientReadCodeGenerator.cs" />
     <Compile Include="Computations\EntityComputedFromDefaultLoadFilterCodeGenerator.cs" />
+    <Compile Include="Computations\InvalidDataMessageParametersItemCodeGenerator.cs" />
+    <Compile Include="Computations\InvalidDataMessageFunctionCodeGenerator.cs" />
+    <Compile Include="Computations\InvalidDataMessageParametersConstantCodeGeneratorcs.cs" />
     <Compile Include="Computations\KeepSynchronizedCodeGenerator.cs" />
     <Compile Include="Computations\SuppressSynchronizationOnChangesItemsCodeGenerator.cs" />
     <Compile Include="Computations\KeepSynchronizedRecomputeOnDeployInfrastructureCodeGenerator.cs" />
@@ -104,7 +107,7 @@
     <Compile Include="Advanced\EntityHistoryCodeGenerator.cs" />
     <Compile Include="Computations\EntityComputedFromCodeGenerator.cs" />
     <Compile Include="Computations\LockItemsMarkPropertyCodeGenerator.cs" />
-    <Compile Include="Computations\InvalidDataMarkPropertyCodeGenerator.cs" />
+    <Compile Include="Computations\InvalidDataMarkProperty2CodeGenerator.cs" />
     <Compile Include="Computations\LockPropertyCodeGenerator.cs" />
     <Compile Include="Computations\HierarchySingleRootInternalCodeGenerator.cs" />
     <Compile Include="Computations\ReportFileCodeGenerator.cs" />

@@ -1,0 +1,332 @@
+﻿Module TestInvalidData
+{
+	Entity Simple
+	{
+		ShortString Name { Unique; }
+		Integer Count;
+		
+		ItemFilter TooMuch 'item => item.Count > 100';
+		InvalidData TooMuch 'Quantity may not be larger than 100.';
+	}
+
+    Entity Simple2
+    {
+        ShortString Name;
+
+        ItemFilter ContainsA 'item => item.Name.ContainsCaseInsensitive("a")';
+        ItemFilter ContainsB 'item => item.Name.ContainsCaseInsensitive("b")';
+        ItemFilter ContainsC 'item => item.Name.ContainsCaseInsensitive("c")';
+        ItemFilter ContainsD 'item => item.Name.ContainsCaseInsensitive("d")';
+
+        InvalidData ContainsA 'Contains A';
+
+        InvalidData ContainsB 'Contains B ({0}, {1})'
+        {
+            MessageParametersConstant '"abc", 123';
+            MarkProperty TestInvalidData.Simple2.Name;
+        }
+
+        InvalidData ContainsC 'Contains C ({0}, {1})'
+        {
+            MessageParametersItem 'item => new { item.ID, P0 = item.Name, P1 = item.Name.Length }';
+        }
+
+        InvalidData ContainsD 'Contains D'
+        {
+            MessageFunction 'ids => this.Query(ids)
+                .Select(item => new { item.ID, item.Name, NameLength = item.Name.Length })
+                .ToList()
+                .Select(item => new InvalidDataMessage
+                {
+                    ID = item.ID,
+                    Message = "Property ''{0}'' should not contain ''{1}''. The entered text is ''{2}'', {3} characters long.",
+                    MessageParameters = new object[] { "Simple2-Name", "letter D", item.Name, item.NameLength }
+                })';
+        }
+    }
+}
+
+Module TestLockItems
+{
+	Entity Simple
+	{
+		ShortString Name;
+		Integer Count;
+		
+		ItemFilter ContainsLockMark 'item => item.Name.Contains("lock")';
+		Lock ContainsLockMark '[Test] Name contains lock mark.';
+		
+		ItemFilter CountNegative 'item => item.Count < 0';
+		LockProperty Name.CountNegative 'Name is locked if count negative.';
+	}
+	
+	Entity Simple2
+	{
+		ShortString Name;
+		Integer Count;
+		Reference TestReference TestLockItems.Simple { CascadeDelete; }
+		
+		ItemFilter CountNegative 'item => item.Count < 0';
+		LockProperty Name.CountNegative 'Name is locked if count negative.';
+		
+		LockProperty TestReference.CountNegative 'TestReference is locked if count negative.';
+		
+		ItemFilter LockExceptName 'item => item.Name.StartsWith("LockExceptName")';
+		LockExcept LockExceptName 'The record is locked except the Name property.' 'Name';
+	}
+}
+
+Module TestMaxLength
+{
+    Entity Old1
+    {
+        Integer IDOld1;
+        ShortString Name { MaxLength 5; }
+        ShortString Name2;
+        Binary Blob;
+    }
+}
+
+Module TestRequired
+{
+    Entity Simple
+    {
+        Integer Count { Required; }
+        ShortString Name { Required; }
+    }
+
+    Entity Simple2
+    {
+        ShortString Name;
+        Bool Tagged { Required; }
+    }
+}
+
+Module TestUserRequired
+{
+    Entity Simple
+    {
+        Integer Count { UserRequired; }
+        ShortString Name { UserRequired; }
+    }
+
+    Entity Simple2
+    {
+        ShortString Name;
+        Bool Tagged { UserRequired; }
+    }
+}
+
+Module TestSystemRequired
+{
+    Entity Parent
+    {
+        ShortString Name { SystemRequired; }
+    }
+
+    Entity Child
+    {
+        ShortString Name;
+        Reference Parent TestSystemRequired.Parent { SystemRequired; }
+    }
+
+    Entity Simple2
+    {
+        ShortString Name;
+        Bool Tagged { SystemRequired; }
+    }
+}
+
+Module TestRange
+{
+    Entity SimpleRange
+    {
+        Decimal FromValue { Range TestRange.SimpleRange.ToValue; }
+        Decimal ToValue;
+    }
+    
+    Entity DateRangeWithoutDef 
+    {
+        DateRange FromDate ToDate;
+    }
+    
+    Entity DateTimeRangeWithoutDef 
+    {
+        DateTimeRange FromDate ToDate;
+    }
+    
+    Entity DateRangeWithRequired
+    {
+        Date FromDate { Required; }
+        DateRange FromDate ToDate;
+    }
+
+    Entity IntegerRange
+    {
+        IntegerRange FromValue ToValue;
+    }
+}
+
+Module TestLengthLimit
+{
+    Entity SimpleMaxLength
+    {
+        ShortString StringLessThan10Chars { MaxLength 10; }
+        LongString LongStringLessThan10Chars { MaxLength 10; }
+    }
+
+    Entity SimpleMinLength 
+    {
+        LongString StringMoreThan2Chars { MinLength 3; }
+    }
+    
+    Entity ExactlyLength
+    {
+        ShortString StringExactly5Chars { MinLength 5; MaxLength 5; }
+    }
+}
+
+Module TestMinValue
+{
+    Entity SimpleInteger
+    {
+        Integer Value { MinValue 2; }
+    }
+    
+    Entity SimpleDecimal
+    {
+        Decimal Value { MinValue "2.34"; }
+    }
+
+    Entity SimpleMoney
+    {
+        Money Value { MinValue "2.34"; }
+    }
+
+    Entity SimpleDate
+    {
+        Date Value { MinValue "05.07.2013"; }
+    }
+
+    Entity SimpleDateTime
+    {
+        DateTime Value { MinValue "05.07.2013 12:34:00"; }
+    }
+}
+
+Module TestMaxValue
+{
+    Entity SimpleInteger
+    {
+        Integer Value { MaxValue 2; }
+    }
+    
+    Entity SimpleDecimal
+    {
+        Decimal Value { MaxValue "2.34"; }
+    }
+
+    Entity SimpleMoney
+    {
+        Money Value { MaxValue "2.34"; }
+    }
+
+    Entity SimpleDate
+    {
+        Date Value { MaxValue "05.07.2013"; }
+    }
+
+    Entity SimpleDateTime
+    {
+        DateTime Value { MaxValue "05.07.2013 12:34:00"; }
+    }
+}
+
+Module TestDenyUserEdit
+{
+    Entity Parent
+    {
+        ShortString Name { Required; }
+    }
+    
+    Entity Simple
+    {
+        ShortString Editable;
+        ShortString NonEditable { DenyUserEdit; }
+        Reference NonEditableReference TestDenyUserEdit.Parent { DenyUserEdit; }
+    }
+    
+    Entity Hardcoded
+    {
+        DenyUserEdit;
+        ShortString Name;
+    }
+    
+    Entity AutoInitialized
+    {
+        DateTime Start { CreationTime; DenyUserEdit; SystemRequired; }
+    }
+}
+
+Module TestMultipleLock
+{
+    SqlQueryable SimpleChecks
+    "
+        SELECT
+            ID,
+            ContainsAlphabetic = CASE WHEN PatIndex('%[^a-z]%', Pass) > 0 THEN 1 ELSE 0 END,
+            ContainsNumeric = CASE WHEN PatIndex('%[^0-9]%', Pass) > 0 THEN 1 ELSE 0 END,
+            ContainsNonAlphaNumeric = CASE WHEN PatIndex('%[^a-z0-9]%', Pass) > 0 THEN 1 ELSE 0 END
+        FROM
+            TestMultipleLock.Simple
+    "
+    {
+        Extends TestMultipleLock.Simple;
+        SqlDependsOn TestMultipleLock.Simple;
+        
+        Bool ContainsAlphabetic;
+        Bool ContainsNumeric;
+        Bool ContainsNonAlphaNumeric;
+    }
+
+    Entity PassDependency
+    {
+        Integer MinPassLength;
+    }
+    
+    Entity Simple
+    {
+        ShortString Pass;
+        ShortString UserName;
+        Reference PassDependency;
+        
+        ItemFilter PassValidation 'item =>
+            !item.Extension_SimpleChecks.ContainsAlphabetic.Value
+            || !item.Extension_SimpleChecks.ContainsNumeric.Value
+            || !item.Extension_SimpleChecks.ContainsNonAlphaNumeric.Value';
+        InvalidData PassValidation 'Pass is not valid.';
+
+        ItemFilter PassContainsName 'item => item.Pass.Contains(item.UserName)';
+        InvalidData PassContainsName 'Pass cannot contain UserName.';
+
+        ItemFilter PassTooShort 'item => item.Pass.Length < item.PassDependency.MinPassLength';
+        InvalidData PassTooShort 'Pass is too short.';
+    }
+}
+
+Module TestRegex
+{
+    Entity Simple 
+    {      
+        ShortString StringFrom200To249 { RegExMatch "2[0-4][0-9]" "StringFrom200To249 must be between 200 and 249."; }
+        ShortString UnicodeTest { RegExMatch "čćČĆテスト" "UnicodeTest must match unicode regex."; }
+        ShortString WhitespaceTest { RegExMatch "a\r\nb\tc" "WhitespaceTest must match whitespace regex."; }
+        ShortString SpecialCharTest { RegExMatch "a\!\@\#\$\%\^\&\*\(\)_\+\-\=\[\]\\\{\}\|\;\'\:\""\,\.\/\<\>\?" "SpecialCharTest must match special character regex."; }
+        ShortString DefaultErrorMessageTest { RegExMatch "123"; }
+    }
+    
+    Entity SimpleRequired 
+    {      
+        ShortString StringFrom200To249 { Required; RegExMatch "2[0-4][0-9]" "Value must be between 200 and 249."; }
+    }
+}

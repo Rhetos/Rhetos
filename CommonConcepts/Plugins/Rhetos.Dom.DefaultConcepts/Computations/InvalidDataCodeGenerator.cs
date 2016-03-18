@@ -35,30 +35,41 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(InvalidDataInfo))]
     public class InvalidDataCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly CsTag<InvalidDataInfo> UserMessageAppend = "UserMessage";
+        public static readonly CsTag<InvalidDataInfo> SystemMessageAppendTag = "SystemMessageAppend";
+        public static readonly CsTag<InvalidDataInfo> OverrideUserMessagesTag = "OverrideUserMessages";
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (InvalidDataInfo)conceptInfo;
-            codeBuilder.InsertCode(CheckInvalidItemsSnippet(info), WritableOrmDataStructureCodeGenerator.OnSaveTag2, info.Source);
-            codeBuilder.AddReferencesFromDependency(typeof(UserException));
+
+            // Using nonstandard naming of variables to avoid name clashes with injected code.
+            string getErrorMessageMethod =
+        @"public IEnumerable<InvalidDataMessage> " + info.GetErrorMessageMethodName() + @"(IEnumerable<Guid> getErrorMessage_Ids)
+        {
+            " + OverrideUserMessagesTag.Evaluate(info) + @" return InvalidDataHelper.SimpleErrorMessages(getErrorMessage_Ids, " + CsUtility.QuotedString(info.ErrorMessage) + @");
         }
 
-        private static string CheckInvalidItemsSnippet(InvalidDataInfo info)
-        {
-            return string.Format(
-@"            if (insertedNew.Count() > 0 || updatedNew.Count() > 0)
-            {{
-                Guid[] changedItemsId = inserted.Concat(updated).Select(item => item.ID).ToArray();
-                var invalidItems = _domRepository.{0}.Filter(this.Query(changedItemsId), new {1}());
-                if (invalidItems.Count() > 0)
-                    throw new Rhetos.UserException({2}, ""DataStructure:{0},ID:"" + invalidItems.First().ID.ToString(){3});
-            }}
-",
-                info.Source.GetKeyProperties(),
-                info.FilterType,
-                CsUtility.QuotedString(info.ErrorMessage),
-                UserMessageAppend.Evaluate(info));
+        ";
+            codeBuilder.InsertCode(getErrorMessageMethod, RepositoryHelper.RepositoryMembers, info.Source);
+            codeBuilder.AddReferencesFromDependency(typeof(InvalidDataMessage));
+
+            string dataStructure = info.Source.Module.Name + "." + info.Source.Name;
+            string systemMessage = @"""DataStructure:" + dataStructure + @",ID:"" + invalidItemId.ToString()" + SystemMessageAppendTag.Evaluate(info);
+            string validationSnippet =
+                @"if (insertedNew.Count() > 0 || updatedNew.Count() > 0)
+                {
+                    Guid[] changedItemsId = inserted.Concat(updated).Select(item => item.ID).ToArray();
+                    Guid invalidItemId = this.Filter(this.Query(changedItemsId), new " + info.FilterType + @"())
+                        .Select(item => item.ID).FirstOrDefault();
+                    if (invalidItemId != default(Guid))
+                    {
+                        var errorMessage = " + info.GetErrorMessageMethodName() + @"(new[] { invalidItemId }).Single();
+                        throw new Rhetos.UserException(errorMessage.Message, errorMessage.MessageParameters, " + systemMessage + @", null);
+                    }
+                }
+                ";
+            codeBuilder.InsertCode(validationSnippet, WritableOrmDataStructureCodeGenerator.OnSaveTag2, info.Source);
+            codeBuilder.AddReferencesFromDependency(typeof(UserException));
         }
     }
 }

@@ -20,21 +20,27 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Globalization;
 using System.Linq;
 using System.Text;
+using Rhetos.Utilities;
+using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
 
-namespace Rhetos.Dsl.DefaultConcepts
+namespace Rhetos.Dom.DefaultConcepts
 {
-    [Obsolete("Use \"MarkProperty\" concept instead.")]
-    [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("InvalidData")]
-    public class InvalidDataMarkPropertyInfo : InvalidDataInfo, IMacroConcept
+    [Export(typeof(IConceptCodeGenerator))]
+    [ExportMetadata(MefProvider.Implements, typeof(InvalidDataMarkProperty2Info))]
+    public class InvalidDataMarkProperty2CodeGenerator : IConceptCodeGenerator
     {
-        public PropertyInfo DependedProperty { get; set; }
-
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            return new[] { new InvalidDataMarkProperty2Info { InvalidData = this, MarkProperty = DependedProperty } };
+            var info = (InvalidDataMarkProperty2Info)conceptInfo;
+
+            string extendSystemMessage = @"+"",Property:" + info.MarkProperty.Name + @"""";
+            codeBuilder.InsertCode(extendSystemMessage, InvalidDataCodeGenerator.SystemMessageAppendTag, info.InvalidData);
         }
     }
 }

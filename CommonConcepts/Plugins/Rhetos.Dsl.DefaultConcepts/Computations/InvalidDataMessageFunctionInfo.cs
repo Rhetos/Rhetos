@@ -25,16 +25,13 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
-    [Obsolete("Use \"MarkProperty\" concept instead.")]
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("InvalidData")]
-    public class InvalidDataMarkPropertyInfo : InvalidDataInfo, IMacroConcept
+    [ConceptKeyword("MessageFunction")]
+    public class InvalidDataMessageFunctionInfo : InvalidDataMessageInfo
     {
-        public PropertyInfo DependedProperty { get; set; }
-
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            return new[] { new InvalidDataMarkProperty2Info { InvalidData = this, MarkProperty = DependedProperty } };
-        }
+        /// <summary>
+        /// Lambda expression: IEnumerable&lt;Guid&gt; => IEnumerable&lt;Rhetos.Dom.DefaultConcepts.InvalidDataMessage&gt;
+        /// </summary>
+        public string MessageFunction { get; set; }
     }
 }

@@ -32,18 +32,19 @@ using Rhetos.Extensibility;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(InvalidDataMarkPropertyInfo))]
-    public class InvalidDataMarkPropertyCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(InvalidDataMessageFunctionInfo))]
+    public class InvalidDataMessageFunctionCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (InvalidDataMarkPropertyInfo)conceptInfo;
-            codeBuilder.InsertCode(AdditionalInvalidMessageSnippet(info), InvalidDataCodeGenerator.UserMessageAppend, info);
-        }
+            var info = (InvalidDataMessageFunctionInfo)conceptInfo;
 
-        private static string AdditionalInvalidMessageSnippet(InvalidDataMarkPropertyInfo info)
-        {
-            return string.Format(@"+"",Property:{0}""", info.DependedProperty.Name);
+            // Using nonstandard naming of variables to avoid name clashes with injected code.
+            string setMessages =
+            @"Func<IEnumerable<Guid>, IEnumerable<InvalidDataMessage>> getErrorMessage_Func = " + info.MessageFunction + @";
+            return getErrorMessage_Func(getErrorMessage_Ids);
+            // ";
+            codeBuilder.InsertCode(setMessages, InvalidDataCodeGenerator.OverrideUserMessagesTag, info.InvalidData);
         }
     }
 }

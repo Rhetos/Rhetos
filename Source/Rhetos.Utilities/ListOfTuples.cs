@@ -32,4 +32,20 @@ namespace Rhetos.Utilities
             Add(Tuple.Create(e1, e2));
         }
     }
+
+    public class ListOfTuples<T1, T2, T3> : List<Tuple<T1, T2, T3>>
+    {
+        public void Add(T1 e1, T2 e2, T3 e3)
+        {
+            Add(Tuple.Create(e1, e2, e3));
+        }
+    }
+
+    public class ListOfTuples<T1, T2, T3, T4> : List<Tuple<T1, T2, T3, T4>>
+    {
+        public void Add(T1 e1, T2 e2, T3 e3, T4 e4)
+        {
+            Add(Tuple.Create(e1, e2, e3, e4));
+        }
+    }
 }

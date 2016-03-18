@@ -116,6 +116,11 @@
     <Compile Include="Computations\ApplyFilterOnClientReadInfo.cs" />
     <Compile Include="Computations\EntityComputedFromDefaultLoadFilterInfo.cs" />
     <Compile Include="Computations\InvalidDataInfo.cs" />
+    <Compile Include="Computations\InvalidDataMessageParametersConstantInfo.cs" />
+    <Compile Include="Computations\InvalidDataMessageInfo.cs" />
+    <Compile Include="Computations\InvalidDataMessageParametersItemInfo.cs" />
+    <Compile Include="Computations\InvalidDataMessageFunctionInfo.cs" />
+    <Compile Include="Computations\InvalidDataMarkProperty2Info.cs" />
     <Compile Include="Computations\InvalidDataMarkPropertyInfo.cs" />
     <Compile Include="Computations\ItemFilterReferencedInfo.cs" />
     <Compile Include="Computations\ItemFilterReferencedNoSubfilterInfo.cs" />

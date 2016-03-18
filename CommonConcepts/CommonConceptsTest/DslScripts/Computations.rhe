@@ -324,48 +324,6 @@ Module TestGenericFilter
 	}
 }
 
-Module TestInvalidData
-{
-	Entity Simple
-	{
-		ShortString Name { Unique; }
-		Integer Count;
-		
-		ItemFilter TooMuch 'item => item.Count > 100';
-		InvalidData TooMuch 'Quantity may not be larger than 100.';
-	}
-}
-
-Module TestLockItems
-{
-	Entity Simple
-	{
-		ShortString Name;
-		Integer Count;
-		
-		ItemFilter ContainsLockMark 'item => item.Name.Contains("lock")';
-		Lock ContainsLockMark '[Test] Name contains lock mark.';
-		
-		ItemFilter CountNegative 'item => item.Count < 0';
-		LockProperty Name.CountNegative 'Name is locked if count negative.';
-	}
-	
-	Entity Simple2
-	{
-		ShortString Name;
-		Integer Count;
-		Reference TestReference TestLockItems.Simple { CascadeDelete; }
-		
-		ItemFilter CountNegative 'item => item.Count < 0';
-		LockProperty Name.CountNegative 'Name is locked if count negative.';
-		
-		LockProperty TestReference.CountNegative 'TestReference is locked if count negative.';
-		
-		ItemFilter LockExceptName 'item => item.Name.StartsWith("LockExceptName")';
-		LockExcept LockExceptName 'The record is locked except the Name property.' 'Name';
-	}
-}
-
 Module TestSqlQueryable
 {
 	Entity Document

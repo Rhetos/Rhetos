@@ -25,16 +25,20 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
-    [Obsolete("Use \"MarkProperty\" concept instead.")]
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("InvalidData")]
-    public class InvalidDataMarkPropertyInfo : InvalidDataInfo, IMacroConcept
+    [ConceptKeyword("MarkProperty")]
+    public class InvalidDataMarkProperty2Info : IConceptInfo, IValidatedConcept
     {
-        public PropertyInfo DependedProperty { get; set; }
+        // TODO: Rename to InvalidDataMarkPropertyInfo after deleting the old concept.
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        [ConceptKey]
+        public InvalidDataInfo InvalidData { get; set; }
+
+        public PropertyInfo MarkProperty { get; set; }
+
+        public void CheckSemantics(IDslModel existingConcepts)
         {
-            return new[] { new InvalidDataMarkProperty2Info { InvalidData = this, MarkProperty = DependedProperty } };
+            DslUtility.CheckIfPropertyBelongsToDataStructure(MarkProperty, InvalidData.Source, this);
         }
     }
 }

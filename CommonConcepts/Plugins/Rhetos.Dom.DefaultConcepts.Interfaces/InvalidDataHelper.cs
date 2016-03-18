@@ -19,22 +19,21 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace Rhetos.Dsl.DefaultConcepts
+namespace Rhetos.Dom.DefaultConcepts
 {
-    [Obsolete("Use \"MarkProperty\" concept instead.")]
-    [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("InvalidData")]
-    public class InvalidDataMarkPropertyInfo : InvalidDataInfo, IMacroConcept
+    public static class InvalidDataHelper
     {
-        public PropertyInfo DependedProperty { get; set; }
-
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public static IEnumerable<InvalidDataMessage> SimpleErrorMessages(IEnumerable<Guid> ids, string simpleMessage)
         {
-            return new[] { new InvalidDataMarkProperty2Info { InvalidData = this, MarkProperty = DependedProperty } };
+            return ids.Select(id => new InvalidDataMessage
+            {
+                ID = id,
+                Message = simpleMessage
+            });
         }
     }
 }

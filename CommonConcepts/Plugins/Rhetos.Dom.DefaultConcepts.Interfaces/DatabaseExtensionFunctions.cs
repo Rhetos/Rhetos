@@ -100,7 +100,7 @@ namespace Rhetos.Dom.DefaultConcepts
         [DbFunction("Rhetos", "StringContainsCaseInsensitive")]
         public static bool ContainsCaseInsensitive(this string a, string b)
         {
-            return a != null && b != null && a.ToLowerInvariant().Contains(b.ToLowerInvariant());
+            return a != null && b != null && a.IndexOf(b, StringComparison.InvariantCultureIgnoreCase) >= 0;
         }
 
         [DbFunction("Rhetos", "StringLike")]

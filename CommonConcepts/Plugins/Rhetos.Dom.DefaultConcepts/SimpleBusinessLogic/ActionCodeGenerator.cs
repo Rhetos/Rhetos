@@ -38,7 +38,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         protected static string RepositoryFunctionsSnippet(ActionInfo info)
         {
-            // Strange naming of variables is to avoid name clashes with existing code.
+            // Using nonstandard naming of variables to avoid name clashes with injected code.
             return string.Format(
 @"        public void Execute({0}.{1} actionParameter)
         {{

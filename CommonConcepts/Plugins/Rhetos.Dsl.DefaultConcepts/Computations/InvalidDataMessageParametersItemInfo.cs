@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -27,38 +26,19 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// Simple data validation with a constant error message.
+    /// Use this concept to separate message parametars from the error message, for easier translation to another language.
+    /// Example: InvalidData with error message 'Maximum value of property {0} is {1}. Current value ({2}) is {3} characters long.'
+    /// may contain MessageParameters 'item => new object[] { item.ID, P0 = "Age", P1 = 200, P2 = item.Age, P3 = item.Age.Length }'.
+    /// By separating the parameters from the error message, only one error message needs to be translated
+    /// for many different max-value constraints.
     /// </summary>
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("InvalidData")]
-    public class InvalidDataInfo : IConceptInfo
+    [ConceptKeyword("MessageParametersItem")]
+    public class InvalidDataMessageParametersItemInfo : InvalidDataMessageInfo
     {
-        [ConceptKey]
-        public DataStructureInfo Source { get; set; }
-
-        [ConceptKey]
-        public string FilterType { get; set; }
-
         /// <summary>
-        /// Simple rule description. The error messages might be overridden by other more complex concepts.
+        /// Lambda expression: item => new { ID = item.ID, P0 = item..., P1 = item..., ... }
         /// </summary>
-        public string ErrorMessage { get; set; }
-
-        public string GetErrorMessageMethodName()
-        {
-            string filterName = null;
-
-            if (FilterType.StartsWith(Source.Module.Name + "."))
-            {
-                string dataStructureName = FilterType.Substring(Source.Module.Name.Length + 1);
-                if (CsUtility.GetIdentifierError(dataStructureName) == null)
-                    filterName = dataStructureName;
-            }
-
-            if (filterName == null)
-                filterName = CsUtility.TextToIdentifier(FilterType);
-
-            return "GetErrorMessage_" + filterName;
-        }
+        public string MessageParameters { get; set; }
     }
 }

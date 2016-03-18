@@ -58,7 +58,7 @@ namespace Rhetos.Utilities
         }
 
         /// <summary>
-        /// It the exception is a UserException, this function evaluates the message parameters using string.Format.
+        /// It the exception is a UserException, this function evaluates the message parameters using string.Format, without localization.
         /// Use this method in error logging to make sure every error is logger even if it's message format is not valid.
         /// </summary>
         public static string SafeFormatUserMessage(Exception ex)
@@ -70,11 +70,17 @@ namespace Rhetos.Utilities
             {
                 return string.Format(userEx.Message, userEx.MessageParameters ?? new object[] { });
             }
-            catch
+            catch (Exception ex2)
             {
-                return "Invalid error message format."
-                    + " Message: " + (ex.Message ?? "null")
-                    + ", Parameters: " + (userEx.MessageParameters != null ? string.Join(", ", userEx.MessageParameters) : "null")
+                return "Invalid error message format. " + ex2.GetType().Name + ": " + ex2.Message + ","
+                    + ", Message: " + (ex.Message == null
+                        ? "null"
+                        : "\"" + ex.Message + "\"")
+                    + ", Parameters: " + (userEx.MessageParameters == null
+                        ? "null"
+                        : userEx.MessageParameters.Length == 0
+                            ? "no parameters"
+                            : "\"" + string.Join(", ", userEx.MessageParameters) + "\"")
                     + ".";
             }
         }

@@ -26,6 +26,7 @@ using Rhetos.TestCommon;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Logging;
 
 namespace CommonConcepts.Test
 {
@@ -136,6 +137,35 @@ namespace CommonConcepts.Test
                 s3.Name = "s3e";
                 s3.Count = 33;
                 TestUtility.ShouldFail(() => repository.TestInvalidData.Simple.Save(CreateSimple(555), new[] { s3 }, new[] { s2 }), "larger than 100");
+            }
+        }
+
+        [TestMethod]
+        public void ErrorMessages()
+        {
+            var tests = new ListOfTuples<string, string[]>
+            {
+                { "xa", new[] { "Contains A" } },
+                { "xb", new[] { "Contains B (abc, 123)", "Property:Name" } },
+                { "xc", new[] { "Contains C (xc, 2)" } },
+                { "xdddddd", new[] { "Property 'Simple2-Name' should not contain 'letter D'. The entered text is 'xdddddd', 7 characters long." } },
+            };
+
+            foreach (var test in tests)
+            {
+                ConsoleLogger.MinLevel = EventType.Info;
+                using (var container = new RhetosTestContainer())
+                {
+                    Console.WriteLine("\r\nInput: " + test.Item1);
+                    var simple2 = container.Resolve<Common.DomRepository>().TestInvalidData.Simple2;
+                    simple2.Delete(simple2.Query());
+                    var newItem = new TestInvalidData.Simple2 { Name = test.Item1 };
+                    var error = TestUtility.ShouldFail<Rhetos.UserException>(
+                        () => simple2.Insert(newItem),
+                        test.Item2);
+                    Console.WriteLine("ErrorMessage: " + ExceptionsUtility.SafeFormatUserMessage(error));
+                    Console.WriteLine("Exception: " + error.ToString());
+                }
             }
         }
     }
