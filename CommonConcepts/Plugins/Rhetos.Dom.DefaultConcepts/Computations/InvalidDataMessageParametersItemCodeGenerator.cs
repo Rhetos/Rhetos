@@ -46,13 +46,13 @@ namespace Rhetos.Dom.DefaultConcepts
                 + " }";
 
             string setMessages =
-            @"return this.Query(getErrorMessage_Ids)
+            @"return this.Query(invalidData_Ids)
                 .Select(" + info.MessageParameters + @")
                 .ToList()
                 .Select(parameters => new InvalidDataMessage
                 {
                     ID = parameters.ID,
-                    Message = " + CsUtility.QuotedString(info.InvalidData.ErrorMessage) + @",
+                    Message = invalidData_Description,
                     MessageParameters = " + parametersArray + @"
                 });
             // ";

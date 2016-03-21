@@ -41,8 +41,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
             // Using nonstandard naming of variables to avoid name clashes with injected code.
             string setMessages =
-            @"Func<IEnumerable<Guid>, IEnumerable<InvalidDataMessage>> getErrorMessage_Func = " + info.MessageFunction + @";
-            return getErrorMessage_Func(getErrorMessage_Ids);
+            @"Func<IEnumerable<Guid>, IEnumerable<InvalidDataMessage>> invalidData_Func = " + info.MessageFunction + @";
+            return invalidData_Func(invalidData_Ids);
             // ";
             codeBuilder.InsertCode(setMessages, InvalidDataCodeGenerator.OverrideUserMessagesTag, info.InvalidData);
         }

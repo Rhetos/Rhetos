@@ -40,10 +40,10 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (InvalidDataMessageParametersConstantInfo)conceptInfo;
 
             string setMessages =
-            @"return getErrorMessage_Ids.Select(id => new InvalidDataMessage
+            @"return invalidData_Ids.Select(id => new InvalidDataMessage
             {
                 ID = id,
-                Message = " + CsUtility.QuotedString(info.InvalidData.ErrorMessage) + @",
+                Message = invalidData_Description,
                 MessageParameters = new object[] { " + info.MessageParameters + @" }
             });
             // ";

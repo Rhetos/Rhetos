@@ -72,8 +72,7 @@ namespace Rhetos.Utilities
             }
             catch (Exception ex2)
             {
-                return "Invalid error message format. " + ex2.GetType().Name + ": " + ex2.Message + ","
-                    + ", Message: " + (ex.Message == null
+                return "Invalid error message format. Message: " + (ex.Message == null
                         ? "null"
                         : "\"" + ex.Message + "\"")
                     + ", Parameters: " + (userEx.MessageParameters == null
@@ -81,7 +80,7 @@ namespace Rhetos.Utilities
                         : userEx.MessageParameters.Length == 0
                             ? "no parameters"
                             : "\"" + string.Join(", ", userEx.MessageParameters) + "\"")
-                    + ".";
+                    + ", " + ex2.GetType().Name + ": " + ex2.Message;
             }
         }
     }

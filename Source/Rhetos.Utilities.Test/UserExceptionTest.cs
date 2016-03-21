@@ -39,8 +39,8 @@ namespace Rhetos.Utilities.Test
                 { new UserException("abc", null, null, null), "abc" },
                 { new UserException("abc", new object[] { 123 }, null, null), "abc" },
                 { new UserException("a{0}bc", new object[] { 123, 456 }, null, null), "a123bc" },
-                { new UserException("a{1}bc", new object[] { 123 }, null, null), "Invalid error message format. Message: a{1}bc, Parameters: 123." },
-                { new UserException("a{0}bc", null, null, null), "Invalid error message format. Message: a{0}bc, Parameters: null." },
+                { new UserException("a{1}bc", new object[] { 123 }, null, null), "Invalid error message format. Message: \"a{1}bc\", Parameters: \"123\", FormatException: Index (zero based) must be greater than or equal to zero and less than the size of the argument list." },
+                { new UserException("a{0}bc", null, null, null), "Invalid error message format. Message: \"a{0}bc\", Parameters: null, FormatException: Index (zero based) must be greater than or equal to zero and less than the size of the argument list." },
             };
 
             foreach (var test in tests)

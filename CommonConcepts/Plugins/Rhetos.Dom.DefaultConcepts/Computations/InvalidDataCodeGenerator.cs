@@ -44,9 +44,10 @@ namespace Rhetos.Dom.DefaultConcepts
 
             // Using nonstandard naming of variables to avoid name clashes with injected code.
             string getErrorMessageMethod =
-        @"public IEnumerable<InvalidDataMessage> " + info.GetErrorMessageMethodName() + @"(IEnumerable<Guid> getErrorMessage_Ids)
+        @"public IEnumerable<InvalidDataMessage> " + info.GetErrorMessageMethodName() + @"(IEnumerable<Guid> invalidData_Ids)
         {
-            " + OverrideUserMessagesTag.Evaluate(info) + @" return InvalidDataHelper.SimpleErrorMessages(getErrorMessage_Ids, " + CsUtility.QuotedString(info.ErrorMessage) + @");
+            const string invalidData_Description = " + CsUtility.QuotedString(info.ErrorMessage) + @";
+            " + OverrideUserMessagesTag.Evaluate(info) + @" return invalidData_Ids.Select(id => new InvalidDataMessage { ID = id, Message = invalidData_Description });
         }
 
         ";
