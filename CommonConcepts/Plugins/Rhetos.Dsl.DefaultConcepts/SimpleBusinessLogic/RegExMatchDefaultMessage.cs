@@ -29,7 +29,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RegExMatch")]
-    public class RegExMatchDefaultMessageInfo : RegExMatchInfo, IAlternativeInitializationConcept
+    public class RegExMatchDefaultMessageInfo : RegExMatchInfo, IAlternativeInitializationConcept, IMacroConcept
     {
         public IEnumerable<string> DeclareNonparsableProperties()
         {
@@ -38,8 +38,24 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
-            ErrorMessage = "Property " + Property.Name + " does not match required format.";
+            ErrorMessage = "Property {0} does not match required format.";
             createdConcepts = null;
+        }
+
+        public new IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        {
+            var newConcepts = new List<IConceptInfo>();
+            newConcepts.AddRange(base.CreateNewConcepts(existingConcepts));
+
+            var invalidData = newConcepts.OfType<InvalidDataInfo>().Single();
+            var messageParameters = new InvalidDataMessageParametersConstantInfo
+            {
+                InvalidData = invalidData,
+                MessageParameters = CsUtility.QuotedString(Property.Name)
+            };
+            newConcepts.Add(messageParameters);
+
+            return newConcepts;
         }
     }
 }

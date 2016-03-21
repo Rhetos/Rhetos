@@ -24,6 +24,7 @@ using System.Linq;
 using System.Text;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -45,15 +46,24 @@ namespace Rhetos.Dsl.DefaultConcepts
                 Expression = "item => item." + Property.Name + " == null"
             };
 
-            var invalidData = new InvalidDataMarkPropertyInfo
+            var invalidData = new InvalidDataInfo
             {
                 Source = Property.DataStructure,
                 FilterType = filterName,
-                ErrorMessage = "System required property " +  Property.GetUserDescription() + " is not set.",
-                DependedProperty = Property
+                ErrorMessage = "System required property {0} is not set."
+            };
+            var messageParameters = new InvalidDataMessageParametersConstantInfo
+            {
+                InvalidData = invalidData,
+                MessageParameters = CsUtility.QuotedString(Property.GetUserDescription())
+            };
+            var invalidProperty = new InvalidDataMarkProperty2Info
+            {
+                InvalidData = invalidData,
+                MarkProperty = Property
             };
 
-            return new IConceptInfo[] { filter, invalidData };
+            return new IConceptInfo[] { filter, invalidData, messageParameters, invalidProperty };
         }
     }
 }

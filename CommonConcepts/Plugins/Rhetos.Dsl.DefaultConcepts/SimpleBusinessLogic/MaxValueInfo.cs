@@ -54,14 +54,23 @@ namespace Rhetos.Dsl.DefaultConcepts
                 Parameter = filterParameter.Module.Name + "." + filterParameter.Name,
                 Source = Property.DataStructure
             };
-            var invalidData = new InvalidDataMarkPropertyInfo
+            var invalidData = new InvalidDataInfo
             {
-                DependedProperty = Property,
+                Source = Property.DataStructure,
                 FilterType = filter.Parameter,
-                ErrorMessage = String.Format("Maximum value of {0} is {1}.", Property.Name, Value),
-                Source = Property.DataStructure
+                ErrorMessage = "Maximum value of {0} is {1}."
             };
-            return new IConceptInfo[] { filterParameter, filter, invalidData };
+            var messageParameters = new InvalidDataMessageParametersConstantInfo
+            {
+                InvalidData = invalidData,
+                MessageParameters = CsUtility.QuotedString(Property.Name) + ", " + CsUtility.QuotedString(Value)
+            };
+            var invalidProperty = new InvalidDataMarkProperty2Info
+            {
+                InvalidData = invalidData,
+                MarkProperty = Property
+            };
+            return new IConceptInfo[] { filterParameter, filter, invalidData, messageParameters, invalidProperty };
         }
 
         private static readonly Regex DecimalChecker = new Regex(@"^[+-]?(\d+(\.\d*)?|\.\d+)$");

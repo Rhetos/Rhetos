@@ -56,22 +56,24 @@ namespace Rhetos.Dsl.DefaultConcepts
                 Property.Name,
                 CsUtility.QuotedString("^" + RegularExpression + "$"));
 
-            var itemFilterRegExMatchProperty = new ComposableFilterByInfo
+            var itemFilter = new ComposableFilterByInfo
             {
                 Expression = filterExpression,
                 Parameter = filterParameter.Module.Name + "." + filterParameter.Name,
                 Source = Property.DataStructure
             };
-
-            var invalidDataRegExMatchProperty = new InvalidDataMarkPropertyInfo
+            var invalidData = new InvalidDataInfo
             {
-                DependedProperty = Property,
-                FilterType = itemFilterRegExMatchProperty.Parameter,
-                ErrorMessage = ErrorMessage,
-                Source = Property.DataStructure
+                Source = Property.DataStructure,
+                FilterType = itemFilter.Parameter,
+                ErrorMessage = ErrorMessage
             };
-
-            return new IConceptInfo[] { filterParameter, itemFilterRegExMatchProperty, invalidDataRegExMatchProperty };
+            var invalidProperty = new InvalidDataMarkProperty2Info
+            {
+                InvalidData = invalidData,
+                MarkProperty = Property
+            };
+            return new IConceptInfo[] { filterParameter, itemFilter, invalidData, invalidProperty };
         }
 
         public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)

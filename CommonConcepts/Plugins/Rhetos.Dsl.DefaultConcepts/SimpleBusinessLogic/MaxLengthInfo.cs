@@ -37,21 +37,29 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            // Expand the base entity:
-            var itemFilterMinLengthProperty = new ItemFilterInfo
+            var itemFilter = new ItemFilterInfo
             {
                 Expression = String.Format("item => !String.IsNullOrEmpty(item.{0}) && item.{0}.Length > {1}", Property.Name, Length),
                 FilterName = Property.Name + "_MaxLengthFilter",
                 Source = Property.DataStructure
             };
-            var invalidDataMinLengthProperty = new InvalidDataMarkPropertyInfo
+            var invalidData = new InvalidDataInfo
             {
-                DependedProperty = Property,
-                FilterType = itemFilterMinLengthProperty.FilterName,
-                ErrorMessage = String.Format("Maximum allowed length of {0} is {1} characters.", Property.Name, Length),
-                Source = Property.DataStructure
+                Source = Property.DataStructure,
+                FilterType = itemFilter.FilterName,
+                ErrorMessage = "Maximum allowed length of {0} is {1} characters."
             };
-            return new IConceptInfo[] { itemFilterMinLengthProperty, invalidDataMinLengthProperty };
+            var messageParameters = new InvalidDataMessageParametersConstantInfo
+            {
+                InvalidData = invalidData,
+                MessageParameters = CsUtility.QuotedString(Property.Name) + ", " + Length
+            };
+            var invalidProperty = new InvalidDataMarkProperty2Info
+            {
+                InvalidData = invalidData,
+                MarkProperty = Property
+            };
+            return new IConceptInfo[] { itemFilter, invalidData, messageParameters, invalidProperty };
         }
 
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)

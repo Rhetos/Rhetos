@@ -38,21 +38,29 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            // Expand the base entity:
-            var itemFilterRange = new ItemFilterInfo
+            var itemFilter = new ItemFilterInfo
             {
                 Expression = String.Format("item => item.{0} != null && item.{1} != null && item.{0} > item.{1}", PropertyFrom.Name, PropertyTo.Name),
                 FilterName = PropertyFrom.Name + "_" + PropertyTo.Name + "_RangeFilter",
                 Source = PropertyFrom.DataStructure
             };
-            var invalidDataRange = new InvalidDataMarkPropertyInfo
+            var invalidData = new InvalidDataInfo
             {
-                DependedProperty = PropertyFrom,
-                FilterType = itemFilterRange.FilterName,
-                ErrorMessage = String.Format("Value of {0} has to be less than or equal to {1}.", PropertyFrom.Name, PropertyTo.Name),
-                Source = PropertyFrom.DataStructure
+                Source = PropertyFrom.DataStructure,
+                FilterType = itemFilter.FilterName,
+                ErrorMessage = "Value of {0} has to be less than or equal to {1}."
             };
-            return new IConceptInfo[] { itemFilterRange, invalidDataRange };
+            var messageParameters = new InvalidDataMessageParametersConstantInfo
+            {
+                InvalidData = invalidData,
+                MessageParameters = CsUtility.QuotedString(PropertyFrom.Name) + ", " + CsUtility.QuotedString(PropertyTo.Name)
+            };
+            var invalidProperty = new InvalidDataMarkProperty2Info
+            {
+                InvalidData = invalidData,
+                MarkProperty = PropertyFrom
+            };
+            return new IConceptInfo[] { itemFilter, invalidData, messageParameters, invalidProperty };
         }
 
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)

@@ -36,10 +36,10 @@ namespace Rhetos.CommonConcepts.Test
         {
             var tests = new ListOfTuples<string, string, string>()
             {
-                { "Mod.Ent", "Filt", "getErrorMessage_Filt" },
-                { "Mod.Ent", "Mod.Filt", "getErrorMessage_Filt" },
-                { "Mod.Ent", "Mod2.Filt", "getErrorMessage_Mod2_2E_Filt" },
-                { "Mod.Ent", "Dictionary<List<System.Guid>, object[]>", "getErrorMessage_Dictionary_3C_List_3C_System_2E_Guid_3E__2C__20_object_5B__5D__3E_" },
+                { "Mod.Ent", "Filt", "GetErrorMessage_Filt" },
+                { "Mod.Ent", "Mod.Filt", "GetErrorMessage_Filt" },
+                { "Mod.Ent", "Mod2.Filt", "GetErrorMessage_Mod2_2E_Filt" },
+                { "Mod.Ent", "Dictionary<List<System.Guid>, object[]>", "GetErrorMessage_Dictionary_3C_List_3C_System_2E_Guid_3E__2C__20_object_5B__5D__3E_" },
             };
 
             foreach (var test in tests)
