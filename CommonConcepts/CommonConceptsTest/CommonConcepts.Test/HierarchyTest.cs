@@ -340,11 +340,11 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestHierarchy.WithPath.Delete(repository.TestHierarchy.WithPath.Query());
 
-                var h1 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = new string('a', 256), Group = null };
-                var h2 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = new string('b', 256), Group = h1 };
-                var h3 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = new string('c', 256), Group = h2 };
+                var h1 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = new string('a', 256), GroupID = null };
+                var h2 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = new string('b', 256), GroupID = h1.ID };
+                var h3 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = new string('c', 256), GroupID = h2.ID };
 
-                repository.TestHierarchy.WithPath.Insert(new[] { h1, h2, h3 });
+                repository.TestHierarchy.WithPath.Insert(h1, h2, h3);
 
                 var paths = repository.TestHierarchy.WithPathGroupHierarchy.Query()
                     .Select(h => new { h.ID, h.GroupSequence })

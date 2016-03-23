@@ -153,7 +153,6 @@ namespace CommonConcepts.Test
 
             foreach (var test in tests)
             {
-                ConsoleLogger.MinLevel = EventType.Info;
                 using (var container = new RhetosTestContainer())
                 {
                     Console.WriteLine("\r\nInput: " + test.Item1);
