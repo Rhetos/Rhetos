@@ -185,5 +185,39 @@ namespace Rhetos.TestCommon
             if (expectedLanguage != null && SqlUtility.DatabaseLanguage != expectedLanguage)
                 Assert.Inconclusive("This test will run only on '" + expectedLanguage + "' database language, not '" + SqlUtility.DatabaseLanguage + "'. " + connectionStringLocation);
         }
+
+        /// <summary>
+        /// Shortens sequences of repeating charaters, if longer then 3.
+        /// Example: "aaaaaaaaaaXXXbbbb" => "aaa...(10)XXXbbb...(5)"
+        /// </summary>
+        public static string CompressReport(string text)
+        {
+            const int showMaxDuplicates = 3;
+
+            var sb = new StringBuilder();
+            char lastc = '\0';
+            int duplicates = 0;
+            foreach (char c in text)
+            {
+                if (c == lastc)
+                    duplicates++;
+                else
+                {
+                    if (duplicates >= showMaxDuplicates)
+                        sb.Append("(").Append(duplicates + 1).Append(")");
+                    duplicates = 0;
+                }
+
+                if (duplicates < showMaxDuplicates)
+                    sb.Append(c);
+                else if (duplicates == showMaxDuplicates)
+                    sb.Append("...");
+
+                lastc = c;
+            }
+            if (duplicates >= showMaxDuplicates)
+                sb.Append("(").Append(duplicates + 1).Append(")");
+            return sb.ToString();
+        }
     }
 }
