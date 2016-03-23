@@ -22,6 +22,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
@@ -327,7 +328,33 @@ namespace CommonConcepts.Test
 
                 Assert.AreEqual("h1, h1 - h11, h1 - h12, h1 - h12 - h121, h2",
                     TestUtility.DumpSorted(repository.TestHierarchy.BrowseWithPath.All(), item => item.GroupSequence));
-               
+
+            }
+        }
+
+        [TestMethod]
+        public void LongPath()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                repository.TestHierarchy.WithPath.Delete(repository.TestHierarchy.WithPath.Query());
+
+                var h1 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = new string('a', 256), Group = null };
+                var h2 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = new string('b', 256), Group = h1 };
+                var h3 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = new string('c', 256), Group = h2 };
+
+                repository.TestHierarchy.WithPath.Insert(new[] { h1, h2, h3 });
+
+                var paths = repository.TestHierarchy.WithPathGroupHierarchy.Query()
+                    .Select(h => new { h.ID, h.GroupSequence })
+                    .ToList()
+                    .ToDictionary(h => h.ID, h => h.GroupSequence);
+
+                Assert.AreEqual("aaa...(256)", TestUtility.CompressReport(paths[h1.ID]));
+                Assert.AreEqual("aaa...(256) - bbb...(256)", TestUtility.CompressReport(paths[h2.ID]));
+                Assert.AreEqual("aaa...(256) - bbb...(256) - ccc...(256)", TestUtility.CompressReport(paths[h3.ID]));
+
             }
         }
 
