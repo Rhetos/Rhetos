@@ -17,28 +17,30 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac;
-using Autofac.Integration.Wcf;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.ServiceModel.Configuration;
-using System.Web;
+using System.ServiceModel.Channels;
+using System.ServiceModel.Description;
+using System.ServiceModel.Dispatcher;
 
 namespace Rhetos.Web
 {
-    // TODO: Rename to RhetosServiceBehaviorExtension
-    public class ErrorHandlerBehavior : BehaviorExtensionElement
+    public class CommitBeforeResponseBehavior : IEndpointBehavior
     {
-        public override Type BehaviorType
+        public void AddBindingParameters(ServiceEndpoint endpoint, BindingParameterCollection bindingParameters)
         {
-            get { return typeof(ErrorServiceBehavior); }
         }
 
-        protected override object CreateBehavior()
+        public void ApplyClientBehavior(ServiceEndpoint endpoint, ClientRuntime clientRuntime)
         {
-            var geh = AutofacServiceHostFactory.Container.Resolve<GlobalErrorHandler>();
-            return new ErrorServiceBehavior(geh);
+        }
+
+        public void ApplyDispatchBehavior(ServiceEndpoint endpoint, EndpointDispatcher endpointDispatcher)
+        {
+            endpointDispatcher.DispatchRuntime.MessageInspectors.Add(new CommitBeforeResponseMessageInspector());
+        }
+
+        public void Validate(ServiceEndpoint endpoint)
+        {
         }
     }
 }
