@@ -333,7 +333,6 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        [Ignore]
         public void LongPath()
         {
             using (var container = new RhetosTestContainer())
