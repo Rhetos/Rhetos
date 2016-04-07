@@ -35,14 +35,14 @@ namespace Rhetos.Dom.DefaultConcepts
         private string SetCreationTimeValue(CreationTimeInfo info)
         {
             return string.Format(
-@"            {{ 
+            @"{{ 
                 var now = SqlUtility.GetDatabaseTime(_executionContext.SqlExecuter);
 
                 foreach (var newItem in insertedNew)
                     if(newItem.{0} == null)
                         newItem.{0} = now;
             }}
-", info.Property.Name);
+            ", info.Property.Name);
         }
 
         public void GenerateCode(Dsl.IConceptInfo conceptInfo, ICodeBuilder codeBuilder)

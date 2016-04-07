@@ -39,7 +39,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private string CheckLocksCodeSnippet(PessimisticLockingInfo info)
         {
             return string.Format(
-@"            {{
+            @"{{
                 // Check pessimistic locking:
 
                 Common.ExclusiveLock deniedLock = null;
@@ -85,7 +85,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     throw new Rhetos.UserException(localizedMessage);
                 }}
             }}
-",
+            ",
                 info.Resource.Module.Name,
                 info.Resource.Name,
                 AdditionalLocksTag.Evaluate(info));

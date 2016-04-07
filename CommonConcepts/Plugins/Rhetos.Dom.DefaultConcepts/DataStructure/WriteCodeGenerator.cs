@@ -46,7 +46,7 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string MemberFunctionsSnippet(WriteInfo info)
         {
             return string.Format(
-@"        public void Save(IEnumerable<{0}.{1}> insertedNew, IEnumerable<{0}.{1}> updatedNew, IEnumerable<{0}.{1}> deletedIds, bool checkUserPermissions = false)
+        @"public void Save(IEnumerable<{0}.{1}> insertedNew, IEnumerable<{0}.{1}> updatedNew, IEnumerable<{0}.{1}> deletedIds, bool checkUserPermissions = false)
         {{
             Rhetos.Utilities.CsUtility.Materialize(ref insertedNew);
             Rhetos.Utilities.CsUtility.Materialize(ref updatedNew);
@@ -76,7 +76,7 @@ namespace Rhetos.Dom.DefaultConcepts
             " + WritableOrmDataStructureCodeGenerator.OnSaveTag2.Evaluate(info.DataStructure) + @"
         }}
 
-",
+        ",
                 info.DataStructure.Module.Name,
                 info.DataStructure.Name,
                 info.SaveImplementation);

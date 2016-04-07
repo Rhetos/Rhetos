@@ -47,7 +47,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string CheckLockedItemsSnippet(LockItemsInfo info)
         {
             return string.Format(
-@"            if (updatedNew.Count() > 0 || deletedIds.Count() > 0)
+            @"if (updatedNew.Count() > 0 || deletedIds.Count() > 0)
             {{
                 {0}[] changedItems = updated.Concat(deleted).ToArray();
 
@@ -55,7 +55,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (lockedItems.Count() > 0)
                     throw new Rhetos.UserException({2}, ""DataStructure:{0},ID:"" + lockedItems.First().ID.ToString(){3});
             }}
-",
+            ",
                 info.Source.GetKeyProperties(),
                 info.FilterType,
                 CsUtility.QuotedString(info.Title),

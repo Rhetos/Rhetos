@@ -44,7 +44,7 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         const string snippet =
-@"        public IQueryable<Guid> CreateQueryableFilterIds(IEnumerable<Guid> ids)
+        @"public IQueryable<Guid> CreateQueryableFilterIds(IEnumerable<Guid> ids)
         {
             if (!(ids is System.Collections.IList))
                 ids = ids.ToList();
@@ -77,6 +77,6 @@ namespace Rhetos.Dom.DefaultConcepts
             return Query().Where(filterId => filterId.Handle == handle).Select(filterId => filterId.Value.Value);
         }
 
-";
+        ";
     }
 }

@@ -105,7 +105,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public static string SnippetQueryableFilterById(DataStructureInfo info)
         {
             return string.Format(
-@"        public IQueryable<Common.Queryable.{0}_{1}> Filter(IQueryable<Common.Queryable.{0}_{1}> items, IEnumerable<Guid> ids)
+        @"public IQueryable<Common.Queryable.{0}_{1}> Filter(IQueryable<Common.Queryable.{0}_{1}> items, IEnumerable<Guid> ids)
         {{
             if (!(ids is System.Collections.IList))
                 ids = ids.ToList();
@@ -119,7 +119,7 @@ namespace Rhetos.Dom.DefaultConcepts
             }}
         }}
 
-",
+        ",
                 info.Module.Name, info.Name);
         }
     }

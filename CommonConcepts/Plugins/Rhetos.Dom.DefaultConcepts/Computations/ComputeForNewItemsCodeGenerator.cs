@@ -58,12 +58,12 @@ namespace Rhetos.Dom.DefaultConcepts
             EntityInfo updatePersistedComputation = info.EntityComputedFrom.Target;
 
             return string.Format(
-@"            if (inserted.Count() > 0)
+            @"if (inserted.Count() > 0)
             {{
                 var filter = inserted.Select(item => item.ID).ToArray();
                 {4}(filter{3});
             }}
-",
+            ",
                 hookOnSave.Module.Name,
                 hookOnSave.Name,
                 uniqueSuffix,
@@ -74,10 +74,10 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string FilterSaveFunction(ComputeForNewItemsInfo info, string uniqueSuffix)
         {
             return string.Format(
-@"        private static readonly Func<IEnumerable<{0}.{1}>, IEnumerable<{0}.{1}>> _filterSaveComputeForNewItems_{2} =
+        @"private static readonly Func<IEnumerable<{0}.{1}>, IEnumerable<{0}.{1}>> _filterSaveComputeForNewItems_{2} =
             {3};
 
-",
+        ",
                 info.EntityComputedFrom.Target.Module.Name,
                 info.EntityComputedFrom.Target.Name,
                 uniqueSuffix,

@@ -33,7 +33,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string CodeSnippetDeleteChildren(ReferenceCascadeDeleteInfo info)
         {
             return string.Format(
-@"            if (deletedIds.Count() > 0)
+            @"if (deletedIds.Count() > 0)
             {{
                 {0}.{1}[] childItems = deletedIds.SelectMany(parent => _executionContext.Repository.{0}.{1}.Query().Where(child => child.{2}ID == parent.ID).ToArray()).ToArray();
                 if (childItems.Count() > 0)
@@ -41,7 +41,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     _domRepository.{0}.{1}.Delete(childItems);
                 }}
             }}
-",
+            ",
             info.Reference.DataStructure.Module.Name,
             info.Reference.DataStructure.Name,
             info.Reference.Name,

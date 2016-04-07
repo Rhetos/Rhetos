@@ -49,7 +49,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 propertyName += "ID";
 
             return string.Format(
-@"            if (updatedNew.Count() > 0 || deletedIds.Count() > 0)
+            @"if (updatedNew.Count() > 0 || deletedIds.Count() > 0)
             {{
                 {0}[] changedItems = updated.Zip(updatedNew, (i, j) => ({4})
                     ? i : null).Where(x => x != null).ToArray();
@@ -61,7 +61,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         throw new Rhetos.UserException({2}, ""DataStructure:{0},ID:"" + lockedItems.First().ID.ToString() + "",Property:{3}"");
                 }}
             }}
-",
+            ",
                 info.Source.DataStructure.GetKeyProperties(),
                 info.FilterType,
                 CsUtility.QuotedString(info.Title),

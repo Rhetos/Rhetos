@@ -39,7 +39,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string RepositoryFunctionsSnippet(ReportDataInfo info)
         {
             return string.Format(
-@"        public object[][] GetReportData({0}.{1} parameter)
+        @"public object[][] GetReportData({0}.{1} parameter)
         {{
 	        var reportData = new Dictionary<string, object[]>();
 	        {2}
@@ -50,7 +50,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public IList<string> DataSourcesNames {{ get {{ return _dataSourcesNames; }} }}
         private readonly static string[] _dataSourcesNames = new string[] {{ {3} }};
 
-",
+        ",
             info.Module.Name,
             info.Name,
             GetReportDataTag.Evaluate(info),

@@ -37,7 +37,7 @@ namespace Rhetos.SimpleWindowsAuth
     public class PermissionLoaderCodeGenerator : IConceptCodeGenerator
     {
         const string MemberFunctionsSnippet =
-@"        public IList<Rhetos.SimpleWindowsAuth.IPermissionBrowse> LoadPermissions(IList<Rhetos.Security.Claim> claims, IList<string> principals)
+        @"public IList<Rhetos.SimpleWindowsAuth.IPermissionBrowse> LoadPermissions(IList<Rhetos.Security.Claim> claims, IList<string> principals)
         {
             var claimNames = claims.Select(claim => claim.Resource + ""."" + claim.Right).ToArray();
             return Query()
@@ -45,7 +45,7 @@ namespace Rhetos.SimpleWindowsAuth
                 .Cast<Rhetos.SimpleWindowsAuth.IPermissionBrowse>().ToList();
         }
 
-";
+        ";
 
         protected static string RegisterRepository(DataStructureInfo info)
         {

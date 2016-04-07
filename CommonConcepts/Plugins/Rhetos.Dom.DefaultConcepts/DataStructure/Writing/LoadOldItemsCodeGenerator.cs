@@ -46,15 +46,14 @@ namespace Rhetos.Dom.DefaultConcepts
         private string GetSnippet(LoadOldItemsInfo info)
         {
             return string.Format(
-@"            
-            var updatedIdsList = updatedNew.Select(item => item.ID).ToList();
+            @"var updatedIdsList = updatedNew.Select(item => item.ID).ToList();
             var deletedIdsList = deletedIds.Select(item => item.ID).ToList();
             var updatedOld = Filter(Query(), updatedIdsList).Select(item => new {{ item.ID{0} }}).ToList();
             var deletedOld = Filter(Query(), deletedIdsList).Select(item => new {{ item.ID{0} }}).ToList();
             Rhetos.Utilities.Graph.SortByGivenOrder(updatedOld, updatedIdsList, item => item.ID);
             Rhetos.Utilities.Graph.SortByGivenOrder(deletedOld, deletedIdsList, item => item.ID);
 
-",
+            ",
                 SelectPropertiesTag.Evaluate(info));
         }
     }

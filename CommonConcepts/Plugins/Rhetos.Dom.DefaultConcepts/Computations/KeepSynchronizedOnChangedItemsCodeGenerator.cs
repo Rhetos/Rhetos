@@ -60,11 +60,11 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string FilterOldItemsBeforeSaveSnippet(DataStructureInfo hookOnSaveEntity, string filterType, string filterFormula, string uniqueName)
         {
             return string.Format(
-@"            Func<IEnumerable<Common.Queryable.{0}_{1}>, {2}> filterLoadKeepSynchronizedOnChangedItems{3} =
+            @"Func<IEnumerable<Common.Queryable.{0}_{1}>, {2}> filterLoadKeepSynchronizedOnChangedItems{3} =
                 {4};
             {2} filterKeepSynchronizedOnChangedItems{3}Old = filterLoadKeepSynchronizedOnChangedItems{3}(updated.Concat(deleted));
 
-",
+            ",
                 hookOnSaveEntity.Module.Name,
                 hookOnSaveEntity.Name,
                 filterType,

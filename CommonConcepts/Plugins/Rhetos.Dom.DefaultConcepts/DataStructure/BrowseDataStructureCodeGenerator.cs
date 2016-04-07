@@ -43,7 +43,7 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string RepositoryFunctionsSnippet(BrowseDataStructureInfo info)
         {
             return string.Format(
-@"        public IQueryable<Common.Queryable.{0}_{1}> Compute(IQueryable<Common.Queryable.{2}_{3}> source)
+        @"public IQueryable<Common.Queryable.{0}_{1}> Compute(IQueryable<Common.Queryable.{2}_{3}> source)
         {{
             return
                 from item in source
@@ -55,7 +55,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 }};
         }}
 
-",
+        ",
             info.Module.Name, info.Name, info.Source.Module.Name, info.Source.Name,
             BrowsePropertiesTag.Evaluate(info));
         }

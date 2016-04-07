@@ -43,11 +43,11 @@ namespace Rhetos.Dom.DefaultConcepts
         private string GetSnippet(OnSaveValidateInfo info)
         {
             return string.Format(
-@"                {{ // {0}
+                @"{{ // {0}
                     {1}
                 }}
 
-",
+                ",
                 info.RuleName, info.CsCodeSnippet.Trim());
         }
     }

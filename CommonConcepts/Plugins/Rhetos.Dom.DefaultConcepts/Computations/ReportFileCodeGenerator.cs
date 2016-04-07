@@ -42,7 +42,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             // TODO: Implement UseExecutionContext concept for reports, then remove the predefined parameter executionContext from _ReportFile_FileGenerator.
             return string.Format(
-@"        protected static Func<object[][], string, Common.ExecutionContext, Rhetos.Dom.DefaultConcepts.ReportFile> _ReportFile_FileGenerator = {2};
+        @"protected static Func<object[][], string, Common.ExecutionContext, Rhetos.Dom.DefaultConcepts.ReportFile> _ReportFile_FileGenerator = {2};
 
         public Rhetos.Dom.DefaultConcepts.ReportFile GenerateReport({0}.{1} parameter, string convertFormat = null)
         {{
@@ -60,7 +60,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return GenerateReport(({0}.{1}) parameters, convertFormat);
         }}
 
-",
+        ",
             info.Module.Name,
             info.Name,
             info.Expression,

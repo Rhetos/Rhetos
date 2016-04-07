@@ -41,14 +41,14 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string FilterImplementationSnippet(FilterByInfo info)
         {
             return string.Format(
-@"        public global::{0}[] Filter({1} filter_Parameter)
+        @"public global::{0}[] Filter({1} filter_Parameter)
         {{
             Func<Common.DomRepository, {1}{3}, {0}[]> filter_Function =
                 {2};
             return filter_Function(_domRepository, filter_Parameter{4});
         }}
 
-",
+        ",
             info.Source.GetKeyProperties(),
             info.Parameter,
             info.Expression,

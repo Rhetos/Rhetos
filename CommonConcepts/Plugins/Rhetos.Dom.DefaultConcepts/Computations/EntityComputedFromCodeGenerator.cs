@@ -55,7 +55,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string CodeSnippet(EntityComputedFromInfo info)
         {
             return string.Format(
-@"        private class {2}_KeyComparer : IComparer<{0}>
+        @"private class {2}_KeyComparer : IComparer<{0}>
         {{
             public int Compare({0} x, {0} y)
             {{
@@ -100,7 +100,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return newItems;
         }}
 
-",
+        ",
             info.Target.GetKeyProperties(),
             info.Source.GetKeyProperties(),
             RecomputeFunctionName(info),

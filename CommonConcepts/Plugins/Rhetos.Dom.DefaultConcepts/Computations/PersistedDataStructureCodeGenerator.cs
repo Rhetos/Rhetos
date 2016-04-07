@@ -38,12 +38,12 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string CodeSnippet(PersistedDataStructureInfo info)
         {
             return string.Format(
-@"        public IEnumerable<{0}> Recompute(object filterLoad = null, Func<IEnumerable<{0}>, IEnumerable<{0}>> filterSave = null)
+        @"public IEnumerable<{0}> Recompute(object filterLoad = null, Func<IEnumerable<{0}>, IEnumerable<{0}>> filterSave = null)
         {{
             return {2}(filterLoad, filterSave);
         }}
 
-",
+        ",
             info.GetKeyProperties(),
             info.Source.GetKeyProperties(),
             EntityComputedFromCodeGenerator.RecomputeFunctionName(new EntityComputedFromInfo { Source = info.Source, Target = info }));

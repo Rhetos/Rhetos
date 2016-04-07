@@ -45,7 +45,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             if (!string.IsNullOrWhiteSpace(info.FilterSaveExpression))
                 return string.Format(
-@"        private static readonly Func<IEnumerable<{0}.{1}>, Common.DomRepository, IEnumerable<{0}.{1}>> _filterSaveKeepSynchronizedOnChangedItems_{3}_{4} =
+        @"private static readonly Func<IEnumerable<{0}.{1}>, Common.DomRepository, IEnumerable<{0}.{1}>> _filterSaveKeepSynchronizedOnChangedItems_{3}_{4} =
         {2};
 
         public IEnumerable<{0}.{1}> FilterSaveKeepSynchronizedOnChangedItems_{3}_{4}(IEnumerable<{0}.{1}> items)
@@ -53,17 +53,17 @@ namespace Rhetos.Dom.DefaultConcepts
             return _filterSaveKeepSynchronizedOnChangedItems_{3}_{4}(items, _domRepository);
         }}
 
-",
+        ",
                     info.EntityComputedFrom.Target.Module.Name, info.EntityComputedFrom.Target.Name, info.FilterSaveExpression,
                     info.EntityComputedFrom.Source.Module.Name, info.EntityComputedFrom.Source.Name);
             else
                 return string.Format(
-@"        public IEnumerable<{0}.{1}> FilterSaveKeepSynchronizedOnChangedItems_{3}_{4}(IEnumerable<{0}.{1}> items)
+        @"public IEnumerable<{0}.{1}> FilterSaveKeepSynchronizedOnChangedItems_{3}_{4}(IEnumerable<{0}.{1}> items)
         {{
             return items;
         }}
 
-",
+        ",
                     info.EntityComputedFrom.Target.Module.Name, info.EntityComputedFrom.Target.Name, info.FilterSaveExpression,
                     info.EntityComputedFrom.Source.Module.Name, info.EntityComputedFrom.Source.Name);
         }

@@ -41,7 +41,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string FilterImplementationSnippet(ComposableFilterByInfo info)
         {
             return string.Format(
-@"        public IQueryable<Common.Queryable.{0}_{1}> Filter(IQueryable<Common.Queryable.{0}_{1}> localSource, {2} localParameter)
+        @"public IQueryable<Common.Queryable.{0}_{1}> Filter(IQueryable<Common.Queryable.{0}_{1}> localSource, {2} localParameter)
         {{
             Func<IQueryable<Common.Queryable.{0}_{1}>, Common.DomRepository, {2}" + AdditionalParametersTypeTag.Evaluate(info) + @", IQueryable<Common.Queryable.{0}_{1}>> filterFunction =
             {3};
@@ -50,7 +50,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return filterFunction(localSource, _domRepository, localParameter" + AdditionalParametersArgumentTag.Evaluate(info) + @");
         }}
 
-",
+        ",
             info.Source.Module.Name,
             info.Source.Name,
             info.Parameter,

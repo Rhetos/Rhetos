@@ -68,7 +68,7 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string MemberFunctionsSnippet(DataStructureInfo info)
         {
             return string.Format(
-@"        public void Save(IEnumerable<{0}.{1}> insertedNew, IEnumerable<{0}.{1}> updatedNew, IEnumerable<{0}.{1}> deletedIds, bool checkUserPermissions = false)
+        @"public void Save(IEnumerable<{0}.{1}> insertedNew, IEnumerable<{0}.{1}> updatedNew, IEnumerable<{0}.{1}> deletedIds, bool checkUserPermissions = false)
         {{
             Common.Infrastructure.MaterializeItemsToSave(ref insertedNew);
             Common.Infrastructure.MaterializeItemsToSave(ref updatedNew);
@@ -176,7 +176,7 @@ namespace Rhetos.Dom.DefaultConcepts
             }}
         }}
 
-",
+        ",
                 info.Module.Name,
                 info.Name);
         }

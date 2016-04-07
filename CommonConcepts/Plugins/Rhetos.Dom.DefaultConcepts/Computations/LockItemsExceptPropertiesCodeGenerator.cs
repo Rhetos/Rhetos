@@ -48,7 +48,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string CheckLockedItemsSnippet(LockItemsExceptPropertiesInfo info)
         {
             return string.Format(
-@"            if (updatedNew.Count() > 0 || deletedIds.Count() > 0)
+            @"if (updatedNew.Count() > 0 || deletedIds.Count() > 0)
             {{
                 {0}[] changedItems = updated.Zip(updatedNew, (i, j) => (false{4})
                     ? i : null).Where(x => x != null).Concat(deleted).ToArray();
@@ -60,7 +60,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         throw new Rhetos.UserException({2}, ""DataStructure:{0},ID:"" + lockedItems.First().ID.ToString(){3});
                 }}
             }}
-",
+            ",
                 info.Source.GetKeyProperties(),
                 info.FilterType,
                 CsUtility.QuotedString(info.Title),

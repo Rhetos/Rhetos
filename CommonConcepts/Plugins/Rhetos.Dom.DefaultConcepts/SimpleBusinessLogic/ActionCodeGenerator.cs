@@ -40,7 +40,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             // Using nonstandard naming of variables to avoid name clashes with injected code.
             return string.Format(
-@"        public void Execute({0}.{1} actionParameter)
+        @"public void Execute({0}.{1} actionParameter)
         {{
             Action<{0}.{1}, Common.DomRepository, IUserInfo{3}> action_Object = {2};
 
@@ -54,7 +54,7 @@ namespace Rhetos.Dom.DefaultConcepts
             Execute(({0}.{1}) actionParameter);
         }}
 
-",
+        ",
             info.Module.Name,
             info.Name,
             info.Script,

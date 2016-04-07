@@ -62,13 +62,13 @@ namespace Rhetos.Dom.DefaultConcepts
             EntityInfo updatePersistedComputation = info.EntityComputedFrom.Target;
 
             return string.Format(
-@"            if (inserted.Count() > 0)
+            @"if (inserted.Count() > 0)
             {{
                 IEnumerable<{0}.{1}> changedItems = inserted;
                 var filter = _filterComputeForNewBaseItems_{2}(changedItems);
                 _domRepository.{3}.{4}.{6}(filter{5});
             }}
-",
+            ",
                 hookOnSave.Module.Name,
                 hookOnSave.Name,
                 uniqueSuffix,
@@ -83,10 +83,10 @@ namespace Rhetos.Dom.DefaultConcepts
             DataStructureInfo hookOnSave = info.Dependency_Extends.Base;
 
             return string.Format(
-@"        private static readonly Func<IEnumerable<{0}.{1}>, Guid[]> _filterComputeForNewBaseItems_{2} =
+        @"private static readonly Func<IEnumerable<{0}.{1}>, Guid[]> _filterComputeForNewBaseItems_{2} =
             changedItems => changedItems.Select(item => item.ID).ToArray();
 
-",
+        ",
                 hookOnSave.Module.Name,
                 hookOnSave.Name,
                 uniqueSuffix);
@@ -95,10 +95,10 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string FilterSaveFunction(ComputeForNewBaseItemsInfo info, string uniqueSuffix)
         {
             return string.Format(
-@"        private static readonly Func<IEnumerable<{0}.{1}>, IEnumerable<{0}.{1}>> _filterSaveComputeForNewBaseItems_{2} =
+        @"private static readonly Func<IEnumerable<{0}.{1}>, IEnumerable<{0}.{1}>> _filterSaveComputeForNewBaseItems_{2} =
             {3};
 
-",
+        ",
                 info.Dependency_Extends.Extension.Module.Name, info.Dependency_Extends.Extension.Name, uniqueSuffix, info.FilterSaveExpression);
         }
     }

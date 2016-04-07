@@ -64,14 +64,14 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string FilterImplementationSnippet(EntityHistoryInfo info)
         {
             return string.Format(
-@"        public global::{0}.{1}[] Filter(System.DateTime parameter)
+        @"public global::{0}.{1}[] Filter(System.DateTime parameter)
         {{
             var sql = ""SELECT * FROM {2}.{3}(@p0)"";
             var query = _executionContext.EntityFrameworkContext.Database.SqlQuery<{0}.{1}>(sql, parameter);
             return query.ToArray();
         }}
 
-",
+        ",
             info.Dependency_ChangesEntity.Module.Name,
             info.Dependency_ChangesEntity.Name,
             SqlUtility.Identifier(info.Entity.Module.Name),

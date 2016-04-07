@@ -45,13 +45,13 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string ThrowExceptionSnippet(DenyUserEditInfo info)
         {
             return string.Format(
-@"            if (invalidItem != null)
+            @"if (invalidItem != null)
                     throw new Rhetos.UserException(
                         ""It is not allowed to directly enter {{0}} property of {{1}}."",
                         new[] {{ ""{2}"", ""{0}.{1}"" }},
                         ""DataStructure:{0}.{1},ID:"" + invalidItem.ID + "",Property:{2}"",
                         null);
-",
+            ",
                 info.Property.DataStructure.Module.Name,
                 info.Property.DataStructure.Name,
                 info.Property.Name,
@@ -62,7 +62,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string CheckChangesOnInsertSnippet(DenyUserEditInfo info)
         {
             return string.Format(
-@"            if (checkUserPermissions)
+            @"if (checkUserPermissions)
             {{
                 var invalidItem = insertedNew.Where(newItem => newItem.{3} != null).FirstOrDefault();
                 
@@ -80,7 +80,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string CheckChangesOnUpdateSnippet(DenyUserEditInfo info)
         {
             return string.Format(
-@"            if (checkUserPermissions)
+            @"if (checkUserPermissions)
             {{
                 var changes = updatedNew.Zip(updated, (newItem, oldItem) => new {{ newItem, oldItem }});
                 foreach (var change in changes)
@@ -93,7 +93,8 @@ namespace Rhetos.Dom.DefaultConcepts
                     
     {4}
             }}
-",
+
+            ",
                 info.Property.DataStructure.Module.Name,
                 info.Property.DataStructure.Name,
                 info.Property.Name,

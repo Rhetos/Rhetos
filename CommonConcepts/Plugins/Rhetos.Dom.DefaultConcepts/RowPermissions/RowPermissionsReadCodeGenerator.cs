@@ -40,11 +40,11 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (RowPermissionsReadInfo)conceptInfo;
 
             var code = string.Format(
-@"        public static Func<IQueryable<Common.Queryable.{0}_{1}>, Common.DomRepository, Common.ExecutionContext,
+        @"public static Func<IQueryable<Common.Queryable.{0}_{1}>, Common.DomRepository, Common.ExecutionContext,
               Expression<Func<Common.Queryable.{0}_{1}, bool>> > {2} =
               {3};
 
-",
+        ",
                 info.Source.Module.Name,
                 info.Source.Name,
                 RowPermissionsReadInfo.PermissionsExpressionName,

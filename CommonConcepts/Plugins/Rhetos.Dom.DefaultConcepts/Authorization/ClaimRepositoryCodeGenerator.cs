@@ -40,7 +40,7 @@ namespace Rhetos.Dom.DefaultConcepts
         string RepositoryMemberSnippet(DataStructureInfo info)
         {
             return string.Format(
-@"        // Claims in use should be deactivated instead of deleted.
+        @"// Claims in use should be deactivated instead of deleted.
         public IEnumerable<Claim> Filter(IEnumerable<Claim> deleted, Rhetos.Dom.DefaultConcepts.DeactivateInsteadOfDelete parameter)
         {{
             var deactivateClaimsId = new List<Guid>();
@@ -52,7 +52,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return deleted.Where(item => deactivateClaimsIdIndex.Contains(item.ID)).ToList();
         }}
 
-", DeactivateInsteadOfDeleteTag.Evaluate(info));
+        ", DeactivateInsteadOfDeleteTag.Evaluate(info));
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
