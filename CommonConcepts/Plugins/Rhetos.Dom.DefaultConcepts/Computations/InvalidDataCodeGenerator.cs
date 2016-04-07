@@ -64,8 +64,9 @@ namespace Rhetos.Dom.DefaultConcepts
                         .Select(item => item.ID).FirstOrDefault();
                     if (invalidItemId != default(Guid))
                     {
-                        var errorMessage = " + info.GetErrorMessageMethodName() + @"(new[] { invalidItemId }).Single();
-                        throw new Rhetos.UserException(errorMessage.Message, errorMessage.MessageParameters, " + systemMessage + @", null);
+                        var userMessage = " + info.GetErrorMessageMethodName() + @"(new[] { invalidItemId }).Single();
+                        string systemMessage = " + systemMessage + @";
+                        throw new Rhetos.UserException(userMessage.Message, userMessage.MessageParameters, systemMessage, null);
                     }
                 }
                 ";

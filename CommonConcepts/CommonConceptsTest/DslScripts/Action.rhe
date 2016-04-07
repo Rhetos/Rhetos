@@ -40,7 +40,7 @@ Module TestAction
         ShortString Name;
         
         ItemFilter NameHasLessThanThreeChars 'item => item.Name.Length < 3';
-        InvalidData NameHasLessThanThreeChars '[Test] Name have to be longer than 2 chars.';
+        InvalidData NameHasLessThanThreeChars '[Test] Name has to be longer than 2 chars.';
         
     }
     

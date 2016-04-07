@@ -6,7 +6,7 @@
 		Integer Count;
 		
 		ItemFilter TooMuch 'item => item.Count > 100';
-		InvalidData TooMuch 'Quantity may not be larger than 100.';
+		InvalidData TooMuch '[Test] Quantity may not be larger than 100.';
 	}
 
     Entity Simple2
@@ -18,20 +18,20 @@
         ItemFilter ContainsC 'item => item.Name.ContainsCaseInsensitive("c")';
         ItemFilter ContainsD 'item => item.Name.ContainsCaseInsensitive("d")';
 
-        InvalidData ContainsA 'Contains A';
+        InvalidData ContainsA '[Test] Contains A';
 
-        InvalidData ContainsB 'Contains B ({0}, {1})'
+        InvalidData ContainsB '[Test] Contains B ({0}, {1})'
         {
             MessageParametersConstant '"abc", 123';
             MarkProperty TestInvalidData.Simple2.Name;
         }
 
-        InvalidData ContainsC 'Contains C ({0}, {1})'
+        InvalidData ContainsC '[Test] Contains C ({0}, {1})'
         {
             MessageParametersItem 'item => new { item.ID, P0 = item.Name, P1 = item.Name.Length }';
         }
 
-        InvalidData ContainsD 'Contains D'
+        InvalidData ContainsD '[Test] Contains D'
         {
             MessageFunction 'ids => this.Query(ids)
                 .Select(item => new { item.ID, item.Name, NameLength = item.Name.Length })
@@ -304,13 +304,13 @@ Module TestMultipleLock
             !item.Extension_SimpleChecks.ContainsAlphabetic.Value
             || !item.Extension_SimpleChecks.ContainsNumeric.Value
             || !item.Extension_SimpleChecks.ContainsNonAlphaNumeric.Value';
-        InvalidData PassValidation 'Pass is not valid.';
+        InvalidData PassValidation '[Test] Pass is not valid.';
 
         ItemFilter PassContainsName 'item => item.Pass.Contains(item.UserName)';
-        InvalidData PassContainsName 'Pass cannot contain UserName.';
+        InvalidData PassContainsName '[Test] Pass cannot contain UserName.';
 
         ItemFilter PassTooShort 'item => item.Pass.Length < item.PassDependency.MinPassLength';
-        InvalidData PassTooShort 'Pass is too short.';
+        InvalidData PassTooShort '[Test] Pass is too short.';
     }
 }
 
