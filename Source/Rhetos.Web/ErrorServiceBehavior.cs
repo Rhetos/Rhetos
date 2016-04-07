@@ -29,32 +29,36 @@ using System.ServiceModel.Dispatcher;
 
 namespace Rhetos.Web
 {
+    // TODO: Rename to RhetosServiceBehavior. It includes global error handler and commit-before-response control.
     public class ErrorServiceBehavior : IServiceBehavior
     {
-        private readonly GlobalErrorHandler ErrorHandler;
+        private readonly GlobalErrorHandler _errorHandler;
+
         public ErrorServiceBehavior(GlobalErrorHandler errorHandler)
         {
-            this.ErrorHandler = errorHandler;
+            _errorHandler = errorHandler;
         }
 
         public void AddBindingParameters(
-            ServiceDescription serviceDescription, 
-            ServiceHostBase serviceHostBase, 
-            Collection<ServiceEndpoint> endpoints, 
+            ServiceDescription serviceDescription,
+            ServiceHostBase serviceHostBase,
+            Collection<ServiceEndpoint> endpoints,
             BindingParameterCollection bindingParameters)
         {
         }
 
         public void ApplyDispatchBehavior(
-            ServiceDescription serviceDescription, 
+            ServiceDescription serviceDescription,
             ServiceHostBase serviceHostBase)
         {
             foreach (ChannelDispatcher disp in serviceHostBase.ChannelDispatchers)
-                disp.ErrorHandlers.Add(ErrorHandler);
+                disp.ErrorHandlers.Add(_errorHandler);
+            foreach (ServiceEndpoint endpoint in serviceDescription.Endpoints)
+                endpoint.EndpointBehaviors.Add(new CommitBeforeResponseBehavior());
         }
 
         public void Validate(
-            ServiceDescription serviceDescription, 
+            ServiceDescription serviceDescription,
             ServiceHostBase serviceHostBase)
         {
         }
