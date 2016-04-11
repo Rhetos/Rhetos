@@ -105,27 +105,40 @@ namespace DeployPackages
             if (obsoleteFolder != null)
                 throw new UserException("Backup all Rhetos server folders and delete obsolete folder '" + obsoleteFolder + "'. It is no longer used.");
 
-            logger.Trace("Getting packages.");
-            var config = new DeploymentConfiguration(DeploymentUtility.InitializationLogProvider);
-            var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = arguments.IgnorePackageDependencies };
-            var packageDownloader = new PackageDownloader(config, DeploymentUtility.InitializationLogProvider, packageDownloaderOptions);
-            var packages = packageDownloader.GetPackages();
+            if (!arguments.DeployDatabaseOnly)
+            {
+                logger.Trace("Getting packages.");
+                var config = new DeploymentConfiguration(DeploymentUtility.InitializationLogProvider);
+                var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = arguments.IgnorePackageDependencies };
+                var packageDownloader = new PackageDownloader(config, DeploymentUtility.InitializationLogProvider, packageDownloaderOptions);
+                var packages = packageDownloader.GetPackages();
 
-            InstalledPackages.Save(packages);
+                InstalledPackages.Save(packages);
+            }
+            else
+                logger.Info("Skipped download packages (DeployDatabaseOnly).");
         }
 
         private static void GenerateApplication(ILogger logger, Arguments arguments)
         {
-            // The old plugins must be deleted before loading the application generator plugins.
-            new FilesUtility(DeploymentUtility.InitializationLogProvider).EmptyDirectory(Paths.GeneratedFolder);
-            if (File.Exists(Paths.DomAssemblyFile)) // Generated DomAssemblyFile is not in GeneratedFolder.
-                File.Delete(Paths.DomAssemblyFile);
-            
+            if (!arguments.DeployDatabaseOnly)
+            {
+                // The old plugins must be deleted before loading the application generator plugins.
+                new FilesUtility(DeploymentUtility.InitializationLogProvider).EmptyDirectory(Paths.GeneratedFolder);
+                if (File.Exists(Paths.DomAssemblyFile)) // Generated DomAssemblyFile is not in GeneratedFolder.
+                    File.Delete(Paths.DomAssemblyFile);
+            }
+            else
+                logger.Info("Skipped deleting old generated files (DeployDatabaseOnly).");
+
             logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
             var builder = new ContainerBuilder();
-            builder.RegisterModule(new AutofacModuleConfiguration(deploymentTime: true, shortTransaction: arguments.ShortTransactions));
+            builder.RegisterModule(new AutofacModuleConfiguration(
+                deploymentTime: true,
+                shortTransaction: arguments.ShortTransactions,
+                deployDatabaseOnly: arguments.DeployDatabaseOnly));
             using (var container = builder.Build())
             {
                 var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
@@ -135,7 +148,7 @@ namespace DeployPackages
                 if (arguments.Debug)
                     container.Resolve<DomGeneratorOptions>().Debug = true;
 
-                container.Resolve<ApplicationGenerator>().ExecuteGenerators();
+                container.Resolve<ApplicationGenerator>().ExecuteGenerators(arguments.DeployDatabaseOnly);
             }
         }
 
@@ -148,7 +161,10 @@ namespace DeployPackages
             var stopwatch = Stopwatch.StartNew();
 
             var builder = new ContainerBuilder();
-            builder.RegisterModule(new AutofacModuleConfiguration(deploymentTime: false, shortTransaction: arguments.ShortTransactions));
+            builder.RegisterModule(new AutofacModuleConfiguration(
+                deploymentTime: false,
+                shortTransaction: arguments.ShortTransactions,
+                deployDatabaseOnly: arguments.DeployDatabaseOnly));
             using (var container = builder.Build())
             {
                 var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");

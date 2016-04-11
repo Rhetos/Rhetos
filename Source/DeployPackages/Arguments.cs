@@ -32,6 +32,7 @@ namespace DeployPackages
         public bool NoPauseOnError { get; private set; }
         public bool IgnorePackageDependencies { get; private set; }
         public bool ShortTransactions { get; private set; }
+        public bool DeployDatabaseOnly { get; private set; }
 
         public Arguments(string[] args)
         {
@@ -49,6 +50,7 @@ namespace DeployPackages
             NoPauseOnError = Pop(arguments, "/NoPause");
             IgnorePackageDependencies = Pop(arguments, "/IgnoreDependencies");
             ShortTransactions = Pop(arguments, "/ShortTransactions");
+            DeployDatabaseOnly = Pop(arguments, "/DatabaseOnly");
 
             if (arguments.Count > 0)
             {
@@ -65,6 +67,7 @@ namespace DeployPackages
             Console.WriteLine("/NoPause       Don't pause on error. Use this switch for build automation.");
             Console.WriteLine("/IgnoreDependencies  Allow installing incompatible versions of Rhetos packages.");
             Console.WriteLine("/ShortTransactions  Commit transaction after creating or dropping each database object.");
+            Console.WriteLine("/DatabaseOnly  Keep old plugins, ServerDom and files in bin\\Generated.");
         }
 
         /// <summary>

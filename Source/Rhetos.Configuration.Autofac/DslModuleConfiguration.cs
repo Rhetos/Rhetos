@@ -27,10 +27,12 @@ namespace Rhetos.Configuration.Autofac
     public class DslModuleConfiguration : Module
     {
         private readonly bool _deploymentTime;
+        private readonly bool _deployDatabaseOnly;
 
-        public DslModuleConfiguration(bool deploymentTime)
+        public DslModuleConfiguration(bool deploymentTime, bool deployDatabaseOnly)
         {
             _deploymentTime = deploymentTime;
+            _deployDatabaseOnly = deployDatabaseOnly;
         }
 
         protected override void Load(ContainerBuilder builder)
@@ -39,7 +41,6 @@ namespace Rhetos.Configuration.Autofac
             {
                 builder.RegisterType<DiskDslScriptLoader>().As<IDslScriptsProvider>().SingleInstance();
                 builder.RegisterType<Tokenizer>().SingleInstance();
-                builder.RegisterType<DslModel>().As<IDslModel>().SingleInstance();
                 builder.RegisterType<DslModelFile>().As<IDslModelFile>().SingleInstance();
                 builder.RegisterType<DslParser>().As<IDslParser>();
                 builder.RegisterType<MacroOrderRepository>().As<IMacroOrderRepository>();
@@ -48,10 +49,11 @@ namespace Rhetos.Configuration.Autofac
                 Plugins.FindAndRegisterPlugins<IConceptInfo>(builder);
                 Plugins.FindAndRegisterPlugins<IConceptMacro>(builder, typeof(IConceptMacro<>));
             }
+
+            if (_deploymentTime && !_deployDatabaseOnly)
+                builder.RegisterType<DslModel>().As<IDslModel>().SingleInstance();
             else
-            {
                 builder.RegisterType<DslModelFile>().As<IDslModel>().SingleInstance();
-            }
 
             builder.RegisterType<DslContainer>();
             Plugins.FindAndRegisterPlugins<IDslModelIndex>(builder);

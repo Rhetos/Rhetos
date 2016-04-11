@@ -32,11 +32,13 @@ namespace DeployPackages
     {
         private readonly bool _deploymentTime;
         private readonly bool _shortTransaction;
+        private readonly bool _deployDatabaseOnly;
 
-        public AutofacModuleConfiguration(bool deploymentTime, bool shortTransaction)
+        public AutofacModuleConfiguration(bool deploymentTime, bool shortTransaction, bool deployDatabaseOnly)
         {
             _deploymentTime = deploymentTime;
             _shortTransaction = shortTransaction;
+            _deployDatabaseOnly = deployDatabaseOnly;
         }
 
         protected override void Load(ContainerBuilder builder)
@@ -59,7 +61,7 @@ namespace DeployPackages
             }
 
             // General registrations:
-            builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(_deploymentTime));
+            builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(_deploymentTime, _deployDatabaseOnly));
 
             // Specific registrations override:
             builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();

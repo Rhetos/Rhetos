@@ -35,10 +35,12 @@ namespace Rhetos.Configuration.Autofac
     public class DefaultAutofacConfiguration : Module
     {
         private readonly bool _deploymentTime;
+        private readonly bool _deployDatabaseOnly;
 
-        public DefaultAutofacConfiguration(bool deploymentTime)
+        public DefaultAutofacConfiguration(bool deploymentTime, bool deployDatabaseOnly)
         {
             _deploymentTime = deploymentTime;
+            _deployDatabaseOnly = deployDatabaseOnly;
         }
 
         protected override void Load(ContainerBuilder builder)
@@ -49,7 +51,7 @@ namespace Rhetos.Configuration.Autofac
             builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));
             builder.RegisterModule(new SecurityModuleConfiguration());
             builder.RegisterModule(new UtilitiesModuleConfiguration());
-            builder.RegisterModule(new DslModuleConfiguration(_deploymentTime));
+            builder.RegisterModule(new DslModuleConfiguration(_deploymentTime, _deployDatabaseOnly));
             builder.RegisterModule(new CompilerConfiguration(_deploymentTime));
             builder.RegisterModule(new LoggingConfiguration());
             builder.RegisterModule(new ProcessingModuleConfiguration(_deploymentTime));

@@ -67,7 +67,7 @@ namespace Rhetos.Deployment
             _dslScriptsLoader = dslScriptsLoader;
         }
 
-        public void ExecuteGenerators()
+        public void ExecuteGenerators(bool deployDatabaseOnly)
         {
             _deployPackagesLogger.Trace("SQL connection string: " + SqlUtility.MaskPassword(SqlUtility.ConnectionString));
             ValidateDbConnection();
@@ -79,23 +79,28 @@ namespace Rhetos.Deployment
             int dslModelConceptsCount = _dslModel.Concepts.Count();
             _deployPackagesLogger.Trace("Application model has " + dslModelConceptsCount + " statements.");
 
-            _deployPackagesLogger.Trace("Compiling DOM assembly.");
-            int generatedTypesCount = _domGenerator.Assembly.GetTypes().Length;
-            if (generatedTypesCount == 0)
+            if (!deployDatabaseOnly)
             {
-                _deployPackagesLogger.Error("WARNING: Empty assembly is generated.");
+                _deployPackagesLogger.Trace("Compiling DOM assembly.");
+                int generatedTypesCount = _domGenerator.Assembly.GetTypes().Length;
+                if (generatedTypesCount == 0)
+                {
+                    _deployPackagesLogger.Error("WARNING: Empty assembly is generated.");
+                }
+                else
+                    _deployPackagesLogger.Trace("Generated " + generatedTypesCount + " types.");
+
+                var generators = GetSortedGenerators();
+                foreach (var generator in generators)
+                {
+                    _deployPackagesLogger.Trace("Executing " + generator.GetType().Name + ".");
+                    generator.Generate();
+                }
+                if (!generators.Any())
+                    _deployPackagesLogger.Trace("No additional generators.");
             }
             else
-                _deployPackagesLogger.Trace("Generated " + generatedTypesCount + " types.");
-
-            var generators = GetSortedGenerators();
-            foreach (var generator in generators)
-            {
-                _deployPackagesLogger.Trace("Executing " + generator.GetType().Name + ".");
-                generator.Generate();
-            }
-            if (!generators.Any())
-                _deployPackagesLogger.Trace("No additional generators.");
+                _deployPackagesLogger.Info("Skipped code generators (DeployDatabaseOnly).");
 
             _deployPackagesLogger.Trace("Cleaning old migration data.");
             _databaseCleaner.RemoveRedundantMigrationColumns();
