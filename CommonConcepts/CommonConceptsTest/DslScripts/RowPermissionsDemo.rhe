@@ -124,7 +124,7 @@
             ShortString Comment;
         }
         
-        Entity DocumentApproval  
+        Entity DocumentApproval
         {
             Extends DemoRowPermissions2.Document;
             Reference ApprovedBy DemoRowPermissions2.Employee;
@@ -142,5 +142,21 @@
                         return item => item.ApprovedBy.ID != myEmployeeId;
                     }';
             }
+        }
+
+        SqlQueryable DocumentInfo
+            "SELECT
+                ID,
+                Title2 = Title + '_2',
+                Division2ID = DivisionID
+            FROM
+                DemoRowPermissions2.Document"
+        {
+            Extends DemoRowPermissions2.Document;
+            ShortString Title2;
+            Reference Division2 DemoRowPermissions2.Division;
+
+            RowPermissions { InheritFromBase; }
+            SamePropertyValue Division2.'Base' DemoRowPermissions2.Document.Division;
         }
     }

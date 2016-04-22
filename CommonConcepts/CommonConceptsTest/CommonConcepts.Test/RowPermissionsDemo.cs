@@ -331,6 +331,33 @@ namespace CommonConcepts.Test
                     container.Resolve<GenericRepository<DemoRowPermissions2.DocumentApproval>>()
                     .Load<Common.RowPermissionsWriteItems>();
                 Assert.AreEqual("app1", TestUtility.DumpSorted(allowedWriteApproval, approval => approval.Note));
+
+                var allowedReadInfo =
+                    container.Resolve<GenericRepository<DemoRowPermissions2.DocumentInfo>>()
+                    .Load<Common.RowPermissionsReadItems>();
+                Assert.AreEqual("doc1_2, doc3_2", TestUtility.DumpSorted(allowedReadInfo, info => info.Title2));
+            }
+        }
+
+        [TestMethod]
+        public void OptimizedInheritingRowPermissions()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var context = container.Resolve<Common.ExecutionContext>();
+                var repository = context.Repository;
+
+                var query = repository.DemoRowPermissions2.DocumentInfo.Query();
+                string rowPermissionFilter = DemoRowPermissions2._Helper.DocumentInfo_Repository
+                    .GetRowPermissionsReadExpression(query, repository, context)
+                    .ToString();
+                Console.WriteLine("[Row permission filter] " + rowPermissionFilter);
+
+                TestUtility.AssertNotContains(rowPermissionFilter, "documentinfoItem.Base.Division",
+                    "SamePropertyValue concept should optimize row permissions to use Division propery directly on 'DocumentInfo', instead of referencing the base entity 'Document'.");
+
+                TestUtility.AssertContains(rowPermissionFilter, "documentinfoItem.Division2",
+                    "Internal error: Division2 property should be used in this row permissions.");
             }
         }
 

@@ -25,28 +25,19 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// This concept is used for optimization when inherited property can be used to avoid
+    /// referencing base data structure's property.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
-    public class RowPermissionsInheritReadFromInfo : IConceptInfo, IAlternativeInitializationConcept
+    public class RowPermissionsInheritReadSameMemberInfo : IConceptInfo
     {
         [ConceptKey]
-        public RowPermissionsInheritFromInfo InheritFromInfo { get; set; }
+        public RowPermissionsInheritReadInfo InheritRead { get; set; }
 
-        public RowPermissionsReadInfo Dependency_RowPermissionsRead { get; set; } // The dependency's code generator must be executed before this concept's code generator.
+        [ConceptKey]
+        public string DerivedMemberName { get; set; }
 
-        public IEnumerable<string> DeclareNonparsableProperties()
-        {
-            return new[] { "Dependency_RowPermissionsRead" };
-        }
-
-        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
-        {
-            Dependency_RowPermissionsRead = new RowPermissionsReadInfo
-            {
-                Source = InheritFromInfo.RowPermissionsFilters.DataStructure,
-                Parameter = RowPermissionsReadInfo.FilterName,
-            };
-            createdConcepts = null;
-        }
+        public string BaseMemberName { get; set; }
     }
 }
-

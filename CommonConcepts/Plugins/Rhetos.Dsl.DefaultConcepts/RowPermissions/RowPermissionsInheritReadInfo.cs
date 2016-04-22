@@ -26,26 +26,27 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class RowPermissionsInheritWriteFromInfo : IConceptInfo, IAlternativeInitializationConcept
+    public class RowPermissionsInheritReadInfo : IConceptInfo, IAlternativeInitializationConcept
     {
         [ConceptKey]
         public RowPermissionsInheritFromInfo InheritFromInfo { get; set; }
 
-        public RowPermissionsWriteInfo Dependency_RowPermissionsWrite { get; set; } // The dependency's code generator must be executed before this concept's code generator.
+        public RowPermissionsReadInfo Dependency_RowPermissionsRead { get; set; } // The dependency's code generator must be executed before this concept's code generator.
 
         public IEnumerable<string> DeclareNonparsableProperties()
         {
-            return new[] { "Dependency_RowPermissionsWrite" };
+            return new[] { "Dependency_RowPermissionsRead" };
         }
 
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
-            Dependency_RowPermissionsWrite = new RowPermissionsWriteInfo
+            Dependency_RowPermissionsRead = new RowPermissionsReadInfo
             {
                 Source = InheritFromInfo.RowPermissionsFilters.DataStructure,
-                Parameter = RowPermissionsWriteInfo.FilterName,
+                Parameter = RowPermissionsReadInfo.FilterName,
             };
             createdConcepts = null;
         }
     }
 }
+

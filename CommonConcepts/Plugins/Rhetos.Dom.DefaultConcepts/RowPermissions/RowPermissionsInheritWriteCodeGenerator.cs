@@ -31,15 +31,20 @@ using Rhetos.Compiler;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(RowPermissionsInheritWriteFromInfo))]
-    public class RowPermissionsInheritWriteFromCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(RowPermissionsInheritWriteInfo))]
+    public class RowPermissionsInheritWriteCodeGenerator : IConceptCodeGenerator
     {
+        public static readonly CsTag<RowPermissionsInheritWriteInfo> SameMembersTag = "SameMembersWrite";
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (RowPermissionsInheritWriteFromInfo)conceptInfo;
+            var info = (RowPermissionsInheritWriteInfo)conceptInfo;
 
             codeBuilder.InsertCode(
-                RowPermissionsUtility.GetInheritSnippet(info.InheritFromInfo, RowPermissionsWriteInfo.PermissionsExpressionName),
+                RowPermissionsUtility.GetInheritSnippet(
+                    info.InheritFromInfo,
+                    RowPermissionsWriteInfo.PermissionsExpressionName,
+                    SameMembersTag.Evaluate(info)),
                 RowPermissionsPluginableFiltersInfo.WriteFilterExpressionsTag,
                 info.Dependency_RowPermissionsWrite);
         }

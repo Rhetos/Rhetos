@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Rhetos.Dsl;
+using Rhetos.Compiler;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -32,6 +33,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return string.Format(
             @"{{
+                // {4}
 				Func<Common.ExecutionContext, Expression<Func<Common.Queryable.{0}_{1}, bool>>> getRuleFilter =
                     {2};
 				Expression<Func<Common.Queryable.{0}_{1}, bool>> ruleFilter = getRuleFilter.Invoke(executionContext);
@@ -41,16 +43,18 @@ namespace Rhetos.Dom.DefaultConcepts
                 info.RowPermissionsFilters.DataStructure.Module.Name,
                 info.RowPermissionsFilters.DataStructure.Name,
                 info.FilterExpressionFunction,
-                allowNotDeny ? "Include" : "Exclude");
+                allowNotDeny ? "Include" : "Exclude",
+                info.Name);
         }
 
-        public static string GetInheritSnippet(RowPermissionsInheritFromInfo info, string permissionExpressionName)
+        public static string GetInheritSnippet(RowPermissionsInheritFromInfo info, string permissionExpressionName, string sameMembersTag)
         {
             return string.Format(
             @"{{
+                var sameMembers = new Tuple<string, string>[] {{ " + sameMembersTag + @" }};
                 var parentRepository = executionContext.Repository.{0}.{1};
                 var parentRowPermissionsExpression = {0}._Helper.{1}_Repository.{2}(parentRepository.Query(), repository, executionContext);
-                var replacedExpression = new ReplaceWithReference<Common.Queryable.{0}_{1}, Common.Queryable.{3}_{4}>(parentRowPermissionsExpression, ""{5}"" , ""{6}"").NewExpression;
+                var replacedExpression = new ReplaceWithReference<Common.Queryable.{0}_{1}, Common.Queryable.{3}_{4}>(parentRowPermissionsExpression, ""{5}"" , ""{6}"", sameMembers).NewExpression;
                 filterExpression.Include(replacedExpression);
             }}
             ",

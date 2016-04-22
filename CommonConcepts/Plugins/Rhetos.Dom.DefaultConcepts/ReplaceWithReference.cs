@@ -33,18 +33,39 @@ namespace Rhetos.Dom.DefaultConcepts
     /// </summary>
     public class ReplaceWithReference<TFrom, TTo> : ExpressionVisitor
     {
+        private readonly Expression<Func<TFrom, bool>> _expression;
+        private readonly System.Reflection.PropertyInfo _referenceProperty;
         private readonly ParameterExpression _parameter;
-        private readonly string _referenceName;
-        private readonly Expression<Func<TTo, bool>> _newExpression;
+        private readonly IEnumerable<Tuple<string, string>> _copiedProperties;
 
-        public Expression<Func<TTo, bool>> NewExpression { get { return _newExpression; } }
-
-        public ReplaceWithReference(Expression<Func<TFrom, bool>> expression, string referenceName, string parameterName)
+        /// <param name="copiedProperties">
+        /// Tuple: inherited property, base property.
+        /// Property on the inherited data structure has same value as on base data structure.
+        /// Inherited row permissions will be optimized to use the property directly
+        /// instead of referencing the base data structure.
+        /// </param>
+        public ReplaceWithReference(
+            Expression<Func<TFrom, bool>> expression,
+            string referenceName,
+            string parameterName,
+            IEnumerable<Tuple<string, string>> copiedProperties = null)
         {
-            _referenceName = referenceName;
+            _expression = expression;
+            _referenceProperty = typeof(TTo).GetProperty(referenceName);
+            if (_referenceProperty == null)
+                throw new FrameworkException("Cannot replace references in the expression. The type '"
+                    + typeof(TTo).Name + "' does not contain propery '" + referenceName + "' that references '" + typeof(TFrom).Name + "'.");
             _parameter = Expression.Parameter(typeof(TTo), parameterName);
-            var body = Visit(expression.Body);
-            _newExpression = Expression.Lambda<Func<TTo, bool>>(body, _parameter);
+            _copiedProperties = copiedProperties ?? Enumerable.Empty<Tuple<string, string>>();
+        }
+
+        public Expression<Func<TTo, bool>> NewExpression
+        {
+            get
+            {
+                var newBody = Visit(_expression.Body);
+                return Expression.Lambda<Func<TTo, bool>>(newBody, _parameter);
+            }
         }
 
         protected override Expression VisitParameter(ParameterExpression node)
@@ -57,12 +78,28 @@ namespace Rhetos.Dom.DefaultConcepts
             if ((node.Expression != null && node.Expression.Type == typeof(TFrom))
                 || (node.Member.DeclaringType == typeof(TFrom)))
             {
-                var referenceInfo = typeof(TTo).GetProperty(_referenceName);
-                var referenceExp = Expression.MakeMemberAccess(Visit(node.Expression), referenceInfo);
+                var newExpression = Visit(node.Expression);
 
-                var memberInfo = typeof(TFrom).GetProperty(node.Member.Name);
-                var memberExp = Expression.MakeMemberAccess(referenceExp, memberInfo);
-                return memberExp;
+                string copiedProperty = _copiedProperties
+                    .Where(cp => cp.Item2 == node.Member.Name)
+                    .Select(cp => cp.Item1)
+                    .OrderBy(name => name)
+                    .FirstOrDefault();
+
+                if (copiedProperty != null)
+                {
+                    var memberInfo = typeof(TTo).GetProperty(copiedProperty);
+                    if (memberInfo == null)
+                        throw new FrameworkException("Cannot replace references in the expression. The type '"
+                            + typeof(TTo).Name + "' does not contain propery '" + copiedProperty + "' that is copied from '" + typeof(TFrom).Name + "'.");
+                    return Expression.MakeMemberAccess(newExpression, memberInfo);
+                }
+                else
+                {
+                    var referenceExp = Expression.MakeMemberAccess(newExpression, _referenceProperty);
+                    var memberInfo = typeof(TFrom).GetProperty(node.Member.Name);
+                    return Expression.MakeMemberAccess(referenceExp, memberInfo);
+                }
             }
             else
             {

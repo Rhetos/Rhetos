@@ -75,12 +75,16 @@ namespace Rhetos.CommonConcepts.Test
         {
             {
                 Expression<Func<ItemMaster, bool>> exp = a => a.id > 5;
-                TestUtility.ShouldFail(() => new ReplaceWithReference<ItemMaster, Item>(exp, "noreference", "item"));
+                TestUtility.ShouldFail(
+                    () => { var rep = new ReplaceWithReference<ItemMaster, Item>(exp, "noreference", "item").NewExpression; },
+                    "Item", "noreference");
             }
 
             {
                 Expression<Func<ItemMaster, bool>> exp = a => a.id > 5;
-                TestUtility.ShouldFail(() => new ReplaceWithReference<ItemMaster, Item>(exp, "invalid reference format", "item"));
+                TestUtility.ShouldFail(
+                    () => { var rep = new ReplaceWithReference<ItemMaster, Item>(exp, "invalid reference format", "item").NewExpression; },
+                    "Item", "invalid reference format");
             }
         }
 
@@ -110,6 +114,39 @@ namespace Rhetos.CommonConcepts.Test
                 Expression<Func<ItemMaster, bool>> exp = parent => parent.parent.id != Guid.Empty && parent.id > 0;
                 var res = new ReplaceWithReference<ItemMaster, Item>(exp, "master", "master").NewExpression;
                 Assert.AreEqual("master => ((master.master.parent.id != Guid.Empty) AndAlso (master.master.id > 0))", res.ToString());
+            }
+        }
+
+        class OptimizeChild
+        {
+            public int A1 { get; set; }
+            public int B1 { get; set; }
+            public OptimizeParent Parent { get; set; }
+        }
+
+        class OptimizeParent
+        {
+            public int A2 { get; set; }
+            public int B2 { get; set; }
+        }
+
+        /// <summary>
+        /// Data structure that inherits row permissions may have some properties copied from the base data structure (same property value).
+        /// Such property may be used directly in the inherited row permissions, simplifying the generated LINQ (and consequently SQL) query.
+        /// </summary>
+        [TestMethod]
+        public void OptimizedCopiedProperties()
+        {
+            {
+                // Control:
+                Expression<Func<OptimizeParent, bool>> exp = p => p.A2 > 1 && p.B2 > 2;
+                var res = new ReplaceWithReference<OptimizeParent, OptimizeChild>(exp, "Parent", "c").NewExpression;
+                Assert.AreEqual("c => ((c.Parent.A2 > 1) AndAlso (c.Parent.B2 > 2))", res.ToString());
+            }
+            {
+                Expression<Func<OptimizeParent, bool>> exp = p => p.A2 > 1 && p.B2 > 2;
+                var res = new ReplaceWithReference<OptimizeParent, OptimizeChild>(exp, "Parent", "c", new Tuple<string, string>[] { Tuple.Create("A1", "A2") }).NewExpression;
+                Assert.AreEqual("c => ((c.A1 > 1) AndAlso (c.Parent.B2 > 2))", res.ToString());
             }
         }
     }

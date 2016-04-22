@@ -44,10 +44,10 @@ namespace Rhetos.Dsl.DefaultConcepts
             List<IConceptInfo> newConcepts = new List<IConceptInfo>();
 
             var rowPermissionsRead = GetRowPermissionsRead(Source, existingConcepts);
-            if (rowPermissionsRead != null) newConcepts.Add(new RowPermissionsInheritReadFromInfo() { InheritFromInfo = this });
+            if (rowPermissionsRead != null) newConcepts.Add(new RowPermissionsInheritReadInfo() { InheritFromInfo = this });
 
             var rowPermissionsWrite = GetRowPermissionsWrite(Source, existingConcepts);
-            if (rowPermissionsWrite != null) newConcepts.Add(new RowPermissionsInheritWriteFromInfo() { InheritFromInfo = this });
+            if (rowPermissionsWrite != null) newConcepts.Add(new RowPermissionsInheritWriteInfo() { InheritFromInfo = this });
 
             return newConcepts;
         }

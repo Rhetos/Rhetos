@@ -142,6 +142,7 @@
     <Compile Include="DatabaseWorkarounds\SqlIndexMultipleFollowingPropertyInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlNotNullInfo.cs" />
     <Compile Include="DataStructure\BeforeQueryWithParameterInfo.cs" />
+    <Compile Include="DataStructure\SamePropertyValueInfo.cs" />
     <Compile Include="DataStructure\WritableOrmDataStructureMacro.cs" />
     <Compile Include="DataStructure\RepositoryUsesInfo.cs" />
     <Compile Include="DataStructure\SubtypeExtendFilterInfo.cs" />
@@ -160,6 +161,8 @@
     <Compile Include="DataStructure\Writing\LoadOldItemsTakeInfo.cs" />
     <Compile Include="DataStructure\Writing\OnSaveValidateInfo.cs" />
     <Compile Include="RowPermissions\AutoInheritRowPermissionsInfo.cs" />
+    <Compile Include="RowPermissions\RowPermissionsInheritReadSameMemberInfo.cs" />
+    <Compile Include="RowPermissions\RowPermissionsInheritWriteSameMemberInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsRuleDenyInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsRuleAllowInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsRuleAllowWriteInfo.cs" />
@@ -169,8 +172,8 @@
     <Compile Include="RowPermissions\RowPermissionsInheritFromBaseInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsInheritFromInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsInheritFromReferenceInfo.cs" />
-    <Compile Include="RowPermissions\RowPermissionsInheritReadFromInfo.cs" />
-    <Compile Include="RowPermissions\RowPermissionsInheritWriteFromInfo.cs" />
+    <Compile Include="RowPermissions\RowPermissionsInheritReadInfo.cs" />
+    <Compile Include="RowPermissions\RowPermissionsInheritWriteInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsPluginableFiltersInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsSingleFunctionRuleInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsRuleInfo.cs" />

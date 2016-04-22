@@ -27,21 +27,22 @@ using System.ComponentModel.Composition;
 using Rhetos.Extensibility;
 using Rhetos.Dsl;
 using Rhetos.Compiler;
+using Rhetos.Utilities;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(RowPermissionsInheritReadFromInfo))]
-    public class RowPermissionsInheritReadFromCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(RowPermissionsInheritWriteSameMemberInfo))]
+    public class RowPermissionsInheritWriteSameMemberCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (RowPermissionsInheritReadFromInfo)conceptInfo;
+            var info = (RowPermissionsInheritWriteSameMemberInfo)conceptInfo;
 
             codeBuilder.InsertCode(
-                RowPermissionsUtility.GetInheritSnippet(info.InheritFromInfo, RowPermissionsReadInfo.PermissionsExpressionName),
-                RowPermissionsPluginableFiltersInfo.ReadFilterExpressionsTag, 
-                info.Dependency_RowPermissionsRead); 
+                "Tuple.Create(" + CsUtility.QuotedString(info.DerivedMemberName) + ", " + CsUtility.QuotedString(info.BaseMemberName) + "), ",
+                RowPermissionsInheritWriteCodeGenerator.SameMembersTag,
+                info.InheritWrite);
         }
     }
 }
