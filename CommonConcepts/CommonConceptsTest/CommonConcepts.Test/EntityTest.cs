@@ -602,5 +602,30 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("c1b2", TestUtility.DumpSorted(repository.TestEntity.Child.Query(), item => item.Name + item.Parent.Name));
             }
         }
+
+        [TestMethod]
+        public void OptimizedDeleteQuery()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var sqlExecuter = container.Resolve<ISqlExecuter>();
+                var repository = container.Resolve<Common.DomRepository>();
+
+                repository.TestEntity.UniqueEntity.Delete(repository.TestEntity.UniqueEntity.Load());
+                var newItem = new TestEntity.UniqueEntity { ID = Guid.NewGuid(), Name = "a", Data = "b" };
+                repository.TestEntity.UniqueEntity.Insert(newItem);
+
+                // Temporarily removing a column to detect if the following code will try to read it.
+                sqlExecuter.ExecuteSql("ALTER TABLE TestEntity.UniqueEntity DROP COLUMN Data");
+
+                IEnumerable<TestEntity.UniqueEntity> items = repository.TestEntity.UniqueEntity.Query();
+                // The following line should not try to read all columns.
+                Common.Infrastructure.MaterializeItemsToDelete(ref items);
+                Assert.AreEqual(1, items.Count());
+                Assert.AreEqual(newItem.ID, items.Single().ID);
+                Assert.IsNull(items.Single().Name);
+                Assert.IsNull(items.Single().Data);
+            }
+        }
     }
 }

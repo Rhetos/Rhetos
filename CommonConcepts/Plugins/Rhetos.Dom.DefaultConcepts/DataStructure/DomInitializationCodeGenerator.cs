@@ -228,6 +228,9 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             if (items == null)
                 items = Enumerable.Empty<T>();
+            if (items is IQueryable<IEntity>)
+                // IQueryable Select will generate a better SQL query instead. IEnumerable Select would load all columns.
+                items = ((IQueryable<IEntity>)items).Select(item => new T { ID = item.ID }).ToList();
             else if (!(items is System.Collections.IList))
                 items = items.Select(item => new T { ID = item.ID }).ToList();
         }

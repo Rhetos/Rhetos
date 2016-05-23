@@ -35,11 +35,16 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format(
             @"if (deletedIds.Count() > 0)
             {{
-                {0}.{1}[] childItems = deletedIds.SelectMany(parent => _executionContext.Repository.{0}.{1}.Query().Where(child => child.{2}ID == parent.ID).ToArray()).ToArray();
+                List<{0}.{1}> childItems = deletedIds
+                    .SelectMany(parent => _executionContext.Repository.{0}.{1}.Query()
+                        .Where(child => child.{2}ID == parent.ID)
+                        .Select(child => child.ID)
+                        .ToList())
+                    .Select(childId => new {0}.{1} {{ ID = childId }})
+                    .ToList();
+
                 if (childItems.Count() > 0)
-                {{
                     _domRepository.{0}.{1}.Delete(childItems);
-                }}
             }}
             ",
             info.Reference.DataStructure.Module.Name,
