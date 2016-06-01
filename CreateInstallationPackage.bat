@@ -1,8 +1,8 @@
 IF NOT EXIST Install\ MD Install
-DEL /F /S /Q Install\* || EXIT /B 1
-IF EXIST Install\*.zip ECHO ERROR: Cannot delete old files in Install folder. Check if the files are locked. & EXIT /B 1
+DEL /F /S /Q Install\* || GOTO Error0
+IF EXIST Install\*.zip ECHO ERROR: Cannot delete old files in Install folder. Check if the files are locked. && GOTO Error0
 RD /S /Q Install\Rhetos
-IF EXIST Install\Rhetos ECHO ERROR: Cannot delete old files in Install folder. Check if the files are locked. & EXIT /B 1
+IF EXIST Install\Rhetos ECHO ERROR: Cannot delete old files in Install folder. Check if the files are locked. && GOTO Error0
 
 SET Config=%1%
 IF [%1] == [] SET Config=Debug
@@ -13,6 +13,7 @@ CALL Source\Rhetos\GetServerFiles.bat %Config% /NOPAUSE || GOTO Error0
 .nuget\NuGet.exe pack SimpleWindowsAuth\Rhetos.SimpleWindowsAuth.nuspec -o Install || GOTO Error0
 .nuget\NuGet.exe pack AspNetFormsAuth\Rhetos.AspNetFormsAuth.nuspec -o Install || GOTO Error0
 .nuget\NuGet.exe pack ActiveDirectorySync\Rhetos.ActiveDirectorySync.nuspec -o Install || GOTO Error0
+.nuget\NuGet.exe pack Rhetos.Core.nuspec -o Install || GOTO Error0
 
 MD Install\Rhetos
 MD Install\Rhetos\bin
