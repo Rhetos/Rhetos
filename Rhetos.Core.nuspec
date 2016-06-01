@@ -28,27 +28,5 @@
     <file src="Source\Rhetos\bin\Rhetos*.pdb" target="lib\net451" />
     <file src="Source\Rhetos.TestCommon\bin\Debug\Rhetos.TestCommon.dll" target="lib\net451" />
     <file src="Source\Rhetos.TestCommon\bin\Debug\Rhetos.TestCommon.pdb" target="lib\net451" />
-
-    <file src="Source\Rhetos\bin\Template.*.config" target="bin" />
-    <file src="C:\My Projects\Rhetos\Source\Rhetos\bin\CleanupOldData.exe" target="bin" />
-    <file src="C:\My Projects\Rhetos\Source\Rhetos\bin\CleanupOldData.exe.config" target="bin" />
-    <file src="C:\My Projects\Rhetos\Source\Rhetos\bin\CleanupOldData.pdb" target="bin" />
-    <file src="C:\My Projects\Rhetos\Source\Rhetos\bin\CreateAndSetDatabase.exe" target="bin" />
-    <file src="C:\My Projects\Rhetos\Source\Rhetos\bin\CreateAndSetDatabase.exe.config" target="bin" />
-    <file src="C:\My Projects\Rhetos\Source\Rhetos\bin\CreateAndSetDatabase.pdb" target="bin" />
-    <file src="C:\My Projects\Rhetos\Source\Rhetos\bin\CreateIISExpressSite.exe" target="bin" />
-    <file src="C:\My Projects\Rhetos\Source\Rhetos\bin\CreateIISExpressSite.exe.config" target="bin" />
-    <file src="C:\My Projects\Rhetos\Source\Rhetos\bin\CreateIISExpressSite.pdb" target="bin" />
-    <file src="C:\My Projects\Rhetos\Source\Rhetos\bin\DeployPackages.exe" target="bin" />
-    <file src="C:\My Projects\Rhetos\Source\Rhetos\bin\DeployPackages.exe.config" target="bin" />
-    <file src="C:\My Projects\Rhetos\Source\Rhetos\bin\DeployPackages.pdb" target="bin" />
-
-    <file src="ChangeLog.md" target="" />
-    <file src="Readme.md" target="" />
-    <file src="Source\Rhetos\Web.config" target="" />
-    <file src="Source\Rhetos\*.aspx" target="" />
-    <file src="Source\Rhetos\*.asax" target="" />
-    <file src="Source\Rhetos\*.svc" target="" />
-    <file src="Source\Rhetos\*.linq" target="" />
   </files>
 </package>
