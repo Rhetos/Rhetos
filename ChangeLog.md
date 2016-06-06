@@ -1,5 +1,16 @@
 # Rhetos release notes
 
+## 0.9.37 (2016-06-06)
+
+### Internal improvements
+
+* Bugfix: Sorting by multiple properties uses only the last one.
+  The bug affected *ReadCommand* used in web APIs such as REST service (RestGenerator).
+* Forcing web services to close SQL transaction *before* sending web response.
+  Without this feature, when using *read committed snapshot isolation* in database, a client could read old data immediately after save command.
+* Modified build to work on Visual Studio 2015.
+* Optimized **Recompute** for *FilterAll* parameter.
+
 ## 0.9.36 (2015-07-14)
 
 ### New features
@@ -11,7 +22,7 @@
 * New *DeployPackages.exe* argument `/ShortTransactions`, for upgrading large databases.
 * Improved **Polymorphic**: multiple **Where** allowed, optimized update of *Materialized* extension.
 * Bugfix: **Polymorphic** does not update *Materialized* extension for *named* implementations.
-* SqlDependesOn* concepts can be used on polymorphic subtype (**Is**) to define dependencies for the generated view.
+* **SqlDependesOn\*** concepts can be used on polymorphic subtype (**Is**) to define dependencies for the generated view.
 * Bugfix: Error "DependsOn data structure must be IWritableOrmDataStructure" when using an entity with **History** as a **Polymorphic** subtype.
 * DeployPackages is logging more detailed information when refreshing a dependent database object.
 * **FilterBy** expression is allowed to use the repository's member methods.

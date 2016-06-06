@@ -1,7 +1,7 @@
 @REM HINT: SET THE FIRST ARGUMENT TO /NOPAUSE WHEN AUTOMATING THE BUILD.
 @SETLOCAL
 @REM //////////////////////////////////////////////////////
-SET BuildVersion=0.9.37
+SET BuildVersion=0.9.38
 SET PrereleaseVersion=alpha001
 @REM SET PrereleaseVersion TO EMPTY VALUE FOR THE OFFICIAL RELEASE.
 @REM \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
