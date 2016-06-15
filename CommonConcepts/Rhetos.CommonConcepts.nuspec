@@ -10,9 +10,9 @@
     <description>CommonConcepts is a DSL package for Rhetos development platform.
       It provides an implementation of domain-specific programming language for business applications.</description>
     <copyright>Copyright Omega software 2015</copyright>
-    <tags>Rhetos</tags>
+    <tags>Rhetos plugin</tags>
     <dependencies>
-      <dependency id="Rhetos" version="1.0.0-alpha004" />
+      <dependency id="Rhetos" version="1.0.0-alpha160614" />
     </dependencies>
   </metadata>
   <files>

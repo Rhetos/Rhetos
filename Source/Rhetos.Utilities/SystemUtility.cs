@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Versioning;
 using System.Text;
 
 namespace Rhetos.Utilities
@@ -42,6 +43,14 @@ namespace Rhetos.Utilities
                 _rhetosVersion = versionAttributes.Single().InformationalVersion;
             }
             return _rhetosVersion;
+        }
+
+        /// <summary>
+        /// "Environment.Version" and similar run-time functions return CLR runtime version, not the .NET Framework version that is targeted by the project.
+        /// </summary>
+        public static FrameworkName GetTargetFramework()
+        {
+            return new FrameworkName(".NETFramework,Version=v4.5.1");
         }
     }
 }

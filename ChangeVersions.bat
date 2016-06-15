@@ -25,12 +25,7 @@ IF /I "!PrereleaseVersion!" EQU "auto" (
 @SET PrereleaseVersion
 
 PUSHD "%~dp0" || GOTO Error0
-CALL ChangeRhetosPackageVersion.bat Source %BuildVersion% !PrereleaseVersion! || GOTO Error1
-CALL ChangeRhetosPackageVersion.bat CommonConcepts %BuildVersion% !PrereleaseVersion! || GOTO Error1
-CALL ChangeRhetosPackageVersion.bat CommonConcepts\CommonConceptsTest %BuildVersion% !PrereleaseVersion! || GOTO Error1
-CALL ChangeRhetosPackageVersion.bat SimpleWindowsAuth %BuildVersion% !PrereleaseVersion! || GOTO Error1
-CALL ChangeRhetosPackageVersion.bat AspNetFormsAuth %BuildVersion% !PrereleaseVersion! || GOTO Error1
-CALL ChangeRhetosPackageVersion.bat ActiveDirectorySync %BuildVersion% !PrereleaseVersion! || GOTO Error1
+CALL ChangeRhetosPackageVersion.bat . %BuildVersion% !PrereleaseVersion! || GOTO Error1
 @POPD
 
 @REM ================================================

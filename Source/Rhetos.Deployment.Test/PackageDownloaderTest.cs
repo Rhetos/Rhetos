@@ -51,7 +51,7 @@ namespace Rhetos.Deployment.Test
             var allPackageIds = entries.Where(e => !e.Contains('-'))
                 .Concat(entries.Where(e => e.Contains('-')).SelectMany(e => e.Split('-')));
             foreach (var packageId in allPackageIds.Distinct(StringComparer.OrdinalIgnoreCase))
-                packagesById.Add(packageId, new InstalledPackage(packageId, "0.0", new List<PackageRequest>(), "folder", new PackageRequest(), "source", "0.0"));
+                packagesById.Add(packageId, new InstalledPackage(packageId, "0.0", new List<PackageRequest>(), "folder", new PackageRequest(), "source"));
 
             foreach (var dependency in entries.Where(e => e.Contains('-')).Select(e => e.Split('-')))
                 ((List<PackageRequest>)(packagesById[dependency[1]].Dependencies))

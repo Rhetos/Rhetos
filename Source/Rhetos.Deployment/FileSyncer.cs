@@ -81,7 +81,7 @@ namespace Rhetos.Deployment
         /// The destinationFolder parameter is separated from destinationFile because
         /// all obsolete files in the destinationFolder must be deleted.
         /// </summary>
-        /// <param name="file">If null, the original file name is used.</param>
+        /// <param name="destinationFile">If null, the original file name is used.</param>
         public void AddFile(string file, string destinationFolder, string destinationFile = null)
         {
             destinationFolder = Path.GetFullPath(destinationFolder).TrimEnd(new[] { '\\' });

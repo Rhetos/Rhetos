@@ -163,12 +163,5 @@ namespace CreateIISExpressSite
             throw new ApplicationException("Cannot detect the authentication type. Please use one of the following Rhetos authentication packages: "
                 + string.Join(", ", authenticationPluginSupportsWindowsAuth.Select(plugin => plugin.Item1)) + ".");
         }
-
-        private static string ExpectedPluginPath<T>()
-        {
-            var dllPath = typeof(T).Assembly.Location;
-            var dllName = Path.GetFileName(dllPath);
-            return Path.Combine("Plugins", dllName);
-        }
     }
 }

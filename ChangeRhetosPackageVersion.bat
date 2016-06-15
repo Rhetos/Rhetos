@@ -15,7 +15,7 @@ REM Set simple version number:
 
 REM Set version number with prerelease:
 "%~dp0"Source\ReplaceRegEx\bin\Debug\ReplaceRegEx.exe *AssemblyInfo.cs "^(\[assembly: AssemblyInformationalVersion(Attribute)?\(\").+(\"\)\])$" "${1}%SemVer%${3}" || GOTO Error1
-"%~dp0"Source\ReplaceRegEx\bin\Debug\ReplaceRegEx.exe *.nuspec "^(\s*\<version\>).+(\<\/version\>\s*)$" "${1}%SemVer%${2}" /RootOnly || GOTO Error1
+"%~dp0"Source\ReplaceRegEx\bin\Debug\ReplaceRegEx.exe *.nuspec "^(\s*\<version\>).+(\<\/version\>\s*)$" "${1}%SemVer%${2}" || GOTO Error1
 
 REM Set other metadata:
 "%~dp0"Source\ReplaceRegEx\bin\Debug\ReplaceRegEx.exe *AssemblyInfo.cs "^(\[assembly: AssemblyCompany\(\")(.*)(\"\)\])$" "${1}Omega software${3}" || GOTO Error1

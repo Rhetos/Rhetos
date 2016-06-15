@@ -66,6 +66,8 @@ namespace Rhetos.Deployment
         {
             var sw = Stopwatch.StartNew();
             var installedPackages = new List<InstalledPackage>();
+            installedPackages.Add(new InstalledPackage("Rhetos", SystemUtility.GetRhetosVersion(), new List<PackageRequest>(), Paths.RhetosServerRootPath,
+                new PackageRequest { Id = "Rhetos", VersionsRange = "", Source = "", RequestedBy = "Rhetos framwork" }, "."));
 
             var binFileSyncer = new FileSyncer(_logProvider);
             binFileSyncer.AddDestinations(Paths.PluginsFolder, Paths.ResourcesFolder); // Even if there are no packages, those folders must be created and emptied.
@@ -173,13 +175,6 @@ namespace Rhetos.Deployment
                         "Package ID '{0}' at location '{1}' does not match package ID '{2}' requested from {3}.",
                         installedPackage.Id, installedPackage.Source, request.Id, request.RequestedBy));
 
-            var currentRhetosVersion = SystemUtility.GetRhetosVersion();
-            if (installedPackage.RequiredRhetosVersion != null)
-                if (!VersionUtility.ParseVersionSpec(installedPackage.RequiredRhetosVersion).Satisfies(SemanticVersion.Parse(currentRhetosVersion)))
-                    DependencyError(string.Format(
-                        "Package '{0}, version {1}' requires Rhetos version {2}. It is incompatible with current Rhetos version {3}.",
-                        installedPackage.Id, installedPackage.Version, installedPackage.RequiredRhetosVersion, currentRhetosVersion));
-
             if (request.VersionsRange != null)
                 if (!VersionUtility.ParseVersionSpec(request.VersionsRange).Satisfies(SemanticVersion.Parse(installedPackage.Version)))
                     DependencyError(string.Format(
@@ -253,37 +248,59 @@ namespace Rhetos.Deployment
 
             var sourceFolder = Path.GetDirectoryName(metadataFile);
             var targetFolder = GetTargetFolder(packageBuilder.Id, packageBuilder.Version.ToString());
+
+            // Copy binary files and resources:
+
+            foreach (PhysicalPackageFile file in FilterCompatibleLibFiles(packageBuilder.Files))
+                binFileSyncer.AddFile(file.SourcePath, Paths.PluginsFolder);
+
             foreach (PhysicalPackageFile file in packageBuilder.Files)
-                if (file.Path.StartsWith(@"Plugins\"))
+                if (file.Path.StartsWith(@"Plugins\")) // Obsolete bin folder; lib should be used instead.
                     binFileSyncer.AddFile(file.SourcePath, Paths.PluginsFolder);
                 else if (file.Path.StartsWith(@"Resources\"))
                     binFileSyncer.AddFile(file.SourcePath, Paths.ResourcesFolder, Path.Combine(SimplifyPackageName(packageBuilder.Id), file.Path.Substring(@"Resources\".Length)));
 
             return new InstalledPackage(packageBuilder.Id, packageBuilder.Version.ToString(), GetNuGetPackageDependencies(packageBuilder),
-                sourceFolder, request, sourceFolder, GetNuGetRequiredRhetosVersion(packageBuilder));
+                sourceFolder, request, sourceFolder);
+        }
+
+        private IEnumerable<IPackageFile> FilterCompatibleLibFiles(IEnumerable<IPackageFile> files)
+        {
+            IEnumerable<IPackageFile> compatibleLibFiles;
+            var allLibFiles = files.Where(file => file.Path.StartsWith(@"lib\"));
+            if (VersionUtility.TryGetCompatibleItems(SystemUtility.GetTargetFramework(), allLibFiles, out compatibleLibFiles))
+                return compatibleLibFiles;
+            else
+                return Enumerable.Empty<IPackageFile>();
         }
 
         private List<PackageRequest> GetNuGetPackageDependencies(IPackageMetadata package)
         {
-            return package.GetCompatiblePackageDependencies(VersionUtility.DefaultTargetFramework)
+            var dependencies = package.GetCompatiblePackageDependencies(SystemUtility.GetTargetFramework())
                 .Select(dependency => new PackageRequest
                 {
                     Id = dependency.Id,
                     VersionsRange = dependency.VersionSpec.ToString(),
                     RequestedBy = "package " + package.Id
                 }).ToList();
-        }
 
-        private string GetNuGetRequiredRhetosVersion(IPackageMetadata package)
-        {
-            var rhetosFrameworkRegex = new Regex(@"^Rhetos\s*,\s*Version\s*=\s*(\S+)$");
-            var match = package.FrameworkAssemblies
-                .Select(fa => rhetosFrameworkRegex.Match(fa.AssemblyName.Trim()))
-                .SingleOrDefault(m => m.Success == true);
-            if (match != null)
-                return match.Groups[1].Value;
-            else
-                return null;
+            if (!dependencies.Any(p => p.Id == "Rhetos"))
+            {
+                // FrameworkAssembly is an obsolete way of marking package dependency on a specific Rhetos version:
+                var rhetosFrameworkAssemblyRegex = new Regex(@"^Rhetos\s*,\s*Version\s*=\s*(\S+)$");
+                var parseFrameworkAssembly = package.FrameworkAssemblies
+                    .Select(fa => rhetosFrameworkAssemblyRegex.Match(fa.AssemblyName.Trim()))
+                    .SingleOrDefault(m => m.Success == true);
+                if (parseFrameworkAssembly != null)
+                    dependencies.Add(new PackageRequest
+                    {
+                        Id = "Rhetos",
+                        VersionsRange = parseFrameworkAssembly.Groups[1].Value,
+                        RequestedBy = "package " + package.Id
+                    });
+            }
+
+            return dependencies;
         }
 
         private class SimplePropertyProvider : Dictionary<string, string>, IPropertyProvider
@@ -309,7 +326,7 @@ namespace Rhetos.Deployment
             binFileSyncer.AddFolderContent(Path.Combine(sourceFolder, "Resources"), Paths.ResourcesFolder, SimplifyPackageName(request.Id), recursive: true);
 
             string defaultVersion = CreateVersionInRangeOrZero(request);
-            return new InstalledPackage(request.Id, defaultVersion, new List<PackageRequest> { }, sourceFolder, request, sourceFolder, null);
+            return new InstalledPackage(request.Id, defaultVersion, new List<PackageRequest> { }, sourceFolder, request, sourceFolder);
         }
 
         #endregion
@@ -344,7 +361,7 @@ namespace Rhetos.Deployment
             binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Plugins"), Paths.PluginsFolder, recursive: false);
             binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Resources"), Paths.ResourcesFolder, SimplifyPackageName(request.Id), recursive: true);
 
-            return new InstalledPackage(request.Id, request.VersionsRange, new List<PackageRequest> { }, targetFolder, request, source.ProcessedLocation, null);
+            return new InstalledPackage(request.Id, request.VersionsRange, new List<PackageRequest> { }, targetFolder, request, source.ProcessedLocation);
         }
 
         #endregion
@@ -380,10 +397,16 @@ namespace Rhetos.Deployment
             _performanceLogger.Write(sw, () => "PackageDownloader install NuGet package " + request.Id + ".");
 
             string targetFolder = packageManager.PathResolver.GetInstallPath(package);
-            binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Plugins"), Paths.PluginsFolder, recursive: false);
+
+            // Copy binary files and resources:
+
+            foreach (var libFile in FilterCompatibleLibFiles(package.GetFiles()))
+                binFileSyncer.AddFile(libFile.Path, Paths.PluginsFolder);
+
+            binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Plugins"), Paths.PluginsFolder, recursive: false); // Obsolete bin folder; lib should be used instead.
             binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Resources"), Paths.ResourcesFolder, SimplifyPackageName(package.Id), recursive: true);
 
-            return new InstalledPackage(package.Id, package.Version.ToString(), GetNuGetPackageDependencies(package), targetFolder, request, source.ProcessedLocation, GetNuGetRequiredRhetosVersion(package));
+            return new InstalledPackage(package.Id, package.Version.ToString(), GetNuGetPackageDependencies(package), targetFolder, request, source.ProcessedLocation);
         }
 
         private static bool IsLocalPath(string path)
