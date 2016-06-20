@@ -140,7 +140,14 @@ namespace Rhetos.Dom.DefaultConcepts
             for (int i = 0; i < (n+BufferSize-1) / BufferSize; i++)
             {{
                 Guid[] idBuffer = identifiers.Skip(i*BufferSize).Take(BufferSize).ToArray();
-                var itemBuffer = Query().Where(item => idBuffer.Contains(item.ID)).ToSimple().ToArray();
+                List<{0}.{1}> itemBuffer;
+                if (idBuffer.Count() == 1) // EF 6.1.3. does not use parametrized SQL query for Contains() function. The equality comparer is used instead, to reuse cached execution plans.
+                {{
+                    Guid id = idBuffer.Single();
+                    itemBuffer = Query().Where(item => item.ID == id).ToSimple().ToList();
+                }}
+                else
+                    itemBuffer = Query().Where(item => idBuffer.Contains(item.ID)).ToSimple().ToList();
                 result.AddRange(itemBuffer);
             }}
             return result.ToArray();

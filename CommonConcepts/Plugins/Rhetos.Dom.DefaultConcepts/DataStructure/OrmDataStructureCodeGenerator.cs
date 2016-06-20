@@ -110,7 +110,12 @@ namespace Rhetos.Dom.DefaultConcepts
             if (!(ids is System.Collections.IList))
                 ids = ids.ToList();
 
-            if (ids.Count() < 2000) // EF 6.1.3. has performance issues on Contains function with large lists. It seems to have O(n^2) time complexity.
+            if (ids.Count() == 1) // EF 6.1.3. does not use parametrized SQL query for Contains() function. The equality comparer is used instead, to reuse cached execution plans.
+            {{
+                Guid id = ids.Single();
+                return items.Where(item => item.ID == id);
+            }}
+            else if (ids.Count() < 2000) // EF 6.1.3. has performance issues on Contains function with large lists. It seems to have O(n^2) time complexity.
                 return items.Where(item => ids.Contains(item.ID));
             else
             {{
