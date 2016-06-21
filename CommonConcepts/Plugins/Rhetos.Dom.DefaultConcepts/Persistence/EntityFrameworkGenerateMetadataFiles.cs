@@ -94,7 +94,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                 int alternativeStart = edmx.IndexOf(startTag, start + 1, StringComparison.Ordinal);
                 int alternativeEnd = edmx.IndexOf(endTag, end + 1, StringComparison.Ordinal);
                 if (start == -1 || alternativeStart != -1 || end == -1 || alternativeEnd != -1)
-                    throw new Exception("Unexcepted EDMX format. " + segment.TagName + " tag locations: start=" + start + " alternativeStart=" + alternativeStart + " end=" + end + " alternativeEnd=" + alternativeEnd + ".");
+                    throw new Exception("Unexpected EDMX format. " + segment.TagName + " tag locations: start=" + start + " alternativeStart=" + alternativeStart + " end=" + end + " alternativeEnd=" + alternativeEnd + ".");
 
                 string segmentXml = edmx.Substring(start + startTag.Length, end - start - startTag.Length);
                 File.WriteAllText(Path.Combine(Paths.GeneratedFolder, segment.FileName), segmentXml, Encoding.UTF8);

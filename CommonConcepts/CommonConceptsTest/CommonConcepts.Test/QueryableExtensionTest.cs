@@ -84,7 +84,7 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        [Ignore] // TODO: Navigation from base to extension class seems to be working only for SQL objects, not for built queryes like QueryableExtension.
+        [Ignore] // TODO: Navigation from base to extension class seems to be working only for SQL objects, not for built queries like QueryableExtension.
         public void QueryableFilterUsingExtension()
         {
             using (var container = new RhetosTestContainer())

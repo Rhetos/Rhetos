@@ -458,7 +458,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod()]
         public void PossiblyUnintuitiveBehaviour_IgnoreTokenIfNotFromSingleText()
         {
-            // Behaviour is different from standard String.Replace function:
+            // Behavior is different from standard String.Replace function:
             // Token is ignored if it is composed by concatenation of two different strings.
             var fr = new FastReplacer("/*", "*/");
             fr.Append("/*a*//*b*/");
@@ -476,7 +476,7 @@ namespace Rhetos.Utilities.Test
         [ExpectedException(typeof(ArgumentException))]
         public void PossiblyUnintuitiveBehaviour_NotAComment()
         {
-            // Behaviour is different from standard C# or SQL comments:
+            // Behavior is different from standard C# or SQL comments:
             // Tokens are recognized even if they are inside a string (token is not always a comment).
             var fr = new FastReplacer("/*", "*/");
             fr.Append("PRINT 'Token starts with /* sequence'");

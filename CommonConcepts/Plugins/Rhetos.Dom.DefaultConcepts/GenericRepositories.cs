@@ -30,7 +30,7 @@ using System.Text;
 namespace Rhetos.Dom.DefaultConcepts
 {
     /// <remarks>
-    /// The term "entity" in the contest of this class representy any identifiable
+    /// The term "entity" in the contest of this class represents any identifiable
     /// data structure (implementation of IEntity). Not to be confused with Entity
     /// DSL concept, which generates only one kind of IEntity (common entity).
     /// Other IEntity implementations can also be handled by this class.

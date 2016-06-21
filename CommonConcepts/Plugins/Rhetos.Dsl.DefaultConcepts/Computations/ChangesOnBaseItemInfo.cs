@@ -42,7 +42,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             if (extendsConcept == null)
                 return null;
-            // TODO: Implement and use gobal ConceptInfoMetadata to check if this concept is handled or not after evaluating all other concepts.
+            // TODO: Implement and use global ConceptInfoMetadata to check if this concept is handled or not after evaluating all other concepts.
                 //throw new DslSyntaxException("ChangesOnBaseItem is used on '" + Computation.GetUserDescription()
                 //    + "' which does not extend another base data structure. Consider adding 'Extends' concept.");
 

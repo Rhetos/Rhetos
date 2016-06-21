@@ -28,7 +28,7 @@ namespace Rhetos.Persistence
     public interface IPersistenceTransaction : IDisposable
     {
         /// <summary>
-        /// DiscardChanges marks the transaction as invalid. The changes will be descarded (rollback executed) on Dispose.
+        /// DiscardChanges marks the transaction as invalid. The changes will be discarded (rollback executed) on Dispose.
         /// </summary>
         void DiscardChanges();
 

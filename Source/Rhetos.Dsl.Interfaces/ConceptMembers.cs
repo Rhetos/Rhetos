@@ -83,7 +83,7 @@ namespace Rhetos.Dsl
                 string derivedKeyMember = conceptMembers.Where(m => m.IsKey && !m.IsDerived).Select(m => m.Name).FirstOrDefault();
                 if (derivedKeyMember != null)
                     throw new FrameworkException(string.Format(
-                        "Derived concept must not containt members with ConceptKey attrubute. Class: {0}, member: {1}.",
+                        "Derived concept must not contain members with ConceptKey attribute. Class: {0}, member: {1}.",
                         conceptInfoType.Name, derivedKeyMember));
             }
 

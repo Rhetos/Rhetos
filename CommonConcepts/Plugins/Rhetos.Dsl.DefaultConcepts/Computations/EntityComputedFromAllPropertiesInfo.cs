@@ -53,7 +53,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             var newSourceProperties = sourceProperties
                 .Where(sp => !existingComputedPropertiesSource.Contains(sp.Name)).ToArray();
 
-            // Clone source properties, including their cascade delete and extension concepts (only for automatically created propeties):
+            // Clone source properties, including their cascade delete and extension concepts (only for automatically created properties):
 
             newConcepts.AddRange(newSourceProperties.Select(sp => new PropertyFromInfo { Source = sp, Destination = conceptInfo.EntityComputedFrom.Target }));
 

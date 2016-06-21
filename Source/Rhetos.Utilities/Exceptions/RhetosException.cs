@@ -28,7 +28,7 @@ namespace Rhetos
     public abstract class RhetosException : Exception
     {
         /// <summary>
-        /// Additional error context. It will be sent to the client if the excetion is UserException or ClientException.
+        /// Additional error context. It will be sent to the client if the exception is UserException or ClientException.
         /// The Info property is used instead of the existing "Data" dictionary to avoid security issue when sending data to the client,
         /// since other tools might use the Data for internal debugging data.
         /// </summary>

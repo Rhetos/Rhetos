@@ -89,7 +89,7 @@ namespace CommonConcepts.Test
         {
             TestPermissionsCachingOnChange(repository => { }, // No change in permissions.
                 new[] { true, true, false },
-                ""); // There shoud be no cache misses.
+                ""); // There should be no cache misses.
         }
 
         [TestMethod]
@@ -115,7 +115,7 @@ namespace CommonConcepts.Test
                 context.Repository.Common.Principal.Update(otherPrincipal);
             },
                 new[] { true, true, false },
-                ""); // Updated principal is not used, should not affecte cached permissions.
+                ""); // Updated principal is not used, should not affect cached permissions.
         }
 
         [TestMethod]

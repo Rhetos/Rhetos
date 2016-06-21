@@ -27,7 +27,7 @@ using System.Threading.Tasks;
 namespace Rhetos.Utilities
 {
     /// <summary>
-    /// This is the default implemementation of ILocalizer.
+    /// This is the default implementation of ILocalizer.
     /// It simply returns the given string, without modification.
     /// </summary>
     public class NoLocalizer : ILocalizer

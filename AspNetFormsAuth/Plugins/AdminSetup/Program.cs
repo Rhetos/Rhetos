@@ -178,7 +178,7 @@ namespace AdminSetup
             }
 
             if (!elevated)
-                throw new ApplicationException(System.Diagnostics.Process.GetCurrentProcess().ProcessName + " has to be executed with elevated privileges (as administator).");
+                throw new ApplicationException(System.Diagnostics.Process.GetCurrentProcess().ProcessName + " has to be executed with elevated privileges (as administrator).");
         }
 
         private static string InputPassword()

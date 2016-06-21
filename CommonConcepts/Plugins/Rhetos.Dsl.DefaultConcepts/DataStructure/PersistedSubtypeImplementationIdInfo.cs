@@ -31,7 +31,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
     /// Represents the persisted table column that captures the alternative ID for the subtype implementation.
-    /// The alternative ID is needed when a subtype implements the same supertype mutiple times, in order to disambiguate implementations without performance loss.
+    /// The alternative ID is needed when a subtype implements the same supertype multiple times, in order to disambiguate implementations without performance loss.
     /// 
     /// This concept is separated from IsSubtypeOfInfo, because there is no need to create a new computed column
     /// for each Supertype: only Subtype and ImplementationName need to be unique.

@@ -29,7 +29,7 @@ namespace Rhetos.Web
 {
     /// <summary>
     /// This WCF extension forces the Rhetos web server to close SQL transaction (either commit or rollback) before sending the response to a client.
-    /// IoC contrainer would close the transaction when automatically disposing all components after the response,
+    /// IoC container would close the transaction when automatically disposing all components after the response,
     /// but that would be too late for detection of some SQL errors (specially those related to snapshot isolation).
     /// </summary>
     public class CommitBeforeResponseMessageInspector : IDispatchMessageInspector

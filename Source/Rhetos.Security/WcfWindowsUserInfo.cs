@@ -111,7 +111,7 @@ namespace Rhetos.Security
                 try
                 {
                     string userName = _userName.Value.Substring(_userName.Value.IndexOf(@"\") + 1);
-                    var windowsIdentity = new WindowsIdentity(userName); // This will throw an exception if the active directory server is not accessable.
+                    var windowsIdentity = new WindowsIdentity(userName); // This will throw an exception if the active directory server is not accessible.
                     _logger.Trace(() => "Using new WindowsIdentity(name): " + Report(windowsIdentity));
                     return windowsIdentity;
                 }

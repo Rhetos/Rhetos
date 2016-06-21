@@ -78,8 +78,8 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
 
                 // Note: When modifying regex, update the error description below!
                 var itemIdFormat = new Regex(@"^(\[\w+\]|\w+)(\.(\[\w+\]|\w+))+$", RegexOptions.Singleline);
-                var tableNameFormat = new Regex(@"^N'(?<unqouted>(\[\w+\]|\w+)(\.(\[\w+\]|\w+))+)'$", RegexOptions.Singleline);
-                var searchColumnsFormat = new Regex(@"^N'(?<unqouted>(\w+|\(\w+(\s*,\s*\w+)*\)|\*))'$", RegexOptions.Singleline);
+                var tableNameFormat = new Regex(@"^N'(?<unquoted>(\[\w+\]|\w+)(\.(\[\w+\]|\w+))+)'$", RegexOptions.Singleline);
+                var searchColumnsFormat = new Regex(@"^N'(?<unquoted>(\w+|\(\w+(\s*,\s*\w+)*\)|\*))'$", RegexOptions.Singleline);
                 var patternFormat = new Regex(@"^(\@\w+|N'([^']*('')*)*')$", RegexOptions.Singleline);
 
                 foreach (var ftsQuery in ftsQueries.OrderByDescending(m => m.Index))
@@ -120,8 +120,8 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
 
                     string ftsSql = string.Format("{0} IN (SELECT [KEY] FROM CONTAINSTABLE({1}, {2}, {3}))",
                         itemId,
-                        tableNameFormat.Match(tableName).Groups["unqouted"].Value,
-                        searchColumnsFormat.Match(searchColumns).Groups["unqouted"].Value,
+                        tableNameFormat.Match(tableName).Groups["unquoted"].Value,
+                        searchColumnsFormat.Match(searchColumns).Groups["unquoted"].Value,
                         pattern);
 
                     cmd.CommandText =

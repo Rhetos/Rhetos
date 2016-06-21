@@ -27,7 +27,7 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// Represents the Save() method of the entity's repository in the generated business layes object model (ServerDom.dll).
+    /// Represents the Save() method of the entity's repository in the generated business layer object model (ServerDom.dll).
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SaveMethod")]

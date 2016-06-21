@@ -274,7 +274,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(@"ls=""def""", description[7]);
                 Assert.AreEqual(@"m=""11.2200""", description[8]);
                 Assert.AreEqual(@"rID=""" + SqlUtility.GuidToString(simple.ID) + @"""", description[9]);
-                Assert.IsTrue(new Regex(@"^t=""2001-02-03T04:05:06(.0+)?""$").IsMatch(description[10]));// optional millisconds
+                Assert.IsTrue(new Regex(@"^t=""2001-02-03T04:05:06(.0+)?""$").IsMatch(description[10]));// optional milliseconds
             }
         }
     }

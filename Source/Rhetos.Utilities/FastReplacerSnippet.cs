@@ -112,7 +112,7 @@ namespace Rhetos.Utilities
                 if (a.Order1 != b.Order1) return a.Order1 - b.Order1;
                 if (a.Order2 != b.Order2) return a.Order2 - b.Order2;
                 throw new InvalidOperationException(string.Format(
-                    "Internal error: Two snippets have ambigous order. At position from {0} to {1}, order1 is {2}, order2 is {3}. First snippet is \"{4}\", second snippet is \"{5}\".",
+                    "Internal error: Two snippets have ambiguous order. At position from {0} to {1}, order1 is {2}, order2 is {3}. First snippet is \"{4}\", second snippet is \"{5}\".",
                     a.Start, a.End, a.Order1, a.Order2, a.Snippet.Text, b.Snippet.Text));
             });
             int lastPosition = 0;

@@ -4,11 +4,8 @@
     <Recognized>
       <Word>Plugin</Word>
       <Word>Plugins</Word>
-      <Word>Pointcut</Word>
-      <Word>Pointcuts</Word>
       <Word>Mef</Word>
       <Word>Autofac</Word>
-      <Word>Registrator</Word>      
     </Recognized>
   </Words>
   <Acronyms>

@@ -57,7 +57,7 @@ namespace Rhetos.AspNetFormsAuth
             }
         }
 
-        const string installationErrorMessage = "Please completed the installation of AspNetFormsAuth package. Follow the installation instuctions in the Readme.md file inside AspNetFormsAuth package.";
+        const string installationErrorMessage = "Please completed the installation of AspNetFormsAuth package. Follow the installation instructions in the Readme.md file inside AspNetFormsAuth package.";
 
         public void Initialize()
         {

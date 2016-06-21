@@ -101,8 +101,8 @@ namespace CommonConcepts.Test
                 }
 
                 {
-                    // Using "ToList()" in the following query results with lazy loading the "Children" members (2 additional SQL queryes,
-                    // one for each parent), and lazy lading the "Base.Name" property (3 additional SQL queryes, one for each child).
+                    // Using "ToList()" in the following query results with lazy loading the "Children" members (2 additional SQL queries,
+                    // one for each parent), and lazy lading the "Base.Name" property (3 additional SQL queries, one for each child).
                     var parentsList = repository.TestLazyLoad.Parent.Query().ToList();
                     var childrenNames = parentsList.SelectMany(parent => parent.Children.Select(child => child.Base.Name)).ToArray();
                     Assert.AreEqual("sb11, sb12, sb2", TestUtility.DumpSorted(childrenNames));
@@ -141,7 +141,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("p0", simples[0].Parent.Name);
                 Assert.AreEqual("sb0, sb1", TestUtility.DumpSorted(parents[0].Children.Select(c => c.Base.Name)));
 
-                // When removing objects from Entity Framwork's cache, the EF will automatically set references
+                // When removing objects from Entity Framework's cache, the EF will automatically set references
                 // between objects to null. Rhetos includes a hack to keep the references, so some data will
                 // be available even though the proxies will probably not work.
                 container.Resolve<IPersistenceCache>().ClearCache();

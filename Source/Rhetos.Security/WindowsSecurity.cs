@@ -136,7 +136,7 @@ namespace Rhetos.Security
 
         /// <summary>
         /// Queries Active Directory server to retrieve the user's Windows domain groups.
-        /// Throws an exception if the username does not have the current domain perfix.
+        /// Throws an exception if the username does not have the current domain prefix.
         /// Returns null if the user is not found on Active Directory (returns empty list is the user exists, but has no membership records).
         /// </summary>
         public IEnumerable<string> GetIdentityMembership(string username)
@@ -205,7 +205,7 @@ namespace Rhetos.Security
                         }
                     }
                     else
-                        _logger.Trace(() => string.Format("Cannot find active directory enity for user's '{0}' parent group with objectSid '{1}'.", accountName, mySID.Value));
+                        _logger.Trace(() => string.Format("Cannot find the active directory entry for user's '{0}' parent group with objectSid '{1}'.", accountName, mySID.Value));
                 }
             }
             else
@@ -216,7 +216,7 @@ namespace Rhetos.Security
         }
 
         /// <summary>
-        /// Throws an exception if the username does not have the current domain perfix.
+        /// Throws an exception if the username does not have the current domain prefix.
         /// </summary>
         private string RemoveDomainPrefix(string username)
         {

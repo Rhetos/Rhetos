@@ -589,8 +589,8 @@ GO
 ALTER PROCEDURE Rhetos.DataMigrationUse
 	@SchemaName NVARCHAR(256), @TableName NVARCHAR(256), @ColumnName NVARCHAR(256), @ColumnType NVARCHAR(256)
 AS
-	-- Data-migration SQL scrtipts must provide a valid @ColumnType argument (use Rhetos.HelpDataMigration for help).
-	-- @ColumnType may be null (autodetect) only when the procedure is called by server application during automatic column backup/restore process.
+	-- Data-migration SQL scripts must provide a valid @ColumnType argument (use Rhetos.HelpDataMigration for help).
+	-- @ColumnType may be null (auto-detect) only when the procedure is called by server application during automatic column backup/restore process.
     
 	-- Standard error-handling header
 	DECLARE @InitialTranCount INT

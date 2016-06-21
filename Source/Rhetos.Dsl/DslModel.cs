@@ -328,7 +328,7 @@ namespace Rhetos.Dsl
         {
             var sw = Stopwatch.StartNew();
 
-            // Validations are grouped by concept type, for group preformance diagnostics.
+            // Validations are grouped by concept type, for group performance diagnostics.
             var validationsByConcept = new MultiDictionary<Type, Action>();
 
             foreach (var conceptValidation in _dslContainer.FindByType<IValidationConcept>())

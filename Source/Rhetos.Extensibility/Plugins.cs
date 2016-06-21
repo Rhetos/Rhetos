@@ -94,7 +94,7 @@ namespace Rhetos.Extensibility
 
         /// <summary>
         /// Since the last registration is considered the active one, when overriding previous registrations
-        /// use this function to verify if the previous plugins are already registered and will be overriden.
+        /// use this function to verify if the previous plugins are already registered and will be overridden.
         /// 
         /// To force the specific registration order between modules (derivations of Autofac.Module)
         /// use [ExportMetadata(MefProvider.DependsOn, typeof(the other Autofac.Module derivation))] attribute
@@ -115,11 +115,11 @@ namespace Rhetos.Extensibility
                     string error = "Unexpected plugins while overriding '" + typeof(TInterface).Name + "' with '" + typeof(TImplementation).Name + "'.";
 
                     if (missingRegistration.Count > 0)
-                        error += " The following plugins should have been previous registered in order to be overriden: "
+                        error += " The following plugins should have been previous registered in order to be overridden: "
                             + string.Join(", ", missingRegistration.Select(r => r.Name)) + ".";
 
                     if (excessRegistration.Count > 0)
-                        error += " The following plugins have been previous registered and whould be unintentionally overriden: "
+                        error += " The following plugins have been previous registered and would be unintentionally overridden: "
                             + string.Join(", ", excessRegistration.Select(r => r.Name)) + ".";
 
                     error += " Verify that the module registration is occurring in the right order: Use [ExportMetadata(MefProvider.DependsOn, typeof(other Autofac.Module implementation))], to make those registration will occur before this one.";

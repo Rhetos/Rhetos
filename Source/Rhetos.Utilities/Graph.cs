@@ -130,7 +130,7 @@ namespace Rhetos.Utilities
 
         /// <summary>
         /// Returns a list of nodes (a subset of 'candidates') that can be safely removed in a way
-        /// that no other remaining node depends (directly or inderectly) on removed nodes.
+        /// that no other remaining node depends (directly or indirectly) on removed nodes.
         /// </summary>
         /// <param name="candidates">Nodes to be removed.</param>
         /// <param name="dependencies">Dependency: Item2 depends on Item1.</param>

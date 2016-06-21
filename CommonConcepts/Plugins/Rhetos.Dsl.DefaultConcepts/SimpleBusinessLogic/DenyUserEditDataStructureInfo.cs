@@ -36,7 +36,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
             if (!(DataStructure is IWritableOrmDataStructure))
-                throw new DslSyntaxException(this, this.GetKeywordOrTypeName() + " may only be used on a writeable data structure, such as an Entity.");
+                throw new DslSyntaxException(this, this.GetKeywordOrTypeName() + " may only be used on a writable data structure, such as an Entity.");
         }
     }
 }

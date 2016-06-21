@@ -582,12 +582,12 @@ namespace Rhetos.CommonConcepts.Test
                 new FilterCriteria { Filter = typeof(QueryLoaderFilter).FullName } }, preferQuery: true)));
             Assert.AreEqual("QP", entityRepos.Log); entityRepos._log.Clear();
 
-            // For a single filter, loader is prefered:
+            // For a single filter, loader is preferred:
             Assert.AreEqual("IL: ql1, ql2", TypeAndNames(genericRepos.Load(new[] {
                 new FilterCriteria { Filter = typeof(QueryLoaderFilter).FullName } })));
             Assert.AreEqual("LP", entityRepos.Log); entityRepos._log.Clear();
 
-            // For multiple filters, queryable loader (QP) is prefered:
+            // For multiple filters, queryable loader (QP) is preferred:
             Assert.AreEqual("IL: ql1", TypeAndNames(genericRepos.Load(new[] {
                 new FilterCriteria { Filter = typeof(QueryLoaderFilter).FullName },
                 new FilterCriteria { Property = "Name", Operation = "Contains", Value = "1" } })));

@@ -46,7 +46,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         /// <summary>Lists "updated" and "deleted" contain OLD data.
         /// Enumerables "insertedNew", "updatedNew" and "deletedIds" contain NEW data.
-        /// Sample usage: 1. Verify that locked items are not goind to be updated or deleted, 2. Cascade delete.</summary>
+        /// Sample usage: 1. Verify that locked items are not going to be updated or deleted, 2. Cascade delete.</summary>
         public static readonly CsTag<DataStructureInfo> OldDataLoadedTag = "WritableOrm OldDataLoaded";
 
         [Obsolete]
@@ -54,12 +54,12 @@ namespace Rhetos.Dom.DefaultConcepts
 
         /// <summary>Insert code here to recompute (insert/update/delete) other entities that depend on the changes items.
         /// Queries "inserted" and "updated" will return NEW data.
-        /// Data is already saved to the database (but the SQL transaction has not yet been commited) so SQL validations and computations can be used.</summary>
+        /// Data is already saved to the database (but the SQL transaction has not yet been committed) so SQL validations and computations can be used.</summary>
         public static readonly CsTag<DataStructureInfo> OnSaveTag1 = "WritableOrm OnSaveTag1";
 
         /// <summary>Insert code here to verify that invalid items are not going to be inserted or updated.
         /// Queries "inserted" and "updated" will return NEW data.
-        /// Data is already saved to the database (but the SQL transaction has not yet been commited) so SQL validations and computations can be used.</summary>
+        /// Data is already saved to the database (but the SQL transaction has not yet been committed) so SQL validations and computations can be used.</summary>
         public static readonly CsTag<DataStructureInfo> OnSaveTag2 = "WritableOrm OnSaveTag2";
 
         public static readonly CsTag<DataStructureInfo> OnDatabaseErrorTag = "WritableOrm OnDatabaseError";

@@ -86,7 +86,7 @@ namespace Rhetos.Processing.DefaultCommands
 
             return new CommandResult
             {
-                Message = "Comand executed",
+                Message = "Command executed",
                 Success = true
             };
         }

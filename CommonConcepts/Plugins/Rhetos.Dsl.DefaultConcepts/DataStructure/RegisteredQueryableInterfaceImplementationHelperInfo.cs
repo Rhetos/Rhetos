@@ -29,7 +29,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// <summary>
     /// Registers the data structure (and it's repository) as the main implementation of the given interface.
     /// This allows for type-safe code in external business layer class library to have simple access to
-    /// the generated data structure's class and the repository using predifined intefaces.
+    /// the generated data structure's class and the repository using predefined interfaces.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RegisteredImplementation")]

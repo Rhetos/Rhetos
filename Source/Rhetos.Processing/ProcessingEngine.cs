@@ -181,7 +181,7 @@ namespace Rhetos.Processing
                 if (ex is UserException)
                 {
                     var userException = (UserException)ex;
-                    userMessage = _localizer[userException.Message, userException.MessageParameters]; // TODO: Remove this code aftear cleaning the double layer of exceptions in the server response call stack.
+                    userMessage = _localizer[userException.Message, userException.MessageParameters]; // TODO: Remove this code after cleaning the double layer of exceptions in the server response call stack.
                     systemMessage = userException.SystemMessage;
                 }
                 else if (ex is ClientException)

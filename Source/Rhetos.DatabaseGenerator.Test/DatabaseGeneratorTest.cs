@@ -658,7 +658,7 @@ namespace Rhetos.DatabaseGenerator.Test
             var ca1 = createdApplications.Where(ca => ca.ConceptInfo == ci1).Single();
             var ca3 = createdApplications.Where(ca => ca.ConceptInfo == ci3).Single();
 
-            Assert.IsTrue(DirectAndIndirectDependencies(ca1).Contains(ca3), "Concept application ca3 should be included in direct or indirect depedencies of ca1.");
+            Assert.IsTrue(DirectAndIndirectDependencies(ca1).Contains(ca3), "Concept application ca3 should be included in direct or indirect dependencies of ca1.");
         }
 
         private static IEnumerable<ConceptApplication> DirectAndIndirectDependencies(ConceptApplication ca)

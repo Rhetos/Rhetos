@@ -96,7 +96,7 @@ namespace Rhetos.Utilities
                     return new FrameworkException("Rhetos server lacks sufficient database permissions for this operation. Please make sure that Rhetos Server process has db_owner role for the database.", exception);
 
             //=========================
-            // Detect UNIQUE constaint:
+            // Detect UNIQUE constraint:
 
             if (sqlException.Number == 2601)
             {
@@ -118,7 +118,7 @@ namespace Rhetos.Utilities
             }
 
             //=========================
-            // Detect REFERENCE constaint:
+            // Detect REFERENCE constraint:
 
             if (sqlException.Number == 547)
             {
@@ -143,7 +143,7 @@ namespace Rhetos.Utilities
                         interpretedException.Info["Constraint"] = "Reference";
                         interpretedException.Info["Action"] = action;
                         if (parts[5].Success)
-                            interpretedException.Info["ConstraintName"] = parts[5].Value; // The FK constraint name is ambiguous: The error does not show the schema name and the base table that the INSERT or UPDATE acctually happened.
+                            interpretedException.Info["ConstraintName"] = parts[5].Value; // The FK constraint name is ambiguous: The error does not show the schema name and the base table that the INSERT or UPDATE actually happened.
                         if (parts[7].Success)
                             interpretedException.Info[action == "DELETE" ? "DependentTable" : "ReferencedTable"] = parts[7].Value;
                         if (parts[9].Success)

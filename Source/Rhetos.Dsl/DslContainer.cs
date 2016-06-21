@@ -168,7 +168,7 @@ namespace Rhetos.Dsl
                     }
             }
 
-            // Unresolved concepts should alse include any concept with resolved references that references an unresolved concept.
+            // Unresolved concepts should also include any concept with resolved references that references an unresolved concept.
             newUnresolved = Graph.IncludeDependents(newUnresolved, dependencies);
 
             var unresolvedIndex = new HashSet<string>(newUnresolved);

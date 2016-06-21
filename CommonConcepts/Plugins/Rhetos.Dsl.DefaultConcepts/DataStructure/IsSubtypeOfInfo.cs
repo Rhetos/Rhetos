@@ -41,7 +41,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         /// <summary>
         /// The same Subtype data structure may implement the same Supertype, using a different ImplementationName.
-        /// If there is only one implementation, use empty ImplementationName for better performace.
+        /// If there is only one implementation, use empty ImplementationName for better performance.
         /// </summary>
         [ConceptKey]
         public string ImplementationName { get; set; }

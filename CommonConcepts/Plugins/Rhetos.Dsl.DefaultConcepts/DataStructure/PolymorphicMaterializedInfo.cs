@@ -50,7 +50,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 FilterSaveExpression = ""
             });
 
-            // Optimized filter by subtype allows efficient queryies on the polymophic's view,
+            // Optimized filter by subtype allows efficient queries on the polymorphic's view,
             // but it does not need to use the subtype name (and persist it) when querying the materialized data.
             newConcepts.Add(new FilterByInfo
             {

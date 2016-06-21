@@ -255,7 +255,7 @@ namespace Rhetos.CommonConcepts.Test
         [TestMethod]
         public void SimpleTest_Cache()
         {
-            // Avoid loading setitng from web.config.
+            // Avoid loading setting from web.config.
             var expiration = typeof(AuthorizationDataCache).GetField("_defaultExpirationSeconds", BindingFlags.Static | BindingFlags.NonPublic);
             expiration.SetValue(null, (double?)60 * 60 * 24 * 365); // Very long expiration time for simpler debugging.
 
@@ -358,7 +358,7 @@ RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMisses(log1))
         [TestMethod]
         public void SimilarClaimsTestWithCache()
         {
-            // Avoid loading setitng from web.config.
+            // Avoid loading setting from web.config.
             var expiration = typeof(AuthorizationDataCache).GetField("_defaultExpirationSeconds", BindingFlags.Static | BindingFlags.NonPublic);
             expiration.SetValue(null, (double?)60 * 60 * 24 * 365); // Very long expiration time for simpler debugging.
 
@@ -445,7 +445,7 @@ PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMiss
         [TestMethod]
         public void ClearCachePrincipalsRoles()
         {
-            // Avoid loading setitng from web.config.
+            // Avoid loading setting from web.config.
             var expiration = typeof(AuthorizationDataCache).GetField("_defaultExpirationSeconds", BindingFlags.Static | BindingFlags.NonPublic);
             expiration.SetValue(null, (double?)60 * 60 * 24 * 365); // Very long expiration time for simpler debugging.
 

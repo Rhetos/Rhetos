@@ -89,12 +89,12 @@ namespace Rhetos.DatabaseGenerator
                 ConceptApplicationRepository.CheckKeyUniqueness(newApplications, "created");
                 _performanceLogger.Write(stopwatch, "DatabaseGenerator: Verify new concept applications' integrity.");
                 newApplications = TrimEmptyApplications(newApplications);
-                _performanceLogger.Write(stopwatch, "DatabaseGenerator: Removed unsused concept applications.");
+                _performanceLogger.Write(stopwatch, "DatabaseGenerator: Removed unused concept applications.");
 
                 List<ConceptApplication> toBeRemoved;
                 List<NewConceptApplication> toBeInserted;
                 CalculateApplicationsToBeRemovedAndInserted(oldApplications, newApplications, out toBeRemoved, out toBeInserted);
-                _performanceLogger.Write(stopwatch, "DatabaseGenerator: Analized differences in database structure.");
+                _performanceLogger.Write(stopwatch, "DatabaseGenerator: Analyzed differences in database structure.");
 
                 ApplyChangesToDatabase(oldApplications, newApplications, toBeRemoved, toBeInserted);
                 _performanceLogger.Write(stopwatch, "DatabaseGenerator: Applied changes to database.");
@@ -151,7 +151,7 @@ namespace Rhetos.DatabaseGenerator
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: Created concept applications from plugins.");
 
             ComputeDependsOn(conceptApplications);
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: Computed depencies.");
+            _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: Computed dependencies.");
 
             ComputeCreateAndRemoveQuery(conceptApplications, _dslModel.Concepts);
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: Generated SQL queries for new concept applications.");
@@ -371,7 +371,7 @@ namespace Rhetos.DatabaseGenerator
         {
             if (!conceptInfosByKey.ContainsKey(conceptInfoKey))
                 throw new FrameworkException(string.Format(
-                    "DatabaseGenerator error while generating code with plugin {0}: Extension created a dependency to the nonexisting concept info {1}.",
+                    "DatabaseGenerator error while generating code with plugin {0}: Extension created a dependency to the nonexistent concept info {1}.",
                     debugContextNewConceptApplication.ConceptImplementationType.Name,
                     conceptInfoKey));
             return conceptInfosByKey[conceptInfoKey];
@@ -660,7 +660,7 @@ namespace Rhetos.DatabaseGenerator
     /// <summary>
     /// This concept implementation is used for concepts that have no database implementation.
     /// This is useful for handling dependencies between concept application in situations where one concept application depends on another concept info
-    /// that has no implementation and which depens on third concept application. First concept application should indirectly depend on third, even thow there
+    /// that has no implementation and which depends on a third concept application. First concept application should indirectly depend on third, even though there
     /// is no second concept application.  Such scenarios are easier to handle if every concept has its implementation.
     /// </summary>
     public class NullImplementation : IConceptDatabaseDefinition

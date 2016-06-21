@@ -36,7 +36,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var baseDataStructure = GetBaseDataStructure(existingConcepts);
             if (baseDataStructure == null)
-                return null; // Migth be created in a later iteration.
+                return null; // Might be created in a later iteration.
 
             return new IConceptInfo[]
             {

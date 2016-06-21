@@ -50,7 +50,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public string CreateViewCodeSnippet(PolymorphicInfo conceptInfo)
         {
             // Column names list (@columnList) is separated from the create query (@sql)
-            // to be used in subqueryes, to make sure that the order of columns is the same
+            // to be used in subqueries, to make sure that the order of columns is the same
             // in all the subqueries. This is necessary for UNION ALL.
 
             return string.Format(

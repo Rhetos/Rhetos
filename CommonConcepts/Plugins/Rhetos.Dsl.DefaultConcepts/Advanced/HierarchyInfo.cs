@@ -168,7 +168,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             return new IConceptInfo[]
             {
-                // Computing the hierarcy information:
+                // Computing the hierarchy information:
                 computedDataStructure,
                 new ModuleExternalReferenceInfo { Module = computedDataStructure.Module, TypeOrAssembly = @"Plugins\Rhetos.Dom.DefaultConcepts.dll" },
                 new DataStructureExtendsInfo { Extension = computedDataStructure, Base = conceptInfo.DataStructure },
@@ -176,14 +176,14 @@ namespace Rhetos.Dsl.DefaultConcepts
                 new IntegerPropertyInfo { DataStructure = computedDataStructure, Name = "RightIndex" },
                 new IntegerPropertyInfo { DataStructure = computedDataStructure, Name = "Level" },
 
-                // Persisting the hierarcy information:
+                // Persisting the hierarchy information:
                 persistedDataStructure,
                 new PersistedAllPropertiesInfo { Persisted = persistedDataStructure }, // This will copy all properties from computedDataStructure.
                 new PersistedKeepSynchronizedInfo { Persisted = persistedDataStructure },
                 persistedLeftIndexProperty,
                 new SqlIndexInfo { Property = persistedLeftIndexProperty },
 
-                // Implement filters for finding ancestors and descendants, using indexed pesisted data:
+                // Implement filters for finding ancestors and descendants, using indexed persisted data:
                 filterAncestorsParameter,
                 filterDescendantsParameter,
                 new GuidPropertyInfo { DataStructure = filterAncestorsParameter, Name = "ID" },
@@ -195,7 +195,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         }
 
         /// <summary>
-        /// Returns all entites that a given data structure is constructed from.
+        /// Returns all entities that a given data structure is constructed from.
         /// If the given data structure depends is an entity, it will be the only item in the result.
         /// </summary>
         public static List<DataStructureInfo> GetDependsOnWriteableDataStructure(DataStructureInfo dataStructure, IDslModel allConcepts, IConceptInfo errorContext)

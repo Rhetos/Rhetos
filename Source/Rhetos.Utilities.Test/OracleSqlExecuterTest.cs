@@ -183,7 +183,7 @@ END;" }),
             string table = GetRandomTableName();
 
             GetSqlExecuter().ExecuteSql(new[] { "CREATE TABLE " + table + " ( A INTEGER )" });
-            AssertRowCount(0, table, "initailization");
+            AssertRowCount(0, table, "initialization");
             TestUtility.ShouldFail(
                 () => GetSqlExecuter().ExecuteSql(new[] {
                     "INSERT INTO " + table + " VALUES (123)",
@@ -226,7 +226,7 @@ END;" }),
 
             GetSqlExecuter().ExecuteSql(new[] { "CREATE TABLE " + table + " ( A INTEGER )" });
 
-            AssertRowCount(0, table, "initailization");
+            AssertRowCount(0, table, "initialization");
 
             TestUtility.ShouldFail(
                 () => GetSqlExecuter().ExecuteSql(new[] {

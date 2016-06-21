@@ -212,7 +212,7 @@ namespace Rhetos.Dom.DefaultConcepts
             Type predicateParameter = GetPredicateExpressionParameter(predicateExpression.GetType());
             MethodInfo whereMethod = QueryableWhereMethod(predicateParameter);
             var result = (IQueryable<TEntityInterface>)whereMethod.InvokeEx(null, items, predicateExpression);
-            // The Expression predicat in the Where function does not support contravariance, so the IQueryable will be cast to the Expression type.
+            // The Expression predicate in the Where function does not support contravariance, so the IQueryable will be cast to the Expression type.
             // This typically happens when filtering `IQ<Common.Queryable.module_entity>` by a filter with `Module.Entity` parameter, or `IEntity` or another interface.
             // If the result without casting is returned, the declared element type (simple instance) would not match actual element type (queryable instance).
             // Also is would not be possible to apply other filter expressions with a supertype parameter.

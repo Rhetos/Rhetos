@@ -27,7 +27,7 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// Property is an abstact concept: there is no ConceptKeyword.
+    /// Property is an abstract concept: there is no ConceptKeyword.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     public class PropertyInfo : IConceptInfo

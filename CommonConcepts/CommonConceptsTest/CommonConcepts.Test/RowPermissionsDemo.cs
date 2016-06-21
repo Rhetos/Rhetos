@@ -209,7 +209,7 @@ namespace CommonConcepts.Test
                 var serverResponse = processingEngine.Execute(new[] { serverCommand });
                 var report = GenerateReport(serverResponse);
                 Console.WriteLine("Server response: " + report);
-                Assert.AreEqual("Comand executed", report);
+                Assert.AreEqual("Command executed", report);
 
                 var documents = repository.DemoRowPermissions2.Document.Query().Select(d => d.Title).OrderBy(t => t);
                 Assert.AreEqual("doc1x, doc2, doc3, doc4", string.Join(", ", documents));
@@ -371,7 +371,7 @@ namespace CommonConcepts.Test
                 var genericRepositories = container.Resolve<GenericRepositories>();
                 var principalRepository = genericRepositories.GetGenericRepository("Common.Principal");
 
-                // Avoding direct use of Common.Principal class, because some AspNetFormsAuth
+                // Avoiding direct use of Common.Principal class, because some AspNetFormsAuth
                 // package extend the class with specific interfaces, requiring this project
                 // to reference those plugins.
 

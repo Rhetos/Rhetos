@@ -92,7 +92,7 @@ namespace {0}._Helper
             var info = (ModuleInfo)conceptInfo;
 
             codeBuilder.InsertCode(GenerateNamespaceSnippet(info));
-            // Default .NET framework asseblies:
+            // Default .NET framework assemblies:
             codeBuilder.AddReferencesFromDependency(typeof(int)); // Includes reference to mscorlib.dll
             codeBuilder.AddReferencesFromDependency(typeof(Enumerable)); // Includes reference to System.Core.
             codeBuilder.AddReferencesFromDependency(typeof(ISet<>)); // Includes reference to System.

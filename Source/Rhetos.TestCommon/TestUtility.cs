@@ -202,7 +202,7 @@ namespace Rhetos.TestCommon
         }
 
         /// <summary>
-        /// Shortens sequences of repeating charaters, if longer then 3.
+        /// Shortens sequences of repeating characters, if longer then 3.
         /// Example: "aaaaaaaaaaXXXbbbb" => "aaa...(10)XXXbbb...(5)"
         /// </summary>
         public static string CompressReport(string text)

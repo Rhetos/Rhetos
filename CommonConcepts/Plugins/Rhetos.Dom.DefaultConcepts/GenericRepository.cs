@@ -46,10 +46,10 @@ namespace Rhetos.Dom.DefaultConcepts
     /// GenericRepository is a helper for a type-safe reflection-based use of the repositories in the ServerDom.dll,
     /// without a need to directly reference ServerDom.dll.
     /// For the type-safe use of an entity with a GenericRepository, set the generic parameter to an interface that an entity implements (ImplementInterface concept).
-    /// For the pure reflection-based use of an entity with a GenericRepository, privide the full entity name when creating the GenericRepository; the IEntity interface will be used for all methods.
+    /// For the pure reflection-based use of an entity with a GenericRepository, provide the full entity name when creating the GenericRepository; the IEntity interface will be used for all methods.
     /// </summary>
     /// <remarks>
-    /// The term "entity" in the contest of this class representy any identifiable
+    /// The term "entity" in the contest of this class represents any identifiable
     /// data structure (implementation of IEntity). Not to be confused with Entity
     /// DSL concept, which generates only one kind of IEntity (common entity).
     /// Other IEntity implementations can also be handled by this class.
@@ -130,7 +130,7 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         /// <returns>Result is a List&lt;&gt; of the data structure type.
-        /// The list is returened as IEnumerable&lt;&gt; of the interface type,
+        /// The list is returned as IEnumerable&lt;&gt; of the interface type,
         /// to allow strongly-typed use of the list through TEntityInterface interface.
         /// Neither List&lt;&gt; or IList&lt;&gt; are covariant, so IEnumerable&lt;&gt; is used.</returns>
         public IEnumerable<TEntityInterface> CreateList(int size)
@@ -145,7 +145,7 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         /// <returns>Result is a List&lt;&gt; of the data structure type.
-        /// The list is returened as IEnumerable&lt;&gt; of the interface type,
+        /// The list is returned as IEnumerable&lt;&gt; of the interface type,
         /// to allow strongly-typed use of the list through TEntityInterface interface.
         /// Neither List&lt;&gt; or IList&lt;&gt; are covariant, so IEnumerable&lt;&gt; is used.</returns>
         public IEnumerable<TEntityInterface> CreateList<TSource>(IEnumerable<TSource> source, Action<TSource, TEntityInterface> initializer)
@@ -645,7 +645,7 @@ namespace Rhetos.Dom.DefaultConcepts
         ///     }
         /// </code></param>
         /// <param name="sameValue">Compare other properties, determining the records that should be updated.
-        /// Comparison may also include key properties with stricter constaints (such as case sensitivity).
+        /// Comparison may also include key properties with stricter constraints (such as case sensitivity).
         /// Typical implementation:
         /// <code>(x, y) =&gt; x.Name == y.Name &amp;&amp; x.SomeValue == y.SomeValue;</code></param>
         /// <param name="assign">Typical implementation:
@@ -733,7 +733,7 @@ namespace Rhetos.Dom.DefaultConcepts
         ///     }
         /// </code></param>
         /// <param name="sameValue">Compare other properties, determining the records that should be updated.
-        /// Comparison may also include key properties with stricter constaints (such as case sensitivity).
+        /// Comparison may also include key properties with stricter constraints (such as case sensitivity).
         /// Typical implementation:
         /// <code>(x, y) =&gt; x.Name == y.Name &amp;&amp; x.SomeValue == y.SomeValue;</code></param>
         /// <param name="filterLoad">For supported filters types see <see cref="Load{TParameter}(TParameter)"/> function.</param>
@@ -789,7 +789,7 @@ namespace Rhetos.Dom.DefaultConcepts
         ///     }
         /// </code></param>
         /// <param name="sameValue">Compare other properties, determining the records that should be updated.
-        /// Comparison may also include key properties with stricter constaints (such as case sensitivity).
+        /// Comparison may also include key properties with stricter constraints (such as case sensitivity).
         /// Typical implementation:
         /// <code>(x, y) =&gt; x.Name == y.Name &amp;&amp; x.SomeValue == y.SomeValue;</code></param>
         /// <param name="filterLoad">For supported filters types see <see cref="Load{TParameter}(TParameter)"/> function.</param>
@@ -855,8 +855,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (toDelete.Count() + toDeactivate.Count() != oldDeleteCount)
                     throw new FrameworkException(string.Format(
                         "Invalid number of items to deactivate for '{0}'."
-                            + " Verify if the deactivation filter ({1}) on that data structure retuns a valid subset of the given items."
-                            + " {2} items to remove: {3} items to deactivate and {4} items remainig to delete (should be {5}).",
+                            + " Verify if the deactivation filter ({1}) on that data structure returns a valid subset of the given items."
+                            + " {2} items to remove: {3} items to deactivate and {4} items remaining to delete (should be {5}).",
                         _repositoryName, filterDeactivateDeleted.GetType().FullName,
                         oldDeleteCount, toDeactivate.Count(), toDelete.Count(), oldDeleteCount - toDeactivate.Count()));
 

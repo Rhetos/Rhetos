@@ -137,7 +137,7 @@ namespace Rhetos.Dsl.Test
                 Assert.IsTrue(ex.Message.Contains("SimpleConceptInfo"), "Concept type.");
                 Assert.IsTrue(ex.Message.Contains("Special"), "Unexpected special token while reading text.");
                 Assert.IsTrue(ex.Message.Contains("{"), "Unexpected special token '{' while reading text.");
-                Assert.IsTrue(ex.Message.Contains("quotes"), "Use quotes to specifie text (e.g. '{')");
+                Assert.IsTrue(ex.Message.Contains("quotes"), "Use quotes to specify text (e.g. '{')");
                 throw;
             }
         }
@@ -464,7 +464,7 @@ namespace Rhetos.Dsl.Test
         /// This is not a must-have feature:
         /// 1. Ambiguity occurs only when there are multiple concepts with the same footprint (keyword and key properties),
         /// such as EntityHistoryAllProperties and LoggingAllProperties.
-        /// 2. The ambiguity could be resolved by a semantic check, but that would be hard to implement becase of the possibility to reference concepts
+        /// 2. The ambiguity could be resolved by a semantic check, but that would be hard to implement because of the possibility to reference concepts
         /// that will later be created by the macro concepts.
         /// </summary>
         [TestMethod()]

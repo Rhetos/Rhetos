@@ -41,7 +41,7 @@ namespace Rhetos.Compiler
         /// Code can be inserted at the tag position multiple times.
         /// New code is inserted <b>before</b> the previously inserted code,
         /// so that multiple insertions at the same tag will result
-        /// in reversed order of the generatered code.
+        /// in reversed order of the generated code.
         /// </summary>
         Reverse
     };

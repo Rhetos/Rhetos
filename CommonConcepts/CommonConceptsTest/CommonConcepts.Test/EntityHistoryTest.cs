@@ -780,7 +780,7 @@ namespace CommonConcepts.Test
 
                 TestUtility.Dump(new[] { future1, future2, future3 }, item => item.ToString("o"));
 
-                // The last record (whether in future or not) should be regarded as "current record" by the Histroy concept.
+                // The last record (whether in future or not) should be regarded as "current record" by the History concept.
                 var lastRecordInFuture = new TestHistory.Simple { ID = Guid.NewGuid(), Code = 1, ActiveSince = future3 };
                 repository.TestHistory.Simple.Insert(new[] { lastRecordInFuture });
 

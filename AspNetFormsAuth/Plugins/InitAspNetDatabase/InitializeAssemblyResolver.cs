@@ -27,7 +27,7 @@ using System.Text;
 namespace InitAspNetDatabase
 {
     /// <summary>
-    /// AssemblyResolver needs to be initialized as a static member, to allow other static memebers' initialization (from Rhetos.Utilities).
+    /// AssemblyResolver needs to be initialized as a static member, to allow other static members' initialization (from Rhetos.Utilities).
     /// </summary>
     class InitializeAssemblyResolver
     {

@@ -143,7 +143,7 @@ namespace CommonConcepts.Test
                     Assert.AreEqual(test.Value, TestUtility.DumpSorted(filtered, item => item.Name2));
                 }
 
-                var testDescentantds = new Dictionary<TestHierarchy.Simple2, string>
+                var testDescendants = new Dictionary<TestHierarchy.Simple2, string>
                 {
                     { h, "h1, h2, h21" },
                     { h1, "" },
@@ -151,9 +151,9 @@ namespace CommonConcepts.Test
                     { h21, "" }
                 };
 
-                foreach (var test in testDescentantds)
+                foreach (var test in testDescendants)
                 {
-                    Console.WriteLine("Testing Descentantds " + test.Key.Name2 + " => " + test.Value);
+                    Console.WriteLine("Testing Descendants " + test.Key.Name2 + " => " + test.Value);
                     var filtered = repository.TestHierarchy.Simple2.Filter(new TestHierarchy.Parent2HierarchyDescendants { ID = test.Key.ID });
                     Assert.AreEqual(test.Value, TestUtility.DumpSorted(filtered, item => item.Name2));
                 }

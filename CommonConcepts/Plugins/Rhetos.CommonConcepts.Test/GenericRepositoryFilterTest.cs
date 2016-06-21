@@ -604,7 +604,7 @@ namespace Rhetos.CommonConcepts.Test
                 new FilterCriteria { Filter = typeof(QueryLoaderFilter).FullName } })));
             Assert.AreEqual("Q, QF, X", entityRepos.Log); entityRepos._log.Clear();
 
-            // Prefere queryable filter version of QueryLoaderFilter on queryable
+            // Prefer queryable filter version of QueryLoaderFilter on queryable
             Assert.AreEqual("IL: a1_qf, b1_qf", TypeAndNames(genericRepos.Filter(genericRepos.Query(), new[] {
                 new FilterCriteria { Filter = typeof(QueryLoaderFilter).FullName },
                 new FilterCriteria { Property = "Name", Operation = "Contains", Value = "1" } })));
@@ -616,7 +616,7 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual("Q, QF, X", entityRepos.Log); entityRepos._log.Clear();
 
             // Enumerable filter on queryable:
-            // Prefere enumerable filter version of QueryLoaderFilter on queryable
+            // Prefer enumerable filter version of QueryLoaderFilter on queryable
             Assert.AreEqual("IL: a1_ef_ef, a2_ef_ef, b1_ef_ef, b2_ef_ef", TypeAndNames(genericRepos.Filter(genericRepos.Query(), new[] {
                 new FilterCriteria { Filter = typeof(EnumerableFilter).FullName },
                 new FilterCriteria { Filter = typeof(QueryLoaderFilter).FullName }, })));

@@ -169,7 +169,7 @@ namespace Rhetos.Utilities
             if (!alreadyValidatedStartAndEnd)
             {
                 if (!token.StartsWith(TokenOpen, StringComparison.InvariantCultureIgnoreCase))
-                    throw new ArgumentException(string.Format("Token \"{0}\" shoud start with \"{1}\". Used with text \"{2}\".", token, TokenOpen, context));
+                    throw new ArgumentException(string.Format("Token \"{0}\" should start with \"{1}\". Used with text \"{2}\".", token, TokenOpen, context));
                 int closePosition = token.IndexOf(TokenClose, StringComparison.InvariantCultureIgnoreCase);
                 if (closePosition == -1)
                     throw new ArgumentException(string.Format("Token \"{0}\" should end with \"{1}\". Used with text \"{2}\".", token, TokenClose, context));

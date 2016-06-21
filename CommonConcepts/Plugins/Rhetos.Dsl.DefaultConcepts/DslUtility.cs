@@ -65,7 +65,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         }
 
         /// <summary>
-        /// Concatenates module name and data stucture name. Omits module name if it is same as the context module.
+        /// Concatenates module name and data structure name. Omits module name if it is same as the context module.
         /// </summary>
         public static string NameOptionalModule(DataStructureInfo dataStructure, ModuleInfo contextModule)
         {

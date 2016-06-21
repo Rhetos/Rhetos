@@ -122,13 +122,13 @@ namespace Rhetos.Utilities
             {
                 char c = name[0];
                 if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && c != '_')
-                    return "Given name '" + name + "' is not valid. First character is not an english letter or undescore.";
+                    return "Given name '" + name + "' is not valid. First character is not an English letter or underscore.";
             }
 
             {
                 foreach (char c in name)
                     if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && c != '_' && (c < '0' || c > '9'))
-                        return "Given name '" + name + "' is not valid. Character '" + c + "' is not an english letter or number or undescore.";
+                        return "Given name '" + name + "' is not valid. Character '" + c + "' is not an English letter or number or underscore.";
             }
 
             return null;
@@ -154,7 +154,7 @@ namespace Rhetos.Utilities
         /// If <paramref name="items"/> is not a List or an Array, converts it to a List&lt;<typeparamref name="T"/>&gt;.
         /// If the parameter is null, it will remain null.
         /// Use this function to make sure that the <paramref name="items"/> is not a LINQ query
-        /// before using it multiple times, in order to aviod the query evaluation every time
+        /// before using it multiple times, in order to avoid the query evaluation every time
         /// (sometimes it means reading data from the database on every evaluation).
         /// </summary>
         public static void Materialize<T>(ref IEnumerable<T> items)
@@ -226,7 +226,7 @@ namespace Rhetos.Utilities
 
         /// <summary>
         /// Returns a subset of the given strings that match the given prefixes.
-        /// String comparison is oridinal, case insensitive.
+        /// String comparison is ordinal, case insensitive.
         /// </summary>
         public static List<string> MatchPrefixes(List<string> strings, List<string> prefixes)
         {

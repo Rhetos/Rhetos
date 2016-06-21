@@ -26,8 +26,8 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// This concept is not necessary for defining a filter. Any data structure (or any data type) can be user as a filter parametar.
-    /// This concept can be used instead of the "DataStructure" concept simply to show an intention and procude a self-documenting code.
+    /// This concept is not necessary for defining a filter. Any data structure (or any data type) can be user as a filter parameter.
+    /// This concept can be used instead of the "DataStructure" concept simply to show an intention and produce a self-documenting code.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Parameter")]

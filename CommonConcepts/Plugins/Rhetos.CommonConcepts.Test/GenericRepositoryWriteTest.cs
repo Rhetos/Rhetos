@@ -93,9 +93,9 @@ namespace Rhetos.CommonConcepts.Test
 
             genericRepository.Save(insertArray, updateList, deleteQuery);
 
-            Assert.AreSame(insertArray, simpleEntityRepository.InsertedGroups.Single(), "Perfomanse issue: No array copying should have happend.");
-            Assert.AreSame(updateList, simpleEntityRepository.UpdatedGroups.Single(), "Perfomanse issue: No list copying should have happend.");
-            Assert.AreEqual(1, queryCount, "Perfomanse issue: Provided LINQ query should have been evaluated (and materialized) only once.");
+            Assert.AreSame(insertArray, simpleEntityRepository.InsertedGroups.Single(), "Performance issue: No array copying should have happened.");
+            Assert.AreSame(updateList, simpleEntityRepository.UpdatedGroups.Single(), "Performance issue: No list copying should have happened.");
+            Assert.AreEqual(1, queryCount, "Performance issue: Provided LINQ query should have been evaluated (and materialized) only once.");
         }
 
         [TestMethod]

@@ -44,7 +44,7 @@ namespace ReplaceRegEx
                 msg.AppendLine("Files will be searched recursively (unless /RootOnly switch is used) in current folder and subfolders.");
                 msg.AppendLine("Use standard wildcards to specify file name.");
                 msg.AppendLine("See examples of replacing with regular expressions at MSDN: 'Regex.Replace Method (String, String)'");
-                msg.AppendLine("Works on unicode text files with BOM and ANSI files. Does not work on unicode files without BOM.");
+                msg.AppendLine("Works on Unicode text files with BOM and ANSI files. Does not work on Unicode files without BOM.");
 
                 if (!(args.Length == 3
                     || args.Length == 4 && args[3].Equals("/RootOnly", StringComparison.OrdinalIgnoreCase)))

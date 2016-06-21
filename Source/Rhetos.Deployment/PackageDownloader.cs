@@ -67,7 +67,7 @@ namespace Rhetos.Deployment
             var sw = Stopwatch.StartNew();
             var installedPackages = new List<InstalledPackage>();
             installedPackages.Add(new InstalledPackage("Rhetos", SystemUtility.GetRhetosVersion(), new List<PackageRequest>(), Paths.RhetosServerRootPath,
-                new PackageRequest { Id = "Rhetos", VersionsRange = "", Source = "", RequestedBy = "Rhetos framwork" }, "."));
+                new PackageRequest { Id = "Rhetos", VersionsRange = "", Source = "", RequestedBy = "Rhetos framework" }, "."));
 
             var binFileSyncer = new FileSyncer(_logProvider);
             binFileSyncer.AddDestinations(Paths.PluginsFolder, Paths.ResourcesFolder); // Even if there are no packages, those folders must be created and emptied.
@@ -122,7 +122,7 @@ namespace Rhetos.Deployment
 
             if (!requestVersionsRange.Satisfies(existingVersion))
                 DependencyError(string.Format(
-                    "Incompatible package version '{0}, version {1}, requested by {2}' conflicts with prevously downloaded package '{3}, version {4}, requested by {5} ({6})'.",
+                    "Incompatible package version '{0}, version {1}, requested by {2}' conflicts with previously downloaded package '{3}, version {4}, requested by {5} ({6})'.",
                     request.Id, request.VersionsRange ?? "not specified", request.RequestedBy,
                     existing.Id, existing.Version, existing.Request.RequestedBy, existing.Request.VersionsRange));
 

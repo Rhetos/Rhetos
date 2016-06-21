@@ -51,7 +51,7 @@ namespace Rhetos.Utilities
 
     public class NullSqlExecuter : ISqlExecuter
     {
-        const string message = "SQL executer in not avaliable.";
+        const string message = "SQL executer in not available.";
 
         public void ExecuteReader(string command, Action<DbDataReader> action)
         {

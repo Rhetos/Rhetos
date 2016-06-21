@@ -39,7 +39,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public ReferencePropertyInfo ReferenceFromMe { get; set; }
 
         /// <summary>
-        /// Use it to additionaly filter out some items or sort the items within a group with the same reference value.
+        /// Use it to additionally filter out some items or sort the items within a group with the same reference value.
         /// </summary>
         public string SubFilterExpression { get; set; }
 

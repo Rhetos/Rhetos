@@ -54,7 +54,7 @@ namespace Rhetos.Dom.DefaultConcepts
             _referenceProperty = typeof(TTo).GetProperty(referenceName);
             if (_referenceProperty == null)
                 throw new FrameworkException("Cannot replace references in the expression. The type '"
-                    + typeof(TTo).Name + "' does not contain propery '" + referenceName + "' that references '" + typeof(TFrom).Name + "'.");
+                    + typeof(TTo).Name + "' does not contain property '" + referenceName + "' that references '" + typeof(TFrom).Name + "'.");
             _parameter = Expression.Parameter(typeof(TTo), parameterName);
             _copiedProperties = copiedProperties ?? Enumerable.Empty<Tuple<string, string>>();
         }
@@ -91,7 +91,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     var memberInfo = typeof(TTo).GetProperty(copiedProperty);
                     if (memberInfo == null)
                         throw new FrameworkException("Cannot replace references in the expression. The type '"
-                            + typeof(TTo).Name + "' does not contain propery '" + copiedProperty + "' that is copied from '" + typeof(TFrom).Name + "'.");
+                            + typeof(TTo).Name + "' does not contain property '" + copiedProperty + "' that is copied from '" + typeof(TFrom).Name + "'.");
                     return Expression.MakeMemberAccess(newExpression, memberInfo);
                 }
                 else
