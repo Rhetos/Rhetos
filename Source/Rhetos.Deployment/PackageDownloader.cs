@@ -372,6 +372,8 @@ namespace Rhetos.Deployment
         {
             var sw = Stopwatch.StartNew();
 
+            // Find the NuGet package:
+
             var nugetRepository = (source.Path != null && IsLocalPath(source.Path))
                 ? new LocalPackageRepository(source.Path, enableCaching: false) // When developer rebuilds a package, the package version does not need to be increased every time.
                 : PackageRepositoryFactory.Default.CreateRepository(source.ProcessedLocation);
@@ -386,9 +388,10 @@ namespace Rhetos.Deployment
                 _logger.Trace("Package " + request.ReportIdVersionsRange() + " not found by NuGet at " + source.ProcessedLocation + ".");
                 return null;
             }
-            else
-                _logger.Trace("Downloading NuGet package " + package.Id + " " + package.Version + " from " + source.ProcessedLocation + ".");
 
+            // Download the NuGet package:
+
+            _logger.Trace("Downloading NuGet package " + package.Id + " " + package.Version + " from " + source.ProcessedLocation + ".");
             var packageManager = new PackageManager(nugetRepository, Paths.PackagesFolder) {
                 Logger = new LoggerForNuget(_logProvider) };
             packageManager.LocalRepository.PackageSaveMode = PackageSaveModes.Nuspec;
@@ -400,8 +403,8 @@ namespace Rhetos.Deployment
 
             // Copy binary files and resources:
 
-            foreach (var libFile in FilterCompatibleLibFiles(package.GetFiles()))
-                binFileSyncer.AddFile(libFile.Path, Paths.PluginsFolder);
+            foreach (var file in FilterCompatibleLibFiles(package.GetFiles()))
+                binFileSyncer.AddFile(Path.Combine(targetFolder, file.Path), Paths.PluginsFolder);
 
             binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Plugins"), Paths.PluginsFolder, recursive: false); // Obsolete bin folder; lib should be used instead.
             binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Resources"), Paths.ResourcesFolder, SimplifyPackageName(package.Id), recursive: true);
