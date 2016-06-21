@@ -280,7 +280,7 @@ namespace Rhetos.Deployment
                 .Select(dependency => new PackageRequest
                 {
                     Id = dependency.Id,
-                    VersionsRange = dependency.VersionSpec.ToString(),
+                    VersionsRange = dependency.VersionSpec != null ? dependency.VersionSpec.ToString() : null,
                     RequestedBy = "package " + package.Id
                 }).ToList();
 
@@ -380,7 +380,14 @@ namespace Rhetos.Deployment
             var requestVersionsRange = !string.IsNullOrEmpty(request.VersionsRange)
                 ? VersionUtility.ParseVersionSpec(request.VersionsRange)
                 : new VersionSpec();
-            var package = nugetRepository.FindPackage(request.Id, requestVersionsRange, allowPrereleaseVersions: true, allowUnlisted: true);
+            IEnumerable<IPackage> packages = nugetRepository.FindPackages(request.Id, requestVersionsRange, allowPrereleaseVersions: true, allowUnlisted: true).ToList();
+
+            if (requestVersionsRange.MinVersion != null && !requestVersionsRange.MinVersion.Equals(new SemanticVersion("0.0")))
+                packages = packages.OrderBy(p => p.Version); // Find the lowest compatible version if the version is specified (default NuGet behavior).
+            else
+                packages = packages.OrderByDescending(p => p.Version);
+
+            var package = packages.FirstOrDefault();
             _performanceLogger.Write(sw, () => "PackageDownloader find NuGet package " + request.Id + ".");
 
             if (package == null)
