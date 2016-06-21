@@ -35,6 +35,7 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <TargetFrameworkProfile />
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -151,6 +152,10 @@
     <ProjectReference Include="..\Rhetos.Logging\Rhetos.Logging.csproj">
       <Project>{8c9f1c24-2d9c-420b-9787-3fcad96c5b3e}</Project>
       <Name>Rhetos.Logging</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.TestCommon\Rhetos.TestCommon.csproj">
+      <Project>{43ba178b-7642-473c-a43a-dbf58294635a}</Project>
+      <Name>Rhetos.TestCommon</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj">
       <Project>{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}</Project>
