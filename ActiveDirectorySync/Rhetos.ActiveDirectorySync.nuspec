@@ -10,12 +10,9 @@
     <description>ActiveDirectorySync is a package for Rhetos development platform.
       It synchronizes the Rhetos principals and roles with Active Directory by automatically adding or removing principal-role and role-role membership relations.</description>
     <copyright>Copyright Omega software 2015</copyright>
-    <tags>Rhetos</tags>
-    <frameworkAssemblies>
-      <frameworkAssembly assemblyName="Rhetos, Version=1.0.0-alpha004" />
-    </frameworkAssemblies>
+    <tags>Rhetos plugin</tags>
     <dependencies>
-      <dependency id="Rhetos.CommonConcepts" version="1.0.0-alpha004" />
+      <dependency id="Rhetos.CommonConcepts" version="1.0.0-alpha160614" />
     </dependencies>
   </metadata>
   <files>

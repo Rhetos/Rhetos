@@ -9,10 +9,10 @@
     <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
     <description>This package is a plugin for Rhetos development platform.</description>
     <copyright>Copyright Omega software 2015</copyright>
-    <tags>Rhetos</tags>
-    <frameworkAssemblies>
-      <frameworkAssembly assemblyName="Rhetos, Version=1.0.0-alpha004" />
-    </frameworkAssemblies>
+    <tags>Rhetos plugin</tags>
+    <dependencies>
+      <dependency id="Rhetos.CommonConcepts" version="1.0.0-alpha160614" />
+    </dependencies>
   </metadata>
   <files>
     <file src="DslScripts\**\*" target="DslScripts" />

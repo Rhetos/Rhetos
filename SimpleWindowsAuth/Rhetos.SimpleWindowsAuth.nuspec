@@ -10,12 +10,9 @@
     <description>SimpleWindowsAuth is a DSL package for Rhetos development platform.
       It provides a simple authorization system and Windows authentication to Rhetos server applications.</description>
     <copyright>Copyright Omega software 2015</copyright>
-    <tags>Rhetos</tags>
-    <frameworkAssemblies>
-      <frameworkAssembly assemblyName="Rhetos, Version=1.0.0-alpha004" />
-    </frameworkAssemblies>
+    <tags>Rhetos plugin</tags>
     <dependencies>
-      <dependency id="Rhetos.CommonConcepts" version="1.0.0-alpha004" />
+      <dependency id="Rhetos.CommonConcepts" version="1.0.0-alpha160614" />
     </dependencies>
   </metadata>
   <files>
@@ -23,9 +20,9 @@
     <file src="DataMigration\**\*" target="DataMigration" />
     <file src="DslScripts\**\*" target="DslScripts" />
     <file src="Resources\**\*" target="Resources" />
-    <file src="Plugins\Rhetos.SimpleWindowsAuth\bin\Debug\Rhetos.SimpleWindowsAuth.dll" target="Plugins" />
-    <file src="Plugins\Rhetos.SimpleWindowsAuth\bin\Debug\Rhetos.SimpleWindowsAuth.pdb" target="Plugins" />
-    <file src="Plugins\Rhetos.Security.Service\bin\Debug\Rhetos.Security.Service.dll" target="Plugins" />
-    <file src="Plugins\Rhetos.Security.Service\bin\Debug\Rhetos.Security.Service.pdb" target="Plugins" />
+    <file src="Plugins\Rhetos.SimpleWindowsAuth\bin\Debug\Rhetos.SimpleWindowsAuth.dll" target="lib\net451" />
+    <file src="Plugins\Rhetos.SimpleWindowsAuth\bin\Debug\Rhetos.SimpleWindowsAuth.pdb" target="lib\net451" />
+    <file src="Plugins\Rhetos.Security.Service\bin\Debug\Rhetos.Security.Service.dll" target="lib\net451" />
+    <file src="Plugins\Rhetos.Security.Service\bin\Debug\Rhetos.Security.Service.pdb" target="lib\net451" />
   </files>
 </package>
