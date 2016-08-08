@@ -69,7 +69,7 @@ There are two recommended ways of implementing *forgot password* functionality w
 
 ### Technical notes
 
-* AspNetFormsAuth packages will automatically import all permissions from SimpleWindowsAuth package, if used before.
+* AspNetFormsAuth packages will automatically import all permissions from the obsolete SimpleWindowsAuth package, if used before.
 
 ### Simple administration GUI
 
@@ -167,7 +167,7 @@ Allows a user to set the initial password or reset the forgotten password, using
 
 Prerequisites:
 
-* AspNetFormsAuth cannot be deployed together with **SimpleWindowsAuth**.
+* AspNetFormsAuth cannot be deployed together with the obsolete **SimpleWindowsAuth**.
 
 Before or after deploying the AspNetFormsAuth packages, please make the following changes to the web site configuration,
 in order for forms authentication to work.

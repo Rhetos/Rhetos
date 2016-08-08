@@ -127,7 +127,7 @@ void Main()
                     if (ex.Message.StartsWith("The HTTP request is unauthorized with client authentication scheme 'Negotiate'."))
                     {
                         // TODO: Implement forms authentication.
-                        throw new NotImplementedException("This script currently supports only Windows Authentication web security (SimpleWindowsAuth Rhetos package).");
+                        throw new NotImplementedException("This script currently supports only Windows Authentication web security.");
                     }
                         
                     throw;

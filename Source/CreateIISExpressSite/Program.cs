@@ -150,18 +150,14 @@ namespace CreateIISExpressSite
         {
             var authenticationPluginSupportsWindowsAuth = new[]
             {
-                Tuple.Create("SimpleWindowsAuth", @"Plugins\Rhetos.SimpleWindowsAuth.dll", true),
                 Tuple.Create("AspNetFormsAuth", @"Plugins\Rhetos.AspNetFormsAuth.dll", false),
             };
 
             foreach (var plugin in authenticationPluginSupportsWindowsAuth)
                 if (File.Exists(plugin.Item2))
                     return plugin.Item3;
-
-            foreach (var plugin in authenticationPluginSupportsWindowsAuth)
-                Console.WriteLine("Looking for " + plugin.Item2);
-            throw new ApplicationException("Cannot detect the authentication type. Please use one of the following Rhetos authentication packages: "
-                + string.Join(", ", authenticationPluginSupportsWindowsAuth.Select(plugin => plugin.Item1)) + ".");
+			
+			return true; // Windows authentication is enabled by default; no plugins are needed.
         }
     }
 }

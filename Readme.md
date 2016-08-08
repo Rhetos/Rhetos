@@ -22,7 +22,7 @@ Recommended plugins
 DSL packages:
 
 * *CommonConcepts* (placed inside the Rhetos repository) contains basic concepts for building applications.
-* *SimpleWindowsAuth* or *AspNetFormsAuth* (placed inside the Rhetos repository) provides authentication and authorization features to Rhetos applications. Both packages cannot be used at the same time.
+* *AspNetFormsAuth* (placed inside the Rhetos repository) provides forms authentication to Rhetos applications. (Windows authentication is enabled by default, no plugins required)
 * [RestGenerator](https://github.com/Rhetos/RestGenerator) automatically generates REST API for all entities and other readable or writable data structures that are defined in a Rhetos application.
 * [MvcModelGenerator](https://github.com/Rhetos/MvcModelGenerator) automatically generates ASP.NET MVC model for all entities and other queryable data structures that are defined in a Rhetos application.
 * [ODataGenerator](https://github.com/Rhetos/ODataGenerator) automatically generates OData interface (Open Data Protocol) for all entities and other queryable data structures that are defined in a Rhetos application.

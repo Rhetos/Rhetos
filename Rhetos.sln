@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EC32DAA1-DE06-41BC-BF05-4C732E29FE63}"
 	ProjectSection(SolutionItems) = preProject
@@ -159,10 +159,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.CommonConcepts.Test", "CommonConcepts\Plugins\Rhetos.CommonConcepts.Test\Rhetos.CommonConcepts.Test.csproj", "{A8495F67-2423-4E3C-82EE-FF69B6350B2F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SecurityPlugins", "SecurityPlugins", "{EA83F423-2486-4154-B0CE-7590EB65D40A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.SimpleWindowsAuth", "SimpleWindowsAuth\Plugins\Rhetos.SimpleWindowsAuth\Rhetos.SimpleWindowsAuth.csproj", "{3B32F187-F203-4147-9983-814A2A1045E5}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Security.Service", "SimpleWindowsAuth\Plugins\Rhetos.Security.Service\Rhetos.Security.Service.csproj", "{9985B38B-F5D3-4312-992E-7D3F98B31A85}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.AspNetFormsAuth", "AspNetFormsAuth\Plugins\Rhetos.AspNetFormsAuth\Rhetos.AspNetFormsAuth.csproj", "{8CE0595E-B553-48D0-8848-9ECB254B2973}"
 EndProject
@@ -786,36 +782,6 @@ Global
 		{A8495F67-2423-4E3C-82EE-FF69B6350B2F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{A8495F67-2423-4E3C-82EE-FF69B6350B2F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{A8495F67-2423-4E3C-82EE-FF69B6350B2F}.Release|x86.ActiveCfg = Release|Any CPU
-		{3B32F187-F203-4147-9983-814A2A1045E5}.CodeAnalysis|Any CPU.ActiveCfg = Release|Any CPU
-		{3B32F187-F203-4147-9983-814A2A1045E5}.CodeAnalysis|Any CPU.Build.0 = Release|Any CPU
-		{3B32F187-F203-4147-9983-814A2A1045E5}.CodeAnalysis|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{3B32F187-F203-4147-9983-814A2A1045E5}.CodeAnalysis|Mixed Platforms.Build.0 = Release|Any CPU
-		{3B32F187-F203-4147-9983-814A2A1045E5}.CodeAnalysis|x86.ActiveCfg = Release|Any CPU
-		{3B32F187-F203-4147-9983-814A2A1045E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3B32F187-F203-4147-9983-814A2A1045E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3B32F187-F203-4147-9983-814A2A1045E5}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{3B32F187-F203-4147-9983-814A2A1045E5}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{3B32F187-F203-4147-9983-814A2A1045E5}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{3B32F187-F203-4147-9983-814A2A1045E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3B32F187-F203-4147-9983-814A2A1045E5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3B32F187-F203-4147-9983-814A2A1045E5}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{3B32F187-F203-4147-9983-814A2A1045E5}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{3B32F187-F203-4147-9983-814A2A1045E5}.Release|x86.ActiveCfg = Release|Any CPU
-		{9985B38B-F5D3-4312-992E-7D3F98B31A85}.CodeAnalysis|Any CPU.ActiveCfg = Release|Any CPU
-		{9985B38B-F5D3-4312-992E-7D3F98B31A85}.CodeAnalysis|Any CPU.Build.0 = Release|Any CPU
-		{9985B38B-F5D3-4312-992E-7D3F98B31A85}.CodeAnalysis|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{9985B38B-F5D3-4312-992E-7D3F98B31A85}.CodeAnalysis|Mixed Platforms.Build.0 = Release|Any CPU
-		{9985B38B-F5D3-4312-992E-7D3F98B31A85}.CodeAnalysis|x86.ActiveCfg = Release|Any CPU
-		{9985B38B-F5D3-4312-992E-7D3F98B31A85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9985B38B-F5D3-4312-992E-7D3F98B31A85}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9985B38B-F5D3-4312-992E-7D3F98B31A85}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{9985B38B-F5D3-4312-992E-7D3F98B31A85}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{9985B38B-F5D3-4312-992E-7D3F98B31A85}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{9985B38B-F5D3-4312-992E-7D3F98B31A85}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9985B38B-F5D3-4312-992E-7D3F98B31A85}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9985B38B-F5D3-4312-992E-7D3F98B31A85}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{9985B38B-F5D3-4312-992E-7D3F98B31A85}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{9985B38B-F5D3-4312-992E-7D3F98B31A85}.Release|x86.ActiveCfg = Release|Any CPU
 		{8CE0595E-B553-48D0-8848-9ECB254B2973}.CodeAnalysis|Any CPU.ActiveCfg = Release|Any CPU
 		{8CE0595E-B553-48D0-8848-9ECB254B2973}.CodeAnalysis|Any CPU.Build.0 = Release|Any CPU
 		{8CE0595E-B553-48D0-8848-9ECB254B2973}.CodeAnalysis|Mixed Platforms.ActiveCfg = Release|Any CPU
@@ -996,8 +962,6 @@ Global
 		{E428537F-9221-4FD0-B8DC-35FF6F0AA4D7} = {2D001517-CE8E-4902-8C0A-0EA13C134830}
 		{DB095801-E380-4CAF-B5F4-6F658ED3E5BE} = {2D001517-CE8E-4902-8C0A-0EA13C134830}
 		{A8495F67-2423-4E3C-82EE-FF69B6350B2F} = {2212BF93-7EC1-447E-BF78-8C845E257E88}
-		{3B32F187-F203-4147-9983-814A2A1045E5} = {EA83F423-2486-4154-B0CE-7590EB65D40A}
-		{9985B38B-F5D3-4312-992E-7D3F98B31A85} = {EA83F423-2486-4154-B0CE-7590EB65D40A}
 		{8CE0595E-B553-48D0-8848-9ECB254B2973} = {EA83F423-2486-4154-B0CE-7590EB65D40A}
 		{9D5BEF32-A7D3-4580-AE84-0DC2A144231A} = {EA83F423-2486-4154-B0CE-7590EB65D40A}
 		{A334FFFD-0400-4FEC-BC83-C044072C76A8} = {E6D8EA3D-AF0C-412E-B8C5-BDED68BD5700}

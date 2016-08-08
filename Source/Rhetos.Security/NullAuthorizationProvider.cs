@@ -43,7 +43,7 @@ namespace Rhetos.Security
 
         public IList<bool> GetAuthorizations(IUserInfo userInfo, IList<Claim> requiredClaims)
         {
-            _logger.Info("There is no authorization package installed. Deploy the necessary Rhetos package (for example, SimpleWindowsAuth).");
+            _logger.Info("There is no authorization package installed. Deploy the necessary Rhetos package (for example, CommonConcepts).");
 
             return requiredClaims.Select(c => false).ToList();
         }
