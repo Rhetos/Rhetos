@@ -170,13 +170,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InitAspNetDatabase", "AspNe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.AspNetFormsAuth.Interfaces", "AspNetFormsAuth\Plugins\Rhetos.AspNetFormsAuth.Interfaces\Rhetos.AspNetFormsAuth.Interfaces.csproj", "{B818F493-EF0C-448F-A89F-FC805FFA879E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{B127A868-AACC-4E94-ABF8-46AFE1E587E5}"
-	ProjectSection(SolutionItems) = preProject
-		.nuget\NuGet.Config = .nuget\NuGet.Config
-		.nuget\NuGet.exe = .nuget\NuGet.exe
-		.nuget\NuGet.targets = .nuget\NuGet.targets
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Deployment.Interfaces", "Source\Rhetos.Deployment.Interfaces\Rhetos.Deployment.Interfaces.csproj", "{945537DC-4AF7-4DEF-B73C-07F19229EFE6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReplaceRegEx", "Source\ReplaceRegEx\ReplaceRegEx.csproj", "{E59FDCEC-2B91-4114-A1D3-18DCF78F574E}"
