@@ -20,6 +20,9 @@ REM Delete build logs:
 REM Delete build installation resut:
 @RD /S/Q Install
 
+REM Delete external dependencies cache (downloaded NuGet packages):
+@RD /S/Q packages
+
 REM Restore local user's connection string:
 @MD Source\Rhetos\bin\
 IF EXIST "ConnectionStrings.config" MOVE "ConnectionStrings.config" "Source\Rhetos\bin\"

@@ -38,10 +38,17 @@ Installation
 Prerequisites
 -----------------
 
+Deployment environment:
+
 * Windows Vista or newer with the latest service pack. 
 * IIS 7.0 or IIS Express.
 * .NET Framework 4.0.
-* Admin access to Microsoft SQL Express (version 2008 or above), Microsoft SQL Server or Oracle Database.
+* Microsoft SQL Express (2008 or newer), Microsoft SQL Server (dbo permissions) or Oracle Database.
+
+Development environment, for building Rhetos server from source:
+
+* Visual Studio 2015
+* NuGet.exe command-line utility (in environment PATH)
 
 Basic information
 -----------------

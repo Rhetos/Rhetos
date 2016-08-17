@@ -9,10 +9,10 @@ IF [%1] == [] SET Config=Debug
 
 CALL Source\Rhetos\GetServerFiles.bat %Config% /NOPAUSE || GOTO Error0
 
-.nuget\NuGet.exe pack Rhetos.nuspec -o Install || GOTO Error0
-.nuget\NuGet.exe pack CommonConcepts\Rhetos.CommonConcepts.nuspec -o Install || GOTO Error0
-.nuget\NuGet.exe pack AspNetFormsAuth\Rhetos.AspNetFormsAuth.nuspec -o Install || GOTO Error0
-.nuget\NuGet.exe pack ActiveDirectorySync\Rhetos.ActiveDirectorySync.nuspec -o Install || GOTO Error0
+NuGet.exe pack Rhetos.nuspec -o Install || GOTO Error0
+NuGet.exe pack CommonConcepts\Rhetos.CommonConcepts.nuspec -o Install || GOTO Error0
+NuGet.exe pack AspNetFormsAuth\Rhetos.AspNetFormsAuth.nuspec -o Install || GOTO Error0
+NuGet.exe pack ActiveDirectorySync\Rhetos.ActiveDirectorySync.nuspec -o Install || GOTO Error0
 
 MD Install\Rhetos
 MD Install\Rhetos\bin
