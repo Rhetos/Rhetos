@@ -178,6 +178,7 @@ namespace DeployPackages
         private static void PrintSummary(Exception ex)
         {
             Console.WriteLine();
+            Console.WriteLine("=== ERROR SUMMARY ===");
             DeploymentUtility.WriteError(ex.GetType().Name + ": " + ExceptionsUtility.SafeFormatUserMessage(ex));
             Console.WriteLine();
             Console.WriteLine("See DeployPackages.log for more information on error. Enable TraceLog in DeployPackages.exe.config for even more details.");

@@ -41,7 +41,7 @@ namespace Rhetos.Deployment
         {
             if (string.IsNullOrEmpty(location))
                 throw new UserException(string.Format(
-                    "Invalid configuration file format. Provided location is empty. Check the configuration files {1} and {2}.",
+                    "Invalid configuration file. Provided location is empty. Check the configuration files {1} and {2}.",
                     DeploymentConfiguration.SourcesConfigurationFileName,
                     DeploymentConfiguration.PackagesConfigurationFileName));
 
@@ -64,7 +64,7 @@ namespace Rhetos.Deployment
 
                 if (pathError != null || (!Directory.Exists(Path) && !File.Exists(Path)))
                     throw new UserException(string.Format(
-                        "Invalid configuration file format. Provided location '{0}' is not a valid URI or an existing path. Check the configuration files {1} and {2}.",
+                        "Invalid configuration file. Provided location '{0}' is not a valid URI or an existing path. Check the configuration files {1} and {2}.",
                         location,
                         DeploymentConfiguration.SourcesConfigurationFileName,
                         DeploymentConfiguration.PackagesConfigurationFileName));
