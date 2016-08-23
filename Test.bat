@@ -3,19 +3,20 @@
 @SET Config=%1%
 @IF [%1] == [] SET Config=Debug
 
+@IF DEFINED VisualStudioVersion GOTO SkipVcvarsall
+IF "%VS140COMNTOOLS%" NEQ "" CALL "%VS140COMNTOOLS%VsDevCmd.bat" x86 && GOTO EndVcvarsall || GOTO Error0
+IF "%VS120COMNTOOLS%" NEQ "" CALL "%VS120COMNTOOLS%\..\..\VC\vcvarsall.bat" x86 && GOTO EndVcvarsall || GOTO Error0
+IF "%VS110COMNTOOLS%" NEQ "" CALL "%VS110COMNTOOLS%\..\..\VC\vcvarsall.bat" x86 && GOTO EndVcvarsall || GOTO Error0
+IF "%VS100COMNTOOLS%" NEQ "" CALL "%VS100COMNTOOLS%\..\..\VC\vcvarsall.bat" x86 && GOTO EndVcvarsall || GOTO Error0
+ECHO ERROR: Cannot detect Visual Studio, missing VSxxxCOMNTOOLS variable.
+GOTO Error0
+:EndVcvarsall
+@ECHO ON
+:SkipVcvarsall
+
 @IF EXIST Test.log DEL Test.log
 @DATE /T >> Test.log
 @TIME /T >> Test.log
-
-@IF DEFINED VisualStudioVersion GOTO SkipVcvarsall
-@SET VSTOOLS=
-@IF "%VS100COMNTOOLS%" NEQ "" SET VSTOOLS=%VS100COMNTOOLS%
-@IF "%VS110COMNTOOLS%" NEQ "" SET VSTOOLS=%VS110COMNTOOLS%
-@IF "%VS120COMNTOOLS%" NEQ "" SET VSTOOLS=%VS120COMNTOOLS%
-CALL "%VSTOOLS%\..\..\VC\vcvarsall.bat" x86 || GOTO Error0
-:SkipVcvarsall
-
-@ECHO ON
 
 IF NOT EXIST TestResults MD TestResults
 
