@@ -1,15 +1,38 @@
 # Rhetos release notes
 
-## 1.0.0 (TO BE RELEASED)
+## 1.0.0 (2016-08-23)
 
 ### Breaking changes
 
 * Modified parameters of `DatabaseExtensionFunctions.FullTextSearch` method.
+* Building Rhetos from source requires Visual Studio 2015 on the development environment. If using command-line build, NuGet command-line tool is also required becase of Automatic Package Restore.
+* For referenced NuGet packages, the lowest compatible package version is deployed, instead of the highest. Visual Studio behaves the same.
+
+### New features
+
+* Enabled localization plugins for end-user messages, such as [I18NFormatter](https://github.com/Rhetos/I18NFormatter).
+* Publishing Rhetos NuGet package, for easier development of Rhetos plugins.
+* **InvalidData** concept allows programmable error messages by using new concepts **MessageParametersConstant**, **MessageParametersItem** or **MessageFunction**.
+* New concept: **SamePropertyValue**, for optimization of inherited row permissions.
 
 ### Internal improvements
 
+* Bugfix: Sorting by multiple properties uses only the last one. The bug affected *ReadCommand* used in web APIs such as REST service (*RestGenerator*).
+* Bugfix: Reference and Unique constraint errors should include entity and property names.
+* Bugfix: Missing encoding info in the JSON error response content type.
+* Bugfix: Adding a dependency between existing SQL objects may cause a KeyNotFoundException in DatabaseGenerator.
+* Bugfix: Hierarchy path is limited to 70 characters.
+* Forcing web service to close SQL transaction *before* sending web response. This is necessary for consistent behavior or consecutive server requests when SQL server uses snapshot isolation.
+* `EntityFramework.UseDatabaseNullSemantics` configuration option sets Entity Framework to generate simpler SQL queryies.
+* Repository's members available in the **Action** code snippet.
+* Fixed IIS Express deployment.
+* Optimized reading one record by ID.
+* New *DeployPackages.exe* switch `/DatabaseOnly`, for improved performance when deploying a farm of Rhetos applications connected to a single database. Multiple instances of the application server can be quickly updated be copying server files, and the database can be quickly upgraded by using the DatabaseOnly switch.
 * Full-text search support on Entity Framework.
-* Bugfix: FullTextSearch method now works on a Browse data structure.
+* Bugfix: The *FullTextSearch* method now works on a **Browse** data structure.
+* Bugfix: Targeted .NET Framework for NuGet plugins should be 4.5.1, not 4.0.0.
+* Obsolete *SimpleWindowsAuth* package moved to a separate repository.
+* NuGet packages for Rhetos plugins can now be references in standard VS projects (using "lib" instead of "plugins" subfolder, using regular dependencies instead of frameworkAssembly).
 
 ## 1.0.0-alpha006 (2015-10-12)
 

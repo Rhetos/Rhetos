@@ -3,7 +3,7 @@
 @SETLOCAL ENABLEDELAYEDEXPANSION
 @SET "params=;%~1;%~2;%~3;%~4;%~5;%~6;%~7;%~8;%~9;"
 @REM //////////////////////////////////////////////////////
-SET BuildVersion=1.0.0
+SET BuildVersion=1.0.1
 SET PrereleaseVersion=auto
 @REM SET PrereleaseVersion TO EMPTY VALUE FOR THE OFFICIAL RELEASE.
 @REM SET PrereleaseVersion TO "auto" FOR AUTOMATIC PRERELEASE NAME "aph<date and time><last commit hash>"
