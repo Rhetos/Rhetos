@@ -31,7 +31,7 @@
 * Full-text search support on Entity Framework.
 * Bugfix: The *FullTextSearch* method now works on a **Browse** data structure.
 * Bugfix: Targeted .NET Framework for NuGet plugins should be 4.5.1, not 4.0.0.
-* Obsolete *SimpleWindowsAuth* package moved to a separate repository.
+* Obsolete *SimpleWindowsAuth* package moved to a separate [repository](https://github.com/Rhetos/SimpleWindowsAuth).
 * NuGet packages for Rhetos plugins can now be references in standard VS projects (using "lib" instead of "plugins" subfolder, using regular dependencies instead of frameworkAssembly).
 
 ## 1.0.0-alpha006 (2015-10-12)
