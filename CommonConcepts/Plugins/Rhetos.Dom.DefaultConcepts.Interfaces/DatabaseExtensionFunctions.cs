@@ -134,6 +134,37 @@ namespace Rhetos.Dom.DefaultConcepts
             return a.ToString();
         }
 
+        [DbFunction("Rhetos", "GuidIsGreaterThan")]
+        public static bool GuidIsGreaterThan(this Guid g1, Guid g2)
+        {
+            string a = g1.ToString();
+            string b = g2.ToString();
+            return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) > 0;
+        }
+
+        [DbFunction("Rhetos", "GuidIsGreaterThanOrEqual")]
+        public static bool GuidIsGreaterThanOrEqual(this Guid g1, Guid g2)
+        {
+            string a = g1.ToString();
+            string b = g2.ToString();
+            return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) >= 0;
+        }
+
+        [DbFunction("Rhetos", "GuidIsLessThan")]
+        public static bool GuidIsLessThan(this Guid g1, Guid g2)
+        {
+            string a = g1.ToString();
+            string b = g2.ToString();
+            return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) < 0;
+        }
+
+        [DbFunction("Rhetos", "GuidIsLessThanOrEqual")]
+        public static bool GuidIsLessThanOrEqual(this Guid g1, Guid g2)
+        {
+            string a = g1.ToString();
+            string b = g2.ToString();
+            return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) <= 0;
+        }
         /// <param name="tableName">Table that contains the full-text search indexed columns. It is usually the entity's table or a table that references the entity's table.</param>
         /// <param name="searchColumns">Full-text search indexed columns. See the columns list parameter on CONTAINSTABLE function for Microsoft SQL server database.</param>
         [DbFunction("Rhetos", "FullTextSearchId")]
