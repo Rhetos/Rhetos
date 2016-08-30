@@ -217,25 +217,36 @@ namespace Rhetos.Deployment
                 }
 
             var metadataFiles = Directory.GetFiles(source.Path, "*.nuspec");
+
+            // Disambiguation by name:
+            if (metadataFiles.Length > 1)
+            {
+                var standardFileName = metadataFiles.Where(f => Path.GetFileName(f) == request.Id + ".nuspec").ToArray();
+                if (standardFileName.Length == 1)
+                    metadataFiles = standardFileName;
+            }
+
             if (metadataFiles.Length > 1)
             {
                 _logger.Info(() => "Package " + request.Id + " source folder '" + source.ProvidedLocation + "' contains multiple .nuspec metadata files.");
                 return null;
             }
-            if (metadataFiles.Length == 1)
+            else if (metadataFiles.Length == 1)
             {
                 _logger.Trace(() => "Reading package " + request.Id + " from unpacked source folder with metadata " + Path.GetFileName(metadataFiles.Single()) + ".");
                 return UseFilesFromUnpackedSourceWithMetadata(metadataFiles.Single(), request, binFileSyncer);
             }
-
-            var rhetosPackageSubfolders = new[] { "DslScripts", "DataMigration", "Plugins", "Resources" };
-            if (rhetosPackageSubfolders.Any(subfolder => Directory.Exists(Path.Combine(source.Path, subfolder))))
+            else
             {
-                _logger.Trace(() => "Reading package " + request.Id + " from unpacked source folder without metadata file.");
-                return UseFilesFromUnpackedSourceWithoutMetadata(source.Path, request, binFileSyncer);
+                var rhetosPackageSubfolders = new[] { "DslScripts", "DataMigration", "Plugins", "Resources" };
+                if (rhetosPackageSubfolders.Any(subfolder => Directory.Exists(Path.Combine(source.Path, subfolder))))
+                {
+                    _logger.Trace(() => "Reading package " + request.Id + " from unpacked source folder without metadata file.");
+                    return UseFilesFromUnpackedSourceWithoutMetadata(source.Path, request, binFileSyncer);
+                }
+                else
+                    return null;
             }
-
-            return null;
         }
 
         private InstalledPackage UseFilesFromUnpackedSourceWithMetadata(string metadataFile, PackageRequest request, FileSyncer binFileSyncer)
