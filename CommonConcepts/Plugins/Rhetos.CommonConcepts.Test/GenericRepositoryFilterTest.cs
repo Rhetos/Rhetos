@@ -604,7 +604,7 @@ namespace Rhetos.CommonConcepts.Test
                 new FilterCriteria { Filter = typeof(QueryLoaderFilter).FullName } })));
             Assert.AreEqual("Q, QF, X", entityRepos.Log); entityRepos._log.Clear();
 
-            // Prefer queryable filter version of QueryLoaderFilter on queryable
+            // Prefere queryable filter version of QueryLoaderFilter on queryable
             Assert.AreEqual("IL: a1_qf, b1_qf", TypeAndNames(genericRepos.Filter(genericRepos.Query(), new[] {
                 new FilterCriteria { Filter = typeof(QueryLoaderFilter).FullName },
                 new FilterCriteria { Property = "Name", Operation = "Contains", Value = "1" } })));
@@ -616,7 +616,7 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual("Q, QF, X", entityRepos.Log); entityRepos._log.Clear();
 
             // Enumerable filter on queryable:
-            // Prefer enumerable filter version of QueryLoaderFilter on queryable
+            // Prefere enumerable filter version of QueryLoaderFilter on queryable
             Assert.AreEqual("IL: a1_ef_ef, a2_ef_ef, b1_ef_ef, b2_ef_ef", TypeAndNames(genericRepos.Filter(genericRepos.Query(), new[] {
                 new FilterCriteria { Filter = typeof(EnumerableFilter).FullName },
                 new FilterCriteria { Filter = typeof(QueryLoaderFilter).FullName }, })));
@@ -739,6 +739,37 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual("00000000-0000-0000-0000-000000000000", genericRepos
                 .Filter(genericRepos.Query(), new[] { new FilterCriteria { Filter = "System.Guid" } })
                 .Single().Name);
+        }
+
+        [TestMethod]
+        public void FilterOperationWithID()
+        {
+            List<SimpleEntity> temp = new List<SimpleEntity>();
+            temp.Add(new SimpleEntity { ID = new Guid("DA04CA2A-7AA0-4827-8F71-05047B0FB201"), Data = "a", Name = "1" });
+            temp.Add(new SimpleEntity { ID = new Guid("85ECBC94-2A9D-457C-934B-1117A7D72834"), Data = "b", Name = "2" });
+            temp.Add(new SimpleEntity { ID = new Guid("F440440A-993F-40B8-BE27-2ECA04FBE191"), Data = "c", Name = "3" });
+            temp.Add(new SimpleEntity { ID = new Guid("723FB608-052F-4696-A1D1-8A12BC19E69F"), Data = "d", Name = "4" });
+
+            var entityRepos = new GenericFilterRepository(temp);
+            var genericRepos = NewRepos(entityRepos);
+            
+            var gf_Greater = new[] { new FilterCriteria { Property = "ID", Operation = "greater", Value = "85ECBC94-2A9D-457C-934B-1117A7D72834" } };
+
+            var gf_GreaterEqual = new[] { new FilterCriteria { Property = "ID", Operation = "greaterequal", Value = "85ECBC94-2A9D-457C-934B-1117A7D72834" } };
+
+            var gf_Less = new[] { new FilterCriteria { Property = "ID", Operation = "less", Value = "85ECBC94-2A9D-457C-934B-1117A7D72834" } };
+
+            var gf_LessEqual = new[] { new FilterCriteria { Property = "ID", Operation = "lessequal", Value = "85ECBC94-2A9D-457C-934B-1117A7D72834" } };
+
+            string resultGreater = TypeAndNames(genericRepos.Filter(genericRepos.Query(), gf_Greater));
+            string resultGreaterEqual = TypeAndNames(genericRepos.Filter(genericRepos.Query(), gf_GreaterEqual));
+            string resultLess = TypeAndNames(genericRepos.Filter(genericRepos.Query(), gf_Less));
+            string resultLessEqual = TypeAndNames(genericRepos.Filter(genericRepos.Query(), gf_LessEqual));
+
+            Assert.AreEqual("IL: 1, 3", resultGreater);
+            Assert.AreEqual("IL: 1, 2, 3", resultGreaterEqual);
+            Assert.AreEqual("IL: 4", resultLess);
+            Assert.AreEqual("IL: 2, 4", resultLessEqual);
         }
     }
 }

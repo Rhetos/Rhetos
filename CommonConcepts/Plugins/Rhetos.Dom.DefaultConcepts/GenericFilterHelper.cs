@@ -88,8 +88,10 @@ namespace Rhetos.Dom.DefaultConcepts
                     object convertedValue;
                     if (criteria.Value == null || basicType.IsAssignableFrom(criteria.Value.GetType()))
                         convertedValue = criteria.Value;
-                    else if (basicType == typeof(Guid) && criteria.Value is string) // Guid object's type was not automatically recognized when deserializing from JSON.
+                    else if (basicType == typeof(Guid) && criteria.Value is string)
                         convertedValue = Guid.Parse(criteria.Value.ToString());
+                    // Guid object's type was not automatically recognized when deserializing from JSON.
+
                     else if (basicType == typeof(DateTime) && criteria.Value is string) // DateTime object's type was not automatically recognized when deserializing from JSON.
                     {
                         string dateString = "\"" + ((string)criteria.Value).Replace("/", "\\/") + "\"";
@@ -134,6 +136,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 Expression expression;
                 switch (criteria.Operation.ToLower())
                 {
+
                     case "equals":
                     case "equal":
                         if (basicType == typeof(string))
@@ -151,26 +154,30 @@ namespace Rhetos.Dom.DefaultConcepts
                     case "greater":
                         if (basicType == typeof(string))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("IsGreaterThen"), memberAccess, constant);
-                        else
-                            expression = Expression.GreaterThan(memberAccess, constant);
+                        else if (basicType == typeof(Guid))
+                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("GuidIsGreaterThan"), memberAccess, constant);
+                        else expression = Expression.GreaterThan(memberAccess, constant);
                         break;
                     case "greaterequal":
                         if (basicType == typeof(string))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("IsGreaterThenOrEqual"), memberAccess, constant);
-                        else
-                            expression = Expression.GreaterThanOrEqual(memberAccess, constant);
+                        else if (basicType == typeof(Guid))
+                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("GuidIsGreaterThanOrEqual"), memberAccess, constant);
+                        else expression = Expression.GreaterThanOrEqual(memberAccess, constant);
                         break;
                     case "less":
                         if (basicType == typeof(string))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("IsLessThen"), memberAccess, constant);
-                        else
-                            expression = Expression.LessThan(memberAccess, constant);
+                        else if (basicType == typeof(Guid))
+                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("GuidIsLessThan"), memberAccess, constant);
+                        else expression = Expression.LessThan(memberAccess, constant);
                         break;
                     case "lessequal":
                         if (basicType == typeof(string))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("IsLessThenOrEqual"), memberAccess, constant);
-                        else
-                            expression = Expression.LessThanOrEqual(memberAccess, constant);
+                        else if (basicType == typeof(Guid))
+                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("GuidIsLessThanOrEqual"), memberAccess, constant);
+                        else expression = Expression.LessThanOrEqual(memberAccess, constant);
                         break;
                     case "startswith":
                     case "endswith":
@@ -370,7 +377,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 if (string.IsNullOrEmpty(filter.Operation))
                     filter.Operation = FilterOperationMatches;
-                
+
                 if (!string.Equals(filter.Operation, FilterOperationMatches, StringComparison.OrdinalIgnoreCase)
                     && !string.Equals(filter.Operation, FilterOperationNotMatches, StringComparison.OrdinalIgnoreCase))
                     throw new ClientException(string.Format(

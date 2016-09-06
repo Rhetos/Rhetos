@@ -115,6 +115,30 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
     </DefiningExpression>
   </Function>
 
+  <Function Name=""GuidIsGreaterThan"" ReturnType=""Edm.Boolean"">
+    <Parameter Name=""a"" Type=""Edm.Guid"" />
+    <Parameter Name=""b"" Type=""Edm.Guid"" />
+    <DefiningExpression>a &gt; b</DefiningExpression>
+  </Function>
+
+  <Function Name=""GuidIsGreaterThanOrEqual"" ReturnType=""Edm.Boolean"">
+    <Parameter Name=""a"" Type=""Edm.Guid"" />
+    <Parameter Name=""b"" Type=""Edm.Guid"" />
+    <DefiningExpression>a &gt;= b</DefiningExpression>
+  </Function>
+
+  <Function Name=""GuidIsLessThan"" ReturnType=""Edm.Boolean"">
+    <Parameter Name=""a"" Type=""Edm.Guid"" />
+    <Parameter Name=""b"" Type=""Edm.Guid"" />
+    <DefiningExpression>a &lt; b</DefiningExpression>
+  </Function>
+
+  <Function Name=""GuidIsLessThanOrEqual"" ReturnType=""Edm.Boolean"">
+    <Parameter Name=""a"" Type=""Edm.Guid"" />
+    <Parameter Name=""b"" Type=""Edm.Guid"" />
+    <DefiningExpression>a &lt;= b</DefiningExpression>
+  </Function>
+
 ", EntityFrameworkMapping.ConceptualModelTag);
         }
     }
