@@ -156,6 +156,7 @@
     <Compile Include="AuditablePropertiesTest.cs" />
     <Compile Include="CloningTest.cs" />
     <Compile Include="AuthorizationCachingTest.cs" />
+    <Compile Include="CreatedByTest.cs" />
     <Compile Include="ReferenceTest.cs" />
     <Compile Include="FullTextSearchTest.cs" />
     <Compile Include="Helpers\RhetosTestContainerExtensions.cs" />

@@ -154,3 +154,18 @@ Module TestDeactivatable
         ShortString Name;
     }
 }
+
+Module TestCreatedBy
+{
+    Entity Simple
+    {
+        ShortString Name;
+        Reference Author Common.Principal { CreatedBy; }
+    }
+
+    Entity WithConstraints
+    {
+        ShortString Name;
+        Reference Author Common.Principal { CreatedBy; DenyUserEdit; SystemRequired; }
+    }
+}
