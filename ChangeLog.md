@@ -1,11 +1,24 @@
-# Rhetos release notes
+﻿# Rhetos release notes
+
+## 1.1.0 (2016-09-16)
+
+### New features
+
+* New concept: **CreatedBy** writes the current user's ID when saving a new record.
+* Generic filter operators `Greater`, `GreaterEqual`, `Less`, `LessEqual` are supported for GUID properties.
+  These are available in web APIs such as [REST service](https://github.com/Rhetos/RestGenerator).
+
+### Internal improvements
+
+* **AutoCode** property is no longer **Required**. Saving NULL value will the generate next number.
+* **SqlDependsOnIndex** concept is enabled for use in DSL scripts.
 
 ## 1.0.0 (2016-08-23)
 
 ### Breaking changes
 
 * Modified parameters of `DatabaseExtensionFunctions.FullTextSearch` method.
-* Building Rhetos from source requires Visual Studio 2015 on the development environment. If using command-line build, NuGet command-line tool is also required becase of Automatic Package Restore.
+* Building Rhetos from source requires Visual Studio 2015 on the development environment. If using command-line build, NuGet command-line tool is also required because of Automatic Package Restore.
 * For referenced NuGet packages, the lowest compatible package version is deployed, instead of the highest. Visual Studio behaves the same.
 
 ### New features
@@ -73,9 +86,9 @@
 ### Internal improvements
 
 * In the business layer object model (ServerDom) for each data structure there are 2 classes created:
-    - A simple class (`SomeModule.SomeEntity`), for working with entity instances in `FilterBy` concept or `Load(filter)` function.
-        That class does not contain navigation properties for references to another data structures. It contains simple Guid properties for those references.
-    - A queryable class (`Common.Queryable.SomeModule_SomeEntity`), for working with LINQ queries in `ComposableFilterBy` or `ItemFilter` concept, or `Query(filter)` function.
+  - A simple class (`SomeModule.SomeEntity`), for working with entity instances in `FilterBy` concept or `Load(filter)` function.
+    That class does not contain navigation properties for references to another data structures. It contains simple Guid properties for those references.
+  - A queryable class (`Common.Queryable.SomeModule_SomeEntity`), for working with LINQ queries in `ComposableFilterBy` or `ItemFilter` concept, or `Query(filter)` function.
 * For reference properties, the scalar Guid property is mapped to the database.
   Previously only navigation properties were available in LINQ queries and in REST filter parameters.
   For example, the client had to use `SomeReference.ID` instead of `SomeReferenceID` in filters; now both options are available and `ReferenceID` is the preferred option.
@@ -172,11 +185,11 @@
 
 * *SimpleWindowsAuth* package is now obsolete, and should be used only for backward compatibility in legacy applications.
   When removing the package from an existing application, the following changes will occur:
-  * Rhetos admin GUI for setting user's permissions is no longer available (`/Resources/Permissions.html`).
-  * User names in `Common.Principal` must start with domain name prefix (domainname\username).
-  * Domain user groups should be moved from `Common.Principal` to `Common.Role`.
-  * Deploy [*ActiveDirectorySync*](ActiveDirectorySync/Readme.md) package to automatically update principal-role membership (`Common.PrincipalHasRole`) for domain users and groups.
-  * Each user must be entered in `Common.Principal`, *SimpleWindowsAuth* allowed entering only user groups.
+  - Rhetos admin GUI for setting user's permissions is no longer available (`/Resources/Permissions.html`).
+  - User names in `Common.Principal` must start with domain name prefix (domainname\username).
+  - Domain user groups should be moved from `Common.Principal` to `Common.Role`.
+  - Deploy [*ActiveDirectorySync*](ActiveDirectorySync/Readme.md) package to automatically update principal-role membership (`Common.PrincipalHasRole`) for domain users and groups.
+  - Each user must be entered in `Common.Principal`, *SimpleWindowsAuth* allowed entering only user groups.
     For backward compatibility enable `AuthorizationAddUnregisteredPrincipals` option in *web.config* on Rhetos v0.9.31 or later.
 
 ### New features
@@ -435,8 +448,8 @@
 * Implemented `GenericRepository` class, a helper for server-side type-safe access to entity's repository (using interface the entity implements) without referencing the generated business layer object model.
 * *Generic filter* is extended to allow multiple predefined filters (along with property filters).
 * New server command: *ReadCommand* is a replacement for *QueryDataSourceCommand*.
-    - Improvements: ordering by multiple properties, more paging control with Top and Skip, reading records with paging without getting total count (this was a performance issue) and reading record count without reading records.
-    - *QueryDataSourceCommand* is obsolete, but still available for backward compatibility.
+  - Improvements: ordering by multiple properties, more paging control with Top and Skip, reading records with paging without getting total count (this was a performance issue) and reading record count without reading records.
+  - *QueryDataSourceCommand* is obsolete, but still available for backward compatibility.
 
 ### Internal improvements
 
