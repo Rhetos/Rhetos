@@ -1,4 +1,4 @@
-
+﻿
 Module TestSqlWorkarounds
 {
     AutodetectSqlDependencies;
@@ -134,6 +134,11 @@ Module TestSqlWorkarounds
 			SELECT @dropView = name FROM sys.objects o WHERE type = 'V' AND SCHEMA_NAME(schema_id) = 'TestSqlWorkarounds' AND name LIKE 'WithoutTransaction[_]%';
 			SET @dropView = 'DROP VIEW TestSqlWorkarounds.' + @dropView;
 			EXEC (@dropView);";
+
+	SqlObject DependsOnIndex 'PRINT 1' 'PRINT 2'
+	{
+		SqlDependsOnIndex TestSqlWorkarounds.TestIndex.'A B';
+	}
 }
 
 Module TestSqlWorkarounds2

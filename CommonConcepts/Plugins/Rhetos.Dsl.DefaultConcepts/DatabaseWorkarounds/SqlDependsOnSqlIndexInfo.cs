@@ -26,6 +26,7 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("SqlDependsOnIndex")]
     public class SqlDependsOnSqlIndexInfo : IConceptInfo
     {
         [ConceptKey]

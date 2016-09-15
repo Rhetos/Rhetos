@@ -27,6 +27,7 @@ using Rhetos.TestCommon;
 using Rhetos;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Dsl;
 
 namespace CommonConcepts.Test
 {
@@ -103,7 +104,7 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void SqlDependsOnSqlIndex()
+        public void SqlDependsOnSqlIndexForFirstProperty()
         {
             using (var container = new RhetosTestContainer())
             {
@@ -133,6 +134,32 @@ namespace CommonConcepts.Test
                     + "baseA-depAll, baseB-depAll,"
                     + "baseBAIndex-depAll," // SqlDependsOnSqlIndex should be automatically included when depending on its entity.
                     + "base-depAll";
+
+                Assert.AreEqual(
+                    TestUtility.DumpSorted(expectedDependencies.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s))),
+                    TestUtility.DumpSorted(deployedDependencies));
+            }
+        }
+
+        [TestMethod]
+        public void SqlDependsOnSqlIndex()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var features = new Dictionary<string, string>
+                {
+                    { "index", "SqlIndexMultipleInfo TestSqlWorkarounds.TestIndex.'A B'" },
+                    { "dependsOnIndex", "SqlObjectInfo TestSqlWorkarounds.DependsOnIndex" }
+                };
+
+                Dictionary<Guid, string> featuresById = features
+                    .Select(f => new { Name = f.Key, Id = ReadConceptId(f.Value, container) })
+                    .ToDictionary(fid => fid.Id, fid => fid.Name);
+
+                var deployedDependencies = ReadConceptDependencies(featuresById.Keys, container)
+                    .Select(dep => featuresById[dep.Item1] + "-" + featuresById[dep.Item2]);
+
+                var expectedDependencies = "index-dependsOnIndex";
 
                 Assert.AreEqual(
                     TestUtility.DumpSorted(expectedDependencies.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s))),
