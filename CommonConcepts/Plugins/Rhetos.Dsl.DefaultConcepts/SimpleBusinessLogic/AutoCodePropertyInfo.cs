@@ -24,7 +24,7 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class AutoCodePropertyInfo : IAlternativeInitializationConcept, IValidationConcept
+    public class AutoCodePropertyInfo : IAlternativeInitializationConcept, IValidationConcept, IMacroConcept
     {
         [ConceptKey]
         public PropertyInfo Property { get; set; }
@@ -50,5 +50,9 @@ namespace Rhetos.Dsl.DefaultConcepts
                 throw new DslSyntaxException("AutoCode is only available for ShortString and Integer properties.");
         }
 
+        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        {
+            return new[] { new SystemRequiredInfo { Property = Property } };
+        }
     }
 }

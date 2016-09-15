@@ -45,6 +45,10 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             CsUtility.Materialize(ref autoCodeItems);
 
+            foreach (var autoCodeItem in autoCodeItems)
+                if (autoCodeItem.Code == null)
+                    autoCodeItem.Code = "+";
+
             var parsedAutoCode = autoCodeItems
                 .Where(acItem => !string.IsNullOrEmpty(acItem.Code))
                 .Select(acItem =>
@@ -95,10 +99,10 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (autoCodeGroup.MaxProvidedCode != null)
                 {
                     string sql = string.Format("EXEC Common.UpdateAutoCodeCache {0}, {1}, {2}, {3}, {4}, {5}",
-                        Rhetos.Utilities.SqlUtility.QuoteText(entityName),
-                        Rhetos.Utilities.SqlUtility.QuoteText(propertyName),
-                        Rhetos.Utilities.SqlUtility.QuoteText(autoCodeGroup.Grouping),
-                        Rhetos.Utilities.SqlUtility.QuoteText(autoCodeGroup.Prefix),
+                        SqlUtility.QuoteText(entityName),
+                        SqlUtility.QuoteText(propertyName),
+                        SqlUtility.QuoteText(autoCodeGroup.Grouping),
+                        SqlUtility.QuoteText(autoCodeGroup.Prefix),
                         autoCodeGroup.MinDigits,
                         autoCodeGroup.MaxProvidedCode);
 
@@ -108,10 +112,10 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (autoCodeGroup.ItemsToGenerateCode.Count > 0)
                 {
                     string sql = string.Format("EXEC Common.GetNextAutoCodeCached {0}, {1}, {2}, {3}, {4}, {5}",
-                        Rhetos.Utilities.SqlUtility.QuoteText(entityName),
-                        Rhetos.Utilities.SqlUtility.QuoteText(propertyName),
-                        Rhetos.Utilities.SqlUtility.QuoteText(autoCodeGroup.Grouping),
-                        Rhetos.Utilities.SqlUtility.QuoteText(autoCodeGroup.Prefix),
+                        SqlUtility.QuoteText(entityName),
+                        SqlUtility.QuoteText(propertyName),
+                        SqlUtility.QuoteText(autoCodeGroup.Grouping),
+                        SqlUtility.QuoteText(autoCodeGroup.Prefix),
                         autoCodeGroup.MinDigits,
                         autoCodeGroup.ItemsToGenerateCode.Count);
 

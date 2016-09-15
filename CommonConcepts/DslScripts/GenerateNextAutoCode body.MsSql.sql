@@ -1,4 +1,4 @@
-
+﻿
 		-- This procedure returns the next available code based on the given code format and the existing records in the database.
 		-- Supported format allows any prefix with a generated numerical suffix.
 
@@ -27,6 +27,8 @@
 		-- Examples:
 		-- "+123"
 
+		-- D) If the format is not set (NULL), a simple counter will be used ("+").
+
 		-- Filter parameter:
 		-- Filter is used in a case when the code is not unique in the table/view, but is unique within a certain group.
 		-- For example, if the table contains column Family, and the codes are generated starting from 1 for each family,
@@ -37,6 +39,7 @@
         SET ANSI_WARNINGS OFF
 
         IF @Filter = '' SET @Filter = NULL
+        IF @CodeFormat IS NULL SET @CodeFormat = '+'
 
 
         --===================================================================

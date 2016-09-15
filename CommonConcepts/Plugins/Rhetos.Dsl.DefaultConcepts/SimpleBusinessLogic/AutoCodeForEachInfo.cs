@@ -18,6 +18,7 @@
 */
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
@@ -29,16 +30,16 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public PropertyInfo Group { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        new public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            var newConcepts = new List<IConceptInfo>
-                             {
-                                 new RequiredPropertyInfo {Property = Property},
-                                 new UniquePropertiesInfo
-                                     {DataStructure = Property.DataStructure, Property1 = Group, Property2 = Property}
-                             };
-
-            return newConcepts;
+            return base.CreateNewConcepts(existingConcepts)
+                .Concat(new[] {
+                    new UniquePropertiesInfo
+                    {
+                        DataStructure = Property.DataStructure,
+                        Property1 = Group,
+                        Property2 = Property
+                    }});
         }
 
         public new void CheckSemantics(IEnumerable<IConceptInfo> concepts)

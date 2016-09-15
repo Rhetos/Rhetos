@@ -63,7 +63,9 @@ namespace CommonConcepts.Test
 
             container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
 
-            string generatedCodes = repository.TestAutoCodeCached.DoubleAutoCode.Query().Where(item => item.ID == id).Select(item => item.CodeA + "," + item.CodeB).Single();
+            string generatedCodes = repository.TestAutoCodeCached.DoubleAutoCode.Query()
+				.Where(item => item.ID == id)
+				.Select(item => item.CodeA + "," + item.CodeB).Single();
             Console.WriteLine(formatA + "," + formatB + " => " + generatedCodes);
             Assert.AreEqual(expectedCodes, generatedCodes);
         }
@@ -186,10 +188,41 @@ namespace CommonConcepts.Test
 
                 AutoCodeHelper.UpdateCodes(
                     context.SqlExecuter, "TestAutoCodeCached.Simple", "Code",
-                    new[] { new Rhetos.Dom.DefaultConcepts.AutoCodeItem<TestAutoCodeCached.Simple> { Item = s1, Code = s1.Code, Grouping = "" } },
+                    new[] { new AutoCodeItem<TestAutoCodeCached.Simple> { Item = s1, Code = s1.Code, Grouping = "" } },
                     (item, newCode) => item.Code = newCode);
 
-                Assert.IsNull(s1.Code);
+                Assert.AreEqual("1", s1.Code);
+            }
+        }
+
+        [TestMethod]
+        public void AutocodeStringNull()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                DeleteOldData(container);
+
+                var repository = container.Resolve<Common.DomRepository>();
+                var item1 = new TestAutoCodeCached.Simple { ID = Guid.NewGuid() };
+                var item2 = new TestAutoCodeCached.Simple { ID = Guid.NewGuid() };
+                repository.TestAutoCodeCached.Simple.Insert(item1);
+                repository.TestAutoCodeCached.Simple.Insert(item2);
+                Assert.AreEqual("1", repository.TestAutoCodeCached.Simple.Load(new[] { item1.ID }).Single().Code);
+                Assert.AreEqual("2", repository.TestAutoCodeCached.Simple.Load(new[] { item2.ID }).Single().Code);
+            }
+        }
+
+        [TestMethod]
+        public void AutocodeStringEmpty()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                DeleteOldData(container);
+
+                var repository = container.Resolve<Common.DomRepository>();
+                var item1 = new TestAutoCodeCached.Simple { ID = Guid.NewGuid(), Code = "" };
+                repository.TestAutoCodeCached.Simple.Insert(item1);
+                Assert.AreEqual("", repository.TestAutoCodeCached.Simple.Load(new[] { item1.ID }).Single().Code);
             }
         }
 

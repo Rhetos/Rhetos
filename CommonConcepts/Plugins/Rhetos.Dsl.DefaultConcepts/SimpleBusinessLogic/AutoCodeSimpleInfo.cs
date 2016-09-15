@@ -18,9 +18,9 @@
 */
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Reflection;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -28,15 +28,10 @@ namespace Rhetos.Dsl.DefaultConcepts
     [ConceptKeyword("AutoCode")]
     public class AutoCodeSimpleInfo : AutoCodePropertyInfo, IMacroConcept
     {
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        new public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            var newConcepts = new List<IConceptInfo>
-                             {
-                                 new RequiredPropertyInfo {Property = Property},
-                                 new UniquePropertyInfo {Property = Property}
-                             };
-
-            return newConcepts;
+            return base.CreateNewConcepts(existingConcepts)
+                .Concat(new[] { new UniquePropertyInfo { Property = Property } });
         }
     }
 }

@@ -35,7 +35,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             return new IConceptInfo[]
             {
-                new RequiredPropertyInfo { Property = Property },
+                new SystemRequiredInfo { Property = Property },
                 new UniquePropertyInfo { Property = Property }
             };
         }
