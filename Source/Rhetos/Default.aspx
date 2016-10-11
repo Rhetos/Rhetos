@@ -25,6 +25,7 @@
         Process start time: <%=System.Diagnostics.Process.GetCurrentProcess().StartTime %><br />
         User identity: <%=Context.User.Identity.Name %><br />
         User authentication type: <%=Context.User.Identity.AuthenticationType %><br />
+        Is 64-bit process: <%=Environment.Is64BitProcess %><br />
     </p>
 </body>
 </html>

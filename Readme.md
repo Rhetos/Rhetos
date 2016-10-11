@@ -130,7 +130,7 @@ security used is based on windows authentication.
 If one prefers to use IIS following steps are required:
 
 * Create ApplicationPool of .NET Framework v4.0
-    * check "Enable 32-Bit Application"
+    * If using Rhetos v1.1 or older, check "Enable 32-Bit Application"
     * set user with admin privileges as Identity
 * Create new Website or use existing one
 * Create new Application with following:
@@ -156,7 +156,7 @@ in cmd while positioned in Rhetos\Source\Rhetos:
 
     > CALL "C:\Program Files (x86)\IIS Express\IISExpress.exe" /config:IISExpress.config
 
-**Note:** Use the "Program Files" folder on 32-bit system.
+If using Rhetos v1.1 or older, use the "Program Files" folder on 32-bit system.
 
 If using IIS then just start site in IIS manager. 
 
