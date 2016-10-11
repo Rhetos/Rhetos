@@ -8,7 +8,6 @@ with recommended security best practices such as password salting and hashing.
 Implementation fully depends on SimpleMembershipProvider; AspNetFormsAuth project does not try
 to implement its own authentication or security mechanisms.
 
-
 ## Table of contents
 
 1. [Features](#features)
@@ -32,7 +31,6 @@ to implement its own authentication or security mechanisms.
 8. [Implementing SendPasswordResetToken](#implementing-sendpasswordresettoken)
 9. [Troubleshooting](#troubleshooting)
 
-
 ## Features
 
 ### Authentication
@@ -40,7 +38,7 @@ to implement its own authentication or security mechanisms.
 * For developers and administrators, a simple login and logout web forms are provided.
   Links are available on the Rhetos server home page.
 * [Authentication service](#authentication-service-api) may be used in web applications
-  and other services to log in and log out users, and for other related actions. 
+  and other services to log in and log out users, and for other related actions.
 * Forms authentication may be utilized for [sharing the authentication](#sharing-the-authentication-across-web-applications)
   across multiple web applications.
 
@@ -145,8 +143,8 @@ Generates a password reset token and sends it to the user.
 * The method does not require user authentication.
 * **NOTE:** *AspNetFormsAuth* package **does not contain** any implementation of sending  the token (by SMS or email, e.g.).
   The implementation must be provided by an additional plugin. For example:
-    * Use the [SimpleSPRTEmail](https://github.com/Rhetos/SimpleSPRTEmail) plugin package for sending token by email,
-    * or follow [Implementing SendPasswordResetToken](#implementing-sendpasswordresettoken) to implement a different sending method.
+    - Use the [SimpleSPRTEmail](https://github.com/Rhetos/SimpleSPRTEmail) plugin package for sending token by email,
+    - or follow [Implementing SendPasswordResetToken](#implementing-sendpasswordresettoken) to implement a different sending method.
 * Use `AspNetFormsAuth.SendPasswordResetToken.ExpirationInMinutes` appSettings key in `web.config` to set the token expiration timeout.
   Default value is 1440 minutes (24 hours).
   For example: `<add key="AspNetFormsAuth.SendPasswordResetToken.ExpirationInMinutes" value="60" />`.
@@ -161,7 +159,6 @@ Allows a user to set the initial password or reset the forgotten password, using
 * Response data is boolean *true* if the password change is successful,
   *false* if the token is invalid or expired,
   or an error message (string) with HTTP error code 4* or 5* in case of any other error.
-
 
 ## Installation
 
@@ -178,17 +175,17 @@ in order for forms authentication to work.
 2. Remove the `<authentication mode="Windows" />` element.
 3. Inside the `<system.web>` element add the following:
 
-	    <authentication mode="Forms" />
-	    <roleManager enabled="true" />
-	    <membership defaultProvider="SimpleMembershipProvider">
-	      <providers>
-	        <clear />
-	        <add name="SimpleMembershipProvider" type="WebMatrix.WebData.SimpleMembershipProvider, WebMatrix.WebData" />
-	      </providers>
-	    </membership>
-	    <authorization>
-	      <deny users="?" />
-	    </authorization>
+        <authentication mode="Forms" />
+        <roleManager enabled="true" />
+        <membership defaultProvider="SimpleMembershipProvider">
+          <providers>
+            <clear />
+            <add name="SimpleMembershipProvider" type="WebMatrix.WebData.SimpleMembershipProvider, WebMatrix.WebData" />
+          </providers>
+        </membership>
+        <authorization>
+          <deny users="?" />
+        </authorization>
 
 ### 2. Configure IIS
 
@@ -205,12 +202,12 @@ utility in Rhetos server's folder to automatically configure `IISExpress.config`
 or manually apply the following lines in IISExpress configuration file inside `system.webServer` element
 or inside `location / system.webServer` (usually at the end of the file):
 
-	<security>
-	    <authentication>
-	        <anonymousAuthentication enabled="false" />
-	        <windowsAuthentication enabled="true" />
-	    </authentication>
-	</security>
+    <security>
+        <authentication>
+            <anonymousAuthentication enabled="false" />
+            <windowsAuthentication enabled="true" />
+        </authentication>
+    </security>
 
 ### 4. Set up HTTPS
 
@@ -221,7 +218,6 @@ At least the services inside `/Resources/AspNetFormsAuth` path must use HTTPS to
 
 Consider using a [free SSL certificate](https://www.google.hr/search?q=free+SSL+certificate) (search the web for the providers)
 in development or QA environment.
-
 
 ## Configuration
 
@@ -271,7 +267,6 @@ RegularExpression|RuleDescription
 `[A-Z]`          | The password must contain at least one uppercase letters.
 `\W`             | The password must contain at least one special character (not a letter or a digit).
 
-
 ## Uninstallation
 
 When returning Rhetos server from Forms Authentication back to **Windows Authentication**, the following configuration changes should be done:
@@ -280,23 +275,23 @@ When returning Rhetos server from Forms Authentication back to **Windows Authent
 
 1. Add (or uncomment) the following element inside all `<binding ...>` elements:
 
-		<security mode="TransportCredentialOnly">
-			<transport clientCredentialType="Windows" />
-		</security>
+        <security mode="TransportCredentialOnly">
+            <transport clientCredentialType="Windows" />
+        </security>
 
 2. Inside `<system.web>` remove following elements:
 
-	    <authentication mode="Forms" />
-	    <roleManager enabled="true" />
-	    <membership defaultProvider="SimpleMembershipProvider">
-	      <providers>
-	        <clear />
-	        <add name="SimpleMembershipProvider" type="WebMatrix.WebData.SimpleMembershipProvider, WebMatrix.WebData" />
-	      </providers>
-	    </membership>
-	    <authorization>
-	      <deny users="?" />
-	    </authorization>
+        <authentication mode="Forms" />
+        <roleManager enabled="true" />
+        <membership defaultProvider="SimpleMembershipProvider">
+          <providers>
+            <clear />
+            <add name="SimpleMembershipProvider" type="WebMatrix.WebData.SimpleMembershipProvider, WebMatrix.WebData" />
+          </providers>
+        </membership>
+        <authorization>
+          <deny users="?" />
+        </authorization>
 
 3. Inside `<system.web>` add the `<authentication mode="Windows" />` element.
 
@@ -304,7 +299,6 @@ When returning Rhetos server from Forms Authentication back to **Windows Authent
 
 1. Start IIS Manager -> Select the web site -> Open "Authentication" feature.
 2. On the Authentication page **disable** *Anonymous Authentication* and *Forms Authentication*, **enable** *Windows Authentication*.
-
 
 ## Sharing the authentication across web applications
 
@@ -318,39 +312,37 @@ For more info, see [MSDN article: Forms Authentication Across Applications](http
 
 The machine key in `web.config` may have the following format:
 
-	<machineKey
-		validationKey="4F579A4589E986E7AF4D11767160DFBCF15A733F285EEF31B6DD26C7D7E9A8D5"
-		decryptionKey="73080E3328B61DC59DE2E3F7FFCA11E2706D62F7BF162E5529728F2C448D8269"
-		validation="HMACSHA256"
-		compatibilityMode="Framework20SP2" />
+    <machineKey
+        validationKey="4F579A4589E986E7AF4D11767160DFBCF15A733F285EEF31B6DD26C7D7E9A8D5"
+        decryptionKey="73080E3328B61DC59DE2E3F7FFCA11E2706D62F7BF162E5529728F2C448D8269"
+        validation="HMACSHA256"
+        compatibilityMode="Framework20SP2" />
 
 It is important to generate new validationKey and decryptionKey for every deployment.
 You may use the following C# code to generate the keys:
- 
-	void Main()
-	{
-	  int len = 64;
-	  byte[] buff = new byte[len/2];
-	  RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
-	  rng.GetBytes(buff);
-	  StringBuilder sb = new StringBuilder(len);
-	  for (int i=0; i<buff.Length; i++)
-	    sb.Append(string.Format("{0:X2}", buff[i]));
-	  sb.ToString().Dump();
-	}
 
+    void Main()
+    {
+      int len = 64;
+      byte[] buff = new byte[len/2];
+      var rng = new System.Security.Cryptography.RNGCryptoServiceProvider();
+      rng.GetBytes(buff);
+      StringBuilder sb = new StringBuilder(len);
+      for (int i=0; i<buff.Length; i++)
+        sb.Append(string.Format("{0:X2}", buff[i]));
+      Console.WriteLine(sb.ToString());
+    }
 
 ## Session timeout
 
 ASP.NET forms authentication ticket will expire after 30 minutes of **client incativity**, by default.
 To allow user to stay logged in after longer time of inactivity, add standard ASP.NET configuration option `timeout` (in minutes) in Web.config:
 
-	<system.web>
-	     <authentication mode="Forms">
-	       <forms timeout="50000000"/>
-	     </authentication>
-	</system.web>
-
+    <system.web>
+         <authentication mode="Forms">
+           <forms timeout="50000000"/>
+         </authentication>
+    </system.web>
 
 ## Implementing SendPasswordResetToken
 
@@ -368,11 +360,11 @@ from `Rhetos.AspNetFormsAuth.Interfaces.dll`.
 The class must use `Export` attribute to register the plugin implementation.
 For example:
 
-	[Export(typeof(ISendPasswordResetToken))]
+    [Export(typeof(ISendPasswordResetToken))]
     public class EmailSender : ISendPasswordResetToken
-	{
-		...
-	}
+    {
+        ...
+    }
 
 The `AdditionalClientInfo` parameter of web service method `/SendPasswordResetToken` will be provided to the implementation function.
 The parameter may contain answers to security questions, preferred method of communication or any similar user provided information
@@ -392,8 +384,8 @@ Any other exception (`Rhetos.FrameworkException`, e.g.) will only be logged on t
 **Issue**: Web service responds with error message "The Role Manager feature has not been enabled."<br>
 **Solution**: The error occurs when the necessary modifications of Web.config file are not done. Please check that you have followed the [installation](#installation) instructions above.
 
-**Issue**: I have accidentally deleted the *admin* user, *SecurityAdministrator* role, or some of its permissions. How can I get it back?<br> 
-**Solution**: Execute `AdminSetup.exe` again. It will regenerate the default administration settings. See [admin user](#admin-user). 
+**Issue**: I have accidentally deleted the *admin* user, *SecurityAdministrator* role, or some of its permissions. How can I get it back?<br>
+**Solution**: Execute `AdminSetup.exe` again. It will regenerate the default administration settings. See [admin user](#admin-user).
 
 **Other:** In case of a server error, additional information on the error may be found in the Rhetos server log (`RhetosServer.log` file, by default).
 If needed, more verbose logging of the authentication service may be switched on by adding `<logger name="AspNetFormsAuth.AuthenticationService" minLevel="Trace" writeTo="TraceLog" />` in Rhetos server's `web.config`. The trace log will be written to `RhetosServerTrace.log`.
