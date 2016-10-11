@@ -19,10 +19,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Data.SqlClient;
-using Oracle.DataAccess.Client;
-using Oracle.DataAccess.Types;
+using Oracle.ManagedDataAccess.Client;
 using System.Data.Common;
 using System.Linq;
 using System.Text;
@@ -125,7 +122,7 @@ namespace Rhetos.Utilities
                 if (DatabaseLanguageIsMsSql.Value)
                     return "System.Data.SqlClient";
                 else if (DatabaseLanguageIsOracle.Value)
-                    return "Oracle.DataAccess.Client";
+                    return "Oracle.ManagedDataAccess.Client";
                 else
                     throw new FrameworkException(UnsupportedLanguageError);
             }

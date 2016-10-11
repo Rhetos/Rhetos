@@ -25,8 +25,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using Rhetos.Logging;
-using Oracle.DataAccess.Client;
-using Oracle.DataAccess.Types;
+using Oracle.ManagedDataAccess.Client;
 
 namespace Rhetos.Utilities
 {

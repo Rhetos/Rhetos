@@ -2,7 +2,7 @@
   <Reference Relative="bin\EntityFramework.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\EntityFramework.dll</Reference>
   <Reference Relative="bin\EntityFramework.SqlServer.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\EntityFramework.SqlServer.dll</Reference>
   <Reference Relative="bin\NLog.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\NLog.dll</Reference>
-  <Reference Relative="bin\Oracle.DataAccess.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Oracle.DataAccess.dll</Reference>
+  <Reference Relative="bin\Oracle.ManagedDataAccess.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Oracle.ManagedDataAccess.dll</Reference>
   <Reference Relative="bin\Plugins\Rhetos.AspNetFormsAuth.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.AspNetFormsAuth.dll</Reference>
   <Reference Relative="bin\Rhetos.Configuration.Autofac.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Configuration.Autofac.dll</Reference>
   <Reference Relative="bin\Plugins\Rhetos.Dom.DefaultConcepts.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Dom.DefaultConcepts.dll</Reference>
@@ -19,7 +19,7 @@
   <Reference>&lt;RuntimeDirectory&gt;\System.DirectoryServices.AccountManagement.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.DirectoryServices.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.Runtime.Serialization.dll</Reference>
-  <Namespace>Oracle.DataAccess.Client</Namespace>
+  <Namespace>Oracle.ManagedDataAccess.Client</Namespace>
   <Namespace>Rhetos.Configuration.Autofac</Namespace>
   <Namespace>Rhetos.Dom</Namespace>
   <Namespace>Rhetos.Dom.DefaultConcepts</Namespace>

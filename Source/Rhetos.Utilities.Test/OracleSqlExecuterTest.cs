@@ -22,8 +22,6 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using Rhetos.Logging;
 using Rhetos.TestCommon;
 
 namespace Rhetos.Utilities.Test

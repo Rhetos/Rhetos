@@ -124,10 +124,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.XmlSerialization.dll</HintPath>
     </Reference>
-    <Reference Include="Oracle.DataAccess, Version=4.112.3.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Source\Rhetos\bin\Oracle.DataAccess.dll</HintPath>
-    </Reference>
     <Reference Include="ServerDom, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Source\Rhetos\bin\ServerDom.dll</HintPath>
