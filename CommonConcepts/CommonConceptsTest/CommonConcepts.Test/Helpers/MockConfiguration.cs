@@ -17,25 +17,32 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace Rhetos.Deployment.Test
+namespace CommonConcepts.Test.Helpers
 {
-    class DataMigration_Accessor : DataMigration
+    public class MockConfiguration : IConfiguration
     {
-        public DataMigration_Accessor()
-            : base(null, new ConsoleLogProvider(), null, null)
+        Dictionary<string, object> _settings;
+
+        public MockConfiguration(Dictionary<string, object> settings = null)
         {
+            _settings = settings ?? new Dictionary<string, object>();
         }
 
-        new public List<DataMigrationScript> FindSkipedScriptsInEachPackage(List<DataMigrationScript> oldScripts, List<DataMigrationScript> newScripts)
+        public Lazy<bool> GetBool(string key, bool defaultValue)
         {
-            return base.FindSkipedScriptsInEachPackage(oldScripts, newScripts);
+            return new Lazy<bool>(() => (bool)_settings[key]);
+        }
+
+        public Lazy<int> GetInt(string key, int defaultValue)
+        {
+            return new Lazy<int>(() => (int)_settings[key]);
         }
     }
 }

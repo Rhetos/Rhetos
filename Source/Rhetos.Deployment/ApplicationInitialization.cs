@@ -59,10 +59,10 @@ namespace Rhetos.Deployment
                 if (configFile.Exists)
                 {
                     Touch(configFile);
-                    _deployPackagesLogger.Trace("Updated Web.config modification date to restart server.");
+                    _deployPackagesLogger.Trace("Updated " + configFile.Name + " modification date to restart server.");
                 }
                 else
-                    _deployPackagesLogger.Trace("Web.config update skipped.");
+                    _deployPackagesLogger.Trace("Missing " + configFile.Name + ".");
             }
         }
 

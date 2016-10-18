@@ -43,6 +43,10 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Autofac, Version=3.5.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Autofac.3.5.2\lib\net40\Autofac.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Ionic.Zip">
       <HintPath>..\..\packages\DotNetZip.1.9.3\lib\net20\Ionic.Zip.dll</HintPath>
     </Reference>
@@ -72,8 +76,11 @@
     <Compile Include="ApplicationInitialization.cs" />
     <Compile Include="ConnectionStringReport.cs" />
     <Compile Include="DataMigrationScript.cs" />
+    <Compile Include="DataMigrationScriptsFromDisk.cs" />
     <Compile Include="DeploymentConfiguration.cs" />
+    <Compile Include="DeploymentModuleConfiguration.cs" />
     <Compile Include="FileSyncer.cs" />
+    <Compile Include="IDataMigrationScriptsProvider.cs" />
     <Compile Include="InstalledPackages.cs" />
     <Compile Include="LoggerForNuget.cs" />
     <Compile Include="PackageDownloaderOptions.cs" />

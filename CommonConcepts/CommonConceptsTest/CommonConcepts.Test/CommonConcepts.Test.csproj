@@ -56,6 +56,10 @@
     <Reference Include="Rhetos.Configuration.Autofac">
       <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Configuration.Autofac.dll</HintPath>
     </Reference>
+    <Reference Include="Rhetos.Deployment, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Deployment.dll</HintPath>
+    </Reference>
     <Reference Include="Rhetos.Extensibility, Version=0.9.14.1, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Extensibility.dll</HintPath>
@@ -153,6 +157,8 @@
     <Compile Include="CloningTest.cs" />
     <Compile Include="AuthorizationCachingTest.cs" />
     <Compile Include="CreatedByTest.cs" />
+    <Compile Include="DataMigrationTest.cs" />
+    <Compile Include="Helpers\MockConfiguration.cs" />
     <Compile Include="ReferenceTest.cs" />
     <Compile Include="FullTextSearchTest.cs" />
     <Compile Include="Helpers\RhetosTestContainerExtensions.cs" />

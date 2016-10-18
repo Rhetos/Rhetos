@@ -851,3 +851,13 @@ BEGIN
     INSERT INTO Rhetos.MacroEvaluatorOrder (EvaluatorName, EvaluatorOrder) VALUES ('IConceptMacro Rhetos.Dsl.DefaultConcepts.SqlDependsOnDataStructureMacro for Rhetos.Dsl.DefaultConcepts.SqlDependsOnDataStructureInfo', 0.9892857143);
     INSERT INTO Rhetos.MacroEvaluatorOrder (EvaluatorName, EvaluatorOrder) VALUES ('IConceptMacro Rhetos.Dsl.DefaultConcepts.SqlDependsOnPropertyMacro for Rhetos.Dsl.DefaultConcepts.SqlDependsOnPropertyInfo', 0.9964285714);
 END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[Rhetos].[DataMigrationScript]') AND name = N'Active')
+BEGIN
+    ALTER TABLE Rhetos.DataMigrationScript
+        ADD Active bit NOT NULL
+        CONSTRAINT DF_DataMigrationScript_Active DEFAULT (1);
+
+    ALTER TABLE Rhetos.DataMigrationScript
+        DROP CONSTRAINT DF_DataMigrationScript_Active;
+END

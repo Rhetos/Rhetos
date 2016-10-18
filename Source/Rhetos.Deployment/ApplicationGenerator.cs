@@ -79,7 +79,9 @@ namespace Rhetos.Deployment
             int dslModelConceptsCount = _dslModel.Concepts.Count();
             _deployPackagesLogger.Trace("Application model has " + dslModelConceptsCount + " statements.");
 
-            if (!deployDatabaseOnly)
+            if (deployDatabaseOnly)
+                _deployPackagesLogger.Info("Skipped code generators (DeployDatabaseOnly).");
+            else
             {
                 _deployPackagesLogger.Trace("Compiling DOM assembly.");
                 int generatedTypesCount = _domGenerator.Assembly.GetTypes().Length;
@@ -99,8 +101,6 @@ namespace Rhetos.Deployment
                 if (!generators.Any())
                     _deployPackagesLogger.Trace("No additional generators.");
             }
-            else
-                _deployPackagesLogger.Info("Skipped code generators (DeployDatabaseOnly).");
 
             _deployPackagesLogger.Trace("Cleaning old migration data.");
             _databaseCleaner.RemoveRedundantMigrationColumns();

@@ -17,18 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac;
+using Rhetos.Utilities;
+using Rhetos.Deployment;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.ServiceModel;
-using Autofac;
-using Rhetos.Utilities;
-using Rhetos.Configuration.Autofac;
-using System.Configuration;
-using System.IO;
-using Rhetos.Dsl;
-using Rhetos.Extensibility;
-using Rhetos.Deployment;
 
 namespace Rhetos.Configuration.Autofac
 {
@@ -45,7 +39,7 @@ namespace Rhetos.Configuration.Autofac
 
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<InstalledPackages>().As<IInstalledPackages>().SingleInstance();
+            builder.RegisterModule(new DeploymentModuleConfiguration(_deploymentTime));
             builder.RegisterModule(new DomModuleConfiguration(_deploymentTime));
             builder.RegisterModule(new PersistenceModuleConfiguration(_deploymentTime));
             builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));

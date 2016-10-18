@@ -21,7 +21,6 @@ using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -38,19 +37,21 @@ namespace Rhetos.Deployment
         protected readonly ISqlExecuter _sqlExecuter;
         protected readonly ILogger _logger;
         protected readonly ILogger _deployPackagesLogger;
-        protected readonly IInstalledPackages _installedPackages;
+        protected readonly IDataMigrationScriptsProvider _scriptsProvider;
+        protected readonly IConfiguration _configuration;
 
-        public DataMigration(ISqlExecuter sqlExecuter, ILogProvider logProvider, IInstalledPackages installedPackages)
+        public DataMigration(ISqlExecuter sqlExecuter, ILogProvider logProvider, IDataMigrationScriptsProvider scriptsProvider, IConfiguration configuration)
         {
             _sqlExecuter = sqlExecuter;
             _logger = logProvider.GetLogger("DataMigration");
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
-            _installedPackages = installedPackages;
+            _scriptsProvider = scriptsProvider;
+            _configuration = configuration;
         }
 
         public DataMigrationReport ExecuteDataMigrationScripts()
         {
-            var newScripts = LoadScriptsFromDisk();
+            var newScripts = _scriptsProvider.Load();
 
             var scriptsInOtherLanguages = FindScriptsInOtherLanguages(newScripts, SqlUtility.DatabaseLanguage);
             LogScripts("Ignoring scripts in other database languages", scriptsInOtherLanguages);
@@ -62,17 +63,31 @@ namespace Rhetos.Deployment
 
             var newIndex = new HashSet<string>(newScripts.Select(s => s.Tag));
             var oldIndex = new HashSet<string>(oldScripts.Select(s => s.Tag));
-
-            List<DataMigrationScript> skipped = SkipOlderScriptsInEachFolder(oldIndex, newScripts);
             List<DataMigrationScript> toRemove = oldScripts.Where(os => !newIndex.Contains(os.Tag)).ToList();
-            List<DataMigrationScript> toExecute = newScripts.Where(ns => !oldIndex.Contains(ns.Tag)).Except(skipped).ToList();
-            LogScripts("Skipped older script", skipped, EventType.Info);
+            List<DataMigrationScript> toExecute = newScripts.Where(ns => !oldIndex.Contains(ns.Tag)).ToList();
+
+            // "skipped" are the new scripts that are ordered *before* some old scripts that were already executed.
+            List<DataMigrationScript> skipped = FindSkipedScriptsInEachPackage(oldScripts, newScripts);
+            string skippedReport = string.Empty;
+            if (skipped.Count > 0)
+            {
+                if (_configuration.GetBool("DataMigration.SkipScriptsWithWrongOrder", true).Value)
+                {
+                    // Ignore skipped scripts for backward compatibility.
+                    LogScripts("Skipped older script", skipped, EventType.Info);
+                    toExecute = toExecute.Except(skipped).ToList();
+                    skippedReport = " " + skipped.Count + " older skipped.";
+                }
+                else
+                {
+                    // Execute skipped scripts even though this means the scripts will be executed in the incorrect order.
+                    LogScripts("Executing script in incorrect order", skipped, EventType.Error);
+                }
+            }
 
             ApplyToDatabase(toRemove, toExecute);
 
-            string report = string.Format("Executed {0} of {1} scripts.", toExecute.Count, newScripts.Count);
-            if (skipped.Count > 0)
-                report = report + " " + skipped.Count + " older skipped.";
+            string report = string.Format("Executed {0} of {1} scripts.{2}", toExecute.Count, newScripts.Count, skippedReport);
             _deployPackagesLogger.Trace(report);
 
             return new DataMigrationReport { CreatedTags = toExecute.Select(s => s.Tag).ToList() };
@@ -81,7 +96,7 @@ namespace Rhetos.Deployment
         public void UndoDataMigrationScripts(List<string> createdTags)
         {
             _sqlExecuter.ExecuteSql(createdTags.Select(tag =>
-                "DELETE FROM Rhetos.DataMigrationScript WHERE Tag = " + SqlUtility.QuoteText(tag)));
+                "UPDATE Rhetos.DataMigrationScript SET Active = 0 WHERE Tag = " + SqlUtility.QuoteText(tag)));
         }
 
         protected static readonly Regex ScriptLanguageRegex = new Regex(@"\((?<DatabaseLanguage>\w*)\).sql$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -107,29 +122,31 @@ namespace Rhetos.Deployment
                 sql.AddRange(script.Content
                                  .Split(new[] { "\r\nGO\r\n" }, StringSplitOptions.RemoveEmptyEntries)
                                  .Where(c => !string.IsNullOrWhiteSpace(c)));
-                sql.Add(SaveDataMigrationScriptEntiry(script));
+                sql.Add(SaveDataMigrationScriptMetadata(script));
             }
             _sqlExecuter.ExecuteSql(sql);
         }
 
-        protected static string SaveDataMigrationScriptEntiry(DataMigrationScript script)
+        protected static string SaveDataMigrationScriptMetadata(DataMigrationScript script)
         {
             return string.Format(
-                "INSERT INTO Rhetos.DataMigrationScript (Tag, Path, Content) VALUES ({0}, {1}, {2})",
+                "DELETE FROM Rhetos.DataMigrationScript WHERE Active = 0 AND Tag = {0};"
+                + "INSERT INTO Rhetos.DataMigrationScript (Tag, Path, Content, Active) VALUES ({0}, {1}, {2}, 1);",
                 SqlUtility.QuoteText(script.Tag),
                 SqlUtility.QuoteText(script.Path),
                 SqlUtility.QuoteText(script.Content));
         }
 
-        protected List<DataMigrationScript> SkipOlderScriptsInEachFolder(
-            HashSet<string> oldIndex, List<DataMigrationScript> newScripts)
+        protected List<DataMigrationScript> FindSkipedScriptsInEachPackage(List<DataMigrationScript> oldScripts, List<DataMigrationScript> newScripts)
         {
-            var newByFolder = newScripts
+            var oldIndex = new HashSet<string>(oldScripts.Select(s => s.Tag));
+
+            var newByPackage = newScripts
                 .GroupBy(ns => GetFirstSubfolder(ns.Path))
                 .ToDictionary(g => g.Key, g => g.ToList());
 
             var skipped = new List<DataMigrationScript>();
-            foreach (var group in newByFolder)
+            foreach (var group in newByPackage)
             {
                 var lastExecuted = group.Value
                     .Where(newScript => oldIndex.Contains(newScript.Tag))
@@ -163,87 +180,21 @@ namespace Rhetos.Deployment
 
         protected void LogScript(string msg, DataMigrationScript script, EventType eventType = EventType.Trace)
         {
-            _logger.Write(eventType, () => msg + " " + script.Path + " (" + script.Tag + ")");
+            _logger.Write(eventType, () => msg + " " + script.Path + " (tag: " + script.Tag + ")");
         }
 
         protected List<DataMigrationScript> LoadScriptsFromDatabase()
         {
             var scripts = new List<DataMigrationScript>();
             _sqlExecuter.ExecuteReader(
-                "SELECT Tag, Path, Content FROM Rhetos.DataMigrationScript", 
+                "SELECT Tag, Path, Content FROM Rhetos.DataMigrationScript WHERE Active = 1", 
                 reader => scripts.Add(new DataMigrationScript
-                                            {
-                                                Tag = reader.GetString(0),
-                                                Path = reader.GetString(1),
-                                                Content = reader.GetString(2)
-                                            }));
+                    {
+                        Tag = reader.GetString(0),
+                        Path = reader.GetString(1),
+                        Content = reader.GetString(2)
+                    }));
             return scripts.OrderBy(s => s).ToList();
-        }
-
-        const string DataMigrationScriptsSubfolder = "DataMigration";
-
-        protected List<DataMigrationScript> LoadScriptsFromDisk()
-        {
-            var allScripts = new List<DataMigrationScript>();
-
-            // The packages are sorted by their dependencies, so the data migration scripts from one module may use the data that was prepared by the module it depends on.
-            foreach (var package in _installedPackages.Packages)
-            {
-                string dataMigrationScriptsFolder = Path.Combine(package.Folder, DataMigrationScriptsSubfolder);
-                if (Directory.Exists(dataMigrationScriptsFolder))
-                {
-                    var files = Directory.GetFiles(dataMigrationScriptsFolder, "*.*", SearchOption.AllDirectories);
-
-                    const string expectedExtension = ".sql";
-                    var badFile = files.FirstOrDefault(file => Path.GetExtension(file).ToLower() != expectedExtension);
-                    if (badFile != null)
-                        throw new FrameworkException("Data migration script '" + badFile + "' does not have expected extension '" + expectedExtension + "'.");
-
-                    int baseFolderLength = GetFullPathLength(dataMigrationScriptsFolder);
-
-                    var packageScripts = (from file in files
-                                   let scriptRelativePath = Path.GetFullPath(file).Substring(baseFolderLength)
-                                   let scriptContent = File.ReadAllText(file, Encoding.Default)
-                                   select new DataMigrationScript
-                                              {
-                                                  Tag = ParseScriptTag(scriptContent, file),
-                                                  // Using package.Id instead of full package subfolder name, in order to keep the same script path between different versions of the package (the folder name will contain the version number).
-                                                  Path = package.Id + "\\" + scriptRelativePath,
-                                                  Content = scriptContent
-                                              }).ToList();
-
-                    packageScripts.Sort();
-                    allScripts.AddRange(packageScripts);
-                }
-            }
-
-            var badGroup = allScripts.GroupBy(s => s.Tag).FirstOrDefault(g => g.Count() >= 2);
-            if (badGroup != null)
-                throw new FrameworkException(string.Format(
-                    "Data migration scripts '{0}' and '{1}' have same tag '{2}' in their headers.",
-                    badGroup.First().Path, badGroup.ElementAt(1).Path, badGroup.Key));
-
-            return allScripts;
-        }
-
-        protected static int GetFullPathLength(string dataMigrationScriptsFolder)
-        {
-            dataMigrationScriptsFolder = Path.GetFullPath(dataMigrationScriptsFolder);
-            if (dataMigrationScriptsFolder.Last() != '\\')
-                dataMigrationScriptsFolder = dataMigrationScriptsFolder + '\\';
-            return Path.GetFullPath(dataMigrationScriptsFolder).Length;
-        }
-
-        protected static readonly Regex ScriptIdRegex = new Regex(@"^/\*DATAMIGRATION (.+)\*/");
-
-        protected static string ParseScriptTag(string scriptContent, string file)
-        {
-            if (!ScriptIdRegex.IsMatch(scriptContent))
-                throw new FrameworkException("Data migration script '" + file + "' should start with a header '/*DATAMIGRATION unique_script_identifier*/'.");
-            string tag = ScriptIdRegex.Match(scriptContent).Groups[1].Value.Trim();
-            if (string.IsNullOrEmpty(tag) || tag.Contains("\n"))
-                throw new FrameworkException("Data migration script '" + file + "' has invalid header. It should start with a header '/*DATAMIGRATION unique_script_identifier*/'");
-            return tag;
         }
     }
 }

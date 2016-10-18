@@ -17,25 +17,32 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Logging;
-using Rhetos.Utilities;
+using Autofac;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace Rhetos.Deployment.Test
+namespace Rhetos.Deployment
 {
-    class DataMigration_Accessor : DataMigration
+    public class DeploymentModuleConfiguration : Module
     {
-        public DataMigration_Accessor()
-            : base(null, new ConsoleLogProvider(), null, null)
+        private readonly bool _deploymentTime;
+
+        public DeploymentModuleConfiguration(bool deploymentTime)
         {
+            _deploymentTime = deploymentTime;
         }
 
-        new public List<DataMigrationScript> FindSkipedScriptsInEachPackage(List<DataMigrationScript> oldScripts, List<DataMigrationScript> newScripts)
+        protected override void Load(ContainerBuilder builder)
         {
-            return base.FindSkipedScriptsInEachPackage(oldScripts, newScripts);
+            builder.RegisterType<InstalledPackages>().As<IInstalledPackages>().SingleInstance();
+
+            if (_deploymentTime)
+                builder.RegisterType<DataMigrationScriptsFromDisk>().As<IDataMigrationScriptsProvider>();
+
+            base.Load(builder);
         }
     }
 }

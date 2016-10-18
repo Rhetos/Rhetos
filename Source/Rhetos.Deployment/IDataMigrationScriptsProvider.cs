@@ -17,25 +17,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Logging;
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace Rhetos.Deployment.Test
+namespace Rhetos.Deployment
 {
-    class DataMigration_Accessor : DataMigration
+    /// <summary>
+    /// The scripts are sorted by the intended execution order.
+    /// </summary>
+    public interface IDataMigrationScriptsProvider
     {
-        public DataMigration_Accessor()
-            : base(null, new ConsoleLogProvider(), null, null)
-        {
-        }
-
-        new public List<DataMigrationScript> FindSkipedScriptsInEachPackage(List<DataMigrationScript> oldScripts, List<DataMigrationScript> newScripts)
-        {
-            return base.FindSkipedScriptsInEachPackage(oldScripts, newScripts);
-        }
+        List<DataMigrationScript> Load();
     }
 }
