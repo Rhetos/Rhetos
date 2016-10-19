@@ -143,34 +143,34 @@ namespace CommonConcepts.Test
                 @"p1\s1, p1\s3, p2\ss1, p2\ss3, p1\s2, p1\s4, p2\ss2, p2\ss4");
 
             var expectedLog = @"
-                [Trace] DataMigration: Script on disk p1\s1.sql (tag: p1\s1)
-                [Trace] DataMigration: Script on disk p1\s3.sql (tag: p1\s3)
-                [Trace] DataMigration: Script on disk p2\ss1.sql (tag: p2\ss1)
-                [Trace] DataMigration: Script on disk p2\ss3.sql (tag: p2\ss3)
-                [Info] DataMigration: Executing p1\s1.sql (tag: p1\s1)
-                [Info] DataMigration: Executing p1\s3.sql (tag: p1\s3)
-                [Info] DataMigration: Executing p2\ss1.sql (tag: p2\ss1)
-                [Info] DataMigration: Executing p2\ss3.sql (tag: p2\ss3)
-                [Trace] DataMigration: Script on disk p1\s1.sql (tag: p1\s1)
-                [Trace] DataMigration: Script on disk p1\s2.sql (tag: p1\s2)
-                [Trace] DataMigration: Script on disk p1\s3.sql (tag: p1\s3)
-                [Trace] DataMigration: Script on disk p1\s4.sql (tag: p1\s4)
-                [Trace] DataMigration: Script on disk p2\ss1.sql (tag: p2\ss1)
-                [Trace] DataMigration: Script on disk p2\ss2.sql (tag: p2\ss2)
-                [Trace] DataMigration: Script on disk p2\ss3.sql (tag: p2\ss3)
-                [Trace] DataMigration: Script on disk p2\ss4.sql (tag: p2\ss4)
-                [Trace] DataMigration: Script in database p1\s1.sql (tag: p1\s1)
-                [Trace] DataMigration: Script in database p1\s3.sql (tag: p1\s3)
-                [Trace] DataMigration: Script in database p2\ss1.sql (tag: p2\ss1)
-                [Trace] DataMigration: Script in database p2\ss3.sql (tag: p2\ss3)
+                [Trace] DataMigration: Script on disk p1\s1.sql (tag p1\s1)
+                [Trace] DataMigration: Script on disk p1\s3.sql (tag p1\s3)
+                [Trace] DataMigration: Script on disk p2\ss1.sql (tag p2\ss1)
+                [Trace] DataMigration: Script on disk p2\ss3.sql (tag p2\ss3)
+                [Info] DataMigration: Executing p1\s1.sql (tag p1\s1)
+                [Info] DataMigration: Executing p1\s3.sql (tag p1\s3)
+                [Info] DataMigration: Executing p2\ss1.sql (tag p2\ss1)
+                [Info] DataMigration: Executing p2\ss3.sql (tag p2\ss3)
+                [Trace] DataMigration: Script on disk p1\s1.sql (tag p1\s1)
+                [Trace] DataMigration: Script on disk p1\s2.sql (tag p1\s2)
+                [Trace] DataMigration: Script on disk p1\s3.sql (tag p1\s3)
+                [Trace] DataMigration: Script on disk p1\s4.sql (tag p1\s4)
+                [Trace] DataMigration: Script on disk p2\ss1.sql (tag p2\ss1)
+                [Trace] DataMigration: Script on disk p2\ss2.sql (tag p2\ss2)
+                [Trace] DataMigration: Script on disk p2\ss3.sql (tag p2\ss3)
+                [Trace] DataMigration: Script on disk p2\ss4.sql (tag p2\ss4)
+                [Trace] DataMigration: Script in database p1\s1.sql (tag p1\s1)
+                [Trace] DataMigration: Script in database p1\s3.sql (tag p1\s3)
+                [Trace] DataMigration: Script in database p2\ss1.sql (tag p2\ss1)
+                [Trace] DataMigration: Script in database p2\ss3.sql (tag p2\ss3)
                 [Trace] DataMigration: Last executed script in 'p1' is 'p1\s3.sql' of new scripts provided.
                 [Trace] DataMigration: Last executed script in 'p2' is 'p2\ss3.sql' of new scripts provided.
-                [Error] DataMigration: Executing script in incorrect order p1\s2.sql (tag: p1\s2)
-                [Error] DataMigration: Executing script in incorrect order p2\ss2.sql (tag: p2\ss2)
-                [Info] DataMigration: Executing p1\s2.sql (tag: p1\s2)
-                [Info] DataMigration: Executing p1\s4.sql (tag: p1\s4)
-                [Info] DataMigration: Executing p2\ss2.sql (tag: p2\ss2)
-                [Info] DataMigration: Executing p2\ss4.sql (tag: p2\ss4)";
+                [Error] DataMigration: Executing script in incorrect order p1\s2.sql (tag p1\s2)
+                [Error] DataMigration: Executing script in incorrect order p2\ss2.sql (tag p2\ss2)
+                [Info] DataMigration: Executing p1\s2.sql (tag p1\s2)
+                [Info] DataMigration: Executing p1\s4.sql (tag p1\s4)
+                [Info] DataMigration: Executing p2\ss2.sql (tag p2\ss2)
+                [Info] DataMigration: Executing p2\ss4.sql (tag p2\ss4)";
 
             Assert.AreEqual(expectedLog, string.Concat(log
                 .Where(l => l.Contains("] DataMigration:"))
@@ -189,12 +189,12 @@ namespace CommonConcepts.Test
                 @"p1\s3-, p1\s1");
 
             var expectedLog = @"
-                [Trace] DataMigration: Script on disk p1\s3.sql (tag: p1\s3)
-                [Info] DataMigration: Executing p1\s3.sql (tag: p1\s3)
-                [Trace] DataMigration: Script on disk p1\s1.sql (tag: p1\s1)
-                [Trace] DataMigration: Script in database p1\s3.sql (tag: p1\s3)
-                [Info] DataMigration: Removing p1\s3.sql (tag: p1\s3)
-                [Info] DataMigration: Executing p1\s1.sql (tag: p1\s1)";
+                [Trace] DataMigration: Script on disk p1\s3.sql (tag p1\s3)
+                [Info] DataMigration: Executing p1\s3.sql (tag p1\s3)
+                [Trace] DataMigration: Script on disk p1\s1.sql (tag p1\s1)
+                [Trace] DataMigration: Script in database p1\s3.sql (tag p1\s3)
+                [Info] DataMigration: Removing p1\s3.sql (tag p1\s3)
+                [Info] DataMigration: Executing p1\s1.sql (tag p1\s1)";
 
             Assert.AreEqual(expectedLog, string.Concat(log
                 .Where(l => l.Contains("] DataMigration:"))
@@ -214,32 +214,32 @@ namespace CommonConcepts.Test
                 skipScriptsWithWrongOrder: true);
 
             var expectedLog = @"
-                [Trace] DataMigration: Script on disk p1\s1.sql (tag: p1\s1)
-                [Trace] DataMigration: Script on disk p1\s3.sql (tag: p1\s3)
-                [Trace] DataMigration: Script on disk p2\ss1.sql (tag: p2\ss1)
-                [Trace] DataMigration: Script on disk p2\ss3.sql (tag: p2\ss3)
-                [Info] DataMigration: Executing p1\s1.sql (tag: p1\s1)
-                [Info] DataMigration: Executing p1\s3.sql (tag: p1\s3)
-                [Info] DataMigration: Executing p2\ss1.sql (tag: p2\ss1)
-                [Info] DataMigration: Executing p2\ss3.sql (tag: p2\ss3)
-                [Trace] DataMigration: Script on disk p1\s1.sql (tag: p1\s1)
-                [Trace] DataMigration: Script on disk p1\s2.sql (tag: p1\s2)
-                [Trace] DataMigration: Script on disk p1\s3.sql (tag: p1\s3)
-                [Trace] DataMigration: Script on disk p1\s4.sql (tag: p1\s4)
-                [Trace] DataMigration: Script on disk p2\ss1.sql (tag: p2\ss1)
-                [Trace] DataMigration: Script on disk p2\ss2.sql (tag: p2\ss2)
-                [Trace] DataMigration: Script on disk p2\ss3.sql (tag: p2\ss3)
-                [Trace] DataMigration: Script on disk p2\ss4.sql (tag: p2\ss4)
-                [Trace] DataMigration: Script in database p1\s1.sql (tag: p1\s1)
-                [Trace] DataMigration: Script in database p1\s3.sql (tag: p1\s3)
-                [Trace] DataMigration: Script in database p2\ss1.sql (tag: p2\ss1)
-                [Trace] DataMigration: Script in database p2\ss3.sql (tag: p2\ss3)
+                [Trace] DataMigration: Script on disk p1\s1.sql (tag p1\s1)
+                [Trace] DataMigration: Script on disk p1\s3.sql (tag p1\s3)
+                [Trace] DataMigration: Script on disk p2\ss1.sql (tag p2\ss1)
+                [Trace] DataMigration: Script on disk p2\ss3.sql (tag p2\ss3)
+                [Info] DataMigration: Executing p1\s1.sql (tag p1\s1)
+                [Info] DataMigration: Executing p1\s3.sql (tag p1\s3)
+                [Info] DataMigration: Executing p2\ss1.sql (tag p2\ss1)
+                [Info] DataMigration: Executing p2\ss3.sql (tag p2\ss3)
+                [Trace] DataMigration: Script on disk p1\s1.sql (tag p1\s1)
+                [Trace] DataMigration: Script on disk p1\s2.sql (tag p1\s2)
+                [Trace] DataMigration: Script on disk p1\s3.sql (tag p1\s3)
+                [Trace] DataMigration: Script on disk p1\s4.sql (tag p1\s4)
+                [Trace] DataMigration: Script on disk p2\ss1.sql (tag p2\ss1)
+                [Trace] DataMigration: Script on disk p2\ss2.sql (tag p2\ss2)
+                [Trace] DataMigration: Script on disk p2\ss3.sql (tag p2\ss3)
+                [Trace] DataMigration: Script on disk p2\ss4.sql (tag p2\ss4)
+                [Trace] DataMigration: Script in database p1\s1.sql (tag p1\s1)
+                [Trace] DataMigration: Script in database p1\s3.sql (tag p1\s3)
+                [Trace] DataMigration: Script in database p2\ss1.sql (tag p2\ss1)
+                [Trace] DataMigration: Script in database p2\ss3.sql (tag p2\ss3)
                 [Trace] DataMigration: Last executed script in 'p1' is 'p1\s3.sql' of new scripts provided.
                 [Trace] DataMigration: Last executed script in 'p2' is 'p2\ss3.sql' of new scripts provided.
-                [Info] DataMigration: Skipped older script p1\s2.sql (tag: p1\s2)
-                [Info] DataMigration: Skipped older script p2\ss2.sql (tag: p2\ss2)
-                [Info] DataMigration: Executing p1\s4.sql (tag: p1\s4)
-                [Info] DataMigration: Executing p2\ss4.sql (tag: p2\ss4)";
+                [Info] DataMigration: Skipped older script p1\s2.sql (tag p1\s2)
+                [Info] DataMigration: Skipped older script p2\ss2.sql (tag p2\ss2)
+                [Info] DataMigration: Executing p1\s4.sql (tag p1\s4)
+                [Info] DataMigration: Executing p2\ss4.sql (tag p2\ss4)";
 
             Assert.AreEqual(expectedLog, string.Concat(log
                 .Where(l => l.Contains("] DataMigration:"))

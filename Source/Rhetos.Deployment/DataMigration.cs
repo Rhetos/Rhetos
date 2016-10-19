@@ -81,6 +81,7 @@ namespace Rhetos.Deployment
                 else
                 {
                     // Execute skipped scripts even though this means the scripts will be executed in the incorrect order.
+                    // The message is logged as an *error* to increase the chance of being noticed because it is one-off event, even though it is not blocking.
                     LogScripts("Executing script in incorrect order", skipped, EventType.Error);
                 }
             }
@@ -180,7 +181,7 @@ namespace Rhetos.Deployment
 
         protected void LogScript(string msg, DataMigrationScript script, EventType eventType = EventType.Trace)
         {
-            _logger.Write(eventType, () => msg + " " + script.Path + " (tag: " + script.Tag + ")");
+            _logger.Write(eventType, () => msg + " " + script.Path + " (tag " + script.Tag + ")");
         }
 
         protected List<DataMigrationScript> LoadScriptsFromDatabase()
