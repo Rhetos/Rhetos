@@ -1,5 +1,17 @@
 ﻿# Rhetos release notes
 
+## 1.2.0 (2016-10-19)
+
+### Breaking changes
+
+* Allowed execution of data-migration scripts in wrong order, when a new script is ordered before the old one that was already executed.
+  In the previous versions, such scripts would be skipped.
+  - Enable `DataMigration.SkipScriptsWithWrongOrder` parameter in *web.config* for backward-compatible behavior.
+
+### Internal improvements
+
+* Removed dependencies to 32-bit dlls; it is no longer required to use 32-bit IIS Application Pool for the Rhetos server.
+
 ## 1.1.0 (2016-09-16)
 
 ### New features
@@ -36,7 +48,7 @@
 * Bugfix: Adding a dependency between existing SQL objects may cause a KeyNotFoundException in DatabaseGenerator.
 * Bugfix: Hierarchy path is limited to 70 characters.
 * Forcing web service to close SQL transaction *before* sending web response. This is necessary for consistent behavior or consecutive server requests when SQL server uses snapshot isolation.
-* `EntityFramework.UseDatabaseNullSemantics` configuration option sets Entity Framework to generate simpler SQL queryies.
+* `EntityFramework.UseDatabaseNullSemantics` configuration option sets Entity Framework to generate simpler SQL queries.
 * Repository's members available in the **Action** code snippet.
 * Fixed IIS Express deployment.
 * Optimized reading one record by ID.
