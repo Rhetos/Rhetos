@@ -2,11 +2,11 @@
 
 ## 1.2.0 (2016-10-19)
 
-### Breaking changes
+### New features
 
 * Allowed execution of data-migration scripts in wrong order, when a new script is ordered before the old one that was already executed.
   In the previous versions, such scripts would be skipped.
-  - Enable `DataMigration.SkipScriptsWithWrongOrder` parameter in *web.config* for backward-compatible behavior.
+  - Set the `DataMigration.SkipScriptsWithWrongOrder` parameter in *web.config* to `False` to enable this feature, or `True` for old behavior (default).
 
 ### Internal improvements
 
