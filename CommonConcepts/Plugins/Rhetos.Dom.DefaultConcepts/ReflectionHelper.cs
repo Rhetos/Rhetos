@@ -176,6 +176,11 @@ namespace Rhetos.Dom.DefaultConcepts
             if (expressionType.GetGenericTypeDefinition() != typeof(Expression<>)) return null;
 
             var funcType = expressionType.GetGenericArguments().First();
+            return GetPredicateFunctionParameter(funcType);
+        }
+
+        public static Type GetPredicateFunctionParameter(Type funcType)
+        {
             if (!funcType.IsGenericType) return null;
             if (funcType.GetGenericTypeDefinition() != typeof(Func<,>)) return null;
 
@@ -207,16 +212,38 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <param name="predicateExpression">
         /// Expression&lt;Func&lt;parameter, result&gt;&gt; does not support contravariant parameter type,
         /// so the object is used for predicateExpression.</param>
-        public IQueryable<TEntityInterface> Where(IQueryable<TEntityInterface> items, Expression predicateExpression)
+        public IQueryable<TEntityInterface> Where(IQueryable<TEntityInterface> query, Expression predicateExpression)
         {
             Type predicateParameter = GetPredicateExpressionParameter(predicateExpression.GetType());
             MethodInfo whereMethod = QueryableWhereMethod(predicateParameter);
-            var result = (IQueryable<TEntityInterface>)whereMethod.InvokeEx(null, items, predicateExpression);
+            var result = (IQueryable<TEntityInterface>)whereMethod.InvokeEx(null, query, predicateExpression);
             // The Expression predicate in the Where function does not support contravariance, so the IQueryable will be cast to the Expression type.
             // This typically happens when filtering `IQ<Common.Queryable.module_entity>` by a filter with `Module.Entity` parameter, or `IEntity` or another interface.
             // If the result without casting is returned, the declared element type (simple instance) would not match actual element type (queryable instance).
             // Also is would not be possible to apply other filter expressions with a supertype parameter.
             return CastAsEntityNavigation(result);
+        }
+
+        private MethodInfo _enumerableWhereMethod = null;
+
+        public MethodInfo EnumerableWhereMethod(Type parameterType)
+        {
+            if (_enumerableWhereMethod == null)
+                _enumerableWhereMethod = typeof(Enumerable).GetMethods()
+                    .Where(m => m.Name == "Where" && m.GetParameters()[1].ParameterType.GetGenericArguments().Count() == 2)
+                    .Single();
+
+            return _enumerableWhereMethod.MakeGenericMethod(parameterType);
+        }
+
+        public IEnumerable<TEntityInterface> Where(IEnumerable<TEntityInterface> items, Delegate predicateFunction)
+        {
+            Type predicateParameter = GetPredicateFunctionParameter(predicateFunction.GetType());
+            MethodInfo whereMethod = EnumerableWhereMethod(predicateParameter);
+            var result = (IEnumerable<TEntityInterface>)whereMethod.InvokeEx(null, items, predicateFunction);
+            // The result type of Where method is defined by the predicateFunction, not by the items element type.
+            // If the predicateFunction uses an interface, the result must be cast back to items element type.
+            return CastAsEntity(result);
         }
 
         private MethodInfo _addRangeMethod = null;
@@ -292,14 +319,19 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         public IQueryable<TEntityInterface> AsQueryable(IEnumerable<TEntityInterface> items)
         {
-            var iQueryable = items.GetType().GetInterface("IQueryable`1");
-            if (iQueryable != null && EntityType.IsAssignableFrom(iQueryable.GetGenericArguments()[0]))
+            if (IsQueryable(items))
                 return (IQueryable<TEntityInterface>)items;
             else
             {
                 var castItems = CastAsEntity(items);
                 return (IQueryable<TEntityInterface>)AsQueryableMethod.InvokeEx(null, castItems);
             }
+        }
+
+        public bool IsQueryable(IEnumerable<TEntityInterface> items)
+        {
+            var iQueryable = items.GetType().GetInterface("IQueryable`1");
+            return iQueryable != null && EntityType.IsAssignableFrom(iQueryable.GetGenericArguments()[0]);
         }
 
         private MethodInfo _toListOfEntityMethod = null;

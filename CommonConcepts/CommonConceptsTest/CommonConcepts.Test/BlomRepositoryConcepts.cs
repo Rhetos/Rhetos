@@ -34,7 +34,7 @@ namespace CommonConcepts.Test
     public class BlomRepositoryConcepts
     {
         [TestMethod]
-        public void OnSaveUpdateAndVerify()
+        public void OnSaveUpdateAndValidate()
         {
             using (var container = new RhetosTestContainer())
             {

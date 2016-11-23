@@ -477,11 +477,20 @@ namespace Rhetos.Dom.DefaultConcepts
             if (typeof(IEnumerable<PropertyFilter>).IsAssignableFrom(parameterType))
             {
                 _logger.Trace(() => "Reading using items.AsQueryable().Where(property filter");
-                var query = Reflection.AsQueryable(items);
-                var itemType = query.GetType().GetInterface("IEnumerable`1").GetGenericArguments()[0];
-                // The expression must use EntityType or EntityNavigationType, depending on the provided query.
+
+                // The filterExpression must use EntityType or EntityNavigationType, depending on the provided query.
+                var itemType = items.GetType().GetInterface("IEnumerable`1").GetGenericArguments()[0];
                 var filterExpression = _genericFilterHelper.ToExpression((IEnumerable<PropertyFilter>)parameter, itemType);
-                return Reflection.Where(query, filterExpression);
+
+                if (Reflection.IsQueryable(items))
+                {
+                    var query = Reflection.AsQueryable(items);
+                    return Reflection.Where(query, filterExpression);
+                }
+                else
+                {
+                    return Reflection.Where(items, filterExpression.Compile());
+                }
             }
 
             // If the parameter is a filter expression, unless explicitly implemented above, use queryable items.Where(parameter)

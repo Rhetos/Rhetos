@@ -488,5 +488,26 @@ namespace CommonConcepts.Test
                     "generic filter", "property 'Parentt'", "TestGenericFilter", "Child'");
             }
         }
+
+        [TestMethod]
+        public void GenericFilterOnLoadedArray()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                foreach (bool preferQuery in new[] { true, false })
+                {
+                    var filtered = repository.TestComputed.Simple.Read(
+                        new[]
+                        {
+                            new FilterCriteria { Filter = "TestComputed.SpecialLoad", Value = new TestComputed.SpecialLoad { SpecialName = "abc" } },
+                            new FilterCriteria { Property = "Name", Operation = "StartsWith", Value = "a" }
+                        },
+                        preferQuery);
+                    Assert.AreEqual("abc", TestUtility.DumpSorted(filtered, item => item.Name));
+                }
+            }
+        }
     }
 }

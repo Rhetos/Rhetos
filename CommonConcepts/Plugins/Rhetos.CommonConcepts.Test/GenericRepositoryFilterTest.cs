@@ -296,7 +296,7 @@ namespace Rhetos.CommonConcepts.Test
         public void FilterGenericFilter2()
         {
             int sourceCounter = 0;
-            var source = new[] { "aa1", "bb1", "bb2" }.Select(s => { sourceCounter++; return new SimpleEntity { Name = s }; });
+            var sourceQuery = new[] { "aa1", "bb1", "bb2" }.Select(s => { sourceCounter++; return new SimpleEntity { Name = s }; }).AsQueryable();
             var gf = new[] { new FilterCriteria { Property = "Name", Operation = "StartsWith", Value = "b" } };
 
             var impRepos = new ImplicitGenericPropertyFilterRepository();
@@ -304,9 +304,9 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual(0, impRepos.Counter);
             Assert.AreEqual(0, sourceCounter);
 
-            var exp = NewRepos(new ExplicitGenericPropertyFilterRepository()).Filter(source, gf);
-            var exp2 = NewRepos(new ExplicitGenericPropertyFilterRepository2()).Filter(source, gf);
-            var imp = NewRepos(impRepos).Filter(source, gf);
+            var exp = NewRepos(new ExplicitGenericPropertyFilterRepository()).Filter(sourceQuery, gf);
+            var exp2 = NewRepos(new ExplicitGenericPropertyFilterRepository2()).Filter(sourceQuery, gf);
+            var imp = NewRepos(impRepos).Filter(sourceQuery, gf);
 
             Assert.AreEqual(0, impRepos.Counter);
             Assert.AreEqual(6, sourceCounter);
@@ -324,9 +324,9 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual(0, impRepos.Counter);
             Assert.AreEqual(6, sourceCounter);
 
-            exp = NewRepos(new ExplicitGenericPropertyFilterRepository()).FilterOrQuery(source, gf);
-            exp2 = NewRepos(new ExplicitGenericPropertyFilterRepository2()).FilterOrQuery(source, gf);
-            imp = NewRepos(impRepos).FilterOrQuery(source, gf);
+            exp = NewRepos(new ExplicitGenericPropertyFilterRepository()).FilterOrQuery(sourceQuery, gf);
+            exp2 = NewRepos(new ExplicitGenericPropertyFilterRepository2()).FilterOrQuery(sourceQuery, gf);
+            imp = NewRepos(impRepos).FilterOrQuery(sourceQuery, gf);
 
             Assert.AreEqual(0, impRepos.Counter);
             Assert.AreEqual(6, sourceCounter);
