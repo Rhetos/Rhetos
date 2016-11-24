@@ -551,4 +551,16 @@ Module TestComputedFrom
         
         ShortString Control;
     }
+    
+    Entity SyncByKeyTarget3
+    {
+        ComputedFrom TestComputedFrom.SyncByKeySource
+        {
+            AllProperties;
+            KeepSynchronized;
+            KeyProperties 'Name1 Name2';
+        }
+        
+        ShortString Control;
+    }
 }

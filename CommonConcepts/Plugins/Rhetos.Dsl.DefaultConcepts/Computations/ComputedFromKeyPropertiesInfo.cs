@@ -28,10 +28,10 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("KeyProperties")]
-    public class PersistedKeyPropertiesInfo : IMacroConcept
+    public class ComputedFromKeyPropertiesInfo : IMacroConcept
     {
         [ConceptKey]
-        public PersistedDataStructureInfo Persisted { get; set; }
+        public EntityComputedFromInfo ComputedFrom { get; set; }
 
         public string KeyProperties { get; set; }
 
@@ -46,14 +46,14 @@ namespace Rhetos.Dsl.DefaultConcepts
                     if (propertyName == "ID")
                         return new KeyPropertyIDComputedFromInfo
                         {
-                            EntityComputedFrom = new EntityComputedFromInfo { Target = Persisted, Source = Persisted.Source }
+                            EntityComputedFrom = ComputedFrom
                         };
                     else
                         return new KeyPropertyComputedFromInfo
                         {
                             PropertyComputedFrom = new PropertyComputedFromInfo
                             {
-                                Target = new PropertyInfo { Name = propertyName, DataStructure = Persisted }
+                                Target = new PropertyInfo { Name = propertyName, DataStructure = ComputedFrom.Target }
                             }
                         };
                 }));

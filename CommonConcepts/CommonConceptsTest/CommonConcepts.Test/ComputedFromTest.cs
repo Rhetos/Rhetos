@@ -211,90 +211,62 @@ namespace CommonConcepts.Test
         //==========================================================================================
 
         [TestMethod]
-        public void KeyProperties()
-        {
-            using (var container = new RhetosTestContainer())
-            {
-                var deleteTables = new[] { "SyncByKeySource", "SyncByKeyTarget" };
-                container.Resolve<ISqlExecuter>().ExecuteSql(deleteTables.Select(t => "DELETE FROM TestComputedFrom." + t));
-                var repository = container.Resolve<Common.DomRepository>();
-
-                var s1a = new TestComputedFrom.SyncByKeySource { Name1 = 1, Name2 = "a", Data = "1a", ID = Guid.NewGuid() };
-                var s1b = new TestComputedFrom.SyncByKeySource { Name1 = 1, Name2 = "b", Data = "1b", ID = Guid.NewGuid() };
-                var s1c = new TestComputedFrom.SyncByKeySource { Name1 = 1, Name2 = "c", Data = "1c", ID = Guid.NewGuid() };
-                var s1d = new TestComputedFrom.SyncByKeySource { Name1 = 1, Name2 = "d", Data = "1d", ID = Guid.NewGuid() };
-                var s2a = new TestComputedFrom.SyncByKeySource { Name1 = 2, Name2 = "a", Data = "2a", ID = Guid.NewGuid() };
-                repository.TestComputedFrom.SyncByKeySource.Insert(new[] { s1a, s1b, s1c, s1d, s2a });
-
-                Assert.AreEqual("1a1a, 1b1b, 1c1c, 1d1d, 2a2a", TestUtility.DumpSorted(
-                    repository.TestComputedFrom.SyncByKeyTarget.All(),
-                    item => item.Name1 + item.Name2 + item.Data + item.Control));
-
-                {
-                    var targetItems = repository.TestComputedFrom.SyncByKeyTarget.All();
-                    foreach (var item in targetItems)
-                        item.Control = "x";
-                    repository.TestComputedFrom.SyncByKeyTarget.Update(targetItems);
-                }
-
-                Assert.AreEqual("1a1ax, 1b1bx, 1c1cx, 1d1dx, 2a2ax", TestUtility.DumpSorted(
-                    repository.TestComputedFrom.SyncByKeyTarget.All(),
-                    item => item.Name1 + item.Name2 + item.Data + item.Control));
-
-                var s2b = new TestComputedFrom.SyncByKeySource { Name1 = 2, Name2 = "b", Data = "2b", ID = Guid.NewGuid() };
-                s1b.Name2 = "B"; // same key - expected for computed value to be updated
-                s1c.Name2 = "cc"; // modified key - expected for computed value to delete 1c, insert 1cc (no control 'x')
-                s2a.Data = "2aa";
-                repository.TestComputedFrom.SyncByKeySource.Save(new[] { s2b }, new[] { s1b, s1c, s2a }, new[] { s1d });
-
-                // expected: insert 2b, 1cc; delete 1c, 1d; update 1B, 2a.
-                Assert.AreEqual("1a1ax, 1B1bx, 1cc1c, 2a2aax, 2b2b", TestUtility.DumpSorted(
-                    repository.TestComputedFrom.SyncByKeyTarget.All(),
-                    item => item.Name1 + item.Name2 + item.Data + item.Control));
-            }
-        }
-
-        [TestMethod]
         public void KeyProperty()
         {
+            TestKeyPropertyTarget<TestComputedFrom.SyncByKeyTarget>(
+                (item, controlValue) => item.Control = controlValue,
+                item => item.Name1 + item.Name2 + item.Data + item.Control);
+
+            TestKeyPropertyTarget<TestComputedFrom.SyncByKeyTarget2>(
+                (item, controlValue) => item.Control = controlValue,
+                item => item.Name1x + item.Name2x + item.Datax + item.Control);
+
+            TestKeyPropertyTarget<TestComputedFrom.SyncByKeyTarget3>(
+                (item, controlValue) => item.Control = controlValue,
+                item => item.Name1 + item.Name2 + item.Data + item.Control);
+        }
+
+        private void TestKeyPropertyTarget<TEntity>(Action<TEntity, string> setControlValue, Func<TEntity, string> report)
+            where TEntity : class, IEntity
+        {
             using (var container = new RhetosTestContainer())
             {
-                var deleteTables = new[] { "SyncByKeySource", "SyncByKeyTarget2" };
-                container.Resolve<ISqlExecuter>().ExecuteSql(deleteTables.Select(t => "DELETE FROM TestComputedFrom." + t));
-                var repository = container.Resolve<Common.DomRepository>();
+                var context = container.Resolve<Common.ExecutionContext>();
+                var sourceRepository = context.Repository.TestComputedFrom.SyncByKeySource;
+                var targetRepository = context.GenericRepository<TEntity>();
 
+                // Clean:
+                sourceRepository.Delete(sourceRepository.Load());
+                targetRepository.Delete(targetRepository.Load());
+                Assert.AreEqual("", TestUtility.DumpSorted(targetRepository.Load(), report));
+
+                // Simple insert:
                 var s1a = new TestComputedFrom.SyncByKeySource { Name1 = 1, Name2 = "a", Data = "1a", ID = Guid.NewGuid() };
                 var s1b = new TestComputedFrom.SyncByKeySource { Name1 = 1, Name2 = "b", Data = "1b", ID = Guid.NewGuid() };
                 var s1c = new TestComputedFrom.SyncByKeySource { Name1 = 1, Name2 = "c", Data = "1c", ID = Guid.NewGuid() };
                 var s1d = new TestComputedFrom.SyncByKeySource { Name1 = 1, Name2 = "d", Data = "1d", ID = Guid.NewGuid() };
                 var s2a = new TestComputedFrom.SyncByKeySource { Name1 = 2, Name2 = "a", Data = "2a", ID = Guid.NewGuid() };
-                repository.TestComputedFrom.SyncByKeySource.Insert(new[] { s1a, s1b, s1c, s1d, s2a });
+                sourceRepository.Insert(new[] { s1a, s1b, s1c, s1d, s2a });
+                Assert.AreEqual("1a1a, 1b1b, 1c1c, 1d1d, 2a2a", TestUtility.DumpSorted(targetRepository.Load(), report));
 
-                Assert.AreEqual("1a1a, 1b1b, 1c1c, 1d1d, 2a2a", TestUtility.DumpSorted(
-                    repository.TestComputedFrom.SyncByKeyTarget2.All(),
-                    item => item.Name1x + item.Name2x + item.Datax + item.Control));
-
+                // Update the Control property:
+                // Recomputing target data should not affect the Control property because it is not included in the ComputedFrom.
+                foreach (var item in targetRepository.Load())
                 {
-                    var targetItems = repository.TestComputedFrom.SyncByKeyTarget2.All();
-                    foreach (var item in targetItems)
-                        item.Control = "x";
-                    repository.TestComputedFrom.SyncByKeyTarget2.Update(targetItems);
+                    setControlValue(item, "x");
+                    targetRepository.Update(item);
                 }
+                Assert.AreEqual("1a1ax, 1b1bx, 1c1cx, 1d1dx, 2a2ax", TestUtility.DumpSorted(targetRepository.Load(), report));
 
-                Assert.AreEqual("1a1ax, 1b1bx, 1c1cx, 1d1dx, 2a2ax", TestUtility.DumpSorted(
-                    repository.TestComputedFrom.SyncByKeyTarget2.All(),
-                    item => item.Name1x + item.Name2x + item.Datax + item.Control));
-
+                // Miscellaneous changes (insert, update, delete):
                 var s2b = new TestComputedFrom.SyncByKeySource { Name1 = 2, Name2 = "b", Data = "2b", ID = Guid.NewGuid() };
                 s1b.Name2 = "B"; // same key - expected for computed value to be updated
                 s1c.Name2 = "cc"; // modified key - expected for computed value to delete 1c, insert 1cc (no control 'x')
                 s2a.Data = "2aa";
-                repository.TestComputedFrom.SyncByKeySource.Save(new[] { s2b }, new[] { s1b, s1c, s2a }, new[] { s1d });
+                sourceRepository.Save(new[] { s2b }, new[] { s1b, s1c, s2a }, new[] { s1d });
 
-                // expected: insert 2b, 1cc; delete 1c, 1d; update 1B, 2a.
-                Assert.AreEqual("1a1ax, 1B1bx, 1cc1c, 2a2aax, 2b2b", TestUtility.DumpSorted(
-                    repository.TestComputedFrom.SyncByKeyTarget2.All(),
-                    item => item.Name1x + item.Name2x + item.Datax + item.Control));
+                // Expected: insert 2b, 1cc; delete 1c, 1d; update 1B, 2a.
+                Assert.AreEqual("1a1ax, 1B1bx, 1cc1c, 2a2aax, 2b2b", TestUtility.DumpSorted(targetRepository.Load(), report));
             }
         }
     }
