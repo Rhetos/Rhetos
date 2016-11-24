@@ -105,16 +105,6 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
     <DefiningExpression>CAST(a as Edm.String)</DefiningExpression>
   </Function>
 
-  <Function Name=""FullTextSearchId"" ReturnType=""Edm.Boolean"">
-    <Parameter Name=""itemId"" Type=""Edm.Guid"" />
-    <Parameter Name=""pattern"" Type=""Edm.String"" />
-    <Parameter Name=""tableName"" Type=""Edm.String"" />
-    <Parameter Name=""searchColumns"" Type=""Edm.String"" />
-    <DefiningExpression>
-      NewGuid() = itemId &amp;&amp; pattern + '#' + tableName + '##' + searchColumns = '" + FullTextSearchInterceptor.InterceptorTag + @"'
-    </DefiningExpression>
-  </Function>
-
   <Function Name=""GuidIsGreaterThan"" ReturnType=""Edm.Boolean"">
     <Parameter Name=""a"" Type=""Edm.Guid"" />
     <Parameter Name=""b"" Type=""Edm.Guid"" />
@@ -140,6 +130,16 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
   </Function>
 
 ", EntityFrameworkMapping.ConceptualModelTag);
+
+            codeBuilder.InsertCode(
+@"  <Function Name=""" + DatabaseExtensionFunctions.InterceptFullTextSearchFunction + @""" ReturnType=""bit"" >
+    <Parameter Name = ""studentId"" Mode = ""In"" Type = ""uniqueidentifier"" />
+    <Parameter Name = ""pattern"" Mode = ""In"" Type = ""nvarchar"" />
+    <Parameter Name = ""tableName"" Mode = ""In"" Type = ""nvarchar"" />
+    <Parameter Name = ""searchColumns"" Mode = ""In"" Type = ""nvarchar"" />
+  </Function>
+
+", EntityFrameworkMapping.StorageModelTag);
         }
     }
 }

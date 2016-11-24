@@ -11,6 +11,12 @@ Module TestFullTextSearch
 		Take Name;
 		Take Code;
 	}
+
+	SqlQueryable SimpleInfo "SELECT ID, Description = CONVERT(NVARCHAR(100), Code) + '-' + Name FROM TestFullTextSearch.Simple"
+	{
+		Extends TestFullTextSearch.Simple;
+		ShortString Description;
+	}
 	
 	SqlQueryable Compute_Simple_Search
 		"SELECT ID, Text = Name + '/' + CONVERT(NVARCHAR(100), Code) FROM TestFullTextSearch.Simple"

@@ -66,13 +66,11 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
 
         #endregion
 
-        public static readonly string InterceptorTag = "#FTS interceptor#";
-
         private static void RewriteFullTextQuery(DbCommand cmd)
         {
-            if (cmd.CommandText.Contains(InterceptorTag))
+            if (cmd.CommandText.Contains(DatabaseExtensionFunctions.InterceptFullTextSearchFunction))
             {
-                var parseFtsQuery = new Regex(@"\(\(NEWID\(\)\) = (?<itemId>.+?)\) AND \(\((?<pattern>.*?) \+ '#' \+ (?<tableName>.*?) \+ '##' \+ (?<searchColumns>.*?)\) = '" + InterceptorTag + @"'\)", RegexOptions.Singleline);
+                var parseFtsQuery = new Regex(@"\(\[Rhetos\]\.\[" + DatabaseExtensionFunctions.InterceptFullTextSearchFunction + @"\]\((?<itemId>.+?), (?<pattern>.*?), (?<tableName>.*?), (?<searchColumns>.*?)\)\) = 1", RegexOptions.Singleline);
 
                 var ftsQueries = parseFtsQuery.Matches(cmd.CommandText).Cast<Match>();
 
@@ -130,7 +128,8 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                         + cmd.CommandText.Substring(ftsQuery.Index + ftsQuery.Length);
                 }
             }
-            if (cmd.CommandText.Contains(InterceptorTag))
+
+            if (cmd.CommandText.Contains(DatabaseExtensionFunctions.InterceptFullTextSearchFunction))
                 throw new FrameworkException("Error while parsing FTS query. Not all search conditions were handled.");
         }
     }

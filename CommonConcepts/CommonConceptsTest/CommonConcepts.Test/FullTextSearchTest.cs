@@ -177,7 +177,40 @@ namespace CommonConcepts.Test
                     var filtered = repository.TestFullTextSearch.SimpleBrowse.Query()
                         .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, test.Key, "TestFullTextSearch.Simple_Search", "*"))
                         .Select(item => item.Name).ToList();
-                    
+
+                    Assert.AreEqual(test.Value, TestUtility.DumpSorted(filtered), "Searching '" + test.Key + "'.");
+                }
+            }
+        }
+
+        [TestMethod]
+        public void SearchOnComplexQuery()
+        {
+            Assert.IsTrue(dataPrepared.Value);
+
+            using (var container = new RhetosTestContainer(false))
+            {
+                var tests = new Dictionary<string, string>
+                {
+                    { "\"ab*\"", "12-ab, 3-abc, 4-cd ab" },
+                    { "\"12*\"", "-123-xy, 12-ab, 56-123" },
+                };
+
+                var repository = container.Resolve<Common.DomRepository>();
+
+                foreach (var test in tests)
+                {
+                    Console.WriteLine("Searching '" + test.Key + "'");
+
+                    var filter = repository.TestFullTextSearch.SimpleBrowse.Query()
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, test.Key, "TestFullTextSearch.Simple_Search", "*"))
+                        // Testing combination of filters on different tables:
+                        .Where(item => item.Base.Extension_SimpleInfo.Description.Length > 0)
+                        .Select(item => item.Base.Extension_SimpleInfo.Description);
+
+                    Console.WriteLine(filter.ToString());
+                    var filtered = filter.ToList();
+
                     Assert.AreEqual(test.Value, TestUtility.DumpSorted(filtered), "Searching '" + test.Key + "'.");
                 }
             }
