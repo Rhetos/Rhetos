@@ -20,29 +20,30 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Linq;
 using System.Reflection;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("AutoCodeCached")]
-    public class AutoCodeCachedInfo : IConceptInfo, IMacroConcept
+    [ConceptKeyword("AutoCodeForEachCached")]
+    public class AutoCodeForEachCachedInfo : AutoCodeCachedInfo, IValidationConcept
     {
-        [ConceptKey]
-        public ShortStringPropertyInfo Property { get; set; }
+        public PropertyInfo Group { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        protected override IConceptInfo CreateUniqueConstraint()
         {
-            return new IConceptInfo[]
+            return new UniquePropertiesInfo
             {
-                new SystemRequiredInfo { Property = Property },
-                CreateUniqueConstraint()
+                DataStructure = Property.DataStructure,
+                Property1 = Group,
+                Property2 = Property
             };
         }
 
-        virtual protected IConceptInfo CreateUniqueConstraint()
+        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
-            return new UniquePropertyInfo { Property = Property };
+            DslUtility.CheckIfPropertyBelongsToDataStructure(Group, Property.DataStructure, this);
         }
     }
 }

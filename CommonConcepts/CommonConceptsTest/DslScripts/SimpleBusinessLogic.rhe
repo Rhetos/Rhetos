@@ -2,25 +2,25 @@
 {
     Entity Simple
     {
-        ShortString Code {  AutoCode; }
+        ShortString Code { AutoCode; }
     }
     
     Entity IntGroup
     {
         Integer Grouping;
-        ShortString Code {  AutoCodeForEach TestAutoCode.IntGroup.Grouping; }
+        ShortString Code { AutoCodeForEach TestAutoCode.IntGroup.Grouping; }
     }
     
     Entity StringGroup
     {
         ShortString Grouping;
-        ShortString Code {  AutoCodeForEach TestAutoCode.StringGroup.Grouping; }
+        ShortString Code { AutoCodeForEach TestAutoCode.StringGroup.Grouping; }
     }
     
     Entity ReferenceGroup
     {
         Reference Grouping TestAutoCode.Simple;
-        ShortString Code {  AutoCodeForEach TestAutoCode.ReferenceGroup.Grouping; }
+        ShortString Code { AutoCodeForEach TestAutoCode.ReferenceGroup.Grouping; }
     }
     
     Entity Grouping
@@ -31,32 +31,32 @@
     Entity ShortReferenceGroup
     {
         Reference Grouping;
-        ShortString Code {  AutoCodeForEach TestAutoCode.ShortReferenceGroup.Grouping; }
+        ShortString Code { AutoCodeForEach TestAutoCode.ShortReferenceGroup.Grouping; }
     }
    
-   Entity DoubleAutoCode
+    Entity DoubleAutoCode
     {
-        ShortString CodeA {  AutoCode; }
-        ShortString CodeB {  AutoCode; }
+        ShortString CodeA { AutoCode; }
+        ShortString CodeB { AutoCode; }
     }
    
-   Entity DoubleAutoCodeWithGroup
+    Entity DoubleAutoCodeWithGroup
     {
         ShortString Grouping;
-        ShortString CodeA {  AutoCode; }
-        ShortString CodeB {  AutoCodeForEach TestAutoCode.DoubleAutoCodeWithGroup.Grouping; }
+        ShortString CodeA { AutoCode; }
+        ShortString CodeB { AutoCodeForEach TestAutoCode.DoubleAutoCodeWithGroup.Grouping; }
     }
     
-   Entity IntegerAutoCode
+    Entity IntegerAutoCode
     {
-        Integer Code {  AutoCode; }
+        Integer Code { AutoCode; }
     }
     
-   Entity IntegerAutoCodeForEach
+    Entity IntegerAutoCodeForEach
     {
         Integer Grouping;
-        Integer CodeA {  AutoCode; }
-        Integer CodeB {  AutoCodeForEach TestAutoCode.IntegerAutoCodeForEach.Grouping; }
+        Integer CodeA { AutoCode; }
+        Integer CodeB { AutoCodeForEach TestAutoCode.IntegerAutoCodeForEach.Grouping; }
     }
 }
 
@@ -64,14 +64,50 @@ Module TestAutoCodeCached
 {
     Entity Simple
     {
-        ShortString Code {  AutoCodeCached; }
+        ShortString Code { AutoCodeCached; }
         ShortString Data;
     }
-    
-   Entity DoubleAutoCode
+
+    Entity IntGroup
     {
-        ShortString CodeA {  AutoCodeCached; }
-        ShortString CodeB {  AutoCodeCached; }
+        Integer Grouping;
+        ShortString Code { AutoCodeForEachCached TestAutoCodeCached.IntGroup.Grouping; }
+    }
+    
+    Entity StringGroup
+    {
+        ShortString Grouping;
+        ShortString Code { AutoCodeForEachCached TestAutoCodeCached.StringGroup.Grouping; }
+    }
+    
+    Entity ReferenceGroup
+    {
+        Reference Grouping TestAutoCodeCached.Simple;
+        ShortString Code { AutoCodeForEachCached TestAutoCodeCached.ReferenceGroup.Grouping; }
+    }
+    
+    Entity Grouping
+    {
+        ShortString Code;
+    }
+    
+    Entity ShortReferenceGroup
+    {
+        Reference Grouping;
+        ShortString Code { AutoCodeForEachCached TestAutoCodeCached.ShortReferenceGroup.Grouping; }
+    }
+    
+    Entity DoubleAutoCode
+    {
+        ShortString CodeA { AutoCodeCached; }
+        ShortString CodeB { AutoCodeCached; }
+    }
+
+    Entity DoubleAutoCodeWithGroup
+    {
+        ShortString Grouping;
+        ShortString CodeA { AutoCode; }
+        ShortString CodeB { AutoCodeForEach TestAutoCodeCached.DoubleAutoCodeWithGroup.Grouping; }
     }
 }
 

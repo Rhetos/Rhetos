@@ -46,8 +46,12 @@ namespace Rhetos.Dom.DefaultConcepts
             CsUtility.Materialize(ref autoCodeItems);
 
             foreach (var autoCodeItem in autoCodeItems)
+            {
                 if (autoCodeItem.Code == null)
                     autoCodeItem.Code = "+";
+                if (autoCodeItem.Grouping == null)
+                    autoCodeItem.Grouping = "";
+            }
 
             var parsedAutoCode = autoCodeItems
                 .Where(acItem => !string.IsNullOrEmpty(acItem.Code))

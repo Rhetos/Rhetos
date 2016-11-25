@@ -40,13 +40,13 @@ namespace CommonConcepts.Test
                 {
                     @"DELETE FROM TestAutoCode.ReferenceGroup;
                     DELETE FROM TestAutoCode.ShortReferenceGroup;
+                    DELETE FROM TestAutoCode.Grouping;
                     DELETE FROM TestAutoCode.StringGroup;
                     DELETE FROM TestAutoCode.IntGroup;
                     DELETE FROM TestAutoCode.Simple;
                     DELETE FROM TestAutoCode.DoubleAutoCode;
                     DELETE FROM TestAutoCode.DoubleAutoCodeWithGroup;
-                    DELETE FROM TestAutoCode.IntegerAutoCode;
-                    DELETE FROM TestAutoCode.Grouping"
+                    DELETE FROM TestAutoCode.IntegerAutoCode;"
                 });
         }
 

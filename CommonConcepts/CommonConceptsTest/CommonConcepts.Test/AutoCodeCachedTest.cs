@@ -38,9 +38,15 @@ namespace CommonConcepts.Test
         {
             container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                 {
-                    @"DELETE FROM TestAutoCodeCached.Simple;
+                    @"DELETE FROM Common.AutoCodeCache WHERE Entity LIKE 'TestAutoCodeCached.%';
+                    DELETE FROM TestAutoCodeCached.ReferenceGroup;
+                    DELETE FROM TestAutoCodeCached.ShortReferenceGroup;
+                    DELETE FROM TestAutoCodeCached.Grouping;
+                    DELETE FROM TestAutoCodeCached.StringGroup;
+                    DELETE FROM TestAutoCodeCached.IntGroup;
+                    DELETE FROM TestAutoCodeCached.Simple;
                     DELETE FROM TestAutoCodeCached.DoubleAutoCode;
-                    DELETE FROM Common.AutoCodeCache WHERE Entity LIKE 'TestAutoCodeCached.%';"
+                    DELETE FROM TestAutoCodeCached.DoubleAutoCodeWithGroup;"
                 });
         }
 
@@ -66,6 +72,20 @@ namespace CommonConcepts.Test
             string generatedCodes = repository.TestAutoCodeCached.DoubleAutoCode.Query()
 				.Where(item => item.ID == id)
 				.Select(item => item.CodeA + "," + item.CodeB).Single();
+            Console.WriteLine(formatA + "," + formatB + " => " + generatedCodes);
+            Assert.AreEqual(expectedCodes, generatedCodes);
+        }
+
+        private static void TestDoubleAutoCodeWithGroup(RhetosTestContainer container, Common.DomRepository repository, string group, string formatA, string formatB, string expectedCodes)
+        {
+            Guid id = Guid.NewGuid();
+            repository.TestAutoCodeCached.DoubleAutoCodeWithGroup.Insert(new[] { new TestAutoCodeCached.DoubleAutoCodeWithGroup { ID = id, Grouping = group, CodeA = formatA, CodeB = formatB } });
+
+            container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
+
+            string generatedCodes = repository.TestAutoCodeCached.DoubleAutoCodeWithGroup.Query()
+                .Where(item => item.ID == id)
+                .Select(item => item.CodeA + "," + item.CodeB).Single();
             Console.WriteLine(formatA + "," + formatB + " => " + generatedCodes);
             Assert.AreEqual(expectedCodes, generatedCodes);
         }
@@ -172,6 +192,106 @@ namespace CommonConcepts.Test
                 TestDoubleAutoCode(container, repository, "AB+", "+", "AB009,14");
                 TestDoubleAutoCode(container, repository, "+", "AB9999", "12,AB9999");
                 TestDoubleAutoCode(container, repository, "AB+", "AB+", "AB010,AB10000");
+            }
+        }
+
+        [TestMethod]
+        public void DoubleAutoCodeWithGroup()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                DeleteOldData(container);
+                var repository = container.Resolve<Common.DomRepository>();
+
+                TestDoubleAutoCodeWithGroup(container, repository, "1", "+", "+", "1,1");
+                TestDoubleAutoCodeWithGroup(container, repository, "1", "+", "4", "2,4");
+                TestDoubleAutoCodeWithGroup(container, repository, "2", "+", "+", "3,1");
+                TestDoubleAutoCodeWithGroup(container, repository, "1", "9", "+", "9,5");
+                TestDoubleAutoCodeWithGroup(container, repository, "2", "+", "11", "10,11");
+                TestDoubleAutoCodeWithGroup(container, repository, "1", "+", "+", "11,6");
+                TestDoubleAutoCodeWithGroup(container, repository, "1", "AB+", "+", "AB1,7");
+                TestDoubleAutoCodeWithGroup(container, repository, "1", "AB+", "X", "AB2,X");
+                TestDoubleAutoCodeWithGroup(container, repository, "2", "AB+", "X09", "AB3,X09");
+                TestDoubleAutoCodeWithGroup(container, repository, "2", "AB+", "X+", "AB4,X10");
+                TestDoubleAutoCodeWithGroup(container, repository, "1", "AB+", "X+", "AB5,X1");
+                TestDoubleAutoCodeWithGroup(container, repository, "1", "AB008", "X+", "AB008,X2");
+                TestDoubleAutoCodeWithGroup(container, repository, "1", "AB+", "+", "AB009,8");
+                TestDoubleAutoCodeWithGroup(container, repository, "1", "+", "AB9999", "12,AB9999");
+                TestDoubleAutoCodeWithGroup(container, repository, "1", "AB+", "AB+", "AB010,AB10000");
+            }
+        }
+
+        private static void TestGroup<TEntity, TGroup>(
+            RhetosTestContainer container, IQueryableRepository<IEntity> entityRepository,
+            TGroup group, string format, string expectedCode)
+                where TEntity : class, IEntity, new()
+        {
+            var writeableRepository = (IWritableRepository<TEntity>) entityRepository;
+
+            Guid id = Guid.NewGuid();
+            dynamic entity = new TEntity();
+            entity.ID = id;
+            entity.Code = format;
+            try
+            {
+                entity.Grouping = group;
+            }
+            catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)
+            {
+                entity.GroupingID = ((dynamic)group).ID;
+            }
+            
+            writeableRepository.Insert((TEntity)entity);
+
+            container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
+
+            var query = entityRepository.Query().Where(e => e.ID == id);
+            Console.WriteLine(query.GetType().FullName);
+            Console.WriteLine(query.Expression.ToString());
+            Console.WriteLine(query.ToString());
+            
+            dynamic loaded = query.Single();
+            string generatedCode = loaded.Code;
+
+            Console.WriteLine(format + " => " + generatedCode);
+            Assert.AreEqual(expectedCode, generatedCode);
+        }
+
+        [TestMethod]
+        public void Grouping()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                DeleteOldData(container);
+                var repository = container.Resolve<Common.DomRepository>();
+
+                TestGroup<TestAutoCodeCached.IntGroup, int>(container, repository.TestAutoCodeCached.IntGroup, 500, "+", "1");
+                TestGroup<TestAutoCodeCached.IntGroup, int>(container, repository.TestAutoCodeCached.IntGroup, 500, "+", "2");
+                TestGroup<TestAutoCodeCached.IntGroup, int>(container, repository.TestAutoCodeCached.IntGroup, 600, "+", "1");
+                TestGroup<TestAutoCodeCached.IntGroup, int>(container, repository.TestAutoCodeCached.IntGroup, 600, "A+", "A1");
+
+                TestGroup<TestAutoCodeCached.StringGroup, string>(container, repository.TestAutoCodeCached.StringGroup, "x", "+", "1");
+                TestGroup<TestAutoCodeCached.StringGroup, string>(container, repository.TestAutoCodeCached.StringGroup, "x", "+", "2");
+                TestGroup<TestAutoCodeCached.StringGroup, string>(container, repository.TestAutoCodeCached.StringGroup, "y", "+", "1");
+                TestGroup<TestAutoCodeCached.StringGroup, string>(container, repository.TestAutoCodeCached.StringGroup, "y", "A+", "A1");
+
+                var simple1 = new TestAutoCodeCached.Simple { ID = Guid.NewGuid(), Code = "1" };
+                var simple2 = new TestAutoCodeCached.Simple { ID = Guid.NewGuid(), Code = "2" };
+                repository.TestAutoCodeCached.Simple.Insert(new[] { simple1, simple2 });
+
+                TestGroup<TestAutoCodeCached.ReferenceGroup, TestAutoCodeCached.Simple>(container, repository.TestAutoCodeCached.ReferenceGroup, simple1, "+", "1");
+                TestGroup<TestAutoCodeCached.ReferenceGroup, TestAutoCodeCached.Simple>(container, repository.TestAutoCodeCached.ReferenceGroup, simple1, "+", "2");
+                TestGroup<TestAutoCodeCached.ReferenceGroup, TestAutoCodeCached.Simple>(container, repository.TestAutoCodeCached.ReferenceGroup, simple2, "+", "1");
+                TestGroup<TestAutoCodeCached.ReferenceGroup, TestAutoCodeCached.Simple>(container, repository.TestAutoCodeCached.ReferenceGroup, simple2, "A+", "A1");
+
+                var grouping1 = new TestAutoCodeCached.Grouping { ID = Guid.NewGuid(), Code = "1" };
+                var grouping2 = new TestAutoCodeCached.Grouping { ID = Guid.NewGuid(), Code = "2" };
+                repository.TestAutoCodeCached.Grouping.Insert(new[] { grouping1, grouping2 });
+
+                TestGroup<TestAutoCodeCached.ShortReferenceGroup, TestAutoCodeCached.Grouping>(container, repository.TestAutoCodeCached.ShortReferenceGroup, grouping1, "+", "1");
+                TestGroup<TestAutoCodeCached.ShortReferenceGroup, TestAutoCodeCached.Grouping>(container, repository.TestAutoCodeCached.ShortReferenceGroup, grouping1, "+", "2");
+                TestGroup<TestAutoCodeCached.ShortReferenceGroup, TestAutoCodeCached.Grouping>(container, repository.TestAutoCodeCached.ShortReferenceGroup, grouping2, "+", "1");
+                TestGroup<TestAutoCodeCached.ShortReferenceGroup, TestAutoCodeCached.Grouping>(container, repository.TestAutoCodeCached.ShortReferenceGroup, grouping2, "A+", "A1");
             }
         }
 

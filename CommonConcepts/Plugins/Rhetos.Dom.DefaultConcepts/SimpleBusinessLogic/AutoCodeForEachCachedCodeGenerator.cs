@@ -30,28 +30,23 @@ using System.Text;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(AutoCodeCachedInfo))]
-    public class AutoCodeCachedCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(AutoCodeForEachCachedInfo))]
+    public class AutoCodeForEachCachedCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly CsTag<AutoCodeCachedInfo> GroupingTag = "Grouping";
-
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (AutoCodeCachedInfo)conceptInfo;
+            var info = (AutoCodeForEachCachedInfo)conceptInfo;
 
-            string snippet = string.Format(
-                @"Rhetos.Dom.DefaultConcepts.AutoCodeHelper.UpdateCodes(
-                _executionContext.SqlExecuter, ""{0}.{1}"", ""{2}"",
-                insertedNew.Select(item => new Rhetos.Dom.DefaultConcepts.AutoCodeItem<{0}.{1}> {{ Item = item, Code = item.{2}" + GroupingTag.Evaluate(info) + @" }}),
-                (item, newCode) => item.{2} = newCode);
+            string groupSelector;
+            if (info.Group is ReferencePropertyInfo)
+                groupSelector = info.Group.Name + "ID.ToString()";
+            else if (info.Group is ShortStringPropertyInfo || info.Group is LongStringPropertyInfo)
+                groupSelector = info.Group.Name;
+            else
+                groupSelector = info.Group.Name + ".ToString()";
 
-            ",
-                info.Property.DataStructure.Module.Name,
-                info.Property.DataStructure.Name,
-                info.Property.Name);
-            codeBuilder.InsertCode(snippet, WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Property.DataStructure);
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.AutoCodeHelper));
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.AutoCodeItem<>));
+            string groupingSnippet = ", Grouping = item." + groupSelector;
+            codeBuilder.InsertCode(groupingSnippet, AutoCodeCachedCodeGenerator.GroupingTag, info);
         }
     }
 }
