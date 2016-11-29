@@ -660,5 +660,21 @@ namespace CommonConcepts.Test
                     new[] { "TestPolymorphic.Simple1.Days", "TestPolymorphic.Simple1.Name" });
             }
         }
+
+        [TestMethod]
+        public void NamedSubtypeWithAutocode()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                repository.TestPolymorphic.OtherFeatures.Delete(repository.TestPolymorphic.OtherFeatures.Load());
+
+                repository.TestPolymorphic.OtherFeatures.Insert(new TestPolymorphic.OtherFeatures { Name = "a" });
+                repository.TestPolymorphic.OtherFeatures.Insert(new TestPolymorphic.OtherFeatures { Name = "b" });
+
+                Assert.AreEqual("a, b", TestUtility.DumpSorted(repository.TestPolymorphic.OtherFeaturesBase.Load(), item => item.Name ));
+                Assert.AreEqual("a-1, b-2", TestUtility.DumpSorted(repository.TestPolymorphic.OtherFeatures.Load(), item => item.Name + "-" + item.Code));
+            }
+        }
     }
 }

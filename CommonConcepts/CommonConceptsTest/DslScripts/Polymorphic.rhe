@@ -316,3 +316,21 @@ Module TestPolymorphic
 		}
 	}
 }
+
+//=========================================================
+// Combination with other featureas:
+
+Module TestPolymorphic
+{
+	Polymorphic OtherFeaturesBase
+	{
+		ShortString Name;
+	}
+	
+	Entity OtherFeatures
+	{
+		Is TestPolymorphic.OtherFeaturesBase 'Alternative';
+
+		ShortString Code { AutoCode; }
+	}
+}
