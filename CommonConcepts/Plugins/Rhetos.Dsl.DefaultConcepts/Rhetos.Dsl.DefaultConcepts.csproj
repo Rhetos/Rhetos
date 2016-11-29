@@ -157,6 +157,7 @@
     <Compile Include="DataStructure\QueryWithParameterInfo.cs" />
     <Compile Include="DataStructure\SubtypeWhereInfo.cs" />
     <Compile Include="DataStructure\Writing\OnSaveUpdateInfo.cs" />
+    <Compile Include="DataStructure\Writing\SaveMethodInitializationInfo.cs" />
     <Compile Include="DataStructure\Writing\SaveMethodInfo.cs" />
     <Compile Include="DataStructure\Writing\LoadOldItemsInfo.cs" />
     <Compile Include="DataStructure\Writing\LoadOldItemsTakeInfo.cs" />

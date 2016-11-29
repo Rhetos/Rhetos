@@ -73,5 +73,27 @@ namespace CommonConcepts.Test
                     "It is not allowed to modify locked item's name 't1' => 't1 modified'.");
             }
         }
+
+        [TestMethod]
+        public void SaveMethodInitialization()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDataStructure.SaveTesterBase" });
+
+                var context = container.Resolve<Common.ExecutionContext>();
+
+                var baseRepos = context.Repository.TestDataStructure.SaveTesterBase;
+                var testerRepos = context.Repository.TestDataStructure.SaveTester;
+
+                var baseItem = new TestDataStructure.SaveTesterBase { ID = Guid.NewGuid(), Name = "b0" };
+                var testerItem = new TestDataStructure.SaveTester { ID = baseItem.ID, Name = "default", Code = 11 };
+
+                baseRepos.Insert(baseItem);
+                testerRepos.Insert(testerItem);
+
+                Assert.AreEqual("b0/initialized-11", TestUtility.DumpSorted(testerRepos.Query(), item => item.Base.Name + "/" + item.Name + "-" + item.Code));
+            }
+        }
     }
 }

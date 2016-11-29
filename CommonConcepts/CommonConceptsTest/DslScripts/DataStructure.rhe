@@ -279,6 +279,11 @@ Module TestDataStructure
 		
 		SaveMethod
 		{
+			Initialization 'DefaultValue'
+				'foreach (var item in insertedNew)
+					if (item.Name == "default")
+						item.Name = "initialized";';
+
 			LoadOldItems
 			{
 				Take Name;
