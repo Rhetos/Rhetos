@@ -30,29 +30,229 @@ using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public class AutoCodeItem<T>
-        where T : IEntity
+    public class AutoCodeItem<TEntity, TProperty>
+        where TEntity : IEntity
     {
-        public T Item;
-        public string Code;
+        public TEntity Item;
+        public TProperty Code;
         public string Grouping;
     }
 
-    public class AutoCodeHelper
+    /// <summary>A helper for automatic detection of TEntity and TProperty parameters.</summary>
+    public static class AutoCodeItem
     {
-        public static void UpdateCodes<T>(ISqlExecuter sqlExecuter, string entityName, string propertyName, IEnumerable<AutoCodeItem<T>> autoCodeItems, Action<T, string> setCode)
-            where T : IEntity
+        public static AutoCodeItem<TEntity, TProperty> Create<TEntity, TProperty>(TEntity item, TProperty code, string grouping = null)
+            where TEntity : IEntity
         {
-            CsUtility.Materialize(ref autoCodeItems);
-
-            foreach (var autoCodeItem in autoCodeItems)
+            return new AutoCodeItem<TEntity, TProperty>
             {
+                Item = item,
+                Code = code,
+                Grouping = grouping
+            };
+        }
+    }
+
+    public static class AutoCodeHelper
+    {
+        public static void UpdateCodesWithoutCache<TEntity>(
+            ISqlExecuter sqlExecuter,
+            string entityName,
+            string propertyName,
+            IList<AutoCodeItem<TEntity, int?>> autoCodeItems,
+            Action<TEntity, int?> setCode,
+            string groupColumnName = null,
+            bool groupTypeQuoted = false)
+            where TEntity : IEntity
+        {
+            foreach (var autoCodeItem in autoCodeItems)
+                if (autoCodeItem.Code == 0) // Both 0 and null are requests to generate autocode.
+                    autoCodeItem.Code = null;
+
+            var autoCodeGroups = autoCodeItems
+                .GroupBy(acItem => acItem.Grouping)
+                .Select(g => new
+                {
+                    Grouping = g.Key,
+                    ItemsToGenerateCode = g.Where(acItem => acItem.Code == null).Select(acItem => acItem.Item).ToList(),
+                    MaxProvidedCode = g.Max(acItem => acItem.Code)
+                })
+                .OrderBy(acGroup => acGroup.Grouping)
+                .ToList();
+
+            // UpdateCodesWithoutCache does not need to update cache, so it is interested only in the items that require a generated code.
+            autoCodeGroups = autoCodeGroups.Where(acg => acg.ItemsToGenerateCode.Count > 0).ToList();
+
+            if (autoCodeGroups.Count > 0)
+                Lock(sqlExecuter, entityName);
+
+            foreach (var autoCodeGroup in autoCodeGroups)
+            {
+                string groupFilter;
+                if (groupColumnName == null)
+                    groupFilter = "";
+                else
+                    groupFilter = "WHERE " + GetGroupFilter(groupColumnName, autoCodeGroup.Grouping, groupTypeQuoted);
+
+                string sql =
+                    $@"SELECT ISNULL(MAX({propertyName}), 0)
+                        FROM {entityName}
+                        {groupFilter}";
+
+                int maxNumber = 0;
+                sqlExecuter.ExecuteReader(sql, reader =>
+                {
+                    maxNumber = reader.GetInt32(0);
+                });
+
+                // If there are newly inserted records greater then the existing records:
+                if (autoCodeGroup.MaxProvidedCode != null && autoCodeGroup.MaxProvidedCode > maxNumber)
+                {
+                    maxNumber = autoCodeGroup.MaxProvidedCode.Value;
+                }
+
+                SetNewCodes(autoCodeGroup.ItemsToGenerateCode,
+                    maxNumber + autoCodeGroup.ItemsToGenerateCode.Count, setCode);
+            }
+        }
+
+        private static string GetGroupFilter(string groupColumnName, string groupValue, bool groupTypeQuoted)
+        {
+            if (groupValue != null)
+                return groupColumnName + " = " + (groupTypeQuoted ? SqlUtility.QuoteText(groupValue) : groupValue);
+            else
+                return groupColumnName + " IS NULL";
+        }
+
+        public static void UpdateCodesWithoutCache<TEntity>(
+            ISqlExecuter sqlExecuter,
+            string entityName,
+            string propertyName,
+            IList<AutoCodeItem<TEntity, string>> autoCodeItems,
+            Action<TEntity, string> setCode,
+            string groupColumnName = null,
+            bool groupTypeQuoted = false)
+            where TEntity : IEntity
+        {
+            foreach (var autoCodeItem in autoCodeItems)
                 if (autoCodeItem.Code == null)
                     autoCodeItem.Code = "+";
-                if (autoCodeItem.Grouping == null)
-                    autoCodeItem.Grouping = "";
-            }
 
+            var autoCodeGroups = OrganizeToAutoCodeGroups(autoCodeItems, entityName, propertyName);
+
+            // UpdateCodesWithoutCache does not need to update cache, so it is interested only in the items that require a generated code.
+            autoCodeGroups = autoCodeGroups.Where(acg => acg.ItemsToGenerateCode.Count > 0).ToList();
+
+            if (autoCodeGroups.Count > 0)
+                Lock(sqlExecuter, entityName);
+
+            foreach (var autoCodeGroup in autoCodeGroups)
+            {
+                string groupFilter;
+                if (groupColumnName == null)
+                    groupFilter = "";
+                else
+                    groupFilter = "AND " + GetGroupFilter(groupColumnName, autoCodeGroup.Grouping, groupTypeQuoted);
+
+                string quotedPrefix = SqlUtility.QuoteText(autoCodeGroup.Prefix);
+                int prefixLength = autoCodeGroup.Prefix.Length;
+
+                string sql =
+                    $@"SELECT TOP 1
+                        MaxSuffixNumber = CONVERT(INT, SUBSTRING({propertyName}, {prefixLength} + 1, 256 )),
+                        MaxSuffixLength = LEN({propertyName}) - {prefixLength}
+                    FROM
+                        {entityName}
+                    WHERE
+                        {propertyName} LIKE {quotedPrefix} + '%'
+                        AND ISNUMERIC(SUBSTRING({propertyName}, {prefixLength} + 1, 256)) = 1 
+                        AND CHARINDEX('.', SUBSTRING({propertyName}, {prefixLength} + 1, 256)) = 0
+                        AND CHARINDEX('e', SUBSTRING({propertyName}, {prefixLength} + 1, 256)) = 0
+                        {groupFilter}
+                    ORDER BY
+                        -- Find maximal numeric suffix:
+                        CONVERT(INT, SUBSTRING({propertyName}, {prefixLength} + 1, 256)) DESC,
+                        -- If there are more than one suffixes with same value, take the longest code:
+                        LEN({propertyName}) - {prefixLength} DESC";
+
+                int maxSuffixNumber = 0; // Default, if there are no matching records.
+                int maxSuffixLength = 1;
+                sqlExecuter.ExecuteReader(sql, reader =>
+                {
+                    maxSuffixNumber = reader.GetInt32(0);
+                    maxSuffixLength = reader.GetInt32(1);
+                });
+
+                // If there are newly inserted records greater then the existing records:
+                if (autoCodeGroup.MaxProvidedCode != null && autoCodeGroup.MaxProvidedCode > maxSuffixNumber)
+                {
+                    maxSuffixNumber = autoCodeGroup.MaxProvidedCode.Value;
+                    maxSuffixLength = autoCodeGroup.MinDigits;
+                }
+
+                SetNewCodes(autoCodeGroup, maxSuffixNumber + autoCodeGroup.ItemsToGenerateCode.Count,
+                    Math.Max(maxSuffixLength, autoCodeGroup.MinDigits), setCode);
+            }
+        }
+
+        public static void UpdateCodesWithCache<TEntity>(
+            ISqlExecuter sqlExecuter,
+            string entityName,
+            string propertyName,
+            IList<AutoCodeItem<TEntity, string>> autoCodeItems,
+            Action<TEntity, string> setCode)
+            where TEntity : IEntity
+        {
+            foreach (var autoCodeItem in autoCodeItems)
+                if (autoCodeItem.Code == null)
+                    autoCodeItem.Code = "+";
+
+            var autoCodeGroups = OrganizeToAutoCodeGroups(autoCodeItems, entityName, propertyName);
+
+            foreach (var autoCodeGroup in autoCodeGroups)
+            {
+                if (autoCodeGroup.MaxProvidedCode != null)
+                {
+                    string sql = string.Format("EXEC Common.AutoCodeCacheUpdate {0}, {1}, {2}, {3}, {4}, {5}",
+                        SqlUtility.QuoteText(entityName),
+                        SqlUtility.QuoteText(propertyName),
+                        SqlUtility.QuoteText(autoCodeGroup.Grouping),
+                        SqlUtility.QuoteText(autoCodeGroup.Prefix),
+                        autoCodeGroup.MinDigits,
+                        autoCodeGroup.MaxProvidedCode);
+
+                    sqlExecuter.ExecuteSql(sql);
+                }
+
+                if (autoCodeGroup.ItemsToGenerateCode.Count > 0)
+                {
+                    string sql = string.Format("EXEC Common.AutoCodeCacheGetNext {0}, {1}, {2}, {3}, {4}, {5}",
+                        SqlUtility.QuoteText(entityName),
+                        SqlUtility.QuoteText(propertyName),
+                        SqlUtility.QuoteText(autoCodeGroup.Grouping),
+                        SqlUtility.QuoteText(autoCodeGroup.Prefix),
+                        autoCodeGroup.MinDigits,
+                        autoCodeGroup.ItemsToGenerateCode.Count);
+
+                    int minDigits = 1;
+                    int lastCode = autoCodeGroup.ItemsToGenerateCode.Count;
+                    sqlExecuter.ExecuteReader(sql, reader =>
+                    {
+                        minDigits = reader.GetInt32(0);
+                        lastCode = reader.GetInt32(1);
+                    });
+
+                    SetNewCodes(autoCodeGroup, lastCode, minDigits, setCode);
+                }
+            }
+        }
+
+        private static List<AutoCodeGroup<TEntity>> OrganizeToAutoCodeGroups<TEntity>(
+            IList<AutoCodeItem<TEntity, string>> autoCodeItems,
+            string entityName,
+            string propertyName)
+            where TEntity : IEntity
+        {
             var parsedAutoCode = autoCodeItems
                 .Where(acItem => !string.IsNullOrEmpty(acItem.Code))
                 .Select(acItem =>
@@ -84,12 +284,12 @@ namespace Rhetos.Dom.DefaultConcepts
                 .Where(acItem => acItem != null)
                 .ToList();
 
-            var autoCodeGroups = parsedAutoCode
+            return parsedAutoCode
                 .GroupBy(acItem => new { acItem.Grouping, acItem.Prefix })
-                .Select(g => new
+                .Select(g => new AutoCodeGroup<TEntity>
                 {
-                    g.Key.Grouping,
-                    g.Key.Prefix,
+                    Grouping = g.Key.Grouping,
+                    Prefix = g.Key.Prefix,
                     MinDigits = g.Max(acItem => acItem.MinDigits),
                     ItemsToGenerateCode = g.Where(acItem => acItem.ProvidedCodeValue == null).Select(acItem => acItem.Item).ToList(),
                     MaxProvidedCode = g.Max(acItem => acItem.ProvidedCodeValue)
@@ -97,49 +297,35 @@ namespace Rhetos.Dom.DefaultConcepts
                 .OrderBy(acGroup => acGroup.Grouping)
                 .ThenBy(acGroup => acGroup.Prefix)
                 .ToList();
+        }
 
-            foreach (var autoCodeGroup in autoCodeGroups)
+        private class AutoCodeGroup<TEntity> where TEntity : IEntity
+        {
+            public string Grouping;
+            public string Prefix;
+            public int MinDigits;
+            public List<TEntity> ItemsToGenerateCode;
+            public int? MaxProvidedCode;
+        }
+
+        private static void SetNewCodes<TEntity>(AutoCodeGroup<TEntity> autoCodeGroup, int lastCode, int minDigits, Action<TEntity, string> setCode) where TEntity : IEntity
+        {
+            for (int i = 0; i < autoCodeGroup.ItemsToGenerateCode.Count; i++)
             {
-                if (autoCodeGroup.MaxProvidedCode != null)
-                {
-                    string sql = string.Format("EXEC Common.UpdateAutoCodeCache {0}, {1}, {2}, {3}, {4}, {5}",
-                        SqlUtility.QuoteText(entityName),
-                        SqlUtility.QuoteText(propertyName),
-                        SqlUtility.QuoteText(autoCodeGroup.Grouping),
-                        SqlUtility.QuoteText(autoCodeGroup.Prefix),
-                        autoCodeGroup.MinDigits,
-                        autoCodeGroup.MaxProvidedCode);
+                string codeSuffix = (lastCode - autoCodeGroup.ItemsToGenerateCode.Count + i + 1).ToString();
+                if (codeSuffix.Length < minDigits)
+                    codeSuffix = new string('0', minDigits - codeSuffix.Length) + codeSuffix;
 
-                    sqlExecuter.ExecuteSql(sql);
-                }
+                setCode(autoCodeGroup.ItemsToGenerateCode[i], autoCodeGroup.Prefix + codeSuffix);
+            }
+        }
 
-                if (autoCodeGroup.ItemsToGenerateCode.Count > 0)
-                {
-                    string sql = string.Format("EXEC Common.GetNextAutoCodeCached {0}, {1}, {2}, {3}, {4}, {5}",
-                        SqlUtility.QuoteText(entityName),
-                        SqlUtility.QuoteText(propertyName),
-                        SqlUtility.QuoteText(autoCodeGroup.Grouping),
-                        SqlUtility.QuoteText(autoCodeGroup.Prefix),
-                        autoCodeGroup.MinDigits,
-                        autoCodeGroup.ItemsToGenerateCode.Count);
-
-                    int? minDigits = null;
-                    int? lastCode = null;
-                    sqlExecuter.ExecuteReader(sql, reader =>
-                        {
-                            minDigits = reader.GetInt32(0);
-                            lastCode = reader.GetInt32(1);
-                        });
-
-                    for (int i = 0; i < autoCodeGroup.ItemsToGenerateCode.Count; i++)
-                    {
-                        string codeSuffix = (lastCode.Value - autoCodeGroup.ItemsToGenerateCode.Count + i + 1).ToString();
-                        if (codeSuffix.Length < minDigits.Value)
-                            codeSuffix = new string('0', minDigits.Value - codeSuffix.Length) + codeSuffix;
-
-                        setCode(autoCodeGroup.ItemsToGenerateCode[i], autoCodeGroup.Prefix + codeSuffix);
-                    }
-                }
+        private static void SetNewCodes<TEntity>(List<TEntity> itemsToGenerateCode, int lastCode, Action<TEntity, int?> setCode) where TEntity : IEntity
+        {
+            for (int i = 0; i < itemsToGenerateCode.Count; i++)
+            {
+                int code = lastCode - itemsToGenerateCode.Count + i + 1;
+                setCode(itemsToGenerateCode[i], code);
             }
         }
 
@@ -170,6 +356,36 @@ namespace Rhetos.Dom.DefaultConcepts
                     suffixDigitsCount = 0;
 
             return suffixDigitsCount;
+        }
+
+        private static void Lock(ISqlExecuter sqlExecuter, string entityName)
+        {
+            // The manual database locking is used here in order to:
+            // 1. allow other users to read the existing records (no exclusive locks), and
+            // 2. avoid deadlocks (no shared locks that will be upgraded to exclusive locks).
+            try
+            {
+                sqlExecuter.ExecuteSql(
+                    $@"DECLARE @lockResult int;
+                    EXEC @lockResult = sp_getapplock 'AutoCode {entityName}', 'Exclusive';
+                    IF @lockResult < 0
+                    BEGIN
+                        RAISERROR('AutoCode lock.', 16, 10);
+                        ROLLBACK;
+                        RETURN;
+                    END");
+            }
+            catch (FrameworkException ex)
+            {
+                if (ex.Message.TrimEnd().EndsWith("AutoCode lock."))
+                    throw new UserException(
+                        "Cannot insert the record in {0} because another user's insert command is still running.",
+                        new object[] { entityName },
+                        null,
+                        ex);
+                else
+                    throw;
+            }
         }
     }
 }

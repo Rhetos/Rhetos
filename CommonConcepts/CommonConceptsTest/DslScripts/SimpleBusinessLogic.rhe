@@ -3,6 +3,7 @@
     Entity Simple
     {
         ShortString Code { AutoCode; }
+        ShortString Data;
     }
     
     Entity IntGroup

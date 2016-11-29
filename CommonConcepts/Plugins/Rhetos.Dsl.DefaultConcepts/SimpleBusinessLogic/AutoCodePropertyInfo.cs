@@ -24,25 +24,11 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class AutoCodePropertyInfo : IAlternativeInitializationConcept, IValidationConcept, IMacroConcept
+    [ConceptKeyword("AutoCode")]
+    public class AutoCodePropertyInfo : IMacroConcept, IValidationConcept
     {
         [ConceptKey]
         public PropertyInfo Property { get; set; }
-
-        public AutoCodeTriggerInfo Dependency_TriggerInfo { get; set; }
-
-        public IEnumerable<string> DeclareNonparsableProperties()
-        {
-            return new[] { "Dependency_TriggerInfo" };
-        }
-
-        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
-        {
-            if (!(Property.DataStructure is EntityInfo))
-                throw new DslSyntaxException(this, "AutoCode concept may only be used on properties of entity.");
-            Dependency_TriggerInfo = new AutoCodeTriggerInfo { Entity = (EntityInfo)this.Property.DataStructure };
-            createdConcepts = new IConceptInfo[] { Dependency_TriggerInfo };
-        }
 
         public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
         {
@@ -52,7 +38,17 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return new[] { new SystemRequiredInfo { Property = Property } };
+            var newConcets = new List<IConceptInfo>();
+
+            newConcets.Add(new SystemRequiredInfo { Property = Property });
+            newConcets.Add(CreateUniqueConstraint());
+
+            return newConcets;
+        }
+
+        virtual protected IConceptInfo CreateUniqueConstraint()
+        {
+            return new UniquePropertyInfo { Property = Property };
         }
     }
 }

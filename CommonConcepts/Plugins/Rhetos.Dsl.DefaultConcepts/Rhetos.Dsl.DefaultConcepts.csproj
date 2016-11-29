@@ -276,7 +276,6 @@
     <Compile Include="SimpleBusinessLogic\AutoCodeCachedInfo.cs" />
     <Compile Include="SimpleBusinessLogic\BeforeActionInfo.cs" />
     <Compile Include="SimpleBusinessLogic\BrowseTakeNamedPropertyInfo.cs" />
-    <Compile Include="SimpleBusinessLogic\AutoCodeTriggerInfo.cs" />
     <Compile Include="SimpleBusinessLogic\CreatedByInfo.cs" />
     <Compile Include="SimpleBusinessLogic\RegExMatchDefaultMessage.cs" />
     <Compile Include="SimpleBusinessLogic\LoggingRelatedItemInfo.cs" />
@@ -296,7 +295,6 @@
     <Compile Include="SimpleBusinessLogic\ModuleExternalReferenceInfo.cs" />
     <Compile Include="SimpleBusinessLogic\ActionInfo.cs" />
     <Compile Include="SimpleBusinessLogic\AutoCodeForEachInfo.cs" />
-    <Compile Include="SimpleBusinessLogic\AutoCodeSimpleInfo.cs" />
     <Compile Include="SimpleBusinessLogic\PessimisticLockingParentInfo.cs" />
     <Compile Include="SimpleBusinessLogic\PessimisticLockingInfo.cs" />
     <Compile Include="SimpleBusinessLogic\CustomClaimInfo.cs" />

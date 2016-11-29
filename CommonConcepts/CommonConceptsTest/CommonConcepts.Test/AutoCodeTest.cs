@@ -28,6 +28,7 @@ using Rhetos.Utilities;
 using Rhetos.TestCommon;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Threading;
 
 namespace CommonConcepts.Test
 {
@@ -138,6 +139,44 @@ namespace CommonConcepts.Test
                 TestSimple(container, repository, "AB+", "AB008");
                 TestSimple(container, repository, "AB999", "AB999");
                 TestSimple(container, repository, "AB+", "AB1000");
+            }
+        }
+
+        [TestMethod]
+        public void InsertMultipleItems()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                DeleteOldData(container);
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var tests = new ListOfTuples<string, string>
+                {
+                    { "+", "10" }, // Exactly specified values are considered before generated values, therefore this item is handled after core "9".
+                    { "+", "11" },
+                    { "+", "12" },
+                    { "9", "9" },
+                    { "+", "13" },
+                    { "+", "14" },
+                    { "AB+", "AB1000" },
+                    { "X", "X" },
+                    { "X+", "X1" },
+                    { "AB007", "AB007" },
+                    { "AB+", "AB1001" },
+                    { "AB999", "AB999" },
+                    { "AB+", "AB1002" },
+                };
+
+                repository.TestAutoCode.Simple.Insert(
+                    tests.Select((test, index) => new TestAutoCode.Simple { ID = new Guid(index + 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), Code = test.Item1 }));
+
+                IEnumerable<string> generatedCodes = repository.TestAutoCode.Simple.Load()
+                    .OrderBy(item => item.ID)
+                    .Select(item => item.Code);
+
+                IEnumerable<string> expectedCodes = tests.Select(test => test.Item2);
+
+                Assert.AreEqual(TestUtility.Dump(expectedCodes), TestUtility.Dump(generatedCodes));
             }
         }
 
@@ -350,21 +389,25 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void SqlTriggerHandlesNullValue()
+        public void AllowedNullValueInternally()
         {
             using (var container = new RhetosTestContainer())
             {
                 DeleteOldData(container);
 
-                Guid id = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "INSERT INTO TestAutoCode.Simple (ID, Code) VALUES ('" + id + "', NULL)" });
+                var context = container.Resolve<Common.ExecutionContext>();
 
-                var repository = container.Resolve<Common.DomRepository>();
-                var loaded = repository.TestAutoCode.Simple.Load(item => item.ID == id).Single();
-                Assert.AreEqual("1", loaded.Code);
+                var s1 = new TestAutoCode.Simple { ID = Guid.NewGuid(), Code = null };
+
+                AutoCodeHelper.UpdateCodesWithoutCache(
+                    context.SqlExecuter, "TestAutoCode.Simple", "Code",
+                    new[] { AutoCodeItem.Create(s1, s1.Code) },
+                    (item, newCode) => item.Code = newCode);
+
+                Assert.AreEqual("1", s1.Code);
             }
         }
-
+        
         [TestMethod]
         public void AutocodeStringNull()
         {
@@ -487,121 +530,297 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void ParallelInserts()
+        public void ParallelInsertsSmokeTestSamePrefix()
         {
-            using (var container = new RhetosTestContainer(true))
+            // Each thread inserts 10*2 records with an empty AutoCode cache:
+            for (int i = 0; i < 10; i++)
+                Execute2ParallelInserts(1, (process, repository) =>
+                {
+                    repository.Insert(new[] { new TestAutoCode.Simple { Code = "+", Data = process.ToString() } });
+                    repository.Insert(new[] { new TestAutoCode.Simple { Code = "+", Data = process.ToString() } });
+                });
+
+            // Each thread inserts 50*2 records, reusing the existing AutoCode cache:
+            Execute2ParallelInserts(50, (process, repository) =>
             {
-                var sqlExecuter = container.Resolve<ISqlExecuter>();
-                sqlExecuter.ExecuteSql(new[] { "DELETE FROM TestAutoCode.Simple" });
-            }
+                repository.Insert(new[] { new TestAutoCode.Simple { Code = "+", Data = process.ToString() } });
+                repository.Insert(new[] { new TestAutoCode.Simple { Code = "+", Data = process.ToString() } });
+            });
 
             using (var container = new RhetosTestContainer())
             {
-                var sqlExecuter = container.Resolve<ISqlExecuter>();
-                var sqlInsert = "INSERT INTO TestAutoCode.Simple (ID, Code) SELECT '{0}', '+'";
-                var insertedIds = new List<Guid>();
+                var repository = container.Resolve<Common.DomRepository>().TestAutoCode.Simple;
+                var generatedCodes = repository.Query().Select(item => item.Code).ToList();
+                var expected = Enumerable.Range(1, 50 * 2 * 2);
+                Assert.AreEqual(TestUtility.DumpSorted(expected), TestUtility.DumpSorted(generatedCodes));
+            }
+        }
 
-                for (int test = 1; test <= 50; test++)
+        [TestMethod]
+        public void ParallelInsertsSmokeTestDifferentPrefix()
+        {
+            // Each thread inserts 10*2 records with an empty AutoCode cache:
+            for (int i = 0; i < 10; i++)
+                Execute2ParallelInserts(1, (process, repository) =>
                 {
-                    Console.WriteLine("Test: " + test);
+                    repository.Insert(new[] { new TestAutoCode.Simple { Code = (char)('a' + process) + "+", Data = process.ToString() } });
+                    repository.Insert(new[] { new TestAutoCode.Simple { Code = (char)('a' + process) + "+", Data = process.ToString() } });
+                });
 
-                    string[] sqlQueries = Enumerable.Range(0, 2).Select(x =>
+            // Each thread inserts 50*2 records, reusing the existing AutoCode cache:
+            Execute2ParallelInserts(50, (process, repository) =>
+            {
+                repository.Insert(new[] { new TestAutoCode.Simple { Code = (char)('a' + process) + "+", Data = process.ToString() } });
+                repository.Insert(new[] { new TestAutoCode.Simple { Code = (char)('a' + process) + "+", Data = process.ToString() } });
+            });
+
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>().TestAutoCode.Simple;
+                var generatedCodes = repository.Query().Select(item => item.Code).ToList();
+                var expected = Enumerable.Range(1, 50 * 2).SelectMany(x => new[] { "a" + x, "b" + x });
+                Assert.AreEqual(TestUtility.DumpSorted(expected), TestUtility.DumpSorted(generatedCodes));
+            }
+        }
+
+        [TestMethod]
+        public void ParallelInsertsLockingTestSamePrefix()
+        {
+            // One process must wait for another, since they use the same code prefix and code group:
+
+            var endTimes = new DateTime[2];
+
+            Execute2ParallelInserts(1, (process, repository) =>
+            {
+                repository.Insert(new[] { new TestAutoCode.Simple { Code = "+", Data = process.ToString() } });
+                System.Threading.Thread.Sleep(200);
+                endTimes[process] = DateTime.Now;
+            });
+
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>().TestAutoCode.Simple;
+                var generatedCodes = repository.Query().Select(item => item.Code).ToList();
+                var expected = Enumerable.Range(1, 2);
+                Assert.AreEqual(TestUtility.DumpSorted(expected), TestUtility.DumpSorted(generatedCodes));
+
+                var codeByProcessReport = TestUtility.Dump(repository.All()
+                    .OrderBy(item => item.Code)
+                    .Take(4)
+                    .Select(item => item.Data + ":" + item.Code));
+                Assert.IsTrue(codeByProcessReport == "0:1, 1:2" || codeByProcessReport == "1:1, 0:2");
+
+                TestUtility.DumpSorted(endTimes);
+                var delay = Math.Abs(endTimes[0].Subtract(endTimes[1]).TotalMilliseconds);
+                Console.WriteLine(delay);
+                if (delay < 200)
+                    Assert.Fail("One process did not wait for another.");
+                if (delay > 300)
+                    Assert.Inconclusive("System too slow. Delay should be a little above 200.");
+            }
+        }
+
+        [TestMethod]
+        public void ParallelInsertsLockingTestDifferentPrefix()
+        {
+            // Executing this test multiple time, to reduce system warmup effects and performance instability.
+
+            for (int retries = 4; retries >= 0; retries--)
+            {
+                try
+                {
+                    // One process may be executed in parallel with another, since they use different prefixes:
+
+                    var endTimes = new DateTime[2];
+
+                    Execute2ParallelInserts(1, (process, repository) =>
                     {
-                        var id = Guid.NewGuid();
-                        insertedIds.Add(id);
-                        return string.Format(sqlInsert, id);
-                    }).ToArray();
+                        repository.Insert(new[] { new TestAutoCode.Simple { Code = (char)('a' + process) + "+", Data = process.ToString() } });
+                        System.Threading.Thread.Sleep(200);
+                        endTimes[process] = DateTime.Now;
+                    });
 
-                    Parallel.For(0, 2, process => sqlExecuter.ExecuteSql(new[] { sqlQueries[process] }, useTransaction: false));
+                    using (var container = new RhetosTestContainer())
+                    {
+                        var repository = container.Resolve<Common.DomRepository>().TestAutoCode.Simple;
+                        var generatedCodes = repository.Query().Select(item => item.Code).ToList();
+                        var expected = new[] { "a1", "b1" };
+                        Assert.AreEqual(TestUtility.DumpSorted(expected), TestUtility.DumpSorted(generatedCodes));
+
+                        var codeByProcessReport = TestUtility.Dump(repository.All()
+                            .OrderBy(item => item.Code)
+                            .Take(4)
+                            .Select(item => item.Data + ":" + item.Code));
+                        Assert.AreEqual("0:a1, 1:b1", codeByProcessReport);
+
+                        TestUtility.DumpSorted(endTimes, item => item.ToString("o"));
+                        var delay = Math.Abs(endTimes[0].Subtract(endTimes[1]).TotalMilliseconds);
+                        Console.WriteLine(delay);
+                        if (delay < 200)
+                            Assert.Fail("One process did not wait for another.");
+                        if (delay > 300)
+                            Assert.Inconclusive("System too slow. Delay should be a little above 200.");
+                    }
                 }
+                catch (Exception ex)
+                {
+                    if (retries > 0)
+                    {
+                        Console.WriteLine(ex);
+                        Console.WriteLine("Retrying " + retries + " more times.");
+                    }
+                    else
+                        throw;
+                }
+            }
+        }
 
-                var simpleRepository = container.Resolve<GenericRepository<TestAutoCode.Simple>>();
+        private void Execute2ParallelInserts(int testCount, Action<int, TestAutoCode._Helper.Simple_Repository> action)
+        {
+            const int threadCount = 2;
 
-                var generatedCodes = simpleRepository.Load(insertedIds).Select(item => Int32.Parse(item.Code));
-                Console.WriteLine("generatedCodes: " + string.Join(", ", generatedCodes.Select(x => x.ToString())));
+            using (var container = new RhetosTestContainer(true))
+            {
+                CheckForParallelism(container.Resolve<ISqlExecuter>(), threadCount);
+                DeleteOldData(container);
+            }
 
-                Assert.AreEqual(insertedIds.Count(), generatedCodes.Count());
-                Assert.AreEqual(insertedIds.Count(), generatedCodes.Max() - generatedCodes.Min() + 1);
+            for (int test = 1; test <= testCount; test++)
+            {
+                Console.WriteLine("Test: " + test);
+                var containers = Enumerable.Range(0, threadCount).Select(t => new RhetosTestContainer(true)).ToArray();
+
+                try
+                {
+                    var repositories = containers.Select(c => c.Resolve<Common.DomRepository>().TestAutoCode.Simple).ToArray();
+                    foreach (var r in repositories)
+                        Assert.IsTrue(r.Query().Count() >= 0); // Cold start.
+
+                    Parallel.For(0, threadCount, process =>
+                    {
+                        action(process, repositories[process]);
+                        containers[process].Dispose();
+                        containers[process] = null;
+                    });
+                } 
+                finally
+                {
+                    foreach (var c in containers)
+                        if (c != null)
+                            c.Dispose();
+                }
             }
         }
 
         [TestMethod]
         public void ParallelInsertsLockErrorHandling()
         {
-            const int testProcessCount = 4;
+            const int threadCount = 4;
+
+            // Starts at 0 ms, ends at 400ms.
+            Action<Common.ExecutionContext> action0 = context =>
+            {
+                Thread.Sleep(0);
+                context.SqlExecuter.ExecuteSql("SET LOCK_TIMEOUT 0");
+                context.Repository.TestAutoCode.Simple.Insert(new TestAutoCode.Simple { Code = "+" });
+                Thread.Sleep(400);
+            };
+
+            // Starts at 100 ms, lock timeout at 300ms.
+            Action<Common.ExecutionContext> action1 = context =>
+            {
+                Thread.Sleep(100);
+                context.SqlExecuter.ExecuteSql("SET LOCK_TIMEOUT 200");
+                context.Repository.TestAutoCode.Simple.Insert(new TestAutoCode.Simple { Code = "+" });
+            };
+
+            // Starts at 200 ms, lock timeout at 200ms.
+            Action<Common.ExecutionContext> action2 = context =>
+            {
+                Thread.Sleep(200);
+                context.SqlExecuter.ExecuteSql("SET LOCK_TIMEOUT 0");
+                context.Repository.TestAutoCode.Simple.Insert(new TestAutoCode.Simple { Code = "+" });
+            };
+
+            // Starts at 200 ms, ends at 200ms.
+            Action<Common.ExecutionContext> action3 = context =>
+            {
+                Thread.Sleep(200);
+                context.SqlExecuter.ExecuteSql("SET LOCK_TIMEOUT 0");
+                context.Repository.TestAutoCode.Simple.Load(item => item.Code == "1");
+            };
+
+            var actions = new[] { action0, action1, action2, action3 };
+            Assert.AreEqual(threadCount, actions.Count());
 
             using (var container = new RhetosTestContainer(true))
             {
                 var sqlExecuter = container.Resolve<ISqlExecuter>();
-                sqlExecuter.ExecuteSql(new[] { "DELETE FROM TestAutoCode.Simple", "INSERT INTO TestAutoCode.Simple (Code) SELECT '1'" });
+                CheckForParallelism(sqlExecuter, threadCount);
+                DeleteOldData(container);
+
+                var repository = container.Resolve<Common.DomRepository>();
+                repository.TestAutoCode.Simple.Insert(new TestAutoCode.Simple { Code = "1" });
             }
 
-            using (RhetosTestContainer container0 = new RhetosTestContainer(),
-                container1 = new RhetosTestContainer(),
-                container2 = new RhetosTestContainer(),
-                container3 = new RhetosTestContainer())
+            var containers = Enumerable.Range(0, threadCount).Select(t => new RhetosTestContainer(true)).ToArray();
+
+            Exception[] exceptions = new Exception[threadCount];
+
+            try
             {
-                // Starts at 0 ms, ends at 400ms.
-                var sql0 = new[] { "WAITFOR DELAY '00:00:00.000'", "SET LOCK_TIMEOUT 0", "INSERT INTO TestAutoCode.Simple (Code) SELECT '+'", "WAITFOR DELAY '00:00:00.400'" };
+                var contexts = containers.Select(c => c.Resolve<Common.ExecutionContext>()).ToArray();
+                foreach (var context in contexts)
+                    Assert.AreEqual(1, context.Repository.TestAutoCode.Simple.Query().Count()); // Cold start.
 
-                // Starts at 100 ms, lock timeout at 300ms.
-                var sql1 = new[] { "WAITFOR DELAY '00:00:00.100'", "SET LOCK_TIMEOUT 200", "INSERT INTO TestAutoCode.Simple (Code) SELECT '+'" };
-
-                // Starts at 200 ms, lock timeout at 200ms.
-                var sql2 = new[] { "WAITFOR DELAY '00:00:00.200'", "SET LOCK_TIMEOUT 0", "INSERT INTO TestAutoCode.Simple (Code) SELECT '+'" };
-
-                // Starts at 200 ms, ends at 200ms.
-                var sql3 = new[] { "WAITFOR DELAY '00:00:00.200'", "SET LOCK_TIMEOUT 0", "SELECT * FROM TestAutoCode.Simple WHERE Code = '1'" };
-
-                var sqls = new [] { sql0, sql1, sql2, sql3 };
-                Assert.AreEqual(testProcessCount, sqls.Count());
-
-                var containers = new[] { container0, container1, container2, container3 };
-                var sqlExecuters = containers.Select(c => c.Resolve<ISqlExecuter>()).ToArray();
-                CheckForParallelism(sqlExecuters);
-
-                Exception[] exceptions = new Exception[testProcessCount];
-
-                Parallel.For(0, testProcessCount, process =>
+                Parallel.For(0, threadCount, thread =>
+                {
+                    try
                     {
-                        try
-                        {
-                            sqlExecuters[process].ExecuteSql(sqls[process]);
-                        }
-                        catch (Exception ex)
-                        {
-                            exceptions[process] = ex;
-                        }
-                    });
-
-                for (int x = 0; x < testProcessCount; x++)
-                    Console.WriteLine("Exception " + x + ": " + exceptions[x] + ".");
-
-                Assert.IsNull(exceptions[0]);
-                Assert.IsNotNull(exceptions[1]);
-                Assert.IsNotNull(exceptions[2]);
-                Assert.IsNull(exceptions[3]); // sql3 should be allowed to read the record with code '1'. sql0 has exclusive lock on code '2'. autocode should not put exclusive lock on other records.
-
-                // Query sql1 may generate next autocode, but it should wait for the entity's table exclusive lock to be released (from sql0).
-                Assert.IsTrue(
-                    exceptions[1].ToString().Contains("lock request time out")
-                    || exceptions[1].ToString().Contains("another user's insert command is still running"), // When READ_COMMITTED_SNAPSHOT is ON.
-                    "See 'Exception 1' in output log.");
-
-                // Query sql2 may not generate next autocode until sql1 releases the lock.
-                TestUtility.AssertContains(exceptions[2].ToString(), new[] { "Cannot insert", "TestAutoCode.Simple", "another user" });
+                        actions[thread].Invoke(contexts[thread]);
+                    }
+                    catch (Exception ex)
+                    {
+                        exceptions[thread] = ex;
+                        contexts[thread].PersistenceTransaction.DiscardChanges();
+                    }
+                    finally
+                    {
+                        containers[thread].Dispose();
+                        containers[thread] = null;
+                    }
+                });
             }
+            finally
+            {
+                foreach (var c in containers)
+                    if (c != null)
+                        c.Dispose();
+            }
+
+            for (int x = 0; x < threadCount; x++)
+                Console.WriteLine("Exception " + x + ": " + exceptions[x] + ".");
+
+            Assert.IsNull(exceptions[0]);
+            Assert.IsNotNull(exceptions[1]);
+            Assert.IsNotNull(exceptions[2]);
+            Assert.IsNull(exceptions[3]); // sql3 should be allowed to read the record with code '1'. sql0 has exclusive lock on code '2'. autocode should not put exclusive lock on other records.
+
+            // Query sql1 may generate next autocode, but it should wait for the entity's table exclusive lock to be released (from sql0).
+            TestUtility.AssertContains(exceptions[1].ToString(), new[] { "Cannot insert", "another user's insert command is still running", "TestAutoCode.Simple" });
+
+            // Query sql2 may not generate next autocode until sql1 releases the lock.
+            TestUtility.AssertContains(exceptions[2].ToString(), new[] { "Cannot insert", "another user's insert command is still running", "TestAutoCode.Simple" });
         }
 
-        private void CheckForParallelism(ISqlExecuter[] sqlExecuters)
+        private void CheckForParallelism(ISqlExecuter sqlExecuter, int requiredNumberOfThreads)
         {
- 	        string sqlDelay01 = "WAITFOR DELAY '00:00:00.100'";
+            string sqlDelay01 = "WAITFOR DELAY '00:00:00.100'";
             var sqls = new[] { sqlDelay01 };
-            // Cold start.
-            Parallel.ForEach(sqlExecuters, sqlExecuter => { sqlExecuter.ExecuteSql(sqls); });
+            sqlExecuter.ExecuteSql(sqls); // Possible cold start.
 
             var sw = Stopwatch.StartNew();
-            Parallel.ForEach(sqlExecuters, sqlExecuter => { sqlExecuter.ExecuteSql(sqls); });
+            Parallel.For(0, requiredNumberOfThreads, x => { sqlExecuter.ExecuteSql(sqls, false); });
             sw.Stop();
 
             Console.WriteLine("CheckForParallelism: " + sw.ElapsedMilliseconds + " ms.");
@@ -612,7 +831,7 @@ namespace CommonConcepts.Test
             if (sw.Elapsed.TotalMilliseconds > 190)
                 Assert.Inconclusive(string.Format(
                     "This test requires {0} parallel SQL queries. {0} parallel delays for 100 ms are executed in {1} ms.",
-                    sqlExecuters.Count(),
+                    requiredNumberOfThreads,
                     sw.ElapsedMilliseconds));
         }
     }

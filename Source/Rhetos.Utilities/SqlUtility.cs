@@ -310,6 +310,11 @@ namespace Rhetos.Utilities
                 : "NULL";
         }
 
+        public static string GuidToString(Guid? guid)
+        {
+            return guid.HasValue ? GuidToString(guid.Value) : null;
+        }
+
         public static string GuidToString(Guid guid)
         {
             if (DatabaseLanguageIsMsSql.Value)
@@ -320,8 +325,42 @@ namespace Rhetos.Utilities
                 throw new FrameworkException(UnsupportedLanguageError);
         }
 
+        public static string QuoteDateTime(DateTime? dateTime)
+        {
+            return dateTime.HasValue
+                ? "'" + DateTimeToString(dateTime.Value) + "'"
+                : "NULL";
+        }
+
+        public static string DateTimeToString(DateTime? dateTime)
+        {
+            return dateTime.HasValue ? DateTimeToString(dateTime.Value) : null;
+        }
+
+        public static string DateTimeToString(DateTime dateTime)
+        {
+            return dateTime.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff");
+        }
+
+        public static string QuoteBool(bool? b)
+        {
+            return b.HasValue ? BoolToString(b.Value) : "NULL";
+        }
+
+        public static string BoolToString(bool? b)
+        {
+            return b.HasValue ? BoolToString(b.Value) : null;
+        }
+
+        public static string BoolToString(bool b)
+        {
+            return b ? "0" : "1";
+        }
+
         private static string ByteArrayToString(byte[] ba)
         {
+            if (ba == null)
+                return null;
             StringBuilder hex = new StringBuilder(ba.Length * 2);
             foreach (byte b in ba)
                 hex.AppendFormat("{0:X2}", b);
@@ -330,6 +369,8 @@ namespace Rhetos.Utilities
 
         private static byte[] StringToByteArray(String hex)
         {
+            if (hex == null)
+                return null;
             int NumberChars = hex.Length / 2;
             byte[] bytes = new byte[NumberChars];
             StringReader sr = new StringReader(hex);

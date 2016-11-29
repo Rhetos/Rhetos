@@ -1,4 +1,6 @@
-﻿IF @quantity < 1
+﻿IF @grouping IS NULL SET @grouping = '';
+
+IF @quantity < 1
 	BEGIN RAISERROR('Invalid argument: @quantity (%d). The value must be 1 or greater. ', 16, 10, @quantity); RETURN 1; END
 
 DECLARE @newCode INT;

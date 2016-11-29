@@ -1,4 +1,6 @@
-﻿UPDATE
+﻿IF @grouping IS NULL SET @grouping = '';
+
+UPDATE
 	acc
 SET
 	MinDigits = CASE WHEN @providedCode > acc.LastCode THEN @minDigits ELSE acc.MinDigits END,

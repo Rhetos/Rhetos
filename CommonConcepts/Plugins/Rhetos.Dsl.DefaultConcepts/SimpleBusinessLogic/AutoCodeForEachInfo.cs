@@ -26,20 +26,18 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AutoCodeForEach")]
-    public class AutoCodeForEachInfo : AutoCodePropertyInfo, IMacroConcept, IValidationConcept
+    public class AutoCodeForEachInfo : AutoCodePropertyInfo, IValidationConcept
     {
         public PropertyInfo Group { get; set; }
 
-        new public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        protected override IConceptInfo CreateUniqueConstraint()
         {
-            return base.CreateNewConcepts(existingConcepts)
-                .Concat(new[] {
-                    new UniquePropertiesInfo
-                    {
-                        DataStructure = Property.DataStructure,
-                        Property1 = Group,
-                        Property2 = Property
-                    }});
+            return new UniquePropertiesInfo
+            {
+                DataStructure = Property.DataStructure,
+                Property1 = Group,
+                Property2 = Property
+            };
         }
 
         public new void CheckSemantics(IEnumerable<IConceptInfo> concepts)

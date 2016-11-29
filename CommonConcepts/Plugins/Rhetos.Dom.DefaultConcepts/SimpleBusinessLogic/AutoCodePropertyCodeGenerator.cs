@@ -30,21 +30,22 @@ using System.Text;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(AutoCodeCachedInfo))]
-    public class AutoCodeCachedCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(AutoCodePropertyInfo))]
+    public class AutoCodePropertyCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly CsTag<AutoCodeCachedInfo> GroupingTag = "Grouping";
+        public static readonly CsTag<AutoCodePropertyInfo> GroupingTag = "Grouping";
+        public static readonly CsTag<AutoCodePropertyInfo> GroupColumnMetadataTag = "GroupColumnMetadata";
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (AutoCodeCachedInfo)conceptInfo;
+            var info = (AutoCodePropertyInfo)conceptInfo;
 
             string dataStructure = info.Property.DataStructure.Module.Name + "." + info.Property.DataStructure.Name;
             string snippet =
-            $@"AutoCodeHelper.UpdateCodesWithCache(
+            $@"AutoCodeHelper.UpdateCodesWithoutCache(
                 _executionContext.SqlExecuter, ""{dataStructure}"", ""{info.Property.Name}"",
                 insertedNew.Select(item => AutoCodeItem.Create(item, item.{info.Property.Name}{GroupingTag.Evaluate(info)})).ToList(),
-                (item, newCode) => item.{info.Property.Name} = newCode);
+                (item, newCode) => item.{info.Property.Name} = newCode{GroupColumnMetadataTag.Evaluate(info)});
 
             ";
 

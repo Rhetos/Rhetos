@@ -312,28 +312,26 @@ namespace CommonConcepts.Test
         {
             using (var container = new RhetosTestContainer())
             {
-                Guid c1ID = Guid.NewGuid();
-                Guid c2ID = Guid.NewGuid();
-                Guid rcID = Guid.NewGuid();
-
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { 
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.BasicAutocode_Changes;",
-                    "DELETE FROM TestHistory.BasicAutocode;",
-                    "INSERT INTO TestHistory.BasicAutocode (ID, Name, Code) VALUES ('" + c1ID.ToString() + "', 'c1', '+');",
-                    "INSERT INTO TestHistory.BasicAutocode (ID, Name, Code) VALUES ('" + c2ID.ToString() + "', 'c2', '+');",
-                });
+                    "DELETE FROM TestHistory.BasicAutocode;" });
+
                 var repository = container.Resolve<Common.DomRepository>();
-                var cleanRepos = repository.TestHistory.BasicAutocode;
 
-                var c1 = repository.TestHistory.BasicAutocode.Query().Where(item => item.ID == c1ID).SingleOrDefault();
-                var c2 = repository.TestHistory.BasicAutocode.Query().Where(item => item.ID == c2ID).SingleOrDefault();
-                c1.Name = "C1New";
-                c2.Name = "C2New";
+                var c1 = new TestHistory.BasicAutocode { ID = Guid.NewGuid(), Name = "c1", Code = "+" };
+                var c2 = new TestHistory.BasicAutocode { ID = Guid.NewGuid(), Name = "c2", Code = "+" };
+                repository.TestHistory.BasicAutocode.Insert(c1, c2);
 
-                cleanRepos.Update(new[] { c1, c2 });
+                c1 = repository.TestHistory.BasicAutocode.Load(item => item.ID == c1.ID).Single();
+                c2 = repository.TestHistory.BasicAutocode.Load(item => item.ID == c2.ID).Single();
+                c1.Name = "c1new";
+                c1.ActiveSince = null;
+                c2.Name = "c2new";
+                c2.ActiveSince = null;
+                repository.TestHistory.BasicAutocode.Update(new[] { c1, c2 });
                 
-                string v1 = "1 c1, 2 c2";
-                Assert.AreEqual(v1, Dump(repository.TestHistory.BasicAutocode_Changes.All()));
+                Assert.AreEqual("1 c1, 2 c2", TestUtility.DumpSorted(repository.TestHistory.BasicAutocode_Changes.Query(), item => item.Code + " " + item.Name), "v1");
+                Assert.AreEqual("1 c1new, 2 c2new", TestUtility.DumpSorted(repository.TestHistory.BasicAutocode.Query(), item => item.Code + " " + item.Name), "v2");
             }
         }
 

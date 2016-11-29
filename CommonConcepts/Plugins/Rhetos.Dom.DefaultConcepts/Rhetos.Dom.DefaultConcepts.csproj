@@ -157,6 +157,8 @@
     <Compile Include="RowPermissions\RowPermissionsReadCodeGenerator.cs" />
     <Compile Include="RowPermissions\RowPermissionsUtility.cs" />
     <Compile Include="RowPermissions\RowPermissionsWriteCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\AutoCodePropertyCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\AutoCodeForEachCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\AutoCodeForEachCachedCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\AutoCodeHelper.cs" />
     <Compile Include="SimpleBusinessLogic\BeforeActionCodeGenerator.cs" />

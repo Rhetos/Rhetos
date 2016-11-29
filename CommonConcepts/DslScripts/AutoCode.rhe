@@ -1,19 +1,17 @@
 ﻿Module Common
 {
-    SqlProcedure GenerateNextAutoCode <GenerateNextAutoCode param.sql> <GenerateNextAutoCode body.sql>;
-	
-	Entity AutoCodeCache
-	{
-		ShortString Entity { SqlNotNull "''"; }
-		ShortString Property { SqlNotNull "''"; }
-		ShortString Grouping { SqlNotNull "''"; }
-		ShortString Prefix { SqlNotNull "''"; }
-		Integer MinDigits { SqlNotNull "0"; }
-		Integer LastCode { SqlNotNull "0"; }
-		
-		UniqueMultiple 'Entity Property Grouping Prefix' { Clustered; }
-	}
-	
-	SqlProcedure GetNextAutoCodeCached <GetNextAutoCodeCached param.sql> <GetNextAutoCodeCached body.sql>;
-	SqlProcedure UpdateAutoCodeCache <UpdateAutoCodeCache param.sql> <UpdateAutoCodeCache body.sql>;
+    Entity AutoCodeCache
+    {
+        ShortString Entity { SqlNotNull "''"; }
+        ShortString Property { SqlNotNull "''"; }
+        ShortString Grouping { SqlNotNull "''"; }
+        ShortString Prefix { SqlNotNull "''"; }
+        Integer MinDigits { SqlNotNull "0"; }
+        Integer LastCode { SqlNotNull "0"; }
+        
+        UniqueMultiple 'Entity Property Grouping Prefix' { Clustered; }
+    }
+    
+    SqlProcedure AutoCodeCacheGetNext <AutoCodeCacheGetNext param.sql> <AutoCodeCacheGetNext body.sql>;
+    SqlProcedure AutoCodeCacheUpdate <AutoCodeCacheUpdate param.sql> <AutoCodeCacheUpdate body.sql>;
 }

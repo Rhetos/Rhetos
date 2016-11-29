@@ -21,6 +21,7 @@ using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -37,15 +38,10 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (AutoCodeForEachCachedInfo)conceptInfo;
 
-            string groupSelector;
-            if (info.Group is ReferencePropertyInfo)
-                groupSelector = info.Group.Name + "ID.ToString()";
-            else if (info.Group is ShortStringPropertyInfo || info.Group is LongStringPropertyInfo)
-                groupSelector = info.Group.Name;
-            else
-                groupSelector = info.Group.Name + ".ToString()";
-
-            string groupingSnippet = ", Grouping = item." + groupSelector;
+            // The groupSelector value format is compatible with T-SQL data formatting,
+            // to allow easier development of data migration scripts and similar features.
+            string groupSelector = AutoCodeForEachCodeGenerator.SnippetSqlFormat(info.Group);
+            string groupingSnippet = ", " + groupSelector;
             codeBuilder.InsertCode(groupingSnippet, AutoCodeCachedCodeGenerator.GroupingTag, info);
         }
     }

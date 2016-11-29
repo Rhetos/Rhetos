@@ -122,28 +122,28 @@ namespace CommonConcepts.Test
                 DeleteOldData(container);
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var tests = new List<Tuple<string, string>>
+                var tests = new ListOfTuples<string, string>
                 {
-                    Tuple.Create("+", "10"), // Exactly specified values are considered before generated values, therefore this item is handled after core "9".
-                    Tuple.Create("+", "11"),
-                    Tuple.Create("+", "12"),
-                    Tuple.Create("9", "9"),
-                    Tuple.Create("+", "13"),
-                    Tuple.Create("+", "14"),
-                    Tuple.Create("AB+", "AB1000"),
-                    Tuple.Create("X", "X"),
-                    Tuple.Create("X+", "X1"),
-                    Tuple.Create("AB007", "AB007"),
-                    Tuple.Create("AB+", "AB1001"),
-                    Tuple.Create("AB999", "AB999"),
-                    Tuple.Create("AB+", "AB1002"),
+                    { "+", "10" }, // Exactly specified values are considered before generated values, therefore this item is handled after core "9".
+                    { "+", "11" },
+                    { "+", "12" },
+                    { "9", "9" },
+                    { "+", "13" },
+                    { "+", "14" },
+                    { "AB+", "AB1000" },
+                    { "X", "X" },
+                    { "X+", "X1" },
+                    { "AB007", "AB007" },
+                    { "AB+", "AB1001" },
+                    { "AB999", "AB999" },
+                    { "AB+", "AB1002" },
                 };
 
                 repository.TestAutoCodeCached.Simple.Insert(
-                    tests.Select((test, index) => new TestAutoCodeCached.Simple { ID = Guid.NewGuid(), Code = test.Item1, Data = index.ToString() }));
+                    tests.Select((test, index) => new TestAutoCodeCached.Simple { ID = new Guid(index + 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), Code = test.Item1 }));
 
                 IEnumerable<string> generatedCodes = repository.TestAutoCodeCached.Simple.Load()
-                    .OrderBy(item => int.Parse(item.Data))
+                    .OrderBy(item => item.ID)
                     .Select(item => item.Code);
 
                 IEnumerable<string> expectedCodes = tests.Select(test => test.Item2);
@@ -306,9 +306,9 @@ namespace CommonConcepts.Test
 
                 var s1 = new TestAutoCodeCached.Simple { ID = Guid.NewGuid(), Code = null };
 
-                AutoCodeHelper.UpdateCodes(
+                AutoCodeHelper.UpdateCodesWithCache(
                     context.SqlExecuter, "TestAutoCodeCached.Simple", "Code",
-                    new[] { new AutoCodeItem<TestAutoCodeCached.Simple> { Item = s1, Code = s1.Code, Grouping = "" } },
+                    new[] { AutoCodeItem.Create(s1, s1.Code) },
                     (item, newCode) => item.Code = newCode);
 
                 Assert.AreEqual("1", s1.Code);
@@ -584,10 +584,11 @@ namespace CommonConcepts.Test
 
         private void Execute2ParallelInserts(int testCount, Action<int, TestAutoCodeCached._Helper.Simple_Repository> action)
         {
+            const int threadCount = 2;
             using (var container = new RhetosTestContainer(true))
             {
                 DeleteOldData(container);
-                CheckForParallelism(container.Resolve<ISqlExecuter>(), 2);
+                CheckForParallelism(container.Resolve<ISqlExecuter>(), threadCount);
             }
 
             for (int test = 1; test <= testCount; test++)
@@ -601,7 +602,7 @@ namespace CommonConcepts.Test
 
                 try
                 {
-                    Parallel.For(0, 2, process =>
+                    Parallel.For(0, threadCount, process =>
                     {
                         action(process, repositories[process]);
                         containers[process].Dispose();
@@ -619,7 +620,7 @@ namespace CommonConcepts.Test
 
         private void CheckForParallelism(ISqlExecuter sqlExecuter, int requiredNumberOfThreads)
         {
- 	        string sqlDelay01 = "WAITFOR DELAY '00:00:00.100'";
+            string sqlDelay01 = "WAITFOR DELAY '00:00:00.100'";
             var sqls = new[] { sqlDelay01 };
             sqlExecuter.ExecuteSql(sqls); // Possible cold start.
 
