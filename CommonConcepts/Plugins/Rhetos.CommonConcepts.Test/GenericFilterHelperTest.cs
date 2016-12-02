@@ -166,22 +166,17 @@ namespace Rhetos.CommonConcepts.Test
             var id3 = new Guid(3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
             var id4 = new Guid(4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
-            var items = new ListOfTuples<Guid, Guid?, string>
+            var items = new[]
             {
-                { id1, idnull, "1" },
-                { id2, id2, "2" },
-                { id3, id3, "3" }
-            }.Select(item => new
-            {
-                ID = item.Item1,
-                RefID = item.Item2,
-                Name = item.Item3
-            }).ToList();
+                new { ID = id1, RefID = idnull, Name = "1" },
+                new { ID = id2, RefID = (Guid?)id2, Name = "2" },
+                new { ID = id3, RefID = (Guid?)id3, Name = "3" },
+            };
 
             // Guid property, Guid array:
             Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("ID", "In", new Guid[] { id1, id2, id2, id4 }, items), item => item.Name));
             Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", new Guid[] { id1, id2, id2, id4 }, items), item => item.Name));
-            
+
             // Guid property, Guid list:
             Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("ID", "In", new List<Guid> { id1, id2, id2, id4 }, items), item => item.Name));
             Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", new List<Guid> { id1, id2, id2, id4 }, items), item => item.Name));
@@ -213,6 +208,86 @@ namespace Rhetos.CommonConcepts.Test
             var filterExpression = genericFilterHelper.ToExpression<T>((IEnumerable<PropertyFilter>)filterObject.Parameter);
             var filteredItems = items.AsQueryable().Where(filterExpression).ToList();
             return filteredItems;
+        }
+
+        [TestMethod]
+        public void ErrorOnInvalidType()
+        {
+            var idnull = (Guid?)null;
+            var id1 = new Guid(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+            var items = new[]
+            {
+                new { ID = id1, RefID = idnull, Name = "1" },
+            };
+
+            TestUtility.ShouldFail<ClientException>(() => TestFilter("ID", "In", new int[] { 1 }, items), "Invalid generic filter", "'In'", "'ID'", "Int32", "Guid");
+            TestUtility.ShouldFail<ClientException>(() => TestFilter("RefID", "In", new int[] { 1 }, items), "Invalid generic filter", "'In'", "'RefID'", "Int32", "Guid");
+            TestUtility.ShouldFail<ClientException>(() => TestFilter("Name", "In", new int[] { 1 }, items), "Invalid generic filter", "'In'", "'Name'", "Int32", "String");
+            TestUtility.ShouldFail<ClientException>(() => TestFilter("ID", "In", 2, items), "Invalid generic filter", "'In'", "'ID'", "Int32", "Guid");
+            TestUtility.ShouldFail<ClientException>(() => TestFilter("Name", "In", null, items), "Invalid generic filter", "'In'", "'Name'", "null", "String");
+        }
+
+        [TestMethod]
+        public void TolerateInvalidTypeOfEmptyArray()
+        {
+            // Element type cannot be defected for empty JSON array, therefore the application should
+            // tolerate invalid element type of the array is empty.
+
+            var idnull = (Guid?)null;
+            var id1 = new Guid(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            var id2 = new Guid(2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            var id3 = new Guid(3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            var id4 = new Guid(4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+            var items = new[]
+            {
+                new { ID = id1, RefID = idnull, Name = "1" },
+                new { ID = id2, RefID = (Guid?)id2, Name = "2" },
+                new { ID = id3, RefID = (Guid?)id3, Name = "3" },
+            };
+
+            Assert.AreEqual("", TestUtility.DumpSorted(TestFilter("ID", "In", new int[] { }, items), item => item.Name));
+            Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", new int[] { }, items), item => item.Name));
+            Assert.AreEqual("", TestUtility.DumpSorted(TestFilter("RefID", "In", new int[] { }, items), item => item.Name));
+            Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(TestFilter("RefID", "NotIn", new int[] { }, items), item => item.Name));
+            Assert.AreEqual("", TestUtility.DumpSorted(TestFilter("Name", "In", new int[] { }, items), item => item.Name));
+            Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(TestFilter("Name", "NotIn", new int[] { }, items), item => item.Name));
+            Assert.AreEqual("", TestUtility.DumpSorted(TestFilter("Name", "In", new C[] { }, items), item => item.Name));
+            Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(TestFilter("Name", "NotIn", new C[] { }, items), item => item.Name));
+        }
+
+        [TestMethod]
+        public void InQueryable()
+        {
+            var idnull = (Guid?)null;
+            var id1 = new Guid(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            var id2 = new Guid(2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            var id3 = new Guid(3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            var id4 = new Guid(4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+            var items = new[]
+            {
+                new { ID = id1, RefID = idnull, Name = "1" },
+                new { ID = id2, RefID = (Guid?)id2, Name = "2" },
+                new { ID = id3, RefID = (Guid?)id3, Name = "3" },
+            };
+
+            int queryExecutions = 0;
+            var query = new[] { 1 }
+                .SelectMany(x =>
+                {
+                    queryExecutions++;
+                    return new Guid[] { id1, id2, id2, id4 }.AsQueryable();
+                }).AsQueryable();
+
+            Assert.AreEqual(0, queryExecutions);
+            Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("ID", "In", query, items), item => item.Name));
+            Assert.AreEqual(1, queryExecutions);
+            Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", query, items), item => item.Name));
+            Assert.AreEqual(2, queryExecutions);
+            Assert.AreEqual("2", TestUtility.DumpSorted(TestFilter("RefID", "In", query, items), item => item.Name));
+            Assert.AreEqual(3, queryExecutions);
         }
     }
 }
