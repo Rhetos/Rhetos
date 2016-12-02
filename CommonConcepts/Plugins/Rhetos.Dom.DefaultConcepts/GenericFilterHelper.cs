@@ -60,13 +60,13 @@ namespace Rhetos.Dom.DefaultConcepts
 
             Expression resultCondition = null;
 
-            foreach (var criteria in propertyFilters)
+            foreach (var filter in propertyFilters)
             {
-                if (string.IsNullOrEmpty(criteria.Property))
+                if (string.IsNullOrEmpty(filter.Property))
                     continue;
 
                 Expression memberAccess = null;
-                foreach (var property in criteria.Property.Split('.'))
+                foreach (var property in filter.Property.Split('.'))
                 {
                     var parentExpression = memberAccess ?? (Expression)parameter;
                     if (parentExpression.Type.GetProperty(property) == null)
@@ -74,46 +74,34 @@ namespace Rhetos.Dom.DefaultConcepts
                     memberAccess = Expression.Property(parentExpression, property);
                 }
 
-                // Change the type of the parameter 'value'. it is necessary for comparisons (specially for booleans)
+                // Change the type of the parameter 'value'. It is necessary for comparisons.
 
-                bool memberIsNullableValueType = memberAccess.Type.IsGenericType && memberAccess.Type.GetGenericTypeDefinition() == typeof(Nullable<>);
-                Type basicType = memberIsNullableValueType ? memberAccess.Type.GetGenericArguments().Single() : memberAccess.Type;
+                bool propertyIsNullableValueType = memberAccess.Type.IsGenericType && memberAccess.Type.GetGenericTypeDefinition() == typeof(Nullable<>);
+                Type propertyBasicType = propertyIsNullableValueType ? memberAccess.Type.GetGenericArguments().Single() : memberAccess.Type;
 
                 ConstantExpression constant;
                 // Operations 'equal' and 'notequal' are supported for backward compatibility.
-                if (new[] { "equals", "equal", "notequals", "notequal", "greater", "greaterequal", "less", "lessequal" }.Contains(criteria.Operation, StringComparer.OrdinalIgnoreCase))
+                if (new[] { "equals", "equal", "notequals", "notequal", "greater", "greaterequal", "less", "lessequal" }.Contains(filter.Operation, StringComparer.OrdinalIgnoreCase))
                 {
                     // Constant value should be of same type as the member it is compared to.
-
                     object convertedValue;
-                    if (criteria.Value == null || basicType.IsAssignableFrom(criteria.Value.GetType()))
-                        convertedValue = criteria.Value;
-                    else if (basicType == typeof(Guid) && criteria.Value is string)
-                        convertedValue = Guid.Parse(criteria.Value.ToString());
-                    // Guid object's type was not automatically recognized when deserializing from JSON.
+                    if (filter.Value == null || propertyBasicType.IsAssignableFrom(filter.Value.GetType()))
+                        convertedValue = filter.Value;
 
-                    else if (basicType == typeof(DateTime) && criteria.Value is string) // DateTime object's type was not automatically recognized when deserializing from JSON.
-                    {
-                        string dateString = "\"" + ((string)criteria.Value).Replace("/", "\\/") + "\"";
-                        using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(dateString)))
-                        {
-                            var serializer = new DataContractJsonSerializer(typeof(DateTime));
-                            try
-                            {
-                                convertedValue = (DateTime)serializer.ReadObject(stream);
-                            }
-                            catch (SerializationException ex)
-                            {
-                                throw new ClientException("Invalid JSON format of " + basicType.Name + " property '" + criteria.Property + "'. " + ex.Message, ex);
-                            }
-                        }
-                    }
-                    else if ((basicType == typeof(decimal) || basicType == typeof(int)) && criteria.Value is string)
-                        throw new FrameworkException("Invalid JSON format of " + basicType.Name + " property '" + criteria.Property + "'. Numeric value should not be passed as a string in JSON serialized object.");
+                    // Guid object's type was not automatically recognized when deserializing from JSON:
+                    else if (propertyBasicType == typeof(Guid) && filter.Value is string)
+                        convertedValue = Guid.Parse(filter.Value.ToString());
+
+                    // DateTime object's type was not automatically recognized when deserializing from JSON:
+                    else if (propertyBasicType == typeof(DateTime) && filter.Value is string)
+                        convertedValue = ParseJsonDateTime((string)filter.Value, filter.Property, propertyBasicType);
+
+                    else if ((propertyBasicType == typeof(decimal) || propertyBasicType == typeof(int)) && filter.Value is string)
+                        throw new FrameworkException($"Invalid JSON format of {propertyBasicType.Name} property '{filter.Property}'. Numeric value should not be passed as a string in JSON serialized object.");
                     else
-                        convertedValue = Convert.ChangeType(criteria.Value, basicType);
+                        convertedValue = Convert.ChangeType(filter.Value, propertyBasicType);
 
-                    if (convertedValue == null && memberAccess.Type.IsValueType && !memberIsNullableValueType)
+                    if (convertedValue == null && memberAccess.Type.IsValueType && !propertyIsNullableValueType)
                     {
                         Type nullableMemberType = typeof(Nullable<>).MakeGenericType(memberAccess.Type);
                         memberAccess = Expression.Convert(memberAccess, nullableMemberType);
@@ -121,61 +109,96 @@ namespace Rhetos.Dom.DefaultConcepts
 
                     constant = Expression.Constant(convertedValue, memberAccess.Type);
                 }
-                else if (new[] { "startswith", "endswith", "contains", "notcontains" }.Contains(criteria.Operation, StringComparer.OrdinalIgnoreCase))
+                else if (new[] { "startswith", "endswith", "contains", "notcontains" }.Contains(filter.Operation, StringComparer.OrdinalIgnoreCase))
                 {
                     // Constant value should be string.
-                    constant = Expression.Constant(criteria.Value.ToString(), typeof(string));
+                    constant = Expression.Constant(filter.Value.ToString(), typeof(string));
                 }
-                else if (new[] { "datein", "datenotin" }.Contains(criteria.Operation, StringComparer.OrdinalIgnoreCase))
+                else if (new[] { "datein", "datenotin" }.Contains(filter.Operation, StringComparer.OrdinalIgnoreCase))
                 {
                     constant = null;
                 }
+                else if (new[] { "in", "notin" }.Contains(filter.Operation, StringComparer.OrdinalIgnoreCase))
+                {
+                    object list = filter.Value;
+
+                    // The list element should be of same type as the member it is compared to.
+                    var parameterMismatchInfo = new Lazy<string>(() =>
+                        $"Invalid generic filter parameter for operation '{filter.Operation}' on {propertyBasicType.Name} property '{filter.Property}'."
+                            + $" The provided value type is '{list.GetType()}' instead of an array of {propertyBasicType.Name}.");
+
+                    if (!(list is IList))
+                        throw new ClientException(parameterMismatchInfo.Value);
+
+                    // Guid object's type was not automatically recognized when deserializing from JSON:
+                    if (propertyBasicType == typeof(Guid) && list is IList<string>)
+                        list = ((IList<string>)list).Select(s => !string.IsNullOrEmpty(s) ? (Guid?)Guid.Parse(s) : null).ToList();
+
+                    // DateTime object's type was not automatically recognized when deserializing from JSON:
+                    if (propertyBasicType == typeof(DateTime) && list is IList<string>)
+                        list = ((IList<string>)list).Select(s => ParseJsonDateTime(s, filter.Property, propertyBasicType)).ToList();
+
+                    if (memberAccess.Type != list.GetType().GetInterface("IList`1").GenericTypeArguments.Single())
+                    {
+                        if (propertyBasicType == typeof(Guid))
+                            AdjustListType<Guid>(ref list, propertyIsNullableValueType, parameterMismatchInfo);
+                        else if (propertyBasicType == typeof(DateTime))
+                            AdjustListType<DateTime>(ref list, propertyIsNullableValueType, parameterMismatchInfo);
+                        else if (propertyBasicType == typeof(int))
+                            AdjustListType<int>(ref list, propertyIsNullableValueType, parameterMismatchInfo);
+                        else if (propertyBasicType == typeof(decimal))
+                            AdjustListType<decimal>(ref list, propertyIsNullableValueType, parameterMismatchInfo);
+                        else
+                            throw new ClientException(parameterMismatchInfo.Value);
+                    }
+
+                    constant = Expression.Constant(list, list.GetType());
+                }
                 else
-                    throw new FrameworkException("Unsupported generic filter operation '" + criteria.Operation + "' on property.");
+                    throw new ClientException($"Unsupported generic filter operation '{filter.Operation}' on a property.");
 
                 Expression expression;
-                switch (criteria.Operation.ToLower())
+                switch (filter.Operation.ToLower())
                 {
-
                     case "equals":
                     case "equal":
-                        if (basicType == typeof(string))
+                        if (propertyBasicType == typeof(string))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("EqualsCaseInsensitive"), memberAccess, constant);
                         else
                             expression = Expression.Equal(memberAccess, constant);
                         break;
                     case "notequals":
                     case "notequal":
-                        if (basicType == typeof(string))
+                        if (propertyBasicType == typeof(string))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("NotEqualsCaseInsensitive"), memberAccess, constant);
                         else
                             expression = Expression.NotEqual(memberAccess, constant);
                         break;
                     case "greater":
-                        if (basicType == typeof(string))
+                        if (propertyBasicType == typeof(string))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("IsGreaterThen"), memberAccess, constant);
-                        else if (basicType == typeof(Guid))
+                        else if (propertyBasicType == typeof(Guid))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("GuidIsGreaterThan"), memberAccess, constant);
                         else expression = Expression.GreaterThan(memberAccess, constant);
                         break;
                     case "greaterequal":
-                        if (basicType == typeof(string))
+                        if (propertyBasicType == typeof(string))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("IsGreaterThenOrEqual"), memberAccess, constant);
-                        else if (basicType == typeof(Guid))
+                        else if (propertyBasicType == typeof(Guid))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("GuidIsGreaterThanOrEqual"), memberAccess, constant);
                         else expression = Expression.GreaterThanOrEqual(memberAccess, constant);
                         break;
                     case "less":
-                        if (basicType == typeof(string))
+                        if (propertyBasicType == typeof(string))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("IsLessThen"), memberAccess, constant);
-                        else if (basicType == typeof(Guid))
+                        else if (propertyBasicType == typeof(Guid))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("GuidIsLessThan"), memberAccess, constant);
                         else expression = Expression.LessThan(memberAccess, constant);
                         break;
                     case "lessequal":
-                        if (basicType == typeof(string))
+                        if (propertyBasicType == typeof(string))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("IsLessThenOrEqual"), memberAccess, constant);
-                        else if (basicType == typeof(Guid))
+                        else if (propertyBasicType == typeof(Guid))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("GuidIsLessThanOrEqual"), memberAccess, constant);
                         else expression = Expression.LessThanOrEqual(memberAccess, constant);
                         break;
@@ -183,16 +206,16 @@ namespace Rhetos.Dom.DefaultConcepts
                     case "endswith":
                         {
                             Expression stringMember;
-                            if (basicType == typeof(string))
+                            if (propertyBasicType == typeof(string))
                                 stringMember = memberAccess;
                             else
                             {
                                 var castMethod = typeof(DatabaseExtensionFunctions).GetMethod("CastToString", new[] { memberAccess.Type });
                                 if (castMethod == null)
-                                    throw new FrameworkException("Generic filter operation '" + criteria.Operation + "' is not supported on property type '" + basicType.Name + "'. There is no overload of 'DatabaseExtensionFunctions.CastToString' function for the type.");
+                                    throw new FrameworkException("Generic filter operation '" + filter.Operation + "' is not supported on property type '" + propertyBasicType.Name + "'. There is no overload of 'DatabaseExtensionFunctions.CastToString' function for the type.");
                                 stringMember = Expression.Call(castMethod, memberAccess);
                             }
-                            string dbMethodName = criteria.Operation.Equals("startswith", StringComparison.OrdinalIgnoreCase) ? "StartsWithCaseInsensitive" : "EndsWithCaseInsensitive";
+                            string dbMethodName = filter.Operation.Equals("startswith", StringComparison.OrdinalIgnoreCase) ? "StartsWithCaseInsensitive" : "EndsWithCaseInsensitive";
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod(dbMethodName), stringMember, constant);
                             break;
                         }
@@ -200,31 +223,31 @@ namespace Rhetos.Dom.DefaultConcepts
                     case "notcontains":
                         {
                             Expression stringMember;
-                            if (basicType == typeof(string))
+                            if (propertyBasicType == typeof(string))
                                 stringMember = memberAccess;
                             else
                             {
                                 var castMethod = typeof(DatabaseExtensionFunctions).GetMethod("CastToString", new[] { memberAccess.Type });
                                 if (castMethod == null)
-                                    throw new FrameworkException("Generic filter operation '" + criteria.Operation + "' is not supported on property type '" + basicType.Name + "'. There is no overload of 'DatabaseExtensionFunctions.CastToString' function for the type.");
+                                    throw new FrameworkException("Generic filter operation '" + filter.Operation + "' is not supported on property type '" + propertyBasicType.Name + "'. There is no overload of 'DatabaseExtensionFunctions.CastToString' function for the type.");
                                 stringMember = Expression.Call(castMethod, memberAccess);
                             }
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("ContainsCaseInsensitive"), stringMember, constant);
 
-                            if (criteria.Operation.Equals("notcontains", StringComparison.OrdinalIgnoreCase))
+                            if (filter.Operation.Equals("notcontains", StringComparison.OrdinalIgnoreCase))
                                 expression = Expression.Not(expression);
                             break;
                         }
                     case "datein":
                     case "datenotin":
                         {
-                            if (basicType != typeof(DateTime))
-                                throw new FrameworkException("Generic filter operation '" + criteria.Operation
-                                    + "' is not supported for property type '" + basicType.Name + "'. Expected property type 'DateTime'.");
+                            if (propertyBasicType != typeof(DateTime))
+                                throw new FrameworkException("Generic filter operation '" + filter.Operation
+                                    + "' is not supported for property type '" + propertyBasicType.Name + "'. Expected property type 'DateTime'.");
 
-                            var match = DateRangeRegex.Match(criteria.Value.ToString());
+                            var match = DateRangeRegex.Match(filter.Value.ToString());
                             if (!match.Success)
-                                throw new FrameworkException("Generic filter operation '" + criteria.Operation + "' expects format 'yyyy-mm-dd', 'yyyy-mm' or 'yyyy'. Value '" + criteria.Value + "' has invalid format.");
+                                throw new FrameworkException("Generic filter operation '" + filter.Operation + "' expects format 'yyyy-mm-dd', 'yyyy-mm' or 'yyyy'. Value '" + filter.Value + "' has invalid format.");
 
                             DateTime? date1, date2;
                             int year = int.Parse(match.Groups["y"].Value);
@@ -253,12 +276,26 @@ namespace Rhetos.Dom.DefaultConcepts
                                 Expression.GreaterThanOrEqual(memberAccess, Expression.Constant(date1, typeof(DateTime?))),
                                 Expression.LessThan(memberAccess, Expression.Constant(date2, typeof(DateTime?))));
 
-                            if (criteria.Operation.Equals("datenotin", StringComparison.OrdinalIgnoreCase))
+                            if (filter.Operation.Equals("datenotin", StringComparison.OrdinalIgnoreCase))
+                                expression = Expression.Not(expression);
+                            break;
+                        }
+                    case "in":
+                    case "notin":
+                        {
+                            var containsMethod = typeof(Enumerable).GetMethods()
+                                .Where(m => m.Name == "Contains" && m.GetParameters().Count() == 2)
+                                .Single()
+                                .MakeGenericMethod(memberAccess.Type);
+
+                            expression = Expression.Call(containsMethod, constant, memberAccess);
+
+                            if (filter.Operation.Equals("notin", StringComparison.OrdinalIgnoreCase))
                                 expression = Expression.Not(expression);
                             break;
                         }
                     default:
-                        throw new FrameworkException("Unsupported generic filter operation '" + criteria.Operation + "' on property (while generating expression).");
+                        throw new FrameworkException("Unsupported generic filter operation '" + filter.Operation + "' on property (while generating expression).");
                 }
 
                 resultCondition = resultCondition != null ? Expression.AndAlso(resultCondition, expression) : expression;
@@ -267,7 +304,41 @@ namespace Rhetos.Dom.DefaultConcepts
             return Expression.Lambda(resultCondition, parameter);
         }
 
+        private static DateTime ParseJsonDateTime(string text, string infoPropertyName, Type infoPropertyType)
+        {
+            string dateString = "\"" + text.Replace("/", "\\/") + "\"";
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(dateString)))
+            {
+                var serializer = new DataContractJsonSerializer(typeof(DateTime));
+                try
+                {
+                    return (DateTime)serializer.ReadObject(stream);
+                }
+                catch (SerializationException ex)
+                {
+                    throw new ClientException($"Invalid JSON format of {infoPropertyType.Name} property '{infoPropertyName}'. {ex.Message}", ex);
+                }
+            }
+        }
+
         private static readonly Regex DateRangeRegex = new Regex(@"^(?<y>\d{4})(-(?<m>\d{1,2}))?(-(?<d>\d{1,2}))?$");
+
+        private void AdjustListType<TPropertyBasicType>(ref object list, bool propertyIsNullableValueType, Lazy<string> parameterMismatchInfo)
+            where TPropertyBasicType : struct
+        {
+            if (list is IList<TPropertyBasicType?>)
+            {
+                if (!propertyIsNullableValueType)
+                    list = ((IList<TPropertyBasicType?>)list).Where(g => g.HasValue).Select(g => g.Value).ToList();
+            }
+            else if (list is IList<TPropertyBasicType>)
+            {
+                if (propertyIsNullableValueType)
+                    list = ((IList<TPropertyBasicType>)list).Cast<TPropertyBasicType?>().ToList();
+            }
+            else
+                throw new ClientException(parameterMismatchInfo.Value);
+        }
 
         #endregion
         //================================================================
@@ -432,17 +503,21 @@ namespace Rhetos.Dom.DefaultConcepts
                 }
                 else
                 {
-                    Type filterType = GetSpecificFilterType(filter.Filter);
+                    var filterObject = new FilterObject
+                    {
+                        FilterType = GetSpecificFilterType(filter.Filter),
+                        Parameter = filter.Value
+                    };
 
                     if (string.Equals(filter.Operation, FilterOperationNotMatches, StringComparison.OrdinalIgnoreCase))
                     {
-                        if (ReflectionHelper<IEntity>.GetPredicateExpressionParameter(filterType) != null)
-                            filter.Value = Not((LambdaExpression)filter.Value);
+                        if (ReflectionHelper<IEntity>.GetPredicateExpressionParameter(filterObject.FilterType) != null)
+                            filterObject.Parameter = Not((LambdaExpression)filterObject.Parameter);
                         else
                             throw new FrameworkException(FilterOperationNotMatches + " operation is only allowed on a filter expression: Expression<Func<T, bool>>.");
                     }
 
-                    filterObjects.Add(new FilterObject { FilterType = filterType, Parameter = filter.Value });
+                    filterObjects.Add(filterObject);
                 }
             }
 

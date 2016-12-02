@@ -22,6 +22,7 @@ using Rhetos.CommonConcepts.Test.Mocks;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Processing.DefaultCommands;
 using Rhetos.TestCommon;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -138,6 +139,80 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual(
                 "c3, b1, b2, b2, b3, a1",
                 TestUtility.Dump(result, item => item.Name + item.Size));
+        }
+
+        [TestMethod]
+        public void OperationInString()
+        {
+            var items = "a1, A2, a3, A4, b1, B2"
+                .Split(new[] { ", " }, StringSplitOptions.None)
+                .Select(name => new C { Name = name }).ToList();
+            items.Add(new C { Name = null });
+            items.Add(new C { Name = "" });
+
+            TestFilterByName("b1, B2", items, "in", new[] { "b1", "B2", "B2", "b3" });
+            TestFilterByName("b1, B2", items, "in", new List<string> { "b1", "B2", "B2", "b3" });
+            TestFilterByName(", <null>, a1, A2, a3, A4", items, "NotIn", new[] { "b1", "B2", "B2", "b3" });
+            TestFilterByName("<null>, a1, A2, a3, A4", items, "NotIn", new[] { "b1", "B2", "B2", "b3", "" });
+            TestFilterByName(", a1, A2, a3, A4", items, "NotIn", new[] { "b1", "B2", "B2", "b3", null });
+        }
+
+        [TestMethod]
+        public void OperationInGuid()
+        {
+            var idnull = (Guid?)null;
+            var id1 = new Guid(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            var id2 = new Guid(2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            var id3 = new Guid(3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            var id4 = new Guid(4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+            var items = new ListOfTuples<Guid, Guid?, string>
+            {
+                { id1, idnull, "1" },
+                { id2, id2, "2" },
+                { id3, id3, "3" }
+            }.Select(item => new
+            {
+                ID = item.Item1,
+                RefID = item.Item2,
+                Name = item.Item3
+            }).ToList();
+
+            // Guid property, Guid array:
+            Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("ID", "In", new Guid[] { id1, id2, id2, id4 }, items), item => item.Name));
+            Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", new Guid[] { id1, id2, id2, id4 }, items), item => item.Name));
+            
+            // Guid property, Guid list:
+            Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("ID", "In", new List<Guid> { id1, id2, id2, id4 }, items), item => item.Name));
+            Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", new List<Guid> { id1, id2, id2, id4 }, items), item => item.Name));
+
+            // Guid property, Guid? array:
+            Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("ID", "In", new Guid?[] { idnull, id1, id2, id2, id4 }, items), item => item.Name));
+            Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", new Guid?[] { idnull, id1, id2, id2, id4 }, items), item => item.Name));
+
+            // Guid property, string array:
+            Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("ID", "In", new string[] { null, "", id1.ToString(), id2.ToString(), id2.ToString(), id4.ToString() }, items), item => item.Name));
+            Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", new string[] { null, "", id1.ToString(), id2.ToString(), id2.ToString(), id4.ToString() }, items), item => item.Name));
+
+            // Guid? property, Guid array:
+            Assert.AreEqual("2", TestUtility.DumpSorted(TestFilter("RefID", "In", new Guid[] { id1, id2, id2, id4 }, items), item => item.Name));
+            Assert.AreEqual("1, 3", TestUtility.DumpSorted(TestFilter("RefID", "NotIn", new Guid[] { id1, id2, id2, id4 }, items), item => item.Name));
+
+            // Guid? property, string array:
+            Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("RefID", "In", new string[] { null, id1.ToString(), id2.ToString(), id2.ToString(), id4.ToString() }, items), item => item.Name));
+            Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("RefID", "NotIn", new string[] { null, id1.ToString(), id2.ToString(), id2.ToString(), id4.ToString() }, items), item => item.Name));
+            Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("RefID", "In", new string[] { "", id1.ToString(), id2.ToString(), id2.ToString(), id4.ToString() }, items), item => item.Name));
+            Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("RefID", "NotIn", new string[] { "", id1.ToString(), id2.ToString(), id2.ToString(), id4.ToString() }, items), item => item.Name));
+        }
+
+        private IEnumerable<T> TestFilter<T>(string property, string operation, object value, IEnumerable<T> items)
+        {
+            var genericFilter = new FilterCriteria(property, operation, value);
+            var genericFilterHelper = new GenericFilterHelper(new DomainObjectModelMock());
+            var filterObject = genericFilterHelper.ToFilterObjects(new FilterCriteria[] { genericFilter }).Single();
+            var filterExpression = genericFilterHelper.ToExpression<T>((IEnumerable<PropertyFilter>)filterObject.Parameter);
+            var filteredItems = items.AsQueryable().Where(filterExpression).ToList();
+            return filteredItems;
         }
     }
 }
