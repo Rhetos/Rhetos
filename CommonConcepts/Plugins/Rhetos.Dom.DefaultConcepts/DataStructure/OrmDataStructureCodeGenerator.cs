@@ -115,10 +115,9 @@ namespace Rhetos.Dom.DefaultConcepts
                 Guid id = ids.Single();
                 return items.Where(item => item.ID == id);
             }}
-            else if (ids.Count() < 2000) // EF 6.1.3. has performance issues on Contains function with large lists. It seems to have O(n^2) time complexity.
-                return items.Where(item => ids.Contains(item.ID));
             else
             {{
+                // Depending on the ids count, this method will return the list of IDs, or insert the ids to the database and return an SQL query that selects the ids.
                 var idsQuery = _domRepository.Common.FilterId.CreateQueryableFilterIds(ids);
                 return items.Where(item => idsQuery.Contains(item.ID));
             }}

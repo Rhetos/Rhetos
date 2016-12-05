@@ -44,19 +44,25 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         const string snippet =
-        @"public IQueryable<Guid> CreateQueryableFilterIds(IEnumerable<Guid> ids)
+        @"/// <summary>
+        /// Depending on the ids count, this method will return the list of IDs, or insert the ids to the database and return an SQL query that selects the ids.
+        /// EF 6.1.3 has performance issues on Contains function with large lists. It seems to have O(n^2) time complexity.
+        /// </summary>
+        public IQueryable<Guid> CreateQueryableFilterIds(IEnumerable<Guid> ids)
         {
-            if (!(ids is System.Collections.IList))
-                ids = ids.ToList();
+            Rhetos.Utilities.CsUtility.Materialize(ref ids);
+
+            if (ids.Count() < 200)
+                return ids.AsQueryable();
 
             var handle = Guid.NewGuid();
-            string sqlInsertIdFormat = ""INSERT INTO Common.FilterId (Handle, Value) SELECT '"" + SqlUtility.GuidToString(handle) + ""', '{0}';"";
+            string sqlInsertIdFormat = ""INSERT INTO Common.FilterId (Handle, Value) VALUES ('"" + SqlUtility.GuidToString(handle) + ""', '{0}');"";
 
             const int chunkSize = 1000; // Keeping a moderate SQL script size.
             for (int start = 0; start < ids.Count(); start += chunkSize)
             {
                 string sqlInsertIds = string.Join(""\r\n"", ids.Skip(start).Take(chunkSize)
-                    .Select(id => string.Format(sqlInsertIdFormat, SqlUtility.GuidToString(id))));
+                        .Select(id => string.Format(sqlInsertIdFormat, SqlUtility.GuidToString(id))));
                 _executionContext.SqlExecuter.ExecuteSql(sqlInsertIds);
             }
 
