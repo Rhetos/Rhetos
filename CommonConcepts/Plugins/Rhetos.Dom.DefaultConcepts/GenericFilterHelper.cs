@@ -129,33 +129,34 @@ namespace Rhetos.Dom.DefaultConcepts
                         $"Invalid generic filter parameter for operation '{filter.Operation}' on {propertyBasicType.Name} property '{filter.Property}'."
                             + $" The provided value type is '{filter.Value.GetType()}', instead of an Array of {propertyBasicType.Name}.");
 
-                    if (!(filter.Value is IList))
+                    if (!(filter.Value is IEnumerable))
                         throw new ClientException(parameterMismatchInfo.Value);
 
-                    IList list = (IList)filter.Value;
+                    var list = (IEnumerable)filter.Value;
 
                     // Guid object's type was not automatically recognized when deserializing from JSON:
-                    if (propertyBasicType == typeof(Guid) && list is IList<string>)
-                        list = ((IList<string>)list).Select(s => !string.IsNullOrEmpty(s) ? (Guid?)Guid.Parse(s) : null).ToList();
+                    if (propertyBasicType == typeof(Guid) && list is IEnumerable<string>)
+                        list = ((IEnumerable<string>)list).Select(s => !string.IsNullOrEmpty(s) ? (Guid?)Guid.Parse(s) : null).ToList();
 
                     // DateTime object's type was not automatically recognized when deserializing from JSON:
-                    if (propertyBasicType == typeof(DateTime) && list is IList<string>)
-                        list = ((IList<string>)list).Select(s => ParseJsonDateTime(s, filter.Property, propertyBasicType)).ToList();
+                    if (propertyBasicType == typeof(DateTime) && list is IEnumerable<string>)
+                        list = ((IEnumerable<string>)list).Select(s => ParseJsonDateTime(s, filter.Property, propertyBasicType)).ToList();
 
                     // Adjust the list element type to exactly match the property type:
-                    if (memberAccess.Type != list.GetType().GetInterface("IList`1").GenericTypeArguments.Single())
+                    if (GetElementType(list) != memberAccess.Type)
                     {
-                        if (list.Count == 0)
+                        if (list is IList && ((IList)list).Count == 0)
                             list = EmptyList(memberAccess.Type);
                         else if (propertyBasicType == typeof(Guid))
-                            AdjustListType<Guid>(ref list, propertyIsNullableValueType, parameterMismatchInfo);
+                            AdjustListTypeNullable<Guid>(ref list, propertyIsNullableValueType);
                         else if (propertyBasicType == typeof(DateTime))
-                            AdjustListType<DateTime>(ref list, propertyIsNullableValueType, parameterMismatchInfo);
+                            AdjustListTypeNullable<DateTime>(ref list, propertyIsNullableValueType);
                         else if (propertyBasicType == typeof(int))
-                            AdjustListType<int>(ref list, propertyIsNullableValueType, parameterMismatchInfo);
+                            AdjustListTypeNullable<int>(ref list, propertyIsNullableValueType);
                         else if (propertyBasicType == typeof(decimal))
-                            AdjustListType<decimal>(ref list, propertyIsNullableValueType, parameterMismatchInfo);
-                        else
+                            AdjustListTypeNullable<decimal>(ref list, propertyIsNullableValueType);
+
+                        if (!(GetElementType(list).IsAssignableFrom(memberAccess.Type)))
                             throw new ClientException(parameterMismatchInfo.Value);
                     }
 
@@ -290,14 +291,19 @@ namespace Rhetos.Dom.DefaultConcepts
                     case "in":
                     case "notin":
                         {
-                            Type collectionType = typeof(IQueryable).IsAssignableFrom(constant.Type)
+                            Type collectionBasicType = typeof(IQueryable).IsAssignableFrom(constant.Type)
                                 ? typeof(Queryable) : typeof(Enumerable);
-                            var containsMethod = collectionType.GetMethods()
+                            Type collectionElement = GetElementType(constant.Type);
+                            var containsMethod = collectionBasicType.GetMethods()
                                 .Where(m => m.Name == "Contains" && m.GetParameters().Count() == 2)
                                 .Single()
-                                .MakeGenericMethod(memberAccess.Type);
+                                .MakeGenericMethod(collectionElement);
 
-                            expression = Expression.Call(containsMethod, constant, memberAccess);
+                            Expression convertedMemberAccess = memberAccess.Type != collectionElement
+                                ? Expression.Convert(memberAccess, collectionElement)
+                                : memberAccess;
+
+                            expression = Expression.Call(containsMethod, constant, convertedMemberAccess);
 
                             if (filter.Operation.Equals("notin", StringComparison.OrdinalIgnoreCase))
                                 expression = Expression.Not(expression);
@@ -311,6 +317,16 @@ namespace Rhetos.Dom.DefaultConcepts
             }
 
             return Expression.Lambda(resultCondition, parameter);
+        }
+
+        private static Type GetElementType(IEnumerable enumerable)
+        {
+            return GetElementType(enumerable.GetType());
+        }
+
+        private static Type GetElementType(Type enumerableType)
+        {
+            return enumerableType.GetInterface("IEnumerable`1").GenericTypeArguments.Single();
         }
 
         private static IList EmptyList(Type elementType)
@@ -339,21 +355,24 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static readonly Regex DateRangeRegex = new Regex(@"^(?<y>\d{4})(-(?<m>\d{1,2}))?(-(?<d>\d{1,2}))?$");
 
-        private void AdjustListType<TPropertyBasicType>(ref IList list, bool propertyIsNullableValueType, Lazy<string> parameterMismatchInfo)
+        private void AdjustListTypeNullable<TPropertyBasicType>(ref IEnumerable list, bool propertyIsNullableValueType)
             where TPropertyBasicType : struct
         {
-            if (list is IList<TPropertyBasicType>)
+            if (list is IQueryable<TPropertyBasicType>)
             {
                 if (propertyIsNullableValueType)
-                    list = ((IList<TPropertyBasicType>)list).Cast<TPropertyBasicType?>().ToList();
+                    list = ((IQueryable<TPropertyBasicType>)list).Cast<TPropertyBasicType?>();
             }
-            else if (list is IList<TPropertyBasicType?>)
+            else if (list is IEnumerable<TPropertyBasicType>)
+            {
+                if (propertyIsNullableValueType)
+                    list = ((IEnumerable<TPropertyBasicType>)list).Cast<TPropertyBasicType?>().ToList();
+            }
+            else if (list is IList<TPropertyBasicType?>) // This scenario is optional, but simplifies the resulting filter expression.
             {
                 if (!propertyIsNullableValueType)
                     list = ((IList<TPropertyBasicType?>)list).Where(g => g.HasValue).Select(g => g.Value).ToList();
             }
-            else
-                throw new ClientException(parameterMismatchInfo.Value);
         }
 
         #endregion

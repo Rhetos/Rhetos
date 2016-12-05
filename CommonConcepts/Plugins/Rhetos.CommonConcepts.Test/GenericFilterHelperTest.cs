@@ -283,11 +283,13 @@ namespace Rhetos.CommonConcepts.Test
 
             Assert.AreEqual(0, queryExecutions);
             Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("ID", "In", query, items), item => item.Name));
-            Assert.AreEqual(1, queryExecutions);
+            Assert.AreEqual(items.Count(), queryExecutions);
             Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", query, items), item => item.Name));
-            Assert.AreEqual(2, queryExecutions);
+            Assert.AreEqual(2 * items.Count(), queryExecutions);
             Assert.AreEqual("2", TestUtility.DumpSorted(TestFilter("RefID", "In", query, items), item => item.Name));
-            Assert.AreEqual(3, queryExecutions);
+            Assert.AreEqual(3 * items.Count(), queryExecutions);
+            Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("ID", "In", query.Cast<Guid?>(), items), item => item.Name));
+            Assert.AreEqual(4 * items.Count(), queryExecutions);
         }
     }
 }

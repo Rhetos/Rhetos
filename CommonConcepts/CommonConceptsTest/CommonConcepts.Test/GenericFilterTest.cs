@@ -509,5 +509,30 @@ namespace CommonConcepts.Test
                 }
             }
         }
+
+        [TestMethod]
+        public void GenericQueryableInSubquery()
+        {
+            string expectedSql = @"SELECT 
+    [Extent1].[ID] AS [ID]
+    FROM [TestGenericFilter].[Child] AS [Extent1]
+    WHERE  EXISTS (SELECT 
+        1 AS [C1]
+        FROM [TestGenericFilter].[Simple] AS [Extent2]
+        WHERE (N'A' = [Extent2].[Name]) AND ([Extent2].[ID] = [Extent1].[ParentID])
+    )";
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                var subquery = repository.TestGenericFilter.Simple.Query(item => item.Name == "A").Select(item => item.ID);
+
+                var querySimple = repository.TestGenericFilter.Child.Query(item => subquery.Contains(item.ParentID.Value)).Select(item => item.ID);
+                Assert.AreEqual(expectedSql, querySimple.ToString(), "This is just a control query.");
+
+                var genericFilter = new FilterCriteria { Property = "ParentID", Operation = "In", Value = subquery };
+                var queryGenericFilter = repository.TestGenericFilter.Child.Query(new[] { genericFilter }).Select(item => item.ID);
+                Assert.AreEqual(expectedSql, queryGenericFilter.ToString(), "Generic filter's Value parameter should be implemented as a LINQ subquery as generated a single SQL query.");
+            }
+        }
     }
 }
