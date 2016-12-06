@@ -128,7 +128,12 @@ namespace DeployPackages
                     File.Delete(Paths.DomAssemblyFile);
             }
             else
+            {
+                if (!File.Exists(Paths.DomAssemblyFile))
+                    throw new UserException($"'/DatabaseOnly' switch cannot be used if the server have not been deployed successfully before. Run a regular deployment instead. Missing '{Paths.DomAssemblyFile}'.");
+
                 logger.Info("Skipped deleting old generated files (DeployDatabaseOnly).");
+            }
 
             logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
