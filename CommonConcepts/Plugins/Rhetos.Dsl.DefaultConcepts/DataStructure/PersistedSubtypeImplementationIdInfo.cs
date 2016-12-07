@@ -56,9 +56,9 @@ namespace Rhetos.Dsl.DefaultConcepts
             return new IConceptInfo[] { sqlObject, sqlDependency };
         }
 
-        public string GetComputedColumnName()
+        public static string GetComputedColumnName(string implementationName)
         {
-            return "Subtype" + ImplementationName + "ID";
+            return "Subtype" + implementationName + "ID";
         }
 
         /// <summary>The returned prototype can be used as a reference to the actual object in the IDslModel.</summary>
@@ -67,7 +67,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             return new SqlObjectInfo
             {
                 Module = Subtype.Module,
-                Name = Subtype.Name + "_" + GetComputedColumnName(),
+                Name = Subtype.Name + "_" + GetComputedColumnName(ImplementationName),
             };
         }
 
@@ -80,7 +80,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 CREATE UNIQUE INDEX IX_{1}_{2} ON {0}.{1}({2});",
                 Subtype.Module.Name,
                 Subtype.Name,
-                GetComputedColumnName(),
+                GetComputedColumnName(ImplementationName),
                 DomUtility.GetSubtypeImplementationHash(ImplementationName));
         }
 
@@ -91,7 +91,7 @@ CREATE UNIQUE INDEX IX_{1}_{2} ON {0}.{1}({2});",
 ALTER TABLE {0}.{1} DROP COLUMN {2};",
                 Subtype.Module.Name,
                 Subtype.Name,
-                GetComputedColumnName());
+                GetComputedColumnName(ImplementationName));
         }
     }
 }

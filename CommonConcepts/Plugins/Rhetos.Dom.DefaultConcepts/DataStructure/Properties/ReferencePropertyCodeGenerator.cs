@@ -51,8 +51,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (info.DataStructure is IOrmDataStructure && info.Referenced is IOrmDataStructure)
                 codeBuilder.InsertCode(
-                    string.Format("modelBuilder.Entity<Common.Queryable.{0}_{1}>().HasOptional(t => t.{2}).WithMany().HasForeignKey(t => t.{2}ID);\r\n            ",
-                        info.DataStructure.Module.Name, info.DataStructure.Name, info.Name),
+                    info.OrmMappingSnippet(),
                     DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
             else if (info.DataStructure is IOrmDataStructure)
                 codeBuilder.InsertCode(

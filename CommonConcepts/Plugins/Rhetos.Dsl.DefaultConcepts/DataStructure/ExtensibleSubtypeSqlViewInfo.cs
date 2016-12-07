@@ -72,8 +72,7 @@ FROM
                 return "";
             else if (IsSubtypeOf.SupportsPersistedSubtypeImplementationColum())
             {
-                var persistedColumnPrototype = new PersistedSubtypeImplementationIdInfo { Subtype = IsSubtypeOf.Subtype, ImplementationName = IsSubtypeOf.ImplementationName };
-                return ",\r\n    SubtypeImplementationID = " + persistedColumnPrototype.GetComputedColumnName();
+                return ",\r\n    SubtypeImplementationID = " + PersistedSubtypeImplementationIdInfo.GetComputedColumnName(IsSubtypeOf.ImplementationName);
             }
             else
             {
