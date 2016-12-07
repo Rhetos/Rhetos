@@ -170,6 +170,9 @@ namespace Rhetos.Dsl.DefaultConcepts
             newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnDataStructureInfo>(dep => dep.Dependent, conceptInfo)
                 .Select(dep => new SqlDependsOnDataStructureInfo { Dependent = implementationView, DependsOn = dep.DependsOn }));
 
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnIDInfo>(dep => dep.Dependent, conceptInfo)
+                .Select(dep => new SqlDependsOnIDInfo { Dependent = implementationView, DependsOn = dep.DependsOn }));
+
             newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnModuleInfo>(dep => dep.Dependent, conceptInfo)
                 .Select(dep => new SqlDependsOnModuleInfo { Dependent = implementationView, DependsOn = dep.DependsOn }));
 

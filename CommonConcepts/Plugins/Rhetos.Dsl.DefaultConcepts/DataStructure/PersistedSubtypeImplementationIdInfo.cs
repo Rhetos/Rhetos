@@ -51,7 +51,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             sqlObject.CreateSql = CreateComputedColumnSnippet();
             sqlObject.RemoveSql = RemoveComputedColumnSnippet();
 
-            var sqlDependency = new SqlDependsOnDataStructureInfo { DependsOn = Subtype, Dependent = sqlObject };
+            var sqlDependency = new SqlDependsOnIDInfo { Dependent = sqlObject, DependsOn = Subtype };
 
             return new IConceptInfo[] { sqlObject, sqlDependency };
         }
