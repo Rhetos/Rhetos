@@ -111,9 +111,9 @@ namespace CommonConcepts.Test
                 var features = new Dictionary<string, string>
                 {
                     { "base", "DataStructureInfo TestSqlWorkarounds.DependencyBase" },
-                    { "baseA", "PropertyInfo TestSqlWorkarounds.DependencyBase.A" },
-                    { "baseB", "PropertyInfo TestSqlWorkarounds.DependencyBase.B" },
-                    { "baseBAIndex", "SqlIndexMultipleInfo TestSqlWorkarounds.DependencyBase.'B A'" },
+                    { "base.A", "PropertyInfo TestSqlWorkarounds.DependencyBase.A" },
+                    { "base.B", "PropertyInfo TestSqlWorkarounds.DependencyBase.B" },
+                    { "base.IndexBA", "SqlIndexMultipleInfo TestSqlWorkarounds.DependencyBase.'B A'" },
                     { "depA", "SqlObjectInfo TestSqlWorkarounds.DependencyA" },
                     { "depB", "SqlObjectInfo TestSqlWorkarounds.DependencyB" },
                     { "depAll", "SqlObjectInfo TestSqlWorkarounds.DependencyAll" }
@@ -126,18 +126,56 @@ namespace CommonConcepts.Test
                 var deployedDependencies = ReadConceptDependencies(featuresById.Keys, container)
                     .Select(dep => featuresById[dep.Item1] + "-" + featuresById[dep.Item2]);
 
-                var expectedDependencies = // Second concept depends on first concept.
-                    "base-baseA, base-baseB," // Standard properties depend on their entity.
-                    + "base-baseBAIndex, baseA-baseBAIndex, baseB-baseBAIndex," // Standard index depends on its properties.
-                    + "baseA-depA,"
-                    + "baseB-depB, baseBAIndex-depB," // SqlDependsOnSqlIndex should be automatically included when depending on its first property.
-                    + "baseA-depAll, baseB-depAll,"
-                    + "baseBAIndex-depAll," // SqlDependsOnSqlIndex should be automatically included when depending on its entity.
-                    + "base-depAll";
+                // Second concept depends on first concept.
+                var expectedDependencies = new[]
+                {
+                    "base-base.A", "base-base.B", // Standard properties depend on their entity.
+                    "base-base.IndexBA", "base.A-base.IndexBA", "base.B-base.IndexBA", // Standard index depends on its properties.
+                    "base.A-depA",
+                    "base.B-depB", "base.IndexBA-depB", // SqlDependsOnSqlIndex should be automatically included when depending on its first property.
+                    "base.A-depAll", "base.B-depAll",
+                    "base.IndexBA-depAll", // SqlDependsOnSqlIndex should be automatically included when depending on its entity.
+                    "base-depAll",
+                };
 
-                Assert.AreEqual(
-                    TestUtility.DumpSorted(expectedDependencies.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s))),
-                    TestUtility.DumpSorted(deployedDependencies));
+                Assert.AreEqual(TestUtility.DumpSorted(expectedDependencies), TestUtility.DumpSorted(deployedDependencies));
+            }
+        }
+
+        [TestMethod]
+        public void SqlDependsOnID()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var features = new Dictionary<string, string>
+                {
+                    { "base", "DataStructureInfo TestSqlWorkarounds.DependencyBase" },
+                    { "base.A", "PropertyInfo TestSqlWorkarounds.DependencyBase.A" },
+                    { "base.B", "PropertyInfo TestSqlWorkarounds.DependencyBase.B" },
+                    { "depA", "SqlObjectInfo TestSqlWorkarounds.DependencyA" },
+                    { "depB", "SqlObjectInfo TestSqlWorkarounds.DependencyB" },
+                    { "depAll", "SqlObjectInfo TestSqlWorkarounds.DependencyAll" },
+                    { "depID", "SqlObjectInfo TestSqlWorkarounds.DependencyID" }
+                };
+
+                Dictionary<Guid, string> featuresById = features
+                    .Select(f => new { Name = f.Key, Id = ReadConceptId(f.Value, container) })
+                    .ToDictionary(fid => fid.Id, fid => fid.Name);
+
+                var deployedDependencies = ReadConceptDependencies(featuresById.Keys, container)
+                    .Select(dep => featuresById[dep.Item1] + "-" + featuresById[dep.Item2]);
+
+                // Second concept depends on first concept.
+                var expectedDependencies = new[]
+                {
+                    "base-base.A", "base-base.B", // Standard properties depend on their entity.
+                    "base.A-depA", // Standard dependency on property.
+                    "base.B-depB", // Standard dependency on property.
+                    "base-depAll", "base.A-depAll", "base.B-depAll", // SqlDependsOnDataStructure includes all properties.
+                    "base-depID" // SqlDependsOnID does not include properties.
+                };
+
+                Assert.AreEqual(TestUtility.DumpSorted(expectedDependencies), TestUtility.DumpSorted(deployedDependencies));
             }
         }
 

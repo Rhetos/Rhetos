@@ -94,6 +94,11 @@ Module TestSqlWorkarounds
     {
         SqlDependsOn TestSqlWorkarounds.DependencyBase;
     }
+
+    SqlObject DependencyID "PRINT 'Create'" "PRINT 'Remove'"
+    {
+        SqlDependsOnID TestSqlWorkarounds.DependencyBase;
+    }
     
     Entity SqlUserError
     {
