@@ -1,5 +1,30 @@
 ﻿# Rhetos release notes
 
+## 1.3.0 (2016-12-08)
+
+### New features
+
+* New generic filter operation: **In** checks if the property's value is in the provided list.
+  It is available in web APIs such as [REST service](https://github.com/Rhetos/RestGenerator).
+  In business layer object model this property filter can be executed with a subquery parameter.
+* New concept **AutoCodeForEachCached**, equivalent to **AutoCodeForEach** with cached last code values.
+* New concept: **SqlDependsOnID**, an alternative for **SqlDependsOn** when one SQL object depends
+  on a data structure (table or view), but does not depend on the data structure's properties (other columns).
+
+### Internal improvements
+
+* Bugfix: *FullTextSearch* on a complex query sometimes fails with a "FrameworkException:
+  Error while parsing FTS query. Not all search conditions were handled."
+* Bugfix: "InvalidCastException" when applying a generic property filter after **FilterBy**.
+* Bugfix: Invalid NuGet package reference to *Oracle.ManagedDataAccess*.
+* Bugfix: "SqlException: Column name or number of supplied values does not match table definition"
+  when inserting a record to an entity that is a named **Polymorphic** implementation with an **AutoCode** property.
+* Refactoring the **AutoCode** concept to avoid using the instead-of trigger.
+* Removed excess dependencies from polymorphic subtype with named implementation.
+* New low-level concept **Initialization**, for injecting initialization code into the Save method.
+* The **KeyProperties** concept can now be used inside **ComputedFrom** on a data structure.
+In previous versions it could be used only inside Persisted or inside ComputedFrom on a property (as KeyProperty).
+
 ## 1.2.0 (2016-10-19)
 
 ### New features
