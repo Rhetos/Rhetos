@@ -167,7 +167,7 @@
     <Compile Include="SimpleBusinessLogic\ImplementsQueryableInterfaceCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\AutoCodeCachedCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\DenyUserEditDataStructureCodeGenerator.cs" />
-    <Compile Include="SimpleBusinessLogic\DenyUserEditCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\DenyUserEditPropertyCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\CreationTimeCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\DeactivatableCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ReferenceCascadeDeleteCodeGenerator.cs" />

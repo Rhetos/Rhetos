@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("DenyUserEdit")]
-    public class DenyUserEditInfo : IValidationConcept
+    public class DenyUserEditPropertyInfo : IValidationConcept
     {
         [ConceptKey]
         public PropertyInfo Property { get; set; }

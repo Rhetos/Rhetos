@@ -281,7 +281,7 @@
     <Compile Include="SimpleBusinessLogic\RegExMatchDefaultMessage.cs" />
     <Compile Include="SimpleBusinessLogic\LoggingRelatedItemInfo.cs" />
     <Compile Include="SimpleBusinessLogic\DenyUserEditDataStructureInfo.cs" />
-    <Compile Include="SimpleBusinessLogic\DenyUserEditInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\DenyUserEditPropertyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\DeactivatableInfo.cs" />
     <Compile Include="SimpleBusinessLogic\DateTimeRangeInfo.cs" />
     <Compile Include="SimpleBusinessLogic\MaxValueInfo.cs" />

@@ -31,18 +31,18 @@ using Rhetos.Compiler;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(DenyUserEditInfo))]
-    public class DenyUserEditCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(DenyUserEditPropertyInfo))]
+    public class DenyUserEditPropertyCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (DenyUserEditInfo)conceptInfo;
+            var info = (DenyUserEditPropertyInfo)conceptInfo;
             codeBuilder.InsertCode(CheckChangesOnInsertSnippet(info), WritableOrmDataStructureCodeGenerator.ArgumentValidationTag, info.Property.DataStructure);
             codeBuilder.InsertCode(CheckChangesOnUpdateSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Property.DataStructure);
             codeBuilder.AddReferencesFromDependency(typeof(UserException));
         }
 
-        private static string ThrowExceptionSnippet(DenyUserEditInfo info)
+        private static string ThrowExceptionSnippet(DenyUserEditPropertyInfo info)
         {
             return string.Format(
             @"if (invalidItem != null)
@@ -59,14 +59,14 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
 
-        private static string CheckChangesOnInsertSnippet(DenyUserEditInfo info)
+        private static string CheckChangesOnInsertSnippet(DenyUserEditPropertyInfo info)
         {
             return string.Format(
             @"if (checkUserPermissions)
             {{
                 var invalidItem = insertedNew.Where(newItem => newItem.{3} != null).FirstOrDefault();
-                
-    {4}
+
+                {4}
             }}
 
             ",
@@ -77,7 +77,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 ThrowExceptionSnippet(info));
         }
 
-        private static string CheckChangesOnUpdateSnippet(DenyUserEditInfo info)
+        private static string CheckChangesOnUpdateSnippet(DenyUserEditPropertyInfo info)
         {
             return string.Format(
             @"if (checkUserPermissions)
@@ -90,8 +90,8 @@ namespace Rhetos.Dom.DefaultConcepts
                     .Where(change => change.newItem.{3} != null && !change.newItem.{3}.Equals(change.oldItem.{3}) || change.newItem.{3} == null && change.oldItem.{3} != null)
                     .Select(change => change.newItem)
                     .FirstOrDefault();
-                    
-    {4}
+
+                {4}
             }}
 
             ",
