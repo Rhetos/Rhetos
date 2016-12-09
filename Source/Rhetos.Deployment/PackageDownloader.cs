@@ -113,7 +113,7 @@ namespace Rhetos.Deployment
 
         private bool CheckAlreadyDownloaded(PackageRequest request, List<InstalledPackage> installedPackages)
         {
-            var existing = installedPackages.FirstOrDefault(op => op.Id == request.Id);
+            var existing = installedPackages.FirstOrDefault(op => string.Equals(op.Id, request.Id, StringComparison.OrdinalIgnoreCase));
             if (existing == null)
                 return false;
 
@@ -170,7 +170,7 @@ namespace Rhetos.Deployment
         private void ValidatePackage(InstalledPackage installedPackage, PackageRequest request, List<InstalledPackage> installedPackages)
         {
             if (request.Id != null)
-                if (installedPackage.Id != request.Id)
+                if (!string.Equals(installedPackage.Id, request.Id, StringComparison.OrdinalIgnoreCase))
                     throw new UserException(string.Format(
                         "Package ID '{0}' at location '{1}' does not match package ID '{2}' requested from {3}.",
                         installedPackage.Id, installedPackage.Source, request.Id, request.RequestedBy));
@@ -182,8 +182,8 @@ namespace Rhetos.Deployment
                         installedPackage.Id, installedPackage.Version,
                         request.VersionsRange, request.RequestedBy));
 
-            var similarOldPackage = installedPackages.FirstOrDefault(oldPackage => oldPackage.Id != installedPackage.Id
-                && SimplifyPackageName(oldPackage.Id) == SimplifyPackageName(installedPackage.Id));
+            var similarOldPackage = installedPackages.FirstOrDefault(oldPackage => !string.Equals(oldPackage.Id, installedPackage.Id, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(SimplifyPackageName(oldPackage.Id), SimplifyPackageName(installedPackage.Id), StringComparison.OrdinalIgnoreCase));
             if (similarOldPackage != null)
                 throw new UserException(string.Format(
                     "Incompatible package names '{0}' (requested from {1}) and '{2}' (requested from {3}).",
@@ -221,7 +221,7 @@ namespace Rhetos.Deployment
             // Disambiguation by name:
             if (metadataFiles.Length > 1)
             {
-                var standardFileName = metadataFiles.Where(f => Path.GetFileName(f) == request.Id + ".nuspec").ToArray();
+                var standardFileName = metadataFiles.Where(f => string.Equals(Path.GetFileName(f), request.Id + ".nuspec", StringComparison.OrdinalIgnoreCase)).ToArray();
                 if (standardFileName.Length == 1)
                     metadataFiles = standardFileName;
             }
@@ -295,7 +295,7 @@ namespace Rhetos.Deployment
                     RequestedBy = "package " + package.Id
                 }).ToList();
 
-            if (!dependencies.Any(p => p.Id == "Rhetos"))
+            if (!dependencies.Any(p => string.Equals(p.Id, "Rhetos", StringComparison.OrdinalIgnoreCase)))
             {
                 // FrameworkAssembly is an obsolete way of marking package dependency on a specific Rhetos version:
                 var rhetosFrameworkAssemblyRegex = new Regex(@"^Rhetos\s*,\s*Version\s*=\s*(\S+)$");
