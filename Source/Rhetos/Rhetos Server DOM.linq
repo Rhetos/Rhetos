@@ -8,6 +8,8 @@
   <Reference Relative="bin\Plugins\Rhetos.Dom.DefaultConcepts.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Dom.DefaultConcepts.dll</Reference>
   <Reference Relative="bin\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces.dll</Reference>
   <Reference Relative="bin\Rhetos.Dom.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Dom.Interfaces.dll</Reference>
+  <Reference Relative="bin\Plugins\Rhetos.Dsl.DefaultConcepts.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Dsl.DefaultConcepts.dll</Reference>
+  <Reference Relative="bin\Rhetos.Dsl.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Dsl.Interfaces.dll</Reference>
   <Reference Relative="bin\Rhetos.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Interfaces.dll</Reference>
   <Reference Relative="bin\Rhetos.Logging.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Logging.Interfaces.dll</Reference>
   <Reference Relative="bin\Rhetos.Persistence.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Persistence.Interfaces.dll</Reference>
@@ -23,6 +25,8 @@
   <Namespace>Rhetos.Configuration.Autofac</Namespace>
   <Namespace>Rhetos.Dom</Namespace>
   <Namespace>Rhetos.Dom.DefaultConcepts</Namespace>
+  <Namespace>Rhetos.Dsl</Namespace>
+  <Namespace>Rhetos.Dsl.DefaultConcepts</Namespace>
   <Namespace>Rhetos.Logging</Namespace>
   <Namespace>Rhetos.Persistence</Namespace>
   <Namespace>Rhetos.Security</Namespace>
