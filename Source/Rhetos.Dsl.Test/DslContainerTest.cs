@@ -43,18 +43,33 @@ namespace Rhetos.Dsl.Test
             [ConceptKey]
             public string Name { get; set; }
         }
+
         class C1 : IConceptInfo
         {
             [ConceptKey]
             public string Name { get; set; }
             public IConceptInfo Ref1 { get; set; }
         }
+
         class C2 : IConceptInfo
         {
             [ConceptKey]
             public string Name { get; set; }
             public IConceptInfo Ref1 { get; set; }
             public IConceptInfo Ref2 { get; set; }
+        }
+
+        class CBase : IConceptInfo
+        {
+            [ConceptKey]
+            public string Name { get; set; }
+
+            public string Info { get; set; }
+        }
+
+        class CDerived : CBase
+        {
+            public string Info2 { get; set; }
         }
 
         [TestMethod]
@@ -100,6 +115,66 @@ namespace Rhetos.Dsl.Test
 
             Assert.IsTrue(new IConceptInfo[] { d, i, j, g, h }
                 .Any(conceptInfo => ex.Message.Contains(conceptInfo.GetUserDescription())));
+        }
+
+        [TestMethod]
+        public void DifferentConceptSameKey()
+        {
+            var a1 = new CBase { Name = "A", Info = "1" };
+            var a2 = new CBase { Name = "A", Info = "2" };
+            var b1 = new CBase { Name = "B", Info = "1" };
+
+            var a1_x = new CDerived { Name = "A", Info = "1", Info2 = "x" };
+            var a1_y = new CDerived { Name = "A", Info = "1", Info2 = "y" };
+            var a3_x = new CDerived { Name = "A", Info = "3", Info2 = "x" };
+
+            TestDifferentConceptSameKey(new ListOfTuples<IConceptInfo[], string, string, string[]>
+            {
+                { new IConceptInfo[] { a1_x }, "CDerived A", "CDerived A", null },
+                { new IConceptInfo[] { a1, b1 }, "CBase B", "CBase B, CDerived A", null }, // a1 is a base concept for a1_x, and has same values of the mutual properties, so it will be ignored.
+            });
+
+            TestDifferentConceptSameKey(new ListOfTuples<IConceptInfo[], string, string, string[]>
+            {
+                { new IConceptInfo[] { a1_x }, "CDerived A", "CDerived A", null },
+                { new IConceptInfo[] { a2 }, null, null, new[] { "DslSyntaxException", "different values", "CDerived A 1 x", "CBase A 2" } }, // a1_x is a derivation of a2, but has different values of the mutual properties.
+            });
+
+            TestDifferentConceptSameKey(new ListOfTuples<IConceptInfo[], string, string, string[]>
+            {
+                { new IConceptInfo[] { a3_x }, "CDerived A", "CDerived A", null },
+                { new IConceptInfo[] { a1 }, null, null, new[] { "DslSyntaxException", "different values", "CDerived A 3 x", "CBase A 1" } }, // a1_x is a derivation of a2, but has different values of the mutual properties.
+            });
+
+            TestDifferentConceptSameKey(new ListOfTuples<IConceptInfo[], string, string, string[]>
+            {
+                { new IConceptInfo[] { a1_x }, "CDerived A", "CDerived A", null },
+                { new IConceptInfo[] { a1_y }, null, null, new[] { "DslSyntaxException", "different values", "CDerived A 1 x", "CDerived A 1 y" } },
+            });
+
+            TestDifferentConceptSameKey(new ListOfTuples<IConceptInfo[], string, string, string[]>
+            {
+                { new IConceptInfo[] { a1_x }, "CDerived A", "CDerived A", null },
+                { new IConceptInfo[] { a3_x }, null, null, new[] { "DslSyntaxException", "different values", "CDerived A 1 x", "CDerived A 3 x" } },
+            });
+        }
+
+        private void TestDifferentConceptSameKey(ListOfTuples<IConceptInfo[], string, string, string[]> newConceptsSets)
+        {
+            var dslContainer = new DslContainerAccessor();
+            foreach (var newConceptsSet in newConceptsSets)
+            {
+                if (newConceptsSet.Item4 == null)
+                {
+                    var report = dslContainer.AddNewConceptsAndReplaceReferences(newConceptsSet.Item1);
+                    Assert.AreEqual(newConceptsSet.Item2, TestUtility.DumpSorted(report.NewUniqueConcepts, item => item.GetShortDescription()));
+                    Assert.AreEqual(newConceptsSet.Item3, TestUtility.DumpSorted(dslContainer.Concepts, item => item.GetShortDescription()));
+                }
+                else
+                {
+                    TestUtility.ShouldFail(() => dslContainer.AddNewConceptsAndReplaceReferences(newConceptsSet.Item1), newConceptsSet.Item4);
+                }
+            }
         }
     }
 }

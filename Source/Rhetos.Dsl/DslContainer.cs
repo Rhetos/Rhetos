@@ -107,12 +107,7 @@ namespace Rhetos.Dsl
                     _unresolvedConceptsByKey.Add(conceptKey, conceptInfo);
                 }
                 else
-                    if (existingConcept != conceptInfo && existingConcept.GetFullDescription() != conceptInfo.GetFullDescription())
-                        throw new DslSyntaxException(string.Format(
-                            "Concept with same key is described twice with different values.\r\nValue 1: {0}\r\nValue 2: {1}\r\nSame key: {2}",
-                            existingConcept.GetFullDescription(),
-                            conceptInfo.GetFullDescription(),
-                            conceptKey));
+                    ValidateNewConceptSameAsExisting(conceptInfo, existingConcept);
             }
 
             var newlyResolved = ReplaceReferencesWithFullConcepts(errorOnUnresolvedReference: false);
@@ -122,11 +117,34 @@ namespace Rhetos.Dsl
             return report;
         }
 
+        private static void ValidateNewConceptSameAsExisting(IConceptInfo newConcept, IConceptInfo existingConcept)
+        {
+            if (newConcept == existingConcept)
+                return;
+
+            if (newConcept.GetFullDescription() == existingConcept.GetFullDescription())
+                return;
+
+            // The new concept is allowed to be a simple version (base class) of the existing concept, even if it is not the same.
+            // This will allow some macro concepts to create simplified new concept that will be ignored if more specific version is already implemented.
+            // Note: Unfortunately this logic should not simply be reversed to also ignore old concept if the new concept is a derivation of the old one,
+            // because other macros might have already used the old concept to generate a different business logic.
+            if (newConcept.GetType().IsAssignableFrom(existingConcept.GetType())
+                && newConcept.GetFullDescription() == existingConcept.GetFullDescriptionAsBaseConcept(newConcept.GetType()))
+                return;
+
+            throw new DslSyntaxException(
+                "Concept with same key is described twice with different values."
+                + "\r\nValue 1: " + existingConcept.GetFullDescription()
+                + "\r\nValue 2: " + newConcept.GetFullDescription()
+                + "\r\nSame key: " + newConcept.GetKey());
+        }
+
         /// <summary>
         /// Since DSL parser returns stub references, this function replaces each reference with actual instance of the referenced concept.
         /// Function returns concepts that have newly resolved references.
         /// </summary>
-		private IEnumerable<IConceptInfo> ReplaceReferencesWithFullConcepts(bool errorOnUnresolvedReference)
+        private IEnumerable<IConceptInfo> ReplaceReferencesWithFullConcepts(bool errorOnUnresolvedReference)
         {
             var dependencies = new List<Tuple<string, string>>();
             var newUnresolved = new List<string>();

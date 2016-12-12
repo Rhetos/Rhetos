@@ -176,12 +176,14 @@ namespace Rhetos.Dsl
 
                         if (macroCreatedConcepts != null && macroCreatedConcepts.Count() > 0)
                         {
+                            _logger.Trace(() => "Evaluating macro " + macroEvaluator.Name + " on " + conceptInfo.GetShortDescription() + ".");
+
                             var aiCreatedConcepts = AlternativeInitialization.InitializeNonparsableProperties(macroCreatedConcepts, _logger);
 
                             var newConceptsReport = _dslContainer.AddNewConceptsAndReplaceReferences(
                                 aiCreatedConcepts.Concat(macroCreatedConcepts));
 
-                            _logger.Trace(() => LogCreatedConcepts(macroEvaluator, conceptInfo, macroCreatedConcepts, newConceptsReport));
+                            _logger.Trace(() => LogCreatedConcepts(macroCreatedConcepts, newConceptsReport));
 
                             iterationCreatedConcepts.AddRange(newConceptsReport.NewUniqueConcepts);
                             if (newConceptsReport.NewlyResolvedConcepts.Count > 0)
@@ -209,11 +211,10 @@ namespace Rhetos.Dsl
             _performanceLogger.Write(swTotal, "DslModel.ExpandMacroConcepts.");
         }
 
-        private string LogCreatedConcepts(MacroEvaluator macroEvaluator, IConceptInfo conceptInfo, IEnumerable<IConceptInfo> macroCreatedConcepts, DslContainer.AddNewConceptsReport newConceptsReport)
+        private string LogCreatedConcepts(IEnumerable<IConceptInfo> macroCreatedConcepts, DslContainer.AddNewConceptsReport newConceptsReport)
         {
             var report = new StringBuilder();
-            report.Append(macroEvaluator.Name + " on " + conceptInfo.GetShortDescription()
-                + " created: " + string.Join(", ", macroCreatedConcepts.Select(c => c.GetShortDescription())) + ".");
+            report.Append("Macro created: " + string.Join(", ", macroCreatedConcepts.Select(c => c.GetShortDescription())) + ".");
 
             var newUniqueIndex = new HashSet<string>(newConceptsReport.NewUniqueConcepts.Select(c => c.GetKey()));
             LogConcepts(report, "New resolved", newConceptsReport.NewlyResolvedConcepts.Where(c => newUniqueIndex.Contains(c.GetKey())));

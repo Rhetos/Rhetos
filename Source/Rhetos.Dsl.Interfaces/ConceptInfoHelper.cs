@@ -105,6 +105,21 @@ namespace Rhetos.Dsl
         }
 
         /// <summary>
+        /// Returns a string that describes the concept instance cast as a base concept.
+        /// The string contains base concept's type name and the base concept's properties.
+        /// </summary>
+        public static string GetFullDescriptionAsBaseConcept(this IConceptInfo ci, Type baseConceptType)
+        {
+            if (!baseConceptType.IsAssignableFrom(ci.GetType()))
+                throw new FrameworkException($"{baseConceptType} is not assignable from {ci.GetUserDescription()}.");
+            StringBuilder desc = new StringBuilder(200);
+            desc.Append(baseConceptType.FullName);
+            desc.Append(" ");
+            AppendMembers(desc, ci, SerializationOptions.AllMembers, false, baseConceptType);
+            return desc.ToString();
+        }
+
+        /// <summary>
         /// Return value is null if IConceptInfo implementations does not have ConceptKeyword attribute. Such classes are usually used as a base class for other concepts.
         /// </summary>
         public static string GetKeyword(this IConceptInfo ci)
@@ -204,9 +219,9 @@ namespace Rhetos.Dsl
             AllMembers
         };
 
-        private static void AppendMembers(StringBuilder text, IConceptInfo ci, SerializationOptions serializationOptions, bool exceptionOnNullMember = false)
+        private static void AppendMembers(StringBuilder text, IConceptInfo ci, SerializationOptions serializationOptions, bool exceptionOnNullMember = false, Type asBaseConceptType = null)
         {
-            IEnumerable<ConceptMember> members = ConceptMembers.Get(ci);
+            IEnumerable<ConceptMember> members = ConceptMembers.Get(asBaseConceptType ?? ci.GetType());
             if (serializationOptions == SerializationOptions.KeyMembers)
                 members = members.Where(member => member.IsKey);
 
