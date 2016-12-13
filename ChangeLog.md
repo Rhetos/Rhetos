@@ -1,5 +1,14 @@
 ﻿# Rhetos release notes
 
+## 1.4.0 (2016-12-13)
+
+### Internal improvements
+
+* Bugfix: NuGet package ID should be case insensitive.
+* Relaxed validation of duplicate concepts in the DSL model.
+  The validation will ignore macro concept that generates a base concept
+  when a derived concept already exists.
+
 ## 1.3.0 (2016-12-08)
 
 ### New features
