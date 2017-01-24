@@ -1,18 +1,11 @@
 @REM HINT: SET SECOND ARGUMENT TO /NOPAUSE WHEN AUTOMATING THE BUILD.
+@SETLOCAL
 
 @SET Config=%1%
 @IF [%1] == [] SET Config=Debug
 
-@IF DEFINED VisualStudioVersion GOTO SkipVcvarsall
-IF "%VS140COMNTOOLS%" NEQ "" CALL "%VS140COMNTOOLS%VsDevCmd.bat" x86 && GOTO EndVcvarsall || GOTO Error0
-IF "%VS120COMNTOOLS%" NEQ "" CALL "%VS120COMNTOOLS%\..\..\VC\vcvarsall.bat" x86 && GOTO EndVcvarsall || GOTO Error0
-IF "%VS110COMNTOOLS%" NEQ "" CALL "%VS110COMNTOOLS%\..\..\VC\vcvarsall.bat" x86 && GOTO EndVcvarsall || GOTO Error0
-IF "%VS100COMNTOOLS%" NEQ "" CALL "%VS100COMNTOOLS%\..\..\VC\vcvarsall.bat" x86 && GOTO EndVcvarsall || GOTO Error0
-ECHO ERROR: Cannot detect Visual Studio, missing VSxxxCOMNTOOLS variable.
-GOTO Error0
-:EndVcvarsall
+IF NOT DEFINED VisualStudioVersion CALL "%VS140COMNTOOLS%VsDevCmd.bat" || ECHO ERROR: Cannot find Visual Studio 2015, missing VS140COMNTOOLS variable. && GOTO Error0
 @ECHO ON
-:SkipVcvarsall
 
 IF EXIST msbuild.log DEL msbuild.log || GOTO Error0
 
