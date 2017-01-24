@@ -48,12 +48,12 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Depending on the ids count, this method will return the list of IDs, or insert the ids to the database and return an SQL query that selects the ids.
         /// EF 6.1.3 has performance issues on Contains function with large lists. It seems to have O(n^2) time complexity.
         /// </summary>
-        public IQueryable<Guid> CreateQueryableFilterIds(IEnumerable<Guid> ids)
+        public IEnumerable<Guid> CreateQueryableFilterIds(IEnumerable<Guid> ids)
         {
             Rhetos.Utilities.CsUtility.Materialize(ref ids);
 
             if (ids.Count() < 200)
-                return ids.AsQueryable();
+                return ids;
 
             var handle = Guid.NewGuid();
             string sqlInsertIdFormat = ""INSERT INTO Common.FilterId (Handle, Value) VALUES ('"" + SqlUtility.GuidToString(handle) + ""', '{0}');"";

@@ -26,6 +26,7 @@ using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using System.Collections;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -51,7 +52,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.UpdateOnChange.DependsOn);
 
             codeBuilder.InsertCode(
-                FilterAndRecomputeAfterSave(info, uniqueName),
+                FilterAndRecomputeAfterSave(info, info.UpdateOnChange.FilterType, uniqueName),
                 WritableOrmDataStructureCodeGenerator.OnSaveTag1, info.UpdateOnChange.DependsOn);
         }
 
@@ -72,51 +73,28 @@ namespace Rhetos.Dom.DefaultConcepts
                 filterFormula);
         }
 
-        private static bool FilterIsEnumerableGuid(string typeSnippet)
+        private static string FilterAndRecomputeAfterSave(KeepSynchronizedOnChangedItemsInfo info, string filterType, string uniqueName)
         {
-            typeSnippet = typeSnippet.Replace("System.Collections.Generic.", "");
-			typeSnippet = typeSnippet.Replace("System.Linq.", "");
-            typeSnippet = typeSnippet.Replace("System.Guid", "Guid");
-            return new[] { "Guid[]", "List<Guid>", "IEnumerable<Guid>", "IQueryable<Guid>" }.Contains(typeSnippet);
-        }
+            string recomputeMethodName =
+                info.KeepSynchronized.EntityComputedFrom.Target.Module.Name
+                + "." + info.KeepSynchronized.EntityComputedFrom.Target.Name
+                + "." + EntityComputedFromCodeGenerator.RecomputeFunctionName(info.KeepSynchronized.EntityComputedFrom);
 
-        private static string FilterAndRecomputeAfterSave(KeepSynchronizedOnChangedItemsInfo info, string uniqueName)
-        {
-            string recomputeCall;
-
-            if (FilterIsEnumerableGuid(info.UpdateOnChange.FilterType))
-                recomputeCall =
-                @"_domRepository.{1}.{2}.{5}(filteredNew.Union(filterKeepSynchronizedOnChangedItems{0}Old).ToList());";
-            else if (info.UpdateOnChange.FilterType == "Rhetos.Dom.DefaultConcepts.FilterSubtype")
-                recomputeCall =
-                @"_domRepository.{1}.{2}.{5}(new Rhetos.Dom.DefaultConcepts.FilterSubtype
-                    {{
-                        Ids = filteredNew.Ids.Union(filterKeepSynchronizedOnChangedItems{0}Old.Ids).ToList(),
-                        Subtype = filteredNew.Subtype,
-                        ImplementationName = filteredNew.ImplementationName
-                    }});";
-            else if (info.UpdateOnChange.FilterType == "FilterAll" || info.UpdateOnChange.FilterType == "Rhetos.Dom.DefaultConcepts.FilterAll")
-                recomputeCall =
-                @"_domRepository.{1}.{2}.{5}(new Rhetos.Dom.DefaultConcepts.FilterAll());";
-            else
-                recomputeCall =
-                @"_domRepository.{1}.{2}.{5}(filterKeepSynchronizedOnChangedItems{0}Old);
-                    _domRepository.{1}.{2}.{5}(filteredNew);";
-            
-            return string.Format(
-                OverrideRecomputeTag(info) + @"
+            return
+                $@"{OverrideRecomputeTag(info)}
                 {{
-                    var filteredNew = filterLoadKeepSynchronizedOnChangedItems{0}(inserted.Concat(updated));
-                    " + recomputeCall + @"
+                    var filteredNew = filterLoadKeepSynchronizedOnChangedItems{uniqueName}(inserted.Concat(updated));
+                    {filterType} optimizedFilter;
+                    if (KeepSynchronizedHelper.OptimizeFiltersUnion(filteredNew, filterKeepSynchronizedOnChangedItems{uniqueName}Old, out optimizedFilter))
+                        _domRepository.{recomputeMethodName}(optimizedFilter);
+                    else
+                    {{
+                        _domRepository.{recomputeMethodName}(filterKeepSynchronizedOnChangedItems{uniqueName}Old);
+                        _domRepository.{recomputeMethodName}(filteredNew);
+                    }}
                 }}
 
-                ",
-                uniqueName,
-                info.KeepSynchronized.EntityComputedFrom.Target.Module.Name,
-                info.KeepSynchronized.EntityComputedFrom.Target.Name,
-                info.UpdateOnChange.DependsOn.Module.Name,
-                info.UpdateOnChange.DependsOn.Name,
-                EntityComputedFromCodeGenerator.RecomputeFunctionName(info.KeepSynchronized.EntityComputedFrom));
+                ";
         }
     }
 }

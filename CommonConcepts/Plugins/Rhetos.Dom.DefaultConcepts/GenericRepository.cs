@@ -294,6 +294,11 @@ namespace Rhetos.Dom.DefaultConcepts
             }
 
             // If the parameter is a generic filter, unless explicitly implemented above, execute it
+            if (parameterType == typeof(FilterCriteria))
+            {
+                _logger.Trace(() => "Reading using generic filter");
+                return ExecuteGenericFilter(new[] { (FilterCriteria)parameter }, preferQuery);
+            }
             if (typeof(IEnumerable<FilterCriteria>).IsAssignableFrom(parameterType))
             {
                 _logger.Trace(() => "Reading using generic filter");
@@ -467,6 +472,11 @@ namespace Rhetos.Dom.DefaultConcepts
             }
 
             // If the parameter is a generic filter, unless explicitly implemented above, execute it
+            if (parameterType == typeof(FilterCriteria))
+            {
+                _logger.Trace(() => "Filtering using generic filter");
+                return ExecuteGenericFilter(new[] { (FilterCriteria)parameter }, preferQuery, items);
+            }
             if (typeof(IEnumerable<FilterCriteria>).IsAssignableFrom(parameterType))
             {
                 _logger.Trace(() => "Filtering using generic filter");
