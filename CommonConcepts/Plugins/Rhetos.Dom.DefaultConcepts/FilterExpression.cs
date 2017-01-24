@@ -74,7 +74,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 a = (bool)constant.Value ? _selectAll : _selectNone;
         }
 
-        private static Expression<Func<T, bool>> Not(Expression<Func<T, bool>> a)
+        public static Expression<Func<T, bool>> Not(Expression<Func<T, bool>> a)
         {
             if (a == _selectAll)
                 return _selectNone;
@@ -84,7 +84,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 return Expression.Lambda<Func<T, bool>>(Expression.Not(a.Body), a.Parameters);
         }
 
-        private static Expression<Func<T, bool>> Or(Expression<Func<T, bool>> a, Expression<Func<T, bool>> b)
+        public static Expression<Func<T, bool>> Or(Expression<Func<T, bool>> a, Expression<Func<T, bool>> b)
         {
             if (a == _selectAll || b == _selectAll)
                 return _selectAll;
@@ -99,7 +99,7 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
-        private static Expression<Func<T, bool>> And(Expression<Func<T, bool>> a, Expression<Func<T, bool>> b)
+        public static Expression<Func<T, bool>> And(Expression<Func<T, bool>> a, Expression<Func<T, bool>> b)
         {
             if (a == _selectNone || b == _selectNone)
                 return _selectNone;
