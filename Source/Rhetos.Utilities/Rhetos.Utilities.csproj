@@ -155,6 +155,7 @@
     <Compile Include="MsSqlUtility.cs" />
     <Compile Include="ConsoleLogProvider.cs" />
     <Compile Include="OracleSqlExecuter.cs" />
+    <Compile Include="SqlTransactionBatch.cs" />
     <Compile Include="SqlUtility.cs" />
     <Compile Include="Exceptions\UserException.cs" />
     <Compile Include="Exceptions\FrameworkException.cs" />

@@ -18,7 +18,6 @@
 */
 
 using System.Diagnostics;
-using Rhetos.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using Rhetos.TestCommon;
@@ -221,6 +220,29 @@ namespace Rhetos.Utilities.Test
 
             foreach (var test in tests)
                 Assert.AreEqual(test.Value, SqlUtility.QuoteIdentifier(test.Key));
+        }
+
+        [TestMethod]
+        public void SplitBatches()
+        {
+            var tests = new Dictionary<string, string[]>
+            {
+                { "111\r\nGO\r\n222", new[] { "111", "222" } }, // Simple
+                { "111\nGO\n222", new[] { "111", "222" } }, // UNIX EOL
+                { "111\r\ngo\r\n222", new[] { "111", "222" } }, // Case insensitive
+                { "111\r\n    GO\t\t\t\r\n222", new[] { "111", "222" } }, // Spaces and tabs
+                { "GO\r\n111\r\nGO\r\n222\r\nGO", new[] { "111", "222" } }, // Beginning and ending with GO
+                { "111\r\nGO\r\n222\r\nGO   ", new[] { "111", "222" } }, // Beginning and ending with GO
+                { "\r\n  GO  \r\n\r\n111\r\nGO\r\n222\r\nGO   \r\nGO   \r\n\r\n", new[] { "111", "222" } }, // Beginning and ending with GO
+                { "111\r\n222\r\nGO\r\n333\r\n444", new[] { "111\r\n222", "333\r\n444" } }, // Multi-line batches
+                { "111\n222\nGO\n333\n444", new[] { "111\n222", "333\n444" } }, // Multi-line batches, UNIX EOL
+                { "111\r\nGO GO\r\n		GO   \r\n		go           \r\n222\r\ngoo\r\ngo", new[] { "111\r\nGO GO", "222\r\ngoo" } }, // Complex
+                { "", new string[] { } }, // Empty batches
+                { "GO", new string[] { } }, // Empty batches
+                { "\r\n  \r\n  GO  \r\n  \r\n", new string[] { } } // Empty batches
+            };
+            foreach (var test in tests)
+                Assert.AreEqual(TestUtility.Dump(test.Value), TestUtility.Dump(SqlUtility.SplitBatches(test.Key)), "Input: " + test.Key);
         }
     }
 }

@@ -17,30 +17,29 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Rhetos.DatabaseGenerator
+namespace Rhetos.Utilities
 {
     /// <summary>SQL scripts are grouped into batches to handle different transaction usage.</summary>
-    public class SqlBatch : List<string>
+    public class SqlTransactionBatch : List<string>
     {
         public bool UseTransacion;
 
-        public static List<SqlBatch> FormBatches(IEnumerable<string> sqlScripts)
+        public static List<SqlTransactionBatch> GroupByTransaction(IEnumerable<string> sqlScripts)
         {
-            var batches = new List<SqlBatch>();
-            SqlBatch currentBatch = null;
+            var batches = new List<SqlTransactionBatch>();
+            SqlTransactionBatch currentBatch = null;
 
             foreach (string sqlScript in sqlScripts)
             {
                 bool scriptUsesTransaction = !sqlScript.StartsWith(SqlUtility.NoTransactionTag);
                 if (currentBatch == null || currentBatch.UseTransacion != scriptUsesTransaction)
                 {
-                    currentBatch = new SqlBatch { UseTransacion = scriptUsesTransaction };
+                    currentBatch = new SqlTransactionBatch { UseTransacion = scriptUsesTransaction };
                     batches.Add(currentBatch);
                 }
 

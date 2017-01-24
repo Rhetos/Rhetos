@@ -528,7 +528,7 @@ namespace Rhetos.DatabaseGenerator
             sqlScripts.AddRange(ApplyChangesToDatabase_Insert(toBeInserted, newApplications));
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Prepared SQL scripts for inserting concept applications.");
 
-            foreach (var batchOfScripts in SqlBatch.FormBatches(sqlScripts.Where(sql => !string.IsNullOrWhiteSpace(sql))))
+            foreach (var batchOfScripts in SqlTransactionBatch.GroupByTransaction(sqlScripts.Where(sql => !string.IsNullOrWhiteSpace(sql))))
                 _sqlExecuter.ExecuteSql(batchOfScripts, batchOfScripts.UseTransacion);
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Executed " + sqlScripts.Count + " SQL scripts.");
         }

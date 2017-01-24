@@ -19,16 +19,15 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Rhetos.DatabaseGenerator.Test
+namespace Rhetos.Utilities.Test
 {
     [TestClass]
-    public class SqlBatchTest
+    public class SqlTransactionBatchTest
     {
         [TestMethod]
         public void Batches()
@@ -48,7 +47,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
             foreach (var test in tests)
             {
-                var batches = SqlBatch.FormBatches(test.Item1.Select(sql => sql.Replace("#", SqlUtility.NoTransactionTag)));
+                var batches = SqlTransactionBatch.GroupByTransaction(test.Item1.Select(sql => sql.Replace("#", SqlUtility.NoTransactionTag)));
                 string report = TestUtility.Dump(batches, batch => batch.Count + (batch.UseTransacion ? "t" : "n"));
                 Assert.AreEqual(test.Item2, report, "Test: " + TestUtility.Dump(test.Item1) + ".");
             }

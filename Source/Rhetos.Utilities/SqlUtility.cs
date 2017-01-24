@@ -461,5 +461,17 @@ namespace Rhetos.Utilities
                 throw new FrameworkException(UnsupportedLanguageError);
             return DateTime.SpecifyKind(now, DateTimeKind.Local);
         }
+
+        /// <summary>
+        /// Splits the script to multiple batches, separated by the GO command.
+        /// It emulates the behavior of Microsoft SQL Server utilities, sqlcmd and osql,
+        /// but it does not work perfectly: comments near GO and the repeat count are currently not supported.
+        /// </summary>
+        public static string[] SplitBatches(string sql)
+        {
+            return batchSplitter.Split(sql).Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s)).ToArray();
+        }
+
+        private static readonly Regex batchSplitter = new Regex(@"^\s*GO\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline);
     }
 }

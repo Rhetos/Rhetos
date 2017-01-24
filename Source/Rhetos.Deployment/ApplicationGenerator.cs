@@ -152,7 +152,7 @@ namespace Rhetos.Deployment
                 throw new FrameworkException("Cannot find resource '" + rhetosDatabaseScriptResourceName + "'.");
             var sql = new StreamReader(resourceStream).ReadToEnd();
 
-            var sqlScripts = sql.Split(new[] { "\r\nGO\r\n" }, StringSplitOptions.RemoveEmptyEntries).Where(s => !String.IsNullOrWhiteSpace(s));
+            var sqlScripts = SqlUtility.SplitBatches(sql);
             _sqlExecuter.ExecuteSql(sqlScripts);
         }
 
