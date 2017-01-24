@@ -165,8 +165,8 @@ namespace CommonConcepts.Test
                 [Trace] DataMigration: Script in database p2\ss3.sql (tag p2\ss3)
                 [Trace] DataMigration: Last executed script in 'p1' is 'p1\s3.sql' of new scripts provided.
                 [Trace] DataMigration: Last executed script in 'p2' is 'p2\ss3.sql' of new scripts provided.
-                [Error] DataMigration: Executing script in incorrect order p1\s2.sql (tag p1\s2)
-                [Error] DataMigration: Executing script in incorrect order p2\ss2.sql (tag p2\ss2)
+                [Info] DataMigration: Executing script in the incorrect order p1\s2.sql (tag p1\s2)
+                [Info] DataMigration: Executing script in the incorrect order p2\ss2.sql (tag p2\ss2)
                 [Info] DataMigration: Executing p1\s2.sql (tag p1\s2)
                 [Info] DataMigration: Executing p1\s4.sql (tag p1\s4)
                 [Info] DataMigration: Executing p2\ss2.sql (tag p2\ss2)

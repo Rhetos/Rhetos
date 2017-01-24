@@ -82,7 +82,7 @@ namespace Rhetos.Deployment
                 {
                     // Execute skipped scripts even though this means the scripts will be executed in the incorrect order.
                     // The message is logged as an *error* to increase the chance of being noticed because it is one-off event, even though it is not blocking.
-                    LogScripts("Executing script in incorrect order", skipped, EventType.Error);
+                    LogScripts("Executing script in incorrect order", skipped, EventType.Info);
                 }
             }
 
@@ -120,9 +120,7 @@ namespace Rhetos.Deployment
             foreach (var script in toExecute)
             {
                 LogScript("Executing", script, EventType.Info);
-                sql.AddRange(script.Content
-                                 .Split(new[] { "\r\nGO\r\n" }, StringSplitOptions.RemoveEmptyEntries)
-                                 .Where(c => !string.IsNullOrWhiteSpace(c)));
+                sql.AddRange(SqlUtility.SplitBatches(script.Content));
                 sql.Add(SaveDataMigrationScriptMetadata(script));
             }
             _sqlExecuter.ExecuteSql(sql);
