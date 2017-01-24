@@ -122,9 +122,6 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             // Add metadata for supertype computation (union):
 
-            string hashId = conceptInfo.ImplementationName == "" ? "item.ID"
-                : "DomUtility.GetSubtypeImplementationId(item.ID, " + DomUtility.GetSubtypeImplementationHash(conceptInfo.ImplementationName) + ")";
-
             foreach (DataStructureInfo dependsOn in DslUtility.GetBaseChangesOnDependency(conceptInfo.Subtype, existingConcepts))
                 newConcepts.Add(new ChangesOnChangedItemsInfo
                 {
@@ -133,7 +130,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                     FilterType = "Rhetos.Dom.DefaultConcepts.FilterSubtype",
                     FilterFormula = @"changedItems => new Rhetos.Dom.DefaultConcepts.FilterSubtype
                         {
-                            Ids = changedItems.Select(item => " + hashId + @").ToArray(),
+                            Ids = changedItems.Select(" + GetComputeHashIdSelector(conceptInfo) + @").ToArray(),
                             Subtype = " + CsUtility.QuotedString(conceptInfo.Subtype.Module.Name + "." + conceptInfo.Subtype.Name) + @",
                             ImplementationName = " + CsUtility.QuotedString(conceptInfo.ImplementationName) + @"
                         }"
@@ -192,6 +189,14 @@ namespace Rhetos.Dsl.DefaultConcepts
                 .Select(dep => new SqlDependsOnSqlViewInfo { Dependent = implementationView, DependsOn = dep.DependsOn }));
 
             return newConcepts;
+        }
+
+        public static string GetComputeHashIdSelector(IsSubtypeOfInfo conceptInfo)
+        {
+            return "item => " + 
+                (conceptInfo.ImplementationName == ""
+                    ? "item.ID"
+                    : "DomUtility.GetSubtypeImplementationId(item.ID, " + DomUtility.GetSubtypeImplementationHash(conceptInfo.ImplementationName) + ")");
         }
     }
 }

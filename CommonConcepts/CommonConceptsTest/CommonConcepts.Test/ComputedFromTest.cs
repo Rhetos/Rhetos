@@ -27,6 +27,7 @@ using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
+using System.Text.RegularExpressions;
 
 namespace CommonConcepts.Test
 {
@@ -268,6 +269,82 @@ namespace CommonConcepts.Test
                 // Expected: insert 2b, 1cc; delete 1c, 1d; update 1B, 2a.
                 Assert.AreEqual("1a1ax, 1B1bx, 1cc1c, 2a2aax, 2b2b", TestUtility.DumpSorted(targetRepository.Load(), report));
             }
+        }
+
+        [TestMethod]
+        public void ChangesOnReferencedItems()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var log = new List<string>();
+                container.AddLogMonitor(log);
+
+                var repository = container.Resolve<Common.DomRepository>();
+                var test = repository.TestChangesOnReferencedItems;
+                test.Tested.Delete(test.Tested.Query());
+                test.Parent.Delete(test.Parent.Query());
+                test.ImplementationSimple.Delete(test.ImplementationSimple.Query());
+                test.ImplementationComplex.Delete(test.ImplementationComplex.Query());
+
+                Assert.AreEqual("", TestUtility.DumpSorted(test.TestedInfo.Query(), item => item.Info));
+
+                var p1 = new TestChangesOnReferencedItems.Parent { Name = "p1" };
+                var p2 = new TestChangesOnReferencedItems.Parent { Name = "p2" };
+                test.Parent.Insert(p1, p2);
+
+                var s1 = new TestChangesOnReferencedItems.ImplementationSimple { Name = "s1" };
+                test.ImplementationSimple.Insert(s1);
+
+                var c1 = new TestChangesOnReferencedItems.ImplementationComplex { Name2 = "c1" };
+                test.ImplementationComplex.Insert(c1);
+                Guid c1AlternativeId = test.Poly.Query(item => item.ImplementationComplexAlternativeNameID == c1.ID).Select(item => item.ID).Single();
+
+                var t1a = new TestChangesOnReferencedItems.Tested { Name = "t1a", ParentID = p1.ID, PolyID = s1.ID };
+                var t1b = new TestChangesOnReferencedItems.Tested { Name = "t1b", ParentID = p1.ID, PolyID = s1.ID };
+                var t2 = new TestChangesOnReferencedItems.Tested { Name = "t2", ParentID = p2.ID, PolyID = c1AlternativeId };
+                test.Tested.Insert(t1a, t1b, t2);
+
+                Assert.AreEqual("t1a-p1-s1, t1b-p1-s1, t2-p2-c1", TestUtility.DumpSorted(test.TestedInfo.Query(), item => item.Info));
+
+                log.Clear();
+                t1a = test.Tested.Load(new[] { t1a.ID }).Single();
+                t1a.Name += "X";
+                test.Tested.Update(t1a);
+                Assert.AreEqual("t1aX-p1-s1, t1b-p1-s1, t2-p2-c1", TestUtility.DumpSorted(test.TestedInfo.Query(), item => item.Info));
+                Assert.AreEqual("TestedInfo 1n 1o - 0i 1u 0d", TestUtility.DumpSorted(FindRecomputes(log)));
+
+                log.Clear();
+                p1 = test.Parent.Load(new[] { p1.ID }).Single();
+                p1.Name += "X";
+                test.Parent.Update(p1);
+                Assert.AreEqual("t1aX-p1X-s1, t1b-p1X-s1, t2-p2-c1", TestUtility.DumpSorted(test.TestedInfo.Query(), item => item.Info));
+                Assert.AreEqual("TestedInfo 2n 2o - 0i 2u 0d", TestUtility.DumpSorted(FindRecomputes(log)));
+
+                log.Clear();
+                s1 = test.ImplementationSimple.Load(new[] { s1.ID }).Single();
+                s1.Name += "X";
+                test.ImplementationSimple.Update(s1);
+                Assert.AreEqual("t1aX-p1X-s1X, t1b-p1X-s1X, t2-p2-c1", TestUtility.DumpSorted(test.TestedInfo.Query(), item => item.Info));
+                Assert.AreEqual("Poly_Materialized 1n 1o - 0i 0u 0d, TestedInfo 2n 2o - 0i 2u 0d", TestUtility.DumpSorted(FindRecomputes(log)));
+
+                log.Clear();
+                c1 = test.ImplementationComplex.Load(new[] { c1.ID }).Single();
+                c1.Name2 += "X";
+                test.ImplementationComplex.Update(c1);
+                Assert.AreEqual("t1aX-p1X-s1X, t1b-p1X-s1X, t2-p2-c1X", TestUtility.DumpSorted(test.TestedInfo.Query(), item => item.Info));
+                Assert.AreEqual("Poly_Materialized 1n 1o - 0i 0u 0d, TestedInfo 1n 1o - 0i 1u 0d", TestUtility.DumpSorted(FindRecomputes(log)));
+            }
+        }
+
+        private static readonly Regex FindRecomputesRegex = new Regex(@"GenericRepository\((?<module>.+)\.(?<entity>.+)\)\.InsertOrUpdateOrDelete: Diff \((?<new>.+) new items, (?<old>.+) old items, (?<ins>.+) to insert, (?<upd>.+) to update, (?<del>.+) to delete\)");
+
+        private List<string> FindRecomputes(List<string> log)
+        {
+            return log.Select(s => FindRecomputesRegex.Match(s))
+                .Where(m => m.Success)
+                .Select(m => m.Groups)
+                .Select(g => g["entity"].Value + " " + g["new"] + "n " + g["old"] + "o - " + g["ins"] + "i " + g["upd"] + "u " + g["del"] + "d")
+                .ToList();
         }
     }
 }

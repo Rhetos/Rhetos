@@ -125,7 +125,12 @@ namespace Rhetos.Dsl.DefaultConcepts
             return (PropertyInfo)dslModel.FindByKey(propertyKey);
         }
 
-        /// <param name="allowSystemProperties">Allows path to end with a C# property that does not have a representation in the DSL model (ID property or the Guid property used for a Reference).</param>
+        /// <param name="allowSystemProperties">
+        /// Allows path to end with a C# property that does not have a representation in the DSL model:
+        /// 1. The 'ID' property.
+        /// 2. The GUID property used for a Reference.
+        /// 3. The 'Base' reference property for the extension referencing the base data structure.
+        /// </param>
         public static ValueOrError<PropertyInfo> GetPropertyByPath(DataStructureInfo source, string path, IDslModel existingConcepts, bool allowSystemProperties = true)
         {
             if (path.Contains(" "))
@@ -157,6 +162,14 @@ namespace Rhetos.Dsl.DefaultConcepts
                 var referencePrototype = new PropertyInfo { DataStructure = selectedDataStructure.Value, Name = referenceName };
                 if (existingConcepts.FindByKey(referencePrototype.GetKey()) != null)
                     return new GuidPropertyInfo { DataStructure = selectedDataStructure.Value, Name = lastPropertyName };
+            }
+
+            if (allowSystemProperties && selectedProperty == null && lastPropertyName == "Base")
+            {
+                var referenced = NavigateToNextDataStructure(selectedDataStructure.Value, lastPropertyName, existingConcepts);
+                if (referenced.IsError)
+                    return ValueOrError.CreateError(referenced.Error);
+                return new ReferencePropertyInfo { DataStructure = selectedDataStructure.Value, Name = lastPropertyName, Referenced = referenced.Value };
             }
 
             if (selectedProperty == null)

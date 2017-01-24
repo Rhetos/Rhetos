@@ -130,6 +130,64 @@ Module Test9
 	}
 }
 
+Module TestChangesOnReferencedItems
+{
+    AutodetectSqlDependencies;
+
+    Entity Tested
+    {
+        ShortString Name;
+        Reference Parent;
+        Reference Poly;
+    }
+
+    Entity Parent
+    {
+        ShortString Name;
+    }
+
+    Polymorphic Poly
+    {
+        ShortString Name;
+    }
+
+    Entity ImplementationSimple
+    {
+        Is TestChangesOnReferencedItems.Poly;
+    }
+
+    Entity ImplementationComplex
+    {
+        ShortString Name2;
+        Is TestChangesOnReferencedItems.Poly 'AlternativeName'
+        {
+            Implements TestChangesOnReferencedItems.Poly.Name 'Name2';
+        }
+    }
+
+    Persisted TestedInfo TestChangesOnReferencedItems.ComputeTestedInfo
+    {
+        AllProperties;
+        KeepSynchronized;
+    }
+
+    SqlQueryable ComputeTestedInfo
+        "SELECT
+            t.ID,
+            Info = t.Name + '-' + pa.Name + '-' + po.Name
+        FROM
+            TestChangesOnReferencedItems.Tested t
+            LEFT JOIN TestChangesOnReferencedItems.Parent pa ON pa.ID = t.ParentID
+            LEFT JOIN TestChangesOnReferencedItems.Poly po ON po.ID = t.PolyID"
+    {
+        Extends TestChangesOnReferencedItems.Tested;
+        ShortString Info;
+
+        ChangesOnReferencedItems 'Base';
+        ChangesOnReferencedItems 'Base.Parent';
+        ChangesOnReferencedItems 'Base.Poly';
+    }
+}
 
 Module Test10
 {

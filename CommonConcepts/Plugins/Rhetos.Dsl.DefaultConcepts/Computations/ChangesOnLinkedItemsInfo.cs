@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// A helper for defining a computation dependency to the detail list, when computing an aggregate.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ChangesOnLinkedItems")]
     public class ChangesOnLinkedItemsInfo : IConceptInfo
