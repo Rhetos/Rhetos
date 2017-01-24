@@ -61,6 +61,11 @@ namespace Rhetos.Dsl.DefaultConcepts
                 var sqlFunction = (SqlFunctionInfo)concept;
                 ConceptsBySqlName.Add(sqlFunction.Module.Name + "." + sqlFunction.Name, concept);
             }
+            else if (concept is PolymorphicUnionViewInfo)
+            {
+                var polymorphicUnionView = (PolymorphicUnionViewInfo)concept;
+                ConceptsBySqlName.Add(polymorphicUnionView.Module.Name + "." + polymorphicUnionView.Name, concept);
+            }
         }
     }
 }

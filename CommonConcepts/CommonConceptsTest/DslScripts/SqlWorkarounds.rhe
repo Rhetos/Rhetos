@@ -114,6 +114,10 @@ Module TestSqlWorkarounds
 	
 	Entity NoProperties;
 	SqlView DependsOnNoProperties "SELECT A = 1;" { SqlDependsOn TestSqlWorkarounds.NoProperties; }
+
+    Polymorphic Poly;
+    Entity PolyImplementation { Is TestSqlWorkarounds.Poly; }
+    SqlView AutoDependsOnPoly "SELECT ID FROM TestSqlWorkarounds.Poly";
 	
 	Entity TestIndex
 	{

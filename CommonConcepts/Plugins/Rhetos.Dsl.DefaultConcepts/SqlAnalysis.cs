@@ -55,6 +55,8 @@ namespace Rhetos.Dsl.DefaultConcepts
                             newConcepts.Add(new SqlDependsOnSqlViewInfo { Dependent = dependent, DependsOn = (SqlViewInfo)conceptInfo });
                         else if (conceptInfo is SqlFunctionInfo)
                             newConcepts.Add(new SqlDependsOnSqlFunctionInfo { Dependent = dependent, DependsOn = (SqlFunctionInfo)conceptInfo });
+                        else if (conceptInfo is SqlObjectInfo)
+                            newConcepts.Add(new SqlDependsOnSqlObjectInfo { Dependent = dependent, DependsOn = (SqlObjectInfo)conceptInfo });
                         else
                             throw new DslSyntaxException(dependent, "Internal error: Unexpected SQL concept type: " + conceptInfo.GetUserDescription() + ".");
                     }
