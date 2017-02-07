@@ -27,12 +27,7 @@ namespace Rhetos.Processing
     public class CommandResult
     {
         public string Message { get; set; }
-        public bool Success { get; set; }
+        public bool Success { get; set; } // TODO: Remove this property and use a User/Client/FrameworkException to return an error.
         public ICommandData Data { get; set; }
-
-        public static CommandResult Fail(string message)
-        {
-            return new CommandResult { Message = message, Success = false };
-        }
     }
 }

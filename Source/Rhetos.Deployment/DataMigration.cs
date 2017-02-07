@@ -82,7 +82,7 @@ namespace Rhetos.Deployment
                 {
                     // Execute skipped scripts even though this means the scripts will be executed in the incorrect order.
                     // The message is logged as an *error* to increase the chance of being noticed because it is one-off event, even though it is not blocking.
-                    LogScripts("Executing script in incorrect order", skipped, EventType.Info);
+                    LogScripts("Executing script in an incorrect order", skipped, EventType.Info);
                 }
             }
 

@@ -29,7 +29,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Omega software")]
 [assembly: AssemblyProduct("ActiveDirectorySync.Test")]
-[assembly: AssemblyCopyright("Copyright (C) Omega software 2016")]
+[assembly: AssemblyCopyright("Copyright (C) Omega software 2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

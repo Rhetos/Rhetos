@@ -53,10 +53,7 @@ namespace Rhetos.Processing.DefaultCommands
 
         public CommandResult Execute(ICommandInfo commandInfo)
         {
-            var saveInfo = commandInfo as SaveEntityCommandInfo;
-
-            if (saveInfo == null)
-                return CommandResult.Fail("CommandInfo does not implement SaveEntityCommandInfo");
+            var saveInfo = (SaveEntityCommandInfo)commandInfo;
 
             if (saveInfo.Entity == null)
                 throw new ClientException("Invalid SaveEntityCommand argument: Entity is not set.");

@@ -48,10 +48,7 @@ namespace Rhetos.Processing.DefaultCommands
 
         public CommandResult Execute(ICommandInfo commandInfo)
         {
-            var readInfo = commandInfo as ReadCommandInfo;
-
-            if (readInfo == null)
-                return CommandResult.Fail("CommandInfo does not implement ReadCommandInfo");
+            var readInfo = (ReadCommandInfo)commandInfo;
 
             if (readInfo.DataSource == null)
                 throw new ClientException("Invalid ReadCommand argument: Data source is not set.");
