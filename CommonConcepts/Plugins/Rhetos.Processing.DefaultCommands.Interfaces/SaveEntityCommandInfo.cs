@@ -37,5 +37,14 @@ namespace Rhetos.Processing.DefaultCommands
         public IEntity[] DataToInsert { get; set; }
         public IEntity[] DataToUpdate { get; set; }
         public IEntity[] DataToDelete { get; set; }
+
+        public override string ToString()
+        {
+            return GetType().Name
+                + " " + Entity
+                + (DataToInsert != null && DataToInsert.Length > 0 ? ", insert " + DataToInsert.Length : "")
+                + (DataToUpdate != null && DataToUpdate.Length > 0 ? ", update " + DataToUpdate.Length : "")
+                + (DataToDelete != null && DataToDelete.Length > 0 ? ", delete " + DataToDelete.Length : "");
+        }
     }
 }

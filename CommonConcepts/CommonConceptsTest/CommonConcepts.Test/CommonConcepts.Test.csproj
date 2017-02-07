@@ -168,6 +168,7 @@
     <Compile Include="Helpers\DateTimeHelper.cs" />
     <Compile Include="PolymorphicTest.cs" />
     <Compile Include="MultipleValidationsTest.cs" />
+    <Compile Include="ProcessingEngineTest.cs" />
     <Compile Include="UserRequiredPropertyTest.cs" />
     <Compile Include="RowPermissionsRulesTest.cs" />
     <Compile Include="RowPermissionsDemo.cs" />

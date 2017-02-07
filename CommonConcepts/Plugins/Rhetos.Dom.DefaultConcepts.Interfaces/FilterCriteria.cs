@@ -18,6 +18,8 @@
 */
 
 using System;
+using System.Collections.Generic;
+
 namespace Rhetos.Dom.DefaultConcepts
 {
     /// <summary>
@@ -80,6 +82,18 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public FilterCriteria()
         {
+        }
+
+        public override string ToString()
+        {
+            string valueShortInfo = Value != null ? "..." : null;
+
+            var guidList = Value as IList<Guid>;
+            if (guidList != null && guidList.Count == 1)
+                valueShortInfo = guidList[0].ToString();
+
+            return (Filter ?? (Property + " " + Operation))
+                + (valueShortInfo != null ? " " + valueShortInfo : "");
         }
     }
 }

@@ -36,6 +36,13 @@ namespace Rhetos.Processing.DefaultCommands
         /// Typically a file extension ("pdf", for example), or null if no conversion of report file type is needed.
         /// </summary>
         public string ConvertFormat { get; set; }
+
+        public override string ToString()
+        {
+            return GetType().Name
+                + (Report != null ? " " + Report.GetType().FullName : "")
+                + (string.IsNullOrEmpty(ConvertFormat) ? "" : " as " + ConvertFormat);
+        }
     }
 
     public class DownloadReportCommandResult : ICommandData

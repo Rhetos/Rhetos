@@ -32,5 +32,11 @@ namespace Rhetos.Processing.DefaultCommands
         /// Instance of the action type.
         /// </summary>
         public object Action { get; set; }
+
+        public override string ToString()
+        {
+            return GetType().Name
+                + (Action != null ? " " + Action.GetType().FullName : "");
+        }
     }
 }

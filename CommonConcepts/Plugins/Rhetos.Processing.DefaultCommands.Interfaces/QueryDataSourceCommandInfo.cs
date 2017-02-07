@@ -82,5 +82,10 @@ namespace Rhetos.Processing.DefaultCommands
                 OrderByProperties = order.ToArray()
             };
         }
+
+        public override string ToString()
+        {
+            return GetType().Name + " " + DataSource;
+        }
     }
 }

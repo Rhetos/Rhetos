@@ -60,11 +60,29 @@ namespace Rhetos.Processing.DefaultCommands
         public int Skip { get; set; }
 
         public OrderByProperty[] OrderByProperties { get; set; }
+
+        public override string ToString()
+        {
+            // This function is intended for a short preview, not a complete data serialization.
+            return GetType().Name
+                + " " + DataSource
+                + (ReadRecords ? " records" : "")
+                + (ReadTotalCount ? " count" : "")
+                + (OrderByProperties != null && OrderByProperties.Length > 0 ? ", order by " + string.Join(" ", OrderByProperties.Select(o => o != null ? o.ToString() : "")) : "")
+                + (Skip != 0 ? ", skip " + Skip : "")
+                + (Top != 0 ? ", top " + Top : "")
+                + (Filters != null && Filters.Length > 0 ? ", filters: " + string.Join(", ", Filters.Select(f => f != null ? f.ToString() : "")) : "");
+        }
     }
 
     public class OrderByProperty
     {
         public string Property { get; set; }
         public bool Descending { get; set; }
+
+        public override string ToString()
+        {
+            return (Descending ? "-" : "") + Property;
+        }
     }
 }

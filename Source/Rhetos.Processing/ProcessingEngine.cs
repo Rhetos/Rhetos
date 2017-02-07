@@ -40,6 +40,8 @@ namespace Rhetos.Processing
         private readonly ILogger _requestLogger;
         private readonly ILogger _commandsLogger;
         private readonly ILogger _commandsResultLogger;
+        private readonly ILogger _commandsClientErrorLogger;
+        private readonly ILogger _commandsServerErrorLogger;
         private readonly IPersistenceTransaction _persistenceTransaction;
         private readonly IAuthorizationManager _authorizationManager;
         private readonly XmlUtility _xmlUtility;
@@ -67,6 +69,8 @@ namespace Rhetos.Processing
             _requestLogger = logProvider.GetLogger("ProcessingEngine Request");
             _commandsLogger = logProvider.GetLogger("ProcessingEngine Commands");
             _commandsResultLogger = logProvider.GetLogger("ProcessingEngine CommandsResult");
+            _commandsClientErrorLogger = logProvider.GetLogger("ProcessingEngine CommandsWithClientError");
+            _commandsServerErrorLogger = logProvider.GetLogger("ProcessingEngine CommandsWithServerError");
             _persistenceTransaction = persistenceTransaction;
             _authorizationManager = authorizationManager;
             _xmlUtility = xmlUtility;
@@ -77,11 +81,12 @@ namespace Rhetos.Processing
 
         public ProcessingResult Execute(IList<ICommandInfo> commands)
         {
-            _requestLogger.Trace(() => string.Format("User: {0}, Commands({1}): {2}.", _userInfo.UserName, commands.Count, string.Join(", ", commands.Select(a => a.GetType().Name))));
+            _requestLogger.Trace(() => string.Format("User: {0}, Commands({1}): {2}.", _userInfo.UserName, commands.Count,
+                string.Join(", ", commands.Select(c => c.ToString()))));
             var executionId = Guid.NewGuid();
             _commandsLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionCommandsLogEntry { ExecutionId = executionId, UserInfo = _userInfo.Report(), Commands = commands }));
 
-            var result = ExecuteInner(commands);
+            var result = ExecuteInner(commands, executionId);
             _commandsResultLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionResultLogEntry { ExecutionId = executionId, Result = result }));
 
             // On error, the CommandResults will contain partial results of the commands executed before the failed one, and should be cleared.
@@ -91,11 +96,11 @@ namespace Rhetos.Processing
             return result;
         }
 
-        public ProcessingResult ExecuteInner(IList<ICommandInfo> commands)
+        public ProcessingResult ExecuteInner(IList<ICommandInfo> commands, Guid executionId)
         {
             var authorizationMessage = _authorizationManager.Authorize(commands);
 
-            if (!String.IsNullOrEmpty(authorizationMessage))
+            if (!string.IsNullOrEmpty(authorizationMessage))
                 return new ProcessingResult
                 {
                     UserMessage = authorizationMessage,
@@ -104,12 +109,13 @@ namespace Rhetos.Processing
                 };
 
             var commandResults = new List<CommandResult>();
+            var stopwatch = Stopwatch.StartNew();
 
-            try
+            foreach (var commandInfo in commands)
             {
-                foreach (var commandInfo in commands)
+                try
                 {
-                    _logger.Trace("Executing command {0}: {1}.", commandInfo.GetType().Name, commandInfo);
+                    _logger.Trace("Executing command {0}.", commandInfo);
 
                     var implementations = _commandRepository.GetImplementations(commandInfo.GetType());
 
@@ -125,7 +131,7 @@ namespace Rhetos.Processing
                     _logger.Trace("Executing implementation {0}.", commandImplementation.GetType().Name);
 
                     var commandObserversForThisCommand = _commandObservers.GetImplementations(commandInfo.GetType());
-                    var stopwatch = Stopwatch.StartNew();
+                    stopwatch.Restart();
 
                     foreach (var commandObeserver in commandObserversForThisCommand)
                     {
@@ -135,7 +141,7 @@ namespace Rhetos.Processing
 
                     var commandResult = commandImplementation.Execute(commandInfo);
 
-                    _performanceLogger.Write(stopwatch, () => "ProcessingEngine: Command executed (" + commandInfo.GetType().FullName + ").");
+                    _performanceLogger.Write(stopwatch, () => "ProcessingEngine: Command executed (" + commandImplementation + ": " + commandInfo + ").");
                     _logger.Trace("Execution result message: {0}", commandResult.Message);
 
                     if (commandResult.Success)
@@ -151,75 +157,76 @@ namespace Rhetos.Processing
                     {
                         _persistenceTransaction.DiscardChanges();
 
-                        var systemMessage = String.Format(CultureInfo.InvariantCulture, "Command failed. {0} {1} {2}", commandInfo.GetType().Name, commandInfo, commandImplementation.GetType().Name);
-                        return LogAndReturnError(commandResults, systemMessage + " " + commandResult.Message, systemMessage, commandResult.Message);
+                        var systemMessage = "Command failed: " + commandImplementation + ", " + commandInfo + ".";
+                        return LogAndReturnError(commandResults, systemMessage + " " + commandResult.Message, systemMessage, commandResult.Message, null, commands, executionId);
                     }
                 }
-
-                return new ProcessingResult
+                catch (Exception ex)
                 {
-                    CommandResults = commandResults.ToArray(),
-                    Success = true,
-                    SystemMessage = null
-                };
+                    _persistenceTransaction.DiscardChanges();
+
+                    if (ex is TargetInvocationException && ex.InnerException is RhetosException)
+                    {
+                        _logger.Trace(() => "Unwrapping exception: " + ex.ToString());
+                        ex = ex.InnerException;
+                    }
+
+                    string userMessage = null;
+                    string systemMessage = null;
+
+                    ex = _sqlUtility.InterpretSqlException(ex) ?? ex;
+
+                    if (ex is UserException)
+                    {
+                        var userException = (UserException)ex;
+                        userMessage = _localizer[userException.Message, userException.MessageParameters]; // TODO: Remove this code after cleaning the double layer of exceptions in the server response call stack.
+                        systemMessage = userException.SystemMessage;
+                    }
+                    else if (ex is ClientException)
+                    {
+                        userMessage = _clientExceptionUserMessage;
+                        systemMessage = ex.Message;
+                    }
+                    else
+                    {
+                        userMessage = null;
+                        systemMessage = "Internal server error occurred (" + ex.GetType().Name + "). See RhetosServer.log for more information.";
+                    }
+
+                    return LogAndReturnError(commandResults, "Command failed: " + commandInfo + ".", systemMessage, userMessage, ex, commands, executionId);
+                }
             }
-            catch (Exception ex)
+
+            return new ProcessingResult
             {
-                _persistenceTransaction.DiscardChanges();
-
-                if (ex is TargetInvocationException && ex.InnerException is RhetosException)
-                {
-                    _logger.Trace(() => "Unwrapping exception: " + ex.ToString());
-                    ex = ex.InnerException;
-                }
-
-                string userMessage = null;
-                string systemMessage = null;
-
-                ex = _sqlUtility.InterpretSqlException(ex) ?? ex;
-
-                if (ex is UserException)
-                {
-                    var userException = (UserException)ex;
-                    userMessage = _localizer[userException.Message, userException.MessageParameters]; // TODO: Remove this code after cleaning the double layer of exceptions in the server response call stack.
-                    systemMessage = userException.SystemMessage;
-                }
-                else if (ex is ClientException)
-                {
-                    userMessage = _clientExceptionUserMessage;
-                    systemMessage = ex.Message;
-                }
-                else
-                {
-                    userMessage = null;
-                    systemMessage = "Internal server error occurred (" + ex.GetType().Name + "). See RhetosServer.log for more information.";
-                }
-
-                return LogAndReturnError(
-                    commandResults,
-                    "Command execution error: ",
-                    systemMessage,
-                    userMessage,
-                    ex);
-            }
+                CommandResults = commandResults.ToArray(),
+                Success = true,
+                SystemMessage = null
+            };
         }
 
-        private ProcessingResult LogAndReturnError(List<CommandResult> commandResults, string logError, string systemMessage, string userMessage, Exception logException = null)
+        private ProcessingResult LogAndReturnError(List<CommandResult> commandResults, string logError, string systemMessage, string userMessage, Exception logException, IList<ICommandInfo> commands, Guid executionId)
         {
             var errorSeverity = logException == null ? EventType.Error
                 : logException is UserException ? EventType.Trace
                 : logException is ClientException ? EventType.Info
                 : EventType.Error;
                  
-            _logger.Write(errorSeverity, () => logError + logException);
+            _logger.Write(errorSeverity, () => logError + (string.IsNullOrEmpty(logError) ? "" : " ") + logException);
 
-            return new ProcessingResult
-                {
-                    CommandResults = commandResults.ToArray(),
-                    Success = false,
-                    SystemMessage = systemMessage,
-                    UserMessage = userMessage
-                };
+            var result = new ProcessingResult
+            {
+                CommandResults = commandResults.ToArray(),
+                Success = false,
+                SystemMessage = systemMessage,
+                UserMessage = userMessage
+            };
+
+            var commandsErrorLogger = (errorSeverity == EventType.Error) ? _commandsServerErrorLogger : _commandsClientErrorLogger;
+            commandsErrorLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionCommandsLogEntry { ExecutionId = executionId, UserInfo = _userInfo.Report(), Commands = commands }));
+            commandsErrorLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionResultLogEntry { ExecutionId = executionId, Result = result }));
+
+            return result;
         }
     }
 }
