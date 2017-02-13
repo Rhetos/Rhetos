@@ -1,5 +1,23 @@
 ﻿# Rhetos release notes
 
+## 1.5.0 (2017-02-13)
+
+### New features
+
+* New concept **ChangesOnReferenced**, a helper for defining a computation dependency to the referenced entity.
+  The parameter is a reference property name, or a path over references, pointing to the entity that the current computation depends on.
+  Note that both computed data structure and the persisted data structure must have the same reference property for this concept to work.
+  The path can include the *Base* reference from extended concepts.
+  The path can target a **Polymorphic**. This will generate a **ChangesOnChangesItems** for each Polymorphic implementation.
+
+### Internal improvements
+
+* Improved logging of server commands.
+  The log now contains a short command description, including the entity/action/report name.
+  Logging full command description for failed commands; it can be configured separately by error severity (client or server errors) in `Web.config`.
+* Bugfix: **AutodetectSqlDependencies** does not detect dependencies to the **Polymorphic**'s view.
+* Optimized use of *FilterCriteria* in the *Recompute* functions.
+
 ## 1.4.0 (2016-12-13)
 
 ### Internal improvements
