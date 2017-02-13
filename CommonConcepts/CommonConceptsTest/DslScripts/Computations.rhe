@@ -130,7 +130,7 @@ Module Test9
 	}
 }
 
-Module TestChangesOnReferencedItems
+Module TestChangesOnReferenced
 {
     AutodetectSqlDependencies;
 
@@ -153,19 +153,19 @@ Module TestChangesOnReferencedItems
 
     Entity ImplementationSimple
     {
-        Is TestChangesOnReferencedItems.Poly;
+        Is TestChangesOnReferenced.Poly;
     }
 
     Entity ImplementationComplex
     {
         ShortString Name2;
-        Is TestChangesOnReferencedItems.Poly 'AlternativeName'
+        Is TestChangesOnReferenced.Poly 'AlternativeName'
         {
-            Implements TestChangesOnReferencedItems.Poly.Name 'Name2';
+            Implements TestChangesOnReferenced.Poly.Name 'Name2';
         }
     }
 
-    Persisted TestedInfo TestChangesOnReferencedItems.ComputeTestedInfo
+    Persisted TestedInfo TestChangesOnReferenced.ComputeTestedInfo
     {
         AllProperties;
         KeepSynchronized;
@@ -176,16 +176,16 @@ Module TestChangesOnReferencedItems
             t.ID,
             Info = t.Name + '-' + pa.Name + '-' + po.Name
         FROM
-            TestChangesOnReferencedItems.Tested t
-            LEFT JOIN TestChangesOnReferencedItems.Parent pa ON pa.ID = t.ParentID
-            LEFT JOIN TestChangesOnReferencedItems.Poly po ON po.ID = t.PolyID"
+            TestChangesOnReferenced.Tested t
+            LEFT JOIN TestChangesOnReferenced.Parent pa ON pa.ID = t.ParentID
+            LEFT JOIN TestChangesOnReferenced.Poly po ON po.ID = t.PolyID"
     {
-        Extends TestChangesOnReferencedItems.Tested;
+        Extends TestChangesOnReferenced.Tested;
         ShortString Info;
 
-        ChangesOnReferencedItems 'Base';
-        ChangesOnReferencedItems 'Base.Parent';
-        ChangesOnReferencedItems 'Base.Poly';
+        ChangesOnReferenced 'Base';
+        ChangesOnReferenced 'Base.Parent';
+        ChangesOnReferenced 'Base.Poly';
     }
 }
 

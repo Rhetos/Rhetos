@@ -272,7 +272,7 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void ChangesOnReferencedItems()
+        public void ChangesOnReferenced()
         {
             using (var container = new RhetosTestContainer())
             {
@@ -280,7 +280,7 @@ namespace CommonConcepts.Test
                 container.AddLogMonitor(log);
 
                 var repository = container.Resolve<Common.DomRepository>();
-                var test = repository.TestChangesOnReferencedItems;
+                var test = repository.TestChangesOnReferenced;
                 test.Tested.Delete(test.Tested.Query());
                 test.Parent.Delete(test.Parent.Query());
                 test.ImplementationSimple.Delete(test.ImplementationSimple.Query());
@@ -288,20 +288,20 @@ namespace CommonConcepts.Test
 
                 Assert.AreEqual("", TestUtility.DumpSorted(test.TestedInfo.Query(), item => item.Info));
 
-                var p1 = new TestChangesOnReferencedItems.Parent { Name = "p1" };
-                var p2 = new TestChangesOnReferencedItems.Parent { Name = "p2" };
+                var p1 = new TestChangesOnReferenced.Parent { Name = "p1" };
+                var p2 = new TestChangesOnReferenced.Parent { Name = "p2" };
                 test.Parent.Insert(p1, p2);
 
-                var s1 = new TestChangesOnReferencedItems.ImplementationSimple { Name = "s1" };
+                var s1 = new TestChangesOnReferenced.ImplementationSimple { Name = "s1" };
                 test.ImplementationSimple.Insert(s1);
 
-                var c1 = new TestChangesOnReferencedItems.ImplementationComplex { Name2 = "c1" };
+                var c1 = new TestChangesOnReferenced.ImplementationComplex { Name2 = "c1" };
                 test.ImplementationComplex.Insert(c1);
                 Guid c1AlternativeId = test.Poly.Query(item => item.ImplementationComplexAlternativeNameID == c1.ID).Select(item => item.ID).Single();
 
-                var t1a = new TestChangesOnReferencedItems.Tested { Name = "t1a", ParentID = p1.ID, PolyID = s1.ID };
-                var t1b = new TestChangesOnReferencedItems.Tested { Name = "t1b", ParentID = p1.ID, PolyID = s1.ID };
-                var t2 = new TestChangesOnReferencedItems.Tested { Name = "t2", ParentID = p2.ID, PolyID = c1AlternativeId };
+                var t1a = new TestChangesOnReferenced.Tested { Name = "t1a", ParentID = p1.ID, PolyID = s1.ID };
+                var t1b = new TestChangesOnReferenced.Tested { Name = "t1b", ParentID = p1.ID, PolyID = s1.ID };
+                var t2 = new TestChangesOnReferenced.Tested { Name = "t2", ParentID = p2.ID, PolyID = c1AlternativeId };
                 test.Tested.Insert(t1a, t1b, t2);
 
                 Assert.AreEqual("t1a-p1-s1, t1b-p1-s1, t2-p2-c1", TestUtility.DumpSorted(test.TestedInfo.Query(), item => item.Info));

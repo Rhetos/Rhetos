@@ -32,8 +32,8 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// * The ReferencePath can target a Polymorphic. This will generate a ChangesOnChangesItems for each Polymorphic implementation.
     /// </summary>
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("ChangesOnReferencedItems")]
-    public class ChangesOnReferencedItemsInfo : IConceptInfo, IValidatedConcept
+    [ConceptKeyword("ChangesOnReferenced")]
+    public class ChangesOnReferencedInfo : IConceptInfo, IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo Computation { get; set; }
@@ -52,9 +52,9 @@ namespace Rhetos.Dsl.DefaultConcepts
     }
 
     [Export(typeof(IConceptMacro))]
-    public class ChangesOnReferencedItemsMacro : IConceptMacro<ChangesOnReferencedItemsInfo>
+    public class ChangesOnReferencedMacro : IConceptMacro<ChangesOnReferencedInfo>
     {
-        public IEnumerable<IConceptInfo> CreateNewConcepts(ChangesOnReferencedItemsInfo conceptInfo, IDslModel existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts(ChangesOnReferencedInfo conceptInfo, IDslModel existingConcepts)
         {
             var reference = DslUtility.GetPropertyByPath(conceptInfo.Computation, conceptInfo.ReferencePath, existingConcepts).Value;
             if (!(reference is ReferencePropertyInfo))

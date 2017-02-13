@@ -114,7 +114,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Computations\ApplyFilterOnClientReadInfo.cs" />
-    <Compile Include="Computations\ChangesOnReferencedItemsInfo.cs" />
+    <Compile Include="Computations\ChangesOnReferencedInfo.cs" />
     <Compile Include="Computations\EntityComputedFromDefaultLoadFilterInfo.cs" />
     <Compile Include="Computations\InvalidDataInfo.cs" />
     <Compile Include="Computations\InvalidDataMessageParametersConstantInfo.cs" />
