@@ -58,5 +58,27 @@ namespace Rhetos.Dsl.Test
 
             TestUtility.ShouldFail<FrameworkException>(() => cm.Set(c1, cmString, "abc"), "metadata is already set", "SomeConcept", "c1", "cmString", cmString.Id.ToString());
         }
+
+        [TestMethod]
+        public void ContainsMetadata()
+        {
+            var cm = new ConceptMetadata();
+
+            var c1 = new SomeConcept { Name = "c1" };
+            var c2 = new SomeConcept { Name = "c2" };
+            var c3 = new SomeConcept { Name = "c3" };
+
+            cm.Set(c1, cmString, "abc");
+            cm.Set(c2, cmString, "def");
+            cm.Set(c2, cmInt, 123);
+
+            Assert.AreEqual(true, cm.Contains(c1, cmString));
+            Assert.AreEqual(true, cm.Contains(c2, cmString));
+            Assert.AreEqual(true, cm.Contains(c2, cmInt));
+
+            Assert.AreEqual(false, cm.Contains(c1, cmInt));
+            Assert.AreEqual(false, cm.Contains(c3, cmString));
+            Assert.AreEqual(false, cm.Contains(c3, cmInt));
+        }
     }
 }
