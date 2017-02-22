@@ -62,6 +62,10 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Data is already saved to the database (but the SQL transaction has not yet been committed) so SQL validations and computations can be used.</summary>
         public static readonly CsTag<DataStructureInfo> OnSaveTag2 = "WritableOrm OnSaveTag2";
 
+        /// <summary>Insert code here to returns a list at errors for the given items (IList&lt;Guid&gt; ids).
+        /// Data is already saved to the database (but the SQL transaction has not yet been committed) so SQL validations and computations can be used.</summary>
+        public static readonly CsTag<DataStructureInfo> OnSaveValidateTag = "WritableOrm OnSaveValidate";
+
         public static readonly CsTag<DataStructureInfo> OnDatabaseErrorTag = "WritableOrm OnDatabaseError";
 
         // TODO: Remove "duplicateObjects" check after implementing stateless session with "manual" saving.
@@ -167,6 +171,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 " + OnSaveTag2.Evaluate(info) + @"
 
+                Rhetos.Dom.DefaultConcepts.InvalidDataMessage.ValidateOnSave(insertedNew, updatedNew, this, ""{0}.{1}"");
                 allEffectsCompleted = true;
             }}
             finally
@@ -174,6 +179,12 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (!allEffectsCompleted)
                     _executionContext.PersistenceTransaction.DiscardChanges();
             }}
+        }}
+
+        public IEnumerable<Rhetos.Dom.DefaultConcepts.InvalidDataMessage> Validate(IList<Guid> ids, bool onSave)
+        {{
+            " + OnSaveValidateTag.Evaluate(info) + @"
+            yield break;
         }}
 
         ",
@@ -188,9 +199,14 @@ namespace Rhetos.Dom.DefaultConcepts
             if (info is IWritableOrmDataStructure)
             {
                 codeBuilder.InsertCode("IWritableRepository<" + info.Module.Name + "." + info.Name + ">", RepositoryHelper.RepositoryInterfaces, info);
+                codeBuilder.InsertCode("IValidateRepository", RepositoryHelper.RepositoryInterfaces, info);
+                codeBuilder.AddReferencesFromDependency(typeof(IWritableRepository<>));
+                codeBuilder.AddReferencesFromDependency(typeof(IValidateRepository));
+
                 codeBuilder.InsertCode(MemberFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info);
                 codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.ExceptionsUtility));
                 codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.CsUtility));
+                codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.InvalidDataMessage));
             }
         }
     }

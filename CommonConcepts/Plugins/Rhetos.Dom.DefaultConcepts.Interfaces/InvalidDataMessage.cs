@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Dom.DefaultConcepts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,10 +28,30 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     public class InvalidDataMessage
     {
-        public Guid ID;
         public string Message;
         public object[] MessageParameters = _emptyArray;
+        /// <summary>Optional.</summary>
+        public Guid? ID;
+        /// <summary>Optional.</summary>
+        public string Property;
 
         private static readonly object[] _emptyArray = new object[] { };
+
+        public static void ValidateOnSave(IEnumerable<IEntity> inserted, IEnumerable<IEntity> updated, IValidateRepository repository, string dataStructure)
+        {
+            if (inserted.Count() > 0 || updated.Count() > 0)
+            {
+                Guid[] newItemsIds = inserted.Concat(updated).Select(item => item.ID).ToArray();
+                var error = repository.Validate(newItemsIds, onSave: true).FirstOrDefault();
+                if (error != null)
+                {
+                    string systemMessage = "DataStructure:" + dataStructure
+                        + (error.ID != null ? ",ID:" + error.ID.Value.ToString() : "")
+                        + (error.Property != null ? ",Property:" + error.Property : "");
+
+                    throw new UserException(error.Message, error.MessageParameters, systemMessage, null);
+                }
+            }
+        }
     }
 }

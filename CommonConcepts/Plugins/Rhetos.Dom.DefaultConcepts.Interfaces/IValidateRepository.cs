@@ -19,29 +19,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Globalization;
 using System.Linq;
 using System.Text;
-using Rhetos.Utilities;
-using Rhetos.Compiler;
-using Rhetos.Dsl;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(InvalidDataMarkProperty2Info))]
-    public class InvalidDataMarkProperty2CodeGenerator : IConceptCodeGenerator
+    public interface IValidateRepository : IRepository
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
-        {
-            var info = (InvalidDataMarkProperty2Info)conceptInfo;
-
-            codeBuilder.InsertCode(
-                "property = " + CsUtility.QuotedString(info.MarkProperty.Name) + ";\r\n            ",
-                InvalidDataCodeGenerator.OverrideErrorMetadataTag, info.InvalidData);
-        }
+        IEnumerable<InvalidDataMessage> Validate(IList<Guid> ids, bool onSave);
     }
 }

@@ -116,6 +116,7 @@
     <Compile Include="Computations\ApplyFilterOnClientReadInfo.cs" />
     <Compile Include="Computations\ChangesOnReferencedInfo.cs" />
     <Compile Include="Computations\EntityComputedFromDefaultLoadFilterInfo.cs" />
+    <Compile Include="Computations\InvalidDataAllowSaveInfo.cs" />
     <Compile Include="Computations\InvalidDataInfo.cs" />
     <Compile Include="Computations\InvalidDataMessageParametersConstantInfo.cs" />
     <Compile Include="Computations\InvalidDataMessageInfo.cs" />

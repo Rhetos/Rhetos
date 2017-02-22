@@ -40,7 +40,12 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (WriteInfo)conceptInfo;
 
             codeBuilder.InsertCode("IWritableRepository<" + info.DataStructure.Module.Name + "." + info.DataStructure.Name + ">", RepositoryHelper.RepositoryInterfaces, info.DataStructure);
+            codeBuilder.InsertCode("IValidateRepository", RepositoryHelper.RepositoryInterfaces, info.DataStructure);
+            codeBuilder.AddReferencesFromDependency(typeof(IWritableRepository<>));
+            codeBuilder.AddReferencesFromDependency(typeof(IValidateRepository));
+
             codeBuilder.InsertCode(MemberFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info.DataStructure);
+            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.InvalidDataMessage));
         }
 
         protected static string MemberFunctionsSnippet(WriteInfo info)
@@ -71,9 +76,27 @@ namespace Rhetos.Dom.DefaultConcepts
 
             {2}
 
-            " + WritableOrmDataStructureCodeGenerator.OnSaveTag1.Evaluate(info.DataStructure) + @"
+            bool allEffectsCompleted = false;
+            try
+            {{
+                " + WritableOrmDataStructureCodeGenerator.OnSaveTag1.Evaluate(info.DataStructure) + @"
 
-            " + WritableOrmDataStructureCodeGenerator.OnSaveTag2.Evaluate(info.DataStructure) + @"
+                " + WritableOrmDataStructureCodeGenerator.OnSaveTag2.Evaluate(info.DataStructure) + @"
+
+                Rhetos.Dom.DefaultConcepts.InvalidDataMessage.ValidateOnSave(insertedNew, updatedNew, this, ""{0}.{1}"");
+                allEffectsCompleted = true;
+            }}
+            finally
+            {{
+                if (!allEffectsCompleted)
+                    _executionContext.PersistenceTransaction.DiscardChanges();
+            }}
+        }}
+
+        public IEnumerable<Rhetos.Dom.DefaultConcepts.InvalidDataMessage> Validate(IList<Guid> ids, bool onSave)
+        {{
+            " + WritableOrmDataStructureCodeGenerator.OnSaveValidateTag.Evaluate(info.DataStructure) + @"
+            yield break;
         }}
 
         ",
