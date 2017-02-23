@@ -314,6 +314,31 @@ Module TestMultipleLock
     }
 }
 
+Module TestAllowSave
+{
+    Entity Simple
+    {
+        Integer Code { Required; }
+        ShortString Name { Required; }
+        Integer CodeAS { RequiredAllowSave; }
+        ShortString NameAS { RequiredAllowSave; }
+
+        ItemFilter NameTooLong3 'item => item.Name.Length > 3';
+        InvalidData NameTooLong3 '[Test] Longer than 3.' { AllowSave; }
+
+        ItemFilter NameTooLong4 'item => item.Name.Length > 4';
+        InvalidData NameTooLong4 '[Test] Longer than 4.' { AllowSave; MarkProperty TestAllowSave.Simple.Name; }
+    }
+
+    Entity SimpleSystem
+    {
+        Integer Code { SystemRequired; }
+        ShortString Name { SystemRequired; }
+        Integer CodeAS { RequiredAllowSave; }
+        ShortString NameAS { RequiredAllowSave; }
+    }
+}
+
 Module TestRegex
 {
     Entity Simple 

@@ -162,6 +162,7 @@
     <Compile Include="ReferenceTest.cs" />
     <Compile Include="FullTextSearchTest.cs" />
     <Compile Include="Helpers\RhetosTestContainerExtensions.cs" />
+    <Compile Include="AllowSaveValidationsTest.cs" />
     <Compile Include="SqlExecuterTransactionTest.cs" />
     <Compile Include="LazyLoadTest.cs" />
     <Compile Include="QueryableRepositoryTest.cs" />

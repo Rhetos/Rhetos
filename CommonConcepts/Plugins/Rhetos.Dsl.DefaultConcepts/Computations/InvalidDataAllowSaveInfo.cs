@@ -49,7 +49,8 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(InvalidDataAllowSaveInfo conceptInfo, IDslModel existingConcepts)
         {
-            _conceptMetadata.Set(conceptInfo.InvalidData, InvalidDataInfo.AllowSaveMetadata, true);
+            if (!_conceptMetadata.Contains(conceptInfo.InvalidData, InvalidDataInfo.AllowSaveMetadata))
+                _conceptMetadata.Set(conceptInfo.InvalidData, InvalidDataInfo.AllowSaveMetadata, true);
             return null;
         }
     }
