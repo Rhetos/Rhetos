@@ -80,7 +80,7 @@ namespace Rhetos.Persistence
 @"<Mapping Space=""C-S"" xmlns=""http://schemas.microsoft.com/ado/2009/11/mapping/cs"">
 {0}
 </Mapping>",
-@"<Schema Namespace=""Rhetos"" Provider=""System.Data.SqlClient"" ProviderManifestToken=""2012"" Alias=""Self"" xmlns:customannotation=""http://schemas.microsoft.com/ado/2013/11/edm/customannotation"" xmlns=""http://schemas.microsoft.com/ado/2009/11/edm/ssdl"">
+@"<Schema Namespace=""Rhetos"" Provider=""System.Data.SqlClient"" ProviderManifestToken="""+SqlUtility.ProviderManifestToken+@""" Alias=""Self"" xmlns:customannotation=""http://schemas.microsoft.com/ado/2013/11/edm/customannotation"" xmlns=""http://schemas.microsoft.com/ado/2009/11/edm/ssdl"">
 {0}
 </Schema>"
         };

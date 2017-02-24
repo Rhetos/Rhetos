@@ -162,6 +162,9 @@
     </CodeAnalysisDictionary>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Sql.AzureSql.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Sql.MsSql.resx">
       <SubType>Designer</SubType>
     </EmbeddedResource>
