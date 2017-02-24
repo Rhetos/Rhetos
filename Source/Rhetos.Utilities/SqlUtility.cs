@@ -87,6 +87,7 @@ namespace Rhetos.Utilities
 
         private static Lazy<bool> DatabaseLanguageIsMsSql = new Lazy<bool>(() => string.Equals(DatabaseLanguage, "MsSql", StringComparison.Ordinal));
         private static Lazy<bool> DatabaseLanguageIsOracle = new Lazy<bool>(() => string.Equals(DatabaseLanguage, "Oracle", StringComparison.Ordinal));
+        private static Lazy<bool> DatabaseLanguageIsAzure = new Lazy<bool>(() => string.Equals(DatabaseLanguage, "AzureSql", StringComparison.Ordinal));
 
         public static string NationalLanguage
         {
@@ -123,6 +124,8 @@ namespace Rhetos.Utilities
                     return "System.Data.SqlClient";
                 else if (DatabaseLanguageIsOracle.Value)
                     return "Oracle.ManagedDataAccess.Client";
+                else if (DatabaseLanguageIsAzure.Value)
+                    return "System.Data.SqlClient";
                 else
                     throw new FrameworkException(UnsupportedLanguageError);
             }
@@ -221,7 +224,7 @@ namespace Rhetos.Utilities
         {
             int dotPosition = fullObjectName.IndexOf('.');
             if (dotPosition == -1)
-                if (DatabaseLanguageIsMsSql.Value)
+                if (DatabaseLanguageIsMsSql.Value || DatabaseLanguageIsAzure.Value)
                     return "dbo";
                 else if (DatabaseLanguageIsOracle.Value)
                     throw new FrameworkException("Missing schema name for database object '" + fullObjectName + "'.");
@@ -267,7 +270,7 @@ namespace Rhetos.Utilities
         /// </summary>
         public static Guid ReadGuid(DbDataReader dataReader, int column)
         {
-            if (DatabaseLanguageIsMsSql.Value)
+            if (DatabaseLanguageIsMsSql.Value || DatabaseLanguageIsAzure.Value)
                 return dataReader.GetGuid(column);
             else if (DatabaseLanguageIsOracle.Value)
                 return new Guid(((OracleDataReader)dataReader).GetOracleBinary(column).Value);
@@ -280,7 +283,7 @@ namespace Rhetos.Utilities
         /// </summary>
         public static int ReadInt(DbDataReader dataReader, int column)
         {
-            if (DatabaseLanguageIsMsSql.Value)
+            if (DatabaseLanguageIsMsSql.Value || DatabaseLanguageIsAzure.Value)
                 return dataReader.GetInt32(column);
             else if (DatabaseLanguageIsOracle.Value)
                 return Convert.ToInt32(dataReader.GetInt64(column)); // On some systems, reading from NUMERIC(10) column will return Int64, and GetInt32 would fail.
@@ -290,7 +293,7 @@ namespace Rhetos.Utilities
 
         public static Guid StringToGuid(string guid)
         {
-            if (DatabaseLanguageIsMsSql.Value)
+            if (DatabaseLanguageIsMsSql.Value || DatabaseLanguageIsAzure.Value)
                 return Guid.Parse(guid);
             else if (DatabaseLanguageIsOracle.Value)
                 return new Guid(StringToByteArray(guid));
@@ -317,7 +320,7 @@ namespace Rhetos.Utilities
 
         public static string GuidToString(Guid guid)
         {
-            if (DatabaseLanguageIsMsSql.Value)
+            if (DatabaseLanguageIsMsSql.Value || DatabaseLanguageIsAzure.Value)
                 return guid.ToString().ToUpper();
             else if (DatabaseLanguageIsOracle.Value)
                 return ByteArrayToString(guid.ToByteArray());
@@ -386,7 +389,7 @@ namespace Rhetos.Utilities
         /// </summary>
         public static string EmptyNullString(DbDataReader dataReader, int column)
         {
-            if (DatabaseLanguageIsMsSql.Value)
+            if (DatabaseLanguageIsMsSql.Value || DatabaseLanguageIsAzure.Value)
                 return dataReader.GetString(column) ?? "";
             else if (DatabaseLanguageIsOracle.Value)
             {
@@ -453,7 +456,7 @@ namespace Rhetos.Utilities
         private static DateTime GetDatabaseTimeFromDatabase(ISqlExecuter sqlExecuter)
         {
             DateTime now;
-            if (DatabaseLanguageIsMsSql.Value)
+            if (DatabaseLanguageIsMsSql.Value || DatabaseLanguageIsAzure.Value)
                 now = MsSqlUtility.GetDatabaseTime(sqlExecuter);
             else if (DatabaseLanguageIsOracle.Value)
                 throw new FrameworkException("GetDatabaseTime function is not yet supported in Rhetos for Oracle database.");
@@ -473,5 +476,20 @@ namespace Rhetos.Utilities
         }
 
         private static readonly Regex batchSplitter = new Regex(@"^\s*GO\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+
+        public static string ProviderManifestToken
+        {
+            get
+            {
+                if (DatabaseLanguageIsAzure.Value)
+                {
+                    return "2012.Azure";
+                }
+                else
+                {
+                    return "2012";
+                }
+            }
+        }
     }
 }

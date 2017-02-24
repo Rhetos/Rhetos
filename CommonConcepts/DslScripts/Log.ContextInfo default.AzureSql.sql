@@ -1,0 +1,1 @@
+CONVERT(varchar(128),LEFT(context_info(), ISNULL(NULLIF(CHARINDEX(0x00, context_info())-1,-1),128)),0)

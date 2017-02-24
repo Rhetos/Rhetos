@@ -60,6 +60,7 @@ namespace CleanupOldData
         {
             var sqlExecuterImplementations = new Dictionary<string, Lazy<ISqlExecuter>>()
             {
+                { "AzureSql", new Lazy<ISqlExecuter>(() => new MsSqlExecuter(connectionString, new ConsoleLogProvider(), new NullUserInfo(), null)) },
                 { "MsSql", new Lazy<ISqlExecuter>(() => new MsSqlExecuter(connectionString, new ConsoleLogProvider(), new NullUserInfo(), null)) },
                 { "Oracle", new Lazy<ISqlExecuter>(() => new OracleSqlExecuter(connectionString, new ConsoleLogProvider(), new NullUserInfo())) }
             };

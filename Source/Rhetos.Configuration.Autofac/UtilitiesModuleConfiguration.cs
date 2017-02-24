@@ -39,6 +39,7 @@ namespace Rhetos.Configuration.Autofac
 
             var sqlImplementations = new[]
             {
+                new { Dialect = "AzureSql", SqlExecuter = typeof(MsSqlExecuter), SqlUtility = typeof(MsSqlUtility) },
                 new { Dialect = "MsSql", SqlExecuter = typeof(MsSqlExecuter), SqlUtility = typeof(MsSqlUtility) },
                 new { Dialect = "Oracle", SqlExecuter = typeof(OracleSqlExecuter), SqlUtility = typeof(OracleSqlUtility) },
             }.ToDictionary(imp => imp.Dialect);
