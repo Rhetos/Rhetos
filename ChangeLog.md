@@ -1,17 +1,18 @@
 ﻿# Rhetos release notes
 
-## 1.6.0 (TO BE RELEASED)
+## 1.6.0 (2017-02-27)
 
 ### New features
 
-* New concept **AllowSave**, for suppressing **InvalidData** validations on save.
+* New concept: **AllowSave**, for suppressing **InvalidData** validations on save.
   The `Validate` method is available on the repository to list the validation errors that do not block saving.
-* New concept **RequiredAllowSave**.
+* New concept: **RequiredAllowSave**, for suppressing **Required** property validations on save.
+* New concept: **ErrorMetadata**, for setting the extensible metadata to **InvalidData** error message.
 
 ### Internal improvements
 
-* Bugfix: *SqlCommandTimeout* is not applied to Entity Framework queries.
-* Extensible metadata for error messages.
+* Bugfix: The *SqlCommandTimeout* configuration option is not applied to the Entity Framework queries.
+* *AssemblyGenerator* uses UTF-8 with BOM when writing the source file (*ServerDom.cs*, for example).
 
 ## 1.5.0 (2017-02-13)
 
