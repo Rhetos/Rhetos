@@ -35,7 +35,7 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(InvalidDataInfo))]
     public class InvalidDataCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly CsTag<InvalidDataInfo> OverrideErrorMetadataTag = "OverrideErrorMetadata";
+        public static readonly CsTag<InvalidDataInfo> ErrorMetadataTag = "ErrorMetadata";
         public static readonly CsTag<InvalidDataInfo> OverrideUserMessagesTag = "OverrideUserMessages";
 
         private readonly ConceptMetadata _conceptMetadata;
@@ -55,14 +55,18 @@ namespace Rhetos.Dom.DefaultConcepts
         $@"public IEnumerable<InvalidDataMessage> {info.GetErrorMessageMethodName()}(IEnumerable<Guid> invalidData_Ids)
         {{
             const string invalidData_Description = {CsUtility.QuotedString(info.ErrorMessage)};
-            string property = null;
-            {OverrideErrorMetadataTag.Evaluate(info)}
-            {OverrideUserMessagesTag.Evaluate(info)} return invalidData_Ids.Select(id => new InvalidDataMessage {{ ID = id, Message = invalidData_Description, Property = property }});
+            IDictionary<string, object> metadata = new Dictionary<string, object>();
+            {ErrorMetadataTag.Evaluate(info)}
+            {OverrideUserMessagesTag.Evaluate(info)} return invalidData_Ids.Select(id => new InvalidDataMessage {{ ID = id, Message = invalidData_Description, Metadata = metadata }});
         }}
 
         ";
             codeBuilder.InsertCode(errorMessageMethod, RepositoryHelper.RepositoryMembers, info.Source);
             codeBuilder.AddReferencesFromDependency(typeof(InvalidDataMessage));
+
+            codeBuilder.InsertCode(
+                "metadata[\"Validation\"] = " + CsUtility.QuotedString(info.FilterType) + ";\r\n            ",
+                ErrorMetadataTag, info);
 
             bool allowSave = _conceptMetadata.GetOrDefault(info, InvalidDataInfo.AllowSaveMetadata, false);
             string validationSnippet =

@@ -30,10 +30,20 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         public string Message;
         public object[] MessageParameters = _emptyArray;
-        /// <summary>Optional.</summary>
-        public Guid? ID;
-        /// <summary>Optional.</summary>
-        public string Property;
+        public Guid ID;
+        public IDictionary<string, object> Metadata;
+
+        public string Property { get { return (string)GetMetadata("Property"); } }
+        public string Validation { get { return (string)GetMetadata("Validation"); } }
+
+        public object GetMetadata(string key)
+        {
+            object value;
+            if (Metadata != null)
+                if (Metadata.TryGetValue(key, out value))
+                    return value;
+            return null;
+        }
 
         private static readonly object[] _emptyArray = new object[] { };
 
@@ -45,11 +55,13 @@ namespace Rhetos.Dom.DefaultConcepts
                 var error = repository.Validate(newItemsIds, onSave: true).FirstOrDefault();
                 if (error != null)
                 {
-                    string systemMessage = "DataStructure:" + dataStructure
-                        + (error.ID != null ? ",ID:" + error.ID.Value.ToString() : "")
-                        + (error.Property != null ? ",Property:" + error.Property : "");
+                    string systemMessage = "DataStructure:" + dataStructure + ",ID:" + error.ID.ToString()
+                        + (error.Metadata != null ? string.Concat(error.Metadata.Select(m => "," + m.Key + ":" + m.Value.ToString())) : "");
 
-                    throw new UserException(error.Message, error.MessageParameters, systemMessage, null);
+                    throw new UserException(error.Message, error.MessageParameters, systemMessage, null)
+                    {
+                        Info = error.Metadata
+                    };
                 }
             }
         }

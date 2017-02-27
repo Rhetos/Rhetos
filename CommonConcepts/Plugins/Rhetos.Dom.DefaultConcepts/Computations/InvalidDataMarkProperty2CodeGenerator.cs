@@ -40,8 +40,8 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (InvalidDataMarkProperty2Info)conceptInfo;
 
             codeBuilder.InsertCode(
-                "property = " + CsUtility.QuotedString(info.MarkProperty.Name) + ";\r\n            ",
-                InvalidDataCodeGenerator.OverrideErrorMetadataTag, info.InvalidData);
+                "metadata[\"Property\"] = " + CsUtility.QuotedString(info.MarkProperty.Name) + ";\r\n            ",
+                InvalidDataCodeGenerator.ErrorMetadataTag, info.InvalidData);
         }
     }
 }

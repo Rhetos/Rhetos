@@ -45,7 +45,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 ID = id,
                 Message = invalidData_Description,
                 MessageParameters = new object[] { " + info.MessageParameters + @" },
-                Property = property
+                Metadata = metadata
             });
             // ";
             codeBuilder.InsertCode(setMessages, InvalidDataCodeGenerator.OverrideUserMessagesTag, info.InvalidData);
