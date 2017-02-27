@@ -118,6 +118,7 @@
     <Compile Include="Computations\EntityComputedFromDefaultLoadFilterInfo.cs" />
     <Compile Include="Computations\InvalidDataAllowSaveInfo.cs" />
     <Compile Include="Computations\InvalidDataInfo.cs" />
+    <Compile Include="Computations\InvalidDataErrorMetadataInfo.cs" />
     <Compile Include="Computations\InvalidDataMessageParametersConstantInfo.cs" />
     <Compile Include="Computations\InvalidDataMessageInfo.cs" />
     <Compile Include="Computations\InvalidDataMessageParametersItemInfo.cs" />

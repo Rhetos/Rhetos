@@ -32,15 +32,15 @@ using Rhetos.Extensibility;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(InvalidDataMarkProperty2Info))]
-    public class InvalidDataMarkProperty2CodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(InvalidDataErrorMetadataInfo))]
+    public class InvalidDataErrorMetadataCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (InvalidDataMarkProperty2Info)conceptInfo;
+            var info = (InvalidDataErrorMetadataInfo)conceptInfo;
 
             codeBuilder.InsertCode(
-                "metadata[\"Property\"] = " + CsUtility.QuotedString(info.MarkProperty.Name) + ";\r\n            ",
+                $"metadata[{CsUtility.QuotedString(info.Key)}] = {CsUtility.QuotedString(info.Value)};\r\n            ",
                 InvalidDataCodeGenerator.ErrorMetadataTag, info.InvalidData);
         }
     }

@@ -40,7 +40,8 @@
                 {
                     ID = item.ID,
                     Message = "Property ''{0}'' should not contain ''{1}''. The entered text is ''{2}'', {3} characters long.",
-                    MessageParameters = new object[] { "Simple2-Name", "letter D", item.Name, item.NameLength }
+                    MessageParameters = new object[] { "Simple2-Name", "letter D", item.Name, item.NameLength },
+                    Metadata = metadata
                 })';
         }
     }
