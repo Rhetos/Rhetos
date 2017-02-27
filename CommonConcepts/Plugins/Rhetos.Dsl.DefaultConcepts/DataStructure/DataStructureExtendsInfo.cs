@@ -33,15 +33,12 @@ namespace Rhetos.Dsl.DefaultConcepts
         public DataStructureInfo Extension { get; set; }
 
         public DataStructureInfo Base { get; set; }
-
-        public override string ToString()
+  
+        public string ExtensionPropertyName()
         {
-            return Extension + " extends " + Base;
-        }
-
-        public override int GetHashCode()
-        {
-            return Extension.GetHashCode() ^ Base.GetHashCode();
+            if (Base.Module == Extension.Module)
+                return "Extension_" + Extension.Name;
+            return "Extension_" + Extension.Module.Name + "_" + Extension.Name;
         }
     }
 }

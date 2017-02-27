@@ -68,11 +68,10 @@ namespace Rhetos.Dom.DefaultConcepts
                     DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
         }
 
+        [Obsolete("Use conceptInfo.ExtensionPropertyName()")]
         public static string ExtensionPropertyName(DataStructureExtendsInfo info)
         {
-            if (info.Base.Module == info.Extension.Module)
-                return "Extension_" + info.Extension.Name;
-            return "Extension_" + info.Extension.Module.Name + "_" + info.Extension.Name;
+            return info.ExtensionPropertyName();
         }
     }
 }
