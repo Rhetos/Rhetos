@@ -56,7 +56,7 @@ namespace CreateAndSetDatabase
                 return Encoding.Default;
             }
         }
-        
+
         public static void ReplaceWithRegex(string fileName, string regex, string value, string invalidMessage)
         {
             var replaceRegex = new Regex(regex, RegexOptions.Multiline);
@@ -77,13 +77,39 @@ namespace CreateAndSetDatabase
     {
         static void Main(string[] args)
         {
-            if (args.Length != 2)
+            foreach (var a in args)
             {
-                Console.WriteLine("Usage: CreateAndSetDatabase <SQLServer> <DataBaseName>");
+                Console.WriteLine(a);
+            }
+
+            CreateAndSetDatabaseCliOptions options;
+            try
+            {
+                options = CliOptionsParser.Parse<CreateAndSetDatabaseCliOptions>(args);
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine(ex.Message);
+                CreateAndSetDatabaseCliOptions.ShowHelp();
                 return;
             }
-            string sqlMasterConnectionString = "server=" + args[0] + ";database=master;integrated security=SSPI;";
-            string dbName = args[1];
+
+            if (options.Help)
+            {
+                CreateAndSetDatabaseCliOptions.ShowHelp();
+                return;
+            }
+
+            string serverName = options.ServerName;
+            string dbName = options.DatabaseName;
+            string sqlMasterConnectionString = "server=" + serverName + ";database=master;Integrated Security=SSPI;";
+            string rhetosConnectionString = @"Data Source=" + serverName + ";Initial Catalog=" + dbName + @";Integrated Security=SSPI;";
+
+            if (!options.UseSSPI)
+            {
+                sqlMasterConnectionString = "server=" + serverName + ";database=master;User ID=" + options.UserId + ";Password=" + options.Password + ";";
+                rhetosConnectionString = @"Data Source=" + serverName + ";Initial Catalog=" + dbName + @";User ID=" + options.UserId + ";Password=" + options.Password + ";";
+            }
 
             SqlConnection sc = new SqlConnection(sqlMasterConnectionString);
             sc.Open();
@@ -91,8 +117,11 @@ namespace CreateAndSetDatabase
             Console.Write("Preparing database ...");
             try
             {
+                // Connection to remote server (e.g. Azure DB) can take very long time,
+                // so CommandTimeout is set to 5 minutes.
+                com.CommandTimeout = 300;
                 com.ExecuteNonQuery();
-                Console.Write(" database [" + args[0] + "." + dbName + "] created.");
+                Console.Write(" database [" + serverName + "." + dbName + "] created.");
             }
             catch (SqlException se) {
                 if (!se.Message.Contains("Database '" + dbName+ "' already exists"))
@@ -109,7 +138,7 @@ namespace CreateAndSetDatabase
             // set Rhetos to point to new database
             FileReplaceHelper.ReplaceWithRegex(@"ConnectionStrings.config"
                             , @"<add.*?name=""ServerConnectionString""(.|\n)*?/>"
-                            , @"<add connectionString=""Data Source=" + args[0] + ";Initial Catalog=" + args[1] + @";Integrated Security=SSPI;"" name=""ServerConnectionString"" providerName=""Rhetos.MsSql"" />"
+                            , @"<add connectionString="""+rhetosConnectionString+@""" name=""ServerConnectionString"" providerName=""Rhetos.MsSql"" />"
                             , "Not valid ConnectionStrings.config file.");
         }
     }

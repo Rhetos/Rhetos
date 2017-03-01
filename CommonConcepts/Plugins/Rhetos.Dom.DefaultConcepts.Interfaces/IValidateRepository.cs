@@ -18,14 +18,14 @@
 */
 
 using System;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-[assembly: AssemblyCompany("Omega software")]
-[assembly: AssemblyCopyright("Copyright (C) Omega software 2017")]
-[assembly: AssemblyTrademark("")]
-
-[assembly: AssemblyVersion("1.7.0")]
-[assembly: AssemblyFileVersion("1.7.0")]
-[assembly: AssemblyInformationalVersion("1.7.0-dev")]
+namespace Rhetos.Dom.DefaultConcepts
+{
+    public interface IValidateRepository : IRepository
+    {
+        IEnumerable<InvalidDataMessage> Validate(IList<Guid> ids, bool onSave);
+    }
+}

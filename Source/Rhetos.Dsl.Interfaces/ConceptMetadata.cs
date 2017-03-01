@@ -61,9 +61,19 @@ namespace Rhetos.Dsl
             return (T)metadataValue;
         }
 
+        public T GetOrDefault<T>(IConceptInfo conceptInfo, ConceptMetadataType<T> metadataType, T defaultValue)
+        {
+            return Contains(conceptInfo, metadataType)
+                ? Get(conceptInfo, metadataType)
+                : defaultValue;
+        }
+
         public bool Contains<T>(IConceptInfo conceptInfo, ConceptMetadataType<T> metadataType)
         {
-            return _metadata.ContainsKey(conceptInfo.GetKey());
+            Dictionary<Guid, object> conceptMetadataByType;
+            if (!_metadata.TryGetValue(conceptInfo.GetKey(), out conceptMetadataByType))
+                return false;
+            return conceptMetadataByType.ContainsKey(metadataType.Id);
         }
     }
 
@@ -79,6 +89,7 @@ namespace Rhetos.Dsl
             Name = name;
         }
 
+        /// <param name="name">Name (optional) is used only for debugging.</param>
         public static implicit operator ConceptMetadataType<T>(string name)
         {
             return new ConceptMetadataType<T>(name);

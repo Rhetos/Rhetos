@@ -62,7 +62,7 @@ namespace Rhetos.Compiler
             else
             {
                 sourceFile = Path.GetFullPath(Path.ChangeExtension(compilerParameters.OutputAssembly, ".cs"));
-                File.WriteAllText(sourceFile, assemblySource.GeneratedCode);
+                File.WriteAllText(sourceFile, assemblySource.GeneratedCode, Encoding.UTF8);
                 using (CSharpCodeProvider codeProvider = new CSharpCodeProvider())
                     results = codeProvider.CompileAssemblyFromFile(compilerParameters, sourceFile);
             }

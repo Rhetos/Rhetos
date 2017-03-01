@@ -26,28 +26,15 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("MarkProperty")]
-    public class InvalidDataMarkProperty2Info : InvalidDataErrorMetadataInfo, IValidatedConcept, IAlternativeInitializationConcept
+    [ConceptKeyword("ErrorMetadata")]
+    public class InvalidDataErrorMetadataInfo : IConceptInfo
     {
-        // TODO: Rename to InvalidDataMarkPropertyInfo after deleting the old concept.
+        [ConceptKey]
+        public InvalidDataInfo InvalidData { get; set; }
 
-        public PropertyInfo MarkProperty { get; set; }
+        [ConceptKey]
+        public string Key { get; set; }
 
-        public IEnumerable<string> DeclareNonparsableProperties()
-        {
-            return new[] { "Key", "Value" };
-        }
-
-        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
-        {
-            Key = "Property";
-            Value = MarkProperty.Name;
-            createdConcepts = null;
-        }
-
-        public void CheckSemantics(IDslModel existingConcepts)
-        {
-            DslUtility.CheckIfPropertyBelongsToDataStructure(MarkProperty, InvalidData.Source, this);
-        }
+        public string Value { get; set; }
     }
 }

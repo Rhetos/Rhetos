@@ -62,6 +62,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (InitializationConcept)conceptInfo;
 
             codeBuilder.InsertCode(GenerateCommonClassesSnippet());
+
             if (_configuration.GetBool("EntityFramework.UseDatabaseNullSemantics", false).Value == true)
                 codeBuilder.InsertCode("this.Configuration.UseDatabaseNullSemantics = true;\r\n            ", EntityFrameworkContextInitializeTag);
 
@@ -75,6 +76,7 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.GenericRepositories));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Logging.ILogProvider));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Security.IWindowsSecurity));
+            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.SqlUtility));
             codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.DbContext));
             codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.SqlServer.SqlProviderServices));
             codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.Core.EntityClient.EntityConnection));
@@ -133,6 +135,9 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private void Initialize()
         {
+            var objectContext = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)this).ObjectContext;
+
+            objectContext.CommandTimeout = Rhetos.Utilities.SqlUtility.SqlCommandTimeout;
             " + EntityFrameworkContextInitializeTag + @"
         }
 

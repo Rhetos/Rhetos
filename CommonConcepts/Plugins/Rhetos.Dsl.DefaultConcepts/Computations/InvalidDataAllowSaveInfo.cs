@@ -25,29 +25,33 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Modifies the InvalidData concept to suppress data validation on save.
+    /// Instead, the data validation can be excepted separately as a report.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("MarkProperty")]
-    public class InvalidDataMarkProperty2Info : InvalidDataErrorMetadataInfo, IValidatedConcept, IAlternativeInitializationConcept
+    [ConceptKeyword("AllowSave")]
+    public class InvalidDataAllowSaveInfo : IConceptInfo
     {
-        // TODO: Rename to InvalidDataMarkPropertyInfo after deleting the old concept.
+        [ConceptKey]
+        public InvalidDataInfo InvalidData { get; set; }
+    }
 
-        public PropertyInfo MarkProperty { get; set; }
+    [Export(typeof(IConceptMacro))]
+    public class InvalidDataAllowSaveMacro : IConceptMacro<InvalidDataAllowSaveInfo>
+    {
+        private readonly ConceptMetadata _conceptMetadata;
 
-        public IEnumerable<string> DeclareNonparsableProperties()
+        public InvalidDataAllowSaveMacro(ConceptMetadata conceptMetadata)
         {
-            return new[] { "Key", "Value" };
+            _conceptMetadata = conceptMetadata;
         }
 
-        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts(InvalidDataAllowSaveInfo conceptInfo, IDslModel existingConcepts)
         {
-            Key = "Property";
-            Value = MarkProperty.Name;
-            createdConcepts = null;
-        }
-
-        public void CheckSemantics(IDslModel existingConcepts)
-        {
-            DslUtility.CheckIfPropertyBelongsToDataStructure(MarkProperty, InvalidData.Source, this);
+            if (!_conceptMetadata.Contains(conceptInfo.InvalidData, InvalidDataInfo.AllowSaveMetadata))
+                _conceptMetadata.Set(conceptInfo.InvalidData, InvalidDataInfo.AllowSaveMetadata, true);
+            return null;
         }
     }
 }

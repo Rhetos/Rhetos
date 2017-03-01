@@ -32,7 +32,7 @@ namespace Rhetos
         /// The Info property is used instead of the existing "Data" dictionary to avoid security issue when sending data to the client,
         /// since other tools might use the Data for internal debugging data.
         /// </summary>
-        public Dictionary<string, object> Info { get; set; } = new Dictionary<string, object>();
+        public IDictionary<string, object> Info { get; set; } = new Dictionary<string, object>();
 
         public RhetosException() { }
         public RhetosException(string message) : base(message) { }

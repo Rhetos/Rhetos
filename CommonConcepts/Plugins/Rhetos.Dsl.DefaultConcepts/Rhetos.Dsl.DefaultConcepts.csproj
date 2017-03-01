@@ -116,7 +116,9 @@
     <Compile Include="Computations\ApplyFilterOnClientReadInfo.cs" />
     <Compile Include="Computations\ChangesOnReferencedInfo.cs" />
     <Compile Include="Computations\EntityComputedFromDefaultLoadFilterInfo.cs" />
+    <Compile Include="Computations\InvalidDataAllowSaveInfo.cs" />
     <Compile Include="Computations\InvalidDataInfo.cs" />
+    <Compile Include="Computations\InvalidDataErrorMetadataInfo.cs" />
     <Compile Include="Computations\InvalidDataMessageParametersConstantInfo.cs" />
     <Compile Include="Computations\InvalidDataMessageInfo.cs" />
     <Compile Include="Computations\InvalidDataMessageParametersItemInfo.cs" />
@@ -301,6 +303,7 @@
     <Compile Include="SimpleBusinessLogic\PessimisticLockingInfo.cs" />
     <Compile Include="SimpleBusinessLogic\CustomClaimInfo.cs" />
     <Compile Include="SimpleBusinessLogic\BrowseTakePropertyInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\RequiredAllowSaveInfo.cs" />
     <Compile Include="SimpleBusinessLogic\UserRequiredPropertyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\SimpleReferencePropertyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\SystemRequiredInfo.cs" />

@@ -25,44 +25,55 @@ using System.Text;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Utilities;
+using Rhetos.Compiler;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("SystemRequired")]
-    public class SystemRequiredInfo : IMacroConcept
+    [ConceptKeyword("RequiredAllowSave")]
+    public class RequiredAllowSaveInfo : IMacroConcept
     {
         [ConceptKey]
         public PropertyInfo Property { get; set; }
 
+        public static readonly CsTag<RequiredAllowSaveInfo> OrCondition = "OrCondition";
+
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            string filterName = "SystemRequired" + Property.Name;
+            string filterName = "RequiredAllowSave" + Property.Name;
+
+            string emptyStringOrCondition = (Property is ShortStringPropertyInfo || Property is LongStringPropertyInfo)
+                ? "|| item." + Property.Name + " == \"\" "
+                : "";
 
             var filter = new ItemFilterInfo
             {
                 Source = Property.DataStructure,
                 FilterName = filterName,
-                Expression = "item => item." + Property.Name + " == null"
+                Expression = "item => item." + Property.Name + " == null " + emptyStringOrCondition + OrCondition.Evaluate(this)
             };
             var invalidData = new InvalidDataInfo
             {
                 Source = Property.DataStructure,
                 FilterType = filterName,
-                ErrorMessage = "System required property {0} is not set."
+                ErrorMessage = "The required property {0} is not set."
             };
             var messageParameters = new InvalidDataMessageParametersConstantInfo
             {
                 InvalidData = invalidData,
-                MessageParameters = CsUtility.QuotedString(Property.GetUserDescription())
+                MessageParameters = CsUtility.QuotedString(Property.Name)
             };
             var invalidProperty = new InvalidDataMarkProperty2Info
             {
                 InvalidData = invalidData,
                 MarkProperty = Property
             };
+            var allowSave = new InvalidDataAllowSaveInfo
+            {
+                InvalidData = invalidData
+            };
 
-            return new IConceptInfo[] { filter, invalidData, messageParameters, invalidProperty };
+            return new IConceptInfo[] { filter, invalidData, messageParameters, invalidProperty, allowSave };
         }
     }
 }

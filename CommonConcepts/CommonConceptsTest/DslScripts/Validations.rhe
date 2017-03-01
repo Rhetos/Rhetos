@@ -40,7 +40,8 @@
                 {
                     ID = item.ID,
                     Message = "Property ''{0}'' should not contain ''{1}''. The entered text is ''{2}'', {3} characters long.",
-                    MessageParameters = new object[] { "Simple2-Name", "letter D", item.Name, item.NameLength }
+                    MessageParameters = new object[] { "Simple2-Name", "letter D", item.Name, item.NameLength },
+                    Metadata = metadata
                 })';
         }
     }
@@ -311,6 +312,31 @@ Module TestMultipleLock
 
         ItemFilter PassTooShort 'item => item.Pass.Length < item.PassDependency.MinPassLength';
         InvalidData PassTooShort '[Test] Pass is too short.';
+    }
+}
+
+Module TestAllowSave
+{
+    Entity Simple
+    {
+        Integer Code { Required; }
+        ShortString Name { Required; }
+        Integer CodeAS { RequiredAllowSave; }
+        ShortString NameAS { RequiredAllowSave; }
+
+        ItemFilter NameTooLong3 'item => item.Name.Length > 3';
+        InvalidData NameTooLong3 '[Test] Longer than 3.' { AllowSave; }
+
+        ItemFilter NameTooLong4 'item => item.Name.Length > 4';
+        InvalidData NameTooLong4 '[Test] Longer than 4.' { AllowSave; MarkProperty TestAllowSave.Simple.Name; }
+    }
+
+    Entity SimpleSystem
+    {
+        Integer Code { SystemRequired; }
+        ShortString Name { SystemRequired; }
+        Integer CodeAS { RequiredAllowSave; }
+        ShortString NameAS { RequiredAllowSave; }
     }
 }
 
