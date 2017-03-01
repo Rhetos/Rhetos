@@ -19,7 +19,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -41,7 +43,7 @@ namespace Rhetos.Utilities
             if (text.Length > 128)
                 text = text.Substring(1, 128);
 
-            var query = new StringBuilder(text.Length*2 + 2);
+            var query = new StringBuilder(text.Length * 2 + 2);
             query.Append("SET CONTEXT_INFO 0x");
             foreach (char c in text)
             {
@@ -84,9 +86,9 @@ namespace Rhetos.Utilities
                 return new UserException(sqlException.Message, exception);
 
             if (sqlException.Errors != null)
-            foreach (var sqlError in sqlException.Errors.Cast<SqlError>().OrderBy(e => e.LineNumber))
-                if (sqlError.State == userErrorCode)
-                    return new UserException(sqlError.Message, exception);
+                foreach (var sqlError in sqlException.Errors.Cast<SqlError>().OrderBy(e => e.LineNumber))
+                    if (sqlError.State == userErrorCode)
+                        return new UserException(sqlError.Message, exception);
 
             //=========================
             // Detect system errors:
@@ -156,7 +158,7 @@ namespace Rhetos.Utilities
 
             return null;
         }
-        
+
         private static readonly string[] _referenceConstraintTypes = new string[] { "REFERENCE", "SAME TABLE REFERENCE", "FOREIGN KEY", "COLUMN FOREIGN KEY" };
 
         public Exception ExtractSqlException(Exception exception)
@@ -205,6 +207,74 @@ namespace Rhetos.Utilities
                 && (info.GetValueOrDefault("DependentTable") as string) == dependentTable
                 && (info.GetValueOrDefault("DependentColumn") as string) == dependentColumn
                 && (info.GetValueOrDefault("ConstraintName") as string) == constraintName;
+        }
+
+        public static SqlVersion GetSqlVersion(DbConnection connection)
+        {
+            var majorVersion = Int32.Parse(connection.ServerVersion.Substring(0, 2), CultureInfo.InvariantCulture);
+
+            if (majorVersion >= 11)
+            {
+                return SqlVersion.Sql11;
+            }
+
+            if (majorVersion == 10)
+            {
+                return SqlVersion.Sql10;
+            }
+
+            if (majorVersion == 9)
+            {
+                return SqlVersion.Sql9;
+            }
+            return SqlVersion.Sql8;
+        }
+
+        public static ServerType GetServerType(DbConnection connection)
+        {
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT serverproperty('EngineEdition')";
+            var reader = command.ExecuteReader();
+            int engineEdition = 0;
+            while (reader.Read())
+            {
+                engineEdition = reader.GetInt32(0);
+            }
+            const int sqlAzureEngineEdition = 5;
+            return engineEdition == sqlAzureEngineEdition ? ServerType.Cloud : ServerType.OnPremises;
+        }
+
+        public static string GetVersionHint(SqlVersion version, ServerType serverType)
+        {
+            if (serverType == ServerType.Cloud)
+            {
+                return SqlProviderManifest.TokenAzure11;
+            }
+
+            switch (version)
+            {
+                case SqlVersion.Sql8:
+                    return SqlProviderManifest.TokenSql8;
+
+                case SqlVersion.Sql9:
+                    return SqlProviderManifest.TokenSql9;
+
+                case SqlVersion.Sql10:
+                    return SqlProviderManifest.TokenSql10;
+
+                case SqlVersion.Sql11:
+                    return SqlProviderManifest.TokenSql11;
+
+                default:
+                    throw new ArgumentException("Could not determine storage version; a valid storage connection or a version hint is required.");
+            }
+        }
+
+        public static string QueryForManifestToken(DbConnection conn)
+        {
+            var sqlVersion = GetSqlVersion(conn);
+            var serverType = sqlVersion >= SqlVersion.Sql11 ? GetServerType(conn) : ServerType.OnPremises;
+            return GetVersionHint(sqlVersion, serverType);
         }
     }
 }
