@@ -136,6 +136,7 @@
     <EmbeddedResource Include="..\..\Source\Database\RhetosDatabase.Oracle.sql">
       <Link>RhetosDatabase.Oracle.sql</Link>
     </EmbeddedResource>
+    <EmbeddedResource Include="Sql.AzureSql.resx" />
     <EmbeddedResource Include="Sql.MsSql.resx" />
     <EmbeddedResource Include="Sql.Oracle.resx" />
   </ItemGroup>
@@ -143,6 +144,11 @@
     <None Include="packages.config" />
     <EmbeddedResource Include="Template.RhetosPackages.config" />
     <EmbeddedResource Include="Template.RhetosPackageSources.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\Database\RhetosDatabase.AzureSql.sql">
+      <Link>RhetosDatabase.AzureSql.sql</Link>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

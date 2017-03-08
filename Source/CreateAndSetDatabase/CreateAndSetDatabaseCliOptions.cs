@@ -39,6 +39,14 @@ namespace CreateAndSetDatabase
 
         public string DatabaseName { get; set; }
 
+        public string ProviderName { get; set; }
+
+        public CreateAndSetDatabaseCliOptions()
+            : base()
+        {
+            this.ProviderName = "Rhetos.MsSql";
+        }
+
         public override void Initialize()
         {
             Help = this.Options.ContainsKey("-h");
@@ -55,6 +63,11 @@ namespace CreateAndSetDatabase
 
             ServerName = this.Arguments[0];
             DatabaseName = this.Arguments[1];
+
+            if (this.Options.ContainsKey("-provider"))
+            {
+                ProviderName = this.Options["-provider"];
+            }
 
             UseSSPI = !this.Options.ContainsKey("-c");
             if (!UseSSPI)
@@ -83,7 +96,7 @@ namespace CreateAndSetDatabase
 
         public override bool RequireOptionArgument(string option)
         {
-            var argumentRequiredOptions = new[] { "-userid", "-pw" };
+            var argumentRequiredOptions = new[] { "-userid", "-pw", "-provider" };
 
             return argumentRequiredOptions.Contains(option);
         }
@@ -97,6 +110,7 @@ namespace CreateAndSetDatabase
         -c                  use datbase login credential instead of integrated security, if specified, userId and password will be asked
         -userid <UserId>    database's user ID
         -pw <Password>      database's password
+        -provider <Name>    (optional) database provider name
 "
             );
         }
