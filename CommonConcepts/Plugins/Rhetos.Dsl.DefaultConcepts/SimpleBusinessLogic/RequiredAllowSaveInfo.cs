@@ -40,7 +40,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            string filterName = "RequiredAllowSave" + Property.Name;
+            string filterName = "RequiredAllowSave_" + Property.Name;
 
             string emptyStringOrCondition = (Property is ShortStringPropertyInfo || Property is LongStringPropertyInfo)
                 ? "|| item." + Property.Name + " == \"\" "
