@@ -1,5 +1,17 @@
 ﻿# Rhetos release notes
 
+## 1.7.0 (2017-03-09)
+
+### New features
+
+* Support for *Azure SQL Database*.
+
+### Internal improvements
+
+* Bugfix: Error when deploying to an empty database "There is already an object named 'Common' in the database".
+* Bugfix: MetadataException when deploying on SQL Server 2008 "All SSDL artifacts must target the same provider".
+* Removed DSL constraint "Browse should be created in same module as referenced entity".
+
 ## 1.6.0 (2017-02-27)
 
 ### New features
