@@ -135,10 +135,12 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private void Initialize()
         {
-            var objectContext = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)this).ObjectContext;
+            System.Data.Entity.Database.SetInitializer<EntityFrameworkContext>(null); // Prevent EF from creating database objects.
 
-            objectContext.CommandTimeout = Rhetos.Utilities.SqlUtility.SqlCommandTimeout;
             " + EntityFrameworkContextInitializeTag + @"
+
+            var objectContext = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)this).ObjectContext;
+            objectContext.CommandTimeout = Rhetos.Utilities.SqlUtility.SqlCommandTimeout;
         }
 
         public void ClearCache()
@@ -201,6 +203,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public EntityFrameworkConfiguration()
         {
             SetProviderServices(""System.Data.SqlClient"", System.Data.Entity.SqlServer.SqlProviderServices.Instance);
+
             " + EntityFrameworkConfigurationTag + @"
 
             System.Data.Entity.DbConfiguration.SetConfiguration(this);
