@@ -381,15 +381,15 @@ namespace CommonConcepts.Test
 
                 var repository = container.Resolve<Common.DomRepository>();
 
-                Assert.AreEqual("a1", TestUtility.DumpSorted(repository.TestSqlWorkarounds.HasNotNullProperty.All(), item => item.Name + item.Code));
+                Assert.AreEqual("a1", TestUtility.DumpSorted(repository.TestSqlWorkarounds.HasNotNullProperty.Query(), item => item.Name + item.Code));
 
                 TestUtility.ShouldFail(
                     () => sqlExecuter.ExecuteSql(new[] { "INSERT INTO TestSqlWorkarounds.HasNotNullProperty (Name) SELECT 'b'" }),
-                    "Cannot insert the value NULL into column 'Code', table 'Rhetos.TestSqlWorkarounds.HasNotNullProperty'");
+                    "Cannot insert the value NULL into column 'Code', table '", ".TestSqlWorkarounds.HasNotNullProperty'");
 
                 TestUtility.ShouldFail(
                     () => sqlExecuter.ExecuteSql(new[] { "INSERT INTO TestSqlWorkarounds.HasNotNullProperty (Code) SELECT 2" }),
-                    "Cannot insert the value NULL into column 'Name', table 'Rhetos.TestSqlWorkarounds.HasNotNullProperty'");
+                    "Cannot insert the value NULL into column 'Name', table '", ".TestSqlWorkarounds.HasNotNullProperty'");
 
             }
         }
