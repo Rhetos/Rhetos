@@ -34,12 +34,6 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public void CheckSemantics(IDslModel concepts)
         {
-            if (Module.Name != Source.Module.Name)
-                throw new DslSyntaxException(
-                    string.Format("Browse should be created in same module as referenced entity. Expecting {0} instead of {1}.",
-                        Source.Module,
-                        Module));
-
             var properties = concepts.FindByReference<PropertyInfo>(p => p.DataStructure, this);
 
             var propertyWithoutSelector = properties

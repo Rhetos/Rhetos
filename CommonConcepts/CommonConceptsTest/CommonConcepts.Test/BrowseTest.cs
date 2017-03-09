@@ -175,7 +175,7 @@ namespace CommonConcepts.Test.OldConcepts
                     });
 
                 Assert.AreEqual("complex parent parent parent base ext2", TestUtility.DumpSorted(
-                    repository.TestBrowse.SFTake.All(),
+                    repository.TestBrowse.SFTake.Query(),
                     item => item.Code + " " + item.RefName + " " + item.RefName2 + " " + item.RefName3 + " " + item.RefBaseName + " " + item.RefExtension_ParentExtension2Name2));
 
                 Assert.AreEqual("complex", TestUtility.DumpSorted(repository.TestBrowse.SFTake.Query(), item => item.Base.Code));
@@ -229,6 +229,37 @@ namespace CommonConcepts.Test.OldConcepts
                     Assert.IsTrue(q is IQueryable, q.GetType().FullName);
                     Assert.AreEqual("abc", q.Single().RefName);
                 }
+            }
+        }
+
+        [TestMethod]
+        public void OtherModule()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                Guid parentID = Guid.NewGuid();
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                    {
+                        "DELETE FROM TestBrowse.Complex",
+                        "DELETE FROM TestBrowse.Parent",
+                        "DELETE FROM TestBrowse.ParentBase",
+                        "INSERT INTO TestBrowse.ParentBase (ID, Name) VALUES ('" + parentID + "', 'base')",
+                        "INSERT INTO TestBrowse.Parent (ID, Name) VALUES ('" + parentID + "', 'parent')",
+                        "INSERT INTO TestBrowse.ParentExtension2 (ID, Name2) VALUES ('" + parentID + "', 'ext2')",
+                        "INSERT INTO TestBrowse.Complex (RefID, Code) VALUES ('" + parentID + "', 'complex')",
+                    });
+
+                Assert.AreEqual("complex parent parent parent base ext2", TestUtility.DumpSorted(
+                    repository.TestBrowse2.OtherModuleBrowse.Query(),
+                    item => item.Code + " " + item.RefName + " " + item.RefName2 + " " + item.RefName3 + " " + item.RefBaseName + " " + item.RefExtension_ParentExtension2Name2));
+
+                Assert.AreEqual("complex", TestUtility.DumpSorted(repository.TestBrowse2.OtherModuleBrowse.Query(), item => item.Base.Code));
+
+                Assert.AreEqual(parentID, repository.TestBrowse2.OtherModuleBrowse.Query().Single().RefID);
+                Assert.AreEqual(parentID, repository.TestBrowse2.OtherModuleBrowse.Query().Single().ParentReferenceID);
+                Assert.AreEqual("parent", repository.TestBrowse2.OtherModuleBrowse.Query().Single().ParentReference.Name);
             }
         }
     }

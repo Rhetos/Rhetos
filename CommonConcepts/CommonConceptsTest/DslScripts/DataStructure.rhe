@@ -95,6 +95,23 @@ Module TestBrowse
 	}
 }
 
+Module TestBrowse2
+{
+	Browse OtherModuleBrowse TestBrowse.Complex
+	{
+		Take Code;
+		Take 'Ref.Name';
+		Take RefName2 'Ref.Name';
+		ShortString RefName3 { From 'Ref.Name'; }
+		
+		Take 'Ref.Base.Name';
+		Take 'Ref.Extension_ParentExtension2.Name2';
+		
+		Take 'Ref.ID';
+		Take ParentReference Ref;
+	}
+}
+
 Module Test13
 {
 	AutodetectSqlDependencies;
