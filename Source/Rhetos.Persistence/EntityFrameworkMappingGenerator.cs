@@ -22,7 +22,9 @@ using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
+using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -47,7 +49,17 @@ namespace Rhetos.Persistence
             _codeGenerator = codeGenerator;
             _performanceLogger = logProvider.GetLogger("Performance");
         }
-
+        private Lazy<string> GetProviderManifestToken = new Lazy<string>(() =>
+        {
+            using (SqlConnection sc = new SqlConnection(SqlUtility.ConnectionString))
+            {
+                sc.Open();
+                string providerManifestToken = MsSqlUtility.QueryForManifestToken(sc);
+                sc.Close();
+                return providerManifestToken;
+            }
+        });
+        
         public void Generate()
         {
             var sw = Stopwatch.StartNew();
@@ -57,13 +69,13 @@ namespace Rhetos.Persistence
 
             if (segments.Count() != EntityFrameworkMapping.ModelFiles.Count())
                 throw new FrameworkException("Unexpected number of metadata segments: " + segments.Count() + ", expected " + EntityFrameworkMapping.ModelFiles.Count() + ".");
-
+            
             for (int s = 0; s < segments.Count(); s++)
             {
                 string clearedXml = XmlUtility.RemoveComments(segments[s]);
                 if (!string.IsNullOrWhiteSpace(clearedXml))
                 {
-                    clearedXml = string.Format(_xmlRootElements[s], clearedXml);
+                    clearedXml = string.Format(GetXmlRootElements()[s], clearedXml);
                     string filePath = Path.Combine(Paths.GeneratedFolder, EntityFrameworkMapping.ModelFiles[s]);
                     File.WriteAllText(filePath, clearedXml, Encoding.UTF8);
                 }
@@ -72,18 +84,21 @@ namespace Rhetos.Persistence
             _performanceLogger.Write(sw, "EntityFrameworkMappingGenerator.GenerateMapping");
         }
 
-        private static readonly string[] _xmlRootElements = new[]
+        private string[] GetXmlRootElements()
         {
+                return new[]
+                {
 @"<Schema Namespace=""Rhetos"" Alias=""Self"" annotation:UseStrongSpatialTypes=""false"" xmlns:annotation=""http://schemas.microsoft.com/ado/2009/02/edm/annotation"" xmlns:customannotation=""http://schemas.microsoft.com/ado/2013/11/edm/customannotation"" xmlns=""http://schemas.microsoft.com/ado/2009/11/edm"">
 {0}
 </Schema>",
 @"<Mapping Space=""C-S"" xmlns=""http://schemas.microsoft.com/ado/2009/11/mapping/cs"">
 {0}
 </Mapping>",
-@"<Schema Namespace=""Rhetos"" Provider=""System.Data.SqlClient"" ProviderManifestToken=""2012"" Alias=""Self"" xmlns:customannotation=""http://schemas.microsoft.com/ado/2013/11/edm/customannotation"" xmlns=""http://schemas.microsoft.com/ado/2009/11/edm/ssdl"">
+@"<Schema Namespace=""Rhetos"" Provider=""System.Data.SqlClient"" ProviderManifestToken=""" + GetProviderManifestToken.Value + "\"" + @" Alias=""Self"" xmlns:customannotation=""http://schemas.microsoft.com/ado/2013/11/edm/customannotation"" xmlns=""http://schemas.microsoft.com/ado/2009/11/edm/ssdl"">
 {0}
 </Schema>"
-        };
+            };
+        }
 
         private class InitialSnippet : IConceptCodeGenerator
         {
