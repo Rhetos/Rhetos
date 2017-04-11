@@ -1,34 +1,25 @@
-﻿/*
-    Copyright (C) 2014 Omega software d.o.o.
-
-    This file is part of Rhetos.
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-using Autofac;
+﻿using Autofac;
 using Autofac.Configuration;
-using Autofac.Integration.Wcf;
+using Rhetos;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Web.Mvc;
+using System.Web.Routing;
+using System.Web.Http;
+using Autofac.Integration.WebApi;
+using System.Reflection;
 
-namespace Rhetos
+namespace RhetosWebApi
 {
-    public class Global : System.Web.HttpApplication
+    public interface IHello
+    {
+    }
+    public class Hello : IHello
+    { }
+    public class MvcApplication : System.Web.HttpApplication
     {
         private static ILogger _logger;
         private static ILogger _performanceLogger;
@@ -37,17 +28,31 @@ namespace Rhetos
         // Called only once.
         protected void Application_Start(object sender, EventArgs e)
         {
+            Console.WriteLine("change");
+            AreaRegistration.RegisterAllAreas();
+            GlobalConfiguration.Configure(WebApiConfig.Register);
+            RouteConfig.RegisterRoutes(RouteTable.Routes);
+
             var stopwatch = Stopwatch.StartNew();
 
             Paths.InitializeRhetosServer();
 
             var builder = new ContainerBuilder();
+            var config = GlobalConfiguration.Configuration;
+            
             builder.RegisterModule(new ConfigurationSettingsReader("autofacComponents"));
-            AutofacServiceHostFactory.Container = builder.Build();
+            //builder.RegisterApiControllers(Assembly.LoadFile(@"F:\Project\Rhetos\AspNetFormsAuth\Plugins\Rhetos.AspNetFormsAuthWebApi\bin\Debug\Rhetos.AspNetFormsAuthWebApi.dll"));
+            builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
+            builder.RegisterType<Hello>().As<IHello>();
+            builder.RegisterType<NLogProvider>().As<ILogProvider>();
 
-            _logger = AutofacServiceHostFactory.Container.Resolve<ILogProvider>().GetLogger("Global");
-            _performanceLogger = AutofacServiceHostFactory.Container.Resolve<ILogProvider>().GetLogger("Performance");
-            _pluginServices = AutofacServiceHostFactory.Container.Resolve<IEnumerable<IService>>();
+            var container = builder.Build();
+            config.DependencyResolver = new AutofacWebApiDependencyResolver(container);
+
+            
+            _logger = container.Resolve<ILogProvider>().GetLogger("Global");
+            _performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
+            _pluginServices = container.Resolve<IEnumerable<IService>>();
 
             _performanceLogger.Write(stopwatch, "Autofac initialized.");
 
@@ -66,8 +71,8 @@ namespace Rhetos
                     throw;
                 }
             }
-
-            _performanceLogger.Write(stopwatch, "All services initialized.");
+            Console.WriteLine("Done");
+            //_performanceLogger.Write(stopwatch, "All services initialized.");
         }
 
         // Called once for each application instance.
@@ -91,38 +96,6 @@ namespace Rhetos
                         throw;
                     }
                 }
-        }
-
-        protected void Session_Start(object sender, EventArgs e)
-        {
-
-        }
-
-        protected void Application_BeginRequest(object sender, EventArgs e)
-        {
-
-        }
-
-        protected void Application_AuthenticateRequest(object sender, EventArgs e)
-        {
-
-        }
-
-        protected void Application_Error(object sender, EventArgs e)
-        {
-            var ex = Server.GetLastError();
-            if (_logger != null)
-                _logger.Error("Application error: " + ex.ToString());
-        }
-
-        protected void Session_End(object sender, EventArgs e)
-        {
-
-        }
-
-        protected void Application_End(object sender, EventArgs e)
-        {
-
         }
     }
 }

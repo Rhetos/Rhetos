@@ -68,6 +68,10 @@
       <Project>{71e63722-57bc-41df-9ff5-57ecc67e4bc1}</Project>
       <Name>Rhetos.Utilities</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rhetos.AspNetFormsAuthWebApi\Rhetos.AspNetFormsAuthWebApi.csproj">
+      <Project>{2de0ad56-bfd7-4097-ab58-d5f6d5928dae}</Project>
+      <Name>Rhetos.AspNetFormsAuthWebApi</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.AspNetFormsAuth\Rhetos.AspNetFormsAuth.csproj">
       <Project>{8ce0595e-b553-48d0-8848-9ecb254b2973}</Project>
       <Name>Rhetos.AspNetFormsAuth</Name>

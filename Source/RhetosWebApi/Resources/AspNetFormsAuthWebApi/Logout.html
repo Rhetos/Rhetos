@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Rhetos: Log out</title>
+        <script type="text/javascript" src="Js/jquery-1.7.min.js" ></script>
+        <script type="text/javascript">
+        $(document).ready(function () {
+            $.ajax({
+                        url: 'Authentication/Logout',
+                        type: 'POST',
+                        dataType: 'json',
+                        async: false,
+                        contentType: 'application/json; charset=utf-8',
+                        data: '',
+                        success: function (data) {
+                            if (data!==null)
+                                alert('Unexpected server response: ' + data.toString());
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            var msg = jqXHR.responseText
+                            try { msg = JSON.parse(msg); } catch (e) {}
+                            if (errorThrown !== 'Bad Request')
+                                msg = msg + '\n\n(' + textStatus + ' ' + errorThrown + ')';
+                            alert('ERROR:\n\n' + msg);
+                        }
+                    });
+         });
+        </script>
+    </head>
+    <body>
+        <h1>Log out</h1>
+        <p>
+            You are now logged out.
+        </p>
+    </body>
+</html>
