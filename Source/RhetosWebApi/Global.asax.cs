@@ -11,6 +11,7 @@ using System.Web.Routing;
 using System.Web.Http;
 using Autofac.Integration.WebApi;
 using System.Reflection;
+using System.Linq;
 
 namespace RhetosWebApi
 {
@@ -28,7 +29,6 @@ namespace RhetosWebApi
         // Called only once.
         protected void Application_Start(object sender, EventArgs e)
         {
-            Console.WriteLine("change");
             AreaRegistration.RegisterAllAreas();
             GlobalConfiguration.Configure(WebApiConfig.Register);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
@@ -41,19 +41,12 @@ namespace RhetosWebApi
             var config = GlobalConfiguration.Configuration;
             
             builder.RegisterModule(new ConfigurationSettingsReader("autofacComponents"));
-            //builder.RegisterApiControllers(Assembly.LoadFile(@"F:\Project\Rhetos\AspNetFormsAuth\Plugins\Rhetos.AspNetFormsAuthWebApi\bin\Debug\Rhetos.AspNetFormsAuthWebApi.dll"));
-            builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
-            builder.RegisterType<Hello>().As<IHello>();
-            builder.RegisterType<NLogProvider>().As<ILogProvider>();
-
             var container = builder.Build();
             config.DependencyResolver = new AutofacWebApiDependencyResolver(container);
 
-            
             _logger = container.Resolve<ILogProvider>().GetLogger("Global");
             _performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
             _pluginServices = container.Resolve<IEnumerable<IService>>();
-
             _performanceLogger.Write(stopwatch, "Autofac initialized.");
 
             foreach (var service in _pluginServices)
@@ -72,7 +65,7 @@ namespace RhetosWebApi
                 }
             }
             Console.WriteLine("Done");
-            //_performanceLogger.Write(stopwatch, "All services initialized.");
+            _performanceLogger.Write(stopwatch, "All services initialized.");
         }
 
         // Called once for each application instance.

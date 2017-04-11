@@ -30,9 +30,9 @@
             $('#login').click(function() {
 
                 var data = JSON.stringify({ 'UserName': $('#username').val(), 'Password': $('#password').val(), 'PersistCookie': $('#persistcookie').is(':checked') });
-
+				var urlLogin = window.location.protocol+'//'+window.location.hostname+(window.location.port ? ':'+window.location.port: '');
                 $.ajax({
-                            url: 'Authentication/Login',
+                            url: urlLogin + '/api/authentication/Login',
                             type: 'POST',
                             dataType: 'json',
                             async: false,

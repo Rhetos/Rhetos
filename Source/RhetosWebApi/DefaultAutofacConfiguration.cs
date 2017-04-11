@@ -14,7 +14,7 @@ namespace RhetosWebApi
             //builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
             //builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
             Plugins.FindAndRegisterPlugins<IService>(builder);
-            //Plugins.FindAndRegisterPlugins<IHomePageSnippet>(builder);
+            Plugins.FindAndRegisterPlugins<IHomePageSnippet>(builder);
 
             // General registrations:
             builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(deploymentTime: false, deployDatabaseOnly: false));

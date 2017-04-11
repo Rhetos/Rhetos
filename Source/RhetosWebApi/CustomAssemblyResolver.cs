@@ -12,7 +12,7 @@ namespace RhetosWebApi
         public ICollection<Assembly> GetAssemblies()
         {
             List<Assembly> baseAssemblies = AppDomain.CurrentDomain.GetAssemblies().ToList();
-            //var controllersAssembly = Assembly.LoadFrom(@"F:\Project\ExternalLibrary\ExternalLibrary\bin\Debug\ExternalLibrary.dll");
+            //var controllersAssembly = Assembly.LoadFrom(@"D:\Projects\RhetosWebApiS2\AspNetFormsAuth\Plugins\Rhetos.AspNetFormsAuthWebApi\bin\Debug\Rhetos.AspNetFormsAuthWebApi.dll");
             //baseAssemblies.Add(controllersAssembly);
             return baseAssemblies;
         }

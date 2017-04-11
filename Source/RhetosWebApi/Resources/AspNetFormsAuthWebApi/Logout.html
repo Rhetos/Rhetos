@@ -7,8 +7,10 @@
         <script type="text/javascript" src="Js/jquery-1.7.min.js" ></script>
         <script type="text/javascript">
         $(document).ready(function () {
+			var urlServer = window.location.protocol+'//'+window.location.hostname+(window.location.port ? ':'+window.location.port: '');
+
             $.ajax({
-                        url: 'Authentication/Logout',
+                        url: urlServer + '/api/authentication/Logout',
                         type: 'POST',
                         dataType: 'json',
                         async: false,

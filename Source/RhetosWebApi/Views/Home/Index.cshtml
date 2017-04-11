@@ -2,17 +2,28 @@
 @{
     Layout = null;
 }
-
 <!DOCTYPE html>
 
 <html>
 <head>
     <meta name="viewport" content="width=device-width" />
-    <title>Index</title>
+    <title>Rhetos</title>
 </head>
 <body>
-    <div> 
-        Rhetos Web Api 3 + @DateTime.Now
-    </div>
+    <p>@Html.Raw(ViewBag.Snippet)</p>
+    <h2>Installed packages</h2>
+    <table>
+        <tbody>
+            @Html.Raw(ViewBag.Package)
+        </tbody>
+    </table>
+    <h2>Server status</h2>
+    <p>
+        Local server time: @System.DateTime.Now <br />
+        Process start time: @System.Diagnostics.Process.GetCurrentProcess().StartTime <br />
+        User identity: @Context.User.Identity.Name<br />
+        User authentication type: @Context.User.Identity.AuthenticationType<br />
+        Is 64-bit process: @Environment.Is64BitProcess<br />
+    </p>
 </body>
 </html>
