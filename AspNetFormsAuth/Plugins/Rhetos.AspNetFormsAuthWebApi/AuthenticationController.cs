@@ -140,29 +140,29 @@ namespace Rhetos.AspNetFormsAuthWebApi
         private readonly ILocalizer _localizer;
 
         public AuthenticationController(
-            ILogProvider logProvider
-            //Lazy<IAuthorizationManager> authorizationManager,
-            //GenericRepositories repositories,
-            //Lazy<ISqlExecuter> sqlExecuter,
-            //Lazy<IEnumerable<ISendPasswordResetToken>> sendPasswordResetTokenPlugins,
-            //ILocalizer localizer
+            ILogProvider logProvider,
+            Lazy<IAuthorizationManager> authorizationManager,
+            GenericRepositories repositories,
+            Lazy<ISqlExecuter> sqlExecuter,
+            Lazy<IEnumerable<ISendPasswordResetToken>> sendPasswordResetTokenPlugins,
+            ILocalizer localizer
             )
         {
-            //_logger = logProvider.GetLogger("AspNetFormsAuth.AuthenticationController");
-            //_authorizationManager = authorizationManager;
-            //_sqlExecuter = sqlExecuter;
-            //_sendPasswordResetTokenPlugin = new Lazy<ISendPasswordResetToken>(() => SinglePlugin(sendPasswordResetTokenPlugins));
+            _logger = logProvider.GetLogger("AspNetFormsAuthWebApi.AuthenticationController");
+            _authorizationManager = authorizationManager;
+            _sqlExecuter = sqlExecuter;
+            _sendPasswordResetTokenPlugin = new Lazy<ISendPasswordResetToken>(() => SinglePlugin(sendPasswordResetTokenPlugins));
 
-            //_passwordStrengthRules = new Lazy<IEnumerable<IPasswordStrength>>(() => repositories.Load<IPasswordStrength>());
-            //_passwordAttemptsLimits = new Lazy<IEnumerable<IPasswordAttemptsLimit>>(() =>
-            //{
-            //    var limits = repositories.Load<IPasswordAttemptsLimit>();
-            //    foreach (var limit in limits)
-            //        if (limit.TimeoutInSeconds == null || limit.TimeoutInSeconds <= 0)
-            //            limit.TimeoutInSeconds = int.MaxValue;
-            //    return limits;
-            //});
-            //_localizer = localizer;
+            _passwordStrengthRules = new Lazy<IEnumerable<IPasswordStrength>>(() => repositories.Load<IPasswordStrength>());
+            _passwordAttemptsLimits = new Lazy<IEnumerable<IPasswordAttemptsLimit>>(() =>
+            {
+                var limits = repositories.Load<IPasswordAttemptsLimit>();
+                foreach (var limit in limits)
+                    if (limit.TimeoutInSeconds == null || limit.TimeoutInSeconds <= 0)
+                        limit.TimeoutInSeconds = int.MaxValue;
+                return limits;
+            });
+            _localizer = localizer;
         }
 
         private ISendPasswordResetToken SinglePlugin(Lazy<IEnumerable<ISendPasswordResetToken>> plugins)
@@ -191,16 +191,15 @@ namespace Rhetos.AspNetFormsAuthWebApi
         [Route("Login")]
         public bool Login(LoginParameters parameters)
         {
-            //if (parameters == null)
-            //    throw new ClientException("It is not allowed to call this authentication service method with no parameters provided.");
-            //_logger.Trace(() => "Login: " + parameters.UserName);
-            //parameters.Validate();
-            //CheckPasswordFailuresBeforeLogin(parameters.UserName);
+            if (parameters == null)
+                throw new ClientException("It is not allowed to call this authentication service method with no parameters provided.");
+            _logger.Trace(() => "Login: " + parameters.UserName);
+            parameters.Validate();
+            CheckPasswordFailuresBeforeLogin(parameters.UserName);
 
-            //return SafeExecute(
-            //    () => WebSecurity.Login(parameters.UserName, parameters.Password, parameters.PersistCookie),
-            //    "Login", parameters.UserName);
-            return true;
+            return SafeExecute(
+                () => WebSecurity.Login(parameters.UserName, parameters.Password, parameters.PersistCookie),
+                "Login", parameters.UserName);
         }
 
         private void CheckPasswordFailuresBeforeLogin(string userName)
@@ -230,6 +229,7 @@ namespace Rhetos.AspNetFormsAuthWebApi
         }
 
         [HttpPost]
+        [Route("Logout")]
         public void Logout()
         {
             _logger.Trace(() => "Logout: " + WebSecurity.CurrentUserName);
@@ -238,6 +238,7 @@ namespace Rhetos.AspNetFormsAuthWebApi
         }
 
         [HttpPost]
+        [Route("SetPassword")]
         public void SetPassword(SetPasswordParameters parameters)
         {
             if (parameters == null)
@@ -269,6 +270,7 @@ namespace Rhetos.AspNetFormsAuthWebApi
         }
 
         [HttpPost]
+        [Route("ChangeMyPassword")]
         public bool ChangeMyPassword(ChangeMyPasswordParameters parameters)
         {
             if (parameters == null)
@@ -296,6 +298,7 @@ namespace Rhetos.AspNetFormsAuthWebApi
         }
 
         [HttpPost]
+        [Route("UnlockUser")]
         public void UnlockUser(UnlockUserParameters parameters)
         {
             if (parameters == null)
@@ -319,6 +322,7 @@ namespace Rhetos.AspNetFormsAuthWebApi
                 p.Name = {0}";
 
         [HttpPost]
+        [Route("GeneratePasswordResetToken")]
         public string GeneratePasswordResetToken(GeneratePasswordResetTokenParameters parameters)
         {
             if (parameters == null)
@@ -347,6 +351,7 @@ namespace Rhetos.AspNetFormsAuthWebApi
         }
 
         [HttpPost]
+        [Route("SendPasswordResetToken")]
         public void SendPasswordResetToken(SendPasswordResetTokenParameters parameters)
         {
             if (parameters == null)
@@ -400,6 +405,7 @@ namespace Rhetos.AspNetFormsAuthWebApi
         /// <param name="parameters"></param>
         /// <returns></returns>
         [HttpPost]
+        [Route("ResetPassword")]
         public bool ResetPassword(ResetPasswordParameters parameters)
         {
             if (parameters == null)

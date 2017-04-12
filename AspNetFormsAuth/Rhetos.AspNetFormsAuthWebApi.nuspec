@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>Rhetos.AspNetFormsAuthWebApi</id>
-    <version>1.8.14-dev</version>
+    <version>1.8.18-dev</version>
     <authors>Omega software</authors>
     <owners>Omega software</owners>
     <licenseUrl>http://opensource.org/licenses/AGPL-3.0</licenseUrl>
@@ -20,7 +20,7 @@
     <file src="Readme.md" target="" />
     <file src="DataMigration\**\*" target="DataMigration" />
     <file src="DslScripts\**\*" target="DslScripts" />
-    <file src="Resources\**\*" target="Resources" />
+    <file src="ResourcesForWebApi\**\*" target="Resources" />
     <file src="Plugins\Rhetos.AspNetFormsAuthWebApi\bin\Debug\Rhetos.AspNetFormsAuthWebApi.dll" target="lib\net451" />
     <file src="Plugins\Rhetos.AspNetFormsAuthWebApi\bin\Debug\Rhetos.AspNetFormsAuthWebApi.pdb" target="lib\net451" />
     <file src="Plugins\Rhetos.AspNetFormsAuthWebApi\bin\Debug\Rhetos.AspNetFormsAuthWebApi.Interfaces.dll" target="lib\net451" />

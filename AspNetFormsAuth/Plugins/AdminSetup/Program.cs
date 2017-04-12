@@ -18,7 +18,7 @@
 */
 
 using Autofac;
-using Rhetos.AspNetFormsAuth;
+using Rhetos.AspNetFormsAuthWebApi;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Extensibility;
