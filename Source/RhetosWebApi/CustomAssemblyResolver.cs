@@ -13,14 +13,12 @@ namespace RhetosWebApi
         public ICollection<Assembly> GetAssemblies()
         {
             List<Assembly> baseAssemblies = AppDomain.CurrentDomain.GetAssemblies().ToList();
-            //string generatedPath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "bin", "Generated");
-            //foreach (string dll in Directory.GetFiles(generatedPath, "*.dll", SearchOption.AllDirectories))
-            //{
-            //    var loadedAssembly = Assembly.LoadFile(dll);
-            //    baseAssemblies.Add(loadedAssembly);
-            //}
-            var controllersAssembly = Assembly.LoadFrom(@"D:\Project\RhetosWebApiMigration\Source\RhetosWebApi\bin\Generated\ApiService.dll");
-            baseAssemblies.Add(controllersAssembly);
+            string generatedPath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "bin", "Generated");
+            foreach (string dll in Directory.GetFiles(generatedPath, "*.dll", SearchOption.AllDirectories))
+            {
+                var loadedAssembly = Assembly.LoadFile(dll);
+                baseAssemblies.Add(loadedAssembly);
+            }
             return baseAssemblies;
         }
     }
