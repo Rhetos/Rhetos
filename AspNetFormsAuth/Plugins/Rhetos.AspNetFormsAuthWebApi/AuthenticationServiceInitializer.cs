@@ -65,7 +65,7 @@ namespace Rhetos.AspNetFormsAuthWebApi
 
         public void InitializeApplicationInstance(HttpApplication context)
         {
-            //_cancelUnauthorizedClientRedirectionModule.Init(context);
+            _cancelUnauthorizedClientRedirectionModule.Init(context);
         }
     }
 }
