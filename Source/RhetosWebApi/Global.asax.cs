@@ -12,6 +12,9 @@ using System.Web.Http;
 using Autofac.Integration.WebApi;
 using System.Reflection;
 using System.Linq;
+using System.Net.Http.Formatting;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace RhetosWebApi
 {
@@ -40,6 +43,14 @@ namespace RhetosWebApi
             var builder = new ContainerBuilder();
             var config = GlobalConfiguration.Configuration;
             
+            config.Formatters.Clear();
+            config.Formatters.Add(new JsonMediaTypeFormatter());
+            config.Formatters.JsonFormatter.SerializerSettings =
+            new JsonSerializerSettings
+            {
+                ContractResolver = new DefaultContractResolver()
+            };
+
             builder.RegisterModule(new ConfigurationSettingsReader("autofacComponents"));
             var container = builder.Build();
             config.DependencyResolver = new AutofacWebApiDependencyResolver(container);

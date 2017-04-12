@@ -127,7 +127,6 @@ namespace Rhetos.AspNetFormsAuthWebApi
     }
 
     #endregion
-    [AllowAnonymous]
     [RoutePrefix("api/authentication")]
     public class AuthenticationController : ApiController
     {
@@ -188,6 +187,7 @@ namespace Rhetos.AspNetFormsAuthWebApi
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [Route("Login")]
         public bool Login(LoginParameters parameters)
         {
@@ -229,6 +229,7 @@ namespace Rhetos.AspNetFormsAuthWebApi
         }
 
         [HttpPost]
+        [Authorize]
         [Route("Logout")]
         public void Logout()
         {
@@ -238,6 +239,7 @@ namespace Rhetos.AspNetFormsAuthWebApi
         }
 
         [HttpPost]
+        [Authorize]
         [Route("SetPassword")]
         public void SetPassword(SetPasswordParameters parameters)
         {
@@ -270,6 +272,7 @@ namespace Rhetos.AspNetFormsAuthWebApi
         }
 
         [HttpPost]
+        [Authorize]
         [Route("ChangeMyPassword")]
         public bool ChangeMyPassword(ChangeMyPasswordParameters parameters)
         {
@@ -298,6 +301,7 @@ namespace Rhetos.AspNetFormsAuthWebApi
         }
 
         [HttpPost]
+        [Authorize]
         [Route("UnlockUser")]
         public void UnlockUser(UnlockUserParameters parameters)
         {
@@ -322,6 +326,7 @@ namespace Rhetos.AspNetFormsAuthWebApi
                 p.Name = {0}";
 
         [HttpPost]
+        [Authorize]
         [Route("GeneratePasswordResetToken")]
         public string GeneratePasswordResetToken(GeneratePasswordResetTokenParameters parameters)
         {
@@ -351,6 +356,7 @@ namespace Rhetos.AspNetFormsAuthWebApi
         }
 
         [HttpPost]
+        [Authorize]
         [Route("SendPasswordResetToken")]
         public void SendPasswordResetToken(SendPasswordResetTokenParameters parameters)
         {
@@ -405,6 +411,7 @@ namespace Rhetos.AspNetFormsAuthWebApi
         /// <param name="parameters"></param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize]
         [Route("ResetPassword")]
         public bool ResetPassword(ResetPasswordParameters parameters)
         {
