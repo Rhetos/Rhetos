@@ -26,6 +26,8 @@ XCOPY /Y/D/R ..\..\Source\CleanupOldData\bin\%Config%\CleanupOldData.exe.config 
 XCOPY /Y/D/R ..\..\Source\CleanupOldData\bin\%Config%\*.dll bin\ || GOTO Error1
 XCOPY /Y/D/R ..\..\Source\CleanupOldData\bin\%Config%\*.pdb bin\ || GOTO Error1
 
+XCOPY /Y/D/R ..\..\Source\RhetosWebApi\Template.ConnectionStrings.config bin\ || GOTO Error1
+
 @POPD
 
 @REM ================================================
