@@ -34,7 +34,6 @@ namespace Rhetos.AspNetFormsAuthWebApi
     {
         protected override void Load(ContainerBuilder builder)
         {
-            //builder.RegisterType<AuthenticationService>().InstancePerLifetimeScope();
             builder.RegisterType<AuthenticationController>().InstancePerRequest();
             Plugins.CheckOverride<IUserInfo, AspNetUserInfo>(builder, typeof(WcfWindowsUserInfo));
             builder.RegisterType<AspNetUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();

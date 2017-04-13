@@ -18,11 +18,6 @@ using Newtonsoft.Json.Serialization;
 
 namespace RhetosWebApi
 {
-    public interface IHello
-    {
-    }
-    public class Hello : IHello
-    { }
     public class MvcApplication : System.Web.HttpApplication
     {
         private static ILogger _logger;
