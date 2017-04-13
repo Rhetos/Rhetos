@@ -23,6 +23,7 @@ namespace RhetosWebApi
                 defaults: new { id = RouteParameter.Optional }
             );
             config.Services.Replace(typeof(IExceptionHandler), new GlobalExceptionHandler());
+            config.Services.Replace(typeof(IAssembliesResolver), new CustomAssemblyResolver());
         }
     }
 }
