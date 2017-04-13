@@ -356,7 +356,6 @@ namespace Rhetos.AspNetFormsAuthWebApi
         }
 
         [HttpPost]
-        [Authorize]
         [Route("SendPasswordResetToken")]
         public void SendPasswordResetToken(SendPasswordResetTokenParameters parameters)
         {
@@ -411,7 +410,6 @@ namespace Rhetos.AspNetFormsAuthWebApi
         /// <param name="parameters"></param>
         /// <returns></returns>
         [HttpPost]
-        [Authorize]
         [Route("ResetPassword")]
         public bool ResetPassword(ResetPasswordParameters parameters)
         {

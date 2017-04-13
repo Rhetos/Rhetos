@@ -45,16 +45,10 @@ namespace Rhetos.AspNetFormsAuthWebApi
             HttpApplication app = (HttpApplication)sender;
 
             var defaultRedirectLocation = new Lazy<string>(() => CombineUrl(app.Request.ApplicationPath, "/login.aspx")); // Unless explicitly specified in web.config.
-            Console.WriteLine(app.Response.StatusCode);
-            Console.WriteLine(app.Response.IsRequestBeingRedirected);
-            Console.WriteLine(app.Response.RedirectLocation);
-            Console.WriteLine(defaultRedirectLocation.Value);
-            Console.WriteLine("<----------->");
             if (app.Response.StatusCode == 302 // Redirect to Login web page
                 && app.Response.IsRequestBeingRedirected
                 && app.Response.RedirectLocation.StartsWith(defaultRedirectLocation.Value))
             {
-                Console.WriteLine(app.Request.AppRelativeCurrentExecutionFilePath);
                 if (app.Request.AppRelativeCurrentExecutionFilePath == "~/" || app.Request.AppRelativeCurrentExecutionFilePath == "~")
                 {
                     // Accessing home page, redirect to login page.

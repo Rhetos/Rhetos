@@ -34,8 +34,9 @@ namespace Rhetos.AspNetFormsAuthWebApi
     {
         protected override void Load(ContainerBuilder builder)
         {
+            Console.WriteLine("Loading aspnetformauth");
             builder.RegisterType<AuthenticationController>().InstancePerRequest();
-            Plugins.CheckOverride<IUserInfo, AspNetUserInfo>(builder, typeof(WcfWindowsUserInfo));
+            Plugins.CheckOverride<IUserInfo, AspNetUserInfo>(builder, typeof(WindowAuthUserInfo));
             builder.RegisterType<AspNetUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
 
             Plugins.FindAndRegisterPlugins<ISendPasswordResetToken>(builder);

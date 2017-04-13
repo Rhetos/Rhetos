@@ -47,6 +47,7 @@ namespace RhetosWebApi
             };
 
             builder.RegisterModule(new ConfigurationSettingsReader("autofacComponents"));
+
             var container = builder.Build();
             config.DependencyResolver = new AutofacWebApiDependencyResolver(container);
 
@@ -59,7 +60,6 @@ namespace RhetosWebApi
             {
                 try
                 {
-                    Console.WriteLine(service);
                     service.Initialize();
                     _performanceLogger.Write(stopwatch, "Service " + service.GetType().FullName + ".Initialize");
                 }

@@ -12,7 +12,7 @@ namespace RhetosWebApi
             // Specific registrations and initialization:
             Plugins.SetInitializationLogging(new NLogProvider());
             //builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
-            //builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
+            builder.RegisterType<GlobalExceptionHandler>();
             Plugins.FindAndRegisterPlugins<IService>(builder);
             Plugins.FindAndRegisterPlugins<IHomePageSnippet>(builder);
 
