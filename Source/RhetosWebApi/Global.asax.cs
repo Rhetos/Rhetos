@@ -70,7 +70,6 @@ namespace RhetosWebApi
                     throw;
                 }
             }
-            Console.WriteLine("Done");
             _performanceLogger.Write(stopwatch, "All services initialized.");
         }
 
