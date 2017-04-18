@@ -7,7 +7,7 @@ using System.Web.Http.Dispatcher;
 
 namespace RhetosWebApi
 {
-    public class CustomAssemblyResolver : IAssembliesResolver
+    public class RhetosAssemblyResolver : IAssembliesResolver
     {
         public ICollection<Assembly> GetAssemblies()
         {

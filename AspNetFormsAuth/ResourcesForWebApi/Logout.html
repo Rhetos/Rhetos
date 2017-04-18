@@ -10,7 +10,7 @@
 			var urlServer = window.location.protocol+'//'+window.location.hostname+(window.location.port ? ':'+window.location.port: '');
 
             $.ajax({
-                        url: urlServer + '/api/authentication/Logout',
+                        url: urlServer + '/REST/authentication/Logout',
                         type: 'POST',
                         dataType: 'json',
                         async: false,

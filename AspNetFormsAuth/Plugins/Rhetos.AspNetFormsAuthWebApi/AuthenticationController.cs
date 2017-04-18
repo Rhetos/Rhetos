@@ -127,7 +127,7 @@ namespace Rhetos.AspNetFormsAuthWebApi
     }
 
     #endregion
-    [RoutePrefix("api/authentication")]
+    [RoutePrefix("REST/authentication")]
     public class AuthenticationController : ApiController
     {
         private readonly ILogger _logger;
