@@ -41,19 +41,22 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             DslUtility.ValidatePropertyListSyntax(KeyProperties, this);
 
+            var entityComputedFrom = new EntityComputedFromInfo { Target = Persisted, Source = Persisted.Source };
+
             newConcepts.AddRange(KeyProperties.Split(' ').Select<string, IConceptInfo>(propertyName =>
                 {
                     if (propertyName == "ID")
                         return new KeyPropertyIDComputedFromInfo
                         {
-                            EntityComputedFrom = new EntityComputedFromInfo { Target = Persisted, Source = Persisted.Source }
+                            EntityComputedFrom = entityComputedFrom
                         };
                     else
                         return new KeyPropertyComputedFromInfo
                         {
                             PropertyComputedFrom = new PropertyComputedFromInfo
                             {
-                                Target = new PropertyInfo { Name = propertyName, DataStructure = Persisted }
+                                Target = new PropertyInfo { Name = propertyName, DataStructure = Persisted },
+                                Dependency_EntityComputedFrom = entityComputedFrom
                             }
                         };
                 }));

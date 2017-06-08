@@ -79,6 +79,7 @@
     <Compile Include="Computations\ComposableFilterUseExecutionContextCodeGenerator.cs" />
     <Compile Include="Computations\ComputeForNewItemsCodeGenerator.cs" />
     <Compile Include="Computations\ApplyFilterOnClientReadCodeGenerator.cs" />
+    <Compile Include="Computations\AlternativeKeyComparerCodeGenerator.cs" />
     <Compile Include="Computations\EntityComputedFromDefaultLoadFilterCodeGenerator.cs" />
     <Compile Include="Computations\InvalidDataErrorMetadataCodeGenerator.cs" />
     <Compile Include="Computations\InvalidDataMessageParametersItemCodeGenerator.cs" />

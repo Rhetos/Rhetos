@@ -656,6 +656,7 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         /// <param name="sameRecord">Compare key properties, determining the records that should be inserted or deleted.
+        /// If set to null, the items will be compared by the ID property.
         /// Typical implementation:
         /// <code>
         ///     class CompareName : IComparer&lt;ISomeEntity&gt;
@@ -677,6 +678,9 @@ namespace Rhetos.Dom.DefaultConcepts
             Action<TEntityInterface, TEntityInterface> assign,
             out IEnumerable<TEntityInterface> toInsert, out IEnumerable<TEntityInterface> toUpdate, out IEnumerable<TEntityInterface> toDelete)
         {
+            if (sameRecord == null)
+                sameRecord = new EntityIdComparer();
+
             var toDeleteList = (IList)CreateList(0);
             var toInsertList = (IList)CreateList(0);
             var toUpdateList = (IList)CreateList(0);
@@ -744,6 +748,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public delegate void BeforeSave(ref IEnumerable<TEntityInterface> toInsert, ref IEnumerable<TEntityInterface> toUpdate, ref IEnumerable<TEntityInterface> toDelete);
 
         /// <param name="sameRecord">Compare key properties, determining the records that should be inserted or deleted.
+        /// If set to null, the items will be compared by the ID property.
         /// Typical implementation:
         /// <code>
         ///     class CompareName : IComparer&lt;ISomeEntity&gt;
@@ -800,6 +805,7 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         /// <param name="sameRecord">Compare key properties, determining the records that should be inserted or deleted.
+        /// If set to null, the items will be compared by the ID property.
         /// Typical implementation:
         /// <code>
         ///     class CompareName : IComparer&lt;ISomeEntity&gt;

@@ -113,6 +113,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Computations\AlternativeKeyComparerInfo.cs" />
     <Compile Include="Computations\ApplyFilterOnClientReadInfo.cs" />
     <Compile Include="Computations\ChangesOnReferencedInfo.cs" />
     <Compile Include="Computations\EntityComputedFromDefaultLoadFilterInfo.cs" />

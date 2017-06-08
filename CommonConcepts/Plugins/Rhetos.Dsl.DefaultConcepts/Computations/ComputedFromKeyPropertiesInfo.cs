@@ -53,7 +53,8 @@ namespace Rhetos.Dsl.DefaultConcepts
                         {
                             PropertyComputedFrom = new PropertyComputedFromInfo
                             {
-                                Target = new PropertyInfo { Name = propertyName, DataStructure = ComputedFrom.Target }
+                                Target = new PropertyInfo { Name = propertyName, DataStructure = ComputedFrom.Target },
+                                Dependency_EntityComputedFrom = ComputedFrom
                             }
                         };
                 }));

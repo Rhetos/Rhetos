@@ -39,7 +39,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (KeyPropertyComputedFromInfo)conceptInfo;
             if (IsSupported(info.PropertyComputedFrom.Target))
-                codeBuilder.InsertCode(Snippet(info), EntityComputedFromCodeGenerator.CompareKeyPropertyTag, info.PropertyComputedFrom.Dependency_EntityComputedFrom);
+                codeBuilder.InsertCode(Snippet(info), AlternativeKeyComparerCodeGenerator.CompareKeyPropertyTag, info.Dependency_AlternativeKeyComparer);
         }
 
         private static readonly Dictionary<Type, string> _supportedSnippets = new Dictionary<Type, string>

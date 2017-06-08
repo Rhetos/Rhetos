@@ -70,14 +70,14 @@ namespace Rhetos.Dom.DefaultConcepts
 
             bool allowSave = _conceptMetadata.GetOrDefault(info, InvalidDataInfo.AllowSaveMetadata, false);
             string validationSnippet =
-                $@"if ({(allowSave ? "!" : "")}onSave)
-                {{
-                    var errorIds = this.Filter(this.Query(ids), new {info.FilterType}()).Select(item => item.ID).ToArray();
-                    if (errorIds.Count() > 0)
-                        foreach (var error in {info.GetErrorMessageMethodName()}(errorIds))
-                            yield return error;
-                }}
-                ";
+            $@"if ({(allowSave ? "!" : "")}onSave)
+            {{
+                var errorIds = this.Filter(this.Query(ids), new {info.FilterType}()).Select(item => item.ID).ToArray();
+                if (errorIds.Count() > 0)
+                    foreach (var error in {info.GetErrorMessageMethodName()}(errorIds))
+                        yield return error;
+            }}
+            ";
             codeBuilder.InsertCode(validationSnippet, WritableOrmDataStructureCodeGenerator.OnSaveValidateTag, info.Source);
         }
     }

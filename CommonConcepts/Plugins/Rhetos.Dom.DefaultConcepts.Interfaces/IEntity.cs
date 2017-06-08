@@ -37,4 +37,12 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         Guid ID { get; set; }
     }
+
+    public class EntityIdComparer : IComparer<IEntity>
+    {
+        public int Compare(IEntity x, IEntity y)
+        {
+            return x.ID.CompareTo(y.ID);
+        }
+    }
 }

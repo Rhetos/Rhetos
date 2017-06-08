@@ -35,7 +35,7 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(EntityComputedFromInfo))]
     public class EntityComputedFromCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly CsTag<EntityComputedFromInfo> CompareKeyPropertyTag = "CompareKeyProperty";
+        public static readonly CsTag<EntityComputedFromInfo> OverrideKeyComparerTag = "OverrideKeyComparer";
         public static readonly CsTag<EntityComputedFromInfo> CompareValuePropertyTag = "CompareValueProperty";
         public static readonly CsTag<EntityComputedFromInfo> ClonePropertyTag = "CloneProperty";
         public static readonly CsTag<EntityComputedFromInfo> AssignPropertyTag = "AssignProperty";
@@ -44,54 +44,37 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (EntityComputedFromInfo)conceptInfo;
-            codeBuilder.InsertCode(CodeSnippet(info), RepositoryHelper.RepositoryMembers, info.Target);
-        }
 
-        public static string RecomputeFunctionName(EntityComputedFromInfo info)
-        {
-            return "RecomputeFrom" + DslUtility.NameOptionalModule(info.Source, info.Target.Module);
-        }
-
-        private static string CodeSnippet(EntityComputedFromInfo info)
-        {
-            return string.Format(
-        @"private class {2}_KeyComparer : IComparer<{0}>
+            string targetEntity = info.Target.GetKeyProperties();
+            string recomputeFunctionName = RecomputeFunctionName(info);
+            string recomputeFunctionSnippet =
+        $@"public IEnumerable<{targetEntity}> {recomputeFunctionName}(object filterLoad = null, Func<IEnumerable<{targetEntity}>, IEnumerable<{targetEntity}>> filterSave = null)
         {{
-            public int Compare({0} x, {0} y)
-            {{
-                int diff;
-                {6}
-                return diff;
-            }}
-        }}
-
-        public IEnumerable<{0}> {2}(object filterLoad = null, Func<IEnumerable<{0}>, IEnumerable<{0}>> filterSave = null)
-        {{
-            {7}
+            {OverrideDefaultFiltersTag.Evaluate(info)}
             filterLoad = filterLoad ?? new FilterAll();
             filterSave = filterSave ?? (x => x);
 
-            var sourceRepository = _executionContext.GenericRepositories.GetGenericRepository<{1}>();
+            var sourceRepository = _executionContext.GenericRepositories.GetGenericRepository<{info.Source.GetKeyProperties()}>();
             var sourceItems = sourceRepository.Load(filterLoad);
-            var newItems = sourceItems.Select(sourceItem => new {0} {{
+            var newItems = sourceItems.Select(sourceItem => new {targetEntity} {{
                 ID = sourceItem.ID,
-                {4} }}).ToList();
+                {ClonePropertyTag.Evaluate(info)} }}).ToList();
 
-            var destinationRepository = _executionContext.GenericRepositories.GetGenericRepository<{0}>();
+            var destinationRepository = _executionContext.GenericRepositories.GetGenericRepository<{targetEntity}>();
             destinationRepository.InsertOrUpdateOrDelete(
                 newItems,
-                sameRecord: new {2}_KeyComparer(),
+                sameRecord: {OverrideKeyComparerTag.Evaluate(info)} null, // Default is comparison by ID.
                 sameValue: (x, y) =>
                 {{
-                    {3}
+                    {CompareValuePropertyTag.Evaluate(info)}
                     return true;
                 }},
                 filterLoad: filterLoad,
                 assign: (destination, source) =>
                 {{
-                    {5}
+                    {AssignPropertyTag.Evaluate(info)}
                 }},
-                beforeSave: (ref IEnumerable<{0}> toInsert, ref IEnumerable<{0}> toUpdate, ref IEnumerable<{0}> toDelete) =>
+                beforeSave: (ref IEnumerable<{targetEntity}> toInsert, ref IEnumerable<{targetEntity}> toUpdate, ref IEnumerable<{targetEntity}> toDelete) =>
                 {{
                     toInsert = filterSave(toInsert);
                     toUpdate = filterSave(toUpdate);
@@ -99,16 +82,14 @@ namespace Rhetos.Dom.DefaultConcepts
                 }});
             return newItems;
         }}
+        
+        ";
+            codeBuilder.InsertCode(recomputeFunctionSnippet, RepositoryHelper.RepositoryMembers, info.Target);
+        }
 
-        ",
-            info.Target.GetKeyProperties(),
-            info.Source.GetKeyProperties(),
-            RecomputeFunctionName(info),
-            CompareValuePropertyTag.Evaluate(info),
-            ClonePropertyTag.Evaluate(info),
-            AssignPropertyTag.Evaluate(info),
-            CompareKeyPropertyTag.Evaluate(info),
-            OverrideDefaultFiltersTag.Evaluate(info));
+        public static string RecomputeFunctionName(EntityComputedFromInfo info)
+        {
+            return "RecomputeFrom" + DslUtility.NameOptionalModule(info.Source, info.Target.Module);
         }
     }
 }

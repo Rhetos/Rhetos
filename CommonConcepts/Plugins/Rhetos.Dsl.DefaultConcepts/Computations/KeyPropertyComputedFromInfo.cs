@@ -27,9 +27,22 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("KeyProperty")]
-    public class KeyPropertyComputedFromInfo : IConceptInfo
+    public class KeyPropertyComputedFromInfo : IConceptInfo, IAlternativeInitializationConcept
     {
         [ConceptKey]
         public PropertyComputedFromInfo PropertyComputedFrom { get; set; }
+
+        public AlternativeKeyComparerInfo Dependency_AlternativeKeyComparer { get; set; }
+
+        public IEnumerable<string> DeclareNonparsableProperties()
+        {
+            return new[] { "Dependency_AlternativeKeyComparer" };
+        }
+
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            Dependency_AlternativeKeyComparer = new AlternativeKeyComparerInfo { EntityComputedFrom = PropertyComputedFrom.Dependency_EntityComputedFrom };
+            createdConcepts = new[] { Dependency_AlternativeKeyComparer };
+        }
     }
 }

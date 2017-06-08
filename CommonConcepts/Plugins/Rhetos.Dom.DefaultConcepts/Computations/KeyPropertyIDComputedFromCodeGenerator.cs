@@ -38,7 +38,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (KeyPropertyIDComputedFromInfo)conceptInfo;
-            codeBuilder.InsertCode(Snippet(info), EntityComputedFromCodeGenerator.CompareKeyPropertyTag, info.EntityComputedFrom);
+            codeBuilder.InsertCode(Snippet(info), AlternativeKeyComparerCodeGenerator.CompareKeyPropertyTag, info.Dependency_AlternativeKeyComparer);
         }
 
         private static string Snippet(KeyPropertyIDComputedFromInfo info)
