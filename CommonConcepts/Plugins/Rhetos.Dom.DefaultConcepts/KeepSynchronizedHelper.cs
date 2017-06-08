@@ -115,10 +115,17 @@ namespace Rhetos.Dom.DefaultConcepts
                     union = a;
                     return true;
                 }
-                if (string.Equals(a.Operation, "In", StringComparison.OrdinalIgnoreCase)
+                else if (string.Equals(a.Operation, "In", StringComparison.OrdinalIgnoreCase)
                     && a.Value is IList<Guid> && b.Value is IList<Guid>)
                 {
                     var listUnion = ((IList<Guid>)a.Value).Union((IList<Guid>)b.Value).ToList();
+                    union = new FilterCriteria(a.Property, a.Operation, listUnion);
+                    return true;
+                }
+                else if (string.Equals(a.Operation, "In", StringComparison.OrdinalIgnoreCase)
+                    && a.Value is IList<Guid?> && b.Value is IList<Guid?>)
+                {
+                    var listUnion = ((IList<Guid?>)a.Value).Union((IList<Guid?>)b.Value).ToList();
                     union = new FilterCriteria(a.Property, a.Operation, listUnion);
                     return true;
                 }

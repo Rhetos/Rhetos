@@ -117,7 +117,7 @@ namespace Rhetos.Security
                 }
                 catch (Exception ex)
                 {
-                    _logger.Trace(() => ex.ToString());
+                    _logger.Trace(ex.ToString);
                 }
             }
 
