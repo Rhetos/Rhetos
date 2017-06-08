@@ -123,7 +123,7 @@ namespace Rhetos.Persistence
                     {
                         sqlCommand.CommandText = commandText;
                         var dataReader = sqlCommand.ExecuteReader();
-                        while (dataReader.Read())
+                        while (!dataReader.IsClosed && dataReader.Read())
                             action(dataReader);
                         dataReader.Close();
                     }
