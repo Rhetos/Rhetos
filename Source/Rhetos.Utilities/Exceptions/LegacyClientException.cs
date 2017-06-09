@@ -38,5 +38,7 @@ namespace Rhetos
                 : base(info, context) { }
 
         public HttpStatusCode HttpStatusCode { get; set; } = HttpStatusCode.BadRequest;
+
+        public bool Severe { get; set; } = true;
     }
 }
