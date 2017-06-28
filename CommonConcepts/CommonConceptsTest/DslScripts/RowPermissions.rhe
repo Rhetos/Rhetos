@@ -278,3 +278,59 @@ Module TestRowPermissions4
         RowPermissionsRead '(source, repo, context) => item => item.Name4 == "4"';
     }
 }
+
+Module TestRowPermissionsExternal
+{
+    Entity SimpleParent
+    {
+        ShortString Name;
+        RowPermissionsRead '(source, repo, context) => item => item.Name == "p"';
+    }
+
+    Entity SimpleBase
+    {
+        ShortString Name;
+        RowPermissionsRead '(source, repo, context) => item => item.Name == "b"';
+    }
+}
+
+Module TestRowPermissionsInheritFull
+{
+    AutoInheritRowPermissions;
+    
+    Entity SimpleDetail
+    {
+        ShortString Name;
+        Reference Parent TestRowPermissionsExternal.SimpleParent { Detail; }
+        RowPermissions { AllowRead AllowMore 'context => item => item.Name == "d"'; }
+    }
+
+    Entity ExtensionComplex
+    {
+        Extends TestRowPermissionsExternal.SimpleBase;
+        ShortString Name;
+        Reference SimpleDetail { Detail; }
+        RowPermissions { AllowRead AllowMore 'context => item => item.Name == "ec"'; }
+    }
+}
+
+
+Module TestRowPermissionsInheritInternally
+{
+    AutoInheritRowPermissionsInternally;
+    
+    Entity SimpleDetail
+    {
+        ShortString Name;
+        Reference Parent TestRowPermissionsExternal.SimpleParent { Detail; }
+        RowPermissions { AllowRead AllowMore 'context => item => item.Name == "d"'; }
+    }
+
+    Entity ExtensionComplex
+    {
+        Extends TestRowPermissionsExternal.SimpleBase;
+        ShortString Name;
+        Reference SimpleDetail { Detail; }
+        RowPermissions { AllowRead AllowMore 'context => item => item.Name == "ec"'; }
+    }
+}

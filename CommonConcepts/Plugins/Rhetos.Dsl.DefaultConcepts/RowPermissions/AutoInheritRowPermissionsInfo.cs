@@ -30,6 +30,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// <summary>
     /// Each detail data structure in the module will inherit row permissions from it's mater data structure.
     /// Each extension in the module will inherit row permissions from it's base data structure.
+    /// Row permissions can be inherited from other modules to this module.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AutoInheritRowPermissions")]
@@ -37,6 +38,17 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         [ConceptKey]
         public ModuleInfo Module { get; set; }
+    }
+
+    /// <summary>
+    /// Each detail data structure in the module will inherit row permissions from it's mater data structure.
+    /// Each extension in the module will inherit row permissions from it's base data structure.
+    /// Row permissions will not be inherited from other modules to this module.
+    /// </summary>
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("AutoInheritRowPermissionsInternally")]
+    public class AutoInheritRowPermissionsInternallyInfo : AutoInheritRowPermissionsInfo
+    {
     }
 
     [Export(typeof(IConceptMacro))]
@@ -50,16 +62,20 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var autoInheritModules = new HashSet<string>(
                 existingConcepts.FindByType<AutoInheritRowPermissionsInfo>().Select(airp => airp.Module.Name));
+            var internalInheritanceModules = new HashSet<string>(
+                existingConcepts.FindByType<AutoInheritRowPermissionsInternallyInfo>().Select(airp => airp.Module.Name));
 
             var autoInheritExtensionsByBase = new MultiDictionary<string, DataStructureExtendsInfo>();
             var autoInheritExtensions = existingConcepts.FindByType<DataStructureExtendsInfo>()
-                .Where(e => autoInheritModules.Contains(e.Extension.Module.Name));
+                .Where(e => autoInheritModules.Contains(e.Extension.Module.Name))
+                .Where(e => e.Extension.Module == e.Base.Module || !internalInheritanceModules.Contains(e.Extension.Module.Name));
             foreach (var autoInheritExtension in autoInheritExtensions)
                 autoInheritExtensionsByBase.Add(autoInheritExtension.Base.GetKey(), autoInheritExtension);
 
             var autoInheritDetailsByMaster = new MultiDictionary<string, ReferenceDetailInfo>();
             var autoInheritDetails = existingConcepts.FindByType<ReferenceDetailInfo>()
-                .Where(d => autoInheritModules.Contains(d.Reference.DataStructure.Module.Name));
+                .Where(d => autoInheritModules.Contains(d.Reference.DataStructure.Module.Name))
+                .Where(d => d.Reference.Referenced.Module == d.Reference.DataStructure.Module || !internalInheritanceModules.Contains(d.Reference.DataStructure.Module.Name));
             foreach (var autoInheritDetail in autoInheritDetails)
                 autoInheritDetailsByMaster.Add(autoInheritDetail.Reference.Referenced.GetKey(), autoInheritDetail);
 

@@ -397,5 +397,44 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("1, 1b, 2, 3", TestUtility.DumpSorted(reposE1BrowseRP.Load<Common.RowPermissionsReadItems>(), item => item.Name1Browse));
             }
         }
+
+        [TestMethod]
+        public void AutoInheritInternallyVsFull()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                repository.TestRowPermissionsInheritInternally.ExtensionComplex.Delete(repository.TestRowPermissionsInheritInternally.ExtensionComplex.Query());
+                repository.TestRowPermissionsInheritInternally.SimpleDetail.Delete(repository.TestRowPermissionsInheritInternally.SimpleDetail.Query());
+                repository.TestRowPermissionsInheritFull.ExtensionComplex.Delete(repository.TestRowPermissionsInheritFull.ExtensionComplex.Query());
+                repository.TestRowPermissionsInheritFull.SimpleDetail.Delete(repository.TestRowPermissionsInheritFull.SimpleDetail.Query());
+                repository.TestRowPermissionsExternal.SimpleParent.Delete(repository.TestRowPermissionsExternal.SimpleParent.Query());
+                repository.TestRowPermissionsExternal.SimpleBase.Delete(repository.TestRowPermissionsExternal.SimpleBase.Query());
+
+                var names = new[] { "x", "p", "b", "d", "ec" };
+                var itemsParent = names.Select(name => new TestRowPermissionsExternal.SimpleParent { ID = Guid.NewGuid(), Name = name }).ToList();
+                var itemsBase = names.Select(name => new TestRowPermissionsExternal.SimpleBase { ID = Guid.NewGuid(), Name = name }).ToList();
+                var itemsDetailFull = names.Select((name, x) => new TestRowPermissionsInheritFull.SimpleDetail { ID = Guid.NewGuid(), Name = name, ParentID = itemsParent[x].ID }).ToList();
+                var itemsExtensionComplexFull = names.Select((name, x) => new TestRowPermissionsInheritFull.ExtensionComplex { ID = itemsBase[x].ID, Name = name, SimpleDetailID = itemsDetailFull[x].ID }).ToList();
+                var itemsDetailInt = names.Select((name, x) => new TestRowPermissionsInheritInternally.SimpleDetail { ID = Guid.NewGuid(), Name = name, ParentID = itemsParent[x].ID }).ToList();
+                var itemsExtensionComplexInt = names.Select((name, x) => new TestRowPermissionsInheritInternally.ExtensionComplex { ID = itemsBase[x].ID, Name = name, SimpleDetailID = itemsDetailInt[x].ID }).ToList();
+
+                repository.TestRowPermissionsExternal.SimpleParent.Insert(itemsParent);
+                repository.TestRowPermissionsExternal.SimpleBase.Insert(itemsBase);
+                repository.TestRowPermissionsInheritFull.SimpleDetail.Insert(itemsDetailFull);
+                repository.TestRowPermissionsInheritFull.ExtensionComplex.Insert(itemsExtensionComplexFull);
+                repository.TestRowPermissionsInheritInternally.SimpleDetail.Insert(itemsDetailInt);
+                repository.TestRowPermissionsInheritInternally.ExtensionComplex.Insert(itemsExtensionComplexInt);
+
+                Assert.AreEqual("p", TestUtility.DumpSorted(repository.TestRowPermissionsExternal.SimpleParent.Query(new Common.RowPermissionsReadItems()), item => item.Name));
+                Assert.AreEqual("b", TestUtility.DumpSorted(repository.TestRowPermissionsExternal.SimpleBase.Query(new Common.RowPermissionsReadItems()), item => item.Name));
+
+                Assert.AreEqual("d, p", TestUtility.DumpSorted(repository.TestRowPermissionsInheritFull.SimpleDetail.Query(new Common.RowPermissionsReadItems()), item => item.Name));
+                Assert.AreEqual("b, d, ec, p", TestUtility.DumpSorted(repository.TestRowPermissionsInheritFull.ExtensionComplex.Query(new Common.RowPermissionsReadItems()), item => item.Name));
+
+                Assert.AreEqual("d", TestUtility.DumpSorted(repository.TestRowPermissionsInheritInternally.SimpleDetail.Query(new Common.RowPermissionsReadItems()), item => item.Name));
+                Assert.AreEqual("d, ec", TestUtility.DumpSorted(repository.TestRowPermissionsInheritInternally.ExtensionComplex.Query(new Common.RowPermissionsReadItems()), item => item.Name));
+            }
+        }
     }
 }
