@@ -80,7 +80,8 @@ namespace CommonConcepts.Test.OldConcepts
 
                 Assert.IsNull(repository.TestBrowse.Source.Query().Select(item => item.Ref.Name).Single(), "all in one query");
 
-                // TODO: "'Separated loading' fails because LINQ2NH will handle nullable properties and null values differently than a simple LINQ query over materialized instances (Linq2Objects). Try to implement browse in a such way that it behaves the same in both scenarios without degrading performance (maybe generating SqlView).
+                // TODO: "'Separated loading' fails because LINQ2NH will handle nullable properties and null values differently than a simple LINQ query over materialized instances (Linq2Objects).
+                // Try to implement browse in a such way that it behaves the same in both scenarios without degrading performance (maybe generating SqlView).
             
                 Assert.IsNull(repository.TestBrowse.Source.Query().ToArray().Select(item => item.Ref.Name).Single(), "separated loading");
             }

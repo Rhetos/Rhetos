@@ -429,7 +429,6 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        [Ignore]
         public void ArrayFilterBrowse()
         {
             using (var container = new RhetosTestContainer())
@@ -454,12 +453,14 @@ namespace CommonConcepts.Test
                     GenericFilter = new FilterCriteria[] { new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "P" } } // TODO: "Contains" is executed in C#, so the value is case sensitive.
                 }));
 
-                // TODO: NullReferenceException because "Simple.Name" FilterCriteria is executed in C# instead of the database.
-                Assert.AreEqual("CA PA, CB PB", ReportFilteredBrowse(container, new QueryDataSourceCommandInfo
-                {
-                    Filter = new TestFilter.ComposableFilterBrowseLoader { Pattern = "c" },
-                    GenericFilter = new FilterCriteria[] { new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "P" } } // TODO: "Contains" is executed in C#, so the value is case sensitive.
-                }));
+                // This test just documents the current behavior, this is not an intended feature.
+                // NullReferenceException because "Simple.Name" FilterCriteria is executed in C# instead of the database.
+                TestUtility.ShouldFail<NullReferenceException>(() =>
+                    ReportFilteredBrowse(container, new QueryDataSourceCommandInfo
+                    {
+                        Filter = new TestFilter.ComposableFilterBrowseLoader { Pattern = "c" },
+                        GenericFilter = new FilterCriteria[] { new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "P" } } // TODO: "Contains" is executed in C#, so the value is case sensitive.
+                    }));
             }
         }
 

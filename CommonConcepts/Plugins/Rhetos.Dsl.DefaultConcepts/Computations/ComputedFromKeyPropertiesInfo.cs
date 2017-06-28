@@ -28,38 +28,61 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("KeyProperties")]
-    public class ComputedFromKeyPropertiesInfo : IMacroConcept
+    public class ComputedFromKeyPropertiesInfo : IConceptInfo, IValidatedConcept
     {
         [ConceptKey]
         public EntityComputedFromInfo ComputedFrom { get; set; }
 
         public string KeyProperties { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
-            var newConcepts = new List<IConceptInfo>();
+            var keyProperties = CreateKeyProperties(existingConcepts);
+            var invalidPropertyName = keyProperties.Where(kp => kp.Value == null).Select(kp => kp.Key).FirstOrDefault();
+            if (invalidPropertyName != null)
+                throw new DslSyntaxException(this, $"Cannot find property '{invalidPropertyName}' on '{ComputedFrom.Target.GetKeyProperties()}'.");
+        }
 
-            DslUtility.ValidatePropertyListSyntax(KeyProperties, this);
+        public Dictionary<string, IConceptInfo> CreateKeyProperties(IDslModel existingConcepts)
+        {
+            var computedPropertiesByTarget = existingConcepts
+                .FindByReference<PropertyComputedFromInfo>(cp => cp.Dependency_EntityComputedFrom, ComputedFrom)
+                .ToDictionary(cp => cp.Target.Name);
 
-            newConcepts.AddRange(KeyProperties.Split(' ').Select<string, IConceptInfo>(propertyName =>
+            return KeyProperties.Split(' ')
+                .ToDictionary(propertyName => propertyName, propertyName =>
                 {
                     if (propertyName == "ID")
                         return new KeyPropertyIDComputedFromInfo
                         {
                             EntityComputedFrom = ComputedFrom
                         };
-                    else
+                    else if (computedPropertiesByTarget.ContainsKey(propertyName))
                         return new KeyPropertyComputedFromInfo
                         {
-                            PropertyComputedFrom = new PropertyComputedFromInfo
-                            {
-                                Target = new PropertyInfo { Name = propertyName, DataStructure = ComputedFrom.Target },
-                                Dependency_EntityComputedFrom = ComputedFrom
-                            }
+                            PropertyComputedFrom = computedPropertiesByTarget[propertyName]
                         };
-                }));
+                    else
+                        return (IConceptInfo)null;
+                });
+        }
+    }
 
-            return newConcepts;
+    [Export(typeof(IConceptMacro))]
+    public class ComputedFromKeyPropertiesMacro : IConceptMacro<ComputedFromKeyPropertiesInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(ComputedFromKeyPropertiesInfo conceptInfo, IDslModel existingConcepts)
+        {
+            DslUtility.ValidatePropertyListSyntax(conceptInfo.KeyProperties, conceptInfo);
+
+            var keyProperties = conceptInfo.CreateKeyProperties(existingConcepts);
+
+            // If *not all* listed property names are found in the DSL model, wait for more iterations of macro evaluation,
+            // or return an error in the IValidatedConcept implementation above.
+            if (!keyProperties.Values.All(kp => kp != null))
+                return null;
+            else
+                return keyProperties.Values;
         }
     }
 }

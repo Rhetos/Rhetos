@@ -84,26 +84,6 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        [Ignore] // TODO: Navigation from base to extension class seems to be working only for SQL objects, not for built queries like QueryableExtension.
-        public void QueryableFilterUsingExtension()
-        {
-            using (var container = new RhetosTestContainer())
-            {
-                var repository = container.Resolve<Common.DomRepository>();
-
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
-                    {
-                        "DELETE FROM Test11.Source;",
-                        "INSERT INTO Test11.Source (Name) SELECT 'a';",
-                        "INSERT INTO Test11.Source (Name) SELECT 'b';"
-                    });
-
-                var filtered2 = repository.Test11.Source.Query().Where(s => s.Extension_QE.Info == "bx");
-                Assert.AreEqual("b", filtered2.Single().Name);
-            }
-        }
-
-        [TestMethod]
         public void SelectUsingBase()
         {
             using (var container = new RhetosTestContainer())

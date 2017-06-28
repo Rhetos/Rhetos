@@ -32,6 +32,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public PropertyInfo Target { get; set; }
 
+        [ConceptKey]
         public PropertyInfo Source { get; set; }
 
         public EntityComputedFromInfo Dependency_EntityComputedFrom { get; set; }

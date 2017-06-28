@@ -37,31 +37,14 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            var newConcepts = new List<IConceptInfo>();
-
-            DslUtility.ValidatePropertyListSyntax(KeyProperties, this);
-
-            var entityComputedFrom = new EntityComputedFromInfo { Target = Persisted, Source = Persisted.Source };
-
-            newConcepts.AddRange(KeyProperties.Split(' ').Select<string, IConceptInfo>(propertyName =>
+            return new[]
+            {
+                new ComputedFromKeyPropertiesInfo
                 {
-                    if (propertyName == "ID")
-                        return new KeyPropertyIDComputedFromInfo
-                        {
-                            EntityComputedFrom = entityComputedFrom
-                        };
-                    else
-                        return new KeyPropertyComputedFromInfo
-                        {
-                            PropertyComputedFrom = new PropertyComputedFromInfo
-                            {
-                                Target = new PropertyInfo { Name = propertyName, DataStructure = Persisted },
-                                Dependency_EntityComputedFrom = entityComputedFrom
-                            }
-                        };
-                }));
-
-            return newConcepts;
+                    ComputedFrom = Persisted.CreateEntityComputedFrom(),
+                    KeyProperties = KeyProperties
+                }
+            };
         }
     }
 }

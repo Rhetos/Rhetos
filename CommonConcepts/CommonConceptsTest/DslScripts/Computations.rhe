@@ -543,6 +543,12 @@ Module TestComputedFrom
         ComputedFrom TestComputedFrom.Source { AllProperties; }
         ShortString Name2 { ComputedFrom TestComputedFrom.Source2.Name; }
     }
+
+    Entity PersistOverlap
+    {
+        ComputedFrom TestComputedFrom.Source { AllProperties; }
+        ComputedFrom TestComputedFrom.Source2 { AllProperties; }
+    }
     
     // KeepSynchronized:
     

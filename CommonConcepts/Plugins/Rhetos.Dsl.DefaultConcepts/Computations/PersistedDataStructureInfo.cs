@@ -33,7 +33,12 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return new[] { new EntityComputedFromInfo { Target = this, Source = Source } };
+            return new[] { CreateEntityComputedFrom() };
+        }
+
+        public EntityComputedFromInfo CreateEntityComputedFrom()
+        {
+            return new EntityComputedFromInfo { Target = this, Source = Source };
         }
     }
 }
