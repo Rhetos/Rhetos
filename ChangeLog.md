@@ -1,5 +1,14 @@
 ﻿# Rhetos release notes
 
+## 1.8.0 (2017-06-30)
+
+### Internal improvements
+
+* New concept **AutoInheritRowPermissionsInternally**, similar to **AutoInheritRowPermissions** but it does not inherit row permissions from other modules.
+* Bugfix: **KeyProperties** concept sometimes adds ID to the list of properties.
+* One persisted property can be included in more than one **ComputedFrom** mapping.
+* RestGenerator: The error "There is no resource of this type with a given ID" is no longer logged to RhetosServer.log by default.
+
 ## 1.7.0 (2017-03-09)
 
 ### New features
