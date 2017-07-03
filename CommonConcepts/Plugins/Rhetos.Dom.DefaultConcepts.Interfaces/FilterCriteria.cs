@@ -18,6 +18,7 @@
 */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Rhetos.Dom.DefaultConcepts
@@ -86,14 +87,64 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public override string ToString()
         {
-            string valueShortInfo = Value != null ? "..." : null;
+            var valueDescription = ValueDescription(Value);
 
-            var guidList = Value as IList<Guid>;
-            if (guidList != null && guidList.Count == 1)
-                valueShortInfo = guidList[0].ToString();
+            return (FilterDescription(Filter) ?? (Property + " " + Operation))
+                + (valueDescription != null ? " " + valueDescription : "");
+        }
 
-            return (Filter ?? (Property + " " + Operation))
-                + (valueShortInfo != null ? " " + valueShortInfo : "");
+        public string FilterDescription(string filter)
+        {
+            if (filter == null)
+                return null;
+            Type filterType = null;
+            try
+            {
+                filterType = Type.GetType(filter, throwOnError: false); // Even when throwOnError is false, some exceptions are thrown.
+            }
+            catch
+            {
+            }
+            if (filterType != null)
+                return filterType.ToString();
+            return filter;
+        }
+
+        public string ValueDescription(object value)
+        {
+            if (value == null)
+                return null;
+
+            string report;
+
+            if (value is IList && value != null)
+            {
+                var list = (IList)value;
+
+                report = list.Count + " items";
+                if (list.Count >= 1)
+                    report += ": " + SingleValueDescription(list[0]);
+                if (list.Count >= 2)
+                    report += " ...";
+            }
+            else
+                report = SingleValueDescription(value);
+
+            const int maxLength = 100;
+            if (report.Length > maxLength)
+                report = report.Substring(0, maxLength) + "...";
+            return "\"" + report + "\"";
+        }
+
+        public string SingleValueDescription(object value)
+        {
+            if (value == null)
+                return "null";
+            if (value.GetType().IsValueType || value is string)
+                return value.ToString();
+            if (value is IEntity)
+                return "ID " + ((IEntity)value).ID.ToString();
+            return "...";
         }
     }
 }

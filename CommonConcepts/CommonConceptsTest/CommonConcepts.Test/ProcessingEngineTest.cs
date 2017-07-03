@@ -56,8 +56,11 @@ namespace CommonConcepts.Test
 
                 var excected = new ListOfTuples<string, IEnumerable<string>>()
                 {
-                    { "request info", new[] { "ProcessingEngine Request", "ReadCommandInfo Common.Principal count, filters: System.Guid[] 546df18b-5df8-4ffa-9b08-8da909efe067" } },
-                    { "command xml", new[] { "ProcessingEngine Commands", "Common.Principal</DataSource>", "true</ReadTotalCount>" } },
+                    { "request info", new[] {
+                        "ProcessingEngine Request",
+                        "ReadCommandInfo Common.Principal count, filters: System.Guid[] \"1 items: 546df18b-5df8-4ffa-9b08-8da909efe067\"" } },
+                    { "command xml", new[] {
+                        "ProcessingEngine Commands", "Common.Principal</DataSource>", "true</ReadTotalCount>" } },
                 };
 
                 foreach (var test in excected)
@@ -67,7 +70,6 @@ namespace CommonConcepts.Test
 
                 foreach (var test in notExpected)
                     Assert.IsFalse(log.Any(line => line.Contains(test)), "Unexpected log entry for test '" + test + "'.");
-
             }
         }
 

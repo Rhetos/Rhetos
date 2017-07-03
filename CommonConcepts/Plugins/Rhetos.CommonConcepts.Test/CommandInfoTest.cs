@@ -69,7 +69,7 @@ namespace Rhetos.CommonConcepts.Test
 
             Assert.AreEqual("ReadCommandInfo ", new ReadCommandInfo { }.ToString());
             Assert.AreEqual("ReadCommandInfo Mod.Ent", new ReadCommandInfo { DataSource = "Mod.Ent" }.ToString());
-            Assert.AreEqual("ReadCommandInfo Mod.Ent records count, order by Code -Name, skip 1, top 2, filters: Rhetos.CommonConcepts.Test.SimpleParameter ..., Rhetos.CommonConcepts.Test.SimpleParameter, Name StartsWith ..., System.Guid[] c56d3af5-db59-4b15-bd27-f800c36dc685, System.Guid[] ...", new ReadCommandInfo
+            Assert.AreEqual("ReadCommandInfo Mod.Ent records count, order by Code -Name, skip 1, top 2, filters: Rhetos.CommonConcepts.Test.SimpleParameter \"...\", Rhetos.CommonConcepts.Test.SimpleParameter, Name StartsWith \"test\", System.Guid[] \"1 items: c56d3af5-db59-4b15-bd27-f800c36dc685\", System.Guid[] \"2 items: c56d3af5-db59-4b15-bd27-f800c36dc685 ...\"", new ReadCommandInfo
             {
                 DataSource = "Mod.Ent",
                 ReadRecords = true,
@@ -86,7 +86,7 @@ namespace Rhetos.CommonConcepts.Test
                         new FilterCriteria(new[] { new Guid("c56d3af5-db59-4b15-bd27-f800c36dc685") }),
                         new FilterCriteria(new[] { new Guid("c56d3af5-db59-4b15-bd27-f800c36dc685"), new Guid("a378621c-b784-4005-a304-1c92e2f07d95") }) },
             }.ToString());
-            Assert.AreEqual("ReadCommandInfo , order by   test -, filters: ,  , test, test ,  test,   ..., test test, test  ...,  test ...", new ReadCommandInfo
+            Assert.AreEqual("ReadCommandInfo , order by   test -, filters: ,  , test, test ,  test,   \"test\", test test, test  \"test\",  test \"test\"", new ReadCommandInfo
             {
                 Filters = new[] {
                         null,
@@ -104,6 +104,10 @@ namespace Rhetos.CommonConcepts.Test
                         new OrderByProperty { Property = "test" },
                         new OrderByProperty { Descending = true },
                         }
+            }.ToString());
+            Assert.AreEqual("ReadCommandInfo , filters: Rhetos.CommonConcepts.Test.SimpleEntity \"ID bb7eb875-8ec2-4a1e-86d6-103f5da490eb\"", new ReadCommandInfo
+            {
+                Filters = new[] { new FilterCriteria(new SimpleEntity { ID = new Guid("bb7eb875-8ec2-4a1e-86d6-103f5da490eb"), Code = 11, Name = "e1" }) }
             }.ToString());
 
             Assert.AreEqual("SaveEntityCommandInfo ", new SaveEntityCommandInfo { }.ToString());
