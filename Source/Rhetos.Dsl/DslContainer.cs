@@ -38,6 +38,7 @@ namespace Rhetos.Dsl
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
         private readonly Stopwatch _addConceptsStopwatch = new Stopwatch();
+        private readonly Stopwatch _validateDuplicateStopwatch = new Stopwatch();
 
         private readonly List<IConceptInfo> _resolvedConcepts = new List<IConceptInfo>();
         private readonly Dictionary<string, IConceptInfo> _resolvedConceptsByKey = new Dictionary<string, IConceptInfo>();
@@ -79,7 +80,7 @@ namespace Rhetos.Dsl
 
         public class AddNewConceptsReport
         {
-            /// <summary>A subset of given new concepts.</summary>
+            /// <summary>A subset of given new concepts. Some of the returned concepts might not have their references resolved yet.</summary>
             public List<IConceptInfo> NewUniqueConcepts;
             /// <summary>May include previously given concepts that have been resolved now.</summary>
             public List<IConceptInfo> NewlyResolvedConcepts;
@@ -117,27 +118,25 @@ namespace Rhetos.Dsl
             return report;
         }
 
-        private static void ValidateNewConceptSameAsExisting(IConceptInfo newConcept, IConceptInfo existingConcept)
+        // The new concept is allowed to be a simple version (base class) of the existing concept, even if it is not the same.
+        // This will allow some macro concepts to create simplified new concept that will be ignored if more specific version is already implemented.
+        // Note: Unfortunately this logic should not simply be reversed to also ignore old concept if the new concept is a derivation of the old one,
+        // because other macros might have already used the old concept to generate a different business logic.
+        private void ValidateNewConceptSameAsExisting(IConceptInfo newConcept, IConceptInfo existingConcept)
         {
-            if (newConcept == existingConcept)
-                return;
+            _validateDuplicateStopwatch.Start();
 
-            if (newConcept.GetFullDescription() == existingConcept.GetFullDescription())
-                return;
+            if (newConcept != existingConcept
+                && newConcept.GetFullDescription() != existingConcept.GetFullDescription()
+                && !(newConcept.GetType().IsAssignableFrom(existingConcept.GetType())
+                    && newConcept.GetFullDescription() == existingConcept.GetFullDescriptionAsBaseConcept(newConcept.GetType())))
+                throw new DslSyntaxException(
+                    "Concept with same key is described twice with different values."
+                    + "\r\nValue 1: " + existingConcept.GetFullDescription()
+                    + "\r\nValue 2: " + newConcept.GetFullDescription()
+                    + "\r\nSame key: " + newConcept.GetKey());
 
-            // The new concept is allowed to be a simple version (base class) of the existing concept, even if it is not the same.
-            // This will allow some macro concepts to create simplified new concept that will be ignored if more specific version is already implemented.
-            // Note: Unfortunately this logic should not simply be reversed to also ignore old concept if the new concept is a derivation of the old one,
-            // because other macros might have already used the old concept to generate a different business logic.
-            if (newConcept.GetType().IsAssignableFrom(existingConcept.GetType())
-                && newConcept.GetFullDescription() == existingConcept.GetFullDescriptionAsBaseConcept(newConcept.GetType()))
-                return;
-
-            throw new DslSyntaxException(
-                "Concept with same key is described twice with different values."
-                + "\r\nValue 1: " + existingConcept.GetFullDescription()
-                + "\r\nValue 2: " + newConcept.GetFullDescription()
-                + "\r\nSame key: " + newConcept.GetKey());
+            _validateDuplicateStopwatch.Stop();
         }
 
         /// <summary>
@@ -219,10 +218,12 @@ namespace Rhetos.Dsl
         {
             _performanceLogger.Write(_addConceptsStopwatch, "DslContainer.AddNewConceptsAndReplaceReferences total time.");
             ReplaceReferencesWithFullConcepts(errorOnUnresolvedReference: true);
+            _performanceLogger.Write(_validateDuplicateStopwatch, "DslContainer.ValidateNewConceptSameAsExisting total time.");
         }
 
         public void SortReferencesBeforeUsingConcept()
         {
+            var sw = Stopwatch.StartNew();
             List<IConceptInfo> sortedList = new List<IConceptInfo>();
             Dictionary<IConceptInfo, bool> processed = _resolvedConcepts.ToDictionary(ci => ci, ci => false);
 
@@ -233,6 +234,7 @@ namespace Rhetos.Dsl
                 throw new FrameworkException(string.Format("Unexpected inner state: sortedList.Count {0} != concepts.Count {1}.", sortedList.Count, _resolvedConcepts.Count));
             _resolvedConcepts.Clear();
             _resolvedConcepts.AddRange(sortedList);
+            _performanceLogger.Write(sw, "DslContainer.SortReferencesBeforeUsingConcept.");
         }
 
         private static void AddReferencesBeforeConcept(IConceptInfo concept, List<IConceptInfo> sortedList, Dictionary<IConceptInfo, bool> processed)
