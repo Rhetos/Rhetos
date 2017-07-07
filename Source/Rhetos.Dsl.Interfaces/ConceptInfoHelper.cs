@@ -155,7 +155,7 @@ namespace Rhetos.Dsl
         {
             return (from member in ConceptMembers.Get(conceptInfo)
                     where member.IsConceptInfo
-                    select (IConceptInfo) member.GetValue(conceptInfo)).Distinct().ToList();
+                    select (IConceptInfo)member.GetValue(conceptInfo)).Distinct().ToList();
         }
 
         /// <summary>
@@ -221,7 +221,7 @@ namespace Rhetos.Dsl
 
         private static void AppendMembers(StringBuilder text, IConceptInfo ci, SerializationOptions serializationOptions, bool exceptionOnNullMember = false, Type asBaseConceptType = null)
         {
-            IEnumerable<ConceptMember> members = ConceptMembers.Get(asBaseConceptType ?? ci.GetType());
+            IEnumerable<ConceptMember> members = asBaseConceptType != null ? ConceptMembers.Get(asBaseConceptType) : ConceptMembers.Get(ci);
             if (serializationOptions == SerializationOptions.KeyMembers)
                 members = members.Where(member => member.IsKey);
 
@@ -264,7 +264,7 @@ namespace Rhetos.Dsl
 
         private static string SafeDelimit(string text)
         {
-            bool clean = text.All(c => c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c=='_');
+            bool clean = text.All(c => c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_');
             if (clean && text.Length > 0)
                 return text;
             string quote = (text.Contains('\'') && !text.Contains('\"')) ? "\"" : "\'";

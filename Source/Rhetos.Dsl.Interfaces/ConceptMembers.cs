@@ -32,15 +32,15 @@ namespace Rhetos.Dsl
 
         public static ConceptMember[] Get(IConceptInfo conceptInfo)
         {
-            return Get(conceptInfo.GetType(), new Lazy<IConceptInfo>(() => conceptInfo));
+            return Get(conceptInfo.GetType(), conceptInfo);
         }
 
         public static ConceptMember[] Get(Type conceptInfoType)
         {
-            return Get(conceptInfoType, new Lazy<IConceptInfo>(() => (IConceptInfo)Activator.CreateInstance(conceptInfoType)));
+            return Get(conceptInfoType, null);
         }
 
-        private static ConceptMember[] Get(Type conceptInfoType, Lazy<IConceptInfo> instance)
+        private static ConceptMember[] Get(Type conceptInfoType, IConceptInfo instance)
         {
             ConceptMember[] cached;
             if (_cache.TryGetValue(conceptInfoType, out cached))
@@ -49,7 +49,9 @@ namespace Rhetos.Dsl
             HashSet<string> nonParsableMembers = null;
             if (typeof(IAlternativeInitializationConcept).IsAssignableFrom(conceptInfoType))
             {
-                var alternativeInitializationConcept = (IAlternativeInitializationConcept)instance.Value;
+                var alternativeInitializationConcept = instance != null
+                    ? (IAlternativeInitializationConcept)instance
+                    : (IAlternativeInitializationConcept)Activator.CreateInstance(conceptInfoType);
                 nonParsableMembers = new HashSet<string>(alternativeInitializationConcept.DeclareNonparsableProperties());
             }
 

@@ -86,11 +86,6 @@ namespace Rhetos.Dsl.Test
             var i = new C1 { Name = "I", Ref1 = d }; // resolved, but references unresolved
             var j = new C1 { Name = "J", Ref1 = i }; // resolved, but indirectly references unresolved
 
-            var e = new C1 { Name = "E" }; // should be resolved, circular reference should not be a problem
-            var f = new C1 { Name = "F" }; // should be resolved, circular reference should not be a problem
-            e.Ref1 = f;
-            f.Ref1 = e;
-
             var g = new C2 { Name = "G", Ref2 = missing }; // unresolved
             var h = new C1 { Name = "H" }; // resolved, but references unresolved
             g.Ref1 = h;
@@ -100,13 +95,13 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual("A", TestUtility.DumpSorted(newConcepts, item => ((dynamic)item).Name));
             Assert.AreEqual("A", TestUtility.DumpSorted(dslContainer.Concepts, item => ((dynamic)item).Name));
 
-            newConcepts = dslContainer.AddNewConceptsAndReplaceReferences(new IConceptInfo[] { i, d, c, b, e, f, g, h, i, j, a }).NewUniqueConcepts;
-            Assert.AreEqual("B, C, D, E, F, G, H, I, J", TestUtility.DumpSorted(newConcepts, item => ((dynamic)item).Name));
-            Assert.AreEqual("A, B, C, E, F", TestUtility.DumpSorted(dslContainer.Concepts, item => ((dynamic)item).Name));
+            newConcepts = dslContainer.AddNewConceptsAndReplaceReferences(new IConceptInfo[] { i, d, c, b, g, h, i, j, a }).NewUniqueConcepts;
+            Assert.AreEqual("B, C, D, G, H, I, J", TestUtility.DumpSorted(newConcepts, item => ((dynamic)item).Name));
+            Assert.AreEqual("A, B, C", TestUtility.DumpSorted(dslContainer.Concepts, item => ((dynamic)item).Name));
 
-            newConcepts = dslContainer.AddNewConceptsAndReplaceReferences(new IConceptInfo[] { i, d, c, b, e, f, g, h, i, j, a }).NewUniqueConcepts;
+            newConcepts = dslContainer.AddNewConceptsAndReplaceReferences(new IConceptInfo[] { i, d, c, b, g, h, i, j, a }).NewUniqueConcepts;
             Assert.AreEqual("", TestUtility.DumpSorted(newConcepts, item => ((dynamic)item).Name));
-            Assert.AreEqual("A, B, C, E, F", TestUtility.DumpSorted(dslContainer.Concepts, item => ((dynamic)item).Name));
+            Assert.AreEqual("A, B, C", TestUtility.DumpSorted(dslContainer.Concepts, item => ((dynamic)item).Name));
 
             var ex = TestUtility.ShouldFail<DslSyntaxException>(
                 () => dslContainer.ReportErrorForUnresolvedConcepts(),
@@ -115,6 +110,36 @@ namespace Rhetos.Dsl.Test
 
             Assert.IsTrue(new IConceptInfo[] { d, i, j, g, h }
                 .Any(conceptInfo => ex.Message.Contains(conceptInfo.GetUserDescription())));
+        }
+
+
+        [TestMethod]
+        public void CircularReferences()
+        {
+            var dslContainer = new DslContainerAccessor();
+
+            var a = new C0 { Name = "A" }; // should be resolved
+            var b = new C1 { Name = "B" }; // referencing circular dependency
+            var c = new C1 { Name = "C" }; // circular dependency
+            var d = new C1 { Name = "D" }; // circular dependency
+            var e = new C1 { Name = "E" }; // referencing circular dependency
+            b.Ref1 = c;
+            c.Ref1 = d;
+            d.Ref1 = c;
+            e.Ref1 = d;
+
+            var report = dslContainer.AddNewConceptsAndReplaceReferences(new IConceptInfo[] { a, b, c, d, e });
+            Assert.AreEqual("A, B, C, D, E", TestUtility.DumpSorted(report.NewUniqueConcepts, item => ((dynamic)item).Name));
+            Assert.AreEqual("A", TestUtility.DumpSorted(report.NewlyResolvedConcepts, item => ((dynamic)item).Name));
+            Assert.AreEqual("A", TestUtility.DumpSorted(dslContainer.Concepts, item => ((dynamic)item).Name));
+
+            var ex = TestUtility.ShouldFail<DslSyntaxException>(
+                () => dslContainer.ReportErrorForUnresolvedConcepts(),
+                "circular dependency");
+
+            // Circular dependency error message should contain only the circle, not external references to it.
+            Assert.IsTrue(new IConceptInfo[] { c, d }.All(conceptInfo => ex.Message.Contains(conceptInfo.GetUserDescription())));
+            Assert.IsFalse(new IConceptInfo[] { b, e }.Any(conceptInfo => ex.Message.Contains(conceptInfo.GetUserDescription())));
         }
 
         [TestMethod]

@@ -40,11 +40,43 @@ namespace Rhetos.Dsl
         private readonly Stopwatch _addConceptsStopwatch = new Stopwatch();
         private readonly Stopwatch _validateDuplicateStopwatch = new Stopwatch();
 
+        private readonly Dictionary<string, ConceptDescription> _givenConceptsByKey = new Dictionary<string, ConceptDescription>();
         private readonly List<IConceptInfo> _resolvedConcepts = new List<IConceptInfo>();
         private readonly Dictionary<string, IConceptInfo> _resolvedConceptsByKey = new Dictionary<string, IConceptInfo>();
-        private readonly Dictionary<string, IConceptInfo> _unresolvedConceptsByKey = new Dictionary<string, IConceptInfo>();
+        private readonly MultiDictionary<string, UnresolvedReference> _unresolvedConceptsByReference = new MultiDictionary<string, UnresolvedReference>();
         private readonly List<IDslModelIndex> _dslModelIndexes;
         private readonly Dictionary<Type, IDslModelIndex> _dslModelIndexesByType;
+
+        private class ConceptDescription
+        {
+            public readonly IConceptInfo Concept;
+            public readonly string Key;
+            public int UnresolvedDependencies;
+
+            public ConceptDescription(IConceptInfo concept)
+            {
+                Concept = concept;
+                Key = concept.GetKey();
+                UnresolvedDependencies = 0;
+            }
+        }
+
+        private class UnresolvedReference
+        {
+            public readonly ConceptDescription Dependant;
+            /// <summary>A member property on the Dependant concept that references another concept.</summary>
+            public readonly ConceptMember Member;
+            public readonly IConceptInfo ReferencedStub;
+            public readonly string ReferencedKey;
+
+            public UnresolvedReference(ConceptDescription dependant, ConceptMember referenceMember)
+            {
+                Dependant = dependant;
+                Member = referenceMember;
+                ReferencedStub = (IConceptInfo)Member.GetValue(Dependant.Concept);
+                ReferencedKey = ReferencedStub?.GetKey();
+            }
+        }
 
         public DslContainer(ILogProvider logProvider, IPluginsContainer<IDslModelIndex> dslModelIndexPlugins)
         {
@@ -94,25 +126,24 @@ namespace Rhetos.Dsl
         public AddNewConceptsReport AddNewConceptsAndReplaceReferences(IEnumerable<IConceptInfo> newConcepts)
         {
             _addConceptsStopwatch.Start();
-            var report = new AddNewConceptsReport();
-            report.NewUniqueConcepts = new List<IConceptInfo>();
+            var newUniqueConceptsDesc = new List<ConceptDescription>();
 
-            foreach (var conceptInfo in newConcepts)
+            foreach (var conceptDesc in newConcepts.Select(c => new ConceptDescription(c)))
             {
-                string conceptKey = conceptInfo.GetKey();
-                IConceptInfo existingConcept;
+                ConceptDescription existingConcept;
 
-                if (!_resolvedConceptsByKey.TryGetValue(conceptKey, out existingConcept) && !_unresolvedConceptsByKey.TryGetValue(conceptKey, out existingConcept))
+                if (!_givenConceptsByKey.TryGetValue(conceptDesc.Key, out existingConcept))
                 {
-                    report.NewUniqueConcepts.Add(conceptInfo);
-                    _unresolvedConceptsByKey.Add(conceptKey, conceptInfo);
+                    _givenConceptsByKey.Add(conceptDesc.Key, conceptDesc);
+                    newUniqueConceptsDesc.Add(conceptDesc);
                 }
                 else
-                    ValidateNewConceptSameAsExisting(conceptInfo, existingConcept);
+                    ValidateNewConceptSameAsExisting(conceptDesc.Concept, existingConcept.Concept);
             }
 
-            var newlyResolved = ReplaceReferencesWithFullConcepts(errorOnUnresolvedReference: false);
-            report.NewlyResolvedConcepts = newlyResolved.ToList();
+            var report = new AddNewConceptsReport();
+            report.NewlyResolvedConcepts = ReplaceReferencesWithFullConcepts(newUniqueConceptsDesc);
+            report.NewUniqueConcepts = newUniqueConceptsDesc.Select(desc => desc.Concept).ToList();
 
             _addConceptsStopwatch.Stop();
             return report;
@@ -142,83 +173,149 @@ namespace Rhetos.Dsl
         /// <summary>
         /// Since DSL parser returns stub references, this function replaces each reference with actual instance of the referenced concept.
         /// Function returns concepts that have newly resolved references.
+        /// Note: This method could handle circular dependencies between the concepts, but for simplicity of the implementation this is currently not supported.
         /// </summary>
-        private IEnumerable<IConceptInfo> ReplaceReferencesWithFullConcepts(bool errorOnUnresolvedReference)
+        private List<IConceptInfo> ReplaceReferencesWithFullConcepts(IEnumerable<ConceptDescription> newConceptsDesc)
         {
-            var dependencies = new List<Tuple<string, string>>();
-            var newUnresolved = new List<string>();
+            var newlyResolved = new List<IConceptInfo>();
 
-            foreach (var concept in _unresolvedConceptsByKey)
+            foreach (var conceptDesc in newConceptsDesc)
             {
-                foreach (ConceptMember member in ConceptMembers.Get(concept.Value))
-                    if (member.IsConceptInfo)
+                var references = ConceptMembers.Get(conceptDesc.Concept).Where(member => member.IsConceptInfo)
+                    .Select(member => new UnresolvedReference(conceptDesc, member));
+
+                foreach (var reference in references)
+                    ReplaceReferenceWithFullConceptOrMarkUnresolved(reference);
+
+                if (conceptDesc.UnresolvedDependencies == 0)
+                {
+                    newlyResolved.Add(conceptDesc.Concept);
+                    newlyResolved.AddRange(MarkResolvedConcept(conceptDesc));
+                }
+            }
+
+            return newlyResolved;
+        }
+
+        private void ReplaceReferenceWithFullConceptOrMarkUnresolved(UnresolvedReference reference)
+        {
+            if (reference.ReferencedKey == null)
+            {
+                string errorMessage = $"Property '{reference.Member.Name}' is not initialized.";
+
+                if (reference.Dependant.Concept is IAlternativeInitializationConcept)
+                    errorMessage = errorMessage + $" Check if the InitializeNonparsableProperties function of IAlternativeInitializationConcept implementation at {reference.Dependant.Concept.GetType().Name} is implemented properly.";
+
+                throw new DslSyntaxException(reference.Dependant.Concept, errorMessage);
+            }
+
+            IConceptInfo referencedConcept;
+            if (_resolvedConceptsByKey.TryGetValue(reference.ReferencedKey, out referencedConcept))
+                reference.Member.SetMemberValue(reference.Dependant.Concept, referencedConcept);
+            else
+            {
+                _unresolvedConceptsByReference.Add(reference.ReferencedKey, reference);
+                reference.Dependant.UnresolvedDependencies++;
+            }
+        }
+
+        /// <summary>
+        /// Returns new resolved concepts that were waiting for this concept to be resolved.
+        /// </summary>
+        private IEnumerable<IConceptInfo> MarkResolvedConcept(ConceptDescription resolved)
+        {
+            _logger.Trace(() => "New concept with resolved references: " + resolved.Key);
+
+            _resolvedConcepts.Add(resolved.Concept);
+            _resolvedConceptsByKey.Add(resolved.Key, resolved.Concept);
+            foreach (var index in _dslModelIndexes)
+                index.Add(resolved.Concept);
+
+            var newlyResolved = new List<IConceptInfo>();
+
+            List<UnresolvedReference> unresolvedReferences;
+            if (_unresolvedConceptsByReference.TryGetValue(resolved.Key, out unresolvedReferences))
+            {
+                foreach (var unresolved in unresolvedReferences)
+                {
+                    if (unresolved.Dependant.UnresolvedDependencies <= 0)
+                        throw new FrameworkException($"Internal error while resolving references of '{unresolved.Dependant.Concept.GetUserDescription()}'."
+                            + $" The concept has {unresolved.Dependant.UnresolvedDependencies} unresolved dependencies,"
+                            + $" but it is marked as unresolved dependency to '{unresolved.ReferencedStub.GetUserDescription()}'.");
+
+                    unresolved.Member.SetMemberValue(unresolved.Dependant.Concept, resolved.Concept);
+
+                    if (--unresolved.Dependant.UnresolvedDependencies == 0)
                     {
-                        var reference = (IConceptInfo)member.GetValue(concept.Value);
-
-                        if (reference == null)
-                        {
-                            string errorMessage = "Property '" + member.Name + "' is not initialized.";
-                            if (concept.Value is IAlternativeInitializationConcept)
-                                errorMessage = errorMessage + string.Format(
-                                    " Check if the InitializeNonparsableProperties function of IAlternativeInitializationConcept implementation at {0} is implemented properly.",
-                                    concept.Value.GetType().Name);
-                            throw new DslSyntaxException(concept.Value, errorMessage);
-                        }
-
-                        string referencedKey = reference.GetKey();
-
-                        dependencies.Add(Tuple.Create(referencedKey, concept.Key));
-
-                        IConceptInfo referencedConcept;
-                        if (!_resolvedConceptsByKey.TryGetValue(referencedKey, out referencedConcept)
-                            && !_unresolvedConceptsByKey.TryGetValue(referencedKey, out referencedConcept))
-                            {
-                                if (errorOnUnresolvedReference)
-                                    throw new DslSyntaxException(concept.Value, string.Format(
-                                        "Referenced concept is not defined in DSL scripts: '{0}'.",
-                                        reference.GetUserDescription()));
-
-                                newUnresolved.Add(concept.Key);
-                            }
-                        else
-                            member.SetMemberValue(concept.Value, referencedConcept);
+                        newlyResolved.Add(unresolved.Dependant.Concept);
+                        newlyResolved.AddRange(MarkResolvedConcept(unresolved.Dependant));
                     }
+                }
+
+                _unresolvedConceptsByReference.Remove(resolved.Key);
             }
 
-            // Unresolved concepts should also include any concept with resolved references that references an unresolved concept.
-            newUnresolved = Graph.IncludeDependents(newUnresolved, dependencies);
-
-            var unresolvedIndex = new HashSet<string>(newUnresolved);
-            var newlyResolved = _unresolvedConceptsByKey
-                .Where(concept => !unresolvedIndex.Contains(concept.Key))
-                .ToList();
-
-            foreach (var concept in newlyResolved)
-            {
-                _logger.Trace(() => "New concept with resolved references: " + concept.Key);
-
-                _unresolvedConceptsByKey.Remove(concept.Key);
-
-                _resolvedConcepts.Add(concept.Value);
-                _resolvedConceptsByKey.Add(concept.Key, concept.Value);
-
-                foreach (var index in _dslModelIndexes)
-                    index.Add(concept.Value);
-            }
-
-            return newlyResolved.Select(concept => concept.Value);
+            return newlyResolved;
         }
 
         public int UnresolvedConceptsCount()
         {
-            return _unresolvedConceptsByKey.Count();
+            return _unresolvedConceptsByReference
+                .SelectMany(concepts => concepts.Value.Select(concept => concept.Dependant.Key))
+                .Distinct().Count();
         }
 
         public void ReportErrorForUnresolvedConcepts()
         {
             _performanceLogger.Write(_addConceptsStopwatch, "DslContainer.AddNewConceptsAndReplaceReferences total time.");
-            ReplaceReferencesWithFullConcepts(errorOnUnresolvedReference: true);
             _performanceLogger.Write(_validateDuplicateStopwatch, "DslContainer.ValidateNewConceptSameAsExisting total time.");
+
+            var unresolvedConcepts = _unresolvedConceptsByReference.SelectMany(ucbr => ucbr.Value);
+            if (unresolvedConcepts.Any())
+            {
+                _logger.Trace(() => string.Join("\r\n",
+                    unresolvedConcepts.Select(u =>
+                        $"Unresolved dependency to '{u.ReferencedKey}' <= '{u.Dependant.Concept.GetUserDescription()}',"
+                        + $" {u.Member.Name} = '{u.ReferencedStub.GetUserDescription()}' ({u.Dependant.UnresolvedDependencies} left)")));
+
+                var internalError = unresolvedConcepts.Where(u => u.Dependant.UnresolvedDependencies <= 0).FirstOrDefault();
+                if (internalError != null)
+                    throw new FrameworkException($"Internal error while resolving references of '{internalError.Dependant.Concept.GetUserDescription()}'."
+                        + $" The concept has {internalError.Dependant.UnresolvedDependencies} unresolved dependencies,"
+                        + $" but it is marked as unresolved dependency to '{internalError.ReferencedStub.GetUserDescription()}'.");
+
+                var rootUnresolved = GetRootUnresolvedConcept(unresolvedConcepts.First());
+                throw new DslSyntaxException(rootUnresolved.Dependant.Concept,
+                    $"Referenced concept is not defined in DSL scripts: '{rootUnresolved.ReferencedStub.GetUserDescription()}'.");
+            }
+        }
+
+        private UnresolvedReference GetRootUnresolvedConcept(UnresolvedReference unresolved, List<string> trail = null)
+        {
+            if (trail == null)
+                trail = new List<string>();
+
+            if (!_givenConceptsByKey.ContainsKey(unresolved.ReferencedKey))
+                return unresolved;
+
+            var referencedUnresolvedConcept = _unresolvedConceptsByReference.SelectMany(ucbr => ucbr.Value)
+                .Where(u => u.Dependant.Key == unresolved.ReferencedKey)
+                .FirstOrDefault();
+
+            if (referencedUnresolvedConcept == null)
+                throw new FrameworkException($"Internal error when resolving concept's references: '{unresolved.Dependant.Concept.GetUserDescription()}' has unresolved reference to '{unresolved.ReferencedStub.GetUserDescription()}', but the referenced concept is not marked as unresolved.");
+
+            if (trail.Contains(referencedUnresolvedConcept.Dependant.Key))
+            {
+                var circularGroup = trail
+                    .Skip(trail.IndexOf(referencedUnresolvedConcept.Dependant.Key))
+                    .Concat(new[] { referencedUnresolvedConcept.Dependant.Key });
+                throw new DslSyntaxException(referencedUnresolvedConcept.Dependant.Concept,
+                    "Circular dependency detected in concept's references: " + string.Join(" => ", circularGroup) + ".");
+            }
+
+            trail.Add(referencedUnresolvedConcept.Dependant.Key);
+            return GetRootUnresolvedConcept(referencedUnresolvedConcept, trail);
         }
 
         public void SortReferencesBeforeUsingConcept()
