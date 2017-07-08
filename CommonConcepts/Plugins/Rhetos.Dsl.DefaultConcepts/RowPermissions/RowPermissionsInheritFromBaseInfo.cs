@@ -27,14 +27,35 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("InheritFromBase")]
-    public class RowPermissionsInheritFromBaseInfo : IMacroConcept, IValidationConcept
+    public class RowPermissionsInheritFromBaseInfo : IValidatedConcept
     {
         [ConceptKey]
         public RowPermissionsPluginableFiltersInfo RowPermissionsFilters { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public DataStructureInfo GetBaseDataStructure(IDslModel existingConcepts)
+        {
+            return existingConcepts
+                .FindByReference<DataStructureExtendsInfo>(extends => extends.Extension, RowPermissionsFilters.DataStructure)
+                .Select(extends => extends.Base)
+                .SingleOrDefault();
+        }
+
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             var baseDataStructure = GetBaseDataStructure(existingConcepts);
+            if (baseDataStructure == null)
+                throw new DslSyntaxException(this, "'" + this.GetKeywordOrTypeName() + "' can only be used on an extension. '"
+                    + RowPermissionsFilters.DataStructure.GetUserDescription() + "' does not extend another data structure.");
+
+        }
+    }
+
+    [Export(typeof(IConceptMacro))]
+    public class RowPermissionsInheritFromBaseMacro : IConceptMacro<RowPermissionsInheritFromBaseInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(RowPermissionsInheritFromBaseInfo conceptInfo, IDslModel existingConcepts)
+        {
+            var baseDataStructure = conceptInfo.GetBaseDataStructure(existingConcepts);
             if (baseDataStructure == null)
                 return null; // Might be created in a later iteration.
 
@@ -42,27 +63,11 @@ namespace Rhetos.Dsl.DefaultConcepts
             {
                 new RowPermissionsInheritFromInfo
                 {
-                    RowPermissionsFilters = RowPermissionsFilters,
+                    RowPermissionsFilters = conceptInfo.RowPermissionsFilters,
                     Source = baseDataStructure,
                     SourceSelector = "Base"
                 }
             };
-        }
-
-        private DataStructureInfo GetBaseDataStructure(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            return existingConcepts.OfType<DataStructureExtendsInfo>()
-                .Where(extends => extends.Extension == RowPermissionsFilters.DataStructure)
-                .Select(extends => extends.Base)
-                .SingleOrDefault();
-        }
-
-        public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            var baseDataStructure = GetBaseDataStructure(existingConcepts);
-            if (baseDataStructure == null)
-                throw new DslSyntaxException(this, "'" + this.GetKeywordOrTypeName() + "' can only be used on an extension. '"
-                    + RowPermissionsFilters.DataStructure.GetUserDescription() + "' does not extend another data structure.");
         }
     }
 }

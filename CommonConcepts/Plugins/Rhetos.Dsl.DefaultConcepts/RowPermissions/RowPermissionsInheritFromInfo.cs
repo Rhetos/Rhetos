@@ -26,7 +26,7 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class RowPermissionsInheritFromInfo : IValidationConcept, IMacroConcept
+    public class RowPermissionsInheritFromInfo : IValidatedConcept
     {
         [ConceptKey]
         public RowPermissionsPluginableFiltersInfo RowPermissionsFilters { get; set; }
@@ -39,38 +39,44 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public string SourceSelector { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
-            List<IConceptInfo> newConcepts = new List<IConceptInfo>();
-
-            var rowPermissionsRead = GetRowPermissionsRead(Source, existingConcepts);
-            if (rowPermissionsRead != null) newConcepts.Add(new RowPermissionsInheritReadInfo() { InheritFromInfo = this });
-
-            var rowPermissionsWrite = GetRowPermissionsWrite(Source, existingConcepts);
-            if (rowPermissionsWrite != null) newConcepts.Add(new RowPermissionsInheritWriteInfo() { InheritFromInfo = this });
-
-            return newConcepts;
-        }
-     
-        public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            var rowPermissionsRead = GetRowPermissionsRead(Source, existingConcepts);
-            var rowPermissionsWrite = GetRowPermissionsWrite(Source, existingConcepts);
+            var rowPermissionsRead = GetRowPermissionsRead(existingConcepts);
+            var rowPermissionsWrite = GetRowPermissionsWrite(existingConcepts);
 
             if (rowPermissionsRead == null && rowPermissionsWrite == null)
                 throw new DslSyntaxException(this, "Referenced '" + Source.GetUserDescription() + "' does not have row permissions.");
         }
 
-        private RowPermissionsReadInfo GetRowPermissionsRead(DataStructureInfo dataStructure, IEnumerable<IConceptInfo> concepts)
+        public RowPermissionsReadInfo GetRowPermissionsRead(IDslModel existingConcepts)
         {
-            var allRp = concepts.OfType<RowPermissionsReadInfo>();
-            return allRp.SingleOrDefault(a => a.Source == dataStructure);
+            return existingConcepts.FindByReference<RowPermissionsReadInfo>(rp => rp.Source, Source)
+                .SingleOrDefault();
         }
 
-        private RowPermissionsWriteInfo GetRowPermissionsWrite(DataStructureInfo dataStructure, IEnumerable<IConceptInfo> concepts)
+        public RowPermissionsWriteInfo GetRowPermissionsWrite(IDslModel existingConcepts)
         {
-            var allRp = concepts.OfType<RowPermissionsWriteInfo>();
-            return allRp.SingleOrDefault(a => a.Source == dataStructure);
+            return existingConcepts.FindByReference<RowPermissionsWriteInfo>(rp => rp.Source, Source)
+                .SingleOrDefault();
+        }
+    }
+
+    [Export(typeof(IConceptMacro))]
+    public class RowPermissionsInheritFromMacro : IConceptMacro<RowPermissionsInheritFromInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(RowPermissionsInheritFromInfo conceptInfo, IDslModel existingConcepts)
+        {
+            List<IConceptInfo> newConcepts = new List<IConceptInfo>();
+
+            var rowPermissionsRead = conceptInfo.GetRowPermissionsRead(existingConcepts);
+            var rowPermissionsWrite = conceptInfo.GetRowPermissionsWrite(existingConcepts);
+
+            if (rowPermissionsRead != null)
+                newConcepts.Add(new RowPermissionsInheritReadInfo() { InheritFromInfo = conceptInfo });
+            if (rowPermissionsWrite != null)
+                newConcepts.Add(new RowPermissionsInheritWriteInfo() { InheritFromInfo = conceptInfo });
+
+            return newConcepts;
         }
     }
 }
