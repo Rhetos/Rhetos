@@ -39,6 +39,8 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly string EntityFrameworkConfigurationTag = "/*EntityFrameworkConfiguration*/";
         public static readonly string CommonQueryableMemebersTag = "/*CommonQueryableMemebers*/";
         public static readonly string QueryExtensionsMembersTag = "/*QueryExtensionsMembers*/";
+        public static readonly string SimpleClassesTag = "/*SimpleClasses*/";
+        public static readonly string RepositoryClassesTag = "/*RepositoryClasses*/";
 
         public static readonly string StandardNamespacesSnippet =
 @"using System;
@@ -90,7 +92,26 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string GenerateCommonClassesSnippet()
         {
             return
-@"namespace Common
+SimpleClassesTag + @"
+
+namespace Common.Queryable
+{
+    " + StandardNamespacesSnippet + @"
+
+    " + CommonQueryableMemebersTag + @"
+}
+
+namespace Rhetos.Dom.DefaultConcepts
+{
+    " + StandardNamespacesSnippet + @"
+
+    public static class QueryExtensions
+    {
+        " + QueryExtensionsMembersTag + @"
+    }
+}
+
+namespace Common
 {
     " + StandardNamespacesSnippet + @"
 
@@ -107,107 +128,6 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         " + ModuleCodeGenerator.CommonDomRepositoryMembersTag + @"
-    }
-
-    public class EntityFrameworkContext : System.Data.Entity.DbContext, Rhetos.Persistence.IPersistenceCache
-    {
-        public EntityFrameworkContext(
-            Rhetos.Persistence.IPersistenceTransaction persistenceTransaction,
-            Rhetos.Dom.DefaultConcepts.Persistence.EntityFrameworkMetadata metadata,
-            EntityFrameworkConfiguration configuration) // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
-            : base(new System.Data.Entity.Core.EntityClient.EntityConnection(metadata.MetadataWorkspace, persistenceTransaction.Connection), false)
-        {
-            Initialize();
-            Database.UseTransaction(persistenceTransaction.Transaction);
-        }
-
-        /// <summary>
-        /// This constructor is used at deployment-time to create slow EntityFrameworkContext instance before the metadata files are generated.
-        /// The instance is used by EntityFrameworkGenerateMetadataFiles to generate the metadata files.
-        /// </summary>
-        protected EntityFrameworkContext(
-            System.Data.Common.DbConnection connection,
-            EntityFrameworkConfiguration configuration) // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
-            : base(connection, true)
-        {
-            Initialize();
-        }
-
-        private void Initialize()
-        {
-            System.Data.Entity.Database.SetInitializer<EntityFrameworkContext>(null); // Prevent EF from creating database objects.
-
-            " + EntityFrameworkContextInitializeTag + @"
-
-            var objectContext = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)this).ObjectContext;
-            objectContext.CommandTimeout = Rhetos.Utilities.SqlUtility.SqlCommandTimeout;
-        }
-
-        public void ClearCache()
-        {
-            var objectContext = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)this).ObjectContext;
-
-            SetDetaching(true);
-            try
-            {
-                Configuration.AutoDetectChangesEnabled = false;
-                var trackedItems = ChangeTracker.Entries().ToList();
-                foreach (var item in trackedItems)
-                    objectContext.Detach(item.Entity);
-                Configuration.AutoDetectChangesEnabled = true;
-            }
-            finally
-            {
-                SetDetaching(false);
-            }
-        }
-
-        public void ClearCache(object item)
-        {
-            var objectContext = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)this).ObjectContext;
-            System.Data.Entity.Core.Objects.ObjectStateEntry stateEntry;
-            bool isCached = objectContext.ObjectStateManager.TryGetObjectStateEntry(item, out stateEntry);
-
-            if (isCached)
-            {
-                SetDetaching(true);
-                try
-                {
-                    Configuration.AutoDetectChangesEnabled = false;
-                    objectContext.Detach(item);
-                    Configuration.AutoDetectChangesEnabled = true;
-                }
-                finally
-                {
-                    SetDetaching(false);
-                }
-            }
-        }
-
-        private void SetDetaching(bool detaching)
-        {
-            foreach (var item in ChangeTracker.Entries().Select(entry => entry.Entity).OfType<IDetachOverride>())
-                item.Detaching = detaching;
-        }
-
-        protected override void OnModelCreating(System.Data.Entity.DbModelBuilder modelBuilder)
-        {
-            " + EntityFrameworkOnModelCreatingTag + @"
-        }
-
-        " + EntityFrameworkContextMembersTag + @"
-    }
-
-    public class EntityFrameworkConfiguration : System.Data.Entity.DbConfiguration
-    {
-        public EntityFrameworkConfiguration()
-        {
-            SetProviderServices(""System.Data.SqlClient"", System.Data.Entity.SqlServer.SqlProviderServices.Instance);
-
-            " + EntityFrameworkConfigurationTag + @"
-
-            System.Data.Entity.DbConfiguration.SetConfiguration(this);
-        }
     }
 
     public static class Infrastructure
@@ -341,26 +261,111 @@ namespace Rhetos.Dom.DefaultConcepts
         }
     }
 
+    public class EntityFrameworkContext : System.Data.Entity.DbContext, Rhetos.Persistence.IPersistenceCache
+    {
+        public EntityFrameworkContext(
+            Rhetos.Persistence.IPersistenceTransaction persistenceTransaction,
+            Rhetos.Dom.DefaultConcepts.Persistence.EntityFrameworkMetadata metadata,
+            EntityFrameworkConfiguration configuration) // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
+            : base(new System.Data.Entity.Core.EntityClient.EntityConnection(metadata.MetadataWorkspace, persistenceTransaction.Connection), false)
+        {
+            Initialize();
+            Database.UseTransaction(persistenceTransaction.Transaction);
+        }
+
+        /// <summary>
+        /// This constructor is used at deployment-time to create slow EntityFrameworkContext instance before the metadata files are generated.
+        /// The instance is used by EntityFrameworkGenerateMetadataFiles to generate the metadata files.
+        /// </summary>
+        protected EntityFrameworkContext(
+            System.Data.Common.DbConnection connection,
+            EntityFrameworkConfiguration configuration) // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
+            : base(connection, true)
+        {
+            Initialize();
+        }
+
+        private void Initialize()
+        {
+            System.Data.Entity.Database.SetInitializer<EntityFrameworkContext>(null); // Prevent EF from creating database objects.
+
+            " + EntityFrameworkContextInitializeTag + @"
+
+            var objectContext = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)this).ObjectContext;
+            objectContext.CommandTimeout = Rhetos.Utilities.SqlUtility.SqlCommandTimeout;
+        }
+
+        public void ClearCache()
+        {
+            var objectContext = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)this).ObjectContext;
+
+            SetDetaching(true);
+            try
+            {
+                Configuration.AutoDetectChangesEnabled = false;
+                var trackedItems = ChangeTracker.Entries().ToList();
+                foreach (var item in trackedItems)
+                    objectContext.Detach(item.Entity);
+                Configuration.AutoDetectChangesEnabled = true;
+            }
+            finally
+            {
+                SetDetaching(false);
+            }
+        }
+
+        public void ClearCache(object item)
+        {
+            var objectContext = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)this).ObjectContext;
+            System.Data.Entity.Core.Objects.ObjectStateEntry stateEntry;
+            bool isCached = objectContext.ObjectStateManager.TryGetObjectStateEntry(item, out stateEntry);
+
+            if (isCached)
+            {
+                SetDetaching(true);
+                try
+                {
+                    Configuration.AutoDetectChangesEnabled = false;
+                    objectContext.Detach(item);
+                    Configuration.AutoDetectChangesEnabled = true;
+                }
+                finally
+                {
+                    SetDetaching(false);
+                }
+            }
+        }
+
+        private void SetDetaching(bool detaching)
+        {
+            foreach (var item in ChangeTracker.Entries().Select(entry => entry.Entity).OfType<IDetachOverride>())
+                item.Detaching = detaching;
+        }
+
+        protected override void OnModelCreating(System.Data.Entity.DbModelBuilder modelBuilder)
+        {
+            " + EntityFrameworkOnModelCreatingTag + @"
+        }
+
+        " + EntityFrameworkContextMembersTag + @"
+    }
+
+    public class EntityFrameworkConfiguration : System.Data.Entity.DbConfiguration
+    {
+        public EntityFrameworkConfiguration()
+        {
+            SetProviderServices(""System.Data.SqlClient"", System.Data.Entity.SqlServer.SqlProviderServices.Instance);
+
+            " + EntityFrameworkConfigurationTag + @"
+
+            System.Data.Entity.DbConfiguration.SetConfiguration(this);
+        }
+    }
+
     " + ModuleCodeGenerator.CommonNamespaceMembersTag + @"
 }
 
-namespace Common.Queryable
-{
-    " + StandardNamespacesSnippet + @"
-
-    " + CommonQueryableMemebersTag + @"
-}
-
-namespace Rhetos.Dom.DefaultConcepts
-{
-    " + StandardNamespacesSnippet + @"
-
-    public static class QueryExtensions
-    {
-        " + QueryExtensionsMembersTag + @"
-    }
-}
-";
+" + RepositoryClassesTag;
         }
     }
 }

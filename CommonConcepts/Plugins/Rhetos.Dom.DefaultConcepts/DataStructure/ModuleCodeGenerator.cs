@@ -37,46 +37,6 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<ModuleInfo> RepositoryMembersTag = "RepositoryMembers";
         public static readonly CsTag<ModuleInfo> HelperNamespaceMembersTag = "HelperNamespaceMembers";
 
-        private static string GenerateNamespaceSnippet(ModuleInfo info)
-        {
-            return string.Format(
-                @"
-namespace {0}
-{{
-    {1}
-
-    {2}
-
-    {3}
-}}
-
-namespace {0}._Helper
-{{
-    {1}
-
-    {2}
-
-    public class _ModuleRepository
-    {{
-        private readonly Rhetos.Extensibility.INamedPlugins<IRepository> _repositories;
-
-        public _ModuleRepository(Rhetos.Extensibility.INamedPlugins<IRepository> repositories)
-        {{
-            _repositories = repositories;
-        }}
-
-        {4}
-    }}
-    {5}
-}}",
-                info.Name,
-                DomInitializationCodeGenerator.StandardNamespacesSnippet,
-                UsingTag.Evaluate(info),
-                NamespaceMembersTag.Evaluate(info),
-                RepositoryMembersTag.Evaluate(info),
-                HelperNamespaceMembersTag.Evaluate(info));
-        }
-
         private static string ModuleRepositoryInCommonRepositorySnippet(ModuleInfo info)
         {
             return string.Format(
@@ -91,7 +51,42 @@ namespace {0}._Helper
         {
             var info = (ModuleInfo)conceptInfo;
 
-            codeBuilder.InsertCode(GenerateNamespaceSnippet(info));
+            codeBuilder.InsertCode(
+$@"namespace {info.Name}
+{{
+    {DomInitializationCodeGenerator.StandardNamespacesSnippet}
+
+    {UsingTag.Evaluate(info)}
+
+    {NamespaceMembersTag.Evaluate(info)}
+}}
+
+", DomInitializationCodeGenerator.SimpleClassesTag);
+
+            codeBuilder.InsertCode(
+$@"namespace {info.Name}._Helper
+{{
+    {DomInitializationCodeGenerator.StandardNamespacesSnippet}
+
+    {UsingTag.Evaluate(info)}
+
+    public class _ModuleRepository
+    {{
+        private readonly Rhetos.Extensibility.INamedPlugins<IRepository> _repositories;
+
+        public _ModuleRepository(Rhetos.Extensibility.INamedPlugins<IRepository> repositories)
+        {{
+            _repositories = repositories;
+        }}
+
+        {RepositoryMembersTag.Evaluate(info)}
+    }}
+
+    {HelperNamespaceMembersTag.Evaluate(info)}
+}}
+
+", DomInitializationCodeGenerator.RepositoryClassesTag);
+
             // Default .NET framework assemblies:
             codeBuilder.AddReferencesFromDependency(typeof(int)); // Includes reference to mscorlib.dll
             codeBuilder.AddReferencesFromDependency(typeof(Enumerable)); // Includes reference to System.Core.
