@@ -36,35 +36,6 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(QueryableExtensionInfo))]
     public class QueryableExtensionCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly CsTag<QueryableExtensionInfo> GetHashCodeTag = "GetHashCode";
-        public static readonly CsTag<QueryableExtensionInfo> EqualsBaseTag = "EqualsBase";
-        public static readonly CsTag<QueryableExtensionInfo> EqualsInterfaceTag = "EqualsInterface";
-
-        protected static string CodeSnippet(QueryableExtensionInfo info)
-        {
-            return
-@"public override int GetHashCode()
-        {
-            " + GetHashCodeTag.Evaluate(info) + @"
-            return ID.GetHashCode();
-        }
-
-        public override bool Equals(object o)
-        {
-            " + EqualsBaseTag.Evaluate(info) + @"
-            var other = o as " + info.Name + @";
-            return other != null && other.ID == ID;
-        }
-
-        bool System.IEquatable<" + info.Name + @">.Equals(" + info.Name + @" other)
-        {
-            " + EqualsInterfaceTag.Evaluate(info) + @"
-            return other != null && other.ID == ID;
-        }
-
-        ";
-        }
-
         protected static string RepositoryFunctionsSnippet(QueryableExtensionInfo info)
         {
             return string.Format(
@@ -86,16 +57,11 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (QueryableExtensionInfo)conceptInfo;
 
-            codeBuilder.InsertCode(CodeSnippet(info), DataStructureCodeGenerator.BodyTag, info);
-            DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, string.Format("System.IEquatable<{0}>", info.Name), typeof(IEquatable<>), info);
+            DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{info.Module.Name}.{info.Name}>", typeof(EntityBase<>), info);
 
             RepositoryHelper.GenerateRepository(info, codeBuilder);
             RepositoryHelper.GenerateQueryableRepositoryFunctions(info, codeBuilder, QuerySnippet(info));
             codeBuilder.InsertCode(RepositoryFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info);
-
-            PropertyInfo idProperty = new PropertyInfo { DataStructure = info, Name = "ID" };
-            PropertyHelper.GenerateCodeForType(idProperty, codeBuilder, "Guid");
-            DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, typeof(IEntity), info);
         }
     }
 }

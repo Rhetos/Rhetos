@@ -54,13 +54,11 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (ComputedInfo)conceptInfo;
 
+            DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{info.Module.Name}.{info.Name}>", typeof(EntityBase<>), info);
+
             RepositoryHelper.GenerateRepository(info, codeBuilder);
             RepositoryHelper.GenerateQueryableRepositoryFunctions(info, codeBuilder, null, LoadFunctionBodySnippet(info));
             codeBuilder.InsertCode(RepositoryFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info);
-
-            PropertyInfo idProperty = new PropertyInfo { DataStructure = info, Name = "ID" };
-            PropertyHelper.GenerateCodeForType(idProperty, codeBuilder, "Guid");
-            DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, typeof(IEntity), info);
         }
     }
 }

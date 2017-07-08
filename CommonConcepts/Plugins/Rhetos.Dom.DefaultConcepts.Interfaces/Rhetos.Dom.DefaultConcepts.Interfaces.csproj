@@ -103,6 +103,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EntityBase.cs" />
     <Compile Include="FilterSubtype.cs" />
     <Compile Include="ActiveItems.cs" />
     <Compile Include="DeactivateInsteadOfDelete.cs" />

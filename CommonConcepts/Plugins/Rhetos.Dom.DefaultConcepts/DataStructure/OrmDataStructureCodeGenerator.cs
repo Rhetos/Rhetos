@@ -36,10 +36,6 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.DependsOn, typeof(DataStructureQueryableCodeGenerator))]
     public class OrmDataStructureCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly CsTag<DataStructureInfo> GetHashCodeTag = "Orm GetHashCode";
-        public static readonly CsTag<DataStructureInfo> EqualsBaseTag = "Orm EqualsBase";
-        public static readonly CsTag<DataStructureInfo> EqualsInterfaceTag = "Orm EqualsInterface";
-
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (DataStructureInfo)conceptInfo;
@@ -47,16 +43,11 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (orm != null)
             {
-                codeBuilder.InsertCode(SnippetEntityClassMembers(info), DataStructureCodeGenerator.BodyTag, info);
-                DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, string.Format("System.IEquatable<{0}>", info.Name), typeof(System.IEquatable<>), info);
+                DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{info.Module.Name}.{info.Name}>", typeof(EntityBase<>), info);
 
                 RepositoryHelper.GenerateRepository(info, codeBuilder);
                 RepositoryHelper.GenerateQueryableRepositoryFunctions(info, codeBuilder, QuerySnippet(info));
                 codeBuilder.InsertCode(SnippetQueryableFilterById(info), RepositoryHelper.RepositoryMembers, info);
-
-                PropertyInfo idProperty = new PropertyInfo { DataStructure = info, Name = "ID" };
-                PropertyHelper.GenerateCodeForType(idProperty, codeBuilder, "Guid");
-                DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, typeof(IEntity), info);
 
                 codeBuilder.InsertCode(
                     string.Format("public System.Data.Entity.DbSet<Common.Queryable.{0}_{1}> {0}_{1} {{ get; set; }}\r\n        ",
@@ -68,31 +59,6 @@ namespace Rhetos.Dom.DefaultConcepts
                         info.Module.Name, info.Name, orm.GetOrmSchema(), orm.GetOrmDatabaseObject()),
                     DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
             }
-        }
-
-        protected static string SnippetEntityClassMembers(DataStructureInfo info)
-        {
-            return
-        @"public override int GetHashCode()
-        {
-            " + GetHashCodeTag.Evaluate(info) + @"
-            return ID.GetHashCode();
-        }
-
-        public override bool Equals(object o)
-        {
-            " + EqualsBaseTag.Evaluate(info) + @"
-            var other = o as " + info.Name + @";
-            return other != null && other.ID == ID;
-        }
-
-        public bool Equals(" + info.Name + @" other)
-        {
-            " + EqualsInterfaceTag.Evaluate(info) + @"
-            return other != null && other.ID == ID;
-        }
-
-        ";
         }
 
         protected static string QuerySnippet(DataStructureInfo info)

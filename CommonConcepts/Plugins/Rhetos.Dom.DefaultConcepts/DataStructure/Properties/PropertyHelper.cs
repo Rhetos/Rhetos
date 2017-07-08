@@ -56,10 +56,9 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode("[DataMember]", AttributeTag, info);
 
             if (DslUtility.IsQueryable(info.DataStructure))
-                if (info.Name != "ID")
-                    codeBuilder.InsertCode(
-                        string.Format(",\r\n                {0} = item.{0}", info.Name),
-                        RepositoryHelper.AssignSimplePropertyTag, info.DataStructure);
+                codeBuilder.InsertCode(
+                    string.Format(",\r\n                {0} = item.{0}", info.Name),
+                    RepositoryHelper.AssignSimplePropertyTag, info.DataStructure);
         }
     }
 }
