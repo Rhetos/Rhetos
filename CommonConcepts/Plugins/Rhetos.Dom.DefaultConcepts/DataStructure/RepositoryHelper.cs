@@ -34,6 +34,7 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         public static readonly CsTag<DataStructureInfo> RepositoryAttributes = "RepositoryAttributes";
         public static readonly CsTag<DataStructureInfo> RepositoryInterfaces = new CsTag<DataStructureInfo>("RepositoryInterface", TagType.Appendable, ",\r\n        {0}");
+        public static readonly CsTag<DataStructureInfo> OverrideBaseTypeTag = new CsTag<DataStructureInfo>("OverrideBaseType", TagType.Reverse, "{0} //");
         public static readonly CsTag<DataStructureInfo> RepositoryPrivateMembers = "RepositoryPrivateMembers";
         public static readonly CsTag<DataStructureInfo> RepositoryMembers = "RepositoryMembers";
         public static readonly CsTag<DataStructureInfo> AssignSimplePropertyTag = "AssignSimpleProperty";
@@ -44,10 +45,9 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return string.Format(
     RepositoryAttributes.Evaluate(info) + @"
-    public class {0}_Repository : IRepository" + RepositoryInterfaces.Evaluate(info) + @"
+    public class {0}_Repository : " + OverrideBaseTypeTag.Evaluate(info) + @" RepositoryBase
+        " + RepositoryInterfaces.Evaluate(info) + @"
     {{
-        private readonly Common.DomRepository _domRepository;
-        private readonly Common.ExecutionContext _executionContext;
         " + RepositoryPrivateMembers.Evaluate(info) + @"
 
         public {0}_Repository(Common.DomRepository domRepository, Common.ExecutionContext executionContext" + ConstructorArguments.Evaluate(info) + @")
@@ -99,28 +99,10 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string RepositoryReadFunctionsSnippet(DataStructureInfo info, string readFunctionBody)
         {
             return string.Format(
-        @"public IEnumerable<{0}> Load(object parameter, Type parameterType)
-        {{
-            var items = _executionContext.GenericRepository(""{0}"").Load(parameter, parameterType);
-            return (IEnumerable<{0}>)items;
-        }}
-
-        public IEnumerable<{0}> Read(object parameter, Type parameterType, bool preferQuery)
-        {{
-            var items = _executionContext.GenericRepository(""{0}"").Read(parameter, parameterType, preferQuery);
-            return (IEnumerable<{0}>)items;
-        }}
-
-        [Obsolete(""Use Load() or Query() method."")]
+        @"[Obsolete(""Use Load() or Query() method."")]
         public global::{0}[] All()
         {{
             {1}
-        }}
-
-        [Obsolete(""Use Load() or Query() method."")]
-        public global::{0}[] Filter(FilterAll filterAll)
-        {{
-            return All();
         }}
 
         ",
@@ -131,41 +113,10 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string RepositoryQueryFunctionsSnippet(DataStructureInfo info, string queryFunctionBody)
         {
             return string.Format(
-        @"[Obsolete(""Use Load(identifiers) or Query(identifiers) method."")]
-        public global::{0}.{1}[] Filter(IEnumerable<Guid> identifiers)
-        {{
-            const int BufferSize = 500; // EF 6.1.3 LINQ query has O(n^2) time complexity. Batch size of 500 results with optimal total time on the test system.
-            int n = identifiers.Count();
-            var result = new List<{0}.{1}>(n);
-            for (int i = 0; i < (n+BufferSize-1) / BufferSize; i++)
-            {{
-                Guid[] idBuffer = identifiers.Skip(i*BufferSize).Take(BufferSize).ToArray();
-                List<{0}.{1}> itemBuffer;
-                if (idBuffer.Count() == 1) // EF 6.1.3. does not use parametrized SQL query for Contains() function. The equality comparer is used instead, to reuse cached execution plans.
-                {{
-                    Guid id = idBuffer.Single();
-                    itemBuffer = Query().Where(item => item.ID == id).ToSimple().ToList();
-                }}
-                else
-                    itemBuffer = Query().Where(item => idBuffer.Contains(item.ID)).ToSimple().ToList();
-                result.AddRange(itemBuffer);
-            }}
-            return result.ToArray();
-        }}
-
-        public IQueryable<Common.Queryable.{0}_{1}> Query()
+        @"public IQueryable<Common.Queryable.{0}_{1}> Query()
         {{
             " + BeforeQueryTag.Evaluate(info) + @"
             " + queryFunctionBody + @"
-        }}
-
-        // LINQ to Entity does not support Query() method in subqueries.
-        public IQueryable<Common.Queryable.{0}_{1}> Subquery {{ get {{ return Query(); }} }}
-
-        public IQueryable<Common.Queryable.{0}_{1}> Query(object parameter, Type parameterType)
-        {{
-            var query = _executionContext.GenericRepository(""{0}.{1}"").Query(parameter, parameterType);
-            return (IQueryable<Common.Queryable.{0}_{1}>)query;
         }}
 
         ",
@@ -176,7 +127,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public static void GenerateReadableRepositoryFunctions(DataStructureInfo info, ICodeBuilder codeBuilder, string loadFunctionBody)
         {
             codeBuilder.InsertCode(RepositoryReadFunctionsSnippet(info, loadFunctionBody), RepositoryMembers, info);
-            codeBuilder.InsertCode("IReadableRepository<" + info.Module.Name + "." + info.Name + ">", RepositoryInterfaces, info);
+            codeBuilder.InsertCode("ReadableRepositoryBase<" + info.Module.Name + "." + info.Name + ">", OverrideBaseTypeTag, info);
         }
 
         public static void GenerateQueryableRepositoryFunctions(DataStructureInfo info, ICodeBuilder codeBuilder, string queryFunctionBody, string loadFunctionBody = null)
@@ -188,7 +139,7 @@ namespace Rhetos.Dom.DefaultConcepts
             if (queryFunctionBody != null)
             {
                 codeBuilder.InsertCode(RepositoryQueryFunctionsSnippet(info, queryFunctionBody), RepositoryMembers, info);
-                codeBuilder.InsertCode("IQueryableRepository<Common.Queryable." + info.Module.Name + "_" + info.Name + ">", RepositoryInterfaces, info);
+                codeBuilder.InsertCode("QueryableRepositoryBase<Common.Queryable." + info.Module.Name + "_" + info.Name + ">", OverrideBaseTypeTag, info);
             }
 
             codeBuilder.InsertCode(SnippetToSimpleObjectsConversion(info), DomInitializationCodeGenerator.QueryExtensionsMembersTag);

@@ -362,6 +362,76 @@ namespace Common
         }
     }
 
+    public abstract class RepositoryBase : IRepository
+    {
+        protected readonly Common.DomRepository _domRepository;
+        protected readonly Common.ExecutionContext _executionContext;
+    }
+
+    public abstract class ReadableRepositoryBase<out TEntity> : RepositoryBase, IReadableRepository<TEntity>
+        where TEntity : class, IEntity
+    {
+        public IEnumerable<TEntity> Load(object parameter, Type parameterType)
+        {
+            var items = _executionContext.GenericRepository(typeof(TEntity).FullName)
+                .Load(parameter, parameterType);
+            return (IEnumerable<TEntity>)items;
+        }
+
+        public IEnumerable<TEntity> Read(object parameter, Type parameterType, bool preferQuery)
+        {
+            var items = _executionContext.GenericRepository(typeof(TEntity).FullName)
+                .Read(parameter, parameterType, preferQuery);
+            return (IEnumerable<TEntity>)items;
+        }
+
+        [Obsolete(""Use Load() or Query() method."")]
+        public abstract TEntity[] All();
+
+        [Obsolete(""Use Load() or Query() method."")]
+        public TEntity[] Filter(FilterAll filterAll)
+        {
+            return All();
+        }
+    }
+
+    public abstract class QueryableRepositoryBase<out TQueryableEntity, out TSimpleEntity> : ReadableRepositoryBase<TSimpleEntity>, IQueryableRepository<TQueryableEntity>
+        where TEntity : class, IEntity
+    {
+        [Obsolete(""Use Load(identifiers)or Query(identifiers) method."")]
+        public TSimpleEntity[] Filter(IEnumerable<Guid> identifiers)
+        {
+            const int BufferSize = 500; // EF 6.1.3 LINQ query has O(n^2) time complexity. Batch size of 500 results with optimal total time on the test system.
+            int n = identifiers.Count();
+            var result = new List<TSimpleEntity>(n);
+            for (int i = 0; i < (n + BufferSize - 1) / BufferSize; i++)
+            {
+                Guid[] idBuffer = identifiers.Skip(i * BufferSize).Take(BufferSize).ToArray();
+                List<TSimpleEntity> itemBuffer;
+                if (idBuffer.Count() == 1) // EF 6.1.3. does not use parametrized SQL query for Contains() function. The equality comparer is used instead, to reuse cached execution plans.
+                {
+                    Guid id = idBuffer.Single();
+                    itemBuffer = Query().Where(item => item.ID == id).ToSimple().ToList();
+                }
+                else
+                    itemBuffer = Query().Where(item => idBuffer.Contains(item.ID)).ToSimple().ToList();
+                result.AddRange(itemBuffer);
+            }
+            return result.ToArray();
+        }
+
+        public abstract IQueryable<TQueryableEntity> Query();
+
+        // LINQ to Entity does not support Query() method in subqueries.
+        public IQueryable<TQueryableEntity> Subquery { get { return Query(); } }
+
+        public IQueryable<TQueryableEntity> Query(object parameter, Type parameterType)
+        {
+            var query = _executionContext.GenericRepository(typeof(TSimpleEntity).FullName).Query(parameter, parameterType);
+            return (IQueryable<TQueryableEntity>)query;
+        }
+    }
+
     " + ModuleCodeGenerator.CommonNamespaceMembersTag + @"
 }
 
