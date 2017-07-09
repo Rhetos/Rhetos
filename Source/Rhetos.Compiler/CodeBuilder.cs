@@ -73,7 +73,7 @@ namespace Rhetos.Compiler
         {
             CheckTag(code, tag);
             if (insertAfterTag)
-                _code.InsertAfter(tag, code);
+                _code.InsertAfter(tag, code, reverse: true);
             else
                 _code.InsertBefore(tag, code);
                 
@@ -88,7 +88,7 @@ namespace Rhetos.Compiler
         {
             CheckTags(firstCode + " /OR/ " + nextCode, firstTag, nextTag);
             if (insertAfterTag)
-                _code.InsertAfter(nextTag, nextCode);
+                _code.InsertAfter(nextTag, nextCode, reverse: true);
             else
                 _code.InsertBefore(nextTag, nextCode);
             _code.Replace(firstTag, firstCode + nextTag);

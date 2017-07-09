@@ -33,8 +33,8 @@ namespace Rhetos.Dom.DefaultConcepts
     public static class RepositoryHelper
     {
         public static readonly CsTag<DataStructureInfo> RepositoryAttributes = "RepositoryAttributes";
-        public static readonly CsTag<DataStructureInfo> RepositoryInterfaces = new CsTag<DataStructureInfo>("RepositoryInterface", TagType.Appendable, ",\r\n        {0}");
-        public static readonly CsTag<DataStructureInfo> OverrideBaseTypeTag = new CsTag<DataStructureInfo>("OverrideBaseType", TagType.Reverse, "{0} //");
+        public static readonly CsTag<DataStructureInfo> RepositoryInterfaces = new CsTag<DataStructureInfo>("RepositoryInterface", TagType.Appendable, ", {0}");
+        public static readonly CsTag<DataStructureInfo> OverrideBaseTypeTag = new CsTag<DataStructureInfo>("OverrideBaseType", TagType.Reverse, " {0} //");
         public static readonly CsTag<DataStructureInfo> RepositoryPrivateMembers = "RepositoryPrivateMembers";
         public static readonly CsTag<DataStructureInfo> RepositoryMembers = "RepositoryMembers";
         public static readonly CsTag<DataStructureInfo> AssignSimplePropertyTag = "AssignSimpleProperty";
@@ -45,7 +45,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return string.Format(
     RepositoryAttributes.Evaluate(info) + @"
-    public class {0}_Repository : " + OverrideBaseTypeTag.Evaluate(info) + @" RepositoryBase
+    public class {0}_Repository : " + OverrideBaseTypeTag.Evaluate(info) + @" global::Common.RepositoryBase
         " + RepositoryInterfaces.Evaluate(info) + @"
     {{
         " + RepositoryPrivateMembers.Evaluate(info) + @"
@@ -100,7 +100,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return string.Format(
         @"[Obsolete(""Use Load() or Query() method."")]
-        public global::{0}[] All()
+        public override global::{0}[] All()
         {{
             {1}
         }}
@@ -113,7 +113,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string RepositoryQueryFunctionsSnippet(DataStructureInfo info, string queryFunctionBody)
         {
             return string.Format(
-        @"public IQueryable<Common.Queryable.{0}_{1}> Query()
+        @"public override IQueryable<Common.Queryable.{0}_{1}> Query()
         {{
             " + BeforeQueryTag.Evaluate(info) + @"
             " + queryFunctionBody + @"
@@ -127,7 +127,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public static void GenerateReadableRepositoryFunctions(DataStructureInfo info, ICodeBuilder codeBuilder, string loadFunctionBody)
         {
             codeBuilder.InsertCode(RepositoryReadFunctionsSnippet(info, loadFunctionBody), RepositoryMembers, info);
-            codeBuilder.InsertCode("ReadableRepositoryBase<" + info.Module.Name + "." + info.Name + ">", OverrideBaseTypeTag, info);
+            codeBuilder.InsertCode("Common.ReadableRepositoryBase<" + info.Module.Name + "." + info.Name + ">", OverrideBaseTypeTag, info);
         }
 
         public static void GenerateQueryableRepositoryFunctions(DataStructureInfo info, ICodeBuilder codeBuilder, string queryFunctionBody, string loadFunctionBody = null)
@@ -139,7 +139,7 @@ namespace Rhetos.Dom.DefaultConcepts
             if (queryFunctionBody != null)
             {
                 codeBuilder.InsertCode(RepositoryQueryFunctionsSnippet(info, queryFunctionBody), RepositoryMembers, info);
-                codeBuilder.InsertCode("QueryableRepositoryBase<Common.Queryable." + info.Module.Name + "_" + info.Name + ">", OverrideBaseTypeTag, info);
+                codeBuilder.InsertCode("Common.QueryableRepositoryBase<Common.Queryable." + info.Module.Name + "_" + info.Name + ", " + info.Module.Name + "." + info.Name + ">", OverrideBaseTypeTag, info);
             }
 
             codeBuilder.InsertCode(SnippetToSimpleObjectsConversion(info), DomInitializationCodeGenerator.QueryExtensionsMembersTag);

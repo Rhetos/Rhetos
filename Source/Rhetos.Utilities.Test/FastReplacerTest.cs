@@ -166,6 +166,29 @@ namespace Rhetos.Utilities.Test
             fr.InsertAfter("/*a*/", "4");
             Assert.AreEqual("/*a*/24/*b*/13", fr.ToString());
         }
+        [TestMethod()]
+        public void InsertAfterReverse_Simple()
+        {
+            var fr = new FastReplacer("/*", "*/");
+            fr.Append("/*a*/");
+            fr.InsertAfter("/*a*/", "1");
+            fr.InsertAfter("/*a*/", "2");
+            fr.InsertAfter("/*a*/", "3", reverse: true);
+            fr.InsertAfter("/*a*/", "4", reverse: true);
+            Assert.AreEqual("/*a*/4312", fr.ToString());
+        }
+
+        [TestMethod()]
+        public void InsertAfterReverse_ComplexAndOrder()
+        {
+            var fr = new FastReplacer("/*", "*/");
+            fr.Append("/*a*//*b*/");
+            fr.InsertAfter("/*b*/", "1");
+            fr.InsertAfter("/*a*/", "2", true);
+            fr.InsertAfter("/*b*/", "3");
+            fr.InsertAfter("/*a*/", "4", true);
+            Assert.AreEqual("/*a*/42/*b*/13", fr.ToString());
+        }
 
         //===========================================================
         // CONTAINS

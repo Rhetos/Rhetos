@@ -90,7 +90,7 @@ namespace Rhetos.Utilities
             });
         }
 
-        public void InsertAfter(int end, FastReplacerSnippet snippet)
+        public void InsertAfter(int end, FastReplacerSnippet snippet, bool reverse)
         {
             InnerSnippets.Add(new InnerSnippet
             {
@@ -98,7 +98,7 @@ namespace Rhetos.Utilities
                 Start = end,
                 End = end,
                 Order1 = 1,
-                Order2 = InnerSnippets.Count
+                Order2 = InnerSnippets.Count * (reverse ? -1 : 1)
             });
         }
 

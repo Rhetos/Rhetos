@@ -103,7 +103,7 @@ namespace Rhetos.Utilities
         }
 
         /// <returns>Returns true if the token was found, false if nothing was replaced.</returns>
-        public bool InsertAfter(string token, string text)
+        public bool InsertAfter(string token, string text, bool reverse = false)
         {
             ValidateToken(token, text, false);
             List<TokenOccurrence> occurrences;
@@ -111,7 +111,7 @@ namespace Rhetos.Utilities
             {
                 var snippet = new FastReplacerSnippet(text);
                 foreach (var occurrence in occurrences)
-                    occurrence.Snippet.InsertAfter(occurrence.End, snippet);
+                    occurrence.Snippet.InsertAfter(occurrence.End, snippet, reverse);
                 ExtractTokens(snippet);
                 return true;
             }

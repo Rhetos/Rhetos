@@ -79,6 +79,7 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Logging.ILogProvider));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Security.IWindowsSecurity));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.SqlUtility));
+            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.ExceptionsUtility));
             codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.DbContext));
             codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.SqlServer.SqlProviderServices));
             codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.Core.EntityClient.EntityConnection));
@@ -107,6 +108,18 @@ namespace Rhetos.Dom.DefaultConcepts
 
     public static class QueryExtensions
     {
+        /// <summary>
+        /// A specific overload of the 'ToSimple' method cannot be targeted from a generic method using generic type.
+        /// This method uses reflection instead to find the specific 'ToSimple' method.
+        /// </summary>
+        public static IQueryable<TEntity> GenericToSimple<TEntity>(this IQueryable<IEntity> i)
+	    {
+            var method = typeof(QueryExtensions).GetMethod(""ToSimple"", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public, null, new Type[] { i.GetType() }, null);
+            if (method == null)
+                throw new Rhetos.FrameworkException(""Cannot find 'ToSimple' method for argument type '"" + i.GetType().ToString() + ""'."");
+            return (IQueryable<TEntity>)Rhetos.Utilities.ExceptionsUtility.InvokeEx(method, null, new object[] { i });
+        }
+        
         " + QueryExtensionsMembersTag + @"
     }
 }
@@ -364,11 +377,11 @@ namespace Common
 
     public abstract class RepositoryBase : IRepository
     {
-        protected readonly Common.DomRepository _domRepository;
-        protected readonly Common.ExecutionContext _executionContext;
+        protected Common.DomRepository _domRepository;
+        protected Common.ExecutionContext _executionContext;
     }
 
-    public abstract class ReadableRepositoryBase<out TEntity> : RepositoryBase, IReadableRepository<TEntity>
+    public abstract class ReadableRepositoryBase<TEntity> : RepositoryBase, IReadableRepository<TEntity>
         where TEntity : class, IEntity
     {
         public IEnumerable<TEntity> Load(object parameter, Type parameterType)
@@ -395,26 +408,27 @@ namespace Common
         }
     }
 
-    public abstract class QueryableRepositoryBase<out TQueryableEntity, out TSimpleEntity> : ReadableRepositoryBase<TSimpleEntity>, IQueryableRepository<TQueryableEntity>
+    public abstract class QueryableRepositoryBase<TQueryableEntity, TEntity> : ReadableRepositoryBase<TEntity>, IQueryableRepository<TQueryableEntity>
         where TEntity : class, IEntity
+        where TQueryableEntity : class, IEntity, TEntity
     {
         [Obsolete(""Use Load(identifiers)or Query(identifiers) method."")]
-        public TSimpleEntity[] Filter(IEnumerable<Guid> identifiers)
+        public TEntity[] Filter(IEnumerable<Guid> identifiers)
         {
             const int BufferSize = 500; // EF 6.1.3 LINQ query has O(n^2) time complexity. Batch size of 500 results with optimal total time on the test system.
             int n = identifiers.Count();
-            var result = new List<TSimpleEntity>(n);
+            var result = new List<TEntity>(n);
             for (int i = 0; i < (n + BufferSize - 1) / BufferSize; i++)
             {
                 Guid[] idBuffer = identifiers.Skip(i * BufferSize).Take(BufferSize).ToArray();
-                List<TSimpleEntity> itemBuffer;
+                List<TEntity> itemBuffer;
                 if (idBuffer.Count() == 1) // EF 6.1.3. does not use parametrized SQL query for Contains() function. The equality comparer is used instead, to reuse cached execution plans.
                 {
                     Guid id = idBuffer.Single();
-                    itemBuffer = Query().Where(item => item.ID == id).ToSimple().ToList();
+                    itemBuffer = Query().Where(item => item.ID == id).GenericToSimple<TEntity>().ToList();
                 }
                 else
-                    itemBuffer = Query().Where(item => idBuffer.Contains(item.ID)).ToSimple().ToList();
+                    itemBuffer = Query().Where(item => idBuffer.Contains(item.ID)).GenericToSimple<TEntity>().ToList();
                 result.AddRange(itemBuffer);
             }
             return result.ToArray();
@@ -427,7 +441,7 @@ namespace Common
 
         public IQueryable<TQueryableEntity> Query(object parameter, Type parameterType)
         {
-            var query = _executionContext.GenericRepository(typeof(TSimpleEntity).FullName).Query(parameter, parameterType);
+            var query = _executionContext.GenericRepository(typeof(TEntity).FullName).Query(parameter, parameterType);
             return (IQueryable<TQueryableEntity>)query;
         }
     }
