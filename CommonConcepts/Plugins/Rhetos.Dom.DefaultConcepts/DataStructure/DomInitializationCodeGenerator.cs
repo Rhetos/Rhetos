@@ -38,8 +38,8 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly string EntityFrameworkOnModelCreatingTag = "/*EntityFrameworkOnModelCreating*/";
         public static readonly string EntityFrameworkConfigurationTag = "/*EntityFrameworkConfiguration*/";
         public static readonly string CommonQueryableMemebersTag = "/*CommonQueryableMemebers*/";
-        public static readonly string QueryExtensionsMembersTag = "/*QueryExtensionsMembers*/";
         public static readonly string SimpleClassesTag = "/*SimpleClasses*/";
+        public static readonly string QueryableToSimpleTag = "/*QueryableToSimple*/";
         public static readonly string RepositoryClassesTag = "/*RepositoryClasses*/";
 
         public static readonly string StandardNamespacesSnippet =
@@ -108,19 +108,47 @@ namespace Rhetos.Dom.DefaultConcepts
 
     public static class QueryExtensions
     {
-        /// <summary>
-        /// A specific overload of the 'ToSimple' method cannot be targeted from a generic method using generic type.
-        /// This method uses reflection instead to find the specific 'ToSimple' method.
-        /// </summary>
-        public static IQueryable<TEntity> GenericToSimple<TEntity>(this IQueryable<IEntity> i)
+        /// <summary>Converts the objects with navigation properties to simple objects with primitive properties.</summary>
+	    public static IQueryable<TEntity> ToSimple<TEntity>(this IQueryable<IQueryableEntity<TEntity>> query)
+		    where TEntity : class, IEntity
 	    {
-            var method = typeof(QueryExtensions).GetMethod(""ToSimple"", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public, null, new Type[] { i.GetType() }, null);
-            if (method == null)
-                throw new Rhetos.FrameworkException(""Cannot find 'ToSimple' method for argument type '"" + i.GetType().ToString() + ""'."");
-            return (IQueryable<TEntity>)Rhetos.Utilities.ExceptionsUtility.InvokeEx(method, null, new object[] { i });
+            return (IQueryable<TEntity>)ToSimple(query, typeof(TEntity).FullName);
+	    }
+
+        /// <summary>Converts the objects with navigation properties to simple objects with primitive properties.</summary>
+        private static IQueryable<IEntity> ToSimple(IQueryable<IEntity> query, string entityName)
+	    {
+		    switch (entityName)
+		    {
+                " + QueryableToSimpleTag + @"
+                default:
+                    throw new Rhetos.FrameworkException(""Unsupported entityName '"" + (entityName ?? ""<null>"") + ""'."");
+		    }
         }
-        
-        " + QueryExtensionsMembersTag + @"
+
+        /// <summary>Converts the objects to simple object and the IEnumerable to List or Array, if not already.</summary>
+        public static void LoadSimpleObjects<TEntity>(ref IEnumerable<TEntity> items)
+            where TEntity: class, IEntity
+        {
+            var query = items as IQueryable<IQueryableEntity<TEntity>>;
+            var navigationItems = items as IEnumerable<IQueryableEntity<TEntity>>;
+
+            if (query != null)
+                items = query.ToSimple<TEntity>().ToList(); // The IQueryable function allows ORM optimizations.
+            else if (navigationItems != null)
+                items = navigationItems.Select(item => item.ToSimple()).ToList();
+            else
+            {
+                Rhetos.Utilities.CsUtility.Materialize(ref items);
+                var itemsList = (IList<TEntity>)items;
+                for (int i = 0; i < itemsList.Count(); i++)
+                {
+                    var navigationItem = itemsList[i] as IQueryableEntity<TEntity>;
+                    if (navigationItem != null)
+                        itemsList[i] = navigationItem.ToSimple();
+                }
+            }
+        }
     }
 }
 
@@ -410,7 +438,7 @@ namespace Common
 
     public abstract class QueryableRepositoryBase<TQueryableEntity, TEntity> : ReadableRepositoryBase<TEntity>, IQueryableRepository<TQueryableEntity>
         where TEntity : class, IEntity
-        where TQueryableEntity : class, IEntity, TEntity
+        where TQueryableEntity : class, IEntity, TEntity, IQueryableEntity<TEntity>
     {
         [Obsolete(""Use Load(identifiers)or Query(identifiers) method."")]
         public TEntity[] Filter(IEnumerable<Guid> identifiers)
@@ -425,10 +453,10 @@ namespace Common
                 if (idBuffer.Count() == 1) // EF 6.1.3. does not use parametrized SQL query for Contains() function. The equality comparer is used instead, to reuse cached execution plans.
                 {
                     Guid id = idBuffer.Single();
-                    itemBuffer = Query().Where(item => item.ID == id).GenericToSimple<TEntity>().ToList();
+                    itemBuffer = Query().Where(item => item.ID == id).ToSimple<TEntity>().ToList();
                 }
                 else
-                    itemBuffer = Query().Where(item => idBuffer.Contains(item.ID)).GenericToSimple<TEntity>().ToList();
+                    itemBuffer = Query().Where(item => idBuffer.Contains(item.ID)).ToSimple<TEntity>().ToList();
                 result.AddRange(itemBuffer);
             }
             return result.ToArray();

@@ -120,6 +120,7 @@
     <Compile Include="IKeepSynchronizedMetadata.cs" />
     <Compile Include="InvalidDataMessage.cs" />
     <Compile Include="IPrincipalPermission.cs" />
+    <Compile Include="IQueryableEntity.cs" />
     <Compile Include="IRolePermission.cs" />
     <Compile Include="IPrincipal.cs" />
     <Compile Include="IPrincipalHasRole.cs" />

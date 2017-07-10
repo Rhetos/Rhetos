@@ -110,20 +110,6 @@ namespace Rhetos.Dom.DefaultConcepts
                 readFunctionBody);
         }
 
-        private static string RepositoryQueryFunctionsSnippet(DataStructureInfo info, string queryFunctionBody)
-        {
-            return string.Format(
-        @"public override IQueryable<Common.Queryable.{0}_{1}> Query()
-        {{
-            " + BeforeQueryTag.Evaluate(info) + @"
-            " + queryFunctionBody + @"
-        }}
-
-        ",
-                info.Module.Name,
-                info.Name);
-        }
-
         public static void GenerateReadableRepositoryFunctions(DataStructureInfo info, ICodeBuilder codeBuilder, string loadFunctionBody)
         {
             codeBuilder.InsertCode(RepositoryReadFunctionsSnippet(info, loadFunctionBody), RepositoryMembers, info);
@@ -132,98 +118,62 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static void GenerateQueryableRepositoryFunctions(DataStructureInfo info, ICodeBuilder codeBuilder, string queryFunctionBody, string loadFunctionBody = null)
         {
+            string module = info.Module.Name;
+            string entity = info.Name;
+
             if (loadFunctionBody == null)
                 loadFunctionBody = "return Query().ToSimple().ToArray();";
             GenerateReadableRepositoryFunctions(info, codeBuilder, loadFunctionBody);
 
             if (queryFunctionBody != null)
             {
-                codeBuilder.InsertCode(RepositoryQueryFunctionsSnippet(info, queryFunctionBody), RepositoryMembers, info);
-                codeBuilder.InsertCode("Common.QueryableRepositoryBase<Common.Queryable." + info.Module.Name + "_" + info.Name + ", " + info.Module.Name + "." + info.Name + ">", OverrideBaseTypeTag, info);
+                string repositoryQueryFunctionsSnippet =
+        $@"public override IQueryable<Common.Queryable.{module}_{entity}> Query()
+        {{
+            {BeforeQueryTag.Evaluate(info)}
+            {queryFunctionBody}
+        }}
+
+        ";
+                codeBuilder.InsertCode(repositoryQueryFunctionsSnippet, RepositoryMembers, info);
+                codeBuilder.InsertCode($"Common.QueryableRepositoryBase<Common.Queryable.{module}_{entity}, {module}.{entity}>", OverrideBaseTypeTag, info);
             }
 
-            codeBuilder.InsertCode(SnippetToSimpleObjectsConversion(info), DomInitializationCodeGenerator.QueryExtensionsMembersTag);
-            codeBuilder.InsertCode(SnippetToNavigationConversion(info), DataStructureCodeGenerator.BodyTag, info);
-            codeBuilder.InsertCode(SnippetToSimpleObjectConversion(info), DataStructureQueryableCodeGenerator.MembersTag, info);
-            codeBuilder.InsertCode(SnippetLoadSimpleObjectsConversion(info), DomInitializationCodeGenerator.QueryExtensionsMembersTag);
+            string snippetToSimpleObjectsConversion = $@"case ""{module}.{entity}"":
+                    return ((IQueryable<Common.Queryable.{module}_{entity}>)query).Select(item => new {module}.{entity}
+                    {{
+                        ID = item.ID{AssignSimplePropertyTag.Evaluate(info)}
+                    }});
+                ";
+            codeBuilder.InsertCode(snippetToSimpleObjectsConversion, DomInitializationCodeGenerator.QueryableToSimpleTag);
+
+            string snippetToSimpleObjectConversion = $@"/// <summary>Converts the object with navigation properties to a simple object with primitive properties.</summary>
+        public {module}.{entity} ToSimple()
+        {{
+            var item = this;
+            return new {module}.{entity}
+            {{
+                ID = item.ID{AssignSimplePropertyTag.Evaluate(info)}
+            }};
+        }}
+
+        ";
+            codeBuilder.InsertCode(snippetToSimpleObjectConversion, DataStructureQueryableCodeGenerator.MembersTag, info);
+
+            string snippetToNavigationConversion = $@"/// <summary>Converts the simple object to a navigation object, and copies its simple properties. Navigation properties are set to null.</summary>
+        public Common.Queryable.{module}_{entity} ToNavigation()
+        {{
+            var item = this;
+            return new Common.Queryable.{module}_{entity}
+            {{
+                ID = item.ID{AssignSimplePropertyTag.Evaluate(info)}
+            }};
+        }}
+
+        ";
+            codeBuilder.InsertCode(snippetToNavigationConversion, DataStructureCodeGenerator.BodyTag, info);
+
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.Graph));
-        }
-
-        private static string SnippetToSimpleObjectsConversion(DataStructureInfo info)
-        {
-            return string.Format(@"/// <summary>Converts the objects with navigation properties to simple objects with primitive properties.</summary>
-        public static IQueryable<{0}.{1}> ToSimple(this IQueryable<Common.Queryable.{0}_{1}> query)
-        {{
-            return query.Select(item => new {0}.{1}
-            {{
-                ID = item.ID" + AssignSimplePropertyTag.Evaluate(info) + @"
-            }});
-        }}
-        ",
-            info.Module.Name,
-            info.Name);
-        }
-
-        private static string SnippetToNavigationConversion(DataStructureInfo info)
-        {
-            return string.Format(@"/// <summary>Converts the simple object to a navigation object, and copies its simple properties. Navigation properties are set to null.</summary>
-        public Common.Queryable.{0}_{1} ToNavigation()
-        {{
-            var item = this;
-            return new Common.Queryable.{0}_{1}
-            {{
-                ID = item.ID" + RepositoryHelper.AssignSimplePropertyTag.Evaluate(info) + @"
-            }};
-        }}
-
-        ",
-            info.Module.Name,
-            info.Name);
-        }
-
-        private static string SnippetToSimpleObjectConversion(DataStructureInfo info)
-        {
-            return string.Format(@"/// <summary>Converts the object with navigation properties to a simple object with primitive properties.</summary>
-        public {0}.{1} ToSimple()
-        {{
-            var item = this;
-            return new {0}.{1}
-            {{
-                ID = item.ID" + RepositoryHelper.AssignSimplePropertyTag.Evaluate(info) + @"
-            }};
-        }}
-
-        ",
-            info.Module.Name,
-            info.Name);
-        }
-
-        private static string SnippetLoadSimpleObjectsConversion(DataStructureInfo info)
-        {
-            return string.Format(@"public static void LoadSimpleObjects(ref IEnumerable<{0}.{1}> items)
-        {{
-            var query = items as IQueryable<Common.Queryable.{0}_{1}>;
-            var navigationItems = items as IEnumerable<Common.Queryable.{0}_{1}>;
-
-            if (query != null)
-                items = query.ToSimple().ToList(); // The IQueryable function allows ORM optimizations.
-            else if (navigationItems != null)
-                items = navigationItems.Select(item => item.ToSimple()).ToList();
-            else
-            {{
-                Rhetos.Utilities.CsUtility.Materialize(ref items);
-                var itemsList = (IList<{0}.{1}>)items;
-                for (int i = 0; i < itemsList.Count(); i++)
-                {{
-                    var navigationItem = itemsList[i] as Common.Queryable.{0}_{1};
-                    if (navigationItem != null)
-                        itemsList[i] = navigationItem.ToSimple();
-                }}
-            }}
-        }}
-        ",
-            info.Module.Name,
-            info.Name);
         }
     }
 }

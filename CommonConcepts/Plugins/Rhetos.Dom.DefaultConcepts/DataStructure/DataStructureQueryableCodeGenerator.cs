@@ -57,7 +57,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return string.Format(
     AttributesTag.Evaluate(info) + @"
-    public class {0}_{1} : global::{0}.{1}, System.IEquatable<{0}_{1}>" + InterfaceTag.Evaluate(info) + @"
+    public class {0}_{1} : global::{0}.{1}, IQueryableEntity<{0}.{1}>, System.IEquatable<{0}_{1}>" + InterfaceTag.Evaluate(info) + @"
     {{
         " + MembersTag.Evaluate(info) + @"
 

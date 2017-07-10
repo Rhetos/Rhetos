@@ -352,7 +352,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         public IEnumerable<TEntityInterface> ToListOfEntity(IEnumerable<TEntityInterface> items)
         {
-            if (LoadSimpleObjectsMethod != null && items.GetType().GetInterface("IEnumerable`1").GetGenericArguments()[0].FullName.StartsWith("Common.Queryable."))
+            if (items.GetType().GetInterface("IEnumerable`1").GetGenericArguments()[0].FullName.StartsWith("Common.Queryable."))
                 LoadSimpleObjects(ref items);
             else
                 items = CastAsEntity(items);
@@ -378,7 +378,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         public IEnumerable<TEntityInterface> ToArrayOfEntity(IEnumerable<TEntityInterface> items)
         {
-            if (LoadSimpleObjectsMethod != null && items.GetType().GetInterface("IEnumerable`1").GetGenericArguments()[0].FullName.StartsWith("Common.Queryable."))
+            if (items.GetType().GetInterface("IEnumerable`1").GetGenericArguments()[0].FullName.StartsWith("Common.Queryable."))
                 LoadSimpleObjects(ref items);
             else
                 items = CastAsEntity(items);
@@ -576,55 +576,19 @@ namespace Rhetos.Dom.DefaultConcepts
             return EntityComputedFromCodeGenerator.RecomputeFunctionName(computedConcept);
         }
 
-        private MethodInfo _queryToSimpleMethod = null;
-        private bool _queryToSimpleMethodLookedFor = false;
-
-        public MethodInfo QueryToSimpleMethod
-        {
-            get
-            {
-                if (!_queryToSimpleMethodLookedFor)
-                {
-                    Type queryExtensions = _domainObjectModel.Assembly.GetType("Rhetos.Dom.DefaultConcepts.QueryExtensions");
-                    if (queryExtensions != null)
-                        _queryToSimpleMethod = queryExtensions.GetMethod("ToSimple", new[] { QueryableType });
-
-                    _queryToSimpleMethodLookedFor = true;
-                }
-                return _queryToSimpleMethod;
-            }
-        }
-
-        public IQueryable<TEntityInterface> QueryToSimple(IQueryable<TEntityInterface> query)
-        {
-            var result = QueryToSimpleMethod.InvokeEx(null, new[] { query });
-            return (IQueryable<TEntityInterface>)result;
-        }
-
-        private MethodInfo _loadItemsMethod = null;
-        private bool _loadItemsMethodLookedFor = false;
-
-        public MethodInfo LoadSimpleObjectsMethod
-        {
-            get
-            {
-                if (!_loadItemsMethodLookedFor)
-                {
-                    Type queryExtensions = _domainObjectModel.Assembly.GetType("Rhetos.Dom.DefaultConcepts.QueryExtensions");
-                    if (queryExtensions != null)
-                        _loadItemsMethod = queryExtensions.GetMethod("LoadSimpleObjects", new[] { EnumerableType.MakeByRefType() });
-
-                    _loadItemsMethodLookedFor = true;
-                }
-                return _loadItemsMethod;
-            }
-        }
+        private MethodInfo _loadSimpleObjectsMethod = null;
 
         public void LoadSimpleObjects(ref IEnumerable<TEntityInterface> items)
         {
-            var parameters = new[] { items };
-            LoadSimpleObjectsMethod.InvokeEx(null, parameters);
-            items = parameters.Single();
+            if (_loadSimpleObjectsMethod == null)
+            {
+                Type queryExtensions = _domainObjectModel.Assembly.GetType("Rhetos.Dom.DefaultConcepts.QueryExtensions");
+                _loadSimpleObjectsMethod = queryExtensions.GetMethod("LoadSimpleObjects").MakeGenericMethod(EntityType);
+            }
+
+            var parameters = new object[] { items };
+            _loadSimpleObjectsMethod.InvokeEx(null, parameters);
+            items = (IEnumerable<TEntityInterface>)parameters[0];
         }
 
         #endregion
