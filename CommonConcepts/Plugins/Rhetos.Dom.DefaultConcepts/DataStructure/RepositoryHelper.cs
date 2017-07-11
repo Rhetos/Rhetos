@@ -32,88 +32,71 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     public static class RepositoryHelper
     {
+        // Repository:
         public static readonly CsTag<DataStructureInfo> RepositoryAttributes = "RepositoryAttributes";
         public static readonly CsTag<DataStructureInfo> RepositoryInterfaces = new CsTag<DataStructureInfo>("RepositoryInterface", TagType.Appendable, ", {0}");
         public static readonly CsTag<DataStructureInfo> OverrideBaseTypeTag = new CsTag<DataStructureInfo>("OverrideBaseType", TagType.Reverse, " {0} //");
         public static readonly CsTag<DataStructureInfo> RepositoryPrivateMembers = "RepositoryPrivateMembers";
         public static readonly CsTag<DataStructureInfo> RepositoryMembers = "RepositoryMembers";
-        public static readonly CsTag<DataStructureInfo> AssignSimplePropertyTag = "AssignSimpleProperty";
         public static readonly CsTag<DataStructureInfo> ConstructorArguments = "RepositoryConstructorArguments";
         public static readonly CsTag<DataStructureInfo> ConstructorCode = "RepositoryConstructorCode";
 
-        private static string RepositorySnippet(DataStructureInfo info)
-        {
-            return string.Format(
-    RepositoryAttributes.Evaluate(info) + @"
-    public class {0}_Repository : " + OverrideBaseTypeTag.Evaluate(info) + @" global::Common.RepositoryBase
-        " + RepositoryInterfaces.Evaluate(info) + @"
-    {{
-        " + RepositoryPrivateMembers.Evaluate(info) + @"
+        // Readable repository:
+        public static readonly CsTag<DataStructureInfo> BeforeQueryTag = "RepositoryBeforeQuery";
 
-        public {0}_Repository(Common.DomRepository domRepository, Common.ExecutionContext executionContext" + ConstructorArguments.Evaluate(info) + @")
-        {{
-            _domRepository = domRepository;
-            _executionContext = executionContext;
-            " + ConstructorCode.Evaluate(info) + @"
-        }}
-
-        " + RepositoryMembers.Evaluate(info) + @"
-    }}
-
-    ",
-                info.Name);
-        }
-
-        private static string CallFromModuleRepostiorySnippet(DataStructureInfo info)
-        {
-            return string.Format(
-        @"private {0}_Repository _{0}_Repository;
-        public {0}_Repository {0} {{ get {{ return _{0}_Repository ?? (_{0}_Repository = ({0}_Repository)Rhetos.Extensibility.NamedPluginsExtensions.GetPlugin(_repositories, {1})); }} }}
-
-        ",
-                info.Name,
-                CsUtility.QuotedString(info.Module.Name + "." + info.Name));
-        }
-
-        private static string RegisterRepository(DataStructureInfo info)
-        {
-            return string.Format(
-            @"builder.RegisterType<{0}._Helper.{1}_Repository>().Keyed<IRepository>(""{0}.{1}"").InstancePerLifetimeScope();
-            ",
-                info.Module.Name,
-                info.Name);
-        }
+        // Queryable repository:
+        public static readonly CsTag<DataStructureInfo> AssignSimplePropertyTag = "AssignSimpleProperty";
 
         public static void GenerateRepository(DataStructureInfo info, ICodeBuilder codeBuilder)
         {
-            codeBuilder.InsertCode(RepositorySnippet(info), ModuleCodeGenerator.HelperNamespaceMembersTag, info.Module);
-            codeBuilder.InsertCode(CallFromModuleRepostiorySnippet(info), ModuleCodeGenerator.RepositoryMembersTag, info.Module);
-            codeBuilder.InsertCode(RegisterRepository(info), ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Extensibility.NamedPluginsExtensions));
-        }
-        
-        //==============================================================
+            string module = info.Module.Name;
+            string entity = info.Name;
 
-        public static readonly CsTag<DataStructureInfo> BeforeQueryTag = "RepositoryBeforeQuery";
+            string repositorySnippet = $@"{RepositoryAttributes.Evaluate(info)}
+    public class {entity}_Repository : {OverrideBaseTypeTag.Evaluate(info)} global::Common.RepositoryBase
+        {RepositoryInterfaces.Evaluate(info)}
+    {{
+        {RepositoryPrivateMembers.Evaluate(info)}
 
-        private static string RepositoryReadFunctionsSnippet(DataStructureInfo info, string readFunctionBody)
-        {
-            return string.Format(
-        @"[Obsolete(""Use Load() or Query() method."")]
-        public override global::{0}[] All()
+        public {entity}_Repository(Common.DomRepository domRepository, Common.ExecutionContext executionContext{ConstructorArguments.Evaluate(info)})
         {{
-            {1}
+            _domRepository = domRepository;
+            _executionContext = executionContext;
+            {ConstructorCode.Evaluate(info)}
         }}
 
-        ",
-                info.GetKeyProperties(),
-                readFunctionBody);
-        }
+        {RepositoryMembers.Evaluate(info)}
+    }}
 
+    ";
+            codeBuilder.InsertCode(repositorySnippet, ModuleCodeGenerator.HelperNamespaceMembersTag, info.Module);
+
+            string callFromModuleRepostiorySnippet = $@"private {entity}_Repository _{entity}_Repository;
+        public {entity}_Repository {entity} {{ get {{ return _{entity}_Repository ?? (_{entity}_Repository = ({entity}_Repository)Rhetos.Extensibility.NamedPluginsExtensions.GetPlugin(_repositories, {CsUtility.QuotedString(module + "." + entity)})); }} }}
+
+        ";
+            codeBuilder.InsertCode(callFromModuleRepostiorySnippet, ModuleCodeGenerator.RepositoryMembersTag, info.Module);
+            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Extensibility.NamedPluginsExtensions));
+
+            string registerRepository = $@"builder.RegisterType<{module}._Helper.{entity}_Repository>().Keyed<IRepository>(""{module}.{entity}"").InstancePerLifetimeScope();
+            ";
+            codeBuilder.InsertCode(registerRepository, ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
+        }
+        
         public static void GenerateReadableRepositoryFunctions(DataStructureInfo info, ICodeBuilder codeBuilder, string loadFunctionBody)
         {
-            codeBuilder.InsertCode(RepositoryReadFunctionsSnippet(info, loadFunctionBody), RepositoryMembers, info);
-            codeBuilder.InsertCode("Common.ReadableRepositoryBase<" + info.Module.Name + "." + info.Name + ">", OverrideBaseTypeTag, info);
+            string module = info.Module.Name;
+            string entity = info.Name;
+
+            string repositoryReadFunctionsSnippet = $@"[Obsolete(""Use Load() or Query() method."")]
+        public override global::{module}.{entity}[] All()
+        {{
+            {loadFunctionBody}
+        }}
+
+        ";
+            codeBuilder.InsertCode(repositoryReadFunctionsSnippet, RepositoryMembers, info);
+            codeBuilder.InsertCode($"Common.ReadableRepositoryBase<{module}.{entity}>", OverrideBaseTypeTag, info);
         }
 
         public static void GenerateQueryableRepositoryFunctions(DataStructureInfo info, ICodeBuilder codeBuilder, string queryFunctionBody, string loadFunctionBody = null)
@@ -139,13 +122,16 @@ namespace Rhetos.Dom.DefaultConcepts
                 codeBuilder.InsertCode($"Common.QueryableRepositoryBase<Common.Queryable.{module}_{entity}, {module}.{entity}>", OverrideBaseTypeTag, info);
             }
 
-            string snippetToSimpleObjectsConversion = $@"case ""{module}.{entity}"":
-                    return ((IQueryable<Common.Queryable.{module}_{entity}>)query).Select(item => new {module}.{entity}
-                    {{
-                        ID = item.ID{AssignSimplePropertyTag.Evaluate(info)}
-                    }});
-                ";
-            codeBuilder.InsertCode(snippetToSimpleObjectsConversion, DomInitializationCodeGenerator.QueryableToSimpleTag);
+            string snippetToSimpleObjectsConversion = $@"/// <summary>Converts the objects with navigation properties to simple objects with primitive properties.</summary>
+        public static IQueryable<{module}.{entity}> ToSimple(this IQueryable<Common.Queryable.{module}_{entity}> query)
+        {{
+            return query.Select(item => new {module}.{entity}
+            {{
+                ID = item.ID{AssignSimplePropertyTag.Evaluate(info)}
+            }});
+        }}
+        ";
+            codeBuilder.InsertCode(snippetToSimpleObjectsConversion, DomInitializationCodeGenerator.QueryExtensionsMembersTag);
 
             string snippetToSimpleObjectConversion = $@"/// <summary>Converts the object with navigation properties to a simple object with primitive properties.</summary>
         public {module}.{entity} ToSimple()
@@ -172,8 +158,6 @@ namespace Rhetos.Dom.DefaultConcepts
 
         ";
             codeBuilder.InsertCode(snippetToNavigationConversion, DataStructureCodeGenerator.BodyTag, info);
-
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.Graph));
         }
     }
 }

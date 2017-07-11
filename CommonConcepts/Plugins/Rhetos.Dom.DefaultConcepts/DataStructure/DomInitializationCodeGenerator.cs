@@ -38,8 +38,8 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly string EntityFrameworkOnModelCreatingTag = "/*EntityFrameworkOnModelCreating*/";
         public static readonly string EntityFrameworkConfigurationTag = "/*EntityFrameworkConfiguration*/";
         public static readonly string CommonQueryableMemebersTag = "/*CommonQueryableMemebers*/";
+        public static readonly string QueryExtensionsMembersTag = "/*QueryExtensionsMembers*/";
         public static readonly string SimpleClassesTag = "/*SimpleClasses*/";
-        public static readonly string QueryableToSimpleTag = "/*QueryableToSimple*/";
         public static readonly string RepositoryClassesTag = "/*RepositoryClasses*/";
 
         public static readonly string StandardNamespacesSnippet =
@@ -108,22 +108,19 @@ namespace Rhetos.Dom.DefaultConcepts
 
     public static class QueryExtensions
     {
-        /// <summary>Converts the objects with navigation properties to simple objects with primitive properties.</summary>
-	    public static IQueryable<TEntity> ToSimple<TEntity>(this IQueryable<IQueryableEntity<TEntity>> query)
-		    where TEntity : class, IEntity
-	    {
-            return (IQueryable<TEntity>)ToSimple(query, typeof(TEntity).FullName);
-	    }
+        " + QueryExtensionsMembersTag + @"
 
-        /// <summary>Converts the objects with navigation properties to simple objects with primitive properties.</summary>
-        private static IQueryable<IEntity> ToSimple(IQueryable<IEntity> query, string entityName)
+        /// <summary>
+        /// A specific overload of the 'ToSimple' method cannot be targeted from a generic method using generic type.
+        /// This method uses reflection instead to find the specific 'ToSimple' method.
+        /// </summary>
+        public static IQueryable<TEntity> GenericToSimple<TEntity>(this IQueryable<IEntity> i)
+            where TEntity : class, IEntity
 	    {
-		    switch (entityName)
-		    {
-                " + QueryableToSimpleTag + @"
-                default:
-                    throw new Rhetos.FrameworkException(""Unsupported entityName '"" + (entityName ?? ""<null>"") + ""'."");
-		    }
+            var method = typeof(QueryExtensions).GetMethod(""ToSimple"", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public, null, new Type[] { i.GetType() }, null);
+            if (method == null)
+                throw new Rhetos.FrameworkException(""Cannot find 'ToSimple' method for argument type '"" + i.GetType().ToString() + ""'."");
+            return (IQueryable<TEntity>)Rhetos.Utilities.ExceptionsUtility.InvokeEx(method, null, new object[] { i });
         }
 
         /// <summary>Converts the objects to simple object and the IEnumerable to List or Array, if not already.</summary>
@@ -134,7 +131,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var navigationItems = items as IEnumerable<IQueryableEntity<TEntity>>;
 
             if (query != null)
-                items = query.ToSimple<TEntity>().ToList(); // The IQueryable function allows ORM optimizations.
+                items = query.GenericToSimple<TEntity>().ToList(); // The IQueryable function allows ORM optimizations.
             else if (navigationItems != null)
                 items = navigationItems.Select(item => item.ToSimple()).ToList();
             else
@@ -453,10 +450,10 @@ namespace Common
                 if (idBuffer.Count() == 1) // EF 6.1.3. does not use parametrized SQL query for Contains() function. The equality comparer is used instead, to reuse cached execution plans.
                 {
                     Guid id = idBuffer.Single();
-                    itemBuffer = Query().Where(item => item.ID == id).ToSimple<TEntity>().ToList();
+                    itemBuffer = Query().Where(item => item.ID == id).GenericToSimple<TEntity>().ToList();
                 }
                 else
-                    itemBuffer = Query().Where(item => idBuffer.Contains(item.ID)).ToSimple<TEntity>().ToList();
+                    itemBuffer = Query().Where(item => idBuffer.Contains(item.ID)).GenericToSimple<TEntity>().ToList();
                 result.AddRange(itemBuffer);
             }
             return result.ToArray();

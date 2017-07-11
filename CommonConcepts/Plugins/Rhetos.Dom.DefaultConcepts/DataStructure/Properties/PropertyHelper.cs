@@ -57,7 +57,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (DslUtility.IsQueryable(info.DataStructure))
                 codeBuilder.InsertCode(
-                    string.Format(",\r\n                        {0} = item.{0}", info.Name),
+                    string.Format(",\r\n                {0} = item.{0}", info.Name),
                     RepositoryHelper.AssignSimplePropertyTag, info.DataStructure);
         }
     }
