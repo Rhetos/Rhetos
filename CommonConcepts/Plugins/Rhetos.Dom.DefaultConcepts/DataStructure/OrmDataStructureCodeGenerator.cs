@@ -43,10 +43,13 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (orm != null)
             {
-                DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{info.Module.Name}.{info.Name}>", typeof(EntityBase<>), info);
+                string module = info.Module.Name;
+                string entity = info.Name;
+
+                DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{module}.{entity}>", typeof(EntityBase<>), info);
 
                 RepositoryHelper.GenerateQueryableRepository(info, codeBuilder, QuerySnippet(info));
-                codeBuilder.InsertCode(SnippetQueryableFilterById(info), RepositoryHelper.RepositoryMembers, info);
+                codeBuilder.InsertCode($"Common.OrmRepositoryBase<Common.Queryable.{module}_{entity}, {module}.{entity}>", RepositoryHelper.OverrideBaseTypeTag, info);
 
                 codeBuilder.InsertCode(
                     string.Format("public System.Data.Entity.DbSet<Common.Queryable.{0}_{1}> {0}_{1} {{ get; set; }}\r\n        ",
@@ -64,31 +67,6 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return string.Format(
                 @"return _executionContext.EntityFrameworkContext.{0}_{1}.AsNoTracking();",
-                info.Module.Name, info.Name);
-        }
-
-        public static string SnippetQueryableFilterById(DataStructureInfo info)
-        {
-            return string.Format(
-        @"public IQueryable<Common.Queryable.{0}_{1}> Filter(IQueryable<Common.Queryable.{0}_{1}> items, IEnumerable<Guid> ids)
-        {{
-            if (!(ids is System.Collections.IList))
-                ids = ids.ToList();
-
-            if (ids.Count() == 1) // EF 6.1.3. does not use parametrized SQL query for Contains() function. The equality comparer is used instead, to reuse cached execution plans.
-            {{
-                Guid id = ids.Single();
-                return items.Where(item => item.ID == id);
-            }}
-            else
-            {{
-                // Depending on the ids count, this method will return the list of IDs, or insert the ids to the database and return an SQL query that selects the ids.
-                var idsQuery = _domRepository.Common.FilterId.CreateQueryableFilterIds(ids);
-                return items.Where(item => idsQuery.Contains(item.ID));
-            }}
-        }}
-
-        ",
                 info.Module.Name, info.Name);
         }
     }

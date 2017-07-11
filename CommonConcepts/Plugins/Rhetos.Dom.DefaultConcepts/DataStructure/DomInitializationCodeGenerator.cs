@@ -471,6 +471,29 @@ namespace Common
         }
     }
 
+    public abstract class OrmRepositoryBase<TQueryableEntity, TEntity> : QueryableRepositoryBase<TQueryableEntity, TEntity>
+        where TEntity : class, IEntity
+        where TQueryableEntity : class, IEntity, TEntity, IQueryableEntity<TEntity>
+    {
+        public IQueryable<TQueryableEntity> Filter(IQueryable<TQueryableEntity> items, IEnumerable<Guid> ids)
+        {
+            if (!(ids is System.Collections.IList))
+                ids = ids.ToList();
+
+            if (ids.Count() == 1) // EF 6.1.3. does not use parametrized SQL query for Contains() function. The equality comparer is used instead, to reuse cached execution plans.
+            {
+                Guid id = ids.Single();
+                return items.Where(item => item.ID == id);
+            }
+            else
+            {
+                // Depending on the ids count, this method will return the list of IDs, or insert the ids to the database and return an SQL query that selects the ids.
+                var idsQuery = _domRepository.Common.FilterId.CreateQueryableFilterIds(ids);
+                return items.Where(item => idsQuery.Contains(item.ID));
+            }
+        }
+    }
+
     " + ModuleCodeGenerator.CommonNamespaceMembersTag + @"
 }
 

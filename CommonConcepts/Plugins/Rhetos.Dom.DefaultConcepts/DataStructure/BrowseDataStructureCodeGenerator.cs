@@ -40,42 +40,29 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         public static readonly CsTag<BrowseDataStructureInfo> BrowsePropertiesTag = "BrowseProperties";
 
-        protected static string RepositoryFunctionsSnippet(BrowseDataStructureInfo info)
-        {
-            return string.Format(
-        @"public IQueryable<Common.Queryable.{0}_{1}> Compute(IQueryable<Common.Queryable.{2}_{3}> source)
-        {{
-            return
-                from item in source
-                select new Common.Queryable.{0}_{1}
-                {{
-                    ID = item.ID,
-                    Base = item,
-                    {4}
-                }};
-        }}
-
-        ",
-            info.Module.Name, info.Name, info.Source.Module.Name, info.Source.Name,
-            BrowsePropertiesTag.Evaluate(info));
-        }
-
-        protected static string QuerySnippet(BrowseDataStructureInfo info)
-        {
-            return string.Format(
-                @"return Compute(_domRepository.{0}.{1}.Query());",
-                info.Source.Module.Name, info.Source.Name);
-        }
-
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (BrowseDataStructureInfo)conceptInfo;
+            string module = info.Module.Name;
+            string entity = info.Name;
 
-            DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{info.Module.Name}.{info.Name}>", typeof(EntityBase<>), info);
+            DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{module}.{entity}>", typeof(EntityBase<>), info);
+            RepositoryHelper.GenerateQueryableRepository(info, codeBuilder, $"return Query(_domRepository.{info.Source.Module.Name}.{info.Source.Name}.Query());");
 
-            RepositoryHelper.GenerateQueryableRepository(info, codeBuilder, QuerySnippet(info));
-            codeBuilder.InsertCode(RepositoryFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info);
-            codeBuilder.InsertCode(OrmDataStructureCodeGenerator.SnippetQueryableFilterById(info), RepositoryHelper.RepositoryMembers, info);
+            string querySnippet = $@"public IQueryable<Common.Queryable.{module}_{entity}> Query(IQueryable<Common.Queryable.{info.Source.Module.Name}_{info.Source.Name}> source)
+        {{
+            return source.Select(item => new Common.Queryable.{module}_{entity}
+                {{
+                    ID = item.ID,
+                    Base = item,
+                    {BrowsePropertiesTag.Evaluate(info)}
+                }});
+        }}
+
+        ";
+            codeBuilder.InsertCode(querySnippet, RepositoryHelper.RepositoryMembers, info);
+
+            codeBuilder.InsertCode($"Common.OrmRepositoryBase<Common.Queryable.{module}_{entity}, {module}.{entity}>", RepositoryHelper.OverrideBaseTypeTag, info);
         }
     }
 }
