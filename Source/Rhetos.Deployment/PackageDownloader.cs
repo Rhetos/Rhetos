@@ -41,6 +41,7 @@ namespace Rhetos.Deployment
         private readonly Rhetos.Logging.ILogger _logger;
         private readonly Rhetos.Logging.ILogger _packagesLogger;
         private readonly Rhetos.Logging.ILogger _performanceLogger;
+        private readonly Rhetos.Logging.ILogger _deployPackagesLogger;
         private readonly PackageDownloaderOptions _options;
         private readonly FilesUtility _filesUtility;
 
@@ -54,6 +55,7 @@ namespace Rhetos.Deployment
             _logger = logProvider.GetLogger(GetType().Name);
             _packagesLogger = logProvider.GetLogger("Packages");
             _performanceLogger = logProvider.GetLogger("Performance");
+            _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _options = options;
             _filesUtility = new FilesUtility(logProvider);
         }
@@ -139,10 +141,14 @@ namespace Rhetos.Deployment
 
         private InstalledPackage GetPackage(PackageRequest request, FileSyncer binFileSyncer)
         {
+            var installedPackage = TryGetPackageFromNuGetCache(request, binFileSyncer);
+            if (installedPackage != null)
+                return installedPackage;
+
             var packageSources = SelectPackageSources(request);
             foreach (var source in packageSources)
             {
-                var installedPackage = TryGetPackage(source, request, binFileSyncer);
+                installedPackage = TryGetPackage(source, request, binFileSyncer);
                 if (installedPackage != null)
                     return installedPackage;
             }
@@ -379,6 +385,51 @@ namespace Rhetos.Deployment
         //================================================================
         #region Getting the package from NuGet
 
+        private InstalledPackage TryGetPackageFromNuGetCache(PackageRequest request, FileSyncer binFileSyncer)
+        {
+            var sw = Stopwatch.StartNew();
+
+            // Use cache only if not deploying from source and an exact version is specified:
+
+            if (request.Source != null)
+                return null;
+
+            var requestVersionsRange = !string.IsNullOrEmpty(request.VersionsRange)
+                ? VersionUtility.ParseVersionSpec(request.VersionsRange)
+                : new VersionSpec();
+
+            if (requestVersionsRange.MinVersion == null
+                || requestVersionsRange.MinVersion.Equals(new SemanticVersion("0.0"))
+                || requestVersionsRange.MinVersion != requestVersionsRange.MaxVersion)
+            {
+                _logger.Trace(() => $"Not looking for {request.ReportIdVersionsRange()} in packages cache because the request does not specify an exact version.");
+                return null;
+            }
+
+            // Find the NuGet package:
+
+            var nugetRepository = new LocalPackageRepository(Paths.PackagesFolder, enableCaching: false);
+            IPackage package = nugetRepository.FindPackage(request.Id, requestVersionsRange, allowPrereleaseVersions: true, allowUnlisted: true);
+
+            _performanceLogger.Write(sw, () => $"PackageDownloader: {(package == null ? "Did not find" : "Found")} the NuGet package {request.ReportIdVersionsRange()} in cache.");
+            if (package == null)
+                return null;
+
+            // Copy binary files and resources:
+
+            string packageSubfolder = nugetRepository.PathResolver.GetPackageDirectory(request.Id, requestVersionsRange.MinVersion);
+            _deployPackagesLogger.Trace(() => $"Reading package from cache '{packageSubfolder}'.");
+            string targetFolder = Path.Combine(Paths.PackagesFolder, packageSubfolder);
+
+            foreach (var file in FilterCompatibleLibFiles(package.GetFiles()))
+                binFileSyncer.AddFile(Path.Combine(targetFolder, file.Path), Paths.PluginsFolder);
+
+            binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Plugins"), Paths.PluginsFolder, recursive: false); // Obsolete bin folder; lib should be used instead.
+            binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Resources"), Paths.ResourcesFolder, SimplifyPackageName(package.Id), recursive: true);
+
+            return new InstalledPackage(package.Id, package.Version.ToString(), GetNuGetPackageDependencies(package), targetFolder, request, Paths.PackagesFolder);
+        }
+
         private InstalledPackage TryGetPackageFromNuGet(PackageSource source, PackageRequest request, FileSyncer binFileSyncer)
         {
             var sw = Stopwatch.StartNew();
@@ -399,23 +450,22 @@ namespace Rhetos.Deployment
                 packages = packages.OrderByDescending(p => p.Version);
 
             var package = packages.FirstOrDefault();
-            _performanceLogger.Write(sw, () => "PackageDownloader find NuGet package " + request.Id + ".");
 
+            _performanceLogger.Write(sw, () => $"PackageDownloader: {(package == null ? "Did not find" : "Found")} the NuGet package {request.ReportIdVersionsRange()} at {source.ProcessedLocation}.");
             if (package == null)
-            {
-                _logger.Trace("Package " + request.ReportIdVersionsRange() + " not found by NuGet at " + source.ProcessedLocation + ".");
                 return null;
-            }
 
             // Download the NuGet package:
 
             _logger.Trace("Downloading NuGet package " + package.Id + " " + package.Version + " from " + source.ProcessedLocation + ".");
-            var packageManager = new PackageManager(nugetRepository, Paths.PackagesFolder) {
-                Logger = new LoggerForNuget(_logProvider) };
+            var packageManager = new PackageManager(nugetRepository, Paths.PackagesFolder)
+            {
+                Logger = new LoggerForNuget(_logProvider)
+            };
             packageManager.LocalRepository.PackageSaveMode = PackageSaveModes.Nuspec;
 
             packageManager.InstallPackage(package, ignoreDependencies: true, allowPrereleaseVersions: true);
-            _performanceLogger.Write(sw, () => "PackageDownloader install NuGet package " + request.Id + ".");
+            _performanceLogger.Write(sw, () => "PackageDownloader: Installed NuGet package " + request.Id + ".");
 
             string targetFolder = packageManager.PathResolver.GetInstallPath(package);
 
