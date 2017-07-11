@@ -56,8 +56,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{info.Module.Name}.{info.Name}>", typeof(EntityBase<>), info);
 
-            RepositoryHelper.GenerateRepository(info, codeBuilder);
-            RepositoryHelper.GenerateQueryableRepositoryFunctions(info, codeBuilder, null, LoadFunctionBodySnippet(info));
+            RepositoryHelper.GenerateQueryableRepository(info, codeBuilder, null, LoadFunctionBodySnippet(info));
             codeBuilder.InsertCode(RepositoryFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info);
         }
     }

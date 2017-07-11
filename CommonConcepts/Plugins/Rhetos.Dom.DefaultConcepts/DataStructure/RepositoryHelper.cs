@@ -83,8 +83,10 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode(registerRepository, ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
         }
         
-        public static void GenerateReadableRepositoryFunctions(DataStructureInfo info, ICodeBuilder codeBuilder, string loadFunctionBody)
+        public static void GenerateReadableRepository(DataStructureInfo info, ICodeBuilder codeBuilder, string loadFunctionBody)
         {
+            GenerateRepository(info, codeBuilder);
+
             string module = info.Module.Name;
             string entity = info.Name;
 
@@ -99,14 +101,12 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode($"Common.ReadableRepositoryBase<{module}.{entity}>", OverrideBaseTypeTag, info);
         }
 
-        public static void GenerateQueryableRepositoryFunctions(DataStructureInfo info, ICodeBuilder codeBuilder, string queryFunctionBody, string loadFunctionBody = null)
+        public static void GenerateQueryableRepository(DataStructureInfo info, ICodeBuilder codeBuilder, string queryFunctionBody, string loadFunctionBody = null)
         {
+            GenerateReadableRepository(info, codeBuilder, loadFunctionBody ?? "return Query().ToSimple().ToArray();");
+
             string module = info.Module.Name;
             string entity = info.Name;
-
-            if (loadFunctionBody == null)
-                loadFunctionBody = "return Query().ToSimple().ToArray();";
-            GenerateReadableRepositoryFunctions(info, codeBuilder, loadFunctionBody);
 
             if (queryFunctionBody != null)
             {
