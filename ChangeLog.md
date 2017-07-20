@@ -1,5 +1,12 @@
 ﻿# Rhetos release notes
 
+## 1.9.0 (2017-07-20)
+
+### Internal improvements
+
+* Performance improvements of *DeployPackages.exe*.
+* Improved request logging: *ProcessingEngine Request* logger logs simplified description of server commands with filter parameters.
+
 ## 1.8.0 (2017-06-30)
 
 ### Internal improvements
