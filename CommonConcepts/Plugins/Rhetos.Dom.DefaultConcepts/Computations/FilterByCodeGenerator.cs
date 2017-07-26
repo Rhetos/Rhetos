@@ -38,28 +38,22 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<FilterByInfo> AdditionalParametersTypeTag = "AdditionalParametersType";
         public static readonly CsTag<FilterByInfo> AdditionalParametersArgumentTag = "AdditionalParametersArgument";
 
-        private static string FilterImplementationSnippet(FilterByInfo info)
-        {
-            return string.Format(
-        @"public global::{0}[] Filter({1} filter_Parameter)
-        {{
-            Func<Common.DomRepository, {1}{3}, {0}[]> filter_Function =
-                {2};
-            return filter_Function(_domRepository, filter_Parameter{4});
-        }}
-
-        ",
-            info.Source.GetKeyProperties(),
-            info.Parameter,
-            info.Expression,
-            AdditionalParametersTypeTag.Evaluate(info),
-            AdditionalParametersArgumentTag.Evaluate(info));
-        }
-
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (FilterByInfo)conceptInfo;
-            codeBuilder.InsertCode(FilterImplementationSnippet(info), RepositoryHelper.RepositoryMembers, info.Source);
+
+            string filterImplementationSnippet =
+        $@"public global::{info.Source.Module}.{info.Source.Name}[] Filter({info.Parameter} filter_Parameter)
+        {{
+            Func<Common.DomRepository, {info.Parameter}{AdditionalParametersTypeTag.Evaluate(info)}, {info.Source.Module}.{info.Source.Name}[]> filter_Function =
+                {info.Expression};
+
+            return filter_Function(_domRepository, filter_Parameter{AdditionalParametersArgumentTag.Evaluate(info)});
+        }}
+
+        ";
+
+            codeBuilder.InsertCode(filterImplementationSnippet, RepositoryHelper.RepositoryMembers, info.Source);
         }
     }
 }

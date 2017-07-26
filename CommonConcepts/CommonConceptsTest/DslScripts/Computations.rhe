@@ -417,6 +417,14 @@ Module TestComputed
     {
         ShortString SpecialName;
     }
+
+    Computed ComputedWithContext 'repository => new[]
+        {
+            new ComputedWithContext { Name = _executionContext.UserInfo.UserName }
+        }'
+    {
+        ShortString Name;
+    }
 }
 
 Module TestReport

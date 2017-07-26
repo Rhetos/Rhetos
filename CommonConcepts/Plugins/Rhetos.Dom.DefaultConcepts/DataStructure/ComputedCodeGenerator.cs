@@ -33,31 +33,19 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(ComputedInfo))]
     public class ComputedCodeGenerator : IConceptCodeGenerator
     {
-        protected static string RepositoryFunctionsSnippet(ComputedInfo info)
-        {
-            return string.Format(
-            @"public readonly Func<Common.DomRepository{2}, global::{0}.{1}[]> Compute =
-            {3};
-
-        ",
-                info.Module.Name, info.Name, DataStructureUtility.ComputationAdditionalParametersTypeTag.Evaluate(info), info.Expression);
-        }
-
-        protected static string LoadFunctionBodySnippet(ComputedInfo info)
-        {
-            return string.Format(
-                @"return Compute(_domRepository{0});",
-                DataStructureUtility.ComputationAdditionalParametersArgumentTag.Evaluate(info));
-        }
-
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (ComputedInfo)conceptInfo;
 
-            DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{info.Module.Name}.{info.Name}>", typeof(EntityBase<>), info);
+            string loadFunctionBodySnippet =
+            $@"Func<Common.DomRepository{DataStructureUtility.ComputationAdditionalParametersTypeTag.Evaluate(info)}, global::{info.Module.Name}.{info.Name}[]> compute_Function =
+            {info.Expression};
 
-            RepositoryHelper.GenerateQueryableRepository(info, codeBuilder, null, LoadFunctionBodySnippet(info));
-            codeBuilder.InsertCode(RepositoryFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info);
+            return compute_Function(_domRepository{DataStructureUtility.ComputationAdditionalParametersArgumentTag.Evaluate(info)});";
+
+            RepositoryHelper.GenerateQueryableRepository(info, codeBuilder, null, loadFunctionBodySnippet);
+
+            DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{info.Module.Name}.{info.Name}>", typeof(EntityBase<>), info);
         }
     }
 }

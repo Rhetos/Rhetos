@@ -25,6 +25,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
 using Rhetos.Configuration.Autofac;
+using Rhetos.Utilities;
 
 namespace CommonConcepts.Test
 {
@@ -60,6 +61,19 @@ namespace CommonConcepts.Test
                 var paremeter = new TestComputed.SpecialLoad { SpecialName = "spec" };
                 var loaded = repository.TestComputed.Simple.Filter(paremeter);
                 Assert.AreEqual("spec", TestUtility.DumpSorted(loaded, item => item.Name));
+            }
+        }
+
+        [TestMethod]
+        public void ComputedWithContext()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var user = container.Resolve<IUserInfo>();
+                var repository = container.Resolve<Common.DomRepository>();
+
+                Assert.IsFalse(string.IsNullOrWhiteSpace(user.UserName));
+                Assert.AreEqual(user.UserName, repository.TestComputed.ComputedWithContext.Load().Single().Name);
             }
         }
     }
