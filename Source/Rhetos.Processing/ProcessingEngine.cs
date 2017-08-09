@@ -190,7 +190,7 @@ namespace Rhetos.Processing
                     else
                     {
                         userMessage = null;
-                        systemMessage = "Internal server error occurred (" + ex.GetType().Name + "). See RhetosServer.log for more information.";
+                        systemMessage = FrameworkException.GetInternalServerErrorMessage(_localizer, ex);
                     }
 
                     return LogAndReturnError(commandResults, "Command failed: " + commandInfo + ".", systemMessage, userMessage, ex, commands, executionId);

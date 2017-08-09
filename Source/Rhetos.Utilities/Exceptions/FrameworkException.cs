@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,6 +38,13 @@ namespace Rhetos
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context)
             : base(info, context) { }
-    }
 
+        public static string GetInternalServerErrorMessage(ILocalizer localizer, Exception exception)
+        {
+            return localizer[
+                "Internal server error occurred. See RhetosServer.log for more information. ({0}, {1})",
+                exception.GetType().Name,
+                DateTime.Now.ToString("s")];
+        }
+    }
 }

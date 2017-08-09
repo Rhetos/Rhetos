@@ -67,10 +67,11 @@ namespace Rhetos.Web
 
             object responseMessage;
             HttpStatusCode responseStatusCode;
+            var localizer = AutofacServiceHostFactory.Container.Resolve<ILocalizer>();
+
             if (error is UserException)
             {
                 var userError = (UserException)error;
-                var localizer = AutofacServiceHostFactory.Container.Resolve<ILocalizer>();
 
                 responseStatusCode = HttpStatusCode.BadRequest;
                 responseMessage = new ResponseMessage { UserMessage = localizer[userError.Message, userError.MessageParameters], SystemMessage = userError.SystemMessage };
@@ -88,7 +89,7 @@ namespace Rhetos.Web
             else
             {
                 responseStatusCode = HttpStatusCode.InternalServerError;
-                responseMessage = new ResponseMessage { SystemMessage = "Internal server error occurred (" + error.GetType().Name + "). See RhetosServer.log for more information." };
+                responseMessage = new ResponseMessage { SystemMessage = FrameworkException.GetInternalServerErrorMessage(localizer, error) };
             }
 
             fault = Message.CreateMessage(version, "", responseMessage,

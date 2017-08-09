@@ -34,7 +34,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public SaveMethodInfo SaveMethod { get; set; }
 
         /// <summary>
-        /// Name of this business rule, unique among this entity's validations.
+        /// Name of this business rule, unique among this entity's initializations.
         /// </summary>
         [ConceptKey]
         public string RuleName { get; set; }

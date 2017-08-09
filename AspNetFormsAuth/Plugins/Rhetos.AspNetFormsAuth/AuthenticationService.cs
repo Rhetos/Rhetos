@@ -414,8 +414,9 @@ namespace Rhetos.AspNetFormsAuth
                 if (ex is UserException || ex is ClientException)
                     ExceptionsUtility.Rethrow(ex);
 
+                // Don't return an internal error to the client. Log it and return a generic error message:
                 _logger.Error(logErrorFormat, parameters.UserName, ex);
-                throw new FrameworkException("Internal server error occurred. See RhetosServer.log for more information.");
+                throw new FrameworkException(FrameworkException.GetInternalServerErrorMessage(_localizer, ex));
             }
         }
 

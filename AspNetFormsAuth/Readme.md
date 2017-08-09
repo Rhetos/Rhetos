@@ -337,7 +337,7 @@ You may use the following C# code to generate the keys:
 ## Session timeout
 
 ASP.NET forms authentication ticket will expire after 30 minutes of **client incativity**, by default.
-To allow user to stay logged in after longer time of inactivity, add standard ASP.NET configuration option `timeout` (in minutes) in Web.config:
+To allow user to stay logged in after longer time of inactivity, add standard [ASP.NET configuration](https://msdn.microsoft.com/en-us/library/1d3t3c61(v=vs.100).aspx) option `timeout` (in minutes) in Web.config:
 
     <system.web>
          <authentication mode="Forms">
