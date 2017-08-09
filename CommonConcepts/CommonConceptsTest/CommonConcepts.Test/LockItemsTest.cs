@@ -34,7 +34,7 @@ namespace CommonConcepts.Test
     {
         private static void AssertData(string expected, Common.DomRepository repository)
         {
-            Assert.AreEqual(expected, TestUtility.DumpSorted(repository.TestLockItems.Simple.All(), item => item.Name));
+            Assert.AreEqual(expected, TestUtility.DumpSorted(repository.TestLockItems.Simple.Query(), item => item.Name));
         }
 
         [TestMethod]
@@ -126,7 +126,7 @@ namespace CommonConcepts.Test
                 }
 
                 {
-                    var s3Persistent = repository.TestLockItems.Simple.All().Single();
+                    var s3Persistent = repository.TestLockItems.Simple.Load().Single();
                     s3Persistent.Name = "abc";
                     TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s3Persistent }),
                         "[Test] Name contains lock mark");
@@ -153,7 +153,7 @@ namespace CommonConcepts.Test
                 }
 
                 {
-                    var s3Persistent = repository.TestLockItems.Simple.All().Single();
+                    var s3Persistent = repository.TestLockItems.Simple.Load().Single();
                     s3Persistent.Name = "abc";
                     TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Delete(new[] { s3Persistent }),
                         "[Test] Name contains lock mark");
@@ -174,14 +174,14 @@ namespace CommonConcepts.Test
                     "INSERT INTO TestLockItems.Simple (Name) VALUES ('abc locked')" });
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var s1 = repository.TestLockItems.Simple.All().Single();
+                var s1 = repository.TestLockItems.Simple.Load().Single();
                 Assert.AreEqual("abc locked", s1.Name);
                 s1.Name = "def";
 
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache(); // Same with Evict(s2)
 
                 Assert.AreEqual("def", s1.Name);
-                var s2 = repository.TestLockItems.Simple.All().Single();
+                var s2 = repository.TestLockItems.Simple.Load().Single();
                 Assert.AreEqual("abc locked", s2.Name);
             }
         }
@@ -195,24 +195,24 @@ namespace CommonConcepts.Test
                     "INSERT INTO TestLockItems.Simple (Name) VALUES ('abc locked')" });
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var s1 = repository.TestLockItems.Simple.All().Single();
+                var s1 = repository.TestLockItems.Simple.Load().Single();
                 Assert.AreEqual("abc locked", s1.Name);
                 s1.Name = "def";
 
                 TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s1 }), "[Test] Name contains lock mark");
 
                 Assert.AreEqual("def", s1.Name);
-                Assert.AreEqual("abc locked", repository.TestLockItems.Simple.All().Single().Name);
+                Assert.AreEqual("abc locked", repository.TestLockItems.Simple.Load().Single().Name);
 
                 TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Update(new[] { s1 }), "[Test] Name contains lock mark");
 
                 Assert.AreEqual("def", s1.Name);
-                Assert.AreEqual("abc locked", repository.TestLockItems.Simple.All().Single().Name);
+                Assert.AreEqual("abc locked", repository.TestLockItems.Simple.Load().Single().Name);
 
                 TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Insert(new[] { s1 }), "Inserting a record that already exists");
 
                 Assert.AreEqual("def", s1.Name);
-                Assert.AreEqual("abc locked", repository.TestLockItems.Simple.All().Single().Name);
+                Assert.AreEqual("abc locked", repository.TestLockItems.Simple.Load().Single().Name);
             }
         }
 

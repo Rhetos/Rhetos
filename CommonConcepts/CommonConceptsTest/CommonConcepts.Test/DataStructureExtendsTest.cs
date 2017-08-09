@@ -173,7 +173,7 @@ namespace CommonConcepts.Test
                 });
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var all = repository.TestExtension.SimpleBase.All();
+                var all = repository.TestExtension.SimpleBase.Load();
                 Assert.AreEqual("b1, b2missing", TestUtility.DumpSorted(all, item => item.Name),
                     "InvalidExtension should not fail because there is not need to load those records.");
 
@@ -184,7 +184,7 @@ namespace CommonConcepts.Test
                 repository.TestExtension.SimpleBase.Insert(new[] { new TestExtension.SimpleBase { Name = "b3" }});
 
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
-                Assert.AreEqual("b1X, b2missingX, b3", TestUtility.DumpSorted(repository.TestExtension.SimpleBase.All(), item => item.Name),
+                Assert.AreEqual("b1X, b2missingX, b3", TestUtility.DumpSorted(repository.TestExtension.SimpleBase.Load(), item => item.Name),
                     "InvalidExtension should not fail because there is no need to load those records.");
 
                 Assert.IsNotNull(repository.TestExtension.SimpleBase.Query().Select(item => item.Extension_InvalidExtension.ID).First());

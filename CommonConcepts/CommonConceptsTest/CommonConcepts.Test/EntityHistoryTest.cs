@@ -100,8 +100,8 @@ namespace CommonConcepts.Test
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Minimal" });
                 var repository = container.Resolve<Common.DomRepository>();
 
-                Assert.AreEqual(0, repository.TestHistory.Minimal.All().Count());
-                Assert.AreEqual(0, repository.TestHistory.Minimal_Changes.All().Count());
+                Assert.AreEqual(0, repository.TestHistory.Minimal.Query().Count());
+                Assert.AreEqual(0, repository.TestHistory.Minimal_Changes.Query().Count());
 
                 var m1 = new TestHistory.Minimal { Code = 1 };
                 var m2 = new TestHistory.Minimal { Code = 2 };
@@ -110,10 +110,10 @@ namespace CommonConcepts.Test
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
                 var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
-                Assert.AreEqual("1, 2", TestUtility.DumpSorted(repository.TestHistory.Minimal.All(), item => item.Code.ToString()));
-                Assert.AreEqual(0, repository.TestHistory.Minimal_Changes.All().Count());
-                Assert.AreEqual(2, repository.TestHistory.Minimal_History.All().Count());
-                foreach (var item in repository.TestHistory.Minimal.All())
+                Assert.AreEqual("1, 2", TestUtility.DumpSorted(repository.TestHistory.Minimal.Query(), item => item.Code.ToString()));
+                Assert.AreEqual(0, repository.TestHistory.Minimal_Changes.Query().Count());
+                Assert.AreEqual(2, repository.TestHistory.Minimal_History.Query().Count());
+                foreach (var item in repository.TestHistory.Minimal.Load())
                     AssertIsRecently(item.ActiveSince, now);
             }
         }
@@ -129,7 +129,7 @@ namespace CommonConcepts.Test
                     "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2001-01-01')"});
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var m1 = repository.TestHistory.Minimal.All().Single();
+                var m1 = repository.TestHistory.Minimal.Load().Single();
                 m1.ActiveSince = null;
                 m1.Code = 11;
                 repository.TestHistory.Minimal.Update(new[] { m1 });
@@ -156,7 +156,7 @@ namespace CommonConcepts.Test
                     "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2001-01-01')"});
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var m1 = repository.TestHistory.Minimal.All().Single();
+                var m1 = repository.TestHistory.Minimal.Load().Single();
                 m1.ActiveSince = null;
                 m1.Code = 11;
                 repository.TestHistory.Minimal.Update(new[] { m1 });
@@ -164,8 +164,8 @@ namespace CommonConcepts.Test
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
                 var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
-                var h = repository.TestHistory.Minimal_History.All().OrderBy(t => t.ActiveSince).FirstOrDefault();
-                var m = repository.TestHistory.Minimal.All().Single();
+                var h = repository.TestHistory.Minimal_History.Load().OrderBy(t => t.ActiveSince).FirstOrDefault();
+                var m = repository.TestHistory.Minimal.Load().Single();
 
                 Assert.AreEqual(h.ActiveUntil, m.ActiveSince);
             }
@@ -184,15 +184,15 @@ namespace CommonConcepts.Test
                 });
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var m1 = repository.TestHistory.Minimal.All().Single();
+                var m1 = repository.TestHistory.Minimal.Load().Single();
                 m1.ActiveSince = new DateTime(2012, 12, 25);
                 repository.TestHistory.Minimal.Update(new[] { m1 });
 
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
                 var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
-                var h = repository.TestHistory.Minimal_History.All().OrderBy(t => t.ActiveSince).ToList();
-                var m = repository.TestHistory.Minimal.All().Single();
+                var h = repository.TestHistory.Minimal_History.Load().OrderBy(t => t.ActiveSince).ToList();
+                var m = repository.TestHistory.Minimal.Load().Single();
 
                 Assert.AreEqual(h[0].ActiveUntil, h[1].ActiveSince);
                 Assert.AreEqual(h[1].ActiveUntil, m.ActiveSince);
@@ -210,7 +210,7 @@ namespace CommonConcepts.Test
                     "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2001-01-01')"});
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var m1 = repository.TestHistory.Minimal.All().Single();
+                var m1 = repository.TestHistory.Minimal.Load().Single();
                 m1.ActiveSince = null;
                 m1.Code = 11;
                 repository.TestHistory.Minimal.Update(new[] { m1 });
@@ -219,7 +219,7 @@ namespace CommonConcepts.Test
                 var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
 
                 var hist = repository.TestHistory.Minimal_Changes.Query().Where(item => item.EntityID == m1.ID).Single();
-                var m = repository.TestHistory.Minimal.All().Single();
+                var m = repository.TestHistory.Minimal.Load().Single();
 
                 Assert.AreEqual(hist.Extension_Minimal_ChangesActiveUntil.ActiveUntil, m.ActiveSince);
             }
@@ -236,7 +236,7 @@ namespace CommonConcepts.Test
                     "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2001-01-01')"});
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var m1 = repository.TestHistory.Minimal.All().Single();
+                var m1 = repository.TestHistory.Minimal.Load().Single();
                 m1.ActiveSince = null;
                 m1.Code = 11;
                 repository.TestHistory.Minimal.Update(new[] { m1 });
@@ -263,7 +263,7 @@ namespace CommonConcepts.Test
                 var e = new TestHistory.Standard { Code = 1, Name = "a", Birthday = new DateTime(2001, 2, 3, 4, 5, 6) };
                 standardRepos.Insert(new[] { e });
                 string v1 = "1 a 2001-02-03T04:05:06";
-                Assert.AreEqual(v1, Dump(standardRepos.All()));
+                Assert.AreEqual(v1, Dump(standardRepos.Load()));
 
                 System.Threading.Thread.Sleep(DatabaseDateTimeImprecision + DatabaseDateTimeImprecision);
                 e.Code = 2;
@@ -389,7 +389,7 @@ namespace CommonConcepts.Test
                     "INSERT INTO TestHistory.Minimal_Changes (ID, EntityID, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(Guid.NewGuid()) + ", " + SqlUtility.QuoteGuid(id1) + ", '2012-12-30')"});
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var m1 = repository.TestHistory.Minimal.All().Single();
+                var m1 = repository.TestHistory.Minimal.Load().Single();
                 m1.ActiveSince = new DateTime(2012, 12, 25);
                 m1.Code = 11;
                 // Should fail
@@ -408,11 +408,11 @@ namespace CommonConcepts.Test
                 // Insert:
                 var s = new TestHistory.Simple { ID = Guid.NewGuid(), Code = 1, ActiveSince = Day(1), Name = "a" };
                 repository.TestHistory.Simple.Insert(new[] { s });
-                Assert.AreEqual(1, repository.TestHistory.Simple_History.All().Count());
+                Assert.AreEqual(1, repository.TestHistory.Simple_History.Query().Count());
 
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
-                Assert.AreEqual("1 a 2001-01-01T00:00:00", DumpFull(repository.TestHistory.Simple.All()));
-                Assert.AreEqual("", DumpFull(repository.TestHistory.Simple_Changes.All()));
+                Assert.AreEqual("1 a 2001-01-01T00:00:00", DumpFull(repository.TestHistory.Simple.Load()));
+                Assert.AreEqual("", DumpFull(repository.TestHistory.Simple_Changes.Load()));
 
                 // Update:
                 s.Code = 2;
@@ -421,9 +421,9 @@ namespace CommonConcepts.Test
                 repository.TestHistory.Simple.Update(new[] { s });
 
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
-                Assert.AreEqual("2 b 2001-01-02T00:00:00", DumpFull(repository.TestHistory.Simple.All()));
-                Assert.AreEqual("1 2001-01-01T00:00:00", DumpFull(repository.TestHistory.Simple_Changes.All()));
-                Assert.AreEqual(2, repository.TestHistory.Simple_History.All().Count());
+                Assert.AreEqual("2 b 2001-01-02T00:00:00", DumpFull(repository.TestHistory.Simple.Query()));
+                Assert.AreEqual("1 2001-01-01T00:00:00", DumpFull(repository.TestHistory.Simple_Changes.Query()));
+                Assert.AreEqual(2, repository.TestHistory.Simple_History.Query().Count());
 
                 // Another update:
                 s.Code = 3;
@@ -432,16 +432,16 @@ namespace CommonConcepts.Test
                 repository.TestHistory.Simple.Update(new[] { s });
 
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
-                Assert.AreEqual("3 c 2001-01-03T00:00:00", DumpFull(repository.TestHistory.Simple.All()));
-                Assert.AreEqual("1 2001-01-01T00:00:00, 2 2001-01-02T00:00:00", DumpFull(repository.TestHistory.Simple_Changes.All()));
-                Assert.AreEqual(3, repository.TestHistory.Simple_History.All().Count());
+                Assert.AreEqual("3 c 2001-01-03T00:00:00", DumpFull(repository.TestHistory.Simple.Query()));
+                Assert.AreEqual("1 2001-01-01T00:00:00, 2 2001-01-02T00:00:00", DumpFull(repository.TestHistory.Simple_Changes.Query()));
+                Assert.AreEqual(3, repository.TestHistory.Simple_History.Query().Count());
 
                 // Delete:
                 repository.TestHistory.Simple.Delete(new[] { s });
 
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
-                Assert.AreEqual("", DumpFull(repository.TestHistory.Simple.All()));
-                Assert.AreEqual("", DumpFull(repository.TestHistory.Simple_Changes.All()));
+                Assert.AreEqual("", DumpFull(repository.TestHistory.Simple.Query()));
+                Assert.AreEqual("", DumpFull(repository.TestHistory.Simple_Changes.Query()));
             }
         }
 
@@ -457,7 +457,7 @@ namespace CommonConcepts.Test
                     .Rounded().AddMinutes(1);
                 repository.TestHistory.Simple.Insert(new[] { new TestHistory.Simple { Code = 1, ActiveSince = future } });
 
-                Assert.AreEqual("1  " + future.Dump(), DumpFull(repository.TestHistory.Simple.All()));
+                Assert.AreEqual("1  " + future.Dump(), DumpFull(repository.TestHistory.Simple.Query()));
             }
         }
 
@@ -477,7 +477,7 @@ namespace CommonConcepts.Test
                 s.ActiveSince = future;
                 repository.TestHistory.Simple.Update(new[] { s });
 
-                Assert.AreEqual("1  " + future.Dump(), DumpFull(repository.TestHistory.Simple.All()));
+                Assert.AreEqual("1  " + future.Dump(), DumpFull(repository.TestHistory.Simple.Query()));
             }
         }
 
@@ -514,7 +514,7 @@ namespace CommonConcepts.Test
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'Test', '2001-01-01')"});
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var m1 = repository.TestHistory.Simple.All().Single();
+                var m1 = repository.TestHistory.Simple.Load().Single();
                 m1.ActiveSince = null;
                 m1.Code = 11;
                 repository.TestHistory.Simple.Update(new[] { m1 });
@@ -554,12 +554,12 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
                 var simpleRepos = repository.TestHistory.Simple;
 
-                Assert.AreEqual("", DumpFull(simpleRepos.All()));
+                Assert.AreEqual("", DumpFull(simpleRepos.Query()));
 
                 var sw = Stopwatch.StartNew();
                 var s1 = new TestHistory.Simple { Code = 1, Name = "a" };
                 simpleRepos.Insert(new[] { s1 });
-                Assert.AreEqual(1, simpleRepos.All().Single().Code);
+                Assert.AreEqual(1, simpleRepos.Load().Single().Code);
 
                 int lastCode = 1;
                 var s1Array = new[] { s1 };
@@ -574,7 +574,7 @@ namespace CommonConcepts.Test
                         s1.Code = ++lastCode;
                         simpleRepos.Update(s1Array);
                     }
-                    Assert.AreEqual(lastCode, simpleRepos.All().Single().Code);
+                    Assert.AreEqual(lastCode, simpleRepos.Load().Single().Code);
                 }
                 sw.Stop();
 
@@ -603,7 +603,7 @@ namespace CommonConcepts.Test
                 standardRepos.Insert(new[] { e });
                 DateTime t1 = GetServerTime(container);
                 string v1 = "1 a 2001-02-03T04:05:06";
-                Assert.AreEqual(v1, Dump(standardRepos.All()));
+                Assert.AreEqual(v1, Dump(standardRepos.Query()));
 
                 System.Threading.Thread.Sleep(DatabaseDateTimeImprecision + DatabaseDateTimeImprecision);
 
@@ -614,7 +614,7 @@ namespace CommonConcepts.Test
                 standardRepos.Update(new[] { e });
                 DateTime t2 = GetServerTime(container);
                 string v2 = "2 b 2011-12-13T14:15:16";
-                Assert.AreEqual(v2, Dump(standardRepos.All()));
+                Assert.AreEqual(v2, Dump(standardRepos.Query()));
 
                 System.Threading.Thread.Sleep(DatabaseDateTimeImprecision + DatabaseDateTimeImprecision);
 
@@ -624,7 +624,7 @@ namespace CommonConcepts.Test
                 standardRepos.Update(new[] { e });
                 DateTime t3 = GetServerTime(container);
                 string v3 = "3 c 2011-12-13T14:15:16";
-                Assert.AreEqual(v3, Dump(standardRepos.All()));
+                Assert.AreEqual(v3, Dump(standardRepos.Query()));
 
                 Console.WriteLine("t1: " + t1.ToString("o"));
                 Console.WriteLine("t2: " + t2.ToString("o"));
@@ -651,7 +651,7 @@ namespace CommonConcepts.Test
                 var e = new TestHistory.Simple { Code = 1, Name = "a" };
                 er.Insert(new[] { e });
                 DateTime t1 = GetServerTime(container);
-                Assert.AreEqual("1 a", Dump(er.All()));
+                Assert.AreEqual("1 a", Dump(er.Query()));
 
                 System.Threading.Thread.Sleep(DatabaseDateTimeImprecision + DatabaseDateTimeImprecision);
 
@@ -660,7 +660,7 @@ namespace CommonConcepts.Test
                 e.ActiveSince = null;
                 er.Update(new[] { e });
                 DateTime t2 = GetServerTime(container);
-                Assert.AreEqual("2 b", Dump(er.All()));
+                Assert.AreEqual("2 b", Dump(er.Query()));
 
                 System.Threading.Thread.Sleep(DatabaseDateTimeImprecision + DatabaseDateTimeImprecision);
 
@@ -669,7 +669,7 @@ namespace CommonConcepts.Test
                 e.ActiveSince = null;
                 er.Update(new[] { e });
                 DateTime t3 = GetServerTime(container);
-                Assert.AreEqual("3 c", Dump(er.All()));
+                Assert.AreEqual("3 c", Dump(er.Query()));
 
                 Console.WriteLine("t1: " + t1.ToString("o"));
                 Console.WriteLine("t2: " + t2.ToString("o"));
@@ -702,7 +702,7 @@ namespace CommonConcepts.Test
                 Console.WriteLine("t1: " + t1.ToString("o"));
 
                 const string v1 = "1 a 2001-02-03T04:05:06";
-                Assert.AreEqual(v1, Dump(er.All()));
+                Assert.AreEqual(v1, Dump(er.Query()));
                 Assert.AreEqual(v1, Dump(er.Filter(t1.Add(DatabaseDateTimeImprecision))));
 
                 TestHistory.Standard[] loaded = er.Filter(t0.Subtract(DatabaseDateTimeImprecision));
@@ -736,7 +736,7 @@ namespace CommonConcepts.Test
 //                Assert.AreEqual(v2, DumpSorted(repository.TestHistory.Simple.Filter(t2)));
 
 //                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
-//                Assert.AreEqual(v2, DumpSorted(repository.TestHistory.Simple.All()));
+//                Assert.AreEqual(v2, DumpSorted(repository.TestHistory.Simple.Query()));
 
 //                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
 //                Assert.AreEqual("", DumpSorted(repository.TestHistory.Simple.Filter(t1.AddSeconds(-1))));
@@ -759,7 +759,7 @@ namespace CommonConcepts.Test
                 repository.TestHistory.Simple.Insert(new[] { e });
 
                 repository.TestHistory.Simple_Changes.Insert(new[] { new TestHistory.Simple_Changes { EntityID = e.ID, ActiveSince = future1 } });
-                Assert.AreEqual("1  " + future2.Dump(), DumpFull(repository.TestHistory.Simple.All()));
+                Assert.AreEqual("1  " + future2.Dump(), DumpFull(repository.TestHistory.Simple.Query()));
             }
         }
 
@@ -788,7 +788,7 @@ namespace CommonConcepts.Test
                 historyRecord.ActiveSince = future2;
                 repository.TestHistory.Simple_Changes.Update(new[] { historyRecord });
 
-                var currentRecord = repository.TestHistory.Simple.All().Single();
+                var currentRecord = repository.TestHistory.Simple.Load().Single();
                 Console.WriteLine("currentRecord.ActiveSince: " + currentRecord.ActiveSince.Value.ToString("o"));
                 Assert.AreEqual("1  " + future3.Dump(), DumpFull(new[] { currentRecord }));
             }
@@ -1083,7 +1083,7 @@ namespace CommonConcepts.Test
 //                Assert.AreEqual("1 a", TestUtility.DumpSorted(repository.TestHistory.Complex.Query(), item => item.Code + " " + item.Name));
 
 //                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
-//                var h = repository.TestHistory.Complex_Changes.All().Single();
+//                var h = repository.TestHistory.Complex_Changes.Load().Single();
 //                h.ActiveSince = h.ActiveSince.Value.AddDays(-1);
 //                repository.TestHistory.Complex_Changes.Update(new[] { h });
 //                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
@@ -1362,7 +1362,7 @@ namespace CommonConcepts.Test
 
                 var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(1, fh.Count());
-                var currentItem = repository.TestHistory.Simple.All();
+                var currentItem = repository.TestHistory.Simple.Load();
 
                 Assert.AreEqual("2 a 2001-01-01T00:00:00", currentItem.ToList().Select(item => item.Code + " " + item.Name + " " + item.ActiveSince.Dump()).Aggregate((i1, i2) => i1 + "," + i2));
             }
@@ -1585,7 +1585,7 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
 
                 // take entry that is in the middle of history
-                var delEnt = repository.TestHistory.Simple_History.All().ToArray();
+                var delEnt = repository.TestHistory.Simple_History.Load();
                 repository.TestHistory.Simple_History.Delete(delEnt);
 
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
@@ -1612,13 +1612,13 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
 
                 // take entry that is in the middle of history
-                var editEnt = repository.TestHistory.SimpleWithLock.All().ToArray();
-                editEnt[0].Name = "buba";
+                var editEnt = repository.TestHistory.SimpleWithLock.Load();
+                editEnt.First().Name = "buba";
                 repository.TestHistory.SimpleWithLock.Update(editEnt);
 
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
 
-                editEnt[0].Name = "bube";
+                editEnt.First().Name = "bube";
                 TestUtility.ShouldFail(() => repository.TestHistory.SimpleWithLock.Update(editEnt), "Name is locked if NameNew contains word 'atest'.");
             }
         }
@@ -1640,14 +1640,14 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
 
                 // take entry that is in the middle of history
-                var editEnt = repository.TestHistory.SimpleWithLockAndDeny.All().ToArray();
-                editEnt[0].Name = "a";
-                editEnt[0].ActiveSince = null;
+                var editEnt = repository.TestHistory.SimpleWithLockAndDeny.Load();
+                editEnt.First().Name = "a";
+                editEnt.First().ActiveSince = null;
                 repository.TestHistory.SimpleWithLockAndDeny.Update(editEnt);
 
 
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
-                editEnt[0].Name = "be";
+                editEnt.First().Name = "be";
                 TestUtility.ShouldFail(() => repository.TestHistory.SimpleWithLockAndDeny.Update(editEnt), "Name is locked if NameNew contains word 'atest'.");
             }
         }

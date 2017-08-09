@@ -34,12 +34,12 @@ namespace CommonConcepts.Test
     {
         private static void AssertData(string expected, Common.DomRepository repository)
         {
-            Assert.AreEqual(expected, TestUtility.DumpSorted(repository.TestLockItems.Simple.All(), item => item.Name));
+            Assert.AreEqual(expected, TestUtility.DumpSorted(repository.TestLockItems.Simple.Query(), item => item.Name));
         }
         
         private static void AssertDataSimple2(string expected, Common.DomRepository repository)
         {
-            Assert.AreEqual(expected, TestUtility.DumpSorted(repository.TestLockItems.Simple2.All(), item => item.Name));
+            Assert.AreEqual(expected, TestUtility.DumpSorted(repository.TestLockItems.Simple2.Query(), item => item.Name));
         }
 
         [TestMethod]

@@ -44,9 +44,9 @@ namespace CommonConcepts.Test
 
                 // Initialize data:
 
-                repository.TestPolymorphic.Simple1.Delete(repository.TestPolymorphic.Simple1.All());
-                repository.TestPolymorphic.Simple2.Delete(repository.TestPolymorphic.Simple2.All());
-                Assert.AreEqual(0, repository.TestPolymorphic.SimpleBase.All().Count());
+                repository.TestPolymorphic.Simple1.Delete(repository.TestPolymorphic.Simple1.Query());
+                repository.TestPolymorphic.Simple2.Delete(repository.TestPolymorphic.Simple2.Query());
+                Assert.AreEqual(0, repository.TestPolymorphic.SimpleBase.Query().Count());
 
                 repository.TestPolymorphic.Simple1.Insert(new[] {
                     new TestPolymorphic.Simple1 { Name = "a", Days = 1 },
@@ -62,7 +62,7 @@ namespace CommonConcepts.Test
 
                 // Tests:
 
-                var all = repository.TestPolymorphic.SimpleBase.All();
+                var all = repository.TestPolymorphic.SimpleBase.Query();
                 Assert.AreEqual(
                     "a/1, aa-11/1, b/2, b3/2, b7/3, bb-22/2, cc-33/3",
                     TestUtility.DumpSorted(all, item => item.Name + "/" + item.Days),
@@ -145,9 +145,9 @@ namespace CommonConcepts.Test
 
                 // Initialize data:
 
-                repository.TestPolymorphic.Simple1.Delete(repository.TestPolymorphic.Simple1.All());
-                repository.TestPolymorphic.Simple2.Delete(repository.TestPolymorphic.Simple2.All());
-                Assert.AreEqual(0, repository.TestPolymorphic.SimpleBase.All().Count());
+                repository.TestPolymorphic.Simple1.Delete(repository.TestPolymorphic.Simple1.Query());
+                repository.TestPolymorphic.Simple2.Delete(repository.TestPolymorphic.Simple2.Query());
+                Assert.AreEqual(0, repository.TestPolymorphic.SimpleBase.Query().Count());
 
                 repository.TestPolymorphic.Simple1.Insert(new[] {
                     new TestPolymorphic.Simple1 { Name = "a", Days = 1 },
@@ -181,7 +181,7 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var loaded = repository.TestPolymorphic.Empty.All();
+                var loaded = repository.TestPolymorphic.Empty.Load();
 
                 Assert.AreEqual("", TestUtility.DumpSorted(loaded, item => item.ID + "-" + item.Subtype));
             }
@@ -196,10 +196,10 @@ namespace CommonConcepts.Test
 
                 // Initialize data:
 
-                repository.TestPolymorphic.Simple1.Delete(repository.TestPolymorphic.Simple1.All());
-                repository.TestPolymorphic.Simple2.Delete(repository.TestPolymorphic.Simple2.All());
-                repository.TestPolymorphic.Second1.Delete(repository.TestPolymorphic.Second1.All());
-                Assert.AreEqual(0, repository.TestPolymorphic.SecondBase.All().Count());
+                repository.TestPolymorphic.Simple1.Delete(repository.TestPolymorphic.Simple1.Query());
+                repository.TestPolymorphic.Simple2.Delete(repository.TestPolymorphic.Simple2.Query());
+                repository.TestPolymorphic.Second1.Delete(repository.TestPolymorphic.Second1.Query());
+                Assert.AreEqual(0, repository.TestPolymorphic.SecondBase.Query().Count());
 
                 repository.TestPolymorphic.Simple1.Insert(new[] {
                     new TestPolymorphic.Simple1 { Name = "a", Days = 1 },
@@ -213,7 +213,7 @@ namespace CommonConcepts.Test
 
                 // Tests:
 
-                var all = repository.TestPolymorphic.SecondBase.All();
+                var all = repository.TestPolymorphic.SecondBase.Query();
                 Assert.AreEqual(
                     "a/1, b/2/2000-01-22T00:00:00, c",
                     TestUtility.DumpSorted(all, item => item.Info));
@@ -303,7 +303,7 @@ namespace CommonConcepts.Test
                 var d2 = new TestPolymorphic.Disjunctive2 { ID = Guid.NewGuid(), Days = 123 };
                 repository.TestPolymorphic.Disjunctive2.Insert(new[] { d2 });
 
-                var all = repository.TestPolymorphic.Disjunctive.All();
+                var all = repository.TestPolymorphic.Disjunctive.Query();
                 Assert.AreEqual(
                     TestUtility.DumpSorted(new[] { d1.ID, d2.ID }),
                     TestUtility.DumpSorted(all, item => item.ID));
@@ -326,7 +326,7 @@ namespace CommonConcepts.Test
 
                 // Initialize data:
 
-                repository.TestPolymorphic.MultipleImplementations.Delete(repository.TestPolymorphic.MultipleImplementations.All());
+                repository.TestPolymorphic.MultipleImplementations.Delete(repository.TestPolymorphic.MultipleImplementations.Query());
 
                 var mi1 = new TestPolymorphic.MultipleImplementations { Name1 = "abc", Name2 = "123" };
                 var mi2 = new TestPolymorphic.MultipleImplementations { Name1 = "def", Name2 = "456" };
@@ -335,13 +335,13 @@ namespace CommonConcepts.Test
 
                 // Testing unions:
 
-                var base1 = repository.TestPolymorphic.Base1.All();
+                var base1 = repository.TestPolymorphic.Base1.Load();
                 Assert.AreEqual("abc, cba, def, fed", TestUtility.DumpSorted(base1, item => item.Name1));
 
-                var base2 = repository.TestPolymorphic.Base2.All();
+                var base2 = repository.TestPolymorphic.Base2.Load();
                 Assert.AreEqual("123, 321, 456, 654", TestUtility.DumpSorted(base2, item => item.Name2));
 
-                var base3 = repository.TestPolymorphic.Base3.All();
+                var base3 = repository.TestPolymorphic.Base3.Load();
                 Assert.AreEqual("abc-3, def-3", TestUtility.DumpSorted(base3, item => item.Name1));
 
                 // Testing specific implementation ID uniqueness:
@@ -351,7 +351,7 @@ namespace CommonConcepts.Test
 
                 // Testing specific implementation ID stability:
 
-                var secondRead = repository.TestPolymorphic.Base1.All();
+                var secondRead = repository.TestPolymorphic.Base1.Query();
                 Assert.AreEqual(
                     TestUtility.DumpSorted(base1IDs),
                     TestUtility.DumpSorted(secondRead, item => item.ID));
@@ -534,7 +534,7 @@ namespace CommonConcepts.Test
             using (var container = new RhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
-                repository.TestPolymorphic.DeactivatableEntity.Delete(repository.TestPolymorphic.DeactivatableEntity.All());
+                repository.TestPolymorphic.DeactivatableEntity.Delete(repository.TestPolymorphic.DeactivatableEntity.Query());
                 Assert.AreEqual("", TestUtility.DumpSorted(repository.TestPolymorphic.ActiveRecords.Query(), item => item.Name));
 
                 var d1 = new TestPolymorphic.DeactivatableEntity { Active = true, Name = "d1" };

@@ -44,9 +44,9 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var context = container.Resolve<Common.ExecutionContext>();
-                repository.DemoRowPermissions1.Document.Delete(repository.DemoRowPermissions1.Document.All());
-                repository.DemoRowPermissions1.Employee.Delete(repository.DemoRowPermissions1.Employee.All());
-                repository.DemoRowPermissions1.Division.Delete(repository.DemoRowPermissions1.Division.All());
+                repository.DemoRowPermissions1.Document.Delete(repository.DemoRowPermissions1.Document.Query());
+                repository.DemoRowPermissions1.Employee.Delete(repository.DemoRowPermissions1.Employee.Query());
+                repository.DemoRowPermissions1.Division.Delete(repository.DemoRowPermissions1.Division.Query());
 
                 var div1 = new DemoRowPermissions1.Division { Name = "div1" };
                 var div2 = new DemoRowPermissions1.Division { Name = "div2" };
@@ -114,13 +114,13 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var context = container.Resolve<Common.ExecutionContext>();
-                repository.DemoRowPermissions2.DocumentApproval.Delete(repository.DemoRowPermissions2.DocumentApproval.All());
-                repository.DemoRowPermissions2.DocumentComment.Delete(repository.DemoRowPermissions2.DocumentComment.All());
-                repository.DemoRowPermissions2.Document.Delete(repository.DemoRowPermissions2.Document.All());
-                repository.DemoRowPermissions2.RegionSupervisor.Delete(repository.DemoRowPermissions2.RegionSupervisor.All());
-                repository.DemoRowPermissions2.Employee.Delete(repository.DemoRowPermissions2.Employee.All());
-                repository.DemoRowPermissions2.Division.Delete(repository.DemoRowPermissions2.Division.All());
-                repository.DemoRowPermissions2.Region.Delete(repository.DemoRowPermissions2.Region.All());
+                repository.DemoRowPermissions2.DocumentApproval.Delete(repository.DemoRowPermissions2.DocumentApproval.Query());
+                repository.DemoRowPermissions2.DocumentComment.Delete(repository.DemoRowPermissions2.DocumentComment.Query());
+                repository.DemoRowPermissions2.Document.Delete(repository.DemoRowPermissions2.Document.Query());
+                repository.DemoRowPermissions2.RegionSupervisor.Delete(repository.DemoRowPermissions2.RegionSupervisor.Query());
+                repository.DemoRowPermissions2.Employee.Delete(repository.DemoRowPermissions2.Employee.Query());
+                repository.DemoRowPermissions2.Division.Delete(repository.DemoRowPermissions2.Division.Query());
+                repository.DemoRowPermissions2.Region.Delete(repository.DemoRowPermissions2.Region.Query());
 
                 var reg3 = new DemoRowPermissions2.Region { Name = "reg3" };
                 repository.DemoRowPermissions2.Region.Insert(new[] { reg3 });
@@ -249,13 +249,13 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var context = container.Resolve<Common.ExecutionContext>();
-                repository.DemoRowPermissions2.DocumentApproval.Delete(repository.DemoRowPermissions2.DocumentApproval.All());
-                repository.DemoRowPermissions2.DocumentComment.Delete(repository.DemoRowPermissions2.DocumentComment.All());
-                repository.DemoRowPermissions2.Document.Delete(repository.DemoRowPermissions2.Document.All());
-                repository.DemoRowPermissions2.RegionSupervisor.Delete(repository.DemoRowPermissions2.RegionSupervisor.All());
-                repository.DemoRowPermissions2.Employee.Delete(repository.DemoRowPermissions2.Employee.All());
-                repository.DemoRowPermissions2.Division.Delete(repository.DemoRowPermissions2.Division.All());
-                repository.DemoRowPermissions2.Region.Delete(repository.DemoRowPermissions2.Region.All());
+                repository.DemoRowPermissions2.DocumentApproval.Delete(repository.DemoRowPermissions2.DocumentApproval.Query());
+                repository.DemoRowPermissions2.DocumentComment.Delete(repository.DemoRowPermissions2.DocumentComment.Query());
+                repository.DemoRowPermissions2.Document.Delete(repository.DemoRowPermissions2.Document.Query());
+                repository.DemoRowPermissions2.RegionSupervisor.Delete(repository.DemoRowPermissions2.RegionSupervisor.Query());
+                repository.DemoRowPermissions2.Employee.Delete(repository.DemoRowPermissions2.Employee.Query());
+                repository.DemoRowPermissions2.Division.Delete(repository.DemoRowPermissions2.Division.Query());
+                repository.DemoRowPermissions2.Region.Delete(repository.DemoRowPermissions2.Region.Query());
 
                 var reg3 = new DemoRowPermissions2.Region { Name = "reg3" };
                 repository.DemoRowPermissions2.Region.Insert(new[] { reg3 });

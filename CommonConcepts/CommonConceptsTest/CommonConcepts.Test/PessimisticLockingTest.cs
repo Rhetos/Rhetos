@@ -54,14 +54,14 @@ namespace CommonConcepts.Test
                 var articleRepos = repository.TestPessimisticLocking.Article;
                 var lockRepos = repository.Common.ExclusiveLock;
 
-                var articles = articleRepos.All();
+                var articles = articleRepos.Load();
                 foreach (var article in articles)
                     container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache(article);
 
                 foreach (var article in articles)
                     article.Name = article.Name + "1";
                 articleRepos.Update(articles);
-                Assert.AreEqual("aaa1, bbb1", TestUtility.DumpSorted(articleRepos.All(), item => item.Name), "updated without locks");
+                Assert.AreEqual("aaa1, bbb1", TestUtility.DumpSorted(articleRepos.Query(), item => item.Name), "updated without locks");
 
                 foreach (var article in articles)
                     article.Name = article.Name + "2";
@@ -85,7 +85,7 @@ namespace CommonConcepts.Test
                 myLock.Workstation = container.Resolve<IUserInfo>().Workstation;
                 lockRepos.Update(new[] { myLock });
                 articleRepos.Update(articles);
-                Assert.AreEqual("aaa12, bbb12", TestUtility.DumpSorted(articleRepos.All(), item => item.Name), "updated with owned locks");
+                Assert.AreEqual("aaa12, bbb12", TestUtility.DumpSorted(articleRepos.Query(), item => item.Name), "updated with owned locks");
             }
         }
 
@@ -114,15 +114,15 @@ namespace CommonConcepts.Test
                 var articleRepos = repository.TestPessimisticLocking.Article;
                 var lockRepos = repository.Common.ExclusiveLock;
 
-                var groups = repository.TestPessimisticLocking.ArticleGroup.All().OrderBy(item => item.Name).ToArray();
-                var articles = articleRepos.All().OrderBy(item => item.Name).ToArray();
+                var groups = repository.TestPessimisticLocking.ArticleGroup.Load().OrderBy(item => item.Name).ToArray();
+                var articles = articleRepos.Load().OrderBy(item => item.Name).ToArray();
                 foreach (var article in articles)
                     container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache(article);
 
                 foreach (var article in articles)
                     article.Name = article.Name + "1";
                 articleRepos.Update(articles);
-                Assert.AreEqual("aaa1, bbb1", TestUtility.DumpSorted(articleRepos.All(), item => item.Name), "updated without locks");
+                Assert.AreEqual("aaa1, bbb1", TestUtility.DumpSorted(articleRepos.Query(), item => item.Name), "updated without locks");
 
                 // Update detail with locked parent:
 
@@ -149,7 +149,7 @@ namespace CommonConcepts.Test
                 myLock.Workstation = container.Resolve<IUserInfo>().Workstation;
                 lockRepos.Update(new[] { myLock });
                 articleRepos.Update(articles);
-                Assert.AreEqual("aaa12, bbb12", TestUtility.DumpSorted(articleRepos.All(), item => item.Name), "updated with OWNED parent lock");
+                Assert.AreEqual("aaa12, bbb12", TestUtility.DumpSorted(articleRepos.Query(), item => item.Name), "updated with OWNED parent lock");
 
                 // Remove detail from locked parent (by deleting or updating Parent reference):
 
@@ -165,7 +165,7 @@ namespace CommonConcepts.Test
                 myLock.UserName = container.Resolve<IUserInfo>().UserName;
                 lockRepos.Update(new[] { myLock });
                 articleRepos.Update(articles);
-                Assert.AreEqual("aaa12, bbb12", TestUtility.DumpSorted(articleRepos.All(), item => item.Name), "Updated with OWNED old parent lock");
+                Assert.AreEqual("aaa12, bbb12", TestUtility.DumpSorted(articleRepos.Query(), item => item.Name), "Updated with OWNED old parent lock");
 
                 // Insert new detail into locked parent:
 
@@ -177,7 +177,7 @@ namespace CommonConcepts.Test
                 myLock.UserName = container.Resolve<IUserInfo>().UserName;
                 lockRepos.Update(new[] { myLock });
                 articleRepos.Insert(new[] { newArticle });
-                Assert.AreEqual("aaa12, bbb12, ccc", TestUtility.DumpSorted(articleRepos.All(), item => item.Name), "Inserted with OWNED new parent lock");
+                Assert.AreEqual("aaa12, bbb12, ccc", TestUtility.DumpSorted(articleRepos.Query(), item => item.Name), "Inserted with OWNED new parent lock");
             }
         }
 
@@ -201,8 +201,8 @@ namespace CommonConcepts.Test
                 var lockRepos = repository.Common.ExclusiveLock;
                 var articleRepos = repository.TestPessimisticLocking.Article;
 
-                var group = repository.TestPessimisticLocking.ArticleGroup.All().Single();
-                var article = articleRepos.All().Single();
+                var group = repository.TestPessimisticLocking.ArticleGroup.Load().Single();
+                var article = articleRepos.Load().Single();
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache(group);
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache(article);
 
@@ -224,7 +224,7 @@ namespace CommonConcepts.Test
                 myLock.LockFinish = DateTime.Now.AddSeconds(-10);
                 lockRepos.Update(new[] { myLock });
                 articleRepos.Update(new[] { article });
-                Assert.AreEqual("aaa1", TestUtility.DumpSorted(articleRepos.All(), item => item.Name), "Inactive lock");
+                Assert.AreEqual("aaa1", TestUtility.DumpSorted(articleRepos.Query(), item => item.Name), "Inactive lock");
 
                 // Active and past lock on parent:
 
@@ -244,7 +244,7 @@ namespace CommonConcepts.Test
                 myLock.LockFinish = DateTime.Now.AddSeconds(-10);
                 lockRepos.Update(new[] { myLock });
                 articleRepos.Update(new[] { article });
-                Assert.AreEqual("aaa12", TestUtility.DumpSorted(articleRepos.All(), item => item.Name), "Inactive parent lock");
+                Assert.AreEqual("aaa12", TestUtility.DumpSorted(articleRepos.Query(), item => item.Name), "Inactive parent lock");
 
             }
         }
@@ -275,10 +275,10 @@ namespace CommonConcepts.Test
                     });
 
                 var repository = container.Resolve<Common.DomRepository>();
-                var article = repository.TestPessimisticLocking.Article.All().Single();
+                var article = repository.TestPessimisticLocking.Article.Load().Single();
 
                 TestSetLock(new Common.SetLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = article.ID }, repository, container.Resolve<IUserInfo>());
-                var myLock = repository.Common.ExclusiveLock.All().Single();
+                var myLock = repository.Common.ExclusiveLock.Load().Single();
                 Assert.AreEqual("TestPessimisticLocking.Article", myLock.ResourceType);
                 Assert.AreEqual(article.ID, myLock.ResourceID);
                 Assert.AreEqual(container.Resolve<IUserInfo>().UserName, myLock.UserName);
@@ -305,7 +305,7 @@ namespace CommonConcepts.Test
                     });
 
                 var repository = container.Resolve<Common.DomRepository>();
-                var article = repository.TestPessimisticLocking.Article.All().Single();
+                var article = repository.TestPessimisticLocking.Article.Load().Single();
 
                 var oldLock = new Common.ExclusiveLock
                 {
@@ -339,7 +339,7 @@ namespace CommonConcepts.Test
                     });
 
                 var repository = container.Resolve<Common.DomRepository>();
-                var article = repository.TestPessimisticLocking.Article.All().Single();
+                var article = repository.TestPessimisticLocking.Article.Load().Single();
 
                 var oldLock = new Common.ExclusiveLock
                 {
@@ -353,7 +353,7 @@ namespace CommonConcepts.Test
                 repository.Common.ExclusiveLock.Insert(new[] { oldLock });
 
                 TestSetLock(new Common.SetLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = article.ID }, repository, container.Resolve<IUserInfo>());
-                var myLock = repository.Common.ExclusiveLock.All().Single();
+                var myLock = repository.Common.ExclusiveLock.Load().Single();
                 Assert.AreEqual("TestPessimisticLocking.Article", myLock.ResourceType);
                 Assert.AreEqual(article.ID, myLock.ResourceID);
                 Assert.AreEqual(container.Resolve<IUserInfo>().UserName, myLock.UserName);
@@ -381,7 +381,7 @@ namespace CommonConcepts.Test
 
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var article = repository.TestPessimisticLocking.Article.All().Single();
+                var article = repository.TestPessimisticLocking.Article.Load().Single();
 
                 var oldLock = new Common.ExclusiveLock
                 {
@@ -395,7 +395,7 @@ namespace CommonConcepts.Test
                 repository.Common.ExclusiveLock.Insert(new[] { oldLock });
 
                 TestSetLock(new Common.SetLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = article.ID }, repository, container.Resolve<IUserInfo>());
-                var myLock = repository.Common.ExclusiveLock.All().Single();
+                var myLock = repository.Common.ExclusiveLock.Load().Single();
                 Assert.AreEqual("TestPessimisticLocking.Article", myLock.ResourceType);
                 Assert.AreEqual(article.ID, myLock.ResourceID);
                 Assert.AreEqual(container.Resolve<IUserInfo>().UserName, myLock.UserName);
@@ -427,7 +427,7 @@ namespace CommonConcepts.Test
                     });
 
                 var repository = container.Resolve<Common.DomRepository>();
-                var article = repository.TestPessimisticLocking.Article.All().Single();
+                var article = repository.TestPessimisticLocking.Article.Load().Single();
 
                 TestReleaseLock(new Common.ReleaseLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = article.ID }, repository, container.Resolve<IUserInfo>());
                 Assert.AreEqual(0, repository.Common.ExclusiveLock.Query().Count());
@@ -471,7 +471,7 @@ namespace CommonConcepts.Test
                     });
 
                 var repository = container.Resolve<Common.DomRepository>();
-                var article = repository.TestPessimisticLocking.Article.All().Single();
+                var article = repository.TestPessimisticLocking.Article.Load().Single();
 
                 var oldLock = new Common.ExclusiveLock
                 {

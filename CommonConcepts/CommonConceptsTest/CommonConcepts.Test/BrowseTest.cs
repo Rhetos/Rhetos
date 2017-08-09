@@ -152,7 +152,7 @@ namespace CommonConcepts.Test.OldConcepts
                     });
 
                 Assert.AreEqual("123 123 abc abc", TestUtility.DumpSorted(
-                    repository.TestBrowse.SFMulti.All(), item => item.Code1 + " " + item.Code2 + " " + item.RefName1 + " " + item.RefName2));
+                    repository.TestBrowse.SFMulti.Query(), item => item.Code1 + " " + item.Code2 + " " + item.RefName1 + " " + item.RefName2));
             }
         }
 

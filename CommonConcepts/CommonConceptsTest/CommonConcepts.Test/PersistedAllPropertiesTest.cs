@@ -93,7 +93,7 @@ namespace CommonConcepts.Test
 
                 repository.TestAllProperties.TestAllPropertiesCopyAllFeatures.Recompute();
                 Assert.AreEqual("", TestUtility.DumpSorted(
-                    repository.TestAllProperties.UsesImplicitlyCreatedProperties.All(), item => item.ComputedName), "initial state");
+                    repository.TestAllProperties.UsesImplicitlyCreatedProperties.Query(), item => item.ComputedName), "initial state");
 
                 var parentId = Guid.NewGuid();
                 repository.TestAllProperties.Parent.Insert(new[] { new TestAllProperties.Parent { ID = parentId } });
@@ -104,7 +104,7 @@ namespace CommonConcepts.Test
 
                 repository.TestAllProperties.TestAllPropertiesCopyAllFeatures.Recompute();
                 Assert.AreEqual("abc", TestUtility.DumpSorted(
-                    repository.TestAllProperties.UsesImplicitlyCreatedProperties.All(), item => item.ComputedName), "after persisting data from 'Source' to 'TestAllPropertiesCopyAllFeatures'.");
+                    repository.TestAllProperties.UsesImplicitlyCreatedProperties.Query(), item => item.ComputedName), "after persisting data from 'Source' to 'TestAllPropertiesCopyAllFeatures'.");
             }
         }
     }

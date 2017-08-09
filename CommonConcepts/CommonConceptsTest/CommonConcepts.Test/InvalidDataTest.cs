@@ -35,7 +35,7 @@ namespace CommonConcepts.Test
     {
         private static void AssertData(Common.DomRepository repository, string expected)
         {
-            Assert.AreEqual(expected, TestUtility.DumpSorted(repository.TestInvalidData.Simple.All(), item => item.Name));
+            Assert.AreEqual(expected, TestUtility.DumpSorted(repository.TestInvalidData.Simple.Query(), item => item.Name));
         }
 
         private static TestInvalidData.Simple[] CreateSimple(params int[] data)

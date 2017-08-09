@@ -43,7 +43,7 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new BasicEnt { Name = "ttt" };
                 repository.TestDeactivatable.BasicEnt.Insert(new[] { entity });
-                Assert.AreEqual(true, repository.TestDeactivatable.BasicEnt.All().Single().Active);
+                Assert.AreEqual(true, repository.TestDeactivatable.BasicEnt.Load().Single().Active);
             }
         }
 
@@ -67,7 +67,7 @@ namespace CommonConcepts.Test
 
                 Assert.AreEqual(
                     "a , b False, c , d True",
-                    TestUtility.DumpSorted(repository.TestDeactivatable.BasicEnt.All(), item => item.Name + " " + item.Active));
+                    TestUtility.DumpSorted(repository.TestDeactivatable.BasicEnt.Query(), item => item.Name + " " + item.Active));
 
                 var e1 = new BasicEnt { ID = id1, Name = "a2", Active = false };
                 var e2 = new BasicEnt { ID = id2, Name = "b2" };
@@ -75,7 +75,7 @@ namespace CommonConcepts.Test
                 var e4 = new BasicEnt { ID = id4, Name = "d2" };
                 repository.TestDeactivatable.BasicEnt.Update(new[] { e1, e2, e3, e4 });
 
-                var afterUpdate = repository.TestDeactivatable.BasicEnt.All();
+                var afterUpdate = repository.TestDeactivatable.BasicEnt.Query();
                 Assert.AreEqual(
                     "a2 False, b2 False, c2 True, d2 True",
                     TestUtility.DumpSorted(afterUpdate, item => item.Name + " " + item.Active));

@@ -56,7 +56,7 @@ namespace CommonConcepts.Test
             using (var container = new RhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
-                Assert.AreEqual("1a, 2b", TestUtility.DumpSorted(repository.Test10.Source.All(), item => item.i + item.s));
+                Assert.AreEqual("1a, 2b", TestUtility.DumpSorted(repository.Test10.Source.Query(), item => item.i + item.s));
             }
         }
 
@@ -66,7 +66,7 @@ namespace CommonConcepts.Test
             using (var container = new RhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
-                var source = repository.Test10.Source.All().OrderBy(item => item.i).ToArray();
+                var source = repository.Test10.Source.Load().OrderBy(item => item.i).ToArray();
                 Assert.AreEqual("2b", TestUtility.DumpSorted(repository.Test10.Source.Filter(new [] { source[1].ID }), item => item.i + item.s));
             }
         }
@@ -486,7 +486,7 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
-                repository.TestFilter.ExternalFilter.Delete(repository.TestFilter.ExternalFilter.All());
+                repository.TestFilter.ExternalFilter.Delete(repository.TestFilter.ExternalFilter.Query());
                 repository.TestFilter.ExternalFilter.Insert(
                     new[] { "str", "snull", "date", "dnull", "ddef" }
                     .Select(name => new TestFilter.ExternalFilter { Name = name }));
@@ -543,8 +543,8 @@ namespace CommonConcepts.Test
             using (var container = new RhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
-                repository.TestFilter.AutoFilter1.Delete(repository.TestFilter.AutoFilter1.All());
-                repository.TestFilter.AutoFilter2.Delete(repository.TestFilter.AutoFilter2.All());
+                repository.TestFilter.AutoFilter1.Delete(repository.TestFilter.AutoFilter1.Query());
+                repository.TestFilter.AutoFilter2.Delete(repository.TestFilter.AutoFilter2.Query());
 
                 repository.TestFilter.AutoFilter1.Insert(
                     new[] { "a1", "a2", "b1", "b2" }
@@ -554,9 +554,9 @@ namespace CommonConcepts.Test
                     new[] { "a1", "a2", "b1", "b2" }
                     .Select(name => new TestFilter.AutoFilter2 { Name = name }));
 
-                Assert.AreEqual("a1, a2, b1, b2", TestUtility.DumpSorted(repository.TestFilter.AutoFilter1.All(), item => item.Name));
-                Assert.AreEqual("a1, a2, b1, b2", TestUtility.DumpSorted(repository.TestFilter.AutoFilter2.All(), item => item.Name));
-                Assert.AreEqual("a1, a2, b1, b2", TestUtility.DumpSorted(repository.TestFilter.AutoFilter2Browse.All(), item => item.Name2));
+                Assert.AreEqual("a1, a2, b1, b2", TestUtility.DumpSorted(repository.TestFilter.AutoFilter1.Query(), item => item.Name));
+                Assert.AreEqual("a1, a2, b1, b2", TestUtility.DumpSorted(repository.TestFilter.AutoFilter2.Query(), item => item.Name));
+                Assert.AreEqual("a1, a2, b1, b2", TestUtility.DumpSorted(repository.TestFilter.AutoFilter2Browse.Query(), item => item.Name2));
 
                 var gr = container.Resolve<GenericRepositories>();
 
@@ -572,8 +572,8 @@ namespace CommonConcepts.Test
             using (var container = new RhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
-                repository.TestFilter.AutoFilter1.Delete(repository.TestFilter.AutoFilter1.All());
-                repository.TestFilter.AutoFilter2.Delete(repository.TestFilter.AutoFilter2.All());
+                repository.TestFilter.AutoFilter1.Delete(repository.TestFilter.AutoFilter1.Query());
+                repository.TestFilter.AutoFilter2.Delete(repository.TestFilter.AutoFilter2.Query());
 
                 repository.TestFilter.AutoFilter1.Insert(
                     new[] { "a1", "a2", "b1", "b2" }
@@ -611,8 +611,8 @@ namespace CommonConcepts.Test
             using (var container = new RhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
-                repository.TestFilter.AutoFilter1.Delete(repository.TestFilter.AutoFilter1.All());
-                repository.TestFilter.AutoFilter2.Delete(repository.TestFilter.AutoFilter2.All());
+                repository.TestFilter.AutoFilter1.Delete(repository.TestFilter.AutoFilter1.Query());
+                repository.TestFilter.AutoFilter2.Delete(repository.TestFilter.AutoFilter2.Query());
 
                 repository.TestFilter.AutoFilter1.Insert(
                     new[] { "a1", "a2", "b1", "b2" }
@@ -650,8 +650,8 @@ namespace CommonConcepts.Test
             using (var container = new RhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
-                repository.TestFilter.AutoFilter1.Delete(repository.TestFilter.AutoFilter1.All());
-                repository.TestFilter.AutoFilter2.Delete(repository.TestFilter.AutoFilter2.All());
+                repository.TestFilter.AutoFilter1.Delete(repository.TestFilter.AutoFilter1.Query());
+                repository.TestFilter.AutoFilter2.Delete(repository.TestFilter.AutoFilter2.Query());
 
                 repository.TestFilter.AutoFilter1.Insert(
                     new[] { "a1", "a2", "b1", "b2" }

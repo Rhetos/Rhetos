@@ -166,7 +166,9 @@ namespace CommonConcepts.Test
                 Action<string, IEnumerable<object>> testType = (testName, items) =>
                     Assert.AreEqual("TestLazyLoad.SimpleBase", items.First().GetType().ToString(), testName);
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 testType("All", simpleBase.All());
+#pragma warning restore CS0618 // Type or member is obsolete
                 testType("Load", simpleBase.Load());
                 testType("Load Expression", simpleBase.Load(item => true));
                 testType("Load FilterAll", simpleBase.Load(new FilterAll()));

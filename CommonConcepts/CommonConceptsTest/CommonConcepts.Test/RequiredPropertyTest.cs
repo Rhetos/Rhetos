@@ -42,7 +42,7 @@ namespace CommonConcepts.Test
 
                 repository.TestRequired.Simple.Insert(new[] { new TestRequired.Simple { Count = 1, Name = "test1" } });
                 repository.TestRequired.Simple.Insert(new[] { new TestRequired.Simple { Count = 0, Name = "test2" } });
-                Assert.AreEqual("0-test2, 1-test1", TestUtility.DumpSorted(repository.TestRequired.Simple.All(), item => item.Count + "-" + item.Name));
+                Assert.AreEqual("0-test2, 1-test1", TestUtility.DumpSorted(repository.TestRequired.Simple.Query(), item => item.Count + "-" + item.Name));
             }
         }
 

@@ -45,8 +45,8 @@ namespace CommonConcepts.Test
                 var repositories = container.Resolve<Common.DomRepository>();
                 var itemsRepository = repositories.TestRowPermissions.RPRulesItem;
                 var groupsRepository = repositories.TestRowPermissions.RPRulesGroup;
-                itemsRepository.Delete(itemsRepository.All());
-                groupsRepository.Delete(groupsRepository.All());
+                itemsRepository.Delete(itemsRepository.Query());
+                groupsRepository.Delete(groupsRepository.Query());
 
                 var g1 = new RPRulesGroup { ID = Guid.NewGuid(), Name = "g1" };
                 var g2 = new RPRulesGroup { ID = Guid.NewGuid(), Name = "g2" };
@@ -75,8 +75,8 @@ namespace CommonConcepts.Test
                 var repositories = container.Resolve<Common.DomRepository>();
                 var itemsRepository = repositories.TestRowPermissions.RPRulesItem;
                 var groupsRepository = repositories.TestRowPermissions.RPRulesGroup;
-                itemsRepository.Delete(itemsRepository.All());
-                groupsRepository.Delete(groupsRepository.All());
+                itemsRepository.Delete(itemsRepository.Query());
+                groupsRepository.Delete(groupsRepository.Query());
 
                 var g1 = new RPRulesGroup { ID = Guid.NewGuid(), Name = "g1" };
                 var g2 = new RPRulesGroup { ID = Guid.NewGuid(), Name = "g2" };
@@ -113,8 +113,8 @@ namespace CommonConcepts.Test
                 var repositories = container.Resolve<Common.DomRepository>();
                 var itemsRepository = repositories.TestRowPermissions.RPRulesItem;
                 var groupsRepository = repositories.TestRowPermissions.RPRulesGroup;
-                itemsRepository.Delete(itemsRepository.All());
-                groupsRepository.Delete(groupsRepository.All());
+                itemsRepository.Delete(itemsRepository.Query());
+                groupsRepository.Delete(groupsRepository.Query());
 
                 var g1 = new RPRulesGroup { ID = Guid.NewGuid(), Name = "g1" };
                 var g2 = new RPRulesGroup { ID = Guid.NewGuid(), Name = "g2" };
@@ -165,9 +165,9 @@ namespace CommonConcepts.Test
                 var babyRepo = repositories.TestRowPermissions.Baby;
                 var browseRepo = repositories.TestRowPermissions.ParentBrowse;
 
-                babyRepo.Delete(babyRepo.All());
-                childRepo.Delete(childRepo.All());
-                parentRepo.Delete(parentRepo.All());
+                babyRepo.Delete(babyRepo.Query());
+                childRepo.Delete(childRepo.Query());
+                parentRepo.Delete(parentRepo.Query());
 
                 parentRepo.Insert(new Parent[] { pReadAllow, pReadDeny, pWriteAllow, pWriteDeny });
                 childRepo.Insert(new Child[] { cParentReadAllow, cParentReadDeny, cParentWriteAllow, cParentWriteDeny });
@@ -222,34 +222,34 @@ namespace CommonConcepts.Test
                 var saveCommand = commandImplementations.GetImplementations(typeof(SaveEntityCommandInfo)).Single();
 
                 {
-                    emptyRP.Delete(emptyRP.All());
+                    emptyRP.Delete(emptyRP.Query());
                     var saveInfo = new SaveEntityCommandInfo() {Entity = "TestRowPermissions.RPWriteRulesEmpty"};
                     saveInfo.DataToInsert = new[] {new RPWriteRulesEmpty()};
                     TestUtility.ShouldFail(() => saveCommand.Execute(saveInfo), _writeException);
                 }
                 {
-                    writeRP.Delete(writeRP.All());
+                    writeRP.Delete(writeRP.Query());
                     var saveInfo = new SaveEntityCommandInfo() { Entity = "TestRowPermissions.RPWriteRules" };
                     saveInfo.DataToInsert = (new[] {10}).Select(item => new RPWriteRules() {value = item}).ToArray();
                     TestUtility.ShouldFail(() => saveCommand.Execute(saveInfo), _writeException);
                 }
 
                 {
-                    writeRP.Delete(writeRP.All());
+                    writeRP.Delete(writeRP.Query());
                     var saveInfo = new SaveEntityCommandInfo() { Entity = "TestRowPermissions.RPWriteRules" };
                     saveInfo.DataToInsert = (new[] { 5 }).Select(item => new RPWriteRules() { value = item }).ToArray();
                     TestUtility.ShouldFail(() => saveCommand.Execute(saveInfo), _writeException);
                 }
 
                 {
-                    writeRP.Delete(writeRP.All());
+                    writeRP.Delete(writeRP.Query());
                     var saveInfo = new SaveEntityCommandInfo() { Entity = "TestRowPermissions.RPWriteRules" };
                     saveInfo.DataToInsert = (new[] { 1, 2, 8 }).Select(item => new RPWriteRules() { value = item }).ToArray();
                     TestUtility.ShouldFail(() => saveCommand.Execute(saveInfo), _writeException);
                 }
 
                 {
-                    writeRP.Delete(writeRP.All());
+                    writeRP.Delete(writeRP.Query());
                     var saveInfo = new SaveEntityCommandInfo() { Entity = "TestRowPermissions.RPWriteRules" };
                     saveInfo.DataToDelete = (new[] { 7 }).Select(item => new RPWriteRules() { value = item, ID = Guid.NewGuid()}).ToArray();
                     writeRP.Insert((RPWriteRules[])saveInfo.DataToDelete);
@@ -258,19 +258,19 @@ namespace CommonConcepts.Test
                 }
 
                 {
-                    writeRP.Delete(writeRP.All());
+                    writeRP.Delete(writeRP.Query());
                     var saveInfo = new SaveEntityCommandInfo() { Entity = "TestRowPermissions.RPWriteRules" };
                     saveInfo.DataToInsert = (new[] { 1, 2, 3, 4, 6, 9 }).Select(item => new RPWriteRules() { value = item, ID = Guid.NewGuid() }).ToArray();
                     saveCommand.Execute(saveInfo);
                     saveInfo.DataToDelete = saveInfo.DataToInsert;
                     saveInfo.DataToInsert = null;
                     saveCommand.Execute(saveInfo);
-                    Assert.AreEqual(0, writeRP.All().Count());
+                    Assert.AreEqual(0, writeRP.Query().Count());
                 }
 
                 // update to legal
                 {
-                    writeRP.Delete(writeRP.All());
+                    writeRP.Delete(writeRP.Query());
                     var saveInfo = new SaveEntityCommandInfo() { Entity = "TestRowPermissions.RPWriteRules" };
                     var items = (new[] { 12 }).Select(item => new RPWriteRules() { value = item, ID = Guid.NewGuid() }).ToArray();
                     writeRP.Insert(items);
@@ -281,7 +281,7 @@ namespace CommonConcepts.Test
 
                 // update from legal
                 {
-                    writeRP.Delete(writeRP.All());
+                    writeRP.Delete(writeRP.Query());
                     var saveInfo = new SaveEntityCommandInfo() { Entity = "TestRowPermissions.RPWriteRules" };
                     var items = (new[] { 1 }).Select(item => new RPWriteRules() { value = item, ID = Guid.NewGuid() }).ToArray();
                     writeRP.Insert(items);
@@ -291,7 +291,7 @@ namespace CommonConcepts.Test
                 }
 
                 {
-                    writeRP.Delete(writeRP.All());
+                    writeRP.Delete(writeRP.Query());
                     var saveInfo = new SaveEntityCommandInfo() { Entity = "TestRowPermissions.RPWriteRules" };
                     var items = (new[] { 1 }).Select(item => new RPWriteRules() { value = item, ID = Guid.NewGuid() }).ToArray();
                     writeRP.Insert(items);
@@ -301,7 +301,7 @@ namespace CommonConcepts.Test
                 }
 
                 {
-                    writeRP.Delete(writeRP.All());
+                    writeRP.Delete(writeRP.Query());
                     var saveInfo = new SaveEntityCommandInfo() { Entity = "TestRowPermissions.RPWriteRules" };
                     saveInfo.DataToInsert = (new[] { 20 }).Select(item => new RPWriteRules() { value = item, ID = Guid.NewGuid() }).ToArray();
 

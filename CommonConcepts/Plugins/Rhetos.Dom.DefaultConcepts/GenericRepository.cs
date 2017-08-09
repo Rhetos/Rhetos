@@ -264,7 +264,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     return readingMethod();
             }
 
-            // If the parameter is FilterAll, unless explicitly implemented above, use All() or Query() if any option exists
+            // If the parameter is FilterAll, unless explicitly implemented above, use Load() or Query() if any option exists
             if (typeof(FilterAll).IsAssignableFrom(parameterType))
             {
                 var options = new ReadingOptions {
@@ -272,7 +272,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         var reader = Reflection.RepositoryLoadMethod;
                         if (reader == null) return null;
                         return () => {
-                            _logger.Trace(() => "Reading using All()");
+                            _logger.Trace(() => "Reading using Load()");
                             return (IEnumerable<TEntityInterface>)reader.InvokeEx(_repository.Value);
                         };
                     },

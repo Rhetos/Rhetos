@@ -511,7 +511,7 @@ namespace CommonConcepts.Test
                 var expected = Enumerable.Range(1, 2);
                 Assert.AreEqual(TestUtility.DumpSorted(expected), TestUtility.DumpSorted(generatedCodes));
 
-                var codeByProcessReport = TestUtility.Dump(repository.All()
+                var codeByProcessReport = TestUtility.Dump(repository.Query()
                     .OrderBy(item => item.Code)
                     .Take(4)
                     .Select(item => item.Data + ":" + item.Code));
@@ -554,7 +554,7 @@ namespace CommonConcepts.Test
                         var expected = new[] { "a1", "b1" };
                         Assert.AreEqual(TestUtility.DumpSorted(expected), TestUtility.DumpSorted(generatedCodes));
 
-                        var codeByProcessReport = TestUtility.Dump(repository.All()
+                        var codeByProcessReport = TestUtility.Dump(repository.Query()
                             .OrderBy(item => item.Code)
                             .Take(4)
                             .Select(item => item.Data + ":" + item.Code));

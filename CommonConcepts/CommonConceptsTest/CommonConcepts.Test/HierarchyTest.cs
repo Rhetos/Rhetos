@@ -35,7 +35,7 @@ namespace CommonConcepts.Test
     {
         private static void PrepareSimpleData(Common.DomRepository repository, string treeDescription)
         {
-            repository.TestHierarchy.Simple.Delete(repository.TestHierarchy.Simple.All());
+            repository.TestHierarchy.Simple.Delete(repository.TestHierarchy.Simple.Load());
 
             var items = new Dictionary<string, TestHierarchy.Simple>();
 
@@ -327,7 +327,7 @@ namespace CommonConcepts.Test
                 repository.TestHierarchy.WithPath.Insert(new[] { h1, h11, h12, h121, h2 });
 
                 Assert.AreEqual("h1, h1 - h11, h1 - h12, h1 - h12 - h121, h2",
-                    TestUtility.DumpSorted(repository.TestHierarchy.BrowseWithPath.All(), item => item.GroupSequence));
+                    TestUtility.DumpSorted(repository.TestHierarchy.BrowseWithPath.Query(), item => item.GroupSequence));
 
             }
         }

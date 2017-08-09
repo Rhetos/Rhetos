@@ -45,7 +45,7 @@ namespace CommonConcepts.Test
 
         private static string ReportCachingTestView(Common.DomRepository repository)
         {
-            return string.Join(", ", repository.TestDataStructure.CachingTestView.All().Select(item => item.S).OrderBy(x => x));
+            return string.Join(", ", repository.TestDataStructure.CachingTestView.Query().Select(item => item.S).OrderBy(x => x));
         }
 
         [TestMethod]

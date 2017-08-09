@@ -17,14 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
-using Rhetos.Configuration.Autofac;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace CommonConcepts.Test
 {
@@ -220,7 +221,7 @@ namespace CommonConcepts.Test
                     "INSERT INTO TestDenyUserEdit.Hardcoded (Name) VALUES ('abc')" });
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var item = repository.TestDenyUserEdit.Hardcoded.All().Single();
+                var item = repository.TestDenyUserEdit.Hardcoded.Load().Single();
                 Assert.AreEqual("abc", item.Name);
                 TestUtility.ShouldFail(
                     () => repository.TestDenyUserEdit.Hardcoded.Save(null, null, new[] { item }, true),
@@ -238,7 +239,7 @@ namespace CommonConcepts.Test
                     "INSERT INTO TestDenyUserEdit.Hardcoded (Name) VALUES ('abc')" });
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var item = repository.TestDenyUserEdit.Hardcoded.All().Single();
+                var item = repository.TestDenyUserEdit.Hardcoded.Load().Single();
                 Assert.AreEqual("abc", item.Name);
                 item.Name += "x";
                 TestUtility.ShouldFail(

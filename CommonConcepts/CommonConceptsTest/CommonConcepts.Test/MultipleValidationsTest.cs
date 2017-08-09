@@ -45,7 +45,7 @@ namespace CommonConcepts.Test
                     "DELETE FROM TestMultipleLock.PassDependency",
                     "INSERT INTO TestMultipleLock.PassDependency (ID, MinPassLength) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 5)"});
                 var repository = container.Resolve<Common.DomRepository>();
-                var pd = repository.TestMultipleLock.PassDependency.All().SingleOrDefault();
+                var pd = repository.TestMultipleLock.PassDependency.Load().SingleOrDefault();
                 var s1 = new TestMultipleLock.Simple { ID = Guid.NewGuid(), PassDependencyID = pd.ID, UserName = "test", Pass = "1.a" };
 
                 TestUtility.ShouldFail(() => repository.TestMultipleLock.Simple.Insert(new[] { s1 }), "Pass is too short.");
@@ -63,7 +63,7 @@ namespace CommonConcepts.Test
                     "DELETE FROM TestMultipleLock.PassDependency",
                     "INSERT INTO TestMultipleLock.PassDependency (ID, MinPassLength) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 5)"});
                 var repository = container.Resolve<Common.DomRepository>();
-                var pd = repository.TestMultipleLock.PassDependency.All().SingleOrDefault();
+                var pd = repository.TestMultipleLock.PassDependency.Load().SingleOrDefault();
                 var s1 = new TestMultipleLock.Simple { ID = Guid.NewGuid(), PassDependencyID = pd.ID, UserName = "test", Pass = "123467" };
                 TestUtility.ShouldFail(() => repository.TestMultipleLock.Simple.Insert(new[] { s1 }), "Pass is not valid.");
             }
@@ -81,7 +81,7 @@ namespace CommonConcepts.Test
                     "DELETE FROM TestMultipleLock.PassDependency",
                     "INSERT INTO TestMultipleLock.PassDependency (ID, MinPassLength) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 5)"});
                 var repository = container.Resolve<Common.DomRepository>();
-                var pd = repository.TestMultipleLock.PassDependency.All().SingleOrDefault();
+                var pd = repository.TestMultipleLock.PassDependency.Load().SingleOrDefault();
                 var s1 = new TestMultipleLock.Simple { ID = Guid.NewGuid(), PassDependencyID = pd.ID, UserName = "test", Pass = "123467..;aaaas" };
                 repository.TestMultipleLock.Simple.Insert(new[] { s1 });
             }
@@ -99,7 +99,7 @@ namespace CommonConcepts.Test
                     "DELETE FROM TestMultipleLock.PassDependency",
                     "INSERT INTO TestMultipleLock.PassDependency (ID, MinPassLength) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 5)"});
                 var repository = container.Resolve<Common.DomRepository>();
-                var pd = repository.TestMultipleLock.PassDependency.All().SingleOrDefault();
+                var pd = repository.TestMultipleLock.PassDependency.Load().SingleOrDefault();
                 var s1 = new TestMultipleLock.Simple { ID = Guid.NewGuid(), PassDependencyID = pd.ID, UserName = "test", Pass = "123467..;atestaaas" };
                 TestUtility.ShouldFail(() => repository.TestMultipleLock.Simple.Insert(new[] { s1 }), "Pass cannot contain UserName.");
             }

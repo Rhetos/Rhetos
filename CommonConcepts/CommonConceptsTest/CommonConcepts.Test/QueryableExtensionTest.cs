@@ -117,7 +117,7 @@ namespace CommonConcepts.Test
                         "INSERT INTO Test11.Source (Name) SELECT 'b';"
                     });
 
-                var browse = repository.Test11.QEBrowse.All();
+                var browse = repository.Test11.QEBrowse.Query();
                 Assert.AreEqual("a ax, b bx", TestUtility.DumpSorted(browse, item => item.Name + " " + item.Info));
             }
         }
@@ -141,7 +141,7 @@ namespace CommonConcepts.Test
                 string expected = string.Format("a {0}, b {0}", userInfo.UserName);
                 Console.WriteLine(expected);
 
-                Assert.AreEqual(expected, TestUtility.DumpSorted(repository.Test11.QEContext.All(), item => item.UserInfo));
+                Assert.AreEqual(expected, TestUtility.DumpSorted(repository.Test11.QEContext.Query(), item => item.UserInfo));
             }
         }
     }
