@@ -132,6 +132,7 @@
     <Compile Include="DataStructure\Writing\SaveMethodInitializationCodeGenerator.cs" />
     <Compile Include="DataStructure\Writing\OnSaveValidateCodeGenerator.cs" />
     <Compile Include="Authorization\DeactivateClaimsCodeGenerator.cs" />
+    <Compile Include="DomHelper.cs" />
     <Compile Include="KeepSynchronizedHelper.cs" />
     <Compile Include="Persistence\DatabaseExtensionFunctionsMapping.cs" />
     <Compile Include="Persistence\EntityFrameworkGenerateMetadataFiles.cs" />

@@ -123,6 +123,28 @@ namespace Rhetos.Utilities.Test
             });
         }
 
+        [TestMethod]
+        public void InterpretPrimaryKeyConstraint()
+        {
+            TestInterpretedException(new ListOfTuples<Exception, string>
+            {
+                // SQL2016:
+                {
+                    NewSqlException(
+                        "Violation of PRIMARY KEY constraint 'PK_Principal'. Cannot insert duplicate key in object 'Common.Principal'. The duplicate key value is (d28a180d-96da-478f-ad7a-e9a071833bad).\r\nThe statement has been terminated.",
+                        2627, 14, 1),
+                    "ClientException: It is not allowed to enter a duplicate record., Constraint=Primary key, ConstraintName=PK_Principal, DuplicateValue=d28a180d-96da-478f-ad7a-e9a071833bad, Table=Common.Principal"
+                },
+                // SQL2000:
+                {
+                    NewSqlException(
+                        "Violation of PRIMARY KEY constraint 'PK_Principal'. Cannot insert duplicate key in object 'Common.Principal'.",
+                        2627, 14, 1),
+                    "ClientException: It is not allowed to enter a duplicate record., Constraint=Primary key, ConstraintName=PK_Principal, Table=Common.Principal"
+                },
+            });
+        }
+
         private void TestInterpretedException(ListOfTuples<Exception, string> tests)
         {
             var msSqlUtility = new MsSqlUtility();

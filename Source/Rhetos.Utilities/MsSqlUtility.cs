@@ -156,6 +156,27 @@ namespace Rhetos.Utilities
                 }
             }
 
+            //=========================
+            // Detect PRIMARY KEY constraint:
+
+            if (sqlException.Number == 2627 && sqlException.Message.StartsWith("Violation of PRIMARY KEY constraint"))
+            {
+                Regex messageParser = new Regex(@"^Violation of PRIMARY KEY constraint '(.+)'\. Cannot insert duplicate key in object '(.+)'\.( The duplicate key value is \((.+)\)\.)?");
+                var parts = messageParser.Match(sqlException.Message).Groups;
+
+                var interpretedException = new FrameworkException(InsertingDuplicateIdMessage, exception);
+
+                interpretedException.Info["Constraint"] = "Primary key";
+                if (parts[1].Success)
+                    interpretedException.Info["ConstraintName"] = parts[1].Value;
+                if (parts[2].Success)
+                    interpretedException.Info["Table"] = parts[2].Value;
+                if (parts[4].Success)
+                    interpretedException.Info["DuplicateValue"] = parts[4].Value;
+
+                return interpretedException;
+            }
+
             return null;
         }
 
@@ -195,6 +216,7 @@ namespace Rhetos.Utilities
                 && (info.GetValueOrDefault("ReferencedColumn") as string) == referencedColumn
                 && (info.GetValueOrDefault("ConstraintName") as string) == constraintName;
         }
+
         public static bool IsReferenceErrorOnDelete(RhetosException interpretedException, string dependentTable, string dependentColumn, string constraintName)
         {
             if (interpretedException == null)
@@ -207,6 +229,20 @@ namespace Rhetos.Utilities
                 && (info.GetValueOrDefault("DependentTable") as string) == dependentTable
                 && (info.GetValueOrDefault("DependentColumn") as string) == dependentColumn
                 && (info.GetValueOrDefault("ConstraintName") as string) == constraintName;
+        }
+
+        private const string InsertingDuplicateIdMessage = "Inserting a record that already exists.";
+
+        public static void ThrowIfPrimaryKeyErrorOnInsert(RhetosException interpretedException, string tableName)
+        {
+            if (interpretedException != null
+                && interpretedException.Info != null
+                && (interpretedException.Info.GetValueOrDefault("Constraint") as string) == "Primary key"
+                && (interpretedException.Info.GetValueOrDefault("Table") as string) == tableName)
+            {
+                string pkValue = interpretedException.Info.GetValueOrDefault("DuplicateValue") as string;
+                throw new ClientException(InsertingDuplicateIdMessage + (pkValue != null ? " ID=" + pkValue : ""));
+            }
         }
 
         public static SqlVersion GetSqlVersion(DbConnection connection)

@@ -52,7 +52,7 @@ namespace Rhetos
             _xmlUtility = xmlUtility;
         }
 
-        public ServerProcessingResult Execute(ServerCommandInfo[] commands)
+        public ServerProcessingResult Execute(params ServerCommandInfo[] commands)
         {
             var totalTime = Stopwatch.StartNew();
 

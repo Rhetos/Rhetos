@@ -27,6 +27,6 @@ namespace Rhetos
     public interface IServerApplication
     {
         [OperationContract]
-        ServerProcessingResult Execute(ServerCommandInfo[] commands);
+        ServerProcessingResult Execute(params ServerCommandInfo[] commands);
     }
 }

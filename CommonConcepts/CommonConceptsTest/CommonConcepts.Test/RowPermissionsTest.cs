@@ -19,6 +19,7 @@
 
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using CommonConcepts.Test.Helpers;
 using Rhetos.TestCommon;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
@@ -770,6 +771,83 @@ namespace CommonConcepts.Test
             var result = TestWrite<SimpleRP>(illegal, null, updateToLegal, null, _writeException);
             Assert.AreEqual(1, result.Count());
             Assert.AreEqual(100, result.First().value);
+        }
+
+        [TestMethod]
+        public void SaveInvalidRecordWithPermission_Insert()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                container.AddIgnoreClaims();
+                var processingEngine = container.Resolve<IProcessingEngine>();
+
+                var item1 = new SimpleRP { value = 1000, ID = Guid.NewGuid() };
+                var item2 = new SimpleRP { value = 1001, ID = item1.ID };
+
+                var command1 = new SaveEntityCommandInfo { Entity = item1.GetType().FullName, DataToInsert = new[] { item1 } };
+                var response1 = processingEngine.Execute(new[] { command1 });
+                Assert.IsTrue(response1.Success);
+
+                var command2 = new SaveEntityCommandInfo { Entity = item2.GetType().FullName, DataToInsert = new[] { item2 } };
+                var response2 = processingEngine.Execute(new[] { command2 });
+                Assert.IsFalse(response2.Success);
+                TestUtility.AssertContains(response2.UserMessage, new[] { "Operation could not be completed because the request sent to the server was not valid or not properly formatted." });
+                TestUtility.AssertContains(response2.SystemMessage, new[] { "Inserting a record that already exists.", item2.ID.ToString() });
+            }
+        }
+
+        [TestMethod]
+        public void SaveInvalidRecordWithPermission_Update()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                container.AddIgnoreClaims();
+                var processingEngine = container.Resolve<IProcessingEngine>();
+
+                var item = new SimpleRP { value = 1000, ID = Guid.NewGuid() };
+                var command = new SaveEntityCommandInfo { Entity = item.GetType().FullName, DataToUpdate = new[] { item } };
+
+                var response = processingEngine.Execute(new[] { command });
+                Assert.IsFalse(response.Success);
+                TestUtility.AssertContains(response.UserMessage, new[] { "Operation could not be completed because the request sent to the server was not valid or not properly formatted." });
+                TestUtility.AssertContains(response.SystemMessage, new[] { "Updating a record that does not exists in database.", item.ID.ToString() });
+            }
+        }
+
+        [TestMethod]
+        public void SaveInvalidRecordWithPermission_Delete()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                container.AddIgnoreClaims();
+                var processingEngine = container.Resolve<IProcessingEngine>();
+
+                var item = new SimpleRP { value = 1000, ID = Guid.NewGuid() };
+                var command = new SaveEntityCommandInfo { Entity = item.GetType().FullName, DataToDelete = new[] { item } };
+
+                var response = processingEngine.Execute(new[] { command });
+                Assert.IsFalse(response.Success);
+                TestUtility.AssertContains(response.UserMessage, new[] { "Operation could not be completed because the request sent to the server was not valid or not properly formatted." });
+                TestUtility.AssertContains(response.SystemMessage, new[] { "Deleting a record that does not exists in database.", item.ID.ToString() });
+            }
+        }
+
+        [TestMethod]
+        public void SaveInvalidRecordWithoutPermission_Insert()
+        {
+            throw new NotImplementedException();
+        }
+
+        [TestMethod]
+        public void SaveInvalidRecordWithoutPermission_Update()
+        {
+            throw new NotImplementedException();
+        }
+
+        [TestMethod]
+        public void SaveInvalidRecordWithoutPermission_Delete()
+        {
+            throw new NotImplementedException();
         }
     }
 }

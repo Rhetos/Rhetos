@@ -180,27 +180,6 @@ namespace Common
             " + ModuleCodeGenerator.ApplyFiltersOnClientReadTag + @"
         };
 
-        public static void MaterializeItemsToSave<T>(ref IEnumerable<T> items) where T : IEntity, new()
-        {
-            if (items == null)
-                items = Enumerable.Empty<T>();
-            else if (items is System.Linq.IQueryable)
-                throw new Rhetos.FrameworkException(""The Save method for '"" + typeof(T).FullName + ""' does not support the argument type '"" + items.GetType().Name + ""'. Use a List or an Array."");
-            else if (!(items is System.Collections.IList))
-                items = items.ToList();
-        }
-
-        public static void MaterializeItemsToDelete<T>(ref IEnumerable<T> items) where T : IEntity, new()
-        {
-            if (items == null)
-                items = Enumerable.Empty<T>();
-            if (items is IQueryable<IEntity>)
-                // IQueryable Select will generate a better SQL query instead. IEnumerable Select would load all columns.
-                items = ((IQueryable<IEntity>)items).Select(item => new T { ID = item.ID }).ToList();
-            else if (!(items is System.Collections.IList))
-                items = items.Select(item => new T { ID = item.ID }).ToList();
-        }
-
         " + ModuleCodeGenerator.CommonInfrastructureMembersTag + @"
     }
 

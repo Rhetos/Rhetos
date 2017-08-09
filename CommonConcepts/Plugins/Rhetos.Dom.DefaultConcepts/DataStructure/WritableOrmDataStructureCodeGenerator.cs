@@ -74,36 +74,10 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format(
         @"public void Save(IEnumerable<{0}.{1}> insertedNew, IEnumerable<{0}.{1}> updatedNew, IEnumerable<{0}.{1}> deletedIds, bool checkUserPermissions = false)
         {{
-            Common.Infrastructure.MaterializeItemsToSave(ref insertedNew);
-            Common.Infrastructure.MaterializeItemsToSave(ref updatedNew);
-            Common.Infrastructure.MaterializeItemsToDelete(ref deletedIds);
-
-            if (insertedNew.Count() == 0 && updatedNew.Count() == 0 && deletedIds.Count() == 0)
+            if (!DomHelper.CleanUpSaveMethodArguments(ref insertedNew, ref updatedNew, ref deletedIds))
                 return;
 
-            foreach (var item in insertedNew)
-                if (item.ID == Guid.Empty)
-                    item.ID = Guid.NewGuid();
-
             " + ClearContextTag.Evaluate(info) + @"
-
-            if (insertedNew.Count() > 0)
-            {{
-                var duplicateObjects = Filter(insertedNew.Select(item => item.ID).ToArray());
-                if (duplicateObjects.Count() > 0)
-                {{
-                    var deletedIndex = new HashSet<Guid>(deletedIds.Select(item => item.ID));
-                    duplicateObjects = duplicateObjects.Where(item => !deletedIndex.Contains(item.ID)).ToArray();
-                }}
-                if (duplicateObjects.Count() > 0)
-                {{
-                    string msg = ""Inserting a record that already exists. ID="" + duplicateObjects.First().ID;
-                    if (checkUserPermissions)
-                        throw new Rhetos.ClientException(msg);
-                    else
-                        throw new Rhetos.FrameworkException(msg);
-                }}
-            }}
 
             " + ArgumentValidationTag.Evaluate(info) + @"
 
@@ -119,10 +93,12 @@ namespace Rhetos.Dom.DefaultConcepts
 
             " + ProcessedOldDataTag.Evaluate(info) + @"
 
+            DomHelper.SaveOperation saveOperation = DomHelper.SaveOperation.None;
             try
             {{
                 if (deletedIds.Count() > 0)
                 {{
+                    saveOperation = DomHelper.SaveOperation.Delete;
                     _executionContext.EntityFrameworkContext.Configuration.AutoDetectChangesEnabled = false;
                     foreach (var item in deletedIds.Select(item => item.ToNavigation()))
                         _executionContext.EntityFrameworkContext.Entry(item).State = System.Data.Entity.EntityState.Deleted;
@@ -132,6 +108,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 if (updatedNew.Count() > 0)
                 {{
+                    saveOperation = DomHelper.SaveOperation.Update;
                     _executionContext.EntityFrameworkContext.Configuration.AutoDetectChangesEnabled = false;
                     foreach (var item in updatedNew.Select(item => item.ToNavigation()))
                         _executionContext.EntityFrameworkContext.Entry(item).State = System.Data.Entity.EntityState.Modified;
@@ -141,18 +118,23 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 if (insertedNew.Count() > 0)
                 {{
+                    saveOperation = DomHelper.SaveOperation.Insert;
                     _executionContext.EntityFrameworkContext.{0}_{1}.AddRange(insertedNew.Select(item => item.ToNavigation()));
                     _executionContext.EntityFrameworkContext.SaveChanges();
                 }}
 
+                saveOperation = DomHelper.SaveOperation.None;
                 _executionContext.EntityFrameworkContext.ClearCache();
             }}
             catch (System.Data.Entity.Infrastructure.DbUpdateException saveException)
             {{
-        		var interpretedException = _sqlUtility.InterpretSqlException(saveException);
+                DomHelper.ThrowIfSavingNonexistentId(saveException, checkUserPermissions, saveOperation);
+        		Rhetos.RhetosException interpretedException = _sqlUtility.InterpretSqlException(saveException);
         		" + OnDatabaseErrorTag.Evaluate(info) + @"
+                if (checkUserPermissions)
+                    Rhetos.Utilities.MsSqlUtility.ThrowIfPrimaryKeyErrorOnInsert(interpretedException, ""{0}.{1}"");
 
-        		if (interpretedException != null)
+                if (interpretedException != null)
         			Rhetos.Utilities.ExceptionsUtility.Rethrow(interpretedException);
                 var sqlException = _sqlUtility.ExtractSqlException(saveException);
                 if (sqlException != null)

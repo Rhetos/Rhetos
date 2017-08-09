@@ -506,20 +506,125 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void SaveDuplicate()
+        public void SaveInvalidRecord_Insert()
         {
             using (var container = new RhetosTestContainer())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.Principal");
-                var r = container.Resolve<Common.DomRepository>().TestEntity.Principal;
+                var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
 
-                var i1 = new TestEntity.Principal { Name = "a", ID = Guid.NewGuid() };
-                var i2 = new TestEntity.Principal { Name = "b", ID = i1.ID };
+                var item1 = new TestEntity.Principal { Name = "a", ID = Guid.NewGuid() };
+                repos.Insert(item1);
 
-                r.Insert(i1);
-                TestUtility.ShouldFail(() => r.Insert(new[] { i2 }), "Inserting a record that already exists");
+                var item2 = new TestEntity.Principal { Name = "b", ID = item1.ID };
+                TestUtility.ShouldFail<Rhetos.ClientException>(() => repos.Save(new[] { item2 }, null, null, checkUserPermissions: true),
+                    "Inserting a record that already exists.", item2.ID.ToString());
             }
         }
+
+        [TestMethod]
+        public void SaveInvalidRecord_SystemInsert()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
+
+                var item1 = new TestEntity.Principal { Name = "a", ID = Guid.NewGuid() };
+                repos.Insert(item1);
+
+                var item2 = new TestEntity.Principal { Name = "b", ID = item1.ID };
+                var error = TestUtility.ShouldFail<Rhetos.FrameworkException>(() => repos.Save(new[] { item2 }, null, null, checkUserPermissions: false));
+                TestUtility.AssertContains(error.ToString(), new[] { "Inserting a record that already exists.", item2.ID.ToString(), "PK_Principal" });
+            }
+        }
+
+        [TestMethod]
+        public void SaveInvalidRecord_Update()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
+
+                var item1 = new TestEntity.Principal { Name = "1", ID = Guid.NewGuid() };
+                var item2 = new TestEntity.Principal { Name = "2", ID = Guid.NewGuid() };
+                var item3 = new TestEntity.Principal { Name = "3", ID = Guid.NewGuid() };
+                var item4 = new TestEntity.Principal { Name = "4", ID = Guid.NewGuid() };
+
+                repos.Insert(item1, item4);
+
+                var error = TestUtility.ShouldFail<Rhetos.ClientException>(
+                    () => repos.Save(null, new[] { item1, item2, item3, item4 }, null, checkUserPermissions: true),
+                    "Updating a record that does not exists in database.");
+
+                Assert.IsTrue(error.Message.Contains(item2.ID.ToString()) || error.Message.Contains(item3.ID.ToString()));
+            }
+        }
+
+        [TestMethod]
+        public void SaveInvalidRecord_SystemUpdate()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
+
+                var item1 = new TestEntity.Principal { Name = "1", ID = Guid.NewGuid() };
+                var item2 = new TestEntity.Principal { Name = "2", ID = Guid.NewGuid() };
+                var item3 = new TestEntity.Principal { Name = "3", ID = Guid.NewGuid() };
+                var item4 = new TestEntity.Principal { Name = "4", ID = Guid.NewGuid() };
+
+                repos.Insert(item1, item4);
+
+                var error = TestUtility.ShouldFail<Rhetos.FrameworkException>(
+                    () => repos.Save(null, new[] { item1, item2, item3, item4 }, null, checkUserPermissions: false),
+                    "Updating a record that does not exists in database.");
+
+                Assert.IsTrue(error.ToString().Contains(item2.ID.ToString()) || error.ToString().Contains(item3.ID.ToString()));
+            }
+        }
+
+        [TestMethod]
+        public void SaveInvalidRecord_Delete()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
+
+                var item = new TestEntity.Principal { Name = "a", ID = Guid.NewGuid() };
+                TestUtility.ShouldFail<Rhetos.ClientException>(() => repos.Save(null, null, new[] { item }, checkUserPermissions: true),
+                    "Deleting a record that does not exists in database.", item.ID.ToString());
+            }
+        }
+
+        [TestMethod]
+        public void SaveInvalidRecordMultiple_Insert()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
+
+                var item1 = new TestEntity.Principal { Name = "a", ID = Guid.NewGuid() };
+                var item2 = new TestEntity.Principal { Name = "b", ID = item1.ID };
+                TestUtility.ShouldFail<Rhetos.ClientException>(() => repos.Save(new[] { item1, item2 }, null, null, checkUserPermissions: true),
+                    "Inserting a record that already exists.", item2.ID.ToString());
+            }
+        }
+
+        [TestMethod]
+        public void SaveInvalidRecordMultiple_InsertDelete()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
+
+                var item1 = new TestEntity.Principal { Name = "a", ID = Guid.NewGuid() };
+                repos.Insert(item1);
+                Assert.AreEqual("a", repos.Query(new[] { item1.ID }).Single().Name);
+
+                var item2 = new TestEntity.Principal { Name = "b", ID = item1.ID };
+                repos.Save(new[] { item2 }, null, new[] { item1 }, checkUserPermissions: true);
+                Assert.AreEqual("b", repos.Query(new[] { item1.ID }).Single().Name);
+            }
+        }
+
 
         [TestMethod]
         public void DeleteUpdateInsert_ConflictUnique()
@@ -614,7 +719,7 @@ namespace CommonConcepts.Test
 
                 IEnumerable<TestEntity.UniqueEntity> items = repository.TestEntity.UniqueEntity.Query();
                 // The following line should not try to read all columns.
-                Common.Infrastructure.MaterializeItemsToDelete(ref items);
+                DomHelper.MaterializeItemsToDelete(ref items);
                 Assert.AreEqual(1, items.Count());
                 Assert.AreEqual(newItem.ID, items.Single().ID);
                 Assert.IsNull(items.Single().Name);
