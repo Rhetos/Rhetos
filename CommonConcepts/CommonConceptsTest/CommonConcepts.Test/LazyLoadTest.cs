@@ -174,8 +174,10 @@ namespace CommonConcepts.Test
                 testType("Load FilterAll", simpleBase.Load(new FilterAll()));
                 testType("Load Guid[]", simpleBase.Load(new[] { sb0.ID }));
                 testType("Load FilterCriteria[]", simpleBase.Load(new[] { new FilterCriteria("ID", "equal", sb0.ID) }));
+#pragma warning disable CS0618 // Type or member is obsolete
                 testType("FilterLoad FilterAll", simpleBase.Filter(new FilterAll()));
                 testType("FilterLoad Guid[]", simpleBase.Filter(new[] { sb0.ID }));
+#pragma warning restore CS0618 // Type or member is obsolete
             }
         }
 

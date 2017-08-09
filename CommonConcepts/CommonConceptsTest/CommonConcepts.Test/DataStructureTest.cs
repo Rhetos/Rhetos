@@ -43,7 +43,7 @@ namespace CommonConcepts.Test
         public void ShortStringProperty()
         {
             TestDataStructure.SimpleDataStructure2 item = new TestDataStructure.SimpleDataStructure2();
-            // TODO: Uninitialized string should be null? Assert.IsNull(item.SimpleShortString);
+            Assert.IsNull(item.SimpleShortString);
 
             {
                 const string value = "";

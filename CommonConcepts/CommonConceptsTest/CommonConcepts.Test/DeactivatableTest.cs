@@ -107,7 +107,7 @@ namespace CommonConcepts.Test
                 var entity2 = new BasicEnt { Name = "ttt2", Active = true };
                 
                 repository.TestDeactivatable.BasicEnt.Insert(new[] { entity, entity2 });
-                Assert.AreEqual(1, repository.TestDeactivatable.BasicEnt.Filter(new ActiveItems()).Count());
+                Assert.AreEqual(1, repository.TestDeactivatable.BasicEnt.Query(new ActiveItems()).Count());
             }
         }
 
@@ -126,8 +126,8 @@ namespace CommonConcepts.Test
                 var entity3 = new BasicEnt { Name = "ttt3", Active = false };
 
                 repository.TestDeactivatable.BasicEnt.Insert(new[] { entity, entity2, entity3 });
-                Assert.AreEqual(1, repository.TestDeactivatable.BasicEnt.Filter(new ActiveItems()).Count());
-                Assert.AreEqual(2, repository.TestDeactivatable.BasicEnt.Filter(new ActiveItems { ItemID = e1ID }).Count());
+                Assert.AreEqual(1, repository.TestDeactivatable.BasicEnt.Query(new ActiveItems()).Count());
+                Assert.AreEqual(2, repository.TestDeactivatable.BasicEnt.Query(new ActiveItems { ItemID = e1ID }).Count());
             }
         }
     }

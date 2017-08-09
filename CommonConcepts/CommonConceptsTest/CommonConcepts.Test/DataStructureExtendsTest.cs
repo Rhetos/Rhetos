@@ -140,7 +140,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("b1 b1Cs", TestUtility.DumpSorted(
                     repository.TestExtension.MissingExtensionCs.Query().Select(item => item.Base.Name + " " + item.Name)));
 
-                var b2missing = repository.TestExtension.SimpleBase.Filter(new[] { id2 }).Single();
+                var b2missing = repository.TestExtension.SimpleBase.Load(new[] { id2 }).Single();
                 b2missing.Name += "x";
                 repository.TestExtension.SimpleBase.Update(new[] { b2missing });
 

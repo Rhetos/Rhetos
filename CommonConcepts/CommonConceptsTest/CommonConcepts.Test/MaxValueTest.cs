@@ -170,7 +170,7 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleInteger { ID = Guid.NewGuid(), Value = null };
                 repository.TestMaxValue.SimpleInteger.Insert(new[] { entity });
-                Assert.IsNull(repository.TestMaxValue.SimpleInteger.Filter(new[] { entity.ID }).Single().Value);
+                Assert.IsNull(repository.TestMaxValue.SimpleInteger.Load(new[] { entity.ID }).Single().Value);
             }
         }
     }

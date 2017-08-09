@@ -170,7 +170,7 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleInteger { ID = Guid.NewGuid(), Value = null };
                 repository.TestMinValue.SimpleInteger.Insert(entity);
-                Assert.IsNull(repository.TestMinValue.SimpleInteger.Filter(new[] { entity.ID }).Single().Value);
+                Assert.IsNull(repository.TestMinValue.SimpleInteger.Load(new[] { entity.ID }).Single().Value);
             }
         }
     }

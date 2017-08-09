@@ -222,7 +222,7 @@ namespace CommonConcepts.Test
                     "Child123abc-Parent123abc, Child456def-Parent456def",
                     TestUtility.DumpSorted(repository.Test13.LegacyMultiChild.Query().Select(child => child.Name + "-" + child.Parent.Name)));
 
-                var c1 = repository.Test13.LegacyMultiChild.Filter(new[] { c1id }).Single();
+                var c1 = repository.Test13.LegacyMultiChild.Load(new[] { c1id }).Single();
                 c1.ParentID = p2id;
                 repository.Test13.LegacyMultiChild.Update(new[] { c1 });
 

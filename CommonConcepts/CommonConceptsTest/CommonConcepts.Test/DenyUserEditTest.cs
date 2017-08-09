@@ -267,7 +267,7 @@ namespace CommonConcepts.Test
 
                 DateTime finish = SqlUtility.GetDatabaseTime(sqlExecuter);
 
-                item = repository.TestDenyUserEdit.AutoInitialized.Filter(new[] { item.ID }).Single();
+                item = repository.TestDenyUserEdit.AutoInitialized.Load(new[] { item.ID }).Single();
 
                 Console.WriteLine("item.Start: " + item.Start);
                 Assert.IsTrue(item.Start >= start && item.Start <= finish);

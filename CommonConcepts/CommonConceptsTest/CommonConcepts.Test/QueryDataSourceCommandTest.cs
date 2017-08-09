@@ -34,6 +34,8 @@ using Rhetos.Logging;
 
 namespace CommonConcepts.Test
 {
+#pragma warning disable CS0618 // Type or member is obsolete (QueryDataSourceCommandInfo)
+
     [TestClass]
     public class QueryDataSourceCommandTest
     {
@@ -255,4 +257,5 @@ namespace CommonConcepts.Test
             throw new NotImplementedException();
         }
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 }

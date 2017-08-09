@@ -210,7 +210,7 @@ namespace CommonConcepts.Test.OldConcepts
                     });
 
                 var ids = new[] { sourceId };
-                Assert.AreEqual("abc", repository.TestBrowse.SF.Filter(ids).Single().RefName);
+                Assert.AreEqual("abc", repository.TestBrowse.SF.Load(ids).Single().RefName);
                 Assert.AreEqual("abc", repository.TestBrowse.SF.Query().Where(item => ids.Contains(item.ID)).Single().RefName);
 
                 {
