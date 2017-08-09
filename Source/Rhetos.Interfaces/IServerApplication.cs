@@ -29,13 +29,4 @@ namespace Rhetos
         [OperationContract]
         ServerProcessingResult Execute(ServerCommandInfo[] commands);
     }
-
-    [Obsolete]
-    public static class ServerApplicationHelper
-    {
-        public static ServerProcessingResult Execute(this IServerApplication app, params ServerCommandInfo[] commands)
-        {
-            return app.Execute(commands);
-        }
-    }
 }

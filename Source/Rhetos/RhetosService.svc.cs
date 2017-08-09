@@ -54,47 +54,45 @@ namespace Rhetos
 
         public ServerProcessingResult Execute(ServerCommandInfo[] commands)
         {
-            var stopwatch = Stopwatch.StartNew();
+            var totalTime = Stopwatch.StartNew();
 
-            var result = ExecuteInner(commands);
+            try
+            {
+                var stopwatch = Stopwatch.StartNew();
 
-            _performanceLogger.Write(stopwatch, "RhetosService: Executed " + string.Join(",", commands.Select(c => c.CommandName)) + ".");
+                if (_commandsByName == null)
+                    PrepareCommandByName();
 
-            return result;
-        }
+                if (commands == null || commands.Length == 0)
+                    return new ServerProcessingResult { SystemMessage = "Commands missing", Success = false };
 
-        private ServerProcessingResult ExecuteInner(ServerCommandInfo[] commands)
-        {
-            var stopwatch = Stopwatch.StartNew();
+                _performanceLogger.Write(stopwatch, "RhetosService.Execute: Server initialization done.");
 
-            if (_commandsByName == null)
-                PrepareCommandByName();
-
-            if (commands == null || commands.Length == 0)
-                return new ServerProcessingResult { SystemMessage = "Commands missing", Success = false };
-
-            _performanceLogger.Write(stopwatch, "RhetosService.ExecuteInner: Server initialization done.");
-
-            var processingCommandsOrError = Deserialize(commands);
-            if (processingCommandsOrError.IsError)
-                return new ServerProcessingResult
+                var processingCommandsOrError = Deserialize(commands);
+                if (processingCommandsOrError.IsError)
+                    return new ServerProcessingResult
                     {
                         Success = false,
                         SystemMessage = processingCommandsOrError.Error
                     };
-            var processingCommands = processingCommandsOrError.Value;
+                var processingCommands = processingCommandsOrError.Value;
 
-            _performanceLogger.Write(stopwatch, "RhetosService.ExecuteInner: Commands deserialized.");
-            
-            var result = _processingEngine.Execute(processingCommands);
+                _performanceLogger.Write(stopwatch, "RhetosService.Execute: Commands deserialized.");
 
-            _performanceLogger.Write(stopwatch, "RhetosService.ExecuteInner: Commands executed.");
+                var result = _processingEngine.Execute(processingCommands);
 
-            var convertedResult = ConvertResult(result);
+                _performanceLogger.Write(stopwatch, "RhetosService.Execute: Commands executed.");
 
-            _performanceLogger.Write(stopwatch, "RhetosService.ExecuteInner: Result converted.");
+                var convertedResult = ConvertResult(result);
 
-            return convertedResult;
+                _performanceLogger.Write(stopwatch, "RhetosService.Execute: Result converted.");
+
+                return convertedResult;
+            }
+            finally
+            {
+                _performanceLogger.Write(totalTime, "RhetosService: Executed " + string.Join(",", commands.Select(c => c.CommandName)) + ".");
+            }
         }
 
         private void PrepareCommandByName()
