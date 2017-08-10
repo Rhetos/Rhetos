@@ -368,5 +368,20 @@ namespace CommonConcepts.Test
                 .Select(g => g["entity"].Value + " " + g["new"] + "n " + g["old"] + "o - " + g["ins"] + "i " + g["upd"] + "u " + g["del"] + "d")
                 .ToList();
         }
+
+        [TestMethod]
+        public void KeepSyncRepositoryMembers()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                container.AddFakeUser("bb");
+
+                container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestComputedFrom.KeepSyncRepositoryMembers");
+                var repository = container.Resolve<Common.DomRepository>();
+
+                repository.TestComputedFrom.KeepSyncRepositoryMembers.RecomputeFromSource();
+                Assert.AreEqual("bb 22", TestUtility.DumpSorted(repository.TestComputedFrom.KeepSyncRepositoryMembers.Query(), item => item.Name + " " + item.Code));
+            }
+        }
     }
 }

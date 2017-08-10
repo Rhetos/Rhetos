@@ -45,12 +45,12 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             if (!string.IsNullOrWhiteSpace(info.FilterSaveExpression))
                 return string.Format(
-        @"private static readonly Func<IEnumerable<{0}.{1}>, Common.DomRepository, IEnumerable<{0}.{1}>> _filterSaveKeepSynchronizedOnChangedItems_{3}_{4} =
-        {2};
-
-        public IEnumerable<{0}.{1}> FilterSaveKeepSynchronizedOnChangedItems_{3}_{4}(IEnumerable<{0}.{1}> items)
+        @"public IEnumerable<{0}.{1}> FilterSaveKeepSynchronizedOnChangedItems_{3}_{4}(IEnumerable<{0}.{1}> filterSave_items)
         {{
-            return _filterSaveKeepSynchronizedOnChangedItems_{3}_{4}(items, _domRepository);
+            Func<IEnumerable<{0}.{1}>, Common.DomRepository, IEnumerable<{0}.{1}>> filterSaveKeepSynchronizedOnChangedItems_{3}_{4} =
+                {2};
+
+            return filterSaveKeepSynchronizedOnChangedItems_{3}_{4}(filterSave_items, _domRepository);
         }}
 
         ",

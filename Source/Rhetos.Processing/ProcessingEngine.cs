@@ -139,9 +139,15 @@ namespace Rhetos.Processing
                         _performanceLogger.Write(stopwatch, () => "ProcessingEngine: CommandObeserver.BeforeExecute " + commandObeserver.GetType().FullName);
                     }
 
-                    var commandResult = commandImplementation.Execute(commandInfo);
-
-                    _performanceLogger.Write(stopwatch, () => "ProcessingEngine: Command executed (" + commandImplementation + ": " + commandInfo + ").");
+                    CommandResult commandResult;
+                    try
+                    {
+                        commandResult = commandImplementation.Execute(commandInfo);
+                    }
+                    finally
+                    {
+                        _performanceLogger.Write(stopwatch, () => "ProcessingEngine: Command executed (" + commandImplementation + ": " + commandInfo + ").");
+                    }
                     _logger.Trace("Execution result message: {0}", commandResult.Message);
 
                     if (commandResult.Success)

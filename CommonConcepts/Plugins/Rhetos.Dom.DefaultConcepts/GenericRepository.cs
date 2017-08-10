@@ -798,7 +798,12 @@ namespace Rhetos.Dom.DefaultConcepts
             // Modify old items to match new items:
 
             if (beforeSave != null)
+            {
                 beforeSave(ref toInsert, ref toUpdate, ref toDelete);
+                CsUtility.Materialize(ref toInsert);
+                CsUtility.Materialize(ref toUpdate);
+                CsUtility.Materialize(ref toDelete);
+            }
             Save(toInsert, toUpdate, toDelete);
             _performanceLogger.Write(stopwatch, () => string.Format("{0}.InsertOrUpdateOrDelete: Save ({1} new items, {2} old items, {3} to insert, {4} to update, {5} to delete)",
                 _repositoryName, newItems.Count(), oldItems.Count(), toInsert.Count(), toUpdate.Count(), toDelete.Count()));
@@ -898,7 +903,12 @@ namespace Rhetos.Dom.DefaultConcepts
             // Modify old items to match new items:
 
             if (beforeSave != null)
+            {
                 beforeSave(ref toInsert, ref toUpdate, ref toDelete);
+                CsUtility.Materialize(ref toInsert);
+                CsUtility.Materialize(ref toUpdate);
+                CsUtility.Materialize(ref toDelete);
+            }
             Save(toInsert, toUpdate, toDelete);
             _performanceLogger.Write(stopwatch, () => string.Format("{0}.InsertOrUpdateOrDeleteOrDeactivate: Save ({1} new items, {2} old items, {3} to insert, {4} to update, {5} to delete)",
                 _repositoryName, newItems.Count(), oldItems.Count(), toInsert.Count(), toUpdate.Count(), toDelete.Count()));

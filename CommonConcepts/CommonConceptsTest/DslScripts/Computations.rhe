@@ -593,6 +593,16 @@ Module TestComputedFrom
 	{
 		ShortString Comp;
 	}
+
+    Entity KeepSyncRepositoryMembers
+    {
+        ComputedFrom TestComputedFrom.Source
+        {
+            AllProperties;
+            // Update only those items that match current user's name.
+            KeepSynchronized '(items, repository) => items.Where(item => item.Name == _executionContext.UserInfo.UserName)';
+        }
+    }
     
     //==========================================================
     
