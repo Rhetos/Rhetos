@@ -209,7 +209,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("def", s1.Name);
                 Assert.AreEqual("abc locked", repository.TestLockItems.Simple.Load().Single().Name);
 
-                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Insert(new[] { s1 }), "Inserting a record that already exists");
+                TestUtility.ShouldFail(() => repository.TestLockItems.Simple.Insert(new[] { s1 }), "Inserting a record that already exists in database.");
 
                 Assert.AreEqual("def", s1.Name);
                 Assert.AreEqual("abc locked", repository.TestLockItems.Simple.Load().Single().Name);

@@ -792,7 +792,7 @@ namespace CommonConcepts.Test
                 var response2 = processingEngine.Execute(new[] { command2 });
                 Assert.IsFalse(response2.Success);
                 TestUtility.AssertContains(response2.UserMessage, new[] { "Operation could not be completed because the request sent to the server was not valid or not properly formatted." });
-                TestUtility.AssertContains(response2.SystemMessage, new[] { "Inserting a record that already exists.", item2.ID.ToString() });
+                TestUtility.AssertContains(response2.SystemMessage, new[] { "Inserting a record that already exists in database.", item2.ID.ToString() });
             }
         }
 
@@ -810,7 +810,7 @@ namespace CommonConcepts.Test
                 var response = processingEngine.Execute(new[] { command });
                 Assert.IsFalse(response.Success);
                 TestUtility.AssertContains(response.UserMessage, new[] { "Operation could not be completed because the request sent to the server was not valid or not properly formatted." });
-                TestUtility.AssertContains(response.SystemMessage, new[] { "Updating a record that does not exists in database.", item.ID.ToString() });
+                TestUtility.AssertContains(response.SystemMessage, new[] { "Updating a record that does not exist in database.", item.ID.ToString() });
             }
         }
 
@@ -828,26 +828,67 @@ namespace CommonConcepts.Test
                 var response = processingEngine.Execute(new[] { command });
                 Assert.IsFalse(response.Success);
                 TestUtility.AssertContains(response.UserMessage, new[] { "Operation could not be completed because the request sent to the server was not valid or not properly formatted." });
-                TestUtility.AssertContains(response.SystemMessage, new[] { "Deleting a record that does not exists in database.", item.ID.ToString() });
+                TestUtility.AssertContains(response.SystemMessage, new[] { "Deleting a record that does not exist in database.", item.ID.ToString() });
             }
         }
 
         [TestMethod]
         public void SaveInvalidRecordWithoutPermission_Insert()
         {
-            throw new NotImplementedException();
+            using (var container = new RhetosTestContainer())
+            {
+                container.AddIgnoreClaims();
+                var processingEngine = container.Resolve<IProcessingEngine>();
+
+                var item1 = new SimpleRP { value = 1000, ID = Guid.NewGuid() };
+                var item2 = new SimpleRP { value = 1, ID = item1.ID };
+
+                var command1 = new SaveEntityCommandInfo { Entity = item1.GetType().FullName, DataToInsert = new[] { item1 } };
+                var response1 = processingEngine.Execute(new[] { command1 });
+                Assert.IsTrue(response1.Success);
+
+                var command2 = new SaveEntityCommandInfo { Entity = item2.GetType().FullName, DataToInsert = new[] { item2 } };
+                var response2 = processingEngine.Execute(new[] { command2 });
+                Assert.IsFalse(response2.Success);
+                TestUtility.AssertContains(response2.UserMessage, new[] { "Operation could not be completed because the request sent to the server was not valid or not properly formatted." });
+                TestUtility.AssertContains(response2.SystemMessage, new[] { "Inserting a record that already exists in database.", item2.ID.ToString() });
+            }
         }
 
         [TestMethod]
         public void SaveInvalidRecordWithoutPermission_Update()
         {
-            throw new NotImplementedException();
+            using (var container = new RhetosTestContainer())
+            {
+                container.AddIgnoreClaims();
+                var processingEngine = container.Resolve<IProcessingEngine>();
+
+                var item = new SimpleRP { value = 1, ID = Guid.NewGuid() };
+                var command = new SaveEntityCommandInfo { Entity = item.GetType().FullName, DataToUpdate = new[] { item } };
+
+                var response = processingEngine.Execute(new[] { command });
+                Assert.IsFalse(response.Success);
+                TestUtility.AssertContains(response.UserMessage, new[] { "Operation could not be completed because the request sent to the server was not valid or not properly formatted." });
+                TestUtility.AssertContains(response.SystemMessage, new[] { "Updating a record that does not exist in database.", item.ID.ToString() });
+            }
         }
 
         [TestMethod]
         public void SaveInvalidRecordWithoutPermission_Delete()
         {
-            throw new NotImplementedException();
+            using (var container = new RhetosTestContainer())
+            {
+                container.AddIgnoreClaims();
+                var processingEngine = container.Resolve<IProcessingEngine>();
+
+                var item = new SimpleRP { value = 1, ID = Guid.NewGuid() };
+                var command = new SaveEntityCommandInfo { Entity = item.GetType().FullName, DataToDelete = new[] { item } };
+
+                var response = processingEngine.Execute(new[] { command });
+                Assert.IsFalse(response.Success);
+                TestUtility.AssertContains(response.UserMessage, new[] { "Operation could not be completed because the request sent to the server was not valid or not properly formatted." });
+                TestUtility.AssertContains(response.SystemMessage, new[] { "Deleting a record that does not exist in database.", item.ID.ToString() });
+            }
         }
     }
 }

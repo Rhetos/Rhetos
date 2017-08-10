@@ -82,6 +82,22 @@ namespace Rhetos.Processing.DefaultCommands
             return true;
         }
 
+        public bool MissingItemId(IEntity[] items, GenericRepository<IEntity> genericRepository, out Guid? missingId)
+        {
+            missingId = null;
+
+            if (items != null && items.Length > 0)
+            {
+                var findIds = items.Select(searchItem => searchItem.ID).ToList();
+                var existingIds = genericRepository.Query(findIds).Select(existingItem => existingItem.ID).ToList();
+                var missingIds = findIds.Except(existingIds).Take(1);
+                if (missingIds.Any())
+                    missingId = missingIds.First();
+            }
+
+            return missingId != null;
+        }
+
         public ReadCommandResult ExecuteReadCommand(ReadCommandInfo commandInfo, GenericRepository<IEntity> genericRepository)
         {
             if (!commandInfo.ReadRecords && !commandInfo.ReadTotalCount)

@@ -231,7 +231,7 @@ namespace Rhetos.Utilities
                 && (info.GetValueOrDefault("ConstraintName") as string) == constraintName;
         }
 
-        private const string InsertingDuplicateIdMessage = "Inserting a record that already exists.";
+        private const string InsertingDuplicateIdMessage = "Inserting a record that already exists in database.";
 
         public static void ThrowIfPrimaryKeyErrorOnInsert(RhetosException interpretedException, string tableName)
         {

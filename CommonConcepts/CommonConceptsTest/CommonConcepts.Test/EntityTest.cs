@@ -517,7 +517,7 @@ namespace CommonConcepts.Test
 
                 var item2 = new TestEntity.Principal { Name = "b", ID = item1.ID };
                 TestUtility.ShouldFail<Rhetos.ClientException>(() => repos.Save(new[] { item2 }, null, null, checkUserPermissions: true),
-                    "Inserting a record that already exists.", item2.ID.ToString());
+                    "Inserting a record that already exists in database.", item2.ID.ToString());
             }
         }
 
@@ -533,7 +533,7 @@ namespace CommonConcepts.Test
 
                 var item2 = new TestEntity.Principal { Name = "b", ID = item1.ID };
                 var error = TestUtility.ShouldFail<Rhetos.FrameworkException>(() => repos.Save(new[] { item2 }, null, null, checkUserPermissions: false));
-                TestUtility.AssertContains(error.ToString(), new[] { "Inserting a record that already exists.", item2.ID.ToString(), "PK_Principal" });
+                TestUtility.AssertContains(error.ToString(), new[] { "Inserting a record that already exists in database.", item2.ID.ToString(), "PK_Principal" });
             }
         }
 
@@ -553,7 +553,7 @@ namespace CommonConcepts.Test
 
                 var error = TestUtility.ShouldFail<Rhetos.ClientException>(
                     () => repos.Save(null, new[] { item1, item2, item3, item4 }, null, checkUserPermissions: true),
-                    "Updating a record that does not exists in database.");
+                    "Updating a record that does not exist in database.");
 
                 Assert.IsTrue(error.Message.Contains(item2.ID.ToString()) || error.Message.Contains(item3.ID.ToString()));
             }
@@ -575,7 +575,7 @@ namespace CommonConcepts.Test
 
                 var error = TestUtility.ShouldFail<Rhetos.FrameworkException>(
                     () => repos.Save(null, new[] { item1, item2, item3, item4 }, null, checkUserPermissions: false),
-                    "Updating a record that does not exists in database.");
+                    "Updating a record that does not exist in database.");
 
                 Assert.IsTrue(error.ToString().Contains(item2.ID.ToString()) || error.ToString().Contains(item3.ID.ToString()));
             }
@@ -590,7 +590,7 @@ namespace CommonConcepts.Test
 
                 var item = new TestEntity.Principal { Name = "a", ID = Guid.NewGuid() };
                 TestUtility.ShouldFail<Rhetos.ClientException>(() => repos.Save(null, null, new[] { item }, checkUserPermissions: true),
-                    "Deleting a record that does not exists in database.", item.ID.ToString());
+                    "Deleting a record that does not exist in database.", item.ID.ToString());
             }
         }
 
@@ -604,7 +604,7 @@ namespace CommonConcepts.Test
                 var item1 = new TestEntity.Principal { Name = "a", ID = Guid.NewGuid() };
                 var item2 = new TestEntity.Principal { Name = "b", ID = item1.ID };
                 TestUtility.ShouldFail<Rhetos.ClientException>(() => repos.Save(new[] { item1, item2 }, null, null, checkUserPermissions: true),
-                    "Inserting a record that already exists.", item2.ID.ToString());
+                    "Inserting a record that already exists in database.", item2.ID.ToString());
             }
         }
 
