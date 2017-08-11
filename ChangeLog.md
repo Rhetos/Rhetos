@@ -1,5 +1,14 @@
 ﻿# Rhetos release notes
 
+## 1.10.0 (2017-08-11)
+
+### Internal improvements
+
+* Bugfix: Updating or deleting a nonexistent records on entity with row permissions is misreported as "You are not authorized ..."
+  instead of "Updating/Deleting a record that does not exist ...".
+* Repository memebers are now available in **KeepSynchronized** filter snippet and **Computed** code snippet (*_executionContext*, for example).
+* Included date and time to internal server error message to help finding the error record in the server log.
+
 ## 1.9.0 (2017-07-20)
 
 ### Internal improvements
