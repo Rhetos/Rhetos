@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.AspNetFormsAuth;
+using Rhetos.AspNetFormsAuthWebApi;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;

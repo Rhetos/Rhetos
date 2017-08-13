@@ -32,7 +32,8 @@ namespace Rhetos.Configuration.Autofac
             builder.RegisterType<AuthorizationManager>().As<IAuthorizationManager>().InstancePerLifetimeScope();
 
             // Default user authentication and authorization components. Custom plugins may override it by registering their own interface implementations.
-            builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope().PreserveExistingDefaults();
+            //builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope().PreserveExistingDefaults();
+            builder.RegisterType<WindowAuthUserInfo>().As<IUserInfo>().InstancePerLifetimeScope().PreserveExistingDefaults();
             builder.RegisterType<NullAuthorizationProvider>().As<IAuthorizationProvider>().PreserveExistingDefaults();
 
             // Cannot use FindAndRegisterPlugins on IUserInfo because each type should be manually registered with InstancePerLifetimeScope.

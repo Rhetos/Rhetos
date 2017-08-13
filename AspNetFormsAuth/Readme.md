@@ -1,11 +1,11 @@
-# AspNetFormsAuth
+# AspNetFormsAuthWebApi
 
-AspNetFormsAuth is a DSL package (a plugin module) for [Rhetos development platform](https://github.com/Rhetos/Rhetos).
+AspNetFormsAuthWebApi is a DSL package (a plugin module) for [Rhetos development platform](https://github.com/Rhetos/Rhetos).
 It provides an implementation of **ASP.NET forms authentication** to Rhetos server applications.
 
 The authentication is implemented using Microsoft's *WebMatrix SimpleMembershipProvider*,
 with recommended security best practices such as password salting and hashing.
-Implementation fully depends on SimpleMembershipProvider; AspNetFormsAuth project does not try
+Implementation fully depends on SimpleMembershipProvider; AspNetFormsAuthWebApi project does not try
 to implement its own authentication or security mechanisms.
 
 ## Table of contents
@@ -76,7 +76,7 @@ For testing and administration, a simple web GUI is available at the Rhetos serv
 
 ## Authentication service API
 
-The JSON service is available at URI `<rhetos server>/Resources/AspNetFormsAuth/Authentication`, with the following methods.
+The JSON service is available at URI `<rhetos server>/Resources/AspNetFormsAuthWebApi/Authentication`, with the following methods.
 
 ### Login
 
@@ -146,9 +146,9 @@ Generates a password reset token and sends it to the user.
   The implementation must be provided by an additional plugin. For example:
     - Use the [SimpleSPRTEmail](https://github.com/Rhetos/SimpleSPRTEmail) plugin package for sending token by email,
     - or follow [Implementing SendPasswordResetToken](#implementing-sendpasswordresettoken) to implement a different sending method.
-* Use `AspNetFormsAuth.SendPasswordResetToken.ExpirationInMinutes` appSettings key in `web.config` to set the token expiration timeout.
+* Use `AspNetFormsAuthWebApi.SendPasswordResetToken.ExpirationInMinutes` appSettings key in `web.config` to set the token expiration timeout.
   Default value is 1440 minutes (24 hours).
-  For example: `<add key="AspNetFormsAuth.SendPasswordResetToken.ExpirationInMinutes" value="60" />`.
+  For example: `<add key="AspNetFormsAuthWebApi.SendPasswordResetToken.ExpirationInMinutes" value="60" />`.
 
 ### ResetPassword
 
@@ -185,7 +185,7 @@ in order for forms authentication to work.
           </providers>
         </membership>
         <authorization>
-          <deny users="?" />
+          <allow users="?" />
         </authorization>
 
 ### 2. Configure IIS
@@ -198,15 +198,15 @@ in order for forms authentication to work.
 
 *(Only if using IIS Express instead of IIS server)*
 
-If using IIS Express, after deploying AspNetFormsAuth package, execute `SetupRhetosServer.bat`
+If using IIS Express, after deploying AspNetFormsAuthWebApi package, execute `SetupRhetosServer.bat`
 utility in Rhetos server's folder to automatically configure `IISExpress.config`,
 or manually apply the following lines in IISExpress configuration file inside `system.webServer` element
 or inside `location / system.webServer` (usually at the end of the file):
 
     <security>
         <authentication>
-            <anonymousAuthentication enabled="false" />
-            <windowsAuthentication enabled="true" />
+            <anonymousAuthentication enabled="true" />
+            <windowsAuthentication enabled="false" />
         </authentication>
     </security>
 
@@ -215,7 +215,7 @@ or inside `location / system.webServer` (usually at the end of the file):
 HTTPS (or any other) secure transport protocol **should always be enforced** when using forms authentication.
 This is necessary because in forms authentication the password is submitted as a plain text.
 
-At least the services inside `/Resources/AspNetFormsAuth` path must use HTTPS to protect user's password.
+At least the services inside `/Resources/AspNetFormsAuthWebApi` path must use HTTPS to protect user's password.
 
 Consider using a [free SSL certificate](https://www.google.hr/search?q=free+SSL+certificate) (search the web for the providers)
 in development or QA environment.
@@ -232,7 +232,7 @@ and give it necessary permissions (claims) for all authentication service method
 
 ### Permissions and claims
 
-All claims related to the authentication service have resource=`AspNetFormsAuth.AuthenticationService`.
+All claims related to the authentication service have resource=`AspNetFormsAuthWebApi.AuthenticationService`.
 [Admin user](#admin-user) has all the necessary permissions (claims) for all authentication service methods.
 
 ### Maximum failed password attempts
@@ -291,7 +291,7 @@ When returning Rhetos server from Forms Authentication back to **Windows Authent
           </providers>
         </membership>
         <authorization>
-          <deny users="?" />
+          <allow users="?" />
         </authorization>
 
 3. Inside `<system.web>` add the `<authentication mode="Windows" />` element.
@@ -356,8 +356,8 @@ an additional plugin must be provided that sends the token to the user (by SMS o
 ### Custom implementation
 
 In order to implement a custom method of sending the token to the user (by SMS or email, e.g.),
-create a Rhetos plugin package with a class that implements the `Rhetos.AspNetFormsAuth.ISendPasswordResetToken` interface
-from `Rhetos.AspNetFormsAuth.Interfaces.dll`.
+create a Rhetos plugin package with a class that implements the `Rhetos.AspNetFormsAuthWebApi.ISendPasswordResetToken` interface
+from `Rhetos.AspNetFormsAuthWebApi.Interfaces.dll`.
 The class must use `Export` attribute to register the plugin implementation.
 For example:
 
@@ -389,4 +389,4 @@ Any other exception (`Rhetos.FrameworkException`, e.g.) will only be logged on t
 **Solution**: Execute `AdminSetup.exe` again. It will regenerate the default administration settings. See [admin user](#admin-user).
 
 **Other:** In case of a server error, additional information on the error may be found in the Rhetos server log (`RhetosServer.log` file, by default).
-If needed, more verbose logging of the authentication service may be switched on by adding `<logger name="AspNetFormsAuth.AuthenticationService" minLevel="Trace" writeTo="TraceLog" />` in Rhetos server's `web.config`. The trace log will be written to `RhetosServerTrace.log`.
+If needed, more verbose logging of the authentication service may be switched on by adding `<logger name="AspNetFormsAuthWebApi.AuthenticationService" minLevel="Trace" writeTo="TraceLog" />` in Rhetos server's `web.config`. The trace log will be written to `RhetosServerTrace.log`.

@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Rhetos: Log in</title>
+        <script type="text/javascript" src="Js/jquery-1.7.min.js" ></script>
+        <script type="text/javascript">
+        $(document).keypress(function(e) {
+            if(e.which == 13) {
+                e.preventDefault();
+                $('#login').click();
+            }
+        });
+
+        $(document).ready(function () {
+            var urlParams;
+            (window.onpopstate = function () {
+                var match,
+                    pl     = /\+/g,
+                    search = /([^&=]+)=?([^&]*)/g,
+                    decode = function (s) { return decodeURIComponent(s.replace(pl, ' ')); },
+                    query  = window.location.search.substring(1);
+
+                urlParams = {};
+                while (match = search.exec(query))
+                   urlParams[decode(match[1])] = decode(match[2]);
+            })();
+                
+            $('#login').click(function() {
+
+                var data = JSON.stringify({ 'UserName': $('#username').val(), 'Password': $('#password').val(), 'PersistCookie': $('#persistcookie').is(':checked') });
+				var urlLogin = window.location.protocol+'//'+window.location.hostname+(window.location.port ? ':'+window.location.port: '');
+                $.ajax({
+                            url: urlLogin + '/REST/authentication/Login',
+                            type: 'POST',
+                            dataType: 'json',
+                            async: false,
+                            contentType: 'application/json; charset=utf-8',
+                            data: data,
+                            success: function (data) {
+                                if (data===true)
+                                {
+                                    alert('Logged in successfully.');
+                                    if ('ReturnUrl' in urlParams)
+                                        window.location.replace(urlParams['ReturnUrl']);
+                                }
+                                else if (data===false)
+                                    alert('Invalid username or password.');
+                                else if (data===null)
+                                    alert('Unexpected server response: <null>');
+                                else
+                                    alert('Unexpected server response: ' + data.toString());
+                            },
+                            error: function (jqXHR, textStatus, errorThrown) {
+                                var msg = jqXHR.responseText
+                                try { msg = JSON.parse(msg); } catch (e) {}
+                                if (errorThrown !== 'Bad Request')
+                                    msg = msg + '\n\n(' + textStatus + ' ' + errorThrown + ')';
+                                alert('ERROR:\n\n' + msg);
+                            }
+                        });
+            });
+         });
+        </script>
+    </head>
+    <body>
+        <h1>Log in to Rhetos services</h1>
+        <div class="control-group">
+            <label class="control-label" for="username">Username:</label>
+            <div class="controls">
+                <input type="text" id="username" name="username" />
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="password">Password:</label>
+            <div class="controls">
+                <input type="password" id="password" name="password" />
+            </div>
+        </div>
+        <p class="control-group">
+            <div class="controls">
+                <label>
+                    <input type="checkbox" id="persistcookie" name="persistcookie" />
+                            Remember me on this computer
+                </label>
+            </div>
+        </p>
+        <div class="control-group">
+            <div class="controls">
+                <input type="submit" id="login"  name="login" value="Log in" />
+            </div>
+        </div>
+		<p>
+			<br/>
+            Forgot my password:
+			<a href="SendPasswordResetToken.html">1. Request token</a>,
+			<a href="ResetPassword.html">2. Reset password</a>.
+        </p>
+    </body>
+</html>

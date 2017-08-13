@@ -55,6 +55,7 @@ namespace Rhetos
             {
                 try
                 {
+                    Console.WriteLine(service);
                     service.Initialize();
                     _performanceLogger.Write(stopwatch, "Service " + service.GetType().FullName + ".Initialize");
                 }
