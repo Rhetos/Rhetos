@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Rhetos.CommonConcepts.Test
 {
@@ -117,6 +118,37 @@ namespace Rhetos.CommonConcepts.Test
             }
         }
 
+        [TestMethod]
+        public void TestContains()
+        {
+            {
+                var parents = new List<Parent>();
+                Expression<Func<ItemMaster, bool>> exp = m => parents.Contains(m.parent);
+                Assert.AreEqual("m => value(...).parents.Contains(m.parent)", SimpleReport(exp));
+
+                var rep = new ReplaceWithReference<ItemMaster, Item>(exp, "master", "item").NewExpression;
+                Assert.AreEqual("item => value(...).parents.Contains(item.master.parent)", SimpleReport(rep));
+            }
+        }
+
+        [TestMethod]
+        public void TestContainsWithoutMemberAccess()
+        {
+            {
+                var masters = new List<ItemMaster>();
+                Expression<Func<ItemMaster, bool>> exp = m => masters.Contains(m);
+                Assert.AreEqual("m => value(...).masters.Contains(m)", SimpleReport(exp));
+
+                var rep = new ReplaceWithReference<ItemMaster, Item>(exp, "master", "item").NewExpression;
+                Assert.AreEqual("item => value(...).masters.Contains(item.master)", SimpleReport(rep));
+            }
+        }
+
+        private string SimpleReport(Expression rep)
+        {
+            return new Regex(@"value\(.*?\)").Replace(rep.ToString(), "value(...)");
+        }
+
         class OptimizeChild
         {
             public int A1 { get; set; }
@@ -147,6 +179,54 @@ namespace Rhetos.CommonConcepts.Test
                 Expression<Func<OptimizeParent, bool>> exp = p => p.A2 > 1 && p.B2 > 2;
                 var res = new ReplaceWithReference<OptimizeParent, OptimizeChild>(exp, "Parent", "c", new Tuple<string, string>[] { Tuple.Create("A1", "A2") }).NewExpression;
                 Assert.AreEqual("c => ((c.A1 > 1) AndAlso (c.Parent.B2 > 2))", res.ToString());
+            }
+        }
+
+        class OptimizeBase
+        {
+            public int A { get; set; }
+            public OptimizeExtension1 Extension1 { get; set; }
+        }
+
+        class OptimizeExtension1
+        {
+            public int B { get; set; }
+            public OptimizeBase Base { get; set; }
+            public OptimizeExtension2 Extension2 { get; set; }
+        }
+
+        class OptimizeExtension2
+        {
+            public int C { get; set; }
+            public OptimizeExtension1 Base { get; set; }
+        }
+
+        /// <summary>
+        /// If row permissions expression on the base data structure references the extension,
+        /// then the inherited expression can directly use members of the extension without referencing "item.Base.Extension...".
+        /// </summary>
+        [TestMethod]
+        public void OptimizedExtension()
+        {
+            {
+                // Control:
+                Expression<Func<OptimizeBase, bool>> exp = p => p.A > 1 && p.Extension1.B > 2 && p.Extension1.Extension2.C > 3;
+
+                var res = new ReplaceWithReference<OptimizeBase, OptimizeExtension1>(exp, "Base", "ext1").NewExpression;
+                Assert.AreEqual("ext1 => (((ext1.Base.A > 1) AndAlso (ext1.Base.Extension1.B > 2)) AndAlso (ext1.Base.Extension1.Extension2.C > 3))", res.ToString());
+
+                var res2 = new ReplaceWithReference<OptimizeExtension1, OptimizeExtension2>(res, "Base", "ext2").NewExpression;
+                Assert.AreEqual("ext2 => (((ext2.Base.Base.A > 1) AndAlso (ext2.Base.Base.Extension1.B > 2)) AndAlso (ext2.Base.Base.Extension1.Extension2.C > 3))", res2.ToString());
+            }
+            {
+                // Test:
+                Expression<Func<OptimizeBase, bool>> exp = p => p.A > 1 && p.Extension1.B > 2 && p.Extension1.Extension2.C > 3;
+
+                var res = new ReplaceWithReference<OptimizeBase, OptimizeExtension1>(exp, "Base", "ext1", null, "Extension1").NewExpression;
+                Assert.AreEqual("ext1 => (((ext1.Base.A > 1) AndAlso (ext1.B > 2)) AndAlso (ext1.Extension2.C > 3))", res.ToString());
+
+                var res2 = new ReplaceWithReference<OptimizeExtension1, OptimizeExtension2>(res, "Base", "ext2", null, "Extension2").NewExpression;
+                Assert.AreEqual("ext2 => (((ext2.Base.Base.A > 1) AndAlso (ext2.Base.B > 2)) AndAlso (ext2.C > 3))", res2.ToString());
             }
         }
     }

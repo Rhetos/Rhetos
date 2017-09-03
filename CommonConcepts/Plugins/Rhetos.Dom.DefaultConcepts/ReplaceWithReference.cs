@@ -35,8 +35,10 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         private readonly Expression<Func<TFrom, bool>> _expression;
         private readonly System.Reflection.PropertyInfo _referenceProperty;
-        private readonly ParameterExpression _parameter;
+        private readonly ParameterExpression _newParameter;
+        private readonly ParameterExpression _oldParameter;
         private readonly IEnumerable<Tuple<string, string>> _copiedProperties;
+        private readonly string _extensionSelfReference;
 
         /// <param name="copiedProperties">
         /// Tuple: inherited property, base property.
@@ -48,15 +50,18 @@ namespace Rhetos.Dom.DefaultConcepts
             Expression<Func<TFrom, bool>> expression,
             string referenceName,
             string parameterName,
-            IEnumerable<Tuple<string, string>> copiedProperties = null)
+            IEnumerable<Tuple<string, string>> copiedProperties = null,
+            string extensionSelfReference = null)
         {
             _expression = expression;
+            _oldParameter = expression.Parameters.Single();
             _referenceProperty = typeof(TTo).GetProperty(referenceName);
             if (_referenceProperty == null)
                 throw new FrameworkException("Cannot replace references in the expression. The type '"
                     + typeof(TTo).Name + "' does not contain property '" + referenceName + "' that references '" + typeof(TFrom).Name + "'.");
-            _parameter = Expression.Parameter(typeof(TTo), parameterName);
+            _newParameter = Expression.Parameter(typeof(TTo), parameterName);
             _copiedProperties = copiedProperties ?? Enumerable.Empty<Tuple<string, string>>();
+            _extensionSelfReference = extensionSelfReference;
         }
 
         public Expression<Func<TTo, bool>> NewExpression
@@ -64,20 +69,22 @@ namespace Rhetos.Dom.DefaultConcepts
             get
             {
                 var newBody = Visit(_expression.Body);
-                return Expression.Lambda<Func<TTo, bool>>(newBody, _parameter);
+                return Expression.Lambda<Func<TTo, bool>>(newBody, _newParameter);
             }
         }
 
         protected override Expression VisitParameter(ParameterExpression node)
         {
-            return _parameter;
+            return _newParameter;
         }
 
         protected override Expression VisitMember(MemberExpression node)
         {
-            if ((node.Expression != null && node.Expression.Type == typeof(TFrom))
-                || (node.Member.DeclaringType == typeof(TFrom)))
+            if (node.Expression == _oldParameter)
             {
+                if (node.Member.Name == _extensionSelfReference)
+                    return _newParameter;
+
                 var newExpression = Visit(node.Expression);
 
                 string copiedProperty = _copiedProperties
