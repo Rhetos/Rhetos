@@ -12,7 +12,7 @@ to implement its own authentication or security mechanisms.
 
 1. [Features](#features)
 2. [Authentication service API](#authentication-service-api)
-    * [Login] (#login)
+    * [Login](#login)
     * [Logout](#logout)
     * [SetPassword](#setpassword)
     * [ChangeMyPassword](#changemypassword)
