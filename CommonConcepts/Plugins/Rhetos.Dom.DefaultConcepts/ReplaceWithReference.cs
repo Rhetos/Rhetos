@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -73,22 +74,56 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
-        protected override Expression VisitParameter(ParameterExpression node)
+        protected override Expression VisitParameter(ParameterExpression original)
         {
-            return _newParameter;
+            if (original == _oldParameter)
+                return _newParameter;
+            else
+                return original;
         }
 
-        protected override Expression VisitMember(MemberExpression node)
+        protected override Expression VisitMethodCall(MethodCallExpression m)
         {
-            if (node.Expression == _oldParameter)
+            Expression obj = this.Visit(m.Object);
+            IEnumerable<Expression> args = this.VisitExpressionList(m.Arguments);
+            if (obj != m.Object || args != m.Arguments)
+                return Expression.Call(obj, m.Method, args);
+            else
+                return m;
+        }
+
+        protected virtual ReadOnlyCollection<Expression> VisitExpressionList(ReadOnlyCollection<Expression> original)
+        {
+            List<Expression> list = null;
+            for (int i = 0, n = original.Count; i < n; i++)
             {
-                if (node.Member.Name == _extensionSelfReference)
+                Expression p;
+                if (original[i] == _oldParameter)
+                    p = Expression.MakeMemberAccess(_newParameter, _referenceProperty);
+                else
+                    p = this.Visit(original[i]);
+
+                if (p != original[i] && list == null)
+                    list = original.Take(i).ToList();
+
+                if (list != null)
+                    list.Add(p);
+            }
+
+            return list?.AsReadOnly() ?? original;
+        }
+
+        protected override Expression VisitMember(MemberExpression original)
+        {
+            if (original.Expression == _oldParameter)
+            {
+                if (original.Member.Name == _extensionSelfReference)
                     return _newParameter;
 
-                var newExpression = Visit(node.Expression);
+                var visitedExpression = Visit(original.Expression); // Should be equal to _newParameter.
 
                 string copiedProperty = _copiedProperties
-                    .Where(cp => cp.Item2 == node.Member.Name)
+                    .Where(cp => cp.Item2 == original.Member.Name)
                     .Select(cp => cp.Item1)
                     .OrderBy(name => name)
                     .FirstOrDefault();
@@ -99,18 +134,17 @@ namespace Rhetos.Dom.DefaultConcepts
                     if (memberInfo == null)
                         throw new FrameworkException("Cannot replace references in the expression. The type '"
                             + typeof(TTo).Name + "' does not contain property '" + copiedProperty + "' that is copied from '" + typeof(TFrom).Name + "'.");
-                    return Expression.MakeMemberAccess(newExpression, memberInfo);
+                    return Expression.MakeMemberAccess(visitedExpression, memberInfo);
                 }
                 else
                 {
-                    var referenceExp = Expression.MakeMemberAccess(newExpression, _referenceProperty);
-                    var memberInfo = typeof(TFrom).GetProperty(node.Member.Name);
-                    return Expression.MakeMemberAccess(referenceExp, memberInfo);
+                    var referenceExp = Expression.MakeMemberAccess(visitedExpression, _referenceProperty);
+                    return Expression.MakeMemberAccess(referenceExp, original.Member);
                 }
             }
             else
             {
-                return base.VisitMember(node);
+                return base.VisitMember(original);
             }
         }
     }

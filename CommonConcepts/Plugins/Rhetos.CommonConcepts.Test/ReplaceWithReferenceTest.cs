@@ -142,6 +142,25 @@ namespace Rhetos.CommonConcepts.Test
                 var rep = new ReplaceWithReference<ItemMaster, Item>(exp, "master", "item").NewExpression;
                 Assert.AreEqual("item => value(...).masters.Contains(item.master)", SimpleReport(rep));
             }
+            {
+                var masters = new List<ItemMaster>().AsQueryable();
+                Expression<Func<ItemMaster, bool>> exp = m => masters.Contains(m);
+                Assert.AreEqual("m => value(...).masters.Contains(m)", SimpleReport(exp));
+
+                var rep = new ReplaceWithReference<ItemMaster, Item>(exp, "master", "item").NewExpression;
+                Assert.AreEqual("item => value(...).masters.Contains(item.master)", SimpleReport(rep));
+            }
+        }
+
+        [TestMethod]
+        public void TestUnrelatedParameters()
+        {
+            var masters = new List<ItemMaster>();
+            Expression<Func<ItemMaster, bool>> exp = m => masters.Contains(m) && masters.Where(m2 => masters.Contains(m2)).Select(m3 => m3.id).Any();
+            Assert.AreEqual("m => (value(...).masters.Contains(m) AndAlso value(...).masters.Where(m2 => value(...).masters.Contains(m2)).Select(m3 => m3.id).Any())", SimpleReport(exp));
+
+            var rep = new ReplaceWithReference<ItemMaster, Item>(exp, "master", "item").NewExpression;
+            Assert.AreEqual("item => (value(...).masters.Contains(item.master) AndAlso value(...).masters.Where(m2 => value(...).masters.Contains(m2)).Select(m3 => m3.id).Any())", SimpleReport(rep));
         }
 
         private string SimpleReport(Expression rep)
