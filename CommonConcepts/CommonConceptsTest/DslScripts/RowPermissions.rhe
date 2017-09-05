@@ -334,3 +334,19 @@ Module TestRowPermissionsInheritInternally
         RowPermissions { AllowRead AllowMore 'context => item => item.Name == "ec"'; }
     }
 }
+
+Module TestRowPermissions
+{
+    Entity OptimizeBase
+    {
+        ShortString NameB;
+        RowPermissions { Allow Ext 'context => item => item.Extension_OptimizeExtension.NameE.Contains("allow")'; }
+    }
+
+    Entity OptimizeExtension
+    {
+        Extends TestRowPermissions.OptimizeBase;
+        ShortString NameE;
+        RowPermissions { InheritFromBase; }
+    }
+}

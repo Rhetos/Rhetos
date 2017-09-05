@@ -147,7 +147,9 @@
     <Compile Include="KeepSynchronizedRecomputeOnDeploy.cs" />
     <Compile Include="ReflectionHelper.cs" />
     <Compile Include="ReplaceWithReference.cs" />
+    <Compile Include="RowPermissions\RowPermissionsInheritExtensionReadCodeGenerator.cs" />
     <Compile Include="RowPermissions\RowPermissionsInheritReadSameMemberCodeGenerator.cs" />
+    <Compile Include="RowPermissions\RowPermissionsInheritExtensionWriteCodeGenerator.cs" />
     <Compile Include="RowPermissions\RowPermissionsInheritWriteSameMemberCodeGenerator.cs" />
     <Compile Include="RowPermissions\RowPermissionsRuleDenyCodeGenerator.cs" />
     <Compile Include="RowPermissions\RowPermissionsRuleAllowCodeGenerator.cs" />

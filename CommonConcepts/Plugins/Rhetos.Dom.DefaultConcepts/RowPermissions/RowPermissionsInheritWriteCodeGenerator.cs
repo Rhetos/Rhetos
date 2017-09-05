@@ -35,6 +35,7 @@ namespace Rhetos.Dom.DefaultConcepts
     public class RowPermissionsInheritWriteCodeGenerator : IConceptCodeGenerator
     {
         public static readonly CsTag<RowPermissionsInheritWriteInfo> SameMembersTag = "SameMembersWrite";
+        public static readonly CsTag<RowPermissionsInheritWriteInfo> ExtensionReferenceTag = "ExtensionReferenceWrite";
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
@@ -44,7 +45,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 RowPermissionsUtility.GetInheritSnippet(
                     info.InheritFromInfo,
                     RowPermissionsWriteInfo.PermissionsExpressionName,
-                    SameMembersTag.Evaluate(info)),
+                    SameMembersTag.Evaluate(info),
+                    ExtensionReferenceTag.Evaluate(info)),
                 RowPermissionsPluginableFiltersInfo.WriteFilterExpressionsTag,
                 info.Dependency_RowPermissionsWrite);
         }

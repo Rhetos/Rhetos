@@ -890,5 +890,37 @@ namespace CommonConcepts.Test
                 TestUtility.AssertContains(response.SystemMessage, new[] { "Deleting a record that does not exist in database.", item.ID.ToString() });
             }
         }
+
+        [TestMethod]
+        public void OptimizeExtension()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var context = container.Resolve<Common.ExecutionContext>();
+                var repository = container.Resolve<Common.DomRepository>();
+
+                Assert.AreEqual(
+                    @"item => item.Extension_OptimizeExtension.NameE.Contains(""allow"")",
+                    TestRowPermissions._Helper.OptimizeBase_Repository.GetRowPermissionsReadExpression(null, repository, context).ToString());
+                Assert.AreEqual(
+                    @"optimizeExtensionItem => optimizeExtensionItem.NameE.Contains(""allow"")",
+                    TestRowPermissions._Helper.OptimizeExtension_Repository.GetRowPermissionsReadExpression(null, repository, context).ToString());
+
+                var b1 = new OptimizeBase { NameB = "b1" };
+                var b2 = new OptimizeBase { NameB = "b2" };
+                repository.TestRowPermissions.OptimizeBase.Insert(b1, b2);
+
+                var e1 = new OptimizeExtension { NameE = "e1", ID = b1.ID };
+                var e2 = new OptimizeExtension { NameE = "e2allow", ID = b2.ID };
+                repository.TestRowPermissions.OptimizeExtension.Insert(e1, e2);
+
+                Assert.AreEqual("b2", TestUtility.DumpSorted(
+                    repository.TestRowPermissions.OptimizeBase.Query(new Common.RowPermissionsReadItems()),
+                    item => item.NameB));
+                Assert.AreEqual("e2allow", TestUtility.DumpSorted(
+                    repository.TestRowPermissions.OptimizeExtension.Query(new Common.RowPermissionsReadItems()),
+                    item => item.NameE));
+            }
+        }
     }
 }

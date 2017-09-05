@@ -65,7 +65,9 @@ namespace Rhetos.CommonConcepts.Test
                 Assert.AreEqual("b => False", rep.ToString());
             }
             {
+#pragma warning disable CS1718 // Comparison made to same variable
                 Expression<Func<ItemMaster, bool>> expTaut = bliblo => bliblo == bliblo;
+#pragma warning restore CS1718 // Comparison made to same variable
                 var rep = new ReplaceWithReference<ItemMaster, Item>(expTaut, "master", "item").NewExpression;
                 Assert.AreEqual("item => (item == item)", rep.ToString());
             }

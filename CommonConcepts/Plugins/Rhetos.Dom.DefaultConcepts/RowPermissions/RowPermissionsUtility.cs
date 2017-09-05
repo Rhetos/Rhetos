@@ -47,24 +47,26 @@ namespace Rhetos.Dom.DefaultConcepts
                 info.Name);
         }
 
-        public static string GetInheritSnippet(RowPermissionsInheritFromInfo info, string permissionExpressionName, string sameMembersTag)
+        public static string GetInheritSnippet(RowPermissionsInheritFromInfo info, string permissionExpressionName,
+            string sameMembersTag, string extensionReferenceTag)
         {
-            return string.Format(
-            @"{{
-                var sameMembers = new Tuple<string, string>[] {{ " + sameMembersTag + @" }};
-                var parentRepository = executionContext.Repository.{0}.{1};
-                var parentRowPermissionsExpression = {0}._Helper.{1}_Repository.{2}(parentRepository.Query(), repository, executionContext);
-                var replacedExpression = new ReplaceWithReference<Common.Queryable.{0}_{1}, Common.Queryable.{3}_{4}>(parentRowPermissionsExpression, ""{5}"" , ""{6}"", sameMembers).NewExpression;
+            var source = info.Source;
+            var target = info.RowPermissionsFilters.DataStructure;
+
+            return
+            $@"{{
+                var sameMembers = new Tuple<string, string>[] {{ {sameMembersTag} }};
+                var parentRepository = executionContext.Repository.{source.Module.Name}.{source.Name};
+                var parentRowPermissionsExpression = {source.Module.Name}._Helper.{source.Name}_Repository.{permissionExpressionName}(parentRepository.Query(), repository, executionContext);
+                var replacedExpression = new ReplaceWithReference<Common.Queryable.{source.Module.Name}_{source.Name}, Common.Queryable.{target.Module.Name}_{target.Name}>(parentRowPermissionsExpression, ""{info.SourceSelector}"" , ""{ParameterName(target)}"", sameMembers {extensionReferenceTag}).NewExpression;
                 filterExpression.Include(replacedExpression);
             }}
-            ",
-                info.Source.Module,
-                info.Source.Name,
-                permissionExpressionName,
-                info.RowPermissionsFilters.DataStructure.Module.Name,
-                info.RowPermissionsFilters.DataStructure.Name,
-                info.SourceSelector,
-                info.RowPermissionsFilters.DataStructure.Name.ToLower() + "Item");
+            ";
+        }
+
+        private static string ParameterName(DataStructureInfo target)
+        {
+            return target.Name.Substring(0, 1).ToLower() + target.Name.Substring(1) + "Item";
         }
     }
 }

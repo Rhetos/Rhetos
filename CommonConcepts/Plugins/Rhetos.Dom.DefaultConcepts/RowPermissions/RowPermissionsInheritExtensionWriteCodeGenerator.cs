@@ -27,28 +27,22 @@ using System.ComponentModel.Composition;
 using Rhetos.Extensibility;
 using Rhetos.Dsl;
 using Rhetos.Compiler;
+using Rhetos.Utilities;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(RowPermissionsInheritReadInfo))]
-    public class RowPermissionsInheritReadCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(RowPermissionsInheritExtensionWriteInfo))]
+    public class RowPermissionsInheritExtensionWriteCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly CsTag<RowPermissionsInheritReadInfo> SameMembersTag = "SameMembersRead";
-        public static readonly CsTag<RowPermissionsInheritReadInfo> ExtensionReferenceTag = "ExtensionReferenceRead";
-        
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (RowPermissionsInheritReadInfo)conceptInfo;
+            var info = (RowPermissionsInheritExtensionWriteInfo)conceptInfo;
 
             codeBuilder.InsertCode(
-                RowPermissionsUtility.GetInheritSnippet(
-                    info.InheritFromInfo,
-                    RowPermissionsReadInfo.PermissionsExpressionName,
-                    SameMembersTag.Evaluate(info),
-                    ExtensionReferenceTag.Evaluate(info)),
-                RowPermissionsPluginableFiltersInfo.ReadFilterExpressionsTag, 
-                info.Dependency_RowPermissionsRead); 
+                ", " + CsUtility.QuotedString(info.Extends.ExtensionPropertyName()),
+                RowPermissionsInheritWriteCodeGenerator.ExtensionReferenceTag,
+                info.InheritWrite);
         }
     }
 }

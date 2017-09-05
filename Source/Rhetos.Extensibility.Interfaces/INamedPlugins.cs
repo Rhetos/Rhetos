@@ -23,6 +23,10 @@ using System.Collections.Generic;
 
 namespace Rhetos.Extensibility
 {
+    /// <summary>
+    /// Note: Names plugins cannot be used to list all plugins (Autofac limitation). It that feature is needed, the plugin must
+    /// be registered both as a named (keyed) service, and as a simple service, then use PluginsContainer to get all plugins.
+    /// </summary>
     public interface INamedPlugins<TPlugin>
     {
         IEnumerable<TPlugin> GetPlugins(string name);
