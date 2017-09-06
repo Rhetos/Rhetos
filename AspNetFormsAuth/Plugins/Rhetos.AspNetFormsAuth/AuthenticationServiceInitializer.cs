@@ -53,7 +53,7 @@ namespace Rhetos.AspNetFormsAuth
                 if (ex.Message == "The Role Manager feature has not been enabled.")
                     throw new FrameworkException(installationErrorMessage + " Modify Web.config. (" + ex.GetType().Name + ": " + ex.Message + ")"); // Without internal message, so that developers can see the error.
 
-                throw new FrameworkException(installationErrorMessage, ex);
+                throw;
             }
         }
 
