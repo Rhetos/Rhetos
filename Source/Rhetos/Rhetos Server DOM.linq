@@ -54,27 +54,29 @@ void Main()
     {
         var context = container.Resolve<Common.ExecutionContext>();
         var repository = context.Repository;
+
+		// Query data from the `Common.Claim` table:
+		
+		var claims = repository.Common.Claim.Query()
+			.Where(c => c.ClaimResource.StartsWith("Common.") && c.ClaimRight == "New")
+			.ToSimple(); // Removes ORM navigation properties from the loaded objects.
+			
+        claims.ToString().Dump("Common.Claims SQL query");
+		claims.Dump("Common.Claims items");
         
-        // PRINT 3 CLAIMS:
-        var claimsAll = repository.Common.Claim.Query();
-        claimsAll.Take(3).Dump();
-        
-        // PRINT CLAIM RESOURCES FROM COMMON MODULE, THAT HAVE 'New' CLAIM RIGHT:
-        string.Join(", ", claimsAll
-            .Where(c => c.ClaimResource.StartsWith("Common.") && c.ClaimRight == "New")
-            .Select(c => c.ClaimResource)).Dump("Claim resources:");
-        
-        // ADD AND REMOVE A PRINCIPAL:
-        var testUser = new Common.Principal { Name = "Test123ABC", ID = Guid.NewGuid() };
+        // Add and remove a `Common.Principal`:
+		
+        var testUser = new Common.Principal { Name = "Test123", ID = Guid.NewGuid() };
         repository.Common.Principal.Insert(new[] { testUser });
         repository.Common.Principal.Delete(new[] { testUser });
         
-        // PRINT LOGGED EVENTS FOR THE 'Common.Principal' INSTANCE:
+        // Print logged events for the `Common.Principal`:
+		
         repository.Common.LogReader.Query()
             .Where(log => log.TableName == "Common.Principal" && log.ItemId == testUser.ID)
             .ToList()
-            //.Select(log => new { log.Created, log.Action, ClientUser = SqlUtility.ExtractUserInfo(log.ContextInfo).UserName, log.Description })
-            .Dump();
+            .Dump("Common.Principal log");
+			
 		Console.WriteLine("Done.");
     }
 }
