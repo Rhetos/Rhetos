@@ -49,7 +49,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return new[] {new DataStructureExtendsInfo {Extension = this, Base = Source}};
+            return new[] { new DataStructureExtendsInfo { Extension = this, Base = Source } };
         }
     }
 }

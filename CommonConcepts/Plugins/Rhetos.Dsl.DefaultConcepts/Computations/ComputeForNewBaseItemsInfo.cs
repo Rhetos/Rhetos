@@ -37,7 +37,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         /// <summary>May be empty.</summary>
         public string FilterSaveExpression { get; set; }
 
-        public DataStructureExtendsInfo Dependency_Extends { get; set; }
+        public UniqueReferenceInfo Dependency_Extends { get; set; }
 
         public IEnumerable<string> DeclareNonparsableProperties()
         {
@@ -46,7 +46,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
-            Dependency_Extends = new DataStructureExtendsInfo { Extension = EntityComputedFrom.Target };
+            Dependency_Extends = new UniqueReferenceInfo { Extension = EntityComputedFrom.Target };
             createdConcepts = null;
         }
 

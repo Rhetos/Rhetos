@@ -441,8 +441,8 @@ namespace Rhetos.DatabaseGenerator
             var oldApplicationsByKey = oldApplications.ToDictionary(a => a.GetConceptApplicationKey());
             var newApplicationsByKey = newApplications.ToDictionary(a => a.GetConceptApplicationKey());
 
-
             // Find directly inserted and removed concept applications:
+
             var directlyRemoved = oldApplicationsByKey.Keys.Except(newApplicationsByKey.Keys).ToList();
             var directlyInserted = newApplicationsByKey.Keys.Except(oldApplicationsByKey.Keys).ToList();
 
@@ -451,8 +451,8 @@ namespace Rhetos.DatabaseGenerator
             foreach (string ca in directlyInserted)
                 _logger.Trace("Directly inserted concept application: " + ca);
             
-
             // Find changed concept applications (different create sql query):
+
             var existingApplications = oldApplicationsByKey.Keys.Intersect(newApplicationsByKey.Keys).ToList();
             var changedApplications = existingApplications.Where(appKey => !string.Equals(
                 oldApplicationsByKey[appKey].CreateQuery,
@@ -461,8 +461,8 @@ namespace Rhetos.DatabaseGenerator
             foreach (string ca in changedApplications)
                 _logger.Trace("Changed concept application: " + ca);
 
-
             // Find dependent concepts applications to be regenerated:
+
             var toBeRemovedKeys = directlyRemoved.Union(changedApplications).ToList();
             var oldDependencies = GetDependencyPairs(oldApplications).Select(dep => Tuple.Create(dep.Item1.GetConceptApplicationKey(), dep.Item2.GetConceptApplicationKey()));
             var dependentRemovedApplications = Graph.IncludeDependents(toBeRemovedKeys, oldDependencies).Except(toBeRemovedKeys);
@@ -475,8 +475,8 @@ namespace Rhetos.DatabaseGenerator
             toBeRemovedKeys.AddRange(refreshDependents.Intersect(oldApplicationsByKey.Keys));
             toBeInsertedKeys.AddRange(refreshDependents.Intersect(newApplicationsByKey.Keys));
 
-
             // Log dependencies for items that need to be refreshed:
+
             var newDependenciesByDependent = newDependencies.GroupBy(dep => dep.Item2, dep => dep.Item1).ToDictionary(group => group.Key, group => group.ToList());
             var oldDependenciesByDependent = oldDependencies.GroupBy(dep => dep.Item2, dep => dep.Item1).ToDictionary(group => group.Key, group => group.ToList());
             var toBeInsertedIndex = new HashSet<string>(toBeInsertedKeys);
@@ -504,8 +504,8 @@ namespace Rhetos.DatabaseGenerator
                         return string.Join(" ", report);
                     });
 
-
             // Result:
+
             toBeRemoved = toBeRemovedKeys.Select(key => oldApplicationsByKey[key]).ToList();
             toBeInserted = toBeInsertedKeys.Select(key => newApplicationsByKey[key]).ToList();
         }

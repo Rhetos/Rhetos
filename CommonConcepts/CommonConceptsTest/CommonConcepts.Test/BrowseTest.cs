@@ -263,5 +263,23 @@ namespace CommonConcepts.Test.OldConcepts
                 Assert.AreEqual("parent", repository.TestBrowse2.OtherModuleBrowse.Query().Single().ParentReference.Name);
             }
         }
+
+        [TestMethod]
+        public void UniqueReference()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var p = new TestBrowse.ParentBase { Name = "p" };
+                repository.TestBrowse.ParentBase.Insert(p);
+
+                var pur = new TestBrowse.ParentUniqueReference { ID = p.ID, Name3 = "pur" };
+                repository.TestBrowse.ParentUniqueReference.Insert(pur);
+
+                Assert.AreEqual("p-pur", repository.TestBrowse.ParentUniqueReferenceBrowse1.Query(item => item.ID == p.ID).Select(item => item.Name + "-" + item.Name3).Single());
+                Assert.AreEqual("p-pur", repository.TestBrowse.ParentUniqueReferenceBrowse2.Query(item => item.ID == p.ID).Select(item => item.Name + "-" + item.Name3).Single());
+            }
+        }
     }
 }

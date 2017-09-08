@@ -35,7 +35,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public DataStructureInfo GetBaseDataStructure(IDslModel existingConcepts)
         {
             return existingConcepts
-                .FindByReference<DataStructureExtendsInfo>(extends => extends.Extension, RowPermissionsFilters.DataStructure)
+                .FindByReference<UniqueReferenceInfo>(extends => extends.Extension, RowPermissionsFilters.DataStructure)
                 .Select(extends => extends.Base)
                 .SingleOrDefault();
         }

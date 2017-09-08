@@ -56,10 +56,12 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public IEnumerable<IConceptInfo> CreateNewConcepts(ChangesOnReferencedInfo conceptInfo, IDslModel existingConcepts)
         {
-            var reference = DslUtility.GetPropertyByPath(conceptInfo.Computation, conceptInfo.ReferencePath, existingConcepts).Value;
-            if (!(reference is ReferencePropertyInfo))
-                throw new DslSyntaxException(conceptInfo, $"The given path '{conceptInfo.ReferencePath}' should end with a reference property, instead of the {reference.GetUserDescription()}.");
-            var referenced = ((ReferencePropertyInfo)reference).Referenced;
+            var reference = DslUtility.GetPropertyByPath(conceptInfo.Computation, conceptInfo.ReferencePath, existingConcepts);
+            if (reference.IsError)
+                return null; // Wait for the other macro concepts to be evaluated. If the error persists, it will be handled at IValidatedConcept.CheckSemantics.
+            if (!(reference.Value is ReferencePropertyInfo))
+                throw new DslSyntaxException(conceptInfo, $"The given path '{conceptInfo.ReferencePath}' should end with a reference property, instead of the {reference.Value.GetUserDescription()}.");
+            var referenced = ((ReferencePropertyInfo)reference.Value).Referenced;
 
             var computationDependencies = new List<Tuple<DataStructureInfo, string>>();
             if (referenced is IWritableOrmDataStructure)

@@ -33,7 +33,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var newConcepts = new List<IConceptInfo>();
 
-            var extensionsIndex = existingConcepts.FindByType<DataStructureExtendsInfo>()
+            var extensionsIndex = existingConcepts.FindByType<UniqueReferenceInfo>()
                 .ToDictionary(e => e.Extension.GetKeyProperties(), e => e);
 
             newConcepts.AddRange(existingConcepts.FindByType<RowPermissionsInheritReadInfo>()

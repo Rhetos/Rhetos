@@ -73,7 +73,7 @@ Module TestBrowse
 		Extends TestBrowse.Parent;
 		ShortString Name2;
 	}
-	
+
 	Entity Complex
 	{
 		ShortString Code;
@@ -92,6 +92,26 @@ Module TestBrowse
 		
 		Take 'Ref.ID';
 		Take ParentReference Ref;
+	}
+
+	//================================
+	
+	Entity ParentUniqueReference
+	{
+		UniqueReference TestBrowse.ParentBase;
+		ShortString Name3;
+	}
+
+	Browse ParentUniqueReferenceBrowse1 TestBrowse.ParentBase
+	{
+		Take Name;
+		Take Name3 'Extension_ParentUniqueReference.Name3';
+	}
+
+	Browse ParentUniqueReferenceBrowse2 TestBrowse.ParentUniqueReference
+	{
+		Take Name 'Base.Name';
+		Take Name3;
 	}
 }
 

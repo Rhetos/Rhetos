@@ -27,10 +27,18 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ChangesOnBaseItem")]
-    public class ChangesOnBaseItemInfo : IConceptInfo
+    public class ChangesOnBaseItemInfo : IConceptInfo, IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo Computation { get; set; }
+
+        public void CheckSemantics(IDslModel existingConcepts)
+        {
+            var extendsConcept = existingConcepts.FindByType<UniqueReferenceInfo>().Where(extends => extends.Extension == Computation).FirstOrDefault();
+            if (extendsConcept == null)
+                throw new DslSyntaxException("ChangesOnBaseItem is used on '" + Computation.GetUserDescription()
+                    + "' which does not extend another base data structure. Consider adding 'Extends' concept.");
+        }
     }
 
     [Export(typeof(IConceptMacro))]
@@ -38,13 +46,9 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public IEnumerable<IConceptInfo> CreateNewConcepts(ChangesOnBaseItemInfo conceptInfo, IDslModel existingConcepts)
         {
-            var extendsConcept = existingConcepts.FindByType<DataStructureExtendsInfo>().Where(extends => extends.Extension == conceptInfo.Computation).FirstOrDefault();
-
+            var extendsConcept = existingConcepts.FindByType<UniqueReferenceInfo>().Where(extends => extends.Extension == conceptInfo.Computation).FirstOrDefault();
             if (extendsConcept == null)
-                return null;
-            // TODO: Implement and use global ConceptInfoMetadata to check if this concept is handled or not after evaluating all other concepts.
-                //throw new DslSyntaxException("ChangesOnBaseItem is used on '" + Computation.GetUserDescription()
-                //    + "' which does not extend another base data structure. Consider adding 'Extends' concept.");
+                return null; // Wait for other macro concepts to evaluate.
 
             if (!typeof(EntityInfo).IsAssignableFrom(extendsConcept.Base.GetType()))
                 throw new DslSyntaxException("ChangesOnBaseItem is used on '" + conceptInfo.Computation.GetUserDescription()

@@ -53,7 +53,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             // If the computed data source is an extension, but its value does not depend on changes in its base data structure,
             // it should still be computed every time the base data structure data is inserted.
 
-            var dataSourceExtension = existingConcepts.FindByType<DataStructureExtendsInfo>()
+            var dataSourceExtension = existingConcepts.FindByType<UniqueReferenceInfo>()
                 .Where(ex => ex.Extension == conceptInfo.EntityComputedFrom.Source)
                 .SingleOrDefault();
             

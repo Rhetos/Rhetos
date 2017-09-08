@@ -207,13 +207,13 @@ END;</value>
   <data name="SqlUniqueMultipleDatabaseDefinition_ExtendOption1" xml:space="preserve">
     <value>UNIQUE </value>
   </data>
-  <data name="DataStructureExtendsDatabaseDefinition_ConstraintName" xml:space="preserve">
+  <data name="UniqueReferenceDatabaseDefinition_ConstraintName" xml:space="preserve">
     <value>FK_{0}_ID</value>
   </data>
-  <data name="DataStructureExtendsDatabaseDefinition_Create" xml:space="preserve">
-    <value>ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY (ID) REFERENCES {2} (ID) ON DELETE CASCADE {3}</value>
+  <data name="UniqueReferenceDatabaseDefinition_Create" xml:space="preserve">
+    <value>ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY (ID) REFERENCES {2} (ID) {3}</value>
   </data>
-  <data name="DataStructureExtendsDatabaseDefinition_Remove" xml:space="preserve">
+  <data name="UniqueReferenceDatabaseDefinition_Remove" xml:space="preserve">
     <value>ALTER TABLE {0} DROP CONSTRAINT {1}</value>
   </data>
   <data name="SqlIndexMultipleDatabaseDefinition_Create" xml:space="preserve">

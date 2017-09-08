@@ -26,12 +26,26 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// Inherits the 'UniqueReference' concept and additionally allows cascade delete and automatic inheritance of row permissions.
-    /// In 1:1 relations, the 'Extends' concept is to 'UniqueReference' as 'Reference' is to 'Reference { Detail; }' in 1:N relations.
+    /// The extension data structure has the same ID as the base data structure.
+    /// Database:
+    /// The extension's table has a foreign key constraint on its ID column, referencing the base entity's ID column.
+    /// C# object model:
+    /// The extension's class has 'Base' navigation property that references the base class. The base class has Extension_* navigation property that references the extension.
     /// </summary>
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("Extends")]
-    public class DataStructureExtendsInfo : UniqueReferenceInfo
+    [ConceptKeyword("UniqueReference")]
+    public class UniqueReferenceInfo : IConceptInfo
     {
+        [ConceptKey]
+        public DataStructureInfo Extension { get; set; }
+
+        public DataStructureInfo Base { get; set; }
+  
+        public string ExtensionPropertyName()
+        {
+            if (Base.Module == Extension.Module)
+                return "Extension_" + Extension.Name;
+            return "Extension_" + Extension.Module.Name + "_" + Extension.Name;
+        }
     }
 }

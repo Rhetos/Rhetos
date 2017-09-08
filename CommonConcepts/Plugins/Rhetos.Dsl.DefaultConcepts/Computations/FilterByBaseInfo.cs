@@ -45,7 +45,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         private DataStructureInfo GetBaseDataStructure(IEnumerable<IConceptInfo> concepts)
         {
-            return concepts.OfType<DataStructureExtendsInfo>()
+            return concepts.OfType<UniqueReferenceInfo>()
                 .Where(ci => ci.Extension == Source)
                 .Select(ci => ci.Base)
                 .SingleOrDefault();
@@ -79,7 +79,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         private DataStructureInfo GetBaseDataStructure(FilterByBaseInfo conceptInfo, IDslModel concepts)
         {
-            return concepts.FindByType<DataStructureExtendsInfo>()
+            return concepts.FindByType<UniqueReferenceInfo>()
                 .Where(ci => ci.Extension == conceptInfo.Source)
                 .Select(ci => ci.Base)
                 .SingleOrDefault();

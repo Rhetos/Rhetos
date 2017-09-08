@@ -36,6 +36,6 @@ namespace Rhetos.Dsl.DefaultConcepts
         public RowPermissionsInheritReadInfo InheritRead { get; set; }
 
         [ConceptKey]
-        public DataStructureExtendsInfo Extends { get; set; }
+        public UniqueReferenceInfo Extends { get; set; }
     }
 }

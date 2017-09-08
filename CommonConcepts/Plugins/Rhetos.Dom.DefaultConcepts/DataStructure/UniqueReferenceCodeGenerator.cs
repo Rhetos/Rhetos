@@ -31,13 +31,12 @@ using Rhetos.Compiler;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(DataStructureExtendsInfo))]
-    public class DataStructureExtendsCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(UniqueReferenceInfo))]
+    public class UniqueReferenceCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            DataStructureExtendsInfo info = (DataStructureExtendsInfo)conceptInfo;
-            var extensionPropertyName = ExtensionPropertyName(info);
+            var info = (UniqueReferenceInfo)conceptInfo;
 
             if (DslUtility.IsQueryable(info.Extension) && DslUtility.IsQueryable(info.Base))
             {
@@ -46,7 +45,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     propertyType: "Common.Queryable." + info.Base.Module.Name + "_" + info.Base.Name,
                     additionalSetterCode: "ID = value != null ? value.ID : Guid.Empty;");
                 DataStructureQueryableCodeGenerator.AddNavigationPropertyWithBackingField(codeBuilder, info.Base,
-                    csPropertyName: extensionPropertyName,
+                    csPropertyName: info.ExtensionPropertyName(),
                     propertyType: "Common.Queryable." + info.Extension.Module.Name + "_" + info.Extension.Name,
                     additionalSetterCode: null);
             }
@@ -54,7 +53,7 @@ namespace Rhetos.Dom.DefaultConcepts
             if (info.Extension is IOrmDataStructure && info.Base is IOrmDataStructure)
                 codeBuilder.InsertCode(
                     string.Format("modelBuilder.Entity<Common.Queryable.{0}_{1}>().HasRequired(t => t.Base).WithOptional(t => t.{2});\r\n            ",
-                        info.Extension.Module.Name, info.Extension.Name, extensionPropertyName),
+                        info.Extension.Module.Name, info.Extension.Name, info.ExtensionPropertyName()),
                     DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
             else if (info.Extension is IOrmDataStructure)
                 codeBuilder.InsertCode(
@@ -64,14 +63,8 @@ namespace Rhetos.Dom.DefaultConcepts
             else if (info.Base is IOrmDataStructure)
                 codeBuilder.InsertCode(
                     string.Format("modelBuilder.Entity<Common.Queryable.{0}_{1}>().Ignore(t => t.{2});\r\n            ",
-                        info.Base.Module.Name, info.Base.Name, extensionPropertyName),
+                        info.Base.Module.Name, info.Base.Name, info.ExtensionPropertyName()),
                     DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
-        }
-
-        [Obsolete("Use conceptInfo.ExtensionPropertyName()")]
-        public static string ExtensionPropertyName(DataStructureExtendsInfo info)
-        {
-            return info.ExtensionPropertyName();
         }
     }
 }

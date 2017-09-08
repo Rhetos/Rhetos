@@ -56,8 +56,10 @@ namespace Rhetos.Dsl.DefaultConcepts
         public static void CloneExtension(DataStructureInfo source, DataStructureInfo destination, IDslModel existingConcepts, List<IConceptInfo> newConcepts)
         {
             newConcepts.AddRange(
-                existingConcepts.FindByType<DataStructureExtendsInfo>().Where(ci => ci.Extension == source)
-                .Select(ci => new DataStructureExtendsInfo { Extension = destination, Base = ci.Base }));
+                existingConcepts.FindByType<UniqueReferenceInfo>().Where(ci => ci.Extension == source)
+                .Select(ci => ci is DataStructureExtendsInfo
+                    ? new DataStructureExtendsInfo { Extension = destination, Base = ci.Base }
+                    : new UniqueReferenceInfo { Extension = destination, Base = ci.Base }));
         }
     }
 }

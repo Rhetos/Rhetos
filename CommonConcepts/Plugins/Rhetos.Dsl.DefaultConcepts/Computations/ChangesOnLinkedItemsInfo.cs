@@ -44,7 +44,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public IEnumerable<IConceptInfo> CreateNewConcepts(ChangesOnLinkedItemsInfo conceptInfo, IDslModel existingConcepts)
         {
-            var extendsConcept = existingConcepts.FindByType<DataStructureExtendsInfo>().Where(extends => extends.Extension == conceptInfo.Computation).FirstOrDefault();
+            var extendsConcept = existingConcepts.FindByType<UniqueReferenceInfo>().Where(extends => extends.Extension == conceptInfo.Computation).FirstOrDefault();
             if (extendsConcept == null)
                 throw new DslSyntaxException("ChangesOnLinkedItems is used on '" + conceptInfo.Computation.GetUserDescription()
                     + "' which does not extend another base data structure. Consider adding 'Extends' concept.");

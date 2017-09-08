@@ -117,13 +117,13 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="DataStructureExtendsDatabaseDefinition_ConstraintName" xml:space="preserve">
+  <data name="UniqueReferenceDatabaseDefinition_ConstraintName" xml:space="preserve">
     <value>FK_{0}_{1}_ID</value>
   </data>
-  <data name="DataStructureExtendsDatabaseDefinition_Create" xml:space="preserve">
-    <value>ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY (ID) REFERENCES {2} (ID) ON DELETE CASCADE {3};</value>
+  <data name="UniqueReferenceDatabaseDefinition_Create" xml:space="preserve">
+    <value>ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY (ID) REFERENCES {2} (ID) {3};</value>
   </data>
-  <data name="DataStructureExtendsDatabaseDefinition_Remove" xml:space="preserve">
+  <data name="UniqueReferenceDatabaseDefinition_Remove" xml:space="preserve">
     <value>ALTER TABLE {0} DROP CONSTRAINT {1};</value>
   </data>
   <data name="EntityDatabaseDefinition_Create" xml:space="preserve">

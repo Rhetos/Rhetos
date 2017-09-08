@@ -36,61 +36,24 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(DataStructureExtendsInfo))]
     public class DataStructureExtendsDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
-        public static readonly SqlTag<DataStructureExtendsInfo> ForeignKeyConstraintOptions = "FK options";
-
-        public static string GetConstraintName(DataStructureExtendsInfo info)
-        {
-            return SqlUtility.Identifier(Sql.Format("DataStructureExtendsDatabaseDefinition_ConstraintName",
-                info.Extension.Name,
-                info.Base.Name));
-        }
-
-        private static bool ShouldCreateConstraint(DataStructureExtendsInfo info)
-        {
-            return info.Extension is EntityInfo
-                && ForeignKeyUtility.GetSchemaTableForForeignKey(info.Base) != null;
-        }
-
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
-            var info = (DataStructureExtendsInfo)conceptInfo;
-            if (ShouldCreateConstraint(info))
-            {
-                return Sql.Format("DataStructureExtendsDatabaseDefinition_Create",
-                    SqlUtility.Identifier(info.Extension.Module.Name) + "." + SqlUtility.Identifier(info.Extension.Name),
-                    GetConstraintName(info),
-                    ForeignKeyUtility.GetSchemaTableForForeignKey(info.Base),
-                    ForeignKeyConstraintOptions.Evaluate(info));
-            }
-            // TODO: else - Generate a Filter+InvalidData validation in the server application that checks for invalid items.
-            return "";
+            return null;
         }
 
         public void ExtendDatabaseStructure(IConceptInfo conceptInfo, ICodeBuilder codeBuilder, out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
         {
             var info = (DataStructureExtendsInfo) conceptInfo;
 
-            var dependencies = new List<Tuple<IConceptInfo, IConceptInfo>>();
-            dependencies.Add(Tuple.Create<IConceptInfo, IConceptInfo>(info.Base, info.Extension));
+            if (UniqueReferenceDatabaseDefinition.ShouldCreateConstraint(info))
+                codeBuilder.InsertCode("ON DELETE CASCADE ", UniqueReferenceDatabaseDefinition.ForeignKeyConstraintOptionsTag, info);
 
-            if (ShouldCreateConstraint(info))
-                dependencies.AddRange(ForeignKeyUtility.GetAdditionalForeignKeyDependencies(info.Base)
-                    .Select(dep => Tuple.Create<IConceptInfo, IConceptInfo>(dep, info))
-                    .ToList());
-
-            createdDependencies = dependencies;
+            createdDependencies = null;
         }
 
         public string RemoveDatabaseStructure(IConceptInfo conceptInfo)
         {
-            var info = (DataStructureExtendsInfo)conceptInfo;
-            if (ShouldCreateConstraint(info))
-            {
-                return Sql.Format("DataStructureExtendsDatabaseDefinition_Remove",
-                    SqlUtility.Identifier(info.Extension.Module.Name) + "." + SqlUtility.Identifier(info.Extension.Name),
-                    GetConstraintName(info));
-            }
-            return "";
+            return null;
         }
     }
 }

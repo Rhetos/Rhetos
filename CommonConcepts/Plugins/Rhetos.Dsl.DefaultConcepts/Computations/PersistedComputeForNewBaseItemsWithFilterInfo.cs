@@ -36,9 +36,9 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public string FilterSaveExpression { get; set; }
 
-        private DataStructureExtendsInfo MyExtendsConceptInfo(IEnumerable<IConceptInfo> existingConcepts)
+        private UniqueReferenceInfo MyExtendsConceptInfo(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return existingConcepts.OfType<DataStructureExtendsInfo>()
+            return existingConcepts.OfType<UniqueReferenceInfo>()
                 .Where(extends => extends.Extension == Persisted)
                 .FirstOrDefault();
         }

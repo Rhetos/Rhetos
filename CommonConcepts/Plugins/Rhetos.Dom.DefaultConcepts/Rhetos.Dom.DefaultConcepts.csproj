@@ -184,7 +184,7 @@
     <Compile Include="DataStructure\ModuleCodeGenerator.cs" />
     <Compile Include="DataStructure\Properties\BinaryCodeGenerator.cs" />
     <Compile Include="DataStructure\Properties\BoolPropertyCodeGenerator.cs" />
-    <Compile Include="DataStructure\DataStructureExtendsCodeGenerator.cs" />
+    <Compile Include="DataStructure\UniqueReferenceCodeGenerator.cs" />
     <Compile Include="DataStructure\Properties\GuidPropertyCodeGenerator.cs" />
     <Compile Include="DataStructure\Properties\MoneyPropertyCodeGenerator.cs" />
     <Compile Include="DataStructure\Properties\DateTimePropertyCodeGenerator.cs" />
