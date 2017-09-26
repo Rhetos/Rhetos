@@ -44,11 +44,19 @@ namespace Rhetos.Dsl.DefaultConcepts
                 .Select(ci => new ReferenceCascadeDeleteInfo
                 {
                     Reference = new ReferencePropertyInfo
-                        {
-                            DataStructure = conceptInfo.Destination,
-                            Name = ci.Reference.Name,
-                            Referenced = ci.Reference.Referenced
-                        }
+                    {
+                        DataStructure = conceptInfo.Destination,
+                        Name = ci.Reference.Name
+                    }
+                }));
+
+            newConcepts.AddRange(existingConcepts.FindByType<UniqueReferenceCascadeDeleteInfo>().Where(ci => ci.UniqueReference.Extension == conceptInfo.Source)
+                .Select(ci => new UniqueReferenceCascadeDeleteInfo
+                {
+                    UniqueReference = new UniqueReferenceInfo
+                    {
+                        Extension = conceptInfo.Destination
+                    }
                 }));
 
             return newConcepts;

@@ -28,9 +28,9 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("CascadeDelete")]
-    public class ReferenceCascadeDeleteInfo : IConceptInfo
+    public class UniqueReferenceCascadeDeleteInfo : IConceptInfo
     {
         [ConceptKey]
-        public ReferencePropertyInfo Reference { get; set; }
+        public UniqueReferenceInfo UniqueReference { get; set; }
     }
 }

@@ -26,6 +26,8 @@ using Rhetos.TestCommon;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
 
 namespace CommonConcepts.Test
 {
@@ -132,6 +134,23 @@ Clone3.Start
 
                 c.Name = null;
                 TestUtility.ShouldFail(() => repository.TestCloning.Clone3.Update(new[] { c }), "required", "Name");
+            }
+        }
+
+        [TestMethod]
+        public void CloneUniqueReference()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var dslModel = container.Resolve<IDslModel>();
+                var cloneUR = (EntityInfo)dslModel.FindByKey("DataStructureInfo TestCloning.CloneUR");
+
+                Assert.AreEqual("ShortString TestCloning.CloneUR.Name", dslModel.FindByReference<PropertyInfo>(p => p.DataStructure, cloneUR).Single().GetUserDescription());
+
+                var uniqueReference = dslModel.FindByReference<UniqueReferenceInfo>(ur => ur.Extension, cloneUR).Single();
+                Assert.AreEqual("UniqueReference TestCloning.CloneUR", uniqueReference.GetUserDescription());
+
+                Assert.AreEqual("CascadeDelete TestCloning.CloneUR", dslModel.FindByReference<UniqueReferenceCascadeDeleteInfo>(cd => cd.UniqueReference, uniqueReference).Single().GetUserDescription());
             }
         }
     }

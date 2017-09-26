@@ -113,6 +113,12 @@ Module TestBrowse
 		Take Name 'Base.Name';
 		Take Name3;
 	}
+
+	Entity UniqueReferenceChild
+	{
+		UniqueReference TestBrowse.ParentUniqueReference { CascadeDelete; }
+		ShortString Name4;
+	}
 }
 
 Module TestBrowse2
@@ -294,10 +300,21 @@ Module TestCloning
 		PropertyFrom TestCloning.Source.Parent;
 		PropertyFrom TestCloning.Source.Start;
 	}
-	
+
 	Entity Clone3
 	{
 		AllPropertiesWithCascadeDeleteFrom TestCloning.Source;
+	}
+
+	Entity SourceUR
+	{
+		UniqueReference TestCloning.Base { CascadeDelete; }
+		ShortString Name;
+	}
+
+	Entity CloneUR
+	{
+		AllPropertiesWithCascadeDeleteFrom TestCloning.SourceUR;
 	}
 }
 
