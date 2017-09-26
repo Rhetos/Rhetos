@@ -23,6 +23,7 @@ using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Security;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,10 +32,8 @@ namespace ActiveDirectorySync.Test.Helpers
 {
     public class MockWindowsSecurityRhetosContainer : RhetosTestContainer
     {
-        const string RhetosServerFolder = @"..\..\..\..\Source\Rhetos";
-
         public MockWindowsSecurityRhetosContainer(string userGroupMembership, bool commitChanges = false)
-            : base(commitChanges, RhetosServerFolder)
+            : base(commitChanges, GetRhetosServerFolder())
         {
             InitializeSession += builder =>
             {
@@ -42,6 +41,21 @@ namespace ActiveDirectorySync.Test.Helpers
                 // Test the CommonAuthorizationProvider even if another security package was deployed:
                 builder.RegisterType<CommonAuthorizationProvider>();
             };
+        }
+
+        private static string GetRhetosServerFolder()
+        {
+            string start = Directory.GetCurrentDirectory();
+
+            string folder = start;
+            while (Path.GetFileName(folder) != "Rhetos")
+            {
+                folder = Path.GetDirectoryName(folder);
+                if (folder == null)
+                    throw new ApplicationException($"Cannot find the root 'Rhetos' source folder starting from '{start}'.");
+            };
+
+            return Path.Combine(folder, @"Source\Rhetos");
         }
     }
 }
