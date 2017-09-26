@@ -28,10 +28,5 @@ namespace Rhetos.Persistence
         /// Clears in-memory cache that is used for lazy loading.
         /// </summary>
         void ClearCache();
-
-        /// <summary>
-        /// Clears the item from the in-memory cache that is used for lazy loading.
-        /// </summary>
-        void ClearCache(object item);
     }
 }

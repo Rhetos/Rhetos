@@ -89,8 +89,7 @@ namespace CommonConcepts.Test
                 repository.Test13.Legacy1.Insert(new[] { new Test13.Legacy1 { Name = "c" } });
                 Assert.AreEqual("a, b, c", ReportLegacy1(container, repository), "insert");
 
-                var updated = repository.Test13.Legacy1.Query().Where(item => item.Name == "a").Single();
-                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache(updated);
+                var updated = repository.Test13.Legacy1.Load(item => item.Name == "a").Single();
                 updated.Name = "ax";
                 repository.Test13.Legacy1.Update(new[] { updated });
                 Assert.AreEqual("ax, b, c", ReportLegacy1(container, repository), "update");
@@ -113,8 +112,7 @@ namespace CommonConcepts.Test
                 repository.Test13.Legacy2.Insert(new[] { new Test13.Legacy2 { NameNew = "bnew", Leg1ID = GuidB, Same = "snew" } });
                 Assert.AreEqual("a ax sx, a ay sy, b bnew snew", ReportLegacy2(container, repository), "insert");
 
-                var updated = repository.Test13.Legacy2.Query().Where(item => item.NameNew == "ax").Single();
-                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache(updated);
+                var updated = repository.Test13.Legacy2.Load(item => item.NameNew == "ax").Single();
                 updated.NameNew += "2";
                 updated.Leg1ID = GuidB;
                 updated.Same += "2";

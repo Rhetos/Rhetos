@@ -330,28 +330,6 @@ namespace Common
             }
         }
 
-        public void ClearCache(object item)
-        {
-            var objectContext = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)this).ObjectContext;
-            System.Data.Entity.Core.Objects.ObjectStateEntry stateEntry;
-            bool isCached = objectContext.ObjectStateManager.TryGetObjectStateEntry(item, out stateEntry);
-
-            if (isCached)
-            {
-                SetDetaching(true);
-                try
-                {
-                    Configuration.AutoDetectChangesEnabled = false;
-                    objectContext.Detach(item);
-                    Configuration.AutoDetectChangesEnabled = true;
-                }
-                finally
-                {
-                    SetDetaching(false);
-                }
-            }
-        }
-
         private void SetDetaching(bool detaching)
         {
             foreach (var item in ChangeTracker.Entries().Select(entry => entry.Entity).OfType<IDetachOverride>())
