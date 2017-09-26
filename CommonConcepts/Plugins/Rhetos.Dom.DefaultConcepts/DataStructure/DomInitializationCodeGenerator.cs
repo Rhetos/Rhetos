@@ -308,8 +308,7 @@ namespace Common
 
             " + EntityFrameworkContextInitializeTag + @"
 
-            var objectContext = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)this).ObjectContext;
-            objectContext.CommandTimeout = Rhetos.Utilities.SqlUtility.SqlCommandTimeout;
+            this.Database.CommandTimeout = Rhetos.Utilities.SqlUtility.SqlCommandTimeout;
         }
 
         public void ClearCache()
