@@ -531,10 +531,8 @@ Module TestComputedFrom
 
     Entity PersistCustom
     {
-        Integer Code;
+        Integer Code { ComputedFrom TestComputedFrom.Source.Code; }
         ShortString NamePersist { ComputedFrom TestComputedFrom.Source.Name; }
-        
-        ComputedFrom TestComputedFrom.Source { AllProperties; }
     }
     
     Computed Source2 'repository => new[]

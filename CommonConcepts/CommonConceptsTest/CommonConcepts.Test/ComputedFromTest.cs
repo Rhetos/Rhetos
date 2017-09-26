@@ -106,7 +106,7 @@ namespace CommonConcepts.Test
 
                 Assert.AreEqual("", TestUtility.DumpSorted(repository.TestComputedFrom.PersistCustom.Load(), Dump));
 
-                repository.TestComputedFrom.PersistCustom.RecomputeFromSource(new Rhetos.Dom.DefaultConcepts.FilterAll(), items => items.Where(item => item.Code == 11));
+                repository.TestComputedFrom.PersistCustom.RecomputeFromSource(new FilterAll(), items => items.Where(item => item.Code == 11));
                 container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
                 Assert.AreEqual("aa 11", TestUtility.DumpSorted(repository.TestComputedFrom.PersistCustom.Load(), Dump), "recompute all with SaveFilter to sync only Code 11 ");
 

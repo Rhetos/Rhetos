@@ -140,7 +140,6 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        [Ignore]
         public void ComputeForNewBaseItems_InvalidCommand()
         {
             using (var container = new RhetosTestContainer())
@@ -164,7 +163,7 @@ namespace CommonConcepts.Test
 
                 var documents = repository.Test9.Document;
 
-                TestUtility.ShouldFail(() => documents.Insert(new[] { new Test9.Document { ID = d1ID, Name = "d1" } }), "existing");
+                TestUtility.ShouldFail(() => documents.Insert(new[] { new Test9.Document { ID = d1ID, Name = "d1" } }), "already exists");
                 Assert.AreEqual("d1:1, d2:2", ReportDocumentCreationInfo(repository), "creation info of previously inserted documents should not be changed");
 
                 TestUtility.ShouldFail(() => documents.Update(new[] { new Test9.Document { ID = Guid.NewGuid(), Name = "d3" } }));

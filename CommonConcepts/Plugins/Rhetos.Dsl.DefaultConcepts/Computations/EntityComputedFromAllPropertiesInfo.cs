@@ -28,10 +28,40 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AllProperties")]
-    public class EntityComputedFromAllPropertiesInfo : IConceptInfo
+    public class EntityComputedFromAllPropertiesInfo : IConceptInfo, IValidatedConcept
     {
         [ConceptKey]
         public EntityComputedFromInfo EntityComputedFrom { get; set; }
+
+        public void CheckSemantics(IDslModel existingConcepts)
+        {
+            var computedProperties = existingConcepts.FindByType<PropertyComputedFromInfo>()
+                .Where(pcf => pcf.Target.DataStructure == EntityComputedFrom.Target && pcf.Source.DataStructure == EntityComputedFrom.Source);
+
+            var duplicates = computedProperties.GroupBy(cp => cp.Source.Name, cp => cp.Target.Name).Where(g => g.Count() >= 2).FirstOrDefault();
+            if (duplicates != null)
+                throw new DslSyntaxException(this, $"Source property '{duplicates.Key}' is mapped to two target properties: '{duplicates.First()}' and '{duplicates.Last()}'.");
+        }
+    }
+
+    /// <summary>
+    /// EntityComputedFromAllPropertiesInfo's macro is split into two classes to allow macro optimization to evaluate
+    /// AllPropertiesWithCascadeDeleteFromInfo between the two. This will reduce the number of macro evaluation cycles.
+    /// </summary>
+    [Export(typeof(IConceptMacro))]
+    public class EntityComputedFromAllPropertiesCopyPropertiesMacro : IConceptMacro<EntityComputedFromAllPropertiesInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(EntityComputedFromAllPropertiesInfo conceptInfo, IDslModel existingConcepts)
+        {
+            return new[]
+            {
+                new AllPropertiesWithCascadeDeleteFromInfo
+                {
+                    Destination = conceptInfo.EntityComputedFrom.Target,
+                    Source = conceptInfo.EntityComputedFrom.Source
+                }
+            };
+        }
     }
 
     [Export(typeof(IConceptMacro))]
@@ -39,50 +69,17 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public IEnumerable<IConceptInfo> CreateNewConcepts(EntityComputedFromAllPropertiesInfo conceptInfo, IDslModel existingConcepts)
         {
-            var newConcepts = new List<IConceptInfo>();
+            // EntityComputedFromAllPropertiesCopyPropertiesMacro copies the properties for the source class.
+            // This method adds computation mapping on the properties.
 
-            var sourceProperties = existingConcepts.FindByType<PropertyInfo>().Where(p => p.DataStructure == conceptInfo.EntityComputedFrom.Source);
-
-            // Some computed properties might be customized, so ignore existing ones:
-
-            var existingComputedPropertiesSource = new HashSet<string>(
-                existingConcepts.FindByType<PropertyComputedFromInfo>()
-                    .Where(comp => comp.Dependency_EntityComputedFrom == conceptInfo.EntityComputedFrom)
-                    .Select(comp => comp.Source.Name));
-
-            var newSourceProperties = sourceProperties
-                .Where(sp => !existingComputedPropertiesSource.Contains(sp.Name)).ToArray();
-
-            // Clone source properties, including their cascade delete and extension concepts (only for automatically created properties):
-
-            newConcepts.AddRange(newSourceProperties.Select(sp => new PropertyFromInfo { Source = sp, Destination = conceptInfo.EntityComputedFrom.Target }));
-
-            AllPropertiesFromMacro.CloneExtension(conceptInfo.EntityComputedFrom.Source, conceptInfo.EntityComputedFrom.Target, existingConcepts, newConcepts);
-
-            newConcepts.AddRange(existingConcepts.FindByType<ReferenceCascadeDeleteInfo>()
-                .Where(ci => ci.Reference.DataStructure == conceptInfo.EntityComputedFrom.Source)
-                .Where(ci => newSourceProperties.Contains(ci.Reference))
-                .Select(ci => new ReferenceCascadeDeleteInfo
-                {
-                    Reference = new ReferencePropertyInfo
-                    {
-                        DataStructure = conceptInfo.EntityComputedFrom.Target,
-                        Name = ci.Reference.Name,
-                        Referenced = ci.Reference.Referenced
-                    }
-                }));
-
-            // Assign ComputedFrom to the target properties:
-
-            newConcepts.AddRange(newSourceProperties.Select(sp =>
+            return existingConcepts.FindByReference<PropertyInfo>(p => p.DataStructure, conceptInfo.EntityComputedFrom.Source)
+                .Select(sp =>
                     new PropertyComputedFromInfo
                     {
                         Target = new PropertyInfo { DataStructure = conceptInfo.EntityComputedFrom.Target, Name = sp.Name },
                         Source = sp,
                         Dependency_EntityComputedFrom = conceptInfo.EntityComputedFrom
-                    }));
-
-            return newConcepts;
+                    });
         }
     }
 }
