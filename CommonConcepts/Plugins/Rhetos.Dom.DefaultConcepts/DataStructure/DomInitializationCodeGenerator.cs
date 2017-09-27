@@ -84,7 +84,6 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.SqlServer.SqlProviderServices));
             codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.Core.EntityClient.EntityConnection));
             codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.Core.Metadata.Edm.MetadataWorkspace));
-            codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.Infrastructure.IObjectContextAdapter));
             codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.Core.Objects.ObjectStateEntry));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.IPersistenceCache));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.IPersistenceTransaction));
@@ -313,15 +312,13 @@ namespace Common
 
         public void ClearCache()
         {
-            var objectContext = ((System.Data.Entity.Infrastructure.IObjectContextAdapter)this).ObjectContext;
-
             SetDetaching(true);
             try
             {
                 Configuration.AutoDetectChangesEnabled = false;
                 var trackedItems = ChangeTracker.Entries().ToList();
                 foreach (var item in trackedItems)
-                    objectContext.Detach(item.Entity);
+                    Entry(item.Entity).State = System.Data.Entity.EntityState.Detached;
                 Configuration.AutoDetectChangesEnabled = true;
             }
             finally
