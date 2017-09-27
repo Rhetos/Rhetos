@@ -47,8 +47,6 @@ namespace CommonConcepts.Test
                 var entity = new TestBinary.E() { ID = Guid.NewGuid(), Blob = blob };
                 repository.TestBinary.E.Insert(new[] { entity });
 
-                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
-
                 var loaded = repository.TestBinary.E.Query().Where(item => item.ID == entity.ID).Single().Blob;
                 Assert.IsTrue(Enumerable.SequenceEqual(blob, loaded));
             }
@@ -68,8 +66,6 @@ namespace CommonConcepts.Test
 
                 var entity = new TestBinary.E() { ID = Guid.NewGuid(), Blob = blob };
                 repository.TestBinary.E.Insert(new[] { entity });
-
-                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
 
                 var loaded = repository.TestBinary.E.Query().Where(item => item.ID == entity.ID).Single().Blob;
                 Assert.IsTrue(Enumerable.SequenceEqual(blob, loaded));

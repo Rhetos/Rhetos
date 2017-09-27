@@ -397,8 +397,6 @@ namespace CommonConcepts.Test
                 var childNull = new TestFilter.CombinedFilters { Name = "CN", SimpleID = null };
                 repository.TestFilter.CombinedFilters.Insert(new[] { childA, childB, childNull });
 
-                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
-
                 Assert.AreEqual("CA PA", ReportFilteredBrowse(container, ReadCommandWithFilters(
                     new TestFilter.SimpleNameA())));
 
@@ -444,8 +442,6 @@ namespace CommonConcepts.Test
                 var childB = new TestFilter.CombinedFilters { Name = "CB", SimpleID = parentB.ID };
                 var childNull = new TestFilter.CombinedFilters { Name = "CN", SimpleID = null };
                 repository.TestFilter.CombinedFilters.Insert(new[] { childA, childB, childNull });
-
-                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
 
                 Assert.AreEqual("CA PA", ReportFilteredBrowse(container, ReadCommandWithFilters(
                     new TestFilter.ComposableFilterBrowseLoader { Pattern = "a" },

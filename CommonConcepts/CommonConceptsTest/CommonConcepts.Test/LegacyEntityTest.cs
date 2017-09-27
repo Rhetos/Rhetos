@@ -49,16 +49,12 @@ namespace CommonConcepts.Test
 
         static string ReportLegacy1(RhetosTestContainer container, Common.DomRepository domRepository)
         {
-            container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
-
             var loaded = domRepository.Test13.Legacy1.Query().Select(l1 => l1.Name);
             return string.Join(", ", loaded.OrderBy(x => x));
         }
 
         static string ReportLegacy2(RhetosTestContainer container, Common.DomRepository domRepository)
         {
-            container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
-
             var loaded = domRepository.Test13.Legacy2.Query().Select(l2 => l2.Leg1.Name + " " + l2.NameNew + " " + l2.Same);
             return string.Join(", ", loaded.OrderBy(x => x));
         }
@@ -154,7 +150,6 @@ namespace CommonConcepts.Test
                         Console.WriteLine(ex.Message);
                     }
 
-                    container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
                     leg = repository.Test13.Legacy3.Query().Single();
                     Assert.AreEqual(123, leg.NumNew);
 
@@ -224,7 +219,6 @@ namespace CommonConcepts.Test
                 c1.ParentID = p2id;
                 repository.Test13.LegacyMultiChild.Update(new[] { c1 });
 
-                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
                 Assert.AreEqual(
                     "Child123abc-Parent456def, Child456def-Parent456def",
                     TestUtility.DumpSorted(repository.Test13.LegacyMultiChild.Query().Select(child => child.Name + "-" + child.Parent.Name)));

@@ -37,7 +37,6 @@ namespace CommonConcepts.Test
         {
             start = new DateTime(start.Year, start.Month, start.Day, start.Hour, start.Minute, start.Second); // ORM may trim milliseconds.
 
-            container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
             var repository = container.Resolve<Common.DomRepository>();
             DateTime? generatedCreationTime = repository.TestAuditable.Simple.Load().Single().Started;
             Assert.IsNotNull(generatedCreationTime, "Generated CreationTime is null.");
@@ -127,7 +126,6 @@ namespace CommonConcepts.Test
                     var start = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
                     repository.TestAuditable.Simple.Insert(new[] { ReadInstance(insertData) });
 
-                    container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
                     DateTime? generatedModificationTime = propertySelector(repository.TestAuditable.Simple.Load().Single());
                     Assert.IsNotNull(generatedModificationTime, testInfo + " Insert: Generated ModificationTime is null.");
 
@@ -142,7 +140,6 @@ namespace CommonConcepts.Test
                     var start = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
                     repository.TestAuditable.Simple.Update(new[] { ReadInstance(updateData) });
 
-                    container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
                     DateTime? generatedModificationTime = propertySelector(repository.TestAuditable.Simple.Load().Single());
                     Assert.IsNotNull(generatedModificationTime, testInfo + " Update: Generated ModificationTime is null.");
 

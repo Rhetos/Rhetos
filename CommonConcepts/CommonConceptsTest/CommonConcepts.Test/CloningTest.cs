@@ -122,7 +122,6 @@ Clone3.Start
                 repository.TestCloning.Parent.Insert(new[] { p, p2, p3 });
                 repository.TestCloning.Clone3.Insert(new[] { c, c2, c3 });
 
-                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
                 Func<string> readClone3 = () => TestUtility.DumpSorted(repository.TestCloning.Clone3.Query()
                         .Select(item => item.Name + " " + item.Base.Name + " " + item.Parent.Name));
 

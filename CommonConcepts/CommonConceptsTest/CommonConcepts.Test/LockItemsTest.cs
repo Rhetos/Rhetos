@@ -148,7 +148,6 @@ namespace CommonConcepts.Test
                     repository.TestLockItems.Simple.Insert(new[] { s3Lock });
 
                     AssertData("s3_lock", repository);
-                    container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
                     AssertData("s3_lock", repository);
                 }
 
@@ -159,7 +158,6 @@ namespace CommonConcepts.Test
                         "[Test] Name contains lock mark");
 
                     AssertData("s3_lock", repository);
-                    container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
                     AssertData("s3_lock", repository);
                 }
             }
@@ -177,8 +175,6 @@ namespace CommonConcepts.Test
                 var s1 = repository.TestLockItems.Simple.Load().Single();
                 Assert.AreEqual("abc locked", s1.Name);
                 s1.Name = "def";
-
-                container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache(); // Same with Evict(s2)
 
                 Assert.AreEqual("def", s1.Name);
                 var s2 = repository.TestLockItems.Simple.Load().Single();

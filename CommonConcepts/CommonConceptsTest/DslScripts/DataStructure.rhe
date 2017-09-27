@@ -405,6 +405,7 @@ Module TestLazyLoad
 	{
 		Extends TestLazyLoad.SimpleBase;
 		Reference Parent;
+		ShortString Name;
 	}
 }
 

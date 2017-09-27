@@ -55,8 +55,6 @@ namespace CommonConcepts.Test
             Guid id = Guid.NewGuid();
             repository.TestAutoCodeCached.Simple.Insert(new[] { new TestAutoCodeCached.Simple { ID = id, Code = format } });
 
-            container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
-
             string generatedCode = repository.TestAutoCodeCached.Simple.Query().Where(item => item.ID == id).Select(item => item.Code).Single();
             Console.WriteLine(format + " => " + generatedCode);
             Assert.AreEqual(expectedCode, generatedCode);
@@ -66,8 +64,6 @@ namespace CommonConcepts.Test
         {
             Guid id = Guid.NewGuid();
             repository.TestAutoCodeCached.DoubleAutoCode.Insert(new[] { new TestAutoCodeCached.DoubleAutoCode { ID = id, CodeA = formatA, CodeB = formatB } });
-
-            container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
 
             string generatedCodes = repository.TestAutoCodeCached.DoubleAutoCode.Query()
 				.Where(item => item.ID == id)
@@ -80,8 +76,6 @@ namespace CommonConcepts.Test
         {
             Guid id = Guid.NewGuid();
             repository.TestAutoCodeCached.DoubleAutoCodeWithGroup.Insert(new[] { new TestAutoCodeCached.DoubleAutoCodeWithGroup { ID = id, Grouping = group, CodeA = formatA, CodeB = formatB } });
-
-            container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
 
             string generatedCodes = repository.TestAutoCodeCached.DoubleAutoCodeWithGroup.Query()
                 .Where(item => item.ID == id)
@@ -242,8 +236,6 @@ namespace CommonConcepts.Test
             }
             
             writeableRepository.Insert((TEntity)entity);
-
-            container.Resolve<Common.ExecutionContext>().EntityFrameworkContext.ClearCache();
 
             var query = entityRepository.Query().Where(e => e.ID == id);
             Console.WriteLine(query.GetType().FullName);
