@@ -254,5 +254,28 @@ namespace Rhetos.Utilities
 
             return matches;
         }
+
+        public static string ByteArrayToHex(byte[] ba)
+        {
+            if (ba == null)
+                return null;
+            StringBuilder hex = new StringBuilder(ba.Length * 2);
+            foreach (byte b in ba)
+                hex.AppendFormat("{0:X2}", b);
+            return hex.ToString();
+        }
+
+        public static byte[] HexToByteArray(string hex)
+        {
+            if (hex == null)
+                return null;
+            int NumberChars = hex.Length / 2;
+            byte[] bytes = new byte[NumberChars];
+            StringReader sr = new StringReader(hex);
+            for (int i = 0; i < NumberChars; i++)
+                bytes[i] = Convert.ToByte(new string(new char[2] { (char)sr.Read(), (char)sr.Read() }), 16);
+            sr.Dispose();
+            return bytes;
+        }
     }
 }

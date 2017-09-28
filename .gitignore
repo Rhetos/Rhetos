@@ -114,6 +114,7 @@ UpgradeLog*.XML
 *.zip
 Source/Rhetos/bin/Plugins/
 Source/Rhetos/bin/Generated/
+Source/Rhetos/GeneratedFilesCache/
 Source/Rhetos/Resources/
 Source/Rhetos/PackagesCache/
 Install/

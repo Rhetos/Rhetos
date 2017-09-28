@@ -293,7 +293,7 @@ namespace Rhetos.Utilities
             if (DatabaseLanguageIsMsSql.Value)
                 return Guid.Parse(guid);
             else if (DatabaseLanguageIsOracle.Value)
-                return new Guid(StringToByteArray(guid));
+                return new Guid(CsUtility.HexToByteArray(guid));
             else
                 throw new FrameworkException(UnsupportedLanguageError);
         }
@@ -320,7 +320,7 @@ namespace Rhetos.Utilities
             if (DatabaseLanguageIsMsSql.Value)
                 return guid.ToString().ToUpper();
             else if (DatabaseLanguageIsOracle.Value)
-                return ByteArrayToString(guid.ToByteArray());
+                return CsUtility.ByteArrayToHex(guid.ToByteArray());
             else
                 throw new FrameworkException(UnsupportedLanguageError);
         }
@@ -355,29 +355,6 @@ namespace Rhetos.Utilities
         public static string BoolToString(bool b)
         {
             return b ? "0" : "1";
-        }
-
-        private static string ByteArrayToString(byte[] ba)
-        {
-            if (ba == null)
-                return null;
-            StringBuilder hex = new StringBuilder(ba.Length * 2);
-            foreach (byte b in ba)
-                hex.AppendFormat("{0:X2}", b);
-            return hex.ToString();
-        }
-
-        private static byte[] StringToByteArray(String hex)
-        {
-            if (hex == null)
-                return null;
-            int NumberChars = hex.Length / 2;
-            byte[] bytes = new byte[NumberChars];
-            StringReader sr = new StringReader(hex);
-            for (int i = 0; i < NumberChars; i++)
-                bytes[i] = Convert.ToByte(new string(new char[2] { (char)sr.Read(), (char)sr.Read() }), 16);
-            sr.Dispose();
-            return bytes;
         }
 
         /// <summary>

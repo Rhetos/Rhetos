@@ -108,10 +108,7 @@ namespace Rhetos.Utilities
             SafeCreateDirectory(path);
 
             foreach (var file in Directory.GetFiles(path, "*", SearchOption.TopDirectoryOnly))
-            {
-                File.SetAttributes(file, FileAttributes.Normal);
-                Retry(() => File.Delete(file), () => "delete file " + file);
-            }
+                SafeDeleteFile(file);
             foreach (var folder in Directory.GetDirectories(path, "*", SearchOption.TopDirectoryOnly))
                 SafeDeleteDirectory(folder);
         }
@@ -129,17 +126,41 @@ namespace Rhetos.Utilities
             }
         }
 
-        public void SafeCopyFile(string source, string destination)
+        public void SafeCopyFile(string sourceFile, string destinationFile)
         {
             try
             {
-                SafeCreateDirectory(Path.GetDirectoryName(destination));
-                Retry(() => File.Copy(source, destination), () => "copy file " + source);
+                SafeCreateDirectory(Path.GetDirectoryName(destinationFile));
+                Retry(() => File.Copy(sourceFile, destinationFile), () => "copy file " + sourceFile);
             }
             catch (Exception ex)
             {
-                throw new FrameworkException(String.Format("Can't copy file '{0}' to '{1}'. Check that destination folder is not locked.", source, destination), ex);
+                throw new FrameworkException(String.Format("Can't copy file '{0}' to '{1}'. Check that destination folder is not locked.", sourceFile, destinationFile), ex);
             }
+        }
+
+        public string SafeCopyFileToFolder(string sourceFile, string destinationFolder)
+        {
+            string destinationFile = Path.Combine(destinationFolder, Path.GetFileName(sourceFile));
+            SafeCopyFile(sourceFile, destinationFile);
+            return destinationFile;
+        }
+
+        public void SafeDeleteFile(string path)
+        {
+            if (File.Exists(path))
+            {
+                File.SetAttributes(path, FileAttributes.Normal);
+                Retry(() => File.Delete(path), () => "delete file " + path);
+            }
+        }
+
+        public string[] SafeGetFiles(string directory, string pattern, SearchOption searchOption)
+        {
+            if (Directory.Exists(directory))
+                return Directory.GetFiles(directory, pattern, searchOption);
+            else
+                return new string[] { };
         }
     }
 }

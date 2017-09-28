@@ -122,10 +122,12 @@ namespace DeployPackages
         {
             if (!arguments.DeployDatabaseOnly)
             {
-                // The old plugins must be deleted before loading the application generator plugins.
-                new FilesUtility(DeploymentUtility.InitializationLogProvider).EmptyDirectory(Paths.GeneratedFolder);
-                if (File.Exists(Paths.DomAssemblyFile)) // Generated DomAssemblyFile is not in GeneratedFolder.
-                    File.Delete(Paths.DomAssemblyFile);
+                // The old generated plugins must be deleted before loading the application generator plugins.
+                var filesUtility = new FilesUtility(DeploymentUtility.InitializationLogProvider);
+                filesUtility.SafeCreateDirectory(Paths.GeneratedFolder);
+                var oldGeneratedFiles = filesUtility.SafeGetFiles(Paths.GeneratedFolder, "*", SearchOption.AllDirectories)
+                    .Concat(filesUtility.SafeGetFiles(Paths.BinFolder, Paths.DomAssemblyName + "*", SearchOption.TopDirectoryOnly)); // TODO: DOM assembly should be placed in the GeneratedFolder.
+                new FilesCache(DeploymentUtility.InitializationLogProvider).MoveToCache(oldGeneratedFiles);
             }
             else
             {

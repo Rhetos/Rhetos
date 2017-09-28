@@ -100,6 +100,7 @@ namespace Rhetos.Utilities
         public static string ResourcesFolder { get { return Path.Combine(RhetosServerRootPath, "Resources"); } }
         public static string BinFolder { get { return Path.Combine(RhetosServerRootPath, "bin"); } }
         public static string GeneratedFolder { get { return Path.Combine(RhetosServerRootPath, "bin\\Generated"); } }
+        public static string GeneratedFilesCacheFolder { get { return Path.Combine(RhetosServerRootPath, "GeneratedFilesCache"); } }
         public static string PluginsFolder { get { return Path.Combine(RhetosServerRootPath, "bin\\Plugins"); } }
 
         public static string RhetosServerWebConfigFile { get { return Path.Combine(RhetosServerRootPath, "Web.config"); } }

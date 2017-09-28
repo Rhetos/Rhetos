@@ -125,8 +125,7 @@ namespace Rhetos.Compiler
         {
             get
             {
-                string referencesList = string.Join("", RegisteredReferences.Select(reference => "// Reference: " + reference + Environment.NewLine));
-                return referencesList + Environment.NewLine + _code;
+                return _code.ToString();
             }
         }
 

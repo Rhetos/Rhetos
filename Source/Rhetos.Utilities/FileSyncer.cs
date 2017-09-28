@@ -26,7 +26,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Rhetos.Deployment
+namespace Rhetos.Utilities
 {
     /// <summary>
     /// Copies the given files from source to destination and deletes all other old files from the destination folder.
@@ -100,7 +100,7 @@ namespace Rhetos.Deployment
                 _filesByDestination.AddKey(destinationFolder);
         }
 
-        public void UpdateDestination()
+        public void UpdateDestination(bool deleteSource = false)
         {
             var ignoreFiles = CheckSourceForDuplicates();
 
@@ -109,7 +109,17 @@ namespace Rhetos.Deployment
                 _filesUtility.EmptyDirectory(destination.Key);
                 foreach (var copyFile in destination.Value)
                     if (!ignoreFiles.Contains(copyFile.File))
-                        _filesUtility.SafeCopyFile(copyFile.File, copyFile.Target);
+                    {
+                        if (deleteSource)
+                            _filesUtility.SafeMoveFile(copyFile.File, copyFile.Target);
+                        else
+                            _filesUtility.SafeCopyFile(copyFile.File, copyFile.Target);
+                    }
+                    else
+                    {
+                        if (deleteSource)
+                            _filesUtility.SafeDeleteFile(copyFile.File);
+                    }
             }
             _filesByDestination.Clear();
         }

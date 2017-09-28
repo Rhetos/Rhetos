@@ -135,6 +135,8 @@
     <Compile Include="ConnectionString.cs" />
     <Compile Include="Exceptions\LegacyClientException.cs" />
     <Compile Include="FilesUtility.cs" />
+    <Compile Include="FileSyncer.cs" />
+    <Compile Include="FilesCache.cs" />
     <Compile Include="IConfiguration.cs" />
     <Compile Include="ISqlUtility.cs" />
     <Compile Include="ListOfTuples.cs" />

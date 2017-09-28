@@ -36,6 +36,7 @@ namespace Rhetos.Configuration.Autofac
             builder.RegisterType<Rhetos.Utilities.Configuration>().As<Rhetos.Utilities.IConfiguration>().SingleInstance();
             Plugins.FindAndRegisterPlugins<ILocalizer>(builder);
             builder.RegisterType<NoLocalizer>().As<ILocalizer>().SingleInstance().PreserveExistingDefaults();
+            builder.RegisterType<FilesCache>().SingleInstance();
 
             var sqlImplementations = new[]
             {

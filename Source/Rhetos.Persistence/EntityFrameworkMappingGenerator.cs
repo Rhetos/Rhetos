@@ -65,7 +65,7 @@ namespace Rhetos.Persistence
             var sw = Stopwatch.StartNew();
 
             string xml = _codeGenerator.ExecutePlugins(_plugins, "<!--", "-->", new InitialSnippet()).GeneratedCode;
-            string[] segments = xml.Split(new[] { _segmentSplitter }, System.StringSplitOptions.None);
+            string[] segments = xml.Split(new[] { _segmentSplitter }, StringSplitOptions.None);
 
             if (segments.Count() != EntityFrameworkMapping.ModelFiles.Count())
                 throw new FrameworkException("Unexpected number of metadata segments: " + segments.Count() + ", expected " + EntityFrameworkMapping.ModelFiles.Count() + ".");

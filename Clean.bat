@@ -8,11 +8,11 @@ REM Delete all "bin", "obj" and "TestResults" subfolders:
 
 REM Delete packages' bineries and their copy in Rhetos folder:
 @DEL /F/Q "*.zip"
-@DEL /F/S/Q "Source\Rhetos\bin\Plugins"
 @DEL /F/S/Q "Source\Rhetos\DataMigration"
 @DEL /F/S/Q "Source\Rhetos\DslScripts"
-@DEL /F/S/Q "Source\Rhetos\Resources"
+@DEL /F/S/Q "Source\Rhetos\GeneratedFilesCache"
 @DEL /F/S/Q "Source\Rhetos\PackagesCache"
+@DEL /F/S/Q "Source\Rhetos\Resources"
 
 REM Delete build logs:
 @DEL *.log
