@@ -35,9 +35,9 @@ namespace Rhetos.Compiler
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
         private readonly Lazy<int> _errorReportLimit;
-        private readonly FilesCache _filesCache;
+        private readonly GeneratedFilesCache _filesCache;
 
-        public AssemblyGenerator(ILogProvider logProvider, IConfiguration configuration, FilesCache filesCache)
+        public AssemblyGenerator(ILogProvider logProvider, IConfiguration configuration, GeneratedFilesCache filesCache)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("AssemblyGenerator");
@@ -57,6 +57,7 @@ namespace Rhetos.Compiler
                 compilerParameters.WarningLevel = 4;
             if (compilerParameters.GenerateInMemory)
                 throw new FrameworkException("GenerateInMemory compiler parameter is not supported.");
+            string assemblyShortName = Path.GetFileName(compilerParameters.OutputAssembly);
 
             // Save source file and it's hash value:
 
@@ -67,7 +68,7 @@ namespace Rhetos.Compiler
 
             string sourceFile = Path.GetFullPath(Path.ChangeExtension(compilerParameters.OutputAssembly, ".cs"));
             var sourceHash = _filesCache.SaveSourceAndHash(sourceFile, sourceCode);
-            _performanceLogger.Write(stopwatch, "AssemblyGenerator: Save source and hash.");
+            _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Save source and hash ({assemblyShortName}).");
 
             // Compile assembly or get from cache:
 
@@ -77,13 +78,13 @@ namespace Rhetos.Compiler
             if (filesFromCache != null)
             {
                 if (!File.Exists(compilerParameters.OutputAssembly))
-                    throw new FrameworkException("AssemblyGenerator: RestoreCachedFiles failed to create the assembly file.");
+                    throw new FrameworkException($"AssemblyGenerator: RestoreCachedFiles failed to create the assembly file ({assemblyShortName}).");
                 
                 generatedAssembly = Assembly.LoadFile(compilerParameters.OutputAssembly);
-                _performanceLogger.Write(stopwatch, "AssemblyGenerator: Assembly from cache.");
+                _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Assembly from cache ({assemblyShortName}).");
 
                 FailOnTypeLoadErrors(generatedAssembly, compilerParameters.OutputAssembly);
-                _performanceLogger.Write(stopwatch, "AssemblyGenerator: Report errors.");
+                _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({assemblyShortName}).");
             }
             else
             {
@@ -91,12 +92,12 @@ namespace Rhetos.Compiler
                 using (CSharpCodeProvider codeProvider = new CSharpCodeProvider())
                     compilerResults = codeProvider.CompileAssemblyFromFile(compilerParameters, sourceFile);
                 generatedAssembly = compilerResults.CompiledAssembly;
-                _performanceLogger.Write(stopwatch, "AssemblyGenerator: CSharpCodeProvider.CompileAssemblyFromFile.");
+                _performanceLogger.Write(stopwatch, $"AssemblyGenerator: CSharpCodeProvider.CompileAssemblyFromFile ({assemblyShortName}).");
 
                 FailOnCompilerErrors(compilerResults, sourceCode, sourceFile);
                 FailOnTypeLoadErrors(generatedAssembly, compilerParameters.OutputAssembly);
                 ReportWarnings(compilerResults, sourceFile);
-                _performanceLogger.Write(stopwatch, "AssemblyGenerator: Report errors.");
+                _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({assemblyShortName}).");
             }
 
             return generatedAssembly;

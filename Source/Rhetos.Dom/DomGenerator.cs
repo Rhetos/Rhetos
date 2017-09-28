@@ -33,14 +33,14 @@ using ICodeGenerator = Rhetos.Compiler.ICodeGenerator;
 
 namespace Rhetos.Dom
 {
-    public class DomGenerator : IDomainObjectModel, IDomGenerator
+    public class DomGenerator : IDomainObjectModel
     {
         private readonly IPluginsContainer<IConceptCodeGenerator> _pluginRepository;
-        private Assembly _objectModel;
-        private readonly ICodeGenerator _codeGenerator; //********????***********/
+        private readonly ICodeGenerator _codeGenerator;
         private readonly ILogProvider _log;
         private readonly IAssemblyGenerator _assemblyGenerator;
         private readonly DomGeneratorOptions _domGeneratorOptions;
+        private Assembly _objectModel;
 
         /// <summary>
         /// If assemblyName is not null, the assembly will be saved on disk.

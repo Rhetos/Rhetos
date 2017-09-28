@@ -127,7 +127,7 @@ namespace DeployPackages
                 filesUtility.SafeCreateDirectory(Paths.GeneratedFolder);
                 var oldGeneratedFiles = filesUtility.SafeGetFiles(Paths.GeneratedFolder, "*", SearchOption.AllDirectories)
                     .Concat(filesUtility.SafeGetFiles(Paths.BinFolder, Paths.DomAssemblyName + "*", SearchOption.TopDirectoryOnly)); // TODO: DOM assembly should be placed in the GeneratedFolder.
-                new FilesCache(DeploymentUtility.InitializationLogProvider).MoveToCache(oldGeneratedFiles);
+                new GeneratedFilesCache(DeploymentUtility.InitializationLogProvider).MoveToCache(oldGeneratedFiles);
             }
             else
             {

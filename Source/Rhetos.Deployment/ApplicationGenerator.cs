@@ -37,7 +37,7 @@ namespace Rhetos.Deployment
         private readonly ILogger _performanceLogger;
         private readonly ISqlExecuter _sqlExecuter;
         private readonly IDslModel _dslModel;
-        private readonly IDomGenerator _domGenerator;
+        private readonly IDomainObjectModel _domGenerator;
         private readonly IPluginsContainer<IGenerator> _generatorsContainer;
         private readonly DatabaseCleaner _databaseCleaner;
         private readonly DataMigration _dataMigration;
@@ -48,7 +48,7 @@ namespace Rhetos.Deployment
             ILogProvider logProvider,
             ISqlExecuter sqlExecuter,
             IDslModel dslModel,
-            IDomGenerator domGenerator,
+            IDomainObjectModel domGenerator,
             IPluginsContainer<IGenerator> generatorsContainer,
             DatabaseCleaner databaseCleaner,
             DataMigration dataMigration,

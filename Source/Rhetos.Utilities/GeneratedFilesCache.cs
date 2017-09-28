@@ -27,14 +27,14 @@ using System.Text;
 
 namespace Rhetos.Utilities
 {
-    public class FilesCache
+    public class GeneratedFilesCache
     {
         private readonly FilesUtility _files;
         private readonly FileSyncer _syncer;
         private readonly ILogger _logger;
         private readonly SHA1 _sha1;
 
-        public FilesCache(ILogProvider logProvider)
+        public GeneratedFilesCache(ILogProvider logProvider)
         {
             _files = new FilesUtility(logProvider);
             _syncer = new FileSyncer(logProvider);
@@ -76,21 +76,35 @@ namespace Rhetos.Utilities
         {
             File.WriteAllText(sourceFile, sourceCode, Encoding.UTF8);
 
-            string hashFile = Path.GetFullPath(Path.ChangeExtension(sourceFile, ".sha1"));
             byte[] hash = _sha1.ComputeHash(Encoding.UTF8.GetBytes(sourceCode));
-            File.WriteAllText(hashFile, CsUtility.ByteArrayToHex(hash), Encoding.ASCII);
-
+            SaveHash(sourceFile, hash);
             return hash;
+        }
+
+        /// <param name="sampleSourceFile">Any file from the cached file group, extension will be ignored.</param>
+        public void SaveHash(string sampleSourceFile, byte[] hash)
+        {
+            string hashFile = Path.GetFullPath(Path.ChangeExtension(sampleSourceFile, ".hash"));
+            File.WriteAllText(hashFile, CsUtility.ByteArrayToHex(hash), Encoding.ASCII);
+        }
+
+        /// <param name="sampleSourceFile">Any file from the cached file group, extension will be ignored.</param>
+        public byte[] LoadHash(string sampleSourceFile)
+        {
+            string hashFile = Path.GetFullPath(Path.ChangeExtension(sampleSourceFile, ".hash"));
+            return CsUtility.HexToByteArray(File.ReadAllText(hashFile, Encoding.Default));
         }
 
         /// <summary>
         /// Copies the files from cache only if all of the extensions are found in the cache,
         /// and if the sourceContent matches the corresponding sourceFile in the cache.
         /// </summary>
+        /// <param name="sampleSourceFile">Any file from the cached file group, extension will be ignored.</param>
         /// <returns>List of the restored files, if the files are copied from the cache, null otherwise.</returns>
-        public List<string> RestoreCachedFiles(string sourceFile, byte[] sourceHash, string targetFolder, string[] copyExtensions)
+        public List<string> RestoreCachedFiles(string sampleSourceFile, byte[] sourceHash, string targetFolder, IEnumerable<string> copyExtensions)
         {
-            var cachedFiles = ListCachedFiles(Path.GetFileNameWithoutExtension(sourceFile), sourceHash, copyExtensions);
+            CsUtility.Materialize(ref copyExtensions);
+            var cachedFiles = ListCachedFiles(Path.GetFileNameWithoutExtension(sampleSourceFile), sourceHash, copyExtensions);
 
             List<string> targetFiles;
             string report;
@@ -107,7 +121,7 @@ namespace Rhetos.Utilities
                 report = cachedFiles.Error;
             }
 
-            _logger.Trace(() => "RestoreCachedFiles for " + Path.GetFileName(sourceFile) + ": " + report);
+            _logger.Trace(() => "RestoreCachedFiles for " + Path.GetFileName(sampleSourceFile) + ": " + report);
             return targetFiles;
         }
 
@@ -118,7 +132,7 @@ namespace Rhetos.Utilities
                 .ToDictionary(g => g.Key, g => g.ToList());
         }
 
-        private ValueOrError<List<string>> ListCachedFiles(string fileGroupName, byte[] sourceHash, string[] requestedExtensions)
+        private ValueOrError<List<string>> ListCachedFiles(string fileGroupName, byte[] sourceHash, IEnumerable<string> requestedExtensions)
         {
             var cachedFilesByExt = ListCachedFiles()
                 .GetValueOrDefault(fileGroupName)
@@ -127,15 +141,18 @@ namespace Rhetos.Utilities
             if (cachedFilesByExt == null)
                 return ValueOrError.CreateError("File group not cached.");
 
-            string cachedHashFile = cachedFilesByExt.GetValueOrDefault(".sha1");
+            string cachedHashFile = cachedFilesByExt.GetValueOrDefault(".hash");
             if (cachedHashFile == null)
                 return ValueOrError.CreateError("Missing hash file.");
 
             byte[] cachedHash = CsUtility.HexToByteArray(File.ReadAllText(cachedHashFile, Encoding.Default));
+            if (cachedHash == null || cachedHash.Length == 0)
+                return ValueOrError.CreateError("Missing hash value.");
+
             if (!sourceHash.SequenceEqual(cachedHash))
                 return ValueOrError.CreateError("Different hash value.");
 
-            var requestedFiles = new List<string>(requestedExtensions.Length);
+            var requestedFiles = new List<string>(requestedExtensions.Count());
             foreach (var extension in requestedExtensions)
             {
                 string cachedFile = cachedFilesByExt.GetValueOrDefault(extension);

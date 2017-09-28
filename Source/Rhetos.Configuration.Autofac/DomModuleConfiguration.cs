@@ -41,7 +41,7 @@ namespace Rhetos.Configuration.Autofac
             if (_deploymentTime)
             {
                 builder.RegisterType<DomGeneratorOptions>().SingleInstance();
-                builder.RegisterType<DomGenerator>().As<IDomainObjectModel>().As<IDomGenerator>().SingleInstance();
+                builder.RegisterType<DomGenerator>().As<IDomainObjectModel>().SingleInstance();
             }
             else
                 builder.RegisterType<DomLoader>().As<IDomainObjectModel>().SingleInstance();

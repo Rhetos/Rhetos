@@ -53,7 +53,6 @@
   <ItemGroup>
     <Compile Include="DomGeneratorOptions.cs" />
     <Compile Include="IDomainObjectModel.cs" />
-    <Compile Include="IDomGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="..\Rhetos\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
