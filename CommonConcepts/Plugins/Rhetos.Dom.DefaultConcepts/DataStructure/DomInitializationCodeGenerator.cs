@@ -91,23 +91,25 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GenerateCommonClassesSnippet()
         {
-            return
-SimpleClassesTag + @"
+            return $@"
+{DomGeneratorOptions.FileSplitterPrefix}{DomAssemblies.Model}{DomGeneratorOptions.FileSplitterSuffix}
+
+{SimpleClassesTag}
 
 namespace Common.Queryable
-{
-    " + StandardNamespacesSnippet + @"
+{{
+    {StandardNamespacesSnippet}
 
-    " + CommonQueryableMemebersTag + @"
-}
+    {CommonQueryableMemebersTag}
+}}
 
 namespace Rhetos.Dom.DefaultConcepts
-{
-    " + StandardNamespacesSnippet + @"
+{{
+    {StandardNamespacesSnippet}
 
     public static class QueryExtensions
-    {
-        " + QueryExtensionsMembersTag + @"
+    {{
+        {QueryExtensionsMembersTag}
 
         /// <summary>
         /// A specific overload of the 'ToSimple' method cannot be targeted from a generic method using generic type.
@@ -115,17 +117,17 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         public static IQueryable<TEntity> GenericToSimple<TEntity>(this IQueryable<IEntity> i)
             where TEntity : class, IEntity
-	    {
-            var method = typeof(QueryExtensions).GetMethod(""ToSimple"", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public, null, new Type[] { i.GetType() }, null);
+	    {{
+            var method = typeof(QueryExtensions).GetMethod(""ToSimple"", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public, null, new Type[] {{ i.GetType() }}, null);
             if (method == null)
                 throw new Rhetos.FrameworkException(""Cannot find 'ToSimple' method for argument type '"" + i.GetType().ToString() + ""'."");
-            return (IQueryable<TEntity>)Rhetos.Utilities.ExceptionsUtility.InvokeEx(method, null, new object[] { i });
-        }
+            return (IQueryable<TEntity>)Rhetos.Utilities.ExceptionsUtility.InvokeEx(method, null, new object[] {{ i }});
+        }}
 
         /// <summary>Converts the objects to simple object and the IEnumerable to List or Array, if not already.</summary>
         public static void LoadSimpleObjects<TEntity>(ref IEnumerable<TEntity> items)
             where TEntity: class, IEntity
-        {
+        {{
             var query = items as IQueryable<IQueryableEntity<TEntity>>;
             var navigationItems = items as IEnumerable<IQueryableEntity<TEntity>>;
 
@@ -134,97 +136,183 @@ namespace Rhetos.Dom.DefaultConcepts
             else if (navigationItems != null)
                 items = navigationItems.Select(item => item.ToSimple()).ToList();
             else
-            {
+            {{
                 Rhetos.Utilities.CsUtility.Materialize(ref items);
                 var itemsList = (IList<TEntity>)items;
                 for (int i = 0; i < itemsList.Count(); i++)
-                {
+                {{
                     var navigationItem = itemsList[i] as IQueryableEntity<TEntity>;
                     if (navigationItem != null)
                         itemsList[i] = navigationItem.ToSimple();
-                }
-            }
-        }
-    }
-}
+                }}
+            }}
+        }}
+    }}
+}}
+
+{DomGeneratorOptions.FileSplitterPrefix}{DomAssemblies.Orm}{DomGeneratorOptions.FileSplitterSuffix}
 
 namespace Common
-{
-    " + StandardNamespacesSnippet + @"
-
+{{
+    {StandardNamespacesSnippet}
     using Autofac;
-    " + ModuleCodeGenerator.CommonUsingTag + @"
+    {ModuleCodeGenerator.CommonUsingTag}
+
+    public class EntityFrameworkContext : System.Data.Entity.DbContext, Rhetos.Persistence.IPersistenceCache
+    {{
+        public EntityFrameworkContext(
+            Rhetos.Persistence.IPersistenceTransaction persistenceTransaction,
+            Rhetos.Dom.DefaultConcepts.Persistence.EntityFrameworkMetadata metadata,
+            EntityFrameworkConfiguration configuration) // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
+            : base(new System.Data.Entity.Core.EntityClient.EntityConnection(metadata.MetadataWorkspace, persistenceTransaction.Connection), false)
+        {{
+            Initialize();
+            Database.UseTransaction(persistenceTransaction.Transaction);
+        }}
+
+        /// <summary>
+        /// This constructor is used at deployment-time to create slow EntityFrameworkContext instance before the metadata files are generated.
+        /// The instance is used by EntityFrameworkGenerateMetadataFiles to generate the metadata files.
+        /// </summary>
+        protected EntityFrameworkContext(
+            System.Data.Common.DbConnection connection,
+            EntityFrameworkConfiguration configuration) // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
+            : base(connection, true)
+        {{
+            Initialize();
+        }}
+
+        private void Initialize()
+        {{
+            System.Data.Entity.Database.SetInitializer<EntityFrameworkContext>(null); // Prevent EF from creating database objects.
+
+            {EntityFrameworkContextInitializeTag}
+
+            this.Database.CommandTimeout = Rhetos.Utilities.SqlUtility.SqlCommandTimeout;
+        }}
+
+        public void ClearCache()
+        {{
+            SetDetaching(true);
+            try
+            {{
+                Configuration.AutoDetectChangesEnabled = false;
+                var trackedItems = ChangeTracker.Entries().ToList();
+                foreach (var item in trackedItems)
+                    Entry(item.Entity).State = System.Data.Entity.EntityState.Detached;
+                Configuration.AutoDetectChangesEnabled = true;
+            }}
+            finally
+            {{
+                SetDetaching(false);
+            }}
+        }}
+
+        private void SetDetaching(bool detaching)
+        {{
+            foreach (var item in ChangeTracker.Entries().Select(entry => entry.Entity).OfType<IDetachOverride>())
+                item.Detaching = detaching;
+        }}
+
+        protected override void OnModelCreating(System.Data.Entity.DbModelBuilder modelBuilder)
+        {{
+            {EntityFrameworkOnModelCreatingTag}
+        }}
+
+        {EntityFrameworkContextMembersTag}
+    }}
+
+    public class EntityFrameworkConfiguration : System.Data.Entity.DbConfiguration
+    {{
+        public EntityFrameworkConfiguration()
+        {{
+            SetProviderServices(""System.Data.SqlClient"", System.Data.Entity.SqlServer.SqlProviderServices.Instance);
+
+            {EntityFrameworkConfigurationTag}
+
+            System.Data.Entity.DbConfiguration.SetConfiguration(this);
+        }}
+    }}
+}}
+
+{DomGeneratorOptions.FileSplitterPrefix}{DomAssemblies.Repositories}{DomGeneratorOptions.FileSplitterSuffix}
+
+namespace Common
+{{
+    {StandardNamespacesSnippet}
+    using Autofac;
+    {ModuleCodeGenerator.CommonUsingTag}
 
     public class DomRepository
-    {
+    {{
         private readonly Rhetos.Extensibility.INamedPlugins<IRepository> _repositories;
 
         public DomRepository(Rhetos.Extensibility.INamedPlugins<IRepository> repositories)
-        {
+        {{
             _repositories = repositories;
-        }
+        }}
 
-        " + ModuleCodeGenerator.CommonDomRepositoryMembersTag + @"
-    }
+        {ModuleCodeGenerator.CommonDomRepositoryMembersTag}
+    }}
 
     public static class Infrastructure
-    {
+    {{
         public static readonly RegisteredInterfaceImplementations RegisteredInterfaceImplementationName = new RegisteredInterfaceImplementations
-        {
-            " + ModuleCodeGenerator.RegisteredInterfaceImplementationNameTag + @"
-        };
+        {{
+            {ModuleCodeGenerator.RegisteredInterfaceImplementationNameTag}
+        }};
 
         public static readonly ApplyFiltersOnClientRead ApplyFiltersOnClientRead = new ApplyFiltersOnClientRead
-        {
-            " + ModuleCodeGenerator.ApplyFiltersOnClientReadTag + @"
-        };
+        {{
+            {ModuleCodeGenerator.ApplyFiltersOnClientReadTag}
+        }};
 
-        " + ModuleCodeGenerator.CommonInfrastructureMembersTag + @"
-    }
+        {ModuleCodeGenerator.CommonInfrastructureMembersTag}
+    }}
 
     public class ExecutionContext
-    {
+    {{
         protected Lazy<Rhetos.Persistence.IPersistenceTransaction> _persistenceTransaction;
-        public Rhetos.Persistence.IPersistenceTransaction PersistenceTransaction { get { return _persistenceTransaction.Value; } }
+        public Rhetos.Persistence.IPersistenceTransaction PersistenceTransaction {{ get {{ return _persistenceTransaction.Value; }} }}
 
         protected Lazy<Rhetos.Utilities.IUserInfo> _userInfo;
-        public Rhetos.Utilities.IUserInfo UserInfo { get { return _userInfo.Value; } }
+        public Rhetos.Utilities.IUserInfo UserInfo {{ get {{ return _userInfo.Value; }} }}
 
         protected Lazy<Rhetos.Utilities.ISqlExecuter> _sqlExecuter;
-        public Rhetos.Utilities.ISqlExecuter SqlExecuter { get { return _sqlExecuter.Value; } }
+        public Rhetos.Utilities.ISqlExecuter SqlExecuter {{ get {{ return _sqlExecuter.Value; }} }}
 
         protected Lazy<Rhetos.Security.IAuthorizationManager> _authorizationManager;
-        public Rhetos.Security.IAuthorizationManager AuthorizationManager { get { return _authorizationManager.Value; } }
+        public Rhetos.Security.IAuthorizationManager AuthorizationManager {{ get {{ return _authorizationManager.Value; }} }}
 
         protected Lazy<Rhetos.Dom.DefaultConcepts.GenericRepositories> _genericRepositories;
-        public Rhetos.Dom.DefaultConcepts.GenericRepositories GenericRepositories { get { return _genericRepositories.Value; } }
+        public Rhetos.Dom.DefaultConcepts.GenericRepositories GenericRepositories {{ get {{ return _genericRepositories.Value; }} }}
 
         public Rhetos.Dom.DefaultConcepts.GenericRepository<TEntity> GenericRepository<TEntity>() where TEntity : class, IEntity
-        {
+        {{
             return GenericRepositories.GetGenericRepository<TEntity>();
-        }
+        }}
 
         public Rhetos.Dom.DefaultConcepts.GenericRepository<TEntity> GenericRepository<TEntity>(string entityName) where TEntity : class, IEntity
-        {
+        {{
             return GenericRepositories.GetGenericRepository<TEntity>(entityName);
-        }
+        }}
 
         public Rhetos.Dom.DefaultConcepts.GenericRepository<IEntity> GenericRepository(string entityName)
-        {
+        {{
             return GenericRepositories.GetGenericRepository(entityName);
-        }
+        }}
 
         protected Lazy<Common.DomRepository> _repository;
-        public Common.DomRepository Repository { get { return _repository.Value; } }
+        public Common.DomRepository Repository {{ get {{ return _repository.Value; }} }}
 
-        public Rhetos.Logging.ILogProvider LogProvider { get; private set; }
+        public Rhetos.Logging.ILogProvider LogProvider {{ get; private set; }}
 
         protected Lazy<Rhetos.Security.IWindowsSecurity> _windowsSecurity;
-        public Rhetos.Security.IWindowsSecurity WindowsSecurity { get { return _windowsSecurity.Value; } }
+        public Rhetos.Security.IWindowsSecurity WindowsSecurity {{ get {{ return _windowsSecurity.Value; }} }}
 
-        public EntityFrameworkContext EntityFrameworkContext { get; private set; }
+        public EntityFrameworkContext EntityFrameworkContext {{ get; private set; }}
 
-        " + ModuleCodeGenerator.ExecutionContextMemberTag + @"
+        {ModuleCodeGenerator.ExecutionContextMemberTag}
 
         // This constructor is used for automatic parameter injection with autofac.
         public ExecutionContext(
@@ -235,9 +323,9 @@ namespace Common
             Lazy<Rhetos.Dom.DefaultConcepts.GenericRepositories> genericRepositories,
             Lazy<Common.DomRepository> repository,
             Rhetos.Logging.ILogProvider logProvider,
-            Lazy<Rhetos.Security.IWindowsSecurity> windowsSecurity" + ModuleCodeGenerator.ExecutionContextConstructorArgumentTag + @",
+            Lazy<Rhetos.Security.IWindowsSecurity> windowsSecurity{ModuleCodeGenerator.ExecutionContextConstructorArgumentTag},
             EntityFrameworkContext entityFrameworkContext)
-        {
+        {{
             _persistenceTransaction = persistenceTransaction;
             _userInfo = userInfo;
             _sqlExecuter = sqlExecuter;
@@ -247,20 +335,20 @@ namespace Common
             LogProvider = logProvider;
             _windowsSecurity = windowsSecurity;
             EntityFrameworkContext = entityFrameworkContext;
-            " + ModuleCodeGenerator.ExecutionContextConstructorAssignmentTag + @"
-        }
+            {ModuleCodeGenerator.ExecutionContextConstructorAssignmentTag}
+        }}
 
         // This constructor is used for manual context creation (unit testing)
         public ExecutionContext()
-        {
-        }
-    }
+        {{
+        }}
+    }}
 
     [System.ComponentModel.Composition.Export(typeof(Autofac.Module))]
     public class AutofacModuleConfiguration : Autofac.Module
-    {
+    {{
         protected override void Load(Autofac.ContainerBuilder builder)
-        {
+        {{
             builder.RegisterType<DomRepository>().InstancePerLifetimeScope();
             builder.RegisterType<EntityFrameworkConfiguration>().SingleInstance();
             builder.RegisterType<EntityFrameworkContext>()
@@ -271,186 +359,110 @@ namespace Common
             builder.RegisterType<ExecutionContext>().InstancePerLifetimeScope();
             builder.RegisterInstance(Infrastructure.RegisteredInterfaceImplementationName).ExternallyOwned();
             builder.RegisterInstance(Infrastructure.ApplyFiltersOnClientRead).ExternallyOwned();
-            " + ModuleCodeGenerator.CommonAutofacConfigurationMembersTag + @"
+            {ModuleCodeGenerator.CommonAutofacConfigurationMembersTag}
 
             base.Load(builder);
-        }
-    }
-
-    public class EntityFrameworkContext : System.Data.Entity.DbContext, Rhetos.Persistence.IPersistenceCache
-    {
-        public EntityFrameworkContext(
-            Rhetos.Persistence.IPersistenceTransaction persistenceTransaction,
-            Rhetos.Dom.DefaultConcepts.Persistence.EntityFrameworkMetadata metadata,
-            EntityFrameworkConfiguration configuration) // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
-            : base(new System.Data.Entity.Core.EntityClient.EntityConnection(metadata.MetadataWorkspace, persistenceTransaction.Connection), false)
-        {
-            Initialize();
-            Database.UseTransaction(persistenceTransaction.Transaction);
-        }
-
-        /// <summary>
-        /// This constructor is used at deployment-time to create slow EntityFrameworkContext instance before the metadata files are generated.
-        /// The instance is used by EntityFrameworkGenerateMetadataFiles to generate the metadata files.
-        /// </summary>
-        protected EntityFrameworkContext(
-            System.Data.Common.DbConnection connection,
-            EntityFrameworkConfiguration configuration) // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
-            : base(connection, true)
-        {
-            Initialize();
-        }
-
-        private void Initialize()
-        {
-            System.Data.Entity.Database.SetInitializer<EntityFrameworkContext>(null); // Prevent EF from creating database objects.
-
-            " + EntityFrameworkContextInitializeTag + @"
-
-            this.Database.CommandTimeout = Rhetos.Utilities.SqlUtility.SqlCommandTimeout;
-        }
-
-        public void ClearCache()
-        {
-            SetDetaching(true);
-            try
-            {
-                Configuration.AutoDetectChangesEnabled = false;
-                var trackedItems = ChangeTracker.Entries().ToList();
-                foreach (var item in trackedItems)
-                    Entry(item.Entity).State = System.Data.Entity.EntityState.Detached;
-                Configuration.AutoDetectChangesEnabled = true;
-            }
-            finally
-            {
-                SetDetaching(false);
-            }
-        }
-
-        private void SetDetaching(bool detaching)
-        {
-            foreach (var item in ChangeTracker.Entries().Select(entry => entry.Entity).OfType<IDetachOverride>())
-                item.Detaching = detaching;
-        }
-
-        protected override void OnModelCreating(System.Data.Entity.DbModelBuilder modelBuilder)
-        {
-            " + EntityFrameworkOnModelCreatingTag + @"
-        }
-
-        " + EntityFrameworkContextMembersTag + @"
-    }
-
-    public class EntityFrameworkConfiguration : System.Data.Entity.DbConfiguration
-    {
-        public EntityFrameworkConfiguration()
-        {
-            SetProviderServices(""System.Data.SqlClient"", System.Data.Entity.SqlServer.SqlProviderServices.Instance);
-
-            " + EntityFrameworkConfigurationTag + @"
-
-            System.Data.Entity.DbConfiguration.SetConfiguration(this);
-        }
-    }
+        }}
+    }}
 
     public abstract class RepositoryBase : IRepository
-    {
+    {{
         protected Common.DomRepository _domRepository;
         protected Common.ExecutionContext _executionContext;
-    }
+    }}
 
     public abstract class ReadableRepositoryBase<TEntity> : RepositoryBase, IReadableRepository<TEntity>
         where TEntity : class, IEntity
-    {
+    {{
         public IEnumerable<TEntity> Load(object parameter, Type parameterType)
-        {
+        {{
             var items = _executionContext.GenericRepository(typeof(TEntity).FullName)
                 .Load(parameter, parameterType);
             return (IEnumerable<TEntity>)items;
-        }
+        }}
 
         public IEnumerable<TEntity> Read(object parameter, Type parameterType, bool preferQuery)
-        {
+        {{
             var items = _executionContext.GenericRepository(typeof(TEntity).FullName)
                 .Read(parameter, parameterType, preferQuery);
             return (IEnumerable<TEntity>)items;
-        }
+        }}
 
         [Obsolete(""Use Load() or Query() method."")]
         public abstract TEntity[] All();
 
         [Obsolete(""Use Load() or Query() method."")]
         public TEntity[] Filter(FilterAll filterAll)
-        {
+        {{
             return All();
-        }
-    }
+        }}
+    }}
 
     public abstract class QueryableRepositoryBase<TQueryableEntity, TEntity> : ReadableRepositoryBase<TEntity>, IQueryableRepository<TQueryableEntity>
         where TEntity : class, IEntity
         where TQueryableEntity : class, IEntity, TEntity, IQueryableEntity<TEntity>
-    {
+    {{
         [Obsolete(""Use Load(identifiers)or Query(identifiers) method."")]
         public TEntity[] Filter(IEnumerable<Guid> identifiers)
-        {
+        {{
             const int BufferSize = 500; // EF 6.1.3 LINQ query has O(n^2) time complexity. Batch size of 500 results with optimal total time on the test system.
             int n = identifiers.Count();
             var result = new List<TEntity>(n);
             for (int i = 0; i < (n + BufferSize - 1) / BufferSize; i++)
-            {
+            {{
                 Guid[] idBuffer = identifiers.Skip(i * BufferSize).Take(BufferSize).ToArray();
                 List<TEntity> itemBuffer;
                 if (idBuffer.Count() == 1) // EF 6.1.3. does not use parametrized SQL query for Contains() function. The equality comparer is used instead, to reuse cached execution plans.
-                {
+                {{
                     Guid id = idBuffer.Single();
                     itemBuffer = Query().Where(item => item.ID == id).GenericToSimple<TEntity>().ToList();
-                }
+                }}
                 else
                     itemBuffer = Query().Where(item => idBuffer.Contains(item.ID)).GenericToSimple<TEntity>().ToList();
                 result.AddRange(itemBuffer);
-            }
+            }}
             return result.ToArray();
-        }
+        }}
 
         public abstract IQueryable<TQueryableEntity> Query();
 
         // LINQ to Entity does not support Query() method in subqueries.
-        public IQueryable<TQueryableEntity> Subquery { get { return Query(); } }
+        public IQueryable<TQueryableEntity> Subquery {{ get {{ return Query(); }} }}
 
         public IQueryable<TQueryableEntity> Query(object parameter, Type parameterType)
-        {
+        {{
             var query = _executionContext.GenericRepository(typeof(TEntity).FullName).Query(parameter, parameterType);
             return (IQueryable<TQueryableEntity>)query;
-        }
-    }
+        }}
+    }}
 
     public abstract class OrmRepositoryBase<TQueryableEntity, TEntity> : QueryableRepositoryBase<TQueryableEntity, TEntity>
         where TEntity : class, IEntity
         where TQueryableEntity : class, IEntity, TEntity, IQueryableEntity<TEntity>
-    {
+    {{
         public IQueryable<TQueryableEntity> Filter(IQueryable<TQueryableEntity> items, IEnumerable<Guid> ids)
-        {
+        {{
             if (!(ids is System.Collections.IList))
                 ids = ids.ToList();
 
             if (ids.Count() == 1) // EF 6.1.3. does not use parametrized SQL query for Contains() function. The equality comparer is used instead, to reuse cached execution plans.
-            {
+            {{
                 Guid id = ids.Single();
                 return items.Where(item => item.ID == id);
-            }
+            }}
             else
-            {
+            {{
                 // Depending on the ids count, this method will return the list of IDs, or insert the ids to the database and return an SQL query that selects the ids.
                 var idsQuery = _domRepository.Common.FilterId.CreateQueryableFilterIds(ids);
                 return items.Where(item => idsQuery.Contains(item.ID));
-            }
-        }
-    }
+            }}
+        }}
+    }}
 
-    " + ModuleCodeGenerator.CommonNamespaceMembersTag + @"
-}
+    {ModuleCodeGenerator.CommonNamespaceMembersTag}
+}}
 
-" + RepositoryClassesTag;
+{RepositoryClassesTag}";
         }
     }
 }

@@ -99,10 +99,7 @@ namespace DeployPackages
 
         private static void DownloadPackages(ILogger logger, Arguments arguments)
         {
-            var obsoleteFolders = new string[] { Path.Combine(Paths.RhetosServerRootPath, "DslScripts"), Path.Combine(Paths.RhetosServerRootPath, "DataMigration") };
-            var obsoleteFolder = obsoleteFolders.FirstOrDefault(folder => Directory.Exists(folder));
-            if (obsoleteFolder != null)
-                throw new UserException("Backup all Rhetos server folders and delete obsolete folder '" + obsoleteFolder + "'. It is no longer used.");
+            InitialCleanup(logger);
 
             if (!arguments.DeployDatabaseOnly)
             {
@@ -118,6 +115,32 @@ namespace DeployPackages
                 logger.Info("Skipped download packages (DeployDatabaseOnly).");
         }
 
+        private static void InitialCleanup(ILogger logger)
+        {
+            var obsoleteFolders = new string[]
+            {
+                Path.Combine(Paths.RhetosServerRootPath, "DslScripts"),
+                Path.Combine(Paths.RhetosServerRootPath, "DataMigration")
+            };
+            var obsoleteFolder = obsoleteFolders.FirstOrDefault(folder => Directory.Exists(folder));
+            if (obsoleteFolder != null)
+                throw new UserException("Backup all Rhetos server folders and delete obsolete folder '" + obsoleteFolder + "'. It is no longer used.");
+
+            var deleteObsoleteFiles = new string[]
+            {
+                Path.Combine(Paths.BinFolder, "ServerDom.cs"),
+                Path.Combine(Paths.BinFolder, "ServerDom.dll"),
+                Path.Combine(Paths.BinFolder, "ServerDom.pdb")
+            };
+            var filesUtility = new FilesUtility(DeploymentUtility.InitializationLogProvider);
+            foreach (var path in deleteObsoleteFiles)
+                if (File.Exists(path))
+                {
+                    logger.Info($"Deleting obsolete file '{path}'.");
+                    filesUtility.SafeDeleteFile(path);
+                }
+        }
+
         private static void GenerateApplication(ILogger logger, Arguments arguments)
         {
             if (!arguments.DeployDatabaseOnly)
@@ -125,14 +148,14 @@ namespace DeployPackages
                 // The old generated plugins must be deleted before loading the application generator plugins.
                 var filesUtility = new FilesUtility(DeploymentUtility.InitializationLogProvider);
                 filesUtility.SafeCreateDirectory(Paths.GeneratedFolder);
-                var oldGeneratedFiles = filesUtility.SafeGetFiles(Paths.GeneratedFolder, "*", SearchOption.AllDirectories)
-                    .Concat(filesUtility.SafeGetFiles(Paths.BinFolder, Paths.DomAssemblyName + "*", SearchOption.TopDirectoryOnly)); // TODO: DOM assembly should be placed in the GeneratedFolder.
+                var oldGeneratedFiles = filesUtility.SafeGetFiles(Paths.GeneratedFolder, "*", SearchOption.AllDirectories);
                 new GeneratedFilesCache(DeploymentUtility.InitializationLogProvider).MoveToCache(oldGeneratedFiles);
             }
             else
             {
-                if (!File.Exists(Paths.DomAssemblyFile))
-                    throw new UserException($"'/DatabaseOnly' switch cannot be used if the server have not been deployed successfully before. Run a regular deployment instead. Missing '{Paths.DomAssemblyFile}'.");
+                var missingFile = Paths.DomAssemblyFiles.FirstOrDefault(f => !File.Exists(f));
+                if (missingFile != null)
+                    throw new UserException($"'/DatabaseOnly' switch cannot be used if the server have not been deployed successfully before. Run a regular deployment instead. Missing '{missingFile}'.");
 
                 logger.Info("Skipped deleting old generated files (DeployDatabaseOnly).");
             }

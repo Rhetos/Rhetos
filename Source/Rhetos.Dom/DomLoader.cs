@@ -25,6 +25,7 @@ using System.Reflection;
 using System.Text;
 using Rhetos.Logging;
 using Rhetos.Utilities;
+using System.IO;
 
 namespace Rhetos.Dom
 {
@@ -33,33 +34,34 @@ namespace Rhetos.Dom
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
 
+        private List<Assembly> _assemblies;
+
         public DomLoader(ILogProvider logProvider)
         {
             _logger = logProvider.GetLogger("DomLoader");
             _performanceLogger = logProvider.GetLogger("Performance");
         }
 
-        private Assembly _objectModel;
-
-        public Assembly Assembly
+        public IEnumerable<Assembly> Assemblies
         {
             get
             {
-                if (_objectModel == null)
+                if (_assemblies == null)
                     LoadObjectModel();
-                return _objectModel;
+                return _assemblies;
             }
         }
 
         private void LoadObjectModel()
         {
             var sw = Stopwatch.StartNew();
-
-            _logger.Trace("Loading assembly by name \"" + Paths.DomAssemblyName + "\".");
-            _objectModel = Assembly.Load(new AssemblyName(Paths.DomAssemblyName));
-            _logger.Trace("Loaded assembly " + _objectModel.FullName + " at " + _objectModel.Location + ".");
-
-            _performanceLogger.Write(sw, "DomLoader.LoadObjectModel done.");
+            _assemblies = new List<Assembly>();
+            foreach (string file in Paths.DomAssemblyFiles)
+            {
+                _logger.Trace("Loading assembly \"" + file + "\".");
+                _assemblies.Add(Assembly.LoadFrom(file));
+                _performanceLogger.Write(sw, "DomLoader.LoadObjectModel " + Path.GetFileName(file));
+            }
         }
     }
 }

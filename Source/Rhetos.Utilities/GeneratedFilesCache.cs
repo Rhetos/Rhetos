@@ -132,6 +132,15 @@ namespace Rhetos.Utilities
                 .ToDictionary(g => g.Key, g => g.ToList());
         }
 
+        public byte[] JoinHashes(IEnumerable<byte[]> hashes)
+        {
+            byte[] result = new byte[hashes.Max(h => h.Length)];
+            foreach (var hash in hashes)
+                for (int i = 0; i < hash.Length; i++)
+                    result[i] ^= hash[i];
+            return result;
+        }
+
         private ValueOrError<List<string>> ListCachedFiles(string fileGroupName, byte[] sourceHash, IEnumerable<string> requestedExtensions)
         {
             var cachedFilesByExt = ListCachedFiles()

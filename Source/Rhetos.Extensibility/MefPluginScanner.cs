@@ -68,7 +68,7 @@ namespace Rhetos.Extensibility
         {
             var stopwatch = Stopwatch.StartNew();
 
-            string[] pluginsPath = new[] { Paths.PluginsFolder, Paths.GeneratedFolder, Paths.DomAssemblyFile };
+            string[] pluginsPath = new[] { Paths.PluginsFolder, Paths.GeneratedFolder };
 
             List<string> assemblies = new List<string>();
             foreach (var path in pluginsPath)

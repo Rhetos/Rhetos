@@ -28,6 +28,25 @@ namespace Rhetos.Dom
 {
     public interface IDomainObjectModel
     {
-        Assembly Assembly { get; }
+        IEnumerable<Assembly> Assemblies { get; }
+    }
+
+    public static class DomainObjectModelExtensions
+    {
+        public static Type GetType(this IDomainObjectModel dom, string name)
+        {
+            foreach (Assembly a in dom.Assemblies)
+            {
+                Type type = a.GetType(name);
+                if (type != null)
+                    return type;
+            }
+            return null;
+        }
+
+        public static IEnumerable<Type> GetTypes(this IDomainObjectModel dom)
+        {
+            return dom.Assemblies.SelectMany(a => a.GetTypes());
+        }
     }
 }

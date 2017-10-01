@@ -499,7 +499,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             Type filterType = null;
 
-            filterType = _domainObjectModel.Assembly.GetType(filterName);
+            filterType = _domainObjectModel.GetType(filterName);
 
             filterType = filterType ?? Type.GetType(filterName);
 

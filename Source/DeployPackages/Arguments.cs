@@ -63,11 +63,11 @@ namespace DeployPackages
         {
             Console.WriteLine("Command-line arguments:");
             Console.WriteLine("/StartPaused   Use for debugging with Visual Studio (Attach to Process).");
-            Console.WriteLine("/Debug         Generates unoptimized dlls (ServerDom.dll, e.g.) for debugging.");
+            Console.WriteLine("/Debug         Generates unoptimized dlls (ServerDom.*.dll, e.g.) for debugging.");
             Console.WriteLine("/NoPause       Don't pause on error. Use this switch for build automation.");
             Console.WriteLine("/IgnoreDependencies  Allow installing incompatible versions of Rhetos packages.");
             Console.WriteLine("/ShortTransactions  Commit transaction after creating or dropping each database object.");
-            Console.WriteLine("/DatabaseOnly  Keep old plugins, ServerDom and files in bin\\Generated.");
+            Console.WriteLine("/DatabaseOnly  Keep old plugins and files in bin\\Generated.");
         }
 
         /// <summary>

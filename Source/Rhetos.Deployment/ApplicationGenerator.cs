@@ -84,7 +84,7 @@ namespace Rhetos.Deployment
             else
             {
                 _deployPackagesLogger.Trace("Compiling DOM assembly.");
-                int generatedTypesCount = _domGenerator.Assembly.GetTypes().Length;
+                int generatedTypesCount = _domGenerator.GetTypes().Count();
                 if (generatedTypesCount == 0)
                 {
                     _deployPackagesLogger.Error("WARNING: Empty assembly is generated.");

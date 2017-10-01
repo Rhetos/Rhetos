@@ -28,9 +28,9 @@ namespace Rhetos.CommonConcepts.Test.Mocks
 {
     class DomainObjectModelMock : IDomainObjectModel
     {
-        public Assembly Assembly
+        public IEnumerable<Assembly> Assemblies
         {
-            get { return typeof(DomainObjectModelMock).Assembly; }
+            get { return new[] { GetType().Assembly }; }
         }
     }
 }

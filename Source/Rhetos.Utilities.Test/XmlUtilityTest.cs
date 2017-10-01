@@ -30,10 +30,7 @@ namespace Rhetos.Utilities.Test
 {
     class DomainObjectModelMock : IDomainObjectModel
     {
-        public System.Reflection.Assembly Assembly
-        {
-            get { return GetType().Assembly; }
-        }
+        public IEnumerable<System.Reflection.Assembly> Assemblies => new[] { GetType().Assembly };
     }
 
     [TestClass()]

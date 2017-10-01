@@ -30,6 +30,7 @@ using Rhetos.Extensibility;
 using Rhetos.Utilities;
 using Rhetos.Logging;
 using ICodeGenerator = Rhetos.Compiler.ICodeGenerator;
+using System.Collections.Generic;
 
 namespace Rhetos.Dom
 {
@@ -40,7 +41,8 @@ namespace Rhetos.Dom
         private readonly ILogProvider _log;
         private readonly IAssemblyGenerator _assemblyGenerator;
         private readonly DomGeneratorOptions _domGeneratorOptions;
-        private Assembly _objectModel;
+
+        private List<Assembly> _assemblies;
 
         /// <summary>
         /// If assemblyName is not null, the assembly will be saved on disk.
@@ -60,13 +62,13 @@ namespace Rhetos.Dom
             _assemblyGenerator = assemblyGenerator;
         }
 
-        public Assembly Assembly
+        public IEnumerable<Assembly> Assemblies
         {
             get
             {
-                if (_objectModel == null)
+                if (_assemblies == null)
                     GenerateObjectModel();
-                return _objectModel;
+                return _assemblies;
             }
         }
 
@@ -78,14 +80,74 @@ namespace Rhetos.Dom
 
             CompilerParameters parameters = new CompilerParameters
             {
-                GenerateExecutable = false,
-                GenerateInMemory = string.IsNullOrEmpty(Paths.DomAssemblyName),
-                OutputAssembly = string.IsNullOrEmpty(Paths.DomAssemblyName) ? null : Path.Combine(Paths.BinFolder, Paths.DomAssemblyName + ".dll"),
                 IncludeDebugInformation = true,
                 CompilerOptions = _domGeneratorOptions.Debug ? "" : "/optimize"
             };
 
-            _objectModel = _assemblyGenerator.Generate(assemblySource, parameters);
+            _assemblies = new List<Assembly>();
+            foreach (var sourcePart in SplitAssemblySource(assemblySource))
+            {
+                parameters.OutputAssembly = sourcePart.AssemblyFileName;
+                _assemblies.Add(_assemblyGenerator.Generate(sourcePart.AssemblySource, parameters));
+            }
+        }
+
+        private IEnumerable<SourcePart> SplitAssemblySource(IAssemblySource assemblySource)
+        {
+            string source = assemblySource.GeneratedCode;
+            List<string> references = assemblySource.RegisteredReferences.ToList();
+
+            string partName = "";
+            int partStart = 0;
+
+            while (true)
+            {
+                int partEnd = source.IndexOf(DomGeneratorOptions.FileSplitterPrefix, partStart);
+                if (partEnd == -1)
+                    partEnd = source.Length;
+
+                string partSource = source.Substring(partStart, partEnd - partStart).Trim();
+                if (!string.IsNullOrEmpty(partSource))
+                {
+                    string assemblyFile = Paths.GetDomAssemblyFile((DomAssemblies)Enum.Parse(typeof(DomAssemblies), partName));
+                    yield return new SourcePart
+                    {
+                        AssemblyFileName = assemblyFile,
+                        AssemblySource = new SimpleAssemplySource
+                        {
+                            GeneratedCode = partSource,
+                            RegisteredReferences = references
+                        }
+                    };
+                    references = references.ToList(); // Create a new list to avoid changing the one provided to the assembly above.
+                    references.Add(assemblyFile);
+                }
+
+                if (partEnd == source.Length)
+                    break;
+
+                int tagStart = partEnd + DomGeneratorOptions.FileSplitterPrefix.Length;
+                int tagEnd = source.IndexOf(DomGeneratorOptions.FileSplitterSuffix, tagStart);
+                if (tagEnd == -1)
+                    throw new FrameworkException($"Unexpected file splitter tag format. Cannot find tag end mark ({DomGeneratorOptions.FileSplitterSuffix})"
+                        + $" after position {tagStart - partEnd} in source:\r\n"
+                        + source.Substring(partEnd, 200));
+
+                partName = source.Substring(tagStart, tagEnd - tagStart);
+                partStart = tagEnd + DomGeneratorOptions.FileSplitterSuffix.Length;
+            }
+        }
+
+        private class SourcePart
+        {
+            public string AssemblyFileName;
+            public IAssemblySource AssemblySource;
+        }
+
+        private class SimpleAssemplySource : IAssemblySource
+        {
+            public string GeneratedCode { get; set; }
+            public IEnumerable<string> RegisteredReferences { get; set; }
         }
     }
 }

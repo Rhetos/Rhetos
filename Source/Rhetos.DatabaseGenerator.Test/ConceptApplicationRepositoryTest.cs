@@ -36,9 +36,9 @@ namespace Rhetos.DatabaseGenerator.Test
 {
     class DomainObjectModelMock : IDomainObjectModel
     {
-        public System.Reflection.Assembly Assembly
+        public IEnumerable<System.Reflection.Assembly> Assemblies
         {
-            get { return GetType().Assembly; }
+            get { return new[] { GetType().Assembly }; }
         }
     }
 

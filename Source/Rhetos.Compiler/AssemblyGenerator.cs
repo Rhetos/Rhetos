@@ -57,7 +57,7 @@ namespace Rhetos.Compiler
                 compilerParameters.WarningLevel = 4;
             if (compilerParameters.GenerateInMemory)
                 throw new FrameworkException("GenerateInMemory compiler parameter is not supported.");
-            string assemblyShortName = Path.GetFileName(compilerParameters.OutputAssembly);
+            string dllName = Path.GetFileName(compilerParameters.OutputAssembly);
 
             // Save source file and it's hash value:
 
@@ -68,7 +68,7 @@ namespace Rhetos.Compiler
 
             string sourceFile = Path.GetFullPath(Path.ChangeExtension(compilerParameters.OutputAssembly, ".cs"));
             var sourceHash = _filesCache.SaveSourceAndHash(sourceFile, sourceCode);
-            _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Save source and hash ({assemblyShortName}).");
+            _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Save source and hash ({dllName}).");
 
             // Compile assembly or get from cache:
 
@@ -77,27 +77,29 @@ namespace Rhetos.Compiler
             var filesFromCache = _filesCache.RestoreCachedFiles(sourceFile, sourceHash, Path.GetDirectoryName(compilerParameters.OutputAssembly), new[] { ".dll", ".pdb" });
             if (filesFromCache != null)
             {
+                _logger.Trace(() => "Restoring assembly from cache: " + dllName + ".");
                 if (!File.Exists(compilerParameters.OutputAssembly))
-                    throw new FrameworkException($"AssemblyGenerator: RestoreCachedFiles failed to create the assembly file ({assemblyShortName}).");
-                
-                generatedAssembly = Assembly.LoadFile(compilerParameters.OutputAssembly);
-                _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Assembly from cache ({assemblyShortName}).");
+                    throw new FrameworkException($"AssemblyGenerator: RestoreCachedFiles failed to create the assembly file ({dllName}).");
+
+                generatedAssembly = Assembly.LoadFrom(compilerParameters.OutputAssembly);
+                _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Assembly from cache ({dllName}).");
 
                 FailOnTypeLoadErrors(generatedAssembly, compilerParameters.OutputAssembly);
-                _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({assemblyShortName}).");
+                _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({dllName}).");
             }
             else
             {
+                _logger.Trace(() => "Compiling assembly: " + dllName + ".");
                 CompilerResults compilerResults;
                 using (CSharpCodeProvider codeProvider = new CSharpCodeProvider())
                     compilerResults = codeProvider.CompileAssemblyFromFile(compilerParameters, sourceFile);
-                generatedAssembly = compilerResults.CompiledAssembly;
-                _performanceLogger.Write(stopwatch, $"AssemblyGenerator: CSharpCodeProvider.CompileAssemblyFromFile ({assemblyShortName}).");
+                _performanceLogger.Write(stopwatch, $"AssemblyGenerator: CSharpCodeProvider.CompileAssemblyFromFile ({dllName}).");
 
                 FailOnCompilerErrors(compilerResults, sourceCode, sourceFile);
-                FailOnTypeLoadErrors(generatedAssembly, compilerParameters.OutputAssembly);
+                FailOnTypeLoadErrors(compilerResults.CompiledAssembly, compilerParameters.OutputAssembly);
                 ReportWarnings(compilerResults, sourceFile);
-                _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({assemblyShortName}).");
+                _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({dllName}).");
+                generatedAssembly = compilerResults.CompiledAssembly;
             }
 
             return generatedAssembly;

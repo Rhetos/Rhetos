@@ -32,7 +32,7 @@ namespace Rhetos.Utilities
     public class XmlUtility
     {
         /// <param name="domainObjectModel">
-        /// Use of domainObjectModel.Assembly.GetType(string) is needed along with Type.GetType(string) to find objects in the generate domain object model.
+        /// Use of domainObjectModel.GetType(string) is needed along with Type.GetType(string) to find objects in the generate domain object model.
         /// Since DOM assembly is not directly referenced from other dlls, Type.GetType will not find types in DOM
         /// before the Dom.GetType is used. The problem usually manifests on the first server call after restarting the process.
         /// The parameter may be null is the object model is not yet generated.

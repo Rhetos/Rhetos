@@ -65,7 +65,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
         {
             var sw = Stopwatch.StartNew();
 
-            byte[] sourceHash = _cache.LoadHash(Paths.DomAssemblyFile);
+            byte[] sourceHash = GetOrmHash();
             string sampleEdmFile = Path.Combine(Paths.GeneratedFolder, EntityFrameworkMetadata.SegmentsFromCode.First().FileName);
             var edmExtensions = EntityFrameworkMetadata.SegmentsFromCode.Select(s => Path.GetExtension(s.FileName));
 
@@ -77,11 +77,11 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
             {
                 var connection = new SqlConnection(_connectionString);
 
-                var dbConfiguration = (DbConfiguration)_dom.Assembly.GetType("Common.EntityFrameworkConfiguration")
+                var dbConfiguration = (DbConfiguration)_dom.GetType("Common.EntityFrameworkConfiguration")
                     .GetConstructor(new Type[] { })
                     .Invoke(new object[] { });
 
-                var dbContext = (DbContext)_dom.Assembly.GetType("Common.EntityFrameworkContext")
+                var dbContext = (DbContext)_dom.GetType("Common.EntityFrameworkContext")
                     .GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(DbConnection), dbConfiguration.GetType() }, null)
                     .Invoke(new object[] { connection, dbConfiguration });
 
@@ -116,6 +116,17 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
             }
 
             _cache.SaveHash(sampleEdmFile, sourceHash);
+        }
+
+        private byte[] GetOrmHash()
+        {
+            var hashes = new[]
+            {
+                _cache.LoadHash(Paths.GetDomAssemblyFile(DomAssemblies.Model)),
+                _cache.LoadHash(Paths.GetDomAssemblyFile(DomAssemblies.Orm)),
+                // TODO: Add DatabaseGenerator hash for new created ConceptApplications.
+            };
+            return _cache.JoinHashes(hashes);
         }
     }
 }

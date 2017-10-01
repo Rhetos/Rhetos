@@ -53,7 +53,7 @@ namespace Rhetos.Processing.DefaultCommands
         {
             if (validateObjects == null) return true;
             var validateItems = (IEntity[])validateObjects;
-            var filterType = _domainObjectModel.Assembly.GetType(filterName);
+            var filterType = _domainObjectModel.GetType(filterName);
             var filterMethodInfo = genericRepository.Reflection.RepositoryQueryableFilterMethod(filterType);
 
             if (filterMethodInfo != null)

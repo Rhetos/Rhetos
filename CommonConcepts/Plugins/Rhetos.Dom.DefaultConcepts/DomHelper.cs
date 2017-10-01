@@ -30,7 +30,7 @@ using System.Threading.Tasks;
 namespace Rhetos.Dom.DefaultConcepts
 {
     /// <summary>
-    /// These methods are called from the generated ServerDom.cs.
+    /// These methods are called from the generated ServerDom.*.cs.
     /// </summary>
     public static class DomHelper
     {

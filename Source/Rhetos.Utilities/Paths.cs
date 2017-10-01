@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Dom;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -96,17 +97,15 @@ namespace Rhetos.Utilities
             }
         }
 
-        public static string PackagesFolder { get { return Path.Combine(RhetosServerRootPath, "PackagesCache"); } }
-        public static string ResourcesFolder { get { return Path.Combine(RhetosServerRootPath, "Resources"); } }
-        public static string BinFolder { get { return Path.Combine(RhetosServerRootPath, "bin"); } }
-        public static string GeneratedFolder { get { return Path.Combine(RhetosServerRootPath, "bin\\Generated"); } }
-        public static string GeneratedFilesCacheFolder { get { return Path.Combine(RhetosServerRootPath, "GeneratedFilesCache"); } }
-        public static string PluginsFolder { get { return Path.Combine(RhetosServerRootPath, "bin\\Plugins"); } }
-
-        public static string RhetosServerWebConfigFile { get { return Path.Combine(RhetosServerRootPath, "Web.config"); } }
-        public static string DomAssemblyFile { get { return Path.Combine(RhetosServerRootPath, "bin", DomAssemblyName + ".dll"); } }
-        public static string ConnectionStringsFile { get { return Path.Combine(RhetosServerRootPath, @"bin\ConnectionStrings.config"); } }
-
-        public const string DomAssemblyName = "ServerDom";
+        public static string PackagesFolder => Path.Combine(RhetosServerRootPath, "PackagesCache");
+        public static string ResourcesFolder => Path.Combine(RhetosServerRootPath, "Resources");
+        public static string BinFolder => Path.Combine(RhetosServerRootPath, "bin");
+        public static string GeneratedFolder => Path.Combine(RhetosServerRootPath, "bin\\Generated");
+        public static string GeneratedFilesCacheFolder => Path.Combine(RhetosServerRootPath, "GeneratedFilesCache");
+        public static string PluginsFolder => Path.Combine(RhetosServerRootPath, "bin\\Plugins");
+        public static string RhetosServerWebConfigFile => Path.Combine(RhetosServerRootPath, "Web.config");
+        public static string ConnectionStringsFile => Path.Combine(RhetosServerRootPath, @"bin\ConnectionStrings.config");
+        public static string GetDomAssemblyFile(DomAssemblies domAssembly) => Path.Combine(GeneratedFolder, $"ServerDom.{domAssembly}.dll");
+        public static IEnumerable<string> DomAssemblyFiles => Enum.GetValues(typeof(DomAssemblies)).Cast<DomAssemblies>().Select(domAssembly => GetDomAssemblyFile(domAssembly));
     }
 }

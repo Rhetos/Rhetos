@@ -24,8 +24,13 @@ using System.Text;
 
 namespace Rhetos.Dom
 {
+    public enum DomAssemblies { Model, Orm, Repositories };
+
     public class DomGeneratorOptions
     {
         public bool Debug { get; set; }
+
+        public const string FileSplitterPrefix = "/*DomainObjectModel file: ";
+        public const string FileSplitterSuffix = "*/";
     }
 }

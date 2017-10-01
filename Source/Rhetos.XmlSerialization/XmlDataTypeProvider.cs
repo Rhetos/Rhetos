@@ -48,7 +48,7 @@ namespace Rhetos.XmlSerialization
 
         public IDataArray CreateDomainDataArray(string domainType) 
         {
-            var type = _domainObjectModel.Assembly.GetType(domainType);
+            var type = _domainObjectModel.GetType(domainType);
 
             if (type == null)
                 throw new Exception("DomainObjectModel does not contain type " + domainType + ".");

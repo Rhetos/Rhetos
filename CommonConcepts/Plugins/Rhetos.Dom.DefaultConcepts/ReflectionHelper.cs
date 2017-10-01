@@ -55,7 +55,7 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 if (_entityType == null)
                 {
-                    _entityType = _domainObjectModel.Assembly.GetType(_entityName);
+                    _entityType = _domainObjectModel.GetType(_entityName);
 
                     if (_entityType == null)
                         throw new Exception("DomainObjectModel does not contain type " + _entityName + ".");
@@ -78,7 +78,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (_entityNavigationType == null)
                 {
                     string entityQueryableName = "Common.Queryable." + _entityName.Replace(".", "_");
-                    _entityNavigationType = _domainObjectModel.Assembly.GetType(entityQueryableName);
+                    _entityNavigationType = _domainObjectModel.GetType(entityQueryableName);
 
                     if (_entityNavigationType == null)
                         _entityNavigationType = EntityType;
@@ -582,7 +582,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             if (_loadSimpleObjectsMethod == null)
             {
-                Type queryExtensions = _domainObjectModel.Assembly.GetType("Rhetos.Dom.DefaultConcepts.QueryExtensions");
+                Type queryExtensions = _domainObjectModel.GetType("Rhetos.Dom.DefaultConcepts.QueryExtensions");
                 _loadSimpleObjectsMethod = queryExtensions.GetMethod("LoadSimpleObjects").MakeGenericMethod(EntityType);
             }
 

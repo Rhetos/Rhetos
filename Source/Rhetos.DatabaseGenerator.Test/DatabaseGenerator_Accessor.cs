@@ -51,7 +51,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
         class MockDomainObjectModel : IDomainObjectModel
         {
-            public System.Reflection.Assembly Assembly { get { return GetType().Assembly; } }
+            public IEnumerable<System.Reflection.Assembly> Assemblies => new[] { GetType().Assembly };
         }
 
         class MockConceptApplicationRepository : IConceptApplicationRepository
