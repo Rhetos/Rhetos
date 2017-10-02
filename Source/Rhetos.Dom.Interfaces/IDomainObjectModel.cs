@@ -26,6 +26,8 @@ using System.Reflection;
 
 namespace Rhetos.Dom
 {
+    public enum DomAssemblies { Model, Orm, Repositories };
+
     public interface IDomainObjectModel
     {
         IEnumerable<Assembly> Assemblies { get; }

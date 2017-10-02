@@ -5,7 +5,7 @@
   <Reference Relative="bin\Plugins\Rhetos.Processing.DefaultCommands.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Processing.DefaultCommands.Interfaces.dll</Reference>
   <Reference Relative="bin\Rhetos.Processing.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Processing.Interfaces.dll</Reference>
   <Reference Relative="bin\Rhetos.Security.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Security.Interfaces.dll</Reference>
-  <Reference Relative="bin\ServerDom.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\ServerDom.dll</Reference>
+  <Reference Relative="bin\Generated\ServerDom.Model.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Generated\ServerDom.Model.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.DirectoryServices.AccountManagement.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.DirectoryServices.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.Runtime.Serialization.dll</Reference>
@@ -184,7 +184,7 @@ void Main()
                 if (type != null)
                     return type;
 					
-				type = Type.GetType(decodedTypeName + ", ServerDom");
+				type = Type.GetType(decodedTypeName + ", ServerDom.Model");
                 if (type != null)
                     return type;
 

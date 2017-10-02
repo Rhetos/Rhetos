@@ -128,9 +128,14 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.XmlSerialization.dll</HintPath>
     </Reference>
-    <Reference Include="ServerDom, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Source\Rhetos\bin\ServerDom.dll</HintPath>
+    <Reference Include="ServerDom.Model">
+      <HintPath>..\..\..\Source\Rhetos\bin\Generated\ServerDom.Model.dll</HintPath>
+    </Reference>
+    <Reference Include="ServerDom.Orm">
+      <HintPath>..\..\..\Source\Rhetos\bin\Generated\ServerDom.Orm.dll</HintPath>
+    </Reference>
+    <Reference Include="ServerDom.Repositories">
+      <HintPath>..\..\..\Source\Rhetos\bin\Generated\ServerDom.Repositories.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">

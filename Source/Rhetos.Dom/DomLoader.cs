@@ -56,11 +56,11 @@ namespace Rhetos.Dom
         {
             var sw = Stopwatch.StartNew();
             _assemblies = new List<Assembly>();
-            foreach (string file in Paths.DomAssemblyFiles)
+            foreach (string name in Paths.DomAssemblyFiles.Select(Path.GetFileNameWithoutExtension))
             {
-                _logger.Trace("Loading assembly \"" + file + "\".");
-                _assemblies.Add(Assembly.LoadFrom(file));
-                _performanceLogger.Write(sw, "DomLoader.LoadObjectModel " + Path.GetFileName(file));
+                _logger.Trace("Loading assembly \"" + name + "\".");
+                _assemblies.Add(Assembly.Load(name));
+                _performanceLogger.Write(sw, "DomLoader.LoadObjectModel " + name);
             }
         }
     }

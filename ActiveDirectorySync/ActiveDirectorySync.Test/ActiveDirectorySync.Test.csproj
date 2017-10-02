@@ -56,8 +56,14 @@
     <Reference Include="Rhetos.Utilities">
       <HintPath>..\..\Source\Rhetos\bin\Rhetos.Utilities.dll</HintPath>
     </Reference>
-    <Reference Include="ServerDom">
-      <HintPath>..\..\Source\Rhetos\bin\ServerDom.dll</HintPath>
+    <Reference Include="ServerDom.Model">
+      <HintPath>..\..\Source\Rhetos\bin\Generated\ServerDom.Model.dll</HintPath>
+    </Reference>
+    <Reference Include="ServerDom.Orm">
+      <HintPath>..\..\Source\Rhetos\bin\Generated\ServerDom.Orm.dll</HintPath>
+    </Reference>
+    <Reference Include="ServerDom.Repositories">
+      <HintPath>..\..\Source\Rhetos\bin\Generated\ServerDom.Repositories.dll</HintPath>
     </Reference>
     <Reference Include="System" />
   </ItemGroup>

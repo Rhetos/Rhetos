@@ -17,7 +17,9 @@
   <Reference Relative="bin\Rhetos.Processing.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Processing.Interfaces.dll</Reference>
   <Reference Relative="bin\Rhetos.Security.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Security.Interfaces.dll</Reference>
   <Reference Relative="bin\Rhetos.Utilities.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Utilities.dll</Reference>
-  <Reference Relative="bin\ServerDom.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\ServerDom.dll</Reference>
+  <Reference Relative="bin\Generated\ServerDom.Model.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Generated\ServerDom.Model.dll</Reference>
+  <Reference Relative="bin\Generated\ServerDom.Orm.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Generated\ServerDom.Orm.dll</Reference>
+  <Reference Relative="bin\Generated\ServerDom.Repositories.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Generated\ServerDom.Repositories.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.DirectoryServices.AccountManagement.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.DirectoryServices.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.Runtime.Serialization.dll</Reference>

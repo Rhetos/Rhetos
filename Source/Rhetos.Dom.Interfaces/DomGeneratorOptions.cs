@@ -24,8 +24,6 @@ using System.Text;
 
 namespace Rhetos.Dom
 {
-    public enum DomAssemblies { Model, Orm, Repositories };
-
     public class DomGeneratorOptions
     {
         public bool Debug { get; set; }
