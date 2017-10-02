@@ -79,13 +79,18 @@ namespace Rhetos.Dsl.DefaultConcepts
                                 Entity.Module.Name, 
                                 Entity.Name) 
             };
-            var invalidDataValidation = new InvalidDataMarkPropertyInfo {
+            var invalidDataValidation = new InvalidDataInfo {
                 FilterType = "Common.OlderThanHistoryEntries", 
                 Source = Entity, 
-                ErrorMessage = "ActiveSince is not allowed to be older than last entry in history.", 
-                DependedProperty = activeSinceProperty 
+                ErrorMessage = "ActiveSince is not allowed to be older than last entry in history."
             };
-            newConcepts.AddRange(new IConceptInfo[] { denyFilter, invalidDataValidation, new ParameterInfo { Module = new ModuleInfo { Name = "Common" }, Name = "OlderThanHistoryEntries" } });
+            newConcepts.AddRange(new IConceptInfo[]
+                {
+                    denyFilter,
+                    invalidDataValidation,
+                    new ParameterInfo { Module = new ModuleInfo { Name = "Common" }, Name = "OlderThanHistoryEntries" },
+                    new InvalidDataMarkProperty2Info { InvalidData = invalidDataValidation, MarkProperty = activeSinceProperty }
+                });
 
             // Create a new entity for history data:
             var currentProperty = new ReferencePropertyInfo { DataStructure = Dependency_ChangesEntity, Name = "Entity", Referenced = Entity };
@@ -106,14 +111,19 @@ namespace Rhetos.Dsl.DefaultConcepts
                 Source = Dependency_ChangesEntity,
                 Expression = @"(items, repository, parameter) => items.Where(item => item.ActiveSince > item.Entity.ActiveSince)"
             };
-            var invalidDataValidationHistory = new InvalidDataMarkPropertyInfo
+            var invalidDataValidationHistory = new InvalidDataInfo
             {
                 FilterType = "Common.NewerThanCurrentEntry",
                 Source = Dependency_ChangesEntity,
-                ErrorMessage = "ActiveSince of history entry is not allowed to be newer than current entry.",
-                DependedProperty = historyActiveSinceProperty
+                ErrorMessage = "ActiveSince of history entry is not allowed to be newer than current entry."
             };
-            newConcepts.AddRange(new IConceptInfo[] { denyFilterHistory, invalidDataValidationHistory, new ParameterInfo { Module = new ModuleInfo { Name = "Common" }, Name = "NewerThanCurrentEntry" } });
+            newConcepts.AddRange(new IConceptInfo[]
+                {
+                    denyFilterHistory,
+                    invalidDataValidationHistory,
+                    new ParameterInfo { Module = new ModuleInfo { Name = "Common" }, Name = "NewerThanCurrentEntry" },
+                    new InvalidDataMarkProperty2Info { InvalidData = invalidDataValidationHistory, MarkProperty = historyActiveSinceProperty }
+                });
 
             // Create ActiveUntil SqlQueryable:
             var activeUntilSqlQueryable = new SqlQueryableInfo { Module = Entity.Module, Name = Entity.Name + "_ChangesActiveUntil", SqlSource = ActiveUntilSqlSnippet() };
