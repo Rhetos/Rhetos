@@ -1,5 +1,24 @@
 ﻿# Rhetos release notes
 
+## 2.0.0 (2017-10-02)
+
+### Breaking changes
+
+* *ServerDom.dll* moved from bin to bin\Generated and split to the following files: ServerDom.Repositories.dll, ServerDom.Model.dll, ServerDom.Orm.dll.
+* When using **AllProperties** concept on **ComputedFrom** or **Persisted**, it is no longer allowed to override the target property name for the computed properties. Use an explicit property mapping instead.
+
+### New features
+
+* New concept **UniqueReference**, similar to the **Extends** concepts but without cascade delete and row permissions inheritance.
+* New concept: **CascadeDelete** for **UniqueReference**.
+
+### Internal improvements
+
+* Deployment performance: Caching generated assembly and EDM files.
+* Run-time performance: Removed use of IObjectContextAdapter at Entity Framework initialization and saving.
+* Run-time performance: Optimized row permissions that uses an extension when inherited to that extension.
+* Bugfix: Inheriting row permissions results with a lambda expression error when using subquery parameters of the same type as the main expression parameter or when inheriting to an extension that is used in the main expression.
+
 ## 1.10.0 (2017-08-11)
 
 ### Internal improvements

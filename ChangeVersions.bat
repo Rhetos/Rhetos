@@ -1,4 +1,7 @@
-﻿@REM HINT: SET THE FIRST ARGUMENT TO /NOPAUSE WHEN AUTOMATING THE BUILD.
+﻿@REM COMMAND LINE ARGUMENTS:
+@REM /NOPAUSE   SCRIT EXITS ON ERROR, WITHOUT WAITING FOR USER'S RESPONSE. USE THIS WHEN AUTOMATING THE BUILD.
+@REM /RESTORE   SETS THE PROJECT'S VERSION TO "dev" PRERELESE. USE THIS BEFORE COMMITTING TO SOURCE REPOSTIORY.
+
 @SETLOCAL
 @SETLOCAL ENABLEDELAYEDEXPANSION
 @SET "params=;%~1;%~2;%~3;%~4;%~5;%~6;%~7;%~8;%~9;"
@@ -6,24 +9,23 @@
 SET BuildVersion=2.0.0
 SET PrereleaseVersion=auto
 @REM SET PrereleaseVersion TO EMPTY VALUE FOR THE OFFICIAL RELEASE.
-@REM SET PrereleaseVersion TO "auto" FOR AUTOMATIC PRERELEASE NAME "aph<date and time><last commit hash>"
+@REM SET PrereleaseVersion TO "auto" FOR AUTOMATIC PRERELEASE NAME "dev<date and time><last commit hash>"
 @REM \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 IF /I "!PrereleaseVersion!" EQU "auto" (
-	@REM If the script parameters contain "/RESTORE" switch: Set the PrereleaseVersion to "dev".
-	IF "!params:;/RESTORE;=;!" NEQ "!params!" (
-		SET "PrereleaseVersion=dev"
-	) ELSE (
-		SET "PrereleaseVersion=alpha"
-		FOR /f "delims=" %%A IN ('powershell get-date -format "{yyMMddHHmm}"') DO SET "PrereleaseVersion=!PrereleaseVersion!%%A"
-		FOR /f "delims=" %%A IN ('git rev-parse --short HEAD') DO SET "PrereleaseVersion=!PrereleaseVersion!%%A"
-		@REM NuGet limits to 20 characters.
-		SET "PrereleaseVersion=!PrereleaseVersion:~0,20!"
-	)
+    @REM If the script parameters contain "/RESTORE" switch: Set the PrereleaseVersion to "dev".
+IF "!params:;/RESTORE;=;!" NEQ "!params!" (
+    SET "PrereleaseVersion=dev"
+) ELSE (
+        SET "PrereleaseVersion=dev"
+        FOR /f "delims=" %%A IN ('powershell get-date -format "{yyMMddHHmm}"') DO SET "PrereleaseVersion=!PrereleaseVersion!%%A"
+        FOR /f "delims=" %%A IN ('git rev-parse --short HEAD') DO SET "PrereleaseVersion=!PrereleaseVersion!%%A"
+        @REM NuGet limits to 20 characters.
+        SET "PrereleaseVersion=!PrereleaseVersion:~0,20!"
+    )
 )
 
-@SET PrereleaseVersion
-
+ECHO PrereleaseVersion="!PrereleaseVersion!"
 PUSHD "%~dp0" || GOTO Error0
 CALL ChangeRhetosPackageVersion.bat . %BuildVersion% !PrereleaseVersion! || GOTO Error1
 @POPD
