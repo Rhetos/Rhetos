@@ -42,10 +42,11 @@ namespace AdminSetup
 {
     class Program
     {
-        static InitializeAssemblyResolver initializeAssemblyResolver = new InitializeAssemblyResolver();
+        static InitializeAssemblyResolver initializeAssemblyResolver = new InitializeAssemblyResolver("..");
 
         static int Main(string[] args)
         {
+            // The exe will be placed in the subfolder: <server root>\bin\Plugins.
             Paths.InitializeRhetosServerRootPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\.."));
 
             string errorMessage = null;

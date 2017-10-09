@@ -34,7 +34,7 @@ namespace InitAspNetDatabase
 {
     class Program
     {
-        static InitializeAssemblyResolver initializeAssemblyResolver = new InitializeAssemblyResolver();
+        static InitializeAssemblyResolver initializeAssemblyResolver = new InitializeAssemblyResolver("..");
 
         static int Main(string[] args)
         {
