@@ -136,6 +136,13 @@ namespace Rhetos.Dsl
             public bool ImplementsDerivations;
         }
 
+        private class CreatedTypesInIteration
+        {
+            public int Iteration;
+            public string Macro;
+            public string Created;
+        }
+
         private void ExpandMacroConcepts()
         {
             var swTotal = Stopwatch.StartNew();
@@ -149,6 +156,7 @@ namespace Rhetos.Dsl
             var recommendedMacroOrder = _macroOrderRepository.Load().ToDictionary(m => m.EvaluatorName, m => m.EvaluatorOrder);
             var macroEvaluators = ListMacroEvaluators(recommendedMacroOrder);
             var macroStopwatches = macroEvaluators.ToDictionary(macro => macro.Name, macro => new Stopwatch());
+            var createdTypesInIteration = new List<CreatedTypesInIteration>(_dslContainer.Concepts.Count() * 5);
             _performanceLogger.Write(sw, "DslModel.ExpandMacroConcepts initialization ("
                 + macroEvaluators.Count + " evaluators, "
                 + _dslContainer.Concepts.Count() + " parsed concepts resolved, "
@@ -186,8 +194,12 @@ namespace Rhetos.Dsl
                             _logger.Trace(() => LogCreatedConcepts(macroCreatedConcepts, newConceptsReport));
 
                             iterationCreatedConcepts.AddRange(newConceptsReport.NewUniqueConcepts);
+
+                            // Optimization analysis:
                             if (newConceptsReport.NewlyResolvedConcepts.Count > 0)
                                 lastResolvedConceptTimeByMacro[macroEvaluator.Name] = ++lastResolvedConceptTime;
+                            createdTypesInIteration.AddRange(newConceptsReport.NewUniqueConcepts.Select(nuc =>
+                                new CreatedTypesInIteration { Macro = macroEvaluator.Name, Created = nuc.BaseConceptInfoType().Name, Iteration = iteration }));
                         }
                     }
                     macroStopwatches[macroEvaluator.Name].Stop();
@@ -208,15 +220,18 @@ namespace Rhetos.Dsl
             foreach (var macroStopwatch in macroStopwatches.OrderByDescending(msw => msw.Value.Elapsed.TotalSeconds).Take(5))
                 _performanceLogger.Write(macroStopwatch.Value, () => "DslModel.ExpandMacroConcepts total time for " + macroStopwatch.Key + ".");
 
+            _logger.Trace(() => LogCreatedTypesInIteration(createdTypesInIteration));
+
             _performanceLogger.Write(swTotal, "DslModel.ExpandMacroConcepts.");
         }
 
         private string LogCreatedConcepts(IEnumerable<IConceptInfo> macroCreatedConcepts, DslContainer.AddNewConceptsReport newConceptsReport)
         {
             var report = new StringBuilder();
-            report.Append("Macro created: " + string.Join(", ", macroCreatedConcepts.Select(c => c.GetShortDescription())) + ".");
-
             var newUniqueIndex = new HashSet<string>(newConceptsReport.NewUniqueConcepts.Select(c => c.GetKey()));
+
+            LogConcepts(report, "Macro created", macroCreatedConcepts, first: true);
+            LogConcepts(report, "New unique", newConceptsReport.NewUniqueConcepts);
             LogConcepts(report, "New resolved", newConceptsReport.NewlyResolvedConcepts.Where(c => newUniqueIndex.Contains(c.GetKey())));
             LogConcepts(report, "Old resolved", newConceptsReport.NewlyResolvedConcepts.Where(c => !newUniqueIndex.Contains(c.GetKey())));
             LogConcepts(report, "New unresolved", newConceptsReport.NewUniqueConcepts.Where(c => _dslContainer.FindByKey(c.GetKey()) == null));
@@ -224,11 +239,22 @@ namespace Rhetos.Dsl
             return report.ToString();
         }
 
-        private void LogConcepts(StringBuilder report, string reportName, IEnumerable<IConceptInfo> concepts)
+        private void LogConcepts(StringBuilder report, string reportName, IEnumerable<IConceptInfo> concepts, bool first = false)
         {
             CsUtility.Materialize(ref concepts);
             if (concepts != null && concepts.Count() > 0)
-                report.Append("\r\n  " + reportName + ": " + string.Join(", ", concepts.Select(c => c.GetShortDescription())) + ".");
+                report.Append(first ? "" : "\r\n").Append(reportName).Append(": ").Append(string.Join(", ", concepts.Select(c => c.GetShortDescription())) + ".");
+        }
+
+        private string LogCreatedTypesInIteration(List<CreatedTypesInIteration> createdTypesInIteration)
+        {
+            var report = new StringBuilder(createdTypesInIteration.Count() * 50);
+            report.Append("Created types:");
+            foreach (var ct in createdTypesInIteration)
+                report.Append("\r\n").Append(ct.Iteration).Append("\t")
+                    .Append(ct.Macro).Append("\t")
+                    .Append(ct.Created.Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' '));
+            return report.ToString();
         }
 
         private List<MacroEvaluator> ListMacroEvaluators(Dictionary<string, decimal> recommendedMacroOrder)

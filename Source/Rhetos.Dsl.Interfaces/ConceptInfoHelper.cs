@@ -271,7 +271,7 @@ namespace Rhetos.Dsl
             return quote + text.Replace(quote, quote + quote) + quote;
         }
 
-        private static Type BaseConceptInfoType(IConceptInfo ci)
+        public static Type BaseConceptInfoType(this IConceptInfo ci)
         {
             Type t = ci.GetType();
             while (typeof(IConceptInfo).IsAssignableFrom(t.BaseType) && t.BaseType.IsClass)
