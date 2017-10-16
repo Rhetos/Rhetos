@@ -81,7 +81,7 @@ begin
 end;" });
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ExecuteSql_SaveLoadTest()
         {
             OracleSqlExecuter sqlExecuter = GetSqlExecuter();
@@ -97,7 +97,7 @@ end;" });
             Assert.AreEqual(123, actual);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ExecuteSql_SimpleSqlError()
         {
             TestUtility.ShouldFail(
@@ -105,7 +105,7 @@ end;" });
                 "divisor is equal to zero");
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ExecuteSql_ErrorDescription()
         {
             TestUtility.ShouldFail(
@@ -122,7 +122,7 @@ end;" });
              */
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ExecuteSql_ErrorDescription2()
         {
             TestUtility.ShouldFail(
@@ -147,7 +147,7 @@ END;" }),
             */
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ExecuteSql_LoginError()
         {
             string userId = "U" + Guid.NewGuid().ToString().Replace("-", "");
@@ -160,7 +160,7 @@ END;" }),
             Assert.IsFalse(ex.ToString().Contains(password));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ExecuteSql_Commit()
         {
             string table = GetRandomTableName();
@@ -175,7 +175,7 @@ END;" }),
             Assert.IsTrue(sw.ElapsedMilliseconds < 50, "The last query was waiting too long. Possibly the first query was not committed immediately.");
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ExecuteSql_Rollback()
         {
             string table = GetRandomTableName();
@@ -201,7 +201,7 @@ END;" }),
             Assert.AreEqual(expectedCount, cnt, msg);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ExecuteSql_StopExecutingScriptsAfterError()
         {
             string table = GetRandomTableName();
@@ -217,7 +217,7 @@ END;" }),
             GetSqlExecuter().ExecuteSql(new[] { "create table " + table + " ( a integer )" }); // Everything created in the first ExecuteSql call should have been rollbacked.
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ExecuteSql_RollbackedTransaction()
         {
             string table = GetRandomTableName();
@@ -297,7 +297,7 @@ END;" }),
             Assert.AreEqual(SqlUtility.UserContextInfoText(testUser), clientInfo);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ExecuteSql_CaseInsenitive()
         {
             Console.WriteLine("NationalLanguage: " + SqlUtility.NationalLanguage);

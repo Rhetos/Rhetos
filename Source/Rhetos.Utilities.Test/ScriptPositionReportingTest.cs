@@ -24,10 +24,10 @@ using System;
 namespace Rhetos.Utilities.Test
 {
 
-    [TestClass()]
+    [TestClass]
     public class ScriptPositionReportingTest
     {
-        [TestMethod()]
+        [TestMethod]
         public void LineTest()
         {
             Assert.AreEqual(1, ScriptPositionReporting.Line("abc\r\n", 0));
@@ -39,7 +39,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(4, ScriptPositionReporting.Line("abc\r\n\r\n\r\ndef", 12));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ColumnTest()
         {
             Assert.AreEqual(1, ScriptPositionReporting.Column("abc\ndef", 0));
@@ -56,7 +56,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(4, ScriptPositionReporting.Column("abc\r\n\r\n\r\ndef", 12));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void FollowingTextTest()
         {
             Assert.AreEqual("a...", ScriptPositionReporting.FollowingText("abc", 0, 1));
@@ -65,7 +65,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual("", ScriptPositionReporting.FollowingText("abc", 3, 10));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void FollowingTextTest_RemoveSeparators()
         {
             Assert.AreEqual("a b", ScriptPositionReporting.FollowingText("a\r\nb", 0, 5));
@@ -76,7 +76,7 @@ namespace Rhetos.Utilities.Test
         /// <summary>
         ///A test for Position
         ///</summary>
-        [TestMethod()]
+        [TestMethod]
         public void PositionTest()
         {
             Assert.AreEqual(0, ScriptPositionReporting.Position("ab", 1, 1));
@@ -101,14 +101,14 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(4, ScriptPositionReporting.Position("\n\nx\n", 4, 1)); // end of file
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void FollowingTextTest_LineColumn()
         {
             Assert.AreEqual("ab...", ScriptPositionReporting.FollowingText("abc\r\ndefgh", 1, 1, 2));
             Assert.AreEqual("ef...", ScriptPositionReporting.FollowingText("abc\r\ndefgh", 2, 2, 2));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void PreviousTextTest()
         {
             Assert.AreEqual("...c", ScriptPositionReporting.PreviousText("abc", 3, 1));

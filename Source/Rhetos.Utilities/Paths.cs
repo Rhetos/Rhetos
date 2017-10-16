@@ -97,7 +97,7 @@ namespace Rhetos.Utilities
             }
         }
 
-        public static string PackagesFolder => Path.Combine(RhetosServerRootPath, "PackagesCache");
+        public static string PackagesCacheFolder => Path.Combine(RhetosServerRootPath, "PackagesCache");
         public static string ResourcesFolder => Path.Combine(RhetosServerRootPath, "Resources");
         public static string BinFolder => Path.Combine(RhetosServerRootPath, "bin");
         public static string GeneratedFolder => Path.Combine(RhetosServerRootPath, "bin\\Generated");

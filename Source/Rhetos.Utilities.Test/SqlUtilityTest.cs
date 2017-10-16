@@ -50,13 +50,13 @@ namespace Rhetos.Utilities.Test
             Assert.IsFalse(limited[1].Equals(limited[2], StringComparison.OrdinalIgnoreCase));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void SingleQuote_SimpleTest()
         {
             Assert.AreEqual("'abc'", SqlUtility.QuoteText("abc"));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void SingleQuote_EscapeSequenceTest()
         {
             Assert.AreEqual("'ab''c'", SqlUtility.QuoteText("ab'c"));
@@ -92,7 +92,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual("someview", SqlUtility.GetShortName("someview"));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void MaskPasswordTest()
         {
             var tests = new[,]

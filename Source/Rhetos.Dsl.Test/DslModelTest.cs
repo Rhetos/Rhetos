@@ -28,7 +28,7 @@ using System.Linq;
 
 namespace Rhetos.Dsl.Test
 {
-    [TestClass()]
+    [TestClass]
     public class DslModelTest
     {
         #region Sample concept classes
@@ -152,7 +152,7 @@ namespace Rhetos.Dsl.Test
         //=========================================================================
 
 
-        [TestMethod()]
+        [TestMethod]
         public void OrganizeConceptsByKey_RemoveDuplicate()
         {
             var concepts = new List<IConceptInfo> { new SimpleConceptInfo("a", "aaa"), new SimpleConceptInfo("a", "aaa") };
@@ -160,7 +160,7 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual(1, newConcepts.Count);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(DslSyntaxException))]
         public void OrganizeConceptsByKey_ErrorIfDuplicatesNotEqual()
         {
@@ -178,7 +178,7 @@ namespace Rhetos.Dsl.Test
             }
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(DslSyntaxException))]
         public void OrganizeConceptsByKey_RecursiveConceptErrorIfDuplicatesNotEqual()
         {
@@ -197,7 +197,7 @@ namespace Rhetos.Dsl.Test
 
         //===================================================================================
 
-        [TestMethod()]
+        [TestMethod]
         public void ReplaceReferencesWithFullConcepts_Test()
         {
             List<IConceptInfo> concepts = new List<IConceptInfo>();
@@ -212,7 +212,7 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual("bbb", ci.Reference.Data);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ReplaceReferencesWithFullConcepts_UnresolvedReference()
         {
             List<IConceptInfo> concepts = new List<IConceptInfo>();
@@ -226,7 +226,7 @@ namespace Rhetos.Dsl.Test
                 "reference", "RefConceptInfo", "Simple", "rx", "bx");
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ReplaceReferencesWithFullConcepts_DerivedConcept()
         {
             List<IConceptInfo> concepts = new List<IConceptInfo>();
@@ -244,7 +244,7 @@ namespace Rhetos.Dsl.Test
         }
 
         //===================================================================================
-        [TestMethod()]
+        [TestMethod]
         public void ResolveReferencedConceptsAndRemoveDuplicates_RemoveDuplicates()
         {
             List<IConceptInfo> concepts = new List<IConceptInfo>();
@@ -273,14 +273,14 @@ namespace Rhetos.Dsl.Test
             }
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void CheckSemanticsTest_Pass()
         {
             List<IConceptInfo> concepts = new List<IConceptInfo>() { new ConceptWithSemanticsValidation { Name = "abc" } };
             Assert.IsNotNull(DslModelFromConcepts(concepts));
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(Exception), "Name too long.")]
         public void CheckSemanticsTest_Fail()
         {
@@ -290,7 +290,7 @@ namespace Rhetos.Dsl.Test
 
         //===================================================================================
 
-        [TestMethod()]
+        [TestMethod]
         public void SortReferencesBeforeUsingConceptTest()
         {
             var c1 = new SimpleConceptInfo { Name = "n1", Data = "" };
@@ -323,7 +323,7 @@ namespace Rhetos.Dsl.Test
             }
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ExpandMacroConcepts_Simple()
         {
             List<IConceptInfo> concepts = new List<IConceptInfo>
@@ -356,7 +356,7 @@ namespace Rhetos.Dsl.Test
             }
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ExpandMacroConcepts_MultiplePassesLinear()
         {
             List<IConceptInfo> concepts = new List<IConceptInfo>
@@ -390,7 +390,7 @@ namespace Rhetos.Dsl.Test
             }
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(DslSyntaxException))]
         public void ExpandMacroConcepts_InfiniteLoop()
         {

@@ -79,7 +79,7 @@ namespace Rhetos.Utilities.Test
             }
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ValidateNameTest()
         {
             string[] validNames = new[] {

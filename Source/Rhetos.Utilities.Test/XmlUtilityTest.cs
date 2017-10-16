@@ -33,7 +33,7 @@ namespace Rhetos.Utilities.Test
         public IEnumerable<System.Reflection.Assembly> Assemblies => new[] { GetType().Assembly };
     }
 
-    [TestClass()]
+    [TestClass]
     public class XmlUtilityTest
     {
         private static XmlUtility _xmlUtility = new XmlUtility(new DomainObjectModelMock());
@@ -54,7 +54,7 @@ namespace Rhetos.Utilities.Test
             return _xmlUtility.DeserializeFromXml<TCopy>(data);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void SerializeToXml_SimpleClass()
         {
             var orig = new SimpleClass { a = 1, b = 2 };
@@ -63,7 +63,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(orig.b, copy.b);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void SerializeToXml_NonenglishCharacters()
         {
             var orig = "čćšđžČĆŠĐŽ";
@@ -71,7 +71,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(orig, copy);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void SerializeToXml_SpecialCharacters()
         {
             var orig = @";'[]\,./<>?:""{}|!@#$%^&*()_";
@@ -84,7 +84,7 @@ namespace Rhetos.Utilities.Test
             public SimpleClass element;
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void SerializeToXml_Subclass()
         {
             var orig = new ClassWithSubclass { element = new SimpleClass { a = 1, b = 2 } };
@@ -93,7 +93,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(orig.element.b, copy.element.b);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void SerializeToXml_List()
         {
             var orig = new List<int>() { 1, 2 };
@@ -103,7 +103,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(orig[1], copy[1]);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void SerializeToXml_Collection()
         {
             var orig = new Collection<int>() { 1, 2 };
@@ -113,7 +113,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(orig[1], copy[1]);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void SerializeToXml_ListOfClasses()
         {
             var orig = new List<SimpleClass>() { new SimpleClass { a = 1, b = 2 } };
@@ -123,7 +123,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(orig[0].b, copy[0].b);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void SerializeToXml_ListOfComplexClasses()
         {
             var orig = new List<ClassWithSubclass>() { new ClassWithSubclass() { element = new SimpleClass { a = 1, b = 2 } } };
@@ -171,7 +171,7 @@ namespace Rhetos.Utilities.Test
             public ITest[] Items;
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void SerializeToXml_ClassWithListOfInterfaces()
         {
             var orig = new ClassWithListOfInterfaces();
@@ -189,7 +189,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(orig.Items[0].a, copy.Items[0].a);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void SerializeToXml_Object()
         {
             object orig = new ClassWithInterface { a = 1, b = 2 };
@@ -198,7 +198,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(2, copy.b);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void SerializeToXml_Interface()
         {
             ITest orig = new ClassWithInterface { a = 1, b = 2 };
@@ -207,7 +207,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(2, copy.b);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void SerializeToXml_MermberWithInterface()
         {
             var orig = new ClassWithMermberWithInterface { m = new ClassWithInterface { a = 1, b = 2 } };
@@ -216,7 +216,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(((ClassWithInterface)orig.m).b, ((ClassWithInterface)copy.m).b);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void SerializeToXml_AbstractMermber()
         {
             var orig = new ClassWithAbstractMermber
@@ -248,7 +248,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(((ClassWithInterface)orig[1]).b, ((ClassWithInterface)copy[1]).b);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void SerializeToXml_Null()
         {
             SimpleClass orig = null;
@@ -257,7 +257,7 @@ namespace Rhetos.Utilities.Test
             Assert.IsNull(copy);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void SerializeToXml_ValueType()
         {
             var orig = new DateTime(2009, 12, 31, 1, 2, 3, 456);
@@ -271,7 +271,7 @@ namespace Rhetos.Utilities.Test
             public TestEnum testEnum;
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void SerializeToXml_EnumTest()
         {
             var orig = new ClassWithEnum { testEnum = ClassWithEnum.TestEnum.ValueB };
@@ -279,7 +279,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(orig.testEnum, copy.testEnum);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void Deserialize_CompatibilityWithPersistedData()
         {
             ITest t1 = new ClassWithInterface() { a = 1, b = 11 };

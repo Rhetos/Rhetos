@@ -58,7 +58,7 @@ namespace Rhetos.Dsl.Test
     }
 
 
-    [TestClass()]
+    [TestClass]
     public class GenericParserTest
     {
         internal static TokenReader TestTokenReader(string dsl, int position = 0)
@@ -77,7 +77,7 @@ namespace Rhetos.Dsl.Test
             }
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ParseTest()
         {
             var simpleParser = new GenericParserHelper<SimpleConceptInfo>("module");
@@ -85,7 +85,7 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual("Wholesale", ci.Name);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ParsePosition()
         {
             var simpleParser = new GenericParserHelper<SimpleConceptInfo>("abc");
@@ -96,7 +96,7 @@ namespace Rhetos.Dsl.Test
             TestUtility.AssertContains(tokenReader.ReportPosition(), "column 15,");
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ParseKeywordCaseInsensitive()
         {
             var simpleParser = new GenericParserHelper<SimpleConceptInfo>("simple");
@@ -104,7 +104,7 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual("abc", ci.Name);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ParseNotEnoughParameters()
         {
             var simpleParser = new GenericParserHelper<SimpleConceptInfo>("module");
@@ -112,7 +112,7 @@ namespace Rhetos.Dsl.Test
                 "Name", "SimpleConceptInfo", "past the end");
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ParseWrongConcept_EmptyErrorForUnrecognizedKeyword()
         {
             var simpleParser = new GenericParser(typeof(SimpleConceptInfo), "simple");
@@ -122,7 +122,7 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual("", ciOrError.Error);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(FrameworkException))]
         public void ParseNotEnoughParametersInSingleConceptDescription()
         {
@@ -150,7 +150,7 @@ namespace Rhetos.Dsl.Test
             public string Name3 { get; set; }
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ParseDerived()
         {
             var derivedParser = new GenericParserHelper<DerivedConceptInfo>("derived");
@@ -175,7 +175,7 @@ namespace Rhetos.Dsl.Test
                     }
                 }
 
-                [TestMethod()]
+                [TestMethod]
                 public void ParseField()
                 {
                     var fieldParser = new GenericParserHelper<FieldConceptInfo>("field");
@@ -200,7 +200,7 @@ namespace Rhetos.Dsl.Test
             }
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ParseComplex()
         {
             var complexParser = new GenericParserHelper<ComplexConceptInfo>("complex");
@@ -228,7 +228,7 @@ namespace Rhetos.Dsl.Test
         //    }
         //}
 
-        //[TestMethod()]
+        //[TestMethod]
         //public void ParseArrayTestSimple()
         //{
         //    var arrayParser = new GenericParserHelper<ArrayConceptInfo>("array");
@@ -237,7 +237,7 @@ namespace Rhetos.Dsl.Test
         //    Assert.AreEqual("a", arrayParser.QuickParse("array a ()").ToString());
         //}
 
-        //[TestMethod()]
+        //[TestMethod]
         //public void ParseArrayTestText()
         //{
         //    var arrayParser = new GenericParserHelper<ArrayConceptInfo>("array");
@@ -247,7 +247,7 @@ namespace Rhetos.Dsl.Test
         //    Assert.AreEqual("a[]", arrayParser.QuickParse("array a ('')").ToString());
         //}
 
-        //[TestMethod()]
+        //[TestMethod]
         //[ExpectedException(typeof(FrameworkException))]
         //public void ParseArrayBracketsNotClosed()
         //{
@@ -280,7 +280,7 @@ namespace Rhetos.Dsl.Test
         //    }
         //}
 
-        //[TestMethod()]
+        //[TestMethod]
         //public void ParseArrayOfReferencesTestSimple()
         //{
         //    var arrayParser = new GenericParserHelper<ArrayOfReferencesConceptInfo>("array");
@@ -306,7 +306,7 @@ namespace Rhetos.Dsl.Test
         //    }
         //}
 
-        //[TestMethod()]
+        //[TestMethod]
         //public void ParseArrayEnclosedOfReferencesTestSimple()
         //{
         //    var arrayParser = new GenericParserHelper<ArrayOfEnclosedReferencesConceptInfo>("array");
@@ -314,7 +314,7 @@ namespace Rhetos.Dsl.Test
         //    Assert.AreEqual("a[b-c][d-e]", arrayParser.QuickParse("array a (b.c d.e)").ToString());
         //}
 
-        //[TestMethod()]
+        //[TestMethod]
         //public void ParseArrayEnclosedOfReferencesTestEnclosed()
         //{
         //    var arrayParser = new GenericParserHelper<ArrayOfEnclosedReferencesConceptInfo>("array");
@@ -336,7 +336,7 @@ namespace Rhetos.Dsl.Test
             public override int GetHashCode() { return Name.GetHashCode(); }
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ParseEnclosed()
         {
             var enclosedParser = new GenericParserHelper<EnclosedConceptInfo>("enclosed");
@@ -351,7 +351,7 @@ namespace Rhetos.Dsl.Test
             TestUtility.AssertContains(tokenReader.ReportPosition(), "before: \";");
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ParseEnclosedInline()
         {
             var enclosedParser = new GenericParserHelper<EnclosedConceptInfo>("enclosed");
@@ -370,7 +370,7 @@ namespace Rhetos.Dsl.Test
             public override int GetHashCode() { return Name.GetHashCode(); }
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ParseEnclosedPartiallyInline()
         {
             var enclosedParser = new GenericParserHelper<EnclosedConceptInfoLevel2>("enclosedlevel2");
@@ -381,7 +381,7 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual("c", ci.Name);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(FrameworkException))]
         public void ParseEnclosedInlineError()
         {
@@ -400,7 +400,7 @@ namespace Rhetos.Dsl.Test
             }
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(FrameworkException))]
         public void ParseEnclosedInWrongConcept()
         {
@@ -432,7 +432,7 @@ namespace Rhetos.Dsl.Test
             }
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ParseEnclosedReference()
         {
             // simple parent1 { enclosed other_enclosed; } simple parent2 { reference (parent1.other_enclosed); }
@@ -467,7 +467,7 @@ namespace Rhetos.Dsl.Test
         /// 2. The ambiguity could be resolved by a semantic check, but that would be hard to implement because of the possibility to reference concepts
         /// that will later be created by the macro concepts.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void ParseEnclosedSinglePropertyConcept()
         {
             var parent = new SimpleConceptInfo { Name = "parent" };
@@ -540,7 +540,7 @@ namespace Rhetos.Dsl.Test
             }
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ParseReferenceWithKey()
         {
             string dsl = "reference wholesale.product";
@@ -563,7 +563,7 @@ namespace Rhetos.Dsl.Test
             }
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ParseMultipleReferenceWithKey()
         {
             string dsl = "reference wholesale.product maticni.mjestotroska";
@@ -593,7 +593,7 @@ namespace Rhetos.Dsl.Test
             }
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ParseReferenceToDerivedWithKey()
         {
             string dsl = "reference wholesale.product";
@@ -626,7 +626,7 @@ namespace Rhetos.Dsl.Test
             public override int GetHashCode() { return Name.GetHashCode(); }
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void Recursive_EnclosedNode()
         {
             ExtendedRootMenuCI root = new ExtendedRootMenuCI { Name = "R", RootData = "SomeData" };
@@ -638,7 +638,7 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual("SomeData", ((ExtendedRootMenuCI)mi.Parent).RootData);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void Recursive_EnclosedNodeLevel2()
         {
             ExtendedRootMenuCI root = new ExtendedRootMenuCI { Name = "R", RootData = "SomeData" };
@@ -652,7 +652,7 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual("SomeData", ((ExtendedRootMenuCI)((SubMenuCI)mi.Parent).Parent).RootData);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void Recursive_Flat()
         {
             string dsl = "menu R M";
@@ -671,7 +671,7 @@ namespace Rhetos.Dsl.Test
             public override int GetHashCode() { return Name.GetHashCode(); }
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(FrameworkException))]
         public void Recursive_Root()
         {

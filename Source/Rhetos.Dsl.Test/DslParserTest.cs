@@ -26,7 +26,7 @@ using System.Linq;
 
 namespace Rhetos.Dsl.Test
 {
-    [TestClass()]
+    [TestClass]
     public class DslParserTest
     {
         #region Sample concept classes
@@ -96,7 +96,7 @@ namespace Rhetos.Dsl.Test
             }
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ParseNextConcept_DontDescribeExceptionIfConceptNotRecognized()
         {
             string dsl = "a";
@@ -110,7 +110,7 @@ namespace Rhetos.Dsl.Test
             Assert.IsFalse(e.Message.Contains(TestErrorParser.ErrorMessage), "Exception must not contain: " + TestErrorParser.ErrorMessage);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ParseNextConcept_PropagateErrorIfKeywordRecognized()
         {
             string dsl = "a";
@@ -152,7 +152,7 @@ namespace Rhetos.Dsl.Test
         }
 
 
-        [TestMethod()]
+        [TestMethod]
         public void ParseNextConcept_SameKeyWordDifferentContext()
         {
             string dsl = "concept simple simpledata; concept ext extdata extdata2;";
@@ -180,7 +180,7 @@ namespace Rhetos.Dsl.Test
             Assert.IsTrue(tokenReader.TryRead(";"), "Reading ';' after the concept.");
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ParseNextConcept_SameKeyWordDifferentContext_Enclosed()
         {
             string dsl = "concept name data { concept ref; }";
@@ -207,7 +207,7 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual("data", (concept as EnclosedRefConceptInfo).Reference.Data);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(DslSyntaxException))]
         public void ParseNextConcept_SameKeyWordDifferentContext_Ambiguous()
         {
@@ -232,7 +232,7 @@ namespace Rhetos.Dsl.Test
             }
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(DslSyntaxException))]
         public void ParserError_ExpectingErrorHandler()
         {

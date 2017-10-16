@@ -27,7 +27,7 @@ using Rhetos.TestCommon;
 namespace Rhetos.Dsl.Test
 {
 
-    [TestClass()]
+    [TestClass]
     public class ConceptInfoHelperTest
     {
         #region Sample concept classes
@@ -136,7 +136,7 @@ namespace Rhetos.Dsl.Test
         //=========================================================================
 
 
-        [TestMethod()]
+        [TestMethod]
         public void GetKey_Simple()
         {
             Assert.AreEqual("SimpleConceptInfo a", new SimpleConceptInfo("a", "b").GetKey());
@@ -148,13 +148,13 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual("SimpleConceptInfo a123_a", new SimpleConceptInfo("a123_a", "b").GetKey());
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void GetKey_Derived()
         {
             Assert.AreEqual("SimpleConceptInfo a", new DerivedConceptInfo("a", "b", "c").GetKey());
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(FrameworkException))]
         public void GetKey_DerivationMustNotHaveKey()
         {
@@ -170,7 +170,7 @@ namespace Rhetos.Dsl.Test
             }
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void GetKey_Reference()
         {
             Assert.AreEqual(
@@ -178,7 +178,7 @@ namespace Rhetos.Dsl.Test
                 new RefConceptInfo("a", new SimpleConceptInfo("b", "c")).GetKey());
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void GetKey_ReferenceToInterface()
         {
             Assert.AreEqual(
@@ -189,7 +189,7 @@ namespace Rhetos.Dsl.Test
         //=========================================================================
 
 
-        [TestMethod()]
+        [TestMethod]
         public void GetKeyProperties_Reference()
         {
             Assert.AreEqual(
@@ -200,20 +200,20 @@ namespace Rhetos.Dsl.Test
         //=========================================================================
 
 
-        [TestMethod()]
+        [TestMethod]
         public void GetFullDescription_Simple()
         {
             Assert.AreEqual("Rhetos.Dsl.Test.ConceptInfoHelperTest+SimpleConceptInfo a b", new SimpleConceptInfo("a", "b").GetFullDescription());
             Assert.AreEqual("Rhetos.Dsl.Test.ConceptInfoHelperTest+SimpleConceptInfo \"'\" ''", new SimpleConceptInfo("'", "").GetFullDescription());
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void GetFullDescription_Derived()
         {
             Assert.AreEqual("Rhetos.Dsl.Test.ConceptInfoHelperTest+DerivedConceptInfo a b c", new DerivedConceptInfo("a", "b", "c").GetFullDescription());
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(FrameworkException))]
         public void GetFullDescription_DerivationMustNotHaveKey()
         {
@@ -229,7 +229,7 @@ namespace Rhetos.Dsl.Test
             }
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void GetFullDescription_ReferencedConceptIsDescribedWithKeyOnly()
         {
             Assert.AreEqual(
@@ -239,7 +239,7 @@ namespace Rhetos.Dsl.Test
 
         //=========================================================================
 
-        [TestMethod()]
+        [TestMethod]
         public void GetDirectDependencies_Empty()
         {
             var conceptInfo = new SimpleConceptInfo("s", "d");
@@ -247,7 +247,7 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual("()", Dump(dependencies));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void GetDirectDependencies_NotRecursive()
         {
             var simpleConceptInfo = new SimpleConceptInfo("s", "d");
@@ -258,7 +258,7 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual(Dump(new IConceptInfo[] { refConceptInfo }), Dump(dependencies));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void GetAllDependencies_Recursive()
         {
             var simpleConceptInfo = new SimpleConceptInfo("s", "d");
@@ -285,7 +285,7 @@ namespace Rhetos.Dsl.Test
 
         //=========================================================================
 
-        [TestMethod()]
+        [TestMethod]
         public void GetErrorDescription()
         {
             var simpleConceptInfo = new SimpleConceptInfo { Name = "s", Data = "d" };

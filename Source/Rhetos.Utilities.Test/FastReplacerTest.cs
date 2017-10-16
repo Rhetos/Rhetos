@@ -23,13 +23,13 @@ using System.Diagnostics;
 
 namespace Rhetos.Utilities.Test
 {
-    [TestClass()]
+    [TestClass]
     public class FastReplacerTest
     {
         //===========================================================
         // APPEND
 
-        [TestMethod()]
+        [TestMethod]
         public void Append_Simple()
         {
             var fr = new FastReplacer("/*", "*/");
@@ -39,7 +39,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual("abc", fr.ToString());
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void Append_Simple_OtherLanguages()
         {
             var fr = new FastReplacer("/*", "*/");
@@ -51,7 +51,7 @@ namespace Rhetos.Utilities.Test
         //===========================================================
         // REPLACE
 
-        [TestMethod()]
+        [TestMethod]
         public void Replace_Simple()
         {
             var fr = new FastReplacer("/*", "*/");
@@ -60,7 +60,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual("123", fr.ToString());
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void Replace_RemoveWhenReplaced()
         {
             var fr = new FastReplacer("/*", "*/");
@@ -70,7 +70,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual("123", fr.ToString());
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void Replace_Complex()
         {
             const string initial = "(/*1*/)";
@@ -82,7 +82,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(stringResult, frResult);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [Timeout(10000)]
         public void Replace_Performance()
         {
@@ -125,7 +125,7 @@ namespace Rhetos.Utilities.Test
         //===========================================================
         // INSERT
 
-        [TestMethod()]
+        [TestMethod]
         public void InsertBefore_Simple()
         {
             var fr = new FastReplacer("/*", "*/");
@@ -134,7 +134,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual("123/*a*/", fr.ToString());
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void InsertBefore_ComplexAndOrder()
         {
             var fr = new FastReplacer("/*", "*/");
@@ -146,7 +146,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual("24/*a*/13/*b*/", fr.ToString());
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void InsertAfter_Simple()
         {
             var fr = new FastReplacer("/*", "*/");
@@ -155,7 +155,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual("/*a*/123", fr.ToString());
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void InsertAfter_ComplexAndOrder()
         {
             var fr = new FastReplacer("/*", "*/");
@@ -166,7 +166,7 @@ namespace Rhetos.Utilities.Test
             fr.InsertAfter("/*a*/", "4");
             Assert.AreEqual("/*a*/24/*b*/13", fr.ToString());
         }
-        [TestMethod()]
+        [TestMethod]
         public void InsertAfterReverse_Simple()
         {
             var fr = new FastReplacer("/*", "*/");
@@ -178,7 +178,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual("/*a*/4312", fr.ToString());
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void InsertAfterReverse_ComplexAndOrder()
         {
             var fr = new FastReplacer("/*", "*/");
@@ -193,7 +193,7 @@ namespace Rhetos.Utilities.Test
         //===========================================================
         // CONTAINS
 
-        [TestMethod()]
+        [TestMethod]
         public void Contains_Test()
         {
             string a = "/*a*/";
@@ -217,7 +217,7 @@ namespace Rhetos.Utilities.Test
         //===========================================================
         // COMBINATION OF OPERATIONS
 
-        [TestMethod()]
+        [TestMethod]
         public void Combination_TokenReuse()
         {
             var fr = new FastReplacer("/*", "*/");
@@ -233,7 +233,7 @@ namespace Rhetos.Utilities.Test
         }
 
 
-        [TestMethod()]
+        [TestMethod]
         public void Combination1()
         {
             var fr = new FastReplacer("/*", "*/");
@@ -249,7 +249,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual("12x-/*a*/x-/*a*/34", fr.ToString());
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void Combination2()
         {
             var fr = new FastReplacer("/*", "*/");
@@ -265,7 +265,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual("bdc", fr.ToString());
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void Combination_Order()
         {
             var fr = new FastReplacer("/*", "*/");
@@ -284,7 +284,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual("73461258", fr.ToString());
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void Combination_OrderAdvanced()
         {
             var fr = new FastReplacer("/*", "*/");
@@ -299,7 +299,7 @@ namespace Rhetos.Utilities.Test
         //===========================================================
         // CASE INSENSITIVE
 
-        [TestMethod()]
+        [TestMethod]
         public void CaseSensitive()
         {
             var fr = new FastReplacer("{", "}");
@@ -310,7 +310,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual("{a}", fr.ToString());
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void CaseSensitive_OtherLanguages()
         {
             var fr = new FastReplacer("{", "}");
@@ -321,7 +321,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual("{č}", fr.ToString());
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void CaseInsensitive()
         {
             var fr = new FastReplacer("{", "}", false);
@@ -332,7 +332,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual("x", fr.ToString());
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void CaseInsensitive_OtherLanguages()
         {
             var fr = new FastReplacer("{", "}", false);
@@ -373,7 +373,7 @@ namespace Rhetos.Utilities.Test
             }, "Expected exception was not thrown while appending \"" + text + "\".");
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void TestErrorHandling_InvalidTokenInsertedInText()
         {
             FailAppend("/*123");
@@ -433,7 +433,7 @@ namespace Rhetos.Utilities.Test
                        "Expected exception was not thrown while using token \"" + token + "\" in function InsertAfter.");
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void TestErrorHandling_NotUsingToken()
         {
             FailUsingToken("a");
@@ -448,13 +448,13 @@ namespace Rhetos.Utilities.Test
             FailUsingToken("a/*b*/");
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void RequiredTokenDelimiters()
         {
             ShouldFail(delegate { new FastReplacer("", ""); }, "Expected exception if token delimiters are not provided.");
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ReturnValue()
         {
             var fr = new FastReplacer("/*", "*/");
@@ -478,7 +478,7 @@ namespace Rhetos.Utilities.Test
         //===========================================================
         // POSSIBLY UNINTUITIVE BEHAVIOUR
 
-        [TestMethod()]
+        [TestMethod]
         public void PossiblyUnintuitiveBehaviour_IgnoreTokenIfNotFromSingleText()
         {
             // Behavior is different from standard String.Replace function:
@@ -495,7 +495,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual("/*c*/", fr.ToString());
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void PossiblyUnintuitiveBehaviour_NotAComment()
         {

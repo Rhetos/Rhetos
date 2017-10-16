@@ -26,10 +26,10 @@ using Rhetos.TestCommon;
 
 namespace Rhetos.Utilities.Test
 {
-    [TestClass()]
+    [TestClass]
     public class GraphTest
     {
-        [TestMethod()]
+        [TestMethod]
         public void IncludeDependenciesTest()
         {
             var list = new[] {1, 2, 3};

@@ -72,7 +72,7 @@ namespace Rhetos.Persistence.Test
                 "IF SCHEMA_ID('RhetosUnitTest') IS NOT NULL DROP SCHEMA RhetosUnitTest" });
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ExecuteSql_SaveLoadTest()
         {
             MsSqlExecuter sqlExecuter = NewSqlExecuter();
@@ -89,20 +89,20 @@ namespace Rhetos.Persistence.Test
             Assert.AreEqual(123, actual);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ExecuteSql_SimpleSqlError()
         {
             TestUtility.ShouldFail(() => NewSqlExecuter().ExecuteSql(new[] { "raiserror('aaa', 16, 100)" }),
                 "aaa", "16", "100");
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ExecuteSql_InfoMessageIsNotError()
         {
             NewSqlExecuter().ExecuteSql(new[] { "raiserror('aaa', 0, 100)" }); // Exception not expected here.
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ExecuteSql_ErrorDescriptions()
         {
             MsSqlExecuter sqlExecuter = NewSqlExecuter();
@@ -123,7 +123,7 @@ raiserror('fff', 18, 118)"
             TestUtility.ShouldFail(() => sqlExecuter.ExecuteSql(commands), expectedStrings);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ExecuteSql_LoginError()
         {
             string nonexistentDatabase = "db" + Guid.NewGuid().ToString().Replace("-", "");
@@ -138,7 +138,7 @@ raiserror('fff', 18, 118)"
                 connectionStringBuilder.DataSource, connectionStringBuilder.InitialCatalog, Environment.UserName);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ExecuteSql_CommitImmediately()
         {
             string table = GetRandomTableName();
@@ -149,7 +149,7 @@ raiserror('fff', 18, 118)"
                 "select * from " + table }); // Exception not expected here.
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ExecuteSql_RollbackImmediately()
         {
             string table = GetRandomTableName();
@@ -167,7 +167,7 @@ raiserror('fff', 18, 118)"
                 "create table " + table + " ( a integer )" }); // Lock timeout exception not expected here.
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ExecuteSql_StopExecutingScriptsAfterError()
         {
             string table = GetRandomTableName();
@@ -184,7 +184,7 @@ raiserror('fff', 18, 118)"
                 "create table " + table + " ( a integer )" }); // Exception not expected here.
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ExecuteSql_RollbackedTransaction()
         {
             try
@@ -200,7 +200,7 @@ raiserror('fff', 18, 118)"
             }
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ExecuteSql_TransactionLevel()
         {
             try

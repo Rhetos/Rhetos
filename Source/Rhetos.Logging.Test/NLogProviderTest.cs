@@ -25,10 +25,10 @@ using System;
 
 namespace Rhetos.Logging.Test
 {
-    [TestClass()]
+    [TestClass]
     public class NLogProviderTest
     {
-        [TestMethod()]
+        [TestMethod]
         [Timeout(1000)]
         public void GetLoggerTest_Performance()
         {
@@ -40,7 +40,7 @@ namespace Rhetos.Logging.Test
             }
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void GetLoggerTest_ThreadSafe()
         {
             NLogProvider logProvider = new NLogProvider();
