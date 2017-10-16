@@ -53,6 +53,8 @@ namespace Rhetos.Dsl
 
                             foreach (var package in _installedPackages.Packages)
                             {
+                                if (!Directory.Exists(package.Folder))
+                                    throw new FrameworkException($"Source folder for package '{package.Id}' does not exist: '{package.Folder}'.");
                                 string dslScriptsFolder = Path.Combine(package.Folder, DslScriptsSubfolder);
                                 if (Directory.Exists(dslScriptsFolder))
                                 {

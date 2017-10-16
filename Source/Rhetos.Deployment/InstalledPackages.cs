@@ -39,16 +39,22 @@ namespace Rhetos.Deployment
             _packages = new Lazy<IEnumerable<InstalledPackage>>(Load);
         }
 
-        public IEnumerable<InstalledPackage> Packages { get { return _packages.Value; } }
+        public IEnumerable<InstalledPackage> Packages => _packages.Value;
 
         private Lazy<IEnumerable<InstalledPackage>> _packages;
+
         private const string PackagesFileName = "InstalledPackages.json";
-        private static string GetPackagesFilePath() { return Path.Combine(Paths.BinFolder, PackagesFileName); }
+
+        private static string PackagesFilePath => Path.Combine(Paths.GeneratedFolder, PackagesFileName);
 
         private IEnumerable<InstalledPackage> Load()
         {
-            string serialized = File.ReadAllText(GetPackagesFilePath(), Encoding.UTF8);
+            string serialized = File.ReadAllText(PackagesFilePath, Encoding.UTF8);
             var packages = (IEnumerable<InstalledPackage>)JsonConvert.DeserializeObject(serialized, _serializerSettings);
+
+            // Package folder is saved as relative path, to allow moving the deployed folder.
+            foreach (var package in packages)
+                FilesUtility.RelativeToAbsolutePath(BaseFolderForRelativePath, package.Folder);
 
             foreach (var package in packages)
                 _logger.Trace(() => package.Report());
@@ -59,9 +65,20 @@ namespace Rhetos.Deployment
         public static void Save(IEnumerable<InstalledPackage> packages)
         {
             CsUtility.Materialize(ref packages);
+
+            // Package folder is saved as relative path, to allow moving the deployed folder.
+            foreach (var package in packages)
+                FilesUtility.AbsoluteToRelativePath(BaseFolderForRelativePath, package.Folder);
+
             string serialized = JsonConvert.SerializeObject(packages, _serializerSettings);
-            File.WriteAllText(GetPackagesFilePath(), serialized, Encoding.UTF8);
+
+            foreach (var package in packages)
+                FilesUtility.RelativeToAbsolutePath(BaseFolderForRelativePath, package.Folder);
+
+            File.WriteAllText(PackagesFilePath, serialized, Encoding.UTF8);
         }
+
+        public static string BaseFolderForRelativePath => Paths.RhetosServerRootPath;
 
         private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
         {

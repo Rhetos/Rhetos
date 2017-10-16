@@ -162,5 +162,33 @@ namespace Rhetos.Utilities
             else
                 return new string[] { };
         }
+
+        public static string RelativeToAbsolutePath(string baseFolder, string path)
+        {
+            return Path.GetFullPath(Path.Combine(baseFolder, path));
+        }
+
+        public static string AbsoluteToRelativePath(string baseFolder, string target)
+        {
+            var baseParts = Path.GetFullPath(baseFolder).Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
+            var targetParts = Path.GetFullPath(target).Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
+
+            int common = 0;
+            while (common < baseParts.Length && common < targetParts.Length
+                && string.Equals(baseParts[common], targetParts[common], StringComparison.OrdinalIgnoreCase))
+                common++;
+
+            if (common == 0)
+                return target;
+
+            var resultParts = Enumerable.Repeat(@"..", baseParts.Length - common)
+                .Concat(targetParts.Skip(common));
+
+            var resultPath = string.Join(@"\", resultParts);
+            if (resultPath != "")
+                return resultPath;
+            else
+                return ".";
+        }
     }
 }

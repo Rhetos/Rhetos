@@ -50,6 +50,8 @@ namespace Rhetos.Deployment
             // The packages are sorted by their dependencies, so the data migration scripts from one module may use the data that was prepared by the module it depends on.
             foreach (var package in _installedPackages.Packages)
             {
+                if (!Directory.Exists(package.Folder))
+                    throw new FrameworkException($"Source folder for package '{package.Id}' does not exist: '{package.Folder}'.");
                 string dataMigrationScriptsFolder = Path.Combine(package.Folder, DataMigrationScriptsSubfolder);
                 if (Directory.Exists(dataMigrationScriptsFolder))
                 {
