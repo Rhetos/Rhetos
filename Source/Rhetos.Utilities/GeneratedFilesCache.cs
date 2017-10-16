@@ -29,28 +29,28 @@ namespace Rhetos.Utilities
 {
     public class GeneratedFilesCache
     {
-        private readonly FilesUtility _files;
+        private readonly FilesUtility _filesUtility;
         private readonly FileSyncer _syncer;
         private readonly ILogger _logger;
         private readonly SHA1 _sha1;
 
         public GeneratedFilesCache(ILogProvider logProvider)
         {
-            _files = new FilesUtility(logProvider);
+            _filesUtility = new FilesUtility(logProvider);
             _syncer = new FileSyncer(logProvider);
             _logger = logProvider.GetLogger("FilesCache");
             _sha1 = new SHA1CryptoServiceProvider();
         }
 
         /// <summary>
-        /// Deletes all of the source files.
-        /// Move only the successfully generated file groups to the cache folder.
+        /// Moves only the successfully generated file groups to the cache folder, otherwise keeps the old cached files.
+        /// Deletes all generated files.
         /// </summary>
-        public void MoveToCache(IEnumerable<string> sourceFiles)
+        public void MoveGeneratedFilesToCache()
         {
             // Group files by name without extension:
 
-            var newFiles = sourceFiles
+            var generatedFiles = _filesUtility.SafeGetFiles(Paths.GeneratedFolder, "*", SearchOption.AllDirectories)
                 .GroupBy(file => Path.GetFileNameWithoutExtension(file))
                 .ToDictionary(g => g.Key, g => g.ToList());
 
@@ -58,18 +58,18 @@ namespace Rhetos.Utilities
 
             // Move the successfully generated file groups to the cache, delete the others:
 
-            var succesfullyGeneratedGroups = newFiles.Keys
-                .Where(key => !oldFiles.ContainsKey(key) || newFiles[key].Count() >= oldFiles[key].Count())
+            var succesfullyGeneratedGroups = generatedFiles.Keys
+                .Where(key => !oldFiles.ContainsKey(key) || generatedFiles[key].Count() >= oldFiles[key].Count())
                 .ToList();
 
             foreach (string moveGroup in succesfullyGeneratedGroups)
-                foreach (string moveFile in newFiles[moveGroup])
+                foreach (string moveFile in generatedFiles[moveGroup])
                     _syncer.AddFile(moveFile, Path.Combine(Paths.GeneratedFilesCacheFolder, moveGroup));
             _syncer.UpdateDestination(deleteSource: true);
 
-            foreach (string deleteGroup in newFiles.Keys.Except(succesfullyGeneratedGroups))
-                foreach (string deleteFile in newFiles[deleteGroup])
-                    _files.SafeDeleteFile(deleteFile);
+            foreach (string deleteGroup in generatedFiles.Keys.Except(succesfullyGeneratedGroups))
+                foreach (string deleteFile in generatedFiles[deleteGroup])
+                    _filesUtility.SafeDeleteFile(deleteFile);
         }
 
         public byte[] SaveSourceAndHash(string sourceFile, string sourceCode)
@@ -112,7 +112,7 @@ namespace Rhetos.Utilities
             if (!cachedFiles.IsError)
             {
                 targetFiles = cachedFiles.Value.Select(source =>
-                    _files.SafeCopyFileToFolder(source, targetFolder)).ToList();
+                    _filesUtility.SafeCopyFileToFolder(source, targetFolder)).ToList();
                 report = "Restored " + string.Join(", ", copyExtensions) + ".";
             }
             else
@@ -127,7 +127,7 @@ namespace Rhetos.Utilities
 
         private Dictionary<string, List<string>> ListCachedFiles()
         {
-            return _files.SafeGetFiles(Paths.GeneratedFilesCacheFolder, "*", SearchOption.AllDirectories)
+            return _filesUtility.SafeGetFiles(Paths.GeneratedFilesCacheFolder, "*", SearchOption.AllDirectories)
                 .GroupBy(file => Path.GetFileName(Path.GetDirectoryName(file)))
                 .ToDictionary(g => g.Key, g => g.ToList());
         }

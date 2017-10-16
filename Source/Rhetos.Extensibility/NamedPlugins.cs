@@ -28,22 +28,24 @@ using System.Text;
 namespace Rhetos.Extensibility
 {
     /// <summary>
-    /// This is a wrapper around IIndex, allowing plugin projects to compile without referencing Autofac.
+    /// This is a simple wrapper around IIndex, allowing plugin projects to compile without referencing Autofac.
     /// </summary>
     public class NamedPlugins<TPlugin> : INamedPlugins<TPlugin>
     {
-        IIndex<string, IEnumerable<TPlugin>> _pluginsByName;
+        private IIndex<string, IEnumerable<TPlugin>> _pluginsByName;
+        private PluginsMetadataCache<TPlugin> _cache;
 
-        public NamedPlugins(IIndex<string, IEnumerable<TPlugin>> pluginsByName)
+        public NamedPlugins(IIndex<string, IEnumerable<TPlugin>> pluginsByName, PluginsMetadataCache<TPlugin> cache)
         {
             _pluginsByName = pluginsByName;
+            _cache = cache;
         }
 
         public IEnumerable<TPlugin> GetPlugins(string name)
         {
             IEnumerable<TPlugin> plugins;
             if (_pluginsByName.TryGetValue(name, out plugins))
-                return plugins;
+                return _cache.RemoveSuppressedPlugins(plugins);
             return Enumerable.Empty<TPlugin>();
         }
     }

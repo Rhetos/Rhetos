@@ -29,25 +29,18 @@ namespace Rhetos.Extensibility
 {
     public class PluginsContainer<TPlugin> : IPluginsContainer<TPlugin>
     {
-        Lazy<IEnumerable<TPlugin>> _sortedPlugins;
-        Lazy<IIndex<Type, IEnumerable<TPlugin>>> _pluginsByImplementation;
-        PluginsMetadataCache<TPlugin> _cache;
+        private Lazy<IEnumerable<TPlugin>> _sortedPlugins;
+        private Lazy<IIndex<Type, IEnumerable<TPlugin>>> _pluginsByImplementation;
+        private PluginsMetadataCache<TPlugin> _cache;
 
         public PluginsContainer(
             Lazy<IEnumerable<TPlugin>> plugins,
             Lazy<IIndex<Type, IEnumerable<TPlugin>>> pluginsByImplementation,
             PluginsMetadataCache<TPlugin> cache)
         {
-            _sortedPlugins = new Lazy<IEnumerable<TPlugin>>(() => SortPlugins(plugins.Value));
+            _sortedPlugins = new Lazy<IEnumerable<TPlugin>>(() => _cache.SortedByMetadataDependsOnAndRemoveSuppressed(typeof(object), plugins.Value));
             _pluginsByImplementation = pluginsByImplementation;
             _cache = cache;
-        }
-
-        private IEnumerable<TPlugin> SortPlugins(IEnumerable<TPlugin> plugins)
-        {
-            var sortedPlugins = plugins.ToArray();
-            _cache.SortByMetadataDependsOn(typeof(object), sortedPlugins);
-            return sortedPlugins;
         }
 
         #region IPluginsContainer implementations
@@ -72,11 +65,9 @@ namespace Rhetos.Extensibility
         public IEnumerable<TPlugin> GetImplementations(Type implements)
         {
             var typeHierarchy = CsUtility.GetClassHierarchy(implements);
-            var allImplementations = typeHierarchy.SelectMany(type => _pluginsByImplementation.Value[type]).ToArray();
+            var allImplementations = typeHierarchy.SelectMany(type => _pluginsByImplementation.Value[type]);
 
-            _cache.SortByMetadataDependsOn(implements, allImplementations);
-
-            return allImplementations;
+            return _cache.SortedByMetadataDependsOnAndRemoveSuppressed(implements, allImplementations);
         }
 
         #endregion

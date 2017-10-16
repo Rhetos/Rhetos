@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac.Features.Indexed;
 using Autofac.Features.Metadata;
 using Rhetos.Utilities;
 using System;
@@ -34,50 +35,66 @@ namespace Rhetos.Extensibility
     /// <typeparam name="TPlugin"></typeparam>
     public class PluginsMetadataCache<TPlugin>
     {
-        public Dictionary<Type, IDictionary<string, object>> MetadataByPluginType { get; private set; }
+        private Dictionary<Type, IDictionary<string, object>> _metadataByPluginType;
         private object _metadataByPluginTypeLock = new object();
 
-        public Dictionary<Type, List<Type>> SortedImplementations { get; private set; }
+        private Dictionary<Type, List<Type>> _sortedImplementations;
         private object _sortedImplementationsLock = new object();
 
-        public PluginsMetadataCache(Lazy<IEnumerable<Meta<TPlugin>>> pluginsWithMetadata)
-        {
-            if (MetadataByPluginType == null)
-                lock (_metadataByPluginTypeLock)
-                    if (MetadataByPluginType == null)
-                        MetadataByPluginType = pluginsWithMetadata.Value.ToDictionary(pm => pm.Value.GetType(), pm => pm.Metadata);
+        private HashSet<Type> _suppressedPlugins;
 
-            SortedImplementations = new Dictionary<Type, List<Type>>();
+        public PluginsMetadataCache(
+            Lazy<IEnumerable<Meta<TPlugin>>> pluginsWithMetadata,
+            IIndex<Type, IEnumerable<SuppressPlugin>> suppressPlugins)
+        {
+            if (_metadataByPluginType == null)
+                lock (_metadataByPluginTypeLock)
+                    if (_metadataByPluginType == null)
+                        _metadataByPluginType = pluginsWithMetadata.Value.ToDictionary(pm => pm.Value.GetType(), pm => pm.Metadata);
+
+            _sortedImplementations = new Dictionary<Type, List<Type>>();
+
+            _suppressedPlugins = new HashSet<Type>(suppressPlugins[typeof(TPlugin)].Select(sp => sp.PluginType));
         }
 
-        public void SortByMetadataDependsOn(Type key, TPlugin[] plugins)
+        public IEnumerable<TPlugin> SortedByMetadataDependsOnAndRemoveSuppressed(Type key, IEnumerable<TPlugin> plugins)
         {
+            var sortPlugins = plugins.ToArray();
             List<Type> pluginTypesSorted;
 
             lock (_sortedImplementationsLock)
             {
-                if (!SortedImplementations.TryGetValue(key, out pluginTypesSorted))
+                if (!_sortedImplementations.TryGetValue(key, out pluginTypesSorted))
                 {
-                    var dependencies = plugins
+                    var dependencies = sortPlugins
                         .Select(plugin => Tuple.Create(GetMetadata(plugin.GetType(), MefProvider.DependsOn), plugin.GetType()))
                         .Where(dependency => dependency.Item1 != null)
                         .ToArray();
 
-                    List<Type> pluginTypesSortedList = plugins.Select(plugin => plugin.GetType()).ToList();
+                    List<Type> pluginTypesSortedList = sortPlugins.Select(plugin => plugin.GetType()).ToList();
                     Graph.TopologicalSort(pluginTypesSortedList, dependencies);
 
                     pluginTypesSorted = pluginTypesSortedList;
-                    SortedImplementations.Add(key, pluginTypesSorted);
+                    _sortedImplementations.Add(key, pluginTypesSorted);
                 }
             }
 
-            Graph.SortByGivenOrder(plugins, pluginTypesSorted, plugin => plugin.GetType());
+            Graph.SortByGivenOrder(sortPlugins, pluginTypesSorted, plugin => plugin.GetType());
+            return RemoveSuppressedPlugins(sortPlugins);
+        }
+
+        public IEnumerable<TPlugin> RemoveSuppressedPlugins(IEnumerable<TPlugin> plugins)
+        {
+            if (_suppressedPlugins.Count > 0)
+                return plugins.Where(p => !_suppressedPlugins.Contains(p.GetType())).ToArray();
+            else
+                return plugins;
         }
 
         public Type GetMetadata(Type pluginType, string metadataKey)
         {
             IDictionary<string, object> metadata;
-            if (!MetadataByPluginType.TryGetValue(pluginType, out metadata))
+            if (!_metadataByPluginType.TryGetValue(pluginType, out metadata))
                 throw new FrameworkException(string.Format(
                     "There is no plugin {0} registered for {1}.",
                     pluginType.FullName, typeof(TPlugin).FullName));

@@ -61,9 +61,7 @@ namespace Rhetos.Utilities
             private set
             {
                 if (_isRhetosServer != null && _isRhetosServer != value)
-                    throw new FrameworkException(string.Format(
-                        "IsRhetosServer is already initialized to a different value. Old value = '', new value = ''.",
-                        _isRhetosServer, value));
+                    throw new FrameworkException($"{nameof(IsRhetosServer)} is already initialized to a different value. Old value = '{_isRhetosServer}', new value = '{value}'.");
 
                 _isRhetosServer = value;
             }
@@ -84,14 +82,12 @@ namespace Rhetos.Utilities
             private set
             {
                 if (value == null)
-                    throw new FrameworkException("RhetosServerRootPath is set to null.");
+                    throw new FrameworkException($"{nameof(RhetosServerRootPath)} is set to null.");
 
                 value = Path.GetFullPath(value);
 
                 if (_rhetosServerRootPath != null && _rhetosServerRootPath != value)
-                    throw new FrameworkException(string.Format(
-                        "RhetosServerRootPath is already initialized to a different value. Old value = '', new value = ''.",
-                        _rhetosServerRootPath, value));
+                    throw new FrameworkException($"{nameof(RhetosServerRootPath)} is already initialized to a different value. Old value = '{_rhetosServerRootPath}', new value = '{value}'.");
 
                 _rhetosServerRootPath = value;
             }
@@ -107,7 +103,7 @@ namespace Rhetos.Utilities
         public static string ConnectionStringsFile => Path.Combine(RhetosServerRootPath, @"bin\ConnectionStrings.config");
         public static string GetDomAssemblyFile(DomAssemblies domAssembly) => Path.Combine(GeneratedFolder, $"ServerDom.{domAssembly}.dll");
         /// <summary>
-        /// List of the generated dll files that make the domain object model (ServerDom*.dll).
+        /// List of the generated dll files that make the domain object model (ServerDom.*.dll).
         /// </summary>
         public static IEnumerable<string> DomAssemblyFiles => Enum.GetValues(typeof(DomAssemblies)).Cast<DomAssemblies>().Select(domAssembly => GetDomAssemblyFile(domAssembly));
     }

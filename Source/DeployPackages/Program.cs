@@ -64,6 +64,7 @@ namespace DeployPackages
                 oldCurrentDirectory = Directory.GetCurrentDirectory();
                 Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
 
+                InitialCleanup(logger, arguments);
                 DownloadPackages(logger, arguments);
                 GenerateApplication(logger, arguments);
                 InitializeGeneratedApplication(logger, arguments);
@@ -97,26 +98,10 @@ namespace DeployPackages
             return 0;
         }
 
-        private static void DownloadPackages(ILogger logger, Arguments arguments)
+        private static void InitialCleanup(ILogger logger, Arguments arguments)
         {
-            InitialCleanup(logger);
+            // Warning to backup obsolete folders:
 
-            if (!arguments.DeployDatabaseOnly)
-            {
-                logger.Trace("Getting packages.");
-                var config = new DeploymentConfiguration(DeploymentUtility.InitializationLogProvider);
-                var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = arguments.IgnorePackageDependencies };
-                var packageDownloader = new PackageDownloader(config, DeploymentUtility.InitializationLogProvider, packageDownloaderOptions);
-                var packages = packageDownloader.GetPackages();
-
-                InstalledPackages.Save(packages);
-            }
-            else
-                logger.Info("Skipped download packages (DeployDatabaseOnly).");
-        }
-
-        private static void InitialCleanup(ILogger logger)
-        {
             var obsoleteFolders = new string[]
             {
                 Path.Combine(Paths.RhetosServerRootPath, "DslScripts"),
@@ -125,6 +110,8 @@ namespace DeployPackages
             var obsoleteFolder = obsoleteFolders.FirstOrDefault(folder => Directory.Exists(folder));
             if (obsoleteFolder != null)
                 throw new UserException("Backup all Rhetos server folders and delete obsolete folder '" + obsoleteFolder + "'. It is no longer used.");
+
+            // Delete obsolete generated files:
 
             var deleteObsoleteFiles = new string[]
             {
@@ -139,17 +126,14 @@ namespace DeployPackages
                     logger.Info($"Deleting obsolete file '{path}'.");
                     filesUtility.SafeDeleteFile(path);
                 }
-        }
 
-        private static void GenerateApplication(ILogger logger, Arguments arguments)
-        {
+            // Backup and delete generated files:
+
             if (!arguments.DeployDatabaseOnly)
             {
-                // The old generated plugins must be deleted before loading the application generator plugins.
-                var filesUtility = new FilesUtility(DeploymentUtility.InitializationLogProvider);
+                logger.Trace("Moving old generated files to cache.");
+                new GeneratedFilesCache(DeploymentUtility.InitializationLogProvider).MoveGeneratedFilesToCache();
                 filesUtility.SafeCreateDirectory(Paths.GeneratedFolder);
-                var oldGeneratedFiles = filesUtility.SafeGetFiles(Paths.GeneratedFolder, "*", SearchOption.AllDirectories);
-                new GeneratedFilesCache(DeploymentUtility.InitializationLogProvider).MoveToCache(oldGeneratedFiles);
             }
             else
             {
@@ -159,7 +143,26 @@ namespace DeployPackages
 
                 logger.Info("Skipped deleting old generated files (DeployDatabaseOnly).");
             }
+        }
 
+        private static void DownloadPackages(ILogger logger, Arguments arguments)
+        {
+            if (!arguments.DeployDatabaseOnly)
+            {
+                logger.Trace("Getting packages.");
+                var config = new DeploymentConfiguration(DeploymentUtility.InitializationLogProvider);
+                var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = arguments.IgnorePackageDependencies };
+                var packageDownloader = new PackageDownloader(config, DeploymentUtility.InitializationLogProvider, packageDownloaderOptions);
+                var packages = packageDownloader.GetPackages();
+
+                InstalledPackages.Save(packages);
+            }
+            else
+                logger.Info("Skipped download packages (DeployDatabaseOnly).");
+        }
+
+        private static void GenerateApplication(ILogger logger, Arguments arguments)
+        {
             logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 

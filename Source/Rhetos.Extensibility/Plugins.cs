@@ -169,6 +169,15 @@ namespace Rhetos.Extensibility
                 plugin.Metadata.Add(MefProvider.Implements, implements);
         }
 
+        /// <summary>
+        /// Suppresses the plugin when reading the plugins from IPluginsContainer and INamedPlugins.
+        /// </summary>
+        public static void SuppressPlugin<TPluginInterface, TPlugin>(ContainerBuilder builder)
+            where TPlugin : TPluginInterface
+        {
+            builder.RegisterInstance(new SuppressPlugin(typeof(TPlugin))).Keyed<SuppressPlugin>(typeof(TPluginInterface));
+        }
+
         #endregion
         //================================================================
         #region Log registration statistics

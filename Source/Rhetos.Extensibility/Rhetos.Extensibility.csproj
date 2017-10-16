@@ -129,6 +129,7 @@
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Plugins.cs" />
+    <Compile Include="SuppressPlugin.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj">

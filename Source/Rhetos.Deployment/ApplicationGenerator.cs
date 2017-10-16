@@ -159,16 +159,25 @@ namespace Rhetos.Deployment
         private IList<IGenerator> GetSortedGenerators()
         {
             // The plugins in the container are sorted by their dependencies defined in ExportMetadata attribute (static typed):
-            var generators = _generatorsContainer.GetPlugins();
+            var generators = _generatorsContainer.GetPlugins().ToArray();
 
             // Additional sorting by loosely-typed dependencies from the Dependencies property:
-            var genNames = generators.Select(gen => gen.GetType().FullName).ToList();
-            var genDependencies = generators.SelectMany(gen => (gen.Dependencies ?? new string[0]).Select(x => Tuple.Create(x, gen.GetType().FullName)));
-            Rhetos.Utilities.Graph.TopologicalSort(genNames, genDependencies);
+            var generatorNames = generators.Select(GetGeneratorName).ToList();
+            var dependencies = generators.Where(gen => gen.Dependencies != null)
+                .SelectMany(gen => gen.Dependencies.Select(dependsOn => Tuple.Create(dependsOn, GetGeneratorName(gen))))
+                .ToList();
+            Graph.TopologicalSort(generatorNames, dependencies);
 
-            var sortedGenerators = generators.ToArray();
-            Graph.SortByGivenOrder(sortedGenerators, genNames.ToArray(), gen => gen.GetType().FullName);
-            return sortedGenerators;
+            foreach (var missingDependency in dependencies.Where(dep => !generatorNames.Contains(dep.Item1)))
+                _deployPackagesLogger.Info($"Missing dependency '{missingDependency.Item1}' for application generator '{missingDependency.Item2}'.");
+
+            Graph.SortByGivenOrder(generators, generatorNames, GetGeneratorName);
+            return generators;
+        }
+
+        private static string GetGeneratorName(IGenerator gen)
+        {
+            return gen.GetType().FullName;
         }
 
         private void UploadDslScriptsToServer()
