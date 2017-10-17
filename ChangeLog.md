@@ -1,5 +1,16 @@
 ﻿# Rhetos release notes
 
+## 2.1.0 (2017-10-17)
+
+### Internal improvements
+
+* Bugfix: AdminSetup.exe fails with FileNotFoundException.
+* Bugfix: `DeployPackages /DatabaseOnly` fails if the Rhetos server folder has been moved.
+* Minor optimizations in performance critical code.
+* New plugins can suppress existing plugins from collections in IPluginsContainer and INamedPlugins.
+* ActiveDirectorySync package moved to a separate source repository: https://github.com/Rhetos/ActiveDirectorySync
+* AspNetFormsAuth package is moved to a separate source repository: https://github.com/Rhetos/AspNetFormsAuth
+
 ## 2.0.0 (2017-10-02)
 
 ### Breaking changes
