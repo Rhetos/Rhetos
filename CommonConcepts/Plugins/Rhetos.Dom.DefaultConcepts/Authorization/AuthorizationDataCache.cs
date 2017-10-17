@@ -183,8 +183,11 @@ namespace Rhetos.Dom.DefaultConcepts
                     _logger.Trace(() => "Cache miss: " + key + ".");
                 }
             }
-
-            var freshPermissions = _authorizationDataReader.Value.GetRolePermissions(missingCache, null);
+            
+            var freshPermissions = missingCache.Count == 0
+                ? Enumerable.Empty<RolePermissionInfo>()
+                :_authorizationDataReader.Value.GetRolePermissions(missingCache, null);
+            
             result = result == null ? freshPermissions : result.Concat(freshPermissions);
 
             var freshPermissionsByRole = freshPermissions.GroupBy(p => p.RoleID).ToDictionary(group => group.Key, group => group.ToList());

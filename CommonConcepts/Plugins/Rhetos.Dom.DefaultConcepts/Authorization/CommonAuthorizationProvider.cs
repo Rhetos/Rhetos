@@ -89,13 +89,15 @@ namespace Rhetos.Dom.DefaultConcepts
             var claimIdsIndex = new HashSet<Guid>(claims.Where(claim => claim.ID != null).Select(claim => claim.ID.Value));
 
             var principalPermissions = _authorizationData.GetPrincipalPermissions(principal, claimIdsIndex)
+                .Where(pp => claimIdsIndex.Contains(pp.ClaimID))
                 .Select(pp => new Permission { PrincipalID = pp.PrincipalID, ClaimID = pp.ClaimID, IsAuthorized = pp.IsAuthorized });
+
             var rolePermissions = _authorizationData.GetRolePermissions(userRoles, claimIdsIndex)
+                .Where(rp => claimIdsIndex.Contains(rp.ClaimID))
                 .Select(rp => new Permission { RoleID = rp.RoleID, ClaimID = rp.ClaimID, IsAuthorized = rp.IsAuthorized });
 
             // GetPrincipalPermissions and GetRolePermissions may return permissions for more claims than required.
             return principalPermissions.Concat(rolePermissions)
-                .Where(p => claimIdsIndex.Contains(p.ClaimID))
                 .ToList();
         }
 
