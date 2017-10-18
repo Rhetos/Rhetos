@@ -50,6 +50,12 @@
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj">
+      <Project>{71e63722-57bc-41df-9ff5-57ecc67e4bc1}</Project>
+      <Name>Rhetos.Utilities</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -61,6 +62,22 @@ namespace Rhetos.Deployment
         public string Report()
         {
             return Id + " " + Version + " (requested from " + Request.RequestedBy + ") in " + Folder + ".";
+        }
+
+        /// <summary>
+        /// Folder paths should be absolute in runtime to avoid ambiguity of current working folder when using the Rhetos server object model from other applications.
+        /// </summary>
+        public void SetAbsoluteFolderPath()
+        {
+            Folder = FilesUtility.RelativeToAbsolutePath(Paths.RhetosServerRootPath, Folder);
+        }
+
+        /// <summary>
+        /// Folder paths should be relative when saving the path to a cache file, to allow moving the Rhetos server folder to testing environment or production.
+        /// </summary>
+        public void SetRelativeFolderPath()
+        {
+            Folder = FilesUtility.AbsoluteToRelativePath(Paths.RhetosServerRootPath, Folder);
         }
     }
 }

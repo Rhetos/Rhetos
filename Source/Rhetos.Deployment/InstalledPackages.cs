@@ -54,7 +54,7 @@ namespace Rhetos.Deployment
 
             // Package folder is saved as relative path, to allow moving the deployed folder.
             foreach (var package in packages)
-                FilesUtility.RelativeToAbsolutePath(BaseFolderForRelativePath, package.Folder);
+                package.SetAbsoluteFolderPath();
 
             foreach (var package in packages)
                 _logger.Trace(() => package.Report());
@@ -68,17 +68,15 @@ namespace Rhetos.Deployment
 
             // Package folder is saved as relative path, to allow moving the deployed folder.
             foreach (var package in packages)
-                FilesUtility.AbsoluteToRelativePath(BaseFolderForRelativePath, package.Folder);
+                package.SetRelativeFolderPath();
 
             string serialized = JsonConvert.SerializeObject(packages, _serializerSettings);
 
             foreach (var package in packages)
-                FilesUtility.RelativeToAbsolutePath(BaseFolderForRelativePath, package.Folder);
+                package.SetAbsoluteFolderPath();
 
             File.WriteAllText(PackagesFilePath, serialized, Encoding.UTF8);
         }
-
-        public static string BaseFolderForRelativePath => Paths.RhetosServerRootPath;
 
         private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
         {
