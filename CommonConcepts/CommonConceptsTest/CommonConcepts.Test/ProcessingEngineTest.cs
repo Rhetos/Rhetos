@@ -102,7 +102,7 @@ namespace CommonConcepts.Test
                     { "command xml", new[] { "ProcessingEngine Commands", "<DataToInsert", ">abc</S>" } },
                     { "error info", new[] { "Command failed: SaveEntityCommandInfo TestUnique.E, insert 2. Rhetos.UserException", "duplicate", "IX_E_S_I_R", "stack trace" } },
                     { "CommandsWithClientError xml", new[] { "ProcessingEngine CommandsWithClientError", "<DataToInsert", ">abc</S>" } },
-                    { "CommandsWithClientError result", new[] { "ProcessingEngine CommandsWithClientError", "<UserMessage>It is not allowed" } },
+                    { "CommandsWithClientError result", new[] { "ProcessingEngine CommandsWithClientError", "<UserMessage>", "It is not allowed" } },
                 };
 
                 foreach (var test in excected)
@@ -134,7 +134,7 @@ namespace CommonConcepts.Test
                 {
                     { "error info", new[] { "Command failed: ReadCommandInfo TestRowPermissions.ErrorData", "Index was outside the bounds of the array", "stack trace" } },
                     { "CommandsWithServerError xml", new[] { "ProcessingEngine CommandsWithServerError", "TestRowPermissions.ErrorData</DataSource>" } },
-                    { "CommandsWithServerError result", new[] { "ProcessingEngine CommandsWithServerError", "<SystemMessage>Internal server error" } },
+                    { "CommandsWithServerError result", new[] { "ProcessingEngine CommandsWithServerError", "<SystemMessage>", "Internal server error" } },
                 };
 
                 foreach (var test in excected)
