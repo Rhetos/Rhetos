@@ -273,40 +273,40 @@ IF OBJECT_ID('Rhetos.DataMigrationApplyMultiple') IS NULL
 	EXEC ('CREATE PROCEDURE Rhetos.DataMigrationApplyMultiple AS SET NOCOUNT ON RAISERROR (''Procedure creation has not finished.'', 16, 62)')
 GO
 ALTER PROCEDURE Rhetos.DataMigrationApplyMultiple
-	@SchemaName NVARCHAR(256), @TableName NVARCHAR(256), @ColumnNames NVARCHAR(MAX)
+    @SchemaName NVARCHAR(256), @TableName NVARCHAR(256), @ColumnNames NVARCHAR(MAX)
 AS
-	-- Standard error-handling header
-	DECLARE @InitialTranCount INT
-	SET @InitialTranCount = @@TRANCOUNT
-	DECLARE @TranName VARCHAR(38)
-	SET @TranName = NEWID()
-	IF @InitialTranCount = 0 BEGIN TRANSACTION @TranName
-	ELSE SAVE TRANSACTION @TranName
-	DECLARE @Error INT
-	SET @Error = 0
-	
+    -- Standard error-handling header
+    DECLARE @InitialTranCount INT
+    SET @InitialTranCount = @@TRANCOUNT
+    DECLARE @TranName VARCHAR(38)
+    SET @TranName = NEWID()
+    IF @InitialTranCount = 0 BEGIN TRANSACTION @TranName
+    ELSE SAVE TRANSACTION @TranName
+    DECLARE @Error INT
+    SET @Error = 0
+    
     SET NOCOUNT ON
 
-	IF CHARINDEX(']', @SchemaName) > 0 OR CHARINDEX('''', @SchemaName) > 0
-	BEGIN ROLLBACK TRANSACTION @TranName RAISERROR('Invalid character in @SchemaName %s', 16, 10, @SchemaName) RETURN 50000 END
+    IF CHARINDEX(']', @SchemaName) > 0 OR CHARINDEX('''', @SchemaName) > 0
+    BEGIN ROLLBACK TRANSACTION @TranName RAISERROR('Invalid character in @SchemaName %s', 16, 10, @SchemaName) RETURN 50000 END
 
-	IF CHARINDEX(']', @TableName) > 0 OR CHARINDEX('''', @TableName) > 0
-	BEGIN ROLLBACK TRANSACTION @TranName RAISERROR('Invalid character in @TableName %s', 16, 10, @TableName) RETURN 50000 END
+    IF CHARINDEX(']', @TableName) > 0 OR CHARINDEX('''', @TableName) > 0
+    BEGIN ROLLBACK TRANSACTION @TranName RAISERROR('Invalid character in @TableName %s', 16, 10, @TableName) RETURN 50000 END
 
-	IF CHARINDEX(']', @ColumnNames) > 0 OR CHARINDEX('''', @ColumnNames) > 0
-	BEGIN ROLLBACK TRANSACTION @TranName RAISERROR('Invalid character in @ColumnNames %s', 16, 10, @ColumnNames) RETURN 50000 END
+    IF CHARINDEX(']', @ColumnNames) > 0 OR CHARINDEX('''', @ColumnNames) > 0
+    BEGIN ROLLBACK TRANSACTION @TranName RAISERROR('Invalid character in @ColumnNames %s', 16, 10, @ColumnNames) RETURN 50000 END
 
-	DECLARE @MigrationSchemaName NVARCHAR(256)
-	SET @MigrationSchemaName = '_' + @SchemaName
-	
-	-- Rhetos.DataMigrationApplyMultiple will not automatically change the column type (unlike Rhetos.DataMigrationApply). That is good enough for use in data migration scripts, but cannot be used in DatabaseGenerator plugins.
+    DECLARE @MigrationSchemaName NVARCHAR(256)
+    SET @MigrationSchemaName = '_' + @SchemaName
     
-	IF NOT EXISTS (SELECT TOP 1 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = @SchemaName AND TABLE_NAME = @TableName)
-        PRINT 'Nothing to migrate. Table ' + @SchemaName + '.' + @TableName + ' is not prepared.'
+    -- Rhetos.DataMigrationApplyMultiple will not automatically change the column type (unlike Rhetos.DataMigrationApply). That is good enough for use in data migration scripts, but cannot be used in DatabaseGenerator plugins.
+    
+    IF NOT EXISTS (SELECT TOP 1 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = @SchemaName AND TABLE_NAME = @TableName AND TABLE_TYPE = 'BASE TABLE')
+        PRINT 'Nothing to migrate. Table "' + @SchemaName + '.' + @TableName + '"" does not exist. It is expected to be created later during this upgrade.'
     ELSE IF NOT EXISTS (SELECT TOP 1 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = @MigrationSchemaName AND TABLE_NAME = @TableName)
-        PRINT 'Nothing to migrate. Data-migration table ' + @MigrationSchemaName + '.' + @TableName + ' does not exist.'
-	ELSE
-	BEGIN
+        PRINT 'Nothing to migrate. Data-migration table "' + @MigrationSchemaName + '.' + @TableName + '"" is not prepared. Execute "Rhetos.DataMigrationUse" to prepare the migration table.'
+    ELSE
+    BEGIN
 
         -- Parse column names to @columns:
         
@@ -348,15 +348,15 @@ AS
         DECLARE @columns1sql VARCHAR(MAX)
         DECLARE @columns2sql VARCHAR(MAX)
         
-		SET @sqlDelete = '
+        SET @sqlDelete = '
             DELETE FROM
                 [' + @SchemaName + '].[' + @TableName + ']
             WHERE
                 ID NOT IN (SELECT ID FROM [' + @MigrationSchemaName + '].[' + @TableName + '])'
-		SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
-		
-		IF EXISTS (SELECT TOP 1 1 FROM @columns)
-		BEGIN
+        SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
+        
+        IF EXISTS (SELECT TOP 1 1 FROM @columns)
+        BEGIN
 
             SET @columns1sql = ''
             SET @columns2sql = ''
@@ -369,7 +369,7 @@ AS
             FROM
                 @columns
             SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
-    		
+            
             SET @sqlUpdate = '
                 UPDATE
                     original
@@ -378,9 +378,9 @@ AS
                     [' + @SchemaName + '].[' + @TableName + '] original
                     INNER JOIN [' + @MigrationSchemaName + '].[' + @TableName + '] migration ON migration.ID = original.ID
                 WHERE' + @columns2sql
-		    SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
-		
-		END
+            SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
+        
+        END
         
         SET @columns1sql = ''
         SELECT
@@ -403,19 +403,19 @@ AS
         SET NOCOUNT OFF
         
         EXEC (@sqlDelete)
-		SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
-		
-		IF @sqlUpdate IS NOT NULL EXEC (@sqlUpdate)
-		SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
-		
-        EXEC (@sqlInsert)
-		SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
+        SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
         
-	END
+        IF @sqlUpdate IS NOT NULL EXEC (@sqlUpdate)
+        SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
+        
+        EXEC (@sqlInsert)
+        SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
+        
+    END
 
-	-- Standard error-handling footer
-	IF @InitialTranCount = 0 COMMIT TRANSACTION @TranName
-	RETURN 0
+    -- Standard error-handling footer
+    IF @InitialTranCount = 0 COMMIT TRANSACTION @TranName
+    RETURN 0
 GO
 
 IF OBJECT_ID(N'[Rhetos].[AppliedConceptDependsOn]') IS NULL
