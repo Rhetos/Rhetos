@@ -24,7 +24,7 @@ using System.Text;
 
 namespace Rhetos.Dsl
 {
-    [Obsolete("Use IConceptMacro.")]
+    [Obsolete("Use IConceptMacro<TConceptInfo> in a separate class.")]
     public interface IMacroConcept : IConceptInfo
     {
         /// <summary>
