@@ -312,5 +312,16 @@ namespace Rhetos.Utilities
             var serverType = sqlVersion >= SqlVersion.Sql11 ? GetServerType(conn) : ServerType.OnPremises;
             return GetVersionHint(sqlVersion, serverType);
         }
+
+        public static string GetProviderManifestToken()
+        {
+            using (SqlConnection sc = new SqlConnection(SqlUtility.ConnectionString))
+            {
+                sc.Open();
+                string providerManifestToken = QueryForManifestToken(sc);
+                sc.Close();
+                return providerManifestToken;
+            }
+        }
     }
 }

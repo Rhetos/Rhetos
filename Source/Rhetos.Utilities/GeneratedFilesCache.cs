@@ -76,9 +76,14 @@ namespace Rhetos.Utilities
         {
             File.WriteAllText(sourceFile, sourceCode, Encoding.UTF8);
 
-            byte[] hash = _sha1.ComputeHash(Encoding.UTF8.GetBytes(sourceCode));
+            byte[] hash = GetHash(sourceCode);
             SaveHash(sourceFile, hash);
             return hash;
+        }
+
+        public byte[] GetHash(string sourceContent)
+        {
+            return _sha1.ComputeHash(Encoding.UTF8.GetBytes(sourceContent));
         }
 
         /// <param name="sampleSourceFile">Any file from the cached file group, extension will be ignored.</param>

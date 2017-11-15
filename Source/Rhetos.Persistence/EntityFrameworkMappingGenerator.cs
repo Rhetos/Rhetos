@@ -49,16 +49,8 @@ namespace Rhetos.Persistence
             _codeGenerator = codeGenerator;
             _performanceLogger = logProvider.GetLogger("Performance");
         }
-        private Lazy<string> GetProviderManifestToken = new Lazy<string>(() =>
-        {
-            using (SqlConnection sc = new SqlConnection(SqlUtility.ConnectionString))
-            {
-                sc.Open();
-                string providerManifestToken = MsSqlUtility.QueryForManifestToken(sc);
-                sc.Close();
-                return providerManifestToken;
-            }
-        });
+
+        private Lazy<string> GetProviderManifestToken = new Lazy<string>(() => MsSqlUtility.GetProviderManifestToken());
         
         public void Generate()
         {

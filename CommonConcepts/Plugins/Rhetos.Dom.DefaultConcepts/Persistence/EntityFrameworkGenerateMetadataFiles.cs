@@ -125,6 +125,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                 _cache.LoadHash(Paths.GetDomAssemblyFile(DomAssemblies.Model)),
                 _cache.LoadHash(Paths.GetDomAssemblyFile(DomAssemblies.Orm)),
                 // TODO: Add DatabaseGenerator hash for new created ConceptApplications.
+                _cache.GetHash(MsSqlUtility.GetProviderManifestToken())
             };
             return _cache.JoinHashes(hashes);
         }
