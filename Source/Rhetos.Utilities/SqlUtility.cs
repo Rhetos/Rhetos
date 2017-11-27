@@ -196,6 +196,8 @@ namespace Rhetos.Utilities
 
             if (DatabaseLanguageIsOracle.Value)
                 name = OracleSqlUtility.LimitIdentifierLength(name);
+            if (DatabaseLanguageIsMsSql.Value)
+                name = MsSqlUtility.LimitIdentifierLength(name);
 
             return name;
         }

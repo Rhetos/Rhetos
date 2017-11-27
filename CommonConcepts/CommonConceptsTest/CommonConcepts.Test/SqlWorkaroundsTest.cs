@@ -393,5 +393,38 @@ namespace CommonConcepts.Test
 
             }
         }
+
+        [TestMethod]
+        public void LongIdentifiers()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repos = container.Resolve<Common.DomRepository>().TestLongIdentifiers;
+
+                var p1 = new TestLongIdentifiers.LongIdentifier0000020000000003000000000400000000050000000006000000000700000000080000000009000000000C
+                {
+                    LongName0100000000020000000003000000000400000000050000000006000000000700000000080000000009000000000C = "p1"
+                };
+                repos.LongIdentifier0000020000000003000000000400000000050000000006000000000700000000080000000009000000000C
+                    .Insert(p1);
+
+                var c1 = new TestLongIdentifiers.LongChild100000000020000000003000000000400000000050000000006000000000700000000080000000009000000000C
+                {
+                    ChildName = "c1",
+                    LongIdentifier0000020000000003000000000400000000050000000006000000000700000000080000000009000000000CID = p1.ID
+                };
+                var c2 = new TestLongIdentifiers.LongChild100000000020000000003000000000400000000050000000006000000000700000000080000000009000000000C
+                {
+                    ChildName = "c2",
+                    LongIdentifier0000020000000003000000000400000000050000000006000000000700000000080000000009000000000CID = p1.ID
+                };
+                repos.LongChild100000000020000000003000000000400000000050000000006000000000700000000080000000009000000000C
+                    .Insert(c1, c2);
+
+                Assert.AreEqual("p1 c1, p1 c2", TestUtility.DumpSorted(
+                    repos.LongBrowse00000000020000000003000000000400000000050000000006000000000700000000080000000009000000000C.Query(),
+                    item => item.ParentName + " " + item.ChildName));
+            }
+        }
     }
 }

@@ -180,6 +180,17 @@ namespace Rhetos.Utilities
             return null;
         }
 
+        public static string LimitIdentifierLength(string name)
+        {
+            const int MaxLength = 128;
+            if (name.Length > MaxLength)
+            {
+                var hashErasedPart = name.Substring(MaxLength - 9).GetHashCode().ToString("X");
+                return name.Substring(0, MaxLength - 9) + "_" + hashErasedPart;
+            }
+            return name;
+        }
+
         private static readonly string[] _referenceConstraintTypes = new string[] { "REFERENCE", "SAME TABLE REFERENCE", "FOREIGN KEY", "COLUMN FOREIGN KEY" };
 
         public Exception ExtractSqlException(Exception exception)

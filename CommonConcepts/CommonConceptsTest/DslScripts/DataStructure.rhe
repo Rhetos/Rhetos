@@ -1,4 +1,4 @@
-﻿Module TestDataStructure { DataStructure SimpleDataStructure1; }
+Module TestDataStructure { DataStructure SimpleDataStructure1; }
 
 Module TestDataStructure { DataStructure SimpleDataStructure2 { ShortString SimpleShortString; } }
 

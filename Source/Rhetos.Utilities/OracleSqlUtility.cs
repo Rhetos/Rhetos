@@ -29,10 +29,11 @@ namespace Rhetos.Utilities
     {
         public static string LimitIdentifierLength(string name)
         {
-            if (name.Length > 30)
+            const int MaxLength = 30;
+            if (name.Length > MaxLength)
             {
-                var hashErasedPart = name.Substring(21).GetHashCode().ToString("X");
-                return name.Substring(0, 21) + "_" + hashErasedPart;
+                var hashErasedPart = name.Substring(MaxLength - 9).GetHashCode().ToString("X");
+                return name.Substring(0, MaxLength - 9) + "_" + hashErasedPart;
             }
             return name;
         }
