@@ -1,5 +1,18 @@
 ﻿# Rhetos release notes
 
+## 2.3.0 (2017-11-27)
+
+### Internal improvements
+
+* Bugfix: *DeployPackages* fails with a ProviderManifestToken error when migrating to a different SQL Server version.
+* Bugfix: *DeployPackages* fails with an error when executing data-migration scripts:
+  "View or function 'x' is not updatable because the modification affects multiple base tables."
+* Bugfix: *DeployPackages* fails with a database error 'identifier too long' on foreign key constraint,
+  when entity name's length is 40 characters. The limit is now moved above 100 characters,
+  but it depends on other features and plugins that are used in the application.
+* Increased EF6 query cache size to 10000 (from default 1000).
+* Disabled ASP.NET session to improve concurrency. Rhetos server does not use it, but it was turned on by default.
+
 ## 2.2.0 (2017-10-18)
 
 ### Internal improvements
