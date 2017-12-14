@@ -17,9 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Logging;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
@@ -31,13 +33,15 @@ using System.Text;
 namespace CommonConcepts.Test
 {
     [TestClass]
-    public class BlomRepositoryConcepts
+    public class DomRepositoryConcepts
     {
         [TestMethod]
         public void OnSaveUpdateAndValidate()
         {
             using (var container = new RhetosTestContainer())
             {
+                var log = new List<string>();
+                container.AddLogMonitor(log, EventType.Info);
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDataStructure.SaveTesterBase" });
 
                 var context = container.Resolve<Common.ExecutionContext>();
@@ -53,24 +57,30 @@ namespace CommonConcepts.Test
                     new TestDataStructure.SaveTester { ID = baseItems[0].ID, Name = "t0", Code = 11 },
                     new TestDataStructure.SaveTester { ID = baseItems[1].ID, Name = "t1", Code = 22 } };
 
+                log.Clear();
                 baseRepos.Insert(baseItems);
                 testerRepos.Insert(testerItems);
+                Assert.AreEqual("", TestUtility.Dump(log));
 
                 Assert.AreEqual("b0, b1 locked", TestUtility.DumpSorted(baseRepos.Load(), item => item.Name));
                 Assert.AreEqual("b0/t0-11, b1 locked/t1-22", TestUtility.DumpSorted(testerRepos.Query(), item => item.Base.Name + "/" + item.Name + "-" + item.Code));
 
                 testerItems[0].Name += " modified"; // Modifying Name property should update the base entity's name ("updated").
                 testerItems[1].Code = 222;
+                log.Clear();
                 testerRepos.Update(testerItems);
+                Assert.AreEqual("[Info] test: t0 => t0 modified", TestUtility.Dump(log));
 
                 Assert.AreEqual("b0 updated, b1 locked", TestUtility.DumpSorted(baseRepos.Load(), item => item.Name));
                 Assert.AreEqual("b0 updated/t0 modified-11, b1 locked/t1-222", TestUtility.DumpSorted(testerRepos.Query(), item => item.Base.Name + "/" + item.Name + "-" + item.Code));
 
                 testerItems[0].Code = 111;
                 testerItems[1].Name += " modified"; // Modifying Name property when base is locked should fail.
+                log.Clear();
                 TestUtility.ShouldFail<Rhetos.UserException>(
                     () => testerRepos.Update(testerItems),
                     "It is not allowed to modify locked item's name 't1' => 't1 modified'.");
+                Assert.AreEqual("", TestUtility.Dump(log));
             }
         }
 

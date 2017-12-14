@@ -31,16 +31,16 @@ using Rhetos.Dsl;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(OnSaveUpdateInfo))]
-    public class OnSaveUpdateCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(SaveMethodAfterSaveInfo))]
+    public class SaveMethodAfterSaveCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (OnSaveUpdateInfo)conceptInfo;
-            codeBuilder.InsertCode(GetSnippet(info), WritableOrmDataStructureCodeGenerator.OnSaveTag1, info.SaveMethod.Entity);
+            var info = (SaveMethodAfterSaveInfo)conceptInfo;
+            codeBuilder.InsertCode(GetSnippet(info), WritableOrmDataStructureCodeGenerator.AfterSaveTag, info.SaveMethod.Entity);
         }
 
-        private string GetSnippet(OnSaveUpdateInfo info)
+        private string GetSnippet(SaveMethodAfterSaveInfo info)
         {
             return string.Format(
                 @"{{ // {0}

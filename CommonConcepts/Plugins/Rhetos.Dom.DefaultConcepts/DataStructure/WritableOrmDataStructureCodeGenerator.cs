@@ -54,21 +54,25 @@ namespace Rhetos.Dom.DefaultConcepts
 
         /// <summary>Insert code here to recompute (insert/update/delete) other entities that depend on the changes items.
         /// Queries "inserted" and "updated" will return NEW data.
-        /// Data is already saved to the database (but the SQL transaction has not yet been committed) so SQL validations and computations can be used.</summary>
+        /// Data is already saved to the database (but the SQL transaction has not yet been committed).</summary>
         public static readonly CsTag<DataStructureInfo> OnSaveTag1 = "WritableOrm OnSaveTag1";
 
         /// <summary>Insert code here to verify that invalid items are not going to be inserted or updated.
         /// Queries "inserted" and "updated" will return NEW data.
-        /// Data is already saved to the database (but the SQL transaction has not yet been committed) so SQL validations and computations can be used.</summary>
+        /// Data is already saved to the database (but the SQL transaction has not yet been committed).</summary>
         public static readonly CsTag<DataStructureInfo> OnSaveTag2 = "WritableOrm OnSaveTag2";
 
         /// <summary>Insert code here to returns a list at errors for the given items (IList&lt;Guid&gt; ids).
-        /// Data is already saved to the database (but the SQL transaction has not yet been committed) so SQL validations and computations can be used.</summary>
+        /// Data is already saved to the database (but the SQL transaction has not yet been committed).</summary>
         public static readonly CsTag<DataStructureInfo> OnSaveValidateTag = "WritableOrm OnSaveValidate";
 
         public static readonly CsTag<DataStructureInfo> OnDatabaseErrorTag = "WritableOrm OnDatabaseError";
 
-        // TODO: Remove "duplicateObjects" check after implementing stateless session with "manual" saving.
+        /// <summary>The inserted code will be execute after recomputing and validations.
+        /// Queries "inserted" and "updated" will return NEW data.
+        /// Data is already saved to the database (but the SQL transaction has not yet been committed).</summary>
+        public static readonly CsTag<DataStructureInfo> AfterSaveTag = "WritableOrm AfterSave";
+
         protected static string MemberFunctionsSnippet(DataStructureInfo info)
         {
             return string.Format(
@@ -154,6 +158,9 @@ namespace Rhetos.Dom.DefaultConcepts
                 " + OnSaveTag2.Evaluate(info) + @"
 
                 Rhetos.Dom.DefaultConcepts.InvalidDataMessage.ValidateOnSave(insertedNew, updatedNew, this, ""{0}.{1}"");
+
+                " + AfterSaveTag.Evaluate(info) + @"
+
                 allEffectsCompleted = true;
             }}
             finally

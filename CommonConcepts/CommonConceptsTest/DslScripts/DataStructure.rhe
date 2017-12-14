@@ -344,9 +344,9 @@ Module TestDataStructure
 				Take 'Base.Name';
 			}
 			
-			OnSaveUpdate 'UnitTestingUpdate'
+			OnSaveUpdate 'UpdateBaseIfNameChanged'
 				'var changedItemsName = updatedOld
-					.Zip(updatedNew, (oldItem, newItem) => new { oldItem, newItem})
+					.Zip(updatedNew, (oldItem, newItem) => new { oldItem, newItem })
 					// Safe universal property comparison:
 					.Where(change => change.oldItem.Name == null && change.newItem.Name != null || change.oldItem.Name != null && !change.oldItem.Name.Equals(change.newItem.Name))
 					.ToList();
@@ -357,9 +357,9 @@ Module TestDataStructure
 					baseItem.Name += " updated";
 				_executionContext.Repository.TestDataStructure.SaveTesterBase.Update(updateBaseItems);';
 				
-			OnSaveValidate 'UnitTestingValidate'
+			OnSaveValidate 'DenyChangeOfLockedName'
 				'var lockedItemModifiedName = updatedOld
-					.Zip(updatedNew, (oldItem, newItem) => new { oldItem, newItem})
+					.Zip(updatedNew, (oldItem, newItem) => new { oldItem, newItem })
 					// Safe universal property comparison:
 					.Where(change => change.oldItem.Name == null && change.newItem.Name != null || change.oldItem.Name != null && !change.oldItem.Name.Equals(change.newItem.Name))
 					.Where(change => change.oldItem.BaseName != null && change.oldItem.BaseName.Contains("lock"))
@@ -370,7 +370,18 @@ Module TestDataStructure
 						"[Test] It is not allowed to modify locked item''s name ''{0}'' => ''{1}''.",
 						lockedItemModifiedName.oldItem.Name,
 						lockedItemModifiedName.newItem.Name));';
+
+			AfterSave 'LogModifications'
+				'var changedItemsName = updatedOld
+					.Zip(updatedNew, (oldItem, newItem) => new { oldItem, newItem })
+					.Where(change => change.oldItem.Name == null && change.newItem.Name != null || change.oldItem.Name != null && !change.oldItem.Name.Equals(change.newItem.Name))
+					.ToList();
+				var logger = _logProvider.GetLogger("test");
+				foreach (var change in changedItemsName)
+					logger.Write(Rhetos.Logging.EventType.Info, () => (change.oldItem.Name ?? "null") + " => " + (change.newItem.Name ?? "null"));';
 		}
+
+		RepositoryUses '_logProvider' 'Rhetos.Logging.ILogProvider, Rhetos.Logging.Interfaces';
 	}
 }
 

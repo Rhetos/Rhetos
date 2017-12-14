@@ -155,7 +155,7 @@
     <Compile Include="AutoCodeCachedTest.cs" />
     <Compile Include="BinaryTest.cs" />
     <Compile Include="AutoCodeTest.cs" />
-    <Compile Include="BlomRepositoryConcepts.cs" />
+    <Compile Include="DomRepositoryConcepts.cs" />
     <Compile Include="ComputationsUtilityTest.cs" />
     <Compile Include="ComputedTest.cs" />
     <Compile Include="AuditablePropertiesTest.cs" />

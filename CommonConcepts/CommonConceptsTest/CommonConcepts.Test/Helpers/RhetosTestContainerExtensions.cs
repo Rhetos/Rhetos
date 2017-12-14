@@ -36,12 +36,13 @@ namespace CommonConcepts.Test.Helpers
     /// </summary>
     public static class RhetosTestContainerExtensions
     {
-        public static void AddLogMonitor(this RhetosTestContainer container, List<string> log)
+        public static void AddLogMonitor(this RhetosTestContainer container, List<string> log, EventType minLevel = EventType.Trace)
         {
             container.InitializeSession += builder =>
                 builder.RegisterInstance(new ConsoleLogProvider((eventType, eventName, message) =>
                 {
-                    log.Add("[" + eventType + "] " + (eventName != null ? (eventName + ": ") : "") + message());
+                    if (eventType >= minLevel)
+                        log.Add("[" + eventType + "] " + (eventName != null ? (eventName + ": ") : "") + message());
                 }))
                 .As<ILogProvider>();
         }

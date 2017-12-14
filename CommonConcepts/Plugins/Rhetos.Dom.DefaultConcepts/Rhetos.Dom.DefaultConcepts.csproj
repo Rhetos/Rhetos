@@ -129,6 +129,7 @@
     <Compile Include="DataStructure\Writing\LoadOldItemsTakeCodeGenerator.cs" />
     <Compile Include="DataStructure\Writing\LoadOldItemsCodeGenerator.cs" />
     <Compile Include="DataStructure\Writing\OnSaveUpdateCodeGenerator.cs" />
+    <Compile Include="DataStructure\Writing\SaveMethodAfterSaveCodeGenerator.cs" />
     <Compile Include="DataStructure\Writing\SaveMethodInitializationCodeGenerator.cs" />
     <Compile Include="DataStructure\Writing\OnSaveValidateCodeGenerator.cs" />
     <Compile Include="Authorization\DeactivateClaimsCodeGenerator.cs" />
