@@ -18,7 +18,6 @@
 */
 
 using System.Collections.Generic;
-using System.Linq;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
@@ -32,12 +31,18 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return new IConceptInfo[]
+            var newConcepts = new List<IConceptInfo>();
+
+            // Even this method generates no other features, the Detail concept can be useful
+            // in business modelling (inheriting row permissions to SqlQueryable, for example)
+            if (Reference.DataStructure is IWritableOrmDataStructure)
             {
-                new ReferenceCascadeDeleteInfo { Reference = Reference },
-                new SqlIndexInfo { Property = Reference },
-                new SystemRequiredInfo { Property = Reference }
-            };
+                newConcepts.Add(new ReferenceCascadeDeleteInfo { Reference = Reference });
+                newConcepts.Add(new SqlIndexInfo { Property = Reference });
+                newConcepts.Add(new SystemRequiredInfo { Property = Reference });
+            }
+
+            return newConcepts;
         }
         
         public override string ToString()

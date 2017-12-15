@@ -68,6 +68,14 @@ namespace Rhetos.Dsl.DefaultConcepts
             return dataStructure is IWritableOrmDataStructure;
         }
 
+        public static void CheckIfSupported(DataStructureInfo dataStructure, IConceptInfo errorContext)
+        {
+            if (!IsSupported(dataStructure))
+                throw new DslSyntaxException(errorContext,
+                    $"SQL index can only be used in a writable data structure." +
+                    $" '{dataStructure}' is a '{dataStructure.GetType().Name}'.");
+        }
+
         /// <summary>
         /// Returns whether the data validation will be implemented in the database (using unique index) or in the application.
         /// </summary>
@@ -78,12 +86,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
-            if (!IsSupported(DataStructure))
-                throw new DslSyntaxException(
-                    string.Format("{0} must be used inside writable data structure. DateStructure {1} is of type {2}.",
-                        this.GetUserDescription(),
-                        DataStructure,
-                        DataStructure.GetType().FullName));
+            CheckIfSupported(DataStructure, this);
 
             DslUtility.ValidatePropertyListSyntax(PropertyNames, this);
         }

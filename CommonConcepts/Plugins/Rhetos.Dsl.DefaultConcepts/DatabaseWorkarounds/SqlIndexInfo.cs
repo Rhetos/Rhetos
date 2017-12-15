@@ -34,11 +34,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
-            if (!(Property.DataStructure is IWritableOrmDataStructure))
-                throw new DslSyntaxException(
-                    string.Format("SqlIndex must be used inside writable data structure. DateStructure {0} is of type {1}.",
-                        Property.DataStructure,
-                        Property.DataStructure.GetType().FullName));
+            SqlIndexMultipleInfo.CheckIfSupported(Property.DataStructure, this);
         }
 
         public SqlIndexMultipleInfo GetCreatedIndex()

@@ -230,7 +230,7 @@ Module TestRowPermissions1
         // Allowed: E3.Name3="3" OR E2.Name2=="2" OR E1.Name1=="1".
         RowPermissions { AllowRead Allow1 'context => item => item.Name1 == "1"'; }
     }
-    
+
     Browse E1Browse TestRowPermissions1.E1
     {
         // Allowed: E3.Name3="3" OR E2.Name2=="2" OR E1.Name1=="1".
@@ -311,6 +311,33 @@ Module TestRowPermissionsInheritFull
         ShortString Name;
         Reference SimpleDetail { Detail; }
         RowPermissions { AllowRead AllowMore 'context => item => item.Name == "ec"'; }
+    }
+}
+
+Module TestRowPermissionsInheritToQuery
+{
+    AutoInheritRowPermissions;
+    
+    Entity Simple
+    {
+        ShortString Name;
+        Guid GroupID;
+        RowPermissions { AllowRead AllowMore 'context => item => item.Name.StartsWith("a")'; }
+    }
+
+    SqlQueryable DetailQuery
+        "
+            SELECT
+                ID = NEWID(), 
+                SimpleID = s.ID,
+                Info = Name + num.x
+            FROM
+                TestRowPermissionsInheritToQuery.Simple s
+                CROSS JOIN (SELECT x='1' UNION ALL SELECT x='2') num
+        "
+    {
+        Reference Simple { Detail; }
+        ShortString Info;
     }
 }
 

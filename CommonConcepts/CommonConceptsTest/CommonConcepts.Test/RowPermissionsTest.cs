@@ -31,7 +31,6 @@ using System.Linq;
 using TestRowPermissions;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos;
-using Rhetos.Logging;
 using Autofac.Features.Indexed;
 using Rhetos.Extensibility;
 
@@ -920,6 +919,33 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("e2allow", TestUtility.DumpSorted(
                     repository.TestRowPermissions.OptimizeExtension.Query(new Common.RowPermissionsReadItems()),
                     item => item.NameE));
+            }
+        }
+
+        [TestMethod]
+        public void InheritRowPermissionsToQuery()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var context = container.Resolve<Common.ExecutionContext>();
+                var repository = container.Resolve<Common.DomRepository>();
+
+                Guid groupID = Guid.NewGuid();
+                repository.TestRowPermissionsInheritToQuery.Simple.Insert(new[]
+                {
+                    new TestRowPermissionsInheritToQuery.Simple { Name = "a", GroupID = groupID },
+                    new TestRowPermissionsInheritToQuery.Simple { Name = "b", GroupID = groupID },
+                });
+
+                Assert.AreEqual("a", TestUtility.DumpSorted(
+                    repository.TestRowPermissionsInheritToQuery.Simple.Query(new Common.RowPermissionsReadItems())
+                        .Where(item => item.GroupID == groupID)
+                        .Select(item => item.Name)));
+
+                Assert.AreEqual("a1, a2", TestUtility.DumpSorted(
+                    repository.TestRowPermissionsInheritToQuery.DetailQuery.Query(new Common.RowPermissionsReadItems())
+                        .Where(item => item.Simple.GroupID == groupID)
+                        .Select(item => item.Info)));
             }
         }
     }
