@@ -25,6 +25,7 @@ using Rhetos.Logging;
 using Rhetos.Utilities;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -32,33 +33,59 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(KeepSynchronizedInfo))]
     public class KeepSynchronizedRecomputeOnDeployCodeGenerator : IConceptCodeGenerator
     {
+        IDslModel _dslModel;
+
+        public KeepSynchronizedRecomputeOnDeployCodeGenerator(IDslModel dslModel)
+        {
+            _dslModel = dslModel;
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (KeepSynchronizedInfo)conceptInfo;
 
-            codeBuilder.InsertCode(KeepSynchronizedMetadataSnippet(info), KeepSynchronizedRecomputeOnDeployInfrastructureCodeGenerator.AddKeepSynchronizedMetadataTag);
-        }
-
-        private static string KeepSynchronizedMetadataSnippet(KeepSynchronizedInfo info)
-        {
-            return string.Format(
+            string metadata = string.Format(
             @"new Common.KeepSynchronizedMetadata {{ Target = {0}, Source = {1}, Context = {2} }},
             ",
                 CsUtility.QuotedString(info.EntityComputedFrom.Target.GetKeyProperties()),
                 CsUtility.QuotedString(info.EntityComputedFrom.Source.GetKeyProperties()),
-                CsUtility.QuotedString(GetKeepSynchronizedContext(info)));
+                CsUtility.QuotedString(GetRecomputeContext(info.EntityComputedFrom.Source)));
+
+            codeBuilder.InsertCode(metadata, KeepSynchronizedRecomputeOnDeployInfrastructureCodeGenerator.AddKeepSynchronizedMetadataTag);
         }
 
         /// <summary>
-        /// The Context property serves as cache-invalidation mechanism.
-        /// When the context is changed in the new version of the application,
+        /// The 'Common.KeepSynchronizedMetadata.Context' property serves as cache-invalidation mechanism.
+        /// If the context is changed in the new version of the application,
         /// then the old persisted data should be recomputed on deployment.
         /// This does not cover all situations when the persisted data should be recomputed
         /// on deployment, but at least handles some obvious ones.
         /// </summary>
-        private static string GetKeepSynchronizedContext(KeepSynchronizedInfo info)
+        private string GetRecomputeContext(DataStructureInfo source)
         {
-            return info.EntityComputedFrom.Source.GetFullDescription();
+            if (source is PolymorphicInfo)
+                return string.Join(", ", _dslModel.FindByReference<IsSubtypeOfInfo>(s => s.Supertype, (PolymorphicInfo)source)
+                    .Select(GetSubtypeRecomputeContext)
+                    .OrderBy(description => description));
+            else
+                return source.GetFullDescription();
+        }
+
+        private string GetSubtypeRecomputeContext(IsSubtypeOfInfo subtype)
+        {
+            var filters = _dslModel.FindByReference<SubtypeWhereInfo>(sw => sw.IsSubtypeOf, subtype).Select(sw => sw.Expression);
+            var customSql = _dslModel.FindByReference<SpecificSubtypeSqlViewInfo>(sql => sql.IsSubtypeOf, subtype).Select(sql => sql.SqlQuery);
+            var filterDescription = string.Join(" AND ", filters.Concat(customSql).OrderBy(x => x));
+
+            string subtypeDescription = subtype.Subtype.GetKeyProperties();
+
+            if (!string.IsNullOrEmpty(subtype.ImplementationName))
+                subtypeDescription += "-" + subtype.ImplementationName;
+
+            if (!string.IsNullOrEmpty(filterDescription))
+                subtypeDescription += "(" + filterDescription + ")";
+
+            return subtypeDescription;
         }
     }
 }

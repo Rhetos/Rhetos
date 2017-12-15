@@ -67,8 +67,6 @@ WHERE
     0=1
 {4}';
 
-
-PRINT @sql;
 EXEC (@sql);
 ",
                 conceptInfo.Module.Name,

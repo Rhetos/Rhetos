@@ -33,33 +33,22 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.DependsOn, typeof(DomInitializationCodeGenerator))]
     public class KeepSynchronizedRecomputeOnDeployInfrastructureCodeGenerator : IConceptCodeGenerator
     {
-        public const string AddKeepSynchronizedMetadataTag = "/*AddKeepSynchronizedMetadata*/";
+        public static readonly string AddKeepSynchronizedMetadataTag = "/*AddKeepSynchronizedMetadata*/";
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (InitializationConcept)conceptInfo;
 
-            codeBuilder.InsertCode(SnippetInfrastructureKeepSynchronizedMetadata(), ModuleCodeGenerator.CommonInfrastructureMembersTag);
-            codeBuilder.InsertCode(SnippetRegisterInfrastructure(), ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
-        }
-
-        private static string SnippetInfrastructureKeepSynchronizedMetadata()
-        {
-            return string.Format(
-        @"public static readonly CurrentKeepSynchronizedMetadata CurrentKeepSynchronizedMetadata = new CurrentKeepSynchronizedMetadata
+            string listOfSynchronizations = $@"public static readonly CurrentKeepSynchronizedMetadata CurrentKeepSynchronizedMetadata = new CurrentKeepSynchronizedMetadata
         {{
-            {0}
+            {AddKeepSynchronizedMetadataTag}
         }};
 
-        ",
-                AddKeepSynchronizedMetadataTag);
-        }
+        ";
+            codeBuilder.InsertCode(listOfSynchronizations, ModuleCodeGenerator.CommonInfrastructureMembersTag);
 
-        private static string SnippetRegisterInfrastructure()
-        {
-            return
-            @"builder.RegisterInstance(Infrastructure.CurrentKeepSynchronizedMetadata).ExternallyOwned();
-            ";
+            string registration = "builder.RegisterInstance(Infrastructure.CurrentKeepSynchronizedMetadata).ExternallyOwned();\r\n            ";
+            codeBuilder.InsertCode(registration, ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
         }
     }
 }
