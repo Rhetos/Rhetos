@@ -146,14 +146,19 @@ namespace Rhetos.Dsl
 
             if (possibleInterpretations.Count == 0)
             {
-                string msg = "Unrecognized concept. " + tokenReader.ReportPosition();
+                var nextToken = new TokenReader(tokenReader).ReadText(); // Peek, without changing the original tokenReader's position.
+                string keyword = nextToken.IsError ? null : nextToken.Value;
+
                 if (errors.Count > 0)
                 {
-                    string listedErrors = string.Join("\r\n", errors);
-                    if (listedErrors.Length > 500) listedErrors = listedErrors.Substring(0, 500) + "...";
-                    msg = msg + "\r\n\r\nPossible causes:\r\n" + listedErrors;
+                    string errorsReport = string.Join("\r\n", errors);
+                    if (errorsReport.Length > 500) errorsReport = errorsReport.Substring(0, 500) + "...";
+                    throw new DslSyntaxException($"Invalid parameters after keyword '{keyword}'. {tokenReader.ReportPosition()}\r\n\r\nPossible causes:\r\n{errorsReport}");
                 }
-                throw new DslSyntaxException(msg);
+                else if (!string.IsNullOrEmpty(keyword))
+                    throw new DslSyntaxException($"Unrecognized concept keyword '{keyword}'. {tokenReader.ReportPosition()}");
+                else
+                    throw new DslSyntaxException($"Invalid DSL script syntax. {tokenReader.ReportPosition()}");
             }
 
             int largest = possibleInterpretations.Max(i => i.NextPosition.PositionInTokenList);
