@@ -1,0 +1,107 @@
+﻿Module Demo
+{
+    Polymorphic MoneyTransaction
+    {
+        DateTime EventDate;
+        Money Amount;
+    }
+
+    Entity BorrowMoney
+    {
+        ShortString FromWhom;
+        Money Amount;
+
+        Is Demo.MoneyTransaction;
+        // The EventDate will be automatically added. The Amount is automatically mapped.
+    }
+
+    Entity LendMoney
+    {
+        ShortString ToWhom;
+        Money Amount;
+
+        Is Demo.MoneyTransaction
+        {
+            Implements Demo.MoneyTransaction.Amount '-Amount';
+            // The Amount in the MoneyTransaction related to the LendMoney record will have negative value.
+        }
+    }
+
+    //=======================================================
+    // Referencing or extending a polymorphic entity
+
+    Entity TransactionComment
+    {
+        Reference MoneyTransaction;
+        LongString Comment;
+    }
+
+    //=======================================================
+    // Multiple interface implementations
+
+    Entity TransferMoney
+    {
+        ShortString TransferFrom;
+        ShortString TransferTo;
+        Money Amount;
+
+        Is Demo.MoneyTransaction; // Implicitly using the 'Amount' value.
+
+        Is Demo.MoneyTransaction 'Subtract'
+        {
+            Implements Demo.MoneyTransaction.Amount '-Amount';
+        }
+    }
+
+    //=======================================================
+    // Property implementation with subquery
+
+    Entity LendMoneyAddendum
+    {
+        Reference LendMoney;
+        Money AdditionalAmount;
+    }
+
+    Entity LendMoney // Adding new features to the existing entity.
+    {
+        Is Demo.MoneyTransaction 'TotalAddendum'
+        {
+            Implements Demo.MoneyTransaction.Amount '(SELECT -SUM(AdditionalAmount) FROM Demo.LendMoneyAddendum)';
+            SqlDependsOn Demo.LendMoneyAddendum;
+        }
+    }
+
+    //=======================================================
+    // Limit the implementation with filter (where)
+
+    Entity BorrowMoney2
+    {
+        ShortString FromWhom;
+        Money Amount;
+        Bool Forgotten;
+
+        Is Demo.MoneyTransaction
+        {
+            Where 'Forgotten = 0'; // SQL snippet, the "Forgotten" column is a "bit".
+        }
+    }
+
+    //=======================================================
+    // Subtype implementation using SQL query
+
+    Entity LendMoney2
+    {
+        ShortString ToWhom;
+        // When using SqlImplementation, the properties are not automatically inherited from the polymorphic.
+        DateTime EventDate;
+        Money Amount;
+
+        Is Demo.MoneyTransaction
+        {
+            SqlImplementation "SELECT lm.ID, lm.EventDate, Amount = -lm.Amount FROM Demo.LendMoney2 lm"
+            {
+                AutoDetectSqlDependencies;
+            }
+        }
+    }
+}
