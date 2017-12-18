@@ -216,44 +216,54 @@ namespace Rhetos.Deployment
             if (source.Path == null || !Directory.Exists(source.Path))
                 return null;
 
-            foreach (string packedExtension in new[] { "zip", "nupkg" })
-                if (Directory.GetFiles(source.Path, "*." + packedExtension).Length > 0)
-                {
-                    _logger.Trace(() => "Package " + request.Id + " source folder is not considered as unpacked source because it contains ." + packedExtension + " files.");
-                    return null;
-                }
+            var packageExtensions = new[] { "*.nupkg", GetZipPackageName(request) };
+            var existingPackageFiles = packageExtensions.SelectMany(ext => Directory.GetFiles(source.Path, ext));
 
-            var metadataFiles = Directory.GetFiles(source.Path, "*.nuspec");
-
-            // Disambiguation by name:
-            if (metadataFiles.Length > 1)
+            var existingMetadataFiles = Directory.GetFiles(source.Path, "*.nuspec");
+            if (existingMetadataFiles.Length > 1)
             {
-                var standardFileName = metadataFiles.Where(f => string.Equals(Path.GetFileName(f), request.Id + ".nuspec", StringComparison.OrdinalIgnoreCase)).ToArray();
+                // If any nuspec file exactly matches the packages name, use that one.
+                var standardFileName = existingMetadataFiles.Where(f => string.Equals(Path.GetFileName(f), request.Id + ".nuspec", StringComparison.OrdinalIgnoreCase)).ToArray();
                 if (standardFileName.Length == 1)
-                    metadataFiles = standardFileName;
+                    existingMetadataFiles = standardFileName;
             }
 
-            if (metadataFiles.Length > 1)
+            var packageSourceSubfolders = new[] { "DslScripts", "DataMigration", "Plugins", "Resources" };
+            var existingSourceSubfolders = packageSourceSubfolders.Where(subfolder => Directory.Exists(Path.Combine(source.Path, subfolder)));
+
+            if (existingPackageFiles.Count() > 0)
+            {
+                string ambiguousAlternative = null;
+                if (existingMetadataFiles.Count() > 0)
+                    ambiguousAlternative = $".nuspec file '{Path.GetFileName(existingMetadataFiles.First())}'";
+                else if (existingSourceSubfolders.Count() > 0)
+                    ambiguousAlternative = $"source folder '{existingSourceSubfolders.First()}'";
+
+                if (ambiguousAlternative != null)
+                    throw new FrameworkException($"Ambiguous source for package {request.Id}. Source folder '{source.Path}' contains both" +
+                        $" package file '{Path.GetFileName(existingPackageFiles.First())}' and {ambiguousAlternative}.");
+
+                _logger.Trace(() => $"Package {request.Id} source folder is not considered as unpacked source because" +
+                    $" it contains a package file '{Path.GetFileName(existingPackageFiles.First())}'.");
+                return null;
+            }
+            else if (existingMetadataFiles.Length > 1)
             {
                 _logger.Info(() => "Package " + request.Id + " source folder '" + source.ProvidedLocation + "' contains multiple .nuspec metadata files.");
                 return null;
             }
-            else if (metadataFiles.Length == 1)
+            else if (existingMetadataFiles.Length == 1)
             {
-                _logger.Trace(() => "Reading package " + request.Id + " from unpacked source folder with metadata " + Path.GetFileName(metadataFiles.Single()) + ".");
-                return UseFilesFromUnpackedSourceWithMetadata(metadataFiles.Single(), request, binFileSyncer);
+                _logger.Trace(() => "Reading package " + request.Id + " from unpacked source folder with metadata " + Path.GetFileName(existingMetadataFiles.Single()) + ".");
+                return UseFilesFromUnpackedSourceWithMetadata(existingMetadataFiles.Single(), request, binFileSyncer);
+            }
+            else if (existingSourceSubfolders.Any())
+            {
+                _logger.Trace(() => "Reading package " + request.Id + " from unpacked source folder without metadata file.");
+                return UseFilesFromUnpackedSourceWithoutMetadata(source.Path, request, binFileSyncer);
             }
             else
-            {
-                var rhetosPackageSubfolders = new[] { "DslScripts", "DataMigration", "Plugins", "Resources" };
-                if (rhetosPackageSubfolders.Any(subfolder => Directory.Exists(Path.Combine(source.Path, subfolder))))
-                {
-                    _logger.Trace(() => "Reading package " + request.Id + " from unpacked source folder without metadata file.");
-                    return UseFilesFromUnpackedSourceWithoutMetadata(source.Path, request, binFileSyncer);
-                }
-                else
-                    return null;
-            }
+                return null;
         }
 
         private InstalledPackage UseFilesFromUnpackedSourceWithMetadata(string metadataFile, PackageRequest request, FileSyncer binFileSyncer)
@@ -359,7 +369,7 @@ namespace Rhetos.Deployment
             if (!Version.TryParse(request.VersionsRange, out simpleVersion))
                 return null;
 
-            string zipPackageName = request.Id + "_" + request.VersionsRange.Replace('.', '_') + ".zip";
+            string zipPackageName = GetZipPackageName(request);
             string zipPackagePath = Path.Combine(source.Path, zipPackageName);
 
             if (!File.Exists(zipPackagePath))
@@ -380,6 +390,11 @@ namespace Rhetos.Deployment
             binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Resources"), Paths.ResourcesFolder, SimplifyPackageName(request.Id), recursive: true);
 
             return new InstalledPackage(request.Id, request.VersionsRange, new List<PackageRequest> { }, targetFolder, request, source.ProcessedLocation);
+        }
+
+        private string GetZipPackageName(PackageRequest request)
+        {
+            return request.Id + (request.VersionsRange != null ? "_" + request.VersionsRange.Replace('.', '_') : "") + ".zip";
         }
 
         #endregion
