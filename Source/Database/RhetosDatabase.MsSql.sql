@@ -310,6 +310,7 @@ AS
 
         -- Parse column names to @columns:
         
+        SET @ColumnNames = REPLACE(REPLACE(REPLACE(@ColumnNames, CHAR(13), ' '), CHAR(10), ' '), CHAR(9), ' ');
         SET @ColumnNames = '<c>' + REPLACE(@ColumnNames, ',', '</c><c>') + '</c>'
         DECLARE @x XML
         SET @x = @ColumnNames
