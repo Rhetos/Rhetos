@@ -398,7 +398,7 @@ namespace Common
         }}
     }}
 
-    public abstract class QueryableRepositoryBase<TQueryableEntity, TEntity> : ReadableRepositoryBase<TEntity>, IQueryableRepository<TQueryableEntity>
+    public abstract class QueryableRepositoryBase<TQueryableEntity, TEntity> : ReadableRepositoryBase<TEntity>, IQueryableRepository<TQueryableEntity, TEntity>
         where TEntity : class, IEntity
         where TQueryableEntity : class, IEntity, TEntity, IQueryableEntity<TEntity>
     {{

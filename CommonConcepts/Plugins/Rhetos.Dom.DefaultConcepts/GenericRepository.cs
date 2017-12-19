@@ -54,7 +54,7 @@ namespace Rhetos.Dom.DefaultConcepts
     /// DSL concept, which generates only one kind of IEntity (common entity).
     /// Other IEntity implementations can also be handled by this class.
     /// </remarks>
-    public class GenericRepository<TEntityInterface> : IWritableRepository<TEntityInterface>, IReadableRepository<TEntityInterface>, IQueryableRepository<TEntityInterface>
+    public class GenericRepository<TEntityInterface> : IWritableRepository<TEntityInterface>, IQueryableRepository<TEntityInterface, TEntityInterface>
         where TEntityInterface : class, IEntity
     {
         // ================================================================================

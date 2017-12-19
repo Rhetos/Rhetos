@@ -25,31 +25,46 @@ using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public interface IQueryableRepository<out TEntity> : IRepository
-        where TEntity : class
+    public interface IQueryableRepository<out TQueryableEntity> : IRepository
+        where TQueryableEntity : class, IEntity
     {
-        IQueryable<TEntity> Query(object parameter, Type parameterType);
+        IQueryable<TQueryableEntity> Query(object parameter, Type parameterType);
+    }
+
+    public interface IQueryableRepository<out TQueryableEntity, out TEntity> :
+        IQueryableRepository<TQueryableEntity>,
+        IReadableRepository<TEntity>
+        where TEntity : class, IEntity
+        where TQueryableEntity : class, IEntity, TEntity
+    {
     }
 
     public static class QueryableRepositoryExtensions
     {
-        public static IQueryable<TEntity> Query<TEntity>(this IQueryableRepository<TEntity> repository)
-            where TEntity : class
+        public static IQueryable<TQueryableEntity> Query<TQueryableEntity>(this IQueryableRepository<TQueryableEntity> repository)
+            where TQueryableEntity : class, IEntity
         {
             return repository.Query(null, typeof(FilterAll));
         }
 
-        public static IQueryable<TEntity> Query<TEntity>(this IQueryableRepository<TEntity> repository, Expression<Func<TEntity, bool>> filter)
-            where TEntity : class
+        public static IQueryable<TQueryableEntity> Query<TQueryableEntity>(this IQueryableRepository<TQueryableEntity> repository, Expression<Func<TQueryableEntity, bool>> filter)
+            where TQueryableEntity : class, IEntity
         {
             return repository.Query(null, typeof(FilterAll)).Where(filter);
         }
 
-        public static IQueryable<TEntity> Query<TEntity, TParameter>(this IQueryableRepository<TEntity> repository, TParameter parameter)
-            where TEntity : class
+        public static IQueryable<TQueryableEntity> Query<TQueryableEntity, TParameter>(this IQueryableRepository<TQueryableEntity> repository, TParameter parameter)
+            where TQueryableEntity : class, IEntity
         {
             Type filterType = parameter != null ? parameter.GetType() : typeof(TParameter);
             return repository.Query(parameter, filterType);
+        }
+
+        public static IEnumerable<TEntity> Load<TQueryableEntity, TEntity>(this IQueryableRepository<TQueryableEntity, TEntity> repository, Expression<Func<TQueryableEntity, bool>> filter)
+            where TEntity : class, IEntity
+            where TQueryableEntity : class, IEntity, TEntity
+        {
+            return repository.Load(filter, filter.GetType());
         }
     }
 }

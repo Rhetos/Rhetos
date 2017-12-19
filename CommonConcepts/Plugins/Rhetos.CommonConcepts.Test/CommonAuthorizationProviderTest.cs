@@ -36,13 +36,13 @@ namespace Rhetos.CommonConcepts.Test
     public class CommonAuthorizationProviderTest
     {
         public static IQueryableRepository<T> InitRepos<T>(IList<T> items)
-            where T : class
+            where T : class, IEntity
         {
             return new MockRepos<T>(items);
         }
 
         private class MockRepos<T> : IQueryableRepository<T>
-            where T : class
+            where T : class, IEntity
         {
             IList<T> _items;
             public MockRepos(IList<T> items) { _items = items; }
