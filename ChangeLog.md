@@ -1,5 +1,17 @@
 ﻿# Rhetos release notes
 
+## 2.4.0 (2017-12-20)
+
+### New features
+
+* New concept: **AfterSave**, for actions that need to be executed *after* all save validations are done.
+
+### Internal improvements
+
+* Bugfix: Polymorphic "_Materialized" records are not update when a new subtype implementation is added or removed.
+* Allowed use of Detail concept on non-writable data structures. This can be useful for inheriting row permissions, for example.
+* Error handling improvements on deployment.
+
 ## 2.3.0 (2017-11-27)
 
 ### Internal improvements
@@ -38,7 +50,7 @@
 
 ### New features
 
-* New concept **UniqueReference**, similar to the **Extends** concepts but without cascade delete and row permissions inheritance.
+* New concept: **UniqueReference**, similar to the **Extends** concepts but without cascade delete and row permissions inheritance.
 * New concept: **CascadeDelete** for **UniqueReference**.
 
 ### Internal improvements
@@ -54,7 +66,7 @@
 
 * Bugfix: Updating or deleting a nonexistent records on entity with row permissions is misreported as "You are not authorized ..."
   instead of "Updating/Deleting a record that does not exist ...".
-* Repository memebers are now available in **KeepSynchronized** filter snippet and **Computed** code snippet (*_executionContext*, for example).
+* Repository members are now available in **KeepSynchronized** filter snippet and **Computed** code snippet (*_executionContext*, for example).
 * Included date and time to internal server error message to help finding the error record in the server log.
 
 ## 1.9.0 (2017-07-20)
@@ -68,7 +80,7 @@
 
 ### Internal improvements
 
-* New concept **AutoInheritRowPermissionsInternally**, similar to **AutoInheritRowPermissions** but it does not inherit row permissions from other modules.
+* New concept: **AutoInheritRowPermissionsInternally**, similar to **AutoInheritRowPermissions** but it does not inherit row permissions from other modules.
 * Bugfix: **KeyProperties** concept sometimes adds ID to the list of properties.
 * One persisted property can be included in more than one **ComputedFrom** mapping.
 * RestGenerator: The error "There is no resource of this type with a given ID" is no longer logged to RhetosServer.log by default.
@@ -103,7 +115,7 @@
 
 ### New features
 
-* New concept **ChangesOnReferenced**, a helper for defining a computation dependency to the referenced entity.
+* New concept: **ChangesOnReferenced**, a helper for defining a computation dependency to the referenced entity.
   The parameter is a reference property name, or a path over references, pointing to the entity that the current computation depends on.
   Note that both computed data structure and the persisted data structure must have the same reference property for this concept to work.
   The path can include the *Base* reference from extended concepts.
@@ -133,7 +145,7 @@
 * New generic filter operation: **In** checks if the property's value is in the provided list.
   It is available in web APIs such as [REST service](https://github.com/Rhetos/RestGenerator).
   In business layer object model this property filter can be executed with a subquery parameter.
-* New concept **AutoCodeForEachCached**, equivalent to **AutoCodeForEach** with cached last code values.
+* New concept: **AutoCodeForEachCached**, equivalent to **AutoCodeForEach** with cached last code values.
 * New concept: **SqlDependsOnID**, an alternative for **SqlDependsOn** when one SQL object depends
   on a data structure (table or view), but does not depend on the data structure's properties (other columns).
 
@@ -446,7 +458,7 @@ In previous versions it could be used only inside Persisted or inside ComputedFr
   This is necessary for deploying SQL objects that cannot be created inside a transaction (*Full-text search index* on MS SQL Server, e.g).
 * New concepts: **ComposableFilterByReferenced** and **ItemFilterReferenced**,
   for inheriting filters from referenced data structure.
-* New concept **InvalidData**, to replace obsolete **DenySave** (same syntax).
+* New concept: **InvalidData**, to replace obsolete **DenySave** (same syntax).
 * `DeployPackages.exe` will pause on error, unless `/NoPause` command-line argument is used.
 
 ### Internal improvements
