@@ -68,4 +68,14 @@ Module TestAction
             'actionParameter.S += " X";
             actionParameter.S += " " + _executionContext.UserInfo.UserName;';
     }
+
+    Action RollbackOnError '(parameter, repository, userInfo) =>
+        {
+            repository.Common.Principal.Insert(new Common.Principal { Name = parameter.NewUsername });
+            if (parameter.NewUsername.EndsWith("x"))
+                throw new Rhetos.UserException("[Test] The username should not end with x.");
+        }'
+    {
+        ShortString NewUsername;
+    }
 }

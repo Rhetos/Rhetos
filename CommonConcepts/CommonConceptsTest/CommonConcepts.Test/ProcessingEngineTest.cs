@@ -146,5 +146,78 @@ namespace CommonConcepts.Test
                     Assert.IsFalse(log.Any(line => line.Contains(test)), "Unexpected log entry for test '" + test + "'.");
             }
         }
+
+        [TestMethod]
+        public void ActionRollbackOnError()
+        {
+            string user1 = "TestRollbackOnError";
+            string user2 = "TestRollbackOnError_x";
+            var usernames = new[] { user1, user2 };
+
+            DeleteUsers(user1, user2);
+            Assert.AreEqual("", TestUtility.DumpSorted(ReadUsers(usernames), p => p.Name));
+
+            ExectureRollbackOnError(user1);
+
+            TestUtility.ShouldFail<ApplicationException>(
+                () => ExectureRollbackOnError(user2),
+                "The username should not end with x.");
+
+            Assert.AreEqual(user1, TestUtility.DumpSorted(ReadUsers(usernames), p => p.Name), "Action that inserts 'user2' shouldn't have been committed because of the exception.");
+            DeleteUsers(user1, user2);
+        }
+
+        private void ExectureRollbackOnError(string username)
+        {
+            var command = new ExecuteActionCommandInfo
+            {
+                Action = new TestAction.RollbackOnError { NewUsername = username }
+            };
+            Exec(command);
+        }
+
+        private Common.Principal[] ReadUsers(params string[] usernames)
+        {
+            var command = new ReadCommandInfo
+            {
+                DataSource = typeof(Common.Principal).FullName,
+                Filters = new[] { new FilterCriteria("Name", "in", usernames) },
+                ReadRecords = true
+            };
+            var result = Exec<ReadCommandResult>(command);
+            return (Common.Principal[])result.Records;
+        }
+
+        private void DeleteUsers(params string[] usernames)
+        {
+            var users = ReadUsers(usernames);
+            if (users.Length > 0)
+            {
+                var command = new SaveEntityCommandInfo
+                {
+                    Entity = typeof(Common.Principal).FullName,
+                    DataToDelete = users
+                };
+                Exec(command);
+            }
+        }
+
+        private void Exec(ICommandInfo command)
+        {
+            Exec<object>(command);
+        }
+
+        private TResult Exec<TResult>(ICommandInfo command)
+        {
+            using (var container = new RhetosTestContainer(commitChanges: true))
+            {
+                container.AddIgnoreClaims();
+                var processingEngine = container.Resolve<IProcessingEngine>();
+                var result = processingEngine.Execute(new[] { command });
+                if (!result.Success)
+                    throw new ApplicationException(result.UserMessage + ", " + result.SystemMessage);
+                return (TResult)result.CommandResults.Single().Data?.Value;
+            }
+        }
     }
 }
