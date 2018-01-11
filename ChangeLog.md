@@ -8,7 +8,7 @@
 
 ### Internal improvements
 
-* Bugfix: Polymorphic "_Materialized" records are not update when a new subtype implementation is added or removed.
+* Bugfix: Polymorphic "_Materialized" records should by automatically updated when a new subtype implementation is added or removed.
 * Allowed use of Detail concept on non-writable data structures. This can be useful for inheriting row permissions, for example.
 * Error handling improvements on deployment.
 
