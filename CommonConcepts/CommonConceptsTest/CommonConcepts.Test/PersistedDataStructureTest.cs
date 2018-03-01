@@ -237,20 +237,13 @@ namespace CommonConcepts.Test
 
         private string ReportRecompute(List<string> log)
         {
-            var report = new StringBuilder();
             var simplifyLog = new Regex(@"GenericRepository\(\w+.(\w+)\)\.InsertOrUpdateOrDelete: Save \(\d+ new items, \d+ old items, (\d+) to insert, (\d+) to update, (\d+) to delete\)");
-            foreach (string entry in log)
-            {
-                var match = simplifyLog.Match(entry);
-                if (match.Success)
-                {
-                    var matchGroups = match.Groups.Cast<Group>().Select(g => g.Value).ToArray();
-                    if (report.Length > 0)
-                        report.Append(", ");
-                    report.Append(string.Format("{1} i{2} u{3} d{4}", matchGroups));
-                }
-            }
-            return report.ToString();
+
+            return TestUtility.DumpSorted(log
+                .Select(entry => simplifyLog.Match(entry))
+                .Where(match => match.Success)
+                .Select(match => match.Groups.Cast<Group>().Select(g => g.Value).ToArray())
+                .Select(matchGroups => string.Format("{1} i{2} u{3} d{4}", matchGroups)));
         }
 
         [TestMethod]
