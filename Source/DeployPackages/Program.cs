@@ -109,7 +109,7 @@ namespace DeployPackages
             };
             var obsoleteFolder = obsoleteFolders.FirstOrDefault(folder => Directory.Exists(folder));
             if (obsoleteFolder != null)
-                throw new UserException("Backup all Rhetos server folders and delete obsolete folder '" + obsoleteFolder + "'. It is no longer used.");
+                throw new UserException("Please backup all Rhetos server folders and delete obsolete folder '" + obsoleteFolder + "'. It is no longer used.");
 
             // Delete obsolete generated files:
 

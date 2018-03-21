@@ -16,13 +16,13 @@ Else
 
 function RegexReplace ($fileSearch, $replacePattern, $replaceWith)
 {
-    gci $fileSearch -r | % {
+    Get-ChildItem $fileSearch -r | % {
         $c = [IO.File]::ReadAllText($_.FullName, [System.Text.Encoding]::Default) -Replace $replacePattern, $replaceWith;
         [IO.File]::WriteAllText($_.FullName, $c, [System.Text.Encoding]::UTF8)
     }
 }
 
-echo "Setting version '$fullVersion'."
+Write-Output "Setting version '$fullVersion'."
 
 RegexReplace '*AssemblyInfo.cs' '([\n^]\[assembly: Assembly(File)?Version(Attribute)?\(\").*(\"\)\])' ('${1}'+$version+'${4}')
 RegexReplace '*AssemblyInfo.cs' '([\n^]\[assembly: AssemblyInformationalVersion(Attribute)?\(\").*(\"\)\])' ('${1}'+$fullVersion+'${3}')
