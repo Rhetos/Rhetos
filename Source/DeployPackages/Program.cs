@@ -197,13 +197,35 @@ namespace DeployPackages
                 deploymentTime: false,
                 shortTransaction: arguments.ShortTransactions,
                 deployDatabaseOnly: arguments.DeployDatabaseOnly));
-            using (var container = builder.Build())
-            {
-                var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
-                performanceLogger.Write(stopwatch, "DeployPackages.Program: New modules and plugins registered.");
-                Plugins.LogRegistrationStatistics("Initializing application", container);
 
-                container.Resolve<ApplicationInitialization>().ExecuteInitializers();
+            Exception originalException = null;
+            try
+            {
+                using (var container = builder.Build())
+                {
+                    var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
+                    performanceLogger.Write(stopwatch, "DeployPackages.Program: New modules and plugins registered.");
+                    Plugins.LogRegistrationStatistics("Initializing application", container);
+
+                    try
+                    {
+                        container.Resolve<ApplicationInitialization>().ExecuteInitializers();
+                    }
+                    catch (Exception ex)
+                    {
+                        // Some exceptions result with invalid SQL transaction state that results with another exception on disposal of this 'using' block.
+                        // The original exception is logged here to make sure that it is not overriden;
+                        originalException = ex;
+                        throw;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (originalException != null)
+                    CsUtility.ThrowEx(originalException);
+                else
+                    throw;
             }
         }
 
