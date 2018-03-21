@@ -35,6 +35,7 @@ namespace Rhetos.Dom
         private readonly ILogger _performanceLogger;
 
         private List<Assembly> _assemblies;
+        private readonly object _assembliesLock = new object();
 
         public DomLoader(ILogProvider logProvider)
         {
@@ -47,21 +48,28 @@ namespace Rhetos.Dom
             get
             {
                 if (_assemblies == null)
-                    LoadObjectModel();
+                    lock (_assembliesLock)
+                        if (_assemblies == null)
+                            _assemblies = LoadObjectModel();
+
                 return _assemblies;
             }
         }
 
-        private void LoadObjectModel()
+        private List<Assembly> LoadObjectModel()
         {
+            var loaded = new List<Assembly>();
             var sw = Stopwatch.StartNew();
-            _assemblies = new List<Assembly>();
             foreach (string name in Paths.DomAssemblyFiles.Select(Path.GetFileNameWithoutExtension))
             {
                 _logger.Trace("Loading assembly \"" + name + "\".");
-                _assemblies.Add(Assembly.Load(name));
+                var assembly = Assembly.Load(name);
+                if (assembly == null)
+                    throw new FrameworkException($"Failed to load assebly '{name}'.");
+                loaded.Add(assembly);
                 _performanceLogger.Write(sw, "DomLoader.LoadObjectModel " + name);
             }
+            return loaded;
         }
     }
 }
