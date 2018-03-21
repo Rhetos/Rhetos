@@ -154,9 +154,8 @@
         {
             Extends DemoRowPermissions2.Document;
             ShortString Title2;
-            Reference Division2 DemoRowPermissions2.Division;
+            Reference Division2 DemoRowPermissions2.Division { SamePropertyValue 'Base' DemoRowPermissions2.Document.Division; }
 
             RowPermissions { InheritFromBase; }
-            SamePropertyValue Division2.'Base' DemoRowPermissions2.Document.Division;
         }
     }
