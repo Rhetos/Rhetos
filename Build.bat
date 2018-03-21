@@ -9,7 +9,7 @@ IF NOT DEFINED VisualStudioVersion CALL "%VS140COMNTOOLS%VsDevCmd.bat" || ECHO E
 @ECHO ON
 
 REM Updating the version of all projects
-PowerShell .\ChangeVersion.ps1 %Version% %Prerelease% || GOTO Error0
+PowerShell -ExecutionPolicy ByPass .\ChangeVersion.ps1 %Version% %Prerelease% || GOTO Error0
 
 REM NuGet Automatic Package Restore requires "NuGet.exe restore" to be executed before the command-line build.
 WHERE /Q NuGet.exe || ECHO ERROR: Please download the NuGet.exe command line tool. && GOTO Error0
@@ -18,7 +18,7 @@ MSBuild.exe "Rhetos.sln" /target:rebuild /p:Configuration=%Config% /verbosity:mi
 CALL CreateInstallationPackage.bat %Config% /NOPAUSE || GOTO Error0
 
 REM Updating the version of all projects back to "dev" (internal development build), to avoid spamming git history.
-PowerShell .\ChangeVersion.ps1 %Version% dev || GOTO Error0
+PowerShell -ExecutionPolicy ByPass .\ChangeVersion.ps1 %Version% dev || GOTO Error0
 
 @REM ================================================
 
