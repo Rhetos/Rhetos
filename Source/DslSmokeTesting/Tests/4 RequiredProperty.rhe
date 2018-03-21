@@ -1,7 +1,0 @@
-module m
-{
-	entity e
-	{
-		integer i { required; }
-	}
-}
