@@ -216,16 +216,19 @@ namespace DeployPackages
                         // Some exceptions result with invalid SQL transaction state that results with another exception on disposal of this 'using' block.
                         // The original exception is logged here to make sure that it is not overriden;
                         originalException = ex;
-                        throw;
+                        ExceptionsUtility.Rethrow(ex);
                     }
                 }
             }
             catch (Exception ex)
             {
-                if (originalException != null)
-                    CsUtility.ThrowEx(originalException);
+                if (originalException != null && ex != originalException)
+                {
+                    logger.Error("Error on cleanup: " + ex.ToString());
+                    ExceptionsUtility.Rethrow(originalException);
+                }
                 else
-                    throw;
+                    ExceptionsUtility.Rethrow(ex);
             }
         }
 

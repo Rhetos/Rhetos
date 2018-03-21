@@ -46,6 +46,7 @@ namespace Rhetos.Utilities
 
         /// <summary>
         /// Keeps the original stack trace when rethrowing an existing exception.
+        /// The simple "throw;" will not show the stack trace of the original exception.
         /// </summary>
         public static void Rethrow(Exception exception)
         {
