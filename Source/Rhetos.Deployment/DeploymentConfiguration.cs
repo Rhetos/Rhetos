@@ -57,8 +57,8 @@ namespace Rhetos.Deployment
 
         private List<PackageRequest> LoadPackageRequest()
         {
-            const string configFileUsage = "Edit the file to set which Rhetos packages will be deployed. Note that removing a Rhetos package from the file will uninstall the package.";
-            string xml = ReadConfigFileOrCreateTemplate(PackagesConfigurationFileName, PackagesConfigurationTemplateFileName, configFileUsage);
+            const string configFileUsage = "Edit the new file to set which Rhetos packages will be deployed. Note that removing a Rhetos package from the file will uninstall the package.";
+            string xml = ReadConfigFile(PackagesConfigurationFileName, PackagesConfigurationTemplateFileName, configFileUsage);
             var xdoc = XDocument.Parse(xml);
             var requests = xdoc.Root.Elements().Select(packageXml =>
                 new PackageRequest
@@ -83,8 +83,8 @@ namespace Rhetos.Deployment
 
         private List<PackageSource> LoadPackageSources()
         {
-            const string configFileUsage = "Edit the file to add locations where Rhetos packages can be found.";
-            string xml = ReadConfigFileOrCreateTemplate(SourcesConfigurationFileName, SourcesConfigurationTemplateFileName, configFileUsage);
+            const string configFileUsage = "Edit the new file to add locations where Rhetos packages can be found.";
+            string xml = ReadConfigFile(SourcesConfigurationFileName, SourcesConfigurationTemplateFileName, configFileUsage);
             var xdoc = XDocument.Parse(xml);
             var sources = xdoc.Root.Elements()
                 .Select(sourceXml => new PackageSource((string)sourceXml.Attribute("location").Value))
@@ -109,33 +109,16 @@ namespace Rhetos.Deployment
             return Paths.RhetosServerRootPath;
         }
 
-        private string ReadConfigFileOrCreateTemplate(string configFileName, string templateFileName, string configFileUsage)
+        private string ReadConfigFile(string configFileName, string templateFileName, string configFileUsage)
         {
             string configFilePath = Path.Combine(GetConfigurationFolder(), configFileName);
-            string xml;
 
             if (File.Exists(configFilePath))
-                xml = File.ReadAllText(configFilePath, Encoding.Default);
+                return File.ReadAllText(configFilePath, Encoding.Default);
             else
-            {
-                _logger.Trace(() => "Missing configuration file '" + configFilePath + "'.");
-
-                string templateResourceName = "Rhetos.Deployment." + templateFileName;
-                string templateFilePath = Path.Combine(GetConfigurationFolder(), templateFileName);
-
-                var resourceStream = GetType().Assembly.GetManifestResourceStream(templateResourceName);
-                if (resourceStream == null)
-                    throw new FrameworkException("Cannot find resource '" + templateResourceName + "'.");
-                xml = new StreamReader(resourceStream).ReadToEnd();
-
-                File.WriteAllText(templateFilePath, xml, Encoding.UTF8);
-
-                throw new UserException("Missing configuration file '" + configFilePath
-                    + "'. Rename the created template file (" + templateFileName
-                    + ") to match the expected file name. " + configFileUsage);
-            }
-
-            return xml;
+                throw new UserException($"Missing configuration file '{configFilePath}'." +
+                    $" Please copy the template file '{templateFileName}' to '{Path.GetFileName(configFilePath)}'." +
+                    $" {configFileUsage}");
         }
     }
 }

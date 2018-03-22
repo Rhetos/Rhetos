@@ -24,6 +24,8 @@ DEL /F /Q Install\Rhetos\bin\ConnectionStrings.config
 XCOPY /Y/D/R Source\Rhetos\*.aspx Install\Rhetos\ || GOTO Error0
 XCOPY /Y/D/R Source\Rhetos\*.asax Install\Rhetos\ || GOTO Error0
 XCOPY /Y/D/R Source\Rhetos\Web.config Install\Rhetos\ || GOTO Error0
+XCOPY /Y/D/R Source\Rhetos\Template.RhetosPackages.config Install\Rhetos\ || GOTO Error0
+XCOPY /Y/D/R Source\Rhetos\Template.RhetosPackageSources.config Install\Rhetos\ || GOTO Error0
 XCOPY /Y/D/R Source\Rhetos\*.linq Install\Rhetos\ || GOTO Error0
 XCOPY /Y/D/R Source\Rhetos\*.svc Install\Rhetos\ || GOTO Error0
 

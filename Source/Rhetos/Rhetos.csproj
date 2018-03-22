@@ -208,6 +208,8 @@
     </Content>
     <Content Include="SetupRhetosServer.bat" />
     <Content Include="packages.config" />
+    <Content Include="Template.RhetosPackages.config" />
+    <Content Include="Template.RhetosPackageSources.config" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
