@@ -35,6 +35,11 @@ namespace CommonConcepts.Test.Helpers
             _settings = settings ?? new Dictionary<string, object>();
         }
 
+        public Lazy<string> GetString(string key, string defaultValue)
+        {
+            return new Lazy<string>(() => (string)_settings[key]);
+        }
+
         public Lazy<bool> GetBool(string key, bool defaultValue)
         {
             return new Lazy<bool>(() => (bool)_settings[key]);
