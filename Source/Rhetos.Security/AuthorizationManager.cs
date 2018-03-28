@@ -21,6 +21,7 @@ using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Processing;
 using Rhetos.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -34,11 +35,14 @@ namespace Rhetos.Security
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
         private readonly bool _allowBuiltinAdminOverride;
+        private readonly HashSet<string> _allClaimsForUsers; // Case-insensitive hashset.
         private readonly IAuthorizationProvider _authorizationProvider;
         private readonly IWindowsSecurity _windowsSecurity;
         private readonly ILocalizer _localizer;
+        private readonly IConfiguration _configuration;
 
         public AuthorizationManager(
+            IConfiguration configuration,
             IPluginsContainer<IClaimProvider> claimProviders,
             IUserInfo userInfo,
             ILogProvider logProvider,
@@ -46,37 +50,49 @@ namespace Rhetos.Security
             IWindowsSecurity windowsSecurity,
             ILocalizer localizer)
         {
+            _configuration = configuration;
             _userInfo = userInfo;
             _claimProviders = claimProviders;
             _authorizationProvider = authorizationProvider;
             _windowsSecurity = windowsSecurity;
             _logger = logProvider.GetLogger(GetType().Name);
             _performanceLogger = logProvider.GetLogger("Performance");
-            _allowBuiltinAdminOverride = FromConfigAllowBuiltinAdminOverride();
+            _allowBuiltinAdminOverride = _configuration.GetBool("BuiltinAdminOverride", false).Value;
+            _allClaimsForUsers = FromConfigAllClaimsForUsers();
             _localizer = localizer;
         }
 
-        private static bool FromConfigAllowBuiltinAdminOverride()
+        private HashSet<string> FromConfigAllClaimsForUsers()
         {
-            var setting = ConfigUtility.GetAppSetting("BuiltinAdminOverride");
-            if (setting != null)
+            const string settingsKey = "Security.AllClaimsForUsers";
+            try
             {
-                bool allow;
-                if (bool.TryParse(setting, out allow))
-                    return allow;
-                
-                throw new FrameworkException("Invalid setting of BuiltinAdminOverride in configuration file. Allowed values are True and False.");
+                string setting = _configuration.GetString(settingsKey, "").Value;
+                var users = setting.Split(',').Select(u => u.Trim()).Where(u => !string.IsNullOrEmpty(u))
+                    .Select(u => u.Split('@'))
+                    .Select(u => new { UserName = u[0], HostName = u[1] })
+                    .ToList();
+                var thisMachineUserNames = users
+                    .Where(u => string.Equals(u.HostName, Environment.MachineName, StringComparison.OrdinalIgnoreCase))
+                    .Select(u => u.UserName)
+                    .Distinct();
+
+                return new HashSet<string>(thisMachineUserNames, StringComparer.OrdinalIgnoreCase);
             }
-            return false;
+            catch (Exception ex)
+            {
+                throw new FrameworkException($"Invalid '{settingsKey}' parameter format in web.config. Expected comma-separated list of entries formatted as username@servername.", ex);
+            }
         }
 
         public IList<bool> GetAuthorizations(IList<Claim> requiredClaims)
         {
             var sw = Stopwatch.StartNew();
 
-            if (_allowBuiltinAdminOverride
-                && _userInfo is IWindowsUserInfo
-                && _windowsSecurity.IsBuiltInAdministrator((IWindowsUserInfo)_userInfo))
+            if (_allClaimsForUsers.Contains(_userInfo.UserName)
+                || _allowBuiltinAdminOverride
+                    && _userInfo is IWindowsUserInfo
+                    && _windowsSecurity.IsBuiltInAdministrator((IWindowsUserInfo)_userInfo))
             {
                 _logger.Trace(() => string.Format("User {0} has builtin administrator privileges.", _userInfo.UserName));
                 return Enumerable.Repeat(true, requiredClaims.Count()).ToArray();

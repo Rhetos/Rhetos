@@ -27,6 +27,11 @@ namespace Rhetos.Utilities
 {
     public class Configuration : IConfiguration
     {
+        public Lazy<string> GetString(string key, string defaultValue)
+        {
+            return new Lazy<string>(() => ConfigUtility.GetAppSetting(key) ?? defaultValue);
+        }
+
         public Lazy<int> GetInt(string key, int defaultValue)
         {
             return new Lazy<int>(() =>

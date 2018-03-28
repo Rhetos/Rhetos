@@ -27,6 +27,7 @@ namespace Rhetos.Utilities
 {
     public interface IConfiguration
     {
+        Lazy<string> GetString(string key, string defaultValue);
         Lazy<int> GetInt(string key, int defaultValue);
         Lazy<bool> GetBool(string key, bool defaultValue);
     }
