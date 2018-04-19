@@ -122,6 +122,9 @@ Install/
 Source/Rhetos/*Trace.xml
 NuGet.exe
 
+#Visual Studio Code
+/.vscode
+
 # Rhetos user-specific files
 Source/Rhetos/ConnectionStrings.config
 Source/Rhetos/IISExpress.config
