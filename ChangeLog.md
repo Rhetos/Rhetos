@@ -1,5 +1,11 @@
 ﻿# Rhetos release notes
 
+## 2.5.0 (2018-04-23)
+
+### Internal improvements
+
+* Bugfix: Server startup sometime fails with a NullReferenceException (since v2.0.0).
+
 ## 2.4.0 (2017-12-20)
 
 ### New features
