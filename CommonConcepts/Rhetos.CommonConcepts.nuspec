@@ -7,7 +7,7 @@
     <owners>Omega software</owners>
     <licenseUrl>http://opensource.org/licenses/AGPL-3.0</licenseUrl>
     <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
-    <description>CommonConcepts is a DSL package for Rhetos development platform.
+    <description>CommonConcepts is a DSL plugin package for Rhetos development platform.
       It provides an implementation of domain-specific programming language for business applications.</description>
     <copyright>Copyright Omega software 2015</copyright>
     <tags>Rhetos plugin</tags>

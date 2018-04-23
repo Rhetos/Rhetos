@@ -508,7 +508,7 @@ In previous versions it could be used only inside Persisted or inside ComputedFr
 
 ### New features
 
-* Added [Forgot my password](https://github.com/Rhetos/Rhetos/tree/master/AspNetFormsAuth#forgot-password) feature to *AspNetFormsAuth*.
+* Added [Forgot my password](https://github.com/Rhetos/AspNetFormsAuth#forgot-password) feature to *AspNetFormsAuth*.
   Sending the password reset token to the user (by SMS or email, e.g.) is to be implemented as a seperate plugin
   (for example see [SimpleSPRTEmail](https://github.com/Rhetos/SimpleSPRTEmail)).
 * New RowPermissions concepts: **AllowWrite** and **DenyWrite**.
