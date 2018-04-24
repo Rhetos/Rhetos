@@ -9,8 +9,11 @@ IF [%1] == [] SET Config=Debug
 
 CALL Source\Rhetos\GetServerFiles.bat %Config% /NOPAUSE || GOTO Error0
 
-NuGet.exe pack Rhetos.nuspec -OutputDirectory Install || GOTO Error0
-NuGet.exe pack CommonConcepts\Rhetos.CommonConcepts.nuspec -OutputDirectory Install || GOTO Error0
+REM Packing the files with an old version of nuget.exe for backward compatibility (spaces in file names).
+IF NOT EXIST Install\nuget.exe POWERSHELL (New-Object System.Net.WebClient).DownloadFile('https://dist.nuget.org/win-x86-commandline/v3.5.0/nuget.exe', 'Install\nuget.exe') || GOTO Error0
+
+Install\NuGet.exe pack Rhetos.nuspec -OutputDirectory Install || GOTO Error0
+Install\NuGet.exe pack CommonConcepts\Rhetos.CommonConcepts.nuspec -OutputDirectory Install || GOTO Error0
 
 MD Install\Rhetos
 MD Install\Rhetos\bin
