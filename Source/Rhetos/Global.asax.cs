@@ -45,8 +45,10 @@ namespace Rhetos
             builder.RegisterModule(new ConfigurationSettingsReader("autofacComponents"));
             AutofacServiceHostFactory.Container = builder.Build();
 
-            _logger = AutofacServiceHostFactory.Container.Resolve<ILogProvider>().GetLogger("Global");
-            _performanceLogger = AutofacServiceHostFactory.Container.Resolve<ILogProvider>().GetLogger("Performance");
+            var logProvider = AutofacServiceHostFactory.Container.Resolve<ILogProvider>();
+            _logger = logProvider.GetLogger("Global");
+            _logger.Trace("Startup");
+            _performanceLogger = logProvider.GetLogger("Performance");
             _pluginServices = AutofacServiceHostFactory.Container.Resolve<IEnumerable<IService>>();
 
             _performanceLogger.Write(stopwatch, "Autofac initialized.");
@@ -73,6 +75,8 @@ namespace Rhetos
         public override void Init()
         {
             base.Init();
+
+            _logger.Trace("New application instance");
 
             if (_pluginServices != null)
                 foreach (var service in _pluginServices)
@@ -121,7 +125,7 @@ namespace Rhetos
 
         protected void Application_End(object sender, EventArgs e)
         {
-
+            _logger.Trace("Shutdown");
         }
     }
 }
