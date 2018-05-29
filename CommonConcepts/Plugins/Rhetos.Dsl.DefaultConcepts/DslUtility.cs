@@ -257,5 +257,36 @@ namespace Rhetos.Dsl.DefaultConcepts
                 || dataStructure is ComputedInfo
                 || dataStructure is IOrmDataStructure;
         }
+
+        public static IEnumerable<IConceptInfo> CopySqlDependencies(IConceptInfo from, IConceptInfo to, IDslModel existingConcepts)
+        {
+            var newConcepts = new List<IConceptInfo>();
+
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnDataStructureInfo>(dep => dep.Dependent, from)
+                .Select(dep => new SqlDependsOnDataStructureInfo { Dependent = to, DependsOn = dep.DependsOn }));
+
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnIDInfo>(dep => dep.Dependent, from)
+                .Select(dep => new SqlDependsOnIDInfo { Dependent = to, DependsOn = dep.DependsOn }));
+
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnModuleInfo>(dep => dep.Dependent, from)
+                .Select(dep => new SqlDependsOnModuleInfo { Dependent = to, DependsOn = dep.DependsOn }));
+
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnPropertyInfo>(dep => dep.Dependent, from)
+                .Select(dep => new SqlDependsOnPropertyInfo { Dependent = to, DependsOn = dep.DependsOn }));
+
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnSqlFunctionInfo>(dep => dep.Dependent, from)
+                .Select(dep => new SqlDependsOnSqlFunctionInfo { Dependent = to, DependsOn = dep.DependsOn }));
+
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnSqlIndexInfo>(dep => dep.Dependent, from)
+                .Select(dep => new SqlDependsOnSqlIndexInfo { Dependent = to, DependsOn = dep.DependsOn }));
+
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnSqlObjectInfo>(dep => dep.Dependent, from)
+                .Select(dep => new SqlDependsOnSqlObjectInfo { Dependent = to, DependsOn = dep.DependsOn }));
+
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlDependsOnSqlViewInfo>(dep => dep.Dependent, from)
+                .Select(dep => new SqlDependsOnSqlViewInfo { Dependent = to, DependsOn = dep.DependsOn }));
+
+            return newConcepts;
+        }
     }
 }

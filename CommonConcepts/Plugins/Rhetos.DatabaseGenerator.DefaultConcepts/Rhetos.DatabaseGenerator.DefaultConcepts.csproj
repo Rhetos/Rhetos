@@ -126,6 +126,7 @@
     <Compile Include="ColumnTypes\DatePropertyDatabaseDefinition.cs" />
     <Compile Include="ColumnTypes\PropertyDatabaseDefinition.cs" />
     <Compile Include="LoggingRelatedItemDatabaseDefinition.cs" />
+    <Compile Include="LogReaderAdditionalSourceDatabaseDefinition.cs" />
     <Compile Include="SqlDependsOnIDDatabaseDefinition.cs" />
     <Compile Include="SqlNotNullDatabaseDefinition.cs" />
     <Compile Include="SubtypeExtendPolymorphicDatabaseDefinition.cs" />

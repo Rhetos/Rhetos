@@ -59,13 +59,14 @@
         ShortString Relation; // Describes what is the referenced Log.ItemId to the LogRelatedItem.ItemId.
         
         PrerequisiteAllProperties;
+        DenyUserEdit;
     }
     
     SqlQueryable RelatedEventsSource <RelatedEvents.sql>
     {
         AllPropertiesFrom Common.Log;
         
-        Reference Log;        
+        Reference Log Common.LogReader;
         ShortString Relation;
         ShortString RelatedToTable;
         Guid RelatedToItem;

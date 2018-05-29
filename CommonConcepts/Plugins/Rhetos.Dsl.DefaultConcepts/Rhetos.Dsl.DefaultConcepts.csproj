@@ -287,6 +287,7 @@
     <Compile Include="SimpleBusinessLogic\BeforeActionInfo.cs" />
     <Compile Include="SimpleBusinessLogic\BrowseTakeNamedPropertyInfo.cs" />
     <Compile Include="SimpleBusinessLogic\CreatedByInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\LogReaderAdditionalSourceInfo.cs" />
     <Compile Include="SimpleBusinessLogic\UniqueReferenceCascadeDeleteInfo.cs" />
     <Compile Include="SimpleBusinessLogic\RegExMatchDefaultMessage.cs" />
     <Compile Include="SimpleBusinessLogic\LoggingRelatedItemInfo.cs" />
