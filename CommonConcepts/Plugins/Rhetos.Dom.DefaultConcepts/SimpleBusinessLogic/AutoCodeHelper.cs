@@ -35,20 +35,20 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         public TEntity Item;
         public TProperty Code;
-        public string Grouping;
+        public string GroupValue;
     }
 
     /// <summary>A helper for automatic detection of TEntity and TProperty parameters.</summary>
     public static class AutoCodeItem
     {
-        public static AutoCodeItem<TEntity, TProperty> Create<TEntity, TProperty>(TEntity item, TProperty code, string grouping = null)
+        public static AutoCodeItem<TEntity, TProperty> Create<TEntity, TProperty>(TEntity item, TProperty code, string groupValue = null)
             where TEntity : IEntity
         {
             return new AutoCodeItem<TEntity, TProperty>
             {
                 Item = item,
                 Code = code,
-                Grouping = grouping
+                GroupValue = groupValue
             };
         }
     }
@@ -70,14 +70,14 @@ namespace Rhetos.Dom.DefaultConcepts
                     autoCodeItem.Code = null;
 
             var autoCodeGroups = autoCodeItems
-                .GroupBy(acItem => acItem.Grouping)
+                .GroupBy(acItem => acItem.GroupValue)
                 .Select(g => new
                 {
-                    Grouping = g.Key,
+                    GroupValue = g.Key,
                     ItemsToGenerateCode = g.Where(acItem => acItem.Code == null).Select(acItem => acItem.Item).ToList(),
                     MaxProvidedCode = g.Max(acItem => acItem.Code)
                 })
-                .OrderBy(acGroup => acGroup.Grouping)
+                .OrderBy(acGroup => acGroup.GroupValue)
                 .ToList();
 
             // UpdateCodesWithoutCache does not need to update cache, so it is interested only in the items that require a generated code.
@@ -92,7 +92,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (groupColumnName == null)
                     groupFilter = "";
                 else
-                    groupFilter = "WHERE " + GetGroupFilter(groupColumnName, autoCodeGroup.Grouping, groupTypeQuoted);
+                    groupFilter = "WHERE " + GetGroupFilter(groupColumnName, autoCodeGroup.GroupValue, groupTypeQuoted);
 
                 string sql =
                     $@"SELECT ISNULL(MAX({propertyName}), 0)
@@ -152,7 +152,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (groupColumnName == null)
                     groupFilter = "";
                 else
-                    groupFilter = "AND " + GetGroupFilter(groupColumnName, autoCodeGroup.Grouping, groupTypeQuoted);
+                    groupFilter = "AND " + GetGroupFilter(groupColumnName, autoCodeGroup.GroupValue, groupTypeQuoted);
 
                 string quotedPrefix = SqlUtility.QuoteText(autoCodeGroup.Prefix);
                 int prefixLength = autoCodeGroup.Prefix.Length;
@@ -216,7 +216,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     string sql = string.Format("EXEC Common.AutoCodeCacheUpdate {0}, {1}, {2}, {3}, {4}, {5}",
                         SqlUtility.QuoteText(entityName),
                         SqlUtility.QuoteText(propertyName),
-                        SqlUtility.QuoteText(autoCodeGroup.Grouping),
+                        SqlUtility.QuoteText(autoCodeGroup.GroupValue),
                         SqlUtility.QuoteText(autoCodeGroup.Prefix),
                         autoCodeGroup.MinDigits,
                         autoCodeGroup.MaxProvidedCode);
@@ -229,7 +229,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     string sql = string.Format("EXEC Common.AutoCodeCacheGetNext {0}, {1}, {2}, {3}, {4}, {5}",
                         SqlUtility.QuoteText(entityName),
                         SqlUtility.QuoteText(propertyName),
-                        SqlUtility.QuoteText(autoCodeGroup.Grouping),
+                        SqlUtility.QuoteText(autoCodeGroup.GroupValue),
                         SqlUtility.QuoteText(autoCodeGroup.Prefix),
                         autoCodeGroup.MinDigits,
                         autoCodeGroup.ItemsToGenerateCode.Count);
@@ -262,7 +262,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         return new
                         {
                             acItem.Item,
-                            acItem.Grouping,
+                            acItem.GroupValue,
                             Prefix = acItem.Code.Substring(0, acItem.Code.Length - numberOfPluses),
                             MinDigits = numberOfPluses,
                             ProvidedCodeValue = (int?)null
@@ -273,7 +273,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         return new
                         {
                             acItem.Item,
-                            acItem.Grouping,
+                            acItem.GroupValue,
                             Prefix = acItem.Code.Substring(0, acItem.Code.Length - suffixDigitsCount),
                             MinDigits = suffixDigitsCount,
                             ProvidedCodeValue = (int?)int.Parse(acItem.Code.Substring(acItem.Code.Length - suffixDigitsCount))
@@ -285,23 +285,23 @@ namespace Rhetos.Dom.DefaultConcepts
                 .ToList();
 
             return parsedAutoCode
-                .GroupBy(acItem => new { acItem.Grouping, acItem.Prefix })
+                .GroupBy(acItem => new { acItem.GroupValue, acItem.Prefix })
                 .Select(g => new AutoCodeGroup<TEntity>
                 {
-                    Grouping = g.Key.Grouping,
+                    GroupValue = g.Key.GroupValue,
                     Prefix = g.Key.Prefix,
                     MinDigits = g.Max(acItem => acItem.MinDigits),
                     ItemsToGenerateCode = g.Where(acItem => acItem.ProvidedCodeValue == null).Select(acItem => acItem.Item).ToList(),
                     MaxProvidedCode = g.Max(acItem => acItem.ProvidedCodeValue)
                 })
-                .OrderBy(acGroup => acGroup.Grouping)
+                .OrderBy(acGroup => acGroup.GroupValue)
                 .ThenBy(acGroup => acGroup.Prefix)
                 .ToList();
         }
 
         private class AutoCodeGroup<TEntity> where TEntity : IEntity
         {
-            public string Grouping;
+            public string GroupValue;
             public string Prefix;
             public int MinDigits;
             public List<TEntity> ItemsToGenerateCode;
