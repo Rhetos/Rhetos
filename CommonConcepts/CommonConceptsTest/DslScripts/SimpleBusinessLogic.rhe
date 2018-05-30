@@ -59,6 +59,14 @@
         Integer CodeA { AutoCode; }
         Integer CodeB { AutoCodeForEach TestAutoCode.IntegerAutoCodeForEach.Grouping; }
     }
+
+    Entity MultipleGroups
+    {
+        ShortString Grouping1;
+        ShortString Grouping2;
+        ShortString Code1 { AutoCodeForEach TestAutoCode.MultipleGroups.Grouping1; }
+        ShortString Code2 { AutoCodeForEach TestAutoCode.MultipleGroups.Grouping2; }
+    }
 }
 
 Module TestAutoCodeCached

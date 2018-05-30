@@ -83,11 +83,10 @@ namespace Rhetos.Dom.DefaultConcepts
             // UpdateCodesWithoutCache does not need to update cache, so it is interested only in the items that require a generated code.
             autoCodeGroups = autoCodeGroups.Where(acg => acg.ItemsToGenerateCode.Count > 0).ToList();
 
-            if (autoCodeGroups.Count > 0)
-                Lock(sqlExecuter, entityName);
-
             foreach (var autoCodeGroup in autoCodeGroups)
             {
+                Lock(sqlExecuter, entityName, groupColumnName, autoCodeGroup.GroupValue);
+
                 string groupFilter;
                 if (groupColumnName == null)
                     groupFilter = "";
@@ -143,11 +142,10 @@ namespace Rhetos.Dom.DefaultConcepts
             // UpdateCodesWithoutCache does not need to update cache, so it is interested only in the items that require a generated code.
             autoCodeGroups = autoCodeGroups.Where(acg => acg.ItemsToGenerateCode.Count > 0).ToList();
 
-            if (autoCodeGroups.Count > 0)
-                Lock(sqlExecuter, entityName);
-
             foreach (var autoCodeGroup in autoCodeGroups)
             {
+                Lock(sqlExecuter, entityName, groupColumnName, autoCodeGroup.GroupValue);
+
                 string groupFilter;
                 if (groupColumnName == null)
                     groupFilter = "";
@@ -358,16 +356,23 @@ namespace Rhetos.Dom.DefaultConcepts
             return suffixDigitsCount;
         }
 
-        private static void Lock(ISqlExecuter sqlExecuter, string entityName)
+        /// <summary>
+        /// The manual database locking is used here in order to:
+        /// 1. allow other users to read the existing records(no exclusive locks), and
+        /// 2. avoid deadlocks(no shared locks that will be upgraded to exclusive locks).
+        /// </summary>
+        private static void Lock(ISqlExecuter sqlExecuter, string entityName, string groupColumnName, string groupValue)
         {
-            // The manual database locking is used here in order to:
-            // 1. allow other users to read the existing records (no exclusive locks), and
-            // 2. avoid deadlocks (no shared locks that will be upgraded to exclusive locks).
+            string key = $"AutoCode {entityName}{groupColumnName ?? ""}{groupValue ?? ""}";
+            const int maxLength = 200;
+            if (key.Length > maxLength)
+                key = key.Substring(0, maxLength);
+
             try
             {
                 sqlExecuter.ExecuteSql(
                     $@"DECLARE @lockResult int;
-                    EXEC @lockResult = sp_getapplock 'AutoCode {entityName}', 'Exclusive';
+                    EXEC @lockResult = sp_getapplock {SqlUtility.QuoteText(key)}, 'Exclusive';
                     IF @lockResult < 0
                     BEGIN
                         RAISERROR('AutoCode lock.', 16, 10);

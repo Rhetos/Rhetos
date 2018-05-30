@@ -29,6 +29,7 @@ using Rhetos.TestCommon;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Threading;
+using System.Collections.Concurrent;
 
 namespace CommonConcepts.Test
 {
@@ -47,7 +48,8 @@ namespace CommonConcepts.Test
                     DELETE FROM TestAutoCode.Simple;
                     DELETE FROM TestAutoCode.DoubleAutoCode;
                     DELETE FROM TestAutoCode.DoubleAutoCodeWithGroup;
-                    DELETE FROM TestAutoCode.IntegerAutoCode;"
+                    DELETE FROM TestAutoCode.IntegerAutoCode;
+                    DELETE FROM TestAutoCode.MultipleGroups;"
                 });
         }
 
@@ -611,9 +613,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ParallelInsertsLockingTestDifferentPrefix()
         {
-            // Executing this test multiple time, to reduce system warmup effects and performance instability.
+            // Executing this test multiple time, to reduce system warm-up effects and performance instability.
 
-            for (int retries = 4; retries >= 0; retries--)
+            for (int retries = 0; retries < 4; retries++)
             {
                 try
                 {
@@ -703,43 +705,60 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ParallelInsertsLockErrorHandling()
         {
-            const int threadCount = 4;
-
-            // Starts at 0 ms, ends at 400ms.
-            Action<Common.ExecutionContext> action0 = context =>
+            var actions = new Action<Common.ExecutionContext>[]
             {
-                Thread.Sleep(0);
-                context.SqlExecuter.ExecuteSql("SET LOCK_TIMEOUT 0");
-                context.Repository.TestAutoCode.Simple.Insert(new TestAutoCode.Simple { Code = "+" });
-                Thread.Sleep(400);
+                // Starts at 0 ms, ends at 400ms.
+                context =>
+                {
+                    Thread.Sleep(0);
+                    context.SqlExecuter.ExecuteSql("SET LOCK_TIMEOUT 0");
+                    context.Repository.TestAutoCode.Simple.Insert(new TestAutoCode.Simple { Code = "+" });
+                    Thread.Sleep(400);
+                },
+                // Starts at 100 ms, lock timeout at 300ms.
+                context =>
+                {
+                    Thread.Sleep(100);
+                    context.SqlExecuter.ExecuteSql("SET LOCK_TIMEOUT 200");
+                    context.Repository.TestAutoCode.Simple.Insert(new TestAutoCode.Simple { Code = "+" });
+                },
+
+                // Starts at 200 ms, lock timeout at 200ms.
+                context =>
+                {
+                    Thread.Sleep(200);
+                    context.SqlExecuter.ExecuteSql("SET LOCK_TIMEOUT 0");
+                    context.Repository.TestAutoCode.Simple.Insert(new TestAutoCode.Simple { Code = "+" });
+                },
+
+                // Starts at 200 ms, ends at 200ms.
+                context =>
+                {
+                    Thread.Sleep(200);
+                    context.SqlExecuter.ExecuteSql("SET LOCK_TIMEOUT 0");
+                    context.Repository.TestAutoCode.Simple.Load(item => item.Code == "1");
+                }
             };
 
-            // Starts at 100 ms, lock timeout at 300ms.
-            Action<Common.ExecutionContext> action1 = context =>
-            {
-                Thread.Sleep(100);
-                context.SqlExecuter.ExecuteSql("SET LOCK_TIMEOUT 200");
-                context.Repository.TestAutoCode.Simple.Insert(new TestAutoCode.Simple { Code = "+" });
-            };
+            var exceptions = ExecuteParallel(actions,
+                context => context.Repository.TestAutoCode.Simple.Insert(new TestAutoCode.Simple { Code = "1" }),
+                context => Assert.AreEqual(1, context.Repository.TestAutoCode.Simple.Query().Count()));
 
-            // Starts at 200 ms, lock timeout at 200ms.
-            Action<Common.ExecutionContext> action2 = context =>
-            {
-                Thread.Sleep(200);
-                context.SqlExecuter.ExecuteSql("SET LOCK_TIMEOUT 0");
-                context.Repository.TestAutoCode.Simple.Insert(new TestAutoCode.Simple { Code = "+" });
-            };
+            Assert.IsNull(exceptions[0]);
+            Assert.IsNotNull(exceptions[1]);
+            Assert.IsNotNull(exceptions[2]);
+            Assert.IsNull(exceptions[3]); // sql3 should be allowed to read the record with code '1'. sql0 has exclusive lock on code '2'. autocode should not put exclusive lock on other records.
 
-            // Starts at 200 ms, ends at 200ms.
-            Action<Common.ExecutionContext> action3 = context =>
-            {
-                Thread.Sleep(200);
-                context.SqlExecuter.ExecuteSql("SET LOCK_TIMEOUT 0");
-                context.Repository.TestAutoCode.Simple.Load(item => item.Code == "1");
-            };
+            // Query sql1 may generate next autocode, but it should wait for the entity's table exclusive lock to be released (from sql0).
+            TestUtility.AssertContains(exceptions[1].ToString(), new[] { "Cannot insert", "another user's insert command is still running", "TestAutoCode.Simple" });
 
-            var actions = new[] { action0, action1, action2, action3 };
-            Assert.AreEqual(threadCount, actions.Count());
+            // Query sql2 may not generate next autocode until sql1 releases the lock.
+            TestUtility.AssertContains(exceptions[2].ToString(), new[] { "Cannot insert", "another user's insert command is still running", "TestAutoCode.Simple" });
+        }
+
+        private Exception[] ExecuteParallel(Action<Common.ExecutionContext>[] actions, Action<Common.ExecutionContext> coldStartInsert, Action<Common.ExecutionContext> coldStartQuery)
+        {
+            int threadCount = actions.Count();
 
             using (var container = new RhetosTestContainer(true))
             {
@@ -747,19 +766,18 @@ namespace CommonConcepts.Test
                 CheckForParallelism(sqlExecuter, threadCount);
                 DeleteOldData(container);
 
-                var repository = container.Resolve<Common.DomRepository>();
-                repository.TestAutoCode.Simple.Insert(new TestAutoCode.Simple { Code = "1" });
+                coldStartInsert(container.Resolve<Common.ExecutionContext>());
             }
 
             var containers = Enumerable.Range(0, threadCount).Select(t => new RhetosTestContainer(true)).ToArray();
 
-            Exception[] exceptions = new Exception[threadCount];
+            var exceptions = new Exception[threadCount];
 
             try
             {
                 var contexts = containers.Select(c => c.Resolve<Common.ExecutionContext>()).ToArray();
                 foreach (var context in contexts)
-                    Assert.AreEqual(1, context.Repository.TestAutoCode.Simple.Query().Count()); // Cold start.
+                    coldStartQuery(context);
 
                 Parallel.For(0, threadCount, thread =>
                 {
@@ -788,17 +806,7 @@ namespace CommonConcepts.Test
 
             for (int x = 0; x < threadCount; x++)
                 Console.WriteLine("Exception " + x + ": " + exceptions[x] + ".");
-
-            Assert.IsNull(exceptions[0]);
-            Assert.IsNotNull(exceptions[1]);
-            Assert.IsNotNull(exceptions[2]);
-            Assert.IsNull(exceptions[3]); // sql3 should be allowed to read the record with code '1'. sql0 has exclusive lock on code '2'. autocode should not put exclusive lock on other records.
-
-            // Query sql1 may generate next autocode, but it should wait for the entity's table exclusive lock to be released (from sql0).
-            TestUtility.AssertContains(exceptions[1].ToString(), new[] { "Cannot insert", "another user's insert command is still running", "TestAutoCode.Simple" });
-
-            // Query sql2 may not generate next autocode until sql1 releases the lock.
-            TestUtility.AssertContains(exceptions[2].ToString(), new[] { "Cannot insert", "another user's insert command is still running", "TestAutoCode.Simple" });
+            return exceptions;
         }
 
         private void CheckForParallelism(ISqlExecuter sqlExecuter, int requiredNumberOfThreads)
@@ -821,6 +829,95 @@ namespace CommonConcepts.Test
                     "This test requires {0} parallel SQL queries. {0} parallel delays for 100 ms are executed in {1} ms.",
                     requiredNumberOfThreads,
                     sw.ElapsedMilliseconds));
+        }
+
+
+        /// <summary>
+        /// There is no need to lock all inserts. It should be allowed to insert different groups in parallel.
+        /// </summary>
+        [TestMethod]
+        public void OptimizeParallelInsertsForDifferentGroups()
+        {
+            var tests = new ListOfTuples<string, string, bool>
+            // Format:
+            // 1. Records to insert (Grouping1-Grouping2) to entity MultipleGroups, with parallel requests.
+            // 2. Expected generated codes (Code1-Code2) for each record.
+            // 3. Whether the inserts should be executed in parallel.
+            {
+                { "A-B, A-B", "1-1, 2-2", false }, // Same Grouping1 and Grouping2: codes should be generated sequentially.
+                { "A-B, A-C", "1-1, 2-1", false }, // Same Grouping1: Code1 should be generated sequentially.
+                { "A-B, C-B", "1-1, 1-2", false }, // Same Grouping2: Code2 should be generated sequentially.
+                { "A-B, C-D", "1-1, 1-1", true },
+                { "A-B, B-A", "1-1, 1-1", true },
+            };
+
+            var results = new ListOfTuples<string, string, bool>();
+            var report = new List<string>();
+
+            const int testPause = 100;
+            const int retries = 4;
+
+            foreach (var test in tests)
+            {
+                for (int retry = 0; retry < retries; retry++)
+                {
+                    var items = test.Item1.Split(',').Select(item => item.Trim()).Select(item => item.Split('-'))
+                        .Select(item => new TestAutoCode.MultipleGroups { Grouping1 = item[0], Grouping2 = item[1] })
+                        .ToArray();
+
+                    var insertDurations = new double[items.Length];
+
+                    var parallelInsertRequests = items.Select((item, x) => (Action<Common.ExecutionContext>)
+                        (context =>
+                        {
+                            var sw = Stopwatch.StartNew();
+                            context.Repository.TestAutoCode.MultipleGroups.Insert(item);
+                            insertDurations[x] = sw.Elapsed.TotalMilliseconds;
+                            Thread.Sleep(testPause);
+                        }))
+                        .ToArray();
+
+                    var exceptions = ExecuteParallel(parallelInsertRequests,
+                        context => context.Repository.TestAutoCode.MultipleGroups.Insert(new TestAutoCode.MultipleGroups { }),
+                        context => Assert.AreEqual(1, context.Repository.TestAutoCode.MultipleGroups.Query().Count(), $"({test.Item1}) Test initialization failed."));
+
+                    Assert.IsTrue(exceptions.All(e => e == null), $"({test.Item1}) Test initialization threw exception. See the test output for details");
+
+                    // Check the generated codes:
+
+                    string generatedCodes;
+                    using (var container = new RhetosTestContainer(false))
+                    {
+                        var repository = container.Resolve<Common.DomRepository>();
+                        generatedCodes = TestUtility.DumpSorted(
+                            repository.TestAutoCode.MultipleGroups.Load(items.Select(item => item.ID)),
+                            x => $"{x.Code1}-{x.Code2}");
+                    }
+
+                    // Check if the inserts were executed in parallel:
+
+                    bool startedImmediately = insertDurations.Any(t => t < testPause);
+                    bool executedInParallel = insertDurations.All(t => t < testPause);
+
+                    // It the parallelism check did not pass, try again to reduce false negatives when the test machine is under load.
+                    if (!startedImmediately && executedInParallel != test.Item3)
+                    {
+                        Console.WriteLine("Retry");
+                        continue;
+                    }
+
+                    Assert.IsTrue(startedImmediately, $"({test.Item1}) At lease one item should be inserted without waiting. The test machine was probably under load during the parallelism test.");
+
+                    report.Add($"Test '{test.Item1}' insert durations: '{TestUtility.Dump(insertDurations)}'.");
+                    results.Add(test.Item1, generatedCodes, executedInParallel);
+                    break;
+                }
+            }
+
+            Assert.AreEqual(
+                string.Concat(tests.Select(test => $"{test.Item1} => {test.Item2} {(test.Item3 ? "parallel" : "sequential")}\r\n")),
+                string.Concat(results.Select(test => $"{test.Item1} => {test.Item2} {(test.Item3 ? "parallel" : "sequential")}\r\n")),
+                "Report: " + string.Concat(report.Select(line => "\r\n" + line)));
         }
     }
 }
