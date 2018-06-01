@@ -900,7 +900,7 @@ namespace CommonConcepts.Test
                     bool executedInParallel = insertDurations.All(t => t < testPause);
 
                     // It the parallelism check did not pass, try again to reduce false negatives when the test machine is under load.
-                    if (!startedImmediately && executedInParallel != test.Item3)
+                    if (!startedImmediately || executedInParallel != test.Item3)
                     {
                         Console.WriteLine("Retry");
                         continue;
