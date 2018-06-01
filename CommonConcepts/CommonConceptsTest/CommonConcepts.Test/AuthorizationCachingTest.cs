@@ -290,7 +290,7 @@ namespace CommonConcepts.Test
 
                 change(context);
 
-                // Get user authorization, with parially invalidated cache:
+                // Get user authorization, with partially invalidated cache:
 
                 Assert.AreEqual(TestUtility.Dump(expectedPermissionsAfterChange),
                     TestUtility.Dump(authorizationManager.GetAuthorizations(new[] { Claim1, Claim2, Claim3 })));

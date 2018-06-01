@@ -215,7 +215,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("doc1x, doc2, doc3, doc4", string.Join(", ", documents));
             }
 
-            // Simulate client request: Edit doc4 (acces denied)
+            // Simulate client request: Edit doc4 (access denied)
 
             using (var container = new RhetosTestContainer())
             {
@@ -354,7 +354,7 @@ namespace CommonConcepts.Test
                 Console.WriteLine("[Row permission filter] " + rowPermissionFilter);
 
                 TestUtility.AssertNotContains(rowPermissionFilter, "documentinfoItem.Base.Division",
-                    "SamePropertyValue concept should optimize row permissions to use Division propery directly on 'DocumentInfo', instead of referencing the base entity 'Document'.");
+                    "SamePropertyValue concept should optimize row permissions to use Division property directly on 'DocumentInfo', instead of referencing the base entity 'Document'.");
 
                 TestUtility.AssertContains(rowPermissionFilter, "documentinfoItem.Division2",
                     "Internal error: Division2 property should be used in this row permissions.");

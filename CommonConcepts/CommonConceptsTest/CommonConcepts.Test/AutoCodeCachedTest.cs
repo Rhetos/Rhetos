@@ -522,7 +522,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ParallelInsertsLockingTestDifferentPrefix()
         {
-            // Executing this test multiple time, to reduce system warmup effects and performance instability.
+            // Executing this test multiple time, to reduce system warm-up effects and performance instability.
 
             for (int retries = 4; retries >= 0; retries--)
             {
