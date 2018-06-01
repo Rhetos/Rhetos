@@ -356,25 +356,5 @@ namespace CommonConcepts.Test
 
             }
         }
-
-        [TestMethod]
-        public void MultipleHierarchiesOnSameEntity()
-        {
-            Assert.Inconclusive();
-        }
-
-        [TestMethod]
-        [Ignore] // TODO: This feature is implemented. Create the unit test.
-        public void HierarchyOnComputedDataStructureExtension()
-        {
-            // Useful for defining a hierarchy on a set of different entities using their union as a list of base items.
-            Assert.Inconclusive();
-        }
-
-        [TestMethod]
-        public void MultiplePathsOnSameEntity()
-        {
-            Assert.Inconclusive();
-        }
     }
 }

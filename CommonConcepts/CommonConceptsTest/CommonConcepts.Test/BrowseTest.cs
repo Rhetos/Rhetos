@@ -59,35 +59,6 @@ namespace CommonConcepts.Test.OldConcepts
         }
 
         [TestMethod]
-        [Ignore]
-        public void NullReference()
-        {
-            using (var container = new RhetosTestContainer())
-            {
-                var repository = container.Resolve<Common.DomRepository>();
-
-                Guid refID = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
-                    {
-                        "DELETE FROM TestBrowse.Source;",
-                        "DELETE FROM TestBrowse.Other;",
-                        "INSERT INTO TestBrowse.Other (ID, Name) SELECT '" + refID + "', 'abc';",
-                        "INSERT INTO TestBrowse.Source (RefID) SELECT NULL;"
-                    });
-
-                Assert.IsNull(repository.TestBrowse.Source.Query().ToArray().Select(item => item.Ref != null ? item.Ref.Name : null).Single(), "separated loading with null checking");
-                Assert.IsNull(repository.TestBrowse.Source.Query().Select(item => item.Ref != null ? item.Ref.Name : null).Single(), "all in one query with null checking");
-
-                Assert.IsNull(repository.TestBrowse.Source.Query().Select(item => item.Ref.Name).Single(), "all in one query");
-
-                // TODO: "'Separated loading' fails because LINQ2NH will handle nullable properties and null values differently than a simple LINQ query over materialized instances (Linq2Objects).
-                // Try to implement browse in a such way that it behaves the same in both scenarios without degrading performance (maybe generating SqlView).
-            
-                Assert.IsNull(repository.TestBrowse.Source.Query().ToArray().Select(item => item.Ref.Name).Single(), "separated loading");
-            }
-        }
-
-        [TestMethod]
         public void ReuseableSourceFilter()
         {
             using (var container = new RhetosTestContainer())
