@@ -1,6 +1,6 @@
 SETLOCAL
-SET Version=2.6.0
-SET Prerelease=auto
+SET Version=2.6.1
+SET Prerelease=
 
 @SET Config=%1%
 @IF [%1] == [] SET Config=Debug
