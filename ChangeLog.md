@@ -1,12 +1,18 @@
 ﻿# Rhetos release notes
 
+## 2.6.1 (2018-06-04)
+
+### Internal improvements
+
+* Corrected the default log archive size.
+
 ## 2.6.0 (2018-06-01)
 
 ### Internal improvements
 
 * Performance: Enabled parallel inserts on **AutoCodeForEach** for different groups or records.
 * Performance: New low-level concept **LogReaderAdditionalSource**, that enables implementation of a custom Log archive. The archive can be integrated into the existing auditing features by extending *LogReader* and *LogRelatedItemReader*.
-* Upgraded to NLog v4.5.4 from v3.2.0. Modified default NLog configuration to use the Logs subfolder and archive the large log files. Fixed the *asyncwrapper* usage.
+* Upgraded to NLog v4.5.4 from v3.2.0. Modified default NLog configuration to use the Logs subfolder, and archive the large log files. Fixed the *asyncwrapper* usage.
 
 ## 2.5.0 (2018-04-23)
 
