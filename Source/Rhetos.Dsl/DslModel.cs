@@ -299,8 +299,7 @@ namespace Rhetos.Dsl
         private decimal GetOrderOrDefault(IDictionary<string, decimal> recommendedMacroOrder, string key, decimal defaultValue)
         {
             const int databaseLengthLimit = 256;
-            if (key.Length > databaseLengthLimit)
-                key = key.Substring(0, databaseLengthLimit);
+            key = key.Limit(databaseLengthLimit);
 
             decimal value;
             if (!recommendedMacroOrder.TryGetValue(key, out value))

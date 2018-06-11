@@ -151,8 +151,7 @@ namespace Rhetos.Dsl
 
                 if (errors.Count > 0)
                 {
-                    string errorsReport = string.Join("\r\n", errors);
-                    if (errorsReport.Length > 500) errorsReport = errorsReport.Substring(0, 500) + "...";
+                    string errorsReport = string.Join("\r\n", errors).Limit(500, "...");
                     throw new DslSyntaxException($"Invalid parameters after keyword '{keyword}'. {tokenReader.ReportPosition()}\r\n\r\nPossible causes:\r\n{errorsReport}");
                 }
                 else if (!string.IsNullOrEmpty(keyword))

@@ -98,7 +98,7 @@ namespace Rhetos.TestCommon
             const int maxLength = 200;
             if (text.Length < maxLength)
                 return "'" + text + "'";
-            return "'" + text.Substring(0, maxLength) + " ...' (total lenght " + text.Length + ")";
+            return "'" + text.Substring(0, maxLength) + " ...' (total length " + text.Length + ")";
         }
 
         /// <summary>

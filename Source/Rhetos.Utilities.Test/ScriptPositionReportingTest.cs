@@ -59,7 +59,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void FollowingTextTest()
         {
-            Assert.AreEqual("a...", ScriptPositionReporting.FollowingText("abc", 0, 1));
+            Assert.AreEqual("a...", ScriptPositionReporting.FollowingText("abcde", 0, 4));
             Assert.AreEqual("bc", ScriptPositionReporting.FollowingText("abc", 1, 2));
             Assert.AreEqual("bc", ScriptPositionReporting.FollowingText("abc", 1, 10));
             Assert.AreEqual("", ScriptPositionReporting.FollowingText("abc", 3, 10));
@@ -69,7 +69,7 @@ namespace Rhetos.Utilities.Test
         public void FollowingTextTest_RemoveSeparators()
         {
             Assert.AreEqual("a b", ScriptPositionReporting.FollowingText("a\r\nb", 0, 5));
-            Assert.AreEqual("a bbb...", ScriptPositionReporting.FollowingText("a\r\n\r\nbbbbbbbbbbb", 0, 5));
+            Assert.AreEqual("a bbb...", ScriptPositionReporting.FollowingText("a\r\n\r\nbbbbbbbbbbb", 0, 8));
             Assert.AreEqual("b c", ScriptPositionReporting.FollowingText("a\t b\t c", 3, 5));
         }
 
@@ -104,8 +104,8 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void FollowingTextTest_LineColumn()
         {
-            Assert.AreEqual("ab...", ScriptPositionReporting.FollowingText("abc\r\ndefgh", 1, 1, 2));
-            Assert.AreEqual("ef...", ScriptPositionReporting.FollowingText("abc\r\ndefgh", 2, 2, 2));
+            Assert.AreEqual("ab...", ScriptPositionReporting.FollowingText("abc\r\ndefgh", 1, 1, 5));
+            Assert.AreEqual("ef...", ScriptPositionReporting.FollowingText("abc\r\ndefghij", 2, 2, 5));
         }
 
         [TestMethod]

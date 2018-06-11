@@ -105,7 +105,7 @@ namespace Rhetos.Compiler
             if (!_code.Contains(tag))
                 throw new FrameworkException(string.Format(
                     "Generated script does not contain tag \"{0}\". Error occurred while inserting code \"{1}\".",
-                    tag, code.Substring(0, Math.Min(200, code.Length))));
+                    tag, code.Limit(200)));
         }
 
         private void CheckTags(string code, string tag1, string tag2)
@@ -113,7 +113,7 @@ namespace Rhetos.Compiler
             if (!_code.Contains(tag1) && !_code.Contains(tag2))
                 throw new FrameworkException(string.Format(
                     "Generated script does not contain tag \"{0}\" nor tag \"{1}\". Error occurred while inserting code \"{2}\".",
-                    tag1, tag2, code.Substring(0, Math.Min(200, code.Length))));
+                    tag1, tag2, code.Limit(200)));
         }
 
         public bool TagExists(string tag)

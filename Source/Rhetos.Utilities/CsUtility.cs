@@ -277,5 +277,56 @@ namespace Rhetos.Utilities
             sr.Dispose();
             return bytes;
         }
+
+        public class Group<TItem, TKey>
+        {
+            public TKey Key;
+            public List<TItem> Items;
+        }
+
+        /// <summary>
+        /// Groups items to batches by their group value, keeping the order of the items.
+        /// This may result with two items with the same key ending in different groups, if there is an item with different key between them.
+        /// </summary>
+        public static List<Group<TItem, TKey>> GroupItemsKeepOrdering<TItem, TKey>(IEnumerable<TItem> items, Func<TItem, TKey> keySelector)
+        {
+            var batches = new List<Group<TItem, TKey>>();
+            Group<TItem, TKey> currentBatch = null;
+
+            foreach (var item in items)
+            {
+                TKey key = keySelector(item);
+                if (currentBatch == null || !currentBatch.Key.Equals(key))
+                {
+                    currentBatch = new Group<TItem, TKey> { Key = key, Items = new List<TItem>() };
+                    batches.Add(currentBatch);
+                }
+
+                currentBatch.Items.Add(item);
+            }
+
+            return batches;
+        }
+
+        public static string Limit(this string text, int maxLength)
+        {
+            if (text.Length > maxLength)
+                return text.Substring(0, maxLength);
+            else
+                return text;
+        }
+
+        /// <param name="trimMark">The suffix that will be appended if the text is trimmed (for example: "...").
+        /// The resulting text length with the suffix included will be maxLength.</param>
+        public static string Limit(this string text, int maxLength, string trimMark)
+        {
+            if (text.Length > maxLength)
+            {
+                trimMark = trimMark.Limit(maxLength);
+                return text.Substring(0, maxLength - trimMark.Length) + trimMark;
+            }
+            else
+                return text;
+        }
     }
 }

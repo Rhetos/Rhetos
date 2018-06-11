@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -130,10 +131,7 @@ namespace Rhetos.Dom.DefaultConcepts
             else
                 report = SingleValueDescription(value);
 
-            const int maxLength = 100;
-            if (report.Length > maxLength)
-                report = report.Substring(0, maxLength) + "...";
-            return "\"" + report + "\"";
+            return "\"" + report.Limit(100, "...") + "\"";
         }
 
         public string SingleValueDescription(object value)

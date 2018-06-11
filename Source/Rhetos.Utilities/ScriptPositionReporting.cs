@@ -75,8 +75,7 @@ namespace Rhetos.Utilities
 
             script = script.Substring(position);
             script = string.Join(" ", script.Split(new char[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
-            if (script.Length > maxLength)
-                script = script.Substring(0, maxLength) + "...";
+            script = script.Limit(maxLength, "...");
             return script;
         }
 

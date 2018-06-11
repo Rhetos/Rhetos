@@ -364,9 +364,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static void Lock(ISqlExecuter sqlExecuter, string entityName, string groupColumnName, string groupValue)
         {
             string key = $"AutoCode {entityName}{groupColumnName ?? ""}{groupValue ?? ""}";
-            const int maxLength = 200;
-            if (key.Length > maxLength)
-                key = key.Substring(0, maxLength);
+            key = key.Limit(200);
 
             try
             {
