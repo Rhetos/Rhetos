@@ -42,8 +42,8 @@ namespace Rhetos.DatabaseGenerator.Test
         {
         }
 
-        public DatabaseGenerator_Accessor(ISqlExecuter sqlExecuter)
-            : base(sqlExecuter, null, new NullPluginsContainer<IConceptDatabaseDefinition>(),
+        public DatabaseGenerator_Accessor(SqlTransactionBatches sqlTransactionBatches)
+            : base(sqlTransactionBatches, null, new NullPluginsContainer<IConceptDatabaseDefinition>(),
             new MockConceptApplicationRepository(),
             new ConsoleLogProvider(), new DatabaseGeneratorOptions { ShortTransactions = false })
         {

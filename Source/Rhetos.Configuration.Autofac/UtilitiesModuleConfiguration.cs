@@ -50,6 +50,7 @@ namespace Rhetos.Configuration.Autofac
 
             builder.RegisterType(sqlImplementation.SqlExecuter).As<ISqlExecuter>().InstancePerLifetimeScope();
             builder.RegisterType(sqlImplementation.SqlUtility).As<ISqlUtility>().InstancePerLifetimeScope();
+            builder.RegisterType<SqlTransactionBatches>().InstancePerLifetimeScope();
 
             base.Load(builder);
         }

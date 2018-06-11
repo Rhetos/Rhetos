@@ -90,6 +90,11 @@ namespace Rhetos.Deployment.Test
 
             public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
             {
+                ExecuteSql(commands, useTransaction, null, null);
+            }
+
+            public void ExecuteSql(IEnumerable<string> commands, bool useTransaction, Action<int> beforeExecute, Action<int> afterExecute)
+            {
                 foreach (var command in commands)
                 {
                     Console.WriteLine("[SQL] " + command);

@@ -147,6 +147,11 @@ namespace Rhetos.Utilities.Test
             {
                 throw new NotImplementedException();
             }
+
+            public void ExecuteSql(IEnumerable<string> commands, bool useTransaction, Action<int> beforeExecute, Action<int> afterExecute)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         [TestMethod]
@@ -243,6 +248,44 @@ namespace Rhetos.Utilities.Test
             };
             foreach (var test in tests)
                 Assert.AreEqual(TestUtility.Dump(test.Value), TestUtility.Dump(SqlUtility.SplitBatches(test.Key)), "Input: " + test.Key);
+        }
+
+        [TestMethod]
+        public void Comment()
+        {
+            Assert.AreEqual("/*abc\r\ndef*/", SqlUtility.Comment("abc\r\ndef"));
+
+            var tests = new Dictionary<string, string>
+            {
+                { "", "" },
+                { "abc", "abc" },
+                { "/*", "/*" },
+                { "/**/", "/*" },
+                { "*/", "" },
+                { "abc*/", "abc" },
+                { "*/abc", "abc" },
+                { "*/*/*/", "" },
+                { "***///", "" },
+                { "/*/*/*", "" },
+                { "///***", "" },
+                { "/**//**/", "" },
+                { "/", "" },
+            };
+
+            foreach (var test in tests)
+            {
+                var comment = SqlUtility.Comment(test.Key);
+                var testInfo = $"{test.Key}=>{comment}";
+
+                Assert.IsTrue(comment.StartsWith("/*"), testInfo);
+                Assert.IsTrue(comment.EndsWith("*/"), testInfo);
+
+                TestUtility.AssertNotContains(comment.Substring(2, comment.Length - 4), "*/", testInfo);
+                TestUtility.AssertNotContains(comment.Substring(2), "/*", testInfo);
+
+                if (!string.IsNullOrEmpty(test.Value))
+                    TestUtility.AssertContains(comment, test.Value, testInfo);
+            }
         }
     }
 }

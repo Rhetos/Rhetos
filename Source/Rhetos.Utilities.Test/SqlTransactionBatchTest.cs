@@ -41,13 +41,15 @@ namespace Rhetos.Utilities.Test
                 Tuple.Create(new[] { "#" }, ""),
                 Tuple.Create(new[] { "a", "a", "a#", "a#a" }, "4t"),
                 Tuple.Create(new[] { "#a", "#a" }, "2n"),
-                Tuple.Create(new[] { "a", "a", "#", "a", "a" }, "2t, 2t"),
+                Tuple.Create(new[] { "a", "a", "#", "a", "a" }, "4t"),
                 Tuple.Create(new[] { "#a", "#a", "#", "#a", "#a" }, "4n"),
             };
 
             foreach (var test in tests)
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 var batches = SqlTransactionBatch.GroupByTransaction(test.Item1.Select(sql => sql.Replace("#", SqlUtility.NoTransactionTag)));
+#pragma warning restore CS0618 // Type or member is obsolete
                 string report = TestUtility.Dump(batches, batch => batch.Count + (batch.UseTransacion ? "t" : "n"));
                 Assert.AreEqual(test.Item2, report, "Test: " + TestUtility.Dump(test.Item1) + ".");
             }

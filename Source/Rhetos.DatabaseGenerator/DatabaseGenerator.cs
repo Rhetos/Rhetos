@@ -33,7 +33,7 @@ namespace Rhetos.DatabaseGenerator
 {
     public class DatabaseGenerator : IDatabaseGenerator
     {
-        protected readonly ISqlExecuter _sqlExecuter;
+        protected readonly SqlTransactionBatches _sqlTransactionBatches;
         protected readonly IDslModel _dslModel;
         protected readonly IPluginsContainer<IConceptDatabaseDefinition> _plugins;
         protected readonly IConceptApplicationRepository _conceptApplicationRepository;
@@ -49,14 +49,14 @@ namespace Rhetos.DatabaseGenerator
         protected readonly object _databaseUpdateLock = new object();
 
         public DatabaseGenerator(
-            ISqlExecuter sqlExecuter, 
+            SqlTransactionBatches sqlTransactionBatches, 
             IDslModel dslModel,
             IPluginsContainer<IConceptDatabaseDefinition> plugins,
             IConceptApplicationRepository conceptApplicationRepository,
             ILogProvider logProvider,
             DatabaseGeneratorOptions options)
         {
-            _sqlExecuter = sqlExecuter;
+            _sqlTransactionBatches = sqlTransactionBatches;
             _dslModel = dslModel;
             _plugins = plugins;
             _conceptApplicationRepository = conceptApplicationRepository;
@@ -528,8 +528,7 @@ namespace Rhetos.DatabaseGenerator
             sqlScripts.AddRange(ApplyChangesToDatabase_Insert(toBeInserted, newApplications));
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Prepared SQL scripts for inserting concept applications.");
 
-            foreach (var batchOfScripts in SqlTransactionBatch.GroupByTransaction(sqlScripts.Where(sql => !string.IsNullOrWhiteSpace(sql))))
-                _sqlExecuter.ExecuteSql(batchOfScripts, batchOfScripts.UseTransacion);
+            _sqlTransactionBatches.Execute(sqlScripts);
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Executed " + sqlScripts.Count + " SQL scripts.");
         }
 

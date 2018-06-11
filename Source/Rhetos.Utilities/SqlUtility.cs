@@ -74,6 +74,14 @@ namespace Rhetos.Utilities
             return connectionStringProvider;
         }
 
+        public static string Comment(string text)
+        {
+            text = text.Replace("/*", "/ *").Replace("*/", "* /");
+            if (text.EndsWith("/"))
+                text += " ";
+            return "/*" + text + "*/";
+        }
+
         public static string DatabaseLanguage
         {
             get
@@ -410,6 +418,8 @@ namespace Rhetos.Utilities
         /// creating full-text search index.
         /// </summary>
         public const string NoTransactionTag = "/*DatabaseGenerator:NoTransaction*/";
+
+        public static bool ScriptSupportsTransaction(string sql) => !sql.StartsWith(NoTransactionTag);
 
         private static TimeSpan DatabaseTimeDifference = TimeSpan.Zero;
         private static DateTime DatabaseTimeObsoleteAfter = DateTime.MinValue;

@@ -62,13 +62,20 @@ namespace Rhetos.Persistence
 
         public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
         {
+            ExecuteSql(commands, useTransaction, null, null);
+        }
+
+        public void ExecuteSql(IEnumerable<string> commands, bool useTransaction, Action<int> beforeExecute, Action<int> afterExecute)
+        {
             _logger.Trace(() => "Executing " + commands.Count() + " commands" + (useTransaction ? "" : " without transaction") + ".");
 
             SafeExecuteCommand(
                 com =>
                 {
+                    int count = 0;
                     foreach (var sql in commands)
                     {
+                        count++;
                         if (sql == null)
                             throw new FrameworkException("SQL script is null.");
 
@@ -81,10 +88,13 @@ namespace Rhetos.Persistence
                         try
                         {
                             com.CommandText = sql;
+
+                            beforeExecute?.Invoke(count - 1);
                             com.ExecuteNonQuery();
                         }
                         finally
                         {
+                            afterExecute?.Invoke(count - 1);
                             LogPerformanceIssue(sw, sql);
                         }
 
@@ -101,7 +111,7 @@ namespace Rhetos.Persistence
                                     string.Format(CultureInfo.InvariantCulture,
                                         "SQL script has changed transaction level.{0}{1}",
                                             Environment.NewLine,
-                                            sql.Substring(0, Math.Min(1000, sql.Length))),
+                                            sql.Limit(1000, "...")),
                                     ex);
                             }
                         }

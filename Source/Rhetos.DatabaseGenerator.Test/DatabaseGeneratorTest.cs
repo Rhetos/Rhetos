@@ -685,7 +685,8 @@ namespace Rhetos.DatabaseGenerator.Test
                 BaseCi.CreateApplication("F", new SimpleConceptImplementation()) };
 
             var sqlExecuter = new MockSqlExecuter();
-            var databaseGenerator = new DatabaseGenerator_Accessor(sqlExecuter);
+            var sqlTransactionBatches = new SqlTransactionBatches(sqlExecuter, new NullConfiguration(), new ConsoleLogProvider());
+            var databaseGenerator = new DatabaseGenerator_Accessor(sqlTransactionBatches);
             databaseGenerator.ApplyChangesToDatabase(oldApplications, newApplications, oldApplications, newApplications);
 
             var executedSql = TestUtility.Dump(sqlExecuter.executedScriptsWithTransaction, scripts =>
@@ -716,8 +717,31 @@ namespace Rhetos.DatabaseGenerator.Test
 
             public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
             {
+                ExecuteSql(commands, useTransaction, null, null);
+            }
+
+            public void ExecuteSql(IEnumerable<string> commands, bool useTransaction, Action<int> beforeExecute, Action<int> afterExecute)
+            {
                 executedScriptsWithTransaction.Add(Tuple.Create(commands.ToList(), useTransaction));
             }
+        }
+    }
+
+    internal class NullConfiguration : IConfiguration
+    {
+        public Lazy<bool> GetBool(string key, bool defaultValue)
+        {
+            return new Lazy<bool>(() => defaultValue);
+        }
+
+        public Lazy<int> GetInt(string key, int defaultValue)
+        {
+            return new Lazy<int>(() => defaultValue);
+        }
+
+        public Lazy<string> GetString(string key, string defaultValue)
+        {
+            return new Lazy<string>(() => defaultValue);
         }
     }
 }

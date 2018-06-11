@@ -24,30 +24,21 @@ using System.Text;
 
 namespace Rhetos.Utilities
 {
+    [Obsolete("Use " + nameof(SqlTransactionBatches) + " instead.")]
     /// <summary>SQL scripts are grouped into batches to handle different transaction usage.</summary>
     public class SqlTransactionBatch : List<string>
     {
+        public SqlTransactionBatch(List<string> source) : base(source)
+        {
+        }
+
         public bool UseTransacion;
 
         public static List<SqlTransactionBatch> GroupByTransaction(IEnumerable<string> sqlScripts)
         {
-            var batches = new List<SqlTransactionBatch>();
-            SqlTransactionBatch currentBatch = null;
-
-            foreach (string sqlScript in sqlScripts)
-            {
-                bool scriptUsesTransaction = !sqlScript.StartsWith(SqlUtility.NoTransactionTag);
-                if (currentBatch == null || currentBatch.UseTransacion != scriptUsesTransaction)
-                {
-                    currentBatch = new SqlTransactionBatch { UseTransacion = scriptUsesTransaction };
-                    batches.Add(currentBatch);
-                }
-
-                if (!string.IsNullOrWhiteSpace(sqlScript.Replace(SqlUtility.NoTransactionTag, "")))
-                    currentBatch.Add(sqlScript);
-            }
-
-            return batches.Where(batch => batch.Count > 0).ToList();
+            sqlScripts = sqlScripts.Where(s => !string.IsNullOrWhiteSpace(s.Replace(SqlUtility.NoTransactionTag, "")));
+            var batches = CsUtility.GroupItemsKeepOrdering(sqlScripts, SqlUtility.ScriptSupportsTransaction);
+            return batches.Select(batch => new SqlTransactionBatch(batch.Items) { UseTransacion = batch.Key }).ToList();
         }
     }
 }

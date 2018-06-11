@@ -17,10 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.Linq;
 
 namespace Rhetos.Utilities
 {
@@ -28,6 +31,7 @@ namespace Rhetos.Utilities
     {
         void ExecuteReader(string command, Action<DbDataReader> action);
         void ExecuteSql(IEnumerable<string> commands, bool useTransaction);
+        void ExecuteSql(IEnumerable<string> commands, bool useTransaction, Action<int> beforeExecute, Action<int> afterExecute);
     }
 
     public static class SqlExecuterExtensions
@@ -46,21 +50,6 @@ namespace Rhetos.Utilities
         public static void ExecuteSql(this ISqlExecuter sqlExecuter, IEnumerable<string> commands)
         {
             sqlExecuter.ExecuteSql(commands, useTransaction: true);
-        }
-    }
-
-    public class NullSqlExecuter : ISqlExecuter
-    {
-        const string message = "SQL executer in not available.";
-
-        public void ExecuteReader(string command, Action<DbDataReader> action)
-        {
-            throw new FrameworkException(message);
-        }
-
-        public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
-        {
-            throw new FrameworkException(message);
         }
     }
 }
