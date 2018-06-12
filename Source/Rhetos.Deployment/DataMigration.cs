@@ -39,14 +39,16 @@ namespace Rhetos.Deployment
         protected readonly ILogger _deployPackagesLogger;
         protected readonly IDataMigrationScriptsProvider _scriptsProvider;
         protected readonly IConfiguration _configuration;
+        protected readonly SqlTransactionBatches _sqlTransactionBatches;
 
-        public DataMigration(ISqlExecuter sqlExecuter, ILogProvider logProvider, IDataMigrationScriptsProvider scriptsProvider, IConfiguration configuration)
+        public DataMigration(ISqlExecuter sqlExecuter, ILogProvider logProvider, IDataMigrationScriptsProvider scriptsProvider, IConfiguration configuration, SqlTransactionBatches sqlTransactionBatches)
         {
             _sqlExecuter = sqlExecuter;
             _logger = logProvider.GetLogger("DataMigration");
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _scriptsProvider = scriptsProvider;
             _configuration = configuration;
+            _sqlTransactionBatches = sqlTransactionBatches;
         }
 
         public DataMigrationReport ExecuteDataMigrationScripts()
@@ -113,23 +115,22 @@ namespace Rhetos.Deployment
 
         protected void ApplyToDatabase(List<DataMigrationScript> toRemove, List<DataMigrationScript> toExecute)
         {
-            LogScripts("Removing", toRemove, EventType.Info);
+            LogScripts("Remove", toRemove, EventType.Info);
             UndoDataMigrationScripts(toRemove.Select(s => s.Tag).ToList());
 
-            var sql = new List<string>();
-            foreach (var script in toExecute)
-            {
-                LogScript("Executing", script, EventType.Info);
-                sql.AddRange(SqlUtility.SplitBatches(script.Content));
-                sql.Add(SaveDataMigrationScriptMetadata(script));
-            }
-            _sqlExecuter.ExecuteSql(sql);
+            LogScripts("Execute", toExecute, EventType.Info);
+            _sqlTransactionBatches.Execute(toExecute
+                .SelectMany(script => new[]
+                {
+                    new SqlTransactionBatches.SqlScript { Sql = script.Content, IsBatch = true, Name = script.Path },
+                    new SqlTransactionBatches.SqlScript { Sql = SaveDataMigrationScriptMetadata(script), IsBatch = false, Name = null },
+                }));
         }
 
         protected static string SaveDataMigrationScriptMetadata(DataMigrationScript script)
         {
             return string.Format(
-                "DELETE FROM Rhetos.DataMigrationScript WHERE Active = 0 AND Tag = {0};"
+                "DELETE FROM Rhetos.DataMigrationScript WHERE Active = 0 AND Tag = {0};\r\n"
                 + "INSERT INTO Rhetos.DataMigrationScript (Tag, Path, Content, Active) VALUES ({0}, {1}, {2}, 1);",
                 SqlUtility.QuoteText(script.Tag),
                 SqlUtility.QuoteText(script.Path),

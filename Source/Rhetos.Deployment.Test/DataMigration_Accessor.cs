@@ -29,7 +29,7 @@ namespace Rhetos.Deployment.Test
     class DataMigration_Accessor : DataMigration
     {
         public DataMigration_Accessor()
-            : base(null, new ConsoleLogProvider(), null, null)
+            : base(null, new ConsoleLogProvider(), null, null, null)
         {
         }
 
