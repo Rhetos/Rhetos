@@ -50,17 +50,11 @@ namespace Rhetos.Utilities
         {
             public string Name;
             public string Sql;
+            /// <summary>
+            /// If the script is a batch, it will be split by a batch separator ("GO") before executing each part separately.
+            /// </summary>
+            public bool IsBatch;
         };
-
-        /// <summary>
-        /// 1. Splits the scripts by the SQL batch delimiter ("GO", for Microsoft SQL Server). See <see cref="SqlUtility.SplitBatches(string)"/>.
-        /// 2. Detects and applies the transaction usage tag. See <see cref="SqlUtility.NoTransactionTag"/> and <see cref="SqlUtility.ScriptSupportsTransaction(string)"/>.
-        /// 3. Reports progress (Info level) after each minute.
-        /// </summary>
-        public void Execute(IEnumerable<string> sqlScripts)
-        {
-            Execute(sqlScripts.Select(sql => new SqlScript { Name = null, Sql = sql }));
-        }
 
         /// <summary>
         /// 1. Splits the scripts by the SQL batch delimiter ("GO", for Microsoft SQL Server). See <see cref="SqlUtility.SplitBatches(string)"/>.
@@ -71,21 +65,21 @@ namespace Rhetos.Utilities
         public void Execute(IEnumerable<SqlScript> sqlScripts)
         {
             var scriptParts = sqlScripts
-                .SelectMany(script => SqlUtility.SplitBatches(script.Sql)
-                    .Select(scriptPart => new { script.Name, Sql = scriptPart }))
-                .Where(script => !string.IsNullOrWhiteSpace(script.Sql.Replace(SqlUtility.NoTransactionTag, "")))
-                .ToList();
+                .SelectMany(script => script.IsBatch
+                    ? SqlUtility.SplitBatches(script.Sql).Select(scriptPart => new SqlScript { Name = script.Name, Sql = scriptPart, IsBatch = false })
+                    : new[] { script })
+                .Where(script => !string.IsNullOrWhiteSpace(script.Sql));
 
             var sqlBatches = CsUtility.GroupItemsKeepOrdering(scriptParts, script => SqlUtility.ScriptSupportsTransaction(script.Sql))
                 .Select(group => new
                 {
                     UseTransaction = group.Key,
-                    Scripts = group.Items
-                        .Select(script => string.IsNullOrEmpty(script.Name)
-                            ? script.Sql
-                            : SqlUtility.Comment("Name: " + script.Name) + "\r\n" + script.Sql)
-                        .ToList()
-                }).ToList();
+                    // The empty NoTransactionTag script is used by the DatabaseGenerator to split transactions.
+                    // This is why there scrips are removed *after* grouping 
+                    Scripts = group.Items.Where(s => !string.Equals(s.Sql, SqlUtility.NoTransactionTag, StringComparison.Ordinal)).ToList()
+                })
+                .Where(group => group.Scripts.Count() > 0) // Cleanup after removing the empty NoTransactionTag scripts.
+                .ToList();
 
             int totalCount = sqlBatches.Sum(b => b.Scripts.Count);
             int previousBatchesCount = 0;
@@ -109,7 +103,12 @@ namespace Rhetos.Utilities
                     }
                 };
 
-                _sqlExecuter.ExecuteSql(sqlBatch.Scripts, sqlBatch.UseTransaction, null, reportProgress);
+                var scriptsWithName = sqlBatch.Scripts
+                    .Select(script => string.IsNullOrEmpty(script.Name)
+                        ? script.Sql
+                        : "--Name: " + script.Name.Replace("\r", " ").Replace("\n", " ") + "\r\n" + script.Sql);
+
+                _sqlExecuter.ExecuteSql(scriptsWithName, sqlBatch.UseTransaction, null, reportProgress);
 
                 previousBatchesCount += sqlBatch.Scripts.Count;
             }

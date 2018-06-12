@@ -528,7 +528,7 @@ namespace Rhetos.DatabaseGenerator
             sqlScripts.AddRange(ApplyChangesToDatabase_Insert(toBeInserted, newApplications));
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Prepared SQL scripts for inserting concept applications.");
 
-            _sqlTransactionBatches.Execute(sqlScripts);
+            _sqlTransactionBatches.Execute(sqlScripts.Select(sql => new SqlTransactionBatches.SqlScript { Sql = sql, IsBatch = false, Name = null }));
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Executed " + sqlScripts.Count + " SQL scripts.");
         }
 
@@ -593,7 +593,7 @@ namespace Rhetos.DatabaseGenerator
 
             // If a DDL script is executed out of transaction, its metadata should also be committed immediately,
             // to avoid rolling back the concept application's metadata in case of any error that might occur later in the transaction.
-            if (databaseModificationScripts.Any(script => script.StartsWith(SqlUtility.NoTransactionTag)))
+            else if (databaseModificationScripts.Any(script => script.StartsWith(SqlUtility.NoTransactionTag)))
                 yield return SqlUtility.NoTransactionTag;
 
             // Oracle must commit metadata changes before modifying next database object, to ensure metadata consistency if next DDL command fails
