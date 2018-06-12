@@ -74,14 +74,6 @@ namespace Rhetos.Utilities
             return connectionStringProvider;
         }
 
-        public static string Comment(string text)
-        {
-            text = text.Replace("/*", "/ *").Replace("*/", "* /");
-            if (text.EndsWith("/"))
-                text += " ";
-            return "/*" + text + "*/";
-        }
-
         public static string DatabaseLanguage
         {
             get
@@ -454,7 +446,7 @@ namespace Rhetos.Utilities
         /// <summary>
         /// Splits the script to multiple batches, separated by the GO command.
         /// It emulates the behavior of Microsoft SQL Server utilities, sqlcmd and osql,
-        /// but it does not work perfectly: comments near GO and the repeat count are currently not supported.
+        /// but it does not work perfectly: comments near GO, strings containing GO and the repeat count are currently not supported.
         /// </summary>
         public static string[] SplitBatches(string sql)
         {
