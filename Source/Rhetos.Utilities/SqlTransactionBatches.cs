@@ -35,14 +35,21 @@ namespace Rhetos.Utilities
     /// </summary>
     public class SqlTransactionBatches
     {
+        public const string ReportProgressMsConfigKey = "SqlExecuter.ReportProgressMs";
+        public const string MaxJoinedScriptCountConfigKey = "SqlExecuter.MaxJoinedScriptCount";
+        public const string MaxJoinedScriptSizeConfigKey = "SqlExecuter.MaxJoinedScriptSize";
         private readonly ISqlExecuter _sqlExecuter;
         private readonly int _reportDelayMs;
+        private readonly int _maxJoinedScriptCount;
+        private readonly int _maxJoinedScriptSize;
         private readonly ILogger _logger;
 
         public SqlTransactionBatches(ISqlExecuter sqlExecuter, IConfiguration configuration, ILogProvider logProvider)
         {
             _sqlExecuter = sqlExecuter;
-            _reportDelayMs = configuration.GetInt("SqlExecuter.ReportProgressMs", 1000 * 60).Value; // Report progress each minute by default
+            _reportDelayMs = configuration.GetInt(ReportProgressMsConfigKey, 1000 * 60).Value; // Report progress each minute by default
+            _maxJoinedScriptCount = configuration.GetInt(MaxJoinedScriptCountConfigKey, 100).Value;
+            _maxJoinedScriptSize = configuration.GetInt(MaxJoinedScriptSizeConfigKey, 100000).Value;
             _logger = logProvider.GetLogger(nameof(SqlTransactionBatches));
         }
 
@@ -81,6 +88,8 @@ namespace Rhetos.Utilities
                 .Where(group => group.Scripts.Count() > 0) // Cleanup after removing the empty NoTransactionTag scripts.
                 .ToList();
 
+            _logger.Trace(() => "SqlBatches: " + string.Join(", ", sqlBatches.Select(b => $"{(b.UseTransaction ? "tran" : "notran")} {b.Scripts.Count()}")));
+
             int totalCount = sqlBatches.Sum(b => b.Scripts.Count);
             int previousBatchesCount = 0;
             var startTime = DateTime.Now;
@@ -112,6 +121,39 @@ namespace Rhetos.Utilities
 
                 previousBatchesCount += sqlBatch.Scripts.Count;
             }
+        }
+
+        /// <summary>
+        /// Combines multiple SQL scripts to a single one.
+        /// Use only for DML SQL scripts to avoid SQL syntax errors on DDL commands that need to stay in a separate scripts.
+        /// Scripts are joined to groups, respecting the configuration settings for the limit on total joined script size and count.
+        /// </summary>
+        /// <returns></returns>
+        public List<string> JoinScripts(IEnumerable<string> scripts)
+        {
+            var joinedScripts = new List<string>();
+            var currentBatch = new List<string>();
+            int currentBatchSize = 0;
+
+            foreach (var script in scripts)
+            {
+                if (currentBatch.Count > 0 &&
+                    (currentBatch.Count + 1 > _maxJoinedScriptCount
+                    || currentBatchSize + 2 + script.Length > _maxJoinedScriptSize))
+                {
+                    joinedScripts.Add(string.Join("\r\n", currentBatch));
+                    currentBatch.Clear();
+                    currentBatchSize = 0;
+                }
+
+                currentBatch.Add(script);
+                currentBatchSize += script.Length + (currentBatch.Count() > 1 ? 2 : 0);
+            }
+
+            if (currentBatch.Count > 0)
+                joinedScripts.Add(string.Join("\r\n", currentBatch));
+
+            return joinedScripts;
         }
     }
 }

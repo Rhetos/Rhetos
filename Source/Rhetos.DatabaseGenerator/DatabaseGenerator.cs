@@ -551,7 +551,7 @@ namespace Rhetos.DatabaseGenerator
                 }
 
                 newScripts.AddRange(removeSqlScripts);
-                newScripts.AddRange(_conceptApplicationRepository.DeleteMetadataSql(ca));
+                newScripts.AddRange(_sqlTransactionBatches.JoinScripts(_conceptApplicationRepository.DeleteMetadataSql(ca)));
                 newScripts.AddRange(MaybeCommitMetadataAfterDdl(removeSqlScripts));
             }
 
@@ -577,7 +577,7 @@ namespace Rhetos.DatabaseGenerator
                 }
 
                 newScripts.AddRange(createSqlScripts);
-                newScripts.AddRange(_conceptApplicationRepository.InsertMetadataSql(ca));
+                newScripts.AddRange(_sqlTransactionBatches.JoinScripts(_conceptApplicationRepository.InsertMetadataSql(ca)));
                 newScripts.AddRange(MaybeCommitMetadataAfterDdl(createSqlScripts));
             }
 
@@ -613,7 +613,7 @@ namespace Rhetos.DatabaseGenerator
 
             foreach (var ca in unchangedApplications)
             {
-                var updateMetadataSql = _conceptApplicationRepository.UpdateMetadataSql(ca, oldApplicationsByKey[ca.GetConceptApplicationKey()]);
+                var updateMetadataSql = _sqlTransactionBatches.JoinScripts(_conceptApplicationRepository.UpdateMetadataSql(ca, oldApplicationsByKey[ca.GetConceptApplicationKey()]));
                 if (updateMetadataSql.Count() > 0)
                 {
                     LogDatabaseChanges(ca, "Updating metadata");

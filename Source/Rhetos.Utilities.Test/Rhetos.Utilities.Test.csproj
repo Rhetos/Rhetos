@@ -71,6 +71,7 @@
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ScriptPositionReportingTest.cs" />
+    <Compile Include="SqlTransactionBatchesTests.cs" />
     <Compile Include="SqlTransactionBatchTest.cs" />
     <Compile Include="SqlUtilityTest.cs" />
     <Compile Include="EventTypeTest.cs" />
