@@ -14,6 +14,8 @@
 
     Action SetLock '(parameters, repository, userInfo) =>
         {
+            var now = SqlUtility.GetDatabaseTime(_executionContext.SqlExecuter);
+
             var oldLock = repository.Common.ExclusiveLock.Query()
                 .Where(itemLock =>
                     itemLock.ResourceType == parameters.ResourceType
@@ -27,12 +29,12 @@
                         Workstation = userInfo.Workstation,
                         ResourceType = parameters.ResourceType,
                         ResourceID = parameters.ResourceID,
-                        LockStart = DateTime.Now,
-                        LockFinish = DateTime.Now.AddMinutes(15)
+                        LockStart = now,
+                        LockFinish = now.AddMinutes(15)
                     }});
             else if (oldLock.UserName == userInfo.UserName
                 && oldLock.Workstation == userInfo.Workstation
-                || oldLock.LockFinish < DateTime.Now)
+                || oldLock.LockFinish < now)
                 repository.Common.ExclusiveLock.Update(new[] { new Common.ExclusiveLock
                     {
                         ID = oldLock.ID,
@@ -40,8 +42,8 @@
                         Workstation = userInfo.Workstation,
                         ResourceType = parameters.ResourceType,
                         ResourceID = parameters.ResourceID,
-                        LockStart = DateTime.Now,
-                        LockFinish = DateTime.Now.AddMinutes(15)
+                        LockStart = now,
+                        LockFinish = now.AddMinutes(15)
                     }});
              else
              {
