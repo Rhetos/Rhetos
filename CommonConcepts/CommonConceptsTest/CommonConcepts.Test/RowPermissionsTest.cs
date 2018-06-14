@@ -33,6 +33,7 @@ using Rhetos.Dsl.DefaultConcepts;
 using Rhetos;
 using Autofac.Features.Indexed;
 using Rhetos.Extensibility;
+using System.Diagnostics;
 
 namespace CommonConcepts.Test
 {
@@ -106,6 +107,8 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void TestReadSimpleManyRecords()
         {
+            CancelTestOnSlowServer();
+
             using (var container = new RhetosTestContainer())
             {
                 var gRepository = container.Resolve<GenericRepository<SimpleRP>>();
@@ -603,7 +606,7 @@ namespace CommonConcepts.Test
             var items = Enumerable.Range(0, 40).Select(a => new NoRP() { ID = Guid.NewGuid(), value = a }).ToList();
 
             // test insert
-            TestWrite<NoRP>(null, items.ToArray(), null, null, null);
+            TestWrite(null, items.ToArray(), null, null, null);
 
             var initial = items.ToArray();
             var id25 = items.Where(a => a.value == 25).Single().ID;
@@ -611,52 +614,53 @@ namespace CommonConcepts.Test
 
             // update items
             {
-                var result = TestWrite<NoRP>(initial, null, items.ToArray(), null, null);
+                var result = TestWrite(initial, null, items.ToArray(), null, null);
                 Assert.AreEqual(50, result.Where(a => a.ID == id25).Single().value);
             }
 
             // delete all
             {
-                var result = TestWrite<NoRP>(initial, null, null, items.ToArray(), null);
+                var result = TestWrite(initial, null, null, items.ToArray(), null);
                 Assert.AreEqual(0, result.Count());
             }
         }
 
-
         [TestMethod]
         public void TestWriteSimpleManyRecords()
         {
+            CancelTestOnSlowServer();
+
             var notLegal = Enumerable.Range(0, 2005).Select(a => new SimpleRP() { ID = Guid.NewGuid(), value = a }).ToArray();
             var legal1 = Enumerable.Range(600, 300).Select(a => new SimpleRP() { ID = Guid.NewGuid(), value = a }).ToArray();
 
             // failed insert
             {
-                var result = TestWrite<SimpleRP>(null, notLegal, null, null, _writeException);
+                var result = TestWrite(null, notLegal, null, null, _writeException);
                 Assert.AreEqual(0, result.Count());
             }
 
             // failed update
             {
-                var result = TestWrite<SimpleRP>(notLegal, null, notLegal, null, _writeException);
+                var result = TestWrite(notLegal, null, notLegal, null, _writeException);
                 Assert.AreEqual(notLegal.Count(), result.Count());
             }
 
             // failed delete
             {
-                var result = TestWrite<SimpleRP>(notLegal, null, null, notLegal, _writeException);
+                var result = TestWrite(notLegal, null, null, notLegal, _writeException);
                 Assert.AreEqual(notLegal.Count(), result.Count());
             }
 
             // legal insert
             {
-                var result = TestWrite<SimpleRP>(null, legal1, null, null, null);
+                var result = TestWrite(null, legal1, null, null, null);
                 Assert.AreEqual(legal1.Count(), result.Count());
             }
 
             // legal update
             {
                 var update = legal1.Select(a => new SimpleRP() { ID = a.ID, value = 1999 }).ToArray();
-                var result = TestWrite<SimpleRP>(legal1, null, update, null, null);
+                var result = TestWrite(legal1, null, update, null, null);
                 Assert.AreEqual(legal1.Count(), result.Count());
                 Assert.IsTrue(result.All(a => a.value == 1999));
             }
@@ -664,16 +668,40 @@ namespace CommonConcepts.Test
             // legal delete
             {
                 var delete = legal1.Take(50).ToArray();
-                var result = TestWrite<SimpleRP>(legal1, null, null, delete, null);
+                var result = TestWrite(legal1, null, null, delete, null);
                 Assert.AreEqual(legal1.Count() - 50, result.Count());
                 var resIDs = result.Select(a => a.ID).ToList();
                 Assert.IsTrue(delete.All(a => !resIDs.Contains(a.ID)));
             }
         }
 
+        private void CancelTestOnSlowServer()
+        {
+            using (var container = new RhetosTestContainer(false))
+            {
+                var context = container.Resolve<Common.ExecutionContext>();
+                var scripts = Enumerable.Range(1, 10).Select(x => $"print {x}");
+                context.SqlExecuter.ExecuteSql(scripts.First()); // Cold start.
+
+                var sw = Stopwatch.StartNew();
+                context.SqlExecuter.ExecuteSql(scripts);
+                var testDuration = sw.Elapsed;
+
+                Console.WriteLine($"CheckServerPerformance test duration: {testDuration}");
+                const int limitMs = 200;
+                const int usualMs = 2;
+                if (testDuration.TotalMilliseconds > limitMs)
+                    Assert.Inconclusive($"This test is suppressed on slow servers." +
+                        $" The baseline durations is {testDuration.TotalMilliseconds}ms, should be under {limitMs}ms." +
+                        $" The usual duration is around {usualMs}ms.");
+            }
+        }
+
         [TestMethod]
         public void TestWriteComplexAndImplicitReadWrite()
         {
+            CancelTestOnSlowServer();
+
             var items = Enumerable.Range(0, 101).Select(a => new ComplexRP() { ID = Guid.NewGuid(), value = a }).ToArray();
             
             using (var container = new RhetosTestContainer(true))
@@ -709,21 +737,21 @@ namespace CommonConcepts.Test
             
             // illegal insert
             {
-                var result = TestWrite<ComplexRP>(null, items, null, null, _writeException);
+                var result = TestWrite(null, items, null, null, _writeException);
                 Assert.AreEqual(0, result.Count());
             }
 
             // illegal update subset
             {
                 var toUpdate = items.Where(a => a.value > 80).ToArray();
-                var result = TestWrite<ComplexRP>(items, null, toUpdate, null, _writeException);
+                var result = TestWrite(items, null, toUpdate, null, _writeException);
                 Assert.AreEqual(items.Count(), result.Count());
             }
 
             // illegal delete subset
             {
                 var toDelete = items.Where(a => a.value < 10).ToArray();
-                var result = TestWrite<ComplexRP>(items, null, null, toDelete, _writeException);
+                var result = TestWrite(items, null, null, toDelete, _writeException);
                 Assert.AreEqual(items.Count(), result.Count());
             }
 
@@ -731,14 +759,14 @@ namespace CommonConcepts.Test
 
             // legal insert
             {
-                var result = TestWrite<ComplexRP>(null, legal, null, null, null);
+                var result = TestWrite(null, legal, null, null, null);
                 Assert.AreEqual(legal.Count(), result.Count());
             }
 
             // legal update
             {
                 var update = legal.Select(a => new ComplexRP() { ID = a.ID, value = 50 }).ToArray();
-                var result = TestWrite<ComplexRP>(legal, null, update, null, null);
+                var result = TestWrite(legal, null, update, null, null);
                 Assert.AreEqual(legal.Count(), result.Count());
                 Assert.IsTrue(result.All(a => a.value == 50));
             }
@@ -746,7 +774,7 @@ namespace CommonConcepts.Test
             // legal delete
             {
                 var toDelete = legal.Take(10).ToArray();
-                var result = TestWrite<ComplexRP>(legal, null, null, toDelete, null);
+                var result = TestWrite(legal, null, null, toDelete, null);
                 Assert.AreEqual(legal.Count() - 10, result.Count());
                 var resIDs= result.Select(a => a.ID).ToList();
                 Assert.IsTrue(toDelete.All(a => !resIDs.Contains(a.ID)));
@@ -767,7 +795,7 @@ namespace CommonConcepts.Test
                 new SimpleRP() { ID = illegalID, value = 600}
             };
 
-            var result = TestWrite<SimpleRP>(illegal, null, updateToLegal, null, _writeException);
+            var result = TestWrite(illegal, null, updateToLegal, null, _writeException);
             Assert.AreEqual(1, result.Count());
             Assert.AreEqual(100, result.First().value);
         }

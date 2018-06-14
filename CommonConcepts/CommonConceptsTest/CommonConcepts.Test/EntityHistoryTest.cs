@@ -569,12 +569,18 @@ namespace CommonConcepts.Test
                 sw.Stop();
 
                 var h = repository.TestHistory.Simple_Changes.Query().OrderBy(item => item.ActiveSince).ToArray();
-                Console.WriteLine(DumpFull(h));
-                string msg = string.Format(
-                    "Number of history records ({0}) is expected to be between the number of elapsed seconds ({1}) and the number of updates ({2}), depending on the DateTime precision.",
-                    h.Count(), Math.Floor(sw.Elapsed.TotalSeconds), tests1 * tests2);
-                Console.WriteLine(msg);
-                Assert.IsTrue(Math.Floor(sw.Elapsed.TotalSeconds) <= h.Count() && h.Count() <= tests1 * tests2, msg);
+                DumpFull(h);
+                Console.WriteLine($"Updates count: {tests1 * tests2}");
+                Console.WriteLine($"History records count: {h.Count()}");
+                Console.WriteLine($"Seconds elapsed: {Math.Floor(sw.Elapsed.TotalSeconds)}");
+
+                if (h.Count() > tests1 * tests2)
+                    Assert.Fail("Should not create more history records then number of updates.");
+                if (h.Count() < tests1 * tests2)
+                    Assert.IsTrue(Math.Floor(sw.Elapsed.TotalSeconds) <= h.Count(),
+                        $"If multiple updates happened at the same time (because of the limited date-time precision)," +
+                        $" the number of history records ({h.Count()}) is expected to be at least" +
+                        $" the number of elapsed seconds ({Math.Floor(sw.Elapsed.TotalSeconds)}) or larger.");
             }
         }
 
