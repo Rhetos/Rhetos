@@ -47,10 +47,11 @@ namespace Rhetos.Dom.DefaultConcepts
                 Guid[] resourceIDs = updated.Select(item => item.ID).Concat(deleted.Select(item => item.ID)).ToArray();
                 if (resourceIDs.Count() > 0)
                 {{
+                    var now = SqlUtility.GetDatabaseTime(_executionContext.SqlExecuter);
                     var queryLock = _domRepository.Common.ExclusiveLock.Query().Where(itemLock =>
                         itemLock.ResourceType == ""{0}.{1}""
                         && resourceIDs.Contains(itemLock.ResourceID.Value)
-                        && itemLock.LockFinish >= DateTime.Now);
+                        && itemLock.LockFinish >= now);
 
                     if (_executionContext.UserInfo.IsUserRecognized)
                         queryLock = queryLock.Where(itemLock =>

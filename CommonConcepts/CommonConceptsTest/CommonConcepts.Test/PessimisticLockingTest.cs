@@ -64,14 +64,14 @@ namespace CommonConcepts.Test
                 foreach (var article in articles)
                     article.Name = article.Name + "2";
                 var myLock = new Common.ExclusiveLock
-                    {
-                        UserName = "OtherUser",
-                        Workstation = container.Resolve<IUserInfo>().Workstation,
-                        ResourceType = "TestPessimisticLocking.Article",
-                        ResourceID = id2,
-                        LockStart = DateTime.Now,
-                        LockFinish = DateTime.Now.AddSeconds(10)
-                    };
+                {
+                    UserName = "OtherUser",
+                    Workstation = container.Resolve<IUserInfo>().Workstation,
+                    ResourceType = "TestPessimisticLocking.Article",
+                    ResourceID = id2,
+                    LockStart = DbTime(container),
+                    LockFinish = DbTime(container).AddSeconds(10)
+                };
                 lockRepos.Insert(new[] { myLock });
                 TestUtility.ShouldFail(() => articleRepos.Update(articles), id2.ToString(), "OtherUser");
 
@@ -85,6 +85,11 @@ namespace CommonConcepts.Test
                 articleRepos.Update(articles);
                 Assert.AreEqual("aaa12, bbb12", TestUtility.DumpSorted(articleRepos.Query(), item => item.Name), "updated with owned locks");
             }
+        }
+
+        private static DateTime DbTime(RhetosTestContainer container)
+        {
+            return SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
         }
 
         [TestMethod]
@@ -130,8 +135,8 @@ namespace CommonConcepts.Test
                     Workstation = container.Resolve<IUserInfo>().Workstation,
                     ResourceType = "TestPessimisticLocking.ArticleGroup",
                     ResourceID = parentId0,
-                    LockStart = DateTime.Now,
-                    LockFinish = DateTime.Now.AddSeconds(10)
+                    LockStart = DbTime(container),
+                    LockFinish = DbTime(container).AddSeconds(10)
                 };
                 lockRepos.Insert(new[] { myLock });
                 TestUtility.ShouldFail(() => articleRepos.Update(articles), parentId0.ToString(), "OtherUser");
@@ -208,14 +213,14 @@ namespace CommonConcepts.Test
                     Workstation = container.Resolve<IUserInfo>().Workstation,
                     ResourceType = "TestPessimisticLocking.Article",
                     ResourceID = article.ID,
-                    LockStart = DateTime.Now,
-                    LockFinish = DateTime.Now.AddSeconds(10)
+                    LockStart = DbTime(container),
+                    LockFinish = DbTime(container).AddSeconds(10)
                 };
                 lockRepos.Insert(new[] { myLock });
                 article.Name = article.Name + "1";
                 TestUtility.ShouldFail(() => articleRepos.Update(new[] { article }), article.ID.ToString(), "OtherUser");
 
-                myLock.LockFinish = DateTime.Now.AddSeconds(-10);
+                myLock.LockFinish = DbTime(container).AddSeconds(-10);
                 lockRepos.Update(new[] { myLock });
                 articleRepos.Update(new[] { article });
                 Assert.AreEqual("aaa1", TestUtility.DumpSorted(articleRepos.Query(), item => item.Name), "Inactive lock");
@@ -228,18 +233,17 @@ namespace CommonConcepts.Test
                     Workstation = container.Resolve<IUserInfo>().Workstation,
                     ResourceType = "TestPessimisticLocking.ArticleGroup",
                     ResourceID = group.ID,
-                    LockStart = DateTime.Now,
-                    LockFinish = DateTime.Now.AddSeconds(10)
+                    LockStart = DbTime(container),
+                    LockFinish = DbTime(container).AddSeconds(10)
                 };
                 lockRepos.Insert(new[] { myLock });
                 article.Name = article.Name + "2";
                 TestUtility.ShouldFail(() => articleRepos.Update(new[] { article }), group.ID.ToString(), "OtherUser");
 
-                myLock.LockFinish = DateTime.Now.AddSeconds(-10);
+                myLock.LockFinish = DbTime(container).AddSeconds(-10);
                 lockRepos.Update(new[] { myLock });
                 articleRepos.Update(new[] { article });
                 Assert.AreEqual("aaa12", TestUtility.DumpSorted(articleRepos.Query(), item => item.Name), "Inactive parent lock");
-
             }
         }
 
@@ -277,7 +281,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(article.ID, myLock.ResourceID);
                 Assert.AreEqual(container.Resolve<IUserInfo>().UserName, myLock.UserName);
                 Assert.AreEqual(container.Resolve<IUserInfo>().Workstation, myLock.Workstation);
-                var now = DateTime.Now;
+                var now = DbTime(container);
                 AssertInRange(myLock.LockStart.Value, now.AddSeconds(-1), now);
                 AssertInRange(myLock.LockFinish.Value, now.AddMinutes(defaultLockMinutes).AddSeconds(-1), now.AddMinutes(defaultLockMinutes));
             }
@@ -307,8 +311,8 @@ namespace CommonConcepts.Test
                     Workstation = container.Resolve<IUserInfo>().Workstation,
                     ResourceType = "TestPessimisticLocking.Article",
                     ResourceID = article.ID,
-                    LockStart = DateTime.Now,
-                    LockFinish = DateTime.Now.AddSeconds(10)
+                    LockStart = DbTime(container),
+                    LockFinish = DbTime(container).AddSeconds(10)
                 };
                 repository.Common.ExclusiveLock.Insert(new[] { oldLock });
 
@@ -341,8 +345,8 @@ namespace CommonConcepts.Test
                     Workstation = container.Resolve<IUserInfo>().Workstation,
                     ResourceType = "TestPessimisticLocking.Article",
                     ResourceID = article.ID,
-                    LockStart = DateTime.Now.AddDays(-1),
-                    LockFinish = DateTime.Now.AddDays(-1).AddSeconds(10)
+                    LockStart = DbTime(container).AddDays(-1),
+                    LockFinish = DbTime(container).AddDays(-1).AddSeconds(10)
                 };
                 repository.Common.ExclusiveLock.Insert(new[] { oldLock });
 
@@ -352,7 +356,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(article.ID, myLock.ResourceID);
                 Assert.AreEqual(container.Resolve<IUserInfo>().UserName, myLock.UserName);
                 Assert.AreEqual(container.Resolve<IUserInfo>().Workstation, myLock.Workstation);
-                var now = DateTime.Now;
+                var now = DbTime(container);
                 AssertInRange(myLock.LockStart.Value, now.AddSeconds(-1), now);
                 AssertInRange(myLock.LockFinish.Value, now.AddMinutes(defaultLockMinutes).AddSeconds(-1), now.AddMinutes(defaultLockMinutes));
             }
@@ -383,8 +387,8 @@ namespace CommonConcepts.Test
                     Workstation = container.Resolve<IUserInfo>().Workstation,
                     ResourceType = "TestPessimisticLocking.Article",
                     ResourceID = article.ID,
-                    LockStart = DateTime.Now.AddSeconds(-10),
-                    LockFinish = DateTime.Now.AddSeconds(4)
+                    LockStart = DbTime(container).AddSeconds(-10),
+                    LockFinish = DbTime(container).AddSeconds(4)
                 };
                 repository.Common.ExclusiveLock.Insert(new[] { oldLock });
 
@@ -394,7 +398,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(article.ID, myLock.ResourceID);
                 Assert.AreEqual(container.Resolve<IUserInfo>().UserName, myLock.UserName);
                 Assert.AreEqual(container.Resolve<IUserInfo>().Workstation, myLock.Workstation);
-                var now = DateTime.Now;
+                var now = DbTime(container);
                 AssertInRange(myLock.LockStart.Value, now.AddSeconds(-1), now);
                 AssertInRange(myLock.LockFinish.Value, now.AddMinutes(defaultLockMinutes).AddSeconds(-1), now.AddMinutes(defaultLockMinutes));
             }
@@ -432,8 +436,8 @@ namespace CommonConcepts.Test
                     Workstation = container.Resolve<IUserInfo>().Workstation,
                     ResourceType = "TestPessimisticLocking.Article",
                     ResourceID = article.ID,
-                    LockStart = DateTime.Now.AddSeconds(-10),
-                    LockFinish = DateTime.Now.AddSeconds(4)
+                    LockStart = DbTime(container).AddSeconds(-10),
+                    LockFinish = DbTime(container).AddSeconds(4)
                 };
                 repository.Common.ExclusiveLock.Insert(new[] { oldLock });
                 Assert.AreEqual(1, repository.Common.ExclusiveLock.Query().Count());
@@ -473,8 +477,8 @@ namespace CommonConcepts.Test
                     Workstation = container.Resolve<IUserInfo>().Workstation,
                     ResourceType = "TestPessimisticLocking.Article",
                     ResourceID = article.ID,
-                    LockStart = DateTime.Now.AddSeconds(0),
-                    LockFinish = DateTime.Now.AddSeconds(10)
+                    LockStart = DbTime(container).AddSeconds(0),
+                    LockFinish = DbTime(container).AddSeconds(10)
                 };
                 repository.Common.ExclusiveLock.Insert(new[] { oldLock });
                 Assert.AreEqual(1, repository.Common.ExclusiveLock.Query().Count());
