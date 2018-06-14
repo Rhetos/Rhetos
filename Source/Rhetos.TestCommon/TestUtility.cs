@@ -88,17 +88,9 @@ namespace Rhetos.TestCommon
                     Console.WriteLine(errorContext);
                     Assert.Fail("Text should contain pattern '" + pattern + "'."
                         + (string.IsNullOrEmpty(message) ? " " + message : "")
-                        + " " + "The text is " + ReportLongText(text) + ".");
+                        + " " + "The text is '" + text.Limit(200, true) + "'.");
                 }
             }
-        }
-
-        private static string ReportLongText(string text)
-        {
-            const int maxLength = 200;
-            if (text.Length < maxLength)
-                return "'" + text + "'";
-            return "'" + text.Substring(0, maxLength) + " ...' (total length " + text.Length + ")";
         }
 
         /// <summary>

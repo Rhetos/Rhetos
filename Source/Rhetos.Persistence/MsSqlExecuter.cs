@@ -67,6 +67,8 @@ namespace Rhetos.Persistence
 
         public void ExecuteSql(IEnumerable<string> commands, bool useTransaction, Action<int> beforeExecute, Action<int> afterExecute)
         {
+            CsUtility.Materialize(ref commands);
+
             _logger.Trace(() => "Executing " + commands.Count() + " commands" + (useTransaction ? "" : " without transaction") + ".");
 
             SafeExecuteCommand(
@@ -97,27 +99,30 @@ namespace Rhetos.Persistence
                             afterExecute?.Invoke(count - 1);
                             LogPerformanceIssue(sw, sql);
                         }
-
-                        if (useTransaction)
-                        {
-                            try
-                            {
-                                com.CommandText = @"IF @@TRANCOUNT <> 1 RAISERROR('Transaction count is %d, expected value is 1.', 16, 10, @@TRANCOUNT)";
-                                com.ExecuteNonQuery();
-                            }
-                            catch (SqlException ex)
-                            {
-                                throw new FrameworkException(
-                                    string.Format(CultureInfo.InvariantCulture,
-                                        "SQL script has changed transaction level.{0}{1}",
-                                            Environment.NewLine,
-                                            sql.Limit(1000, "...")),
-                                    ex);
-                            }
-                        }
                     }
+                    CheckTransactionState(useTransaction, com, commands);
                 },
                 useTransaction);
+        }
+
+        private static void CheckTransactionState(bool useTransaction, DbCommand com, IEnumerable<string> commands)
+        {
+            if (useTransaction)
+            {
+                try
+                {
+                    com.CommandText = @"IF @@TRANCOUNT <> 1 RAISERROR('Transaction count is %d, expected value is 1.', 16, 10, @@TRANCOUNT)";
+                    com.ExecuteNonQuery();
+                }
+                catch (SqlException ex)
+                {
+                    throw new FrameworkException(
+                        "The SQL scripts have changed transaction level:\r\n"
+                            + commands.First().Limit(1000, true)
+                            + (commands.Count() > 1 ? $" ... ({commands.Count()} scripts)" : ""),
+                        ex);
+                }
+            }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
@@ -218,7 +223,7 @@ namespace Rhetos.Persistence
         private void LogPerformanceIssue(Stopwatch sw, string sql)
         {
             if (sw.Elapsed >= LoggerHelper.SlowEvent) // Avoid flooding the performance trace log.
-                _performanceLogger.Write(sw, () => "MsSqlExecuter: " + sql);
+                _performanceLogger.Write(sw, () => "MsSqlExecuter: " + sql.Limit(50000, true));
             else
                 sw.Restart(); // _performanceLogger.Write would restart the stopwatch.
         }

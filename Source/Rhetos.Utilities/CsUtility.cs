@@ -308,10 +308,15 @@ namespace Rhetos.Utilities
             return batches;
         }
 
-        public static string Limit(this string text, int maxLength)
+        public static string Limit(this string text, int maxLength, bool appendTotalLengthInfo = false)
         {
             if (text.Length > maxLength)
-                return text.Substring(0, maxLength);
+            {
+                if (!appendTotalLengthInfo)
+                    return text.Substring(0, maxLength);
+                else
+                    return text.Substring(0, maxLength) + "... (total length " + text.Length + ")";
+            }
             else
                 return text;
         }

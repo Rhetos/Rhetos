@@ -68,11 +68,19 @@ namespace Rhetos.Logging
             stopwatch.Restart();
         }
 
+        /// <summary>
+        /// Logs 'Trace' or 'Info' level, depending on the event duration.
+        /// Restarts the stopwatch.
+        /// </summary>
         public static void Write(this ILogger performanceLogger, Stopwatch stopwatch, Func<string> message)
         {
             PerformanceWrite(performanceLogger, stopwatch, () => stopwatch.Elapsed + " " + message());
         }
 
+        /// <summary>
+        /// Logs 'Trace' or 'Info' level, depending on the event duration.
+        /// Restarts the stopwatch.
+        /// </summary>
         public static void Write(this ILogger performanceLogger, Stopwatch stopwatch, string message)
         {
             PerformanceWrite(performanceLogger, stopwatch, () => stopwatch.Elapsed + " " + message);
