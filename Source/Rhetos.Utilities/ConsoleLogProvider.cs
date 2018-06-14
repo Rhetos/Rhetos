@@ -66,16 +66,7 @@ namespace Rhetos.Utilities
                 try
                 {
                     message = logMessage();
-
-                    const int maxLogMessageLength = 10000;
-                    string shortenedMessage;
-                    if (message.Length > maxLogMessageLength)
-                        shortenedMessage = message.Substring(0, maxLogMessageLength)
-                            + " ... (trimmed to max " + GetType().Name + " message length of " + maxLogMessageLength + ")";
-                    else
-                        shortenedMessage = message;
-
-                    Write(eventType, _eventName, shortenedMessage);
+                    Write(eventType, _eventName, message.Limit(10000, true));
                 }
                 catch (Exception ex)
                 {

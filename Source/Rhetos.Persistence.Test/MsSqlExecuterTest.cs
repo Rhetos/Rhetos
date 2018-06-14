@@ -60,6 +60,8 @@ namespace Rhetos.Persistence.Test
         [ClassCleanup]
         public static void DropRhetosUnitTestSchema()
         {
+            Console.WriteLine("=== ClassCleanup ===");
+
             try { TestUtility.CheckDatabaseAvailability("MsSql"); }
             catch { return; }
 
@@ -187,33 +189,23 @@ raiserror('fff', 18, 118)"
         [TestMethod]
         public void ExecuteSql_RollbackedTransaction()
         {
-            try
-            {
-                NewSqlExecuter().ExecuteSql(new[] {
+            TestUtility.ShouldFail<FrameworkException>(
+                () => NewSqlExecuter().ExecuteSql(new[] {
+                    "print '1'",
                     "rollback",
-                    "raiserror('abc', 16, 10)" });
-            }
-            catch (Exception e)
-            {
-                Assert.IsFalse(e.Message.Contains("abc"), "Script executed out of transaction. Second query must not be executed.");
-                Assert.IsTrue(e.Message.ToLower().Contains("transaction"), "Error cause is not described.");
-            }
+                    "print '2'" }),
+                "transaction", "rollback");
         }
 
         [TestMethod]
         public void ExecuteSql_TransactionLevel()
         {
-            try
-            {
-                NewSqlExecuter().ExecuteSql(new[] {
+            TestUtility.ShouldFail<FrameworkException>(
+                () => NewSqlExecuter().ExecuteSql(new[] {
+                    "print '1'",
                     "begin tran",
-                    "raiserror('abc', 16, 10)" });
-            }
-            catch (Exception e)
-            {
-                Assert.IsFalse(e.Message.Contains("abc"), "Change of transaction level is not recognized. Second query must not be executed.");
-                Assert.IsTrue(e.Message.ToLower().Contains("transaction"), "Error cause is not described.");
-            }
+                    "print '2'" }),
+                "transaction", "begin tran");
         }
 
         [TestMethod]

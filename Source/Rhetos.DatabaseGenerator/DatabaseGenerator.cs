@@ -529,7 +529,7 @@ namespace Rhetos.DatabaseGenerator
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Prepared SQL scripts for inserting concept applications.");
 
             _sqlTransactionBatches.Execute(sqlScripts.Select(sql => new SqlTransactionBatches.SqlScript { Sql = sql, IsBatch = false, Name = null }));
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Executed " + sqlScripts.Count + " SQL scripts.");
+            _performanceLogger.Write(stopwatch, $"DatabaseGenerator.ApplyChangesToDatabase: Executed {sqlScripts.Where(sql => !string.IsNullOrEmpty(sql)).Count()} SQL scripts.");
         }
 
         protected List<string> ApplyChangesToDatabase_Remove(List<ConceptApplication> toBeRemoved, List<ConceptApplication> oldApplications)

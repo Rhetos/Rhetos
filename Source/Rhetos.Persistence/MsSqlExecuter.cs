@@ -117,12 +117,29 @@ namespace Rhetos.Persistence
                 catch (SqlException ex)
                 {
                     throw new FrameworkException(
-                        "The SQL scripts have changed transaction level:\r\n"
-                            + commands.First().Limit(1000, true)
-                            + (commands.Count() > 1 ? $" ... ({commands.Count()} scripts)" : ""),
+                        "The SQL scripts have changed transaction level. " + ReportSqlScripts(commands, 1000),
                         ex);
                 }
             }
+        }
+
+        private static string ReportSqlScripts(IEnumerable<string> commands, int maxLength)
+        {
+            var report = new StringBuilder();
+            report.Append($"Executing {commands.Count()} scripts:");
+
+            foreach (var sql in commands)
+            {
+                report.Append("\r\n");
+                report.Append(sql.Limit(maxLength, true));
+                if (report.Length > maxLength)
+                {
+                    report.Append("\r\n...");
+                    break;
+                }
+            }
+
+            return report.ToString();
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
