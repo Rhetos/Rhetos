@@ -174,11 +174,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <CodeAnalysisDictionary Include="..\..\CodeAnalysisDictionary.xml">
-      <Link>CodeAnalysisDictionary.xml</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Sql.MsSql.resx">
       <SubType>Designer</SubType>
     </EmbeddedResource>
