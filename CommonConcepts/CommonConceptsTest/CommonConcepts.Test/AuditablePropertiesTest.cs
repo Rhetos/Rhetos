@@ -219,5 +219,69 @@ namespace CommonConcepts.Test
             TestModificationTimeOf(p, "nameA-par1-timeNull-timeNull=>timeNow", null, "Initialize1, update time.");
             TestModificationTimeOf(p, "nameA-parNull-time1-timeNull=>timeNow", null, "Initialize2, update time.");
         }
+
+        [TestMethod]
+        public void ModificationTime_ChronologyOnInsert()
+        {
+            const int testRuns = 8;
+            const int testCount = 3;
+            TimeSpan sqlPrecision = TimeSpan.FromMilliseconds(5); // SQL DateTime precision.
+
+            var errors = new MultiDictionary<string, string>();
+
+            for (int testRun = 0; testRun < testRuns; testRun++)
+            {
+                using (var container = new RhetosTestContainer())
+                {
+                    var context = container.Resolve<Common.ExecutionContext>();
+                    var repository = context.Repository;
+                    repository.TestAuditable.Simple2.Insert(new TestAuditable.Simple2 { }); // Cold start.
+
+                    for (int test = 0; test < testCount; test++)
+                    {
+                        var items = Enumerable.Range(0, 1)
+                            .Select(x => new TestAuditable.Simple2 { Name = x.ToString() })
+                            .ToArray();
+
+                        DateTime testStart = SqlUtility.GetDatabaseTime(context.SqlExecuter);
+                        repository.TestAuditable.Simple2.Insert(items);
+                        DateTime testFinish = SqlUtility.GetDatabaseTime(context.SqlExecuter);
+
+                        items = repository.TestAuditable.Simple2.Load(items.Select(item => item.ID)).ToArray();
+                        //Assert.AreEqual(test + 1, items.Count());
+
+                        foreach (var item in items)
+                        {
+                            var failures = new List<string>();
+                            if (testStart > item.Created.Value.Add(sqlPrecision)) // Tolerate imprecision when comparing C# DateTime value and SQL DateTime value.
+                                failures.Add("testStart > item.Created");
+                            if (item.Created > item.Modified) // Both values are from SQL, so there should not tolerance for imprecision.
+                                failures.Add("item.Created > item.Modified");
+                            if (item.Modified > testFinish.Add(sqlPrecision)) // Tolerate imprecision when comparing C# DateTime value and SQL DateTime value.
+                                failures.Add("item.Modified > testFinish");
+
+                            if (failures.Any())
+                            {
+                                string errorType = string.Join(", ", failures);
+                                string report = $"Test run {testRun}, test {test}:" +
+                                    $"{item.ID} TestAuditable.Simple2.ID\r\n" +
+                                    $"{testStart.ToString("o")} testStart\r\n" +
+                                    $"{item.Created.Value.ToString("o")} Created\r\n" +
+                                    $"{item.Modified.Value.ToString("o")} Modified\r\n" +
+                                    $"{testFinish.ToString("o")} testFinish";
+
+                                Console.WriteLine(errorType + "\r\n" + report);
+                                errors.Add(errorType, report);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (errors.Any())
+                Assert.Fail("Incorrect chronology on insert, see test Output for more details." +
+                    string.Concat(errors.Select(e => $"\r\n{e.Value.Count()} failures: {e.Key}"))
+                    + "\r\nSample:" + errors[errors.Keys.OrderByDescending(x => x.Length).First()].First());
+        }
     }
 }

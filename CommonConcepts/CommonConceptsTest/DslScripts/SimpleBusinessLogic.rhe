@@ -189,6 +189,13 @@ Module TestAuditable
         DateTime ModifiedParentProperty { ModificationTimeOf TestAuditable.Simple.Parent; }
         DateTime ModifiedNameOrParentModification { ModificationTimeOf TestAuditable.Simple.Name; ModificationTimeOf TestAuditable.Simple.ModifiedParentProperty; }
     }
+
+    Entity Simple2
+    {
+        ShortString Name;
+        DateTime Created { CreationTime; }
+        DateTime Modified { ModificationTimeOf TestAuditable.Simple2.Name; }
+    }
 }
 
 Module TestDeactivatable
