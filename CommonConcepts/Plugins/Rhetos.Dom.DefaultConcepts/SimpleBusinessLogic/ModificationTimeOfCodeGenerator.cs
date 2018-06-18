@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Compiler;
+using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
 using System;
@@ -29,24 +30,35 @@ using System.Text;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(CreationTimeInfo))]
-    public class CreationTimeCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(ModificationTimeOfInfo))]
+    public class ModificationTimeOfCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(Dsl.IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (CreationTimeInfo)conceptInfo;
+            var info = (ModificationTimeOfInfo)conceptInfo;
+
+            string timeProperty = info.Property.GetSimplePropertyName();
+            string modifiedProperty = info.ModifiedProperty.GetSimplePropertyName();
 
             string snippet =
             $@"{{ 
                 var now = SqlUtility.GetDatabaseTime(_executionContext.SqlExecuter);
 
                 foreach (var newItem in insertedNew)
-                    if(newItem.{info.Property.Name} == null)
-                        newItem.{info.Property.Name} = now;
+                    if(newItem.{timeProperty} == null)
+                        newItem.{timeProperty} = now;
+
+                var modifiedItems = updatedOld
+					.Zip(updatedNew, (oldValue, newValue) => new {{ oldValue, newValue }})
+					.Where(modified => modified.oldValue.{modifiedProperty} == null && modified.newValue.{modifiedProperty} != null
+                        || modified.oldValue.{modifiedProperty} != null && !modified.oldValue.{modifiedProperty}.Equals(modified.newValue.{modifiedProperty}));
+
+                foreach (var modified in modifiedItems)
+                    modified.newValue.{timeProperty} = now;
             }}
             ";
 
-            codeBuilder.InsertCode(snippet, WritableOrmDataStructureCodeGenerator.InitializationTag, info.Property.DataStructure);
+            codeBuilder.InsertCode(snippet, WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Property.DataStructure);
         }
     }
 }

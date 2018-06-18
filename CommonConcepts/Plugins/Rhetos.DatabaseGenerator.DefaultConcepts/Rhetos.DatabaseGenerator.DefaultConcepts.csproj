@@ -138,7 +138,6 @@
     <Compile Include="PolymorphicPropertyDatabaseDefinition.cs" />
     <Compile Include="SqlDependsOnSqlIndexDatabaseDefinition.cs" />
     <Compile Include="EntityHistoryPropertyDatabaseDefinition.cs" />
-    <Compile Include="ModificationTimeOfDatabaseDefinition.cs" />
     <Compile Include="SqlDependsOnSqlObjectDatabaseDefinition.cs" />
     <Compile Include="SqlObjectDatabaseDefinition.cs" />
     <Compile Include="Sql.cs" />

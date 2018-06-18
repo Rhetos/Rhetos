@@ -46,5 +46,15 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             return DataStructure.Name.GetHashCode() ^ Name.GetHashCode();
         }
+
+        /// <summary>
+        /// Name of the property generated in the simple POCO C# class for the data structure.
+        /// This may be different from the database column or the navigation property name.
+        /// Returns null, if this concept does not generate the single property on the simple class.
+        /// </summary>
+        virtual public string GetSimplePropertyName()
+        {
+            return Name;
+        }
     }
 }

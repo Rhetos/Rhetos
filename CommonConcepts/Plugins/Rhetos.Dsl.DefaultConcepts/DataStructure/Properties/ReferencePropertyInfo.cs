@@ -39,5 +39,10 @@ namespace Rhetos.Dsl.DefaultConcepts
                 .HasForeignKey(t => t.{Name}ID);
             ";
         }
+
+        public override string GetSimplePropertyName()
+        {
+            return Name + "ID";
+        }
     }
 }

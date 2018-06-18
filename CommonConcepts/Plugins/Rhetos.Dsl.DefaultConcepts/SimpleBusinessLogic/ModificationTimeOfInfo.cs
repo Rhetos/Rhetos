@@ -27,7 +27,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ModificationTimeOf")]
-    public class ModificationTimeOfInfo : IValidationConcept
+    public class ModificationTimeOfInfo : IValidatedConcept
     {
         [ConceptKey]
         public DateTimePropertyInfo Property { get; set; }
@@ -35,9 +35,29 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public PropertyInfo ModifiedProperty { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             DslUtility.CheckIfPropertyBelongsToDataStructure(ModifiedProperty, Property.DataStructure, this);
+        }
+    }
+
+    [Export(typeof(IConceptMacro))]
+    public class ModificationTimeOfMacro : IConceptMacro<ModificationTimeOfInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(ModificationTimeOfInfo conceptInfo, IDslModel existingConcepts)
+        {
+            if (!(conceptInfo.Property.DataStructure is EntityInfo))
+                throw new DslSyntaxException(conceptInfo, $"{conceptInfo.GetKeywordOrTypeName()} can only be used on an Entity, " +
+                    $"not on {conceptInfo.Property.DataStructure.GetUserDescription()}.");
+            
+            var saveMethod = new SaveMethodInfo { Entity = (EntityInfo)conceptInfo.Property.DataStructure };
+            var loadOldItems = new LoadOldItemsInfo { SaveMethod = saveMethod };
+            return new IConceptInfo[]
+            {
+                saveMethod,
+                loadOldItems,
+                new LoadOldItemsTakeInfo { LoadOldItems = loadOldItems, Path = conceptInfo.ModifiedProperty.GetSimplePropertyName() }
+            };
         }
     }
 }

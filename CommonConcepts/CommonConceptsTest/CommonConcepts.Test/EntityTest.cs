@@ -715,45 +715,5 @@ namespace CommonConcepts.Test
                 Assert.IsNull(items.Single().Data);
             }
         }
-
-        [TestMethod]
-        public void DateTimeConsistencyTest()
-        {
-            using (var container = new RhetosTestContainer())
-            {
-                container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestTypes.Simple");
-                var repository = container.Resolve<Common.DomRepository>();
-
-                const int tests = 30;
-
-                var report = new List<string>(tests);
-
-                for (int i = 0; i < tests; i++)
-                {
-                    var simples = repository.TestTypes.Simple;
-                    DateTime t0 = DateTime.Now;
-                    var id = Guid.NewGuid();
-                    simples.Insert(new TestTypes.Simple { ID = id, Start = t0 });
-                    DateTime t1 = simples.Load(new[] { id }).Single().Start.Value;
-
-                    // It is not necessary to match t1 == t0, because the database precision may be lower than C#,
-                    // but the data loaded from a database should behave consistently when returning it to the database.
-                    // There is a problem with EF6 and datetime SQL type:
-                    // EF6 uses datetime2 for query parameters while Rhetos uses datetime in database. The mismatch creates errors in this test.");
-
-                    string result = (simples.Query(x => x.ID == id && x.Start == t1).Any() ? "eq " : "")
-                        + (simples.Query(x => x.ID == id && x.Start != t1).Any() ? "ne " : "")
-                        + (simples.Query(x => x.ID == id && x.Start <= t1).Any() ? "le " : "")
-                        + (simples.Query(x => x.ID == id && x.Start >= t1).Any() ? "ge " : "")
-                        + (simples.Query(x => x.ID == id && x.Start < t1).Any() ? "lt " : "")
-                        + (simples.Query(x => x.ID == id && x.Start > t1).Any() ? "gt " : "");
-
-                    report.Add(result);
-                }
-
-                string summary = TestUtility.DumpSorted(report.GroupBy(r => r), g => $"{g.Key}({g.Count()})");
-                Assert.AreEqual($"eq le ge ({tests})", summary);
-            }
-        }
     }
 }

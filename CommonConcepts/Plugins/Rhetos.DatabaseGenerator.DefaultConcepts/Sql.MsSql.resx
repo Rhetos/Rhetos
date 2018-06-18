@@ -491,57 +491,6 @@ ALTER TABLE {0}.{1} DROP COLUMN [{2}]
   <data name="EntityLoggingDefinition_TriggerNameUpdate" xml:space="preserve">
     <value>trg_{1}_Logging</value>
   </data>
-  <data name="CreationTimeDatabaseDefinition_TriggerBody" xml:space="preserve">
-    <value>
-SET NOCOUNT ON
-
-UPDATE
-	newData
-SET
-	{2} = GETDATE()
-FROM
-	{0}.{1} newData
-	INNER JOIN inserted ON inserted.ID = newData.ID
-WHERE
-	inserted.{2} IS NULL
-</value>
-  </data>
-  <data name="ModificationTimeOfDatabaseDefinition_InsertTriggerBody" xml:space="preserve">
-    <value>
-SET NOCOUNT ON
-
-UPDATE
-	newData
-SET
-	{2} = GETDATE()
-FROM
-	{0}.{1} newData
-	INNER JOIN inserted ON inserted.ID = newData.ID
-WHERE
-	inserted.{2} IS NULL
-</value>
-  </data>
-  <data name="ModificationTimeOfDatabaseDefinition_UpdateTriggerBody" xml:space="preserve">
-    <value>
-SET NOCOUNT ON
-
-IF UPDATE({3})
-BEGIN
-  UPDATE
-    newData
-  SET
-    {2} = GETDATE()
-  FROM
-    {0}.{1} newData
-    INNER JOIN inserted ON inserted.ID = newData.ID
-    INNER JOIN deleted ON deleted.ID = inserted.ID
-  WHERE
-    inserted.{3} &lt;&gt; deleted.{3}
-    OR inserted.{3} IS NULL AND deleted.{3} IS NOT NULL
-    OR inserted.{3} IS NOT NULL AND deleted.{3} IS NULL
-END
-</value>
-  </data>
   <data name="LoggingRelatedItemDatabaseDefinition_TempColumnDefinition" xml:space="preserve">
     <value>,
     {0} uniqueidentifier,

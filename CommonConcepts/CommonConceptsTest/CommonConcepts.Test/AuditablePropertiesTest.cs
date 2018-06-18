@@ -164,37 +164,6 @@ namespace CommonConcepts.Test
             TestModificationTimeOf(p, "nameA-parNull-timeNull=>timeNow", null, "Initialize without parent, update time.");
         }
 
-        [TestMethod]
-        public void ModificationTimeOf_Database()
-        {
-            using (var container = new RhetosTestContainer())
-            {
-                var start = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
-                    {
-                        "DELETE FROM TestAuditable.Simple",
-                        "DELETE FROM TestAuditable.Parent",
-                        "INSERT INTO TestAuditable.Parent (ID, Name) VALUES ('"+parentID1+"', 'par1')",
-                        "INSERT INTO TestAuditable.Parent (ID, Name) VALUES ('"+parentID2+"', 'par2')",
-                        "INSERT INTO TestAuditable.Simple (Name, ModifiedParentProperty) VALUES ('newInstance', NULL)",
-                        "INSERT INTO TestAuditable.Simple (Name, ParentID, ModifiedParentProperty) VALUES ('explicitTime', '" + parentID1 + "', '2001-2-3')",
-                        "INSERT INTO TestAuditable.Simple (Name, ParentID, ModifiedParentProperty) VALUES ('modifiedParent', '" + parentID1 + "', '2001-2-3')",
-                        "UPDATE TestAuditable.Simple SET ParentID = '" + parentID2 + "' WHERE Name = 'modifiedParent'",
-                        "INSERT INTO TestAuditable.Simple (Name, ParentID, ModifiedParentProperty) VALUES ('modifiedNameX', '" + parentID1 + "', '2001-2-3')",
-                        "UPDATE TestAuditable.Simple SET Name = 'modifiedName' WHERE Name = 'modifiedNameX'"
-                    });
-                var repository = container.Resolve<Common.DomRepository>();
-
-                Func<string, DateTime?> actualModifiedTime = test => repository.TestAuditable.Simple.Query()
-                    .Where(item => item.Name == test).Single().ModifiedParentProperty;
-
-                AssertJustAfter(start, actualModifiedTime("newInstance"), "newInstance");
-                AssertJustAfter(new DateTime(2001, 2, 3), actualModifiedTime("explicitTime"), "explicitTime");
-                AssertJustAfter(start, actualModifiedTime("modifiedParent"), "modifiedParent");
-                AssertJustAfter(new DateTime(2001, 2, 3), actualModifiedTime("modifiedName"), "modifiedName");
-            }
-        }
-
         private static void AssertJustAfter(DateTime expected, DateTime? actual, string errorMessage)
         {
             expected = new DateTime(expected.Year, expected.Month, expected.Day, expected.Hour, expected.Minute, expected.Second); // ORM may trim milliseconds.
@@ -220,11 +189,16 @@ namespace CommonConcepts.Test
             TestModificationTimeOf(p, "nameA-parNull-time1-timeNull=>timeNow", null, "Initialize2, update time.");
         }
 
+        public void AssertLessOrEqual(DateTime? t1, DateTime? t2, string message)
+        {
+            Assert.IsTrue(t1.Value <= t2.Value, $"Failed condition {t1.Value.ToString("o")} <= {t2.Value.ToString("o")}. {message}");
+        }
+
         [TestMethod]
         public void ModificationTime_ChronologyOnInsert()
         {
-            const int testRuns = 8;
-            const int testCount = 3;
+            const int testRuns = 5;
+            const int testBatch = 5;
             TimeSpan sqlPrecision = TimeSpan.FromMilliseconds(5); // SQL DateTime precision.
 
             var errors = new MultiDictionary<string, string>();
@@ -237,51 +211,27 @@ namespace CommonConcepts.Test
                     var repository = context.Repository;
                     repository.TestAuditable.Simple2.Insert(new TestAuditable.Simple2 { }); // Cold start.
 
-                    for (int test = 0; test < testCount; test++)
-                    {
-                        var items = Enumerable.Range(0, 1)
-                            .Select(x => new TestAuditable.Simple2 { Name = x.ToString() })
-                            .ToArray();
+                    var items = Enumerable.Range(0, testBatch)
+                        .Select(x => new TestAuditable.Simple2 { Name = x.ToString() })
+                        .ToArray();
 
-                        DateTime testStart = SqlUtility.GetDatabaseTime(context.SqlExecuter);
-                        repository.TestAuditable.Simple2.Insert(items);
-                        DateTime testFinish = SqlUtility.GetDatabaseTime(context.SqlExecuter);
+                    foreach (var item in items)
+                        repository.TestAuditable.Simple2.Insert(item); // Inserting one by one to make sure that each is processed separately.
 
-                        items = repository.TestAuditable.Simple2.Load(items.Select(item => item.ID)).ToArray();
-                        //Assert.AreEqual(test + 1, items.Count());
+                    for (int i = 0; i < items.Count(); i++)
+                        items[i] = repository.TestAuditable.Simple2.Load(new[] { items[i].ID }).Single();
 
-                        foreach (var item in items)
-                        {
-                            var failures = new List<string>();
-                            if (testStart > item.Created.Value.Add(sqlPrecision)) // Tolerate imprecision when comparing C# DateTime value and SQL DateTime value.
-                                failures.Add("testStart > item.Created");
-                            if (item.Created > item.Modified) // Both values are from SQL, so there should not tolerance for imprecision.
-                                failures.Add("item.Created > item.Modified");
-                            if (item.Modified > testFinish.Add(sqlPrecision)) // Tolerate imprecision when comparing C# DateTime value and SQL DateTime value.
-                                failures.Add("item.Modified > testFinish");
+                    Console.WriteLine(string.Join("\r\n", items.Select((item, x) => $"{x}" +
+                        $" {item.Created.Value.ToString("o")}" +
+                        $" created\r\n{x} {item.Modified.Value.ToString("o")} modified")));
 
-                            if (failures.Any())
-                            {
-                                string errorType = string.Join(", ", failures);
-                                string report = $"Test run {testRun}, test {test}:" +
-                                    $"{item.ID} TestAuditable.Simple2.ID\r\n" +
-                                    $"{testStart.ToString("o")} testStart\r\n" +
-                                    $"{item.Created.Value.ToString("o")} Created\r\n" +
-                                    $"{item.Modified.Value.ToString("o")} Modified\r\n" +
-                                    $"{testFinish.ToString("o")} testFinish";
+                    for (int i = 1; i < items.Count(); i++)
+                        AssertLessOrEqual(items[i].Created, items[i].Modified, $"Item should be created before modified ({testRun}/{i}).");
 
-                                Console.WriteLine(errorType + "\r\n" + report);
-                                errors.Add(errorType, report);
-                            }
-                        }
-                    }
+                    for (int i = 1; i < items.Count(); i++)
+                        AssertLessOrEqual(items[i-1].Modified, items[i].Created, $"The previous item should be modified before the next is created ({testRun}/{i}).");
                 }
             }
-
-            if (errors.Any())
-                Assert.Fail("Incorrect chronology on insert, see test Output for more details." +
-                    string.Concat(errors.Select(e => $"\r\n{e.Value.Count()} failures: {e.Key}"))
-                    + "\r\nSample:" + errors[errors.Keys.OrderByDescending(x => x.Length).First()].First());
         }
     }
 }

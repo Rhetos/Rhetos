@@ -161,7 +161,7 @@ namespace Rhetos.Utilities.Test
 
             SqlUtility.GetDatabaseTime(sqlExecuter); // First run, might not be cached.
 
-            var getNonCachedTime = typeof(SqlUtility).GetMethod("GetDatabaseTimeFromDatabase", BindingFlags.NonPublic | BindingFlags.Static );
+            var getNonCachedTime = typeof(SqlUtility).GetMethod("GetDatabaseTimeFromDatabase", BindingFlags.NonPublic | BindingFlags.Static);
             Assert.IsNotNull(getNonCachedTime);
             var notCachedDatabaseTime = (DateTime)getNonCachedTime.Invoke(null, new[] { sqlExecuter });
             var cachedTime = SqlUtility.GetDatabaseTime(sqlExecuter);
@@ -176,7 +176,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void ExtractUserInfoTestFormat()
         {
-            var initialUserInfo = new TestUserInfo("os\ab", "cd.ef", true);
+            var initialUserInfo = new TestUserInfo(@"os\ab", "cd.ef", true);
             var processedUserInfo = SqlUtility.ExtractUserInfo(SqlUtility.UserContextInfoText(initialUserInfo));
             Assert.AreEqual(
                 initialUserInfo.UserName + "|" + initialUserInfo.Workstation,

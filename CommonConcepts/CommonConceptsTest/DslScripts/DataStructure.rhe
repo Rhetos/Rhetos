@@ -345,13 +345,13 @@ Module TestDataStructure
 			}
 			
 			OnSaveUpdate 'UpdateBaseIfNameChanged'
-				'var changedItemsName = updatedOld
-					.Zip(updatedNew, (oldItem, newItem) => new { oldItem, newItem })
+				'var modifiedItemsName = updatedOld
+					.Zip(updatedNew, (oldValue, newValue) => new { oldValue, newValue })
 					// Safe universal property comparison:
-					.Where(change => change.oldItem.Name == null && change.newItem.Name != null || change.oldItem.Name != null && !change.oldItem.Name.Equals(change.newItem.Name))
+					.Where(modified => modified.oldValue.Name == null && modified.newValue.Name != null || modified.oldValue.Name != null && !modified.oldValue.Name.Equals(modified.newValue.Name))
 					.ToList();
 				
-				var updateIds = changedItemsName.Select(change => change.newItem.ID);
+				var updateIds = modifiedItemsName.Select(modified => modified.newValue.ID);
 				var updateBaseItems = _executionContext.Repository.TestDataStructure.SaveTesterBase.Filter(updateIds);
 				foreach (var baseItem in updateBaseItems)
 					baseItem.Name += " updated";
@@ -359,26 +359,26 @@ Module TestDataStructure
 				
 			OnSaveValidate 'DenyChangeOfLockedName'
 				'var lockedItemModifiedName = updatedOld
-					.Zip(updatedNew, (oldItem, newItem) => new { oldItem, newItem })
+					.Zip(updatedNew, (oldValue, newValue) => new { oldValue, newValue })
 					// Safe universal property comparison:
-					.Where(change => change.oldItem.Name == null && change.newItem.Name != null || change.oldItem.Name != null && !change.oldItem.Name.Equals(change.newItem.Name))
-					.Where(change => change.oldItem.BaseName != null && change.oldItem.BaseName.Contains("lock"))
+					.Where(modified => modified.oldValue.Name == null && modified.newValue.Name != null || modified.oldValue.Name != null && !modified.oldValue.Name.Equals(modified.newValue.Name))
+					.Where(modified => modified.oldValue.BaseName != null && modified.oldValue.BaseName.Contains("lock"))
 					.FirstOrDefault();
 				
 				if (lockedItemModifiedName != null)
 					throw new Rhetos.UserException(string.Format(
 						"[Test] It is not allowed to modify locked item''s name ''{0}'' => ''{1}''.",
-						lockedItemModifiedName.oldItem.Name,
-						lockedItemModifiedName.newItem.Name));';
+						lockedItemModifiedName.oldValue.Name,
+						lockedItemModifiedName.newValue.Name));';
 
 			AfterSave 'LogModifications'
-				'var changedItemsName = updatedOld
-					.Zip(updatedNew, (oldItem, newItem) => new { oldItem, newItem })
-					.Where(change => change.oldItem.Name == null && change.newItem.Name != null || change.oldItem.Name != null && !change.oldItem.Name.Equals(change.newItem.Name))
+				'var modifiedItemsName = updatedOld
+					.Zip(updatedNew, (oldValue, newValue) => new { oldValue, newValue })
+					.Where(modified => modified.oldValue.Name == null && modified.newValue.Name != null || modified.oldValue.Name != null && !modified.oldValue.Name.Equals(modified.newValue.Name))
 					.ToList();
 				var logger = _logProvider.GetLogger("test");
-				foreach (var change in changedItemsName)
-					logger.Write(Rhetos.Logging.EventType.Info, () => (change.oldItem.Name ?? "null") + " => " + (change.newItem.Name ?? "null"));';
+				foreach (var modified in modifiedItemsName)
+					logger.Write(Rhetos.Logging.EventType.Info, () => (modified.oldValue.Name ?? "null") + " => " + (modified.newValue.Name ?? "null"));';
 		}
 
 		RepositoryUses '_logProvider' 'Rhetos.Logging.ILogProvider, Rhetos.Logging.Interfaces';

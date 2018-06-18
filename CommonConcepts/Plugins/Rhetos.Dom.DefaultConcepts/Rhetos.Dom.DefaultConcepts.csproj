@@ -170,6 +170,7 @@
     <Compile Include="SimpleBusinessLogic\BeforeActionCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ActionCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\CreatedByCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\ModificationTimeOfCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ImplementsQueryableInterfaceCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\AutoCodeCachedCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\DenyUserEditDataStructureCodeGenerator.cs" />

@@ -39,22 +39,18 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (LoadOldItemsInfo)conceptInfo;
-            codeBuilder.InsertCode(GetSnippet(info), WritableOrmDataStructureCodeGenerator.InitializationTag, info.SaveMethod.Entity);
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.Graph));
-        }
 
-        private string GetSnippet(LoadOldItemsInfo info)
-        {
-            return string.Format(
-            @"var updatedIdsList = updatedNew.Select(item => item.ID).ToList();
+            string snippet =
+            $@"var updatedIdsList = updatedNew.Select(item => item.ID).ToList();
             var deletedIdsList = deletedIds.Select(item => item.ID).ToList();
-            var updatedOld = Filter(Query(), updatedIdsList).Select(item => new {{ item.ID{0} }}).ToList();
-            var deletedOld = Filter(Query(), deletedIdsList).Select(item => new {{ item.ID{0} }}).ToList();
+            var updatedOld = Filter(Query(), updatedIdsList).Select(item => new {{ item.ID{SelectPropertiesTag.Evaluate(info)} }}).ToList();
+            var deletedOld = Filter(Query(), deletedIdsList).Select(item => new {{ item.ID{SelectPropertiesTag.Evaluate(info)} }}).ToList();
             Rhetos.Utilities.Graph.SortByGivenOrder(updatedOld, updatedIdsList, item => item.ID);
             Rhetos.Utilities.Graph.SortByGivenOrder(deletedOld, deletedIdsList, item => item.ID);
 
-            ",
-                SelectPropertiesTag.Evaluate(info));
+            ";
+            codeBuilder.InsertCode(snippet, WritableOrmDataStructureCodeGenerator.InitializationTag, info.SaveMethod.Entity);
+            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.Graph));
         }
     }
 }
