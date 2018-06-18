@@ -133,6 +133,7 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="ConfigUtility.cs" />
     <Compile Include="ConnectionString.cs" />
+    <Compile Include="DatabaseTimeCache.cs" />
     <Compile Include="Exceptions\LegacyClientException.cs" />
     <Compile Include="FilesUtility.cs" />
     <Compile Include="FileSyncer.cs" />

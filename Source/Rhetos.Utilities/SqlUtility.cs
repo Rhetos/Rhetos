@@ -413,34 +413,19 @@ namespace Rhetos.Utilities
 
         public static bool ScriptSupportsTransaction(string sql) => !sql.StartsWith(NoTransactionTag);
 
-        private static TimeSpan DatabaseTimeDifference = TimeSpan.Zero;
-        private static DateTime DatabaseTimeObsoleteAfter = DateTime.MinValue;
-
         public static DateTime GetDatabaseTime(ISqlExecuter sqlExecuter)
         {
-            var now = DateTime.Now;
-            if (now <= DatabaseTimeObsoleteAfter)
-                return now + DatabaseTimeDifference;
-            else
+            return DatabaseTimeCache.GetDatabaseTimeCached(() =>
             {
-                var databaseTime = GetDatabaseTimeFromDatabase(sqlExecuter);
-                now = DateTime.Now; // Refreshing current time to avoid including initial SQL connection time.
-                DatabaseTimeDifference = databaseTime - now;
-                DatabaseTimeObsoleteAfter = now.AddMinutes(1); // Short expiration time to minimize errors on local or database time updates, daylight savings and other.
-                return databaseTime;
-            }
-        }
-
-        private static DateTime GetDatabaseTimeFromDatabase(ISqlExecuter sqlExecuter)
-        {
-            DateTime now;
-            if (DatabaseLanguageIsMsSql.Value)
-                now = MsSqlUtility.GetDatabaseTime(sqlExecuter);
-            else if (DatabaseLanguageIsOracle.Value)
-                throw new FrameworkException("GetDatabaseTime function is not yet supported in Rhetos for Oracle database.");
-            else
-                throw new FrameworkException(UnsupportedLanguageError);
-            return DateTime.SpecifyKind(now, DateTimeKind.Local);
+                DateTime databaseTime;
+                if (DatabaseLanguageIsMsSql.Value)
+                    databaseTime = MsSqlUtility.GetDatabaseTime(sqlExecuter);
+                else if (DatabaseLanguageIsOracle.Value)
+                    throw new FrameworkException("GetDatabaseTime function is not yet supported in Rhetos for Oracle database.");
+                else
+                    throw new FrameworkException(UnsupportedLanguageError);
+                return DateTime.SpecifyKind(databaseTime, DateTimeKind.Local);
+            });
         }
 
         /// <summary>
