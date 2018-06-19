@@ -59,6 +59,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DatabaseTimeCacheTests.cs" />
     <Compile Include="FilesUtilityTest.cs" />
     <Compile Include="MsSqlUtilityTest.cs" />
     <Compile Include="NoLocalizerTest.cs" />

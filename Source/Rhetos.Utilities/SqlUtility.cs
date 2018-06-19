@@ -425,7 +425,7 @@ namespace Rhetos.Utilities
                 else
                     throw new FrameworkException(UnsupportedLanguageError);
                 return DateTime.SpecifyKind(databaseTime, DateTimeKind.Local);
-            });
+            }, () => DateTime.Now);
         }
 
         /// <summary>
