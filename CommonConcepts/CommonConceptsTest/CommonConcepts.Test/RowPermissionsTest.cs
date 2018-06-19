@@ -531,7 +531,7 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void ErrorHandling()
+        public void ErrorHandling_SourceHasDuplicateID()
         {
             using (var container = new RhetosTestContainer())
             {
@@ -543,6 +543,38 @@ namespace CommonConcepts.Test
 
                 TestUtility.ShouldFail<FrameworkException>(() => ReadErrorData(container, "duplicateSecondItem"),
                     "duplicate IDs", "ErrorData", newItems[1].ID.ToString());
+            }
+        }
+
+        [TestMethod]
+        public void ErrorHandling_RowPermissionsFilterReturnsDuplicateID()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                container.AddIgnoreClaims();
+                var processingEngine = container.Resolve<IProcessingEngine>();
+                var repository = container.Resolve<Common.DomRepository>();
+                var readCommand = container.Resolve<IPluginsContainer<ICommandImplementation>>().GetPlugins().OfType<ReadCommand>().Single();
+                Guid testRun = Guid.NewGuid();
+
+                // The following DuplicateIdViewID GUIDs are hard-coded in SqlQueryable DuplicateIdView.
+                // The user has permissions to read itemAllowed, does not have permissions for itemNotAllowed,
+                // but the row permissions filter returns duplicate instances for itemAllowed because of the (intentional)
+                // error in SqlQueryable DuplicateIdView.
+                var itemAllowed = new EntityWithDuplicateIdFilter { DuplicateIdViewID = new Guid("11111111-c757-4757-9850-231c800393a7"), TestRun = testRun };
+                var itemNotAllowed = new EntityWithDuplicateIdFilter { DuplicateIdViewID = new Guid("22222222-c757-4757-9850-231c800393a7"), TestRun = testRun };
+                repository.TestRowPermissions.EntityWithDuplicateIdFilter.Insert(itemAllowed, itemNotAllowed);
+
+                var command = new ReadCommandInfo
+                {
+                    DataSource = typeof(EntityWithDuplicateIdFilter).FullName,
+                    Filters = new[] { new FilterCriteria("TestRun", "equal", testRun) },
+                    ReadRecords = true
+                };
+
+                TestUtility.ShouldFail<FrameworkException>(
+                    () => readCommand.Execute(command),
+                    new[] { "Row permissions filter error", "duplicate IDs", command.DataSource, "RowPermissionsReadItems" });
             }
         }
 

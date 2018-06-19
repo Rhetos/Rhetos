@@ -18,6 +18,15 @@ Module TestRowPermissions
     {
         Integer value;
         ItemFilter Value10 'item => item.value > 10';
+
+        RowPermissions
+            '(source, repos, context) =>
+            {
+                var perms = repos.TestRowPermissions.ComplexRPPermissions.Query().Where(a => a.userName == context.UserInfo.UserName).ToList().SingleOrDefault();
+                if (perms == null) return item => false;
+                
+                return item => (item.value >= perms.minVal) && (item.value <= perms.maxVal);
+            }';
     }
     
     Entity ComplexRPPermissions
@@ -26,14 +35,6 @@ Module TestRowPermissions
         Integer minVal;
         Integer maxVal;
     }
-    
-    RowPermissions ComplexRP '(source, repos, context) =>
-        {
-            var perms = repos.TestRowPermissions.ComplexRPPermissions.Query().Where(a => a.userName == context.UserInfo.UserName).ToList().SingleOrDefault();
-            if (perms == null) return item => false;
-            
-            return item => (item.value >= perms.minVal) && (item.value <= perms.maxVal);
-        }';
     
     Browse SimpleRPBrowse TestRowPermissions.SimpleRP
     {
@@ -71,6 +72,30 @@ Module TestRowPermissions
                     return items.Concat(new[] { items[1] }).ToArray();
                 return items;
             }';
+    }
+
+    Entity EntityWithDuplicateIdFilter
+    {
+        Reference DuplicateIdView;
+        Guid TestRun;
+        RowPermissions '(source, repos, context) =>
+            {
+                return item => item.DuplicateIdView.ValidPermissions > 0;
+            }';
+    }
+
+    SqlQueryable DuplicateIdView
+        "
+            SELECT ID = CAST('11111111-c757-4757-9850-231c800393a7' AS uniqueidentifier), ValidPermissions = 2
+            UNION ALL
+            SELECT ID = CAST('11111111-c757-4757-9850-231c800393a7' AS uniqueidentifier), ValidPermissions = 3
+            UNION ALL
+            SELECT ID = CAST('11111111-c757-4757-9850-231c800393a7' AS uniqueidentifier), ValidPermissions = 4
+            UNION ALL
+            SELECT ID = CAST('22222222-c757-4757-9850-231c800393a7' AS uniqueidentifier), ValidPermissions = 0
+        "
+    {
+        Integer ValidPermissions;
     }
     
     //===============================================================

@@ -74,9 +74,10 @@ namespace Rhetos.Processing.DefaultCommands
                 if (allowedItemsCount < itemsIds.Count)
                     return false;
                 else if (allowedItemsCount > itemsIds.Count)
-                    throw new FrameworkException(string.Format(
-                        "Invalid filter validation result: More items allowed ({0}) then items read ({1}). Check if the {2} filter on {3} returns duplicate IDs.",
-                        allowedItemsCount, itemsIds.Count, filterType.Name, genericRepository.EntityName));
+                    throw new FrameworkException(
+                        $"Row permissions filter error:"
+                        + $" Filter {filterType.Name} on {genericRepository.EntityName} returned more items ({allowedItemsCount}) then requested ({itemsIds.Count})."
+                        + $" Possible cause: {genericRepository.EntityName}, or any related view that is uses for its row permissions, returns duplicate IDs.");
             }
 
             return true;
