@@ -26,6 +26,7 @@ using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Xml;
+using System.Data.SqlClient;
 
 namespace Rhetos.Utilities
 {
@@ -376,27 +377,29 @@ namespace Rhetos.Utilities
                 throw new FrameworkException(UnsupportedLanguageError);
         }
 
-        public static string MaskPassword(string connectionString)
+        public static string SqlConnectionInfo(string connectionString)
         {
-            var passwordSearchRegex = new[]
+            SqlConnectionStringBuilder cs;
+            try
             {
-                @"\b(password|pwd)\s*=(?<pwd>[^;]*)",
-                @"\b/(?<pwd>[^/;=]*)@"
+                cs = new SqlConnectionStringBuilder(connectionString);
+            }
+            catch
+            {
+                // This is not be a blocking error, because other database providers should be supported.
+                return "(cannot parse connection string)";
+            }
+
+            var elements = new ListOfTuples<string, string>
+            {
+                { "DataSource", cs.DataSource },
+                { "InitialCatalog", cs.InitialCatalog },
             };
 
-            foreach (var regex in passwordSearchRegex)
-            {
-                var matches = new Regex(regex, RegexOptions.IgnoreCase).Matches(connectionString);
-                for (int i = matches.Count - 1; i >= 0; i--)
-                {
-                    var pwdGroup = matches[i].Groups["pwd"];
-                    if (pwdGroup.Success)
-                        connectionString = connectionString
-                            .Remove(pwdGroup.Index, pwdGroup.Length)
-                            .Insert(pwdGroup.Index, "*");
-                }
-            }
-            return connectionString;
+            return
+                string.Join(", ", elements
+                    .Where(e => !string.IsNullOrWhiteSpace(e.Item2))
+                    .Select(e => e.Item1 + "=" + e.Item2));
         }
 
         /// <summary>

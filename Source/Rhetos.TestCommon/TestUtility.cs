@@ -69,8 +69,9 @@ namespace Rhetos.TestCommon
         /// <summary>
         /// Case-insensitive comparison.
         /// </summary>
-        public static void AssertContains(string text, string[] patterns, string message = null, string errorContext = null)
+        public static void AssertContains(string text, IEnumerable<string> patterns, string message = null, string errorContext = null)
         {
+            CsUtility.Materialize(ref patterns);
             if (patterns.Any(string.IsNullOrEmpty))
                 throw new ArgumentException("Given list of patterns contains an empty string.");
 

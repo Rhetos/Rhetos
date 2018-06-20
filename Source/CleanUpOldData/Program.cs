@@ -37,7 +37,7 @@ namespace CleanupOldData
                 Paths.InitializeRhetosServerRootPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".."));
 
                 string connectionString = SqlUtility.ConnectionString;
-                Console.WriteLine("SQL connection string: " + SqlUtility.MaskPassword(connectionString));
+                Console.WriteLine("SQL connection: " + SqlUtility.SqlConnectionInfo(connectionString));
                 var sqlExecuter = GetSqlExecuterImplementation(connectionString);
 
                 var databaseCleaner = new DatabaseCleaner(new ConsoleLogProvider(), sqlExecuter);

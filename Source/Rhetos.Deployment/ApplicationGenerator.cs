@@ -69,7 +69,7 @@ namespace Rhetos.Deployment
 
         public void ExecuteGenerators(bool deployDatabaseOnly)
         {
-            _deployPackagesLogger.Trace("SQL connection string: " + SqlUtility.MaskPassword(SqlUtility.ConnectionString));
+            _deployPackagesLogger.Trace("SQL connection: " + SqlUtility.SqlConnectionInfo(SqlUtility.ConnectionString));
             ValidateDbConnection();
 
             _deployPackagesLogger.Trace("Preparing Rhetos database.");

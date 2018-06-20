@@ -95,32 +95,32 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void MaskPasswordTest()
         {
-            var tests = new[,]
+            var tests = new ListOfTuples<string, string[]>
             {
-                { "Data Source=myOracleDB;User Id=SYS;Password=SYS;DBA Privilege=SYSDBA;", "Data Source=myOracleDB;User Id=SYS;Password=*;DBA Privilege=SYSDBA;" },
-                { "password=asd;", "password=*;" },
-                { "PASSWORD=asd;", "PASSWORD=*;" },
-                { "pwd=asd;", "pwd=*;" },
-                { "PWD=asd;", "PWD=*;" },
-                { "pwd=", "pwd=*" },
-                { "pwd=;", "pwd=*;" },
-
-                { "pwd=asdf asdf asddfas fasd asdf asdfas dfas ", "pwd=*" },
-                { "pwd=asdf asdf asddfas fasd asdf asdfas dfas; ", "pwd=*; " },
-
-                { "user = password asdf asdf ; pwd = 123; asdf = pwd; password=pwd;", "user = password asdf asdf ; pwd =*; asdf = pwd; password=*;" },
-
-                { "mypwd=pwd;a=2", "mypwd=pwd;a=2" },
-
-                { "Data Source=username/password@//myserver:1521/my.service.com;", "Data Source=username/*@//myserver:1521/my.service.com;" },
-                { "Data Source=username/xx+-*@//myserver:1521/my.service.com;", "Data Source=username/*@//myserver:1521/my.service.com;" },
-                { "Data Source=username/@//myserver:1521/my.service.com;", "Data Source=username/*@//myserver:1521/my.service.com;" }
+                // Format: connection string, expected content.
+                { "Server=tcp:name.database.windows.net,1433;Initial Catalog=RhetosAzureDB;Persist Security Info=False;User ID=jjj;Password=jjj;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
+                    new[] { "tcp:name.database.windows.net,1433", "RhetosAzureDB" } },
+                { "Data Source=localhost;Initial Catalog=Rhetos;Integrated Security=SSPI;",
+                    new[] { "localhost", "Rhetos" } },
+                { "User Id=jjj;Password=jjj;Data Source=localhost:1521/xe;",
+                    new[] { "localhost:1521/xe" } },
+                { "User Id=jjj;Password='jjj;jjj=jjj';Data Source=localhost:1521/xe;",
+                    new[] { "localhost:1521/xe" } },
+                { "User Id=jjj;Password=\"jjj;jjj=jjj\";Data Source=localhost:1521/xe;",
+                    new[] { "localhost:1521/xe" } },
+                { "';[]=-",
+                    new string[] { } },
             };
 
-            for (int i = 0; i < tests.GetLength(0); i++)
+            foreach (var test in tests)
             {
-                Assert.AreEqual(tests[i, 1], SqlUtility.MaskPassword(tests[i, 0]));
-                Console.WriteLine("OK: " + tests[i, 1]);
+                Console.WriteLine(test.Item1);
+                string report = SqlUtility.SqlConnectionInfo(test.Item1);
+                Console.WriteLine("=> " + report);
+
+                TestUtility.AssertNotContains(report, "j", "Username or password leaked.");
+                if (test.Item2.Any())
+                    TestUtility.AssertContains(report, test.Item2);
             }
         }
 
