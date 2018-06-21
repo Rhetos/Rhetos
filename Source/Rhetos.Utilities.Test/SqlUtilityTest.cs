@@ -157,13 +157,14 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void GetDatabaseTimeTest()
         {
+            // More detailed tests are implemented in the DatabaseTimeCacheTest class.
+            // This is only a smoke test for SqlUtility.
+
             var sqlExecuter = new MockSqlExecuter();
 
-            SqlUtility.GetDatabaseTime(sqlExecuter); // First run, might not be cached.
+            Enumerable.Range(0, 4).Select(x => SqlUtility.GetDatabaseTime(sqlExecuter)); // Caching initialization.
 
-            var getNonCachedTime = typeof(SqlUtility).GetMethod("GetDatabaseTimeFromDatabase", BindingFlags.NonPublic | BindingFlags.Static);
-            Assert.IsNotNull(getNonCachedTime);
-            var notCachedDatabaseTime = (DateTime)getNonCachedTime.Invoke(null, new[] { sqlExecuter });
+            var notCachedDatabaseTime = MsSqlUtility.GetDatabaseTime(sqlExecuter);
             var cachedTime = SqlUtility.GetDatabaseTime(sqlExecuter);
 
             Console.WriteLine(notCachedDatabaseTime.ToString("o"));

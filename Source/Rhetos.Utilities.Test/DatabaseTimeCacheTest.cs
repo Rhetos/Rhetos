@@ -30,7 +30,7 @@ using System.Threading.Tasks;
 namespace Rhetos.Utilities.Tests
 {
     [TestClass]
-    public class DatabaseTimeCacheTests
+    public class DatabaseTimeCacheTest
     {
         [TestMethod]
         public void GetDatabaseTimeCached_DbAhead()
