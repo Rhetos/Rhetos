@@ -333,5 +333,19 @@ namespace Rhetos.Utilities
             else
                 return text;
         }
+
+        private static char[] lineSplitters = new char[] { '\r', '\n' };
+
+        public static string FirstLine(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return text;
+
+            var lineEnd = text.IndexOfAny(lineSplitters);
+            if (lineEnd != -1)
+                return text.Substring(0, lineEnd);
+            else
+                return text;
+        }
     }
 }

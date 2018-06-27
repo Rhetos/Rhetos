@@ -221,7 +221,7 @@ namespace Rhetos.Persistence
                 }
                 catch (SqlException ex)
                 {
-                    string msg = "SqlException has occurred:\r\n" + ReportSqlErrors(ex);
+                    string msg = "SqlException has occurred" + ReportSqlName(command) + ":\r\n" + ReportSqlErrors(ex);
                     if (command != null && !string.IsNullOrWhiteSpace(command.CommandText))
                         _logger.Error("Unable to execute SQL query:\r\n" + command.CommandText);
 
@@ -235,6 +235,15 @@ namespace Rhetos.Persistence
                     if (connection != null)
                         ((IDisposable)connection).Dispose();
             }
+        }
+
+        private string ReportSqlName(DbCommand command)
+        {
+            const string namePrefix = "--Name: ";
+            if (command?.CommandText?.StartsWith(namePrefix) == true)
+                return " in '" + CsUtility.FirstLine(command.CommandText).Substring(namePrefix.Length).Limit(1000, "...") + "'";
+            else
+                return "";
         }
 
         private void LogPerformanceIssue(Stopwatch sw, string sql)

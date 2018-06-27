@@ -194,5 +194,28 @@ namespace Rhetos.Utilities.Test
 
             Assert.AreEqual(TestUtility.DumpSorted(listExpected), TestUtility.DumpSorted(listActual), "Matching strings '" + strings + "' for prefixes '" + prefixes + "'.");
         }
+
+        [TestMethod]
+        public void FirstLine()
+        {
+            var tests = new ListOfTuples<string, string>
+            {
+                { "abc", "abc" },
+                { "", "" },
+                { null, null },
+                { "abc\r\ndef\r\n123", "abc" },
+                { "a\r\ndef", "a" },
+                { "\r\ndef", "" },
+                { "\r\ndef\r\n", "" },
+                { "\r\ndef\r\n1234", "" },
+                { "\r", "" },
+                { "\n", "" },
+                { "abc\rdef\n123", "abc" },
+                { "abc\ndef\r123", "abc" },
+            };
+
+            foreach (var test in tests)
+                Assert.AreEqual(test.Item2, CsUtility.FirstLine(test.Item1), "Test: " + test.Item1);
+        }
     }
 }
