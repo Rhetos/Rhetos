@@ -295,7 +295,9 @@ namespace Rhetos.Deployment
         private IEnumerable<IPackageFile> FilterCompatibleLibFiles(IEnumerable<IPackageFile> files)
         {
             IEnumerable<IPackageFile> compatibleLibFiles;
-            var allLibFiles = files.Where(file => file.Path.StartsWith(@"lib\"));
+            var allLibFiles = files.Where(file =>
+                file.Path.StartsWith(@"lib\")
+                && file.Path.Count(c => c == '\\') < 3); // HACK: NuGet library v2.x does not support binary paths with a language ("lib\framework\language\file"). Remove this condition after migrating to new NuGet version.
             if (VersionUtility.TryGetCompatibleItems(SystemUtility.GetTargetFramework(), allLibFiles, out compatibleLibFiles))
                 return compatibleLibFiles;
             else
