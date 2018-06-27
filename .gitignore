@@ -121,6 +121,7 @@ Source/Rhetos/PackagesCache/
 Install/
 Source/Rhetos/*Trace.xml
 NuGet.exe
+Logs/
 
 #Visual Studio Code
 /.vscode

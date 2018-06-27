@@ -1,5 +1,15 @@
 ﻿# Rhetos release notes
 
+## 2.7.0 (2018-06-27)
+
+### Internal improvements
+
+* Bugfix: The **ModificationTimeOf** concept sometime sets the current time value before the **CreationTime** concept on the same data entry.
+* Bugfix: The **PessimisticLocking** concept uses Rhetos server time instead of the database time.
+* Bugfix: "Conflicting source files with different file size" error when downloading localized NuGet packages.
+* Improved database deployment over networks with high latency: performance improvements, progress reporting.
+* Minor improvements in error reporting and logging (most notably for data migration scripts).
+
 ## 2.6.1 (2018-06-04)
 
 ### Internal improvements

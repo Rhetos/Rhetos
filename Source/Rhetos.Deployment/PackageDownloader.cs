@@ -280,7 +280,7 @@ namespace Rhetos.Deployment
             // Copy binary files and resources:
 
             foreach (PhysicalPackageFile file in FilterCompatibleLibFiles(packageBuilder.Files))
-                binFileSyncer.AddFile(file.SourcePath, Paths.PluginsFolder);
+                binFileSyncer.AddFile(file.SourcePath, Paths.PluginsFolder, Path.Combine(Paths.PluginsFolder, file.EffectivePath));
 
             foreach (PhysicalPackageFile file in packageBuilder.Files)
                 if (file.Path.StartsWith(@"Plugins\")) // Obsolete bin folder; lib should be used instead.
@@ -295,9 +295,7 @@ namespace Rhetos.Deployment
         private IEnumerable<IPackageFile> FilterCompatibleLibFiles(IEnumerable<IPackageFile> files)
         {
             IEnumerable<IPackageFile> compatibleLibFiles;
-            var allLibFiles = files.Where(file =>
-                file.Path.StartsWith(@"lib\")
-                && file.Path.Count(c => c == '\\') < 3); // HACK: NuGet library v2.x does not support binary paths with a language ("lib\framework\language\file"). Remove this condition after migrating to new NuGet version.
+            var allLibFiles = files.Where(file => file.Path.StartsWith(@"lib\"));
             if (VersionUtility.TryGetCompatibleItems(SystemUtility.GetTargetFramework(), allLibFiles, out compatibleLibFiles))
                 return compatibleLibFiles;
             else
@@ -440,7 +438,7 @@ namespace Rhetos.Deployment
             string targetFolder = Path.Combine(Paths.PackagesCacheFolder, packageSubfolder);
 
             foreach (var file in FilterCompatibleLibFiles(package.GetFiles()))
-                binFileSyncer.AddFile(Path.Combine(targetFolder, file.Path), Paths.PluginsFolder);
+                binFileSyncer.AddFile(Path.Combine(targetFolder, file.Path), Paths.PluginsFolder, Path.Combine(Paths.PluginsFolder, file.EffectivePath));
 
             binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Plugins"), Paths.PluginsFolder, recursive: false); // Obsolete bin folder; lib should be used instead.
             binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Resources"), Paths.ResourcesFolder, SimplifyPackageName(package.Id), recursive: true);
@@ -490,7 +488,7 @@ namespace Rhetos.Deployment
             // Copy binary files and resources:
 
             foreach (var file in FilterCompatibleLibFiles(package.GetFiles()))
-                binFileSyncer.AddFile(Path.Combine(targetFolder, file.Path), Paths.PluginsFolder);
+                binFileSyncer.AddFile(Path.Combine(targetFolder, file.Path), Paths.PluginsFolder, Path.Combine(Paths.PluginsFolder, file.EffectivePath));
 
             binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Plugins"), Paths.PluginsFolder, recursive: false); // Obsolete bin folder; lib should be used instead.
             binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Resources"), Paths.ResourcesFolder, SimplifyPackageName(package.Id), recursive: true);
