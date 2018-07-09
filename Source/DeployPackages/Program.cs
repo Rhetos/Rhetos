@@ -23,6 +23,7 @@ using Rhetos.Deployment;
 using Rhetos.Dom;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
+using Rhetos.Persistence;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
@@ -171,6 +172,7 @@ namespace DeployPackages
                 deploymentTime: true,
                 shortTransaction: arguments.ShortTransactions,
                 deployDatabaseOnly: arguments.DeployDatabaseOnly));
+
             using (var container = builder.Build())
             {
                 var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
@@ -203,19 +205,21 @@ namespace DeployPackages
             {
                 using (var container = builder.Build())
                 {
-                    var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
-                    performanceLogger.Write(stopwatch, "DeployPackages.Program: New modules and plugins registered.");
-                    Plugins.LogRegistrationStatistics("Initializing application", container);
-
                     try
                     {
+                        var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
+                        performanceLogger.Write(stopwatch, "DeployPackages.Program: New modules and plugins registered.");
+                        Plugins.LogRegistrationStatistics("Initializing application", container);
+
                         container.Resolve<ApplicationInitialization>().ExecuteInitializers();
                     }
                     catch (Exception ex)
                     {
                         // Some exceptions result with invalid SQL transaction state that results with another exception on disposal of this 'using' block.
-                        // The original exception is logged here to make sure that it is not overriden;
+                        // The original exception is logged here to make sure that it is not overridden;
                         originalException = ex;
+
+                        container.Resolve<IPersistenceTransaction>().DiscardChanges();
                         ExceptionsUtility.Rethrow(ex);
                     }
                 }

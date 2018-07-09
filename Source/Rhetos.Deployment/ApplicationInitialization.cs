@@ -19,6 +19,7 @@
 
 using Rhetos.Extensibility;
 using Rhetos.Logging;
+using Rhetos.Persistence;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
@@ -32,13 +33,16 @@ namespace Rhetos.Deployment
     {
         private readonly ILogger _deployPackagesLogger;
         private readonly IPluginsContainer<IServerInitializer> _initializersContainer;
+        private readonly IPersistenceTransaction _transaction;
 
         public ApplicationInitialization(
             ILogProvider logProvider,
-            IPluginsContainer<IServerInitializer> initializersContainer)
+            IPluginsContainer<IServerInitializer> initializersContainer,
+            IPersistenceTransaction transaction)
         {
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _initializersContainer = initializersContainer;
+            _transaction = transaction;
         }
 
         public void ExecuteInitializers()
@@ -48,7 +52,9 @@ namespace Rhetos.Deployment
                 foreach (var initializer in initializers)
                 {
                     _deployPackagesLogger.Trace("Initialization " + initializer.GetType().Name + ".");
+
                     initializer.Initialize();
+                    _transaction.CommitAndReconnect(); // Deployment optimization to simplify debugging of the failed database initializers.
                 }
                 if (!initializers.Any())
                     _deployPackagesLogger.Trace("No server initialization plugins.");

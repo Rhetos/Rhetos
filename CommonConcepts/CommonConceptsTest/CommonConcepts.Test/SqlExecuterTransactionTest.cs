@@ -84,7 +84,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Load(ids), item => item.Name));
 
                 // Write using SqlExecuter in it's own transaction, ignoring "commitChanges: false" on the persistence transaction:
-                sqlExecuter.ExecuteSql(new []
+                sqlExecuter.ExecuteSql(new[]
                     {
                         "DELETE FROM TestEntity.BaseEntity",
                         string.Format(
@@ -112,6 +112,5 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("e0", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Load(ids), item => item.Name));
             }
         }
-
     }
 }
