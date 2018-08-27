@@ -575,8 +575,6 @@ namespace CommonConcepts.Test
                     new[] { "a1", "a2", "b1", "b2" }
                     .Select(name => new TestFilter.AutoFilter2 { Name = name }));
 
-                var gr = container.Resolve<GenericRepositories>();
-
                 TestClientRead<TestFilter.AutoFilter1>(container, "a1, a2", item => item.Name);
                 TestClientRead<TestFilter.AutoFilter2>(container, "a1, a2, b1, b2", item => item.Name);
                 TestClientRead<TestFilter.AutoFilter2Browse>(container, "b1x, b2x", item => item.Name2);
@@ -682,6 +680,55 @@ namespace CommonConcepts.Test
                     Top = 1
                 };
                 TestClientRead<TestFilter.AutoFilter2Browse>(container, "b2xx", item => item.Name2, readCommand);
+            }
+        }
+
+        [TestMethod]
+        public void AutoFilter_Where()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                repository.TestFilter.AutoFilter3.Delete(repository.TestFilter.AutoFilter3.Query());
+
+                repository.TestFilter.AutoFilter3.Insert(
+                    new[] { "a1", "a2", "b1", "b2" }
+                    .Select(name => new TestFilter.AutoFilter3 { Name = name }));
+
+                var readAll = new ReadCommandInfo
+                {
+                    ReadRecords = true,
+                    OrderByProperties = new[] { new OrderByProperty { Property = "Name" } },
+                };
+                var read10 = new ReadCommandInfo
+                {
+                    ReadRecords = true,
+                    OrderByProperties = new[] { new OrderByProperty { Property = "Name" } },
+                    Top = 10,
+                };
+                var readFiltered = new ReadCommandInfo
+                {
+                    ReadRecords = true,
+                    OrderByProperties = new[] { new OrderByProperty { Property = "Name" } },
+                    Filters = new[] { new FilterCriteria { Filter = "TestFilter.WithA" } },
+                };
+                var readFiltered10 = new ReadCommandInfo
+                {
+                    ReadRecords = true,
+                    OrderByProperties = new[] { new OrderByProperty { Property = "Name" } },
+                    Top = 10,
+                    Filters = new[] { new FilterCriteria { Filter = "TestFilter.WithA" } },
+                };
+
+                TestClientRead<TestFilter.AutoFilter3>(container, "a1, a2, b1, b2", item => item.Name, readAll);
+                TestClientRead<TestFilter.AutoFilter3>(container, "a1, a2", item => item.Name, read10);
+                TestClientRead<TestFilter.AutoFilter3>(container, "a1, a2", item => item.Name, readFiltered);
+                TestClientRead<TestFilter.AutoFilter3>(container, "a1, a2", item => item.Name, readFiltered10);
+
+                Assert.AreEqual("", TestUtility.Dump(readAll.Filters.Select(f => f.Filter)));
+                Assert.AreEqual("TestFilter.WithA", TestUtility.Dump(read10.Filters.Select(f => f.Filter)));
+                Assert.AreEqual("TestFilter.WithA", TestUtility.Dump(readFiltered.Filters.Select(f => f.Filter)));
+                Assert.AreEqual("TestFilter.WithA", TestUtility.Dump(readFiltered10.Filters.Select(f => f.Filter))); // To make sure the filter is not duplicated.
             }
         }
 

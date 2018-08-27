@@ -125,7 +125,6 @@
     <Compile Include="IPrincipal.cs" />
     <Compile Include="IPrincipalHasRole.cs" />
     <Compile Include="IQueryableRepository.cs" />
-    <Compile Include="ApplyFiltersOnClientRead.cs" />
     <Compile Include="CurrentKeepSynchronizedMetadata.cs" />
     <Compile Include="IRole.cs" />
     <Compile Include="IRoleInheritsRole.cs" />

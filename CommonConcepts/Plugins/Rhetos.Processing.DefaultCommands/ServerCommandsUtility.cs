@@ -153,17 +153,17 @@ namespace Rhetos.Processing.DefaultCommands
             return result;
         }
 
-
         private void AutoApplyFilters(ReadCommandInfo commandInfo)
         {
-            List<string> filterNames;
-            if (_applyFiltersOnClientRead.TryGetValue(commandInfo.DataSource, out filterNames))
+            List<ApplyFilterWhere> applyFilters;
+            if (_applyFiltersOnClientRead.TryGetValue(commandInfo.DataSource, out applyFilters))
             {
                 commandInfo.Filters = commandInfo.Filters ?? new FilterCriteria[] { };
 
-                var newFilters = filterNames
-                    .Where(name => !commandInfo.Filters.Any(existingFilter => GenericFilterHelper.EqualsSimpleFilter(existingFilter, name)))
-                    .Select(name => new FilterCriteria { Filter = name })
+                var newFilters = applyFilters
+                    .Where(applyFilter => applyFilter.Where == null || applyFilter.Where(commandInfo))
+                    .Where(applyFilter => !commandInfo.Filters.Any(existingFilter => GenericFilterHelper.EqualsSimpleFilter(existingFilter, applyFilter.FilterName)))
+                    .Select(applyFilter => new FilterCriteria { Filter = applyFilter.FilterName })
                     .ToList();
 
                 _logger.Trace(() => "AutoApplyFilters: " + string.Join(", ", newFilters.Select(f => f.Filter)));

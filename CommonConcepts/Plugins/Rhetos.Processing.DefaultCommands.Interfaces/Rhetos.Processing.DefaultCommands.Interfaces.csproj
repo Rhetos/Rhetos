@@ -89,6 +89,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplyFiltersOnClientRead.cs" />
     <Compile Include="ReadCommandResult.cs" />
     <Compile Include="ReadCommandInfo.cs" />
     <Compile Include="ExecuteActionCommandInfo.cs" />

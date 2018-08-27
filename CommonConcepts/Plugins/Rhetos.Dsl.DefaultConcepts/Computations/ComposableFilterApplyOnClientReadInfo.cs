@@ -40,7 +40,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             return new IConceptInfo[]
             {
-                new ApplyFilterOnClientReadInfo
+                new ApplyFilterOnClientReadAllInfo
                 {
                     DataStructure = Filter.Source,
                     FilterName = Filter.Parameter

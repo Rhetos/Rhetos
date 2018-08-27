@@ -362,6 +362,14 @@ Module TestFilter
 			new Common.Queryable.TestFilter_AutoFilter2Browse { ID = item.ID, Base = item.Base, Name2 = item.Name2 + "x"})';
 		ApplyFilterOnClientRead 'System.String';
 	}
+
+    Entity AutoFilter3
+	{
+		ShortString Name;
+
+        ItemFilter WithA 'item => item.Name.StartsWith("a")';
+		ApplyFilterOnClientRead 'TestFilter.WithA' 'command => command.Top == 10';
+	}
 }
 
 Module TestFilter2;

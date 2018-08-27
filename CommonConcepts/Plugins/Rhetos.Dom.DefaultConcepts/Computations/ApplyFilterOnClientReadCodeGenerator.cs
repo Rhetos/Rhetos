@@ -33,23 +33,20 @@ using Rhetos.Extensibility;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(ApplyFilterOnClientReadInfo))]
+    [ExportMetadata(MefProvider.Implements, typeof(ApplyFilterOnClientReadWhereInfo))]
     public class ApplyFilterOnClientReadCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (ApplyFilterOnClientReadInfo)conceptInfo;
+            var info = (ApplyFilterOnClientReadWhereInfo)conceptInfo;
 
-            codeBuilder.InsertCode(AddFilterSnippet(info), ModuleCodeGenerator.ApplyFiltersOnClientReadTag);
-        }
+            string dataStructureSnippet = CsUtility.QuotedString(info.DataStructure.GetKeyProperties());
+            string filterNameSnippet = CsUtility.QuotedString(info.FilterName);
+            string whereSnippet = string.IsNullOrEmpty(info.Where) ? "" : (", " + info.Where);
 
-        protected static string AddFilterSnippet(ApplyFilterOnClientReadInfo info)
-        {
-            return string.Format(
-            @"{{ {0}, {1} }},
-            ",
-                CsUtility.QuotedString(info.DataStructure.GetKeyProperties()),
-                CsUtility.QuotedString(info.FilterName));
+            string snippet = $"{{ {dataStructureSnippet}, {filterNameSnippet}{whereSnippet} }},\r\n            ";
+
+            codeBuilder.InsertCode(snippet, ModuleCodeGenerator.ApplyFiltersOnClientReadTag);
         }
     }
 }

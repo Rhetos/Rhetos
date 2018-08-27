@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Processing.DefaultCommands;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,21 +26,31 @@ using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
+    public class ApplyFilterWhere
+    {
+        public string FilterName;
+
+        /// <summary>
+        /// (Optional) Selection of command where the filter will be applied.
+        /// If not set (null), it is equivalent to "command => true".
+        /// </summary>
+        public Func<ReadCommandInfo, bool> Where;
+    }
+
     /// <summary>
     /// For a given data structure key, dictionary contains list of filters that will be
     /// automatically applied when executing ReadCommand.
     /// </summary>
-    public class ApplyFiltersOnClientRead : Dictionary<string, List<string>>
+    public class ApplyFiltersOnClientRead : MultiDictionary<string, ApplyFilterWhere>
     {
-        public void Add(string dataStructure, string filter)
+        public void Add(string dataStructure, string filterName)
         {
-            List<string> filters;
-            if (!TryGetValue(dataStructure, out filters))
-            {
-                filters = new List<string>();
-                Add(dataStructure, filters);
-            }
-            filters.Add(filter);
+            Add(dataStructure, new ApplyFilterWhere { FilterName = filterName, Where = null });
+        }
+
+        public void Add(string dataStructure, string filterName, Func<ReadCommandInfo, bool> where)
+        {
+            Add(dataStructure, new ApplyFilterWhere { FilterName = filterName, Where = where });
         }
     }
 }

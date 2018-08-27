@@ -31,12 +31,19 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ApplyFilterOnClientRead")]
-    public class ApplyFilterOnClientReadInfo : IConceptInfo
+    public class ApplyFilterOnClientReadWhereInfo : IConceptInfo
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }
 
         [ConceptKey]
         public string FilterName { get; set; }
+
+        /// <summary>
+        /// (Optional)
+        /// Selection of read commands where the filter will be applied.
+        /// If empty string, it is equivalent to "command => true".
+        /// </summary>
+        public string Where{ get; set; }
     }
 }

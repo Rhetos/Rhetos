@@ -22,6 +22,7 @@ using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using Rhetos.Processing;
 using Rhetos.Utilities;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -87,6 +88,8 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.Core.Objects.ObjectStateEntry));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.IPersistenceCache));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.IPersistenceTransaction));
+            codeBuilder.AddReferencesFromDependency(typeof(ApplyFiltersOnClientRead));
+            codeBuilder.AddReferencesFromDependency(typeof(ICommandInfo)); // Used from ApplyFiltersOnClientRead.
         }
 
         private static string GenerateCommonClassesSnippet()
