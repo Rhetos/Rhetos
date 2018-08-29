@@ -20,6 +20,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Persistence;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
@@ -110,6 +111,43 @@ namespace CommonConcepts.Test
 
                 // After persistence transaction rollback, a record should remain from ExecuteSql with "useTransaction: false"
                 Assert.AreEqual("e0", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Load(ids), item => item.Name));
+            }
+        }
+
+        [TestMethod]
+        public void CommitAndReconnect()
+        {
+            var items = Enumerable.Range(0, 4)
+                .Select(x => new TestEntity.BaseEntity { ID = Guid.NewGuid(), Name = "e" + x })
+                .ToArray();
+
+            var itemsIds = items.Select(item => item.ID);
+
+            using (var container = new RhetosTestContainer(commitChanges: false))
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                var sqlExecuter = container.Resolve<ISqlExecuter>();
+                var persistence = container.Resolve<IPersistenceTransaction>();
+
+                repository.TestEntity.BaseEntity.Delete(repository.TestEntity.BaseEntity.Query());
+
+                // Testing both EF and direct SQL commands to work well with the same transaction context:
+                repository.TestEntity.BaseEntity.Insert(items[0]);
+                sqlExecuter.ExecuteSql($"INSERT INTO TestEntity.BaseEntity (ID, Name) SELECT '{items[1].ID}', '{items[1].Name}'");
+                Assert.AreEqual("e0, e1", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Query(itemsIds), item => item.Name));
+
+                persistence.CommitAndReconnect();
+
+                repository.TestEntity.BaseEntity.Insert(items[2]);
+                sqlExecuter.ExecuteSql($"INSERT INTO TestEntity.BaseEntity (ID, Name) SELECT '{items[3].ID}', '{items[3].Name}'");
+                Assert.AreEqual("e0, e1, e2, e3", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Query(itemsIds), item => item.Name));
+            }
+
+            using (var container = new RhetosTestContainer(commitChanges: false))
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                Assert.AreEqual("e0, e1", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Query(itemsIds), item => item.Name));
             }
         }
     }
