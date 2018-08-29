@@ -77,7 +77,12 @@ namespace Rhetos.Persistence
                 throw new FrameworkException("Trying to commit and reconnect a discarded persistence transaction.");
 
             _logger.Trace(() => "CommitAndReconnect (" + _persistenceTransactionId + ").");
-            Commit();
+            if (_transaction != null)
+            {
+                _transaction.Commit();
+                _transaction = _connection.BeginTransaction();
+                NewTransactionCreated?.Invoke(this, _transaction);
+            }
         }
 
         private void Commit()
@@ -166,6 +171,7 @@ namespace Rhetos.Persistence
 
                     _logger.Trace(() => "Beginning transaction (" + _persistenceTransactionId + ").");
                     _transaction = _connection.BeginTransaction();
+                    NewTransactionCreated?.Invoke(this, _transaction);
                 }
 
                 return _connection;
@@ -182,5 +188,7 @@ namespace Rhetos.Persistence
                 return _transaction;
             }
         }
+
+        public event EventHandler<DbTransaction> NewTransactionCreated;
     }
 }

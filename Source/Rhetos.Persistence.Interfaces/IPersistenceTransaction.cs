@@ -59,5 +59,7 @@ namespace Rhetos.Persistence
         /// See the <see cref="Connection"/> property for more details.
         /// </summary>
         DbTransaction Transaction { get; }
+
+        event EventHandler<DbTransaction> NewTransactionCreated;
     }
 }

@@ -171,6 +171,12 @@ namespace Common
         {{
             Initialize();
             Database.UseTransaction(persistenceTransaction.Transaction);
+
+            persistenceTransaction.NewTransactionCreated += (pt, t) => 
+            {{
+                Database.UseTransaction(null);
+                Database.UseTransaction(t);
+            }};
         }}
 
         /// <summary>
