@@ -46,6 +46,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (childItems.Count() > 0)
                     _domRepository.{0}.{1}.Delete(childItems);
             }}
+
             ",
             info.Reference.DataStructure.Module.Name,
             info.Reference.DataStructure.Name,

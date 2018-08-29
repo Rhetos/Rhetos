@@ -133,7 +133,9 @@ raiserror('fff', 18, 118)"
             var connectionStringBuilder = new SqlConnectionStringBuilder(SqlUtility.ConnectionString);
             connectionStringBuilder.InitialCatalog = nonexistentDatabase;
             connectionStringBuilder.IntegratedSecurity = true;
+            connectionStringBuilder.ConnectTimeout = 1;
             string nonexistentDatabaseConnectionString = connectionStringBuilder.ConnectionString;
+            Console.WriteLine(nonexistentDatabaseConnectionString);
 
             MsSqlExecuter sqlExecuter = NewSqlExecuter(nonexistentDatabaseConnectionString);
             TestUtility.ShouldFail(() => sqlExecuter.ExecuteSql(new[] { "print 123" }),

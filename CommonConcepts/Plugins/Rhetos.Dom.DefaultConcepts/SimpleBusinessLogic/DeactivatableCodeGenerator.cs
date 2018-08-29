@@ -45,7 +45,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string DefaultSnippet(DeactivatableInfo info)
         {
             return string.Format(
-@"			    foreach (var newItem in insertedNew)
+            @"foreach (var newItem in insertedNew)
                 if (newItem.Active == null)
                     newItem.Active = true;
 
@@ -53,7 +53,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (change.newItem.Active == null)
                     change.newItem.Active = change.oldItem.Active ?? true;
 
-");
+            ");
         }
     }
 }
