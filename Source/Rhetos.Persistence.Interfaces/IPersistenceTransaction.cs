@@ -43,6 +43,7 @@ namespace Rhetos.Persistence
         /// This method should not be used during regular server run-time because it splits the unit of work
         /// making it impossible to rollback the whole session in case of a need.
         /// </summary>
+        [Obsolete("It is not longer needed for IServerInitializer plugins, because each plugin is executed in a separate connection.")]
         void CommitAndReconnect();
 
         /// <summary>
@@ -59,7 +60,5 @@ namespace Rhetos.Persistence
         /// See the <see cref="Connection"/> property for more details.
         /// </summary>
         DbTransaction Transaction { get; }
-
-        event EventHandler<DbTransaction> NewTransactionCreated;
     }
 }

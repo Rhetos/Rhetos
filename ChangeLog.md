@@ -1,5 +1,11 @@
 ﻿# Rhetos release notes
 
+## NEXT (to be released)
+
+### Internal improvements
+
+* Bugfix: DeployPackages Initialization sometimes fails with InvalidOperationException: This SqlTransaction has completed; it is no longer usable.
+
 ## 2.7.0 (2018-06-27)
 
 ### Internal improvements

@@ -190,5 +190,20 @@ namespace Rhetos.Utilities
             else
                 return ".";
         }
+
+        public static bool SafeTouch(string path)
+        {
+            var file = new FileInfo(path);
+            if (file.Exists)
+            {
+                var isReadOnly = file.IsReadOnly;
+                file.IsReadOnly = false;
+                file.LastWriteTime = DateTime.Now;
+                file.IsReadOnly = isReadOnly;
+                return true;
+            }
+            else
+                return false;
+        }
     }
 }

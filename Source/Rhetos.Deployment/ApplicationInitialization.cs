@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Persistence;
@@ -29,70 +30,72 @@ using System.Text;
 
 namespace Rhetos.Deployment
 {
+    /// <summary>
+    /// NOTE:
+    /// This class does not conform to the standard IoC design pattern.
+    /// It uses IoC container directly because it needs to handle a special scope control (separate database connections) and error handling.
+    /// </summary>
     public class ApplicationInitialization
     {
-        private readonly ILogger _deployPackagesLogger;
-        private readonly IPluginsContainer<IServerInitializer> _initializersContainer;
-        private readonly IPersistenceTransaction _transaction;
-
-        public ApplicationInitialization(
-            ILogProvider logProvider,
-            IPluginsContainer<IServerInitializer> initializersContainer,
-            IPersistenceTransaction transaction)
-        {
-            _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
-            _initializersContainer = initializersContainer;
-            _transaction = transaction;
-        }
-
-        public void ExecuteInitializers()
-        {
-            {
-                var initializers = GetSortedInitializers();
-                foreach (var initializer in initializers)
-                {
-                    _deployPackagesLogger.Trace("Initialization " + initializer.GetType().Name + ".");
-
-                    initializer.Initialize();
-                    _transaction.CommitAndReconnect(); // Deployment optimization to simplify debugging of the failed database initializers.
-                }
-                if (!initializers.Any())
-                    _deployPackagesLogger.Trace("No server initialization plugins.");
-            }
-
-            {
-                var configFile = new FileInfo(Paths.RhetosServerWebConfigFile);
-                if (configFile.Exists)
-                {
-                    Touch(configFile);
-                    _deployPackagesLogger.Trace("Updated " + configFile.Name + " modification date to restart server.");
-                }
-                else
-                    _deployPackagesLogger.Trace("Missing " + configFile.Name + ".");
-            }
-        }
-
-        private IList<IServerInitializer> GetSortedInitializers()
+        public static IEnumerable<Type> GetSortedInitializers(IContainer container)
         {
             // The plugins in the container are sorted by their dependencies defined in ExportMetadata attribute (static typed):
-            var initializers = _initializersContainer.GetPlugins();
+            var initializers = GetInitializers(container);
 
             // Additional sorting by loosely-typed dependencies from the Dependencies property:
             var initNames = initializers.Select(init => init.GetType().FullName).ToList();
             var initDependencies = initializers.SelectMany(init => (init.Dependencies ?? new string[0]).Select(x => Tuple.Create(x, init.GetType().FullName)));
-            Rhetos.Utilities.Graph.TopologicalSort(initNames, initDependencies);
+            Graph.TopologicalSort(initNames, initDependencies);
 
             var sortedInitializers = initializers.ToArray();
             Graph.SortByGivenOrder(sortedInitializers, initNames.ToArray(), init => init.GetType().FullName);
-            return sortedInitializers;
+            return sortedInitializers.Select(initializer => initializer.GetType()).ToList();
         }
 
-        private static void Touch(FileInfo file)
+        private static IEnumerable<IServerInitializer> GetInitializers(IContainer container)
         {
-            var isReadOnly = file.IsReadOnly;
-            file.IsReadOnly = false;
-            file.LastWriteTime = DateTime.Now;
-            file.IsReadOnly = isReadOnly;
+            return container.Resolve<IPluginsContainer<IServerInitializer>>().GetPlugins();
+        }
+
+        /// <summary>
+        /// NOTE:
+        /// This method does not conform to the standard IoC design pattern.
+        /// It uses IoC container directly because it needs to handle a special scope control (separate database connections) and error handling.
+        /// </summary>
+        public static void ExecuteInitializer(IContainer container, Type initializerType)
+        {
+            var deployPackagesLogger = container.Resolve<ILogProvider>().GetLogger("DeployPackages");
+            
+            Exception originalException = null;
+            try
+            {
+                using (var initializerScope = container.BeginLifetimeScope())
+                    try
+                    {
+                        deployPackagesLogger.Trace("Initialization " + initializerType.Name + ".");
+                        var initializers = initializerScope.Resolve<IPluginsContainer<IServerInitializer>>().GetPlugins();
+                        IServerInitializer initializer = initializers.Single(i => i.GetType() == initializerType);
+                        initializer.Initialize();
+                    }
+                    catch (Exception ex)
+                    {
+                        // Some exceptions result with invalid SQL transaction state that results with another exception on disposal of this 'using' block.
+                        // The original exception is logged here to make sure that it is not overridden;
+                        originalException = ex;
+                        initializerScope.Resolve<IPersistenceTransaction>().DiscardChanges();
+                        ExceptionsUtility.Rethrow(ex);
+                    }
+            }
+            catch (Exception ex)
+            {
+                if (originalException != null && ex != originalException)
+                {
+                    deployPackagesLogger.Error("Error on cleanup: " + ex.ToString());
+                    ExceptionsUtility.Rethrow(originalException);
+                }
+                else
+                    ExceptionsUtility.Rethrow(ex);
+            }
         }
     }
 }

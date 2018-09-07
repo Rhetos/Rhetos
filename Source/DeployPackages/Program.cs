@@ -200,40 +200,31 @@ namespace DeployPackages
                 shortTransaction: arguments.ShortTransactions,
                 deployDatabaseOnly: arguments.DeployDatabaseOnly));
 
-            Exception originalException = null;
-            try
+            using (var container = builder.Build())
             {
-                using (var container = builder.Build())
-                {
-                    try
-                    {
-                        var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
-                        performanceLogger.Write(stopwatch, "DeployPackages.Program: New modules and plugins registered.");
-                        Plugins.LogRegistrationStatistics("Initializing application", container);
+                var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
+                var initializers = ApplicationInitialization.GetSortedInitializers(container);
 
-                        container.Resolve<ApplicationInitialization>().ExecuteInitializers();
-                    }
-                    catch (Exception ex)
-                    {
-                        // Some exceptions result with invalid SQL transaction state that results with another exception on disposal of this 'using' block.
-                        // The original exception is logged here to make sure that it is not overridden;
-                        originalException = ex;
+                performanceLogger.Write(stopwatch, "DeployPackages.Program: New modules and plugins registered.");
+                Plugins.LogRegistrationStatistics("Initializing application", container);
 
-                        container.Resolve<IPersistenceTransaction>().DiscardChanges();
-                        ExceptionsUtility.Rethrow(ex);
-                    }
-                }
+                foreach (var initializer in initializers)
+                    ApplicationInitialization.ExecuteInitializer(container, initializer);
+
+                if (!initializers.Any())
+                    logger.Trace("No server initialization plugins.");
             }
-            catch (Exception ex)
-            {
-                if (originalException != null && ex != originalException)
-                {
-                    logger.Error("Error on cleanup: " + ex.ToString());
-                    ExceptionsUtility.Rethrow(originalException);
-                }
-                else
-                    ExceptionsUtility.Rethrow(ex);
-            }
+
+            RestartWebServer(logger);
+        }
+
+        private static void RestartWebServer(ILogger logger)
+        {
+            var configFile = Paths.RhetosServerWebConfigFile;
+            if (FilesUtility.SafeTouch(configFile))
+                logger.Trace($"Updated {Path.GetFileName(configFile)} modification date to restart server.");
+            else
+                logger.Trace($"Missing {Path.GetFileName(configFile)}.");
         }
 
         private static void PrintSummary(Exception ex)

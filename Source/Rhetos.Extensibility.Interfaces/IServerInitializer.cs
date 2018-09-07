@@ -26,8 +26,10 @@ using System.Threading.Tasks;
 namespace Rhetos.Extensibility
 {
     /// <summary>
-    /// Called at deployment time (DeployPackages.exe), after the database is updated, all code generators are executed
-    /// and the generated object model is registered to IoC container.
+    /// Interfaces for plugins that initialize data in the application's database.
+    /// 
+    /// The plugins are called at deployment time (DeployPackages.exe), after the database structure is updated,
+    /// all code generators are executed and the generated object model is registered to IoC container.
     /// </summary>
     public interface IServerInitializer
     {

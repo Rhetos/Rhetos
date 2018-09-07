@@ -22,6 +22,7 @@ using Rhetos.Utilities;
 using System;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Threading;
 
 namespace Rhetos.Persistence
@@ -71,18 +72,29 @@ namespace Rhetos.Persistence
 
         public void CommitAndReconnect()
         {
+            string callerInfo = GetCaller();
+            _logger.Info(() => "CommitAndReconnect is obsolete. Please upgrade to a latest version of the Rhetos plugin '" + callerInfo + "'.");
+
             if (_disposed)
                 throw new FrameworkException("Trying to commit and reconnect a disposed persistence transaction.");
             if (_discard)
                 throw new FrameworkException("Trying to commit and reconnect a discarded persistence transaction.");
 
             _logger.Trace(() => "CommitAndReconnect (" + _persistenceTransactionId + ").");
-            if (_transaction != null)
+            Commit();
+        }
+
+        private static string GetCaller()
+        {
+            try
             {
-                _transaction.Commit();
-                _transaction = _connection.BeginTransaction();
-                NewTransactionCreated?.Invoke(this, _transaction);
+                var callStack = new StackTrace().GetFrames();
+                return new StackTrace().GetFrame(2).GetMethod().DeclaringType.AssemblyQualifiedName;
             }
+            catch
+            {
+                return "";
+            };
         }
 
         private void Commit()
@@ -171,7 +183,6 @@ namespace Rhetos.Persistence
 
                     _logger.Trace(() => "Beginning transaction (" + _persistenceTransactionId + ").");
                     _transaction = _connection.BeginTransaction();
-                    NewTransactionCreated?.Invoke(this, _transaction);
                 }
 
                 return _connection;
@@ -188,7 +199,5 @@ namespace Rhetos.Persistence
                 return _transaction;
             }
         }
-
-        public event EventHandler<DbTransaction> NewTransactionCreated;
     }
 }

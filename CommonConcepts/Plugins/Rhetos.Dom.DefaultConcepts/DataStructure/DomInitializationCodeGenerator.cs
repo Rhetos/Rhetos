@@ -171,12 +171,6 @@ namespace Common
         {{
             Initialize();
             Database.UseTransaction(persistenceTransaction.Transaction);
-
-            persistenceTransaction.NewTransactionCreated += (pt, t) => 
-            {{
-                Database.UseTransaction(null);
-                Database.UseTransaction(t);
-            }};
         }}
 
         /// <summary>
@@ -411,7 +405,7 @@ namespace Common
         where TEntity : class, IEntity
         where TQueryableEntity : class, IEntity, TEntity, IQueryableEntity<TEntity>
     {{
-        [Obsolete(""Use Load(identifiers)or Query(identifiers) method."")]
+        [Obsolete(""Use Load(identifiers) or Query(identifiers) method."")]
         public TEntity[] Filter(IEnumerable<Guid> identifiers)
         {{
             const int BufferSize = 500; // EF 6.1.3 LINQ query has O(n^2) time complexity. Batch size of 500 results with optimal total time on the test system.
