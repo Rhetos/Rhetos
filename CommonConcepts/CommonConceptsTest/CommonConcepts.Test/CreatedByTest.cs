@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
@@ -37,13 +38,12 @@ namespace CommonConcepts.Test
         {
             using (var container = new RhetosTestContainer())
             {
-                var genericRepositories = container.Resolve<GenericRepositories>();
+                var context = container.Resolve<Common.ExecutionContext>();
                 var repository = container.Resolve<Common.DomRepository>();
 
                 string currentUserName = container.Resolve<IUserInfo>().UserName;
                 Assert.IsTrue(!string.IsNullOrWhiteSpace(currentUserName));
-                var currentPrincipal = new Common.Principal { Name = currentUserName };
-                genericRepositories.InsertOrReadId(currentPrincipal, p => p.Name);
+                var currentPrincipal = context.InsertPrincipalOrReadId(currentUserName);
 
                 var testItem1 = new TestCreatedBy.Simple { ID = Guid.NewGuid(), Name = "test1" };
                 var testItem2 = new TestCreatedBy.Simple { ID = Guid.NewGuid(), Name = "test2" };
@@ -62,17 +62,15 @@ namespace CommonConcepts.Test
         {
             using (var container = new RhetosTestContainer())
             {
-                var genericRepositories = container.Resolve<GenericRepositories>();
+                var context = container.Resolve<Common.ExecutionContext>();
                 var repository = container.Resolve<Common.DomRepository>();
 
                 string currentUserName = container.Resolve<IUserInfo>().UserName;
                 Assert.IsTrue(!string.IsNullOrWhiteSpace(currentUserName));
-                var currentPrincipal = new Common.Principal { Name = currentUserName };
-                genericRepositories.InsertOrReadId(currentPrincipal, p => p.Name);
+                var currentPrincipal = context.InsertPrincipalOrReadId(currentUserName);
 
                 string otherUserName = "otherUser-" + Guid.NewGuid();
-                var otherPrincipal = new Common.Principal { Name = otherUserName };
-                genericRepositories.InsertOrReadId(otherPrincipal, p => p.Name);
+                var otherPrincipal = context.InsertPrincipalOrReadId(otherUserName);
 
                 var testItem1 = new TestCreatedBy.Simple { ID = Guid.NewGuid(), Name = "test1", AuthorID = otherPrincipal.ID };
                 var testItem2 = new TestCreatedBy.Simple { ID = Guid.NewGuid(), Name = "test2" };
@@ -91,13 +89,12 @@ namespace CommonConcepts.Test
         {
             using (var container = new RhetosTestContainer())
             {
-                var genericRepositories = container.Resolve<GenericRepositories>();
+                var context = container.Resolve<Common.ExecutionContext>();
                 var repository = container.Resolve<Common.DomRepository>();
 
                 string currentUserName = container.Resolve<IUserInfo>().UserName;
                 Assert.IsTrue(!string.IsNullOrWhiteSpace(currentUserName));
-                var currentPrincipal = new Common.Principal { Name = currentUserName };
-                genericRepositories.InsertOrReadId(currentPrincipal, p => p.Name);
+                var currentPrincipal = context.InsertPrincipalOrReadId(currentUserName);
 
                 var testItem1 = new TestCreatedBy.WithConstraints { ID = Guid.NewGuid(), Name = "test1" };
                 var testItem2 = new TestCreatedBy.WithConstraints { ID = Guid.NewGuid(), Name = "test2" };
@@ -116,13 +113,12 @@ namespace CommonConcepts.Test
         {
             using (var container = new RhetosTestContainer())
             {
-                var genericRepositories = container.Resolve<GenericRepositories>();
+                var context = container.Resolve<Common.ExecutionContext>();
                 var repository = container.Resolve<Common.DomRepository>();
 
                 string currentUserName = container.Resolve<IUserInfo>().UserName;
                 Assert.IsTrue(!string.IsNullOrWhiteSpace(currentUserName));
-                var currentPrincipal = new Common.Principal { Name = currentUserName };
-                genericRepositories.InsertOrReadId(currentPrincipal, p => p.Name);
+                var currentPrincipal = context.InsertPrincipalOrReadId(currentUserName);
 
                 var testItem1 = new TestCreatedBy.WithConstraints { ID = Guid.NewGuid(), Name = "test1" };
                 var testItem2 = new TestCreatedBy.WithConstraints { ID = Guid.NewGuid(), Name = "test2", AuthorID = currentPrincipal.ID };

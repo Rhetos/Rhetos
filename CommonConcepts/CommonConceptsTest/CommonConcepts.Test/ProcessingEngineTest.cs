@@ -176,7 +176,7 @@ namespace CommonConcepts.Test
             Exec(command);
         }
 
-        private Common.Principal[] ReadUsers(params string[] usernames)
+        private IPrincipal[] ReadUsers(params string[] usernames)
         {
             var command = new ReadCommandInfo
             {
@@ -185,7 +185,7 @@ namespace CommonConcepts.Test
                 ReadRecords = true
             };
             var result = Exec<ReadCommandResult>(command);
-            return (Common.Principal[])result.Records;
+            return (IPrincipal[])result.Records;
         }
 
         private void DeleteUsers(params string[] usernames)

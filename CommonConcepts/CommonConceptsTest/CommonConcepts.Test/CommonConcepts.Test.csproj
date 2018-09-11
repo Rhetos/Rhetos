@@ -163,6 +163,7 @@
     <Compile Include="AuthorizationCachingTest.cs" />
     <Compile Include="CreatedByTest.cs" />
     <Compile Include="DataMigrationTest.cs" />
+    <Compile Include="Helpers\PrincipalHelper.cs" />
     <Compile Include="ReferenceTest.cs" />
     <Compile Include="FullTextSearchTest.cs" />
     <Compile Include="Helpers\RhetosTestContainerExtensions.cs" />

@@ -53,11 +53,11 @@ namespace CommonConcepts.Test
             DeleteTestPermissions();
             using (var container = new RhetosTestContainer(commitChanges: true))
             {
+                var context = container.Resolve<Common.ExecutionContext>();
                 var r = container.Resolve<Common.DomRepository>();
 
-                var principal1 = new Common.Principal { Name = User1Name };
-                var principal2 = new Common.Principal { Name = User2Name };
-                r.Common.Principal.Insert(principal1, principal2);
+                var principal1 = context.InsertPrincipalOrReadId(User1Name);
+                var principal2 = context.InsertPrincipalOrReadId(User2Name);
 
                 var role1 = new Common.Role { Name = Role1Name };
                 var role2 = new Common.Role { Name = Role2Name };
@@ -78,8 +78,10 @@ namespace CommonConcepts.Test
         {
             using (var container = new RhetosTestContainer(commitChanges: true))
             {
+                var c = container.Resolve<Common.ExecutionContext>();
                 var r = container.Resolve<Common.DomRepository>();
-                r.Common.Principal.Delete(r.Common.Principal.Load(p => p.Name.StartsWith(UserPrefix)));
+                var oldData = c.GenericPrincipal().Query(p => p.Name.StartsWith(UserPrefix));
+                c.GenericPrincipal().Delete(oldData);
                 r.Common.Role.Delete(r.Common.Role.Load(p => p.Name.StartsWith(RolePrefix)));
             }
         }
@@ -97,9 +99,9 @@ namespace CommonConcepts.Test
         {
             TestPermissionsCachingOnChange(context =>
             {
-                var currentPrincipal = context.Repository.Common.Principal.Load(p => p.Name == User1Name).Single();
+                var currentPrincipal = context.GenericPrincipal().Load(p => p.Name == User1Name).Single();
                 currentPrincipal.Name = currentPrincipal.Name.ToUpper();
-                context.Repository.Common.Principal.Update(currentPrincipal);
+                context.GenericPrincipal().Update(currentPrincipal);
             },
                 new[] { true, true, false },
                 "Principal, PrincipalPermissions, PrincipalRoles"); // Some permissions should have been cleared from cache, some remaining.
@@ -110,9 +112,9 @@ namespace CommonConcepts.Test
         {
             TestPermissionsCachingOnChange(context =>
             {
-                var otherPrincipal = context.Repository.Common.Principal.Load(p => p.Name == User2Name).Single();
+                var otherPrincipal = context.GenericPrincipal().Load(p => p.Name == User2Name).Single();
                 otherPrincipal.Name = otherPrincipal.Name.ToUpper();
-                context.Repository.Common.Principal.Update(otherPrincipal);
+                context.GenericPrincipal().Update(otherPrincipal);
             },
                 new[] { true, true, false },
                 ""); // Updated principal is not used, should not affect cached permissions.
@@ -123,9 +125,9 @@ namespace CommonConcepts.Test
         {
             TestPermissionsCachingOnChange(context =>
             {
-                var currentPrincipal = context.Repository.Common.Principal.Load(p => p.Name == User1Name).Single();
-                context.Repository.Common.Principal.Delete(currentPrincipal);
-                context.Repository.Common.Principal.Insert(currentPrincipal);
+                var currentPrincipal = context.GenericPrincipal().Load(p => p.Name == User1Name).Single();
+                context.GenericPrincipal().Delete(currentPrincipal);
+                context.GenericPrincipal().Insert(currentPrincipal);
             },
                 new[] { false, false, false },
                 "Principal, PrincipalPermissions, PrincipalRoles");
@@ -137,7 +139,7 @@ namespace CommonConcepts.Test
             TestPermissionsCachingOnChange(context =>
             {
                 var common = context.Repository.Common;
-                var currentPrincipal = common.Principal.Load(p => p.Name == User1Name).Single();
+                var currentPrincipal = context.GenericPrincipal().Load(p => p.Name == User1Name).Single();
                 var claim1 = common.Claim.Load(c => c.ClaimResource == Claim1.Resource && c.ClaimRight == Claim1.Right).Single();
                 var permission1 = common.PrincipalPermission.Load(pp => pp.PrincipalID == currentPrincipal.ID && pp.ClaimID == claim1.ID).Single();
                 permission1.IsAuthorized = false;
@@ -153,7 +155,7 @@ namespace CommonConcepts.Test
             TestPermissionsCachingOnChange(context =>
             {
                 var common = context.Repository.Common;
-                var currentPrincipal = common.Principal.Load(p => p.Name == User1Name).Single();
+                var currentPrincipal = context.GenericPrincipal().Load(p => p.Name == User1Name).Single();
                 var claim1 = common.Claim.Load(c => c.ClaimResource == Claim1.Resource && c.ClaimRight == Claim1.Right).Single();
                 var permission1 = common.PrincipalPermission.Load(pp => pp.PrincipalID == currentPrincipal.ID && pp.ClaimID == claim1.ID).Single();
                 common.PrincipalPermission.Delete(permission1);
@@ -168,7 +170,7 @@ namespace CommonConcepts.Test
             TestPermissionsCachingOnChange(context =>
             {
                 var common = context.Repository.Common;
-                var currentPrincipal = common.Principal.Load(p => p.Name == User1Name).Single();
+                var currentPrincipal = context.GenericPrincipal().Load(p => p.Name == User1Name).Single();
                 var claim3 = common.Claim.Load(c => c.ClaimResource == Claim3.Resource && c.ClaimRight == Claim3.Right).Single();
                 var permission3 = new Common.PrincipalPermission { PrincipalID = currentPrincipal.ID, ClaimID = claim3.ID, IsAuthorized = true };
                 common.PrincipalPermission.Insert(permission3);
