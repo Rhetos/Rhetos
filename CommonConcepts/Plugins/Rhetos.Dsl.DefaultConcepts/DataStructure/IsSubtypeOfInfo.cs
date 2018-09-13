@@ -89,6 +89,13 @@ namespace Rhetos.Dsl.DefaultConcepts
     [Export(typeof(IConceptMacro))]
     public class IsSubtypeOfMacro : IConceptMacro<IsSubtypeOfInfo>
     {
+        private readonly ConceptMetadata _conceptMetadata;
+
+        public IsSubtypeOfMacro(ConceptMetadata conceptMetadata)
+        {
+            _conceptMetadata = conceptMetadata;
+        }
+
         public IEnumerable<IConceptInfo> CreateNewConcepts(IsSubtypeOfInfo conceptInfo, IDslModel existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();
@@ -102,7 +109,8 @@ namespace Rhetos.Dsl.DefaultConcepts
                 Name = conceptInfo.GetSubtypeReferenceName()
             };
             newConcepts.Add(subtypeReference);
-            newConcepts.Add(new PolymorphicPropertyInfo { Property = subtypeReference, SubtypeReference = conceptInfo.Subtype.GetKeyProperties() });
+            _conceptMetadata.Set(subtypeReference, PolymorphicPropertyInfo.IsPolymorphicSystemProperty, true);
+            newConcepts.Add(new PolymorphicPropertyInfo { Property = subtypeReference }); // Minor optimization to reduce the number of macro evaluations.
 
             // Append subtype implementation to the supertype union:
 

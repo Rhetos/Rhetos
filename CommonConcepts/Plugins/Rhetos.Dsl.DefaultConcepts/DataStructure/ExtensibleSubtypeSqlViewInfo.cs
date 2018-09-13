@@ -29,6 +29,13 @@ using Rhetos.Dom.DefaultConcepts;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// This is one of the options for implementing a polymorphic in the subtype data structure,
+    /// i.e. defining a mapping between the polymorphic supertype and the subtype.
+    /// ExtensibleSubtypeSqlViewInfo allows an independent mapping definition implementation for each property,
+    /// also allowing for additional subtype properties (from a custom extension package, for example)
+    /// to be added to the subtype and mapped to the supertype.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     public class ExtensibleSubtypeSqlViewInfo : SqlViewInfo, IAlternativeInitializationConcept
     {
@@ -85,6 +92,13 @@ FROM
     [Export(typeof(IConceptMacro))]
     public class ExtensibleSubtypeSqlViewMacro : IConceptMacro<ExtensibleSubtypeSqlViewInfo>
     {
+        private readonly ConceptMetadata _conceptMetadata;
+
+        public ExtensibleSubtypeSqlViewMacro(ConceptMetadata conceptMetadata)
+        {
+            _conceptMetadata = conceptMetadata;
+        }
+
         public IEnumerable<IConceptInfo> CreateNewConcepts(ExtensibleSubtypeSqlViewInfo conceptInfo, IDslModel existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();
@@ -92,7 +106,7 @@ FROM
             // Automatic interface implementation: Add missing property implementations and missing properties to the subtype.
 
             var implementableSupertypeProperties = existingConcepts.FindByType<PolymorphicPropertyInfo>()
-                .Where(pp => pp.Property.DataStructure == conceptInfo.IsSubtypeOf.Supertype && pp.IsImplementable())
+                .Where(pp => pp.Property.DataStructure == conceptInfo.IsSubtypeOf.Supertype && pp.IsImplementable(_conceptMetadata))
                 .Select(pp => pp.Property).ToList();
             var subtypeProperties = existingConcepts.FindByReference<PropertyInfo>(p => p.DataStructure, conceptInfo.IsSubtypeOf.Subtype);
             var subtypeImplementsProperties = existingConcepts.FindByReference<SubtypeImplementsPropertyInfo>(subim => subim.IsSubtypeOf, conceptInfo.IsSubtypeOf)

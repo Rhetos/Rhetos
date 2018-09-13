@@ -53,6 +53,13 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public static readonly CsTag<PolymorphicInfo> SetFilterExpressionTag = "SetFilterExpression";
 
+        private readonly ConceptMetadata _conceptMetadata;
+
+        public PolymorphicMacro(ConceptMetadata conceptMetadata)
+        {
+            _conceptMetadata = conceptMetadata;
+        }
+
         public IEnumerable<IConceptInfo> CreateNewConcepts(PolymorphicInfo conceptInfo, IDslModel existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();
@@ -65,19 +72,13 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             var subtypeString = new ShortStringPropertyInfo { DataStructure = conceptInfo, Name = "Subtype" };
             newConcepts.Add(subtypeString);
-            newConcepts.Add(new PolymorphicPropertyInfo { Property = subtypeString });
+            _conceptMetadata.Set(subtypeString, PolymorphicPropertyInfo.IsPolymorphicSystemProperty, true);
+            newConcepts.Add(new PolymorphicPropertyInfo { Property = subtypeString }); // Minor optimization to reduce the number of macro evaluations.
 
             // Mark polymorphic properties:
 
-            var existingPolymorphicProperties = new HashSet<string>(
-                existingConcepts.FindByType<PolymorphicPropertyInfo>()
-                    .Where(pp => pp.Property.DataStructure == conceptInfo)
-                    .Select(pp => pp.Property.Name));
-
             newConcepts.AddRange(existingConcepts
-                .FindByType<PropertyInfo>()
-                .Where(p => p.DataStructure == conceptInfo)
-                .Where(p => !existingPolymorphicProperties.Contains(p.Name))
+                .FindByReference<PropertyInfo>(p => p.DataStructure, conceptInfo)
                 .Select(p => new PolymorphicPropertyInfo { Property = p }));
 
             // Automatically materialize the polymorphic entity if it is referenced or extended, so the polymorphic can be used in FK constraint:
