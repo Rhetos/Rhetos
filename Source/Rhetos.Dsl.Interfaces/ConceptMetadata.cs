@@ -20,8 +20,6 @@
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Dsl
 {
@@ -82,34 +80,6 @@ namespace Rhetos.Dsl
             if (!_metadata.TryGetValue(conceptInfo.GetKey(), out conceptInfoMetadata))
                 return false;
             return conceptInfoMetadata.ContainsKey(metadataKey.Id);
-        }
-    }
-
-    public class ConceptMetadataKey<T>
-    {
-        public Guid Id { get; private set; }
-        public string Name { get; private set; }
-
-        /// <param name="name">Name is optional. It is used only for debugging.</param>
-        public ConceptMetadataKey(string name = null)
-        {
-            Id = Guid.NewGuid();
-            Name = name;
-        }
-
-        /// <summary>
-        /// Name is optional. It is used only for debugging.
-        /// </summary>
-        public static implicit operator ConceptMetadataKey<T>(string name)
-        {
-            return new ConceptMetadataKey<T>(name);
-        }
-
-        public override string ToString()
-        {
-            return Name != null
-                ? Name + ", " + Id.ToString()
-                : Id.ToString();
         }
     }
 }

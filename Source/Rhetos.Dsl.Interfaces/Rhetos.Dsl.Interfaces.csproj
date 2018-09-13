@@ -118,6 +118,7 @@
     <Compile Include="ConceptMember.cs" />
     <Compile Include="ConceptMembers.cs" />
     <Compile Include="ConceptMetadata.cs" />
+    <Compile Include="ConceptMetadataKey.cs" />
     <Compile Include="DslModelIndexByReference.cs" />
     <Compile Include="DslScript.cs" />
     <Compile Include="DslSyntaxException.cs" />
