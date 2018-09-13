@@ -175,7 +175,7 @@ namespace CommonConcepts.Test
 
                 var all = repository.TestExtension.SimpleBase.Load();
                 Assert.AreEqual("b1, b2missing", TestUtility.DumpSorted(all, item => item.Name),
-                    "InvalidExtension should not fail because there is not need to load those records.");
+                    "InvalidExtension should not fail because there is no need to load those records.");
 
                 foreach (var item in all)
                     item.Name += "X";

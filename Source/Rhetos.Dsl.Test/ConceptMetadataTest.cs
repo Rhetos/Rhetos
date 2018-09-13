@@ -52,11 +52,12 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual("def", cm.Get(c2, cmString));
             Assert.AreEqual(123, cm.Get(c2, cmInt));
 
-            TestUtility.ShouldFail<FrameworkException>(() => cm.Get(c1, cmInt), "There is no metadata", "SomeConcept", "c1", cmInt.Id.ToString());
-            TestUtility.ShouldFail<FrameworkException>(() => cm.Get(c3, cmString), "There is no metadata", "SomeConcept", "c3", "cmString", cmString.Id.ToString());
-            TestUtility.ShouldFail<FrameworkException>(() => cm.Get(c3, cmInt), "There is no metadata", "SomeConcept");
+            TestUtility.ShouldFail<FrameworkException>(() => cm.Get(c1, cmInt), "There is no requested metadata", "SomeConcept", "c1", cmInt.Id.ToString());
+            TestUtility.ShouldFail<FrameworkException>(() => cm.Get(c3, cmString), "There is no requested metadata", "SomeConcept", "c3", "cmString", cmString.Id.ToString());
+            TestUtility.ShouldFail<FrameworkException>(() => cm.Get(c3, cmInt), "There is no requested metadata", "SomeConcept");
 
-            TestUtility.ShouldFail<FrameworkException>(() => cm.Set(c1, cmString, "abc"), "metadata is already set", "SomeConcept", "c1", "cmString", cmString.Id.ToString());
+            TestUtility.ShouldFail<FrameworkException>(() => cm.Set(c1, cmString, "xyz"),
+                "metadata value is already set", "SomeConcept", "c1", "cmString", cmString.Id.ToString(), "abc", "xyz");
         }
 
         [TestMethod]
