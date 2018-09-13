@@ -43,8 +43,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         public static readonly SqlTag<PropertyInfo> AfterCreateTag = "AfterCreate";
         public static readonly SqlTag<PropertyInfo> BeforeRemoveTag = "BeforeRemove";
 
-        public static readonly ConceptMetadataType<List<string>> ColumnNamesMetadata = "ColumnNames";
-        public static readonly ConceptMetadataType<List<string>> ColumnTypesMetadata = "ColumnTypes";
+        public static readonly ConceptMetadataKey<List<string>> ColumnNamesMetadata = "ColumnNames";
+        public static readonly ConceptMetadataKey<List<string>> ColumnTypesMetadata = "ColumnTypes";
 
         public static void RegisterColumnMetadata(ConceptMetadata conceptMetadata, PropertyInfo property, string columnName, string columnType)
         {

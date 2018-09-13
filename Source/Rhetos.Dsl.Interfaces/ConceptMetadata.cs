@@ -34,65 +34,75 @@ namespace Rhetos.Dsl
             _metadata = new Dictionary<string, Dictionary<Guid, object>>();
         }
 
-        public void Set<T>(IConceptInfo conceptInfo, ConceptMetadataType<T> metadataType, T value)
+        public void Set<T>(IConceptInfo conceptInfo, ConceptMetadataKey<T> metadataKey, T value)
         {
-            Dictionary<Guid, object> conceptMetadataByType;
+            Dictionary<Guid, object> conceptInfoMetadata;
             string conceptKey = conceptInfo.GetKey();
-            if (!_metadata.TryGetValue(conceptKey, out conceptMetadataByType))
+            if (!_metadata.TryGetValue(conceptKey, out conceptInfoMetadata))
             {
-                conceptMetadataByType = new Dictionary<Guid, object>();
-                _metadata.Add(conceptKey, conceptMetadataByType);
+                conceptInfoMetadata = new Dictionary<Guid, object>();
+                _metadata.Add(conceptKey, conceptInfoMetadata);
             }
 
-            if (conceptMetadataByType.ContainsKey(metadataType.Id))
-                throw new FrameworkException(string.Format(
-                    "The metadata is already set for concept {0}. Metadata type {1}.",
-                    conceptInfo.GetUserDescription(),
-                    metadataType));
-
-            conceptMetadataByType.Add(metadataType.Id, value);
+            object oldValue;
+            if (!conceptInfoMetadata.TryGetValue(metadataKey.Id, out oldValue))
+                conceptInfoMetadata.Add(metadataKey.Id, value);
+            else
+            {
+                if (!SameValue(value, oldValue))
+                    throw new FrameworkException(
+                        $"Different metadata value is already set for concept {conceptInfo.GetUserDescription()}, key {metadataKey}." +
+                        $" Previous value '{oldValue}', new value '{value}'.");
+            }
         }
 
-        public T Get<T>(IConceptInfo conceptInfo, ConceptMetadataType<T> metadataType)
+        private static bool SameValue<T>(T value, object oldValue)
         {
-            Func<string> missingMetadataMessage = () => "There is no metadata of requested type for concept " + conceptInfo.GetUserDescription() + ". Metadata type is " + metadataType + ".";
-            var conceptMetadataByType = _metadata.GetValue(conceptInfo.GetKey(), missingMetadataMessage);
-            var metadataValue = conceptMetadataByType.GetValue(metadataType.Id, missingMetadataMessage);
+            return oldValue == null ? (value == null) : oldValue.Equals(value);
+        }
+
+        public T Get<T>(IConceptInfo conceptInfo, ConceptMetadataKey<T> metadataKey)
+        {
+            Func<string> missingMetadataMessage = () => "There is no requested metadata for concept " + conceptInfo.GetUserDescription() + ". Metadata key is " + metadataKey + ".";
+            var conceptInfoMetadata = _metadata.GetValue(conceptInfo.GetKey(), missingMetadataMessage);
+            var metadataValue = conceptInfoMetadata.GetValue(metadataKey.Id, missingMetadataMessage);
             return (T)metadataValue;
         }
 
-        public T GetOrDefault<T>(IConceptInfo conceptInfo, ConceptMetadataType<T> metadataType, T defaultValue)
+        public T GetOrDefault<T>(IConceptInfo conceptInfo, ConceptMetadataKey<T> metadataKey, T defaultValue)
         {
-            return Contains(conceptInfo, metadataType)
-                ? Get(conceptInfo, metadataType)
+            return Contains(conceptInfo, metadataKey)
+                ? Get(conceptInfo, metadataKey)
                 : defaultValue;
         }
 
-        public bool Contains<T>(IConceptInfo conceptInfo, ConceptMetadataType<T> metadataType)
+        public bool Contains<T>(IConceptInfo conceptInfo, ConceptMetadataKey<T> metadataKey)
         {
-            Dictionary<Guid, object> conceptMetadataByType;
-            if (!_metadata.TryGetValue(conceptInfo.GetKey(), out conceptMetadataByType))
+            Dictionary<Guid, object> conceptInfoMetadata;
+            if (!_metadata.TryGetValue(conceptInfo.GetKey(), out conceptInfoMetadata))
                 return false;
-            return conceptMetadataByType.ContainsKey(metadataType.Id);
+            return conceptInfoMetadata.ContainsKey(metadataKey.Id);
         }
     }
 
-    public class ConceptMetadataType<T>
+    public class ConceptMetadataKey<T>
     {
         public Guid Id { get; private set; }
         public string Name { get; private set; }
 
-        /// <param name="name">Name (optional) is used only for debugging.</param>
-        public ConceptMetadataType(string name = null)
+        /// <param name="name">Name is optional. It is used only for debugging.</param>
+        public ConceptMetadataKey(string name = null)
         {
             Id = Guid.NewGuid();
             Name = name;
         }
 
-        /// <param name="name">Name (optional) is used only for debugging.</param>
-        public static implicit operator ConceptMetadataType<T>(string name)
+        /// <summary>
+        /// Name is optional. It is used only for debugging.
+        /// </summary>
+        public static implicit operator ConceptMetadataKey<T>(string name)
         {
-            return new ConceptMetadataType<T>(name);
+            return new ConceptMetadataKey<T>(name);
         }
 
         public override string ToString()

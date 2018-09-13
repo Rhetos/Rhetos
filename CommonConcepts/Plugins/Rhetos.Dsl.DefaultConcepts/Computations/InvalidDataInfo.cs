@@ -44,7 +44,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         /// </summary>
         public string ErrorMessage { get; set; }
 
-        public static readonly ConceptMetadataType<bool> AllowSaveMetadata = "AllowSave";
+        public static readonly ConceptMetadataKey<bool> AllowSaveMetadata = "AllowSave";
 
         public string GetErrorMessageMethodName()
         {

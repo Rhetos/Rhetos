@@ -32,8 +32,8 @@ namespace Rhetos.Dsl.Test
             public string Name { get; set; }
         }
 
-        static readonly ConceptMetadataType<string> cmString = new ConceptMetadataType<string>("cmString");
-        static readonly ConceptMetadataType<int> cmInt = new ConceptMetadataType<int>();
+        static readonly ConceptMetadataKey<string> cmString = new ConceptMetadataKey<string>("cmString");
+        static readonly ConceptMetadataKey<int> cmInt = new ConceptMetadataKey<int>();
 
         [TestMethod]
         public void GetSetMetadata()
