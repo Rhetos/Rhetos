@@ -37,7 +37,6 @@ namespace Rhetos.Security
         private readonly bool _allowBuiltinAdminOverride;
         private readonly HashSet<string> _allClaimsForUsers; // Case-insensitive hashset.
         private readonly IAuthorizationProvider _authorizationProvider;
-        private readonly IWindowsSecurity _windowsSecurity;
         private readonly ILocalizer _localizer;
         private readonly IConfiguration _configuration;
 
@@ -54,7 +53,6 @@ namespace Rhetos.Security
             _userInfo = userInfo;
             _claimProviders = claimProviders;
             _authorizationProvider = authorizationProvider;
-            _windowsSecurity = windowsSecurity;
             _logger = logProvider.GetLogger(GetType().Name);
             _performanceLogger = logProvider.GetLogger("Performance");
             _allowBuiltinAdminOverride = _configuration.GetBool("BuiltinAdminOverride", false).Value;
@@ -91,10 +89,10 @@ namespace Rhetos.Security
 
             if (_allClaimsForUsers.Contains(_userInfo.UserName)
                 || _allowBuiltinAdminOverride
-                    && _userInfo is IWindowsUserInfo
-                    && _windowsSecurity.IsBuiltInAdministrator((IWindowsUserInfo)_userInfo))
+                    && _userInfo is IUserInfoAdmin
+                    && ((IUserInfoAdmin)_userInfo).IsBuiltInAdministrator)
             {
-                _logger.Trace(() => string.Format("User {0} has builtin administrator privileges.", _userInfo.UserName));
+                _logger.Trace(() => string.Format("User {0} has built-in administrator privileges.", _userInfo.UserName));
                 return Enumerable.Repeat(true, requiredClaims.Count()).ToArray();
             }
 

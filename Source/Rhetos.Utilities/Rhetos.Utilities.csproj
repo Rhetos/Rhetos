@@ -140,6 +140,7 @@
     <Compile Include="GeneratedFilesCache.cs" />
     <Compile Include="IConfiguration.cs" />
     <Compile Include="ISqlUtility.cs" />
+    <Compile Include="IUserInfoAdmin.cs" />
     <Compile Include="ListOfTuples.cs" />
     <Compile Include="SqlTransactionBatches.cs" />
     <Compile Include="NoLocalizer.cs" />

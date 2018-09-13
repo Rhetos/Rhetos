@@ -121,14 +121,11 @@ namespace Rhetos.Security
             }
         }
 
-        public bool IsBuiltInAdministrator(IWindowsUserInfo userInfo)
+        public bool IsBuiltInAdministrator(WindowsIdentity windowsIdentity)
         {
             // WARNING: When making any changes to this function, please make sure that it works correctly when the process is run on IIS with the "ApplicationPoolIdentity".
 
-            if (!userInfo.IsUserRecognized)
-                return false;
-
-            WindowsPrincipal principal = new WindowsPrincipal(userInfo.WindowsIdentity);
+            WindowsPrincipal principal = new WindowsPrincipal(windowsIdentity);
 
             // Returns true if user is a local administrator AND the process is running under elevated privileges.
             return principal.IsInRole(WindowsBuiltInRole.Administrator);

@@ -25,7 +25,9 @@ namespace Rhetos.Utilities
     public interface IUserInfo
     {
         bool IsUserRecognized { get; }
+
         string UserName { get; }
+
         /// <summary>
         /// Client host name or address.
         /// </summary>

@@ -17,17 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Principal;
-using System.Text;
-
-namespace Rhetos.Security
+namespace Rhetos.Utilities
 {
-    public interface IWindowsUserInfo : IUserInfo
+    public interface IUserInfoAdmin : IUserInfo
     {
-        WindowsIdentity WindowsIdentity { get; }
+        /// <summary>
+        /// User that is a BuiltInAdministrator has all claims by default, if the BuiltinAdminOverride option is set in web.config.
+        /// </summary>
+        bool IsBuiltInAdministrator { get; }
     }
 }

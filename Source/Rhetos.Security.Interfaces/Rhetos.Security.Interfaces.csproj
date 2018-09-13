@@ -58,7 +58,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="IWindowsSecurity.cs" />
-    <Compile Include="IWindowsUserInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="..\Rhetos\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>

@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Security.Principal;
 
 namespace Rhetos.Security
 {
@@ -29,6 +30,6 @@ namespace Rhetos.Security
     {
         string GetClientWorkstation();
         IEnumerable<string> GetIdentityMembership(string username);
-        bool IsBuiltInAdministrator(IWindowsUserInfo userInfo);
+        bool IsBuiltInAdministrator(WindowsIdentity userInfo);
     }
 }

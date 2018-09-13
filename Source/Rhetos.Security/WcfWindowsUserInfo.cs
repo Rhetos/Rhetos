@@ -35,21 +35,21 @@ namespace Rhetos.Security
     /// <summary>
     /// This is a security principal provider based on WCF and Windows authentication.
     /// </summary>
-    public class WcfWindowsUserInfo : IWindowsUserInfo
+    public class WcfWindowsUserInfo : IUserInfoAdmin
     {
-        #region IWindowsUserInfo implementation
+        #region IUserInfoAdmin implementation
 
         public bool IsUserRecognized { get { return _isUserRecognized.Value; } }
         public string UserName { get { CheckIfUserRecognized(); return _userName.Value; } }
         public string Workstation { get { CheckIfUserRecognized(); return _workstation.Value; } }
-        public WindowsIdentity WindowsIdentity { get { CheckIfUserRecognized(); return _windowsIdentity.Value; } }
         public string Report() { return UserName + "," + Workstation; }
+        public bool IsBuiltInAdministrator => IsUserRecognized && _windowsSecurity.IsBuiltInAdministrator(_windowsIdentity.Value);
 
         #endregion
 
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
-
+        private readonly IWindowsSecurity _windowsSecurity;
         private Lazy<bool> _isUserRecognized;
         /// <summary>Format: "domain\user"</summary>
         private Lazy<string> _userName;
@@ -65,6 +65,7 @@ namespace Rhetos.Security
             _userName = new Lazy<string>(() => InitUserName());
             _workstation = new Lazy<string>(() => windowsSecurity.GetClientWorkstation());
             _windowsIdentity = new Lazy<WindowsIdentity>(() => InitWindowsIdentity());
+            _windowsSecurity = windowsSecurity;
         }
 
         private void CheckIfUserRecognized()
