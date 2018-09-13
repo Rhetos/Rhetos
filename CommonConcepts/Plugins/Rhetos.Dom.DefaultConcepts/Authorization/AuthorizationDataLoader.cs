@@ -110,8 +110,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 }
                 else
                 {
-                    _logger.Error("There is no principal with the given username '" + username + "' in Common.Principal.");
-                    throw new ClientException("There is no principal with the given username.");
+                    _logger.Info($"There is no principal with the username '{username}' in Common.Principal.");
+                    throw new UserException($"Your account '{username}' is not registered in the system. Please contact the system administrator.");
                 }
             }
             return principal;
