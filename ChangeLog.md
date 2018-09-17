@@ -1,10 +1,13 @@
 ﻿# Rhetos release notes
 
-## NEXT (to be released)
+## 2.8.0 (2018-09-17)
 
 ### Internal improvements
 
-* Bugfix: DeployPackages Initialization sometimes fails with InvalidOperationException: This SqlTransaction has completed; it is no longer usable.
+* Bugfix: DeployPackages sometimes fails with InvalidOperationException: This SqlTransaction has completed; it is no longer usable.
+* Bugfix: DeployPackages sometimes fails with DslSyntaxException: "Concept with same key is described twice with different values." for PolymorphicPropertyInfo.
+* All security plugins (IUserInfo/IUserInfoAdmin) can now provide the admin user information. Previously this option was available only to Windows authentication.
+* **ApplyFilterOnClientRead** concept: Added an optional selector of read commands where the filter will be applied.
 
 ## 2.7.0 (2018-06-27)
 
