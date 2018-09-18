@@ -134,11 +134,11 @@ namespace Rhetos.Utilities
                 {
                     UserException interpretedException = null;
                     if (action == "DELETE")
-                        interpretedException = new UserException("It is not allowed to delete a record that is referenced by other records.", exception);
+                        interpretedException = new UserException("It is not allowed to delete a record that is referenced by other records.", new string[] { parts[7].Value, parts[9].Value }, null, exception);
                     else if (action == "INSERT")
-                        interpretedException = new UserException("It is not allowed to enter the record. The entered value references nonexistent record.", exception);
+                        interpretedException = new UserException("It is not allowed to enter the record. The entered value references nonexistent record.", new string[] { parts[7].Value, parts[9].Value }, null, exception);
                     else if (action == "UPDATE")
-                        interpretedException = new UserException("It is not allowed to edit the record. The entered value references nonexistent record.", exception);
+                        interpretedException = new UserException("It is not allowed to edit the record. The entered value references nonexistent record.", new string[] { parts[7].Value, parts[9].Value }, null, exception);
 
                     if (interpretedException != null)
                     {

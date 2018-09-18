@@ -17,16 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
 using System.ComponentModel.Composition;
 using Rhetos.Extensibility;
 using Rhetos.Dsl;
 using Rhetos.Compiler;
+using Rhetos.Utilities;
+using Rhetos.DatabaseGenerator.DefaultConcepts;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -65,6 +62,19 @@ namespace Rhetos.Dom.DefaultConcepts
                     string.Format("modelBuilder.Entity<Common.Queryable.{0}_{1}>().Ignore(t => t.{2});\r\n            ",
                         info.Base.Module.Name, info.Base.Name, info.ExtensionPropertyName()),
                     DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
+
+            if (info.Extension is IOrmDataStructure && info.Base is IWritableOrmDataStructure)
+            {
+                var ormDataStructure = (IOrmDataStructure)info.Extension;
+                string systemMessage = "DataStructure:" + info.Extension + ",Property:ID,Referenced:" + info.Base;
+                string onDeleteInterpretSqlError = @"if (interpretedException is Rhetos.UserException && Rhetos.Utilities.MsSqlUtility.IsReferenceErrorOnDelete(interpretedException, "
+                    + CsUtility.QuotedString(ormDataStructure.GetOrmSchema() + "." + ormDataStructure.GetOrmDatabaseObject()) + @", "
+                    + CsUtility.QuotedString("ID") + @", "
+                    + CsUtility.QuotedString(UniqueReferenceDatabaseDefinition.GetConstraintName(info)) + @"))
+                    ((Rhetos.UserException)interpretedException).SystemMessage = " + CsUtility.QuotedString(systemMessage) + @";
+                ";
+                codeBuilder.InsertCode(onDeleteInterpretSqlError, WritableOrmDataStructureCodeGenerator.OnDatabaseErrorTag, info.Base);
+            }
         }
     }
 }
