@@ -288,9 +288,9 @@ namespace Rhetos.DatabaseGenerator.Test
             databaseGenerator.CalculateApplicationsToBeRemovedAndInserted(
                 oldApplications, newApplications,
                 out toBeRemoved, out toBeInserted);
-            Graph.TopologicalSort(toBeRemoved, DatabaseGenerator_Accessor.GetDependencyPairs(oldApplications));
+            Graph.TopologicalSort(toBeRemoved, ConceptApplication.GetDependencyPairs(oldApplications));
             toBeRemoved.Reverse();
-            Graph.TopologicalSort(toBeInserted, DatabaseGenerator_Accessor.GetDependencyPairs(newApplications));
+            Graph.TopologicalSort(toBeInserted, ConceptApplication.GetDependencyPairs(newApplications));
         }
 
         #endregion

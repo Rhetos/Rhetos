@@ -65,5 +65,17 @@ namespace Rhetos.DatabaseGenerator
             var fullTypeName = GetTypeNameWithoutVersion(assemblyQualifiedName);
             return fullTypeName.Substring(fullTypeName.LastIndexOf('.') + 1); // Works even for type without namespace.
         }
+
+        /// <summary>Using generics to work on both ConceptApplication and NewConceptApplication.</summary>
+        /// <returns>Item2 depends on item1.</returns>
+        public static List<Tuple<TConceptApplication, TConceptApplication>> GetDependencyPairs<TConceptApplication>(IEnumerable<TConceptApplication> conceptApplications)
+            where TConceptApplication : ConceptApplication
+        {
+            return conceptApplications
+                .SelectMany(dependent => dependent.DependsOn
+                    .Select(dependsOn => Tuple.Create((TConceptApplication)dependsOn.ConceptApplication, dependent)))
+                .Where(dependency => dependency.Item1 != dependency.Item2)
+                .ToList();
+        }
     }
 }

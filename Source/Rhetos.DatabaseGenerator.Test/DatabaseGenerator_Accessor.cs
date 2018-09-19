@@ -82,16 +82,6 @@ namespace Rhetos.DatabaseGenerator.Test
             base.CalculateApplicationsToBeRemovedAndInserted(oldApplications, newApplications, out toBeRemoved, out toBeInserted);
         }
 
-        new public static List<Tuple<NewConceptApplication, NewConceptApplication>> GetDependencyPairs(IEnumerable<NewConceptApplication> conceptApplications)
-        {
-            return DatabaseGenerator.GetDependencyPairs(conceptApplications);
-        }
-
-        new public static List<Tuple<ConceptApplication, ConceptApplication>> GetDependencyPairs(IEnumerable<ConceptApplication> conceptApplications)
-        {
-            return DatabaseGenerator.GetDependencyPairs(conceptApplications);
-        }
-
         new public List<NewConceptApplication> CreateNewApplications(List<ConceptApplication> oldApplications)
         {
             return base.CreateNewApplications(oldApplications);
