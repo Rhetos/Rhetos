@@ -102,14 +102,13 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             // Add a subtype reference (for each subtype) to the supertype data structure:
 
-            var subtypeReference = new ReferencePropertyInfo
+            var subtypeReference = new PolymorphicSubtypeReferenceInfo
             {
                 DataStructure = conceptInfo.Supertype,
                 Referenced = conceptInfo.Subtype,
                 Name = conceptInfo.GetSubtypeReferenceName()
             };
             newConcepts.Add(subtypeReference);
-            _conceptMetadata.Set(subtypeReference, PolymorphicPropertyInfo.IsPolymorphicSystemProperty, true);
             newConcepts.Add(new PolymorphicPropertyInfo { Property = subtypeReference }); // Minor optimization to reduce the number of macro evaluations.
 
             // Append subtype implementation to the supertype union:

@@ -37,19 +37,13 @@ namespace Rhetos.Dsl.DefaultConcepts
         public PolymorphicUnionViewInfo Dependency_PolymorphicUnionView { get; set; }
 
         /// <summary>
-        /// Polymorphic system properties contain metadata on the subtype implementations.
-        /// They cannot be implemented by the subtypes.
-        /// </summary>
-        public static readonly ConceptMetadataKey<bool> IsPolymorphicSystemProperty = "IsPolymorphicSystemProperty";
-
-        /// <summary>
         /// Each subtype must implement all properties from the polymorphic supertype, except:
         /// 1. the references to the subtypes (automatically generated for each subtype)
         /// 2. the "Subtype" discriminator property (automatically generated to describe the subtype of a record).
         /// </summary>
-        public bool IsImplementable(ConceptMetadata conceptMetadata)
+        public bool IsImplementable()
         {
-            return !conceptMetadata.GetOrDefault(Property, IsPolymorphicSystemProperty, false);
+            return !(Property is PolymorphicSubtypeDiscriminatorInfo || Property is PolymorphicSubtypeReferenceInfo);
         }
 
         public IEnumerable<string> DeclareNonparsableProperties()

@@ -58,7 +58,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
             foreach (var column in propertyColumnNames.Zip(propertyColumnTypes, (name, type) => new { name, type }))
             {
-                string columnImplementationsSelector = info.IsImplementable(_conceptMetadata)
+                string columnImplementationsSelector = info.IsImplementable()
                     ? ", " + column.name
                     : ", " + column.name + " = NULL";
 

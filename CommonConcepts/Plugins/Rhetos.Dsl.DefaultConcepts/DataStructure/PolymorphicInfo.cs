@@ -70,9 +70,12 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             // Create a subtype name property:
 
-            var subtypeString = new ShortStringPropertyInfo { DataStructure = conceptInfo, Name = "Subtype" };
+            var subtypeString = new PolymorphicSubtypeDiscriminatorInfo
+            {
+                DataStructure = conceptInfo,
+                Name = "Subtype"
+            };
             newConcepts.Add(subtypeString);
-            _conceptMetadata.Set(subtypeString, PolymorphicPropertyInfo.IsPolymorphicSystemProperty, true);
             newConcepts.Add(new PolymorphicPropertyInfo { Property = subtypeString }); // Minor optimization to reduce the number of macro evaluations.
 
             // Mark polymorphic properties:

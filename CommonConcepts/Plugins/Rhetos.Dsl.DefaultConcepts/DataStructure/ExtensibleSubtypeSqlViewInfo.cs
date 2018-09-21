@@ -92,13 +92,6 @@ FROM
     [Export(typeof(IConceptMacro))]
     public class ExtensibleSubtypeSqlViewMacro : IConceptMacro<ExtensibleSubtypeSqlViewInfo>
     {
-        private readonly ConceptMetadata _conceptMetadata;
-
-        public ExtensibleSubtypeSqlViewMacro(ConceptMetadata conceptMetadata)
-        {
-            _conceptMetadata = conceptMetadata;
-        }
-
         public IEnumerable<IConceptInfo> CreateNewConcepts(ExtensibleSubtypeSqlViewInfo conceptInfo, IDslModel existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();
@@ -106,7 +99,7 @@ FROM
             // Automatic interface implementation: Add missing property implementations and missing properties to the subtype.
 
             var implementableSupertypeProperties = existingConcepts.FindByType<PolymorphicPropertyInfo>()
-                .Where(pp => pp.Property.DataStructure == conceptInfo.IsSubtypeOf.Supertype && pp.IsImplementable(_conceptMetadata))
+                .Where(pp => pp.Property.DataStructure == conceptInfo.IsSubtypeOf.Supertype && pp.IsImplementable())
                 .Select(pp => pp.Property).ToList();
             var subtypeProperties = existingConcepts.FindByReference<PropertyInfo>(p => p.DataStructure, conceptInfo.IsSubtypeOf.Subtype);
             var subtypeImplementsProperties = existingConcepts.FindByReference<SubtypeImplementsPropertyInfo>(subim => subim.IsSubtypeOf, conceptInfo.IsSubtypeOf)
