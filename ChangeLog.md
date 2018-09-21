@@ -1,5 +1,12 @@
 ﻿# Rhetos release notes
 
+## 2.9.0 (2018-09-21)
+
+### Internal improvements
+
+* Bugfix: Deployment with /DatabaseOnly fails with SqlException: Invalid column name 'Subtype' (since 2.8.0).
+* Bugfix: When trying to delete entity that has a UniqueReference entity without CascadeDelete concept applied, insufficient error message is returned. There is no info about entity that references aforementioned entity.
+
 ## 2.8.0 (2018-09-17)
 
 ### Internal improvements
