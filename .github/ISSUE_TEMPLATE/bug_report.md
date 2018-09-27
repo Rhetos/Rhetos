@@ -14,3 +14,6 @@ See <https://help.github.com/articles/creating-and-highlighting-code-blocks/>.
 **Error message**
 If an error occurs on deployment, copy the ERROR SUMMARY here.
 For internal server error in web API, please copy the exception details from RhetosServer.log.
+
+**Expected behavior**
+A clear and concise description of what you expected to happen.
