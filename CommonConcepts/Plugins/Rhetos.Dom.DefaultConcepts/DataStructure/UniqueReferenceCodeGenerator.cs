@@ -63,7 +63,9 @@ namespace Rhetos.Dom.DefaultConcepts
                         info.Base.Module.Name, info.Base.Name, info.ExtensionPropertyName()),
                     DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
 
-            if (info.Extension is IOrmDataStructure && info.Base is IWritableOrmDataStructure)
+            if (UniqueReferenceDatabaseDefinition.ShouldCreateConstraint(info)
+                && info.Extension is IOrmDataStructure
+                && info.Base is IWritableOrmDataStructure)
             {
                 var ormDataStructure = (IOrmDataStructure)info.Extension;
                 string systemMessage = "DataStructure:" + info.Extension + ",Property:ID,Referenced:" + info.Base;
