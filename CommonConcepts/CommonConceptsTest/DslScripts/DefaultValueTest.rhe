@@ -1,0 +1,20 @@
+Module DefaultValue
+{
+	Entity DefaultValueTestClass
+	{
+		Integer IntegerValue { DefaultValue 'item => { int x = 7; return x * x; }'; }
+		ShortString ShortStringValue { DefaultValue 'item => _executionContext.UserInfo.UserName'; }
+		LongString LongStringValue { DefaultValue 'item => "s1"'; }
+		ShortString ShortStringValueWithAutoCode { AutoCode; DefaultValue 'item => "tmp++"'; }
+		Decimal DecimalValue { DefaultValue 'item => (decimal)7.7'; }
+		Money MoneyValue { DefaultValue 'item => (decimal)7.7'; }		
+		Date DateValue { DefaultValue 'item => DateTime.Now.Date'; }
+		DateTime DateTimeValue { DefaultValue 'item => DateTime.Now'; }
+		Reference DefaultValueTestReference { DefaultValue 'item => _domRepository.DefaultValue.DefaultValueTestReference.Query(dftr => dftr.Name == "test1").Select(dftr => dftr.ID).FirstOrDefault()'; }
+	}
+
+	Entity DefaultValueTestReference
+	{
+		ShortString Name;
+	}
+}
