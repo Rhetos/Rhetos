@@ -1,12 +1,21 @@
 Module TestAction
 {
-    Action ThrowException
-        '(TestAction.ThrowException parameters, Common.DomRepository repository, IUserInfo userInfo) =>
-            { throw new ApplicationException("TestAction exception " + parameters.Message); }'
+    Entity ToInsert
+    {
+        LongString Name;
+    }
+
+    Action InsertAndThrowException
+        '(parameters, repository, userInfo) =>
+            { 
+                repository.TestAction.ToInsert.Insert(new TestAction.ToInsert { ID = parameters.ItmemID.Value, Name = "Test" });
+                throw new ApplicationException("TestAction exception " + parameters.Message);
+            }'            
     {
         ShortString Message;
+        Guid ItmemID;
     }
-    
+
     Action UEC
         '(parameters, repository, userInfo, executionContext) =>
             { throw new ApplicationException("User " + executionContext.UserInfo.UserName); }'

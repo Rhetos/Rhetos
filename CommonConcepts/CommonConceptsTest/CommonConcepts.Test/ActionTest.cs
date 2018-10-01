@@ -33,14 +33,24 @@ namespace CommonConcepts.Test
     public class ActionTest
     {
         [TestMethod]
-        public void ThrowException()
+        public void InsertAndThrowException()
         {
+            var item1ID = Guid.NewGuid();
+            var item2ID = Guid.NewGuid();
+            using (var container = new RhetosTestContainer(true))
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                repository.TestAction.ToInsert.Insert(new TestAction.ToInsert { ID = item1ID });
+                TestUtility.ShouldFail<ApplicationException>(
+                    () => repository.TestAction.InsertAndThrowException.Execute(new TestAction.InsertAndThrowException { Message = "abcd", ItmemID = item2ID }),
+                    "abcd");
+            }
+
             using (var container = new RhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
-                TestUtility.ShouldFail(
-                    () => repository.TestAction.ThrowException.Execute(new TestAction.ThrowException { Message = "abcd" }),
-                    "abcd");
+                var toInsertEntityCount = repository.TestAction.ToInsert.Query(x => x.ID == item1ID || x.ID == item2ID).Count();
+                Assert.AreEqual(0, toInsertEntityCount);
             }
         }
 

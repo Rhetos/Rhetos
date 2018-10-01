@@ -44,9 +44,19 @@ namespace Rhetos.Dom.DefaultConcepts
         {{
             Action<{0}.{1}, Common.DomRepository, IUserInfo{3}> action_Object = {2};
 
-            {5}
-            action_Object(actionParameter, _domRepository, _executionContext.UserInfo{4});
-            {6}
+            bool allEffectsCompleted = false;
+            try
+            {{
+                {5}
+                action_Object(actionParameter, _domRepository, _executionContext.UserInfo{4});
+                {6}
+                allEffectsCompleted = true;
+            }}
+            finally
+            {{
+                if (!allEffectsCompleted)
+                    _executionContext.PersistenceTransaction.DiscardChanges();
+            }}
         }}
 
         void IActionRepository.Execute(object actionParameter)
