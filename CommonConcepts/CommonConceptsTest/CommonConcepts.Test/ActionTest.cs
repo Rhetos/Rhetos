@@ -41,9 +41,12 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestAction.ToInsert.Insert(new TestAction.ToInsert { ID = item1ID });
-                TestUtility.ShouldFail<ApplicationException>(
+
+                var exception = TestUtility.ShouldFail<ApplicationException>(
                     () => repository.TestAction.InsertAndThrowException.Execute(new TestAction.InsertAndThrowException { Message = "abcd", ItmemID = item2ID }),
                     "abcd");
+                var exceptionOrigin = exception.StackTrace.Substring(0, exception.StackTrace.IndexOf(Environment.NewLine));
+                Assert.IsTrue(exceptionOrigin.Contains("InsertAndThrowException_Repository.<Execute>b__"));
             }
 
             using (var container = new RhetosTestContainer())
