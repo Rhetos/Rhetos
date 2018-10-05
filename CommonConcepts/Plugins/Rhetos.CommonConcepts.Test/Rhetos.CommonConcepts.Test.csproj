@@ -73,7 +73,6 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="AutomaticSubtypeImplementationTest.cs" />
     <Compile Include="CommonAuthorizationProviderTest.cs" />
     <Compile Include="ClaimsTest.cs" />
     <Compile Include="DataStructureUtilityTest.cs" />

@@ -10,6 +10,7 @@
     {
         ShortString FromWhom;
         Money Amount;
+        DateTime EventDate;
 
         Is Demo.MoneyTransaction;
         // The EventDate will be automatically added. The Amount is automatically mapped.
@@ -19,6 +20,7 @@
     {
         ShortString ToWhom;
         Money Amount;
+        DateTime EventDate;
 
         Is Demo.MoneyTransaction
         {
@@ -41,6 +43,7 @@
 
     Entity TransferMoney
     {
+        DateTime EventDate;
         ShortString TransferFrom;
         ShortString TransferTo;
         Money Amount;
@@ -77,6 +80,7 @@
     Entity BorrowMoney2
     {
         ShortString FromWhom;
+        DateTime EventDate;
         Money Amount;
         Bool Forgotten;
 

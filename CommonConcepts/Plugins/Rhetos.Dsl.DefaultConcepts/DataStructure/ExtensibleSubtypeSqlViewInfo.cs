@@ -92,6 +92,13 @@ FROM
     [Export(typeof(IConceptMacro))]
     public class ExtensibleSubtypeSqlViewMacro : IConceptMacro<ExtensibleSubtypeSqlViewInfo>
     {
+        IConfiguration _configuration;
+
+        public ExtensibleSubtypeSqlViewMacro(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
         public IEnumerable<IConceptInfo> CreateNewConcepts(ExtensibleSubtypeSqlViewInfo conceptInfo, IDslModel existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();
@@ -114,12 +121,19 @@ FROM
                 })
                 .ToList();
 
-            var missingProperties = missingImplementations.Select(subim => subim.Property).Where(supp => !subtypeProperties.Any(subp => subp.Name == supp.Name))
-                .Select(missing => DslUtility.CreatePassiveClone(missing, conceptInfo.IsSubtypeOf.Subtype))
-                .ToList();
+            var missingProperties = missingImplementations.Select(subim => subim.Property).Where(supp => !subtypeProperties.Any(subp => subp.Name == supp.Name));
+            var missingPropertiesToAdd = missingProperties.Select(missing => DslUtility.CreatePassiveClone(missing, conceptInfo.IsSubtypeOf.Subtype)).ToList();
+
+            if (_configuration.GetBool("CommonConcepts.Legacy.AutoGeneratePolymorphicProperty", true).Value == false
+                && missingProperties.Count() > 0)
+            {
+                throw new DslSyntaxException( "The property " + missingProperties.First().GetUserDescription() + 
+                    " is not implemented in the polymorphic subtype " + conceptInfo.IsSubtypeOf.Subtype.GetUserDescription() + ". " + 
+                    "Please add the property implementation to the subtype.");
+            }
 
             newConcepts.AddRange(missingImplementations);
-            newConcepts.AddRange(missingProperties);
+            newConcepts.AddRange(missingPropertiesToAdd);
 
             return newConcepts;
         }
