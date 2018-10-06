@@ -13,7 +13,8 @@ Module TestPolymorphic
 	Entity Simple1
 	{
 		Integer Days; // Should automatically match Days implementation by name.
-		Is TestPolymorphic.SimpleBase; // Should automatically add Name property.
+		ShortString Name;
+		Is TestPolymorphic.SimpleBase;
 	}
 	
 	Entity Simple2
@@ -136,6 +137,9 @@ Module TestPolymorphic
 {
 	Entity MultipleImplementations
 	{
+		ShortString Name1;
+		ShortString Name2;
+
 		Is TestPolymorphic.Base1;
 		Is TestPolymorphic.Base1 'Reverse'
 		{
@@ -274,11 +278,17 @@ Module TestPolymorphic
 	
 	Entity ChildA
 	{
+		ShortString Name;
+		Reference Parent;
+
 		Is TestPolymorphic.Child;
 	}
 	
 	Entity ChildB
 	{
+		ShortString Name;
+		Reference Parent;
+
 		Guid ManualParentID;
 		
 		Is TestPolymorphic.Child
@@ -308,7 +318,9 @@ Module TestPolymorphic
 	Entity DeactivatableEntity
 	{
 		Deactivatable;
-		
+
+		ShortString Name;	
+
 		Is TestPolymorphic.ActiveRecords
 		{
 			Where "Active = 1";
@@ -329,6 +341,7 @@ Module TestPolymorphic
 	
 	Entity OtherFeatures
 	{
+		ShortString Name;
 		Is TestPolymorphic.OtherFeaturesBase 'Alternative';
 
 		ShortString Code { AutoCode; }

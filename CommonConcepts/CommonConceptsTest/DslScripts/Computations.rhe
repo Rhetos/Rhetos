@@ -153,6 +153,7 @@ Module TestChangesOnReferenced
 
     Entity ImplementationSimple
     {
+        ShortString Name;
         Is TestChangesOnReferenced.Poly;
     }
 
