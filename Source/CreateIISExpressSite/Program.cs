@@ -70,9 +70,9 @@ namespace CreateIISExpressSite
             File.WriteAllText(fileName, fileText, encoding);
         }
 
-        public static void ConfigReplaceRegex(string regex, string value)
+        public static void ConfigReplaceRegex(string fileName, string regex, string value)
         {
-            ReplaceWithRegex(@"..\IISExpress.config", regex, value, "Unexpected IISExpress.config file format. Copy Template.IISExpress.config.");
+            ReplaceWithRegex(fileName, regex, value, "Unexpected IISExpress.config file format. Copy Template.IISExpress.config.");
         }
     }
 
@@ -88,27 +88,30 @@ namespace CreateIISExpressSite
                     Console.WriteLine("   Port has to be between 1024 and 65535");
                     return 1;
                 }
-                string appRoot = Directory.GetCurrentDirectory().Substring(0, Directory.GetCurrentDirectory().Length - 4);
+                string physicalPath = Directory.GetCurrentDirectory().Substring(0, Directory.GetCurrentDirectory().LastIndexOf(Path.DirectorySeparatorChar));
                 if (args.Length == 3)
-                    appRoot = args[2];
-
+                    physicalPath = args[2];
+                
                 int port = 0;
                 if (!Int32.TryParse(args[1], out port))
                     throw new ArgumentException("Port has to be valid integer less than 65536.");
                 if (port > 65535)
                     throw new ArgumentException("Port has to be valid integer less than 65536.");
 
-                bool winAuth = DetectWindowsAuthenticationPlugin();
+                string appRoot = AppDomain.CurrentDomain.BaseDirectory;
+                string iisexpressConfigPath = Path.Combine(appRoot, @"..\IISExpress.config");
 
-                if (!File.Exists(@"..\IISExpress.config"))
-                    File.Copy(@"Template.IISExpress.config", @"..\IISExpress.config");
+                if (!File.Exists(iisexpressConfigPath))
+                    File.Copy(Path.Combine(appRoot, @"Template.IISExpress.config"), iisexpressConfigPath);
                 Console.Write("Preparing local IISExpress.config ... ");
 
+                bool winAuth = DetectWindowsAuthenticationPlugin(appRoot);
 
-                FileReplaceHelper.ConfigReplaceRegex(@"<site name(.|\n)*?</site>",
+                FileReplaceHelper.ConfigReplaceRegex(iisexpressConfigPath,
+                    @"<site name(.|\n)*?</site>",
          @"<site name=""" + args[0] + @""" id=""1"" serverAutoStart=""true"">
                 <application path=""/"">
-                    <virtualDirectory path=""/"" physicalPath=""" + appRoot + @""" />
+                    <virtualDirectory path=""/"" physicalPath=""" + physicalPath + @""" />
                 </application>
                 <bindings>
                     <binding protocol=""http"" bindingInformation="":" + port.ToString() + @":localhost"" />
@@ -116,7 +119,8 @@ namespace CreateIISExpressSite
             </site>");
 
 
-                FileReplaceHelper.ConfigReplaceRegex(@"<!-- AuthenticationPart-->(.|\n)*?<location path(.|\n)*?</location>",
+                FileReplaceHelper.ConfigReplaceRegex(iisexpressConfigPath,
+                    @"<!-- AuthenticationPart-->(.|\n)*?<location path(.|\n)*?</location>",
  @"<!-- AuthenticationPart-->
     <location path=""" + args[0] + @""">
         <system.webServer>
@@ -146,11 +150,11 @@ namespace CreateIISExpressSite
             return 0;
         }
 
-        private static bool DetectWindowsAuthenticationPlugin()
+        private static bool DetectWindowsAuthenticationPlugin(string appRoot = "")
         {
             var authenticationPluginSupportsWindowsAuth = new[]
             {
-                Tuple.Create("AspNetFormsAuth", @"Plugins\Rhetos.AspNetFormsAuth.dll", false),
+                Tuple.Create("AspNetFormsAuth", Path.Combine(appRoot, @"Plugins\Rhetos.AspNetFormsAuth.dll"), false),
             };
 
             foreach (var plugin in authenticationPluginSupportsWindowsAuth)
