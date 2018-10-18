@@ -17,52 +17,40 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl;
 using Rhetos.Utilities;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Linq;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
-    /// <summary>
-    /// Used for internal optimizations when a property on one data structure returns the same value
-    /// as a property on referenced (base or parent) data structure.
-    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SamePropertyValue")]
-    public class SamePropertyValueInfo : IConceptInfo, IValidatedConcept
+    public class SamePropertyValueInfo : IConceptInfo
     {
         [ConceptKey]
         public PropertyInfo DerivedProperty { get; set; }
 
         [ConceptKey]
-        /// <summary>Object model property name on the inherited data structure that references the base data structure class.</summary>
-        public string BaseSelector { get; set; }
-
-        public PropertyInfo BaseProperty { get; set; }
-
-        public void CheckSemantics(IDslModel existingConcepts)
-        {
-            DslUtility.ValidateIdentifier(BaseSelector, this, "BaseSelector should be set to a property name from '"
-                + DerivedProperty.DataStructure.GetKeyProperties() + "' class.");
-        }
+        public string Path { get; set; }
     }
 
     [Export(typeof(IConceptMacro))]
-    public class SamePropertyInheritRowPermissionsMacro : IConceptMacro<InitializationConcept>
+    public class SamePropertyValueMacro : IConceptMacro<InitializationConcept>
     {
         public IEnumerable<IConceptInfo> CreateNewConcepts(InitializationConcept conceptInfo, IDslModel existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();
 
-            var samePropertiesByInheritance = existingConcepts.FindByType<SamePropertyValueInfo>()
-                .GroupBy(same => new {
+            var samePropertiesByInheritance = existingConcepts.FindByType<SamePropertyValueInfo>().Select(x => new {
+                    DerivedProperty = x.DerivedProperty,
+                    BaseSelector = x.Path.Substring(0, x.Path.LastIndexOf('.')),
+                    BaseProperty = DslUtility.GetPropertyByPath(x.DerivedProperty.DataStructure, x.Path, existingConcepts).Value,
+                }).GroupBy(same => new {
                     Module = same.DerivedProperty.DataStructure.Module.Name,
                     DataStructure = same.DerivedProperty.DataStructure.Name,
-                    same.BaseSelector })
+                    same.BaseSelector
+                })
                 .ToDictionary(g => g.Key, g => g.ToList());
 
             foreach (var inherit in existingConcepts.FindByType<RowPermissionsInheritReadInfo>())

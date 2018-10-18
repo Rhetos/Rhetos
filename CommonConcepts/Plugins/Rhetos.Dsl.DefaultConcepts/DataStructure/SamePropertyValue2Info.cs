@@ -17,39 +17,44 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Rhetos.Dsl;
+using Rhetos.Utilities;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Used for internal optimizations when a property on one data structure returns the same value
+    /// as a property on referenced (base or parent) data structure.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SamePropertyValue")]
-    public class SamePropertyValue2Info : IConceptInfo
+    public class SamePropertyValue2Info : SamePropertyValueInfo, IValidatedConcept, IAlternativeInitializationConcept
     {
-        [ConceptKey]
-        public PropertyInfo DerivedProperty { get; set; }
+        /// <summary>Object model property name on the inherited data structure that references the base data structure class.</summary>
+        public string BaseSelector { get; set; }
 
-        [ConceptKey]
-        public string Path { get; set; }
-    }
+        public PropertyInfo BaseProperty { get; set; }
 
-    [Export(typeof(IConceptMacro))]
-    public class SamePropertyValueMacro : IConceptMacro<SamePropertyValue2Info>
-    {
-        public IEnumerable<IConceptInfo> CreateNewConcepts(SamePropertyValue2Info conceptInfo, IDslModel existingConcepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
-            var newConcepts = new List<IConceptInfo>();
-            var baseSelector = conceptInfo.Path.Substring(0, conceptInfo.Path.LastIndexOf('.'));
-            var result = DslUtility.GetPropertyByPath(conceptInfo.DerivedProperty.DataStructure, conceptInfo.Path, existingConcepts);
-            if (result.Error != null)
-                throw new DslSyntaxException(result.Error);
-            newConcepts.Add(new SamePropertyValueInfo
-            {
-                DerivedProperty = conceptInfo.DerivedProperty,
-                BaseSelector = baseSelector,
-                BaseProperty = result.Value
-            });
-            return newConcepts;
+            DslUtility.ValidateIdentifier(BaseSelector, this, "BaseSelector should be set to a property name from '"
+                + DerivedProperty.DataStructure.GetKeyProperties() + "' class.");
+        }
+
+        public IEnumerable<string> DeclareNonparsableProperties()
+        {
+            return new string[] { "Path" };
+        }
+
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            Path = BaseSelector + "." + BaseProperty.Name;
+            createdConcepts = new IConceptInfo[] {};
         }
     }
 }
