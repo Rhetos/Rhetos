@@ -137,7 +137,6 @@
     <Compile Include="KeepSynchronizedHelper.cs" />
     <Compile Include="Persistence\DatabaseExtensionFunctionsMapping.cs" />
     <Compile Include="Persistence\DataStructureEdmxCodeGenerator.cs" />
-    <Compile Include="Persistence\EntityFrameworkGenerateMetadataFiles.cs" />
     <Compile Include="Persistence\EntityFrameworkMetadata.cs" />
     <Compile Include="FilterExpression.cs" />
     <Compile Include="GenericRepository.cs" />

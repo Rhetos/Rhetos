@@ -35,7 +35,7 @@ namespace Rhetos.Persistence
 {
     public class EdmxGenerator : IGenerator
     {
-        public static readonly string[] ModelFiles = new[] { "ServerDomEdmFromCode2.csdl", "ServerDomEdmFromCode2.msl", "ServerDomEdmFromCode2.ssdl" };
+        public static readonly string[] ModelFiles = new[] { "ServerDomEdmFromCode.csdl", "ServerDomEdmFromCode.msl", "ServerDomEdmFromCode.ssdl" };
 
         private readonly ICodeGenerator _codeGenerator;
         private readonly IPluginsContainer<IEdmxCodeGenerator> _plugins;
