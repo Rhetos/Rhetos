@@ -42,7 +42,7 @@ namespace Rhetos.Dom.DefaultConcepts
             if (propertyInfo.DataStructure is IOrmDataStructure && IsTypeSupported(propertyInfo.GetType()))
             {
                 codeBuilder.InsertCode("\n" + GetPropertyElementForConceptualModel(propertyInfo), DataStructureEdmxCodeGenerator.ConceptualModelEntityTypePropertyTag.Evaluate(propertyInfo.DataStructure));
-                codeBuilder.InsertCode("\n" + getScalarPropertyElement(propertyInfo), DataStructureEdmxCodeGenerator.EntitySetMappingPropertyTag.Evaluate(propertyInfo.DataStructure));
+                codeBuilder.InsertCode("\n" + GetScalarPropertyElement(propertyInfo), DataStructureEdmxCodeGenerator.EntitySetMappingPropertyTag.Evaluate(propertyInfo.DataStructure));
                 codeBuilder.InsertCode("\n" + GetPropertyElementForStorageModel(propertyInfo), DataStructureEdmxCodeGenerator.StorageModelEntityTypePropertyTag.Evaluate(propertyInfo.DataStructure));
             }
         }
@@ -119,7 +119,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return "";
         }
 
-        private static string getScalarPropertyElement(PropertyInfo propertyInfo)
+        private static string GetScalarPropertyElement(PropertyInfo propertyInfo)
         {
             return $@"        <ScalarProperty Name=""{propertyInfo.Name}"" ColumnName=""{propertyInfo.Name}"" />";
         }

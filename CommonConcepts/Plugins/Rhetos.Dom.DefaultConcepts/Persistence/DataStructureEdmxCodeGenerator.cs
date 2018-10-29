@@ -63,9 +63,9 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetEntitySetMappingForMapping(DataStructureInfo dataStructureInfo)
         {
-            return "\n" + $@"  <EntitySetMapping Name=""{GetEFName(dataStructureInfo)}"">
-    <EntityTypeMapping TypeName=""Common.{GetEFName(dataStructureInfo)}"">
-      <MappingFragment StoreEntitySet=""{GetEFName(dataStructureInfo)}"">
+            return "\n" + $@"  <EntitySetMapping Name=""{GetName(dataStructureInfo)}"">
+    <EntityTypeMapping TypeName=""Common.{GetName(dataStructureInfo)}"">
+      <MappingFragment StoreEntitySet=""{GetName(dataStructureInfo)}"">
         <ScalarProperty Name=""ID"" ColumnName=""ID"" />{EntitySetMappingPropertyTag.Evaluate(dataStructureInfo)}
       </MappingFragment>
     </EntityTypeMapping>
@@ -74,7 +74,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetEntityTypeNodeForStorageModel(DataStructureInfo dataStructureInfo)
         {
-            return "\n" + $@"  <EntityType Name=""{dataStructureInfo.Module.Name}_{dataStructureInfo.Name}"">
+            return "\n" + $@"  <EntityType Name=""{GetName(dataStructureInfo)}"">
     <Key>
       <PropertyRef Name=""ID"" />
     </Key>
@@ -84,7 +84,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetEntityTypeNodeForConceptualModel(DataStructureInfo dataStructureInfo)
         {
-            return "\n" + $@"  <EntityType Name=""{GetEFName(dataStructureInfo)}"" customannotation:ClrType=""Common.Queryable.{GetEFName(dataStructureInfo)}, ServerDom.Model, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null"">
+            return "\n" + $@"  <EntityType Name=""{GetName(dataStructureInfo)}"" customannotation:ClrType=""Common.Queryable.{GetName(dataStructureInfo)}, ServerDom.Model, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null"">
     <Key>
       <PropertyRef Name=""ID"" />
     </Key>
@@ -94,7 +94,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetEntitySetNodeForConceptualModel(DataStructureInfo dataStructureInfo)
         {
-            return "\n" + $@"    <EntitySet Name=""{GetEFName(dataStructureInfo)}"" EntityType=""Self.{GetEFName(dataStructureInfo)}"" />";
+            return "\n" + $@"    <EntitySet Name=""{GetName(dataStructureInfo)}"" EntityType=""Self.{GetName(dataStructureInfo)}"" />";
         }
 
         private static string GetEntitySetNodeForStorageModel(DataStructureInfo dataStructureInfo)
@@ -102,15 +102,15 @@ namespace Rhetos.Dom.DefaultConcepts
             if (dataStructureInfo is LegacyEntityInfo)
             {
                 var legacyEntityInfo = dataStructureInfo as LegacyEntityInfo;
-                return "\n" + $@"    <EntitySet Name=""{GetEFName(dataStructureInfo)}"" EntityType=""Self.{GetEFName(dataStructureInfo)}"" Schema=""{legacyEntityInfo.View.Split('.')[0]}"" Table=""{legacyEntityInfo.View.Split('.')[1]}"" />";
+                return "\n" + $@"    <EntitySet Name=""{GetName(dataStructureInfo)}"" EntityType=""Self.{GetName(dataStructureInfo)}"" Schema=""{legacyEntityInfo.View.Split('.')[0]}"" Table=""{legacyEntityInfo.View.Split('.')[1]}"" />";
             }
             else
             {
-                return "\n" + $@"    <EntitySet Name=""{GetEFName(dataStructureInfo)}"" EntityType=""Self.{GetEFName(dataStructureInfo)}"" Schema=""{dataStructureInfo.Module.Name}"" Table=""{dataStructureInfo.Name}"" />";
+                return "\n" + $@"    <EntitySet Name=""{GetName(dataStructureInfo)}"" EntityType=""Self.{GetName(dataStructureInfo)}"" Schema=""{dataStructureInfo.Module.Name}"" Table=""{dataStructureInfo.Name}"" />";
             }
         }
 
-        private static string GetEFName(DataStructureInfo dataStructureInfo)
+        public static string GetName(DataStructureInfo dataStructureInfo)
         {
             return $@"{dataStructureInfo.Module}_{dataStructureInfo.Name}";
         }

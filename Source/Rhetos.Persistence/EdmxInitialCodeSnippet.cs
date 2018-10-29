@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Persistence
 {
-    public class EdmxInitialCodeSnippet : IConceptCodeGenerator
+    public class EdmxInitialCodeSnippet : IEdmxCodeGenerator
     {
         public const string ConceptualModeEntityTypeTag = "<!--ConceptualModeEntityType-->";
         public const string ConceptualModeEntitySetTag = "<!--ConceptualModeEntitySet-->";

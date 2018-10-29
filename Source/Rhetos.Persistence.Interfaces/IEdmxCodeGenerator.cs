@@ -29,6 +29,5 @@ namespace Rhetos.Persistence
 {
     public interface IEdmxCodeGenerator : IConceptCodeGenerator
     {
-        void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder);
     }
 }

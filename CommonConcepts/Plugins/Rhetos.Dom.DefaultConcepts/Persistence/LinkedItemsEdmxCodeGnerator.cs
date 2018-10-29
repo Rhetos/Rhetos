@@ -54,15 +54,5 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return linkedItemsInfo.DataStructure.Module + "_" + linkedItemsInfo.ReferenceProperty.DataStructure.Name + "_" + linkedItemsInfo.DataStructure.Name;
         }
-
-        private static string GetAssociationSetNameForRefrence(ReferencePropertyInfo referencePropertyInfo)
-        {
-            return $@"{referencePropertyInfo.DataStructure.Module}_{referencePropertyInfo.DataStructure.Name}_{referencePropertyInfo.Name}";
-        }
-
-        private static string GetEFName(DataStructureInfo dataStructureInfo)
-        {
-            return $@"{dataStructureInfo.Module}_{dataStructureInfo.Name}";
-        }
     }
 }
