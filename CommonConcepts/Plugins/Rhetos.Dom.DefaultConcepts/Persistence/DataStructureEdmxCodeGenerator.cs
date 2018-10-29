@@ -43,6 +43,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static readonly XmlTag<DataStructureInfo> StorageModelEntityTypePropertyTag = "StorageModelEntityTypeProperty";
 
+        public static readonly XmlTag<DataStructureInfo> StorageModelCustomannotationIndexForIDTag = "StorageModelCustomannotationIndexForID";
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var dataStructureInfo = conceptInfo as DataStructureInfo;
@@ -76,7 +78,7 @@ namespace Rhetos.Dom.DefaultConcepts
     <Key>
       <PropertyRef Name=""ID"" />
     </Key>
-    <Property Name=""ID"" Type=""uniqueidentifier"" Nullable=""false"" />{StorageModelEntityTypePropertyTag.Evaluate(dataStructureInfo)}
+    <Property Name=""ID"" Type=""uniqueidentifier"" Nullable=""false"" {StorageModelCustomannotationIndexForIDTag.Evaluate(dataStructureInfo)}/>{StorageModelEntityTypePropertyTag.Evaluate(dataStructureInfo)}
   </EntityType>";
         }
 
@@ -97,7 +99,15 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetEntitySetNodeForStorageModel(DataStructureInfo dataStructureInfo)
         {
-            return "\n" + $@"    <EntitySet Name=""{GetEFName(dataStructureInfo)}"" EntityType=""Self.{GetEFName(dataStructureInfo)}"" Schema=""{dataStructureInfo.Module.Name}"" Table=""{dataStructureInfo.Name}"" />";
+            if (dataStructureInfo is LegacyEntityInfo)
+            {
+                var legacyEntityInfo = dataStructureInfo as LegacyEntityInfo;
+                return "\n" + $@"    <EntitySet Name=""{GetEFName(dataStructureInfo)}"" EntityType=""Self.{GetEFName(dataStructureInfo)}"" Schema=""{legacyEntityInfo.View.Split('.')[0]}"" Table=""{legacyEntityInfo.View.Split('.')[1]}"" />";
+            }
+            else
+            {
+                return "\n" + $@"    <EntitySet Name=""{GetEFName(dataStructureInfo)}"" EntityType=""Self.{GetEFName(dataStructureInfo)}"" Schema=""{dataStructureInfo.Module.Name}"" Table=""{dataStructureInfo.Name}"" />";
+            }
         }
 
         private static string GetEFName(DataStructureInfo dataStructureInfo)

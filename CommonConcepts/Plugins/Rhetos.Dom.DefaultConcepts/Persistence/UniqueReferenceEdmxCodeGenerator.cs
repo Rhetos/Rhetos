@@ -49,7 +49,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 codeBuilder.InsertCode(GetAssociationSetNodeForConceptualModel(uniqueReferenceInfo), EdmxInitialCodeSnippet.ConceptualModelAssociationSetTag);
 
                 codeBuilder.InsertCode(GetAssociationNodeForStorageModel(uniqueReferenceInfo), EdmxInitialCodeSnippet.StorageModelAssociationTag);
-                codeBuilder.InsertCode(GetPropertyNodeForStorageModel(), DataStructureEdmxCodeGenerator.StorageModelEntityTypePropertyTag.Evaluate(uniqueReferenceInfo.Extension));
+                codeBuilder.InsertCode(GetAttributeForIDPropertyForStorageModel(), DataStructureEdmxCodeGenerator.StorageModelCustomannotationIndexForIDTag.Evaluate(uniqueReferenceInfo.Extension));
                 codeBuilder.InsertCode(GetAssociationSetNodeForStorageModel(uniqueReferenceInfo), EdmxInitialCodeSnippet.StorageModelAssociationSetTag);
             }
         }
@@ -102,9 +102,9 @@ namespace Rhetos.Dom.DefaultConcepts
   </Association>";
         }
 
-        private static string GetPropertyNodeForStorageModel()
+        private static string GetAttributeForIDPropertyForStorageModel()
         {
-            return "\n" + $@"    <Property Name=""ID"" Type=""uniqueidentifier"" customannotation:Index=""{{ Name: IX_ID, Order: 0 }}"" Nullable=""false"" />";
+            return "\n" + $@" customannotation:Index=""{{ Name: IX_ID, Order: 0 }}""";
         }
 
         private static string GetNavigationPropertyNodeForConceptualModel(UniqueReferenceInfo uniqueReferenceInfo)
