@@ -91,6 +91,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ManifestResource.cs" />
     <Compile Include="SqlTag.cs" />
     <Compile Include="XmlTag.cs" />
     <Compile Include="CsTag.cs" />
