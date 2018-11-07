@@ -49,13 +49,16 @@ namespace Rhetos.Dsl
         {
             get
             {
-                IEnumerable<IConceptParser> parsers = CreateGenericParsers();
+                var sw = Stopwatch.StartNew();
+                Dictionary<string, List<IConceptParser>> parsers = CreateGenericParsers();
                 var parsedConcepts = ExtractConcepts(parsers);
                 var alternativeInitializationGeneratedReferences = InitializeAlternativeInitializationConcepts(parsedConcepts);
-                return new[] { CreateInitializationConcept() }
+                var parsedConcepts2 = new[] { CreateInitializationConcept() }
                     .Concat(parsedConcepts)
                     .Concat(alternativeInitializationGeneratedReferences)
                     .ToList();
+                sw.Stop();
+                return parsedConcepts2;
             }
         }
 
@@ -69,7 +72,7 @@ namespace Rhetos.Dsl
             };
         }
 
-        protected IEnumerable<IConceptParser> CreateGenericParsers()
+        protected Dictionary<string,List<IConceptParser>> CreateGenericParsers()
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -86,12 +89,12 @@ namespace Rhetos.Dsl
 
             _keywordsLogger.Trace(() => string.Join(" ", conceptMetadata.Select(cm => cm.conceptKeyword).OrderBy(keyword => keyword).Distinct()));
 
-            var result = conceptMetadata.Select(cm => new GenericParser(cm.conceptType, cm.conceptKeyword)).ToList<IConceptParser>();
+            var result = conceptMetadata.GroupBy(cm => cm.conceptKeyword.ToLower()).ToDictionary(x => x.Key, x => x.Select(cm => (IConceptParser)new GenericParser(cm.conceptType, cm.conceptKeyword)).ToList());
             _performanceLogger.Write(stopwatch, "DslParser.CreateGenericParsers.");
             return result;
         }
 
-        protected IEnumerable<IConceptInfo> ExtractConcepts(IEnumerable<IConceptParser> conceptParsers)
+        protected IEnumerable<IConceptInfo> ExtractConcepts(Dictionary<string, List<IConceptParser>> conceptParsers)
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -124,31 +127,35 @@ namespace Rhetos.Dsl
 
         class Interpretation { public IConceptInfo ConceptInfo; public TokenReader NextPosition; }
 
-        protected IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, IEnumerable<IConceptParser> conceptParsers)
+        protected IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, Dictionary<string, List<IConceptParser>> conceptParsers)
         {
             var errors = new List<string>();
             List<Interpretation> possibleInterpretations = new List<Interpretation>();
 
-            foreach (var conceptParser in conceptParsers)
+            //conceptParsers.TryGetValue()
+            var keywordReader = new TokenReader(tokenReader).ReadText();
+            var parsers = new List<IConceptParser>();
+            var keyword = keywordReader.IsError ? null : keywordReader.Value.ToLower();
+            if (conceptParsers.TryGetValue(keyword, out parsers))
             {
-                TokenReader nextPosition = new TokenReader(tokenReader);
-                var conceptInfoOrError = conceptParser.Parse(nextPosition, context);
+                foreach (var conceptParser in parsers)
+                {
+                    TokenReader nextPosition = new TokenReader(tokenReader);
+                    var conceptInfoOrError = conceptParser.Parse(nextPosition, context);
 
-                if (!conceptInfoOrError.IsError)
-                    possibleInterpretations.Add(new Interpretation
-                    {
-                        ConceptInfo = conceptInfoOrError.Value,
-                        NextPosition = nextPosition
-                    });
-                else if (!string.IsNullOrEmpty(conceptInfoOrError.Error)) // Empty error means that this parser is not for this keyword.
-                    errors.Add(string.Format("{0}: {1}\r\n{2}", conceptParser.GetType().Name, conceptInfoOrError.Error, tokenReader.ReportPosition()));
+                    if (!conceptInfoOrError.IsError)
+                        possibleInterpretations.Add(new Interpretation
+                        {
+                            ConceptInfo = conceptInfoOrError.Value,
+                            NextPosition = nextPosition
+                        });
+                    else if (!string.IsNullOrEmpty(conceptInfoOrError.Error)) // Empty error means that this parser is not for this keyword.
+                        errors.Add(string.Format("{0}: {1}\r\n{2}", conceptParser.GetType().Name, conceptInfoOrError.Error, tokenReader.ReportPosition()));
+                }
             }
 
             if (possibleInterpretations.Count == 0)
             {
-                var nextToken = new TokenReader(tokenReader).ReadText(); // Peek, without changing the original tokenReader's position.
-                string keyword = nextToken.IsError ? null : nextToken.Value;
-
                 if (errors.Count > 0)
                 {
                     string errorsReport = string.Join("\r\n", errors).Limit(500, "...");

@@ -91,6 +91,7 @@ namespace Rhetos.Dsl
 
         public string ReportPosition()
         {
+            
             DslScript dslScript;
             int position;
 
@@ -109,7 +110,7 @@ namespace Rhetos.Dsl
                 dslScript = new DslScript { Script = "", Name = "", Path = "" };
                 position = 0;
             }
-
+            //return "";
             return ScriptPositionReporting.ReportPosition(dslScript.Script, position, dslScript.Path);
         }
 
