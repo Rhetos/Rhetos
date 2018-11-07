@@ -19,7 +19,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Globalization;
 using Rhetos.Utilities;
@@ -95,14 +94,14 @@ namespace Rhetos.Dsl
             DslScript dslScript;
             int position;
 
-            if (PositionInTokenList < _tokenList.Count())
+            if (PositionInTokenList < _tokenList.Count)
             {
                 dslScript = CurrentToken.DslScript;
                 position = CurrentToken.PositionInDslScript;
             }
             else if (_tokenList.Count > 0)
             {
-                dslScript = _tokenList.Last().DslScript;
+                dslScript = _tokenList[_tokenList.Count - 1].DslScript;
                 position = dslScript.Script.Length;
             }
             else

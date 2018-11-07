@@ -49,16 +49,13 @@ namespace Rhetos.Dsl
         {
             get
             {
-                var sw = Stopwatch.StartNew();
                 Dictionary<string, List<IConceptParser>> parsers = CreateGenericParsers();
                 var parsedConcepts = ExtractConcepts(parsers);
                 var alternativeInitializationGeneratedReferences = InitializeAlternativeInitializationConcepts(parsedConcepts);
-                var parsedConcepts2 = new[] { CreateInitializationConcept() }
+                return new[] { CreateInitializationConcept() }
                     .Concat(parsedConcepts)
                     .Concat(alternativeInitializationGeneratedReferences)
                     .ToList();
-                sw.Stop();
-                return parsedConcepts2;
             }
         }
 
@@ -132,11 +129,10 @@ namespace Rhetos.Dsl
             var errors = new List<string>();
             List<Interpretation> possibleInterpretations = new List<Interpretation>();
 
-            //conceptParsers.TryGetValue()
             var keywordReader = new TokenReader(tokenReader).ReadText();
             var parsers = new List<IConceptParser>();
             var keyword = keywordReader.IsError ? null : keywordReader.Value.ToLower();
-            if (conceptParsers.TryGetValue(keyword, out parsers))
+            if (keyword != null && conceptParsers.TryGetValue(keyword, out parsers))
             {
                 foreach (var conceptParser in parsers)
                 {
@@ -178,8 +174,8 @@ namespace Rhetos.Dsl
                 throw new DslSyntaxException(msg);
             }
 
-            tokenReader.CopyFrom(possibleInterpretations.Single().NextPosition);
-            return possibleInterpretations.Single().ConceptInfo;
+            tokenReader.CopyFrom(possibleInterpretations[0].NextPosition);
+            return possibleInterpretations[0].ConceptInfo;
         }
 
         protected string ReportErrorContext(IConceptInfo conceptInfo, TokenReader tokenReader)
