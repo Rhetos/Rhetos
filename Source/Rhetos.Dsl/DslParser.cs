@@ -127,6 +127,7 @@ namespace Rhetos.Dsl
         protected IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, Dictionary<string, List<IConceptParser>> conceptParsers)
         {
             var errors = new List<string>();
+            var errorReports = new List<Func<string>>();
             List<Interpretation> possibleInterpretations = new List<Interpretation>();
 
             var keywordReader = new TokenReader(tokenReader).ReadText();
@@ -146,15 +147,17 @@ namespace Rhetos.Dsl
                             NextPosition = nextPosition
                         });
                     else if (!string.IsNullOrEmpty(conceptInfoOrError.Error)) // Empty error means that this parser is not for this keyword.
-                        errors.Add(string.Format("{0}: {1}\r\n{2}", conceptParser.GetType().Name, conceptInfoOrError.Error, tokenReader.ReportPosition()));
+                    {
+                        errorReports.Add(() => string.Format("{0}: {1}\r\n{2}", conceptParser.GetType().Name, conceptInfoOrError.Error, tokenReader.ReportPosition()));
+                    }
                 }
             }
 
             if (possibleInterpretations.Count == 0)
             {
-                if (errors.Count > 0)
+                if (errorReports.Count > 0)
                 {
-                    string errorsReport = string.Join("\r\n", errors).Limit(500, "...");
+                    string errorsReport = string.Join("\r\n", errorReports.Select(x => x.Invoke())).Limit(500, "...");
                     throw new DslSyntaxException($"Invalid parameters after keyword '{keyword}'. {tokenReader.ReportPosition()}\r\n\r\nPossible causes:\r\n{errorsReport}");
                 }
                 else if (!string.IsNullOrEmpty(keyword))
