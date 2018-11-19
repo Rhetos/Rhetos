@@ -141,6 +141,7 @@
     <Compile Include="FilterExpression.cs" />
     <Compile Include="GenericRepository.cs" />
     <Compile Include="GenericRepositories.cs" />
+    <Compile Include="Persistence\FullTextSearchWithRankInterceptor.cs" />
     <Compile Include="Persistence\FullTextSearchInterceptor.cs" />
     <Compile Include="Persistence\FullTextSearchInterceptorCodeGenerator.cs" />
     <Compile Include="PropertySelectorExpression.cs" />
