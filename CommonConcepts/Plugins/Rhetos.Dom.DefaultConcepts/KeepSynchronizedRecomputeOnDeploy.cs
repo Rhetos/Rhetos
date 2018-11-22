@@ -53,6 +53,11 @@ namespace Rhetos.Dom.DefaultConcepts
             var sw = Stopwatch.StartNew();
 
             var keepSyncRepos = _genericRepositories.GetGenericRepository<IKeepSynchronizedMetadata>();
+            var ignoreTargets = _genericRepositories.GetGenericRepository<IKeepSynchronizedIgnoreTarget>()
+                .Query()
+                .Select(x => x.Target)
+                .ToList();
+
             var oldItems = keepSyncRepos.Load();
             var avoidRecompute = new HashSet<string>(oldItems.Where(item => item.Context == "NORECOMPUTE").Select(GetKey));
 
@@ -60,7 +65,7 @@ namespace Rhetos.Dom.DefaultConcepts
             keepSyncRepos.Diff(oldItems, _currentKeepSynchronizedMetadata, new SameRecord(), SameValue, Assign, out toInsert, out toUpdate, out toDelete);
 
             foreach (var keepSynchronized in toInsert.Concat(toUpdate))
-                if (!avoidRecompute.Contains(GetKey(keepSynchronized)))
+                if (!avoidRecompute.Contains(GetKey(keepSynchronized)) && !ignoreTargets.Contains(keepSynchronized.Target))
                 {
                     _logger.Info(() => string.Format("Recomputing {0} from {1}.", keepSynchronized.Target, keepSynchronized.Source));
                     _genericRepositories.GetGenericRepository(keepSynchronized.Target).RecomputeFrom(keepSynchronized.Source);

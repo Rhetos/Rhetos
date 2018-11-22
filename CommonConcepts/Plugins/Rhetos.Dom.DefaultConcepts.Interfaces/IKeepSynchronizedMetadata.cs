@@ -30,4 +30,9 @@ namespace Rhetos.Dom.DefaultConcepts
         string Source { get; set; }
         string Context { get; set; }
     }
+
+    public interface IKeepSynchronizedIgnoreTarget : IEntity
+    {
+        string Target { get; set; }
+    }
 }
