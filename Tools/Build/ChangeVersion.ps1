@@ -16,10 +16,12 @@ Else
 
 function RegexReplace ($fileSearch, $replacePattern, $replaceWith)
 {
-    Get-ChildItem $fileSearch -r | % {
-        $c = [IO.File]::ReadAllText($_.FullName, [System.Text.Encoding]::Default) -Replace $replacePattern, $replaceWith;
-        [IO.File]::WriteAllText($_.FullName, $c, [System.Text.Encoding]::UTF8)
-    }
+    Get-ChildItem $fileSearch -r `
+        | Where-Object { $_.FullName -notlike '*\PackagesCache\*' } `
+        | ForEach-Object {
+            $c = [IO.File]::ReadAllText($_.FullName, [System.Text.Encoding]::Default) -Replace $replacePattern, $replaceWith;
+            [IO.File]::WriteAllText($_.FullName, $c, [System.Text.Encoding]::UTF8)
+            }
 }
 
 Write-Output "Setting version '$fullVersion'."

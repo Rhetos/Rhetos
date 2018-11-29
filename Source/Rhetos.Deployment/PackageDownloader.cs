@@ -417,9 +417,8 @@ namespace Rhetos.Deployment
                 ? VersionUtility.ParseVersionSpec(request.VersionsRange)
                 : new VersionSpec();
 
-            if (requestVersionsRange.MinVersion == null
-                || requestVersionsRange.MinVersion.Equals(new SemanticVersion("0.0"))
-                || requestVersionsRange.MinVersion != requestVersionsRange.MaxVersion)
+            // Default NuGet behavior is to download the smallest version in the given range, so only MinVersion is checked here:
+            if (requestVersionsRange.MinVersion == null || requestVersionsRange.MinVersion.Equals(new SemanticVersion("0.0")))
             {
                 _logger.Trace(() => $"Not looking for {request.ReportIdVersionsRange()} in packages cache because the request does not specify an exact version.");
                 return null;
@@ -546,7 +545,7 @@ namespace Rhetos.Deployment
             var sw = Stopwatch.StartNew();
 
             var obsoletePackages = Directory.GetDirectories(Paths.PackagesCacheFolder)
-                .Except(installedPackages.Select(p => p.Folder));
+                .Except(installedPackages.Select(p => p.Folder), StringComparer.OrdinalIgnoreCase);
 
             foreach (var folder in obsoletePackages)
                 _filesUtility.SafeDeleteDirectory(folder);
