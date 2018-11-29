@@ -149,6 +149,7 @@
     <Compile Include="SqlDependsOnSqlViewDatabaseDefinition.cs" />
     <Compile Include="LegacyPropertyReadOnlyDatabaseDefinition.cs" />
     <Compile Include="LegacyPropertyReferenceDatabaseDefinition.cs" />
+    <Compile Include="UniqueReferenceCascadeDeleteDatabaseDefinition.cs" />
     <Compile Include="UniqueReferenceDatabaseDefinition.cs" />
     <Compile Include="LegacyEntityWithAutoCreatedViewDatabaseDefinition.cs" />
     <Compile Include="LegacyPropertySimpleDatabaseDefinition.cs" />
