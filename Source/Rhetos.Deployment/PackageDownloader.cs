@@ -255,11 +255,13 @@ namespace Rhetos.Deployment
             else if (existingMetadataFiles.Length == 1)
             {
                 _logger.Trace(() => "Reading package " + request.Id + " from unpacked source folder with metadata " + Path.GetFileName(existingMetadataFiles.Single()) + ".");
+                _deployPackagesLogger.Trace(() => "Reading " + request.Id + " from source.");
                 return UseFilesFromUnpackedSourceWithMetadata(existingMetadataFiles.Single(), request, binFileSyncer);
             }
             else if (existingSourceSubfolders.Any())
             {
                 _logger.Trace(() => "Reading package " + request.Id + " from unpacked source folder without metadata file.");
+                _deployPackagesLogger.Trace(() => "Reading " + request.Id + " from source without metadata.");
                 return UseFilesFromUnpackedSourceWithoutMetadata(source.Path, request, binFileSyncer);
             }
             else
@@ -379,6 +381,7 @@ namespace Rhetos.Deployment
             }
 
             _logger.Trace(() => "Reading package " + request.Id + " from legacy file " + zipPackageName + ".");
+            _deployPackagesLogger.Trace(() => "Reading " + request.Id + " from legacy file.");
 
             string targetFolder = GetTargetFolder(request.Id, request.VersionsRange);
             _filesUtility.EmptyDirectory(targetFolder);
@@ -433,8 +436,9 @@ namespace Rhetos.Deployment
 
             // Copy binary files and resources:
 
-            string packageSubfolder = nugetRepository.PathResolver.GetPackageDirectory(request.Id, requestVersionsRange.MinVersion);
-            _deployPackagesLogger.Trace(() => $"Reading package from cache '{packageSubfolder}'.");
+            string packageSubfolder = nugetRepository.PathResolver.GetPackageDirectory(request.Id, package.Version);
+            _logger.Trace(() => $"Reading package {request.Id} from cache '{packageSubfolder}'.");
+            _deployPackagesLogger.Trace(() => $"Reading {request.Id} from cache.");
             string targetFolder = Path.Combine(Paths.PackagesCacheFolder, packageSubfolder);
 
             foreach (var file in FilterCompatibleLibFiles(package.GetFiles()))
@@ -539,11 +543,15 @@ namespace Rhetos.Deployment
 
         private void DeleteObsoletePackages(List<InstalledPackage> installedPackages)
         {
+            var sw = Stopwatch.StartNew();
+
             var obsoletePackages = Directory.GetDirectories(Paths.PackagesCacheFolder)
                 .Except(installedPackages.Select(p => p.Folder));
 
             foreach (var folder in obsoletePackages)
                 _filesUtility.SafeDeleteDirectory(folder);
+
+            _performanceLogger.Write(sw, "PackageDownloader.DeleteObsoletePackages");
         }
     }
 }
