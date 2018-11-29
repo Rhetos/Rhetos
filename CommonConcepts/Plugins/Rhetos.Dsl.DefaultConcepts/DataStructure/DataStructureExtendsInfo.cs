@@ -33,13 +33,18 @@ namespace Rhetos.Dsl.DefaultConcepts
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Extends")]
     public class DataStructureExtendsInfo : UniqueReferenceInfo
-    {}
+    {
+    }
 
+    [Export(typeof(IConceptMacro))]
     public class DataStructureExtendsMacro : IConceptMacro<DataStructureExtendsInfo>
     {
         public IEnumerable<IConceptInfo> CreateNewConcepts(DataStructureExtendsInfo conceptInfo, IDslModel existingConcepts)
         {
-            return new IConceptInfo[] { new UniqueReferenceCascadeDeleteInfo { UniqueReference = conceptInfo } };
+            if (UniqueReferenceCascadeDeleteInfo.IsSupported(conceptInfo))
+                return new IConceptInfo[] { new UniqueReferenceCascadeDeleteInfo { UniqueReference = conceptInfo } };
+            else
+                return null;
         }
     }
 }
