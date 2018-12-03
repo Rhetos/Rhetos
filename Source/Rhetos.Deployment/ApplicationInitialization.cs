@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Persistence;
@@ -62,7 +63,7 @@ namespace Rhetos.Deployment
         /// This method does not conform to the standard IoC design pattern.
         /// It uses IoC container directly because it needs to handle a special scope control (separate database connections) and error handling.
         /// </summary>
-        public static void ExecuteInitializer(IContainer container, Type initializerType)
+        public static void ExecuteInitializer(IContainer container, Type initializerType, InitializerParams initializerParams)
         {
             var deployPackagesLogger = container.Resolve<ILogProvider>().GetLogger("DeployPackages");
             
@@ -75,7 +76,14 @@ namespace Rhetos.Deployment
                         deployPackagesLogger.Trace("Initialization " + initializerType.Name + ".");
                         var initializers = initializerScope.Resolve<IPluginsContainer<IServerInitializer>>().GetPlugins();
                         IServerInitializer initializer = initializers.Single(i => i.GetType() == initializerType);
-                        initializer.Initialize();
+                        bool willExcute = WillExcuteInitilizerWithCondition(initializerType, initializerParams, out string message);
+                        if (willExcute)
+                        {
+                            initializer.Initialize();
+                        } else
+                        {
+                            deployPackagesLogger.Info(message);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -96,6 +104,21 @@ namespace Rhetos.Deployment
                 else
                     ExceptionsUtility.Rethrow(ex);
             }
+        }
+
+        /// <summary>
+        /// Check initializer will excute with condition.
+        /// If not, return "message" to log.
+        /// </summary>
+        private static bool WillExcuteInitilizerWithCondition(Type initializerType, InitializerParams initializerParams, out string message)
+        {
+            if(initializerType == typeof(KeepSynchronizedRecomputeOnDeploy) && initializerParams.SkipRecompute)
+            {
+                message = "All computed data that should be recomputed but is skipped.";
+                return false;
+            }
+            message = "";
+            return true;
         }
     }
 }

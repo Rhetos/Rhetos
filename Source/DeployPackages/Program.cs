@@ -190,6 +190,8 @@ namespace DeployPackages
         {
             // Creating a new container builder instead of using builder.Update, because of severe performance issues with the Update method.
             Plugins.ClearCache();
+            // Extract condition from arguments for excuting initializers
+            InitializerParams initializerParams = new InitializerParams(arguments);
 
             logger.Trace("Loading generated plugins.");
             var stopwatch = Stopwatch.StartNew();
@@ -209,7 +211,7 @@ namespace DeployPackages
                 Plugins.LogRegistrationStatistics("Initializing application", container);
 
                 foreach (var initializer in initializers)
-                    ApplicationInitialization.ExecuteInitializer(container, initializer);
+                    ApplicationInitialization.ExecuteInitializer(container, initializer, initializerParams);
 
                 if (!initializers.Any())
                     logger.Trace("No server initialization plugins.");
