@@ -210,11 +210,15 @@ namespace DeployPackages
                 performanceLogger.Write(stopwatch, "DeployPackages.Program: New modules and plugins registered.");
                 Plugins.LogRegistrationStatistics("Initializing application", container);
 
-                foreach (var initializer in initializers)
-                    ApplicationInitialization.ExecuteInitializer(container, initializer, initializerParams);
-
                 if (!initializers.Any())
+                {
                     logger.Trace("No server initialization plugins.");
+                } else
+                {
+                    foreach (var initializer in initializers)
+                        ApplicationInitialization.ExecuteInitializer(container, initializer, initializerParams);
+                }
+                
             }
 
             RestartWebServer(logger);
