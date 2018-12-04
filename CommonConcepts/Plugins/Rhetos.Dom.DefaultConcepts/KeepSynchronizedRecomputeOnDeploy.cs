@@ -54,8 +54,9 @@ namespace Rhetos.Dom.DefaultConcepts
         // Called at deployment time
         public void Initialize()
         {
+            var skipRecompute = _deployArguments.SkipRecompute;
             var sw = Stopwatch.StartNew();
-
+            
             var keepSyncRepos = _genericRepositories.GetGenericRepository<IKeepSynchronizedMetadata>();
             var oldItems = keepSyncRepos.Load();
             var avoidRecompute = new HashSet<string>(oldItems.Where(item => item.Context == "NORECOMPUTE").Select(GetKey));
@@ -67,7 +68,13 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (!avoidRecompute.Contains(GetKey(keepSynchronized)))
                 {
                     _logger.Info(() => string.Format("Recomputing {0} from {1}.", keepSynchronized.Target, keepSynchronized.Source));
-                    _genericRepositories.GetGenericRepository(keepSynchronized.Target).RecomputeFrom(keepSynchronized.Source);
+                    if(!skipRecompute)
+                    {
+                        _genericRepositories.GetGenericRepository(keepSynchronized.Target).RecomputeFrom(keepSynchronized.Source);
+                    } else
+                    {
+                        _logger.Info(() => string.Format("{0} should be recomputed from {1} but is skipped.", keepSynchronized.Target, keepSynchronized.Source));
+                    }
                     _performanceLogger.Write(sw, () => string.Format("KeepSynchronizedRecomputeOnDeploy: {0} from {1}.", keepSynchronized.Target, keepSynchronized.Source));
                 }
                 else
