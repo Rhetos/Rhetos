@@ -19,6 +19,7 @@
 
 using Rhetos.Extensibility;
 using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -39,7 +40,8 @@ namespace Rhetos.Dom.DefaultConcepts
         public KeepSynchronizedRecomputeOnDeploy(
             GenericRepositories genericRepositories,
             ILogProvider logProvider,
-            CurrentKeepSynchronizedMetadata currentKeepSynchronizedMetadata)
+            CurrentKeepSynchronizedMetadata currentKeepSynchronizedMetadata,
+            DeployArguments deployArguments)
         {
             _genericRepositories = genericRepositories;
             _performanceLogger = logProvider.GetLogger("Performance");

@@ -74,14 +74,12 @@
   <ItemGroup>
     <Compile Include="ApplicationGenerator.cs" />
     <Compile Include="ApplicationInitialization.cs" />
-    <Compile Include="Arguments.cs" />
     <Compile Include="ConnectionStringReport.cs" />
     <Compile Include="DataMigrationScript.cs" />
     <Compile Include="DataMigrationScriptsFromDisk.cs" />
     <Compile Include="DeploymentConfiguration.cs" />
     <Compile Include="DeploymentModuleConfiguration.cs" />
     <Compile Include="IDataMigrationScriptsProvider.cs" />
-    <Compile Include="InitializerParams.cs" />
     <Compile Include="InstalledPackages.cs" />
     <Compile Include="LoggerForNuget.cs" />
     <Compile Include="PackageDownloaderOptions.cs" />

@@ -18,7 +18,6 @@
 */
 
 using Autofac;
-using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Persistence;

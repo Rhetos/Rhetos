@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rhetos.Deployment
+namespace Rhetos.Utilities
 {
-    public class Arguments
+    public class DeployArguments
     {
         public bool Help { get; private set; }
         public bool StartPaused { get; private set; }
@@ -17,7 +17,7 @@ namespace Rhetos.Deployment
         public bool DeployDatabaseOnly { get; private set; }
         public bool SkipRecompute { get; private set; }
 
-        public Arguments(string[] args)
+        public DeployArguments(string[] args)
         {
             var arguments = new List<string>(args);
 
