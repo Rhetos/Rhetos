@@ -97,10 +97,6 @@
     <Compile Include="Sql.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\CommonConcepts\Plugins\Rhetos.Dom.DefaultConcepts\Rhetos.Dom.DefaultConcepts.csproj">
-      <Project>{6FA98D51-A0B6-4E5F-8C78-0D369DDD6DCC}</Project>
-      <Name>Rhetos.Dom.DefaultConcepts</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Source\Rhetos.Utilities\Rhetos.Utilities.csproj">
       <Project>{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}</Project>
       <Name>Rhetos.Utilities</Name>

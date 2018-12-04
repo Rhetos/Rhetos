@@ -216,7 +216,7 @@ namespace DeployPackages
                 } else
                 {
                     foreach (var initializer in initializers)
-                        ApplicationInitialization.ExecuteInitializer(container, initializer, initializerParams);
+                        ApplicationInitialization.ExecuteInitializer(container, initializer);
                 }
                 
             }
