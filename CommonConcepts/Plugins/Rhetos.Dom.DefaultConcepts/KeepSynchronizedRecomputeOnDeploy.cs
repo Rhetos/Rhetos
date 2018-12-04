@@ -36,6 +36,7 @@ namespace Rhetos.Dom.DefaultConcepts
         ILogger _performanceLogger;
         ILogger _logger;
         CurrentKeepSynchronizedMetadata _currentKeepSynchronizedMetadata;
+        DeployArguments _deployArguments;
 
         public KeepSynchronizedRecomputeOnDeploy(
             GenericRepositories genericRepositories,
@@ -47,6 +48,7 @@ namespace Rhetos.Dom.DefaultConcepts
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("KeepSynchronizedRecomputeOnDeploy");
             _currentKeepSynchronizedMetadata = currentKeepSynchronizedMetadata;
+            _deployArguments = deployArguments;
         }
 
         // Called at deployment time
