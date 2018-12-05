@@ -47,13 +47,20 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
         private readonly IDomainObjectModel _dom;
         private readonly ConnectionString _connectionString;
         private readonly GeneratedFilesCache _cache;
+        private readonly IConfiguration _configuration;
 
-        public EntityFrameworkGenerateMetadataFiles(ILogProvider logProvider, IDomainObjectModel dom, ConnectionString connectionString, GeneratedFilesCache cache)
+        public EntityFrameworkGenerateMetadataFiles(
+            ILogProvider logProvider, 
+            IDomainObjectModel dom, 
+            ConnectionString connectionString, 
+            GeneratedFilesCache cache,
+            IConfiguration configuration)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _dom = dom;
             _connectionString = connectionString;
             _cache = cache;
+            _configuration = configuration;
         }
 
         public IEnumerable<string> Dependencies
@@ -82,8 +89,8 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                     .Invoke(new object[] { });
 
                 var dbContext = (DbContext)_dom.GetType("Common.EntityFrameworkContext")
-                    .GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(DbConnection), dbConfiguration.GetType() }, null)
-                    .Invoke(new object[] { connection, dbConfiguration });
+                    .GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(DbConnection), dbConfiguration.GetType(), typeof(IConfiguration) }, null)
+                    .Invoke(new object[] { connection, dbConfiguration, _configuration });
 
                 string edmx;
                 using (var stringWriter = new StringWriter())
