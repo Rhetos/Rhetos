@@ -130,6 +130,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Arguments.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="ConfigUtility.cs" />
     <Compile Include="ConnectionString.cs" />

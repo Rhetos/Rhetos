@@ -19,6 +19,7 @@
 
 using Rhetos.Extensibility;
 using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -35,23 +36,27 @@ namespace Rhetos.Dom.DefaultConcepts
         ILogger _performanceLogger;
         ILogger _logger;
         CurrentKeepSynchronizedMetadata _currentKeepSynchronizedMetadata;
+        DeployArguments _deployArguments;
 
         public KeepSynchronizedRecomputeOnDeploy(
             GenericRepositories genericRepositories,
             ILogProvider logProvider,
-            CurrentKeepSynchronizedMetadata currentKeepSynchronizedMetadata)
+            CurrentKeepSynchronizedMetadata currentKeepSynchronizedMetadata,
+            DeployArguments deployArguments)
         {
             _genericRepositories = genericRepositories;
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("KeepSynchronizedRecomputeOnDeploy");
             _currentKeepSynchronizedMetadata = currentKeepSynchronizedMetadata;
+            _deployArguments = deployArguments;
         }
 
         // Called at deployment time
         public void Initialize()
         {
+            var skipRecompute = _deployArguments.SkipRecompute;
             var sw = Stopwatch.StartNew();
-
+            
             var keepSyncRepos = _genericRepositories.GetGenericRepository<IKeepSynchronizedMetadata>();
             var oldItems = keepSyncRepos.Load();
             var avoidRecompute = new HashSet<string>(oldItems.Where(item => item.Context == "NORECOMPUTE").Select(GetKey));
@@ -63,7 +68,13 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (!avoidRecompute.Contains(GetKey(keepSynchronized)))
                 {
                     _logger.Info(() => string.Format("Recomputing {0} from {1}.", keepSynchronized.Target, keepSynchronized.Source));
-                    _genericRepositories.GetGenericRepository(keepSynchronized.Target).RecomputeFrom(keepSynchronized.Source);
+                    if(!skipRecompute)
+                    {
+                        _genericRepositories.GetGenericRepository(keepSynchronized.Target).RecomputeFrom(keepSynchronized.Source);
+                    } else
+                    {
+                        _logger.Info(() => string.Format("{0} should be recomputed from {1} but is skipped.", keepSynchronized.Target, keepSynchronized.Source));
+                    }
                     _performanceLogger.Write(sw, () => string.Format("KeepSynchronizedRecomputeOnDeploy: {0} from {1}.", keepSynchronized.Target, keepSynchronized.Source));
                 }
                 else
