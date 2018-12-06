@@ -1,5 +1,21 @@
 ﻿# Rhetos release notes
 
+## 2.10.0 (2018-12-06)
+
+### New features
+
+* New concept: **DefaultValue**, for setting the default property values when inserting a new record. See usage [examples](https://github.com/ibarban/Rhetos/blob/bc023542c4a7d5d117bf74bdac9a75f2ffe95c12/CommonConcepts/CommonConceptsTest/DslScripts/DefaultValueTest.rhe).
+* New *DeployPackages.exe* switch: `/DatabaseOnly`, to disable automatic updating of the computed data marked with KeepSynchronized during deployment (issue #83).
+
+### Internal improvements
+
+* Bugfix: Cascade delete for extension bypasses the entity's object model.
+* Bugfix: Cannot run CreateAndSetDatabase outside bin folder (issue #67).
+* Turned off automatic generated properties of polymorphic subtype, since it was easy to forget to implement a new subtype property (issue #62). An error is reported instead.
+  Note: To apply the new behavior to the existing applications, add `<add key="CommonConcepts.Legacy.AutoGeneratePolymorphicProperty" value="False" />` to *Web.config*.
+* Performance: Improved NuGet package caching.
+* `EntityFramework.UseDatabaseNullSemantics` setting can be changed without re-deploying the application (issue #64).
+
 ## 2.9.0 (2018-09-21)
 
 ### Internal improvements
@@ -171,7 +187,7 @@
 
 * Improved logging of server commands.
   The log now contains a short command description, including the entity/action/report name.
-  Logging full command description for failed commands; it can be configured separately by error severity (client or server errors) in `Web.config`.
+  Logging full command description for failed commands; it can be configured separately by error severity (client or server errors) in *Web.config*.
 * Bugfix: **AutodetectSqlDependencies** does not detect dependencies to the **Polymorphic**'s view.
 * Optimized use of *FilterCriteria* in the *Recompute* functions.
 
@@ -215,7 +231,7 @@ In previous versions it could be used only inside Persisted or inside ComputedFr
 
 * Allowed execution of data-migration scripts in wrong order, when a new script is ordered before the old one that was already executed.
   In the previous versions, such scripts would be skipped.
-  - Set the `DataMigration.SkipScriptsWithWrongOrder` parameter in *web.config* to `False` to enable this feature, or `True` for old behavior (default).
+  - Set the `DataMigration.SkipScriptsWithWrongOrder` parameter in *Web.config* to `False` to enable this feature, or `True` for old behavior (default).
 
 ### Internal improvements
 
@@ -279,7 +295,7 @@ In previous versions it could be used only inside Persisted or inside ComputedFr
 ### New features
 
 * Automatic authentication cache invalidation when modifying principals, roles and permissions.
-  The `AuthorizationCacheExpirationSeconds` option in *web.config* can now be increased, if Active Directory integration is not used.
+  The `AuthorizationCacheExpirationSeconds` option in *Web.config* can now be increased, if Active Directory integration is not used.
 * New generic property filters: `EndsWith`, `NotContains`, `DateNotIn`.
   Also available in [REST API](https://github.com/rhetos/restgenerator#filters).
 
@@ -384,7 +400,7 @@ In previous versions it could be used only inside Persisted or inside ComputedFr
 ### New features
 
 * To automatically add unregistered users to Rhetos users list,
-  enable `AuthorizationAddUnregisteredPrincipals` option in *web.config*.
+  enable `AuthorizationAddUnregisteredPrincipals` option in *Web.config*.
   This feature can be useful with Windows authentication and *ActiveDirectorySync* Rhetos plugin,
   when configuring Rhetos permissions for domain user groups only.
 
@@ -411,7 +427,7 @@ In previous versions it could be used only inside Persisted or inside ComputedFr
   - Domain user groups should be moved from `Common.Principal` to `Common.Role`.
   - Deploy [*ActiveDirectorySync*](ActiveDirectorySync/Readme.md) package to automatically update principal-role membership (`Common.PrincipalHasRole`) for domain users and groups.
   - Each user must be entered in `Common.Principal`, *SimpleWindowsAuth* allowed entering only user groups.
-    For backward compatibility enable `AuthorizationAddUnregisteredPrincipals` option in *web.config* on Rhetos v0.9.31 or later.
+    For backward compatibility enable `AuthorizationAddUnregisteredPrincipals` option in *Web.config* on Rhetos v0.9.31 or later.
 
 ### New features
 
@@ -475,7 +491,7 @@ In previous versions it could be used only inside Persisted or inside ComputedFr
 * Checking package dependency on Rhetos framework version using `frameworkAssembly` element in *.nuspec* file.
 * Bugfix: Case insensitive and *null* comparison in *GenericFilter* sometimes do not work (REST API and ReadCommand filters).
 * Bugfix: *Read* claim is generated for some non-readable data structures (**Action**, for example).
-* Bugfix: Logging Rhetos server commands and results works only for SOAP web API, not for REST (see `TraceCommandsXml` in *web.config*).
+* Bugfix: Logging Rhetos server commands and results works only for SOAP web API, not for REST (see `TraceCommandsXml` in *Web.config*).
 * Client application may ignore properties marked with **DenyUserEdit**, the server will accept *null* value from client and keep the old value unchanged.
 * Logging slow SQL queries from *ISqlExecuter*.
 * Logging file-locking issues on deployment.
@@ -746,7 +762,7 @@ In previous versions it could be used only inside Persisted or inside ComputedFr
 * Improved performance of `DeployPackaged.exe`. Optimized update of concepts' metadata in database generator.
 * Bugfix: **DenySave** that uses **SqlQueryable** sometimes caused an error "Could not initialize proxy" on save.
 * Bugfix: Web query that combines **ItemFilter** or **ComposableFilter** with *GenericFilter* somtimes caused case insensitive string filtering or NullReferenceException. Filter was executed in C# instead of the SQL.
-* Bugfix: Rhetos REST service bindings were not loaded from `web.config`.
+* Bugfix: Rhetos REST service bindings were not loaded from *Web.config*.
 * Bugfix: On some systems the PUT method on Rhetos REST service caused HTTP error 405. Removed WebDAVModule.
 * Bugfix: InvalidCastException (OracleDataReader.GetInt32) on some systems while upgrading database.
 * Improved error handling in build batch scripts. Use `/NOPAUSE` parameter for automated builds to avoid pause on error.
