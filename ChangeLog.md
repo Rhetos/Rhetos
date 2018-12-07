@@ -5,7 +5,7 @@
 ### New features
 
 * New concept: **DefaultValue**, for setting the default property values when inserting a new record. See usage [examples](https://github.com/ibarban/Rhetos/blob/bc023542c4a7d5d117bf74bdac9a75f2ffe95c12/CommonConcepts/CommonConceptsTest/DslScripts/DefaultValueTest.rhe).
-* New *DeployPackages.exe* switch: `/DatabaseOnly`, to disable automatic updating of the computed data marked with KeepSynchronized during deployment (issue #83).
+* New *DeployPackages.exe* switch: `/SkipRecompute`, to disable automatic updating of the computed data marked with KeepSynchronized during deployment (issue #83).
 
 ### Internal improvements
 
