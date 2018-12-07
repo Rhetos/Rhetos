@@ -23,6 +23,8 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.Globalization;
+using System.Linq.Expressions;
+using System.Reflection.Emit;
 
 namespace Rhetos.Dsl
 {
@@ -75,49 +77,39 @@ namespace Rhetos.Dsl
             return depth;
         }
 
+        Action<IConceptInfo, object> _setValueFunc = null;
+
         public void SetMemberValue(IConceptInfo conceptInfo, object value)
         {
-            PropertyInfo pi;
-            FieldInfo fi;
+            if (_setValueFunc == null)
+            {
+                PropertyInfo pi;
+                FieldInfo fi;
 
-            if ((pi = MemberInfo as PropertyInfo) != null)
-                try
-                {
-                    pi.SetValue(conceptInfo, value, null);
-                }
-                catch (ArgumentException ae)
-                {
+                Type fieldOrPropertyType = null;
+
+                if ((pi = MemberInfo as PropertyInfo) != null)
+                    fieldOrPropertyType = pi.PropertyType;
+                else if ((fi = MemberInfo as FieldInfo) != null)
+                    fieldOrPropertyType = fi.FieldType;
+                else
                     throw new FrameworkException(
                         string.Format(CultureInfo.InvariantCulture,
-                            "Unable to convert property {0} in concept {1} from type {2} to type {3}",
-                                pi.Name,
-                                conceptInfo.GetType().FullName,
-                                pi.PropertyType.FullName,
-                                value != null ? value.GetType().FullName : "unknown"),
-                        ae);
-                }
-            else if ((fi = MemberInfo as FieldInfo) != null)
-                try
-                {
-                    fi.SetValue(conceptInfo, value);
-                }
-                catch (ArgumentException ae)
-                {
-                    throw new FrameworkException(
-                        string.Format(CultureInfo.InvariantCulture,
-                            "Unable to convert property {0} in concept {1} from type {2} to type {3}",
-                                pi.Name,
-                                conceptInfo.GetType().FullName,
-                                pi.PropertyType.FullName,
-                                value != null ? value.GetType().FullName : "unknown"),
-                        ae);
-                }
-            else
-                throw new FrameworkException(
-                    string.Format(CultureInfo.InvariantCulture,
-                        "Unexpected member type {0} for member {1}.",
-                            MemberInfo.MemberType,
-                            MemberInfo.Name));
+                            "Unexpected member type {0} for member {1}.",
+                                MemberInfo.MemberType,
+                                MemberInfo.Name));
+
+                var parameter1 = Expression.Parameter(typeof(IConceptInfo), "x");
+                var parameter2 = Expression.Parameter(typeof(Object), "value");
+                var castParameter1 = Expression.Convert(parameter1, MemberInfo.DeclaringType);
+                UnaryExpression castParameter2 = Expression.Convert(parameter2, fieldOrPropertyType);
+                var member = Expression.PropertyOrField(castParameter1, MemberInfo.Name);
+                var assignment = Expression.Assign(member, castParameter2);
+                var finalExpression = Expression.Lambda<Action<IConceptInfo, object>>(assignment, parameter1, parameter2);
+                _setValueFunc = finalExpression.Compile();
+            }
+
+            _setValueFunc(conceptInfo, value);
         }
 
         private static Type GetMemberType(MemberInfo member)
@@ -142,21 +134,29 @@ namespace Rhetos.Dsl
             return Name + ":" + ValueType.Name;
         }
 
+        Func<IConceptInfo, object> _getValueFunc = null;
+
         public object GetValue(IConceptInfo conceptInfo)
         {
-            PropertyInfo pi;
-            FieldInfo fi;
+            if (_getValueFunc == null)
+            {
+                if (MemberInfo is PropertyInfo || MemberInfo is FieldInfo)
+                {
+                    var parameter = Expression.Parameter(typeof(IConceptInfo), "x");
+                    var castParameter = Expression.Convert(parameter, MemberInfo.DeclaringType);
+                    var member = Expression.PropertyOrField(castParameter, MemberInfo.Name);                                                                     //Expression.Convert(member, MemberInfo)
+                    var finalExpression = Expression.Lambda<Func<IConceptInfo, object>>(member, parameter);
+                    _getValueFunc = finalExpression.Compile();
+                }
+                else
+                    throw new FrameworkException(
+                        string.Format(CultureInfo.InvariantCulture,
+                            "Unexpected member type {0} for member {1}.",
+                                MemberInfo.MemberType,
+                                MemberInfo.Name));
+            }
 
-            if ((pi = MemberInfo as PropertyInfo) != null)
-                return pi.GetValue(conceptInfo, null);
-            else if ((fi = MemberInfo as FieldInfo) != null)
-                return fi.GetValue(conceptInfo);
-            else
-                throw new FrameworkException(
-                    string.Format(CultureInfo.InvariantCulture,
-                        "Unexpected member type {0} for member {1}.",
-                            MemberInfo.MemberType,
-                            MemberInfo.Name));
+            return _getValueFunc(conceptInfo);
         }
     }
 }
