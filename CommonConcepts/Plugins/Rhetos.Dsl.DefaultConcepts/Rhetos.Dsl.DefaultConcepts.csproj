@@ -165,6 +165,8 @@
     <Compile Include="DataStructure\ExtensibleSubtypeSqlViewInfo.cs" />
     <Compile Include="DataStructure\QueryWithParameterInfo.cs" />
     <Compile Include="DataStructure\SubtypeWhereInfo.cs" />
+    <Compile Include="DataStructure\Writing\ArgumentValidationInfo.cs" />
+    <Compile Include="DataStructure\Writing\OldDataLoadedInfo.cs" />
     <Compile Include="DataStructure\Writing\OnSaveUpdateInfo.cs" />
     <Compile Include="DataStructure\Writing\SaveMethodAfterSaveInfo.cs" />
     <Compile Include="DataStructure\Writing\SaveMethodInitializationInfo.cs" />
