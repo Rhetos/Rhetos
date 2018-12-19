@@ -165,6 +165,7 @@ namespace Rhetos.Dom.DefaultConcepts
             string b = g2.ToString();
             return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) <= 0;
         }
+
         /// <param name="tableName">Table that contains the full-text search indexed columns. It is usually the entity's table or a table that references the entity's table.</param>
         /// <param name="searchColumns">Full-text search indexed columns. See the columns list parameter on CONTAINSTABLE function for Microsoft SQL server database.</param>
         [DbFunction("Rhetos", InterceptFullTextSearchFunction)]
@@ -174,5 +175,15 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         public const string InterceptFullTextSearchFunction = "InterceptFullTextSearch";
+
+        /// <param name="tableName">Table that contains the full-text search indexed columns. It is usually the entity's table or a table that references the entity's table.</param>
+        /// <param name="searchColumns">Full-text search indexed columns. See the columns list parameter on CONTAINSTABLE function for Microsoft SQL server database.</param>
+        [DbFunction("Rhetos", InterceptFullTextSearchFunctionIntKey)]
+        public static bool FullTextSearchIntKey(int itemId, string pattern, string tableName, string searchColumns)
+        {
+            throw new ClientException("Full-text search cannot be executed on loaded data. Use this function in a LINQ query to execute FTS on database.");
+        }
+
+        public const string InterceptFullTextSearchFunctionIntKey = "InterceptFullTextSearchIntKey";
     }
 }

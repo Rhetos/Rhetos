@@ -20,12 +20,7 @@
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rhetos.Dom.DefaultConcepts.Persistence
 {
@@ -37,7 +32,9 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             codeBuilder.InsertCode("AddInterceptor(new Rhetos.Dom.DefaultConcepts.Persistence.FullTextSearchInterceptor());\r\n            ", DomInitializationCodeGenerator.EntityFrameworkConfigurationTag);
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.Persistence.FullTextSearchInterceptor));
+            codeBuilder.AddReferencesFromDependency(typeof(FullTextSearchInterceptor));
+            codeBuilder.InsertCode("AddInterceptor(new Rhetos.Dom.DefaultConcepts.Persistence.FullTextSearchIntKeyInterceptor());\r\n            ", DomInitializationCodeGenerator.EntityFrameworkConfigurationTag);
+            codeBuilder.AddReferencesFromDependency(typeof(FullTextSearchIntKeyInterceptor));
         }
     }
 }
