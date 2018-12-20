@@ -169,6 +169,7 @@ namespace Rhetos.DatabaseGenerator
 
             var dependencies = ExtractDependencies(newConceptApplications);
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: ExtractDependencies executed.");
+
             UpdateConceptApplicationsFromDependencyList(dependencies);
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: UpdateConceptApplicationsFromDependencyList executed.");
         }

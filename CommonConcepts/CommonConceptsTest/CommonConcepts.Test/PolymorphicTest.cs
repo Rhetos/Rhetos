@@ -676,5 +676,29 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("a-1, b-2", TestUtility.DumpSorted(repository.TestPolymorphic.OtherFeatures.Load(), item => item.Name + "-" + item.Code));
             }
         }
+
+        [TestMethod]
+        public void Dependencies()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                int? dependencies = null;
+                string checkDependencies =
+                    @"SELECT
+                        COUNT(*)
+                    FROM
+                        Rhetos.AppliedConceptDependsOn dependency
+                        INNER JOIN Rhetos.AppliedConcept dependent ON dependent.ID = dependency.DependentID
+                        INNER JOIN Rhetos.AppliedConcept dependsOn ON dependsOn.ID = dependency.DependsOnID
+                    WHERE
+                        dependent.CreateQuery LIKE '%VIEW TestPolymorphic.DependentQuery%'
+                        AND dependsOn.CreateQuery LIKE '%VIEW TestPolymorphic.PolyWithDependencies%'";
+
+                var sqlExecuter = container.Resolve<ISqlExecuter>();
+                sqlExecuter.ExecuteReader(checkDependencies, reader => { dependencies = reader.GetInt32(0); });
+
+                Assert.AreEqual(1, dependencies);
+            }
+        }
     }
 }

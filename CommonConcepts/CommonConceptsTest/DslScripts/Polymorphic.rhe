@@ -347,3 +347,20 @@ Module TestPolymorphic
 		ShortString Code { AutoCode; }
 	}
 }
+
+//=========================================================
+// Database dependencies:
+
+Module TestPolymorphic
+{
+    Polymorphic PolyWithDependencies
+    {
+        ShortString Name;
+    }
+
+    SqlQueryable DependentQuery "SELECT ID, Name FROM TestPolymorphic.PolyWithDependencies"
+    {
+        ShortString Name;
+        SqlDependsOn TestPolymorphic.PolyWithDependencies;
+    }
+}
