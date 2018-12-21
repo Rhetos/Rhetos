@@ -93,15 +93,6 @@ namespace Rhetos.Utilities
             File.WriteAllText(hashFile, CsUtility.ByteArrayToHex(hash), Encoding.ASCII);
         }
 
-        public string LoadFromCache(string fileName)
-        {
-            var filePath = Path.Combine(Paths.GeneratedFilesCacheFolder, Path.GetFileNameWithoutExtension(fileName), fileName);
-            if (File.Exists(filePath))
-                return File.ReadAllText(filePath);
-            else
-                return null;
-        }
-
         /// <param name="sampleSourceFile">Any file from the cached file group, extension will be ignored.</param>
         public byte[] LoadHash(string sampleSourceFile)
         {
