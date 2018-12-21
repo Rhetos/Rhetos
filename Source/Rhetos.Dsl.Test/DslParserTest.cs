@@ -100,7 +100,7 @@ namespace Rhetos.Dsl.Test
         public void ParseNextConcept_DontDescribeExceptionIfConceptNotRecognized()
         {
             string dsl = "a";
-            var conceptParsers = new Dictionary<string, List<IConceptParser>> ();
+            var conceptParsers = new MultiDictionary<string, IConceptParser> ();
             conceptParsers.Add("b", new List<IConceptParser>() { new TestErrorParser("b") });
 
             TokenReader tokenReader = new TokenReader(new Tokenizer(new MockDslScriptsProvider(dsl)).GetTokens(), 0);
@@ -115,7 +115,7 @@ namespace Rhetos.Dsl.Test
         public void ParseNextConcept_PropagateErrorIfKeywordRecognized()
         {
             string dsl = "a";
-            var conceptParsers = new Dictionary<string, List<IConceptParser>>();
+            var conceptParsers = new MultiDictionary<string, IConceptParser>();
             conceptParsers.Add("a", new List<IConceptParser>() { new TestErrorParser("a") }); ;
 
             TokenReader tokenReader = TestTokenReader(dsl);
@@ -163,7 +163,7 @@ namespace Rhetos.Dsl.Test
                 new GenericParserHelper<SimpleConceptInfo>("concept"),
                 new GenericParserHelper<ExtendedConceptInfo>("concept")
             };
-            var conceptParsers = new Dictionary<string, List<IConceptParser>>();
+            var conceptParsers = new MultiDictionary<string, IConceptParser>();
             conceptParsers.Add("concept", conceptParsersList);
 
             var noContext = new Stack<IConceptInfo>();
@@ -193,7 +193,7 @@ namespace Rhetos.Dsl.Test
                 new GenericParserHelper<SimpleConceptInfo>("concept"),
                 new GenericParserHelper<EnclosedRefConceptInfo>("concept")
             };
-            var conceptParsers = new Dictionary<string, List<IConceptParser>>();
+            var conceptParsers = new MultiDictionary<string, IConceptParser>();
             conceptParsers.Add("concept", conceptParsersList);
 
             var context = new Stack<IConceptInfo>();
@@ -224,7 +224,7 @@ namespace Rhetos.Dsl.Test
                 new GenericParserHelper<SimpleConceptInfo>("concept"),
                 new GenericParserHelper<RefConceptInfo>("concept")
             };
-            var conceptParsers = new Dictionary<string, List<IConceptParser>>();
+            var conceptParsers = new MultiDictionary<string, IConceptParser> ();
             conceptParsers.Add("concept", conceptParsersList);
 
             var noContext = new Stack<IConceptInfo>();
@@ -250,7 +250,7 @@ namespace Rhetos.Dsl.Test
             {
                 new GenericParserHelper<SimpleConceptInfo>("concept"),
             };
-            var conceptParsers = new Dictionary<string, List<IConceptParser>>();
+            var conceptParsers = new MultiDictionary<string, IConceptParser>();
             conceptParsers.Add("concept", conceptParsersList);
 
             try

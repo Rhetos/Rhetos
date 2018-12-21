@@ -49,7 +49,7 @@ namespace Rhetos.Dsl
         {
             get
             {
-                Dictionary<string, List<IConceptParser>> parsers = CreateGenericParsers();
+                var parsers = CreateGenericParsers();
                 var parsedConcepts = ExtractConcepts(parsers);
                 var alternativeInitializationGeneratedReferences = InitializeAlternativeInitializationConcepts(parsedConcepts);
                 return new[] { CreateInitializationConcept() }
@@ -69,7 +69,7 @@ namespace Rhetos.Dsl
             };
         }
 
-        protected Dictionary<string,List<IConceptParser>> CreateGenericParsers()
+        protected MultiDictionary<string,IConceptParser> CreateGenericParsers()
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -86,12 +86,12 @@ namespace Rhetos.Dsl
 
             _keywordsLogger.Trace(() => string.Join(" ", conceptMetadata.Select(cm => cm.conceptKeyword).OrderBy(keyword => keyword).Distinct()));
 
-            var result = conceptMetadata.GroupBy(cm => cm.conceptKeyword.ToLower()).ToDictionary(x => x.Key, x => x.Select(cm => (IConceptParser)new GenericParser(cm.conceptType, cm.conceptKeyword)).ToList());
+            var result = conceptMetadata.ToMultiDictionary(x => x.conceptKeyword, x => (IConceptParser)new GenericParser(x.conceptType, x.conceptKeyword));
             _performanceLogger.Write(stopwatch, "DslParser.CreateGenericParsers.");
             return result;
         }
 
-        protected IEnumerable<IConceptInfo> ExtractConcepts(Dictionary<string, List<IConceptParser>> conceptParsers)
+        protected IEnumerable<IConceptInfo> ExtractConcepts(MultiDictionary<string, IConceptParser> conceptParsers)
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -124,18 +124,17 @@ namespace Rhetos.Dsl
 
         class Interpretation { public IConceptInfo ConceptInfo; public TokenReader NextPosition; }
 
-        protected IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, Dictionary<string, List<IConceptParser>> conceptParsers)
+        protected IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, MultiDictionary<string, IConceptParser> conceptParsers)
         {
-            var errors = new List<string>();
             var errorReports = new List<Func<string>>();
             List<Interpretation> possibleInterpretations = new List<Interpretation>();
 
             var keywordReader = new TokenReader(tokenReader).ReadText();
-            var parsers = new List<IConceptParser>();
             var keyword = keywordReader.IsError ? null : keywordReader.Value.ToLower();
-            if (keyword != null && conceptParsers.TryGetValue(keyword, out parsers))
+
+            if (keyword != null)
             {
-                foreach (var conceptParser in parsers)
+                foreach (var conceptParser in conceptParsers.Get(keyword))
                 {
                     TokenReader nextPosition = new TokenReader(tokenReader);
                     var conceptInfoOrError = conceptParser.Parse(nextPosition, context);
@@ -177,8 +176,8 @@ namespace Rhetos.Dsl
                 throw new DslSyntaxException(msg);
             }
 
-            tokenReader.CopyFrom(possibleInterpretations[0].NextPosition);
-            return possibleInterpretations[0].ConceptInfo;
+            tokenReader.CopyFrom(possibleInterpretations.Single().NextPosition);
+            return possibleInterpretations.Single().ConceptInfo;
         }
 
         protected string ReportErrorContext(IConceptInfo conceptInfo, TokenReader tokenReader)

@@ -36,12 +36,12 @@ namespace Rhetos.Dsl.Test
         {
         }
 
-        new public IEnumerable<IConceptInfo> ExtractConcepts(Dictionary<string, List<IConceptParser>> conceptParsers)
+        new public IEnumerable<IConceptInfo> ExtractConcepts(MultiDictionary<string, IConceptParser> conceptParsers)
         {
             return base.ExtractConcepts(conceptParsers);
         }
 
-        new public IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, Dictionary<string, List<IConceptParser>> conceptParsers)
+        new public IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, MultiDictionary<string, IConceptParser> conceptParsers)
         {
             return base.ParseNextConcept(tokenReader, context, conceptParsers);
         }
