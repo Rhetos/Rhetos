@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
@@ -37,18 +39,21 @@ namespace Rhetos.Dom.DefaultConcepts
         ILogger _logger;
         CurrentKeepSynchronizedMetadata _currentKeepSynchronizedMetadata;
         DeployArguments _deployArguments;
+        IDslModel _dslModel;
 
         public KeepSynchronizedRecomputeOnDeploy(
             GenericRepositories genericRepositories,
             ILogProvider logProvider,
             CurrentKeepSynchronizedMetadata currentKeepSynchronizedMetadata,
-            DeployArguments deployArguments)
+            DeployArguments deployArguments,
+            IDslModel dslModel)
         {
             _genericRepositories = genericRepositories;
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("KeepSynchronizedRecomputeOnDeploy");
             _currentKeepSynchronizedMetadata = currentKeepSynchronizedMetadata;
             _deployArguments = deployArguments;
+            _dslModel = dslModel;
         }
 
         // Called at deployment time
@@ -61,6 +66,8 @@ namespace Rhetos.Dom.DefaultConcepts
             var oldItems = keepSyncRepos.Load();
             var avoidRecompute = new HashSet<string>(oldItems.Where(item => item.Context == "NORECOMPUTE").Select(GetKey));
 
+            var skipRecomputations = _dslModel.FindByType<SkipRecomputeOnDeployInfo>().Select(item => item.GetKey());
+
             IEnumerable<IKeepSynchronizedMetadata> toInsert, toUpdate, toDelete;
             keepSyncRepos.Diff(oldItems, _currentKeepSynchronizedMetadata, new SameRecord(), SameValue, Assign, out toInsert, out toUpdate, out toDelete);
 
@@ -68,7 +75,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (!avoidRecompute.Contains(GetKey(keepSynchronized)))
                 {
                     _logger.Info(() => string.Format("Recomputing {0} from {1}.", keepSynchronized.Target, keepSynchronized.Source));
-                    if(!skipRecompute)
+                    if(!skipRecompute && !skipRecomputations.Contains(GetKey(keepSynchronized)))
                     {
                         _genericRepositories.GetGenericRepository(keepSynchronized.Target).RecomputeFrom(keepSynchronized.Source);
                     } else
