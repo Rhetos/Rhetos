@@ -86,7 +86,7 @@ namespace Rhetos.Dsl
 
             _keywordsLogger.Trace(() => string.Join(" ", conceptMetadata.Select(cm => cm.conceptKeyword).OrderBy(keyword => keyword).Distinct()));
 
-            var result = conceptMetadata.ToMultiDictionary(x => x.conceptKeyword, x => (IConceptParser)new GenericParser(x.conceptType, x.conceptKeyword));
+            var result = conceptMetadata.ToMultiDictionary(x => x.conceptKeyword, x => (IConceptParser)new GenericParser(x.conceptType, x.conceptKeyword), StringComparer.OrdinalIgnoreCase);
             _performanceLogger.Write(stopwatch, "DslParser.CreateGenericParsers.");
             return result;
         }
@@ -129,8 +129,8 @@ namespace Rhetos.Dsl
             var errorReports = new List<Func<string>>();
             List<Interpretation> possibleInterpretations = new List<Interpretation>();
 
-            var keywordReader = new TokenReader(tokenReader).ReadText();
-            var keyword = keywordReader.IsError ? null : keywordReader.Value.ToLower();
+            var keywordReader = new TokenReader(tokenReader).ReadText(); // Peek, without changing the original tokenReader's position.
+            var keyword = keywordReader.IsError ? null : keywordReader.Value;
 
             if (keyword != null)
             {
