@@ -43,11 +43,9 @@ namespace Rhetos.Dsl
     {
         ILogger _loadOrderLogger;
         ILogger _saveOrderLogger;
-        GeneratedFilesCache _generatedFilesCache;
 
         public MacroOrderRepository(ILogProvider logProvider, GeneratedFilesCache generatedFilesCache)
         {
-            _generatedFilesCache = generatedFilesCache;
             _loadOrderLogger = logProvider.GetLogger("MacroRepositoryLoad");
             _saveOrderLogger = logProvider.GetLogger("MacroRepositorySave");
         }
