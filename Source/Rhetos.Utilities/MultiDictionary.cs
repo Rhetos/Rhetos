@@ -68,4 +68,23 @@ namespace Rhetos.Utilities
             return list;
         }
     }
+
+    public static class MultiDictionaryLinqExtensions
+    {
+        public static MultiDictionary<TKey, TElement> ToMultiDictionary<TSource, TKey, TElement>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> valueSelector)
+        {
+            var multyDictionary = new MultiDictionary<TKey, TElement>();
+            foreach (var element in source)
+                multyDictionary.Add(keySelector(element), valueSelector(element));
+            return multyDictionary;
+        }
+
+        public static MultiDictionary<TKey, TElement> ToMultiDictionary<TSource, TKey, TElement>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> valueSelector, IEqualityComparer<TKey> comparer)
+        {
+            var multyDictionary = new MultiDictionary<TKey, TElement>(comparer);
+            foreach (var element in source)
+                multyDictionary.Add(keySelector(element), valueSelector(element));
+            return multyDictionary;
+        }
+    }
 }

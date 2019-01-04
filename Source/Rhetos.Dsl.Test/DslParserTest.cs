@@ -100,7 +100,8 @@ namespace Rhetos.Dsl.Test
         public void ParseNextConcept_DontDescribeExceptionIfConceptNotRecognized()
         {
             string dsl = "a";
-            List<IConceptParser> conceptParsers = new List<IConceptParser>() { new TestErrorParser("b") };
+            var conceptParsers = new MultiDictionary<string, IConceptParser> ();
+            conceptParsers.Add("b", new List<IConceptParser>() { new TestErrorParser("b") });
 
             TokenReader tokenReader = new TokenReader(new Tokenizer(new MockDslScriptsProvider(dsl)).GetTokens(), 0);
 
@@ -114,7 +115,8 @@ namespace Rhetos.Dsl.Test
         public void ParseNextConcept_PropagateErrorIfKeywordRecognized()
         {
             string dsl = "a";
-            List<IConceptParser> conceptParsers = new List<IConceptParser>() { new TestErrorParser("a") };
+            var conceptParsers = new MultiDictionary<string, IConceptParser>();
+            conceptParsers.Add("a", new List<IConceptParser>() { new TestErrorParser("a") }); ;
 
             TokenReader tokenReader = TestTokenReader(dsl);
 
@@ -156,11 +158,13 @@ namespace Rhetos.Dsl.Test
         public void ParseNextConcept_SameKeyWordDifferentContext()
         {
             string dsl = "concept simple simpledata; concept ext extdata extdata2;";
-            var conceptParsers = new List<IConceptParser>()
+            var conceptParsersList = new List<IConceptParser>()
             {
                 new GenericParserHelper<SimpleConceptInfo>("concept"),
                 new GenericParserHelper<ExtendedConceptInfo>("concept")
             };
+            var conceptParsers = new MultiDictionary<string, IConceptParser>();
+            conceptParsers.Add("concept", conceptParsersList);
 
             var noContext = new Stack<IConceptInfo>();
             TokenReader tokenReader = TestTokenReader(dsl);
@@ -184,11 +188,13 @@ namespace Rhetos.Dsl.Test
         public void ParseNextConcept_SameKeyWordDifferentContext_Enclosed()
         {
             string dsl = "concept name data { concept ref; }";
-            var conceptParsers = new List<IConceptParser>()
+            var conceptParsersList = new List<IConceptParser>()
             {
                 new GenericParserHelper<SimpleConceptInfo>("concept"),
                 new GenericParserHelper<EnclosedRefConceptInfo>("concept")
             };
+            var conceptParsers = new MultiDictionary<string, IConceptParser>();
+            conceptParsers.Add("concept", conceptParsersList);
 
             var context = new Stack<IConceptInfo>();
             TokenReader tokenReader = TestTokenReader(dsl);
@@ -212,11 +218,14 @@ namespace Rhetos.Dsl.Test
         public void ParseNextConcept_SameKeyWordDifferentContext_Ambiguous()
         {
             string dsl = "concept simple data; concept ref simple;";
-            var conceptParsers = new List<IConceptParser>()
+
+            var conceptParsersList = new List<IConceptParser>()
             {
                 new GenericParserHelper<SimpleConceptInfo>("concept"),
                 new GenericParserHelper<RefConceptInfo>("concept")
             };
+            var conceptParsers = new MultiDictionary<string, IConceptParser> ();
+            conceptParsers.Add("concept", conceptParsersList);
 
             var noContext = new Stack<IConceptInfo>();
             TokenReader tokenReader = TestTokenReader(dsl);
@@ -237,10 +246,12 @@ namespace Rhetos.Dsl.Test
         public void ParserError_ExpectingErrorHandler()
         {
             string dsl = "concept first second whoami";
-            var conceptParsers = new List<IConceptParser>()
+            var conceptParsersList = new List<IConceptParser>()
             {
                 new GenericParserHelper<SimpleConceptInfo>("concept"),
             };
+            var conceptParsers = new MultiDictionary<string, IConceptParser>();
+            conceptParsers.Add("concept", conceptParsersList);
 
             try
             {
