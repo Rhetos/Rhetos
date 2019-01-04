@@ -39,8 +39,10 @@ namespace Rhetos.Dom.DefaultConcepts
         public string Property { get; set; }
 
         /// <summary>
-        /// Predefined filter name (filter type). May be a data structure name form DSL script (Common.Principal, e.g.).
+        /// Predefined filter name (filter type).
         /// Either "Property" or "Filter" member should be set.
+        /// May be a data structure name from DSL script (Common.Principal, e.g.), FullName of a standard type (from mscorlib),
+        /// or an AssemblyQualifiedName (optional Version, Culture and PublicKeyToken) for other types.
         /// </summary>
         public string Filter { get; set; }
 

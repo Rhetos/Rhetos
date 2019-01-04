@@ -301,7 +301,7 @@ namespace Rhetos.Dom.DefaultConcepts
             }
             if (typeof(IEnumerable<FilterCriteria>).IsAssignableFrom(parameterType))
             {
-                _logger.Trace(() => "Reading using generic filter");
+                _logger.Trace(() => "Reading using generic filters");
                 return ExecuteGenericFilter((IEnumerable<FilterCriteria>)parameter, preferQuery);
             }
 
@@ -479,7 +479,7 @@ namespace Rhetos.Dom.DefaultConcepts
             }
             if (typeof(IEnumerable<FilterCriteria>).IsAssignableFrom(parameterType))
             {
-                _logger.Trace(() => "Filtering using generic filter");
+                _logger.Trace(() => "Filtering using generic filters");
                 return ExecuteGenericFilter((IEnumerable<FilterCriteria>)parameter, preferQuery, items);
             }
 
