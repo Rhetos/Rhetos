@@ -116,7 +116,6 @@ AND [Extent1].[ID2] IN (SELECT [KEY] FROM CONTAINSTABLE(TestFullTextSearch.Simpl
                     @"InterceptFullTextSearch",
                     @"Not all search conditions were handled"
                 },
-
             };
 
             foreach (var test in tests)
