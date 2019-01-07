@@ -254,6 +254,39 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
+        public void SearchWithRankTop()
+        {
+            Assert.IsTrue(dataPrepared.Value);
+
+            using (var container = new RhetosTestContainer(false))
+            {
+                var tests = new Dictionary<string, string>
+                {
+                    { "\"ab*\"", "ab, abc, cd ab" },
+                    { "\"12*\"", "123, ab, xy" },
+                };
+
+                var repository = container.Resolve<Common.DomRepository>();
+
+                foreach (var test in tests)
+                {
+                    Console.WriteLine("Searching '" + test.Key + "'");
+                    var rankTop = 10;
+                    var filteredQuery = repository.TestFullTextSearch.SimpleBrowse.Query()
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearchWithRank(item.ID, test.Key, rankTop,
+                            "TestFullTextSearch.Simple_Search", "*"))
+                        .Select(item => item.Name)
+                        .OrderBy(x => x);
+                    Console.WriteLine(filteredQuery.ToString());
+
+                    var filtered = filteredQuery.ToList();
+
+                    Assert.AreEqual(test.Value, TestUtility.DumpSorted(filtered), "Searching '" + test.Key + "'.");
+                }
+            }
+        }
+
+        [TestMethod]
         public void NullArgument()
         {
             using (var container = new RhetosTestContainer(false))
