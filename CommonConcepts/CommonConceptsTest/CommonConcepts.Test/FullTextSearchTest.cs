@@ -271,17 +271,27 @@ namespace CommonConcepts.Test
                 foreach (var test in tests)
                 {
                     Console.WriteLine("Searching '" + test.Key + "'");
-                    var rankTop = 10;
+
+                    // rankTop > count:
+
+                    int rankTop = 10;
                     var filteredQuery = repository.TestFullTextSearch.SimpleBrowse.Query()
                         .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, test.Key,
-                            "TestFullTextSearch.Simple_Search", "*", rankTop))
-                        .Select(item => item.Name)
-                        .OrderBy(x => x);
+                            "TestFullTextSearch.Simple_Search", "*", rankTop));
                     Console.WriteLine(filteredQuery.ToString());
+                    Assert.AreEqual(test.Value, TestUtility.DumpSorted(filteredQuery, item => item.Name), $"Searching top {rankTop} '{test.Key}'.");
 
-                    var filtered = filteredQuery.ToList();
+                    // rankTop < count:
 
-                    Assert.AreEqual(test.Value, TestUtility.DumpSorted(filtered), "Searching '" + test.Key + "'.");
+                    rankTop = 2;
+                    Assert.AreEqual(rankTop, filteredQuery.ToList().Count(), $"Searching top {rankTop} '{test.Key}'.");
+
+                    // rankTop as a literal:
+
+                    filteredQuery = repository.TestFullTextSearch.SimpleBrowse.Query()
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, test.Key,
+                            "TestFullTextSearch.Simple_Search", "*", 2));
+                    Assert.AreEqual(rankTop, filteredQuery.ToList().Count(), $"Searching '{test.Key}' with rankTop int literal.");
                 }
             }
         }
@@ -303,6 +313,8 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void TableParameter()
         {
+            // SQL Server does not support the table parameter to be a variable.
+
             using (var container = new RhetosTestContainer(false))
             {
                 var repository = container.Resolve<Common.DomRepository>();
@@ -318,6 +330,8 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ColumnsParameter()
         {
+            // SQL Server does not support the columns parameter to be a variable.
+
             using (var container = new RhetosTestContainer(false))
             {
                 var repository = container.Resolve<Common.DomRepository>();
@@ -327,6 +341,23 @@ namespace CommonConcepts.Test
                         .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, "a", "TestFullTextSearch.Simple_Search", columns))
                         .Select(item => item.Base.Name).ToList());
                 TestUtility.AssertContains(ex.ToString(), new[] { "Please use a string literal", "searchColumns" });
+            }
+        }
+
+        [TestMethod]
+        public void RankTopParameter()
+        {
+            // SQL Server does not support the rankTop parameter to be an expression.
+
+            using (var container = new RhetosTestContainer(false))
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                int topValue = 10;
+                var ex = TestUtility.ShouldFail(
+                    () => repository.TestFullTextSearch.Simple_Search.Query()
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, "a", "TestFullTextSearch.Simple_Search", "*", topValue + 1))
+                        .Select(item => item.Base.Name).ToList());
+                TestUtility.AssertContains(ex.ToString(), new[] { "Please use a simple integer variable", "rankTop" });
             }
         }
     }

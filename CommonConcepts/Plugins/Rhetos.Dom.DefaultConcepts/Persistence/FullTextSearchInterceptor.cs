@@ -80,7 +80,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                 var tableNameFormat = new Regex(@"^N'(?<unquoted>(\[\w+\]|\w+)(\.(\[\w+\]|\w+))+)'$", RegexOptions.Singleline);
                 var searchColumnsFormat = new Regex(@"^N'(?<unquoted>(\w+|\(\w+(\s*,\s*\w+)*\)|\*))'$", RegexOptions.Singleline);
                 var patternFormat = new Regex(@"^(\@\w+|N'([^']*('')*)*')$", RegexOptions.Singleline);
-                var rankFormat = new Regex(@"^(\@\w+|N'([^']*('')*)*')$", RegexOptions.Singleline);
+                var rankFormat = new Regex(@"^(\@\w+|-?\d+|)$", RegexOptions.Singleline);
 
                 foreach (var ftsQuery in ftsQueries.OrderByDescending(m => m.Index))
                 {
@@ -111,7 +111,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                         new { Parameter = "pattern", GeneratedSql = pattern, Format = patternFormat,
                             InfoSql = "an SQL query parameter or a quoted string without single-quote characters",
                             InfoLinq = "a simple string variable, not an expression," }, // Not mentioning string literals to simplify the message.
-                        new { Parameter = "rankTop", GeneratedSql = pattern, Format = rankFormat,
+                        new { Parameter = "rankTop", GeneratedSql = rankTop, Format = rankFormat,
                             InfoSql = "an SQL query parameter or integer",
                             InfoLinq = "a simple integer variable, not an expression," }, // Not mentioning int literals to simplify the message.
                     };
