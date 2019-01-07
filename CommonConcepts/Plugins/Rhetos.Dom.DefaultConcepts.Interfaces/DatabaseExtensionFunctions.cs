@@ -166,6 +166,8 @@ namespace Rhetos.Dom.DefaultConcepts
             return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) <= 0;
         }
 
+        public const string InterceptFullTextSearchFunction = "InterceptFullTextSearch";
+
         /// <param name="tableName">Table that contains the full-text search indexed columns. It is usually the entity's table or a table that references the entity's table.</param>
         /// <param name="searchColumns">Full-text search indexed columns. See the columns list parameter on CONTAINSTABLE function for Microsoft SQL server database.</param>
         [DbFunction("Rhetos", InterceptFullTextSearchFunction)]
@@ -174,27 +176,28 @@ namespace Rhetos.Dom.DefaultConcepts
             throw new ClientException("Full-text search cannot be executed on loaded data. Use this function in a LINQ query to execute FTS on database.");
         }
 
-        public const string InterceptFullTextSearchFunction = "InterceptFullTextSearch";
-
         /// <param name="tableName">Table that contains the full-text search indexed columns. It is usually the entity's table or a table that references the entity's table.</param>
         /// <param name="searchColumns">Full-text search indexed columns. See the columns list parameter on CONTAINSTABLE function for Microsoft SQL server database.</param>
-        [DbFunction("Rhetos", InterceptFullTextSearchWithRankFunction)]
-        public static bool FullTextSearchWithRank(Guid itemId, string pattern, int?rankTop, string tableName, string searchColumns)
+        [DbFunction("Rhetos", InterceptFullTextSearchFunction)]
+        public static bool FullTextSearch(Guid itemId, string pattern, string tableName, string searchColumns, int? rankTop)
         {
             throw new ClientException("Full-text search cannot be executed on loaded data. Use this function in a LINQ query to execute FTS on database.");
         }
 
-        public const string InterceptFullTextSearchWithRankFunction = "InterceptFullTextSearchWithRank";
-
-
         /// <param name="tableName">Table that contains the full-text search indexed columns. It is usually the entity's table or a table that references the entity's table.</param>
         /// <param name="searchColumns">Full-text search indexed columns. See the columns list parameter on CONTAINSTABLE function for Microsoft SQL server database.</param>
-        [DbFunction("Rhetos", InterceptFullTextSearchFunctionIntKey)]
-        public static bool FullTextSearchIntKey(int itemId, string pattern, string tableName, string searchColumns)
+        [DbFunction("Rhetos", InterceptFullTextSearchFunction)]
+        public static bool FullTextSearch(int itemId, string pattern, string tableName, string searchColumns)
         {
             throw new ClientException("Full-text search cannot be executed on loaded data. Use this function in a LINQ query to execute FTS on database.");
         }
 
-        public const string InterceptFullTextSearchFunctionIntKey = "InterceptFullTextSearchIntKey";
+        /// <param name="tableName">Table that contains the full-text search indexed columns. It is usually the entity's table or a table that references the entity's table.</param>
+        /// <param name="searchColumns">Full-text search indexed columns. See the columns list parameter on CONTAINSTABLE function for Microsoft SQL server database.</param>
+        [DbFunction("Rhetos", InterceptFullTextSearchFunction)]
+        public static bool FullTextSearch(int itemId, string pattern, string tableName, string searchColumns, int? rankTop)
+        {
+            throw new ClientException("Full-text search cannot be executed on loaded data. Use this function in a LINQ query to execute FTS on database.");
+        }
     }
 }

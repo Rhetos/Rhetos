@@ -32,11 +32,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             codeBuilder.InsertCode("AddInterceptor(new Rhetos.Dom.DefaultConcepts.Persistence.FullTextSearchInterceptor());\r\n            ", DomInitializationCodeGenerator.EntityFrameworkConfigurationTag);
-            codeBuilder.InsertCode("AddInterceptor(new Rhetos.Dom.DefaultConcepts.Persistence.FullTextSearchWithRankInterceptor());\r\n            ", DomInitializationCodeGenerator.EntityFrameworkConfigurationTag);
             codeBuilder.AddReferencesFromDependency(typeof(FullTextSearchInterceptor));
-            codeBuilder.AddReferencesFromDependency(typeof(FullTextSearchInterceptorCodeGenerator));
-            codeBuilder.InsertCode("AddInterceptor(new Rhetos.Dom.DefaultConcepts.Persistence.FullTextSearchIntKeyInterceptor());\r\n            ", DomInitializationCodeGenerator.EntityFrameworkConfigurationTag);
-            codeBuilder.AddReferencesFromDependency(typeof(FullTextSearchIntKeyInterceptor));
         }
     }
 }

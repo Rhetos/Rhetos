@@ -273,8 +273,8 @@ namespace CommonConcepts.Test
                     Console.WriteLine("Searching '" + test.Key + "'");
                     var rankTop = 10;
                     var filteredQuery = repository.TestFullTextSearch.SimpleBrowse.Query()
-                        .Where(item => DatabaseExtensionFunctions.FullTextSearchWithRank(item.ID, test.Key, rankTop,
-                            "TestFullTextSearch.Simple_Search", "*"))
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, test.Key,
+                            "TestFullTextSearch.Simple_Search", "*", rankTop))
                         .Select(item => item.Name)
                         .OrderBy(x => x);
                     Console.WriteLine(filteredQuery.ToString());
