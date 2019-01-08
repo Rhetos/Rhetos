@@ -178,5 +178,16 @@ namespace CommonConcepts.Test
                     "Testing if the CascadeDelete concept was properly implemented while using a Reference concept with late initialization of the Reference property.");
             }
         }
+
+        [TestMethod]
+        public void SimpleMethod()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                Assert.AreEqual("Test", repository.TestDataStructure.TestMethod.Test());
+            }
+        }
     }
 }

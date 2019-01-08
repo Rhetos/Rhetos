@@ -399,6 +399,16 @@ Module TestDataStructure
 
 		RepositoryUses '_logProvider' 'Rhetos.Logging.ILogProvider, Rhetos.Logging.Interfaces';
 	}
+
+	Entity TestMethod
+	{
+		Method '
+			public string Test()
+			{
+				return "Test";
+			}
+		';
+	}
 }
 
 Module TestQueryable

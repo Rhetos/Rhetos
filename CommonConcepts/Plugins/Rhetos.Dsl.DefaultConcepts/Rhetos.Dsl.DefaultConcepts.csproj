@@ -150,6 +150,7 @@
     <Compile Include="DatabaseWorkarounds\SqlIndexMultipleFollowingPropertyInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlNotNullInfo.cs" />
     <Compile Include="DataStructure\BeforeQueryWithParameterInfo.cs" />
+    <Compile Include="DataStructure\MethodConceptInfo.cs" />
     <Compile Include="DataStructure\PolymorphicSubtypeDiscriminatorInfo.cs" />
     <Compile Include="DataStructure\PolymorphicSubtypeReferenceInfo.cs" />
     <Compile Include="DataStructure\SamePropertyValueInfo.cs" />
