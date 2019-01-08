@@ -93,6 +93,7 @@
     <Compile Include="Computations\KeepSynchronizedRecomputeOnDeployCodeGenerator.cs" />
     <Compile Include="Computations\LockItemsLockPropertyCodeGenerator.cs" />
     <Compile Include="DataStructure\DataStructureQueryableCodeGenerator.cs" />
+    <Compile Include="DataStructure\RepositoryMemberCodeGenerator.cs" />
     <Compile Include="DataStructure\RepositoryUsesCodeGenerator.cs" />
     <Compile Include="DataStructure\SubtypeExtendFilterCodeGenerator.cs" />
     <Compile Include="DataStructure\FilterIdRepositoryCodeGenerator.cs" />
