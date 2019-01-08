@@ -1,10 +1,28 @@
 ﻿# Rhetos release notes
 
+## 2.11.0 (TO BE RELEASES)
+
+### New features
+
+* New concept **SkipRecomputeOnDeploy**, for disabling recompute-on-deploy for a specific entity in the DSL script (issue #105).
+* Additional full-text search features, available as overloads of the existing **FullTextSearch** LINQ query method:
+  1. Alternative integer key instead of GUID ID.
+  2. Limiting the search subquery results with
+     [top_n_by_rank](https://docs.microsoft.com/en-us/sql/relational-databases/system-functions/containstable-transact-sql?view=sql-server-2017).
+
+### Internal improvements
+
+* Simplified syntax of concept **SamePropertyValue** to use a simple path,
+  see [RowPermissions](https://github.com/Rhetos/Rhetos/wiki/RowPermissions-concept) example.
+* Minor performance improvements for DSL parser.
+* Bugfix: **SqlDependsOn** referencing polymorphic data structure did not create a dependency to the polymorphic's view (issue #98)
+
 ## 2.10.0 (2018-12-06)
 
 ### New features
 
-* New concept: **DefaultValue**, for setting the default property values when inserting a new record. See usage [examples](https://github.com/ibarban/Rhetos/blob/bc023542c4a7d5d117bf74bdac9a75f2ffe95c12/CommonConcepts/CommonConceptsTest/DslScripts/DefaultValueTest.rhe).
+* New concept: **DefaultValue**, for setting the default property values when inserting a new record.
+  See usage [examples](https://github.com/ibarban/Rhetos/blob/bc023542c4a7d5d117bf74bdac9a75f2ffe95c12/CommonConcepts/CommonConceptsTest/DslScripts/DefaultValueTest.rhe).
 * New *DeployPackages.exe* switch: `/SkipRecompute`, to disable automatic updating of the computed data marked with KeepSynchronized during deployment (issue #83).
 
 ### Internal improvements
@@ -100,8 +118,10 @@
 * Bugfix: AdminSetup.exe fails with FileNotFoundException.
 * Minor optimizations in performance critical code.
 * New plugins can suppress existing plugins from collections in IPluginsContainer and INamedPlugins.
-* ActiveDirectorySync package moved to a separate source repository: https://github.com/Rhetos/ActiveDirectorySync
-* AspNetFormsAuth package is moved to a separate source repository: https://github.com/Rhetos/AspNetFormsAuth
+* ActiveDirectorySync package moved to a separate source repository:
+  <https://github.com/Rhetos/ActiveDirectorySync>
+* AspNetFormsAuth package is moved to a separate source repository:
+  <https://github.com/Rhetos/AspNetFormsAuth>
 
 ## 2.0.0 (2017-10-02)
 
@@ -223,7 +243,7 @@
 * Removed excess dependencies from polymorphic subtype with named implementation.
 * New low-level concept **Initialization**, for injecting initialization code into the Save method.
 * The **KeyProperties** concept can now be used inside **ComputedFrom** on a data structure.
-In previous versions it could be used only inside Persisted or inside ComputedFrom on a property (as KeyProperty).
+  In previous versions it could be used only inside Persisted or inside ComputedFrom on a property (as KeyProperty).
 
 ## 1.2.0 (2016-10-19)
 
@@ -231,7 +251,7 @@ In previous versions it could be used only inside Persisted or inside ComputedFr
 
 * Allowed execution of data-migration scripts in wrong order, when a new script is ordered before the old one that was already executed.
   In the previous versions, such scripts would be skipped.
-  - Set the `DataMigration.SkipScriptsWithWrongOrder` parameter in *Web.config* to `False` to enable this feature, or `True` for old behavior (default).
+  * Set the `DataMigration.SkipScriptsWithWrongOrder` parameter in *Web.config* to `False` to enable this feature, or `True` for old behavior (default).
 
 ### Internal improvements
 
@@ -323,9 +343,9 @@ In previous versions it could be used only inside Persisted or inside ComputedFr
 ### Internal improvements
 
 * In the business layer object model (ServerDom) for each data structure there are 2 classes created:
-  - A simple class (`SomeModule.SomeEntity`), for working with entity instances in `FilterBy` concept or `Load(filter)` function.
+  * A simple class (`SomeModule.SomeEntity`), for working with entity instances in `FilterBy` concept or `Load(filter)` function.
     That class does not contain navigation properties for references to another data structures. It contains simple Guid properties for those references.
-  - A queryable class (`Common.Queryable.SomeModule_SomeEntity`), for working with LINQ queries in `ComposableFilterBy` or `ItemFilter` concept, or `Query(filter)` function.
+  * A queryable class (`Common.Queryable.SomeModule_SomeEntity`), for working with LINQ queries in `ComposableFilterBy` or `ItemFilter` concept, or `Query(filter)` function.
 * For reference properties, the scalar Guid property is mapped to the database.
   Previously only navigation properties were available in LINQ queries and in REST filter parameters.
   For example, the client had to use `SomeReference.ID` instead of `SomeReferenceID` in filters; now both options are available and `ReferenceID` is the preferred option.
@@ -422,11 +442,11 @@ In previous versions it could be used only inside Persisted or inside ComputedFr
 
 * *SimpleWindowsAuth* package is now obsolete, and should be used only for backward compatibility in legacy applications.
   When removing the package from an existing application, the following changes will occur:
-  - Rhetos admin GUI for setting user's permissions is no longer available (`/Resources/Permissions.html`).
-  - User names in `Common.Principal` must start with domain name prefix (domainname\username).
-  - Domain user groups should be moved from `Common.Principal` to `Common.Role`.
-  - Deploy [*ActiveDirectorySync*](ActiveDirectorySync/Readme.md) package to automatically update principal-role membership (`Common.PrincipalHasRole`) for domain users and groups.
-  - Each user must be entered in `Common.Principal`, *SimpleWindowsAuth* allowed entering only user groups.
+  * Rhetos admin GUI for setting user's permissions is no longer available (`/Resources/Permissions.html`).
+  * User names in `Common.Principal` must start with domain name prefix (domainname\username).
+  * Domain user groups should be moved from `Common.Principal` to `Common.Role`.
+  * Deploy [*ActiveDirectorySync*](ActiveDirectorySync/Readme.md) package to automatically update principal-role membership (`Common.PrincipalHasRole`) for domain users and groups.
+  * Each user must be entered in `Common.Principal`, *SimpleWindowsAuth* allowed entering only user groups.
     For backward compatibility enable `AuthorizationAddUnregisteredPrincipals` option in *Web.config* on Rhetos v0.9.31 or later.
 
 ### New features
@@ -685,8 +705,8 @@ In previous versions it could be used only inside Persisted or inside ComputedFr
 * Implemented `GenericRepository` class, a helper for server-side type-safe access to entity's repository (using interface the entity implements) without referencing the generated business layer object model.
 * *Generic filter* is extended to allow multiple predefined filters (along with property filters).
 * New server command: *ReadCommand* is a replacement for *QueryDataSourceCommand*.
-  - Improvements: ordering by multiple properties, more paging control with Top and Skip, reading records with paging without getting total count (this was a performance issue) and reading record count without reading records.
-  - *QueryDataSourceCommand* is obsolete, but still available for backward compatibility.
+  * Improvements: ordering by multiple properties, more paging control with Top and Skip, reading records with paging without getting total count (this was a performance issue) and reading record count without reading records.
+  * *QueryDataSourceCommand* is obsolete, but still available for backward compatibility.
 
 ### Internal improvements
 
@@ -748,7 +768,7 @@ In previous versions it could be used only inside Persisted or inside ComputedFr
 * Bugfix: Updating ActiveItem in history should not create new entry in Changes table.
 * Bugfix: DeployPackages sometimes uses old migration data in DataMigrationRestore.
 * Bugfix: FK_AppliedConceptDependsOn_DependsOn error on DeployPackages.
-* NHibernate updated to version 3.3.3 SP1 (HqlTreeBuilder.Constant IList<X> issue).
+* NHibernate updated to version 3.3.3 SP1 (HqlTreeBuilder.Constant `IList<T>` issue).
 * Improved ORM DateTime precision from seconds to milliseconds.
 
 ## 0.9.11 (2013-09-25)
