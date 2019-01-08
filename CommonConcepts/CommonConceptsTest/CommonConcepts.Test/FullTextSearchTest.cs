@@ -57,7 +57,7 @@ namespace CommonConcepts.Test
                 while (true)
                 {
                     int? ftsStatus = null;
-                    var getFtsStatus = "SELECT OBJECTPROPERTYEX(OBJECT_ID('TestFullTextSearch.Simple_Search'), 'TableFulltextPopulateStatus')";
+                    var getFtsStatus = "SELECT OBJECTPROPERTYEX(OBJECT_ID('TestFullTextSearch.SimpleFTS'), 'TableFulltextPopulateStatus')";
                     container.Resolve<ISqlExecuter>().ExecuteReader(getFtsStatus, reader => ftsStatus = reader.GetInt32(0));
 
                     if (ftsStatus != 0)
@@ -99,13 +99,13 @@ namespace CommonConcepts.Test
                 {
                     Console.WriteLine("Searching '" + test.Key + "'");
 
-                    var filtered = repository.TestFullTextSearch.Simple_Search.Query()
-                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, test.Key, "TestFullTextSearch.Simple_Search", "*"))
+                    var filtered = repository.TestFullTextSearch.SimpleFTS.Query()
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, test.Key, "TestFullTextSearch.SimpleFTS", "*"))
                         .Select(item => item.Base.Name).ToList();
                     Assert.AreEqual(test.Value, TestUtility.DumpSorted(filtered), "Searching '" + test.Key + "'.");
 
-                    filtered = repository.TestFullTextSearch.Simple_Search.Query()
-                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, test.Key, "TestFullTextSearch.Simple_Search", "Text"))
+                    filtered = repository.TestFullTextSearch.SimpleFTS.Query()
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, test.Key, "TestFullTextSearch.SimpleFTS", "Text"))
                         .Select(item => item.Base.Name).ToList();
                     Assert.AreEqual(test.Value, TestUtility.DumpSorted(filtered), "Searching '" + test.Key + "'.");
                 }
@@ -121,8 +121,8 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var filtered = repository.TestFullTextSearch.Simple_Search.Query()
-                    .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, "\"ab*\"", "TestFullTextSearch.Simple_Search", "*"))
+                var filtered = repository.TestFullTextSearch.SimpleFTS.Query()
+                    .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, "\"ab*\"", "TestFullTextSearch.SimpleFTS", "*"))
                     .Select(item => item.Base.Name).ToList();
                 Assert.AreEqual("ab, abc, cd ab", TestUtility.DumpSorted(filtered));
             }
@@ -148,7 +148,7 @@ namespace CommonConcepts.Test
                     Console.WriteLine("Searching '" + test.Key + "'");
 
                     var filtered = repository.TestFullTextSearch.Simple.Query()
-                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, test.Key, "TestFullTextSearch.Simple_Search", "*"))
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, test.Key, "TestFullTextSearch.SimpleFTS", "*"))
                         .Select(item => item.Name).ToList();
                     Assert.AreEqual(test.Value, TestUtility.DumpSorted(filtered), "Searching '" + test.Key + "'.");
                 }
@@ -175,7 +175,7 @@ namespace CommonConcepts.Test
                     Console.WriteLine("Searching '" + test.Key + "'");
 
                     var filtered = repository.TestFullTextSearch.SimpleBrowse.Query()
-                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, test.Key, "TestFullTextSearch.Simple_Search", "*"))
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, test.Key, "TestFullTextSearch.SimpleFTS", "*"))
                         .Select(item => item.Name).ToList();
 
                     Assert.AreEqual(test.Value, TestUtility.DumpSorted(filtered), "Searching '" + test.Key + "'.");
@@ -203,7 +203,7 @@ namespace CommonConcepts.Test
                     Console.WriteLine("Searching '" + test.Key + "'");
 
                     var filter = repository.TestFullTextSearch.SimpleBrowse.Query()
-                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, test.Key, "TestFullTextSearch.Simple_Search", "*"))
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, test.Key, "TestFullTextSearch.SimpleFTS", "*"))
                         // Testing combination of filters on different tables:
                         .Where(item => item.Base.Extension_SimpleInfo.Description.Length > 0)
                         .Select(item => item.Base.Extension_SimpleInfo.Description);
@@ -231,7 +231,7 @@ namespace CommonConcepts.Test
 
                     Console.WriteLine("Searching '" + pattern + "'");
                     var filtered = repository.TestFullTextSearch.Simple.Query()
-                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, pattern, "TestFullTextSearch.Simple_Search", "*"))
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, pattern, "TestFullTextSearch.SimpleFTS", "*"))
                         .OrderByDescending(item => item.Name)
                         .Select(item => item.Name).ToList();
                     Assert.AreEqual(result, TestUtility.Dump(filtered), "Searching '" + pattern + "'.");
@@ -243,7 +243,7 @@ namespace CommonConcepts.Test
 
                     Console.WriteLine("Searching '" + pattern + "'");
                     var filtered = repository.TestFullTextSearch.Simple.Query()
-                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, pattern, "TestFullTextSearch.Simple_Search", "*"))
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, pattern, "TestFullTextSearch.SimpleFTS", "*"))
                         .OrderByDescending(item => item.Name)
                         .Skip(1)
                         .Take(1)
@@ -277,7 +277,7 @@ namespace CommonConcepts.Test
                     int rankTop = 10;
                     var filteredQuery = repository.TestFullTextSearch.SimpleBrowse.Query()
                         .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, test.Key,
-                            "TestFullTextSearch.Simple_Search", "*", rankTop));
+                            "TestFullTextSearch.SimpleFTS", "*", rankTop));
                     Console.WriteLine(filteredQuery.ToString());
                     Assert.AreEqual(test.Value, TestUtility.DumpSorted(filteredQuery, item => item.Name), $"Searching top {rankTop} '{test.Key}'.");
 
@@ -290,7 +290,7 @@ namespace CommonConcepts.Test
 
                     filteredQuery = repository.TestFullTextSearch.SimpleBrowse.Query()
                         .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, test.Key,
-                            "TestFullTextSearch.Simple_Search", "*", 2));
+                            "TestFullTextSearch.SimpleFTS", "*", 2));
                     Assert.AreEqual(rankTop, filteredQuery.ToList().Count(), $"Searching '{test.Key}' with rankTop int literal.");
                 }
             }
@@ -303,8 +303,8 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var ex = TestUtility.ShouldFail(
-                    () => repository.TestFullTextSearch.Simple_Search.Query()
-                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, null, "TestFullTextSearch.Simple_Search", "*"))
+                    () => repository.TestFullTextSearch.SimpleFTS.Query()
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, null, "TestFullTextSearch.SimpleFTS", "*"))
                         .Select(item => item.Base.Name).ToList());
                 TestUtility.AssertContains(ex.ToString(), "Search pattern must not be NULL.");
             }
@@ -318,9 +318,9 @@ namespace CommonConcepts.Test
             using (var container = new RhetosTestContainer(false))
             {
                 var repository = container.Resolve<Common.DomRepository>();
-                string table = "TestFullTextSearch.Simple_Search";
+                string table = "TestFullTextSearch.SimpleFTS";
                 var ex = TestUtility.ShouldFail(
-                    () => repository.TestFullTextSearch.Simple_Search.Query()
+                    () => repository.TestFullTextSearch.SimpleFTS.Query()
                         .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, "a", table, "*"))
                         .Select(item => item.Base.Name).ToList());
                 TestUtility.AssertContains(ex.ToString(), new[] { "Please use a string literal", "tableName" });
@@ -337,8 +337,8 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
                 string columns = "*";
                 var ex = TestUtility.ShouldFail(
-                    () => repository.TestFullTextSearch.Simple_Search.Query()
-                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, "a", "TestFullTextSearch.Simple_Search", columns))
+                    () => repository.TestFullTextSearch.SimpleFTS.Query()
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, "a", "TestFullTextSearch.SimpleFTS", columns))
                         .Select(item => item.Base.Name).ToList());
                 TestUtility.AssertContains(ex.ToString(), new[] { "Please use a string literal", "searchColumns" });
             }
@@ -354,8 +354,8 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
                 int topValue = 10;
                 var ex = TestUtility.ShouldFail(
-                    () => repository.TestFullTextSearch.Simple_Search.Query()
-                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, "a", "TestFullTextSearch.Simple_Search", "*", topValue + 1))
+                    () => repository.TestFullTextSearch.SimpleFTS.Query()
+                        .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, "a", "TestFullTextSearch.SimpleFTS", "*", topValue + 1))
                         .Select(item => item.Base.Name).ToList());
                 TestUtility.AssertContains(ex.ToString(), new[] { "Please use a simple integer variable", "rankTop" });
             }

@@ -18,7 +18,7 @@ Module TestFullTextSearch
 		ShortString Description;
 	}
 	
-	SqlQueryable Compute_Simple_Search
+	SqlQueryable ComputeSimpleFTS
 		"SELECT ID, Text = Name + '/' + CONVERT(NVARCHAR(100), Code) FROM TestFullTextSearch.Simple"
 	{
 		AutoDetectSqlDependencies;
@@ -26,28 +26,28 @@ Module TestFullTextSearch
 		LongString Text;
 	}
 	
-	Persisted Simple_Search TestFullTextSearch.Compute_Simple_Search
+	Persisted SimpleFTS TestFullTextSearch.ComputeSimpleFTS
 	{
 		AllProperties;
 		KeepSynchronized;
 	}
 	
 	SqlObject TestFullTextSearchCatalog
-		'/*DatabaseGenerator:NoTransaction*/
-		CREATE FULLTEXT CATALOG TestFullTextSearchCatalog'
-		'/*DatabaseGenerator:NoTransaction*/
-		DROP FULLTEXT CATALOG TestFullTextSearchCatalog';
+		"/*DatabaseGenerator:NoTransaction*/
+		CREATE FULLTEXT CATALOG TestFullTextSearchCatalog"
+		"/*DatabaseGenerator:NoTransaction*/
+		DROP FULLTEXT CATALOG TestFullTextSearchCatalog";
 	
 	SqlObject TestFullTextSearchSimple
-		'/*DatabaseGenerator:NoTransaction*/
-		CREATE FULLTEXT INDEX ON TestFullTextSearch.Simple_Search(Text)
-			KEY INDEX PK_Simple_Search
+		"/*DatabaseGenerator:NoTransaction*/
+		CREATE FULLTEXT INDEX ON TestFullTextSearch.SimpleFTS (Text)
+			KEY INDEX PK_SimpleFTS
 			ON TestFullTextSearchCatalog
-			WITH STOPLIST = SYSTEM'
-	   '/*DatabaseGenerator:NoTransaction*/
-	   DROP FULLTEXT INDEX ON TestFullTextSearch.Simple_Search'
+			WITH STOPLIST = SYSTEM"
+	   "/*DatabaseGenerator:NoTransaction*/
+	   DROP FULLTEXT INDEX ON TestFullTextSearch.SimpleFTS"
 	{
 		SqlDependsOnSqlObject TestFullTextSearch.TestFullTextSearchCatalog;
-		SqlDependsOn TestFullTextSearch.Simple_Search.Text;
+		SqlDependsOn TestFullTextSearch.SimpleFTS.Text;
 	}
 }
