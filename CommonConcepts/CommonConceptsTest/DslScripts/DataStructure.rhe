@@ -402,10 +402,12 @@ Module TestDataStructure
 
 	Entity TestMethod
 	{
-		Method '
-			public string Test()
+		ShortString Name;
+
+		RepositoryMember FilterByName '
+			public IEnumerable<Common.Queryable.TestDataStructure_TestMethod> FilterByName(string name)
 			{
-				return "Test";
+				return _domRepository.TestDataStructure.TestMethod.Query().Where(x => x.Name == name).ToList();
 			}
 		';
 	}

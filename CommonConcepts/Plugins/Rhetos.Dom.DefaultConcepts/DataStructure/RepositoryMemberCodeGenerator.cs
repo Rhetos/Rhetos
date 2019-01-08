@@ -26,13 +26,20 @@ using Rhetos.Compiler;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(MethodConceptInfo))]
-    public class MethodConceptInfoCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(RepositoryMemberInfo))]
+    public class RepositoryMemberCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            MethodConceptInfo info = (MethodConceptInfo)conceptInfo;
-            codeBuilder.InsertCode(info.MethodImplementation, RepositoryHelper.RepositoryMembers.Evaluate(info.DataStructure));
+            RepositoryMemberInfo info = (RepositoryMemberInfo)conceptInfo;
+            codeBuilder.InsertCode(GetSnippet(info), RepositoryHelper.RepositoryMembers, info.DataStructure);
+        }
+
+        private string GetSnippet(RepositoryMemberInfo info)
+        {
+            return $@"{info.Implementation.Trim()}
+
+        ";
         }
     }
 }

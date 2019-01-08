@@ -186,7 +186,10 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
-                Assert.AreEqual("Test", repository.TestDataStructure.TestMethod.Test());
+                var test1 = new TestDataStructure.TestMethod { Name = "Test1" };
+                repository.TestDataStructure.TestMethod.Insert(test1);
+
+                Assert.AreEqual(test1.ID, repository.TestDataStructure.TestMethod.FilterByName("Test1").Single().ID);
             }
         }
     }

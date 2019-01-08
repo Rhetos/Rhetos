@@ -22,12 +22,20 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("Method")]
-    public class MethodConceptInfo : IConceptInfo
+    [ConceptKeyword("RepositoryMember")]
+    public class RepositoryMemberInfo : IConceptInfo, IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }
+
         [ConceptKey]
-        public string MethodImplementation { get; set; }
+        public string Name { get; set; }
+
+        public string Implementation { get; set; }
+
+        public void CheckSemantics(IDslModel existingConcepts)
+        {
+            DslUtility.ValidateIdentifier(Name, this);
+        }
     }
 }
