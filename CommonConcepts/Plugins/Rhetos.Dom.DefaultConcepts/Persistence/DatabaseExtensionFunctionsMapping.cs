@@ -133,13 +133,47 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
 
             codeBuilder.InsertCode(
 @"  <Function Name=""" + DatabaseExtensionFunctions.InterceptFullTextSearchFunction + @""" ReturnType=""bit"" >
-    <Parameter Name = ""studentId"" Mode = ""In"" Type = ""uniqueidentifier"" />
+    <Parameter Name = ""itemId"" Mode = ""In"" Type = ""uniqueidentifier"" />
     <Parameter Name = ""pattern"" Mode = ""In"" Type = ""nvarchar"" />
     <Parameter Name = ""tableName"" Mode = ""In"" Type = ""nvarchar"" />
     <Parameter Name = ""searchColumns"" Mode = ""In"" Type = ""nvarchar"" />
   </Function>
 
 ", EntityFrameworkMapping.StorageModelTag);
+
+            codeBuilder.InsertCode(
+@"  <Function Name=""" + DatabaseExtensionFunctions.InterceptFullTextSearchFunction + @""" ReturnType=""bit"" >
+    <Parameter Name = ""itemId"" Mode = ""In"" Type = ""uniqueidentifier"" />
+    <Parameter Name = ""pattern"" Mode = ""In"" Type = ""nvarchar"" />
+    <Parameter Name = ""tableName"" Mode = ""In"" Type = ""nvarchar"" />
+    <Parameter Name = ""searchColumns"" Mode = ""In"" Type = ""nvarchar"" />
+    <Parameter Name = ""rankTop"" Mode = ""In"" Type = ""int"" />
+  </Function>
+
+", EntityFrameworkMapping.StorageModelTag);
+
+            codeBuilder.InsertCode(
+@"  <Function Name=""" + DatabaseExtensionFunctions.InterceptFullTextSearchFunction + @""" ReturnType=""bit"" >
+    <Parameter Name = ""itemId"" Mode = ""In"" Type = ""int"" />
+    <Parameter Name = ""pattern"" Mode = ""In"" Type = ""nvarchar"" />
+    <Parameter Name = ""tableName"" Mode = ""In"" Type = ""nvarchar"" />
+    <Parameter Name = ""searchColumns"" Mode = ""In"" Type = ""nvarchar"" />
+  </Function>
+
+", EntityFrameworkMapping.StorageModelTag);
+
+            codeBuilder.InsertCode(
+@"  <Function Name=""" + DatabaseExtensionFunctions.InterceptFullTextSearchFunction + @""" ReturnType=""bit"" >
+    <Parameter Name = ""itemId"" Mode = ""In"" Type = ""int"" />
+    <Parameter Name = ""pattern"" Mode = ""In"" Type = ""nvarchar"" />
+    <Parameter Name = ""tableName"" Mode = ""In"" Type = ""nvarchar"" />
+    <Parameter Name = ""searchColumns"" Mode = ""In"" Type = ""nvarchar"" />
+    <Parameter Name = ""rankTop"" Mode = ""In"" Type = ""int"" />
+  </Function>
+
+", EntityFrameworkMapping.StorageModelTag);
+
+
         }
     }
 }
