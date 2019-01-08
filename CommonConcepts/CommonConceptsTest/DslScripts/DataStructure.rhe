@@ -404,13 +404,20 @@ Module TestDataStructure
 	{
 		ShortString Name;
 
-		RepositoryMember FilterByName '
-			public IEnumerable<Common.Queryable.TestDataStructure_TestMethod> FilterByName(string name)
+		RepositoryMember TestMethod
+			'public IQueryable<Common.Queryable.TestDataStructure_TestMethod> TestMethod()
 			{
-				return _domRepository.TestDataStructure.TestMethod.Query().Where(x => x.Name == name).ToList();
+				return this.Query().Where(x => x.Name == "test");
+			}';
+
+		FilterBy Limit5 '(repository, parameter) =>
+			{
+				return TestMethod().Take(5).ToArray();
 			}
 		';
 	}
+
+	Parameter Limit5;
 }
 
 Module TestQueryable
