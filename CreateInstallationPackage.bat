@@ -20,6 +20,7 @@ MD Install\RhetosServer\bin
 
 XCOPY /Y/D/R Source\Rhetos\bin\*.dll Install\RhetosServer\bin || GOTO Error0
 XCOPY /Y/D/R Source\Rhetos\bin\*.pdb Install\RhetosServer\bin || GOTO Error0
+XCOPY /Y/D/R Source\Rhetos\bin\Rhetos*.xml Install\RhetosServer\bin || GOTO Error0
 XCOPY /Y/D/R Source\Rhetos\bin\*.exe Install\RhetosServer\bin || GOTO Error0
 XCOPY /Y/D/R Source\Rhetos\bin\*.config Install\RhetosServer\bin || GOTO Error0
 DEL /F /Q Install\RhetosServer\bin\ConnectionStrings.config
