@@ -576,7 +576,7 @@ Module TestComputedFrom
     
     Entity MultiSync
     {
-        ComputedFrom TestComputedFrom.Comp1a { AllProperties; KeepSynchronized; } // The AllProperties concept includes "Base".
+        ComputedFrom TestComputedFrom.Comp1a { AllProperties; KeepSynchronized; SkipRecomputeOnDeploy; } // The AllProperties concept includes "Base".
         
         ShortString Name1bx { ComputedFrom TestComputedFrom.Comp1b.Name1b; }
         ComputedFrom TestComputedFrom.Comp1b { KeepSynchronized; }
