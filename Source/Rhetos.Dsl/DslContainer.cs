@@ -157,10 +157,26 @@ namespace Rhetos.Dsl
         {
             _validateDuplicateStopwatch.Start();
 
-            if (newConcept != existingConcept
-                && newConcept.GetFullDescription() != existingConcept.GetFullDescription()
-                && !(newConcept.GetType().IsAssignableFrom(existingConcept.GetType())
-                    && newConcept.GetFullDescription() == existingConcept.GetFullDescriptionAsBaseConcept(newConcept.GetType())))
+            var conceptsAreEqual = true;
+            if (!newConcept.GetType().IsAssignableFrom(existingConcept.GetType()))
+            {
+                conceptsAreEqual = false;
+            }
+            else
+            {
+                var newConceptMemebers = ConceptMembers.Get(newConcept);
+                var existingConceptMemebers = ConceptMembers.Get(existingConcept);
+                for (var i = 0; i < newConceptMemebers.Length; i++)
+                {
+                    if (existingConceptMemebers[i].IsKey)
+                        continue;
+
+                    if(!AreConceptMembersEqual(newConcept, newConceptMemebers[i], existingConcept, existingConceptMemebers[i]))
+                        conceptsAreEqual = false;
+                }
+            }
+
+            if (!conceptsAreEqual)
                 throw new DslSyntaxException(
                     "Concept with same key is described twice with different values."
                     + "\r\nValue 1: " + existingConcept.GetFullDescription()
@@ -168,6 +184,33 @@ namespace Rhetos.Dsl
                     + "\r\nSame key: " + newConcept.GetKey());
 
             _validateDuplicateStopwatch.Stop();
+        }
+
+        private bool AreConceptMembersEqual(IConceptInfo newConcept, ConceptMember newConceptMemeber, IConceptInfo existingConcept, ConceptMember existingConceptMemeber)
+        {
+            if (existingConceptMemeber.IsConceptInfo)
+            {
+                if ((existingConceptMemeber.GetValue(existingConcept) as IConceptInfo).GetKeyProperties() !=
+                (newConceptMemeber.GetValue(newConcept) as IConceptInfo).GetKeyProperties())
+                    return false;
+                else
+                    return true;
+            }
+            else
+            {
+                var value1 = existingConceptMemeber.GetValue(existingConcept);
+                var value2 = newConceptMemeber.GetValue(newConcept);
+                if (value1 == null && value2 == null)
+                    return true;
+                else if (value1 != null && value2 == null)
+                    return false;
+                else if (value1 == null && value2 != null)
+                    return false;
+                else if (!value1.Equals(value2))
+                    return false;
+                else
+                    return true;
+            }
         }
 
         /// <summary>
