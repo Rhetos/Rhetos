@@ -157,10 +157,7 @@ namespace Rhetos.Dsl
         {
             _validateDuplicateStopwatch.Start();
 
-            if (newConcept != existingConcept
-                && newConcept.GetFullDescription() != existingConcept.GetFullDescription()
-                && !(newConcept.GetType().IsAssignableFrom(existingConcept.GetType())
-                    && newConcept.GetFullDescription() == existingConcept.GetFullDescriptionAsBaseConcept(newConcept.GetType())))
+            if (!ConteptsValueEqualOrBase(newConcept, existingConcept))
                 throw new DslSyntaxException(
                     "Concept with same key is described twice with different values."
                     + "\r\nValue 1: " + existingConcept.GetFullDescription()
@@ -168,6 +165,56 @@ namespace Rhetos.Dsl
                     + "\r\nSame key: " + newConcept.GetKey());
 
             _validateDuplicateStopwatch.Stop();
+        }
+
+        private bool ConteptsValueEqualOrBase(IConceptInfo newConcept, IConceptInfo existingConcept)
+        {
+            if (object.ReferenceEquals(newConcept, existingConcept))
+                return true;
+            else if (newConcept.GetKey() != existingConcept.GetKey())
+                return false;
+            else if (!newConcept.GetType().IsAssignableFrom(existingConcept.GetType()))
+                return false;
+            else
+            {
+                var newConceptMemebers = ConceptMembers.Get(newConcept);
+                foreach (ConceptMember member in newConceptMemebers)
+                {
+                    if (member.IsKey)
+                        continue;
+
+                    if (!IsConceptMemberEqual(newConcept, existingConcept, member))
+                        return false;
+                }
+            }
+            return true;
+        }
+
+        private bool IsConceptMemberEqual(IConceptInfo newConcept, IConceptInfo existingConcept, ConceptMember conceptMemeber)
+        {
+            if (conceptMemeber.IsConceptInfo)
+            {
+                if ((conceptMemeber.GetValue(existingConcept) as IConceptInfo).GetKey() !=
+                (conceptMemeber.GetValue(newConcept) as IConceptInfo).GetKey())
+                    return false;
+                else
+                    return true;
+            }
+            else
+            {
+                var value1 = conceptMemeber.GetValue(existingConcept);
+                var value2 = conceptMemeber.GetValue(newConcept);
+                if (value1 == null && value2 == null)
+                    return true;
+                else if (value1 != null && value2 == null)
+                    return false;
+                else if (value1 == null && value2 != null)
+                    return false;
+                else if (!value1.Equals(value2))
+                    return false;
+                else
+                    return true;
+            }
         }
 
         /// <summary>
@@ -186,7 +233,7 @@ namespace Rhetos.Dsl
 
                 foreach (var reference in references)
                     ReplaceReferenceWithFullConceptOrMarkUnresolved(reference);
-
+                 
                 if (conceptDesc.UnresolvedDependencies == 0)
                 {
                     newlyResolved.Add(conceptDesc.Concept);

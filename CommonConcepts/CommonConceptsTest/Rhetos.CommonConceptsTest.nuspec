@@ -16,5 +16,6 @@
   </metadata>
   <files>
     <file src="DslScripts\**\*" target="DslScripts" />
+    <file src="DataMigration\**\*" target="DataMigration" />
   </files>
 </package>
