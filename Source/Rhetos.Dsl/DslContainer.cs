@@ -169,7 +169,9 @@ namespace Rhetos.Dsl
 
         private bool ConteptsValueEqualOrBase(IConceptInfo newConcept, IConceptInfo existingConcept)
         {
-            if (newConcept.GetKey() != existingConcept.GetKey())
+            if (object.ReferenceEquals(newConcept, existingConcept))
+                return true;
+            else if (newConcept.GetKey() != existingConcept.GetKey())
                 return false;
             else if (!newConcept.GetType().IsAssignableFrom(existingConcept.GetType()))
                 return false;
@@ -181,14 +183,14 @@ namespace Rhetos.Dsl
                     if (member.IsKey)
                         continue;
 
-                    if (!AreConceptMembersEqual(newConcept, existingConcept, member))
+                    if (!IsConceptMemberEqual(newConcept, existingConcept, member))
                         return false;
                 }
             }
             return true;
         }
 
-        private bool AreConceptMembersEqual(IConceptInfo newConcept, IConceptInfo existingConcept, ConceptMember conceptMemeber)
+        private bool IsConceptMemberEqual(IConceptInfo newConcept, IConceptInfo existingConcept, ConceptMember conceptMemeber)
         {
             if (conceptMemeber.IsConceptInfo)
             {
