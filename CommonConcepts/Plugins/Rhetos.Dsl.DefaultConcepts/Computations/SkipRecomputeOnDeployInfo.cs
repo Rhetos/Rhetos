@@ -18,14 +18,19 @@
 */
 
 using System;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-[assembly: AssemblyCompany("Omega software")]
-[assembly: AssemblyCopyright("Copyright (C) Omega software 2017")]
-[assembly: AssemblyTrademark("")]
-
-[assembly: AssemblyVersion("2.11.0")]
-[assembly: AssemblyFileVersion("2.11.0")]
-[assembly: AssemblyInformationalVersion("2.11.0-dev")]
+namespace Rhetos.Dsl.DefaultConcepts
+{
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("SkipRecomputeOnDeploy")]
+    public class SkipRecomputeOnDeployInfo : IConceptInfo
+    {
+        [ConceptKey]
+        public EntityComputedFromInfo EntityComputedFrom { get; set; }
+    }
+}

@@ -136,6 +136,27 @@ Clone3.Start
             }
         }
 
+
+        [TestMethod]
+        public void CloneExtension()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var dslModel = container.Resolve<IDslModel>();
+                var clone3 = (EntityInfo)dslModel.FindByKey("DataStructureInfo TestCloning.Clone3");
+
+                var properties = dslModel.FindByReference<PropertyInfo>(p => p.DataStructure, clone3);
+                Assert.AreEqual("DateTime Start, Integer Code, Reference Parent, ShortString Name",
+                    TestUtility.DumpSorted(properties, p => $"{p.GetKeywordOrTypeName()} {p.Name}"));
+
+                var extends = dslModel.FindByReference<DataStructureExtendsInfo>(e => e.Extension, clone3).Single();
+                Assert.AreEqual("Rhetos.Dsl.DefaultConcepts.DataStructureExtendsInfo TestCloning.Clone3 TestCloning.Base", extends.GetFullDescription());
+
+                var cascadeDelete = dslModel.FindByReference<UniqueReferenceCascadeDeleteInfo>(cd => cd.UniqueReference, extends).SingleOrDefault();
+                Assert.IsNotNull(cascadeDelete);
+            }
+        }
+
         [TestMethod]
         public void CloneUniqueReference()
         {
@@ -144,12 +165,15 @@ Clone3.Start
                 var dslModel = container.Resolve<IDslModel>();
                 var cloneUR = (EntityInfo)dslModel.FindByKey("DataStructureInfo TestCloning.CloneUR");
 
-                Assert.AreEqual("ShortString TestCloning.CloneUR.Name", dslModel.FindByReference<PropertyInfo>(p => p.DataStructure, cloneUR).Single().GetUserDescription());
+                var properties = dslModel.FindByReference<PropertyInfo>(p => p.DataStructure, cloneUR);
+                Assert.AreEqual("ShortString Name",
+                    TestUtility.DumpSorted(properties, p => $"{p.GetKeywordOrTypeName()} {p.Name}"));
 
                 var uniqueReference = dslModel.FindByReference<UniqueReferenceInfo>(ur => ur.Extension, cloneUR).Single();
-                Assert.AreEqual("UniqueReference TestCloning.CloneUR", uniqueReference.GetUserDescription());
+                Assert.AreEqual("Rhetos.Dsl.DefaultConcepts.UniqueReferenceInfo TestCloning.CloneUR TestCloning.Base", uniqueReference.GetFullDescription());
 
-                Assert.AreEqual("CascadeDelete TestCloning.CloneUR", dslModel.FindByReference<UniqueReferenceCascadeDeleteInfo>(cd => cd.UniqueReference, uniqueReference).Single().GetUserDescription());
+                var cascadeDelete = dslModel.FindByReference<UniqueReferenceCascadeDeleteInfo>(cd => cd.UniqueReference, uniqueReference).SingleOrDefault();
+                Assert.IsNotNull(cascadeDelete, "cascadeDelete");
             }
         }
     }

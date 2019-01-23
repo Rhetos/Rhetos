@@ -105,5 +105,33 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("b0/initialized-11", TestUtility.DumpSorted(testerRepos.Query(), item => item.Base.Name + "/" + item.Name + "-" + item.Code));
             }
         }
+
+        [TestMethod]
+        public void AutomaticallyDeleteExtensionWithBusinessLogic()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var log = new List<string>();
+                container.AddLogMonitor(log);
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var baseItem = new TestDataStructure.SaveTesterBase { Name = "b1" };
+                repository.TestDataStructure.SaveTesterBase.Insert(baseItem);
+
+                var extensionItem = new TestDataStructure.SaveTester { ID = baseItem.ID, Name = "e1" };
+                repository.TestDataStructure.SaveTester.Insert(extensionItem);
+
+                Assert.AreEqual(1, repository.TestDataStructure.SaveTester.Query(new[] { extensionItem.ID }).Count()); // Just checking the test is not false positive.
+
+                log.Clear();
+                repository.TestDataStructure.SaveTesterBase.Delete(baseItem);
+
+                Console.WriteLine("LOG BEGIN\r\n" + string.Join("\r\n", log) + "\r\nLOG END");
+
+                Assert.AreEqual(0, repository.TestDataStructure.SaveTester.Query(new[] { extensionItem.ID }).Count()); // Just checking the test is not false positive.
+
+                Assert.IsTrue(log.Any(entry => entry.Contains("SaveTester.Deletions: e1.")), "Deleting the base entity should result with deletion of the extension through the object model (not just deleted in database by cascade delete).");
+            }
+        }
     }
 }

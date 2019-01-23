@@ -17,15 +17,25 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using System.ComponentModel.Composition;
 
-[assembly: AssemblyCompany("Omega software")]
-[assembly: AssemblyCopyright("Copyright (C) Omega software 2017")]
-[assembly: AssemblyTrademark("")]
+namespace Rhetos.Dsl.DefaultConcepts
+{
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("RepositoryMember")]
+    public class RepositoryMemberInfo : IConceptInfo, IValidatedConcept
+    {
+        [ConceptKey]
+        public DataStructureInfo DataStructure { get; set; }
 
-[assembly: AssemblyVersion("2.11.0")]
-[assembly: AssemblyFileVersion("2.11.0")]
-[assembly: AssemblyInformationalVersion("2.11.0-dev")]
+        [ConceptKey]
+        public string Name { get; set; }
+
+        public string Implementation { get; set; }
+
+        public void CheckSemantics(IDslModel existingConcepts)
+        {
+            DslUtility.ValidateIdentifier(Name, this);
+        }
+    }
+}

@@ -27,11 +27,24 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
     /// Inherits the 'UniqueReference' concept and additionally allows cascade delete and automatic inheritance of row permissions.
-    /// In 1:1 relations, the 'Extends' concept is to 'UniqueReference' as 'Reference' is to 'Reference { Detail; }' in 1:N relations.
+    /// From a business perspective, the main difference between 'Extends' and 'UniqueReference' is that extension is considered a part of the base data structure.
+    /// In 1:1 relations, the 'Extends' concept is to 'UniqueReference' as 'Reference { Detail; }' is to 'Reference' in 1:N relations.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Extends")]
     public class DataStructureExtendsInfo : UniqueReferenceInfo
     {
+    }
+
+    [Export(typeof(IConceptMacro))]
+    public class DataStructureExtendsMacro : IConceptMacro<DataStructureExtendsInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(DataStructureExtendsInfo conceptInfo, IDslModel existingConcepts)
+        {
+            if (UniqueReferenceCascadeDeleteInfo.IsSupported(conceptInfo))
+                return new IConceptInfo[] { new UniqueReferenceCascadeDeleteInfo { UniqueReference = conceptInfo } };
+            else
+                return null;
+        }
     }
 }

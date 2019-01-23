@@ -32,5 +32,10 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         [ConceptKey]
         public UniqueReferenceInfo UniqueReference { get; set; }
+
+        public static bool IsSupported(UniqueReferenceInfo uniqueReference)
+        {
+            return uniqueReference.Base is IWritableOrmDataStructure && uniqueReference.Extension is IWritableOrmDataStructure;
+        }
     }
 }

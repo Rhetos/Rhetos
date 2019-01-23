@@ -32,9 +32,9 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = ((UniqueReferenceCascadeDeleteInfo)conceptInfo);
+            var info = (UniqueReferenceCascadeDeleteInfo)conceptInfo;
 
-            if (info.UniqueReference.Base is IWritableOrmDataStructure)
+            if (UniqueReferenceCascadeDeleteInfo.IsSupported(info.UniqueReference))
             {
                 string extensionName = info.UniqueReference.Extension.Module.Name + "." + info.UniqueReference.Extension.Name;
 

@@ -17,22 +17,29 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Compiler;
-using Rhetos.Dsl;
-using Rhetos.Extensibility;
+using Rhetos.Dsl.DefaultConcepts;
 using System.ComponentModel.Composition;
+using Rhetos.Extensibility;
+using Rhetos.Dsl;
+using Rhetos.Compiler;
 
-namespace Rhetos.Dom.DefaultConcepts.Persistence
+namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(InitializationConcept))]
-    [ExportMetadata(MefProvider.DependsOn, typeof(DomInitializationCodeGenerator))]
-    public class FullTextSearchInterceptorCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(RepositoryMemberInfo))]
+    public class RepositoryMemberCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            codeBuilder.InsertCode("AddInterceptor(new Rhetos.Dom.DefaultConcepts.Persistence.FullTextSearchInterceptor());\r\n            ", DomInitializationCodeGenerator.EntityFrameworkConfigurationTag);
-            codeBuilder.AddReferencesFromDependency(typeof(FullTextSearchInterceptor));
+            RepositoryMemberInfo info = (RepositoryMemberInfo)conceptInfo;
+            codeBuilder.InsertCode(GetSnippet(info), RepositoryHelper.RepositoryMembers, info.DataStructure);
+        }
+
+        private string GetSnippet(RepositoryMemberInfo info)
+        {
+            return $@"{info.Implementation.Trim()}
+
+        ";
         }
     }
 }

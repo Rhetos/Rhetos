@@ -33,8 +33,8 @@ using Rhetos.Compiler;
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
     [Export(typeof(IConceptDatabaseDefinition))]
-    [ExportMetadata(MefProvider.Implements, typeof(DataStructureExtendsInfo))]
-    public class DataStructureExtendsDatabaseDefinition : IConceptDatabaseDefinitionExtension
+    [ExportMetadata(MefProvider.Implements, typeof(UniqueReferenceCascadeDeleteInfo))]
+    public class UniqueReferenceCascadeDeleteDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
@@ -43,10 +43,10 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
         public void ExtendDatabaseStructure(IConceptInfo conceptInfo, ICodeBuilder codeBuilder, out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
         {
-            var info = (DataStructureExtendsInfo) conceptInfo;
+            var info = (UniqueReferenceCascadeDeleteInfo) conceptInfo;
 
-            if (UniqueReferenceDatabaseDefinition.ShouldCreateConstraint(info))
-                codeBuilder.InsertCode("ON DELETE CASCADE ", UniqueReferenceDatabaseDefinition.ForeignKeyConstraintOptionsTag, info);
+            if (UniqueReferenceDatabaseDefinition.ShouldCreateConstraint(info.UniqueReference))
+                codeBuilder.InsertCode("ON DELETE CASCADE ", UniqueReferenceDatabaseDefinition.ForeignKeyConstraintOptionsTag, info.UniqueReference);
 
             createdDependencies = null;
         }

@@ -49,7 +49,7 @@ namespace Rhetos.Dsl
         {
             get
             {
-                IEnumerable<IConceptParser> parsers = CreateGenericParsers();
+                var parsers = CreateGenericParsers();
                 var parsedConcepts = ExtractConcepts(parsers);
                 var alternativeInitializationGeneratedReferences = InitializeAlternativeInitializationConcepts(parsedConcepts);
                 return new[] { CreateInitializationConcept() }
@@ -69,7 +69,7 @@ namespace Rhetos.Dsl
             };
         }
 
-        protected IEnumerable<IConceptParser> CreateGenericParsers()
+        protected MultiDictionary<string,IConceptParser> CreateGenericParsers()
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -86,12 +86,12 @@ namespace Rhetos.Dsl
 
             _keywordsLogger.Trace(() => string.Join(" ", conceptMetadata.Select(cm => cm.conceptKeyword).OrderBy(keyword => keyword).Distinct()));
 
-            var result = conceptMetadata.Select(cm => new GenericParser(cm.conceptType, cm.conceptKeyword)).ToList<IConceptParser>();
+            var result = conceptMetadata.ToMultiDictionary(x => x.conceptKeyword, x => (IConceptParser)new GenericParser(x.conceptType, x.conceptKeyword), StringComparer.OrdinalIgnoreCase);
             _performanceLogger.Write(stopwatch, "DslParser.CreateGenericParsers.");
             return result;
         }
 
-        protected IEnumerable<IConceptInfo> ExtractConcepts(IEnumerable<IConceptParser> conceptParsers)
+        protected IEnumerable<IConceptInfo> ExtractConcepts(MultiDictionary<string, IConceptParser> conceptParsers)
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -124,34 +124,39 @@ namespace Rhetos.Dsl
 
         class Interpretation { public IConceptInfo ConceptInfo; public TokenReader NextPosition; }
 
-        protected IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, IEnumerable<IConceptParser> conceptParsers)
+        protected IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, MultiDictionary<string, IConceptParser> conceptParsers)
         {
-            var errors = new List<string>();
+            var errorReports = new List<Func<string>>();
             List<Interpretation> possibleInterpretations = new List<Interpretation>();
 
-            foreach (var conceptParser in conceptParsers)
-            {
-                TokenReader nextPosition = new TokenReader(tokenReader);
-                var conceptInfoOrError = conceptParser.Parse(nextPosition, context);
+            var keywordReader = new TokenReader(tokenReader).ReadText(); // Peek, without changing the original tokenReader's position.
+            var keyword = keywordReader.IsError ? null : keywordReader.Value;
 
-                if (!conceptInfoOrError.IsError)
-                    possibleInterpretations.Add(new Interpretation
+            if (keyword != null)
+            {
+                foreach (var conceptParser in conceptParsers.Get(keyword))
+                {
+                    TokenReader nextPosition = new TokenReader(tokenReader);
+                    var conceptInfoOrError = conceptParser.Parse(nextPosition, context);
+
+                    if (!conceptInfoOrError.IsError)
+                        possibleInterpretations.Add(new Interpretation
+                        {
+                            ConceptInfo = conceptInfoOrError.Value,
+                            NextPosition = nextPosition
+                        });
+                    else if (!string.IsNullOrEmpty(conceptInfoOrError.Error)) // Empty error means that this parser is not for this keyword.
                     {
-                        ConceptInfo = conceptInfoOrError.Value,
-                        NextPosition = nextPosition
-                    });
-                else if (!string.IsNullOrEmpty(conceptInfoOrError.Error)) // Empty error means that this parser is not for this keyword.
-                    errors.Add(string.Format("{0}: {1}\r\n{2}", conceptParser.GetType().Name, conceptInfoOrError.Error, tokenReader.ReportPosition()));
+                        errorReports.Add(() => string.Format("{0}: {1}\r\n{2}", conceptParser.GetType().Name, conceptInfoOrError.Error, tokenReader.ReportPosition()));
+                    }
+                }
             }
 
             if (possibleInterpretations.Count == 0)
             {
-                var nextToken = new TokenReader(tokenReader).ReadText(); // Peek, without changing the original tokenReader's position.
-                string keyword = nextToken.IsError ? null : nextToken.Value;
-
-                if (errors.Count > 0)
+                if (errorReports.Count > 0)
                 {
-                    string errorsReport = string.Join("\r\n", errors).Limit(500, "...");
+                    string errorsReport = string.Join("\r\n", errorReports.Select(x => x.Invoke())).Limit(500, "...");
                     throw new DslSyntaxException($"Invalid parameters after keyword '{keyword}'. {tokenReader.ReportPosition()}\r\n\r\nPossible causes:\r\n{errorsReport}");
                 }
                 else if (!string.IsNullOrEmpty(keyword))

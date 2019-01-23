@@ -30,6 +30,8 @@ using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
 using CommonConcepts.Test.Helpers;
 using System.Text.RegularExpressions;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
 
 namespace CommonConcepts.Test
 {
@@ -324,6 +326,23 @@ namespace CommonConcepts.Test
 
                 documents.Save(null, null, new[] { new Test9.Document { ID = d4ID, Name = "d45" } });
                 Assert.AreEqual("d1:1, d2xx:1", ReportDocumentAggregates(repository), "delete extension of locked item");
+            }
+        }
+
+        [TestMethod]
+        public void AllPropertiesCopiesExtension()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var dslModel = container.Resolve<IDslModel>();
+
+                var persisted = (EntityInfo)dslModel.FindByKey("DataStructureInfo Test9.DocumentCreationInfo");
+
+                var extends = dslModel.FindByReference<DataStructureExtendsInfo>(e => e.Extension, persisted).Single();
+                Assert.AreEqual("Rhetos.Dsl.DefaultConcepts.DataStructureExtendsInfo Test9.DocumentCreationInfo Test9.Document", extends.GetFullDescription());
+
+                var cascadeDelete = dslModel.FindByReference<UniqueReferenceCascadeDeleteInfo>(cd => cd.UniqueReference, extends).SingleOrDefault();
+                Assert.IsNotNull(cascadeDelete, "cascadeDelete");
             }
         }
     }

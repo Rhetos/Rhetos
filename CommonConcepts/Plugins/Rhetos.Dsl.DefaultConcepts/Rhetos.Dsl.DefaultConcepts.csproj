@@ -53,6 +53,7 @@
     <CodeContractsRuntimeCheckingLevel>Full</CodeContractsRuntimeCheckingLevel>
     <CodeContractsReferenceAssembly>%28none%29</CodeContractsReferenceAssembly>
     <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Debug\Rhetos.Dsl.DefaultConcepts.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -62,6 +63,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Release\Rhetos.Dsl.DefaultConcepts.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'CodeAnalysis|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
@@ -138,6 +140,7 @@
     <Compile Include="Computations\ComputeForNewItemsInfo.cs" />
     <Compile Include="Computations\ComposableFilterApplyOnClientReadInfo.cs" />
     <Compile Include="Computations\ComputedFromKeyPropertiesInfo.cs" />
+    <Compile Include="Computations\SkipRecomputeOnDeployInfo.cs" />
     <Compile Include="Computations\SuppressSynchronizationInfo.cs" />
     <Compile Include="Computations\KeyPropertyIDComputedFromInfo.cs" />
     <Compile Include="Computations\LockItemsExceptPropertiesInfo.cs" />
@@ -151,8 +154,10 @@
     <Compile Include="DataStructure\BeforeQueryWithParameterInfo.cs" />
     <Compile Include="DataStructure\PolymorphicSubtypeDiscriminatorInfo.cs" />
     <Compile Include="DataStructure\PolymorphicSubtypeReferenceInfo.cs" />
-    <Compile Include="DataStructure\UniqueReferenceInfo.cs" />
+    <Compile Include="DataStructure\RepositoryMemberInfo.cs" />
     <Compile Include="DataStructure\SamePropertyValueInfo.cs" />
+    <Compile Include="DataStructure\UniqueReferenceInfo.cs" />
+    <Compile Include="DataStructure\SamePropertyValue2Info.cs" />
     <Compile Include="DataStructure\WritableOrmDataStructureMacro.cs" />
     <Compile Include="DataStructure\RepositoryUsesInfo.cs" />
     <Compile Include="DataStructure\SubtypeExtendFilterInfo.cs" />

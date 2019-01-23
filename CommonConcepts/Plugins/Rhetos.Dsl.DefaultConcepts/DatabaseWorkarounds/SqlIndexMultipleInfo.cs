@@ -31,6 +31,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }
+
         [ConceptKey]
         public string PropertyNames { get; set; }
 

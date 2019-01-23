@@ -21,10 +21,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace DeployPackages
+namespace Rhetos.Utilities
 {
-    class Arguments
+    public class DeployArguments
     {
         public bool Help { get; private set; }
         public bool StartPaused { get; private set; }
@@ -33,8 +34,9 @@ namespace DeployPackages
         public bool IgnorePackageDependencies { get; private set; }
         public bool ShortTransactions { get; private set; }
         public bool DeployDatabaseOnly { get; private set; }
+        public bool SkipRecompute { get; private set; }
 
-        public Arguments(string[] args)
+        public DeployArguments(string[] args)
         {
             var arguments = new List<string>(args);
 
@@ -51,6 +53,7 @@ namespace DeployPackages
             IgnorePackageDependencies = Pop(arguments, "/IgnoreDependencies");
             ShortTransactions = Pop(arguments, "/ShortTransactions");
             DeployDatabaseOnly = Pop(arguments, "/DatabaseOnly");
+            SkipRecompute = Pop(arguments, "/SkipRecompute");
 
             if (arguments.Count > 0)
             {
@@ -68,6 +71,7 @@ namespace DeployPackages
             Console.WriteLine("/IgnoreDependencies  Allow installing incompatible versions of Rhetos packages.");
             Console.WriteLine("/ShortTransactions  Commit transaction after creating or dropping each database object.");
             Console.WriteLine("/DatabaseOnly  Keep old plugins and files in bin\\Generated.");
+            Console.WriteLine("/SkipRecompute  Use this if you want to skip all computed data.");
         }
 
         /// <summary>

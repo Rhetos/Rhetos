@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>Rhetos.CommonConcepts</id>
-    <version>2.10.0-dev</version>
+    <version>2.11.0-dev</version>
     <authors>Omega software</authors>
     <owners>Omega software</owners>
     <licenseUrl>http://opensource.org/licenses/AGPL-3.0</licenseUrl>
@@ -21,15 +21,21 @@
     <file src="DslScripts\**\*" target="DslScripts" />
     <file src="Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\Rhetos.Dsl.DefaultConcepts.dll" target="lib\net451" />
     <file src="Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\Rhetos.Dsl.DefaultConcepts.pdb" target="lib\net451" />
+	<file src="Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\Rhetos.Dsl.DefaultConcepts.xml" target="lib\net451" />
     <file src="Plugins\Rhetos.Dom.DefaultConcepts\bin\Debug\Rhetos.Dom.DefaultConcepts.dll" target="lib\net451" />
     <file src="Plugins\Rhetos.Dom.DefaultConcepts\bin\Debug\Rhetos.Dom.DefaultConcepts.pdb" target="lib\net451" />
+	<file src="Plugins\Rhetos.Dom.DefaultConcepts\bin\Debug\Rhetos.Dom.DefaultConcepts.xml" target="lib\net451" />
     <file src="Plugins\Rhetos.Dom.DefaultConcepts.Interfaces\bin\Debug\Rhetos.Dom.DefaultConcepts.Interfaces.dll" target="lib\net451" />
     <file src="Plugins\Rhetos.Dom.DefaultConcepts.Interfaces\bin\Debug\Rhetos.Dom.DefaultConcepts.Interfaces.pdb" target="lib\net451" />
+	<file src="Plugins\Rhetos.Dom.DefaultConcepts.Interfaces\bin\Debug\Rhetos.Dom.DefaultConcepts.Interfaces.xml" target="lib\net451" />
     <file src="Plugins\Rhetos.DatabaseGenerator.DefaultConcepts\bin\Debug\Rhetos.DatabaseGenerator.DefaultConcepts.dll" target="lib\net451" />
     <file src="Plugins\Rhetos.DatabaseGenerator.DefaultConcepts\bin\Debug\Rhetos.DatabaseGenerator.DefaultConcepts.pdb" target="lib\net451" />
+	<file src="Plugins\Rhetos.DatabaseGenerator.DefaultConcepts\bin\Debug\Rhetos.DatabaseGenerator.DefaultConcepts.xml" target="lib\net451" />
     <file src="Plugins\Rhetos.Processing.DefaultCommands\bin\Debug\Rhetos.Processing.DefaultCommands.dll" target="lib\net451" />
     <file src="Plugins\Rhetos.Processing.DefaultCommands\bin\Debug\Rhetos.Processing.DefaultCommands.pdb" target="lib\net451" />
+	<file src="Plugins\Rhetos.Processing.DefaultCommands\bin\Debug\Rhetos.Processing.DefaultCommands.xml" target="lib\net451" />
     <file src="Plugins\Rhetos.Processing.DefaultCommands.Interfaces\bin\Debug\Rhetos.Processing.DefaultCommands.Interfaces.dll" target="lib\net451" />
     <file src="Plugins\Rhetos.Processing.DefaultCommands.Interfaces\bin\Debug\Rhetos.Processing.DefaultCommands.Interfaces.pdb" target="lib\net451" />
+	<file src="Plugins\Rhetos.Processing.DefaultCommands.Interfaces\bin\Debug\Rhetos.Processing.DefaultCommands.Interfaces.xml" target="lib\net451" />
   </files>
 </package>

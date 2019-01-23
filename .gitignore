@@ -131,3 +131,4 @@ Source/Rhetos/ConnectionStrings.config
 Source/Rhetos/IISExpress.config
 Source/Rhetos/RhetosPackages.config
 Source/Rhetos/RhetosPackageSources.config
+/Source/Rhetos/External*.config
