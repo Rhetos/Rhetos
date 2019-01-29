@@ -17,13 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Dsl;
-using Rhetos.Compiler;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
@@ -31,30 +32,37 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(ReferenceCascadeDeleteInfo))]
     public class ReferenceCascadeDeleteDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
+        private readonly Lazy<bool> _legacyCascadeDeleteInDatabase;
+        
+        public ReferenceCascadeDeleteDatabaseDefinition(IConfiguration configuration)
+        {
+            _legacyCascadeDeleteInDatabase = configuration.GetBool("CommonConcepts.Legacy.CascadeDeleteInDatabase", true);
+        }
+
         public void ExtendDatabaseStructure(
             IConceptInfo conceptInfo, ICodeBuilder codeBuilder, 
             out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
         {
-            // Cascade delete FK in database is not essential because the server application will explicitly delete the referencing data (to ensure server-side validations and recomputations).
-			// Cascade delete in database is just a convenience for development and testing.
+            // Cascade delete FK in database is not needed because the server application will explicitly delete the referencing data (to ensure server-side validations and recomputations).
+            // Cascade delete in database is just a legacy feature, a convenience for development and testing.
+            // It is turned off by default because if a record is deleted by cascade delete directly in the database, then the business logic implemented in application layer will not be executed.
             var info = (ReferenceCascadeDeleteInfo)conceptInfo;
-            createdDependencies = null;
 
-            if (ReferencePropertyConstraintDatabaseDefinition.IsSupported(info.Reference))
-            {
+            if (_legacyCascadeDeleteInDatabase.Value && ReferencePropertyConstraintDatabaseDefinition.IsSupported(info.Reference))
                 codeBuilder.InsertCode(Sql.Get("ReferenceCascadeDeleteDatabaseDefinition_ExtendForeignKey"),
                     ReferencePropertyConstraintDatabaseDefinition.ForeignKeyConstraintOptions, info.Reference);
-            }
+
+            createdDependencies = null;
         }
 
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
-            return "";
+            return null;
         }
 
         public string RemoveDatabaseStructure(IConceptInfo conceptInfo)
         {
-            return "";
+            return null;
         }
     }
 }
