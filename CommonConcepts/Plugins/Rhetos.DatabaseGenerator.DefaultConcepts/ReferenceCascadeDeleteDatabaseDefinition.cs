@@ -19,14 +19,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.DatabaseGenerator;
 using System.ComponentModel.Composition;
 using Rhetos.Extensibility;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Dsl;
-using System.Globalization;
 using Rhetos.Compiler;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
