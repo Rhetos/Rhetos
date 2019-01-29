@@ -49,7 +49,10 @@ namespace CommonConcepts.Test
         {
             using (var container = new RhetosTestContainer())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                var sqlExecuter = container.Resolve<ISqlExecuter>();
+                var repository = container.Resolve<Common.DomRepository>();
+
+                sqlExecuter.ExecuteSql(new[]
                     {
                         @"DELETE FROM TestExtension.EntityExtension1",
                         @"DELETE FROM TestExtension.Old1",
@@ -58,32 +61,25 @@ namespace CommonConcepts.Test
                         @"INSERT INTO TestExtension.EntityExtension1 (ID, info) SELECT ID = '5D089327-97EF-418D-A7DF-783D3873A5B4', info = '1-a'",
                         @"INSERT INTO TestExtension.EntityExtension1 (ID, info) SELECT ID = 'DB97EA5F-FB8C-408F-B35B-AD6642C593D7', info = '2-b'"
                     });
-                var repository = container.Resolve<Common.DomRepository>();
 
                 // Test querying:
                 var secondDescription = repository.TestExtension.EntityExtension1.Query().Where(item => item.Base.i == 2).Select(item => item.info).Single();
                 Assert.AreEqual("2-b", secondDescription);
 
                 // Test FK:
-                string error = null;
-                try
-                {
-                    container.Resolve<ISqlExecuter>().ExecuteSql(new[]
-                        {
-                            @"INSERT INTO TestExtension.EntityExtension1 (ID, info) SELECT ID = NEWID(), info = '3-c'"
-                        });
-                }
-                catch (Exception ex)
-                {
-                    error = ex.Message;
-                }
-                TestUtility.AssertContains(error, "Old1", "Foreign key should prevent inserting extension record without base record.");
+                TestUtility.ShouldFail(
+                    () => sqlExecuter.ExecuteSql(@"INSERT INTO TestExtension.EntityExtension1 (ID, info) SELECT ID = NEWID(), info = '3-c'"),
+                     "Old1", "The INSERT statement conflicted with the FOREIGN KEY constraint");
 
-                // Test cascade delete:
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
-                    {
-                        @"DELETE FROM TestExtension.Old1 WHERE i = 2"
-                    });
+                // Test cascade delete in database:
+                TestUtility.ShouldFail(
+                    () => sqlExecuter.ExecuteSql(@"DELETE FROM TestExtension.Old1 WHERE i = 2"),
+                    "EntityExtension1", "The DELETE statement conflicted with the REFERENCE constraint");
+
+                Assert.AreEqual(2, repository.TestExtension.Old1.Query().Count(), "Testing the Old1 setup to avoid false-positive.");
+                Assert.AreEqual(2, repository.TestExtension.EntityExtension1.Query().Count(), "Testing the EntityExtension1 setup to avoid false-positive.");
+                repository.TestExtension.Legacy1.Delete(new TestExtension.Legacy1 { ID = new Guid("DB97EA5F-FB8C-408F-B35B-AD6642C593D7") });
+                Assert.AreEqual(1, repository.TestExtension.Old1.Query().Count(), "Old1 should have been deleted as it is a source for Legacy1.");
                 Assert.AreEqual(1, repository.TestExtension.EntityExtension1.Query().Count(), "'On delete cascade' should delete one extension record.");
             }
         }
