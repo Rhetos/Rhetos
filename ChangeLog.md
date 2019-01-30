@@ -9,13 +9,19 @@
   1. Alternative integer key instead of GUID ID.
   2. Limiting the search subquery results with
      [top_n_by_rank](https://docs.microsoft.com/en-us/sql/relational-databases/system-functions/containstable-transact-sql?view=sql-server-2017).
+* New low-level concept **RepositoryMember**, for extending generated repository classes (issue #87).
+* Generating .xml documentation files for the class libraries (issue #100).
 
 ### Internal improvements
 
 * Simplified syntax of concept **SamePropertyValue** to use a simple path,
   see [RowPermissions](https://github.com/Rhetos/Rhetos/wiki/RowPermissions-concept) example.
+* Bugfix: **SqlDependsOn** referencing polymorphic data structure did not create a dependency to the polymorphic's view (issue #98).
+* Cascade delete is executed only in the application layer, not in the database, to prevent bypassing any business rules (issue #90).
+  The new behavior can be enabled in *old applications* by setting
+  the [appSettings](https://github.com/Rhetos/Rhetos/blob/master/Source/Rhetos/Web.config) option
+  "CommonConcepts.Legacy.CascadeDeleteInDatabase" to "False".
 * Minor performance improvements for DSL parser.
-* Bugfix: **SqlDependsOn** referencing polymorphic data structure did not create a dependency to the polymorphic's view (issue #98)
 
 ## 2.10.0 (2018-12-06)
 
