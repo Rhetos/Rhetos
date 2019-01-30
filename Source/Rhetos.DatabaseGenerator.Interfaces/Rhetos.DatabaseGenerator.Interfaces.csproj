@@ -54,6 +54,7 @@
     <CodeContractsReferenceAssembly>%28none%29</CodeContractsReferenceAssembly>
     <Prefer32Bit>false</Prefer32Bit>
     <DocumentationFile>bin\Debug\Rhetos.DatabaseGenerator.Interfaces.xml</DocumentationFile>
+    <NoWarn>1591,1573</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -64,6 +65,7 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
     <DocumentationFile>bin\Release\Rhetos.DatabaseGenerator.Interfaces.xml</DocumentationFile>
+    <NoWarn>1591,1573</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'CodeAnalysis|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>

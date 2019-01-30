@@ -23,6 +23,7 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
     <DocumentationFile>bin\Debug\Rhetos.Deployment.Interfaces.xml</DocumentationFile>
+    <NoWarn>1591,1573</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -33,6 +34,7 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
     <DocumentationFile>bin\Release\Rhetos.Deployment.Interfaces.xml</DocumentationFile>
+    <NoWarn>1591,1573</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
