@@ -33,10 +33,13 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     public class ReferenceCascadeDeleteDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
         private readonly Lazy<bool> _legacyCascadeDeleteInDatabase;
-        
+
+        public static readonly string LegacyCascadeDeleteInDatabaseOption = "CommonConcepts.Legacy.CascadeDeleteInDatabase";
+
+
         public ReferenceCascadeDeleteDatabaseDefinition(IConfiguration configuration)
         {
-            _legacyCascadeDeleteInDatabase = configuration.GetBool("CommonConcepts.Legacy.CascadeDeleteInDatabase", true);
+            _legacyCascadeDeleteInDatabase = configuration.GetBool(LegacyCascadeDeleteInDatabaseOption, true);
         }
 
         public void ExtendDatabaseStructure(
