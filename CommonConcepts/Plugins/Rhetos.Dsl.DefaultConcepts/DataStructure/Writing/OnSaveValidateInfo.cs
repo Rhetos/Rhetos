@@ -49,7 +49,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         ///     updatedOld (array of old items),
         ///     deletedOld (array of old items).
         /// Throw Rhetos.UserException("message to the user") if the Save command should be canceled and all changes rolled back.
-        /// See <see cref="WritableOrmDataStructureCodeGenerator.OnSaveTag2">WritableOrmDataStructureCodeGenerator.OnSaveTag2</see> for more info.
+        /// See WritableOrmDataStructureCodeGenerator.OnSaveTag2 for more info.
         /// </summary>
         public string CsCodeSnippet { get; set; }
     }

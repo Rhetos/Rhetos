@@ -42,7 +42,7 @@ namespace Rhetos.Utilities
         /// <summary>
         /// Return a list that contains all elements from the given list and all elements that depend on them.
         /// </summary>
-        /// <param name="dependencies">A function that returns direct dependents of the given item.</param>
+        /// <param name="getDependents">A function that returns direct dependents of the given item.</param>
         public static List<T> IncludeDependents<T>(IEnumerable<T> list, Func<T, IEnumerable<T>> getDependents)
         {
             var result = new List<T>(list);
