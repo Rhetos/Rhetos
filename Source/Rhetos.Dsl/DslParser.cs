@@ -22,7 +22,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Globalization;
 using Rhetos.Utilities;
 using Rhetos.Logging;
 
@@ -45,21 +44,20 @@ namespace Rhetos.Dsl
             _keywordsLogger = logProvider.GetLogger("DslParser.Keywords");
         }
 
-        public IEnumerable<IConceptInfo> ParsedConcepts
-        {
-            get
-            {
-                var parsers = CreateGenericParsers();
-                var parsedConcepts = ExtractConcepts(parsers);
-                var alternativeInitializationGeneratedReferences = InitializeAlternativeInitializationConcepts(parsedConcepts);
-                return new[] { CreateInitializationConcept() }
-                    .Concat(parsedConcepts)
-                    .Concat(alternativeInitializationGeneratedReferences)
-                    .ToList();
-            }
-        }
+        public IEnumerable<IConceptInfo> ParsedConcepts => GetConcepts();
 
         //=================================================================
+
+        private List<IConceptInfo> GetConcepts()
+        {
+            var parsers = CreateGenericParsers();
+            var parsedConcepts = ExtractConcepts(parsers);
+            var alternativeInitializationGeneratedReferences = InitializeAlternativeInitializationConcepts(parsedConcepts);
+            return new[] { CreateInitializationConcept() }
+                .Concat(parsedConcepts)
+                .Concat(alternativeInitializationGeneratedReferences)
+                .ToList();
+        }
 
         private IConceptInfo CreateInitializationConcept()
         {
@@ -206,7 +204,7 @@ namespace Rhetos.Dsl
             {
                 var sb = new StringBuilder();
                 sb.Append(ReportErrorContext(conceptInfo, tokenReader));
-                sb.AppendFormat("Expected \";\" or \"{{\".");
+                sb.Append("Expected \";\" or \"{\".");
                 throw new DslSyntaxException(sb.ToString());
             }
 

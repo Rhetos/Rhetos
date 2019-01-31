@@ -142,7 +142,7 @@ namespace Rhetos.DatabaseGenerator
             {
                 IConceptDatabaseDefinition[] implementations = _plugins.GetImplementations(conceptInfo.GetType()).ToArray();
 
-                if (implementations.Count() == 0)
+                if (!implementations.Any())
                     implementations = new[] { new NullImplementation() };
 
                 conceptApplications.AddRange(implementations.Select(impl => new NewConceptApplication(conceptInfo, impl))); // DependsOn, CreateQuery and RemoveQuery will be set later.
@@ -426,7 +426,7 @@ namespace Rhetos.DatabaseGenerator
         {
             var report = new StringBuilder();
             report.Append("Dependencies:");
-            foreach (var ca in conceptApplications.Where(x => x.DependsOn.Count() > 0))
+            foreach (var ca in conceptApplications.Where(x => x.DependsOn.Any()))
             {
                 report.AppendLine().Append(ca.ToString()).Append(" depends on:");
                 foreach (var dep in ca.DependsOn)
@@ -615,7 +615,7 @@ namespace Rhetos.DatabaseGenerator
             foreach (var ca in unchangedApplications)
             {
                 var updateMetadataSql = _sqlTransactionBatches.JoinScripts(_conceptApplicationRepository.UpdateMetadataSql(ca, oldApplicationsByKey[ca.GetConceptApplicationKey()]));
-                if (updateMetadataSql.Count() > 0)
+                if (updateMetadataSql.Any())
                 {
                     LogDatabaseChanges(ca, "Updating metadata");
                     newScripts.AddRange(updateMetadataSql);
