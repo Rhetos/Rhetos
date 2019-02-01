@@ -18,7 +18,6 @@
 */
 
 using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
 using System.ComponentModel.Composition;
 using Rhetos.Extensibility;
 using Rhetos.Dsl;
@@ -39,17 +38,18 @@ namespace Rhetos.Dom.DefaultConcepts
                 string extensionName = info.UniqueReference.Extension.Module.Name + "." + info.UniqueReference.Extension.Name;
 
                 string snippetDeleteChildItems =
-                    $@"if (deletedIds.Count() > 0)
-                    {{
-                        List<{extensionName}> childItems = _executionContext.Repository.{extensionName}
-                            .Query(deletedIds.Select(parent => parent.ID))
-                            .Select(child => child.ID).ToList()
-                            .Select(childId => new {extensionName} {{ ID = childId }}).ToList();
+            $@"if (deletedIds.Count() > 0)
+            {{
+                List<{extensionName}> childItems = _executionContext.Repository.{extensionName}
+                    .Query(deletedIds.Select(parent => parent.ID))
+                    .Select(child => child.ID).ToList()
+                    .Select(childId => new {extensionName} {{ ID = childId }}).ToList();
 
-                        if (childItems.Count() > 0)
-                            _domRepository.{extensionName}.Delete(childItems);
-                    }};
-                    ";
+                if (childItems.Count() > 0)
+                    _domRepository.{extensionName}.Delete(childItems);
+            }}
+
+            ";
 
                 codeBuilder.InsertCode(snippetDeleteChildItems, WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.UniqueReference.Base);
             }

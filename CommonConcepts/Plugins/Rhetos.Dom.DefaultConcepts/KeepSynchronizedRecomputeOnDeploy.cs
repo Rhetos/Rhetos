@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
@@ -37,57 +39,72 @@ namespace Rhetos.Dom.DefaultConcepts
         ILogger _logger;
         CurrentKeepSynchronizedMetadata _currentKeepSynchronizedMetadata;
         DeployArguments _deployArguments;
+        IDslModel _dslModel;
 
         public KeepSynchronizedRecomputeOnDeploy(
             GenericRepositories genericRepositories,
             ILogProvider logProvider,
             CurrentKeepSynchronizedMetadata currentKeepSynchronizedMetadata,
-            DeployArguments deployArguments)
+            DeployArguments deployArguments,
+            IDslModel dslModel)
         {
             _genericRepositories = genericRepositories;
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("KeepSynchronizedRecomputeOnDeploy");
             _currentKeepSynchronizedMetadata = currentKeepSynchronizedMetadata;
             _deployArguments = deployArguments;
+            _dslModel = dslModel;
         }
 
         // Called at deployment time
         public void Initialize()
         {
-            var skipRecompute = _deployArguments.SkipRecompute;
             var sw = Stopwatch.StartNew();
             
             var keepSyncRepos = _genericRepositories.GetGenericRepository<IKeepSynchronizedMetadata>();
             var oldItems = keepSyncRepos.Load();
-            var avoidRecompute = new HashSet<string>(oldItems.Where(item => item.Context == "NORECOMPUTE").Select(GetKey));
+            var skipRecomputeDbMetadata = new HashSet<string>(oldItems.Where(item => item.Context == "NORECOMPUTE").Select(GetComputationKey));
+
+            var skipRecomputeDslConcept = new HashSet<string>(_dslModel.FindByType<SkipRecomputeOnDeployInfo>().Select(GetComputationKey));
+
+            bool skipRecomputeDeployParameter = _deployArguments.SkipRecompute;
 
             IEnumerable<IKeepSynchronizedMetadata> toInsert, toUpdate, toDelete;
             keepSyncRepos.Diff(oldItems, _currentKeepSynchronizedMetadata, new SameRecord(), SameValue, Assign, out toInsert, out toUpdate, out toDelete);
 
-            foreach (var keepSynchronized in toInsert.Concat(toUpdate))
-                if (!avoidRecompute.Contains(GetKey(keepSynchronized)))
+            _performanceLogger.Write(sw, () => nameof(KeepSynchronizedRecomputeOnDeploy) + ": Load metadata.");
+
+            foreach (var compute in toInsert.Concat(toUpdate))
+            {
+                if (skipRecomputeDeployParameter)
                 {
-                    _logger.Info(() => string.Format("Recomputing {0} from {1}.", keepSynchronized.Target, keepSynchronized.Source));
-                    if(!skipRecompute)
-                    {
-                        _genericRepositories.GetGenericRepository(keepSynchronized.Target).RecomputeFrom(keepSynchronized.Source);
-                    } else
-                    {
-                        _logger.Info(() => string.Format("{0} should be recomputed from {1} but is skipped.", keepSynchronized.Target, keepSynchronized.Source));
-                    }
-                    _performanceLogger.Write(sw, () => string.Format("KeepSynchronizedRecomputeOnDeploy: {0} from {1}.", keepSynchronized.Target, keepSynchronized.Source));
+                    _logger.Info(() => $"Skipped recomputing {compute.Target} from {compute.Source} due to deployment parameter.");
+                }
+                else if (skipRecomputeDslConcept.Contains(GetComputationKey(compute)))
+                {
+                    _logger.Info(() => $"Skipped recomputing {compute.Target} from {compute.Source} due to DSL concept.");
+                }
+                else if (skipRecomputeDbMetadata.Contains(GetComputationKey(compute)))
+                {
+                    _logger.Info(() => $"Skipped recomputing {compute.Target} from {compute.Source} due to database metadata.");
                 }
                 else
-                    _logger.Info(() => string.Format("Specified not to recompute {0} from {1}.", keepSynchronized.Target, keepSynchronized.Source));
+                {
+                    _logger.Info(() => $"Recomputing {compute.Target} from {compute.Source}.");
+                    _genericRepositories.GetGenericRepository(compute.Target).RecomputeFrom(compute.Source);
+                    _performanceLogger.Write(sw, () => $"{nameof(KeepSynchronizedRecomputeOnDeploy)}: {compute.Target} from {compute.Source}.");
+                }
+            }
 
             keepSyncRepos.Save(toInsert, toUpdate, toDelete);
+            _performanceLogger.Write(sw, () => nameof(KeepSynchronizedRecomputeOnDeploy) + ": Save metadata.");
         }
 
         private class SameRecord : IComparer<IKeepSynchronizedMetadata>
         {
             public int Compare(IKeepSynchronizedMetadata x, IKeepSynchronizedMetadata y)
             {
-                return string.Compare(GetKey(x), GetKey(y), StringComparison.Ordinal);
+                return string.Compare(GetComputationKey(x), GetComputationKey(y), StringComparison.Ordinal);
             }
         }
 
@@ -108,9 +125,16 @@ namespace Rhetos.Dom.DefaultConcepts
             get { return null; }
         }
 
-        private static string GetKey(IKeepSynchronizedMetadata ks)
+        private static string GetComputationKey(IKeepSynchronizedMetadata ks)
         {
             return ks.Source + "/" + ks.Target;
+        }
+
+        private static string GetComputationKey(SkipRecomputeOnDeployInfo info)
+        {
+            var source = info.EntityComputedFrom.Source;
+            var target = info.EntityComputedFrom.Target;
+            return $"{source.Module.Name}.{source.Name}/{target.Module.Name}.{target.Name}";
         }
     }
 }

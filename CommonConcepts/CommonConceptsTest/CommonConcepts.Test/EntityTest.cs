@@ -17,9 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Logging;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
@@ -355,6 +357,8 @@ namespace CommonConcepts.Test
         {
             using (var container = new RhetosTestContainer())
             {
+                var log = new List<string>();
+                container.AddLogMonitor(log, EventType.Info);
                 var repository = container.Resolve<Common.DomRepository>();
 
                 var pid1 = Guid.NewGuid();
@@ -372,17 +376,19 @@ namespace CommonConcepts.Test
                     "INSERT INTO TestEntity.BaseEntity (ID, Name) SELECT '" + pid1 + "', '1'",
                     "INSERT INTO TestEntity.BaseEntity (ID, Name) SELECT '" + pid2+ "', '2'",
                     "INSERT INTO TestEntity.BaseEntity (ID, Name) SELECT '" + pid3 + "', '3'",
-                    "INSERT INTO TestEntity.Child (ID, Name, ParentID) SELECT '" + cid11 + "', '11', '" + pid1 + "'",
-                    "INSERT INTO TestEntity.Child (ID, Name, ParentID) SELECT '" + cid12 + "', '12', '" + pid1 + "'",
-                    "INSERT INTO TestEntity.Child (ID, Name, ParentID) SELECT '" + cid21 + "', '21', '" + pid2 + "'",
-                    "INSERT INTO TestEntity.Child (ID, Name, ParentID) SELECT '" + cid31 + "', '31', '" + pid3 + "'",
+                    "INSERT INTO TestEntity.Child (ID, Name, ParentID) SELECT '" + cid11 + "', '1a', '" + pid1 + "'",
+                    "INSERT INTO TestEntity.Child (ID, Name, ParentID) SELECT '" + cid12 + "', '1b', '" + pid1 + "'",
+                    "INSERT INTO TestEntity.Child (ID, Name, ParentID) SELECT '" + cid21 + "', '2a', '" + pid2 + "'",
+                    "INSERT INTO TestEntity.Child (ID, Name, ParentID) SELECT '" + cid31 + "', '3a', '" + pid3 + "'",
                 });
 
-                Assert.AreEqual("11, 12, 21, 31", TestUtility.DumpSorted(repository.TestEntity.Child.Query(), item => item.Name));
+                Assert.AreEqual("1a, 1b, 2a, 3a", TestUtility.DumpSorted(repository.TestEntity.Child.Query(), item => item.Name));
 
+                log.Clear();
                 repository.TestEntity.BaseEntity.Delete(new [] { new TestEntity.BaseEntity { ID = pid1 }, new TestEntity.BaseEntity { ID = pid2 } });
 
-                Assert.AreEqual("31", TestUtility.DumpSorted(repository.TestEntity.Child.Query(), item => item.Name));
+                Assert.AreEqual("3a", TestUtility.DumpSorted(repository.TestEntity.Child.Query(), item => item.Name));
+                Assert.AreEqual("[Info] Child.Deletions: 1a, 1b, 2a.", TestUtility.Dump(log), "Deletion of detail entity should be done through the object model (not just deleted in database by cascade delete).");
             }
         }
 

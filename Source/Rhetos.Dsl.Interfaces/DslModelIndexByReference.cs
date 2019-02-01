@@ -94,7 +94,9 @@ namespace Rhetos.Dsl
         private readonly ConceptsIndex _conceptsIndex = new ConceptsIndex();
 
         /// <summary>
-        /// The <see cref="Get"/> method returns all previously registered derivations or implementations (see <see cref="Add"/> method) of the given base class or an index, including the supertype itself (if registered).
+        /// The <see cref="MultiDictionary{TKey,TValue}.Get"/> method returns all previously registered derivations
+        /// or implementations (by <see cref="Add"/>) of the given base class or an index,
+        /// including the supertype itself (if registered).
         /// The supertype may be an interface or a class, except the <see cref="Object"/> type.
         /// </summary>
         private class Subtypes : MultiDictionary<Type, Type>

@@ -399,6 +399,25 @@ Module TestDataStructure
 
 		RepositoryUses '_logProvider' 'Rhetos.Logging.ILogProvider, Rhetos.Logging.Interfaces';
 	}
+
+	Entity TestMethod
+	{
+		ShortString Name;
+
+		RepositoryMember TestMethod
+			'public IQueryable<Common.Queryable.TestDataStructure_TestMethod> TestMethod()
+			{
+				return this.Query().Where(x => x.Name == "test");
+			}';
+
+		FilterBy Limit5 '(repository, parameter) =>
+			{
+				return TestMethod().Take(5).ToArray();
+			}
+		';
+	}
+
+	Parameter Limit5;
 }
 
 Module TestQueryable

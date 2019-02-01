@@ -40,10 +40,23 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public IEnumerable<IConceptInfo> CreateNewConcepts(SqlDependsOnDataStructureInfo conceptInfo, IDslModel existingConcepts)
         {
-            return existingConcepts.FindByReference<PropertyInfo>(p => p.DataStructure, conceptInfo.DependsOn)
-                .Where(p => p != conceptInfo.Dependent)
-                .Select(p => new SqlDependsOnPropertyInfo { Dependent = conceptInfo.Dependent, DependsOn = p })
-                .ToList();
+            var newConcepts = new List<IConceptInfo>();
+
+            if (conceptInfo.DependsOn is PolymorphicInfo)
+            {
+                newConcepts.Add(new SqlDependsOnSqlObjectInfo {
+                    Dependent = conceptInfo.Dependent,
+                    DependsOn = ((PolymorphicInfo)conceptInfo.DependsOn).GetUnionViewPrototype()
+                });
+            }
+
+            newConcepts.AddRange(
+                existingConcepts.FindByReference<PropertyInfo>(p => p.DataStructure, conceptInfo.DependsOn)
+                    .Where(p => p != conceptInfo.Dependent)
+                    .Select(p => new SqlDependsOnPropertyInfo { Dependent = conceptInfo.Dependent, DependsOn = p })
+                    .ToList());
+
+            return newConcepts;
         }
     }
 }

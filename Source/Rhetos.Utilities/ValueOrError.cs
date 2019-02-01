@@ -111,7 +111,7 @@ namespace Rhetos.Utilities
 
     /// <summary>
     /// This is a helper for returning an error without specifying a generic type.
-    /// It will be implicitly converted to a generic ValueOrError<> class.
+    /// It will be implicitly converted to the generic <see cref="ValueOrError{TNew}"/> class.
     /// </summary>
     public class ValueOrError : IValueOrError
     {

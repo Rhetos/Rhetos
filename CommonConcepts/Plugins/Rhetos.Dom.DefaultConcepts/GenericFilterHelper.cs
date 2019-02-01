@@ -497,11 +497,7 @@ namespace Rhetos.Dom.DefaultConcepts
             if (string.IsNullOrEmpty(filterName))
                 throw new ArgumentNullException("filterName");
 
-            Type filterType = null;
-
-            filterType = _domainObjectModel.GetType(filterName);
-
-            filterType = filterType ?? Type.GetType(filterName);
+            Type filterType = _domainObjectModel.GetType(filterName) ?? Type.GetType(filterName);
 
             if (filterType == null)
                 throw new ClientException(string.Format("Unknown filter type '{0}'.", filterName));

@@ -48,18 +48,16 @@ namespace Rhetos.Security
         #endregion
 
         private readonly ILogger _logger;
-        private readonly ILogger _performanceLogger;
         private readonly IWindowsSecurity _windowsSecurity;
-        private Lazy<bool> _isUserRecognized;
+        private readonly Lazy<bool> _isUserRecognized;
         /// <summary>Format: "domain\user"</summary>
-        private Lazy<string> _userName;
-        private Lazy<string> _workstation;
-        private Lazy<WindowsIdentity> _windowsIdentity;
+        private readonly Lazy<string> _userName;
+        private readonly Lazy<string> _workstation;
+        private readonly Lazy<WindowsIdentity> _windowsIdentity;
 
         public WcfWindowsUserInfo(ILogProvider logProvider, IWindowsSecurity windowsSecurity)
         {
             _logger = logProvider.GetLogger(GetType().Name);
-            _performanceLogger = logProvider.GetLogger("Performance");
 
             _isUserRecognized = new Lazy<bool>(() => InitIsUserRecognized());
             _userName = new Lazy<string>(() => InitUserName());

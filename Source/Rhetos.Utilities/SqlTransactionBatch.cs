@@ -24,8 +24,8 @@ using System.Text;
 
 namespace Rhetos.Utilities
 {
-    [Obsolete("Use " + nameof(SqlTransactionBatches) + " instead.")]
     /// <summary>SQL scripts are grouped into batches to handle different transaction usage.</summary>
+    [Obsolete("Use " + nameof(SqlTransactionBatches) + " instead.")]
     public class SqlTransactionBatch : List<string>
     {
         public SqlTransactionBatch(List<string> source) : base(source)

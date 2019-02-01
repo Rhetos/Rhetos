@@ -17,38 +17,29 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
 using System.ComponentModel.Composition;
-using Rhetos.Compiler;
 using Rhetos.Extensibility;
 using Rhetos.Dsl;
+using Rhetos.Compiler;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(SaveMethodInitializationInfo))]
-    public class SaveMethodInitializationCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(RepositoryMemberInfo))]
+    public class RepositoryMemberCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (SaveMethodInitializationInfo)conceptInfo;
-            codeBuilder.InsertCode(GetSnippet(info), WritableOrmDataStructureCodeGenerator.InitializationTag, info.SaveMethod.Entity);
+            RepositoryMemberInfo info = (RepositoryMemberInfo)conceptInfo;
+            codeBuilder.InsertCode(GetSnippet(info), RepositoryHelper.RepositoryMembers, info.DataStructure);
         }
 
-        private string GetSnippet(SaveMethodInitializationInfo info)
+        private string GetSnippet(RepositoryMemberInfo info)
         {
-            return string.Format(
-            @"{{ // {0}
-                {1}
-            }}
+            return $@"{info.Implementation.Trim()}
 
-            ",
-                info.RuleName, info.CsCodeSnippet.Trim());
+        ";
         }
     }
 }

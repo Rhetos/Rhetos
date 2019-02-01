@@ -158,4 +158,19 @@
 
             RowPermissions { InheritFromBase; }
         }
+
+        SqlQueryable DocumentInfo2
+            "SELECT
+                ID,
+                Title2 = Title + '_2',
+                Division2ID = DivisionID
+            FROM
+                DemoRowPermissions2.Document"
+        {
+            Extends DemoRowPermissions2.Document;
+            ShortString Title2;
+            Reference Division2 DemoRowPermissions2.Division { SamePropertyValue 'Base.Division'; }
+
+            RowPermissions { InheritFromBase; }
+        }        
     }

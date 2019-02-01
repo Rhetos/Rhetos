@@ -17,18 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Utilities;
-using Rhetos.DatabaseGenerator;
 using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Dsl;
-using System.Globalization;
-using Rhetos.Compiler;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
@@ -36,19 +32,31 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(UniqueReferenceCascadeDeleteInfo))]
     public class UniqueReferenceCascadeDeleteDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
-        public string CreateDatabaseStructure(IConceptInfo conceptInfo)
+        private readonly Lazy<bool> _legacyCascadeDeleteInDatabase;
+
+        public UniqueReferenceCascadeDeleteDatabaseDefinition(IConfiguration configuration)
         {
-            return null;
+            _legacyCascadeDeleteInDatabase = configuration.GetBool(ReferenceCascadeDeleteDatabaseDefinition.LegacyCascadeDeleteInDatabaseOption, true);
         }
 
-        public void ExtendDatabaseStructure(IConceptInfo conceptInfo, ICodeBuilder codeBuilder, out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
+        public void ExtendDatabaseStructure(
+            IConceptInfo conceptInfo, ICodeBuilder codeBuilder,
+            out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
         {
+            // Cascade delete FK in database is not needed because the server application will explicitly delete the referencing data (to ensure server-side validations and recomputations).
+            // Cascade delete in database is just a legacy feature, a convenience for development and testing.
+            // It is turned off by default because if a record is deleted by cascade delete directly in the database, then the business logic implemented in application layer will not be executed.
             var info = (UniqueReferenceCascadeDeleteInfo) conceptInfo;
 
-            if (UniqueReferenceDatabaseDefinition.ShouldCreateConstraint(info.UniqueReference))
+            if (_legacyCascadeDeleteInDatabase.Value && UniqueReferenceDatabaseDefinition.ShouldCreateConstraint(info.UniqueReference))
                 codeBuilder.InsertCode("ON DELETE CASCADE ", UniqueReferenceDatabaseDefinition.ForeignKeyConstraintOptionsTag, info.UniqueReference);
 
             createdDependencies = null;
+        }
+
+        public string CreateDatabaseStructure(IConceptInfo conceptInfo)
+        {
+            return null;
         }
 
         public string RemoveDatabaseStructure(IConceptInfo conceptInfo)

@@ -114,7 +114,7 @@ namespace Rhetos.Utilities.Test
                     TestUtility.AssertContains(error, "null");
                 else if (name == "")
                     TestUtility.AssertContains(error, "empty");
-                else if (name == "")
+                else
                     TestUtility.AssertContains(error, new[] { name, "not valid" });
             }
         }
@@ -126,7 +126,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void GetTypeHierarchyTest()
         {
-            object o = new DerivedClass();
+            object o = new DerivedClass { Name = "abc" };
             string expected = "BaseClass-DerivedClass";
             string actual = string.Join("-", CsUtility.GetClassHierarchy(o.GetType()).Select(type => type.Name));
             Assert.AreEqual(expected, actual);

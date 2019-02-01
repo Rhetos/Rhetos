@@ -24,6 +24,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json;
+using System.IO;
 
 namespace Rhetos.Dsl
 {
@@ -34,39 +36,37 @@ namespace Rhetos.Dsl
     }
 
     /// <summary>
-    /// Reads from database the recommended order of macro concepts evaluation.
+    /// Reads from file the recommended order of macro concepts evaluation.
     /// The order is optimized to reduce number of iteration in macro evaluation.
     /// </summary>
     public class MacroOrderRepository : IMacroOrderRepository
     {
-        ISqlExecuter _sqlExecuter;
         ILogger _loadOrderLogger;
         ILogger _saveOrderLogger;
 
-        public MacroOrderRepository(ISqlExecuter sqlExecuter, ILogProvider logProvider)
+        public MacroOrderRepository(ILogProvider logProvider)
         {
-            _sqlExecuter = sqlExecuter;
             _loadOrderLogger = logProvider.GetLogger("MacroRepositoryLoad");
             _saveOrderLogger = logProvider.GetLogger("MacroRepositorySave");
         }
+
+        private const string MacroOrderFileName = "MacroOrder.json";
 
         /// <summary>
         /// Dictionary's Key is EvaluatorName, Value is EvaluatorOrder.
         /// </summary>
         public List<MacroOrder> Load()
         {
-            string sql = "SELECT EvaluatorName, EvaluatorOrder FROM Rhetos.MacroEvaluatorOrder";
-            var macroOrders = new List<MacroOrder>();
-            _sqlExecuter.ExecuteReader(sql, reader =>
-                {
-                    macroOrders.Add(new MacroOrder
-                    {
-                        EvaluatorName = reader.GetString(0),
-                        EvaluatorOrder = reader.GetDecimal(1)
-                    });
-                });
-            _loadOrderLogger.Trace(() => "\r\n" + ReportMacroOrders(macroOrders));
-            return macroOrders;
+            var cahceFilePath = Path.Combine(Paths.GeneratedFilesCacheFolder, Path.GetFileNameWithoutExtension(MacroOrderFileName), MacroOrderFileName);
+            if (File.Exists(cahceFilePath))
+            {
+                var serializedConcepts = File.ReadAllText(cahceFilePath);
+                return JsonConvert.DeserializeObject<List<MacroOrder>>(serializedConcepts);
+            }
+            else
+            {
+                return new List<MacroOrder>();
+            }
         }
 
         private string ReportMacroOrders(IEnumerable<MacroOrder> macroOrders)
@@ -79,21 +79,9 @@ namespace Rhetos.Dsl
         /// <param name="macroOrders">Tuple's Item1 is EvaluatorName, Item2 is EvaluatorOrder.</param>
         public void Save(IEnumerable<MacroOrder> macroOrders)
         {
-            _saveOrderLogger.Trace(() => "\r\n" + ReportMacroOrders(macroOrders));
-            string sql = string.Join("\r\n", macroOrders.Select(GetSaveSql));
-            _sqlExecuter.ExecuteSql(new[] { sql });
-        }
-
-        private string GetSaveSql(MacroOrder macroOrder)
-        {
-            return string.Format(
-@"IF NOT EXISTS (SELECT * FROM Rhetos.MacroEvaluatorOrder WHERE EvaluatorName = {0})
-	INSERT INTO Rhetos.MacroEvaluatorOrder (EvaluatorName, EvaluatorOrder) VALUES (LEFT({0}, 256), {1});
-ELSE
-	UPDATE Rhetos.MacroEvaluatorOrder SET EvaluatorOrder = {1} WHERE EvaluatorName = {0};
-",
-                SqlUtility.QuoteText(macroOrder.EvaluatorName),
-                macroOrder.EvaluatorOrder.ToString(CultureInfo.InvariantCulture));
+            string serializedConcepts = JsonConvert.SerializeObject(macroOrders);
+            string path = Path.Combine(Paths.GeneratedFolder, MacroOrderFileName);
+            File.WriteAllText(path, serializedConcepts, Encoding.UTF8);
         }
     }
 }

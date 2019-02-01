@@ -53,6 +53,8 @@
     <CodeContractsRuntimeCheckingLevel>Full</CodeContractsRuntimeCheckingLevel>
     <CodeContractsReferenceAssembly>%28none%29</CodeContractsReferenceAssembly>
     <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Debug\Rhetos.Dsl.Interfaces.xml</DocumentationFile>
+    <NoWarn>1591,1573</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -62,6 +64,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Release\Rhetos.Dsl.Interfaces.xml</DocumentationFile>
+    <NoWarn>1591,1573</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'CodeAnalysis|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>

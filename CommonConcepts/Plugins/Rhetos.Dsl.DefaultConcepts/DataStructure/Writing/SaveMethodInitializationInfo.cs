@@ -47,7 +47,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         ///     updatedNew (array of new items - update),
         ///     deletedIds (array of items to be deleted).
         /// In current state old items are not loaded. These are bare data provided to save method.
-        /// See <see cref="WritableOrmDataStructureCodeGenerator.InitializationTag">WritableOrmDataStructureCodeGenerator.InitializationTag</see> for more info.
+        /// See WritableOrmDataStructureCodeGenerator.InitializationTag for more info.
         /// </summary>
         public string CsCodeSnippet { get; set; }
     }

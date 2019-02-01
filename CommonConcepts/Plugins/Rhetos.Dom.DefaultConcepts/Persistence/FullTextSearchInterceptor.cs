@@ -70,7 +70,8 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
         {
             if (cmd.CommandText.Contains(DatabaseExtensionFunctions.InterceptFullTextSearchFunction))
             {
-                var parseFtsQuery = new Regex(@"\(\[Rhetos\]\.\[" + DatabaseExtensionFunctions.InterceptFullTextSearchFunction + @"\]\((?<itemId>.+?), (?<pattern>.*?), (?<tableName>.*?), (?<searchColumns>.*?)\)\) = 1", RegexOptions.Singleline);
+                var parseFtsQuery = new Regex(@"\(\[Rhetos\]\.\[" + DatabaseExtensionFunctions.InterceptFullTextSearchFunction + @"\]\((?<itemId>.+?), (?<pattern>.*?), (?<tableName>.*?), (?<searchColumns>.*?)(, (?<rankTop>[^']*?))?\)\) = 1", RegexOptions.Singleline);
+                // Hack: rankTop above is detected as 'expression without quotes' to help with disambiguation with searchColumns when there are multiple comma-separated columns.
 
                 var ftsQueries = parseFtsQuery.Matches(cmd.CommandText).Cast<Match>();
 
@@ -79,6 +80,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                 var tableNameFormat = new Regex(@"^N'(?<unquoted>(\[\w+\]|\w+)(\.(\[\w+\]|\w+))+)'$", RegexOptions.Singleline);
                 var searchColumnsFormat = new Regex(@"^N'(?<unquoted>(\w+|\(\w+(\s*,\s*\w+)*\)|\*))'$", RegexOptions.Singleline);
                 var patternFormat = new Regex(@"^(\@\w+|N'([^']*('')*)*')$", RegexOptions.Singleline);
+                var rankFormat = new Regex(@"^(\@\w+|-?\d+|)$", RegexOptions.Singleline);
 
                 foreach (var ftsQuery in ftsQueries.OrderByDescending(m => m.Index))
                 {
@@ -90,6 +92,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                     string tableName = ftsQuery.Groups["tableName"].Value;
                     string searchColumns = ftsQuery.Groups["searchColumns"].Value;
                     string pattern = ftsQuery.Groups["pattern"].Value;
+                    string rankTop = ftsQuery.Groups["rankTop"].Value;
 
                     if (pattern == "CAST(NULL AS varchar(1))")
                         throw new FrameworkException("Invalid FTS search pattern format. Search pattern must not be NULL.");
@@ -108,6 +111,9 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                         new { Parameter = "pattern", GeneratedSql = pattern, Format = patternFormat,
                             InfoSql = "an SQL query parameter or a quoted string without single-quote characters",
                             InfoLinq = "a simple string variable, not an expression," }, // Not mentioning string literals to simplify the message.
+                        new { Parameter = "rankTop", GeneratedSql = rankTop, Format = rankFormat,
+                            InfoSql = "an SQL query parameter or integer",
+                            InfoLinq = "a simple integer variable, not an expression," }, // Not mentioning int literals to simplify the message.
                     };
 
                     foreach (var test in validations)
@@ -116,11 +122,10 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                                 + " Please use " + test.InfoLinq + " for the '" + test.Parameter + "' parameter of the FullTextSeach method."
                                 + " The resulting SQL expression (" + test.GeneratedSql + ") should be " + test.InfoSql + ".");
 
-                    string ftsSql = string.Format("{0} IN (SELECT [KEY] FROM CONTAINSTABLE({1}, {2}, {3}))",
-                        itemId,
-                        tableNameFormat.Match(tableName).Groups["unquoted"].Value,
-                        searchColumnsFormat.Match(searchColumns).Groups["unquoted"].Value,
-                        pattern);
+                    string tableNameUnquoted = tableNameFormat.Match(tableName).Groups["unquoted"].Value;
+                    string searchColumnsUnquoted = searchColumnsFormat.Match(searchColumns).Groups["unquoted"].Value;
+                    string optionalRankTop = !string.IsNullOrEmpty(rankTop) ? $", {rankTop}" : "";
+                    string ftsSql = $"{itemId} IN (SELECT [KEY] FROM CONTAINSTABLE({tableNameUnquoted}, {searchColumnsUnquoted}, {pattern}{optionalRankTop}))";
 
                     cmd.CommandText =
                         cmd.CommandText.Substring(0, ftsQuery.Index)
