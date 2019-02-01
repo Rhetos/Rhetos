@@ -24,11 +24,11 @@ namespace Rhetos.Dom.DefaultConcepts
         private string GetSnippet(OldDataLoadedInfo info)
         {
             return string.Format(
-                @"{{ // {0}
-                    {1}
-                }}
+            @"{{ // {0}
+                {1}
+            }}
 
-                ",
+            ",
                 info.RuleName, info.CsCodeSnippet.Trim());
         }
     }
