@@ -131,8 +131,10 @@
     <Compile Include="Computations\KeepSynchronizedOnChangedItemsCodeGenerator.cs" />
     <Compile Include="Computations\ComputeForNewBaseItemsCodeGenerator.cs" />
     <Compile Include="Computations\QueryableExtensionCodeGenerator.cs" />
+    <Compile Include="DataStructure\Writing\ArgumentValidationCodeGenerator.cs" />
     <Compile Include="DataStructure\Writing\LoadOldItemsTakeCodeGenerator.cs" />
     <Compile Include="DataStructure\Writing\LoadOldItemsCodeGenerator.cs" />
+    <Compile Include="DataStructure\Writing\OldDataLoadedCodeGenerator.cs" />
     <Compile Include="DataStructure\Writing\OnSaveUpdateCodeGenerator.cs" />
     <Compile Include="DataStructure\Writing\SaveMethodAfterSaveCodeGenerator.cs" />
     <Compile Include="DataStructure\Writing\SaveMethodInitializationCodeGenerator.cs" />
