@@ -17,6 +17,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         /// <summary>
         /// Unique name of this business rule.
         /// </summary>
+        [ConceptKey]
         public string RuleName { get; set; }
 
         /// <summary>
