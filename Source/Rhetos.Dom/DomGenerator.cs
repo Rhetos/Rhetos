@@ -18,12 +18,7 @@
 */
 
 using System;
-using System.CodeDom.Compiler;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
-using Microsoft.CSharp;
 using Rhetos.Compiler;
 using System.Reflection;
 using Rhetos.Extensibility;
@@ -78,17 +73,10 @@ namespace Rhetos.Dom
             _log.GetLogger("Domain Object Model references").Trace(() => string.Join(", ", assemblySource.RegisteredReferences));
             _log.GetLogger("Domain Object Model source").Trace(assemblySource.GeneratedCode);
 
-            CompilerParameters parameters = new CompilerParameters
-            {
-                IncludeDebugInformation = true,
-                CompilerOptions = _domGeneratorOptions.Debug ? "" : "/optimize"
-            };
-
             _assemblies = new List<Assembly>();
             foreach (var sourcePart in SplitAssemblySource(assemblySource))
             {
-                parameters.OutputAssembly = sourcePart.AssemblyFileName;
-                _assemblies.Add(_assemblyGenerator.Generate(sourcePart.AssemblySource, parameters));
+                _assemblies.Add(_assemblyGenerator.Generate(sourcePart.AssemblySource, sourcePart.AssemblyFileName));
             }
         }
 

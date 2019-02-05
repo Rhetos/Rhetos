@@ -17,13 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
-using System.Reflection;
 
 namespace Rhetos.Compiler
 {
-    public interface IAssemblyGenerator
+    public class ManifestResource
     {
-        Assembly Generate(IAssemblySource assemblySource, string outputAssembly, List<ManifestResource> embeddedResources = null);
+        public string Name { get; set; }
+        public string Path { get; set; }
+        public bool IsPublic { get; set; } = true;
     }
 }
