@@ -1,6 +1,6 @@
 ﻿# Rhetos release notes
 
-## 2.11.0 (TO BE RELEASES)
+## 2.11.0 (2019-01-31)
 
 ### New features
 
