@@ -1,5 +1,11 @@
 ﻿# Rhetos release notes
 
+## 3.0.0 (TO BE RELEASED)
+
+### Breaking changes
+
+* Upgraded from .NET Framework 4.5.1 to .NET Framework 4.7.2.
+
 ## 2.11.0 (2019-01-31)
 
 ### New features
