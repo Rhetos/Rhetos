@@ -46,7 +46,7 @@ namespace CommonConcepts.Test
                     () => repository.TestAction.InsertAndThrowException.Execute(new TestAction.InsertAndThrowException { Message = "abcd", ItmemID = item2ID }),
                     "abcd");
                 var exceptionOrigin = exception.StackTrace.Substring(0, exception.StackTrace.IndexOf(Environment.NewLine));
-                Assert.IsTrue(exceptionOrigin.Contains("InsertAndThrowException_Repository.<Execute>b__"));
+                TestUtility.AssertContains(exceptionOrigin, new[] { "InsertAndThrowException_Repository", "Execute", "InsertAndThrowException parameters" });
             }
 
             using (var container = new RhetosTestContainer())
