@@ -113,8 +113,7 @@ namespace Rhetos.Compiler
                     SaveGeneratedFile(dllStream, outputAssembly);
                     SaveGeneratedFile(pdbStream, Path.ChangeExtension(outputAssembly, ".pdb"));
 
-                    dllStream.Seek(0, SeekOrigin.Begin);
-                    generatedAssembly = Assembly.Load(dllStream.ToArray());
+                    generatedAssembly = Assembly.LoadFrom(outputAssembly);
 
                     FailOnTypeLoadErrors(generatedAssembly, outputAssembly);
                     ReportWarnings(emitResult, outputAssembly);
