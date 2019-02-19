@@ -90,7 +90,7 @@ namespace Rhetos.Processing
             _commandsResultLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionResultLogEntry { ExecutionId = executionId, Result = result }));
 
             // On error, the CommandResults will contain partial results of the commands executed before the failed one, and should be cleared.
-            if (result.Success == false)
+            if (!result.Success)
                 result.CommandResults = null;
 
             return result;
