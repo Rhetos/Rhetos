@@ -30,6 +30,9 @@ using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis.Emit;
 using Rhetos.Dom;
+using Microsoft.CodeAnalysis.Text;
+using System.CodeDom.Compiler;
+using System.Collections.Specialized;
 
 namespace Rhetos.Compiler
 {
@@ -51,7 +54,7 @@ namespace Rhetos.Compiler
             _domGeneratorOptions = domGeneratorOptions;
         }
 
-        public Assembly Generate(IAssemblySource assemblySource, string outputAssembly, List<ManifestResource> manifestResources = null)
+        public Assembly Generate(IAssemblySource assemblySource, string outputAssembly, IEnumerable<ManifestResource> manifestResources = null)
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -211,6 +214,15 @@ namespace Rhetos.Compiler
 
                 _logger.Info(report.ToString());
             }
+        }
+
+        [Obsolete("See the description in IAssemblyGenerator.")]
+        public Assembly Generate(IAssemblySource assemblySource, CompilerParameters compilerParameters)
+        {
+            var resources = compilerParameters.EmbeddedResources.Cast<string>()
+                .Select(path => new ManifestResource { Name = Path.GetFileName(path), Path = path, IsPublic = true })
+                .ToList();
+            return Generate(assemblySource, compilerParameters.OutputAssembly, resources);
         }
     }
 }
