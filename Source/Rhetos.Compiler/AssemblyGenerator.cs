@@ -93,28 +93,44 @@ namespace Rhetos.Compiler
                 var references = assemblySource.RegisteredReferences.Select(reference =>
                                     MetadataReference.CreateFromFile(reference)).ToList();
 
-                var assemblyName = dllName.Replace(".dll", "");
+                var assemblyName = GetAssemblyName(dllName);
                 var assemblyCSharpCompilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
                          assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default,
                          moduleName: assemblyName,
                          optimizationLevel: _domGeneratorOptions.Debug ? OptimizationLevel.Debug : OptimizationLevel.Release);
 
-                var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
+                var buffer = Encoding.UTF8.GetBytes(sourceCode);
+                var sourceText = SourceText.From(buffer, buffer.Length, Encoding.UTF8, canBeEmbedded: true);
+                var syntaxTree = CSharpSyntaxTree.ParseText(
+                    //sourceCode, 
+                    sourceText, // TODO: Ako ne treba sourceText, možda mogu koristiti stari sourceCode.
+                    null, sourceFile/*, Encoding.UTF8*/);
 
-                CSharpCompilation compilation = CSharpCompilation.Create(
+                var compilation = CSharpCompilation.Create(
                     assemblyName, new[] { syntaxTree }, references, assemblyCSharpCompilationOptions);
 
                 using (var dllStream = new MemoryStream())
                 using (var pdbStream = new MemoryStream())
                 {
-                    var emitResult = compilation.Emit(dllStream, pdbStream, manifestResources:
-                            manifestResources?.Select(x => new ResourceDescription(x.Name, () => File.OpenRead(x.Path), x.IsPublic)));
+                    var pdbPath = Path.ChangeExtension(outputAssembly, ".pdb");
+
+                    var emitResult = compilation.Emit(
+                        dllStream,
+                        pdbStream,
+                        manifestResources: manifestResources?.Select(x => new ResourceDescription(x.Name, () => File.OpenRead(x.Path), x.IsPublic)),
+
+                        // TODO: Provjeriti jel embeddedTexts potreban.
+                        embeddedTexts: new List<EmbeddedText> { EmbeddedText.FromSource(sourceFile, sourceText) },
+
+                        options: new EmitOptions(
+                            debugInformationFormat: DebugInformationFormat.Pdb, // TODO: Probati vratiti PortablePdb
+                            pdbFilePath: pdbPath));
                     _performanceLogger.Write(stopwatch, $"AssemblyGenerator: CSharpCompilation.Create ({dllName}).");
 
                     FailOnCompilerErrors(emitResult, outputAssembly);
 
                     SaveGeneratedFile(dllStream, outputAssembly);
-                    SaveGeneratedFile(pdbStream, Path.ChangeExtension(outputAssembly, ".pdb"));
+                    SaveGeneratedFile(pdbStream, pdbPath);
 
                     generatedAssembly = Assembly.LoadFrom(outputAssembly);
 
@@ -122,11 +138,17 @@ namespace Rhetos.Compiler
                     ReportWarnings(emitResult, outputAssembly);
                     _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({dllName}).");
                 }
-
-                _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({dllName}).");
             }
 
             return generatedAssembly;
+        }
+
+        private static string GetAssemblyName(string dllName)
+        {
+            const string extension = ".dll";
+            if (!dllName.EndsWith(extension))
+                throw new FrameworkException($"DLL name '{dllName}' does not end with an extension '{extension}'.");
+            return dllName.Substring(0, dllName.Length - extension.Length);
         }
 
         private void SaveGeneratedFile(MemoryStream inputStream, string filePath)
@@ -150,17 +172,16 @@ namespace Rhetos.Compiler
                 return;
 
             var report = new StringBuilder();
-            var errorsCount = errors.Count();
-            report.Append($"{errorsCount} error(s) while compiling '{Path.GetFileName(sourcePath)}'");
+            report.Append($"{errors.Count} error(s) while compiling '{Path.GetFileName(sourcePath)}'");
 
-            if (errorsCount > _errorReportLimit.Value)
+            if (errors.Count > _errorReportLimit.Value)
                 report.AppendLine($". The first {_errorReportLimit.Value} errors:");
             else
                 report.AppendLine(":");
 
             report.Append(string.Join("\n", errors.Take(_errorReportLimit.Value).Select(error => error.ToString())));
 
-            if (errorsCount > _errorReportLimit.Value)
+            if (errors.Count > _errorReportLimit.Value)
             {
                 report.AppendLine();
                 report.AppendLine("...");
