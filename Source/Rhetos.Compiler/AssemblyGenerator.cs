@@ -63,6 +63,9 @@ namespace Rhetos.Compiler
             // Save source file and it's hash value:
             string sourceCode = // The compiler parameters are included in the source, in order to invalidate the assembly cache when the parameters are changed.
                 string.Concat(assemblySource.RegisteredReferences.Select(reference => $"// Reference: {reference}\r\n"))
+                + (manifestResources != null
+                    ? string.Concat(manifestResources.Select(resource => $"// Resource: \"{resource.Name}\", {resource.Path}\r\n"))
+                    : "")
                 + $"// DomGeneratorOptions.Debug = \"{_domGeneratorOptions.Debug}\"\r\n\r\n"
                 + assemblySource.GeneratedCode;
 
@@ -90,44 +93,28 @@ namespace Rhetos.Compiler
             {
                 _logger.Trace(() => "Compiling assembly: " + dllName + ".");
 
-                var references = assemblySource.RegisteredReferences.Select(reference =>
-                                    MetadataReference.CreateFromFile(reference)).ToList();
+                var references = assemblySource.RegisteredReferences
+                    .Select(reference => MetadataReference.CreateFromFile(reference)).ToList();
 
                 var assemblyName = GetAssemblyName(dllName);
-                var assemblyCSharpCompilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
-                         assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default,
-                         moduleName: assemblyName,
-                         // platform: Platform.AnyCpu, // compiler error: You must add a reference to assembly 'mscorlib, Version=2.0.5.0 ...' (we are referencing mscorlib, Version=4.0.0.0)
-                         optimizationLevel: _domGeneratorOptions.Debug ? OptimizationLevel.Debug : OptimizationLevel.Release);
+                var assemblyCSharpCompilationOptions = new CSharpCompilationOptions(
+                    OutputKind.DynamicallyLinkedLibrary,
+                    assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default,
+                    moduleName: assemblyName,
+                    optimizationLevel: _domGeneratorOptions.Debug ? OptimizationLevel.Debug : OptimizationLevel.Release);
 
-                var encoding = new UTF8Encoding(true); // Encoding.UTF8;
-                var buffer = encoding.GetBytes(sourceCode);
-                var sourceText = SourceText.From(buffer, buffer.Length, encoding, canBeEmbedded: true);
-                var syntaxTree = CSharpSyntaxTree.ParseText(
-                    //sourceCode, null, sourcePath, encoding);
-                    sourceText, new CSharpParseOptions(), sourcePath); // TODO: Ako ne treba sourceText, možda mogu koristiti stari sourceCode.
-                var syntaxRootNode = syntaxTree.GetRoot() as CSharpSyntaxNode;
-                var encodedsyntaxTree = CSharpSyntaxTree.Create(syntaxRootNode, null, sourcePath, encoding); // TODO: Jel ovo riješava problem
-
-                var compilation = CSharpCompilation.Create(
-                    assemblyName, new[] { encodedsyntaxTree }, references, assemblyCSharpCompilationOptions);
+                var encoding = new UTF8Encoding(true); // This encoding is used when saving the source file.
+                var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode, null, sourcePath, encoding);
+                var compilation = CSharpCompilation.Create(assemblyName, new[] { syntaxTree }, references, assemblyCSharpCompilationOptions);
 
                 using (var dllStream = new MemoryStream())
                 using (var pdbStream = new MemoryStream())
                 {
                     var pdbPath = Path.ChangeExtension(outputAssemblyPath, ".pdb");
 
-                    var emitResult = compilation.Emit(
-                        dllStream,
-                        pdbStream,
-                        manifestResources: manifestResources?.Select(x => new ResourceDescription(x.Name, () => File.OpenRead(x.Path), x.IsPublic)),
-
-                        // TODO: Provjeriti jel embeddedTexts potreban.
-                        /////embeddedTexts: new List<EmbeddedText> { EmbeddedText.FromSource(sourcePath, sourceText) },
-
-                        options: new EmitOptions(
-                            debugInformationFormat: DebugInformationFormat.Pdb, // TODO: Probati vratiti PortablePdb
-                            pdbFilePath: pdbPath));
+                    var resources = manifestResources?.Select(x => new ResourceDescription(x.Name, () => File.OpenRead(x.Path), x.IsPublic));
+                    var options = new EmitOptions(debugInformationFormat: DebugInformationFormat.PortablePdb, pdbFilePath: pdbPath);
+                    var emitResult = compilation.Emit(dllStream, pdbStream, manifestResources: resources, options: options);
                     _performanceLogger.Write(stopwatch, $"AssemblyGenerator: CSharpCompilation.Create ({dllName}).");
 
                     FailOnCompilerErrors(emitResult, outputAssemblyPath);
