@@ -26,7 +26,7 @@ namespace Rhetos.Compiler
 {
     public interface IAssemblyGenerator
     {
-        Assembly Generate(IAssemblySource assemblySource, string outputAssembly, IEnumerable<ManifestResource> manifestResources = null);
+        Assembly Generate(IAssemblySource assemblySource, string outputAssemblyPath, IEnumerable<ManifestResource> manifestResources = null);
 
         [Obsolete("The Generate method with CompilerParameters is no longer supported, options other then OutputAssembly are ignored. Use the IAssemblyGenerator.Generate method with the outputAssembly string parameter.")]
         Assembly Generate(IAssemblySource assemblySource, CompilerParameters compilerParameters);

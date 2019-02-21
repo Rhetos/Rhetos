@@ -54,11 +54,11 @@ namespace Rhetos.Compiler
             _domGeneratorOptions = domGeneratorOptions;
         }
 
-        public Assembly Generate(IAssemblySource assemblySource, string outputAssembly, IEnumerable<ManifestResource> manifestResources = null)
+        public Assembly Generate(IAssemblySource assemblySource, string outputAssemblyPath, IEnumerable<ManifestResource> manifestResources = null)
         {
             var stopwatch = Stopwatch.StartNew();
 
-            string dllName = Path.GetFileName(outputAssembly);
+            string dllName = Path.GetFileName(outputAssemblyPath);
 
             // Save source file and it's hash value:
             string sourceCode = // The compiler parameters are included in the source, in order to invalidate the assembly cache when the parameters are changed.
@@ -66,24 +66,24 @@ namespace Rhetos.Compiler
                 + $"// DomGeneratorOptions.Debug = \"{_domGeneratorOptions.Debug}\"\r\n\r\n"
                 + assemblySource.GeneratedCode;
 
-            string sourceFile = Path.GetFullPath(Path.ChangeExtension(outputAssembly, ".cs"));
-            var sourceHash = _filesCache.SaveSourceAndHash(sourceFile, sourceCode);
+            string sourcePath = Path.GetFullPath(Path.ChangeExtension(outputAssemblyPath, ".cs"));
+            var sourceHash = _filesCache.SaveSourceAndHash(sourcePath, sourceCode);
             _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Save source and hash ({dllName}).");
 
             // Compile assembly or get from cache:
             Assembly generatedAssembly;
 
-            var filesFromCache = _filesCache.RestoreCachedFiles(sourceFile, sourceHash, Path.GetDirectoryName(outputAssembly), new[] { ".dll", ".pdb" });
+            var filesFromCache = _filesCache.RestoreCachedFiles(sourcePath, sourceHash, Path.GetDirectoryName(outputAssemblyPath), new[] { ".dll", ".pdb" });
             if (filesFromCache != null)
             {
                 _logger.Trace(() => "Restoring assembly from cache: " + dllName + ".");
-                if (!File.Exists(outputAssembly))
+                if (!File.Exists(outputAssemblyPath))
                     throw new FrameworkException($"AssemblyGenerator: RestoreCachedFiles failed to create the assembly file ({dllName}).");
 
-                generatedAssembly = Assembly.LoadFrom(outputAssembly);
+                generatedAssembly = Assembly.LoadFrom(outputAssemblyPath);
                 _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Assembly from cache ({dllName}).");
 
-                FailOnTypeLoadErrors(generatedAssembly, outputAssembly);
+                FailOnTypeLoadErrors(generatedAssembly, outputAssemblyPath);
                 _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({dllName}).");
             }
             else
@@ -97,22 +97,25 @@ namespace Rhetos.Compiler
                 var assemblyCSharpCompilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
                          assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default,
                          moduleName: assemblyName,
+                         // platform: Platform.AnyCpu, // compiler error: You must add a reference to assembly 'mscorlib, Version=2.0.5.0 ...' (we are referencing mscorlib, Version=4.0.0.0)
                          optimizationLevel: _domGeneratorOptions.Debug ? OptimizationLevel.Debug : OptimizationLevel.Release);
 
-                var buffer = Encoding.UTF8.GetBytes(sourceCode);
-                var sourceText = SourceText.From(buffer, buffer.Length, Encoding.UTF8, canBeEmbedded: true);
+                var encoding = new UTF8Encoding(true); // Encoding.UTF8;
+                var buffer = encoding.GetBytes(sourceCode);
+                var sourceText = SourceText.From(buffer, buffer.Length, encoding, canBeEmbedded: true);
                 var syntaxTree = CSharpSyntaxTree.ParseText(
-                    //sourceCode, 
-                    sourceText, // TODO: Ako ne treba sourceText, možda mogu koristiti stari sourceCode.
-                    null, sourceFile/*, Encoding.UTF8*/);
+                    //sourceCode, null, sourcePath, encoding);
+                    sourceText, new CSharpParseOptions(), sourcePath); // TODO: Ako ne treba sourceText, možda mogu koristiti stari sourceCode.
+                var syntaxRootNode = syntaxTree.GetRoot() as CSharpSyntaxNode;
+                var encodedsyntaxTree = CSharpSyntaxTree.Create(syntaxRootNode, null, sourcePath, encoding); // TODO: Jel ovo riješava problem
 
                 var compilation = CSharpCompilation.Create(
-                    assemblyName, new[] { syntaxTree }, references, assemblyCSharpCompilationOptions);
+                    assemblyName, new[] { encodedsyntaxTree }, references, assemblyCSharpCompilationOptions);
 
                 using (var dllStream = new MemoryStream())
                 using (var pdbStream = new MemoryStream())
                 {
-                    var pdbPath = Path.ChangeExtension(outputAssembly, ".pdb");
+                    var pdbPath = Path.ChangeExtension(outputAssemblyPath, ".pdb");
 
                     var emitResult = compilation.Emit(
                         dllStream,
@@ -120,22 +123,22 @@ namespace Rhetos.Compiler
                         manifestResources: manifestResources?.Select(x => new ResourceDescription(x.Name, () => File.OpenRead(x.Path), x.IsPublic)),
 
                         // TODO: Provjeriti jel embeddedTexts potreban.
-                        embeddedTexts: new List<EmbeddedText> { EmbeddedText.FromSource(sourceFile, sourceText) },
+                        /////embeddedTexts: new List<EmbeddedText> { EmbeddedText.FromSource(sourcePath, sourceText) },
 
                         options: new EmitOptions(
                             debugInformationFormat: DebugInformationFormat.Pdb, // TODO: Probati vratiti PortablePdb
                             pdbFilePath: pdbPath));
                     _performanceLogger.Write(stopwatch, $"AssemblyGenerator: CSharpCompilation.Create ({dllName}).");
 
-                    FailOnCompilerErrors(emitResult, outputAssembly);
+                    FailOnCompilerErrors(emitResult, outputAssemblyPath);
 
-                    SaveGeneratedFile(dllStream, outputAssembly);
+                    SaveGeneratedFile(dllStream, outputAssemblyPath);
                     SaveGeneratedFile(pdbStream, pdbPath);
 
-                    generatedAssembly = Assembly.LoadFrom(outputAssembly);
+                    generatedAssembly = Assembly.LoadFrom(outputAssemblyPath);
 
-                    FailOnTypeLoadErrors(generatedAssembly, outputAssembly);
-                    ReportWarnings(emitResult, outputAssembly);
+                    FailOnTypeLoadErrors(generatedAssembly, outputAssemblyPath);
+                    ReportWarnings(emitResult, outputAssemblyPath);
                     _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({dllName}).");
                 }
             }
