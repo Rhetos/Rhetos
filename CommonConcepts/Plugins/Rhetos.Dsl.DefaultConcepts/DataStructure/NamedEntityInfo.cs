@@ -1,5 +1,4 @@
-﻿
-/*
+﻿/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -18,25 +17,25 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Rhetos.Dsl;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("RepositoryMember")]
-    public class RepositoryMemberInfo : IConceptInfo, IValidatedConcept
+    [ConceptKeyword("NamedEntity")]
+    public class NamedEntityInfo : EntityInfo, IMacroConcept
     {
-        [ConceptKey]
-        public DataStructureInfo DataStructure { get; set; }
-
-        [ConceptKey]
-        public string Name { get; set; }
-
-        public string Implementation { get; set; }
-
-        public void CheckSemantics(IDslModel existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            DslUtility.ValidateIdentifier(Name, this);
+            return new List<IConceptInfo>
+            {
+                new ShortStringPropertyInfo{ DataStructure = this, Name = "Name" }
+            };
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿
-/*
+﻿/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -18,25 +17,28 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Linq;
+using System.Text;
+using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
 
-namespace Rhetos.Dsl.DefaultConcepts
+namespace Rhetos.Dom.DefaultConcepts
 {
-    [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("RepositoryMember")]
-    public class RepositoryMemberInfo : IConceptInfo, IValidatedConcept
+    [Export(typeof(IConceptCodeGenerator))]
+    [ExportMetadata(MefProvider.Implements, typeof(NamedEntityEntryInfo))]
+    public class NamedEntityEntryCodeGenerator : IConceptCodeGenerator
     {
-        [ConceptKey]
-        public DataStructureInfo DataStructure { get; set; }
-
-        [ConceptKey]
-        public string Name { get; set; }
-
-        public string Implementation { get; set; }
-
-        public void CheckSemantics(IDslModel existingConcepts)
+        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            DslUtility.ValidateIdentifier(Name, this);
+            var info = (NamedEntityEntryInfo)conceptInfo;
+
+            codeBuilder.InsertCode($@"
+        public static readonly Guid {info.Name} = new Guid(""{info.GetIdentifier()}"");", RepositoryHelper.RepositoryMembers, info.NamedEntity);
         }
     }
 }

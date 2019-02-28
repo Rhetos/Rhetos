@@ -1,0 +1,109 @@
+Module TestSifarnik
+{
+    NamedEntity Statusi
+    {
+        ShortString Opis;
+        Bool Assert;
+
+        Entry Status1
+        {
+            Value Opis 'Test lala';
+            Value Assert 1;
+        }
+
+        Entry Status3
+        {
+            Value Opis 'Test lala 1';
+            Value Assert 1;
+        }
+    }
+}
+
+Module Ugovaranje
+{
+    HardcodedEntity ZiuStatus
+    {
+        ShortString Opis;
+        Bool KorisnikImaUvid;
+        Bool InstitucijaImaUvid;
+        Bool DozvoljenoUredjivanjeKorisnika;
+        Bool DozvoljenoUredjivanjeInstitucije;        
+
+        Entry UIzradi
+        {
+            Value Opis 'U Izradi';s
+            Value KorisnikImaUvid 1;
+            Value InstitucijaImaUvid 0;
+            Value DozvoljenoUredjivanjeKorisnika 1;
+            Value DozvoljenoUredjivanjeInstitucije 0;
+        }
+
+        Entry Podnesen
+        {
+            Value Opis 'Podnesen';
+            Value KorisnikImaUvid 1;
+            Value InstitucijaImaUvid 1;
+            Value DozvoljenoUredjivanjeKorisnika 0;
+            Value DozvoljenoUredjivanjeInstitucije 0;
+        }
+
+        Entry UDoradi
+        {
+            Value Opis 'U doradi';
+            Value KorisnikImaUvid 1;
+            Value InstitucijaImaUvid 0;
+            Value DozvoljenoUredjivanjeKorisnika 1;
+            Value DozvoljenoUredjivanjeInstitucije 0;
+        }
+
+        Entry Otkazan
+        {
+            Value Opis Otkazan';
+            Value KorisnikImaUvid 1;
+            Value InstitucijaImaUvid 1;
+            Value DozvoljenoUredjivanjeKorisnika 0;
+            Value DozvoljenoUredjivanjeInstitucije 0;
+        }          
+    }
+
+    EventType ZiuEvent Ugovaranje.ZahtjevZaIzmjenomugovora;
+
+    Event ZiuEvent ZiuPokreniIradu
+    {
+        StartEvent;
+        To Ugovaranje.ZiuStatus.UIzradi;
+    }
+
+    Event ZiuEvent ZiuPodnosenje 
+    {
+        From Ugovaranje.ZiuStatus.UIzradi;
+        To Ugovaranje.ZiuStatus.Podnesen;
+    }
+
+    Event ZiuEvent ZiuVracanjeUDoradu     
+    {
+        From Ugovaranje.ZiuStatus.Podnesen;
+        To Ugovaranje.ZiuStatus.UDoradi;
+    }
+
+    Event ZiuEvent ZiuOtkazivanje     
+    {
+        To Ugovaranje.ZiuStatus.UDoradi;
+    }
+
+    //Alternativno
+
+    Event ZiuEvent ZiuOtkazivanjes     
+    {
+        From {
+            Status Ugovaranje.ZiuStatus.UIzradi;
+            Status Ugovaranje.ZiuStatus.UDoradi;
+            Status Ugovaranje.ZiuStatus.Podnesen;
+        }
+        To Ugovaranje.ZiuStatus.UDoradi;
+
+        OnSaveUpdate{}
+
+        RowPermission{}
+    }            
+}
