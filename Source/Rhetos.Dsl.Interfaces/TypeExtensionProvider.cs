@@ -26,16 +26,6 @@ namespace Rhetos.Dsl
 {
     public class TypeExtensionProvider
     {
-        public void Test2()
-        {
-            var a =  AnalizirajTip(new List<int>());
-        }
-
-        public string  AnalizirajTip(object o)
-        {
-            return o.GetType().Name;
-        }
-
         Dictionary<Type, Dictionary<Type, ITypeExtension>> _typeExtensions;
 
         IPluginsContainer<ITypeExtension> _plugins;
@@ -43,7 +33,6 @@ namespace Rhetos.Dsl
         public TypeExtensionProvider(IPluginsContainer<ITypeExtension> plugins)
         {
             _plugins = plugins;
-            var a = _plugins.GetPlugins();
             _typeExtensions = new Dictionary<Type, Dictionary<Type, ITypeExtension>>();
         }
 
