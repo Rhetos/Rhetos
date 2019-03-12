@@ -134,6 +134,7 @@
     <Compile Include="IDslModelIndex.cs" />
     <Compile Include="IDslScriptsProvider.cs" />
     <Compile Include="InitializationConcept.cs" />
+    <Compile Include="ITypeExtension.cs" />
     <Compile Include="IValidatedConcept.cs" />
     <Compile Include="IValidationConcept.cs" />
     <Compile Include="IDslModel.cs" />
@@ -144,6 +145,7 @@
     <Compile Include="..\Rhetos\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="TypeExtensionProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Rhetos.Extensibility.Interfaces\Rhetos.Extensibility.Interfaces.csproj">

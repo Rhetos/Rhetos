@@ -122,7 +122,11 @@
   <ItemGroup>
     <Compile Include="ColumnTypes\BinaryPropertyDatabaseDefinition.cs" />
     <Compile Include="ColumnTypes\BoolPropertyDatabaseDefinition.cs" />
+    <Compile Include="ColumnTypes\DatabaseColumnNameExtension.cs" />
+    <Compile Include="ColumnTypes\DatabaseColumnTypeExtensions.cs" />
     <Compile Include="ColumnTypes\GuidPropertyDatabaseDefinition.cs" />
+    <Compile Include="ColumnTypes\IDatabaseColumnName.cs" />
+    <Compile Include="ColumnTypes\IDatabaseColumnType.cs" />
     <Compile Include="ColumnTypes\MoneyPropertyDatabaseDefinition.cs" />
     <Compile Include="ColumnTypes\DateTimePropertyDatabaseDefinition.cs" />
     <Compile Include="ColumnTypes\LongStringPropertyDatabaseDefinition.cs" />

@@ -35,20 +35,19 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ConceptImplementationVersion(2, 0)]
     public class BoolPropertyDatabaseDefinition : IConceptDatabaseDefinition
     {
-        ConceptMetadata _conceptMetadata;
+        TypeExtensionProvider _typeExtension;
 
-        public BoolPropertyDatabaseDefinition(ConceptMetadata conceptMetadata)
+        public BoolPropertyDatabaseDefinition(TypeExtensionProvider typeExtension)
         {
-            _conceptMetadata = conceptMetadata;
+            _typeExtension = typeExtension;
         }
 
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
             var info = (BoolPropertyInfo)conceptInfo;
 
-            PropertyDatabaseDefinition.RegisterColumnMetadata(_conceptMetadata, info, SqlUtility.Identifier(info.Name), Sql.Get("BoolPropertyDatabaseDefinition_DataType"));
             if (info.DataStructure is EntityInfo)
-                return PropertyDatabaseDefinition.AddColumn(_conceptMetadata, info);
+                return PropertyDatabaseDefinition.AddColumn(_typeExtension, info);
 
             return "";
         }

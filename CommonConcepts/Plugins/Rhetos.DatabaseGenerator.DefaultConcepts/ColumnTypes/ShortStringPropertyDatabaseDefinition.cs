@@ -35,21 +35,19 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ConceptImplementationVersion(2, 1)]
     public class ShortStringPropertyDatabaseDefinition : IConceptDatabaseDefinition
     {
-        ConceptMetadata _conceptMetadata;
+        TypeExtensionProvider _typeExtension;
 
-        public ShortStringPropertyDatabaseDefinition(ConceptMetadata conceptMetadata)
+        public ShortStringPropertyDatabaseDefinition(TypeExtensionProvider typeExtsnion)
         {
-            _conceptMetadata = conceptMetadata;
+            _typeExtension = typeExtsnion;
         }
 
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
             var info = (ShortStringPropertyInfo)conceptInfo;
 
-            PropertyDatabaseDefinition.RegisterColumnMetadata(_conceptMetadata, info, SqlUtility.Identifier(info.Name),
-                    Sql.Format("ShortStringPropertyDatabaseDefinition_DataType", ShortStringPropertyInfo.MaxLength));
             if (info.DataStructure is EntityInfo)
-                return PropertyDatabaseDefinition.AddColumn(_conceptMetadata, info);
+                return PropertyDatabaseDefinition.AddColumn(_typeExtension, info);
 
             return "";
         }

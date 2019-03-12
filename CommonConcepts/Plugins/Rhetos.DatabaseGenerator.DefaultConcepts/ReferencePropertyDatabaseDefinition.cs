@@ -37,11 +37,11 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ConceptImplementationVersion(2, 0)]
     public class ReferencePropertyDatabaseDefinition : IConceptDatabaseDefinition
     {
-        ConceptMetadata _conceptMetadata;
+        TypeExtensionProvider _typeExtension;
 
-        public ReferencePropertyDatabaseDefinition(ConceptMetadata conceptMetadata)
+        public ReferencePropertyDatabaseDefinition(TypeExtensionProvider typeExtension)
         {
-            _conceptMetadata = conceptMetadata;
+            _typeExtension = typeExtension;
         }
 
         public static bool IsSupported(ReferencePropertyInfo info)
@@ -53,9 +53,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (ReferencePropertyInfo)conceptInfo;
 
-            PropertyDatabaseDefinition.RegisterColumnMetadata(_conceptMetadata, info, info.GetColumnName(), Sql.Get("ReferencePropertyDatabaseDefinition_DataType"));
             if (IsSupported(info))
-                return PropertyDatabaseDefinition.AddColumn(_conceptMetadata, info);
+                return PropertyDatabaseDefinition.AddColumn(_typeExtension, info);
 
             return "";
         }
