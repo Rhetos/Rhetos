@@ -53,13 +53,6 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public static readonly CsTag<PolymorphicInfo> SetFilterExpressionTag = "SetFilterExpression";
 
-        private readonly ConceptMetadata _conceptMetadata;
-
-        public PolymorphicMacro(ConceptMetadata conceptMetadata)
-        {
-            _conceptMetadata = conceptMetadata;
-        }
-
         public IEnumerable<IConceptInfo> CreateNewConcepts(PolymorphicInfo conceptInfo, IDslModel existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();

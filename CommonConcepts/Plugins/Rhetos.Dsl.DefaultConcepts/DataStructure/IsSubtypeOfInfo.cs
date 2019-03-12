@@ -89,13 +89,6 @@ namespace Rhetos.Dsl.DefaultConcepts
     [Export(typeof(IConceptMacro))]
     public class IsSubtypeOfMacro : IConceptMacro<IsSubtypeOfInfo>
     {
-        private readonly ConceptMetadata _conceptMetadata;
-
-        public IsSubtypeOfMacro(ConceptMetadata conceptMetadata)
-        {
-            _conceptMetadata = conceptMetadata;
-        }
-
         public IEnumerable<IConceptInfo> CreateNewConcepts(IsSubtypeOfInfo conceptInfo, IDslModel existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();

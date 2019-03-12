@@ -33,20 +33,19 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(DatePropertyInfo))]
     public class DatePropertyDatabaseDefinition : IConceptDatabaseDefinition
     {
-        ConceptMetadata _conceptMetadata;
+        TypeExtensionProvider _typeExtensionprovider;
 
-        public DatePropertyDatabaseDefinition(ConceptMetadata conceptMetadata)
+        public DatePropertyDatabaseDefinition(TypeExtensionProvider typeExtensionprovider)
         {
-            _conceptMetadata = conceptMetadata;
+            _typeExtensionprovider = typeExtensionprovider;
         }
 
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
             var info = (DatePropertyInfo)conceptInfo;
 
-            PropertyDatabaseDefinition.RegisterColumnMetadata(_conceptMetadata, info, SqlUtility.Identifier(info.Name), Sql.Get("DatePropertyDatabaseDefinition_DataType"));
             if (info.DataStructure is EntityInfo)
-                return PropertyDatabaseDefinition.AddColumn(_conceptMetadata, info);
+                return PropertyDatabaseDefinition.AddColumn(_typeExtensionprovider, info);
 
             return "";
         }
