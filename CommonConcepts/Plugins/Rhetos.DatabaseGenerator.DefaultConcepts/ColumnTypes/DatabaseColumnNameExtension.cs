@@ -25,7 +25,7 @@ using System.ComponentModel.Composition;
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
     [Export(typeof(ITypeExtension))]
-    public class PropertyDatabseColumnNameExtension : IDatabseColumnName<PropertyInfo>
+    public class PropertyDatabaseColumnNameExtension : IDatabaseColumnName<PropertyInfo>
     {
         public string GetColumnName(PropertyInfo info)
         {
@@ -34,7 +34,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     }
 
     [Export(typeof(ITypeExtension))]
-    public class ReferencePropertyDatabseColumnNameExtension : IDatabseColumnName<ReferencePropertyInfo>
+    public class ReferencePropertyDatabaseColumnNameExtension : IDatabaseColumnName<ReferencePropertyInfo>
     {
         public string GetColumnName(PropertyInfo info)
         {

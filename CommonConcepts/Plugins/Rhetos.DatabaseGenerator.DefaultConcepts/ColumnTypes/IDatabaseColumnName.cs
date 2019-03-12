@@ -22,7 +22,7 @@ using Rhetos.Dsl.DefaultConcepts;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
-    public interface IDatabseColumnName<out T> : ITypeExtension<T> where T : PropertyInfo
+    public interface IDatabaseColumnName<out T> : ITypeExtension<T> where T : PropertyInfo
     {
         string GetColumnName(PropertyInfo concept);
     }

@@ -62,7 +62,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
         private string PropertyImplementationSnippet(SubtypeImplementsPropertyInfo info)
         {
-            var propertyColumnName = _typeExtension.Get<IDatabseColumnName<PropertyInfo>>(info.Property.GetType()).GetColumnName(info.Property);
+            var propertyColumnName = _typeExtension.Get<IDatabaseColumnName<PropertyInfo>>(info.Property.GetType()).GetColumnName(info.Property);
 
             return ",\r\n    " + propertyColumnName + " = " + info.Expression;
         }

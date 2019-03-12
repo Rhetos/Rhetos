@@ -25,7 +25,7 @@ using System.ComponentModel.Composition;
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
     [Export(typeof(ITypeExtension))]
-    public class ShortStringDatabaseColumnTypeExtension : IDatabseColumnType<ShortStringPropertyInfo>
+    public class ShortStringDatabaseColumnTypeExtension : IDatabaseColumnType<ShortStringPropertyInfo>
     {
         public string ColumnType {
             get { return Sql.Format("ShortStringPropertyDatabaseDefinition_DataType", ShortStringPropertyInfo.MaxLength); }
@@ -33,7 +33,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     }
 
     [Export(typeof(ITypeExtension))]
-    public class LongStringDatabaseColumnTypeExtension : IDatabseColumnType<LongStringPropertyInfo>
+    public class LongStringDatabaseColumnTypeExtension : IDatabaseColumnType<LongStringPropertyInfo>
     {
         public string ColumnType
         {
@@ -42,7 +42,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     }
 
     [Export(typeof(ITypeExtension))]
-    public class BinaryDatabaseColumnTypeExtension : IDatabseColumnType<BinaryPropertyInfo>
+    public class BinaryDatabaseColumnTypeExtension : IDatabaseColumnType<BinaryPropertyInfo>
     {
         public string ColumnType
         {
@@ -51,7 +51,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     }
 
     [Export(typeof(ITypeExtension))]
-    public class BoolDatabaseColumnTypeExtension : IDatabseColumnType<BoolPropertyInfo>
+    public class BoolDatabaseColumnTypeExtension : IDatabaseColumnType<BoolPropertyInfo>
     {
         public string ColumnType
         {
@@ -60,7 +60,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     }
 
     [Export(typeof(ITypeExtension))]
-    public class DateTimeDatabaseColumnTypeExtension : IDatabseColumnType<DateTimePropertyInfo>
+    public class DateTimeDatabaseColumnTypeExtension : IDatabaseColumnType<DateTimePropertyInfo>
     {
         public string ColumnType
         {
@@ -69,7 +69,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     }
 
     [Export(typeof(ITypeExtension))]
-    public class DateDatabaseColumnTypeExtension : IDatabseColumnType<DatePropertyInfo>
+    public class DateDatabaseColumnTypeExtension : IDatabaseColumnType<DatePropertyInfo>
     {
         public string ColumnType
         {
@@ -78,7 +78,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     }
 
     [Export(typeof(ITypeExtension))]
-    public class DecimalDatabaseColumnTypeExtension : IDatabseColumnType<DecimalPropertyInfo>
+    public class DecimalDatabaseColumnTypeExtension : IDatabaseColumnType<DecimalPropertyInfo>
     {
         public string ColumnType
         {
@@ -87,7 +87,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     }
 
     [Export(typeof(ITypeExtension))]
-    public class GuidDatabaseColumnTypeExtension : IDatabseColumnType<GuidPropertyInfo>
+    public class GuidDatabaseColumnTypeExtension : IDatabaseColumnType<GuidPropertyInfo>
     {
         public string ColumnType
         {
@@ -96,7 +96,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     }
 
     [Export(typeof(ITypeExtension))]
-    public class IntegerDatabaseColumnTypeExtension : IDatabseColumnType<IntegerPropertyInfo>
+    public class IntegerDatabaseColumnTypeExtension : IDatabaseColumnType<IntegerPropertyInfo>
     {
         public string ColumnType
         {
@@ -105,7 +105,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     }
 
     [Export(typeof(ITypeExtension))]
-    public class ReferenceDatabaseColumnTypeExtension : IDatabseColumnType<ReferencePropertyInfo>
+    public class ReferenceDatabaseColumnTypeExtension : IDatabaseColumnType<ReferencePropertyInfo>
     {
         public string ColumnType
         {
@@ -114,7 +114,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     }
 
     [Export(typeof(ITypeExtension))]
-    public class MoneyDatabaseColumnTypeExtension : IDatabseColumnType<MoneyPropertyInfo>
+    public class MoneyDatabaseColumnTypeExtension : IDatabaseColumnType<MoneyPropertyInfo>
     {
         public string ColumnType
         {

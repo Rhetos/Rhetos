@@ -48,13 +48,13 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
         public static string AddColumn(TypeExtensionProvider typeExtension, PropertyInfo property, string options = "")
         {
-            string columnName = typeExtension.Get<IDatabseColumnName<PropertyInfo>>(property.GetType()).GetColumnName(property);
+            string columnName = typeExtension.Get<IDatabaseColumnName<PropertyInfo>>(property.GetType()).GetColumnName(property);
 
             return Sql.Format("PropertyDatabaseDefinition_AddColumn",
                 SqlUtility.Identifier(property.DataStructure.Module.Name),
                 SqlUtility.Identifier(property.DataStructure.Name),
                 DslUtility.ValidateIdentifier(columnName, property, "Invalid column name."),
-                typeExtension.Get<IDatabseColumnType<PropertyInfo>>(property.GetType()).ColumnType,
+                typeExtension.Get<IDatabaseColumnType<PropertyInfo>>(property.GetType()).ColumnType,
                 options,
                 Options1Tag.Evaluate(property),
                 Options2Tag.Evaluate(property),
