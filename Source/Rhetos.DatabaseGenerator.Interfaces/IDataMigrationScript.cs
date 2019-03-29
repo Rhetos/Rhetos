@@ -17,28 +17,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using Rhetos.Compiler;
 using Rhetos.Dsl;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.DatabaseGenerator
 {
-    [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(EntryInfo))]
-    public class NamedEntityEntryCodeGenerator : IConceptCodeGenerator
+    public interface IDataMigrationScript
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
-        {
-            var info = (EntryInfo)conceptInfo;
+    }
 
-            codeBuilder.InsertCode($@"
-        public static readonly Guid {info.Name} = new Guid(""{info.GetIdentifier()}"");", DataStructureCodeGenerator.BodyTag, info.HardcodedEntity);
-        }
+    public interface IDataMigrationScript<in T> : IDataMigrationScript where T : IConceptInfo
+    {
+        void GenerateCode(T concept, IDataMigrationScriptBuilder codeBuilder);
     }
 }

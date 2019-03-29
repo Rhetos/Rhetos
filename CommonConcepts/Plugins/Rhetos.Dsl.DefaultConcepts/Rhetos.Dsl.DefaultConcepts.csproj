@@ -154,8 +154,8 @@
     <Compile Include="DatabaseWorkarounds\SqlIndexMultipleFollowingPropertyInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlNotNullInfo.cs" />
     <Compile Include="DataStructure\BeforeQueryWithParameterInfo.cs" />
-    <Compile Include="DataStructure\NamedEntityEntryInfo.cs" />
-    <Compile Include="DataStructure\NamedEntityInfo.cs" />
+    <Compile Include="DataStructure\EntryInfo.cs" />
+    <Compile Include="DataStructure\HardcodedEntityInfo.cs" />
     <Compile Include="DataStructure\PolymorphicSubtypeDiscriminatorInfo.cs" />
     <Compile Include="DataStructure\PolymorphicSubtypeReferenceInfo.cs" />
     <Compile Include="DataStructure\RepositoryMemberInfo.cs" />

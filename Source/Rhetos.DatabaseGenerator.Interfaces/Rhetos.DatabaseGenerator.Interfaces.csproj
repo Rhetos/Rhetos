@@ -121,6 +121,9 @@
     <Compile Include="IConceptDatabaseDefinition.cs" />
     <Compile Include="IConceptDatabaseDefinitionExtension.cs" />
     <Compile Include="IDatabaseGenerator.cs" />
+    <Compile Include="IDataMigrationScriptBuilder.cs" />
+    <Compile Include="IDataMigrationFromCodeExecuter.cs" />
+    <Compile Include="IDataMigrationScript.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="..\Rhetos\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>

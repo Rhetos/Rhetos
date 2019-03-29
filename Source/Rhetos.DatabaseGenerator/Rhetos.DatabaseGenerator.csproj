@@ -119,11 +119,14 @@
   <ItemGroup>
     <Compile Include="ConceptApplicationDependency.cs" />
     <Compile Include="ConceptApplication.cs" />
+    <Compile Include="DataMigrationScriptBuilder.cs" />
+    <Compile Include="DataMigrationFromCodeExecuter.cs" />
+    <Compile Include="DataMigrationScriptUtility.cs" />
     <Compile Include="IConceptApplicationRepository.cs" />
-    <Compile Include="NewConceptApplication.cs" />
     <Compile Include="DatabaseGenerator.cs" />
     <Compile Include="ConceptApplicationRepository.cs" />
     <Compile Include="Dependency.cs" />
+    <Compile Include="NewConceptApplication.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="..\Rhetos\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>

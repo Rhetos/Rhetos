@@ -27,8 +27,8 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("NamedEntity")]
-    public class NamedEntityInfo : EntityInfo, IMacroConcept
+    [ConceptKeyword("HardcodedEntity")]
+    public class HardcodedEntityInfo : EntityInfo, IMacroConcept
     {
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {

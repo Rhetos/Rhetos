@@ -133,11 +133,12 @@
     <Compile Include="ColumnTypes\DecimalPropertyDatabaseDefinition.cs" />
     <Compile Include="ColumnTypes\DatePropertyDatabaseDefinition.cs" />
     <Compile Include="ColumnTypes\PropertyDatabaseDefinition.cs" />
-    <Compile Include="EntryValueDatabseDefinition.cs" />
+    <Compile Include="EntryDataMigrationScript.cs" />
+    <Compile Include="EntryValueDataMigrationScript.cs" />
+    <Compile Include="HardcodedEntityDataMigrationScript.cs" />
+    <Compile Include="HardcodedEntityPropertyDataMigrationScript.cs" />
     <Compile Include="LoggingRelatedItemDatabaseDefinition.cs" />
     <Compile Include="LogReaderAdditionalSourceDatabaseDefinition.cs" />
-    <Compile Include="NamedEntityDatabseDefinition.cs" />
-    <Compile Include="EntryDatabseDefinition.cs" />
     <Compile Include="SqlDependsOnIDDatabaseDefinition.cs" />
     <Compile Include="SqlNotNullDatabaseDefinition.cs" />
     <Compile Include="SubtypeExtendPolymorphicDatabaseDefinition.cs" />

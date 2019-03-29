@@ -17,28 +17,34 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using Rhetos.Compiler;
-using Rhetos.Dsl;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Dsl.DefaultConcepts
 {
-    [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(EntryInfo))]
-    public class NamedEntityEntryCodeGenerator : IConceptCodeGenerator
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("Value")]
+    public class EntryValueInfo : IConceptInfo, IAlternativeInitializationConcept
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
-        {
-            var info = (EntryInfo)conceptInfo;
+        [ConceptKey]
+        public EntryInfo Entry { get; set; }
 
-            codeBuilder.InsertCode($@"
-        public static readonly Guid {info.Name} = new Guid(""{info.GetIdentifier()}"");", DataStructureCodeGenerator.BodyTag, info.HardcodedEntity);
+        [ConceptKey]
+        public string PropertyName { get; set; }
+
+        public string Value { get; set; }
+
+        public PropertyInfo Property { get; set; }
+
+        public IEnumerable<string> DeclareNonparsableProperties()
+        {
+            return new[] { "Property" };
+        }
+
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            Property = new PropertyInfo { DataStructure = Entry.HardcodedEntity, Name = PropertyName };
+            createdConcepts = new[] { Property };
         }
     }
 }

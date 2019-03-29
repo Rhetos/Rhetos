@@ -19,19 +19,16 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Entry")]
-    public class NamedEntityEntryInfo : IMacroConcept
+    public class EntryInfo : IMacroConcept
     {
         [ConceptKey]
-        public NamedEntityInfo NamedEntity { get; set; }
+        public HardcodedEntityInfo HardcodedEntity { get; set; }
 
         [ConceptKey]
         public string Name { get; set; }
@@ -49,45 +46,22 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return new List<IConceptInfo>
+            var sqlFunction = new SqlFunctionInfo
             {
-                new SqlFunctionInfo{
-                    Module = NamedEntity.Module,
-                    Name = NamedEntity.Name + "_" + Name,
-                    Source = $@"
+                Module = HardcodedEntity.Module,
+                Name = HardcodedEntity.Name + "_" + Name,
+                Source = $@"
 RETURNS uniqueidentifier
 AS
 BEGIN
 	RETURN CONVERT(uniqueidentifier, '{GetIdentifier()}');
 END"
-                }
             };
-        }
-    }
-
-    [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("Value")]
-    public class EntryValueInfo : IConceptInfo, IAlternativeInitializationConcept
-    {
-        [ConceptKey]
-        public NamedEntityEntryInfo Entry { get; set; }
-
-        [ConceptKey]
-        public string PropertyName { get; set; }
-
-        public string Value { get; set; }
-
-        public PropertyInfo Property { get; set; }
-
-        public IEnumerable<string> DeclareNonparsableProperties()
-        {
-            return new[] { "Property" };
-        }
-
-        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
-        {
-            Property = new PropertyInfo { DataStructure = Entry.NamedEntity, Name = PropertyName };
-            createdConcepts = new[] { Property };
+            return new List<IConceptInfo>
+            {
+                sqlFunction,
+                new SqlDependsOnSqlFunctionInfo { Dependent = this.HardcodedEntity, DependsOn = sqlFunction },
+            };
         }
     }
 }

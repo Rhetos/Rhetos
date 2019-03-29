@@ -1,0 +1,76 @@
+Module TestHardcodedEntity
+{
+    Entity Message
+    {
+        LongString Content { Required; }
+        Reference MessageStatus { Required; }
+    }
+
+	Browse MessageBrowse TestHardcodedEntity.Message
+	{
+		Take Content;
+        Take MessageStatus;
+		Take MessageStatusDescription 'MessageStatus.UserDescription';
+
+        ComposableFilterBy 'VisibleMessages' '(query, repository, parameters) =>
+        {
+            return query.Where(x => x.MessageStatus.VisibleToUser == true);
+        }';
+	}
+
+    Parameter VisibleMessages;
+
+    HardcodedEntity MessageStatus
+    {
+        ShortString UserDescription;
+        Bool VisibleToUser;
+
+        Entry InProgress
+        {
+            Value UserDescription 'In progress';
+            Value VisibleToUser 0;
+        }
+
+        Entry Delivered
+        {
+            Value UserDescription 'Delivered';
+            Value VisibleToUser 1;
+        }
+
+        Entry Read
+        {
+            Value UserDescription 'Read';
+            Value VisibleToUser 1;
+        }
+
+        Entry Deleted
+        {
+            Value UserDescription 'Deleted';
+            Value VisibleToUser 0;
+        }       
+    }
+
+    Action MarkAllMessagesAsRead '(parameter, repository, userInfo) =>
+        {
+            var unreadMessages = _domRepository.TestHardcodedEntity.Message.Query().Where(x => x.MessageStatusID == TestHardcodedEntity.MessageStatus.Delivered).ToList();
+            foreach(var message in unreadMessages)
+                message.MessageStatusID = TestHardcodedEntity.MessageStatus.Read;
+            _domRepository.TestHardcodedEntity.Message.Update(unreadMessages);
+        }'
+    {
+    }
+
+    SqlQueryable UnreadMessage
+    "
+        SELECT
+            ID = message.ID,
+            message.Content
+        FROM TestHardcodedEntity.Message message
+        WHERE message.MessageStatusID = TestHardcodedEntity.MessageStatus_Delivered();
+    "
+        {
+            LongString Content;
+
+            SqlDependsOn TestHardcodedEntity.MessageStatus;
+        }
+}
