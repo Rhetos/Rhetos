@@ -1,6 +1,6 @@
 Module TestHardcodedEntity
 {
-    HardcodedEntity SimpleHardocedEntity
+    HardcodedEntity SimpleHardcodedEntity
     {
         ShortString Description;
         Bool BoolProperty;
@@ -23,7 +23,7 @@ Module TestHardcodedEntity
     Entity ReferenceToHardcodedEntity
     {
         LongString Content { Required; }
-        Reference SimpleHardocedEntity { Required; }      
+        Reference SimpleHardcodedEntity { Required; }      
     }
 
     SqlQueryable HardcodedEntityInSqlTest
@@ -33,7 +33,7 @@ Module TestHardcodedEntity
             Content
         FROM
             TestHardcodedEntity.ReferenceToHardcodedEntity
-        WHERE SimpleHardocedEntityID = TestHardcodedEntity.SimpleHardocedEntity_StatusWithoutIntPropertyDefined();
+        WHERE SimpleHardcodedEntityID = TestHardcodedEntity.SimpleHardcodedEntity_StatusWithoutIntPropertyDefined();
     "
     {
         LongString Content;       

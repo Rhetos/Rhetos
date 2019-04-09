@@ -38,7 +38,7 @@ namespace CommonConcepts.Test
             using (var container = new RhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
-                var statusWithoutIntPropertyDefined = repository.TestHardcodedEntity.SimpleHardocedEntity.Query().Where(x => x.ID == TestHardcodedEntity.SimpleHardocedEntity.StatusWithDefinedAllPropertity).Single();
+                var statusWithoutIntPropertyDefined = repository.TestHardcodedEntity.SimpleHardcodedEntity.Query().Where(x => x.ID == TestHardcodedEntity.SimpleHardcodedEntity.StatusWithDefinedAllPropertity).Single();
 
                 Assert.AreEqual("Status with defined all properties", statusWithoutIntPropertyDefined.Description);
                 Assert.AreEqual(false, statusWithoutIntPropertyDefined.BoolProperty);
@@ -52,7 +52,7 @@ namespace CommonConcepts.Test
             using (var container = new RhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
-                var statusWithoutIntPropertyDefined = repository.TestHardcodedEntity.SimpleHardocedEntity.Query().Where(x => x.ID == TestHardcodedEntity.SimpleHardocedEntity.StatusWithoutIntPropertyDefined).Single();
+                var statusWithoutIntPropertyDefined = repository.TestHardcodedEntity.SimpleHardcodedEntity.Query().Where(x => x.ID == TestHardcodedEntity.SimpleHardcodedEntity.StatusWithoutIntPropertyDefined).Single();
 
                 Assert.AreEqual("Status with undefined int property", statusWithoutIntPropertyDefined.Description);
                 Assert.AreEqual(true, statusWithoutIntPropertyDefined.BoolProperty);
@@ -69,12 +69,12 @@ namespace CommonConcepts.Test
                 repository.TestHardcodedEntity.ReferenceToHardcodedEntity.Insert(new TestHardcodedEntity.ReferenceToHardcodedEntity
                 {
                     Content = "Message 1",
-                    SimpleHardocedEntityID = TestHardcodedEntity.SimpleHardocedEntity.StatusWithDefinedAllPropertity
+                    SimpleHardcodedEntityID = TestHardcodedEntity.SimpleHardcodedEntity.StatusWithDefinedAllPropertity
                 });
                 repository.TestHardcodedEntity.ReferenceToHardcodedEntity.Insert(new TestHardcodedEntity.ReferenceToHardcodedEntity
                 {
                     Content = "Message 2",
-                    SimpleHardocedEntityID = TestHardcodedEntity.SimpleHardocedEntity.StatusWithoutIntPropertyDefined
+                    SimpleHardcodedEntityID = TestHardcodedEntity.SimpleHardcodedEntity.StatusWithoutIntPropertyDefined
                 });
                 
                 Assert.AreEqual(1, repository.TestHardcodedEntity.HardcodedEntityInSqlTest.Query().Count());
