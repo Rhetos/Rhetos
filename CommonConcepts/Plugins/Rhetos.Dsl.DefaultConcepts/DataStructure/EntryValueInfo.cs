@@ -44,7 +44,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
             Property = new PropertyInfo { DataStructure = Entry.HardcodedEntity, Name = PropertyName };
-            createdConcepts = new[] { Property };
+            createdConcepts = null;
         }
     }
 }

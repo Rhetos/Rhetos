@@ -33,50 +33,30 @@ namespace CommonConcepts.Test
     public class HardcodedEntityTest
     {
         [TestMethod]
-        public void DataInDatabseTest()
+        public void HardcodedEntityWithDefinedAllPropertiesTest()
         {
             using (var container = new RhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
+                var statusWithoutIntPropertyDefined = repository.TestHardcodedEntity.SimpleHardocedEntity.Query().Where(x => x.ID == TestHardcodedEntity.SimpleHardocedEntity.StatusWithDefinedAllPropertity).Single();
 
-                var inprogressData = repository.TestHardcodedEntity.MessageStatus.Query().FirstOrDefault(x => x.ID == TestHardcodedEntity.MessageStatus.InProgress);
-                Assert.AreEqual("In progress", inprogressData.UserDescription);
-                Assert.AreEqual(false, inprogressData.VisibleToUser);
-
-                var deliveredData = repository.TestHardcodedEntity.MessageStatus.Query().FirstOrDefault(x => x.ID == TestHardcodedEntity.MessageStatus.Delivered);
-                Assert.AreEqual("Delivered", deliveredData.UserDescription);
-                Assert.AreEqual(true, deliveredData.VisibleToUser);
-
-                var readData = repository.TestHardcodedEntity.MessageStatus.Query().FirstOrDefault(x => x.ID == TestHardcodedEntity.MessageStatus.Read);
-                Assert.AreEqual("Read", readData.UserDescription);
-                Assert.AreEqual(true, readData.VisibleToUser);
-
-                var deletedData = repository.TestHardcodedEntity.MessageStatus.Query().FirstOrDefault(x => x.ID == TestHardcodedEntity.MessageStatus.Deleted);
-                Assert.AreEqual("Deleted", deletedData.UserDescription);
-                Assert.AreEqual(false, deletedData.VisibleToUser);
+                Assert.AreEqual("Status with defined all properties", statusWithoutIntPropertyDefined.Description);
+                Assert.AreEqual(false, statusWithoutIntPropertyDefined.BoolProperty);
+                Assert.AreEqual(2, statusWithoutIntPropertyDefined.IntProperty);
             }
         }
 
         [TestMethod]
-        public void SimpleTest()
+        public void NotDefinedPropertiesShouldBeNullTest()
         {
             using (var container = new RhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
-                repository.TestHardcodedEntity.Message.Insert(new TestHardcodedEntity.Message {
-                    Content = "Message 1",
-                    MessageStatusID = TestHardcodedEntity.MessageStatus.Delivered
-                });
-                repository.TestHardcodedEntity.Message.Insert(new TestHardcodedEntity.Message
-                {
-                    Content = "Message 2",
-                    MessageStatusID = TestHardcodedEntity.MessageStatus.Delivered
-                });
+                var statusWithoutIntPropertyDefined = repository.TestHardcodedEntity.SimpleHardocedEntity.Query().Where(x => x.ID == TestHardcodedEntity.SimpleHardocedEntity.StatusWithoutIntPropertyDefined).Single();
 
-                Assert.AreEqual(2, repository.TestHardcodedEntity.Message.Query().Count(x => x.MessageStatusID == TestHardcodedEntity.MessageStatus.Delivered));
-
-                repository.TestHardcodedEntity.MarkAllMessagesAsRead.Execute(new TestHardcodedEntity.MarkAllMessagesAsRead());
-                Assert.AreEqual(2, repository.TestHardcodedEntity.Message.Query().Count(x => x.MessageStatusID == TestHardcodedEntity.MessageStatus.Read));
+                Assert.AreEqual("Status with undefined int property", statusWithoutIntPropertyDefined.Description);
+                Assert.AreEqual(true, statusWithoutIntPropertyDefined.BoolProperty);
+                Assert.AreEqual(null, statusWithoutIntPropertyDefined.IntProperty);
             }
         }
 
@@ -86,18 +66,18 @@ namespace CommonConcepts.Test
             using (var container = new RhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
-                repository.TestHardcodedEntity.Message.Insert(new TestHardcodedEntity.Message
+                repository.TestHardcodedEntity.ReferenceToHardcodedEntity.Insert(new TestHardcodedEntity.ReferenceToHardcodedEntity
                 {
                     Content = "Message 1",
-                    MessageStatusID = TestHardcodedEntity.MessageStatus.InProgress
+                    SimpleHardocedEntityID = TestHardcodedEntity.SimpleHardocedEntity.StatusWithDefinedAllPropertity
                 });
-                repository.TestHardcodedEntity.Message.Insert(new TestHardcodedEntity.Message
+                repository.TestHardcodedEntity.ReferenceToHardcodedEntity.Insert(new TestHardcodedEntity.ReferenceToHardcodedEntity
                 {
                     Content = "Message 2",
-                    MessageStatusID = TestHardcodedEntity.MessageStatus.Delivered
+                    SimpleHardocedEntityID = TestHardcodedEntity.SimpleHardocedEntity.StatusWithoutIntPropertyDefined
                 });
-
-                Assert.AreEqual(1, repository.TestHardcodedEntity.UnreadMessage.Query().Count());
+                
+                Assert.AreEqual(1, repository.TestHardcodedEntity.HardcodedEntityInSqlTest.Query().Count());
             }
         }
     }

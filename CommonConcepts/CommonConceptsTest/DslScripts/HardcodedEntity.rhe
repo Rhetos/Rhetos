@@ -1,76 +1,41 @@
 Module TestHardcodedEntity
 {
-    Entity Message
+    HardcodedEntity SimpleHardocedEntity
+    {
+        ShortString Description;
+        Bool BoolProperty;
+        Integer IntProperty;
+
+        Entry StatusWithDefinedAllPropertity
+        {
+            Value Description 'Status with defined all properties';
+            Value BoolProperty 0;
+            Value IntProperty 2;
+        }
+
+        Entry StatusWithoutIntPropertyDefined
+        {
+            Value Description 'Status with undefined int property';
+            Value BoolProperty 1;
+        }      
+    }
+
+    Entity ReferenceToHardcodedEntity
     {
         LongString Content { Required; }
-        Reference MessageStatus { Required; }
+        Reference SimpleHardocedEntity { Required; }      
     }
 
-	Browse MessageBrowse TestHardcodedEntity.Message
-	{
-		Take Content;
-        Take MessageStatus;
-		Take MessageStatusDescription 'MessageStatus.UserDescription';
-
-        ComposableFilterBy 'VisibleMessages' '(query, repository, parameters) =>
-        {
-            return query.Where(x => x.MessageStatus.VisibleToUser == true);
-        }';
-	}
-
-    Parameter VisibleMessages;
-
-    HardcodedEntity MessageStatus
-    {
-        ShortString UserDescription;
-        Bool VisibleToUser;
-
-        Entry InProgress
-        {
-            Value UserDescription 'In progress';
-            Value VisibleToUser 0;
-        }
-
-        Entry Delivered
-        {
-            Value UserDescription 'Delivered';
-            Value VisibleToUser 1;
-        }
-
-        Entry Read
-        {
-            Value UserDescription 'Read';
-            Value VisibleToUser 1;
-        }
-
-        Entry Deleted
-        {
-            Value UserDescription 'Deleted';
-            Value VisibleToUser 0;
-        }       
-    }
-
-    Action MarkAllMessagesAsRead '(parameter, repository, userInfo) =>
-        {
-            var unreadMessages = _domRepository.TestHardcodedEntity.Message.Query().Where(x => x.MessageStatusID == TestHardcodedEntity.MessageStatus.Delivered).ToList();
-            foreach(var message in unreadMessages)
-                message.MessageStatusID = TestHardcodedEntity.MessageStatus.Read;
-            _domRepository.TestHardcodedEntity.Message.Update(unreadMessages);
-        }'
-    {
-    }
-
-    SqlQueryable UnreadMessage
+    SqlQueryable HardcodedEntityInSqlTest
     "
         SELECT
-            ID = message.ID,
-            message.Content
-        FROM TestHardcodedEntity.Message message
-        WHERE message.MessageStatusID = TestHardcodedEntity.MessageStatus_Delivered();
+            ID,
+            Content
+        FROM
+            TestHardcodedEntity.ReferenceToHardcodedEntity
+        WHERE SimpleHardocedEntityID = TestHardcodedEntity.SimpleHardocedEntity_StatusWithoutIntPropertyDefined();
     "
-        {
-            LongString Content;
-
-            SqlDependsOn TestHardcodedEntity.MessageStatus;
-        }
+    {
+        LongString Content;       
+    }
 }
