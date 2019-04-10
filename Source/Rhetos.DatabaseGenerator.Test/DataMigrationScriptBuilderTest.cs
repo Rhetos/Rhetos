@@ -43,7 +43,7 @@ namespace Rhetos.DatabaseGenerator.Test
         {
             var scriptBuilder = new DataMigrationScriptBuilder();
 
-            var beforeScript1 = "Before script 1" + Environment.NewLine + "Before script 1 lin 2";
+            var beforeScript1 = "Before script 1" + Environment.NewLine + "Before script 1 line 2";
             var beforeScript2 = "Before script 2";
             scriptBuilder.AddBeforeDataMigrationScript(beforeScript1);
             scriptBuilder.AddBeforeDataMigrationScript(beforeScript2);

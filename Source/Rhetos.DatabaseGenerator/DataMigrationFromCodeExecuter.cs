@@ -54,8 +54,10 @@ namespace Rhetos.DatabaseGenerator
         {
             Initialize();
             _sqlExecuter.Execute(_codeBuilder.GetBeforeDataMigartionScript().Select(x => 
-                new SqlTransactionBatches.SqlScript {
-                    Sql = x, IsBatch = true
+                new SqlTransactionBatches.SqlScript
+                {
+                    Sql = x,
+                    IsBatch = true
                 }));
         }
 

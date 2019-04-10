@@ -31,7 +31,7 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
     [ExportMetadata(MefProvider.Implements, typeof(EntryInfo))]
-    public class NamedEntityEntryCodeGenerator : IConceptCodeGenerator
+    public class EntryCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
