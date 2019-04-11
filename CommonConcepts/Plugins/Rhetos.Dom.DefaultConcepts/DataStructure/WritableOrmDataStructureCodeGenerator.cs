@@ -88,9 +88,13 @@ namespace Rhetos.Dom.DefaultConcepts
             " + InitializationTag.Evaluate(info) + @"
 
             // Using old data, including lazy loading of navigation properties:
-            IEnumerable<Common.Queryable.{0}_{1}> deleted = this.Query(deletedIds.Select(item => item.ID)).ToList();
+		    IEnumerable<Common.Queryable.{0}_{1}> deleted = new List<Common.Queryable.{0}_{1}>();
+		    if(deletedIds.Any())
+                deleted = this.Query(deletedIds.Select(item => item.ID)).ToList();
             Rhetos.Utilities.Graph.SortByGivenOrder((List<Common.Queryable.{0}_{1}>)deleted, deletedIds.Select(item => item.ID), item => item.ID);
-            IEnumerable<Common.Queryable.{0}_{1}> updated = this.Query(updatedNew.Select(item => item.ID)).ToList();
+		    IEnumerable<Common.Queryable.{0}_{1}> updated = new List<Common.Queryable.{0}_{1}>();
+		    if(updatedNew.Any())
+                updated = this.Query(updatedNew.Select(item => item.ID)).ToList();
             Rhetos.Utilities.Graph.SortByGivenOrder((List<Common.Queryable.{0}_{1}>)updated, updatedNew.Select(item => item.ID), item => item.ID);
 
             " + OldDataLoadedTag.Evaluate(info) + @"
