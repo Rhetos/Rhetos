@@ -63,7 +63,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         info.Base.Module.Name, info.Base.Name, info.ExtensionPropertyName()),
                     DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
 
-            if (UniqueReferenceDatabaseDefinition.ShouldCreateConstraint(info)
+            if (UniqueReferenceDatabaseDefinition.IsSupported(info)
                 && info.Extension is IOrmDataStructure
                 && info.Base is IWritableOrmDataStructure)
             {

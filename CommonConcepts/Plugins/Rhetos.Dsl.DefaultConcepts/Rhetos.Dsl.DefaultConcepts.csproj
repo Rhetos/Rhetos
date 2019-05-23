@@ -301,6 +301,8 @@
     <Compile Include="SimpleBusinessLogic\CreatedByInfo.cs" />
     <Compile Include="SimpleBusinessLogic\DefaultValueInfo.cs" />
     <Compile Include="SimpleBusinessLogic\LogReaderAdditionalSourceInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\ReferenceCascadeDeletePolymorphicInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\UniqueReferenceCascadeDeletePolymorphicInfo.cs" />
     <Compile Include="SimpleBusinessLogic\UniqueReferenceCascadeDeleteInfo.cs" />
     <Compile Include="SimpleBusinessLogic\RegExMatchDefaultMessage.cs" />
     <Compile Include="SimpleBusinessLogic\LoggingRelatedItemInfo.cs" />

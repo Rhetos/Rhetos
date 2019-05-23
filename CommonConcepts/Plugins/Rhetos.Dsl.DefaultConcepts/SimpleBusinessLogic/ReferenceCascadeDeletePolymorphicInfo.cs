@@ -17,32 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("Detail")]
-    public class ReferenceDetailInfo : IMacroConcept
+    public class ReferenceCascadeDeletePolymorphicInfo : IConceptInfo
     {
         [ConceptKey]
         public ReferencePropertyInfo Reference { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            var newConcepts = new List<IConceptInfo>();
-
-            // Even if this method generates no new features, the Detail concept can be useful
-            // in business modeling (inheriting row permissions to SqlQueryable, for example)
-            if (Reference.DataStructure is IWritableOrmDataStructure)
-            {
-                newConcepts.Add(new ReferenceCascadeDeleteInfo { Reference = Reference });
-                newConcepts.Add(new SqlIndexInfo { Property = Reference });
-                newConcepts.Add(new SystemRequiredInfo { Property = Reference });
-            }
-
-            return newConcepts;
-        }
+        [ConceptKey]
+        public DataStructureInfo Parent { get; set; }
     }
 }

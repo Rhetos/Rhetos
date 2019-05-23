@@ -46,6 +46,11 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             return Name; // ORM will be mapped to PolymorphicUnionViewInfo from the database.
         }
+
+        public EntityInfo GetMaterializedEntity()
+        {
+            return new EntityInfo { Module = Module, Name = Name + "_Materialized" };
+        }
     }
 
     [Export(typeof(IConceptMacro))]

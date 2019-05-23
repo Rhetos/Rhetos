@@ -1,5 +1,12 @@
 ﻿# Rhetos release notes
 
+## 2.11.1 (2019-05-23)
+
+### Internal improvements
+
+* Bugfix: "The DELETE statement conflicted with the REFERENCE constraint" error when deleting a record that is included in a polymorphic,
+  event when the cascade delete should be applied automatically (issue #154).
+
 ## 2.11.0 (2019-01-31)
 
 ### New features

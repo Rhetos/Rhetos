@@ -19,29 +19,25 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
+using Rhetos.Dsl;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// Inherits the 'UniqueReference' concept and additionally allows cascade delete and automatic inheritance of row permissions.
-    /// From a business perspective, the main difference between 'Extends' and 'UniqueReference' is that extension is considered a part of the base data structure.
-    /// In 1:1 relations, the 'Extends' concept is to 'UniqueReference' as 'Reference { Detail; }' is to 'Reference' in 1:N relations.
+    /// A reference to polymorphic supports cascade delete, but the polymorphic itself is not directly writable,
+    /// so the triggering event is redirected to the polymorphic's materialized entity.
     /// </summary>
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("Extends")]
-    public class DataStructureExtendsInfo : UniqueReferenceInfo
+    public class UniqueReferenceCascadeDeletePolymorphicInfo : IConceptInfo
     {
-    }
+        [ConceptKey]
+        public DataStructureInfo Extension { get; set; }
 
-    [Export(typeof(IConceptMacro))]
-    public class DataStructureExtendsMacro : IConceptMacro<DataStructureExtendsInfo>
-    {
-        public IEnumerable<IConceptInfo> CreateNewConcepts(DataStructureExtendsInfo conceptInfo, IDslModel existingConcepts)
-        {
-            return new IConceptInfo[] { new UniqueReferenceCascadeDeleteInfo { UniqueReference = conceptInfo } };
-        }
+        [ConceptKey]
+        public DataStructureInfo Base { get; set; }
+
     }
 }
