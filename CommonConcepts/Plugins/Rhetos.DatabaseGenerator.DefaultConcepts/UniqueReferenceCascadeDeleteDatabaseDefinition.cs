@@ -48,7 +48,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             // It is turned off by default because if a record is deleted by cascade delete directly in the database, then the business logic implemented in application layer will not be executed.
             var info = (UniqueReferenceCascadeDeleteInfo) conceptInfo;
 
-            if (_legacyCascadeDeleteInDatabase.Value && UniqueReferenceDatabaseDefinition.ShouldCreateConstraint(info.UniqueReference))
+            if (_legacyCascadeDeleteInDatabase.Value && UniqueReferenceDatabaseDefinition.IsSupported(info.UniqueReference))
                 codeBuilder.InsertCode("ON DELETE CASCADE ", UniqueReferenceDatabaseDefinition.ForeignKeyConstraintOptionsTag, info.UniqueReference);
 
             createdDependencies = null;

@@ -38,7 +38,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var newConcepts = new List<IConceptInfo>();
 
-            var persisted = new EntityInfo { Module = Polymorphic.Module, Name = Polymorphic.Name + "_Materialized" };
+            var persisted = Polymorphic.GetMaterializedEntity();
             newConcepts.Add(persisted);
 
             var computedFrom = new EntityComputedFromInfo { Target = persisted, Source = Polymorphic };
