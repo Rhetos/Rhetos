@@ -42,4 +42,23 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public ReferencePropertyInfo Reference { get; set; }
     }
+
+    [Export(typeof(IConceptMacro))]
+    public class ReferenceCascadeDeleteMacro : IConceptMacro<ReferenceCascadeDeleteInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(ReferenceCascadeDeleteInfo conceptInfo, IDslModel existingConcepts)
+        {
+            if (conceptInfo.Reference.Referenced is PolymorphicInfo && conceptInfo.Reference.DataStructure is IWritableOrmDataStructure)
+                return new[]
+                {
+                    new ReferenceCascadeDeletePolymorphicInfo
+                    {
+                        Reference = conceptInfo.Reference,
+                        Parent = ((PolymorphicInfo)conceptInfo.Reference.Referenced).GetMaterializedEntity()
+                    }
+                };
+            else
+                return null;
+        }
+    }
 }
