@@ -26,8 +26,9 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// This concept is used as a placeholder when all properties of an entity are required as a prerequisite for another concept.
-    /// Dependent concept can reference this concept as a dependency.
+    /// This concept is used as a placeholder for internal optimization when all properties of an entity
+    /// are required as a prerequisite for another concept.
+    /// A dependent object can reference this concept as a dependency, instead of referencing each property individually.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("PrerequisiteAllProperties")]
