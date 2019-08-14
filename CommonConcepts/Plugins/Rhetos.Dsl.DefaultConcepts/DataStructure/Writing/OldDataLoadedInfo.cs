@@ -42,12 +42,10 @@ namespace Rhetos.Dsl.DefaultConcepts
         /// <summary>
         /// Available variables in this context:
         ///     _executionContext,
-        ///     inserted (array of new items),
-        ///     updated (array of new items).
-        /// If LoadOldItems concept is used, there are also available:
-        ///     updatedOld (array of old items),
-        ///     deletedOld (array of old items).
-        ///     See <see cref="WritableOrmDataStructureCodeGenerator.OldDataLoadedTag">WritableOrmDataStructureCodeGenerator.OnSaveTag1</see> for more info.
+        ///     checkUserPermissions (whether the Save command is called directly by client through a web API)
+        ///     insertedNew (array of new items for insert),
+        ///     updatedNew (array of new items for update),
+        ///     deletedIds (array of items to be deleted).
         /// </summary>
         public string CsCodeSnippet { get; set; }
     }

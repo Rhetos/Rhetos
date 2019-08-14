@@ -43,9 +43,9 @@ namespace Rhetos.Dsl.DefaultConcepts
         /// Available variables in this context:
         ///     _executionContext,
         ///     checkUserPermissions (whether the Save command is called directly by client through a web API)
-        ///     inserted (array of new items),
-        ///     updated (array of new items).
-        ///     See <see cref="WritableOrmDataStructureCodeGenerator.ArgumentValidationTag">WritableOrmDataStructureCodeGenerator.OnSaveTag2</see> for more info.
+        ///     insertedNew (array of new items for insert),
+        ///     updatedNew (array of new items for update),
+        ///     deletedIds (array of items to be deleted).
         /// </summary>
         public string CsCodeSnippet { get; set; }
     }
