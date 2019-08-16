@@ -187,14 +187,14 @@ namespace Rhetos.Deployment
         {
             var scripts = new List<DataMigrationScript>();
             _sqlExecuter.ExecuteReader(
-                "SELECT Tag, Path, Content FROM Rhetos.DataMigrationScript WHERE Active = 1", 
+                "SELECT Tag, Path, Content FROM Rhetos.DataMigrationScript WHERE Active = 1 ORDER BY DateExecuted",
                 reader => scripts.Add(new DataMigrationScript
                     {
                         Tag = reader.GetString(0),
                         Path = reader.GetString(1),
                         Content = reader.GetString(2)
                     }));
-            return scripts.OrderBy(s => s).ToList();
+            return scripts.ToList();
         }
     }
 }

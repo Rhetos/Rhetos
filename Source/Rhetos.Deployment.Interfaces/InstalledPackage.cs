@@ -46,7 +46,7 @@ namespace Rhetos.Deployment
             Folder = folder;
             Request = request;
             Source = source;
-            ContentFiles = contentFiles ?? FilesFromFolder(folder);
+            ContentFiles = contentFiles ?? FilesFromFolder(folder, id);
         }
 
         public string Id { get; private set; }
@@ -92,8 +92,11 @@ namespace Rhetos.Deployment
                 file.PhysicalPath = FilesUtility.AbsoluteToRelativePath(Paths.RhetosServerRootPath, file.PhysicalPath);
         }
 
-        private List<ContentFile> FilesFromFolder(string folder)
+        private static List<ContentFile> FilesFromFolder(string folder, string packageId)
         {
+            if (!Directory.Exists(folder))
+                throw new FrameworkException($"Source folder for package '{packageId}' does not exist: '{folder}'.");
+
             return Directory.GetFiles(folder, "*", SearchOption.AllDirectories)
                 .Select(file => new ContentFile
                 {

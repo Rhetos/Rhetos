@@ -30,7 +30,8 @@ namespace Rhetos.Deployment
 {
     public class DataMigrationScriptsFromDisk : IDataMigrationScriptsProvider
     {
-        const string DataMigrationScriptsSubfolder = "DataMigration";
+        const string DataMigrationSubfolder = "DataMigration";
+        const string DataMigrationSubfolderPrefix = DataMigrationSubfolder + @"\";
 
         protected readonly IInstalledPackages _installedPackages;
 
@@ -50,35 +51,26 @@ namespace Rhetos.Deployment
             // The packages are sorted by their dependencies, so the data migration scripts from one module may use the data that was prepared by the module it depends on.
             foreach (var package in _installedPackages.Packages)
             {
-                if (!Directory.Exists(package.Folder))
-                    throw new FrameworkException($"Source folder for package '{package.Id}' does not exist: '{package.Folder}'.");
-                string dataMigrationScriptsFolder = Path.Combine(package.Folder, DataMigrationScriptsSubfolder);
-                if (Directory.Exists(dataMigrationScriptsFolder))
-                {
-                    var files = Directory.GetFiles(dataMigrationScriptsFolder, "*.*", SearchOption.AllDirectories);
+                var files = package.ContentFiles.Where(file => file.InPackagePath.StartsWith(DataMigrationSubfolderPrefix, StringComparison.OrdinalIgnoreCase));
 
-                    const string expectedExtension = ".sql";
-                    var badFile = files.FirstOrDefault(file => Path.GetExtension(file).ToLower() != expectedExtension);
-                    if (badFile != null)
-                        throw new FrameworkException("Data migration script '" + badFile + "' does not have expected extension '" + expectedExtension + "'.");
+                const string expectedExtension = ".sql";
+                var badFile = files.FirstOrDefault(file => !string.Equals(Path.GetExtension(file.InPackagePath), expectedExtension, StringComparison.OrdinalIgnoreCase));
+                if (badFile != null)
+                    throw new FrameworkException("Data migration script '" + badFile.PhysicalPath + "' does not have expected extension '" + expectedExtension + "'.");
 
-                    int baseFolderLength = GetFullPathLength(dataMigrationScriptsFolder);
+                var packageScripts =
+                    (from file in files
+                     let scriptContent = File.ReadAllText(file.PhysicalPath, Encoding.Default)
+                     select new DataMigrationScript
+                     {
+                         Tag = ParseScriptTag(scriptContent, file.PhysicalPath),
+                         // Using package.Id instead of full package subfolder name, in order to keep the same script path between different versions of the package (the folder name will contain the version number).
+                         Path = package.Id + "\\" + file.InPackagePath.Substring(DataMigrationSubfolderPrefix.Length),
+                         Content = scriptContent
+                     }).ToList();
 
-                    var packageScripts =
-                        (from file in files
-                         let scriptRelativePath = Path.GetFullPath(file).Substring(baseFolderLength)
-                         let scriptContent = File.ReadAllText(file, Encoding.Default)
-                         select new DataMigrationScript
-                         {
-                             Tag = ParseScriptTag(scriptContent, file),
-                             // Using package.Id instead of full package subfolder name, in order to keep the same script path between different versions of the package (the folder name will contain the version number).
-                             Path = package.Id + "\\" + scriptRelativePath,
-                             Content = scriptContent
-                         }).ToList();
-
-                    packageScripts.Sort();
-                    allScripts.AddRange(packageScripts);
-                }
+                packageScripts.Sort();
+                allScripts.AddRange(packageScripts);
             }
 
             var badGroup = allScripts.GroupBy(s => s.Tag).FirstOrDefault(g => g.Count() >= 2);
@@ -88,14 +80,6 @@ namespace Rhetos.Deployment
                     badGroup.First().Path, badGroup.ElementAt(1).Path, badGroup.Key));
 
             return allScripts;
-        }
-
-        protected static int GetFullPathLength(string dataMigrationScriptsFolder)
-        {
-            dataMigrationScriptsFolder = Path.GetFullPath(dataMigrationScriptsFolder);
-            if (dataMigrationScriptsFolder.Last() != '\\')
-                dataMigrationScriptsFolder = dataMigrationScriptsFolder + '\\';
-            return Path.GetFullPath(dataMigrationScriptsFolder).Length;
         }
 
         protected static readonly Regex ScriptIdRegex = new Regex(@"^/\*DATAMIGRATION (.+)\*/");

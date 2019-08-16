@@ -29,7 +29,7 @@ namespace Rhetos.Deployment
 
         /// <summary>
         /// Relative path where the file should be located in the package.
-        /// This is used for detecting the file's role by subfolder convention, and for file sorting.
+        /// This is used for detecting the file's role from subfolder name, and for file sorting.
         /// </summary>
         public string InPackagePath { get; set; }
     }
