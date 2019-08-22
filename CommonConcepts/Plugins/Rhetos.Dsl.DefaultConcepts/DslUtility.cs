@@ -182,13 +182,9 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var selectedProperty = FindProperty(existingConcepts, source, referenceName);
 
-            IEnumerable<UniqueReferenceInfo> allExtensions;
-            allExtensions = existingConcepts.FindByType<UniqueReferenceInfo>();
-
             if (selectedProperty == null && referenceName == "Base")
             {
-                var baseDataStructure = allExtensions
-                    .Where(ex => ex.Extension == source)
+                var baseDataStructure = existingConcepts.FindByReference<UniqueReferenceInfo>(ex => ex.Extension, source)
                     .Select(ex => ex.Base).SingleOrDefault();
                 if (baseDataStructure != null)
                     return baseDataStructure;
@@ -200,8 +196,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (selectedProperty == null && referenceName.StartsWith("Extension_"))
             {
                 string extensionName = referenceName.Substring("Extension_".Length);
-                var extensionDataStructure = allExtensions
-                    .Where(ex => ex.Base == source)
+                var extensionDataStructure = existingConcepts.FindByReference<UniqueReferenceInfo>(ex => ex.Base, source)
                     .Where(ex => ex.Extension.Module == source.Module && ex.Extension.Name == extensionName
                         || ex.Extension.Module.Name + "_" + ex.Extension.Name == extensionName)
                     .Select(ex => ex.Extension).SingleOrDefault();

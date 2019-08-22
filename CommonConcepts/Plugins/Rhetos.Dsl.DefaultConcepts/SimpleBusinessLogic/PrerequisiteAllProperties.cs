@@ -43,7 +43,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public IEnumerable<IConceptInfo> CreateNewConcepts(PrerequisiteAllProperties conceptInfo, IDslModel existingConcepts)
         {
-            var dependsOnProperties = existingConcepts.FindByType<PropertyInfo>().Where(p => p.DataStructure == conceptInfo.DependsOn);
+            var dependsOnProperties = existingConcepts.FindByReference<PropertyInfo>(p => p.DataStructure, conceptInfo.DependsOn);
             return dependsOnProperties
                 .Select(dependsOnProperty => new SqlDependsOnPropertyInfo { Dependent = conceptInfo, DependsOn = dependsOnProperty })
                 .ToList();
