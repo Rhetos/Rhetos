@@ -109,19 +109,22 @@ namespace Rhetos.Dsl
                 lock (_initializationLock)
                     if (!_initialized)
                     {
-                        var sw = Stopwatch.StartNew();
-
+                        var swTotal = Stopwatch.StartNew();
                         var parsedConcepts = _dslParser.ParsedConcepts;
+
+                        var swFirstAdd = Stopwatch.StartNew();
                         _dslContainer.AddNewConceptsAndReplaceReferences(parsedConcepts);
+                        _performanceLogger.Write(swFirstAdd, $"DslModel.Initialize: First AddNewConceptsAndReplaceReferences ({_dslContainer.Concepts.Count()} concepts).");
+
                         ExpandMacroConcepts();
                         _dslContainer.ReportErrorForUnresolvedConcepts();
                         CheckSemantics();
                         _dslContainer.SortReferencesBeforeUsingConcept();
-                        _performanceLogger.Write(sw, "DslModel.Initialize (" + _dslContainer.Concepts.Count() + " concepts).");
-
                         LogDslModel();
                         ReportObsoleteConcepts();
                         _dslModelFile.SaveConcepts(_dslContainer.Concepts);
+
+                        _performanceLogger.Write(swTotal, $"DslModel.Initialize ({_dslContainer.Concepts.Count()} concepts).");
                         _initialized = true;
                     }
         }
