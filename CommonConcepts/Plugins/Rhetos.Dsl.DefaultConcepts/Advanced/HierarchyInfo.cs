@@ -216,7 +216,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 dependencies.Add(dataStructure);
             else if (dataStructure is SqlQueryableInfo)
             {
-                var deps = allConcepts.FindByType<SqlDependsOnDataStructureInfo>().Where(dep => dep.Dependent == dataStructure).ToArray();
+                var deps = allConcepts.FindByReference<SqlDependsOnDataStructureInfo>(dep => dep.Dependent, dataStructure).ToArray();
                 foreach (var dep in deps)
                     GetDependsOnWriteableDataStructure(dep.DependsOn, dependencies, allConcepts, errorContext, done);
             }

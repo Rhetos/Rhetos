@@ -34,7 +34,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public void CheckSemantics(IDslModel existingConcepts)
         {
-            var extendsConcept = existingConcepts.FindByType<UniqueReferenceInfo>().Where(extends => extends.Extension == Computation).FirstOrDefault();
+            var extendsConcept = existingConcepts.FindByReference<UniqueReferenceInfo>(extends => extends.Extension, Computation).FirstOrDefault();
             if (extendsConcept == null)
                 throw new DslSyntaxException("ChangesOnBaseItem is used on '" + Computation.GetUserDescription()
                     + "' which does not extend another base data structure. Consider adding 'Extends' concept.");
@@ -46,7 +46,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public IEnumerable<IConceptInfo> CreateNewConcepts(ChangesOnBaseItemInfo conceptInfo, IDslModel existingConcepts)
         {
-            var extendsConcept = existingConcepts.FindByType<UniqueReferenceInfo>().Where(extends => extends.Extension == conceptInfo.Computation).FirstOrDefault();
+            var extendsConcept = existingConcepts.FindByReference<UniqueReferenceInfo>(extends => extends.Extension, conceptInfo.Computation).FirstOrDefault();
             if (extendsConcept == null)
                 return null; // Wait for other macro concepts to evaluate.
 

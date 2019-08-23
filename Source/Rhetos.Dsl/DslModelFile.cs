@@ -109,6 +109,9 @@ namespace Rhetos.Dsl
         {
             var sw = Stopwatch.StartNew();
 
+            CsUtility.Materialize(ref concepts);
+            _performanceLogger.Write(sw, "DslModelFile.SaveConcepts: Materialize.");
+
             var serializerSettings = new JsonSerializerSettings
             {
                 PreserveReferencesHandling = PreserveReferencesHandling.All,
@@ -116,12 +119,12 @@ namespace Rhetos.Dsl
                 TypeNameHandling = TypeNameHandling.All,
             };
 
-            CsUtility.Materialize(ref concepts);
             string serializedConcepts = JsonConvert.SerializeObject(concepts, serializerSettings);
+            _performanceLogger.Write(sw, "DslModelFile.SaveConcepts: Serialize.");
+
             string path = Path.Combine(Paths.GeneratedFolder, DslModelFileName);
             File.WriteAllText(path, serializedConcepts, Encoding.UTF8);
-
-            _performanceLogger.Write(sw, "DslModelFile.Save.");
+            _performanceLogger.Write(sw, "DslModelFile.SaveConcepts: Write.");
         }
 
         private IEnumerable<IConceptInfo> LoadConcepts()

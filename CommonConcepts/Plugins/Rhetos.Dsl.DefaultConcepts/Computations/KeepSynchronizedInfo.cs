@@ -43,8 +43,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var newConcepts = new List<IConceptInfo>();
 
-            var changesOnChangesItems = existingConcepts.FindByType<ChangesOnChangedItemsInfo>()
-                .Where(change => change.Computation == conceptInfo.EntityComputedFrom.Source)
+            var changesOnChangesItems = existingConcepts.FindByReference<ChangesOnChangedItemsInfo>(change => change.Computation, conceptInfo.EntityComputedFrom.Source)
                 .ToArray();
 
             newConcepts.AddRange(changesOnChangesItems.Select(change =>
@@ -53,14 +52,13 @@ namespace Rhetos.Dsl.DefaultConcepts
             // If the computed data source is an extension, but its value does not depend on changes in its base data structure,
             // it should still be computed every time the base data structure data is inserted.
 
-            var dataSourceExtension = existingConcepts.FindByType<UniqueReferenceInfo>()
-                .Where(ex => ex.Extension == conceptInfo.EntityComputedFrom.Source)
+            var dataSourceExtension = existingConcepts.FindByReference<UniqueReferenceInfo>(ex => ex.Extension, conceptInfo.EntityComputedFrom.Source)
                 .SingleOrDefault();
             
             if (dataSourceExtension != null
                 && dataSourceExtension.Base is IWritableOrmDataStructure
                 && !changesOnChangesItems.Any(c => c.DependsOn == dataSourceExtension.Base)
-                && !existingConcepts.FindByType<ChangesOnBaseItemInfo>().Where(c => c.Computation == conceptInfo.EntityComputedFrom.Source).Any())
+                && !existingConcepts.FindByReference<ChangesOnBaseItemInfo>(c => c.Computation, conceptInfo.EntityComputedFrom.Source).Any())
                 newConcepts.Add(new ComputeForNewBaseItemsInfo { EntityComputedFrom = conceptInfo.EntityComputedFrom, FilterSaveExpression = conceptInfo.FilterSaveExpression });
 
             return newConcepts;
