@@ -365,7 +365,7 @@ CREATE FUNCTION {0}.{1} ({2})
     <value>IX_{0}_{1}</value>
   </data>
   <data name="SqlIndexMultipleDatabaseDefinition_Create" xml:space="preserve">
-    <value>CREATE {4} INDEX {0} ON {1}.{2} ({3}) {5}</value>
+    <value>CREATE {4} {5} INDEX {0} ON {1}.{2} ({3}) {6}</value>
   </data>
   <data name="SqlIndexMultipleDatabaseDefinition_Remove" xml:space="preserve">
     <value>DROP INDEX {0}.{1}.{2}</value>

@@ -17,26 +17,35 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class SqlIndexMultipleFollowingPropertyInfo : SqlIndexMultiplePropertyInfo, IValidatedConcept
+    [ConceptKeyword("Clustered")]
+    public class UniqueClusteredInfo : IConceptInfo
     {
-        /// <summary>
-        /// Used for property ordering when creating the index.
-        /// </summary>
-        public SqlIndexMultiplePropertyInfo PreviousIndexProperty { get; set; }
+        [ConceptKey]
+        public UniqueMultiplePropertiesInfo Unique { get; set; }
+    }
 
-        public new void CheckSemantics(IDslModel existingConcepts)
+    [Export(typeof(IConceptMacro))]
+    public class UniqueClusteredMacro : IConceptMacro<UniqueClusteredInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(UniqueClusteredInfo conceptInfo, IDslModel existingConcepts)
         {
-            base.CheckSemantics(existingConcepts);
-            DslUtility.CheckIfPropertyBelongsToDataStructure(PreviousIndexProperty.Property, SqlIndex.DataStructure, this);
+            return new[]
+            {
+                new SqlIndexClusteredInfo
+                {
+                    SqlIndex = new SqlIndexMultipleInfo
+                    {
+                        DataStructure = conceptInfo.Unique.DataStructure,
+                        PropertyNames = conceptInfo.Unique.PropertyNames
+                    }
+                }
+            };
         }
     }
 }

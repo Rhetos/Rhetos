@@ -143,6 +143,20 @@ Module TestSqlWorkarounds
 	{
 		SqlDependsOnIndex TestSqlWorkarounds.TestIndex.'A B';
 	}
+
+	Entity RedundantIndexDefinitions1
+	{
+		// This is just a deploy-time test. The deployment would fail if there is a conflict between multiple index definitions.
+		SqlIndexMultiple 'Code' { Clustered; }
+		ShortString Code { AutoCode; SqlIndex; Unique; }
+	}
+
+	Entity RedundantIndexDefinitions2
+	{
+		// This is just a deploy-time test. The deployment would fail if there is a conflict between multiple index definitions.
+		SqlIndexMultiple 'TestIndex' { Clustered; }
+		Reference TestIndex { Unique; SqlIndex; Detail; }
+	}
 }
 
 Module TestSqlWorkarounds2

@@ -41,8 +41,8 @@ namespace Rhetos.Dsl.DefaultConcepts
         public IEnumerable<IConceptInfo> CreateNewConcepts(SqlDependsOnPropertyInfo conceptInfo, IDslModel existingConcepts)
         {
             return existingConcepts.FindByReference<UniqueMultiplePropertiesInfo>(unique => unique.DataStructure, conceptInfo.DependsOn.DataStructure)
-                .Where(unique => unique.SqlImplementation() && IsFirstIdentifierInList(conceptInfo.DependsOn.Name, unique.PropertyNames))
-                .Select(unique => new SqlDependsOnSqlIndexInfo { Dependent = conceptInfo.Dependent, DependsOn = unique });
+                .Where(unique => unique.Dependency_SqlIndex.SqlImplementation() && IsFirstIdentifierInList(conceptInfo.DependsOn.Name, unique.PropertyNames))
+                .Select(unique => new SqlDependsOnSqlIndexInfo { Dependent = conceptInfo.Dependent, DependsOn = unique.Dependency_SqlIndex });
         }
 
         private static bool IsFirstIdentifierInList(string identifier, string list)
