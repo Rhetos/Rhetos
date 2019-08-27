@@ -181,7 +181,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 new PersistedAllPropertiesInfo { Persisted = persistedDataStructure }, // This will copy all properties from computedDataStructure.
                 new PersistedKeepSynchronizedInfo { Persisted = persistedDataStructure },
                 persistedLeftIndexProperty,
-                new SqlIndexInfo { Property = persistedLeftIndexProperty },
+                new SqlIndexMultipleInfo { DataStructure = persistedLeftIndexProperty.DataStructure, PropertyNames = persistedLeftIndexProperty.Name },
 
                 // Implement filters for finding ancestors and descendants, using indexed persisted data:
                 filterAncestorsParameter,

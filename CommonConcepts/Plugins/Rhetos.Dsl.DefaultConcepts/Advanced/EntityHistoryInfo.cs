@@ -101,7 +101,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 new RequiredPropertyInfo { Property = currentProperty }, // TODO: SystemRequired
                 new PropertyFromInfo { Destination = Dependency_ChangesEntity, Source = activeSinceProperty },
                 historyActiveSinceProperty,
-                new UniquePropertiesInfo { DataStructure = Dependency_ChangesEntity, Property1 = currentProperty, Property2 = historyActiveSinceProperty }
+                new UniqueMultiplePropertiesInfo { DataStructure = Dependency_ChangesEntity, PropertyNames = $"{currentProperty.Name} {historyActiveSinceProperty.Name}" }
             });
 
             // InvalidData for history entity: it is not allowed to save with ActiveSince newer than current entity
