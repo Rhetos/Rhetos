@@ -37,12 +37,14 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public override string ToString()
         {
-            return Module.Name + "." + Name;
+            return FullName; // For backward compatibility.
         }
 
         public override int GetHashCode()
         {
             return Name.GetHashCode();
         }
+
+        public string FullName => Module.Name + "." + Name;
     }
 }
