@@ -36,7 +36,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
         public UniqueReferenceCascadeDeleteDatabaseDefinition(IConfiguration configuration)
         {
-            _legacyCascadeDeleteInDatabase = configuration.GetBool(ReferenceCascadeDeleteDatabaseDefinition.LegacyCascadeDeleteInDatabaseOption, true);
+            _legacyCascadeDeleteInDatabase = configuration.GetBool(ReferenceCascadeDeleteMacro.LegacyCascadeDeleteInDatabaseOption, true);
         }
 
         public void ExtendDatabaseStructure(

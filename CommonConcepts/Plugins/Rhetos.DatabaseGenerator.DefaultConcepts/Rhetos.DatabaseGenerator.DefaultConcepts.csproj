@@ -160,7 +160,6 @@
     <Compile Include="SqlQueryableDatabaseDefinition.cs" />
     <Compile Include="SqlDependsOnPropertyDatabaseDefinition.cs" />
     <Compile Include="EntityLoggingDefinition.cs" />
-    <Compile Include="Extensions.cs" />
     <Compile Include="PropertyLoggingDefinition.cs" />
     <Compile Include="ReferencePropertyConstraintDatabaseDefinition.cs" />
     <Compile Include="SqlDefaultPropertyDatabaseDefinition.cs" />
