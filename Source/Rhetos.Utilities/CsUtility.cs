@@ -347,5 +347,30 @@ namespace Rhetos.Utilities
             else
                 return text;
         }
+
+        public static string ReportSegment(string query, int showPosition, int maxLength)
+        {
+            int start = showPosition - maxLength / 2;
+            int end = showPosition + (maxLength + 1) / 2;
+            if (start < 0)
+            {
+                end += -start;
+                start = 0;
+            }
+            if (end > query.Length)
+            {
+                start -= end - query.Length;
+                end = query.Length;
+            }
+            if (start < 0)
+                start = 0;
+
+            string prefix = start > 0 ? "..." : "";
+            string suffix = end < query.Length ? "..." : "";
+
+            return prefix
+                + query.Substring(start, end - start).Replace(@"\", @"\\").Replace("\r", @"\r").Replace("\n", @"\n").Replace("\t", @"\t")
+                + suffix;
+        }
     }
 }
