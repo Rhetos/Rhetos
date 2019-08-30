@@ -26,9 +26,12 @@ namespace Rhetos.Dsl
 {
     public class TypeExtensionProvider
     {
-        Dictionary<Type, Dictionary<Type, ITypeExtension>> _typeExtensions;
+        /// <summary>
+        /// First key is the extension interface type, second key is the concept type.
+        /// </summary>
+        private readonly Dictionary<Type, Dictionary<Type, ITypeExtension>> _typeExtensions;
 
-        IPluginsContainer<ITypeExtension> _plugins;
+        private readonly IPluginsContainer<ITypeExtension> _plugins;
 
         public TypeExtensionProvider(IPluginsContainer<ITypeExtension> plugins)
         {
@@ -36,55 +39,64 @@ namespace Rhetos.Dsl
             _typeExtensions = new Dictionary<Type, Dictionary<Type, ITypeExtension>>();
         }
 
-        public T Get<T>(Type type) where T : ITypeExtension<IConceptInfo>
+        public TExtension Get<TExtension>(Type conceptType) where TExtension : ITypeExtension<IConceptInfo>
         {
-            var genericTypeDefinition = typeof(T).GetGenericTypeDefinition();
-
-            Dictionary<Type, ITypeExtension> _typeExtensionImplementation = null;
-            if (!_typeExtensions.TryGetValue(genericTypeDefinition, out _typeExtensionImplementation))
-            {
-                _typeExtensionImplementation = GetTypeExtensionMappingForType(genericTypeDefinition);
-                _typeExtensions.Add(genericTypeDefinition, _typeExtensionImplementation);
-            }
-
-            if (!_typeExtensionImplementation.ContainsKey(type))
-            {
-                var posibleBaseType = TryFindBaseType(type, _typeExtensionImplementation.Select(x => x.Key).ToList());
-                if (posibleBaseType != null)
-                {
-                    _typeExtensionImplementation.Add(type, _typeExtensionImplementation[posibleBaseType]);
-                }
-                else
-                {
-                    throw new FrameworkException($@"There is no type extension of type {typeof(T).Name} for type {type.Name}");
-                }
-            }
-
-            return (T)_typeExtensionImplementation[type];
+            return (TExtension)Get(typeof(TExtension), conceptType);
         }
 
-        private Dictionary<Type, ITypeExtension> GetTypeExtensionMappingForType(Type typeExtensionType)
+        public ITypeExtension Get(Type extensionInterface, Type conceptType)
         {
-            var typeExtensionMapping = new Dictionary<Type, ITypeExtension>();
+            Type expectedExtensionType = typeof(ITypeExtension<IConceptInfo>);
+            if (!expectedExtensionType.IsAssignableFrom(extensionInterface))
+                throw new FrameworkException($"{extensionInterface} does not implement {expectedExtensionType}.");
 
-            foreach (var plugin in _plugins.GetPlugins().Where(x => IsAssignableToGenericType(x.GetType(), typeExtensionType)))
+            var extensionGenericInterface = extensionInterface.GetGenericTypeDefinition();
+
+            Dictionary<Type, ITypeExtension> extensionsByConceptType;
+            if (!_typeExtensions.TryGetValue(extensionGenericInterface, out extensionsByConceptType))
             {
-                var type = plugin.GetType();
-                var interfaceIplementationType = type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeExtensionType);
-                var typeExtensionInterface = type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ITypeExtension<>));
-                var typeExtensionGenericArgument = typeExtensionInterface.GetGenericArguments().Single();
+                extensionsByConceptType = GetTypeExtensionMappingForType(extensionGenericInterface);
+                _typeExtensions.Add(extensionGenericInterface, extensionsByConceptType);
+            }
 
-                if (!typeExtensionMapping.ContainsKey(typeExtensionGenericArgument))
+            if (!extensionsByConceptType.ContainsKey(conceptType))
+            {
+                var conceptBaseType = TryFindBaseType(conceptType, extensionsByConceptType.Select(x => x.Key).ToList());
+                if (conceptBaseType != null)
                 {
-                    typeExtensionMapping.Add(typeExtensionGenericArgument, plugin as ITypeExtension);
+                    extensionsByConceptType.Add(conceptType, extensionsByConceptType[conceptBaseType]);
                 }
                 else
                 {
-                    throw new FrameworkException($@"There is already an implementation of {interfaceIplementationType.Name} for type {typeExtensionGenericArgument.Name}");
+                    throw new FrameworkException($@"There is no {nameof(ITypeExtension)} plugin of type {extensionInterface} for concept {conceptType}.");
                 }
             }
 
-            return typeExtensionMapping;
+            return extensionsByConceptType[conceptType];
+        }
+
+        private Dictionary<Type, ITypeExtension> GetTypeExtensionMappingForType(Type extensionGenericInterface)
+        {
+            var extensionsByConceptType = new Dictionary<Type, ITypeExtension>();
+
+            foreach (var plugin in _plugins.GetPlugins().Where(x => IsAssignableToGenericType(x.GetType(), extensionGenericInterface)))
+            {
+                var type = plugin.GetType();
+                var interfaceIplementationType = type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == extensionGenericInterface);
+                var typeExtensionInterface = type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ITypeExtension<>));
+                var conceptType = typeExtensionInterface.GetGenericArguments().Single();
+
+                if (!extensionsByConceptType.ContainsKey(conceptType))
+                {
+                    extensionsByConceptType.Add(conceptType, plugin);
+                }
+                else
+                {
+                    throw new FrameworkException($@"There is already an implementation of {interfaceIplementationType} for type {conceptType}.");
+                }
+            }
+
+            return extensionsByConceptType;
         }
 
         private static bool IsAssignableToGenericType(Type givenType, Type genericType)

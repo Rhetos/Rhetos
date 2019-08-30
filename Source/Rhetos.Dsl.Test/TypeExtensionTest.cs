@@ -106,7 +106,7 @@ namespace Rhetos.Dsl.Test
 
             TestUtility.ShouldFail(() => {
                 var typeExtension = extensionProvider.Get<SimpleTypeExtension<IConceptInfo>>(typeof(SimpleConcept1));
-            }, "There is no type extension");
+            }, "There is no ITypeExtension plugin", "SimpleTypeExtension", "SimpleConcept1");
         }
     }
 }
