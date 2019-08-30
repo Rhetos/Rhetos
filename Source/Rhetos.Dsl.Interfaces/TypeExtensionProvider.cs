@@ -55,67 +55,40 @@ namespace Rhetos.Dsl
             Dictionary<Type, ITypeExtension> extensionsByConceptType;
             if (!_typeExtensions.TryGetValue(extensionGenericInterface, out extensionsByConceptType))
             {
-                extensionsByConceptType = GetTypeExtensionMappingForType(extensionGenericInterface);
+                extensionsByConceptType = GetTypeExtensionMappingForType(extensionInterface, extensionGenericInterface);
                 _typeExtensions.Add(extensionGenericInterface, extensionsByConceptType);
             }
 
             if (!extensionsByConceptType.ContainsKey(conceptType))
             {
                 var conceptBaseType = TryFindBaseType(conceptType, extensionsByConceptType.Select(x => x.Key).ToList());
-                if (conceptBaseType != null)
-                {
-                    extensionsByConceptType.Add(conceptType, extensionsByConceptType[conceptBaseType]);
-                }
-                else
-                {
+                if (conceptBaseType == null)
                     throw new FrameworkException($@"There is no {nameof(ITypeExtension)} plugin of type {extensionInterface} for concept {conceptType}.");
-                }
+
+                extensionsByConceptType.Add(conceptType, extensionsByConceptType[conceptBaseType]);
             }
 
             return extensionsByConceptType[conceptType];
         }
 
-        private Dictionary<Type, ITypeExtension> GetTypeExtensionMappingForType(Type extensionGenericInterface)
+        private Dictionary<Type, ITypeExtension> GetTypeExtensionMappingForType(Type extensionInterface, Type extensionGenericInterface)
         {
             var extensionsByConceptType = new Dictionary<Type, ITypeExtension>();
 
-            foreach (var plugin in _plugins.GetPlugins().Where(x => IsAssignableToGenericType(x.GetType(), extensionGenericInterface)))
+            foreach (var plugin in _plugins.GetPlugins().Where(x => extensionInterface.IsInstanceOfType(x)))
             {
-                var type = plugin.GetType();
-                var interfaceIplementationType = type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == extensionGenericInterface);
-                var typeExtensionInterface = type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ITypeExtension<>));
+                var pluginType = plugin.GetType();
+                var typeExtensionInterface = pluginType.GetInterfaces().Single(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ITypeExtension<>));
                 var conceptType = typeExtensionInterface.GetGenericArguments().Single();
 
-                if (!extensionsByConceptType.ContainsKey(conceptType))
-                {
-                    extensionsByConceptType.Add(conceptType, plugin);
-                }
-                else
-                {
-                    throw new FrameworkException($@"There is already an implementation of {interfaceIplementationType} for type {conceptType}.");
-                }
+                if (extensionsByConceptType.ContainsKey(conceptType))
+                    throw new FrameworkException($"There are multiple implementation of {extensionGenericInterface.Name} for type {conceptType.Name}:" +
+                        $" '{extensionsByConceptType[conceptType].GetType()}' and '{pluginType}'.");
+
+                extensionsByConceptType.Add(conceptType, plugin);
             }
 
             return extensionsByConceptType;
-        }
-
-        private static bool IsAssignableToGenericType(Type givenType, Type genericType)
-        {
-            var interfaceTypes = givenType.GetInterfaces();
-
-            foreach (var it in interfaceTypes)
-            {
-                if (it.IsGenericType && it.GetGenericTypeDefinition() == genericType)
-                    return true;
-            }
-
-            if (givenType.IsGenericType && givenType.GetGenericTypeDefinition() == genericType)
-                return true;
-
-            Type baseType = givenType.BaseType;
-            if (baseType == null) return false;
-
-            return IsAssignableToGenericType(baseType, genericType);
         }
 
         private static Type TryFindBaseType(Type t, List<Type> allowedTypes)
