@@ -121,15 +121,13 @@ namespace Rhetos.Dsl
         private static Type TryFindBaseType(Type t, List<Type> allowedTypes)
         {
             var baseType = t.BaseType;
-            while (t.BaseType != typeof(object))
+
+            while (baseType != null && baseType.IsClass)
             {
-                if (allowedTypes.Contains(baseType) && baseType.IsClass)
+                if (allowedTypes.Contains(baseType))
                     return baseType;
 
                 baseType = baseType.BaseType;
-
-                if (baseType == null)
-                    return null;
             }
 
             return null;
