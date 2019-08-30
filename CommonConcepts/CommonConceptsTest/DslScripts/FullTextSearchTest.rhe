@@ -18,7 +18,7 @@ Module TestFullTextSearch
 		ShortString Description;
 	}
 	
-	SqlQueryable Compute_Simple_Search
+	SqlQueryable ComputeSimpleFTS
 		"SELECT ID, Text = Name + '/' + CONVERT(NVARCHAR(100), Code) FROM TestFullTextSearch.Simple"
 	{
 		AutoDetectSqlDependencies;
@@ -26,28 +26,67 @@ Module TestFullTextSearch
 		LongString Text;
 	}
 	
-	Persisted Simple_Search TestFullTextSearch.Compute_Simple_Search
+	Persisted SimpleFTS TestFullTextSearch.ComputeSimpleFTS
 	{
 		AllProperties;
 		KeepSynchronized;
 	}
 	
 	SqlObject TestFullTextSearchCatalog
-		'/*DatabaseGenerator:NoTransaction*/
-		CREATE FULLTEXT CATALOG TestFullTextSearchCatalog'
-		'/*DatabaseGenerator:NoTransaction*/
-		DROP FULLTEXT CATALOG TestFullTextSearchCatalog';
+		"/*DatabaseGenerator:NoTransaction*/
+		CREATE FULLTEXT CATALOG TestFullTextSearchCatalog"
+		"/*DatabaseGenerator:NoTransaction*/
+		DROP FULLTEXT CATALOG TestFullTextSearchCatalog";
 	
 	SqlObject TestFullTextSearchSimple
-		'/*DatabaseGenerator:NoTransaction*/
-		CREATE FULLTEXT INDEX ON TestFullTextSearch.Simple_Search(Text)
-			KEY INDEX PK_Simple_Search
+		"/*DatabaseGenerator:NoTransaction*/
+		CREATE FULLTEXT INDEX ON TestFullTextSearch.SimpleFTS (Text)
+			KEY INDEX PK_SimpleFTS
 			ON TestFullTextSearchCatalog
-			WITH STOPLIST = SYSTEM'
-	   '/*DatabaseGenerator:NoTransaction*/
-	   DROP FULLTEXT INDEX ON TestFullTextSearch.Simple_Search'
+			WITH STOPLIST = SYSTEM"
+	   "/*DatabaseGenerator:NoTransaction*/
+	   DROP FULLTEXT INDEX ON TestFullTextSearch.SimpleFTS"
 	{
 		SqlDependsOnSqlObject TestFullTextSearch.TestFullTextSearchCatalog;
-		SqlDependsOn TestFullTextSearch.Simple_Search.Text;
+		SqlDependsOn TestFullTextSearch.SimpleFTS.Text;
+	}
+
+	//===========================================================
+	// Using an alternative integer key instead of GUID ID:
+
+	Entity AlternativeEntity
+	{
+		Integer AlternativeKey;
+		ShortString Text1;
+		ShortString Text2;
+	}
+
+	SqlObject AlternativeEntityKeyNotNull
+		"ALTER TABLE TestFullTextSearch.AlternativeEntity ALTER COLUMN AlternativeKey INT NOT NULL"
+		"ALTER TABLE TestFullTextSearch.AlternativeEntity ALTER COLUMN AlternativeKey INT NULL"
+	{
+		SqlDependsOn TestFullTextSearch.AlternativeEntity.AlternativeKey;
+	}
+
+	SqlObject IX_AlternativeEntity_AlternativeKey
+		"CREATE UNIQUE INDEX IX_AlternativeEntity_AlternativeKey ON TestFullTextSearch.AlternativeEntity (AlternativeKey)"
+		"DROP INDEX IX_AlternativeEntity_AlternativeKey ON TestFullTextSearch.AlternativeEntity"
+	{
+		SqlDependsOnSqlObject TestFullTextSearch.AlternativeEntityKeyNotNull;
+	}
+
+	SqlObject TestFullTextSearchAlternative
+		"/*DatabaseGenerator:NoTransaction*/
+		CREATE FULLTEXT INDEX ON TestFullTextSearch.AlternativeEntity (Text1, Text2)
+			KEY INDEX IX_AlternativeEntity_AlternativeKey
+			ON TestFullTextSearchCatalog
+			WITH STOPLIST = SYSTEM"
+	   "/*DatabaseGenerator:NoTransaction*/
+	   DROP FULLTEXT INDEX ON TestFullTextSearch.AlternativeEntity"
+	{
+		SqlDependsOnSqlObject TestFullTextSearch.TestFullTextSearchCatalog;
+		SqlDependsOnSqlObject TestFullTextSearch.IX_AlternativeEntity_AlternativeKey;
+		SqlDependsOn TestFullTextSearch.AlternativeEntity.Text1;
+		SqlDependsOn TestFullTextSearch.AlternativeEntity.Text2;
 	}
 }

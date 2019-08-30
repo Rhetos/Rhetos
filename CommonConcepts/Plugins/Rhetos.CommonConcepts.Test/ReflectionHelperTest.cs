@@ -37,7 +37,6 @@ namespace Rhetos.CommonConcepts.Test
 
         class DerivedEntity : SimpleEntity
         {
-            public Guid ID { get; set; }
             public string Data { get; set; }
         }
 

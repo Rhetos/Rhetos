@@ -51,7 +51,7 @@ namespace Rhetos.Persistence
         /// Do not close or modify this connection directly.
         /// A single server request will be executed in one transaction. If the server request fails, the transaction will be rolled back.
         /// If you need to execute an SQL query outside of the server request's transaction, create a new database connection using Rhetos.Utilities.SqlUtility.ConnectionString.
-        /// </remarks>
+        /// </summary>
         DbConnection Connection { get; }
 
         /// <summary>

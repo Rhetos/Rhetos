@@ -32,6 +32,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Debug\Rhetos.Dom.DefaultConcepts.xml</DocumentationFile>
+    <NoWarn>1591,1573</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -41,6 +43,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Release\Rhetos.Dom.DefaultConcepts.xml</DocumentationFile>
+    <NoWarn>1591,1573</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autofac">
@@ -93,6 +97,7 @@
     <Compile Include="Computations\KeepSynchronizedRecomputeOnDeployCodeGenerator.cs" />
     <Compile Include="Computations\LockItemsLockPropertyCodeGenerator.cs" />
     <Compile Include="DataStructure\DataStructureQueryableCodeGenerator.cs" />
+    <Compile Include="DataStructure\RepositoryMemberCodeGenerator.cs" />
     <Compile Include="DataStructure\RepositoryUsesCodeGenerator.cs" />
     <Compile Include="DataStructure\SubtypeExtendFilterCodeGenerator.cs" />
     <Compile Include="DataStructure\FilterIdRepositoryCodeGenerator.cs" />
@@ -172,6 +177,7 @@
     <Compile Include="SimpleBusinessLogic\BeforeActionCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ActionCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\CreatedByCodeGenerator.cs" />
+    <Compile Include="SimpleBusinessLogic\DefaultValueCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ModificationTimeOfCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\ImplementsQueryableInterfaceCodeGenerator.cs" />
     <Compile Include="SimpleBusinessLogic\AutoCodeCachedCodeGenerator.cs" />

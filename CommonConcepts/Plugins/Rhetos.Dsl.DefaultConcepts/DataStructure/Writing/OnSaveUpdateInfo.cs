@@ -47,7 +47,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         /// If LoadOldItems concept is used, there are also available:
         ///     updatedOld (array of old items),
         ///     deletedOld (array of old items).
-        ///     See <see cref="WritableOrmDataStructureCodeGenerator.OnSaveTag1">WritableOrmDataStructureCodeGenerator.OnSaveTag1</see> for more info.
+        ///     See WritableOrmDataStructureCodeGenerator.OnSaveTag1 for more info.
         /// </summary>
         public string CsCodeSnippet { get; set; }
     }

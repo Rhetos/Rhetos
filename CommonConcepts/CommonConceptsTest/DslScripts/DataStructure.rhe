@@ -345,7 +345,8 @@ Module TestDataStructure
 			}
 			
 			OnSaveUpdate 'UpdateBaseIfNameChanged'
-				'var modifiedItemsName = updatedOld
+			'
+				var modifiedItemsName = updatedOld
 					.Zip(updatedNew, (oldValue, newValue) => new { oldValue, newValue })
 					// Safe universal property comparison:
 					.Where(modified => modified.oldValue.Name == null && modified.newValue.Name != null || modified.oldValue.Name != null && !modified.oldValue.Name.Equals(modified.newValue.Name))
@@ -355,10 +356,12 @@ Module TestDataStructure
 				var updateBaseItems = _executionContext.Repository.TestDataStructure.SaveTesterBase.Filter(updateIds);
 				foreach (var baseItem in updateBaseItems)
 					baseItem.Name += " updated";
-				_executionContext.Repository.TestDataStructure.SaveTesterBase.Update(updateBaseItems);';
+				_executionContext.Repository.TestDataStructure.SaveTesterBase.Update(updateBaseItems);
+			';
 				
 			OnSaveValidate 'DenyChangeOfLockedName'
-				'var lockedItemModifiedName = updatedOld
+			'
+				var lockedItemModifiedName = updatedOld
 					.Zip(updatedNew, (oldValue, newValue) => new { oldValue, newValue })
 					// Safe universal property comparison:
 					.Where(modified => modified.oldValue.Name == null && modified.newValue.Name != null || modified.oldValue.Name != null && !modified.oldValue.Name.Equals(modified.newValue.Name))
@@ -369,20 +372,52 @@ Module TestDataStructure
 					throw new Rhetos.UserException(string.Format(
 						"[Test] It is not allowed to modify locked item''s name ''{0}'' => ''{1}''.",
 						lockedItemModifiedName.oldValue.Name,
-						lockedItemModifiedName.newValue.Name));';
+						lockedItemModifiedName.newValue.Name));
+			';
 
 			AfterSave 'LogModifications'
-				'var modifiedItemsName = updatedOld
+			'
+				var modifiedItemsName = updatedOld
 					.Zip(updatedNew, (oldValue, newValue) => new { oldValue, newValue })
 					.Where(modified => modified.oldValue.Name == null && modified.newValue.Name != null || modified.oldValue.Name != null && !modified.oldValue.Name.Equals(modified.newValue.Name))
 					.ToList();
 				var logger = _logProvider.GetLogger("test");
 				foreach (var modified in modifiedItemsName)
-					logger.Write(Rhetos.Logging.EventType.Info, () => (modified.oldValue.Name ?? "null") + " => " + (modified.newValue.Name ?? "null"));';
+					logger.Write(Rhetos.Logging.EventType.Info, () => (modified.oldValue.Name ?? "null") + " => " + (modified.newValue.Name ?? "null"));
+			';
+
+			Initialization 'LogDeletions'
+			'
+				if (deletedIds.Any())
+				{
+					var names = this.Query(deletedIds.Select(d => d.ID)).Select(d => d.Name);
+					var report = string.Join(", ", names.OrderBy(name => name)) + ".";
+					_logProvider.GetLogger("SaveTester.Deletions").Write(Rhetos.Logging.EventType.Info, () => report);
+				}
+			';
 		}
 
 		RepositoryUses '_logProvider' 'Rhetos.Logging.ILogProvider, Rhetos.Logging.Interfaces';
 	}
+
+	Entity TestMethod
+	{
+		ShortString Name;
+
+		RepositoryMember TestMethod
+			'public IQueryable<Common.Queryable.TestDataStructure_TestMethod> TestMethod()
+			{
+				return this.Query().Where(x => x.Name == "test");
+			}';
+
+		FilterBy Limit5 '(repository, parameter) =>
+			{
+				return TestMethod().Take(5).ToArray();
+			}
+		';
+	}
+
+	Parameter Limit5;
 }
 
 Module TestQueryable

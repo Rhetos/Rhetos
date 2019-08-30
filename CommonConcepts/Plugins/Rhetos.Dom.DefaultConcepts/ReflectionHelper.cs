@@ -194,9 +194,6 @@ namespace Rhetos.Dom.DefaultConcepts
         //===================================================
         #region Methods
 
-        /// <param name="predicateExpression">
-        /// Expression&lt;Func&lt;parameter, result&gt;&gt; does not support contravariant parameter type,
-        /// so a specific function type is needed for each parameter type.</param>
         private MethodInfo _queryableWhereMethod = null;
 
         public MethodInfo QueryableWhereMethod(Type parameterType)

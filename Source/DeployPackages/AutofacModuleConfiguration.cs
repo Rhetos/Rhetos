@@ -31,24 +31,25 @@ namespace DeployPackages
     public class AutofacModuleConfiguration : Module
     {
         private readonly bool _deploymentTime;
-        private readonly bool _shortTransaction;
-        private readonly bool _deployDatabaseOnly;
+        private readonly DeployArguments _configurationArguments;
 
-        public AutofacModuleConfiguration(bool deploymentTime, bool shortTransaction, bool deployDatabaseOnly)
+        public AutofacModuleConfiguration(bool deploymentTime, DeployArguments configurationArguments)
         {
             _deploymentTime = deploymentTime;
-            _shortTransaction = shortTransaction;
-            _deployDatabaseOnly = deployDatabaseOnly;
+            _configurationArguments = configurationArguments;
         }
 
         protected override void Load(ContainerBuilder builder)
         {
+            bool shortTransaction = _configurationArguments.ShortTransactions;
+            bool deployDatabaseOnly = _configurationArguments.DeployDatabaseOnly;
+
             // Specific registrations and initialization:
             Plugins.SetInitializationLogging(DeploymentUtility.InitializationLogProvider);
 
             if (_deploymentTime)
             {
-                builder.RegisterModule(new DatabaseGeneratorModuleConfiguration(_shortTransaction));
+                builder.RegisterModule(new DatabaseGeneratorModuleConfiguration(shortTransaction));
                 builder.RegisterType<DataMigration>();
                 builder.RegisterType<DatabaseCleaner>();
                 builder.RegisterType<ApplicationGenerator>();
@@ -57,11 +58,12 @@ namespace DeployPackages
             else
             {
                 builder.RegisterType<ApplicationInitialization>();
+                builder.RegisterInstance(_configurationArguments).As<DeployArguments>();
                 Plugins.FindAndRegisterPlugins<IServerInitializer>(builder);
             }
 
             // General registrations:
-            builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(_deploymentTime, _deployDatabaseOnly));
+            builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(_deploymentTime, deployDatabaseOnly));
 
             // Specific registrations override:
             builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();

@@ -18,7 +18,6 @@
 */
 
 using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
 using System.ComponentModel.Composition;
 using Rhetos.Extensibility;
 using Rhetos.Dsl;
@@ -30,37 +29,33 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(ReferenceCascadeDeleteInfo))]
     public class ReferenceCascadeDeleteCodeGenerator : IConceptCodeGenerator
     {
-        private static string CodeSnippetDeleteChildren(ReferenceCascadeDeleteInfo info)
+        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            return string.Format(
-            @"if (deletedIds.Count() > 0)
+            var info = (ReferenceCascadeDeleteInfo)conceptInfo;
+
+            if (info.Reference.Referenced is IWritableOrmDataStructure)
+            {
+                string childName = info.Reference.DataStructure.Module.Name + "." + info.Reference.DataStructure.Name;
+
+                string snippetDeleteChildItems =
+            $@"if (deletedIds.Count() > 0)
             {{
-                List<{0}.{1}> childItems = deletedIds
-                    .SelectMany(parent => _executionContext.Repository.{0}.{1}.Query()
-                        .Where(child => child.{2}ID == parent.ID)
+                List<{childName}> childItems = deletedIds
+                    .SelectMany(parent => _executionContext.Repository.{childName}.Query()
+                        .Where(child => child.{info.Reference.Name}ID == parent.ID)
                         .Select(child => child.ID)
                         .ToList())
-                    .Select(childId => new {0}.{1} {{ ID = childId }})
+                    .Select(childId => new {childName} {{ ID = childId }})
                     .ToList();
 
                 if (childItems.Count() > 0)
-                    _domRepository.{0}.{1}.Delete(childItems);
+                    _domRepository.{childName}.Delete(childItems);
             }}
 
-            ",
-            info.Reference.DataStructure.Module.Name,
-            info.Reference.DataStructure.Name,
-            info.Reference.Name,
-            info.Reference.Referenced.Module.Name,
-            info.Reference.Referenced.Name);
-        }
+            ";
 
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
-        {
-            var info = ((ReferenceCascadeDeleteInfo)conceptInfo);
-
-            if(info.Reference.Referenced is IWritableOrmDataStructure)
-                codeBuilder.InsertCode(CodeSnippetDeleteChildren(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Reference.Referenced);
+                codeBuilder.InsertCode(snippetDeleteChildItems, WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Reference.Referenced);
+            }
         }
     }
 }

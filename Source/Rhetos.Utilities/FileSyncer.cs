@@ -22,6 +22,7 @@ using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -34,11 +35,13 @@ namespace Rhetos.Utilities
     public class FileSyncer
     {
         private readonly ILogger _logger;
+        private readonly ILogger _performanceLogger;
         private readonly FilesUtility _filesUtility;
 
         public FileSyncer(ILogProvider logProvider)
         {
             _logger = logProvider.GetLogger(GetType().Name);
+            _performanceLogger = logProvider.GetLogger("Performance");
             _filesUtility = new FilesUtility(logProvider);
         }
 
@@ -102,26 +105,56 @@ namespace Rhetos.Utilities
 
         public void UpdateDestination(bool deleteSource = false)
         {
+            var sw = Stopwatch.StartNew();
+
+            int countDestination = 0;
+            int countMoved = 0;
+            int countCopied = 0;
+            int countDeleted = 0;
+
             var ignoreFiles = CheckSourceForDuplicates();
 
             foreach (var destination in _filesByDestination)
             {
                 _filesUtility.EmptyDirectory(destination.Key);
+                countDestination++;
+
                 foreach (var copyFile in destination.Value)
                     if (!ignoreFiles.Contains(copyFile.File))
                     {
                         if (deleteSource)
+                        {
                             _filesUtility.SafeMoveFile(copyFile.File, copyFile.Target);
+                            countMoved++;
+                        }
                         else
+                        {
                             _filesUtility.SafeCopyFile(copyFile.File, copyFile.Target);
+                            countCopied++;
+                        }
                     }
                     else
                     {
                         if (deleteSource)
+                        {
                             _filesUtility.SafeDeleteFile(copyFile.File);
+                            countDeleted++;
+                        }
                     }
             }
             _filesByDestination.Clear();
+
+            var report = new StringBuilder(100);
+            report.Append("FileSyncer.UpdateDestination ").Append(countDestination).Append(" destinations");
+            if (countMoved > 0)
+                report.Append($", {countMoved} moved");
+            if (countCopied > 0)
+                report.Append($", {countCopied} copied");
+            if (countDeleted > 0)
+                report.Append($", {countDeleted} deleted");
+            report.Append(".");
+
+            _performanceLogger.Write(sw, () => report.ToString());
         }
 
         private HashSet<string> CheckSourceForDuplicates()

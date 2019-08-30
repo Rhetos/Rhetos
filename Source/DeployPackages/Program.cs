@@ -40,13 +40,13 @@ namespace DeployPackages
         {
             ILogger logger = new ConsoleLogger("DeployPackages"); // Using the simplest logger outside of try-catch block.
             string oldCurrentDirectory = null;
-            Arguments arguments = null;
+            DeployArguments arguments = null;
 
             try
             {
                 logger = DeploymentUtility.InitializationLogProvider.GetLogger("DeployPackages"); // Setting the final log provider inside the try-catch block, so that the simple ConsoleLogger can be used (see above) in case of an initialization error.
 
-                arguments = new Arguments(args);
+                arguments = new DeployArguments(args);
                 if (arguments.Help)
                     return 1;
 
@@ -99,7 +99,7 @@ namespace DeployPackages
             return 0;
         }
 
-        private static void InitialCleanup(ILogger logger, Arguments arguments)
+        private static void InitialCleanup(ILogger logger, DeployArguments arguments)
         {
             // Warning to backup obsolete folders:
 
@@ -146,7 +146,7 @@ namespace DeployPackages
             }
         }
 
-        private static void DownloadPackages(ILogger logger, Arguments arguments)
+        private static void DownloadPackages(ILogger logger, DeployArguments arguments)
         {
             if (!arguments.DeployDatabaseOnly)
             {
@@ -162,7 +162,7 @@ namespace DeployPackages
                 logger.Info("Skipped download packages (DeployDatabaseOnly).");
         }
 
-        private static void GenerateApplication(ILogger logger, Arguments arguments)
+        private static void GenerateApplication(ILogger logger, DeployArguments arguments)
         {
             logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
@@ -170,8 +170,7 @@ namespace DeployPackages
             var builder = new ContainerBuilder();
             builder.RegisterModule(new AutofacModuleConfiguration(
                 deploymentTime: true,
-                shortTransaction: arguments.ShortTransactions,
-                deployDatabaseOnly: arguments.DeployDatabaseOnly));
+                configurationArguments: arguments));
 
             using (var container = builder.Build())
             {
@@ -186,7 +185,7 @@ namespace DeployPackages
             }
         }
 
-        private static void InitializeGeneratedApplication(ILogger logger, Arguments arguments)
+        private static void InitializeGeneratedApplication(ILogger logger, DeployArguments arguments)
         {
             // Creating a new container builder instead of using builder.Update, because of severe performance issues with the Update method.
             Plugins.ClearCache();
@@ -197,9 +196,8 @@ namespace DeployPackages
             var builder = new ContainerBuilder();
             builder.RegisterModule(new AutofacModuleConfiguration(
                 deploymentTime: false,
-                shortTransaction: arguments.ShortTransactions,
-                deployDatabaseOnly: arguments.DeployDatabaseOnly));
-
+                configurationArguments: arguments));
+            
             using (var container = builder.Build())
             {
                 var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
@@ -208,11 +206,14 @@ namespace DeployPackages
                 performanceLogger.Write(stopwatch, "DeployPackages.Program: New modules and plugins registered.");
                 Plugins.LogRegistrationStatistics("Initializing application", container);
 
-                foreach (var initializer in initializers)
-                    ApplicationInitialization.ExecuteInitializer(container, initializer);
-
                 if (!initializers.Any())
+                {
                     logger.Trace("No server initialization plugins.");
+                } else
+                {
+                    foreach (var initializer in initializers)
+                        ApplicationInitialization.ExecuteInitializer(container, initializer);
+                }
             }
 
             RestartWebServer(logger);

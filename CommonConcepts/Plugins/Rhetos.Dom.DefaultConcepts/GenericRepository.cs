@@ -301,7 +301,7 @@ namespace Rhetos.Dom.DefaultConcepts
             }
             if (typeof(IEnumerable<FilterCriteria>).IsAssignableFrom(parameterType))
             {
-                _logger.Trace(() => "Reading using generic filter");
+                _logger.Trace(() => "Reading using generic filters");
                 return ExecuteGenericFilter((IEnumerable<FilterCriteria>)parameter, preferQuery);
             }
 
@@ -479,7 +479,7 @@ namespace Rhetos.Dom.DefaultConcepts
             }
             if (typeof(IEnumerable<FilterCriteria>).IsAssignableFrom(parameterType))
             {
-                _logger.Trace(() => "Filtering using generic filter");
+                _logger.Trace(() => "Filtering using generic filters");
                 return ExecuteGenericFilter((IEnumerable<FilterCriteria>)parameter, preferQuery, items);
             }
 
@@ -760,7 +760,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Comparison may also include key properties with stricter constraints (such as case sensitivity).
         /// Typical implementation:
         /// <code>(x, y) =&gt; x.Name == y.Name &amp;&amp; x.SomeValue == y.SomeValue;</code></param>
-        /// <param name="filterLoad">For supported filters types see <see cref="Load{TParameter}(TParameter)"/> function.</param>
+        /// <param name="filterLoad">For supported filters types see <see cref="Load"/> function.</param>
         /// <param name="assign">Typical implementation:
         /// <code>(destination, source) =&gt; {
         ///     destination.Property1 = source.Property1;
@@ -822,12 +822,12 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Comparison may also include key properties with stricter constraints (such as case sensitivity).
         /// Typical implementation:
         /// <code>(x, y) =&gt; x.Name == y.Name &amp;&amp; x.SomeValue == y.SomeValue;</code></param>
-        /// <param name="filterLoad">For supported filters types see <see cref="Load{TParameter}(TParameter)"/> function.</param>
+        /// <param name="filterLoad">For supported filters types see <see cref="Load"/> function.</param>
         /// <param name="assign">Typical implementation:
         /// <code>(destination, source) =&gt; {
         ///     destination.Property1 == source.Property1;
         ///     destination.Property2 == source.Property2; }</code></param>
-        /// <param name="deactivateDeleted">A filter that selects items that should be deactivated instead of deleted.
+        /// <param name="filterDeactivateDeleted">A filter that selects items that should be deactivated instead of deleted.
         /// Typical implementation:
         /// <code>(Func&lt;IEntity, bool&gt;)(item =&gt; ItemsInUseHashSet.Contains(item.ID))</code>
         /// <br/>For supported filters types see <see cref="Filter"/> function.

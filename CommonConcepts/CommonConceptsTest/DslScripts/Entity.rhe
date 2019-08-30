@@ -33,6 +33,21 @@
 	{
 		ShortString Name;
 		Reference Parent TestEntity.BaseEntity { Detail; }
+
+		SaveMethod
+		{
+			Initialization LogDeletions
+			'
+				if (deletedIds.Any())
+				{
+					var names = this.Query(deletedIds.Select(d => d.ID)).Select(d => d.Name);
+					var report = string.Join(", ", names.OrderBy(name => name)) + ".";
+					_logProvider.GetLogger("Child.Deletions").Write(Rhetos.Logging.EventType.Info, () => report);
+				}
+			';
+		}
+
+		RepositoryUses _logProvider 'Rhetos.Logging.ILogProvider, Rhetos.Logging.Interfaces';
 	}
 	
 	Browse ChildBrowse TestEntity.Child

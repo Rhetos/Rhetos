@@ -36,9 +36,9 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     /// </summary>
     public static class PropertyDatabaseDefinition
     {
-        /// <summary>Ordering of options may be important./summary>
+        /// <summary>Ordering of options may be important.</summary>
         public static readonly SqlTag<PropertyInfo> Options1Tag = "Options1";
-        /// <summary>Ordering of options may be important./summary>
+        /// <summary>Ordering of options may be important.</summary>
         public static readonly SqlTag<PropertyInfo> Options2Tag = "Options2";
         public static readonly SqlTag<PropertyInfo> AfterCreateTag = "AfterCreate";
         public static readonly SqlTag<PropertyInfo> BeforeRemoveTag = "BeforeRemove";

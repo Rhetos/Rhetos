@@ -66,8 +66,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             codeBuilder.InsertCode(GenerateCommonClassesSnippet());
 
-            if (_configuration.GetBool("EntityFramework.UseDatabaseNullSemantics", false).Value == true)
-                codeBuilder.InsertCode("this.Configuration.UseDatabaseNullSemantics = true;\r\n            ", EntityFrameworkContextInitializeTag);
+            codeBuilder.InsertCode("this.Configuration.UseDatabaseNullSemantics = _configuration.GetBool(\"EntityFramework.UseDatabaseNullSemantics\", false).Value;\r\n            ", EntityFrameworkContextInitializeTag);
 
             // Types used in the preceding code snippet:
             codeBuilder.AddReferencesFromDependency(typeof(Autofac.Module)); // Includes a reference to Autofac.dll.
@@ -163,12 +162,16 @@ namespace Common
 
     public class EntityFrameworkContext : System.Data.Entity.DbContext, Rhetos.Persistence.IPersistenceCache
     {{
+        private readonly Rhetos.Utilities.IConfiguration _configuration;
+
         public EntityFrameworkContext(
             Rhetos.Persistence.IPersistenceTransaction persistenceTransaction,
             Rhetos.Dom.DefaultConcepts.Persistence.EntityFrameworkMetadata metadata,
-            EntityFrameworkConfiguration configuration) // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
+            EntityFrameworkConfiguration entityFrameworkConfiguration, // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
+            Rhetos.Utilities.IConfiguration configuration)
             : base(new System.Data.Entity.Core.EntityClient.EntityConnection(metadata.MetadataWorkspace, persistenceTransaction.Connection), false)
         {{
+            _configuration = configuration;
             Initialize();
             Database.UseTransaction(persistenceTransaction.Transaction);
         }}
@@ -179,9 +182,11 @@ namespace Common
         /// </summary>
         protected EntityFrameworkContext(
             System.Data.Common.DbConnection connection,
-            EntityFrameworkConfiguration configuration) // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
+            EntityFrameworkConfiguration entityFrameworkConfiguration, // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
+            Rhetos.Utilities.IConfiguration configuration)
             : base(connection, true)
         {{
+            _configuration = configuration;
             Initialize();
         }}
 

@@ -26,6 +26,15 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Automatically deletes detail records when a master record is deleted.
+    /// </summary>
+    /// <remarks>
+    /// This feature does not create "on delete cascade" in database
+    /// (since Rhetos v2.11, unless CommonConcepts.Legacy.CascadeDeleteInDatabase is enabled).
+    /// It is implemented in the application layer, because a database implementation would not execute
+    /// any business logic that is implemented on the child entity.
+    /// </remarks> 
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("CascadeDelete")]
     public class ReferenceCascadeDeleteInfo : IConceptInfo

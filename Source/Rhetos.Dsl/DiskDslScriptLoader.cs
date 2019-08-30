@@ -18,7 +18,6 @@
 */
 
 using Rhetos.Deployment;
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,56 +28,47 @@ namespace Rhetos.Dsl
 {
     public class DiskDslScriptLoader : IDslScriptsProvider
     {
-        protected readonly IInstalledPackages _installedPackages;
+        private readonly Lazy<IEnumerable<DslScript>> _scripts;
 
         public DiskDslScriptLoader(IInstalledPackages installedPackages)
         {
-            _installedPackages = installedPackages;
+            _scripts = new Lazy<IEnumerable<DslScript>>(() => LoadScripts(installedPackages));
         }
 
-        private List<DslScript> _scripts = null;
-        private readonly object _scriptsLock = new object();
+        public IEnumerable<DslScript> DslScripts => _scripts.Value;
 
         const string DslScriptsSubfolder = "DslScripts";
 
-        public IEnumerable<DslScript> DslScripts
+        private List<DslScript> LoadScripts(IInstalledPackages installedPackages)
         {
-            get
+            var scripts = new List<DslScript>();
+
+            foreach (var package in installedPackages.Packages)
             {
-                if (_scripts == null)
-                    lock (_scriptsLock)
-                        if (_scripts == null)
+                if (!Directory.Exists(package.Folder))
+                    throw new FrameworkException($"Source folder for package '{package.Id}' does not exist: '{package.Folder}'.");
+                string dslScriptsFolder = Path.Combine(package.Folder, DslScriptsSubfolder);
+                if (Directory.Exists(dslScriptsFolder))
+                {
+                    var baseFolder = Path.GetFullPath(dslScriptsFolder);
+                    if (baseFolder.Last() != '\\') baseFolder += '\\';
+
+                    var files = Directory.GetFiles(baseFolder, "*.rhe", SearchOption.AllDirectories).OrderBy(path => path);
+
+                    var packageScripts = files.Select(file =>
+                        new DslScript
                         {
-                            _scripts = new List<DslScript>();
+                            // Using package.Id instead of full package subfolder name, in order to keep the same script path between different versions of the package (the folder name will contain the version number).
+                            Name = package.Id + "\\" + file.Substring(baseFolder.Length),
+                            Script = File.ReadAllText(file, Encoding.Default),
+                            Path = file
+                        });
 
-                            foreach (var package in _installedPackages.Packages)
-                            {
-                                if (!Directory.Exists(package.Folder))
-                                    throw new FrameworkException($"Source folder for package '{package.Id}' does not exist: '{package.Folder}'.");
-                                string dslScriptsFolder = Path.Combine(package.Folder, DslScriptsSubfolder);
-                                if (Directory.Exists(dslScriptsFolder))
-                                {
-                                    var baseFolder = Path.GetFullPath(dslScriptsFolder);
-                                    if (baseFolder.Last() != '\\') baseFolder += '\\';
-
-                                    var files = Directory.GetFiles(baseFolder, "*.rhe", SearchOption.AllDirectories).OrderBy(path => path);
-
-                                    var packageScripts = files.Select(file =>
-                                        new DslScript
-                                        {
-                                            // Using package.Id instead of full package subfolder name, in order to keep the same script path between different versions of the package (the folder name will contain the version number).
-                                            Name = package.Id + "\\" + file.Substring(baseFolder.Length),
-                                            Script = File.ReadAllText(file, Encoding.Default),
-                                            Path = file
-                                        });
-
-                                    _scripts.AddRange(packageScripts);
-                                }
-                            }
-                        }
-
-                return _scripts;
+                    scripts.AddRange(packageScripts);
+                }
             }
+
+            return scripts;
         }
     }
 }
