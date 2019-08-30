@@ -34,11 +34,11 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(SqlNotNullInfo))]
     public class SqlNotNullDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
-        private readonly ConceptMetadata _conceptMetadata;
+        private readonly TypeExtensionProvider _typeExtension;
 
-        public SqlNotNullDatabaseDefinition(ConceptMetadata conceptMetadata)
+        public SqlNotNullDatabaseDefinition(TypeExtensionProvider typeExtension)
         {
-            _conceptMetadata = conceptMetadata;
+            _typeExtension = typeExtension;
         }
 
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
@@ -56,20 +56,18 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             var info = (SqlNotNullInfo)conceptInfo;
             var sql = new StringBuilder();
 
-            if (_conceptMetadata.Contains(info.Property, PropertyDatabaseDefinition.ColumnTypesMetadata))
+            if (_typeExtension.Get<IDatabaseColumnType<PropertyInfo>>(info.Property.GetType()) != null)
             {
-                var columnNames = _conceptMetadata.Get(info.Property, PropertyDatabaseDefinition.ColumnNamesMetadata);
-                var columnTypes = _conceptMetadata.Get(info.Property, PropertyDatabaseDefinition.ColumnTypesMetadata);
-                var columns = columnNames.Zip(columnTypes, (name, type) => new { name, type });
+                var columnName = _typeExtension.Get<IDatabaseColumnName<PropertyInfo>>(info.Property.GetType()).GetColumnName(info.Property);
+                var columnType = _typeExtension.Get<IDatabaseColumnType<PropertyInfo>>(info.Property.GetType()).ColumnType;
 
-                foreach (var column in columns)
-                    sql.AppendLine(Sql.Format("SqlNotNull_Create",
-                        SqlUtility.Identifier(info.Property.DataStructure.Module.Name),
-                        SqlUtility.Identifier(info.Property.DataStructure.Name),
-                        column.name,
-                        column.type,
-                        info.InitialValueSqlExpression,
-                        SqlUtility.ScriptSplitterTag).Trim());
+                sql.AppendLine(Sql.Format("SqlNotNull_Create",
+                    SqlUtility.Identifier(info.Property.DataStructure.Module.Name),
+                    SqlUtility.Identifier(info.Property.DataStructure.Name),
+                    columnName,
+                    columnType,
+                    info.InitialValueSqlExpression,
+                    SqlUtility.ScriptSplitterTag).Trim());
             }
 
             var sqlSnippet = sql.ToString().Trim() + "\r\n";

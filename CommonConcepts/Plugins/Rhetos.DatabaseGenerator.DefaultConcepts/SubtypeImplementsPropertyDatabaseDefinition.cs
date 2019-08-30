@@ -32,11 +32,11 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(SubtypeImplementsPropertyInfo))]
     public class SubtypeImplementsPropertyDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
-        ConceptMetadata _conceptMetadata;
+        TypeExtensionProvider _typeExtension;
 
-        public SubtypeImplementsPropertyDatabaseDefinition(ConceptMetadata conceptMetadata)
+        public SubtypeImplementsPropertyDatabaseDefinition(TypeExtensionProvider typeExtension)
         {
-            _conceptMetadata = conceptMetadata;
+            _typeExtension = typeExtension;
         }
 
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
@@ -62,9 +62,9 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
         private string PropertyImplementationSnippet(SubtypeImplementsPropertyInfo info)
         {
-            var propertyColumnNames = _conceptMetadata.Get(info.Property, PropertyDatabaseDefinition.ColumnNamesMetadata);
+            var propertyColumnName = _typeExtension.Get<IDatabaseColumnName<PropertyInfo>>(info.Property.GetType()).GetColumnName(info.Property);
 
-            return ",\r\n    " + propertyColumnNames.Single() + " = " + info.Expression;
+            return ",\r\n    " + propertyColumnName + " = " + info.Expression;
         }
     }
 }
