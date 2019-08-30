@@ -53,8 +53,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (PolymorphicPropertyInfo)conceptInfo;
 
-            var propertyColumnName = _typeExtension.Get<IDatabaseColumnName<PropertyInfo>>(info.Property.GetType()).GetColumnName(info.Property);
-            var propertyColumnType = _typeExtension.Get<IDatabaseColumnType<PropertyInfo>>(info.Property.GetType()).ColumnType;
+            var propertyColumnName = _typeExtension.GetColumnName(info.Property);
+            var propertyColumnType = _typeExtension.GetColumnType(info.Property);
 
             string columnImplementationsSelector = info.IsImplementable()
                 ? ", " + propertyColumnName

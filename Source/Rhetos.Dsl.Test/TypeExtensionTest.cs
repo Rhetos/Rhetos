@@ -85,8 +85,10 @@ namespace Rhetos.Dsl.Test
                     new SimpleTypeExtensionImplementation12()
                 }));
 
-                var typeExtension =  extensionProvider.Get<SimpleTypeExtension<IConceptInfo>>(typeof(SimpleConcept1));
-            }, "There is already an implementation of");
+                var typeExtension = extensionProvider.Get<SimpleTypeExtension<IConceptInfo>>(typeof(SimpleConcept1));
+            },
+                "There are multiple implementations of", "SimpleTypeExtensionImplementation1", "SimpleTypeExtensionImplementation12",
+                "SimpleTypeExtension", "SimpleConcept1");
         }
 
         [TestMethod]

@@ -19,11 +19,25 @@
 
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
+using System;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
-    public interface IDatabaseColumnType<out T> : ITypeExtension<T> where T : PropertyInfo 
+    public interface IDatabaseColumnType<out T> : ITypeExtension<T> where T : PropertyInfo
     {
         string ColumnType { get; }
+    }
+
+    public static class DatabaseColumnTypeExtension
+    {
+        public static string GetColumnType(this TypeExtensionProvider typeExtensionProvider, PropertyInfo property)
+        {
+            return typeExtensionProvider.Get<IDatabaseColumnType<PropertyInfo>>(property.GetType())?.ColumnType;
+        }
+
+        public static string GetColumnType(this TypeExtensionProvider typeExtensionProvider, Type propertyType)
+        {
+            return typeExtensionProvider.Get<IDatabaseColumnType<PropertyInfo>>(propertyType)?.ColumnType;
+        }
     }
 }

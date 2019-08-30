@@ -82,7 +82,7 @@ namespace Rhetos.Dsl
                 var conceptType = typeExtensionInterface.GetGenericArguments().Single();
 
                 if (extensionsByConceptType.ContainsKey(conceptType))
-                    throw new FrameworkException($"There are multiple implementation of {extensionGenericInterface.Name} for type {conceptType.Name}:" +
+                    throw new FrameworkException($"There are multiple implementations of {extensionGenericInterface.Name} for type {conceptType.Name}:" +
                         $" '{extensionsByConceptType[conceptType].GetType()}' and '{pluginType}'.");
 
                 extensionsByConceptType.Add(conceptType, plugin);

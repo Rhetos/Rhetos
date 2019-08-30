@@ -56,11 +56,11 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             var info = (SqlNotNullInfo)conceptInfo;
             var sql = new StringBuilder();
 
-            if (_typeExtension.Get<IDatabaseColumnType<PropertyInfo>>(info.Property.GetType()) != null)
-            {
-                var columnName = _typeExtension.Get<IDatabaseColumnName<PropertyInfo>>(info.Property.GetType()).GetColumnName(info.Property);
-                var columnType = _typeExtension.Get<IDatabaseColumnType<PropertyInfo>>(info.Property.GetType()).ColumnType;
+            var columnName = _typeExtension.GetColumnName(info.Property);
+            var columnType = _typeExtension.GetColumnType(info.Property);
 
+            if (columnType != null)
+            {
                 sql.AppendLine(Sql.Format("SqlNotNull_Create",
                     SqlUtility.Identifier(info.Property.DataStructure.Module.Name),
                     SqlUtility.Identifier(info.Property.DataStructure.Name),

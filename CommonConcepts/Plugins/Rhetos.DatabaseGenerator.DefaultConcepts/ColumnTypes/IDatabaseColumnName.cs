@@ -26,4 +26,12 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     {
         string GetColumnName(PropertyInfo concept);
     }
+
+    public static class DatabaseColumnNameExtension
+    {
+        public static string GetColumnName(this TypeExtensionProvider typeExtensionProvider, PropertyInfo property)
+        {
+            return typeExtensionProvider.Get<IDatabaseColumnName<PropertyInfo>>(property.GetType())?.GetColumnName(property);
+        }
+    }
 }
