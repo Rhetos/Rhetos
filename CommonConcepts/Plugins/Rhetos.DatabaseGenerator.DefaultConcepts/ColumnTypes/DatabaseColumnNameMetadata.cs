@@ -17,11 +17,28 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace Rhetos.Dsl
-{
-    public interface ITypeExtension
-    { }
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Utilities;
+using System.ComponentModel.Composition;
 
-    public interface ITypeExtension<out T> : ITypeExtension where T : IConceptInfo
-    { }
+namespace Rhetos.DatabaseGenerator.DefaultConcepts
+{
+    [Export(typeof(IConceptMetadataExtension))]
+    public class PropertyDatabaseColumnNameMetadata : IDatabaseColumnName<PropertyInfo>
+    {
+        public string GetColumnName(PropertyInfo info)
+        {
+            return SqlUtility.Identifier(info.Name);
+        }
+    }
+
+    [Export(typeof(IConceptMetadataExtension))]
+    public class ReferencePropertyDatabaseColumnNameMetadata : IDatabaseColumnName<ReferencePropertyInfo>
+    {
+        public string GetColumnName(PropertyInfo info)
+        {
+            return SqlUtility.Identifier(info.Name + "ID");
+        }
+    }
 }

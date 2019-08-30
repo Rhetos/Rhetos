@@ -77,7 +77,7 @@
     </Compile>
     <Compile Include="TokenizerTest.cs" />
     <Compile Include="InitializationConceptTest.cs" />
-    <Compile Include="TypeExtensionTest.cs" />
+    <Compile Include="ConceptMetadataTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Source\Rhetos.Utilities\Rhetos.Utilities.csproj">

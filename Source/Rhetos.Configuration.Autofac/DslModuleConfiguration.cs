@@ -44,11 +44,11 @@ namespace Rhetos.Configuration.Autofac
                 builder.RegisterType<DslModelFile>().As<IDslModelFile>().SingleInstance();
                 builder.RegisterType<DslParser>().As<IDslParser>();
                 builder.RegisterType<MacroOrderRepository>().As<IMacroOrderRepository>();
-                builder.RegisterType<TypeExtensionProvider>().SingleInstance();
+                builder.RegisterType<ConceptMetadata>().SingleInstance();
                 builder.RegisterType<InitializationConcept>().As<IConceptInfo>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos dlls.
                 Plugins.FindAndRegisterPlugins<IConceptInfo>(builder);
                 Plugins.FindAndRegisterPlugins<IConceptMacro>(builder, typeof(IConceptMacro<>));
-                Plugins.FindAndRegisterPlugins<ITypeExtension>(builder);
+                Plugins.FindAndRegisterPlugins<IConceptMetadataExtension>(builder);
             }
 
             if (_deploymentTime && !_deployDatabaseOnly)

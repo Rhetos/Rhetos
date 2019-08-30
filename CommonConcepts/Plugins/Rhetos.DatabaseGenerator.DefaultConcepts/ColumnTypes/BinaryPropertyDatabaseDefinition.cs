@@ -33,11 +33,11 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(BinaryPropertyInfo))]
     public class BinaryPropertyDatabaseDefinition : IConceptDatabaseDefinition
     {
-        TypeExtensionProvider _typeExtension;
+        ConceptMetadata _conceptMetadata;
 
-        public BinaryPropertyDatabaseDefinition(TypeExtensionProvider typeExtension)
+        public BinaryPropertyDatabaseDefinition(ConceptMetadata conceptMetadata)
         {
-            _typeExtension = typeExtension;
+            _conceptMetadata = conceptMetadata;
         }
 
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
@@ -45,7 +45,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             var info = (BinaryPropertyInfo)conceptInfo;
 
             if (info.DataStructure is EntityInfo)
-                return PropertyDatabaseDefinition.AddColumn(_typeExtension, info);
+                return PropertyDatabaseDefinition.AddColumn(_conceptMetadata, info);
             
             return "";
         }

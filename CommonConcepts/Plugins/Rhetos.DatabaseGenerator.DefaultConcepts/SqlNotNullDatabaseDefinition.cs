@@ -34,11 +34,11 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(SqlNotNullInfo))]
     public class SqlNotNullDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
-        private readonly TypeExtensionProvider _typeExtension;
+        private readonly ConceptMetadata _conceptMetadata;
 
-        public SqlNotNullDatabaseDefinition(TypeExtensionProvider typeExtension)
+        public SqlNotNullDatabaseDefinition(ConceptMetadata conceptMetadata)
         {
-            _typeExtension = typeExtension;
+            _conceptMetadata = conceptMetadata;
         }
 
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
@@ -56,8 +56,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             var info = (SqlNotNullInfo)conceptInfo;
             var sql = new StringBuilder();
 
-            var columnName = _typeExtension.GetColumnName(info.Property);
-            var columnType = _typeExtension.GetColumnType(info.Property);
+            var columnName = _conceptMetadata.GetColumnName(info.Property);
+            var columnType = _conceptMetadata.GetColumnType(info.Property);
 
             if (columnType != null)
             {
