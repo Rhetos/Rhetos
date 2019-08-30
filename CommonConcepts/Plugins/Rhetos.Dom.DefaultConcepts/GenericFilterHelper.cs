@@ -79,7 +79,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 bool propertyIsNullableValueType = memberAccess.Type.IsGenericType && memberAccess.Type.GetGenericTypeDefinition() == typeof(Nullable<>);
                 Type propertyBasicType = propertyIsNullableValueType ? memberAccess.Type.GetGenericArguments().Single() : memberAccess.Type;
 
-                ConstantExpression constant;
+                Expression constant;
                 // Operations 'equal' and 'notequal' are supported for backward compatibility.
                 if (new[] { "equals", "equal", "notequals", "notequal", "greater", "greaterequal", "less", "lessequal" }.Contains(filter.Operation, StringComparer.OrdinalIgnoreCase))
                 {
@@ -106,8 +106,13 @@ namespace Rhetos.Dom.DefaultConcepts
                         Type nullableMemberType = typeof(Nullable<>).MakeGenericType(memberAccess.Type);
                         memberAccess = Expression.Convert(memberAccess, nullableMemberType);
                     }
-
-                    constant = Expression.Constant(convertedValue, memberAccess.Type);
+                    if (propertyBasicType == typeof(Guid))
+                    {
+                        Expression<Func<object>> idLambda = () => convertedValue;
+                        constant = Expression.Convert(idLambda.Body, memberAccess.Type);
+                    }
+                    else
+                        constant = Expression.Constant(convertedValue, memberAccess.Type);
                 }
                 else if (new[] { "startswith", "endswith", "contains", "notcontains" }.Contains(filter.Operation, StringComparer.OrdinalIgnoreCase))
                 {
@@ -304,6 +309,9 @@ namespace Rhetos.Dom.DefaultConcepts
                                 : memberAccess;
 
                             expression = Expression.Call(containsMethod, constant, convertedMemberAccess);
+
+                            if (propertyBasicType == typeof(Guid) && typeof(IEnumerable<Guid>).IsAssignableFrom(filter.Value.GetType()))
+                                expression = EFExpression.OptimizeContains(expression);
 
                             if (filter.Operation.Equals("notin", StringComparison.OrdinalIgnoreCase))
                                 expression = Expression.Not(expression);

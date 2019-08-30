@@ -135,6 +135,8 @@
     <Compile Include="Authorization\DeactivateClaimsCodeGenerator.cs" />
     <Compile Include="DomHelper.cs" />
     <Compile Include="KeepSynchronizedHelper.cs" />
+    <Compile Include="Persistence\ContainsIdsInterceptor.cs" />
+    <Compile Include="Persistence\ContainsIdsInterceptorCodeGenerator.cs" />
     <Compile Include="Persistence\DatabaseExtensionFunctionsMapping.cs" />
     <Compile Include="Persistence\EntityFrameworkGenerateMetadataFiles.cs" />
     <Compile Include="Persistence\EntityFrameworkMetadata.cs" />

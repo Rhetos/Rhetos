@@ -534,5 +534,28 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(expectedSql, queryGenericFilter.ToString(), "Generic filter's Value parameter should be implemented as a LINQ subquery as generated a single SQL query.");
             }
         }
+
+        [TestMethod]
+        public void OptimizeEqualsGuidTest()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                var id = Guid.NewGuid();
+
+                var sqlQuery1 = repository.TestGenericFilter.Child.Query(new FilterCriteria("ID", "equals", id)).ToString();
+                Assert.IsFalse(sqlQuery1.ToLower().Contains(id.ToString().ToLower()));
+
+                var sqlQuery2 = repository.TestGenericFilter.Child.Query(new FilterCriteria("ParentID", "equals", id)).ToString();
+                Assert.IsFalse(sqlQuery2.ToLower().Contains(id.ToString().ToLower()));
+
+                var nullableId = new Nullable<Guid>(Guid.NewGuid());
+                var sqlQuery3 = repository.TestGenericFilter.Child.Query(new FilterCriteria("ID", "equals", nullableId)).ToString();
+                Assert.IsFalse(sqlQuery3.ToLower().Contains(nullableId.Value.ToString().ToLower()));
+
+                var sqlQuery4 = repository.TestGenericFilter.Child.Query(new FilterCriteria("ParentID", "equals", nullableId)).ToString();
+                Assert.IsFalse(sqlQuery4.ToLower().Contains(nullableId.Value.ToString().ToLower()));
+            }
+        }
     }
 }

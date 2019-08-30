@@ -139,6 +139,10 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
     <Parameter Name = ""searchColumns"" Mode = ""In"" Type = ""nvarchar"" />
   </Function>
 
+  <Function Name=""" + EFExpression.ContainsIdsFunction + @""" ReturnType=""bit"" >
+    <Parameter Name = ""id"" Mode = ""In"" Type = ""uniqueidentifier"" />
+    <Parameter Name = ""concatenatedids"" Mode = ""In"" Type = ""nvarchar"" />
+  </Function>
 ", EntityFrameworkMapping.StorageModelTag);
         }
     }
