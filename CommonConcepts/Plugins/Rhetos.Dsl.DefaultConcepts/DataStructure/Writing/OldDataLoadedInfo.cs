@@ -22,26 +22,31 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
-    /// <summary>
-    /// Inherits the 'UniqueReference' concept and additionally allows cascade delete and automatic inheritance of row permissions.
-    /// From a business perspective, the main difference between 'Extends' and 'UniqueReference' is that extension is considered a part of the base data structure.
-    /// In 1:1 relations, the 'Extends' concept is to 'UniqueReference' as 'Reference { Detail; }' is to 'Reference' in 1:N relations.
-    /// </summary>
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("Extends")]
-    public class DataStructureExtendsInfo : UniqueReferenceInfo
+    [ConceptKeyword("OldDataLoaded")]
+    public class OldDataLoadedInfo : IConceptInfo
     {
-    }
+        [ConceptKey]
+        public SaveMethodInfo SaveMethod { get; set; }
 
-    [Export(typeof(IConceptMacro))]
-    public class DataStructureExtendsMacro : IConceptMacro<DataStructureExtendsInfo>
-    {
-        public IEnumerable<IConceptInfo> CreateNewConcepts(DataStructureExtendsInfo conceptInfo, IDslModel existingConcepts)
-        {
-            return new IConceptInfo[] { new UniqueReferenceCascadeDeleteInfo { UniqueReference = conceptInfo } };
-        }
+        /// <summary>
+        /// Unique name of this business rule.
+        /// </summary>
+        [ConceptKey]
+        public string RuleName { get; set; }
+
+        /// <summary>
+        /// Available variables in this context:
+        ///     _executionContext,
+        ///     checkUserPermissions (whether the Save command is called directly by client through a web API)
+        ///     insertedNew (array of new items for insert),
+        ///     updatedNew (array of new items for update),
+        ///     deletedIds (array of items to be deleted).
+        /// </summary>
+        public string CsCodeSnippet { get; set; }
     }
 }

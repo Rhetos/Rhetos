@@ -17,22 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Logging;
-using Rhetos.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
 using Newtonsoft.Json;
+using Rhetos.Utilities;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace Rhetos.Dsl
 {
     public class MacroOrder
     {
-        public string EvaluatorName;
-        public decimal EvaluatorOrder;
+        public string EvaluatorName { get; set; }
+        public decimal EvaluatorOrder { get; set; }
     }
 
     /// <summary>
@@ -41,26 +37,14 @@ namespace Rhetos.Dsl
     /// </summary>
     public class MacroOrderRepository : IMacroOrderRepository
     {
-        ILogger _loadOrderLogger;
-        ILogger _saveOrderLogger;
-
-        public MacroOrderRepository(ILogProvider logProvider)
-        {
-            _loadOrderLogger = logProvider.GetLogger("MacroRepositoryLoad");
-            _saveOrderLogger = logProvider.GetLogger("MacroRepositorySave");
-        }
-
         private const string MacroOrderFileName = "MacroOrder.json";
 
-        /// <summary>
-        /// Dictionary's Key is EvaluatorName, Value is EvaluatorOrder.
-        /// </summary>
         public List<MacroOrder> Load()
         {
-            var cahceFilePath = Path.Combine(Paths.GeneratedFilesCacheFolder, Path.GetFileNameWithoutExtension(MacroOrderFileName), MacroOrderFileName);
-            if (File.Exists(cahceFilePath))
+            var cacheFilePath = Path.Combine(Paths.GeneratedFilesCacheFolder, Path.GetFileNameWithoutExtension(MacroOrderFileName), MacroOrderFileName);
+            if (File.Exists(cacheFilePath))
             {
-                var serializedConcepts = File.ReadAllText(cahceFilePath);
+                var serializedConcepts = File.ReadAllText(cacheFilePath, Encoding.UTF8);
                 return JsonConvert.DeserializeObject<List<MacroOrder>>(serializedConcepts);
             }
             else
@@ -69,17 +53,9 @@ namespace Rhetos.Dsl
             }
         }
 
-        private string ReportMacroOrders(IEnumerable<MacroOrder> macroOrders)
-        {
-            return string.Join("\r\n", macroOrders
-                .OrderBy(macro => macro.EvaluatorOrder)
-                .Select(macro => macro.EvaluatorName));
-        }
-
-        /// <param name="macroOrders">Tuple's Item1 is EvaluatorName, Item2 is EvaluatorOrder.</param>
         public void Save(IEnumerable<MacroOrder> macroOrders)
         {
-            string serializedConcepts = JsonConvert.SerializeObject(macroOrders);
+            string serializedConcepts = JsonConvert.SerializeObject(macroOrders, Formatting.Indented);
             string path = Path.Combine(Paths.GeneratedFolder, MacroOrderFileName);
             File.WriteAllText(path, serializedConcepts, Encoding.UTF8);
         }

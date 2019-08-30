@@ -217,5 +217,56 @@ namespace Rhetos.Utilities.Test
             foreach (var test in tests)
                 Assert.AreEqual(test.Item2, CsUtility.FirstLine(test.Item1), "Test: " + test.Item1);
         }
+
+        [TestMethod]
+        public void ReportSegment()
+        {
+            var tests = new ListOfTuples<string, int, int, string>
+            {
+                { "", -100, 3, "" },
+                { "", -1, 3, "" },
+                { "", 0, 3, "" },
+                { "", 1, 3, "" },
+                { "", 100, 3, "" },
+
+                { "abc", -1000, 100, "abc" },
+                { "abc", -10, 100, "abc" },
+                { "abc", 0, 100, "abc" },
+                { "abc", 10, 100, "abc" },
+                { "abc", 1000, 100, "abc" },
+
+                { "abcde", 0, 1, "a..." },
+                { "abcde", 1, 1, "...b..." },
+                { "abcde", 5, 1, "...e" },
+
+                { "abcde", -10, 3, "abc..." },
+                { "abcde", -1, 3, "abc..." },
+                { "abcde", 0, 3, "abc..." },
+                { "abcde", 1, 3, "abc..." },
+                { "abcde", 2, 3, "...bcd..." },
+                { "abcde", 3, 3, "...cde" },
+                { "abcde", 4, 3, "...cde" },
+                { "abcde", 5, 3, "...cde" },
+                { "abcde", 10, 3, "...cde" },
+
+                { "abcde", -10, 2, "ab..." },
+                { "abcde", -1, 2, "ab..." },
+                { "abcde", 0, 2, "ab..." },
+                { "abcde", 1, 2, "ab..." },
+                { "abcde", 2, 2, "...bc..." },
+                { "abcde", 3, 2, "...cd..." },
+                { "abcde", 4, 2, "...de" },
+                { "abcde", 5, 2, "...de" },
+                { "abcde", 10, 2, "...de" },
+
+                { "\r\n\t", 0, 1, @"\r..." },
+                { "\r\n\t", 1, 1, @"...\n..." },
+                { "\r\n\t", 2, 1, @"...\t" },
+                { "\r\n\t\\", 2, 10, @"\r\n\t\\" },
+            };
+
+            foreach (var test in tests)
+                Assert.AreEqual(test.Item4, CsUtility.ReportSegment(test.Item1, test.Item2, test.Item3), $"Test: {test.Item1} {test.Item2} {test.Item3}");
+        }
     }
 }

@@ -17,15 +17,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using System.ComponentModel.Composition;
 
-[assembly: AssemblyCompany("Omega software")]
-[assembly: AssemblyCopyright("Copyright (C) Omega software 2017")]
-[assembly: AssemblyTrademark("")]
-
-[assembly: AssemblyVersion("2.12.0")]
-[assembly: AssemblyFileVersion("2.12.0")]
-[assembly: AssemblyInformationalVersion("2.12.0-dev")]
+namespace Rhetos.Dsl.DefaultConcepts
+{
+    /// <summary>
+    /// An internal concept for generating cascade delete in database.
+    /// It should be rarely used because deleting records directly in database
+    /// circumvents any business logic implemented in the application related to those records.
+    /// </summary>
+    [Export(typeof(IConceptInfo))]
+    public class ReferenceCascadeDeleteDbInfo : IConceptInfo
+    {
+        [ConceptKey]
+        public ReferencePropertyDbConstraintInfo ReferenceDbConstraint { get; set; }
+    }
+}

@@ -333,7 +333,12 @@ Module TestDataStructure
 		
 		SaveMethod
 		{
-			Initialization 'DefaultValue'
+			ArgumentValidation CodeNot123
+				'foreach (var item in insertedNew.Concat(updatedNew))
+					if (item.Code == 123)
+						throw new Rhetos.UserException("[Test] Cannot insert code 123.");';
+
+			Initialization DefaultNameValue
 				'foreach (var item in insertedNew)
 					if (item.Name == "default")
 						item.Name = "initialized";';
@@ -343,8 +348,13 @@ Module TestDataStructure
 				Take Name;
 				Take 'Base.Name';
 			}
+
+			OldDataLoaded LockedBaseName456
+				'foreach (var item in deletedOld.Concat(updatedOld))
+					if (item.BaseName == "456")
+						throw new Rhetos.UserException("[Test] Cannot change locked base name 456.");';
 			
-			OnSaveUpdate 'UpdateBaseIfNameChanged'
+			OnSaveUpdate UpdateBaseIfNameChanged
 			'
 				var modifiedItemsName = updatedOld
 					.Zip(updatedNew, (oldValue, newValue) => new { oldValue, newValue })
@@ -359,7 +369,7 @@ Module TestDataStructure
 				_executionContext.Repository.TestDataStructure.SaveTesterBase.Update(updateBaseItems);
 			';
 				
-			OnSaveValidate 'DenyChangeOfLockedName'
+			OnSaveValidate DenyChangeOfLockedName
 			'
 				var lockedItemModifiedName = updatedOld
 					.Zip(updatedNew, (oldValue, newValue) => new { oldValue, newValue })
@@ -375,7 +385,7 @@ Module TestDataStructure
 						lockedItemModifiedName.newValue.Name));
 			';
 
-			AfterSave 'LogModifications'
+			AfterSave LogModifications
 			'
 				var modifiedItemsName = updatedOld
 					.Zip(updatedNew, (oldValue, newValue) => new { oldValue, newValue })
@@ -386,7 +396,7 @@ Module TestDataStructure
 					logger.Write(Rhetos.Logging.EventType.Info, () => (modified.oldValue.Name ?? "null") + " => " + (modified.newValue.Name ?? "null"));
 			';
 
-			Initialization 'LogDeletions'
+			Initialization LogDeletions
 			'
 				if (deletedIds.Any())
 				{

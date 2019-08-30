@@ -39,10 +39,10 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var newConcepts = new List<IConceptInfo>();
 
-            var extension = existingConcepts.FindByType<DataStructureExtendsInfo>().Where(e => e.Extension == conceptInfo.Entity).SingleOrDefault();
+            var extension = existingConcepts.FindByReference<DataStructureExtendsInfo>(e => e.Extension, conceptInfo.Entity).SingleOrDefault();
 
-            if (extension != null
-                && existingConcepts.FindByType<EntityLoggingInfo>().Where(l => l.Entity == extension.Base).Any())
+            if (extension != null && extension.Base is EntityInfo
+                && existingConcepts.FindByReference<EntityLoggingInfo>(l => l.Entity, extension.Base).Any())
             {
                 newConcepts.Add(new LoggingRelatedItemInfo
                 {

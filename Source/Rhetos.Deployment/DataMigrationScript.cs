@@ -20,32 +20,46 @@
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Rhetos.Deployment
 {
+    [DebuggerDisplay("{Path}")]
     public class DataMigrationScript : IComparable<DataMigrationScript>
     {
-        public string Tag;
-        public string Path;
-        public string Content;
+        public string Tag { get; set; }
+        /// <summary>
+        /// Full name of the script, including package name, subfolder path, and file name.
+        /// This is not an actual file path on disk.
+        /// </summary>
+        public string Path { get; set; }
+        public string Content { get; set; }
 
-        protected string _order;
-        protected string Order
+        private string _orderWithinPackage;
+
+        /// <summary>
+        /// Ordering of scripts between packages is defined by the package dependencies from a .nuspec file.
+        /// </summary>
+        private string OrderWithinPackage
         {
-            get { return _order ?? (_order = ComputeOrder(Path)); }
+            get { return _orderWithinPackage ?? (_orderWithinPackage = ComputeOrder(Path)); }
         }
 
-        protected static string ComputeOrder(string s)
+        private static string ComputeOrder(string s)
         {
-            return CsUtility.GetNaturalSortString(s).Replace(@"\", @" \");
+            return CsUtility.GetNaturalSortString(s).Replace(@"\", @" \").ToLower();
         }
 
+        /// <summary>
+        /// This works correctly only on scripts from the same package.
+        /// Ordering of scripts between packages is defined by the package dependencies from a .nuspec file.
+        /// </summary>
         public int CompareTo(DataMigrationScript other)
         {
-            return string.Compare(Order, other.Order, StringComparison.InvariantCultureIgnoreCase);
+            return string.Compare(OrderWithinPackage, other.OrderWithinPackage, StringComparison.InvariantCultureIgnoreCase);
         }
     }
 }

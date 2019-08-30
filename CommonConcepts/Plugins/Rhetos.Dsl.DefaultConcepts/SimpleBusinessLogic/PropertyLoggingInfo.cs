@@ -57,9 +57,9 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             var reference = conceptInfo.Property as ReferencePropertyInfo;
 
-            if (reference != null
-                && existingConcepts.FindByType<ReferenceDetailInfo>().Where(d => d.Reference == reference).Any()
-                && existingConcepts.FindByType<EntityLoggingInfo>().Where(l => l.Entity == reference.Referenced).Any())
+            if (reference != null && reference.Referenced is EntityInfo
+                && existingConcepts.FindByReference<ReferenceDetailInfo>(d => d.Reference, reference).Any()
+                && existingConcepts.FindByReference<EntityLoggingInfo>(l => l.Entity, reference.Referenced).Any())
             {
                 newConcepts.Add(new LoggingRelatedItemInfo
                     {

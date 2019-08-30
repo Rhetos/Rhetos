@@ -33,8 +33,8 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var newConcepts = new List<IConceptInfo>();
 
-            // Even this method generates no other features, the Detail concept can be useful
-            // in business modelling (inheriting row permissions to SqlQueryable, for example)
+            // Even if this method generates no new features, the Detail concept can be useful
+            // in business modeling (inheriting row permissions to SqlQueryable, for example)
             if (Reference.DataStructure is IWritableOrmDataStructure)
             {
                 newConcepts.Add(new ReferenceCascadeDeleteInfo { Reference = Reference });
@@ -43,16 +43,6 @@ namespace Rhetos.Dsl.DefaultConcepts
             }
 
             return newConcepts;
-        }
-        
-        public override string ToString()
-        {
-            return "Detail " + Reference.ToString();
-        }
-
-        public override int GetHashCode()
-        {
-            return Reference.GetHashCode();
         }
     }
 }

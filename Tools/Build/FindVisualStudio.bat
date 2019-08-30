@@ -10,7 +10,11 @@ FOR /f "usebackq delims=" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\
 )
 
 @REM VS2015 uses %VS140COMNTOOLS% for locating the installation.
-IF "%VS140COMNTOOLS%" NEQ "" (CALL "%VS140COMNTOOLS%VsDevCmd.bat" x86 && GOTO OkRestoreEcho || GOTO Error)
+IF "%VS140COMNTOOLS%" NEQ "" (
+  IF EXIST "%VS140COMNTOOLS%VsDevCmd.bat" (
+    CALL "%VS140COMNTOOLS%VsDevCmd.bat" x86 && GOTO OkRestoreEcho || GOTO Error
+  )
+)
 
 :Error
 @ECHO ERROR: Cannot find Visual Studio.

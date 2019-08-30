@@ -17,17 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// Automatically deletes detail records when a master record is deleted.
+    /// Automatically deletes the extension records when a master record is deleted.
     /// </summary>
     /// <remarks>
     /// This feature does not create "on delete cascade" in database
@@ -41,10 +37,24 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         [ConceptKey]
         public UniqueReferenceInfo UniqueReference { get; set; }
+    }
 
-        public static bool IsSupported(UniqueReferenceInfo uniqueReference)
+    [Export(typeof(IConceptMacro))]
+    public class UniqueReferenceCascadeDeleteMacro : IConceptMacro<UniqueReferenceCascadeDeleteInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(UniqueReferenceCascadeDeleteInfo conceptInfo, IDslModel existingConcepts)
         {
-            return uniqueReference.Base is IWritableOrmDataStructure && uniqueReference.Extension is IWritableOrmDataStructure;
+            if (conceptInfo.UniqueReference.Base is PolymorphicInfo && conceptInfo.UniqueReference.Extension is IWritableOrmDataStructure)
+                return new[]
+                {
+                    new UniqueReferenceCascadeDeletePolymorphicInfo
+                    {
+                        Extension = conceptInfo.UniqueReference.Extension,
+                        Base = ((PolymorphicInfo)conceptInfo.UniqueReference.Base).GetMaterializedEntity()
+                    }
+                };
+            else
+                return null;
         }
     }
 }

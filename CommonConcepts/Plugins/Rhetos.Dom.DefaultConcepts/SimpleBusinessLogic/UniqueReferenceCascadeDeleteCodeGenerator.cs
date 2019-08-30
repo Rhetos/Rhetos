@@ -17,11 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Dsl.DefaultConcepts;
-using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl;
 using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -33,9 +33,14 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (UniqueReferenceCascadeDeleteInfo)conceptInfo;
 
-            if (UniqueReferenceCascadeDeleteInfo.IsSupported(info.UniqueReference))
+            InsertCodeSnippet(codeBuilder, info.UniqueReference.Extension, info.UniqueReference.Base);
+        }
+
+        public static void InsertCodeSnippet(ICodeBuilder codeBuilder, DataStructureInfo extension, DataStructureInfo baseEntity)
+        {
+            if (baseEntity is IWritableOrmDataStructure && extension is IWritableOrmDataStructure)
             {
-                string extensionName = info.UniqueReference.Extension.Module.Name + "." + info.UniqueReference.Extension.Name;
+                string extensionName = extension.Module.Name + "." + extension.Name;
 
                 string snippetDeleteChildItems =
             $@"if (deletedIds.Count() > 0)
@@ -51,7 +56,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             ";
 
-                codeBuilder.InsertCode(snippetDeleteChildItems, WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.UniqueReference.Base);
+                codeBuilder.InsertCode(snippetDeleteChildItems, WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, baseEntity);
             }
         }
     }

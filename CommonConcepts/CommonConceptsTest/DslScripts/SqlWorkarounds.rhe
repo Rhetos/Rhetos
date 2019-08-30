@@ -30,12 +30,17 @@ Module TestSqlWorkarounds
 	Entity Person { ShortString Name; }
 	
 	SqlProcedure ComputePersonInfo
-		'@NamePattern NVARCHAR(256), @LimitResultCount INT'
-		'SELECT TOP (@LimitResultCount)
-			Name, NameLength = LEN(Name), PersonID = ID
-			FROM TestSqlWorkarounds.Person
-			WHERE Name LIKE @NamePattern
-			ORDER BY Name';
+		"@NamePattern NVARCHAR(256), @LimitResultCount INT"
+		"
+			SELECT TOP (@LimitResultCount)
+				p.ID, Name, NameLength = LEN(p.Name), PersonID = p.ID
+			FROM
+				TestSqlWorkarounds.Person p
+			WHERE
+				p.Name LIKE '%' + @NamePattern + '%'
+			ORDER BY
+				p.Name
+		";
 	
 	Parameter PersonFilter
 	{
@@ -50,27 +55,17 @@ Module TestSqlWorkarounds
 		Reference Person TestSqlWorkarounds.Person; // Simpler alternative would be "Guid PersonID;"
 		
 		FilterBy PersonFilter
-			'(repository, parameter, executionContext) =>
+			'(repository, parameter) =>
 			{
-				var sql = string.Format(
-					"EXEC TestSqlWorkarounds.ComputePersonInfo {0}, {1}",
-					SqlUtility.QuoteText(parameter.NamePattern), // Prevents SQL injection.
-					parameter.LimitResultCount);
-					
-				var result = new List<TestSqlWorkarounds.PersonInfo>();
-				executionContext.SqlExecuter.ExecuteReader(sql,
-					sqlReader => result.Add(new TestSqlWorkarounds.PersonInfo
-						{
-							Name = sqlReader.GetString(0),
-							NameLength = sqlReader.GetInt32(1),
-							PersonID = SqlUtility.ReadGuid(sqlReader, 2) // Works for both Oracle and MsSql.
-						}));
-				
-				return result.ToArray();
-			}'
-		{
-			UseExecutionContext;
-		}
+				// Always use parameters to prevent SQL injection.
+				string sql = "EXEC TestSqlWorkarounds.ComputePersonInfo @p0, @p1";
+				var sqlParams = new object[] { parameter.NamePattern, parameter.LimitResultCount };
+
+				var result = _executionContext.EntityFrameworkContext.Database
+					.SqlQuery<TestSqlWorkarounds.PersonInfo>(sql, sqlParams)
+					.ToArray();
+				return result;
+			}';
 	}
 
     Entity DependencyBase

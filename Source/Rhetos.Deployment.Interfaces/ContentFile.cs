@@ -17,15 +17,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
-[assembly: AssemblyCompany("Omega software")]
-[assembly: AssemblyCopyright("Copyright (C) Omega software 2017")]
-[assembly: AssemblyTrademark("")]
+namespace Rhetos.Deployment
+{
+    public class ContentFile
+    {
+        /// <summary>
+        /// File location on disk.
+        /// </summary>
+        public string PhysicalPath { get; set; }
 
-[assembly: AssemblyVersion("2.12.0")]
-[assembly: AssemblyFileVersion("2.12.0")]
-[assembly: AssemblyInformationalVersion("2.12.0-dev")]
+        /// <summary>
+        /// Relative path where the file should be located in the package.
+        /// This is used for detecting the file's role from subfolder name, and for file sorting.
+        /// </summary>
+        public string InPackagePath { get; set; }
+    }
+}

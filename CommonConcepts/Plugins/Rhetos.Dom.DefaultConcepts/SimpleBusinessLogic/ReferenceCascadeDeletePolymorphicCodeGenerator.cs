@@ -17,15 +17,23 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using Rhetos.Dsl.DefaultConcepts;
+using System.ComponentModel.Composition;
+using Rhetos.Extensibility;
+using Rhetos.Dsl;
+using Rhetos.Compiler;
 
-[assembly: AssemblyCompany("Omega software")]
-[assembly: AssemblyCopyright("Copyright (C) Omega software 2017")]
-[assembly: AssemblyTrademark("")]
+namespace Rhetos.Dom.DefaultConcepts
+{
+    [Export(typeof(IConceptCodeGenerator))]
+    [ExportMetadata(MefProvider.Implements, typeof(ReferenceCascadeDeletePolymorphicInfo))]
+    public class ReferenceCascadeDeletePolymorphicCodeGenerator : IConceptCodeGenerator
+    {
+        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        {
+            var info = (ReferenceCascadeDeletePolymorphicInfo)conceptInfo;
 
-[assembly: AssemblyVersion("2.12.0")]
-[assembly: AssemblyFileVersion("2.12.0")]
-[assembly: AssemblyInformationalVersion("2.12.0-dev")]
+            ReferenceCascadeDeleteCodeGenerator.InsertCodeSnippet(codeBuilder, info.Reference, info.Parent);
+        }
+    }
+}

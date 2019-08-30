@@ -72,6 +72,7 @@ namespace CommonConcepts.Test
                      "Old1", "The INSERT statement conflicted with the FOREIGN KEY constraint");
 
                 // Test cascade delete in database:
+                // (the release should ship with "CommonConcepts.Legacy.CascadeDeleteInDatabase" set to "False")
                 TestUtility.ShouldFail(
                     () => sqlExecuter.ExecuteSql(@"DELETE FROM TestExtension.Old1 WHERE i = 2"),
                     "EntityExtension1", "The DELETE statement conflicted with the REFERENCE constraint");

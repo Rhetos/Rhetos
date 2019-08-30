@@ -57,7 +57,7 @@ namespace Rhetos.Logging
                 logger.Write(eventType, () => string.Format(CultureInfo.InvariantCulture, eventData, eventDataParams));
         }
 
-        public static readonly TimeSpan SlowEvent = TimeSpan.FromSeconds(10);
+        public static TimeSpan SlowEvent { get; set; } = TimeSpan.FromSeconds(10);
 
         private static void PerformanceWrite(this ILogger performanceLogger, Stopwatch stopwatch, Func<string> fullMessage)
         {
