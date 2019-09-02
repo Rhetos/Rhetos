@@ -24,17 +24,6 @@ namespace Rhetos.Deployment
 {
     public static class DeploymentUtility
     {
-        public static void WriteError(string msg)
-        {
-            var oldFg = Console.ForegroundColor;
-            var oldBg = Console.BackgroundColor;
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.BackgroundColor = ConsoleColor.DarkRed;
-            Console.WriteLine(msg);
-            Console.ForegroundColor = oldFg;
-            Console.BackgroundColor = oldBg;
-        }
-
         private static ILogProvider _initializationLogProvider;
 
         /// <summary>To be used during system initialization while the IoC container is yet not built.

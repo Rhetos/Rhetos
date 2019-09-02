@@ -23,7 +23,6 @@ using Rhetos.Deployment;
 using Rhetos.Dom;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
-using Rhetos.Persistence;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
@@ -231,8 +230,9 @@ namespace DeployPackages
         private static void PrintSummary(Exception ex)
         {
             Console.WriteLine();
-            Console.WriteLine("=== ERROR SUMMARY ===");
-            DeploymentUtility.WriteError(ex.GetType().Name + ": " + ExceptionsUtility.SafeFormatUserMessage(ex));
+            Console.WriteLine("=============== ERROR SUMMARY ===============");
+            Console.WriteLine(ex.GetType().Name + ": " + ExceptionsUtility.SafeFormatUserMessage(ex));
+            Console.WriteLine("=============================================");
             Console.WriteLine();
             Console.WriteLine("See DeployPackages.log for more information on error. Enable TraceLog in DeployPackages.exe.config for even more details.");
         }
