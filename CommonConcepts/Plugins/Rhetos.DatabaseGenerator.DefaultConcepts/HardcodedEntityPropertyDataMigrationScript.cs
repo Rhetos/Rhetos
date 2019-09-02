@@ -29,19 +29,19 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(PropertyInfo))]
     public class HardcodedEntityPropertyDataMigrationScript : IDataMigrationScript<PropertyInfo>
     {
-        TypeExtensionProvider _typeExtensionprovider;
+        private readonly ConceptMetadata _conceptMetadata;
 
-        public HardcodedEntityPropertyDataMigrationScript(TypeExtensionProvider typeExtensionprovider)
+        public HardcodedEntityPropertyDataMigrationScript(ConceptMetadata conceptMetadata)
         {
-            _typeExtensionprovider = typeExtensionprovider;
+            _conceptMetadata = conceptMetadata;
         }
 
         public void GenerateCode(PropertyInfo concept, IDataMigrationScriptBuilder codeBuilder)
         {
             if (concept.DataStructure is HardcodedEntityInfo)
             {
-                var databaseColumnName = _typeExtensionprovider.Get<IDatabaseColumnName<PropertyInfo>>(concept.GetType()).GetColumnName(concept);
-                var databaseColumnType = _typeExtensionprovider.Get<IDatabaseColumnType<PropertyInfo>>(concept.GetType()).ColumnType;
+                var databaseColumnName = _conceptMetadata.GetColumnName(concept);
+                var databaseColumnType = _conceptMetadata.GetColumnType(concept);
 
                 codeBuilder.InsertCode(Environment.NewLine + $@"EXEC Rhetos.DataMigrationUse '{concept.DataStructure.Module.Name}', '{concept.DataStructure.Name}', '{databaseColumnName}', '{databaseColumnType}';",
                     HardcodedEntityDataMigrationScript.DataMigrationUseTag, concept.DataStructure as HardcodedEntityInfo);

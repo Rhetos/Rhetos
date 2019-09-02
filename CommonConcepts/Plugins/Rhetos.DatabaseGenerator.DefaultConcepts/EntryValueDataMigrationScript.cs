@@ -29,17 +29,17 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(EntryValueInfo))]
     public class EntryValueDataMigrationScript : IDataMigrationScript<EntryValueInfo>
     {
-        TypeExtensionProvider _typeExtensionprovider;
+        private readonly ConceptMetadata _conceptMetadata;
 
-        public EntryValueDataMigrationScript(TypeExtensionProvider typeExtensionprovider)
+        public EntryValueDataMigrationScript(ConceptMetadata conceptMetadata)
         {
-            _typeExtensionprovider = typeExtensionprovider;
+            _conceptMetadata = conceptMetadata;
         }
 
         public void GenerateCode(EntryValueInfo concept, IDataMigrationScriptBuilder codeBuilder)
         {
-            var databaseColumnName = _typeExtensionprovider.Get<IDatabaseColumnName<PropertyInfo>>(concept.Property.GetType()).GetColumnName(concept.Property);
-            var databaseColumnType = _typeExtensionprovider.Get<IDatabaseColumnType<PropertyInfo>>(concept.Property.GetType()).ColumnType;
+            var databaseColumnName = _conceptMetadata.GetColumnName(concept.Property);
+            var databaseColumnType = _conceptMetadata.GetColumnType(concept.Property);
 
             codeBuilder.InsertCode($@", {Environment.NewLine}{databaseColumnName} = CONVERT({databaseColumnType}, '{concept.Value}')",
                 EntryDataMigrationScript.UpdatePropertyTag, concept.Entry);
