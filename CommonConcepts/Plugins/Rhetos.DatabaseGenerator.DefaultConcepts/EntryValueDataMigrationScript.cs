@@ -41,7 +41,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             var databaseColumnName = _conceptMetadata.GetColumnName(concept.Property);
             var databaseColumnType = _conceptMetadata.GetColumnType(concept.Property);
 
-            codeBuilder.InsertCode($@", {Environment.NewLine}{databaseColumnName} = CONVERT({databaseColumnType}, '{concept.Value}')",
+            codeBuilder.InsertCode($@",{Environment.NewLine}    {databaseColumnName} = CONVERT({databaseColumnType}, '{concept.Value}')",
                 EntryDataMigrationScript.UpdatePropertyTag, concept.Entry);
         }
     }

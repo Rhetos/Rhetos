@@ -27,7 +27,7 @@ using System.Threading.Tasks;
 
 namespace Rhetos.DatabaseGenerator
 {
-    public interface  IDataMigrationScriptBuilder
+    public interface IDataMigrationScriptBuilder
     {
         void AddBeforeDataMigrationScript(string script);
 

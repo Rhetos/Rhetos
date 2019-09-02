@@ -31,15 +31,15 @@ namespace Rhetos.DatabaseGenerator
 {
     public class DataMigrationScriptBuilder : IDataMigrationScriptBuilder
     {
-        protected const string BeforeDataMigrationTag = "/*BeforedataMigration*/";
+        private const string BeforeDataMigrationTag = "/*BeforeDataMigration*/";
 
-        protected const string AfterDataMigrationTag = "/*AfterDataMigration*/";
+        private const string AfterDataMigrationTag = "/*AfterDataMigration*/";
 
-        protected const string DataMigrationScriptStartTag = "/*DataMigrationScriptStart*/";
+        private const string DataMigrationScriptStartTag = "/*DataMigrationScriptStart*/";
 
-        protected const string DataMigrationScriptEndTag = "/*DataMigrationScriptEnd*/";
+        private const string DataMigrationScriptEndTag = "/*DataMigrationScriptEnd*/";
 
-        protected readonly CodeBuilder _codeBuilder;
+        private readonly CodeBuilder _codeBuilder;
 
         public string GeneratedCode {
             get { return _codeBuilder.GeneratedCode; }
@@ -81,8 +81,8 @@ namespace Rhetos.DatabaseGenerator
         public IEnumerable<string> GetBeforeDataMigartionScript()
         {
             var code = _codeBuilder.GeneratedCode;
-            var beforedataMigartionScriptStart = code.IndexOf(BeforeDataMigrationTag);
-            var beforeDataMigartionCode = code.Substring(0, beforedataMigartionScriptStart);
+            var beforeDataMigartionScriptStart = code.IndexOf(BeforeDataMigrationTag);
+            var beforeDataMigartionCode = code.Substring(0, beforeDataMigartionScriptStart);
 
             return GetSubStrings(beforeDataMigartionCode, DataMigrationScriptStartTag, DataMigrationScriptEndTag);
         }
@@ -113,7 +113,5 @@ namespace Rhetos.DatabaseGenerator
 
             return scripts;
         }
-
-
     }
 }

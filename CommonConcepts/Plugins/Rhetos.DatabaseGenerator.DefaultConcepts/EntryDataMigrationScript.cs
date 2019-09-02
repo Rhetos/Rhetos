@@ -43,8 +43,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             }
 
             codeBuilder.InsertCode($@"
-UPDATE _{concept.HardcodedEntity.Module.Name}.{concept.HardcodedEntity.Name} SET
-Name = '{concept.Name}'{UpdatePropertyTag.Evaluate(concept)}
+UPDATE _{concept.HardcodedEntity.Module.Name}.{concept.HardcodedEntity.Name}
+SET Name = '{concept.Name}'{UpdatePropertyTag.Evaluate(concept)}
 WHERE ID = '{concept.GetIdentifier()}';",
             HardcodedEntityDataMigrationScript.UpdateTag, concept.HardcodedEntity);
         }

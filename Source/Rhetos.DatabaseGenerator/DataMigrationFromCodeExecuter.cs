@@ -34,8 +34,7 @@ namespace Rhetos.DatabaseGenerator
         private readonly SqlTransactionBatches _sqlExecuter;
         private readonly IDslModel _dslModel;
         private readonly IPluginsContainer<IDataMigrationScript> _plugins;
-
-        DataMigrationScriptBuilder _codeBuilder;
+        private readonly Lazy<DataMigrationScriptBuilder> _codeBuilder;
 
         public DataMigrationFromCodeExecuter(
             ILogProvider logProvider,
@@ -48,12 +47,12 @@ namespace Rhetos.DatabaseGenerator
             _sqlExecuter = sqlExecuter;
             _dslModel = dslModel;
             _plugins = plugins;
+            _codeBuilder = new Lazy<DataMigrationScriptBuilder>(ExecutePlugins);
         }
 
         public void ExecuteBeforeDataMigrationScripts()
         {
-            Initialize();
-            _sqlExecuter.Execute(_codeBuilder.GetBeforeDataMigartionScript().Select(x => 
+            _sqlExecuter.Execute(_codeBuilder.Value.GetBeforeDataMigartionScript().Select(x => 
                 new SqlTransactionBatches.SqlScript
                 {
                     Sql = x,
@@ -63,19 +62,12 @@ namespace Rhetos.DatabaseGenerator
 
         public void ExecuteAfterDataMigrationScripts()
         {
-            Initialize();
-            _sqlExecuter.Execute(_codeBuilder.GetAfterDataMigartionScript().Reverse().Select(x =>
+            _sqlExecuter.Execute(_codeBuilder.Value.GetAfterDataMigartionScript().Reverse().Select(x =>
                 new SqlTransactionBatches.SqlScript
                 {
                     Sql = x,
                     IsBatch = true
                 }));
-        }
-
-        private void Initialize()
-        {
-            if (_codeBuilder == null)
-                _codeBuilder = ExecutePlugins();
         }
 
         private DataMigrationScriptBuilder ExecutePlugins()
@@ -93,10 +85,9 @@ namespace Rhetos.DatabaseGenerator
                     }
                     catch (Exception ex)
                     {
-                        _logger.Error(ex.ToString());
                         _logger.Error("Part of the source code that was generated before the exception was thrown is written in the trace log.");
                         _logger.Trace(codeBuilder.GeneratedCode);
-                        throw;
+                        throw new FrameworkException($"Error while generating data-migration script for '{conceptInfo.GetUserDescription()}'.", ex);
                     }
                 }
 
