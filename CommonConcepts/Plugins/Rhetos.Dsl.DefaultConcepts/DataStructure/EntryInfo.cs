@@ -20,6 +20,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Linq;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -35,11 +36,10 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public Guid GetIdentifier()
         {
-            using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
+            using (var hashing = System.Security.Cryptography.SHA256.Create())
             {
                 byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(Name);
-                byte[] hashBytes = md5.ComputeHash(inputBytes);
-
+                byte[] hashBytes = hashing.ComputeHash(inputBytes).Take(16).ToArray();
                 return new Guid(hashBytes);
             }
         }
