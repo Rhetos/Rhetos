@@ -42,7 +42,11 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         virtual protected IConceptInfo CreateUniqueConstraint()
         {
-            return new UniquePropertyInfo { Property = Property };
+            return new UniqueMultiplePropertiesInfo
+            {
+                DataStructure = Property.DataStructure,
+                PropertyNames = Property.Name
+            };
         }
     }
 }

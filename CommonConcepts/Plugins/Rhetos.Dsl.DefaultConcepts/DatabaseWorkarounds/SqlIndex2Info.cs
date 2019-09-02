@@ -27,7 +27,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlIndex")]
-    public class SqlIndex2Info : IConceptInfo, IValidationConcept, IMacroConcept
+    public class SqlIndex2Info : IValidatedConcept
     {
         [ConceptKey]
         public EntityInfo DataStructure { get; set; }
@@ -36,35 +36,26 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public PropertyInfo Property2 { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
-            if (Property1.DataStructure != DataStructure)
-                throw new Exception(string.Format(
-                    "SqlIndex is not well defined because property {0}.{1}.{2} is not in entity {3}.{4}.",
-                    Property1.DataStructure.Module.Name,
-                    Property1.DataStructure.Name,
-                    Property1.Name,
-                    DataStructure.Module.Name,
-                    DataStructure.Name));
-
-            if (Property2.DataStructure != DataStructure)
-                throw new Exception(string.Format(
-                    "SqlIndex is not well defined because property {0}.{1}.{2} is not in entity {3}.{4}.",
-                    Property2.DataStructure.Module.Name,
-                    Property2.DataStructure.Name,
-                    Property2.Name,
-                    DataStructure.Module.Name,
-                    DataStructure.Name));
+            DslUtility.CheckIfPropertyBelongsToDataStructure(Property1, DataStructure, this);
+            DslUtility.CheckIfPropertyBelongsToDataStructure(Property2, DataStructure, this);
         }
+    }
 
-        public SqlIndexMultipleInfo GetCreatedIndex()
+    [Export(typeof(IConceptMacro))]
+    public class SqlIndex2Macro : IConceptMacro<SqlIndex2Info>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(SqlIndex2Info conceptInfo, IDslModel existingConcepts)
         {
-            return new SqlIndexMultipleInfo { DataStructure = DataStructure, PropertyNames = Property1.Name + " " + Property2.Name };
-        }
-
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            return new[] { GetCreatedIndex() };
+            return new[]
+            {
+                new SqlIndexMultipleInfo
+                {
+                    DataStructure = conceptInfo.DataStructure,
+                    PropertyNames = conceptInfo.Property1.Name + " " + conceptInfo.Property2.Name
+                }
+            };
         }
     }
 }

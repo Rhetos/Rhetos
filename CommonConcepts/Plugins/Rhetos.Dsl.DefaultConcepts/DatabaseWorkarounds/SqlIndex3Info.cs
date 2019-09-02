@@ -27,7 +27,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlIndex")]
-    public class SqlIndex3Info : IConceptInfo, IValidationConcept, IMacroConcept
+    public class SqlIndex3Info : IValidatedConcept
     {
         [ConceptKey]
         public EntityInfo DataStructure { get; set; }
@@ -38,44 +38,27 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public PropertyInfo Property3 { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
-            if (Property1.DataStructure != DataStructure)
-                throw new Exception(string.Format(
-                    "SqlIndex is not well defined because property {0}.{1}.{2} is not in entity {3}.{4}.",
-                    Property1.DataStructure.Module.Name,
-                    Property1.DataStructure.Name,
-                    Property1.Name,
-                    DataStructure.Module.Name,
-                    DataStructure.Name));
-
-            if (Property2.DataStructure != DataStructure)
-                throw new Exception(string.Format(
-                    "SqlIndex is not well defined because property {0}.{1}.{2} is not in entity {3}.{4}.",
-                    Property2.DataStructure.Module.Name,
-                    Property2.DataStructure.Name,
-                    Property2.Name,
-                    DataStructure.Module.Name,
-                    DataStructure.Name));
-
-            if (Property3.DataStructure != DataStructure)
-                throw new Exception(string.Format(
-                    "SqlIndex is not well defined because property {0}.{1}.{2} is not in entity {3}.{4}.",
-                    Property3.DataStructure.Module.Name,
-                    Property3.DataStructure.Name,
-                    Property3.Name,
-                    DataStructure.Module.Name,
-                    DataStructure.Name));
+            DslUtility.CheckIfPropertyBelongsToDataStructure(Property1, DataStructure, this);
+            DslUtility.CheckIfPropertyBelongsToDataStructure(Property2, DataStructure, this);
+            DslUtility.CheckIfPropertyBelongsToDataStructure(Property3, DataStructure, this);
         }
+    }
 
-        public SqlIndexMultipleInfo GetCreatedIndex()
+    [Export(typeof(IConceptMacro))]
+    public class SqlIndex3Macro : IConceptMacro<SqlIndex3Info>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(SqlIndex3Info conceptInfo, IDslModel existingConcepts)
         {
-            return new SqlIndexMultipleInfo { DataStructure = DataStructure, PropertyNames = Property1.Name + " " + Property2.Name + " " + Property3.Name };
-        }
-
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            return new[] { GetCreatedIndex() };
+            return new[]
+            {
+                new SqlIndexMultipleInfo
+                {
+                    DataStructure = conceptInfo.DataStructure,
+                    PropertyNames = conceptInfo.Property1.Name + " " + conceptInfo.Property2.Name + " " + conceptInfo.Property3.Name
+                }
+            };
         }
     }
 }

@@ -153,7 +153,9 @@
     <Compile Include="DatabaseWorkarounds\SqlDependsOnIDInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndexClusteredInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndexMultipleFollowingPropertyInfo.cs" />
+    <Compile Include="DatabaseWorkarounds\SqlIndexPropertyClusteredInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlNotNullInfo.cs" />
+    <Compile Include="DatabaseWorkarounds\UniqueClusteredInfo.cs" />
     <Compile Include="DataStructure\BeforeQueryWithParameterInfo.cs" />
     <Compile Include="DataStructure\PolymorphicSubtypeDiscriminatorInfo.cs" />
     <Compile Include="DataStructure\PolymorphicSubtypeReferenceInfo.cs" />

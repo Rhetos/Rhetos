@@ -38,7 +38,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (Reference.DataStructure is IWritableOrmDataStructure)
             {
                 newConcepts.Add(new ReferenceCascadeDeleteInfo { Reference = Reference });
-                newConcepts.Add(new SqlIndexInfo { Property = Reference });
+                newConcepts.Add(new SqlIndexMultipleInfo { DataStructure = Reference.DataStructure, PropertyNames = Reference.Name });
                 newConcepts.Add(new SystemRequiredInfo { Property = Reference });
             }
 

@@ -37,7 +37,11 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     public class SqlIndexMultipleDatabaseDefinition : IConceptDatabaseDefinition
     {
         /// <summary>
-        /// Options inserted between CREATE and INDEX
+        /// Options inserted between CREATE and INDEX, before Options1Tag.
+        /// </summary>
+        public static readonly SqlTag<SqlIndexMultipleInfo> Options0Tag = "Options0";
+        /// <summary>
+        /// Options inserted between CREATE and INDEX, after Options0Tag.
         /// </summary>
         public static readonly SqlTag<SqlIndexMultipleInfo> Options1Tag = "Options1";
         /// <summary>
@@ -68,6 +72,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                     SqlUtility.Identifier(info.DataStructure.Module.Name),
                     SqlUtility.Identifier(info.DataStructure.Name),
                     ColumnsTag.Evaluate(info),
+                    Options0Tag.Evaluate(info),
                     Options1Tag.Evaluate(info),
                     Options2Tag.Evaluate(info));
             return null;

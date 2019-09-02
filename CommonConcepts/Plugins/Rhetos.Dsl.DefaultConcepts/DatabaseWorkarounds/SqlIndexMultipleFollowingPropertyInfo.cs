@@ -26,16 +26,16 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class SqlIndexMultipleFollowingPropertyInfo : SqlIndexMultiplePropertyInfo, IValidationConcept
+    public class SqlIndexMultipleFollowingPropertyInfo : SqlIndexMultiplePropertyInfo, IValidatedConcept
     {
         /// <summary>
         /// Used for property ordering when creating the index.
         /// </summary>
         public SqlIndexMultiplePropertyInfo PreviousIndexProperty { get; set; }
 
-        public new void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public new void CheckSemantics(IDslModel existingConcepts)
         {
-            base.CheckSemantics(concepts);
+            base.CheckSemantics(existingConcepts);
             DslUtility.CheckIfPropertyBelongsToDataStructure(PreviousIndexProperty.Property, SqlIndex.DataStructure, this);
         }
     }
