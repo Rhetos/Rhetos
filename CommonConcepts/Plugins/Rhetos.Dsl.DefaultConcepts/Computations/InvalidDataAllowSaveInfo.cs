@@ -36,21 +36,4 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public InvalidDataInfo InvalidData { get; set; }
     }
-
-    [Export(typeof(IConceptMacro))]
-    public class InvalidDataAllowSaveMacro : IConceptMacro<InvalidDataAllowSaveInfo>
-    {
-        private readonly ConceptMetadata _conceptMetadata;
-
-        public InvalidDataAllowSaveMacro(ConceptMetadata conceptMetadata)
-        {
-            _conceptMetadata = conceptMetadata;
-        }
-
-        public IEnumerable<IConceptInfo> CreateNewConcepts(InvalidDataAllowSaveInfo conceptInfo, IDslModel existingConcepts)
-        {
-            _conceptMetadata.Set(conceptInfo.InvalidData, InvalidDataInfo.AllowSaveMetadata, true);
-            return null;
-        }
-    }
 }
