@@ -34,7 +34,7 @@ namespace Rhetos.DatabaseGenerator
         private readonly SqlTransactionBatches _sqlExecuter;
         private readonly IDslModel _dslModel;
         private readonly IPluginsContainer<IConceptDataMigration> _plugins;
-        private readonly Lazy<DataMigrationScriptBuilder> _codeBuilder;
+        private readonly Lazy<GeneratedDataMigrationScripts> _scripts;
 
         public ConceptDataMigrationExecuter(
             ILogProvider logProvider,
@@ -43,16 +43,16 @@ namespace Rhetos.DatabaseGenerator
             IPluginsContainer<IConceptDataMigration> plugins)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
-            _logger = logProvider.GetLogger("DataMigrationScriptGenerator");
+            _logger = logProvider.GetLogger(GetType().Name);
             _sqlExecuter = sqlExecuter;
             _dslModel = dslModel;
             _plugins = plugins;
-            _codeBuilder = new Lazy<DataMigrationScriptBuilder>(ExecutePlugins);
+            _scripts = new Lazy<GeneratedDataMigrationScripts>(ExecutePlugins);
         }
 
         public void ExecuteBeforeDataMigrationScripts()
         {
-            _sqlExecuter.Execute(_codeBuilder.Value.GetBeforeDataMigartionScript().Select(x => 
+            _sqlExecuter.Execute(_scripts.Value.BeforeDataMigration.Select(x => 
                 new SqlTransactionBatches.SqlScript
                 {
                     Sql = x,
@@ -62,7 +62,7 @@ namespace Rhetos.DatabaseGenerator
 
         public void ExecuteAfterDataMigrationScripts()
         {
-            _sqlExecuter.Execute(_codeBuilder.Value.GetAfterDataMigartionScript().Reverse().Select(x =>
+            _sqlExecuter.Execute(_scripts.Value.AfterDataMigration.Reverse().Select(x =>
                 new SqlTransactionBatches.SqlScript
                 {
                     Sql = x,
@@ -70,7 +70,7 @@ namespace Rhetos.DatabaseGenerator
                 }));
         }
 
-        private DataMigrationScriptBuilder ExecutePlugins()
+        private GeneratedDataMigrationScripts ExecutePlugins()
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -91,9 +91,11 @@ namespace Rhetos.DatabaseGenerator
                     }
                 }
 
+            _logger.Trace(codeBuilder.GeneratedCode);
+
             _performanceLogger.Write(stopwatch, "DataMigrationScriptGenerator: Scripts generated.");
 
-            return codeBuilder;
+            return codeBuilder.GetDataMigartionScripts();
         }
     }
 }

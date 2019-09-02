@@ -1,6 +1,6 @@
 Module TestHardcodedEntity
 {
-    HardcodedEntity SimpleHardcodedEntity
+    Hardcoded SimpleHardcodedEntity
     {
         ShortString Description;
         Bool BoolProperty;

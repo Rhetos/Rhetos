@@ -22,6 +22,7 @@ using System.ComponentModel.Composition;
 using Rhetos.Extensibility;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Dsl;
+using Rhetos.Compiler;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {

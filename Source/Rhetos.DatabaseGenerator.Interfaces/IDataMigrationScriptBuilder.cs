@@ -25,16 +25,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rhetos.DatabaseGenerator
+namespace Rhetos.Compiler
 {
-    public interface IDataMigrationScriptBuilder
+    public interface IDataMigrationScriptBuilder : ICodeBuilder
     {
         void AddBeforeDataMigrationScript(string script);
 
         void AddAfterDataMigrationScript(string script);
-
-        void InsertCode<T>(string code, Tag<T> tag, T conceptInfo) where T : IConceptInfo;
-
-        bool TagExists(string tag);
     }
 }

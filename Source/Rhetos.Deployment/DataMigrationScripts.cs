@@ -27,11 +27,6 @@ using System.Text.RegularExpressions;
 
 namespace Rhetos.Deployment
 {
-    public class DataMigrationReport
-    {
-        public List<string> CreatedTags;
-    }
-
     public class DataMigrationScripts
     {
         protected readonly ISqlExecuter _sqlExecuter;
@@ -44,7 +39,7 @@ namespace Rhetos.Deployment
         public DataMigrationScripts(ISqlExecuter sqlExecuter, ILogProvider logProvider, IDataMigrationScriptsProvider scriptsProvider, IConfiguration configuration, SqlTransactionBatches sqlTransactionBatches)
         {
             _sqlExecuter = sqlExecuter;
-            _logger = logProvider.GetLogger("DataMigration");
+            _logger = logProvider.GetLogger(GetType().Name);
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _scriptsProvider = scriptsProvider;
             _configuration = configuration;
@@ -196,5 +191,10 @@ namespace Rhetos.Deployment
                     }));
             return scripts.ToList();
         }
+    }
+
+    public class DataMigrationReport
+    {
+        public List<string> CreatedTags { get; set; }
     }
 }

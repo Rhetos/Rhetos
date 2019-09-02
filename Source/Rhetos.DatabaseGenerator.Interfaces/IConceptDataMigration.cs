@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Dsl;
+using Rhetos.Compiler;
 
 namespace Rhetos.DatabaseGenerator
 {

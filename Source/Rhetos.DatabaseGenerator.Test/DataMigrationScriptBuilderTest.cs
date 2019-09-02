@@ -32,9 +32,9 @@ namespace Rhetos.DatabaseGenerator.Test
         {
             var scriptBuilder = new DataMigrationScriptBuilder();
 
-            var beforeDataMigratinScripts = scriptBuilder.GetBeforeDataMigartionScript().ToList();
+            var beforeDataMigratinScripts = scriptBuilder.GetDataMigartionScripts().BeforeDataMigration.ToList();
             Assert.AreEqual(0, beforeDataMigratinScripts.Count);
-            var afterDataMigratinScripts = scriptBuilder.GetAfterDataMigartionScript().ToList();
+            var afterDataMigratinScripts = scriptBuilder.GetDataMigartionScripts().AfterDataMigration.ToList();
             Assert.AreEqual(0, afterDataMigratinScripts.Count);
         }
 
@@ -53,13 +53,13 @@ namespace Rhetos.DatabaseGenerator.Test
             scriptBuilder.AddAfterDataMigrationScript(afterScript1);
             scriptBuilder.AddAfterDataMigrationScript(afterScript2);
 
-            var beforeDataMigratinScripts = scriptBuilder.GetBeforeDataMigartionScript().ToList();
+            var beforeDataMigratinScripts = scriptBuilder.GetDataMigartionScripts().BeforeDataMigration.ToList();
 
             Assert.AreEqual(2, beforeDataMigratinScripts.Count);
             Assert.AreEqual(beforeScript1, beforeDataMigratinScripts[0]);
             Assert.AreEqual(beforeScript2, beforeDataMigratinScripts[1]);
 
-            var afterDataMigratinScripts = scriptBuilder.GetAfterDataMigartionScript().ToList();
+            var afterDataMigratinScripts = scriptBuilder.GetDataMigartionScripts().AfterDataMigration.ToList();
             Assert.AreEqual(2, afterDataMigratinScripts.Count);
             Assert.AreEqual(afterScript1, afterDataMigratinScripts[0]);
             Assert.AreEqual(afterScript2, afterDataMigratinScripts[1]);

@@ -18,100 +18,50 @@
 */
 
 using Rhetos.Compiler;
-using Rhetos.Dsl;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Rhetos.DatabaseGenerator
 {
-    public class DataMigrationScriptBuilder : IDataMigrationScriptBuilder
+    public class DataMigrationScriptBuilder : CodeBuilder, IDataMigrationScriptBuilder
     {
         private const string BeforeDataMigrationTag = "/*BeforeDataMigration*/";
 
-        private const string AfterDataMigrationTag = "/*AfterDataMigration*/";
+        private readonly string DataMigrationScriptSplitterTag = Environment.NewLine + "/*DataMigrationScriptSplitter*/" + Environment.NewLine;
 
-        private const string DataMigrationScriptStartTag = "/*DataMigrationScriptStart*/";
-
-        private const string DataMigrationScriptEndTag = "/*DataMigrationScriptEnd*/";
-
-        private readonly CodeBuilder _codeBuilder;
-
-        public string GeneratedCode {
-            get { return _codeBuilder.GeneratedCode; }
-        }
-
-        public DataMigrationScriptBuilder()
+        public DataMigrationScriptBuilder() : base("/*", "*/")
         {
-            _codeBuilder = new CodeBuilder("/*", "*/");
-
-            _codeBuilder.InsertCode(BeforeDataMigrationTag + Environment.NewLine + AfterDataMigrationTag);
+            InsertCode(BeforeDataMigrationTag + DataMigrationScriptSplitterTag);
         }
 
         public void AddBeforeDataMigrationScript(string script)
         {
-            _codeBuilder.InsertCode(Environment.NewLine + MarkAsDataMigartionScript(script), BeforeDataMigrationTag, false);
+            InsertCode(script + DataMigrationScriptSplitterTag, BeforeDataMigrationTag);
         }
 
         public void AddAfterDataMigrationScript(string script)
         {
-            _codeBuilder.InsertCode(Environment.NewLine + MarkAsDataMigartionScript(script), AfterDataMigrationTag, false);
+            InsertCode(script + DataMigrationScriptSplitterTag);
         }
 
-        public void InsertCode<T>(string code, Tag<T> tag, T conceptInfo)
-            where T : IConceptInfo
+        public GeneratedDataMigrationScripts GetDataMigartionScripts()
         {
-            _codeBuilder.InsertCode(code, tag, conceptInfo);
-        }
-
-        public bool TagExists(string tag)
-        {
-            return _codeBuilder.TagExists(tag);
-        }
-
-        private static string MarkAsDataMigartionScript(string code)
-        {
-            return DataMigrationScriptStartTag + code + DataMigrationScriptEndTag + Environment.NewLine;
-        }
-
-        public IEnumerable<string> GetBeforeDataMigartionScript()
-        {
-            var code = _codeBuilder.GeneratedCode;
-            var beforeDataMigartionScriptStart = code.IndexOf(BeforeDataMigrationTag);
-            var beforeDataMigartionCode = code.Substring(0, beforeDataMigartionScriptStart);
-
-            return GetSubStrings(beforeDataMigartionCode, DataMigrationScriptStartTag, DataMigrationScriptEndTag);
-        }
-
-        public IEnumerable<string> GetAfterDataMigartionScript()
-        {
-            var code = _codeBuilder.GeneratedCode;
-            var beforeDataMigartionScriptEnd = code.IndexOf(BeforeDataMigrationTag) + BeforeDataMigrationTag.Length;
-            var afterDataMigartionScriptStart = code.IndexOf(AfterDataMigrationTag);
-            var afterDataMigartionCode = code.Substring(beforeDataMigartionScriptEnd, afterDataMigartionScriptStart - beforeDataMigartionScriptEnd);
-
-            return GetSubStrings(afterDataMigartionCode, DataMigrationScriptStartTag, DataMigrationScriptEndTag);
-        }
-
-        private List<string> GetSubStrings(string input, string startString, string endString)
-        {
-            var index = input.IndexOf(startString);
-            var scripts = new List<string>();
-            while (index != -1)
+            var scripts = GeneratedCode.Split(new[] { DataMigrationScriptSplitterTag }, StringSplitOptions.RemoveEmptyEntries);
+            int beforeTagPosition = Array.IndexOf(scripts, BeforeDataMigrationTag);
+            if (beforeTagPosition == -1)
+                throw new FrameworkException($"Internal error when finding {nameof(BeforeDataMigrationTag)}.");
+            return new GeneratedDataMigrationScripts
             {
-                var endIndex = input.IndexOf(endString, index);
-                if (endIndex == -1)
-                    break;
-
-                scripts.Add(input.Substring(index + startString.Length, endIndex - index - startString.Length));
-                index = input.IndexOf(startString, endIndex);
-            }
-
-            return scripts;
+                BeforeDataMigration = scripts.Take(beforeTagPosition),
+                AfterDataMigration = scripts.Skip(beforeTagPosition + 1),
+            };
         }
+    }
+
+    public class GeneratedDataMigrationScripts
+    {
+        public IEnumerable<string> BeforeDataMigration { get; set; }
+        public IEnumerable<string> AfterDataMigration { get; set; }
     }
 }

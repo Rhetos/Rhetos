@@ -32,26 +32,15 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
         public void GenerateCode(EntryInfo concept, IDataMigrationScriptBuilder codeBuilder)
         {
-            if (codeBuilder.TagExists(HardcodedEntityDataMigrationScript.InsertFirstValueTag.Evaluate(concept.HardcodedEntity)))
-            {
-                codeBuilder.InsertCode(GenerateCodeSnippet(concept), HardcodedEntityDataMigrationScript.InsertFirstValueTag, concept.HardcodedEntity);
-            }
-            else
-            {
-                codeBuilder.InsertCode($@" UNION ALL
-	                {GenerateCodeSnippet(concept)}", HardcodedEntityDataMigrationScript.InsertValuesTag, concept.HardcodedEntity);
-            }
+            string insertSnippet = $@"SELECT ID = '{concept.GetIdentifier()}'";
+            codeBuilder.InsertCode(insertSnippet, HardcodedEntityDataMigrationScript.InsertValuesTag, concept.HardcodedEntity);
 
             codeBuilder.InsertCode($@"
+
 UPDATE _{concept.HardcodedEntity.Module.Name}.{concept.HardcodedEntity.Name}
 SET Name = '{concept.Name}'{UpdatePropertyTag.Evaluate(concept)}
 WHERE ID = '{concept.GetIdentifier()}';",
             HardcodedEntityDataMigrationScript.UpdateTag, concept.HardcodedEntity);
-        }
-
-        private static string GenerateCodeSnippet(EntryInfo entryInfo)
-        {
-            return $@"SELECT ID = '{entryInfo.GetIdentifier()}', Name = '{entryInfo.Name}'";
         }
     }
 }

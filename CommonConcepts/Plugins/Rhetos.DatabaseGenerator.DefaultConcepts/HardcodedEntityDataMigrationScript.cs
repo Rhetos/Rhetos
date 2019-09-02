@@ -28,9 +28,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(HardcodedEntityInfo))]
     public class HardcodedEntityDataMigrationScript : IConceptDataMigration<HardcodedEntityInfo>
     {
-        public static readonly SqlTag<HardcodedEntityInfo> InsertFirstValueTag = new SqlTag<HardcodedEntityInfo>("InsertFirstValue", TagType.Single);
-
-        public static readonly SqlTag<HardcodedEntityInfo> InsertValuesTag = new SqlTag<HardcodedEntityInfo>("InsertValues");
+        public static readonly SqlTag<HardcodedEntityInfo> InsertValuesTag = new SqlTag<HardcodedEntityInfo>("InsertValues", TagType.Appendable, "{0}", " UNION ALL\r\n			{0}");
 
         public static readonly SqlTag<HardcodedEntityInfo> DataMigrationUseTag = new SqlTag<HardcodedEntityInfo>("DataMigrationUse");
 
@@ -41,21 +39,18 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         public void GenerateCode(HardcodedEntityInfo concept, IDataMigrationScriptBuilder codeBuilder)
         {
             codeBuilder.AddBeforeDataMigrationScript($@"
-EXEC Rhetos.DataMigrationUse '{concept.Module.Name}', '{concept.Name}', 'ID', 'uniqueidentifier';
-EXEC Rhetos.DataMigrationUse '{concept.Module.Name}', '{concept.Name}', 'Name', 'nvarchar(256)';
-{DataMigrationUseTag.Evaluate(concept)}
+EXEC Rhetos.DataMigrationUse '{concept.Module.Name}', '{concept.Name}', 'ID', 'uniqueidentifier';{DataMigrationUseTag.Evaluate(concept)}
 GO
 
-INSERT INTO _{concept.Module.Name}.{concept.Name} (ID, Name)
-SELECT newItem.ID, newItem.Name
+INSERT INTO _{concept.Module.Name}.{concept.Name} (ID)
+SELECT newItem.ID
 FROM
 	(
-		{InsertFirstValueTag.Evaluate(concept)}{InsertValuesTag.Evaluate(concept)}
+		{InsertValuesTag.Evaluate(concept)}
 	) newItem
 	LEFT JOIN _{concept.Module.Name}.{concept.Name} existingItem ON existingItem.ID = newItem.ID
 WHERE
 	existingItem.ID IS NULL;
-
 {UpdateTag.Evaluate(concept)}
 
 DECLARE @ColumnNames nvarchar(max);
@@ -71,7 +66,7 @@ DELETE FROM _{concept.Module.Name}.{concept.Name} WHERE ID NOT IN
     SELECT newItem.ID
     FROM
 	    (
-		    {InsertFirstValueTag.Evaluate(concept)}{InsertValuesTag.Evaluate(concept)}
+		    {InsertValuesTag.Evaluate(concept)}
 	    ) newItem
 );
 

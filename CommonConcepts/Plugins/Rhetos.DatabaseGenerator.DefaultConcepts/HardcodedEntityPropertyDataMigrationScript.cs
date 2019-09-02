@@ -20,6 +20,7 @@
 using System;
 using System.ComponentModel.Composition;
 using Rhetos.Extensibility;
+using Rhetos.Compiler;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Dsl;
 
