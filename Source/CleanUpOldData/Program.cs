@@ -47,10 +47,8 @@ namespace CleanupOldData
             catch (Exception ex)
             {
                 Console.WriteLine();
-                DeploymentUtility.WriteError(ex.Message);
-                Console.WriteLine("Details:");
                 Console.WriteLine(ex);
-                if (Environment.UserInteractive) 
+                if (Environment.UserInteractive)
                     Thread.Sleep(3000);
                 return 1;
             }
