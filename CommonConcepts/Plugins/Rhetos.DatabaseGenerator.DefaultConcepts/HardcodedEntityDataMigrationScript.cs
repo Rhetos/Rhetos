@@ -24,9 +24,9 @@ using Rhetos.Dsl.DefaultConcepts;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
-    [Export(typeof(IDataMigrationScript))]
+    [Export(typeof(IConceptDataMigration))]
     [ExportMetadata(MefProvider.Implements, typeof(HardcodedEntityInfo))]
-    public class HardcodedEntityDataMigrationScript : IDataMigrationScript<HardcodedEntityInfo>
+    public class HardcodedEntityDataMigrationScript : IConceptDataMigration<HardcodedEntityInfo>
     {
         public static readonly SqlTag<HardcodedEntityInfo> InsertFirstValueTag = new SqlTag<HardcodedEntityInfo>("InsertFirstValue", TagType.Single);
 

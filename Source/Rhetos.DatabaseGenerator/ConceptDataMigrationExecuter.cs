@@ -27,20 +27,20 @@ using System.Linq;
 
 namespace Rhetos.DatabaseGenerator
 {
-    public class DataMigrationFromCodeExecuter : IDataMigrationFromCodeExecuter
+    public class ConceptDataMigrationExecuter : IConceptDataMigrationExecuter
     {
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
         private readonly SqlTransactionBatches _sqlExecuter;
         private readonly IDslModel _dslModel;
-        private readonly IPluginsContainer<IDataMigrationScript> _plugins;
+        private readonly IPluginsContainer<IConceptDataMigration> _plugins;
         private readonly Lazy<DataMigrationScriptBuilder> _codeBuilder;
 
-        public DataMigrationFromCodeExecuter(
+        public ConceptDataMigrationExecuter(
             ILogProvider logProvider,
             SqlTransactionBatches sqlExecuter,
             IDslModel dslModel,
-            IPluginsContainer<IDataMigrationScript> plugins)
+            IPluginsContainer<IConceptDataMigration> plugins)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("DataMigrationScriptGenerator");

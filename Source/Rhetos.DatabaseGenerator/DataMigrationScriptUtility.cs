@@ -30,7 +30,7 @@ namespace Rhetos.DatabaseGenerator
 {
     public static class DataMigrationScriptUtility
     {
-        public static void GenerateCode(this IDataMigrationScript dataMigrationScript, IConceptInfo conceptInfo, IDataMigrationScriptBuilder dataMigrationScriptBuilder)
+        public static void GenerateCode(this IConceptDataMigration dataMigrationScript, IConceptInfo conceptInfo, IDataMigrationScriptBuilder dataMigrationScriptBuilder)
         {
             foreach (var method in GetPluginMethods(dataMigrationScript, conceptInfo))
             {
@@ -38,10 +38,10 @@ namespace Rhetos.DatabaseGenerator
             }
         }
 
-        private static List<MethodInfo> GetPluginMethods(IDataMigrationScript dataMigrationScript, IConceptInfo conceptInfo)
+        private static List<MethodInfo> GetPluginMethods(IConceptDataMigration dataMigrationScript, IConceptInfo conceptInfo)
         {
             var methods = dataMigrationScript.GetType().GetInterfaces()
-                    .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IDataMigrationScript<>)
+                    .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IConceptDataMigration<>)
                         && i.GetGenericArguments().Single().IsAssignableFrom(conceptInfo.GetType()))
                     .Select(i => i.GetMethod("GenerateCode"))
                     .ToList();
@@ -50,7 +50,7 @@ namespace Rhetos.DatabaseGenerator
                 throw new FrameworkException(string.Format(
                     "Plugin {0} does not implement generic interface {1} that accepts argument {2}.",
                     dataMigrationScript.GetType().FullName,
-                    typeof(IDataMigrationScript<>).FullName,
+                    typeof(IConceptDataMigration<>).FullName,
                     conceptInfo.GetType().FullName));
 
             return methods;

@@ -50,7 +50,7 @@ namespace DeployPackages
             if (_deploymentTime)
             {
                 builder.RegisterModule(new DatabaseGeneratorModuleConfiguration(shortTransaction));
-                builder.RegisterType<DataMigration>();
+                builder.RegisterType<DataMigrationScripts>();
                 builder.RegisterType<DatabaseCleaner>();
                 builder.RegisterType<ApplicationGenerator>();
                 Plugins.FindAndRegisterPlugins<IGenerator>(builder);

@@ -26,7 +26,7 @@ using System.Text;
 
 namespace Rhetos.Deployment.Test
 {
-    class DataMigration_Accessor : DataMigration
+    class DataMigration_Accessor : DataMigrationScripts
     {
         public DataMigration_Accessor()
             : base(null, new ConsoleLogProvider(), null, null, null)

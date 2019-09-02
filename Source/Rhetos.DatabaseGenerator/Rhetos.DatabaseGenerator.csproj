@@ -120,7 +120,7 @@
     <Compile Include="ConceptApplicationDependency.cs" />
     <Compile Include="ConceptApplication.cs" />
     <Compile Include="DataMigrationScriptBuilder.cs" />
-    <Compile Include="DataMigrationFromCodeExecuter.cs" />
+    <Compile Include="ConceptDataMigrationExecuter.cs" />
     <Compile Include="DataMigrationScriptUtility.cs" />
     <Compile Include="IConceptApplicationRepository.cs" />
     <Compile Include="DatabaseGenerator.cs" />

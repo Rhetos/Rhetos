@@ -19,7 +19,7 @@
 
 namespace Rhetos.DatabaseGenerator
 {
-    public interface IDataMigrationFromCodeExecuter
+    public interface IConceptDataMigrationExecuter
     {
         void ExecuteBeforeDataMigrationScripts();
 

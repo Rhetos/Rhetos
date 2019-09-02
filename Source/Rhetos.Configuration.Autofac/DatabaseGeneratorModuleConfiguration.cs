@@ -36,11 +36,11 @@ namespace Rhetos.Configuration.Autofac
         {
             builder.RegisterType<ConceptApplicationRepository>().As<IConceptApplicationRepository>();
             builder.RegisterType<DatabaseGenerator.DatabaseGenerator>().As<IDatabaseGenerator>();
-            builder.RegisterType<DatabaseGenerator.DataMigrationFromCodeExecuter>().As<IDataMigrationFromCodeExecuter>();
+            builder.RegisterType<DatabaseGenerator.ConceptDataMigrationExecuter>().As<IConceptDataMigrationExecuter>();
             builder.RegisterInstance(new DatabaseGeneratorOptions { ShortTransactions = _shortTransactions });
             Plugins.FindAndRegisterPlugins<IConceptDatabaseDefinition>(builder);
             builder.RegisterType<NullImplementation>().As<IConceptDatabaseDefinition>();
-            Plugins.FindAndRegisterPlugins<IDataMigrationScript>(builder);
+            Plugins.FindAndRegisterPlugins<IConceptDataMigration>(builder);
 
             base.Load(builder);
         }

@@ -21,11 +21,11 @@ using Rhetos.Dsl;
 
 namespace Rhetos.DatabaseGenerator
 {
-    public interface IDataMigrationScript
+    public interface IConceptDataMigration
     {
     }
 
-    public interface IDataMigrationScript<in T> : IDataMigrationScript where T : IConceptInfo
+    public interface IConceptDataMigration<in T> : IConceptDataMigration where T : IConceptInfo
     {
         void GenerateCode(T concept, IDataMigrationScriptBuilder codeBuilder);
     }
