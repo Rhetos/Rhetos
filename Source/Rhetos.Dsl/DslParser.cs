@@ -167,11 +167,13 @@ namespace Rhetos.Dsl
             possibleInterpretations.RemoveAll(i => i.NextPosition.PositionInTokenList < largest);
             if (possibleInterpretations.Count > 1)
             {
-                string msg = "Ambiguous syntax. " + tokenReader.ReportPosition()
-                    + "\r\n Possible interpretations: "
-                    + string.Join(", ", possibleInterpretations.Select(i => i.ConceptInfo.GetType().Name))
-                    + ".";
-                throw new DslSyntaxException(msg);
+                var report = new List<string>();
+                report.Add($"Ambiguous syntax. {tokenReader.ReportPosition()}");
+                report.Add($"There are multiple possible interpretations of keyword '{keyword}':");
+                for (int i = 0; i < possibleInterpretations.Count; i++)
+                    report.Add($"{i + 1}. {possibleInterpretations[i].ConceptInfo.GetType().AssemblyQualifiedName}");
+
+                throw new DslSyntaxException(string.Join("\r\n", report));
             }
 
             tokenReader.CopyFrom(possibleInterpretations.Single().NextPosition);

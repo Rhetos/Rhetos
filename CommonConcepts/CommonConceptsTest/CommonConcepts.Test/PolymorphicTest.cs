@@ -221,17 +221,18 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void Dependant_FKConstraintDelete()
+        public void Dependant_FKConstraintDeleteReferenced()
         {
             using (var container = new RhetosTestContainer())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var s1 = new TestPolymorphic.Simple1 { ID = Guid.NewGuid(), Name = "a", Days = 1 };
+                var s1 = new TestPolymorphic.Simple1 { Name = "a", Days = 1 };
                 repository.TestPolymorphic.Simple1.Insert(new[] { s1 });
 
-                var dep = new TestPolymorphic.Dependant { ID = Guid.NewGuid(), Name = "dep", SimpleBaseID = s1.ID };
+                var dep = new TestPolymorphic.Dependant { Name = "dep", SimpleBaseID = s1.ID };
                 repository.TestPolymorphic.Dependant.Insert(new[] { dep });
+
                 Assert.AreEqual("dep-a", TestUtility.DumpSorted(
                     repository.TestPolymorphic.DependantBrowse.Query(new[] { dep.ID }),
                     item => item.Name + "-" + item.SimpleBaseName));
@@ -250,13 +251,13 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var s1 = new TestPolymorphic.Simple1 { ID = Guid.NewGuid(), Name = "a", Days = 1 };
+                var s1 = new TestPolymorphic.Simple1 { Name = "a", Days = 1 };
                 repository.TestPolymorphic.Simple1.Insert(new[] { s1 });
 
-                var dep = new TestPolymorphic.Dependant { ID = Guid.NewGuid(), Name = "dep", SimpleBaseID = s1.ID };
+                var dep = new TestPolymorphic.Dependant { Name = "dep", SimpleBaseID = s1.ID };
                 repository.TestPolymorphic.Dependant.Insert(new[] { dep });
 
-                var depInvalidReference = new TestPolymorphic.Dependant { ID = Guid.NewGuid(), Name = "depInvalidReference", SimpleBaseID = Guid.NewGuid() };
+                var depInvalidReference = new TestPolymorphic.Dependant { Name = "depInvalidReference", SimpleBaseID = Guid.NewGuid() };
                 var ex = TestUtility.ShouldFail<Rhetos.UserException>(
                     () => repository.TestPolymorphic.Dependant.Insert(new[] { depInvalidReference }),
                     "It is not allowed to enter the record.");
@@ -271,10 +272,10 @@ namespace CommonConcepts.Test
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
-                var s1 = new TestPolymorphic.Simple1 { ID = Guid.NewGuid(), Name = "a", Days = 1 };
+                var s1 = new TestPolymorphic.Simple1 { Name = "a", Days = 1 };
                 repository.TestPolymorphic.Simple1.Insert(new[] { s1 });
 
-                var dep = new TestPolymorphic.Dependant { ID = Guid.NewGuid(), Name = "dep", SimpleBaseID = s1.ID };
+                var dep = new TestPolymorphic.Dependant { Name = "dep", SimpleBaseID = s1.ID };
                 repository.TestPolymorphic.Dependant.Insert(new[] { dep });
 
                 dep.SimpleBaseID = Guid.NewGuid();
@@ -283,6 +284,80 @@ namespace CommonConcepts.Test
                     () => repository.TestPolymorphic.Dependant.Update(new[] { dep }),
                     "It is not allowed to edit the record.");
                 TestUtility.AssertContains(ex.ToString(), new[] { "Dependant", "FOREIGN KEY", "SimpleBase" }, "Expected inner SQL exception");
+            }
+        }
+
+        [TestMethod]
+        public void Dependant_FKConstraintDeleteUniqueReferenced()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var s1 = new TestPolymorphic.Simple1 { Name = "s1", Days = 1 };
+                repository.TestPolymorphic.Simple1.Insert(new[] { s1 });
+
+                var d1 = new TestPolymorphic.DependantUniqueReference { Name = "d1", ID = s1.ID };
+                repository.TestPolymorphic.DependantUniqueReference.Insert(new[] { d1 });
+
+                Assert.AreEqual("s1-d1", TestUtility.DumpSorted(
+                    repository.TestPolymorphic.SimpleBase.Query(new[] { d1.ID }),
+                    item => item.Name + "-" + item.Extension_DependantUniqueReference.Name));
+
+                var ex = TestUtility.ShouldFail<Rhetos.UserException>(
+                    () => repository.TestPolymorphic.Simple1.Delete(new[] { s1 }),
+                    "It is not allowed to delete");
+                TestUtility.AssertContains(ex.ToString(), new[] { "DependantUniqueReference", "REFERENCE", "SimpleBase" }, "Expected inner SQL exception");
+            }
+        }
+
+        [TestMethod]
+        public void CascadeDeleteDetail()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var s1 = new TestPolymorphic.Simple1 { Name = "s1", Days = 1 };
+                repository.TestPolymorphic.Simple1.Insert(new[] { s1 });
+
+                var d1 = new TestPolymorphic.DependantDetail { Name = "d1", SimpleBaseID = s1.ID };
+                repository.TestPolymorphic.DependantDetail.Insert(new[] { d1 });
+
+                Assert.AreEqual("s1-d1", TestUtility.DumpSorted(
+                    repository.TestPolymorphic.DependantDetail.Query(new[] { d1.ID }).ToList(),
+                    item => item.SimpleBase.Name + "-" + item.Name));
+
+                repository.TestPolymorphic.Simple1.Delete(new[] { s1 });
+
+                Assert.AreEqual("", TestUtility.DumpSorted(
+                    repository.TestPolymorphic.DependantDetail.Query(new[] { d1.ID }).ToList(),
+                    item => item.SimpleBase.Name + "-" + item.Name));
+            }
+        }
+
+        [TestMethod]
+        public void CascadeDeleteExtension()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var s1 = new TestPolymorphic.Simple1 { Name = "s1", Days = 1 };
+                repository.TestPolymorphic.Simple1.Insert(new[] { s1 });
+
+                var d1 = new TestPolymorphic.DependantExtension { Name = "d1", ID = s1.ID };
+                repository.TestPolymorphic.DependantExtension.Insert(new[] { d1 });
+
+                Assert.AreEqual("s1-d1", TestUtility.DumpSorted(
+                    repository.TestPolymorphic.DependantExtension.Query(new[] { d1.ID }).ToList(),
+                    item => item.Base.Name + "-" + item.Name));
+
+                repository.TestPolymorphic.Simple1.Delete(new[] { s1 });
+
+                Assert.AreEqual("", TestUtility.DumpSorted(
+                    repository.TestPolymorphic.DependantExtension.Query(new[] { d1.ID }).ToList(),
+                    item => item.Base.Name + "-" + item.Name));
             }
         }
 

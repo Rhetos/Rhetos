@@ -17,11 +17,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace Rhetos.Dsl
-{
-    public interface ITypeExtension
-    { }
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Rhetos.Dsl;
+using System.ComponentModel.Composition;
 
-    public interface ITypeExtension<out T> : ITypeExtension where T : IConceptInfo
-    { }
+namespace Rhetos.Dsl.DefaultConcepts
+{
+    /// <summary>
+    /// A reference to polymorphic supports cascade delete, but the polymorphic itself is not directly writable,
+    /// so the triggering event is redirected to the polymorphic's materialized entity.
+    /// </summary>
+    [Export(typeof(IConceptInfo))]
+    public class UniqueReferenceCascadeDeletePolymorphicInfo : IConceptInfo
+    {
+        [ConceptKey]
+        public DataStructureInfo Extension { get; set; }
+
+        [ConceptKey]
+        public DataStructureInfo Base { get; set; }
+
+    }
 }

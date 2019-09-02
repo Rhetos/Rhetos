@@ -33,28 +33,33 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (ReferenceCascadeDeleteInfo)conceptInfo;
 
-            if (info.Reference.Referenced is IWritableOrmDataStructure)
+            InsertCodeSnippet(codeBuilder, info.Reference, info.Reference.Referenced);
+        }
+
+        public static void InsertCodeSnippet(ICodeBuilder codeBuilder, ReferencePropertyInfo reference, DataStructureInfo parent)
+        {
+            if (reference.DataStructure is IWritableOrmDataStructure && parent is IWritableOrmDataStructure)
             {
-                string childName = info.Reference.DataStructure.Module.Name + "." + info.Reference.DataStructure.Name;
+                string detailName = reference.DataStructure.Module.Name + "." + reference.DataStructure.Name;
 
                 string snippetDeleteChildItems =
             $@"if (deletedIds.Count() > 0)
             {{
-                List<{childName}> childItems = deletedIds
-                    .SelectMany(parent => _executionContext.Repository.{childName}.Query()
-                        .Where(child => child.{info.Reference.Name}ID == parent.ID)
+                List<{detailName}> childItems = deletedIds
+                    .SelectMany(parent => _executionContext.Repository.{detailName}.Query()
+                        .Where(child => child.{reference.Name}ID == parent.ID)
                         .Select(child => child.ID)
                         .ToList())
-                    .Select(childId => new {childName} {{ ID = childId }})
+                    .Select(childId => new {detailName} {{ ID = childId }})
                     .ToList();
 
                 if (childItems.Count() > 0)
-                    _domRepository.{childName}.Delete(childItems);
+                    _domRepository.{detailName}.Delete(childItems);
             }}
 
             ";
 
-                codeBuilder.InsertCode(snippetDeleteChildItems, WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Reference.Referenced);
+                codeBuilder.InsertCode(snippetDeleteChildItems, WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, parent);
             }
         }
     }

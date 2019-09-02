@@ -23,6 +23,7 @@ using System.Linq;
 using System.Text;
 using Rhetos.Dsl;
 using System.ComponentModel.Composition;
+using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -30,8 +31,8 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// Automatically deletes detail records when a master record is deleted.
     /// </summary>
     /// <remarks>
-    /// This feature does not create "on delete cascade" in database
-    /// (since Rhetos v2.11, unless CommonConcepts.Legacy.CascadeDeleteInDatabase is enabled).
+    /// This feature does not create "on delete cascade" in database unless CommonConcepts.Legacy.CascadeDeleteInDatabase
+    /// is enabled (since Rhetos v2.11).
     /// It is implemented in the application layer, because a database implementation would not execute
     /// any business logic that is implemented on the child entity.
     /// </remarks> 
@@ -41,5 +42,44 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         [ConceptKey]
         public ReferencePropertyInfo Reference { get; set; }
+    }
+
+    [Export(typeof(IConceptMacro))]
+    public class ReferenceCascadeDeleteMacro : IConceptMacro<ReferenceCascadeDeleteInfo>
+    {
+        public static readonly string LegacyCascadeDeleteInDatabaseOption = "CommonConcepts.Legacy.CascadeDeleteInDatabase";
+
+        private readonly IConfiguration _configuration;
+
+        public ReferenceCascadeDeleteMacro(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+        public IEnumerable<IConceptInfo> CreateNewConcepts(ReferenceCascadeDeleteInfo conceptInfo, IDslModel existingConcepts)
+        {
+            var newConcepts = new List<IConceptInfo>();
+
+            if (conceptInfo.Reference.Referenced is PolymorphicInfo && conceptInfo.Reference.DataStructure is IWritableOrmDataStructure)
+                newConcepts.Add(new ReferenceCascadeDeletePolymorphicInfo
+                {
+                    Reference = conceptInfo.Reference,
+                    Parent = ((PolymorphicInfo)conceptInfo.Reference.Referenced).GetMaterializedEntity()
+                });
+
+            // Cascade delete FK in database is not needed because the server application will explicitly delete the referencing data (to ensure server-side validations and recomputations).
+            // Cascade delete in database is just a legacy feature, a convenience for development and testing.
+            // It is turned off by default because if a record is deleted by cascade delete directly in the database, then the business logic implemented in application layer will not be executed.
+            if (_configuration.GetBool(LegacyCascadeDeleteInDatabaseOption, true).Value)
+            {
+                var dbConstraint = (ReferencePropertyDbConstraintInfo)existingConcepts.FindByKey($"ReferencePropertyDbConstraintInfo {conceptInfo.Reference}");
+                if (dbConstraint != null)
+                    newConcepts.Add(new ReferenceCascadeDeleteDbInfo
+                    {
+                        ReferenceDbConstraint = dbConstraint
+                    });
+            }
+
+            return newConcepts;
+        }
     }
 }

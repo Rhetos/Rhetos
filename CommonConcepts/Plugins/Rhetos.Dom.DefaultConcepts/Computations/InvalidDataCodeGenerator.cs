@@ -38,17 +38,16 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<InvalidDataInfo> ErrorMetadataTag = "ErrorMetadata";
         public static readonly CsTag<InvalidDataInfo> OverrideUserMessagesTag = "OverrideUserMessages";
 
-        private readonly ConceptMetadata _conceptMetadata;
+        private readonly IDslModel _dslModel;
 
-        public InvalidDataCodeGenerator(ConceptMetadata conceptMetadata)
+        public InvalidDataCodeGenerator(IDslModel dslModel)
         {
-            _conceptMetadata = conceptMetadata;
+            _dslModel = dslModel;
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (InvalidDataInfo)conceptInfo;
-            string dataStructure = info.Source.Module.Name + "." + info.Source.Name;
 
             // Using nonstandard naming of variables to avoid name clashes with injected code.
             string errorMessageMethod =
@@ -68,7 +67,13 @@ namespace Rhetos.Dom.DefaultConcepts
                 "metadata[\"Validation\"] = " + CsUtility.QuotedString(info.FilterType) + ";\r\n            ",
                 ErrorMetadataTag, info);
 
-            bool allowSave = _conceptMetadata.GetOrDefault(info, InvalidDataInfo.AllowSaveMetadata, false);
+            // HACK: IDslModel should not be used in code generator.
+            // We should remove AllowSave concept,
+            // add a base validation concept for InvalidData that does not block saving,
+            // add DenySave concept that referenced the base validation and blocks saving,
+            // and make InvalidData a macro that adds DenySave.
+            bool allowSave = _dslModel.FindByKey($"{nameof(InvalidDataAllowSaveInfo)} {info.GetKeyProperties()}") != null;
+
             string validationSnippet =
             $@"if ({(allowSave ? "!" : "")}onSave)
             {{

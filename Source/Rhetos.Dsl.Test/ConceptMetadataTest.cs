@@ -17,69 +17,98 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
+using Rhetos.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace Rhetos.Dsl.Test
 {
     [TestClass]
     public class ConceptMetadataTest
     {
-        class SomeConcept : IConceptInfo
+
+        public class SimpleConcept1 : IConceptInfo { }
+
+        public class DerivationConcept1 : SimpleConcept1 { }
+
+        public class SimpleConcept2 : IConceptInfo { }
+
+        public interface ISimpleConceptMetadata<out T> : IConceptMetadataExtension<T> where T : IConceptInfo
         {
-            [ConceptKey]
-            public string Name { get; set; }
+            string ExtensionForType{ get; }
         }
 
-        static readonly ConceptMetadataKey<string> cmString = new ConceptMetadataKey<string>("cmString");
-        static readonly ConceptMetadataKey<int> cmInt = new ConceptMetadataKey<int>();
-
-        [TestMethod]
-        public void GetSetMetadata()
+        public class SimpleConceptMetadataImplementation1 : ISimpleConceptMetadata<SimpleConcept1>
         {
-            var cm = new ConceptMetadata();
+            public string ExtensionForType { get { return "SimpleConcept1"; } }
+        }
 
-            var c1 = new SomeConcept { Name = "c1" };
-            var c2 = new SomeConcept { Name = "c2" };
-            var c3 = new SomeConcept { Name = "c3" };
+        public class DerivationConceptMetadataImplementation1 : ISimpleConceptMetadata<DerivationConcept1>
+        {
+            public string ExtensionForType { get { return "DerivationConcept1"; } }
+        }
 
-            cm.Set(c1, cmString, "abc");
-            cm.Set(c2, cmString, "def");
-            cm.Set(c2, cmInt, 123);
+        public class SimpleConceptMetadataImplementation12 : ISimpleConceptMetadata<SimpleConcept1>
+        {
+            public string ExtensionForType { get { return "SimpleConcept1"; } }
+        }
 
-            Assert.AreEqual("abc", cm.Get(c1, cmString));
-            Assert.AreEqual("def", cm.Get(c2, cmString));
-            Assert.AreEqual(123, cm.Get(c2, cmInt));
-
-            TestUtility.ShouldFail<FrameworkException>(() => cm.Get(c1, cmInt), "There is no requested metadata", "SomeConcept", "c1", cmInt.Id.ToString());
-            TestUtility.ShouldFail<FrameworkException>(() => cm.Get(c3, cmString), "There is no requested metadata", "SomeConcept", "c3", "cmString", cmString.Id.ToString());
-            TestUtility.ShouldFail<FrameworkException>(() => cm.Get(c3, cmInt), "There is no requested metadata", "SomeConcept");
-
-            TestUtility.ShouldFail<FrameworkException>(() => cm.Set(c1, cmString, "xyz"),
-                "metadata value is already set", "SomeConcept", "c1", "cmString", cmString.Id.ToString(), "abc", "xyz");
+        public class SimpleConceptMetadataImplementation2 : ISimpleConceptMetadata<SimpleConcept2>
+        {
+            public string ExtensionForType { get { return "SimpleConcept2"; } }
         }
 
         [TestMethod]
-        public void ContainsMetadata()
+        public void RetrieveConceptMetadataTest()
         {
-            var cm = new ConceptMetadata();
+            var metadataProvider = new ConceptMetadata(new MockPluginsContainer<IConceptMetadataExtension>(new IConceptMetadataExtension[] {
+                new SimpleConceptMetadataImplementation1(),
+                new SimpleConceptMetadataImplementation2(),
+                new DerivationConceptMetadataImplementation1()
+            }));
 
-            var c1 = new SomeConcept { Name = "c1" };
-            var c2 = new SomeConcept { Name = "c2" };
-            var c3 = new SomeConcept { Name = "c3" };
+            Assert.AreEqual("SimpleConcept1", metadataProvider.Get<ISimpleConceptMetadata<IConceptInfo>>(typeof(SimpleConcept1)).ExtensionForType);
+            Assert.AreEqual("SimpleConcept2", metadataProvider.Get<ISimpleConceptMetadata<IConceptInfo>>(typeof(SimpleConcept2)).ExtensionForType);
+            Assert.AreEqual("DerivationConcept1", metadataProvider.Get<ISimpleConceptMetadata<IConceptInfo>>(typeof(DerivationConcept1)).ExtensionForType);
+        }
 
-            cm.Set(c1, cmString, "abc");
-            cm.Set(c2, cmString, "def");
-            cm.Set(c2, cmInt, 123);
+        [TestMethod]
+        public void MultipleExtensionForSameTypeErrorTest()
+        {
+            TestUtility.ShouldFail(()=> {
+                var metadataProvider = new ConceptMetadata(new MockPluginsContainer<IConceptMetadataExtension>(new IConceptMetadataExtension[] {
+                    new SimpleConceptMetadataImplementation1(),
+                    new SimpleConceptMetadataImplementation12()
+                }));
 
-            Assert.AreEqual(true, cm.Contains(c1, cmString));
-            Assert.AreEqual(true, cm.Contains(c2, cmString));
-            Assert.AreEqual(true, cm.Contains(c2, cmInt));
+                metadataProvider.Get<ISimpleConceptMetadata<IConceptInfo>>(typeof(SimpleConcept1));
+            },
+                "There are multiple implementations of", "SimpleConceptMetadataImplementation1", "SimpleConceptMetadataImplementation12",
+                "SimpleConceptMetadata", "SimpleConcept1");
+        }
 
-            Assert.AreEqual(false, cm.Contains(c1, cmInt));
-            Assert.AreEqual(false, cm.Contains(c3, cmString));
-            Assert.AreEqual(false, cm.Contains(c3, cmInt));
+        [TestMethod]
+        public void FallbackTypeTest()
+        {
+            var metadataProvider = new ConceptMetadata(new MockPluginsContainer<IConceptMetadataExtension>(new IConceptMetadataExtension[] {
+                new SimpleConceptMetadataImplementation1()
+            }));
+            
+            Assert.AreEqual("SimpleConcept1", metadataProvider.Get<ISimpleConceptMetadata<IConceptInfo>>(typeof(DerivationConcept1)).ExtensionForType);
+        }
+
+        [TestMethod]
+        public void NoConceptMetadataTest()
+        {
+            var metadataProvider = new ConceptMetadata(new MockPluginsContainer<IConceptMetadataExtension>(new IConceptMetadataExtension[] {}));
+
+            TestUtility.ShouldFail(() => {
+                metadataProvider.Get<ISimpleConceptMetadata<IConceptInfo>>(typeof(SimpleConcept1));
+            }, $"There is no {nameof(IConceptMetadataExtension)} plugin", "SimpleConceptMetadata", "SimpleConcept1");
         }
     }
 }

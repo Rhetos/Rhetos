@@ -149,6 +149,7 @@
     <Compile Include="Computations\LockItemsLockPropertyInfo.cs" />
     <Compile Include="Computations\PersistedKeyPropertiesInfo.cs" />
     <Compile Include="Computations\KeyPropertyComputedFromInfo.cs" />
+    <Compile Include="DatabaseWorkarounds\ForeignKeyUtility.cs" />
     <Compile Include="DatabaseWorkarounds\SqlDependsOnIDInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndexClusteredInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndexMultipleFollowingPropertyInfo.cs" />
@@ -159,6 +160,7 @@
     <Compile Include="DataStructure\HardcodedEntityInfo.cs" />
     <Compile Include="DataStructure\PolymorphicSubtypeDiscriminatorInfo.cs" />
     <Compile Include="DataStructure\PolymorphicSubtypeReferenceInfo.cs" />
+    <Compile Include="DataStructure\Properties\ReferencePropertyDbConstraintInfo.cs" />
     <Compile Include="DataStructure\RepositoryMemberInfo.cs" />
     <Compile Include="DataStructure\SamePropertyValueInfo.cs" />
     <Compile Include="DataStructure\UniqueReferenceInfo.cs" />
@@ -175,6 +177,8 @@
     <Compile Include="DataStructure\ExtensibleSubtypeSqlViewInfo.cs" />
     <Compile Include="DataStructure\QueryWithParameterInfo.cs" />
     <Compile Include="DataStructure\SubtypeWhereInfo.cs" />
+    <Compile Include="DataStructure\Writing\ArgumentValidationInfo.cs" />
+    <Compile Include="DataStructure\Writing\OldDataLoadedInfo.cs" />
     <Compile Include="DataStructure\Writing\OnSaveUpdateInfo.cs" />
     <Compile Include="DataStructure\Writing\SaveMethodAfterSaveInfo.cs" />
     <Compile Include="DataStructure\Writing\SaveMethodInitializationInfo.cs" />
@@ -302,6 +306,9 @@
     <Compile Include="SimpleBusinessLogic\CreatedByInfo.cs" />
     <Compile Include="SimpleBusinessLogic\DefaultValueInfo.cs" />
     <Compile Include="SimpleBusinessLogic\LogReaderAdditionalSourceInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\ReferenceCascadeDeleteDbInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\ReferenceCascadeDeletePolymorphicInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\UniqueReferenceCascadeDeletePolymorphicInfo.cs" />
     <Compile Include="SimpleBusinessLogic\UniqueReferenceCascadeDeleteInfo.cs" />
     <Compile Include="SimpleBusinessLogic\RegExMatchDefaultMessage.cs" />
     <Compile Include="SimpleBusinessLogic\LoggingRelatedItemInfo.cs" />

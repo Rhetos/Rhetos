@@ -17,69 +17,93 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
+using Rhetos.Extensibility;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Rhetos.Dsl
 {
     public class ConceptMetadata
     {
-        Dictionary<string, Dictionary<Guid, object>> _metadata;
+        /// <summary>
+        /// First key is the metadata interface type (inherits IConceptMetadata), second key is the concept type (inherits IConceptInfo).
+        /// </summary>
+        private readonly Dictionary<Type, Dictionary<Type, IConceptMetadataExtension>> _metadata;
 
-        public ConceptMetadata()
+        private readonly IPluginsContainer<IConceptMetadataExtension> _plugins;
+
+        public ConceptMetadata(IPluginsContainer<IConceptMetadataExtension> plugins)
         {
-            _metadata = new Dictionary<string, Dictionary<Guid, object>>();
+            _plugins = plugins;
+            _metadata = new Dictionary<Type, Dictionary<Type, IConceptMetadataExtension>>();
         }
 
-        public void Set<T>(IConceptInfo conceptInfo, ConceptMetadataKey<T> metadataKey, T value)
+        public TMetadata Get<TMetadata>(Type conceptType) where TMetadata : IConceptMetadataExtension<IConceptInfo>
         {
-            Dictionary<Guid, object> conceptInfoMetadata;
-            string conceptKey = conceptInfo.GetKey();
-            if (!_metadata.TryGetValue(conceptKey, out conceptInfoMetadata))
+            return (TMetadata)Get(typeof(TMetadata), conceptType);
+        }
+
+        public IConceptMetadataExtension Get(Type metadataInterface, Type conceptType)
+        {
+            Type expectedMetadataType = typeof(IConceptMetadataExtension<IConceptInfo>);
+            if (!expectedMetadataType.IsAssignableFrom(metadataInterface))
+                throw new FrameworkException($"{metadataInterface} does not implement {expectedMetadataType}.");
+
+            var metadataGenericInterface = metadataInterface.GetGenericTypeDefinition();
+
+            Dictionary<Type, IConceptMetadataExtension> metadataByConceptType;
+            if (!_metadata.TryGetValue(metadataGenericInterface, out metadataByConceptType))
             {
-                conceptInfoMetadata = new Dictionary<Guid, object>();
-                _metadata.Add(conceptKey, conceptInfoMetadata);
+                metadataByConceptType = GetPluginsForMetadataType(metadataInterface, metadataGenericInterface);
+                _metadata.Add(metadataGenericInterface, metadataByConceptType);
             }
 
-            object oldValue;
-            if (!conceptInfoMetadata.TryGetValue(metadataKey.Id, out oldValue))
-                conceptInfoMetadata.Add(metadataKey.Id, value);
-            else
+            if (!metadataByConceptType.ContainsKey(conceptType))
             {
-                if (!SameValue(value, oldValue))
-                    throw new FrameworkException(
-                        $"Different metadata value is already set for concept {conceptInfo.GetUserDescription()}, key {metadataKey}." +
-                        $" Previous value '{oldValue}', new value '{value}'.");
+                var conceptBaseType = TryFindBaseType(conceptType, metadataByConceptType.Select(x => x.Key).ToList());
+                if (conceptBaseType == null)
+                    throw new FrameworkException($@"There is no {nameof(IConceptMetadataExtension)} plugin of type {metadataInterface} for concept {conceptType}.");
+
+                metadataByConceptType.Add(conceptType, metadataByConceptType[conceptBaseType]);
             }
+
+            return metadataByConceptType[conceptType];
         }
 
-        private static bool SameValue<T>(T value, object oldValue)
+        private Dictionary<Type, IConceptMetadataExtension> GetPluginsForMetadataType(Type metadataInterface, Type metadataGenericInterface)
         {
-            return oldValue == null ? (value == null) : oldValue.Equals(value);
+            var metadataByConceptType = new Dictionary<Type, IConceptMetadataExtension>();
+
+            foreach (var plugin in _plugins.GetPlugins().Where(x => metadataInterface.IsInstanceOfType(x)))
+            {
+                var pluginType = plugin.GetType();
+                var pluginInterface = pluginType.GetInterfaces().Single(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IConceptMetadataExtension<>));
+                var conceptType = pluginInterface.GetGenericArguments().Single();
+
+                if (metadataByConceptType.ContainsKey(conceptType))
+                    throw new FrameworkException($"There are multiple implementations of {metadataGenericInterface.Name} for type {conceptType.Name}:" +
+                        $" '{metadataByConceptType[conceptType].GetType()}' and '{pluginType}'.");
+
+                metadataByConceptType.Add(conceptType, plugin);
+            }
+
+            return metadataByConceptType;
         }
 
-        public T Get<T>(IConceptInfo conceptInfo, ConceptMetadataKey<T> metadataKey)
+        private static Type TryFindBaseType(Type t, List<Type> allowedTypes)
         {
-            Func<string> missingMetadataMessage = () => "There is no requested metadata for concept " + conceptInfo.GetUserDescription() + ". Metadata key is " + metadataKey + ".";
-            var conceptInfoMetadata = _metadata.GetValue(conceptInfo.GetKey(), missingMetadataMessage);
-            var metadataValue = conceptInfoMetadata.GetValue(metadataKey.Id, missingMetadataMessage);
-            return (T)metadataValue;
-        }
+            var baseType = t.BaseType;
 
-        public T GetOrDefault<T>(IConceptInfo conceptInfo, ConceptMetadataKey<T> metadataKey, T defaultValue)
-        {
-            return Contains(conceptInfo, metadataKey)
-                ? Get(conceptInfo, metadataKey)
-                : defaultValue;
-        }
+            while (baseType != null && baseType.IsClass)
+            {
+                if (allowedTypes.Contains(baseType))
+                    return baseType;
 
-        public bool Contains<T>(IConceptInfo conceptInfo, ConceptMetadataKey<T> metadataKey)
-        {
-            Dictionary<Guid, object> conceptInfoMetadata;
-            if (!_metadata.TryGetValue(conceptInfo.GetKey(), out conceptInfoMetadata))
-                return false;
-            return conceptInfoMetadata.ContainsKey(metadataKey.Id);
+                baseType = baseType.BaseType;
+            }
+
+            return null;
         }
     }
 }

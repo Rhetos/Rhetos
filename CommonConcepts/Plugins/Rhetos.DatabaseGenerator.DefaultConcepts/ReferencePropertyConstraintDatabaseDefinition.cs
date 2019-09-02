@@ -36,62 +36,49 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     /// so that changes in foreign key options (such as on delete cascade) can be done without regenerating the column.
     /// </summary>
     [Export(typeof(IConceptDatabaseDefinition))]
-    [ExportMetadata(MefProvider.Implements, typeof(ReferencePropertyInfo))]
-    [ExportMetadata(MefProvider.DependsOn, typeof(ReferencePropertyDatabaseDefinition))]
-    public class ReferencePropertyConstraintDatabaseDefinition : IConceptDatabaseDefinition, IConceptDatabaseDefinitionExtension
+    [ExportMetadata(MefProvider.Implements, typeof(ReferencePropertyDbConstraintInfo))]
+    public class ReferencePropertyConstraintDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
-        public static readonly SqlTag<ReferencePropertyInfo> ForeignKeyConstraintOptions = "FK options";
+        public static readonly SqlTag<ReferencePropertyDbConstraintInfo> ForeignKeyConstraintOptions = "FK options";
 
-        public static string GetConstraintName(ReferencePropertyInfo info)
+        public static string GetConstraintName(ReferencePropertyInfo reference)
         {
             return SqlUtility.Identifier(Sql.Format("ReferencePropertyConstraintDatabaseDefinition_ConstraintName",
-                info.DataStructure.Name,
-                info.Referenced.Name,
-                info.Name));
+                reference.DataStructure.Name,
+                reference.Referenced.Name,
+                reference.Name));
         }
-
-        public static bool IsSupported(ReferencePropertyInfo info)
-        {
-            return ReferencePropertyDatabaseDefinition.IsSupported(info)
-                && ForeignKeyUtility.GetSchemaTableForForeignKey(info.Referenced) != null;
-        }
-
+        
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
-            var info = (ReferencePropertyInfo)conceptInfo;
+            var info = (ReferencePropertyDbConstraintInfo)conceptInfo;
+            var reference = info.Reference;
 
-            if (IsSupported(info))
-                return Sql.Format("ReferencePropertyConstraintDatabaseDefinition_Create",
-                    SqlUtility.Identifier(info.DataStructure.Module.Name) + "." + SqlUtility.Identifier(info.DataStructure.Name),
-                    GetConstraintName(info),
-                    info.GetColumnName(),
-                    ForeignKeyUtility.GetSchemaTableForForeignKey(info.Referenced),
-                    ForeignKeyConstraintOptions.Evaluate(info));
-            return "";
+            return Sql.Format("ReferencePropertyConstraintDatabaseDefinition_Create",
+                SqlUtility.Identifier(reference.DataStructure.Module.Name) + "." + SqlUtility.Identifier(reference.DataStructure.Name),
+                GetConstraintName(reference),
+                reference.GetColumnName(),
+                ForeignKeyUtility.GetSchemaTableForForeignKey(reference.Referenced),
+                ForeignKeyConstraintOptions.Evaluate(info));
         }
 
         public string RemoveDatabaseStructure(IConceptInfo conceptInfo)
         {
-            var info = (ReferencePropertyInfo)conceptInfo;
+            var info = (ReferencePropertyDbConstraintInfo)conceptInfo;
+            var reference = info.Reference;
 
-            if (IsSupported(info))
-                return Sql.Format("ReferencePropertyConstraintDatabaseDefinition_Remove",
-                    SqlUtility.Identifier(info.DataStructure.Module.Name) + "." + SqlUtility.Identifier(info.DataStructure.Name),
-                    GetConstraintName(info));
-            return "";
+            return Sql.Format("ReferencePropertyConstraintDatabaseDefinition_Remove",
+                SqlUtility.Identifier(reference.DataStructure.Module.Name) + "." + SqlUtility.Identifier(reference.DataStructure.Name),
+                GetConstraintName(reference));
         }
 
         public void ExtendDatabaseStructure(IConceptInfo conceptInfo, ICodeBuilder codeBuilder, out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
         {
-            var info = (ReferencePropertyInfo)conceptInfo;
+            var info = (ReferencePropertyDbConstraintInfo)conceptInfo;
+            var reference = info.Reference;
 
-            var dependencies = new List<Tuple<IConceptInfo, IConceptInfo>>();
-
-            if (IsSupported(info))
-                dependencies.AddRange(ForeignKeyUtility.GetAdditionalForeignKeyDependencies(info.Referenced)
-                    .Select(dep => Tuple.Create<IConceptInfo, IConceptInfo>(dep, info)));
-
-            createdDependencies = dependencies;
+            createdDependencies = ForeignKeyUtility.GetAdditionalForeignKeyDependencies(reference.Referenced)
+                .Select(dep => Tuple.Create<IConceptInfo, IConceptInfo>(dep, reference));
         }
     }
 }

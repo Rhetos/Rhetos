@@ -89,7 +89,7 @@ namespace Rhetos.TestCommon
                     Console.WriteLine(errorContext);
                     Assert.Fail("Text should contain pattern '" + pattern + "'."
                         + (string.IsNullOrEmpty(message) ? " " + message : "")
-                        + " " + "The text is '" + text.Limit(200, true) + "'.");
+                        + " " + "The text is '" + text.Limit(400, true) + "'.");
                 }
             }
         }

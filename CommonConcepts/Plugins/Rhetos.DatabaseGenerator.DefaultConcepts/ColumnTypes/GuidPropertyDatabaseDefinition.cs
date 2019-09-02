@@ -30,11 +30,11 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(GuidPropertyInfo))]
     public class GuidPropertyDatabaseDefinition : IConceptDatabaseDefinition
     {
-        TypeExtensionProvider _typeExtension;
+        ConceptMetadata _conceptMetadata;
 
-        public GuidPropertyDatabaseDefinition(TypeExtensionProvider typeExtension)
+        public GuidPropertyDatabaseDefinition(ConceptMetadata conceptMetadata)
         {
-            _typeExtension = typeExtension;
+            _conceptMetadata = conceptMetadata;
         }
 
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
@@ -42,7 +42,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             var info = (GuidPropertyInfo)conceptInfo;
 
             if (info.DataStructure is EntityInfo)
-                return PropertyDatabaseDefinition.AddColumn(_typeExtension, info);
+                return PropertyDatabaseDefinition.AddColumn(_conceptMetadata, info);
 
             return "";
         }

@@ -133,5 +133,40 @@ namespace CommonConcepts.Test
                 Assert.IsTrue(log.Any(entry => entry.Contains("SaveTester.Deletions: e1.")), "Deleting the base entity should result with deletion of the extension through the object model (not just deleted in database by cascade delete).");
             }
         }
+
+        [TestMethod]
+        public void SaveMethodArgumentValidation()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var context = container.Resolve<Common.ExecutionContext>();
+
+                var baseItem = new TestDataStructure.SaveTesterBase();
+                context.Repository.TestDataStructure.SaveTesterBase.Insert(baseItem);
+
+                TestUtility.ShouldFail<Rhetos.UserException>(
+                    () => context.Repository.TestDataStructure.SaveTester.Insert(new TestDataStructure.SaveTester { ID = baseItem.ID, Code = 123 }),
+                    "Cannot insert code 123");
+            }
+        }
+
+        [TestMethod]
+        public void SaveMethodOldDataLoaded()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var context = container.Resolve<Common.ExecutionContext>();
+
+                var baseItem = new TestDataStructure.SaveTesterBase { Name = "456" };
+                context.Repository.TestDataStructure.SaveTesterBase.Insert(baseItem);
+
+                var testItem = new TestDataStructure.SaveTester { ID = baseItem.ID };
+                context.Repository.TestDataStructure.SaveTester.Insert(testItem);
+
+                TestUtility.ShouldFail<Rhetos.UserException>(
+                    () => context.Repository.TestDataStructure.SaveTester.Delete(testItem),
+                    "Cannot change locked base name 456");
+            }
+        }
     }
 }

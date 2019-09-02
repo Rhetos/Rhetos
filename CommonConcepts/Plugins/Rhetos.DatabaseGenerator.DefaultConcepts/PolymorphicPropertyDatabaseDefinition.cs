@@ -32,11 +32,11 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(PolymorphicPropertyInfo))]
     public class PolymorphicPropertyDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
-        TypeExtensionProvider _typeExtension;
+        ConceptMetadata _conceptMetadata;
 
-        public PolymorphicPropertyDatabaseDefinition(TypeExtensionProvider typeExtension)
+        public PolymorphicPropertyDatabaseDefinition(ConceptMetadata conceptMetadata)
         {
-            _typeExtension = typeExtension;
+            _conceptMetadata = conceptMetadata;
         }
 
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
@@ -53,8 +53,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (PolymorphicPropertyInfo)conceptInfo;
 
-            var propertyColumnName = _typeExtension.Get<IDatabaseColumnName<PropertyInfo>>(info.Property.GetType()).GetColumnName(info.Property);
-            var propertyColumnType = _typeExtension.Get<IDatabaseColumnType<PropertyInfo>>(info.Property.GetType()).ColumnType;
+            var propertyColumnName = _conceptMetadata.GetColumnName(info.Property);
+            var propertyColumnType = _conceptMetadata.GetColumnType(info.Property);
 
             string columnImplementationsSelector = info.IsImplementable()
                 ? ", " + propertyColumnName

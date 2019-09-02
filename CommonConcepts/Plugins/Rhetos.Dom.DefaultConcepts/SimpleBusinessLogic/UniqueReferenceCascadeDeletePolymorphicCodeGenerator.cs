@@ -17,28 +17,23 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Utilities;
+using Rhetos.Extensibility;
 using System.ComponentModel.Composition;
 
-namespace Rhetos.DatabaseGenerator.DefaultConcepts
+namespace Rhetos.Dom.DefaultConcepts
 {
-    [Export(typeof(ITypeExtension))]
-    public class PropertyDatabaseColumnNameExtension : IDatabaseColumnName<PropertyInfo>
+    [Export(typeof(IConceptCodeGenerator))]
+    [ExportMetadata(MefProvider.Implements, typeof(UniqueReferenceCascadeDeletePolymorphicInfo))]
+    public class UniqueReferenceCascadeDeletePolymorphicCodeGenerator : IConceptCodeGenerator
     {
-        public string GetColumnName(PropertyInfo info)
+        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            return SqlUtility.Identifier(info.Name);
-        }
-    }
+            var info = (UniqueReferenceCascadeDeletePolymorphicInfo)conceptInfo;
 
-    [Export(typeof(ITypeExtension))]
-    public class ReferencePropertyDatabaseColumnNameExtension : IDatabaseColumnName<ReferencePropertyInfo>
-    {
-        public string GetColumnName(PropertyInfo info)
-        {
-            return SqlUtility.Identifier(info.Name + "ID");
+            UniqueReferenceCascadeDeleteCodeGenerator.InsertCodeSnippet(codeBuilder, info.Extension, info.Base);
         }
     }
 }

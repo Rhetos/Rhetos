@@ -455,12 +455,15 @@ namespace Rhetos.DatabaseGenerator
             // Find changed concept applications (different create sql query):
 
             var existingApplications = oldApplicationsByKey.Keys.Intersect(newApplicationsByKey.Keys).ToList();
-            var changedApplications = existingApplications.Where(appKey => !string.Equals(
-                oldApplicationsByKey[appKey].CreateQuery,
-                newApplicationsByKey[appKey].CreateQuery)).ToList();
+            var changedApplications = existingApplications
+                .Where(appKey => !string.Equals(
+                    oldApplicationsByKey[appKey].CreateQuery,
+                    newApplicationsByKey[appKey].CreateQuery,
+                    StringComparison.Ordinal))
+                .ToList();
 
             foreach (string ca in changedApplications)
-                _logger.Trace("Changed concept application: " + ca);
+                _logger.Trace(() => $"Changed concept application: {ca}\r\n{ReportDiff(oldApplicationsByKey[ca].CreateQuery, newApplicationsByKey[ca].CreateQuery)}");
 
             // Find dependent concepts applications to be regenerated:
 
@@ -509,6 +512,15 @@ namespace Rhetos.DatabaseGenerator
 
             toBeRemoved = toBeRemovedKeys.Select(key => oldApplicationsByKey[key]).ToList();
             toBeInserted = toBeInsertedKeys.Select(key => newApplicationsByKey[key]).ToList();
+        }
+
+        private string ReportDiff(string oldQuery, string newQuery)
+        {
+            int c = 0;
+            for (; c < Math.Min(oldQuery.Length, newQuery.Length); c++)
+                if (oldQuery[c] != newQuery[c])
+                    break;
+            return $"Old: {CsUtility.ReportSegment(oldQuery, c, 400)}\r\nNew: {CsUtility.ReportSegment(newQuery, c, 400)}";
         }
 
         protected void ApplyChangesToDatabase(

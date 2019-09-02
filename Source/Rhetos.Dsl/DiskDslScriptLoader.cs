@@ -38,37 +38,27 @@ namespace Rhetos.Dsl
         public IEnumerable<DslScript> DslScripts => _scripts.Value;
 
         const string DslScriptsSubfolder = "DslScripts";
+        const string DslScriptsSubfolderPrefix = DslScriptsSubfolder + @"\";
 
         private List<DslScript> LoadScripts(IInstalledPackages installedPackages)
         {
-            var scripts = new List<DslScript>();
+            return installedPackages.Packages.SelectMany(LoadPackageScripts).ToList();
+        }
 
-            foreach (var package in installedPackages.Packages)
-            {
-                if (!Directory.Exists(package.Folder))
-                    throw new FrameworkException($"Source folder for package '{package.Id}' does not exist: '{package.Folder}'.");
-                string dslScriptsFolder = Path.Combine(package.Folder, DslScriptsSubfolder);
-                if (Directory.Exists(dslScriptsFolder))
-                {
-                    var baseFolder = Path.GetFullPath(dslScriptsFolder);
-                    if (baseFolder.Last() != '\\') baseFolder += '\\';
-
-                    var files = Directory.GetFiles(baseFolder, "*.rhe", SearchOption.AllDirectories).OrderBy(path => path);
-
-                    var packageScripts = files.Select(file =>
-                        new DslScript
-                        {
-                            // Using package.Id instead of full package subfolder name, in order to keep the same script path between different versions of the package (the folder name will contain the version number).
-                            Name = package.Id + "\\" + file.Substring(baseFolder.Length),
-                            Script = File.ReadAllText(file, Encoding.Default),
-                            Path = file
-                        });
-
-                    scripts.AddRange(packageScripts);
-                }
-            }
-
-            return scripts;
+        private IEnumerable<DslScript> LoadPackageScripts(InstalledPackage package)
+        {
+            return package.ContentFiles
+                .Where(file => file.InPackagePath.StartsWith(DslScriptsSubfolderPrefix, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(Path.GetExtension(file.InPackagePath), ".rhe", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(file => file.InPackagePath)
+                .Select(file =>
+                    new DslScript
+                    {
+                        // Using package.Id instead of full package subfolder name, in order to keep the same script path between different versions of the package (the folder name will contain the version number).
+                        Name = package.Id + "\\" + file.InPackagePath.Substring(DslScriptsSubfolderPrefix.Length),
+                        Script = File.ReadAllText(file.PhysicalPath, Encoding.Default),
+                        Path = file.PhysicalPath
+                    });
         }
     }
 }

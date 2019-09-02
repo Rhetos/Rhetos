@@ -24,16 +24,16 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
-    [Export(typeof(ITypeExtension))]
-    public class ShortStringDatabaseColumnTypeExtension : IDatabaseColumnType<ShortStringPropertyInfo>
+    [Export(typeof(IConceptMetadataExtension))]
+    public class ShortStringDatabaseColumnTypeMetadata : IDatabaseColumnType<ShortStringPropertyInfo>
     {
         public string ColumnType {
             get { return Sql.Format("ShortStringPropertyDatabaseDefinition_DataType", ShortStringPropertyInfo.MaxLength); }
         }
     }
 
-    [Export(typeof(ITypeExtension))]
-    public class LongStringDatabaseColumnTypeExtension : IDatabaseColumnType<LongStringPropertyInfo>
+    [Export(typeof(IConceptMetadataExtension))]
+    public class LongStringDatabaseColumnTypeMetadata : IDatabaseColumnType<LongStringPropertyInfo>
     {
         public string ColumnType
         {
@@ -41,8 +41,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         }
     }
 
-    [Export(typeof(ITypeExtension))]
-    public class BinaryDatabaseColumnTypeExtension : IDatabaseColumnType<BinaryPropertyInfo>
+    [Export(typeof(IConceptMetadataExtension))]
+    public class BinaryDatabaseColumnTypeMetadata : IDatabaseColumnType<BinaryPropertyInfo>
     {
         public string ColumnType
         {
@@ -50,8 +50,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         }
     }
 
-    [Export(typeof(ITypeExtension))]
-    public class BoolDatabaseColumnTypeExtension : IDatabaseColumnType<BoolPropertyInfo>
+    [Export(typeof(IConceptMetadataExtension))]
+    public class BoolDatabaseColumnTypeMetadata : IDatabaseColumnType<BoolPropertyInfo>
     {
         public string ColumnType
         {
@@ -59,8 +59,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         }
     }
 
-    [Export(typeof(ITypeExtension))]
-    public class DateTimeDatabaseColumnTypeExtension : IDatabaseColumnType<DateTimePropertyInfo>
+    [Export(typeof(IConceptMetadataExtension))]
+    public class DateTimeDatabaseColumnTypeMetadata : IDatabaseColumnType<DateTimePropertyInfo>
     {
         public string ColumnType
         {
@@ -68,8 +68,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         }
     }
 
-    [Export(typeof(ITypeExtension))]
-    public class DateDatabaseColumnTypeExtension : IDatabaseColumnType<DatePropertyInfo>
+    [Export(typeof(IConceptMetadataExtension))]
+    public class DateDatabaseColumnTypeMetadata : IDatabaseColumnType<DatePropertyInfo>
     {
         public string ColumnType
         {
@@ -77,8 +77,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         }
     }
 
-    [Export(typeof(ITypeExtension))]
-    public class DecimalDatabaseColumnTypeExtension : IDatabaseColumnType<DecimalPropertyInfo>
+    [Export(typeof(IConceptMetadataExtension))]
+    public class DecimalDatabaseColumnTypeMetadata : IDatabaseColumnType<DecimalPropertyInfo>
     {
         public string ColumnType
         {
@@ -86,8 +86,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         }
     }
 
-    [Export(typeof(ITypeExtension))]
-    public class GuidDatabaseColumnTypeExtension : IDatabaseColumnType<GuidPropertyInfo>
+    [Export(typeof(IConceptMetadataExtension))]
+    public class GuidDatabaseColumnTypeMetadata : IDatabaseColumnType<GuidPropertyInfo>
     {
         public string ColumnType
         {
@@ -95,8 +95,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         }
     }
 
-    [Export(typeof(ITypeExtension))]
-    public class IntegerDatabaseColumnTypeExtension : IDatabaseColumnType<IntegerPropertyInfo>
+    [Export(typeof(IConceptMetadataExtension))]
+    public class IntegerDatabaseColumnTypeMetadata : IDatabaseColumnType<IntegerPropertyInfo>
     {
         public string ColumnType
         {
@@ -104,8 +104,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         }
     }
 
-    [Export(typeof(ITypeExtension))]
-    public class ReferenceDatabaseColumnTypeExtension : IDatabaseColumnType<ReferencePropertyInfo>
+    [Export(typeof(IConceptMetadataExtension))]
+    public class ReferenceDatabaseColumnTypeMetadata : IDatabaseColumnType<ReferencePropertyInfo>
     {
         public string ColumnType
         {
@@ -113,8 +113,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         }
     }
 
-    [Export(typeof(ITypeExtension))]
-    public class MoneyDatabaseColumnTypeExtension : IDatabaseColumnType<MoneyPropertyInfo>
+    [Export(typeof(IConceptMetadataExtension))]
+    public class MoneyDatabaseColumnTypeMetadata : IDatabaseColumnType<MoneyPropertyInfo>
     {
         public string ColumnType
         {
