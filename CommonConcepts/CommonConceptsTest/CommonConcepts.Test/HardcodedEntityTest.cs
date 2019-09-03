@@ -80,5 +80,16 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(1, repository.TestHardcodedEntity.HardcodedEntityInSqlTest.Query().Count());
             }
         }
+
+        [TestMethod]
+        public void SpecialDescription()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                var item = repository.TestHardcodedEntity.SimpleHardcodedEntity.Load(x => x.Name == "SpecialDescription").Single();
+                Assert.AreEqual("a\r\n'\r\nb", item.Description);
+            }
+        }
     }
 }

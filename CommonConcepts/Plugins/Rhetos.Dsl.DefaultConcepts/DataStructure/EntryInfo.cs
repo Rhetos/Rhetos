@@ -26,7 +26,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Entry")]
-    public class EntryInfo : IMacroConcept
+    public class EntryInfo : IMacroConcept, IValidatedConcept
     {
         [ConceptKey]
         public HardcodedEntityInfo HardcodedEntity { get; set; }
@@ -62,6 +62,11 @@ END"
                 sqlFunction,
                 new SqlDependsOnSqlFunctionInfo { Dependent = this.HardcodedEntity, DependsOn = sqlFunction },
             };
+        }
+
+        public void CheckSemantics(IDslModel existingConcepts)
+        {
+            DslUtility.ValidateIdentifier(Name, this);
         }
     }
 }

@@ -17,13 +17,18 @@ Module TestHardcodedEntity
         {
             Value Description 'Status with undefined int property';
             Value BoolProperty 1;
-        }      
+        }
+
+        Entry SpecialDescription
+        {
+            Value Description <SpecialDescription.txt>;
+        }
     }
 
     Entity ReferenceToHardcodedEntity
     {
         LongString Content { Required; }
-        Reference SimpleHardcodedEntity { Required; }      
+        Reference SimpleHardcodedEntity { Required; }
     }
 
     SqlQueryable HardcodedEntityInSqlTest
@@ -36,6 +41,6 @@ Module TestHardcodedEntity
         WHERE SimpleHardcodedEntityID = TestHardcodedEntity.SimpleHardcodedEntity_StatusWithoutIntPropertyDefined();
     "
     {
-        LongString Content;       
+        LongString Content;
     }
 }

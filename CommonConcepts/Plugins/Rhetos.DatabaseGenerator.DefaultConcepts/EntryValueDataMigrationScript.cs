@@ -23,6 +23,7 @@ using Rhetos.Extensibility;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Dsl;
 using Rhetos.Compiler;
+using Rhetos.Utilities;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
@@ -42,7 +43,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             var databaseColumnName = _conceptMetadata.GetColumnName(concept.Property);
             var databaseColumnType = _conceptMetadata.GetColumnType(concept.Property);
 
-            codeBuilder.InsertCode($@",{Environment.NewLine}    {databaseColumnName} = CONVERT({databaseColumnType}, '{concept.Value}')",
+            codeBuilder.InsertCode($@",{Environment.NewLine}    {databaseColumnName} = CONVERT({databaseColumnType}, {SqlUtility.QuoteText(concept.Value)})",
                 EntryDataMigrationScript.UpdatePropertyTag, concept.Entry);
         }
     }
