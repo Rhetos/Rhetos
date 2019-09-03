@@ -61,7 +61,7 @@ namespace Rhetos.Compiler
 
         public void InsertCode(string code)
         {
-            _code.Append(code + Environment.NewLine);
+            _code.Append(code);
         }
 
         public void InsertCode(string code, string tag)

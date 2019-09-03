@@ -95,7 +95,7 @@ namespace Rhetos.DatabaseGenerator
 
             _performanceLogger.Write(stopwatch, "DataMigrationScriptGenerator: Scripts generated.");
 
-            return codeBuilder.GetDataMigartionScripts();
+            return codeBuilder.GetDataMigrationScripts();
         }
     }
 }

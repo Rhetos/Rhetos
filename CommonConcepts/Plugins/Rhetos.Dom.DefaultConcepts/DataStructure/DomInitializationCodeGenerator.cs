@@ -470,7 +470,8 @@ namespace Common
     {ModuleCodeGenerator.CommonNamespaceMembersTag}
 }}
 
-{RepositoryClassesTag}";
+{RepositoryClassesTag}
+";
         }
     }
 }

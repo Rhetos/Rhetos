@@ -28,14 +28,13 @@ namespace Rhetos.DatabaseGenerator.Test
     public class DataMigrationScriptBuilderTest
     {
         [TestMethod]
-        public void EmptyDataMigrationScriptstest()
+        public void EmptyDataMigrationScriptsTest()
         {
             var scriptBuilder = new DataMigrationScriptBuilder();
 
-            var beforeDataMigratinScripts = scriptBuilder.GetDataMigartionScripts().BeforeDataMigration.ToList();
-            Assert.AreEqual(0, beforeDataMigratinScripts.Count);
-            var afterDataMigratinScripts = scriptBuilder.GetDataMigartionScripts().AfterDataMigration.ToList();
-            Assert.AreEqual(0, afterDataMigratinScripts.Count);
+            var dataMigrationScripts = scriptBuilder.GetDataMigrationScripts();
+            Assert.AreEqual(0, dataMigrationScripts.BeforeDataMigration.Count());
+            Assert.AreEqual(0, dataMigrationScripts.AfterDataMigration.Count());
         }
 
         [TestMethod]
@@ -53,13 +52,14 @@ namespace Rhetos.DatabaseGenerator.Test
             scriptBuilder.AddAfterDataMigrationScript(afterScript1);
             scriptBuilder.AddAfterDataMigrationScript(afterScript2);
 
-            var beforeDataMigratinScripts = scriptBuilder.GetDataMigartionScripts().BeforeDataMigration.ToList();
+            var dataMigrationScripts = scriptBuilder.GetDataMigrationScripts();
 
+            var beforeDataMigratinScripts = dataMigrationScripts.BeforeDataMigration.ToList();
             Assert.AreEqual(2, beforeDataMigratinScripts.Count);
             Assert.AreEqual(beforeScript1, beforeDataMigratinScripts[0]);
             Assert.AreEqual(beforeScript2, beforeDataMigratinScripts[1]);
 
-            var afterDataMigratinScripts = scriptBuilder.GetDataMigartionScripts().AfterDataMigration.ToList();
+            var afterDataMigratinScripts = dataMigrationScripts.AfterDataMigration.ToList();
             Assert.AreEqual(2, afterDataMigratinScripts.Count);
             Assert.AreEqual(afterScript1, afterDataMigratinScripts[0]);
             Assert.AreEqual(afterScript2, afterDataMigratinScripts[1]);

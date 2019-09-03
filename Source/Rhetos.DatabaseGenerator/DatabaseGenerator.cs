@@ -334,7 +334,7 @@ namespace Rhetos.DatabaseGenerator
 
                 // Generate CreateQuery:
 
-                sqlCodeBuilder.InsertCode(ca.ConceptImplementation.CreateDatabaseStructure(ca.ConceptInfo));
+                sqlCodeBuilder.InsertCode(ca.ConceptImplementation.CreateDatabaseStructure(ca.ConceptInfo) + Environment.NewLine);
 
                 if (ca.ConceptImplementation is IConceptDatabaseDefinitionExtension)
                 {
@@ -401,7 +401,7 @@ namespace Rhetos.DatabaseGenerator
 
         protected static void AddConceptApplicationSeparator(ConceptApplication ca, CodeBuilder sqlCodeBuilder)
         {
-            sqlCodeBuilder.InsertCode(string.Format("{0}{1}{2}{3}",
+            sqlCodeBuilder.InsertCode(string.Format("{0}{1}{2}{3}\r\n",
                 NextConceptApplicationSeparator, NextConceptApplicationIdPrefix, ca.Id, NextConceptApplicationIdSuffix));
         }
 

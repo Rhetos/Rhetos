@@ -45,7 +45,7 @@ namespace Rhetos.DatabaseGenerator
             InsertCode(script + DataMigrationScriptSplitterTag);
         }
 
-        public GeneratedDataMigrationScripts GetDataMigartionScripts()
+        public GeneratedDataMigrationScripts GetDataMigrationScripts()
         {
             var scripts = GeneratedCode.Split(new[] { DataMigrationScriptSplitterTag }, StringSplitOptions.RemoveEmptyEntries);
             int beforeTagPosition = Array.IndexOf(scripts, BeforeDataMigrationTag);
