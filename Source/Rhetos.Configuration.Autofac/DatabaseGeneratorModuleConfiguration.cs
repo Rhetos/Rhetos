@@ -40,7 +40,7 @@ namespace Rhetos.Configuration.Autofac
             builder.RegisterInstance(new DatabaseGeneratorOptions { ShortTransactions = _shortTransactions });
             Plugins.FindAndRegisterPlugins<IConceptDatabaseDefinition>(builder);
             builder.RegisterType<NullImplementation>().As<IConceptDatabaseDefinition>();
-            Plugins.FindAndRegisterPlugins<IConceptDataMigration>(builder);
+            Plugins.FindAndRegisterPlugins<IConceptDataMigration>(builder, typeof(IConceptDataMigration<>));
 
             base.Load(builder);
         }

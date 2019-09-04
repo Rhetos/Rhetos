@@ -109,13 +109,11 @@ namespace Rhetos.Deployment
             _databaseCleaner.RemoveRedundantMigrationColumns();
             _databaseCleaner.RefreshDataMigrationRows();
 
-            _deployPackagesLogger.Trace("Executing before data migration scripts.");
             _dataMigrationFromCodeExecuter.ExecuteBeforeDataMigrationScripts();
 
             _deployPackagesLogger.Trace("Executing data migration scripts.");
             var dataMigrationReport = _dataMigration.Execute();
 
-            _deployPackagesLogger.Trace("Executing after data migration scripts.");
             _dataMigrationFromCodeExecuter.ExecuteAfterDataMigrationScripts();
 
             _deployPackagesLogger.Trace("Upgrading database.");

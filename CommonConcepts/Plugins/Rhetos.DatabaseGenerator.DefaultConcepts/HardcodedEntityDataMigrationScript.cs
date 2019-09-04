@@ -25,7 +25,6 @@ using Rhetos.Dsl.DefaultConcepts;
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
     [Export(typeof(IConceptDataMigration))]
-    [ExportMetadata(MefProvider.Implements, typeof(HardcodedEntityInfo))]
     public class HardcodedEntityDataMigrationScript : IConceptDataMigration<HardcodedEntityInfo>
     {
         public static readonly SqlTag<HardcodedEntityInfo> InsertValuesTag = new SqlTag<HardcodedEntityInfo>("InsertValues", TagType.Appendable, "{0}", " UNION ALL\r\n			{0}");

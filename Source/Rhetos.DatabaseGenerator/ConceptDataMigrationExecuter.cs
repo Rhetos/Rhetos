@@ -31,6 +31,7 @@ namespace Rhetos.DatabaseGenerator
     {
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
+        private readonly ILogger _deployPackagesLogger;
         private readonly SqlTransactionBatches _sqlExecuter;
         private readonly IDslModel _dslModel;
         private readonly IPluginsContainer<IConceptDataMigration> _plugins;
@@ -44,6 +45,7 @@ namespace Rhetos.DatabaseGenerator
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger(GetType().Name);
+            _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _sqlExecuter = sqlExecuter;
             _dslModel = dslModel;
             _plugins = plugins;
@@ -52,6 +54,7 @@ namespace Rhetos.DatabaseGenerator
 
         public void ExecuteBeforeDataMigrationScripts()
         {
+            _deployPackagesLogger.Trace(() => $"Executing {_scripts.Value.BeforeDataMigration.Count()} before data migration scripts.");
             _sqlExecuter.Execute(_scripts.Value.BeforeDataMigration.Select(x => 
                 new SqlTransactionBatches.SqlScript
                 {
@@ -62,6 +65,7 @@ namespace Rhetos.DatabaseGenerator
 
         public void ExecuteAfterDataMigrationScripts()
         {
+            _deployPackagesLogger.Trace(() => $"Executing {_scripts.Value.AfterDataMigration.Count()} after data migration scripts.");
             _sqlExecuter.Execute(_scripts.Value.AfterDataMigration.Reverse().Select(x =>
                 new SqlTransactionBatches.SqlScript
                 {

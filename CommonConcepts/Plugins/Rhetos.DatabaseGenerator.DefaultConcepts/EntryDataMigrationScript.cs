@@ -25,7 +25,6 @@ using Rhetos.Dsl.DefaultConcepts;
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
     [Export(typeof(IConceptDataMigration))]
-    [ExportMetadata(MefProvider.Implements, typeof(EntryInfo))]
     public class EntryDataMigrationScript : IConceptDataMigration<EntryInfo>
     {
         public static readonly SqlTag<EntryInfo> UpdatePropertyTag = new SqlTag<EntryInfo>("UpdateProperty");

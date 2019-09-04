@@ -27,7 +27,6 @@ using Rhetos.Dsl;
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
     [Export(typeof(IConceptDataMigration))]
-    [ExportMetadata(MefProvider.Implements, typeof(PropertyInfo))]
     public class HardcodedEntityPropertyDataMigrationScript : IConceptDataMigration<PropertyInfo>
     {
         private readonly ConceptMetadata _conceptMetadata;

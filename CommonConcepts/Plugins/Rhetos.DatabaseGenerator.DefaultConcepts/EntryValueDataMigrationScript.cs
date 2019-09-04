@@ -28,7 +28,6 @@ using Rhetos.Utilities;
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
     [Export(typeof(IConceptDataMigration))]
-    [ExportMetadata(MefProvider.Implements, typeof(EntryValueInfo))]
     public class EntryValueDataMigrationScript : IConceptDataMigration<EntryValueInfo>
     {
         private readonly ConceptMetadata _conceptMetadata;
