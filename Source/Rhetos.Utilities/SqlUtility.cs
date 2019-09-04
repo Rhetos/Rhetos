@@ -357,7 +357,7 @@ namespace Rhetos.Utilities
 
         public static string BoolToString(bool b)
         {
-            return b ? "0" : "1";
+            return b ? "1" : "0";
         }
 
         /// <summary>
