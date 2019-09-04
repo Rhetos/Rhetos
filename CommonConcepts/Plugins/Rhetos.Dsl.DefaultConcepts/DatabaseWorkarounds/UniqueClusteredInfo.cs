@@ -17,32 +17,35 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Reflection;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("AutoCodeForEachCached")]
-    public class AutoCodeForEachCachedInfo : AutoCodeCachedInfo, IValidationConcept
+    [ConceptKeyword("Clustered")]
+    public class UniqueClusteredInfo : IConceptInfo
     {
-        public PropertyInfo Group { get; set; }
+        [ConceptKey]
+        public UniqueMultiplePropertiesInfo Unique { get; set; }
+    }
 
-        protected override IConceptInfo CreateUniqueConstraint()
+    [Export(typeof(IConceptMacro))]
+    public class UniqueClusteredMacro : IConceptMacro<UniqueClusteredInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(UniqueClusteredInfo conceptInfo, IDslModel existingConcepts)
         {
-            return new UniqueMultiplePropertiesInfo
+            return new[]
             {
-                DataStructure = Property.DataStructure,
-                PropertyNames = $"{Group.Name} {Property.Name}"
+                new SqlIndexClusteredInfo
+                {
+                    SqlIndex = new SqlIndexMultipleInfo
+                    {
+                        DataStructure = conceptInfo.Unique.DataStructure,
+                        PropertyNames = conceptInfo.Unique.PropertyNames
+                    }
+                }
             };
-        }
-
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
-        {
-            DslUtility.CheckIfPropertyBelongsToDataStructure(Group, Property.DataStructure, this);
         }
     }
 }

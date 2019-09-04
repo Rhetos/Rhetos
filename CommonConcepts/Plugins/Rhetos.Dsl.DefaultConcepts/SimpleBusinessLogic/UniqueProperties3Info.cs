@@ -27,7 +27,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Unique")]
-    public class UniqueProperties3Info : IValidationConcept, IMacroConcept
+    public class UniqueProperties3Info : IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }
@@ -38,16 +38,27 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public PropertyInfo Property3 { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            return new[] { new UniqueMultiplePropertiesInfo { DataStructure = DataStructure, PropertyNames = Property1.Name + " " + Property2.Name + " " + Property3.Name } };
-        }
-
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             DslUtility.CheckIfPropertyBelongsToDataStructure(Property1, DataStructure, this);
             DslUtility.CheckIfPropertyBelongsToDataStructure(Property2, DataStructure, this);
             DslUtility.CheckIfPropertyBelongsToDataStructure(Property3, DataStructure, this);
+        }
+    }
+
+    [Export(typeof(IConceptMacro))]
+    public class UniqueProperties3Macro : IConceptMacro<UniqueProperties3Info>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(UniqueProperties3Info conceptInfo, IDslModel existingConcepts)
+        {
+            return new[]
+            {
+                new UniqueMultiplePropertiesInfo
+                {
+                    DataStructure = conceptInfo.DataStructure,
+                    PropertyNames = conceptInfo.Property1.Name + " " + conceptInfo.Property2.Name + " " + conceptInfo.Property3.Name
+                }
+            };
         }
     }
 }

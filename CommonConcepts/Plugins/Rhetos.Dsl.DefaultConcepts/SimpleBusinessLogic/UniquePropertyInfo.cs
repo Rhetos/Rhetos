@@ -27,14 +27,25 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Unique")]
-    public class UniquePropertyInfo : IMacroConcept
+    public class UniquePropertyInfo : IConceptInfo
     {
         [ConceptKey]
         public PropertyInfo Property { get; set; }
+    }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+    [Export(typeof(IConceptMacro))]
+    public class UniquePropertyMacro : IConceptMacro<UniquePropertyInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(UniquePropertyInfo conceptInfo, IDslModel existingConcepts)
         {
-            return new[] { new UniqueMultiplePropertiesInfo { DataStructure = Property.DataStructure, PropertyNames = Property.Name } };
+            return new[]
+            {
+                new UniqueMultiplePropertiesInfo
+                {
+                    DataStructure = conceptInfo.Property.DataStructure,
+                    PropertyNames = conceptInfo.Property.Name
+                }
+            };
         }
     }
 }

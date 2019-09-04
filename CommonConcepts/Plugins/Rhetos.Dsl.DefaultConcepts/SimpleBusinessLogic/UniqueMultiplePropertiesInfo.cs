@@ -27,17 +27,38 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("UniqueMultiple")]
-    public class UniqueMultiplePropertiesInfo : SqlIndexMultipleInfo, IMacroConcept
+    public class UniqueMultiplePropertiesInfo : IAlternativeInitializationConcept
     {
-        public new IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        [ConceptKey]
+        public DataStructureInfo DataStructure { get; set; }
+
+        [ConceptKey]
+        public string PropertyNames { get; set; }
+
+        public SqlIndexMultipleInfo Dependency_SqlIndex { get; set; }
+
+        public IEnumerable<string> DeclareNonparsableProperties()
+        {
+            return new[] { nameof(Dependency_SqlIndex) };
+        }
+
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            Dependency_SqlIndex = new SqlIndexMultipleInfo { DataStructure = this.DataStructure, PropertyNames = this.PropertyNames };
+            createdConcepts = new[] { Dependency_SqlIndex };
+        }
+    }
+
+    [Export(typeof(IConceptMacro))]
+    public class UniqueMultiplePropertiesMacro : IConceptMacro<UniqueMultiplePropertiesInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(UniqueMultiplePropertiesInfo conceptInfo, IDslModel existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();
 
-            newConcepts.AddRange(base.CreateNewConcepts(existingConcepts));
-
-            var uniquePropertis = PropertyNames.Split(' ')
-                .Select(name => new PropertyInfo { DataStructure = DataStructure, Name = name })
-                .Select(property => new UniqueMultiplePropertyInfo { Unique = this, Property = property });
+            var uniquePropertis = conceptInfo.PropertyNames.Split(' ')
+                .Select(name => new PropertyInfo { DataStructure = conceptInfo.DataStructure, Name = name })
+                .Select(property => new UniqueMultiplePropertyInfo { Unique = conceptInfo, Property = property });
             newConcepts.AddRange(uniquePropertis);
 
             return newConcepts;

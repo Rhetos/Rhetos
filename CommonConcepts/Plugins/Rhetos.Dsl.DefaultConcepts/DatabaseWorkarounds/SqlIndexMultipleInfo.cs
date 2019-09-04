@@ -27,7 +27,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlIndexMultiple")]
-    public class SqlIndexMultipleInfo : IValidationConcept, IMacroConcept
+    public class SqlIndexMultipleInfo : IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }
@@ -35,46 +35,9 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public string PropertyNames { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            var newConcepts = new List<IConceptInfo>();
-
-            CheckSemantics(existingConcepts);
-
-            var names = PropertyNames.Split(' ');
-            if (names.Distinct().Count() != names.Count())
-                throw new DslSyntaxException(this, "Duplicate property name in index list '" + PropertyNames + "'.");
-            if (names.Count() == 0)
-                throw new DslSyntaxException(this, "Empty property list.");
-
-            SqlIndexMultiplePropertyInfo lastIndexProperty = null;
-            for (int i = 0; i < names.Count(); i++)
-            {
-                var property = new PropertyInfo { DataStructure = DataStructure, Name = names[i] };
-                SqlIndexMultiplePropertyInfo indexProperty;
-                if (i == 0)
-                    indexProperty = new SqlIndexMultiplePropertyInfo { SqlIndex = this, Property = property };
-                else
-                    indexProperty = new SqlIndexMultipleFollowingPropertyInfo { SqlIndex = this, Property = property, PreviousIndexProperty = lastIndexProperty };
-
-                newConcepts.Add(indexProperty);
-                lastIndexProperty = indexProperty;
-            }
-
-            return newConcepts;
-        }
-
         public static bool IsSupported(DataStructureInfo dataStructure)
         {
             return dataStructure is IWritableOrmDataStructure;
-        }
-
-        public static void CheckIfSupported(DataStructureInfo dataStructure, IConceptInfo errorContext)
-        {
-            if (!IsSupported(dataStructure))
-                throw new DslSyntaxException(errorContext,
-                    $"SQL index can only be used in a writable data structure." +
-                    $" '{dataStructure}' is a '{dataStructure.GetType().Name}'.");
         }
 
         /// <summary>
@@ -85,11 +48,47 @@ namespace Rhetos.Dsl.DefaultConcepts
             return DataStructure is EntityInfo;
         }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
-            CheckIfSupported(DataStructure, this);
+            if (!IsSupported(DataStructure))
+                throw new DslSyntaxException(this,
+                    $"SQL index can only be used in a writable data structure." +
+                    $" '{DataStructure.FullName}' is a '{DataStructure.GetKeywordOrTypeName()}'.");
 
             DslUtility.ValidatePropertyListSyntax(PropertyNames, this);
+        }
+    }
+
+    [Export(typeof(IConceptMacro))]
+    public class SqlIndexMultipleMacro : IConceptMacro<SqlIndexMultipleInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(SqlIndexMultipleInfo conceptInfo, IDslModel existingConcepts)
+        {
+            var newConcepts = new List<IConceptInfo>();
+
+            conceptInfo.CheckSemantics(existingConcepts);
+
+            var names = conceptInfo.PropertyNames.Split(' ');
+            if (names.Distinct().Count() != names.Count())
+                throw new DslSyntaxException(conceptInfo, "Duplicate property name in index list '" + conceptInfo.PropertyNames + "'.");
+            if (!names.Any())
+                throw new DslSyntaxException(conceptInfo, "Empty property list.");
+
+            SqlIndexMultiplePropertyInfo lastIndexProperty = null;
+            for (int i = 0; i < names.Count(); i++)
+            {
+                var property = new PropertyInfo { DataStructure = conceptInfo.DataStructure, Name = names[i] };
+                SqlIndexMultiplePropertyInfo indexProperty;
+                if (i == 0)
+                    indexProperty = new SqlIndexMultiplePropertyInfo { SqlIndex = conceptInfo, Property = property };
+                else
+                    indexProperty = new SqlIndexMultipleFollowingPropertyInfo { SqlIndex = conceptInfo, Property = property, PreviousIndexProperty = lastIndexProperty };
+
+                newConcepts.Add(indexProperty);
+                lastIndexProperty = indexProperty;
+            }
+
+            return newConcepts;
         }
     }
 }

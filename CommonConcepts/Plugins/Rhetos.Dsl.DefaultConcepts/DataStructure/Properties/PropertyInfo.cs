@@ -39,7 +39,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public override string ToString()
         {
-            return DataStructure.ToString() + "." + Name;
+            return FullName; // For backward compatibility.
         }
 
         public override int GetHashCode()
@@ -56,5 +56,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             return Name;
         }
+
+        public string FullName => DataStructure.FullName + "." + Name;
     }
 }
