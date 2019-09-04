@@ -130,7 +130,16 @@ namespace Rhetos.Deployment
             var allColumns = new List<ColumnInfo>();
 
             _sqlExecuter.ExecuteReader(
-                "SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS",
+                @"SELECT
+                    c.TABLE_SCHEMA, c.TABLE_NAME, c.COLUMN_NAME
+                FROM
+                    INFORMATION_SCHEMA.COLUMNS c
+                    INNER JOIN INFORMATION_SCHEMA.TABLES t
+                        ON t.TABLE_CATALOG = c.TABLE_CATALOG
+                        AND t.TABLE_SCHEMA = c.TABLE_SCHEMA
+                        AND t.TABLE_NAME = c.TABLE_NAME
+                WHERE
+                    t.TABLE_TYPE = 'BASE TABLE'",
                 reader =>
                 {
                     allColumns.Add(new ColumnInfo(reader.GetString(0), reader.GetString(1), reader.GetString(2)));
