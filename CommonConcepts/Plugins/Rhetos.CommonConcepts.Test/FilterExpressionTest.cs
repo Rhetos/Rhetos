@@ -39,10 +39,10 @@ namespace Rhetos.CommonConcepts.Test
             public IQueryable<int> Query()
             {
                 return new[] { 0 }.AsQueryable()
-                    .SelectMany(x => f());
+                    .SelectMany(x => GenerateData());
             }
 
-            IEnumerable<int> f()
+            private IEnumerable<int> GenerateData()
             {
                 CallCount++;
                 return new[] { 1, 2, 3, 4 };
@@ -273,6 +273,32 @@ namespace Rhetos.CommonConcepts.Test
 
             Assert.AreEqual(".Where(x1 => (((x1 >= 2) OrElse (x1 >= 4)) AndAlso (Not((x1 >= 4)) AndAlso Not((x1 >= 5)))))", mockQuery.GetWherePart(filteredQuery));
             Assert.AreEqual("2, 3", TestUtility.Dump(filteredQuery));
+            Assert.AreEqual(1, mockQuery.CallCount);
+        }
+
+        [TestMethod]
+        public void Subquery()
+        {
+            var mockQuery = new MockQuery();
+            var query = mockQuery.Query(); // Elements: 1, 2, 3, 4.
+
+            var filterExpression = new FilterExpression<int>();
+
+            filterExpression.Include(x1 => new[] { "a", "aaaaa" }.AsQueryable().Select(s1 => s1.Length).Contains(x1)); // Elements: 1, 5.
+            Console.WriteLine(filterExpression.GetFilter());
+
+            filterExpression.Include(x2 => new[] { "aa", "aaaaaa" }.AsQueryable().Select(s2 => s2.Length).Contains(x2)); // Elements: 2, 6.
+            Console.WriteLine(filterExpression.GetFilter());
+
+            // Intentionally reusing the previous parameter name in expression (x2) and subquery (s2).
+            filterExpression.Include(x2 => new[] { "aaa", "aaaaaaa" }.AsQueryable().Select(s2 => s2.Length).Contains(x2)); // Elements: 3, 7.
+            Console.WriteLine(filterExpression.GetFilter());
+
+            var filteredQuery = GetOpt(filterExpression.GetFilter(), query);
+            Console.WriteLine(mockQuery.GetWherePart(filteredQuery));
+
+            Assert.AreEqual(0, mockQuery.CallCount);
+            Assert.AreEqual("1, 2, 3", TestUtility.Dump(filteredQuery));
             Assert.AreEqual(1, mockQuery.CallCount);
         }
     }
