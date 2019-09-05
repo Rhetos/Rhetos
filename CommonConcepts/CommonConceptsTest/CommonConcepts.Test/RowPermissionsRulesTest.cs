@@ -147,56 +147,56 @@ namespace CommonConcepts.Test
         {
             using (var container = new RhetosTestContainer())
             {
-                Parent
-                    pReadAllow = new Parent() { ID = Guid.NewGuid(), value = 190 },
-                    pReadDeny = new Parent() { ID = Guid.NewGuid(), value = 90 },
-                    pWriteAllow = new Parent() { ID = Guid.NewGuid(), value = 60 },
-                    pWriteDeny = new Parent() { ID = Guid.NewGuid(), value = 160 };
+                Level1
+                    l1ReadAllow = new Level1() { ID = Guid.NewGuid(), value = 190 },
+                    l1ReadDeny = new Level1() { ID = Guid.NewGuid(), value = 90 },
+                    l1WriteAllow = new Level1() { ID = Guid.NewGuid(), value = 60 },
+                    l1WriteDeny = new Level1() { ID = Guid.NewGuid(), value = 160 };
 
-                Child
-                    cParentReadAllow = new Child() { ID = Guid.NewGuid(), MyParentID = pReadAllow.ID, value = 5 },
-                    cParentReadDeny = new Child() { ID = Guid.NewGuid(), MyParentID = pReadDeny.ID, value = 6 },
-                    cParentWriteAllow = new Child() { ID = Guid.NewGuid(), MyParentID = pWriteAllow.ID, value = 7 },
-                    cParentWriteDeny = new Child() { ID = Guid.NewGuid(), MyParentID = pWriteDeny.ID, value = 8 };
+                Level2
+                    l2ParentReadAllow = new Level2() { ID = Guid.NewGuid(), MyParentID = l1ReadAllow.ID, value = 5 },
+                    l2cParentReadDeny = new Level2() { ID = Guid.NewGuid(), MyParentID = l1ReadDeny.ID, value = 6 },
+                    l2cParentWriteAllow = new Level2() { ID = Guid.NewGuid(), MyParentID = l1WriteAllow.ID, value = 7 },
+                    l2cParentWriteDeny = new Level2() { ID = Guid.NewGuid(), MyParentID = l1WriteDeny.ID, value = 8 };
 
                 var repositories = container.Resolve<Common.DomRepository>();
-                var parentRepo = repositories.TestRowPermissions.Parent;
-                var childRepo = repositories.TestRowPermissions.Child;
-                var babyRepo = repositories.TestRowPermissions.Baby;
-                var browseRepo = repositories.TestRowPermissions.ParentBrowse;
+                var l1Repo = repositories.TestRowPermissions.Level1;
+                var l2Repo = repositories.TestRowPermissions.Level2;
+                var l3Repo = repositories.TestRowPermissions.Level3;
+                var browseRepo = repositories.TestRowPermissions.Level1Browse;
 
-                babyRepo.Delete(babyRepo.Query());
-                childRepo.Delete(childRepo.Query());
-                parentRepo.Delete(parentRepo.Query());
+                l3Repo.Delete(l3Repo.Query());
+                l2Repo.Delete(l2Repo.Query());
+                l1Repo.Delete(l1Repo.Query());
 
-                parentRepo.Insert(new Parent[] { pReadAllow, pReadDeny, pWriteAllow, pWriteDeny });
-                childRepo.Insert(new Child[] { cParentReadAllow, cParentReadDeny, cParentWriteAllow, cParentWriteDeny });
+                l1Repo.Insert(new Level1[] { l1ReadAllow, l1ReadDeny, l1WriteAllow, l1WriteDeny });
+                l2Repo.Insert(new Level2[] { l2ParentReadAllow, l2cParentReadDeny, l2cParentWriteAllow, l2cParentWriteDeny });
 
                 {
-                    var childAllowRead = childRepo.Filter(childRepo.Query(), new Common.RowPermissionsReadItems()).ToList();
-                    Assert.AreEqual("5, 8", TestUtility.DumpSorted(childAllowRead, a => a.value.ToString()));
+                    var l2AllowRead = l2Repo.Filter(l2Repo.Query(), new Common.RowPermissionsReadItems()).ToList();
+                    Assert.AreEqual("5, 8", TestUtility.DumpSorted(l2AllowRead, a => a.value.ToString()));
                 }
 
                 {
-                    var childAllowWrite = childRepo.Filter(childRepo.Query(), new Common.RowPermissionsWriteItems()).ToList();
-                    Assert.AreEqual("6, 7", TestUtility.DumpSorted(childAllowWrite, a => a.value.ToString()));
+                    var l2AllowWrite = l2Repo.Filter(l2Repo.Query(), new Common.RowPermissionsWriteItems()).ToList();
+                    Assert.AreEqual("6, 7", TestUtility.DumpSorted(l2AllowWrite, a => a.value.ToString()));
                 }
 
-                // Test combination with rule on child
-                Child cCombo = new Child() { ID = Guid.NewGuid(), MyParentID = pReadAllow.ID, value = 3 };
-                childRepo.Insert(new Child[] { cCombo });
+                // Test combination with rule on level 2
+                Level2 cCombo = new Level2() { ID = Guid.NewGuid(), MyParentID = l1ReadAllow.ID, value = 3 };
+                l2Repo.Insert(new Level2[] { cCombo });
                 {
-                    var childAllowRead = childRepo.Filter(childRepo.Query(), new Common.RowPermissionsReadItems()).ToList();
-                    Assert.IsTrue(!childAllowRead.Select(a => a.value).Contains(3));
+                    var l2AllowRead = l2Repo.Filter(l2Repo.Query(), new Common.RowPermissionsReadItems()).ToList();
+                    Assert.IsTrue(!l2AllowRead.Select(a => a.value).Contains(3));
                 }
 
                 // Test double inheritance, only write deny case
-                Baby bDenyWrite = new Baby() { ID = Guid.NewGuid(), MyParentID = cParentWriteDeny.ID };
-                babyRepo.Insert(new Baby[] { bDenyWrite });
+                Level3 bDenyWrite = new Level3() { ID = Guid.NewGuid(), MyParentID = l2cParentWriteDeny.ID };
+                l3Repo.Insert(new Level3[] { bDenyWrite });
                 {
-                    Assert.AreEqual(1, babyRepo.Query().Count());
-                    var babyDenyWrite = babyRepo.Filter(babyRepo.Query(), new Common.RowPermissionsWriteItems()).ToList();
-                    Assert.AreEqual(0, babyDenyWrite.Count());
+                    Assert.AreEqual(1, l3Repo.Query().Count());
+                    var l3DenyWrite = l3Repo.Filter(l3Repo.Query(), new Common.RowPermissionsWriteItems()).ToList();
+                    Assert.AreEqual(0, l3DenyWrite.Count);
                 }
 
                 // Test inheritance form base data structure
@@ -434,6 +434,61 @@ namespace CommonConcepts.Test
 
                 Assert.AreEqual("d", TestUtility.DumpSorted(repository.TestRowPermissionsInheritInternally.SimpleDetail.Query(new Common.RowPermissionsReadItems()), item => item.Name));
                 Assert.AreEqual("d, ec", TestUtility.DumpSorted(repository.TestRowPermissionsInheritInternally.ExtensionComplex.Query(new Common.RowPermissionsReadItems()), item => item.Name));
+            }
+        }
+
+        [TestMethod]
+        public void SelfReference()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var testData = new[]
+                {
+                    new { Employee = "E1", Supervisor = "E3" },
+                    new { Employee = "E2", Supervisor = "E4" },
+                    new { Employee = "E3", Supervisor = "Jane" },
+                    new { Employee = "E4", Supervisor = "John" },
+                    new { Employee = "Jane", Supervisor = "E5" },
+                    new { Employee = "John", Supervisor = "E6" },
+                    new { Employee = "E5", Supervisor = "E5" },
+                    new { Employee = "E6", Supervisor = "E6" },
+                };
+
+                var employees = testData.Select(t => new TestRowPermissions5.Employee
+                {
+                    ID = Guid.NewGuid(),
+                    Name = t.Employee,
+                }).ToList();
+
+                foreach (var employee in employees)
+                    employee.SupervisorID = employee.ID;
+
+                repository.TestRowPermissions5.Employee.Insert(employees);
+
+                foreach (var t in testData)
+                {
+                    var employee = employees.Single(e => e.Name == t.Employee);
+                    var supervisor = t.Supervisor != null ? employees.Single(s => s.Name == t.Supervisor) : null;
+                    employee.SupervisorID = supervisor?.ID;
+                }
+
+                repository.TestRowPermissions5.Employee.Update(employees);
+
+                var employeeIds = employees.Select(e => e.ID).ToList();
+
+                var rpEmployees = repository.TestRowPermissions5.Employee.Filter(
+                    repository.TestRowPermissions5.Employee.Query(employeeIds),
+                    new Common.RowPermissionsReadItems());
+                Assert.AreEqual("E3-Jane, E4-John, Jane-E5, John-E6",
+                    TestUtility.DumpSorted(rpEmployees, e => e.Name + "-" + e.Supervisor.Name));
+
+                var rpEmployeesBrowse = repository.TestRowPermissions5.EmployeeBrowse.Filter(
+                    repository.TestRowPermissions5.EmployeeBrowse.Query(employeeIds),
+                    new Common.RowPermissionsReadItems());
+                Assert.AreEqual("E3-Jane, E4-John, Jane-E5, John-E6",
+                    TestUtility.DumpSorted(rpEmployeesBrowse, e => e.Name + "-" + e.SupervisorName));
             }
         }
     }

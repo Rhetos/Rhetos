@@ -183,34 +183,34 @@ Module TestRowPermissions
     
     //===============================================================
     
-    Entity Parent
+    Entity Level1
     {
         Integer value;
         RowPermissionsRead '(source, repo, context) => item => item.value > 100 && item.value < 200';
         RowPermissionsWrite '(source, repo, context) => item => item.value > 50 && item.value < 150';
     }
     
-    Entity Child
+    Entity Level2
     {
         Integer value;
-        Reference MyParent TestRowPermissions.Parent;
+        Reference MyParent TestRowPermissions.Level1;
         RowPermissions
         {
-            InheritFrom TestRowPermissions.Child.MyParent;
+            InheritFrom TestRowPermissions.Level2.MyParent;
             DenyRead Denied 'context => item => new List<int?>() { 1, 2, 3 }.Contains(item.value)';
         }
     }
     
-    Entity Baby
+    Entity Level3
     {
-        Reference MyParent TestRowPermissions.Child;
+        Reference MyParent TestRowPermissions.Level2;
         RowPermissions
         {
-            InheritFrom TestRowPermissions.Baby.MyParent;
+            InheritFrom TestRowPermissions.Level3.MyParent;
         }
     }
 
-    Browse ParentBrowse TestRowPermissions.Parent
+    Browse Level1Browse TestRowPermissions.Level1
     {
         Take Value2 value;
         RowPermissions { InheritFromBase; }
@@ -400,5 +400,28 @@ Module TestRowPermissions
         Extends TestRowPermissions.OptimizeBase;
         ShortString NameE;
         RowPermissions { InheritFromBase; }
+    }
+}
+
+Module TestRowPermissions5
+{
+    AutoInheritRowPermissions;
+
+    Entity Employee
+    {
+        ShortString Name;
+        Reference Supervisor TestRowPermissions5.Employee { Detail; }
+
+        RowPermissions
+        {
+            Allow Access1 'context => item => item.Name == "Jane" || item.Supervisor.Name == "Jane"';
+            Allow Access2 'context => item => item.Name == "John" || item.Supervisor.Name == "John"';
+        }
+    }
+
+    Browse EmployeeBrowse TestRowPermissions5.Employee
+    {
+        Take 'Name';
+        Take 'Supervisor.Name';
     }
 }
