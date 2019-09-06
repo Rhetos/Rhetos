@@ -1,5 +1,26 @@
 ﻿# Rhetos release notes
 
+## 2.12.0 (TO BE RELEASED)
+
+### New features
+
+* New concepts: **Hardcoded**, **Entry** and **Value**, for read-only entities in DSL scripts (code tables, for example).
+
+### Internal improvements
+
+* New low-level concepts: **ArgumentValidation** and **OldDataLoaded**,
+  for extending [SaveMethod](https://github.com/Rhetos/Rhetos/wiki/Low-level-object-model-concepts).
+* Bugfix: AutoCodeForEach on Bool grouping property causes unique index error on insert (issue #132).
+* Bugfix: Multiple row permissions with subqueries can result with ArgumentException (issue #191).
+* AutoInheritRowPermissions now safely ignores self-references (issue #35).
+* Bugfix: Backup data-migration column is dropped when converting table to view (issue #170).
+* Simpler error summary for better readability in VS Code terminal (issue #175).
+* Bugfix: DslScripts and DataMigration folders are ignored when deploying a package *from source*,
+  if they are not placed directly under the *nuspec* file (issue #173).
+* Minor performance optimizations (reading and writing data, DSL parser, database upgrade) and improvements in error handling.
+* New plugin type: IConceptDataMigration, for custom data-migration extensions (such as *Hardcoded* concept).
+* New plugin type: IConceptMetadataExtension, for providing information on concept implementation details (such as database column type).
+
 ## 2.11.1 (2019-05-23)
 
 ### Internal improvements
