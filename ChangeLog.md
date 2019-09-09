@@ -1,6 +1,6 @@
 ﻿# Rhetos release notes
 
-## 2.12.0 (TO BE RELEASED)
+## 2.12.0 (2019-09-09)
 
 ### New features
 
@@ -17,9 +17,10 @@
 * Simpler error summary for better readability in VS Code terminal (issue #175).
 * Bugfix: DslScripts and DataMigration folders are ignored when deploying a package *from source*,
   if they are not placed directly under the *nuspec* file (issue #173).
-* Minor performance optimizations (reading and writing data, DSL parser, database upgrade) and improvements in error handling.
-* New plugin type: IConceptDataMigration, for custom data-migration extensions (such as *Hardcoded* concept).
-* New plugin type: IConceptMetadataExtension, for providing information on concept implementation details (such as database column type).
+* Minor performance optimizations (reading and writing data, DSL parser, database upgrade)
+  and improvements in error handling.
+* New plugin type: IConceptDataMigration, for custom data-migration extensions (*Hardcoded* concept, for example).
+* New plugin type: IConceptMetadataExtension, for providing information on concept implementation details (database column type, for example).
 
 ## 2.11.1 (2019-05-23)
 
