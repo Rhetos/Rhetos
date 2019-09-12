@@ -46,7 +46,6 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (BoolPropertyInfo)conceptInfo;
 
-            PropertyDatabaseDefinition.RegisterColumnMetadata(_conceptMetadata, info, SqlUtility.Identifier(info.Name), Sql.Get("BoolPropertyDatabaseDefinition_DataType"));
             if (info.DataStructure is EntityInfo)
                 return PropertyDatabaseDefinition.AddColumn(_conceptMetadata, info);
 

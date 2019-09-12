@@ -41,10 +41,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public IEnumerable<IConceptInfo> CreateNewConcepts(DataStructureExtendsInfo conceptInfo, IDslModel existingConcepts)
         {
-            if (UniqueReferenceCascadeDeleteInfo.IsSupported(conceptInfo))
-                return new IConceptInfo[] { new UniqueReferenceCascadeDeleteInfo { UniqueReference = conceptInfo } };
-            else
-                return null;
+            return new IConceptInfo[] { new UniqueReferenceCascadeDeleteInfo { UniqueReference = conceptInfo } };
         }
     }
 }

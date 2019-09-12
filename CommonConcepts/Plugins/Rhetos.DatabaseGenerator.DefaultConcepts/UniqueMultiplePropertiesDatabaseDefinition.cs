@@ -50,8 +50,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             var info = (UniqueMultiplePropertiesInfo)conceptInfo;
             createdDependencies = null;
 
-            if (info.SqlImplementation())
-                codeBuilder.InsertCode(Sql.Get("SqlUniqueMultipleDatabaseDefinition_ExtendOption1"), SqlIndexMultipleDatabaseDefinition.Options1Tag, info);
+            if (info.Dependency_SqlIndex.SqlImplementation())
+                codeBuilder.InsertCode(Sql.Get("SqlUniqueMultipleDatabaseDefinition_ExtendOption1"), SqlIndexMultipleDatabaseDefinition.Options0Tag, info.Dependency_SqlIndex);
         }
     }
 }

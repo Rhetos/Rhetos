@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ContentFile.cs" />
     <Compile Include="IInstalledPackages.cs" />
     <Compile Include="InstalledPackage.cs" />
     <Compile Include="PackageRequest.cs" />

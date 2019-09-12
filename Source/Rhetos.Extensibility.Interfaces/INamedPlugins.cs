@@ -24,8 +24,9 @@ using System.Collections.Generic;
 namespace Rhetos.Extensibility
 {
     /// <summary>
-    /// Note: Names plugins cannot be used to list all plugins (Autofac limitation). It that feature is needed, the plugin must
-    /// be registered both as a named (keyed) service, and as a simple service, then use PluginsContainer to get all plugins.
+    /// Note: Named plugins cannot be used to list all plugins (Autofac limitation). If that feature is needed, the plugin must
+    /// be registered both as a named (keyed) service, and as a simple service, then use IPluginsContainer to get all plugins.
+    /// https://stackoverflow.com/questions/4959148/is-it-possible-in-autofac-to-resolve-all-services-for-a-type-even-if-they-were
     /// </summary>
     public interface INamedPlugins<TPlugin>
     {

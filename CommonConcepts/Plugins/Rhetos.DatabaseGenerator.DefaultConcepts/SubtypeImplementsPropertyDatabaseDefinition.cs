@@ -62,9 +62,9 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
         private string PropertyImplementationSnippet(SubtypeImplementsPropertyInfo info)
         {
-            var propertyColumnNames = _conceptMetadata.Get(info.Property, PropertyDatabaseDefinition.ColumnNamesMetadata);
+            var propertyColumnName = _conceptMetadata.GetColumnName(info.Property);
 
-            return ",\r\n    " + propertyColumnNames.Single() + " = " + info.Expression;
+            return ",\r\n    " + propertyColumnName + " = " + info.Expression;
         }
     }
 }

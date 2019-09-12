@@ -52,7 +52,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         /// </summary>
         public IEnumerable<IConceptInfo> CreateNewConcepts(LegacyEntityWithAutoCreatedViewInfo conceptInfo, IDslModel existingConcepts)
         {
-            var properties = existingConcepts.FindByType<PropertyInfo>().Where(prop => prop.DataStructure == conceptInfo).ToArray();
+            var properties = existingConcepts.FindByReference<PropertyInfo>(prop => prop.DataStructure, conceptInfo).ToArray();
             var propertiesWithLegacyProperty = existingConcepts.FindByType<LegacyPropertyInfo>().Where(lp => lp.Property.DataStructure == conceptInfo).Select(lp => lp.Property).ToArray();
 
             var legacyIndex = new HashSet<PropertyInfo>(propertiesWithLegacyProperty);

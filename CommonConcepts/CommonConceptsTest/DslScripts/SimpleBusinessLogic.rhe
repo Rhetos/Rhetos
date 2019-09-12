@@ -12,6 +12,12 @@
         ShortString Code { AutoCodeForEach TestAutoCode.IntGroup.Grouping; }
     }
     
+    Entity BoolGroup
+    {
+        Bool Grouping;
+        ShortString Code { AutoCodeForEach TestAutoCode.BoolGroup.Grouping; }
+    }
+   
     Entity StringGroup
     {
         ShortString Grouping;
@@ -34,7 +40,7 @@
         Reference Grouping;
         ShortString Code { AutoCodeForEach TestAutoCode.ShortReferenceGroup.Grouping; }
     }
-   
+
     Entity DoubleAutoCode
     {
         ShortString CodeA { AutoCode; }

@@ -46,19 +46,17 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             return Name; // ORM will be mapped to PolymorphicUnionViewInfo from the database.
         }
+
+        public EntityInfo GetMaterializedEntity()
+        {
+            return new EntityInfo { Module = Module, Name = Name + "_Materialized" };
+        }
     }
 
     [Export(typeof(IConceptMacro))]
     public class PolymorphicMacro : IConceptMacro<PolymorphicInfo>
     {
         public static readonly CsTag<PolymorphicInfo> SetFilterExpressionTag = "SetFilterExpression";
-
-        private readonly ConceptMetadata _conceptMetadata;
-
-        public PolymorphicMacro(ConceptMetadata conceptMetadata)
-        {
-            _conceptMetadata = conceptMetadata;
-        }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(PolymorphicInfo conceptInfo, IDslModel existingConcepts)
         {
@@ -86,8 +84,8 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             // Automatically materialize the polymorphic entity if it is referenced or extended, so the polymorphic can be used in FK constraint:
 
-            if (existingConcepts.FindByType<ReferencePropertyInfo>().Where(r => r.Referenced == conceptInfo && r.DataStructure is EntityInfo).Any()
-                || existingConcepts.FindByType<UniqueReferenceInfo>().Where(e => e.Base == conceptInfo && e.Extension is EntityInfo).Any())
+            if (existingConcepts.FindByReference<ReferencePropertyInfo>(r => r.Referenced, conceptInfo).Where(r => r.DataStructure is EntityInfo).Any()
+                || existingConcepts.FindByReference<UniqueReferenceInfo>(e => e.Base, conceptInfo).Where(e => e.Extension is EntityInfo).Any())
                 newConcepts.Add(new PolymorphicMaterializedInfo { Polymorphic = conceptInfo });
 
             // Optimized filter by subtype allows better SQL server optimization of the execution plan:

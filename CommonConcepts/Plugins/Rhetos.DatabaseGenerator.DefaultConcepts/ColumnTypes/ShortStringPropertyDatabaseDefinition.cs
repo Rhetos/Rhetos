@@ -46,8 +46,6 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (ShortStringPropertyInfo)conceptInfo;
 
-            PropertyDatabaseDefinition.RegisterColumnMetadata(_conceptMetadata, info, SqlUtility.Identifier(info.Name),
-                    Sql.Format("ShortStringPropertyDatabaseDefinition_DataType", ShortStringPropertyInfo.MaxLength));
             if (info.DataStructure is EntityInfo)
                 return PropertyDatabaseDefinition.AddColumn(_conceptMetadata, info);
 

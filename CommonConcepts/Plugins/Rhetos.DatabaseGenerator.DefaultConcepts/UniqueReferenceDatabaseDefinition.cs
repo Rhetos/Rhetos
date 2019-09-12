@@ -45,7 +45,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                 info.Base.Name));
         }
 
-        public static bool ShouldCreateConstraint(UniqueReferenceInfo info)
+        public static bool IsSupported(UniqueReferenceInfo info)
         {
             return info.Extension is EntityInfo
                 && ForeignKeyUtility.GetSchemaTableForForeignKey(info.Base) != null;
@@ -54,7 +54,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
             var info = (UniqueReferenceInfo)conceptInfo;
-            if (ShouldCreateConstraint(info))
+            if (IsSupported(info))
             {
                 return Sql.Format("UniqueReferenceDatabaseDefinition_Create",
                     SqlUtility.Identifier(info.Extension.Module.Name) + "." + SqlUtility.Identifier(info.Extension.Name),
@@ -73,7 +73,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             var dependencies = new List<Tuple<IConceptInfo, IConceptInfo>>();
             dependencies.Add(Tuple.Create<IConceptInfo, IConceptInfo>(info.Base, info.Extension));
 
-            if (ShouldCreateConstraint(info))
+            if (IsSupported(info))
                 dependencies.AddRange(ForeignKeyUtility.GetAdditionalForeignKeyDependencies(info.Base)
                     .Select(dep => Tuple.Create<IConceptInfo, IConceptInfo>(dep, info))
                     .ToList());
@@ -84,7 +84,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         public string RemoveDatabaseStructure(IConceptInfo conceptInfo)
         {
             var info = (UniqueReferenceInfo)conceptInfo;
-            if (ShouldCreateConstraint(info))
+            if (IsSupported(info))
             {
                 return Sql.Format("UniqueReferenceDatabaseDefinition_Remove",
                     SqlUtility.Identifier(info.Extension.Module.Name) + "." + SqlUtility.Identifier(info.Extension.Name),

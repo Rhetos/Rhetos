@@ -27,12 +27,7 @@ using System.Text.RegularExpressions;
 
 namespace Rhetos.Deployment
 {
-    public class DataMigrationReport
-    {
-        public List<string> CreatedTags;
-    }
-
-    public class DataMigration
+    public class DataMigrationScripts
     {
         protected readonly ISqlExecuter _sqlExecuter;
         protected readonly ILogger _logger;
@@ -41,7 +36,7 @@ namespace Rhetos.Deployment
         protected readonly IConfiguration _configuration;
         protected readonly SqlTransactionBatches _sqlTransactionBatches;
 
-        public DataMigration(ISqlExecuter sqlExecuter, ILogProvider logProvider, IDataMigrationScriptsProvider scriptsProvider, IConfiguration configuration, SqlTransactionBatches sqlTransactionBatches)
+        public DataMigrationScripts(ISqlExecuter sqlExecuter, ILogProvider logProvider, IDataMigrationScriptsProvider scriptsProvider, IConfiguration configuration, SqlTransactionBatches sqlTransactionBatches)
         {
             _sqlExecuter = sqlExecuter;
             _logger = logProvider.GetLogger("DataMigration");
@@ -51,7 +46,7 @@ namespace Rhetos.Deployment
             _sqlTransactionBatches = sqlTransactionBatches;
         }
 
-        public DataMigrationReport ExecuteDataMigrationScripts()
+        public DataMigrationReport Execute()
         {
             var newScripts = _scriptsProvider.Load();
 
@@ -96,7 +91,7 @@ namespace Rhetos.Deployment
             return new DataMigrationReport { CreatedTags = toExecute.Select(s => s.Tag).ToList() };
         }
 
-        public void UndoDataMigrationScripts(List<string> createdTags)
+        public void Undo(List<string> createdTags)
         {
             _sqlExecuter.ExecuteSql(createdTags.Select(tag =>
                 "UPDATE Rhetos.DataMigrationScript SET Active = 0 WHERE Tag = " + SqlUtility.QuoteText(tag)));
@@ -116,7 +111,7 @@ namespace Rhetos.Deployment
         protected void ApplyToDatabase(List<DataMigrationScript> toRemove, List<DataMigrationScript> toExecute)
         {
             LogScripts("Remove", toRemove, EventType.Info);
-            UndoDataMigrationScripts(toRemove.Select(s => s.Tag).ToList());
+            Undo(toRemove.Select(s => s.Tag).ToList());
 
             LogScripts("Execute", toExecute, EventType.Info);
             _sqlTransactionBatches.Execute(toExecute
@@ -187,14 +182,19 @@ namespace Rhetos.Deployment
         {
             var scripts = new List<DataMigrationScript>();
             _sqlExecuter.ExecuteReader(
-                "SELECT Tag, Path, Content FROM Rhetos.DataMigrationScript WHERE Active = 1", 
+                "SELECT Tag, Path, Content FROM Rhetos.DataMigrationScript WHERE Active = 1 ORDER BY DateExecuted",
                 reader => scripts.Add(new DataMigrationScript
                     {
                         Tag = reader.GetString(0),
                         Path = reader.GetString(1),
                         Content = reader.GetString(2)
                     }));
-            return scripts.OrderBy(s => s).ToList();
+            return scripts.ToList();
         }
+    }
+
+    public class DataMigrationReport
+    {
+        public List<string> CreatedTags { get; set; }
     }
 }

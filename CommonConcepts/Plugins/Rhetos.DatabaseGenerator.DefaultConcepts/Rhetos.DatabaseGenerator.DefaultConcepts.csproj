@@ -122,13 +122,21 @@
   <ItemGroup>
     <Compile Include="ColumnTypes\BinaryPropertyDatabaseDefinition.cs" />
     <Compile Include="ColumnTypes\BoolPropertyDatabaseDefinition.cs" />
+    <Compile Include="ColumnTypes\DatabaseColumnNameMetadata.cs" />
+    <Compile Include="ColumnTypes\DatabaseColumnTypeMetadata.cs" />
     <Compile Include="ColumnTypes\GuidPropertyDatabaseDefinition.cs" />
+    <Compile Include="ColumnTypes\IDatabaseColumnName.cs" />
+    <Compile Include="ColumnTypes\IDatabaseColumnType.cs" />
     <Compile Include="ColumnTypes\MoneyPropertyDatabaseDefinition.cs" />
     <Compile Include="ColumnTypes\DateTimePropertyDatabaseDefinition.cs" />
     <Compile Include="ColumnTypes\LongStringPropertyDatabaseDefinition.cs" />
     <Compile Include="ColumnTypes\DecimalPropertyDatabaseDefinition.cs" />
     <Compile Include="ColumnTypes\DatePropertyDatabaseDefinition.cs" />
     <Compile Include="ColumnTypes\PropertyDatabaseDefinition.cs" />
+    <Compile Include="EntryDataMigrationScript.cs" />
+    <Compile Include="EntryValueDataMigrationScript.cs" />
+    <Compile Include="HardcodedEntityDataMigrationScript.cs" />
+    <Compile Include="HardcodedEntityPropertyDataMigrationScript.cs" />
     <Compile Include="LoggingRelatedItemDatabaseDefinition.cs" />
     <Compile Include="LogReaderAdditionalSourceDatabaseDefinition.cs" />
     <Compile Include="SqlDependsOnIDDatabaseDefinition.cs" />
@@ -160,7 +168,6 @@
     <Compile Include="SqlQueryableDatabaseDefinition.cs" />
     <Compile Include="SqlDependsOnPropertyDatabaseDefinition.cs" />
     <Compile Include="EntityLoggingDefinition.cs" />
-    <Compile Include="Extensions.cs" />
     <Compile Include="PropertyLoggingDefinition.cs" />
     <Compile Include="ReferencePropertyConstraintDatabaseDefinition.cs" />
     <Compile Include="SqlDefaultPropertyDatabaseDefinition.cs" />

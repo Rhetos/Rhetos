@@ -17,35 +17,28 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Utilities;
+using System.ComponentModel.Composition;
 
-namespace Rhetos.Dsl
+namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
-    public class ConceptMetadataKey<T>
+    [Export(typeof(IConceptMetadataExtension))]
+    public class PropertyDatabaseColumnNameMetadata : IDatabaseColumnName<PropertyInfo>
     {
-        public Guid Id { get; private set; }
-        public string Name { get; private set; }
-
-        /// <param name="name">Name is optional. It is used only for debugging.</param>
-        public ConceptMetadataKey(string name = null)
+        public string GetColumnName(PropertyInfo info)
         {
-            Id = Guid.NewGuid();
-            Name = name;
+            return SqlUtility.Identifier(info.Name);
         }
+    }
 
-        /// <summary>
-        /// Name is optional. It is used only for debugging.
-        /// </summary>
-        public static implicit operator ConceptMetadataKey<T>(string name)
+    [Export(typeof(IConceptMetadataExtension))]
+    public class ReferencePropertyDatabaseColumnNameMetadata : IDatabaseColumnName<ReferencePropertyInfo>
+    {
+        public string GetColumnName(PropertyInfo info)
         {
-            return new ConceptMetadataKey<T>(name);
-        }
-
-        public override string ToString()
-        {
-            return Name != null
-                ? Name + ", " + Id.ToString()
-                : Id.ToString();
+            return SqlUtility.Identifier(info.Name + "ID");
         }
     }
 }

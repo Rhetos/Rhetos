@@ -551,9 +551,12 @@ namespace Rhetos.Dom.DefaultConcepts
                 EntityName, parameterType.FullName);
 
             if (Reflection.RepositoryLoadWithParameterMethod(parameterType) != null)
+            {
                 errorMessage += " There is a loader method with this parameter implemented: Try reordering filters to use the " + parameterType.Name + " first.";
-
-            throw new FrameworkException(errorMessage);
+                throw new ClientException(errorMessage);
+            }
+            else
+                throw new FrameworkException(errorMessage);
         }
 
         #endregion

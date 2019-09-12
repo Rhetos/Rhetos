@@ -45,11 +45,11 @@ namespace Rhetos.Dsl.DefaultConcepts
             var newConcepts = new List<IConceptInfo>();
 
             newConcepts.AddRange(
-                existingConcepts.FindByType<PropertyInfo>().Where(ci => ci.DataStructure == conceptInfo.Source)
+                existingConcepts.FindByReference<PropertyInfo>(ci => ci.DataStructure, conceptInfo.Source)
                 .Select(property => new PropertyFromInfo { Destination = conceptInfo.Destination, Source = property }));
 
             newConcepts.AddRange(
-                existingConcepts.FindByType<UniqueReferenceInfo>().Where(ci => ci.Extension == conceptInfo.Source)
+                existingConcepts.FindByReference<UniqueReferenceInfo>(ci => ci.Extension, conceptInfo.Source)
                 .Select(ci => ci is DataStructureExtendsInfo
                     ? new DataStructureExtendsInfo { Extension = conceptInfo.Destination, Base = ci.Base }
                     : new UniqueReferenceInfo { Extension = conceptInfo.Destination, Base = ci.Base }));

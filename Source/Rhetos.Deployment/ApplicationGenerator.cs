@@ -40,9 +40,10 @@ namespace Rhetos.Deployment
         private readonly IDomainObjectModel _domGenerator;
         private readonly IPluginsContainer<IGenerator> _generatorsContainer;
         private readonly DatabaseCleaner _databaseCleaner;
-        private readonly DataMigration _dataMigration;
+        private readonly DataMigrationScripts _dataMigration;
         private readonly IDatabaseGenerator _databaseGenerator;
         private readonly IDslScriptsProvider _dslScriptsLoader;
+        private readonly IConceptDataMigrationExecuter _dataMigrationFromCodeExecuter;
 
         public ApplicationGenerator(
             ILogProvider logProvider,
@@ -51,9 +52,10 @@ namespace Rhetos.Deployment
             IDomainObjectModel domGenerator,
             IPluginsContainer<IGenerator> generatorsContainer,
             DatabaseCleaner databaseCleaner,
-            DataMigration dataMigration,
+            DataMigrationScripts dataMigration,
             IDatabaseGenerator databaseGenerator,
-            IDslScriptsProvider dslScriptsLoader)
+            IDslScriptsProvider dslScriptsLoader,
+            IConceptDataMigrationExecuter dataMigrationFromCodeExecuter)
         {
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _performanceLogger = logProvider.GetLogger("Performance");
@@ -65,6 +67,7 @@ namespace Rhetos.Deployment
             _dataMigration = dataMigration;
             _databaseGenerator = databaseGenerator;
             _dslScriptsLoader = dslScriptsLoader;
+            _dataMigrationFromCodeExecuter = dataMigrationFromCodeExecuter;
         }
 
         public void ExecuteGenerators(bool deployDatabaseOnly)
@@ -106,8 +109,12 @@ namespace Rhetos.Deployment
             _databaseCleaner.RemoveRedundantMigrationColumns();
             _databaseCleaner.RefreshDataMigrationRows();
 
+            _dataMigrationFromCodeExecuter.ExecuteBeforeDataMigrationScripts();
+
             _deployPackagesLogger.Trace("Executing data migration scripts.");
-            var dataMigrationReport = _dataMigration.ExecuteDataMigrationScripts();
+            var dataMigrationReport = _dataMigration.Execute();
+
+            _dataMigrationFromCodeExecuter.ExecuteAfterDataMigrationScripts();
 
             _deployPackagesLogger.Trace("Upgrading database.");
             try
@@ -118,7 +125,7 @@ namespace Rhetos.Deployment
             {
                 try
                 {
-                    _dataMigration.UndoDataMigrationScripts(dataMigrationReport.CreatedTags);
+                    _dataMigration.Undo(dataMigrationReport.CreatedTags);
                 }
                 catch (Exception undoException)
                 {

@@ -43,24 +43,15 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         public static readonly SqlTag<PropertyInfo> AfterCreateTag = "AfterCreate";
         public static readonly SqlTag<PropertyInfo> BeforeRemoveTag = "BeforeRemove";
 
-        public static readonly ConceptMetadataKey<List<string>> ColumnNamesMetadata = "ColumnNames";
-        public static readonly ConceptMetadataKey<List<string>> ColumnTypesMetadata = "ColumnTypes";
-
-        public static void RegisterColumnMetadata(ConceptMetadata conceptMetadata, PropertyInfo property, string columnName, string columnType)
-        {
-            conceptMetadata.Set(property, ColumnNamesMetadata, new List<string> { columnName });
-            conceptMetadata.Set(property, ColumnTypesMetadata, new List<string> { columnType });
-        }
-
         public static string AddColumn(ConceptMetadata conceptMetadata, PropertyInfo property, string options = "")
         {
-            string columnName = conceptMetadata.Get(property, ColumnNamesMetadata).Single();
+            string columnName = conceptMetadata.GetColumnName(property);
 
             return Sql.Format("PropertyDatabaseDefinition_AddColumn",
                 SqlUtility.Identifier(property.DataStructure.Module.Name),
                 SqlUtility.Identifier(property.DataStructure.Name),
                 DslUtility.ValidateIdentifier(columnName, property, "Invalid column name."),
-                conceptMetadata.Get(property, ColumnTypesMetadata).Single(),
+                conceptMetadata.GetColumnType(property),
                 options,
                 Options1Tag.Evaluate(property),
                 Options2Tag.Evaluate(property),

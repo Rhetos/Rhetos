@@ -48,6 +48,7 @@ namespace Rhetos.Configuration.Autofac
                 builder.RegisterType<InitializationConcept>().As<IConceptInfo>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos dlls.
                 Plugins.FindAndRegisterPlugins<IConceptInfo>(builder);
                 Plugins.FindAndRegisterPlugins<IConceptMacro>(builder, typeof(IConceptMacro<>));
+                Plugins.FindAndRegisterPlugins<IConceptMetadataExtension>(builder);
             }
 
             if (_deploymentTime && !_deployDatabaseOnly)

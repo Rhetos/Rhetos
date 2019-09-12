@@ -1,0 +1,46 @@
+Module TestHardcodedEntity
+{
+    Hardcoded SimpleHardcodedEntity
+    {
+        ShortString Description;
+        Bool BoolProperty;
+        Integer IntProperty;
+
+        Entry StatusWithDefinedAllPropertity
+        {
+            Value Description 'Status with defined all properties';
+            Value BoolProperty 0;
+            Value IntProperty 2;
+        }
+
+        Entry StatusWithoutIntPropertyDefined
+        {
+            Value Description 'Status with undefined int property';
+            Value BoolProperty 1;
+        }
+
+        Entry SpecialDescription
+        {
+            Value Description <SpecialDescription.txt>;
+        }
+    }
+
+    Entity ReferenceToHardcodedEntity
+    {
+        LongString Content { Required; }
+        Reference SimpleHardcodedEntity { Required; }
+    }
+
+    SqlQueryable HardcodedEntityInSqlTest
+    "
+        SELECT
+            ID,
+            Content
+        FROM
+            TestHardcodedEntity.ReferenceToHardcodedEntity
+        WHERE SimpleHardcodedEntityID = TestHardcodedEntity.SimpleHardcodedEntity_StatusWithoutIntPropertyDefined();
+    "
+    {
+        LongString Content;
+    }
+}

@@ -53,27 +53,24 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (PolymorphicPropertyInfo)conceptInfo;
 
-            var propertyColumnNames = _conceptMetadata.Get(info.Property, PropertyDatabaseDefinition.ColumnNamesMetadata);
-            var propertyColumnTypes = _conceptMetadata.Get(info.Property, PropertyDatabaseDefinition.ColumnTypesMetadata);
+            var propertyColumnName = _conceptMetadata.GetColumnName(info.Property);
+            var propertyColumnType = _conceptMetadata.GetColumnType(info.Property);
 
-            foreach (var column in propertyColumnNames.Zip(propertyColumnTypes, (name, type) => new { name, type }))
-            {
-                string columnImplementationsSelector = info.IsImplementable()
-                    ? ", " + column.name
-                    : ", " + column.name + " = NULL";
+            string columnImplementationsSelector = info.IsImplementable()
+                ? ", " + propertyColumnName
+                : ", " + propertyColumnName + " = NULL";
 
-                codeBuilder.InsertCode(
-                    columnImplementationsSelector,
-                    PolymorphicUnionViewInfo.PolymorphicPropertyNameTag,
-                    info.Dependency_PolymorphicUnionView);
+            codeBuilder.InsertCode(
+                columnImplementationsSelector,
+                PolymorphicUnionViewInfo.PolymorphicPropertyNameTag,
+                info.Dependency_PolymorphicUnionView);
 
-                string columnInitialization = string.Format(",\r\n    {0} = CONVERT({1}, NULL)", column.name, column.type);
+            string columnInitialization = string.Format(",\r\n    {0} = CONVERT({1}, NULL)", propertyColumnName, propertyColumnType);
 
-                codeBuilder.InsertCode(
-                    columnInitialization,
-                    PolymorphicUnionViewInfo.PolymorphicPropertyInitializationTag,
-                    info.Dependency_PolymorphicUnionView);
-            }
+            codeBuilder.InsertCode(
+                columnInitialization,
+                PolymorphicUnionViewInfo.PolymorphicPropertyInitializationTag,
+                info.Dependency_PolymorphicUnionView);
 
             createdDependencies = null;
         }

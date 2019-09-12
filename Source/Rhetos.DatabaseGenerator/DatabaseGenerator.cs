@@ -334,7 +334,7 @@ namespace Rhetos.DatabaseGenerator
 
                 // Generate CreateQuery:
 
-                sqlCodeBuilder.InsertCode(ca.ConceptImplementation.CreateDatabaseStructure(ca.ConceptInfo));
+                sqlCodeBuilder.InsertCode(ca.ConceptImplementation.CreateDatabaseStructure(ca.ConceptInfo) + Environment.NewLine);
 
                 if (ca.ConceptImplementation is IConceptDatabaseDefinitionExtension)
                 {
@@ -401,7 +401,7 @@ namespace Rhetos.DatabaseGenerator
 
         protected static void AddConceptApplicationSeparator(ConceptApplication ca, CodeBuilder sqlCodeBuilder)
         {
-            sqlCodeBuilder.InsertCode(string.Format("{0}{1}{2}{3}",
+            sqlCodeBuilder.InsertCode(string.Format("{0}{1}{2}{3}\r\n",
                 NextConceptApplicationSeparator, NextConceptApplicationIdPrefix, ca.Id, NextConceptApplicationIdSuffix));
         }
 
@@ -455,12 +455,15 @@ namespace Rhetos.DatabaseGenerator
             // Find changed concept applications (different create sql query):
 
             var existingApplications = oldApplicationsByKey.Keys.Intersect(newApplicationsByKey.Keys).ToList();
-            var changedApplications = existingApplications.Where(appKey => !string.Equals(
-                oldApplicationsByKey[appKey].CreateQuery,
-                newApplicationsByKey[appKey].CreateQuery)).ToList();
+            var changedApplications = existingApplications
+                .Where(appKey => !string.Equals(
+                    oldApplicationsByKey[appKey].CreateQuery,
+                    newApplicationsByKey[appKey].CreateQuery,
+                    StringComparison.Ordinal))
+                .ToList();
 
             foreach (string ca in changedApplications)
-                _logger.Trace("Changed concept application: " + ca);
+                _logger.Trace(() => $"Changed concept application: {ca}\r\n{ReportDiff(oldApplicationsByKey[ca].CreateQuery, newApplicationsByKey[ca].CreateQuery)}");
 
             // Find dependent concepts applications to be regenerated:
 
@@ -509,6 +512,15 @@ namespace Rhetos.DatabaseGenerator
 
             toBeRemoved = toBeRemovedKeys.Select(key => oldApplicationsByKey[key]).ToList();
             toBeInserted = toBeInsertedKeys.Select(key => newApplicationsByKey[key]).ToList();
+        }
+
+        private string ReportDiff(string oldQuery, string newQuery)
+        {
+            int c = 0;
+            for (; c < Math.Min(oldQuery.Length, newQuery.Length); c++)
+                if (oldQuery[c] != newQuery[c])
+                    break;
+            return $"Old: {CsUtility.ReportSegment(oldQuery, c, 400)}\r\nNew: {CsUtility.ReportSegment(newQuery, c, 400)}";
         }
 
         protected void ApplyChangesToDatabase(

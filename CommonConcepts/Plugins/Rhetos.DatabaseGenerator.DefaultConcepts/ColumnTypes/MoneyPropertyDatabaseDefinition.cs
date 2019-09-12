@@ -53,7 +53,6 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             var info = (MoneyPropertyInfo)conceptInfo;
             SqlUtility.Identifier(info.Name);
 
-            PropertyDatabaseDefinition.RegisterColumnMetadata(_conceptMetadata, info, SqlUtility.Identifier(info.Name), Sql.Get("MoneyPropertyDatabaseDefinition_DataType"));
             if (info.DataStructure is EntityInfo)
                 return PropertyDatabaseDefinition.AddColumn(_conceptMetadata, info,
                     Sql.Format("MoneyPropertyDatabaseDefinition_CreateCheckConstraint", ConstraintName(info), SqlUtility.Identifier(info.Name)));

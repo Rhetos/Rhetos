@@ -30,6 +30,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         [ConceptKey]
         public UniqueMultiplePropertiesInfo Unique { get; set; }
+
         [ConceptKey]
         public PropertyInfo Property { get; set; }
 

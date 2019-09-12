@@ -44,17 +44,11 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             _conceptMetadata = conceptMetadata;
         }
 
-        public static bool IsSupported(ReferencePropertyInfo info)
-        {
-            return info.DataStructure is EntityInfo;
-        }
-
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
             var info = (ReferencePropertyInfo)conceptInfo;
 
-            PropertyDatabaseDefinition.RegisterColumnMetadata(_conceptMetadata, info, info.GetColumnName(), Sql.Get("ReferencePropertyDatabaseDefinition_DataType"));
-            if (IsSupported(info))
+            if (info.DataStructure is EntityInfo)
                 return PropertyDatabaseDefinition.AddColumn(_conceptMetadata, info);
 
             return "";
@@ -63,7 +57,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         public string RemoveDatabaseStructure(IConceptInfo conceptInfo)
         {
             var info = (ReferencePropertyInfo)conceptInfo;
-            if (IsSupported(info))
+            if (info.DataStructure is EntityInfo)
                 return PropertyDatabaseDefinition.RemoveColumn(info, info.GetColumnName());
             return "";
         }

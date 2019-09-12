@@ -42,14 +42,18 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var newConcepts = new List<IConceptInfo>();
 
-            newConcepts.AddRange(existingConcepts.FindByType<PropertyInfo>()
-                .Where(p => p.DataStructure.Module == conceptInfo.DependsOn)
-                .Where(p => p != conceptInfo.Dependent && p.DataStructure != conceptInfo.Dependent)
-                .Select(p => new SqlDependsOnPropertyInfo { Dependent = conceptInfo.Dependent, DependsOn = p }));
-
-            newConcepts.AddRange(existingConcepts.FindByType<DataStructureInfo>()
-                .Where(item => item.Module == conceptInfo.DependsOn)
+            var dependsOnDataStructures = existingConcepts.FindByReference<DataStructureInfo>(item => item.Module, conceptInfo.DependsOn)
                 .Where(item => item != conceptInfo.Dependent)
+                .ToList();
+
+            foreach (var dependsOnDataStructure in dependsOnDataStructures)
+            {
+                newConcepts.AddRange(existingConcepts.FindByReference<PropertyInfo>(p => p.DataStructure, dependsOnDataStructure)
+                    .Where(p => p != conceptInfo.Dependent)
+                    .Select(p => new SqlDependsOnPropertyInfo { Dependent = conceptInfo.Dependent, DependsOn = p }));
+            }
+
+            newConcepts.AddRange(dependsOnDataStructures
                 .Select(item => new SqlDependsOnDataStructureInfo { Dependent = conceptInfo.Dependent, DependsOn = item }));
 
             return newConcepts;
@@ -63,8 +67,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var newConcepts = new List<IConceptInfo>();
 
-            newConcepts.AddRange(existingConcepts.FindByType<SqlFunctionInfo>()
-                .Where(item => item.Module == conceptInfo.DependsOn)
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlFunctionInfo>(item => item.Module, conceptInfo.DependsOn)
                 .Where(item => item != conceptInfo.Dependent)
                 .Select(item => new SqlDependsOnSqlFunctionInfo { Dependent = conceptInfo.Dependent, DependsOn = item }));
 
@@ -73,13 +76,11 @@ namespace Rhetos.Dsl.DefaultConcepts
                 .Where(item => item != conceptInfo.Dependent && item.DataStructure != conceptInfo.Dependent)
                 .Select(item => new SqlDependsOnSqlIndexInfo { Dependent = conceptInfo.Dependent, DependsOn = item }));
 
-            newConcepts.AddRange(existingConcepts.FindByType<SqlObjectInfo>()
-                .Where(item => item.Module == conceptInfo.DependsOn)
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlObjectInfo>(item => item.Module, conceptInfo.DependsOn)
                 .Where(item => item != conceptInfo.Dependent)
                 .Select(item => new SqlDependsOnSqlObjectInfo { Dependent = conceptInfo.Dependent, DependsOn = item }));
 
-            newConcepts.AddRange(existingConcepts.FindByType<SqlViewInfo>()
-                .Where(item => item.Module == conceptInfo.DependsOn)
+            newConcepts.AddRange(existingConcepts.FindByReference<SqlViewInfo>(item => item.Module, conceptInfo.DependsOn)
                 .Where(item => item != conceptInfo.Dependent)
                 .Select(item => new SqlDependsOnSqlViewInfo { Dependent = conceptInfo.Dependent, DependsOn = item }));
 

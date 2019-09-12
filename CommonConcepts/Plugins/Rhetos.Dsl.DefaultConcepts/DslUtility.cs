@@ -55,13 +55,8 @@ namespace Rhetos.Dsl.DefaultConcepts
         public static void CheckIfPropertyBelongsToDataStructure(PropertyInfo property, DataStructureInfo dataStructure, IConceptInfo errorContext)
         {
             if (property.DataStructure != dataStructure)
-                throw new Exception(String.Format(
-                    "Invalid use of " + errorContext.GetKeywordOrTypeName() + ": Property {0}.{1}.{2} is not in data structure {3}.{4}.",
-                    property.DataStructure.Module.Name,
-                    property.DataStructure.Name,
-                    property.Name,
-                    dataStructure.Module.Name,
-                    dataStructure.Name));
+                throw new DslSyntaxException(errorContext,
+                    $"Property {property.FullName} is not in data structure {dataStructure.FullName}.");
         }
 
         /// <summary>
@@ -133,11 +128,11 @@ namespace Rhetos.Dsl.DefaultConcepts
         /// </param>
         public static ValueOrError<PropertyInfo> GetPropertyByPath(DataStructureInfo source, string path, IDslModel existingConcepts, bool allowSystemProperties = true)
         {
-            if (path.Contains(" "))
-                return ValueOrError.CreateError("The path contains a space character.");
-
             if (string.IsNullOrEmpty(path))
                 return ValueOrError.CreateError("The path is empty.");
+
+            if (path.Contains(" "))
+                return ValueOrError.CreateError("The path contains a space character.");
 
             var propertyNames = path.Split('.');
             var referenceNames = propertyNames.Take(propertyNames.Count() - 1).ToArray();
@@ -182,13 +177,9 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var selectedProperty = FindProperty(existingConcepts, source, referenceName);
 
-            IEnumerable<UniqueReferenceInfo> allExtensions;
-            allExtensions = existingConcepts.FindByType<UniqueReferenceInfo>();
-
             if (selectedProperty == null && referenceName == "Base")
             {
-                var baseDataStructure = allExtensions
-                    .Where(ex => ex.Extension == source)
+                var baseDataStructure = existingConcepts.FindByReference<UniqueReferenceInfo>(ex => ex.Extension, source)
                     .Select(ex => ex.Base).SingleOrDefault();
                 if (baseDataStructure != null)
                     return baseDataStructure;
@@ -200,8 +191,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (selectedProperty == null && referenceName.StartsWith("Extension_"))
             {
                 string extensionName = referenceName.Substring("Extension_".Length);
-                var extensionDataStructure = allExtensions
-                    .Where(ex => ex.Base == source)
+                var extensionDataStructure = existingConcepts.FindByReference<UniqueReferenceInfo>(ex => ex.Base, source)
                     .Where(ex => ex.Extension.Module == source.Module && ex.Extension.Name == extensionName
                         || ex.Extension.Module.Name + "_" + ex.Extension.Name == extensionName)
                     .Select(ex => ex.Extension).SingleOrDefault();

@@ -22,7 +22,7 @@ using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Utilities;
 using System.Collections.Generic;
 
-namespace Rhetos.DatabaseGenerator.DefaultConcepts
+namespace Rhetos.Dsl.DefaultConcepts
 {
     public static class ForeignKeyUtility
     {

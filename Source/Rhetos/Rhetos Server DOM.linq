@@ -49,10 +49,11 @@
 
 void Main()
 {
-    ConsoleLogger.MinLevel = EventType.Info; // Use "Trace" for more details log.
+    ConsoleLogger.MinLevel = EventType.Info; // Use "Trace" for more detailed log.
     var rhetosServerPath = Path.GetDirectoryName(Util.CurrentQueryPath);
     Directory.SetCurrentDirectory(rhetosServerPath);
-    using (var container = new RhetosTestContainer(commitChanges: false)) // Use this parameter to COMMIT or ROLLBACK the data changes.
+	// Set commitChanges parameter to COMMIT or ROLLBACK the data changes.
+    using (var container = new RhetosTestContainer(commitChanges: false))
     {
         var context = container.Resolve<Common.ExecutionContext>();
         var repository = context.Repository;

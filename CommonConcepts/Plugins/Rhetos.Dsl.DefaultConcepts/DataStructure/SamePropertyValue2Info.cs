@@ -33,6 +33,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SamePropertyValue")]
+    [Obsolete("Use simpler SamePropertyValue syntax with a path to the base property.")]
     public class SamePropertyValue2Info : SamePropertyValueInfo, IValidatedConcept, IAlternativeInitializationConcept
     {
         /// <summary>Object model property name on the inherited data structure that references the base data structure class.</summary>

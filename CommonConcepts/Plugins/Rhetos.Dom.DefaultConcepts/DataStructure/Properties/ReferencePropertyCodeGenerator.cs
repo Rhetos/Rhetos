@@ -59,7 +59,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         info.DataStructure.Module.Name, info.DataStructure.Name, info.Name),
                     DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
 
-            if (ReferencePropertyConstraintDatabaseDefinition.IsSupported(info)
+            if (ReferencePropertyDbConstraintInfo.IsSupported(info)
                 && info.DataStructure is IOrmDataStructure
                 && info.Referenced is IOrmDataStructure)
             {

@@ -6,6 +6,35 @@
 
 * Upgraded from .NET Framework 4.5.1 to .NET Framework 4.7.2.
 
+## 2.12.0 (2019-09-09)
+
+### New features
+
+* New concepts: **Hardcoded**, **Entry** and **Value**, for read-only entities in DSL scripts (code tables, for example).
+
+### Internal improvements
+
+* New low-level concepts: **ArgumentValidation** and **OldDataLoaded**,
+  for extending [SaveMethod](https://github.com/Rhetos/Rhetos/wiki/Low-level-object-model-concepts).
+* Bugfix: AutoCodeForEach on Bool grouping property causes unique index error on insert (issue #132).
+* Bugfix: Multiple row permissions with subqueries can result with ArgumentException (issue #191).
+* AutoInheritRowPermissions now safely ignores self-references (issue #35).
+* Bugfix: Backup data-migration column is dropped when converting table to view (issue #170).
+* Simpler error summary for better readability in VS Code terminal (issue #175).
+* Bugfix: DslScripts and DataMigration folders are ignored when deploying a package *from source*,
+  if they are not placed directly under the *nuspec* file (issue #173).
+* Minor performance optimizations (reading and writing data, DSL parser, database upgrade)
+  and improvements in error handling.
+* New plugin type: IConceptDataMigration, for custom data-migration extensions (*Hardcoded* concept, for example).
+* New plugin type: IConceptMetadataExtension, for providing information on concept implementation details (database column type, for example).
+
+## 2.11.1 (2019-05-23)
+
+### Internal improvements
+
+* Bugfix: "The DELETE statement conflicted with the REFERENCE constraint" error when deleting a record that is included in a polymorphic,
+  event when the cascade delete should be applied automatically (issue #154).
+
 ## 2.11.0 (2019-01-31)
 
 ### New features
@@ -373,7 +402,7 @@
 * New *DeployPackages.exe* argument `/ShortTransactions`, for upgrading large databases.
 * Improved **Polymorphic**: multiple **Where** allowed, optimized update of *Materialized* extension.
 * Bugfix: **Polymorphic** does not update *Materialized* extension for *named* implementations.
-* SqlDependesOn* concepts can be used on polymorphic subtype (**Is**) to define dependencies for the generated view.
+* SqlDependsOn* concepts can be used on polymorphic subtype (**Is**) to define dependencies for the generated view.
 * Bugfix: Error "DependsOn data structure must be IWritableOrmDataStructure" when using an entity with **History** as a **Polymorphic** subtype.
 * DeployPackages is logging more detailed information when refreshing a dependent database object.
 * **FilterBy** expression is allowed to use the repository's member methods.
@@ -603,7 +632,7 @@
 ### New features
 
 * Added [Forgot my password](https://github.com/Rhetos/AspNetFormsAuth#forgot-password) feature to *AspNetFormsAuth*.
-  Sending the password reset token to the user (by SMS or email, e.g.) is to be implemented as a seperate plugin
+  Sending the password reset token to the user (by SMS or email, e.g.) is to be implemented as a separate plugin
   (for example see [SimpleSPRTEmail](https://github.com/Rhetos/SimpleSPRTEmail)).
 * New RowPermissions concepts: **AllowWrite** and **DenyWrite**.
 * New RowPermissions concept: **InheritFromBase**.
@@ -644,7 +673,7 @@
 * Bugfix: *ArgumentNullException* thrown on some client request.
 * Bugfixes: Row permissions not supported on **Browse**. Row permissions not used on empty filter requests.
 * New interface *IConceptMacro*, for implementing macro concepts with better performance.
-* Added Query function to *GenericRepository*, for simplied use in application code.
+* Added Query function to *GenericRepository*, for simpler use in application code.
 
 ## 0.9.19 (2014-11-12)
 
@@ -750,7 +779,7 @@
 * Bugfix: Absolute URI (localhost Rhetos server) removed from *Web.config*.
 * Bugfix: **DenyUserEdit** and **SystemRequired** concepts denied saving valid data entries when using automatic value initialization.
 * Bugfix: `SetupRhetosServer.bat` sometimes reported incorrect error "IIS Express is not installed".
-* Performance: First call of the *DownloadReport* server command sometimes takes more time (building DslModel instance).
+* Performance: First call of the *DownloadReport* server command sometimes takes more time.
 * New plugin type: *IHomePageSnippet*, for adding development and administration content to Rhetos homepage.
 * New plugin type: *ICommandObserver*, for extending server's command handling.
 
@@ -793,7 +822,7 @@
 
 * Improved performance of `DeployPackaged.exe`. Optimized update of concepts' metadata in database generator.
 * Bugfix: **DenySave** that uses **SqlQueryable** sometimes caused an error "Could not initialize proxy" on save.
-* Bugfix: Web query that combines **ItemFilter** or **ComposableFilter** with *GenericFilter* somtimes caused case insensitive string filtering or NullReferenceException. Filter was executed in C# instead of the SQL.
+* Bugfix: Web query that combines **ItemFilter** or **ComposableFilter** with *GenericFilter* sometimes caused case insensitive string filtering or NullReferenceException. Filter was executed in C# instead of the SQL.
 * Bugfix: Rhetos REST service bindings were not loaded from *Web.config*.
 * Bugfix: On some systems the PUT method on Rhetos REST service caused HTTP error 405. Removed WebDAVModule.
 * Bugfix: InvalidCastException (OracleDataReader.GetInt32) on some systems while upgrading database.
@@ -814,7 +843,7 @@
 
 * Bugfix: Concept info property 'LegacyPropertySimpleInfo.LegacyEntityWithAutoCreatedView' is not initialized.
 * Bugfix: ArgumentNullException when loading Common.Claim or Common.Principal.
-* Bugfix: Genetared dlls moved to bin\Generated, to avoid locking during exection of DeployPackages.exe.
+* Bugfix: Generated dlls moved to bin\Generated, to avoid locking during execution of DeployPackages.exe.
 
 ## 0.9.9 (2013-09-04)
 
@@ -840,15 +869,15 @@
 ### New features
 
 * New concept: **SystemRequired**, for a property that must be computed by the server. Note that the existing **Required** concept should be used to enforce a business rule when a user must enter the property's value.
-* New concept: **DenyUserEdit**, for a property that may only be changed by the server, not by a client Save request. It may also be applyed to an entity with hardcoded system data.
+* New concept: **DenyUserEdit**, for a property that may only be changed by the server, not by a client Save request. It may also be applied to an entity with hardcoded system data.
 
 ### Internal improvements
 
-* Helper classes *CsTag*, *SqlTag* and *XmlTag* provied a simplifyed creation of code tags (for code generator plugins).
+* Helper classes *CsTag*, *SqlTag* and *XmlTag* provided a simplified creation of code tags (for code generator plugins).
 * Bugfix: **LongString** and **Binary** properties were limited to 8000 bytes.
 * DSL packages may contain custom web service registration.
-* Implicit transactions with NHibernatePeristenceTransaction allow late query evaluation that is required for OData service.
-* Removed *TypeFactory*, *AspectFactory*, *InterceptorFactory* and *DynamicProxyFactory*. TypeFactory was a wrapper around Autofac, but it did not provide a useful abstraction layer. Other components were planned for AOP, but they were not used in practice. AOP principles are already fully supported by code generators for the final application. These features were not used for internal framework compoments.
+* Implicit transactions with NHibernatePersistenceTransaction allow late query evaluation that is required for OData service.
+* Removed *TypeFactory*, *AspectFactory*, *InterceptorFactory* and *DynamicProxyFactory*. TypeFactory was a wrapper around Autofac, but it did not provide a useful abstraction layer. Other components were planned for AOP, but they were not used in practice. AOP principles are already fully supported by code generators for the final application. These features were not used for internal framework components.
 * More flexible plugins registration using *PluginsUtility* and *PluginsContainer*.
 * Removed backing fields for properties in server object model.
 * **FullHistory** data structure implementation changed to SqlQueryable instead of generated view and legacy entity, so that other concepts may use the SqlQueryable with **SqlDependsOn**.
@@ -900,7 +929,7 @@
 ### New features
 
 * Rhetos is an open source software under AGPL licence!
-* New concept: **SimpleReferencePropertyInfo** simplifies writing a DSL script when a reference propety name is the same as the referenced entity.
+* New concept: **SimpleReferencePropertyInfo** simplifies writing a DSL script when a reference property name is the same as the referenced entity.
 * Improved DSL parser: IAlternativeInitializationConcept allows a DSL concept to simplify its syntax or its internal design when depending on other automatically created concepts.
 
 ### Internal improvements
@@ -941,7 +970,7 @@
 * New concept: **History**, for automatic management of older versions of a record (some or all properties).
   It also provides a functions for retrieving the record's state at a given time.
 * **Detail** concept automatically includes SqlIndex.
-* New concepts for copying properties from another data stucture: **PropertyFrom** and **AllPropertiesWithCascadeDeleteFrom**.
+* New concepts for copying properties from another data structure: **PropertyFrom** and **AllPropertiesWithCascadeDeleteFrom**.
   Existing **AllPropertiesFrom** modified to not include cloning CascadeDelete concepts.
 
 ### Internal improvements

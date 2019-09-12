@@ -121,21 +121,27 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         private static void MatchExpressionParameter(Expression<Func<T, bool>> a, ref Expression<Func<T, bool>> b)
         {
-            b = (Expression<Func<T, bool>>)new ParameterReplacer(a.Parameters.Single()).Visit(b);
+            var parameterReplacer = new ParameterReplacer(b.Parameters.Single(), a.Parameters.Single());
+            b = (Expression<Func<T, bool>>)parameterReplacer.Visit(b);
         }
 
         private class ParameterReplacer : ExpressionVisitor
         {
-            private readonly ParameterExpression _parameter;
+            private readonly ParameterExpression _oldParameter;
+            private readonly ParameterExpression _newParameter;
 
-            internal ParameterReplacer(ParameterExpression parameter)
+            internal ParameterReplacer(ParameterExpression oldParameter, ParameterExpression newParameter)
             {
-                _parameter = parameter;
+                _oldParameter = oldParameter;
+                _newParameter = newParameter;
             }
 
             protected override Expression VisitParameter(ParameterExpression node)
             {
-                return _parameter;
+                if (node == _oldParameter)
+                    return _newParameter;
+                else
+                    return node;
             }
         }
     }

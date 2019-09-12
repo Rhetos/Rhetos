@@ -45,6 +45,7 @@ namespace CommonConcepts.Test
                     DELETE FROM TestAutoCode.Grouping;
                     DELETE FROM TestAutoCode.StringGroup;
                     DELETE FROM TestAutoCode.IntGroup;
+                    DELETE FROM TestAutoCode.BoolGroup;
                     DELETE FROM TestAutoCode.Simple;
                     DELETE FROM TestAutoCode.DoubleAutoCode;
                     DELETE FROM TestAutoCode.DoubleAutoCodeWithGroup;
@@ -352,11 +353,19 @@ namespace CommonConcepts.Test
                 TestGroup<TestAutoCode.IntGroup, int>(container, repository.TestAutoCode.IntGroup, 500, "+", "2");
                 TestGroup<TestAutoCode.IntGroup, int>(container, repository.TestAutoCode.IntGroup, 600, "+", "1");
                 TestGroup<TestAutoCode.IntGroup, int>(container, repository.TestAutoCode.IntGroup, 600, "A+", "A1");
+                TestGroup<TestAutoCode.IntGroup, int>(container, repository.TestAutoCode.IntGroup, 600, "A+", "A2");
+
+                TestGroup<TestAutoCode.BoolGroup, bool>(container, repository.TestAutoCode.BoolGroup, false, "+", "1");
+                TestGroup<TestAutoCode.BoolGroup, bool>(container, repository.TestAutoCode.BoolGroup, false, "+", "2");
+                TestGroup<TestAutoCode.BoolGroup, bool>(container, repository.TestAutoCode.BoolGroup, true, "+", "1");
+                TestGroup<TestAutoCode.BoolGroup, bool>(container, repository.TestAutoCode.BoolGroup, true, "A+", "A1");
+                TestGroup<TestAutoCode.BoolGroup, bool>(container, repository.TestAutoCode.BoolGroup, true, "A+", "A2");
 
                 TestGroup<TestAutoCode.StringGroup, string>(container, repository.TestAutoCode.StringGroup, "x", "+", "1");
                 TestGroup<TestAutoCode.StringGroup, string>(container, repository.TestAutoCode.StringGroup, "x", "+", "2");
                 TestGroup<TestAutoCode.StringGroup, string>(container, repository.TestAutoCode.StringGroup, "y", "+", "1");
                 TestGroup<TestAutoCode.StringGroup, string>(container, repository.TestAutoCode.StringGroup, "y", "A+", "A1");
+                TestGroup<TestAutoCode.StringGroup, string>(container, repository.TestAutoCode.StringGroup, "y", "A+", "A2");
 
                 var simple1 = new TestAutoCode.Simple { ID = Guid.NewGuid(), Code = "1" };
                 var simple2 = new TestAutoCode.Simple { ID = Guid.NewGuid(), Code = "2" };
@@ -366,6 +375,7 @@ namespace CommonConcepts.Test
                 TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(container, repository.TestAutoCode.ReferenceGroup, simple1, "+", "2");
                 TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(container, repository.TestAutoCode.ReferenceGroup, simple2, "+", "1");
                 TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(container, repository.TestAutoCode.ReferenceGroup, simple2, "A+", "A1");
+                TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(container, repository.TestAutoCode.ReferenceGroup, simple2, "A+", "A2");
 
                 var grouping1 = new TestAutoCode.Grouping { ID = Guid.NewGuid(), Code = "1" };
                 var grouping2 = new TestAutoCode.Grouping { ID = Guid.NewGuid(), Code = "2" };
@@ -375,6 +385,7 @@ namespace CommonConcepts.Test
                 TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(container, repository.TestAutoCode.ShortReferenceGroup, grouping1, "+", "2");
                 TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(container, repository.TestAutoCode.ShortReferenceGroup, grouping2, "+", "1");
                 TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(container, repository.TestAutoCode.ShortReferenceGroup, grouping2, "A+", "A1");
+                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(container, repository.TestAutoCode.ShortReferenceGroup, grouping2, "A+", "A2");
             }
         }
 

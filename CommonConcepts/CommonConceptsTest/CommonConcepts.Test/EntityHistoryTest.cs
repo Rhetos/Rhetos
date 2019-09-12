@@ -1521,7 +1521,6 @@ namespace CommonConcepts.Test
             }
         }
 
-
         [TestMethod]
         public void HistoryDeleteAllHistory()
         {

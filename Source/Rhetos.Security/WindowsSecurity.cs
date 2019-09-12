@@ -39,13 +39,13 @@ namespace Rhetos.Security
     {
         private ILogger _logger;
         private ILogger _performanceLogger;
-        private Lazy<bool> _lookupClientHostname;
+        private IConfiguration _configuration;
 
         public WindowsSecurity(ILogProvider logProvider, IConfiguration configuration)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _performanceLogger = logProvider.GetLogger("Performance");
-            _lookupClientHostname = configuration.GetBool("Security.LookupClientHostname", false);
+            _configuration = configuration;
         }
 
         public string GetClientWorkstation()
@@ -74,7 +74,7 @@ namespace Rhetos.Security
 
             string name = null;
 
-            if (_lookupClientHostname.Value)
+            if (_configuration.GetBool("Security.LookupClientHostname", false).Value)
             {
                 name = GetNameFromAddress(endpointInfo.Address, endpointInfo.Port);
 

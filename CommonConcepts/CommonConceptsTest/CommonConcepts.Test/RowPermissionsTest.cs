@@ -457,20 +457,18 @@ namespace CommonConcepts.Test
                 var testData = new[] { "a1", "a2", "b1", "b2" }.Select(name => new TestRowPermissions.AutoFilter { Name = name });
                 gr.Save(testData, null, gr.Load());
 
-                int lastFilterCount = logFilterQuery.Count();
-
                 {
                     var readCommand = new ReadCommandInfo
                     {
                         DataSource = "TestRowPermissions.AutoFilter",
                         ReadRecords = true
                     };
+                    int lastFilterCount = logFilterQuery.Count();
                     var readResult = (TestRowPermissions.AutoFilter[])ExecuteReadCommand(readCommand, container).Records;
                     Assert.AreEqual("a1, a2", TestUtility.DumpSorted(readResult, item => item.Name));
 
                     Assert.AreEqual(1, logFilterQuery.Count() - lastFilterCount,
                         "Row permission filter should be automatically applied on reading, no need to be applied again on result permission validation.");
-                    lastFilterCount = logFilterQuery.Count();
                 }
 
                 {
@@ -480,12 +478,12 @@ namespace CommonConcepts.Test
                         ReadRecords = true,
                         Filters = new FilterCriteria[] { new FilterCriteria("Name", "contains", "2") }
                     };
+                    int lastFilterCount = logFilterQuery.Count();
                     var readResult = (TestRowPermissions.AutoFilter[])ExecuteReadCommand(readCommand, container).Records;
                     Assert.AreEqual("a2", TestUtility.DumpSorted(readResult, item => item.Name));
 
                     Assert.AreEqual(1, logFilterQuery.Count() - lastFilterCount,
                         "Row permission filter should be automatically applied on reading, no need to be use it again for result permission validation.");
-                    lastFilterCount = logFilterQuery.Count();
                 }
 
                 {
@@ -495,12 +493,12 @@ namespace CommonConcepts.Test
                         ReadRecords = true,
                         Filters = new FilterCriteria[] { new FilterCriteria("Name", "contains", "2"), new FilterCriteria(typeof(Common.RowPermissionsReadItems)) }
                     };
+                    int lastFilterCount = logFilterQuery.Count();
                     var readResult = (TestRowPermissions.AutoFilter[])ExecuteReadCommand(readCommand, container).Records;
                     Assert.AreEqual("a2", TestUtility.DumpSorted(readResult, item => item.Name));
 
                     Assert.AreEqual(1, logFilterQuery.Count() - lastFilterCount,
                         "Row permission filter should be automatically applied on reading, no need to be use it again for result permission validation.");
-                    lastFilterCount = logFilterQuery.Count();
                 }
 
                 {
@@ -510,12 +508,12 @@ namespace CommonConcepts.Test
                         ReadRecords = true,
                         Filters = new FilterCriteria[] { new FilterCriteria(typeof(Common.RowPermissionsReadItems)), new FilterCriteria("Name", "contains", "2") }
                     };
+                    int lastFilterCount = logFilterQuery.Count();
                     var readResult = (TestRowPermissions.AutoFilter[])ExecuteReadCommand(readCommand, container).Records;
                     Assert.AreEqual("a2", TestUtility.DumpSorted(readResult, item => item.Name));
 
                     Assert.AreEqual(2, logFilterQuery.Count() - lastFilterCount,
                         "Row permission filter is not the last filter applied on reading. It will be use again for result permission validation to make sure other filters did not expand the result set.");
-                    lastFilterCount = logFilterQuery.Count();
                 }
             }
         }
@@ -552,7 +550,6 @@ namespace CommonConcepts.Test
             using (var container = new RhetosTestContainer())
             {
                 container.AddIgnoreClaims();
-                var processingEngine = container.Resolve<IProcessingEngine>();
                 var repository = container.Resolve<Common.DomRepository>();
                 var readCommand = container.Resolve<IPluginsContainer<ICommandImplementation>>().GetPlugins().OfType<ReadCommand>().Single();
                 Guid testRun = Guid.NewGuid();
@@ -641,13 +638,13 @@ namespace CommonConcepts.Test
             TestWrite(null, items.ToArray(), null, null, null);
 
             var initial = items.ToArray();
-            var id25 = items.Where(a => a.value == 25).Single().ID;
+            var id25 = items.Single(a => a.value == 25).ID;
             items.ForEach(a => a.value = a.value * 2);
 
             // update items
             {
                 var result = TestWrite(initial, null, items.ToArray(), null, null);
-                Assert.AreEqual(50, result.Where(a => a.ID == id25).Single().value);
+                Assert.AreEqual(50, result.Single(a => a.ID == id25).value);
             }
 
             // delete all
@@ -987,7 +984,6 @@ namespace CommonConcepts.Test
         {
             using (var container = new RhetosTestContainer())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
                 var repository = container.Resolve<Common.DomRepository>();
 
                 Guid groupID = Guid.NewGuid();

@@ -33,11 +33,10 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         protected override IConceptInfo CreateUniqueConstraint()
         {
-            return new UniquePropertiesInfo
+            return new UniqueMultiplePropertiesInfo
             {
                 DataStructure = Property.DataStructure,
-                Property1 = Group,
-                Property2 = Property
+                PropertyNames = $"{Group.Name} {Property.Name}"
             };
         }
 

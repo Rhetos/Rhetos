@@ -103,6 +103,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
                 newInheritences.AddRange(newDataStructuresWithRowPermissions
                     .SelectMany(ds => autoInheritDetailsByMaster.Get(ds))
+                    .Where(detail => detail.Reference.DataStructure != detail.Reference.Referenced)
                     .SelectMany(detail =>
                     {
                         var rpFilters = new RowPermissionsPluginableFiltersInfo { DataStructure = detail.Reference.DataStructure };
@@ -119,7 +120,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
                 foreach (var dataStructure in newDataStructuresWithRowPermissions)
                     allDataStructuresWithRowPermissions.Add(dataStructure);
-            };
+            }
 
             return newConcepts;
         }

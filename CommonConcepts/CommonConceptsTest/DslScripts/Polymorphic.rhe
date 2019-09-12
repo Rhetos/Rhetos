@@ -94,6 +94,24 @@ Module TestPolymorphic
 		ShortString Name;
 		Reference SimpleBase;
 	}
+
+	Entity DependantDetail
+	{
+		ShortString Name;
+		Reference SimpleBase { Detail; }
+	}
+
+	Entity DependantExtension
+	{
+		Extends TestPolymorphic.SimpleBase;
+		ShortString Name;
+	}
+
+	Entity DependantUniqueReference
+	{
+		UniqueReference TestPolymorphic.SimpleBase;
+		ShortString Name;
+	}
 	
 	Browse DependantBrowse TestPolymorphic.Dependant
 	{

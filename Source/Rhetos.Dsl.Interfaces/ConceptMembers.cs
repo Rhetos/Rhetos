@@ -57,6 +57,7 @@ namespace Rhetos.Dsl
 
             var conceptMembers = conceptInfoType
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                .Where(p => p.CanWrite)
                 .Select(memberInfo => new ConceptMember(memberInfo, nonParsableMembers))
                 .ToArray();
 
@@ -74,7 +75,7 @@ namespace Rhetos.Dsl
                     return a.SortOrder2 - b.SortOrder2;
                 });
 
-            if (!conceptMembers.Where(m => m.IsKey).Any())
+            if (!conceptMembers.Any(m => m.IsKey))
                 throw new FrameworkException(
                     string.Format(CultureInfo.InvariantCulture,
                         "One or more members of concept-info class must have ConceptKey attribute. Class: \"{0}\".",

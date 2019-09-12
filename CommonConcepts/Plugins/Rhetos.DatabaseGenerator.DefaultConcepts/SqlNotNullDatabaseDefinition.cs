@@ -56,20 +56,18 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             var info = (SqlNotNullInfo)conceptInfo;
             var sql = new StringBuilder();
 
-            if (_conceptMetadata.Contains(info.Property, PropertyDatabaseDefinition.ColumnTypesMetadata))
-            {
-                var columnNames = _conceptMetadata.Get(info.Property, PropertyDatabaseDefinition.ColumnNamesMetadata);
-                var columnTypes = _conceptMetadata.Get(info.Property, PropertyDatabaseDefinition.ColumnTypesMetadata);
-                var columns = columnNames.Zip(columnTypes, (name, type) => new { name, type });
+            var columnName = _conceptMetadata.GetColumnName(info.Property);
+            var columnType = _conceptMetadata.GetColumnType(info.Property);
 
-                foreach (var column in columns)
-                    sql.AppendLine(Sql.Format("SqlNotNull_Create",
-                        SqlUtility.Identifier(info.Property.DataStructure.Module.Name),
-                        SqlUtility.Identifier(info.Property.DataStructure.Name),
-                        column.name,
-                        column.type,
-                        info.InitialValueSqlExpression,
-                        SqlUtility.ScriptSplitterTag).Trim());
+            if (columnType != null)
+            {
+                sql.AppendLine(Sql.Format("SqlNotNull_Create",
+                    SqlUtility.Identifier(info.Property.DataStructure.Module.Name),
+                    SqlUtility.Identifier(info.Property.DataStructure.Name),
+                    columnName,
+                    columnType,
+                    info.InitialValueSqlExpression,
+                    SqlUtility.ScriptSplitterTag).Trim());
             }
 
             var sqlSnippet = sql.ToString().Trim() + "\r\n";
