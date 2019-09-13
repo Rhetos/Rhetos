@@ -4,7 +4,14 @@
 
 ### Breaking changes
 
-* Upgraded from .NET Framework 4.5.1 to .NET Framework 4.7.2.
+* Upgrade from .NET Framework 4.5.1 to **.NET Framework 4.7.2**.
+  * If your existing Visual Studio project references ServerDom dlls,
+    you need to change the *Target framework* in
+    [project properties](https://stackoverflow.com/a/10877950/2086516) to 4.7.2.
+
+### Internal improvements
+
+* Performance improvements on generating large dll files (Roslyn compiler, issue #52).
 
 ## 2.12.0 (2019-09-09)
 

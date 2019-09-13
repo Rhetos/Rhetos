@@ -117,7 +117,7 @@ namespace Rhetos.Compiler
                     var emitResult = compilation.Emit(dllStream, pdbStream, manifestResources: resources, options: options);
                     _performanceLogger.Write(stopwatch, $"AssemblyGenerator: CSharpCompilation.Create ({dllName}).");
 
-                    FailOnCompilerErrors(emitResult, outputAssemblyPath);
+                    FailOnCompilerErrors(emitResult, sourceCode, sourcePath, outputAssemblyPath);
 
                     SaveGeneratedFile(dllStream, outputAssemblyPath);
                     SaveGeneratedFile(pdbStream, pdbPath);
@@ -150,26 +150,28 @@ namespace Rhetos.Compiler
             }
         }
 
-        private void FailOnCompilerErrors(EmitResult emitResult, string sourcePath)
+        private void FailOnCompilerErrors(EmitResult emitResult, string sourceCode, string sourcePath, string outputAssemblyPath)
         {
             if (emitResult.Success)
                 return;
 
-            List<Diagnostic> errors = emitResult.Diagnostics.Where(x =>
-                            x.IsWarningAsError || x.Severity == DiagnosticSeverity.Error).ToList();
+            var errors = emitResult.Diagnostics
+                .Where(x => x.IsWarningAsError || x.Severity == DiagnosticSeverity.Error)
+                .ToList();
 
             if (!errors.Any())
                 return;
 
             var report = new StringBuilder();
-            report.Append($"{errors.Count} error(s) while compiling '{Path.GetFileName(sourcePath)}'");
+            report.Append($"{errors.Count} error(s) while compiling '{Path.GetFileName(outputAssemblyPath)}'");
 
             if (errors.Count > _errorReportLimit.Value)
                 report.AppendLine($". The first {_errorReportLimit.Value} errors:");
             else
                 report.AppendLine(":");
 
-            report.Append(string.Join("\n", errors.Take(_errorReportLimit.Value).Select(error => error.ToString())));
+            report.Append(string.Join("\n",
+                errors.Take(_errorReportLimit.Value).Select(error => error.ToString() + ReportContext(error, sourceCode, sourcePath))));
 
             if (errors.Count > _errorReportLimit.Value)
             {
@@ -178,6 +180,17 @@ namespace Rhetos.Compiler
             }
 
             throw new FrameworkException(report.ToString().Trim());
+        }
+
+        private string ReportContext(Diagnostic error, string sourceCode, string sourcePath)
+        {
+            if (error.Location.IsInSource && error.Location.SourceTree.FilePath == sourcePath)
+            {
+                var span = error.Location.SourceSpan;
+                return "\r\n" + ScriptPositionReporting.ReportPreviousAndFollowingText(sourceCode, span.Start);
+            }
+            else
+                return "";
         }
 
         private void FailOnTypeLoadErrors(Assembly assembly, string assemblyPath)
@@ -194,7 +207,10 @@ namespace Rhetos.Compiler
 
         private void ReportWarnings(EmitResult emitResult, string sourcePath)
         {
-            List<Diagnostic> warnings = emitResult.Diagnostics.Where(x => x.Severity == DiagnosticSeverity.Warning).ToList();
+            List<Diagnostic> warnings = emitResult.Diagnostics
+                .Where(x => x.Severity == DiagnosticSeverity.Warning)
+                .ToList();
+
             if (!warnings.Any())
                 return;
 
