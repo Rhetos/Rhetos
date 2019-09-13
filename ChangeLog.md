@@ -12,6 +12,7 @@
 ### Internal improvements
 
 * Performance improvements on generating large dll files (Roslyn compiler, issue #52).
+* C# 6.0 and C# 7.0 features are now available in DSL code snippets (Roslyn compiler, issue #52).
 
 ## 2.12.0 (2019-09-09)
 

@@ -35,7 +35,6 @@ namespace Rhetos.Dom
         private readonly ICodeGenerator _codeGenerator;
         private readonly ILogProvider _log;
         private readonly IAssemblyGenerator _assemblyGenerator;
-        private readonly DomGeneratorOptions _domGeneratorOptions;
 
         private List<Assembly> _assemblies;
 
@@ -47,10 +46,8 @@ namespace Rhetos.Dom
             IPluginsContainer<IConceptCodeGenerator> plugins,
             ICodeGenerator codeGenerator,
             ILogProvider logProvider,
-            IAssemblyGenerator assemblyGenerator,
-            DomGeneratorOptions domGeneratorOptions)
+            IAssemblyGenerator assemblyGenerator)
         {
-            _domGeneratorOptions = domGeneratorOptions;
             _pluginRepository = plugins;
             _codeGenerator = codeGenerator;
             _log = logProvider;

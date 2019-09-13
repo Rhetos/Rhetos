@@ -17,22 +17,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
+using Rhetos.Dom;
+using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Rhetos.Utilities;
-using Rhetos.Logging;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis;
-using System.Collections.Generic;
-using Microsoft.CodeAnalysis.Emit;
-using Rhetos.Dom;
-using Microsoft.CodeAnalysis.Text;
-using System.CodeDom.Compiler;
-using System.Collections.Specialized;
 
 namespace Rhetos.Compiler
 {
@@ -117,6 +115,7 @@ namespace Rhetos.Compiler
                     var emitResult = compilation.Emit(dllStream, pdbStream, manifestResources: resources, options: options);
                     _performanceLogger.Write(stopwatch, $"AssemblyGenerator: CSharpCompilation.Create ({dllName}).");
 
+                    ReportWarnings(emitResult, outputAssemblyPath);
                     FailOnCompilerErrors(emitResult, sourceCode, sourcePath, outputAssemblyPath);
 
                     SaveGeneratedFile(dllStream, outputAssemblyPath);
@@ -125,7 +124,6 @@ namespace Rhetos.Compiler
                     generatedAssembly = Assembly.LoadFrom(outputAssemblyPath);
 
                     FailOnTypeLoadErrors(generatedAssembly, outputAssemblyPath);
-                    ReportWarnings(emitResult, outputAssemblyPath);
                     _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({dllName}).");
                 }
             }
@@ -163,7 +161,7 @@ namespace Rhetos.Compiler
                 return;
 
             var report = new StringBuilder();
-            report.Append($"{errors.Count} error(s) while compiling '{Path.GetFileName(outputAssemblyPath)}'");
+            report.Append($"{errors.Count} error(s) while compiling {Path.GetFileName(outputAssemblyPath)}");
 
             if (errors.Count > _errorReportLimit.Value)
                 report.AppendLine($". The first {_errorReportLimit.Value} errors:");
@@ -179,7 +177,7 @@ namespace Rhetos.Compiler
                 report.AppendLine("...");
             }
 
-            throw new FrameworkException(report.ToString().Trim());
+            throw new FrameworkException(report.ToString());
         }
 
         private string ReportContext(Diagnostic error, string sourceCode, string sourcePath)
@@ -193,7 +191,7 @@ namespace Rhetos.Compiler
                 return "";
         }
 
-        private void FailOnTypeLoadErrors(Assembly assembly, string assemblyPath)
+        private void FailOnTypeLoadErrors(Assembly assembly, string outputAssemblyPath)
         {
             try
             {
@@ -201,11 +199,11 @@ namespace Rhetos.Compiler
             }
             catch (ReflectionTypeLoadException ex)
             {
-                throw new FrameworkException(CsUtility.ReportTypeLoadException(ex, "Error while compiling " + assemblyPath + "."), ex);
+                throw new FrameworkException(CsUtility.ReportTypeLoadException(ex, $"Error while compiling {Path.GetFileName(outputAssemblyPath)}."), ex);
             }
         }
 
-        private void ReportWarnings(EmitResult emitResult, string sourcePath)
+        private void ReportWarnings(EmitResult emitResult, string outputAssemblyPath)
         {
             List<Diagnostic> warnings = emitResult.Diagnostics
                 .Where(x => x.Severity == DiagnosticSeverity.Warning)
@@ -214,33 +212,34 @@ namespace Rhetos.Compiler
             if (!warnings.Any())
                 return;
 
-            const string obsoleteInfo = "is obsolete: ";
-            var warningGroups = warnings.GroupBy(warning =>
+            string warningDetails = string.Join("\r\n", warnings
+                .GroupBy(warning => warning.Id + DescriptionIfObsolete(warning))
+                .Select(warningGroup => $"{warningGroup.First()}{MultipleWarningsInfo(warningGroup.Count())}"));
+
+            _logger.Info($"{warnings.Count} warning(s) while compiling {Path.GetFileName(outputAssemblyPath)}:\r\n{warningDetails}");
+        }
+
+        private string MultipleWarningsInfo(int count)
+        {
+            if (count == 1)
+                return "";
+            else
+                return $" ({count} warnings)";
+        }
+
+        private static string DescriptionIfObsolete(Diagnostic warning)
+        {
+            if (warning.Id == "CS0612") // Grouping obsolete warnings by description.
+                return warning.GetMessage();
+            else if (warning.Id == "CS0618") // Grouping obsolete warnings with custom message by custom message, to avoid spamming the log for each generated class.
             {
-                string groupKey = warning.Id;
-                if (groupKey == "CS0618")
-                {
-                    var warningMessage = warning.GetMessage();
-                    int obsoleteInfoStart = warningMessage.IndexOf(obsoleteInfo);
-                    if (obsoleteInfoStart != -1)
-                        groupKey += " " + warningMessage.Substring(obsoleteInfoStart + obsoleteInfo.Length);
-                }
-                return groupKey;
-            });
-
-            var sourcePathCs = Path.ChangeExtension(sourcePath, ".cs");
-            foreach (var warningGroup in warningGroups)
-            {
-                var warning = warningGroup.First();
-                var report = new StringBuilder();
-
-                if (warningGroup.Count() > 1)
-                    report.Append($"{warningGroup.Count()} warnings {warning.Id}: ");
-
-                report.Append($"{warning.ToString()}, file: {sourcePathCs}");
-
-                _logger.Info(report.ToString());
+                const string obsoleteInfoTag = "is obsolete: ";
+                var warningMessage = warning.GetMessage();
+                int obsoleteInfoStart = warningMessage.IndexOf(obsoleteInfoTag);
+                if (obsoleteInfoStart != -1)
+                    return " " + warningMessage.Substring(obsoleteInfoStart + obsoleteInfoTag.Length);
             }
+            return "";
         }
 
         [Obsolete("See the description in IAssemblyGenerator.")]
