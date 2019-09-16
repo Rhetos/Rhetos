@@ -20,9 +20,9 @@ namespace DeployPackages.Test
         {
             Paths.InitializeRhetosServer();
 
-            var builder = new ContainerBuilder();
-            var arguments = new DeployArguments(new string[] { }); 
-            builder.RegisterModule(new AutofacModuleConfiguration(deploymentTime: true, arguments));
+            var arguments = new DeployArguments(new string[] { });
+            var builder = new ContainerBuilder()
+                .AddRhetosDeployPackages(true, arguments);
 
             using (var container = builder.Build())
             {
@@ -37,9 +37,9 @@ namespace DeployPackages.Test
         {
             Paths.InitializeRhetosServer();
 
-            var builder = new ContainerBuilder();
-            var arguments = new DeployArguments(new string[] { "/DatabaseOnly" }); 
-            builder.RegisterModule(new AutofacModuleConfiguration(deploymentTime: true, arguments));
+            var arguments = new DeployArguments(new string[] { "/DatabaseOnly" });
+            var builder = new ContainerBuilder()
+                .AddRhetosDeployPackages(true, arguments);
 
             using (var container = builder.Build())
             {
@@ -54,9 +54,9 @@ namespace DeployPackages.Test
         {
             Paths.InitializeRhetosServer();
 
-            var builder = new ContainerBuilder();
             var arguments = new DeployArguments(new string[] { });
-            builder.RegisterModule(new AutofacModuleConfiguration(deploymentTime: false, arguments));
+            var builder = new ContainerBuilder()
+                .AddRhetosDeployPackages(false, arguments);
 
             using (var container = builder.Build())
             {

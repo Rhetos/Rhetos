@@ -28,28 +28,16 @@ using System.Collections.Generic;
 
 namespace DeployPackages
 {
-    public class AutofacModuleConfiguration : Module
+    public static class AutofacModuleConfiguration
     {
-        private readonly bool _deploymentTime;
-        private readonly DeployArguments _configurationArguments;
-
-        public AutofacModuleConfiguration(bool deploymentTime, DeployArguments configurationArguments)
+        public static ContainerBuilder AddRhetosDeployPackages(this ContainerBuilder builder, bool deploymentTime, DeployArguments configurationArguments)
         {
-            _deploymentTime = deploymentTime;
-            _configurationArguments = configurationArguments;
-        }
-
-        protected override void Load(ContainerBuilder builder)
-        {
-            bool shortTransaction = _configurationArguments.ShortTransactions;
-            bool deployDatabaseOnly = _configurationArguments.DeployDatabaseOnly;
-
             // Specific registrations and initialization:
             Plugins.SetInitializationLogging(DeploymentUtility.InitializationLogProvider);
 
-            if (_deploymentTime)
+            if (deploymentTime)
             {
-                builder.RegisterModule(new DatabaseGeneratorModuleConfiguration(shortTransaction));
+                builder.RegisterModule(new DatabaseGeneratorModuleConfiguration(configurationArguments.ShortTransactions));
                 builder.RegisterType<DataMigrationScripts>();
                 builder.RegisterType<DatabaseCleaner>();
                 builder.RegisterType<ApplicationGenerator>();
@@ -58,18 +46,19 @@ namespace DeployPackages
             else
             {
                 builder.RegisterType<ApplicationInitialization>();
-                builder.RegisterInstance(_configurationArguments).As<DeployArguments>();
+                builder.RegisterInstance(configurationArguments).As<DeployArguments>();
                 Plugins.FindAndRegisterPlugins<IServerInitializer>(builder);
             }
 
             // General registrations:
-            builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(_deploymentTime, deployDatabaseOnly));
+            // builder.AddRhetos(deploymentTime, configurationArguments.DeployDatabaseOnly);
+            builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(deploymentTime, configurationArguments.DeployDatabaseOnly));
 
             // Specific registrations override:
             builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
             builder.RegisterInstance(DeploymentUtility.InitializationLogProvider).As<ILogProvider>(); // InitializationLogProvider allows overriding deployment logging (both within and outside IoC).
-
-            base.Load(builder);
+            
+            return builder;
         }
     }
 }

@@ -39,16 +39,22 @@ namespace Rhetos.Configuration.Autofac
 
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterModule(new DeploymentModuleConfiguration(_deploymentTime));
-            builder.RegisterModule(new DomModuleConfiguration(_deploymentTime));
-            builder.RegisterModule(new PersistenceModuleConfiguration(_deploymentTime));
+            builder.RegisterModule(new DeploymentModuleConfiguration());
             builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));
             builder.RegisterModule(new SecurityModuleConfiguration());
             builder.RegisterModule(new UtilitiesModuleConfiguration());
             builder.RegisterModule(new DslModuleConfiguration(_deploymentTime, _deployDatabaseOnly));
-            builder.RegisterModule(new CompilerConfiguration(_deploymentTime));
             builder.RegisterModule(new LoggingConfiguration());
-            builder.RegisterModule(new ProcessingModuleConfiguration(_deploymentTime));
+
+            if (_deploymentTime)
+            {
+                builder.RegisterModule(new RhetosDeployTimeModule());
+            }
+            else
+            {
+                builder.RegisterModule(new RhetosRuntimeModule());
+            }
+
             builder.RegisterModule(new ExtensibilityModuleConfiguration()); // This is the last registration, so that the plugins can override core components.
 
             base.Load(builder);

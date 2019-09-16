@@ -28,19 +28,9 @@ namespace Rhetos.Deployment
 {
     public class DeploymentModuleConfiguration : Module
     {
-        private readonly bool _deploymentTime;
-
-        public DeploymentModuleConfiguration(bool deploymentTime)
-        {
-            _deploymentTime = deploymentTime;
-        }
-
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<InstalledPackages>().As<IInstalledPackages>().SingleInstance();
-
-            if (_deploymentTime)
-                builder.RegisterType<DataMigrationScriptsFromDisk>().As<IDataMigrationScriptsProvider>();
 
             base.Load(builder);
         }

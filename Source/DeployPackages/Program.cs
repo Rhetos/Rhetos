@@ -166,10 +166,8 @@ namespace DeployPackages
             logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var builder = new ContainerBuilder();
-            builder.RegisterModule(new AutofacModuleConfiguration(
-                deploymentTime: true,
-                configurationArguments: arguments));
+            var builder = new ContainerBuilder()
+                .AddRhetosDeployPackages(true, arguments);
 
             using (var container = builder.Build())
             {
@@ -192,10 +190,8 @@ namespace DeployPackages
             logger.Trace("Loading generated plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var builder = new ContainerBuilder();
-            builder.RegisterModule(new AutofacModuleConfiguration(
-                deploymentTime: false,
-                configurationArguments: arguments));
+            var builder = new ContainerBuilder()
+                .AddRhetosDeployPackages(false, arguments);
             
             using (var container = builder.Build())
             {
