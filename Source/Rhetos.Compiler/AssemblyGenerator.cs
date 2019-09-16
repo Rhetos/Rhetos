@@ -1,4 +1,4 @@
-/*
+﻿/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -17,16 +17,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
+using Rhetos.Dom;
+using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 using System.CodeDom.Compiler;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Microsoft.CSharp;
-using Rhetos.Utilities;
-using Rhetos.Logging;
 
 namespace Rhetos.Compiler
 {
@@ -36,110 +40,158 @@ namespace Rhetos.Compiler
         private readonly ILogger _logger;
         private readonly Lazy<int> _errorReportLimit;
         private readonly GeneratedFilesCache _filesCache;
+        private readonly DomGeneratorOptions _domGeneratorOptions;
 
-        public AssemblyGenerator(ILogProvider logProvider, IConfiguration configuration, GeneratedFilesCache filesCache)
+        public AssemblyGenerator(ILogProvider logProvider, IConfiguration configuration,
+            GeneratedFilesCache filesCache, DomGeneratorOptions domGeneratorOptions)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("AssemblyGenerator");
             _errorReportLimit = configuration.GetInt("AssemblyGenerator.ErrorReportLimit", 5);
             _filesCache = filesCache;
+            _domGeneratorOptions = domGeneratorOptions;
         }
 
-        public Assembly Generate(IAssemblySource assemblySource, CompilerParameters compilerParameters)
+        public Assembly Generate(IAssemblySource assemblySource, string outputAssemblyPath, IEnumerable<ManifestResource> manifestResources = null)
         {
             var stopwatch = Stopwatch.StartNew();
 
-            // Prepare compiler parameters:
-
-            compilerParameters.ReferencedAssemblies.AddRange(assemblySource.RegisteredReferences.ToArray());
-
-            if (compilerParameters.WarningLevel == -1)
-                compilerParameters.WarningLevel = 4;
-            if (compilerParameters.GenerateInMemory)
-                throw new FrameworkException("GenerateInMemory compiler parameter is not supported.");
-            string dllName = Path.GetFileName(compilerParameters.OutputAssembly);
+            string dllName = Path.GetFileName(outputAssemblyPath);
 
             // Save source file and it's hash value:
-
             string sourceCode = // The compiler parameters are included in the source, in order to invalidate the assembly cache when the parameters are changed.
                 string.Concat(assemblySource.RegisteredReferences.Select(reference => $"// Reference: {reference}\r\n"))
-                + $"// CompilerOptions: \"{compilerParameters.CompilerOptions}\"\r\n\r\n"
+                + (manifestResources != null
+                    ? string.Concat(manifestResources.Select(resource => $"// Resource: \"{resource.Name}\", {resource.Path}\r\n"))
+                    : "")
+                + $"// DomGeneratorOptions.Debug = \"{_domGeneratorOptions.Debug}\"\r\n\r\n"
                 + assemblySource.GeneratedCode;
 
-            string sourceFile = Path.GetFullPath(Path.ChangeExtension(compilerParameters.OutputAssembly, ".cs"));
-            var sourceHash = _filesCache.SaveSourceAndHash(sourceFile, sourceCode);
+            string sourcePath = Path.GetFullPath(Path.ChangeExtension(outputAssemblyPath, ".cs"));
+            var sourceHash = _filesCache.SaveSourceAndHash(sourcePath, sourceCode);
             _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Save source and hash ({dllName}).");
 
             // Compile assembly or get from cache:
-
             Assembly generatedAssembly;
 
-            var filesFromCache = _filesCache.RestoreCachedFiles(sourceFile, sourceHash, Path.GetDirectoryName(compilerParameters.OutputAssembly), new[] { ".dll", ".pdb" });
+            var filesFromCache = _filesCache.RestoreCachedFiles(sourcePath, sourceHash, Path.GetDirectoryName(outputAssemblyPath), new[] { ".dll", ".pdb" });
             if (filesFromCache != null)
             {
                 _logger.Trace(() => "Restoring assembly from cache: " + dllName + ".");
-                if (!File.Exists(compilerParameters.OutputAssembly))
+                if (!File.Exists(outputAssemblyPath))
                     throw new FrameworkException($"AssemblyGenerator: RestoreCachedFiles failed to create the assembly file ({dllName}).");
 
-                generatedAssembly = Assembly.LoadFrom(compilerParameters.OutputAssembly);
+                generatedAssembly = Assembly.LoadFrom(outputAssemblyPath);
                 _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Assembly from cache ({dllName}).");
 
-                FailOnTypeLoadErrors(generatedAssembly, compilerParameters.OutputAssembly);
+                FailOnTypeLoadErrors(generatedAssembly, outputAssemblyPath);
                 _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({dllName}).");
             }
             else
             {
                 _logger.Trace(() => "Compiling assembly: " + dllName + ".");
-                CompilerResults compilerResults;
-                using (CSharpCodeProvider codeProvider = new CSharpCodeProvider())
-                    compilerResults = codeProvider.CompileAssemblyFromFile(compilerParameters, sourceFile);
-                _performanceLogger.Write(stopwatch, $"AssemblyGenerator: CSharpCodeProvider.CompileAssemblyFromFile ({dllName}).");
 
-                FailOnCompilerErrors(compilerResults, sourceCode, sourceFile);
-                FailOnTypeLoadErrors(compilerResults.CompiledAssembly, compilerParameters.OutputAssembly);
-                ReportWarnings(compilerResults, sourceFile);
-                _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({dllName}).");
-                generatedAssembly = compilerResults.CompiledAssembly;
+                var references = assemblySource.RegisteredReferences
+                    .Select(reference => MetadataReference.CreateFromFile(reference)).ToList();
+
+                var assemblyName = GetAssemblyName(dllName);
+                var assemblyCSharpCompilationOptions = new CSharpCompilationOptions(
+                    OutputKind.DynamicallyLinkedLibrary,
+                    assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default,
+                    moduleName: assemblyName,
+                    optimizationLevel: _domGeneratorOptions.Debug ? OptimizationLevel.Debug : OptimizationLevel.Release);
+
+                var encoding = new UTF8Encoding(true); // This encoding is used when saving the source file.
+                var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode, null, sourcePath, encoding);
+                var compilation = CSharpCompilation.Create(assemblyName, new[] { syntaxTree }, references, assemblyCSharpCompilationOptions);
+
+                using (var dllStream = new MemoryStream())
+                using (var pdbStream = new MemoryStream())
+                {
+                    var pdbPath = Path.ChangeExtension(outputAssemblyPath, ".pdb");
+
+                    var resources = manifestResources?.Select(x => new ResourceDescription(x.Name, () => File.OpenRead(x.Path), x.IsPublic));
+                    var options = new EmitOptions(debugInformationFormat: DebugInformationFormat.PortablePdb, pdbFilePath: pdbPath);
+                    var emitResult = compilation.Emit(dllStream, pdbStream, manifestResources: resources, options: options);
+                    _performanceLogger.Write(stopwatch, $"AssemblyGenerator: CSharpCompilation.Create ({dllName}).");
+
+                    ReportWarnings(emitResult, outputAssemblyPath);
+                    FailOnCompilerErrors(emitResult, sourceCode, sourcePath, outputAssemblyPath);
+
+                    SaveGeneratedFile(dllStream, outputAssemblyPath);
+                    SaveGeneratedFile(pdbStream, pdbPath);
+
+                    generatedAssembly = Assembly.LoadFrom(outputAssemblyPath);
+
+                    FailOnTypeLoadErrors(generatedAssembly, outputAssemblyPath);
+                    _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({dllName}).");
+                }
             }
 
             return generatedAssembly;
         }
 
-        private void FailOnCompilerErrors(CompilerResults compilerResults, string sourceCode, string sourcePath)
+        private static string GetAssemblyName(string dllName)
         {
-            if (compilerResults.Errors.HasErrors)
+            const string extension = ".dll";
+            if (!dllName.EndsWith(extension))
+                throw new FrameworkException($"DLL name '{dllName}' does not end with an extension '{extension}'.");
+            return dllName.Substring(0, dllName.Length - extension.Length);
+        }
+
+        private void SaveGeneratedFile(MemoryStream inputStream, string filePath)
+        {
+            inputStream.Seek(0, SeekOrigin.Begin);
+            using (var fs = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write))
             {
-                var errors = (from System.CodeDom.Compiler.CompilerError error in compilerResults.Errors
-                              where !error.IsWarning
-                              select error).ToList();
-
-                var report = new StringBuilder();
-                report.Append(errors.Count + " errors while compiling '" + Path.GetFileName(sourcePath) + "'");
-
-                if (errors.Count > _errorReportLimit.Value)
-                    report.AppendLine(". The first " + _errorReportLimit.Value + " errors:");
-                else
-                    report.AppendLine(":");
-
-                foreach (var error in errors.Take(_errorReportLimit.Value))
-                {
-                    report.AppendLine();
-                    report.AppendLine(error.ErrorText);
-                    if (error.Line > 0 || error.Column > 0)
-                        report.AppendLine(ScriptPositionReporting.ReportPosition(sourceCode, error.Line, error.Column, sourcePath));
-                }
-
-                if (errors.Count() > _errorReportLimit.Value)
-                {
-                    report.AppendLine();
-                    report.AppendLine("...");
-                }
-
-                throw new FrameworkException(report.ToString().Trim());
+                inputStream.WriteTo(fs);
             }
         }
 
-        private void FailOnTypeLoadErrors(Assembly assembly, string assemblyPath)
+        private void FailOnCompilerErrors(EmitResult emitResult, string sourceCode, string sourcePath, string outputAssemblyPath)
+        {
+            if (emitResult.Success)
+                return;
+
+            var errors = emitResult.Diagnostics
+                .Where(x => x.IsWarningAsError || x.Severity == DiagnosticSeverity.Error)
+                .ToList();
+
+            if (!errors.Any())
+                return;
+
+            var report = new StringBuilder();
+            report.Append($"{errors.Count} error(s) while compiling {Path.GetFileName(outputAssemblyPath)}");
+
+            if (errors.Count > _errorReportLimit.Value)
+                report.AppendLine($". The first {_errorReportLimit.Value} errors:");
+            else
+                report.AppendLine(":");
+
+            report.Append(string.Join("\n",
+                errors.Take(_errorReportLimit.Value).Select(error => error.ToString() + ReportContext(error, sourceCode, sourcePath))));
+
+            if (errors.Count > _errorReportLimit.Value)
+            {
+                report.AppendLine();
+                report.AppendLine("...");
+            }
+
+            throw new FrameworkException(report.ToString());
+        }
+
+        private string ReportContext(Diagnostic error, string sourceCode, string sourcePath)
+        {
+            if (error.Location.IsInSource && error.Location.SourceTree.FilePath == sourcePath)
+            {
+                var span = error.Location.SourceSpan;
+                return "\r\n" + ScriptPositionReporting.ReportPreviousAndFollowingText(sourceCode, span.Start);
+            }
+            else
+                return "";
+        }
+
+        private void FailOnTypeLoadErrors(Assembly assembly, string outputAssemblyPath)
         {
             try
             {
@@ -147,46 +199,56 @@ namespace Rhetos.Compiler
             }
             catch (ReflectionTypeLoadException ex)
             {
-                throw new FrameworkException(CsUtility.ReportTypeLoadException(ex, "Error while compiling " + assemblyPath + "."), ex);
+                throw new FrameworkException(CsUtility.ReportTypeLoadException(ex, $"Error while compiling {Path.GetFileName(outputAssemblyPath)}."), ex);
             }
         }
 
-        private void ReportWarnings(CompilerResults results, string filePath)
+        private void ReportWarnings(EmitResult emitResult, string outputAssemblyPath)
         {
-            var warnings = (from System.CodeDom.Compiler.CompilerError error in results.Errors
-                            where error.IsWarning
-                            select error).ToList();
+            List<Diagnostic> warnings = emitResult.Diagnostics
+                .Where(x => x.Severity == DiagnosticSeverity.Warning)
+                .ToList();
 
-            var warningGroups = warnings.GroupBy(warning =>
-                {
-                    string groupKey = warning.ErrorNumber;
-                    if (groupKey == "CS0618")
-                    {
-                        const string obsoleteInfo = "is obsolete: ";
-                        int obsoleteInfoStart = warning.ErrorText.IndexOf(obsoleteInfo);
-                        if (obsoleteInfoStart != -1)
-                            groupKey += " " + warning.ErrorText.Substring(obsoleteInfoStart + obsoleteInfo.Length);
-                    }
-                    return groupKey;
-                });
+            if (!warnings.Any())
+                return;
 
-            foreach (var warningGroup in warningGroups)
+            string warningDetails = string.Join("\r\n", warnings
+                .GroupBy(warning => warning.Id + DescriptionIfObsolete(warning))
+                .Select(warningGroup => $"{warningGroup.First()}{MultipleWarningsInfo(warningGroup.Count())}"));
+
+            _logger.Info($"{warnings.Count} warning(s) while compiling {Path.GetFileName(outputAssemblyPath)}:\r\n{warningDetails}");
+        }
+
+        private string MultipleWarningsInfo(int count)
+        {
+            if (count == 1)
+                return "";
+            else
+                return $" ({count} warnings)";
+        }
+
+        private static string DescriptionIfObsolete(Diagnostic warning)
+        {
+            if (warning.Id == "CS0612") // Grouping obsolete warnings by description.
+                return warning.GetMessage();
+            else if (warning.Id == "CS0618") // Grouping obsolete warnings with custom message by custom message, to avoid spamming the log for each generated class.
             {
-                var warning = warningGroup.First();
-                var report = new StringBuilder();
-
-                if (warningGroup.Count() > 1)
-                    report.AppendFormat("{0} warnings", warningGroup.Count());
-                else
-                    report.Append("Warning");
-
-                report.AppendFormat(" {0}: {1}.", warning.ErrorNumber, warning.ErrorText);
-
-                if (!string.IsNullOrEmpty(warning.FileName))
-                    report.AppendFormat(" At line {0}, column {1}, file '{2}'.", warning.Line, warning.Column, warning.FileName);
-                
-                _logger.Info(report.ToString());
+                const string obsoleteInfoTag = "is obsolete: ";
+                var warningMessage = warning.GetMessage();
+                int obsoleteInfoStart = warningMessage.IndexOf(obsoleteInfoTag);
+                if (obsoleteInfoStart != -1)
+                    return " " + warningMessage.Substring(obsoleteInfoStart + obsoleteInfoTag.Length);
             }
+            return "";
+        }
+
+        [Obsolete("See the description in IAssemblyGenerator.")]
+        public Assembly Generate(IAssemblySource assemblySource, CompilerParameters compilerParameters)
+        {
+            var resources = compilerParameters.EmbeddedResources.Cast<string>()
+                .Select(path => new ManifestResource { Name = Path.GetFileName(path), Path = path, IsPublic = true })
+                .ToList();
+            return Generate(assemblySource, compilerParameters.OutputAssembly, resources);
         }
     }
 }

@@ -104,8 +104,14 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void FollowingTextTest_LineColumn()
         {
-            Assert.AreEqual("ab...", ScriptPositionReporting.FollowingText("abc\r\ndefgh", 1, 1, 5));
-            Assert.AreEqual("ef...", ScriptPositionReporting.FollowingText("abc\r\ndefghij", 2, 2, 5));
+            Assert.AreEqual("ab...", FollowingText_LineColumn("abc\r\ndefgh", 1, 1, 5));
+            Assert.AreEqual("ef...", FollowingText_LineColumn("abc\r\ndefghij", 2, 2, 5));
+        }
+
+        private string FollowingText_LineColumn(string script, int line, int column, int maxLength)
+        {
+            int position = ScriptPositionReporting.Position(script, line, column);
+            return ScriptPositionReporting.FollowingText(script, position, maxLength);
         }
 
         [TestMethod]
@@ -115,6 +121,19 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual("ab", ScriptPositionReporting.PreviousText("abc", 2, 2));
             Assert.AreEqual("ab", ScriptPositionReporting.PreviousText("abc", 2, 10));
             Assert.AreEqual("", ScriptPositionReporting.PreviousText("abc", 0, 10));
+        }
+
+        [TestMethod]
+        public void ReportPreviousAndFollowingText()
+        {
+            Assert.AreEqual(" after: \"01234\",\r\n before: \"56789\".", ScriptPositionReporting.ReportPreviousAndFollowingText("0123456789", 5));
+        }
+
+        [TestMethod]
+        public void ReportPosition()
+        {
+            Assert.AreEqual("At line 1, column 6,\r\n after: \"01234\",\r\n before: \"56789\".", ScriptPositionReporting.ReportPosition("0123456789", 5));
+            Assert.AreEqual("At line 1, column 6, file 'abc.txt',\r\n after: \"01234\",\r\n before: \"56789\".", ScriptPositionReporting.ReportPosition("0123456789", 5, "abc.txt"));
         }
     }
 }

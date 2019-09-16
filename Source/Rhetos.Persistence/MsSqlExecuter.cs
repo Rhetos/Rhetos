@@ -203,13 +203,8 @@ namespace Rhetos.Persistence
                 catch (SqlException ex)
                 {
                     SqlConnectionStringBuilder csb = new SqlConnectionStringBuilder(_connectionString);
-                    string msg = string.Format(CultureInfo.InvariantCulture,
-                            "Could not connect to server '{0}', database '{1}' using {2}.",
-                                csb.DataSource,
-                                csb.InitialCatalog,
-                                csb.IntegratedSecurity ? "integrated security account " + Environment.UserName : "SQL login '" + csb.UserID + "'");
-
-                    _logger.Error("{0} {1}", msg, ex);
+                    string secutiryInfo = csb.IntegratedSecurity ? $"integrated security account {Environment.UserName}" : $"SQL login '{csb.UserID}'";
+                    string msg = $"Could not connect to server '{csb.DataSource}', database '{csb.InitialCatalog}' using {secutiryInfo}.";
                     throw new FrameworkException(msg, ex);
                 }
 
@@ -221,19 +216,17 @@ namespace Rhetos.Persistence
                 }
                 catch (SqlException ex)
                 {
-                    string msg = "SqlException has occurred" + ReportSqlName(command) + ":\r\n" + ReportSqlErrors(ex);
                     if (command != null && !string.IsNullOrWhiteSpace(command.CommandText))
-                        _logger.Error("Unable to execute SQL query:\r\n" + command.CommandText);
+                        _logger.Error("Unable to execute SQL query:\r\n" + command.CommandText.Limit(1000000));
 
-                    _logger.Error("{0} {1}", msg, ex);
+                    string msg = $"{ex.GetType().Name} has occurred{ReportSqlName(command)}:\r\n{ReportSqlErrors(ex)}";
                     throw new FrameworkException(msg, ex);
                 }
             }
             finally
             {
-                if (createOwnConnection)
-                    if (connection != null)
-                        ((IDisposable)connection).Dispose();
+                if (createOwnConnection && connection != null)
+                    ((IDisposable)connection).Dispose();
             }
         }
 

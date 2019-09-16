@@ -72,6 +72,9 @@ namespace Rhetos.Utilities
                     _filesUtility.SafeDeleteFile(deleteFile);
         }
 
+        /// <summary>
+        /// Writes source file with encoding <see cref="Encoding.UTF8"/>.
+        /// </summary>
         public byte[] SaveSourceAndHash(string sourceFile, string sourceCode)
         {
             File.WriteAllText(sourceFile, sourceCode, Encoding.UTF8);

@@ -65,7 +65,7 @@ namespace Rhetos.Dom
                 _logger.Trace("Loading assembly \"" + name + "\".");
                 var assembly = Assembly.Load(name);
                 if (assembly == null)
-                    throw new FrameworkException($"Failed to load assebly '{name}'.");
+                    throw new FrameworkException($"Failed to load assembly '{name}'.");
                 loaded.Add(assembly);
                 _performanceLogger.Write(sw, "DomLoader.LoadObjectModel " + name);
             }

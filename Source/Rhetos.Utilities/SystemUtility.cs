@@ -50,7 +50,7 @@ namespace Rhetos.Utilities
         /// </summary>
         public static FrameworkName GetTargetFramework()
         {
-            return new FrameworkName(".NETFramework,Version=v4.5.1");
+            return new FrameworkName(".NETFramework,Version=v4.7.2");
         }
     }
 }

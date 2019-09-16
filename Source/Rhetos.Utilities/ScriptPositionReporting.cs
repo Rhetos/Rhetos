@@ -28,34 +28,34 @@ namespace Rhetos.Utilities
 {
     public static class ScriptPositionReporting
     {
-        public static int Line(string script, int position)
+        public static int Line(string text, int position)
         {
-            Contract.Requires(script != null);
-            Contract.Requires(position >= 0 && position < script.Length);
+            Contract.Requires(text != null);
+            Contract.Requires(position >= 0 && position < text.Length);
 
-            return script.Substring(0, position).Count(c => c == '\n') + 1;
+            return text.Substring(0, position).Count(c => c == '\n') + 1;
         }
 
-        public static int Column(string script, int position)
+        public static int Column(string text, int position)
         {
-            Contract.Requires(script != null);
-            Contract.Requires(position >= 0 && position < script.Length);
+            Contract.Requires(text != null);
+            Contract.Requires(position >= 0 && position < text.Length);
 
             if (position == 0)
                 return 1;
-            int end = script.LastIndexOf('\n', position - 1);
+            int end = text.LastIndexOf('\n', position - 1);
             if (end == -1)
                 return position + 1;
 
             return position - end;
         }
 
-        public static int Position(string script, int line, int column)
+        public static int Position(string text, int line, int column)
         {
             int pos = 0;
             while (line > 1)
             {
-                pos = script.IndexOf('\n', pos);
+                pos = text.IndexOf('\n', pos);
                 if (pos == -1)
                     break;
                 pos++;
@@ -64,63 +64,55 @@ namespace Rhetos.Utilities
             return pos + column - 1;
         }
 
-        public static string FollowingText(string script, int position, int maxLength)
+        public static string FollowingText(string text, int position, int maxLength)
         {
-            Contract.Requires(script != null);
-            Contract.Requires(position >= 0 && position < script.Length);
+            Contract.Requires(text != null);
+            Contract.Requires(position >= 0 && position < text.Length);
             Contract.Requires(maxLength >= 0);
 
-            if (position >= script.Length)
+            if (position >= text.Length)
                 return "";
 
-            script = script.Substring(position);
-            script = string.Join(" ", script.Split(new char[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
-            script = script.Limit(maxLength, "...");
-            return script;
+            text = text.Substring(position);
+            text = string.Join(" ", text.Split(new char[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
+            text = text.Limit(maxLength, "...");
+            return text;
         }
 
-        public static string FollowingText(string script, int line, int column, int maxLength)
+        public static string PreviousText(string text, int position, int maxLength)
         {
-            return FollowingText(script, Position(script, line, column), maxLength);
-        }
-
-        public static string PreviousText(string script, int position, int maxLength)
-        {
-            if (position >= script.Length)
-                position = script.Length;
+            if (position >= text.Length)
+                position = text.Length;
             if (position <= 0)
                 return "";
 
-            script = script.Substring(0, position);
-            script = string.Join(" ", script.Split(new char[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
-            if (script.Length > maxLength)
-                script = "..." + script.Substring(script.Length - maxLength, maxLength);
-            return script;
-        }
-
-        public static string PreviousText(string script, int line, int column, int maxLength)
-        {
-            return PreviousText(script, Position(script, line, column), maxLength);
-        }
-
-        public static string ReportPosition(string text, int line, int column, string filePath = null)
-        {
-            return string.Format(CultureInfo.InvariantCulture,
-                "At line {0}, column {1},{2}\r\nafter: \"{3}\",\r\nbefore: \"{4}\".",
-                    line, column,
-                    (filePath != null) ? " file '" + filePath + "'," : "",
-                    PreviousText(text, line, column, 70),
-                    FollowingText(text, line, column, 70));
+            text = text.Substring(0, position);
+            text = string.Join(" ", text.Split(new char[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
+            if (text.Length > maxLength)
+                text = "..." + text.Substring(text.Length - maxLength, maxLength);
+            return text;
         }
 
         public static string ReportPosition(string text, int position, string filePath = null)
+        {
+            position = PositionWithinRange(text, position);
+            string fileInfo = filePath != null ? " file '" + filePath + "'," : "";
+            string fileAndPositionInfo = $"At line {Line(text, position)}, column {Column(text, position)},{fileInfo}\r\n";
+            return $"{fileAndPositionInfo}{ReportPreviousAndFollowingText(text, position)}";
+        }
+
+        public static string ReportPreviousAndFollowingText(string text, int position)
+        {
+            position = PositionWithinRange(text, position);
+            return $" after: \"{PreviousText(text, position, 70)}\",\r\n before: \"{FollowingText(text, position, 70)}\".";
+        }
+        private static int PositionWithinRange(string text, int position)
         {
             if (position > text.Length)
                 position = text.Length;
             if (position < 0)
                 position = 0;
-
-            return ReportPosition(text, Line(text, position), Column(text, position), filePath);
+            return position;
         }
     }
 }

@@ -1,5 +1,5 @@
 SETLOCAL
-SET Version=2.12.0
+SET Version=3.0.0
 SET Prerelease=auto
 
 @SET Config=%1%
@@ -7,7 +7,7 @@ SET Prerelease=auto
 
 CALL Tools\Build\FindVisualStudio.bat || GOTO Error0
 
-REM Updating the version of all projects.
+REM Updating the build version of all projects.
 PowerShell -ExecutionPolicy ByPass .\Tools\Build\ChangeVersion.ps1 %Version% %Prerelease% || GOTO Error0
 
 REM NuGet Automatic Package Restore requires "NuGet.exe restore" to be executed before the command-line build.
@@ -16,7 +16,7 @@ NuGet.exe restore "Rhetos.sln" -NonInteractive || GOTO Error0
 MSBuild.exe "Rhetos.sln" /target:rebuild /p:Configuration=%Config% /verbosity:minimal /fileLogger || GOTO Error0
 CALL CreateInstallationPackage.bat %Config% /NOPAUSE || GOTO Error0
 
-REM Updating the version of all projects back to "dev" (internal development build), to avoid spamming git history.
+REM Updating the build version back to "dev" (internal development build), to avoid spamming git history with timestamped prerelease versions.
 PowerShell -ExecutionPolicy ByPass .\Tools\Build\ChangeVersion.ps1 %Version% dev || GOTO Error0
 
 @REM ================================================
