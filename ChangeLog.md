@@ -4,15 +4,19 @@
 
 ### Breaking changes
 
-* Upgrade from .NET Framework 4.5.1 to **.NET Framework 4.7.2**.
-  * If your existing Visual Studio project references ServerDom dlls,
-    you need to change the *Target framework* in
-    [project properties](https://stackoverflow.com/a/10877950/2086516) to 4.7.2.
+* Upgrade from .NET Framework 4.5.1 to **.NET Framework 4.7.2** (issue #52).
+  1. Update *Web.config* in your Rhetos server:
+     replace *multiple* instances of `targetFramework="4.5.1"` with `targetFramework="4.7.2"`.
+  2. If your Visual Studio project *directly references* ServerDom dlls,
+     change the *Target framework* in project properties to ".NET Framework 4.7.2"
+     (see [instructions](https://stackoverflow.com/a/10877950/2086516)).
+     If you have a *.nuspec* file that contains this project's dll,
+     replace `target="lib\net451"` with `target="lib\net472"`.
 
 ### Internal improvements
 
-* Performance improvements on generating large dll files (Roslyn compiler, issue #52).
-* C# 6.0 and C# 7.0 features are now available in DSL code snippets (Roslyn compiler, issue #52).
+* C# 6.0 and C# 7.0 features are now available in DSL code snippets (issue #52).
+* Performance improvements on building large dll files (issue #52).
 
 ## 2.12.0 (2019-09-09)
 
