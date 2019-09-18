@@ -17,21 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
-using Rhetos.Compiler;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using Rhetos.Dsl;
-using System.Linq;
-using Rhetos.Extensibility;
-using Rhetos.Logging;
-using Rhetos.TestCommon;
-using Rhetos.DatabaseGenerator;
-using System.Text;
 using Autofac.Features.Indexed;
 using Autofac.Features.Metadata;
-using System.Text.RegularExpressions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Extensibility;
+using Rhetos.TestCommon;
+using Rhetos.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Rhetos.DatabaseGenerator.Test
 {
@@ -612,11 +608,9 @@ namespace Rhetos.DatabaseGenerator.Test
 
         class MockDslModel : IDslModel
         {
-            private readonly IEnumerable<IConceptInfo> _conceptInfos;
-            public MockDslModel(IEnumerable<IConceptInfo> conceptInfos) { _conceptInfos = conceptInfos; }
-            public IEnumerable<IConceptInfo> Concepts { get { return _conceptInfos; } }
+            public MockDslModel(IEnumerable<IConceptInfo> conceptInfos) { Concepts = conceptInfos; }
+            public IEnumerable<IConceptInfo> Concepts { get; private set; }
             public IConceptInfo FindByKey(string conceptKey) { throw new NotImplementedException(); }
-            public IEnumerable<IConceptInfo> FindByType(Type conceptType) { throw new NotImplementedException(); }
             public T GetIndex<T>() where T : IDslModelIndex
             {
                 throw new NotImplementedException();

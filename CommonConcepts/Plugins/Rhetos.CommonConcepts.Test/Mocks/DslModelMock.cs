@@ -31,12 +31,7 @@ namespace Rhetos.CommonConcepts.Test.Mocks
 
         public IConceptInfo FindByKey(string conceptKey)
         {
-            return this.Where(c => c.GetKey() == conceptKey).SingleOrDefault();
-        }
-
-        public IEnumerable<IConceptInfo> FindByType(Type conceptType)
-        {
-            return this.Where(c => conceptType.IsAssignableFrom(c.GetType()));
+            return this.SingleOrDefault(c => c.GetKey() == conceptKey);
         }
 
         public T GetIndex<T>() where T : IDslModelIndex

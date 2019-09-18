@@ -20,7 +20,6 @@
 using Newtonsoft.Json;
 using Rhetos.Logging;
 using Rhetos.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -32,10 +31,7 @@ namespace Rhetos.Dsl
     public class DslModelFile : IDslModel, IDslModelFile
     {
         private readonly ILogger _performanceLogger;
-        private readonly ILogger _logger;
-        private readonly ILogger _dslModelConceptsLogger;
         private readonly DslContainer _dslContainer;
-        private readonly ISqlExecuter _sqlExecuter;
 
         public DslModelFile(
             ILogProvider logProvider,
@@ -43,10 +39,7 @@ namespace Rhetos.Dsl
             ISqlExecuter sqlExecuter)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
-            _logger = logProvider.GetLogger(GetType().Name);
-            _dslModelConceptsLogger = logProvider.GetLogger("DslModelConcepts");
             _dslContainer = dslContainer;
-            _sqlExecuter = sqlExecuter;
         }
 
         #region IDslModel implementation
@@ -66,13 +59,6 @@ namespace Rhetos.Dsl
             if (!_initialized)
                 Initialize();
             return _dslContainer.FindByKey(conceptKey);
-        }
-
-        public IEnumerable<IConceptInfo> FindByType(Type conceptType)
-        {
-            if (!_initialized)
-                Initialize();
-            return _dslContainer.FindByType(conceptType);
         }
 
         public T GetIndex<T>() where T : IDslModelIndex
