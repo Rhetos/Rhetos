@@ -46,6 +46,7 @@ namespace Rhetos.Dsl
         private readonly MultiDictionary<string, UnresolvedReference> _unresolvedConceptsByReference = new MultiDictionary<string, UnresolvedReference>();
         private readonly List<IDslModelIndex> _dslModelIndexes;
         private readonly Dictionary<Type, IDslModelIndex> _dslModelIndexesByType;
+        private readonly IConfiguration _configuration;
 
         private class ConceptDescription
         {
@@ -78,12 +79,13 @@ namespace Rhetos.Dsl
             }
         }
 
-        public DslContainer(ILogProvider logProvider, IPluginsContainer<IDslModelIndex> dslModelIndexPlugins)
+        public DslContainer(ILogProvider logProvider, IPluginsContainer<IDslModelIndex> dslModelIndexPlugins, IConfiguration configuration)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("DslContainer");
             _dslModelIndexes = dslModelIndexPlugins.GetPlugins().ToList();
             _dslModelIndexesByType = _dslModelIndexes.ToDictionary(index => index.GetType());
+            _configuration = configuration;
         }
 
         #region IDslModel filters implementation
@@ -368,7 +370,15 @@ namespace Rhetos.Dsl
         public void SortReferencesBeforeUsingConcept()
         {
             var sw = Stopwatch.StartNew();
-            List<IConceptInfo> sortedList = new List<IConceptInfo>();
+
+            // Initial sorting will reduce variations in the generated application source that are created by different macro evaluation order on each deployment.
+            if (_configuration.GetBool("CommonConcepts.Debug.SortConceptsByKey", false).Value)
+            {
+                _resolvedConcepts.Sort((a, b) => GetOrderByKey(a).CompareTo(GetOrderByKey(b)));
+                _performanceLogger.Write(sw, "DslContainer.SortReferencesBeforeUsingConcept: Sort by key.");
+            }
+
+            List<IConceptInfo> sortedList = new List<IConceptInfo>(_resolvedConcepts.Count);
             Dictionary<IConceptInfo, bool> processed = _resolvedConcepts.ToDictionary(ci => ci, ci => false);
 
             foreach (var concept in _resolvedConcepts)
@@ -379,6 +389,11 @@ namespace Rhetos.Dsl
             _resolvedConcepts.Clear();
             _resolvedConcepts.AddRange(sortedList);
             _performanceLogger.Write(sw, "DslContainer.SortReferencesBeforeUsingConcept.");
+        }
+
+        static string GetOrderByKey(IConceptInfo concept)
+        {
+            return concept is InitializationConcept ? string.Empty : concept.GetKey();
         }
 
         private static void AddReferencesBeforeConcept(IConceptInfo concept, List<IConceptInfo> sortedList, Dictionary<IConceptInfo, bool> processed)

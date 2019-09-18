@@ -33,7 +33,7 @@ namespace Rhetos.Dsl.Test
         class DslContainerAccessor : DslContainer
         {
             public DslContainerAccessor()
-                : base(new ConsoleLogProvider(), new MockPluginsContainer<IDslModelIndex>(new DslModelIndexByType()))
+                : base(new ConsoleLogProvider(), new MockPluginsContainer<IDslModelIndex>(new DslModelIndexByType()), new MockConfiguration())
             {
             }
         }
