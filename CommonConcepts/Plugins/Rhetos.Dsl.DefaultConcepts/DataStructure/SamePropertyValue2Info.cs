@@ -34,28 +34,37 @@ namespace Rhetos.Dsl.DefaultConcepts
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SamePropertyValue")]
     [Obsolete("Use simpler SamePropertyValue syntax with a path to the base property.")]
-    public class SamePropertyValue2Info : SamePropertyValueInfo, IValidatedConcept, IAlternativeInitializationConcept
+    public class SamePropertyValue2Info : IValidatedConcept
     {
+        [ConceptKey]
+        public PropertyInfo DerivedProperty { get; set; }
+
         /// <summary>Object model property name on the inherited data structure that references the base data structure class.</summary>
+        [ConceptKey]
         public string BaseSelector { get; set; }
 
         public PropertyInfo BaseProperty { get; set; }
 
         public void CheckSemantics(IDslModel existingConcepts)
         {
-            DslUtility.ValidateIdentifier(BaseSelector, this, "BaseSelector should be set to a property name from '"
-                + DerivedProperty.DataStructure.GetKeyProperties() + "' class.");
+            DslUtility.ValidateIdentifier(BaseSelector, this,
+                $"BaseSelector should be set to a property name from '{DerivedProperty.DataStructure.FullName}' class.");
         }
+    }
 
-        public IEnumerable<string> DeclareNonparsableProperties()
+    [Export(typeof(IConceptMacro))]
+    public class SamePropertyValue2Macro : IConceptMacro<SamePropertyValue2Info>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(SamePropertyValue2Info conceptInfo, IDslModel existingConcepts)
         {
-            return new string[] { "Path" };
-        }
-
-        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
-        {
-            Path = BaseSelector + "." + BaseProperty.Name;
-            createdConcepts = new IConceptInfo[] {};
+            return new[]
+            {
+                new SamePropertyValueInfo
+                {
+                    DerivedProperty = conceptInfo.DerivedProperty,
+                    Path = conceptInfo.BaseSelector + "." + conceptInfo.BaseProperty.Name
+                }
+            };
         }
     }
 }
