@@ -26,13 +26,18 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SamePropertyValue")]
-    public class SamePropertyValueInfo : IConceptInfo
+    public class SamePropertyValueInfo : IConceptInfo, IValidatedConcept
     {
         [ConceptKey]
         public PropertyInfo DerivedProperty { get; set; }
 
         [ConceptKey]
         public string Path { get; set; }
+
+        public void CheckSemantics(IDslModel existingConcepts)
+        {
+            DslUtility.ValidatePath(DerivedProperty.DataStructure, Path, existingConcepts, this);
+        }
     }
 
     [Export(typeof(IConceptMacro))]
@@ -42,11 +47,14 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var newConcepts = new List<IConceptInfo>();
 
-            var samePropertiesByInheritance = existingConcepts.FindByType<SamePropertyValueInfo>().Select(x => new {
-                    DerivedProperty = x.DerivedProperty,
+            var samePropertiesByInheritance = existingConcepts.FindByType<SamePropertyValueInfo>()
+                .Select(x => new {
+                    x.DerivedProperty,
                     BaseSelector = x.Path.Substring(0, x.Path.LastIndexOf('.')),
-                    BaseProperty = DslUtility.GetPropertyByPath(x.DerivedProperty.DataStructure, x.Path, existingConcepts).Value,
-                }).GroupBy(same => new {
+                    BaseProperty = DslUtility.GetPropertyByPath(x.DerivedProperty.DataStructure, x.Path, existingConcepts),
+                })
+                .Where(x => !x.BaseProperty.IsError) // Ignore errors here, the referenced object might be created later in another macro iteration. Any remaining errors will be reported later in SamePropertyValueInfo.CheckSemantics.
+                .GroupBy(same => new {
                     Module = same.DerivedProperty.DataStructure.Module.Name,
                     DataStructure = same.DerivedProperty.DataStructure.Name,
                     same.BaseSelector
@@ -67,16 +75,16 @@ namespace Rhetos.Dsl.DefaultConcepts
                         new RowPermissionsInheritReadSameMemberInfo
                         {
                             InheritRead = inherit,
-                            BaseMemberName = op.BaseProperty.Name,
+                            BaseMemberName = op.BaseProperty.Value.Name,
                             DerivedMemberName = op.DerivedProperty.Name
                         }));
                 newConcepts.AddRange(optimizeProperties
-                    .Where(op => op.DerivedProperty is ReferencePropertyInfo && op.BaseProperty is ReferencePropertyInfo)
+                    .Where(op => op.DerivedProperty is ReferencePropertyInfo && op.BaseProperty.Value is ReferencePropertyInfo)
                     .Select(op =>
                         new RowPermissionsInheritReadSameMemberInfo
                         {
                             InheritRead = inherit,
-                            BaseMemberName = op.BaseProperty.Name + "ID",
+                            BaseMemberName = op.BaseProperty.Value.Name + "ID",
                             DerivedMemberName = op.DerivedProperty.Name + "ID"
                         }));
             }
@@ -95,16 +103,16 @@ namespace Rhetos.Dsl.DefaultConcepts
                         new RowPermissionsInheritWriteSameMemberInfo
                         {
                             InheritWrite = inherit,
-                            BaseMemberName = op.BaseProperty.Name,
+                            BaseMemberName = op.BaseProperty.Value.Name,
                             DerivedMemberName = op.DerivedProperty.Name
                         }));
                 newConcepts.AddRange(optimizeProperties
-                    .Where(op => op.DerivedProperty is ReferencePropertyInfo && op.BaseProperty is ReferencePropertyInfo)
+                    .Where(op => op.DerivedProperty is ReferencePropertyInfo && op.BaseProperty.Value is ReferencePropertyInfo)
                     .Select(op =>
                         new RowPermissionsInheritWriteSameMemberInfo
                         {
                             InheritWrite = inherit,
-                            BaseMemberName = op.BaseProperty.Name + "ID",
+                            BaseMemberName = op.BaseProperty.Value.Name + "ID",
                             DerivedMemberName = op.DerivedProperty.Name + "ID"
                         }));
             }
