@@ -55,6 +55,18 @@
       <Project>{db291a1a-bd71-4eea-898a-7b353c7d1ef5}</Project>
       <Name>DeployPackages</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Configuration.Autofac\Rhetos.Configuration.Autofac.csproj">
+      <Project>{759cea3c-1cd0-449c-977e-102ce308f4de}</Project>
+      <Name>Rhetos.Configuration.Autofac</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Dsl.Interfaces\Rhetos.Dsl.Interfaces.csproj">
+      <Project>{F4ACD412-2782-4191-8708-C7AE99B0CEE9}</Project>
+      <Name>Rhetos.Dsl.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Dsl\Rhetos.Dsl.csproj">
+      <Project>{aa08ecfa-2ad6-4b0c-86b9-c5d8754a2073}</Project>
+      <Name>Rhetos.Dsl</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.TestCommon\Rhetos.TestCommon.csproj">
       <Project>{43ba178b-7642-473c-a43a-dbf58294635a}</Project>
       <Name>Rhetos.TestCommon</Name>

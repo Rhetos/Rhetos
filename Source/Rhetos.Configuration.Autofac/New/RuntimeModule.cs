@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Configuration.Autofac
 {
-    public class RhetosRuntimeModule : Module
+    public class RuntimeModule : Module
     {
         protected override void Load(ContainerBuilder builder)
         {
