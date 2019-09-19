@@ -308,6 +308,7 @@
     <Compile Include="SimpleBusinessLogic\CreatedByInfo.cs" />
     <Compile Include="SimpleBusinessLogic\DefaultValueInfo.cs" />
     <Compile Include="SimpleBusinessLogic\LogReaderAdditionalSourceInfo.cs" />
+    <Compile Include="SimpleBusinessLogic\ModificationTimeOfInfrastructureInfo.cs" />
     <Compile Include="SimpleBusinessLogic\ReferenceCascadeDeleteDbInfo.cs" />
     <Compile Include="SimpleBusinessLogic\ReferenceCascadeDeletePolymorphicInfo.cs" />
     <Compile Include="SimpleBusinessLogic\UniqueReferenceCascadeDeletePolymorphicInfo.cs" />
