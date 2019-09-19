@@ -163,8 +163,7 @@ namespace Rhetos.Dsl
                     throw new DslSyntaxException($"Invalid DSL script syntax. {tokenReader.ReportPosition()}");
             }
 
-            int largest = possibleInterpretations.Max(i => i.NextPosition.PositionInTokenList);
-            possibleInterpretations.RemoveAll(i => i.NextPosition.PositionInTokenList < largest);
+            Disambiguate(possibleInterpretations);
             if (possibleInterpretations.Count > 1)
             {
                 var report = new List<string>();
@@ -178,6 +177,58 @@ namespace Rhetos.Dsl
 
             tokenReader.CopyFrom(possibleInterpretations.Single().NextPosition);
             return possibleInterpretations.Single().ConceptInfo;
+        }
+
+        private void Disambiguate(List<Interpretation> possibleInterpretations)
+        {
+            // Interpretation that covers most of the DSL script has priority,
+            // because other interpretations are obviously missing some parameters,
+            // otherwise the parser would stop earlier on '{' or ';'.
+            int largest = possibleInterpretations.Max(i => i.NextPosition.PositionInTokenList);
+            possibleInterpretations.RemoveAll(i => i.NextPosition.PositionInTokenList < largest);
+            if (possibleInterpretations.Count == 1)
+                return;
+
+            // Interpretation with a flat syntax has priority over the interpretation
+            // that could be placed in a nested concept.
+            // The nested interpretation can be manually enforced in DSL script (if needed)
+            // by nesting this concept.
+            var interpretationParameters = possibleInterpretations
+                .Select(i =>
+                {
+                    var firstMemberType = ConceptMembers.Get(i.ConceptInfo).First().ValueType;
+                    return new { Interpretation = i, FirstParameter = firstMemberType, NestingOptions = GetNestingOptions(firstMemberType) };
+                })
+                .ToList();
+            var couldBeNested = new HashSet<Interpretation>();
+            foreach (var i1 in interpretationParameters)
+                foreach (var i2 in interpretationParameters)
+                    if (i1 != i2 && i2.NestingOptions.Skip(1).Contains(i1.FirstParameter))
+                    {
+                        couldBeNested.Add(i2.Interpretation);
+                        _logger.Trace(() => $"Interpretation {i1.Interpretation.ConceptInfo.GetType().Name}" +
+                            $" has priority over {i2.Interpretation.ConceptInfo.GetType().Name}," +
+                            $" because the second one could be nested in {i2.FirstParameter.Name} to force that interpretation." +
+                            $" Statement: {i1.Interpretation.ConceptInfo.GetUserDescription()}.");
+                    }
+            var flatestInterpretations = possibleInterpretations.Except(couldBeNested).ToList();
+            if (flatestInterpretations.Count == 1)
+            {
+                possibleInterpretations.Clear();
+                possibleInterpretations.Add(flatestInterpretations.Single());
+            }
+        }
+
+        private static List<Type> GetNestingOptions(Type conceptType)
+        {
+            var options = new List<Type>();
+            while (!options.Contains(conceptType)) // Recursive concept are possible.
+            {
+                options.Add(conceptType);
+                if (typeof(IConceptInfo).IsAssignableFrom(conceptType))
+                    conceptType = ConceptMembers.Get(conceptType).First().ValueType;
+            }
+            return options;
         }
 
         protected string ReportErrorContext(IConceptInfo conceptInfo, TokenReader tokenReader)
