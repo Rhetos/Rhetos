@@ -155,6 +155,7 @@
     <Compile Include="DatabaseWorkarounds\SqlIndexMultipleFollowingPropertyInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlIndexPropertyClusteredInfo.cs" />
     <Compile Include="DatabaseWorkarounds\SqlNotNullInfo.cs" />
+    <Compile Include="DatabaseWorkarounds\SqlIndexClusteredFlatInfo.cs" />
     <Compile Include="DatabaseWorkarounds\UniqueClusteredInfo.cs" />
     <Compile Include="DataStructure\BeforeQueryWithParameterInfo.cs" />
     <Compile Include="DataStructure\EntryInfo.cs" />
