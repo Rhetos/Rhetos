@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.Configuration.Autofac;
 using Rhetos.Dsl;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
@@ -23,7 +24,8 @@ namespace DeployPackages.Test
 
             var arguments = new DeployArguments(new string[] { });
             var builder = new ContainerBuilder()
-                .AddRhetosDeployPackages(true, arguments);
+                .AddRhetosDeployment(arguments.ShortTransactions, DeployType.DeployFull)
+                .AddUserAndLoggingOverrides();
 
             using (var container = builder.Build())
             {
@@ -44,7 +46,8 @@ namespace DeployPackages.Test
 
             var arguments = new DeployArguments(new string[] { "/DatabaseOnly" });
             var builder = new ContainerBuilder()
-                .AddRhetosDeployPackages(true, arguments);
+                .AddRhetosDeployment(arguments.ShortTransactions, DeployType.DeployDatabaseOnly)
+                .AddUserAndLoggingOverrides();
 
             using (var container = builder.Build())
             {
@@ -61,7 +64,9 @@ namespace DeployPackages.Test
 
             var arguments = new DeployArguments(new string[] { });
             var builder = new ContainerBuilder()
-                .AddRhetosDeployPackages(false, arguments);
+                .AddApplicationInitialization(arguments)
+                .AddRhetosRuntime()
+                .AddUserAndLoggingOverrides();
 
             using (var container = builder.Build())
             {
@@ -78,8 +83,8 @@ namespace DeployPackages.Test
         public void CorrectRegistrationsServerRuntime()
         {
             Paths.InitializeRhetosServer();
-            var builder = new ContainerBuilder();
-            builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(false, false));
+            var builder = new ContainerBuilder()
+                .AddRhetosRuntime();
 
             using (var container = builder.Build())
             {

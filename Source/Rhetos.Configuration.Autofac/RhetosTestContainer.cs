@@ -154,8 +154,8 @@ namespace Rhetos.Configuration.Autofac
             Plugins.SetInitializationLogging(new ConsoleLogProvider());
 
             // General registrations:
-            var builder = new ContainerBuilder();
-            builder.RegisterModule(new DefaultAutofacConfiguration(deploymentTime: false, deployDatabaseOnly: false));
+            var builder = new ContainerBuilder()
+                .AddRhetosRuntime();
 
             // Specific registrations override:
             builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();

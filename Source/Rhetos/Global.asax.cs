@@ -20,6 +20,8 @@
 using Autofac;
 using Autofac.Configuration;
 using Autofac.Integration.Wcf;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
@@ -41,8 +43,7 @@ namespace Rhetos
 
             Paths.InitializeRhetosServer();
 
-            var builder = new ContainerBuilder();
-            builder.RegisterModule(new ConfigurationSettingsReader("autofacComponents"));
+            var builder = CreateServerContainer();
             AutofacServiceHostFactory.Container = builder.Build();
 
             var logProvider = AutofacServiceHostFactory.Container.Resolve<ILogProvider>();
@@ -69,6 +70,22 @@ namespace Rhetos
             }
 
             _performanceLogger.Write(stopwatch, "All services initialized.");
+        }
+
+        private ContainerBuilder CreateServerContainer()
+        {
+            var builder = new ContainerBuilder();
+
+            // Specific registrations and initialization:
+            Plugins.SetInitializationLogging(new NLogProvider());
+            builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
+            builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
+            Plugins.FindAndRegisterPlugins<IService>(builder);
+            Plugins.FindAndRegisterPlugins<IHomePageSnippet>(builder);
+
+            // General registrations:
+            builder.AddRhetosRuntime();
+            return builder;
         }
 
         // Called once for each application instance.

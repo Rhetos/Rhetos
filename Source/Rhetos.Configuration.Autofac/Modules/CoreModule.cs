@@ -12,7 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rhetos.Configuration.Autofac
+namespace Rhetos.Configuration.Autofac.Modules
 {
     public class CoreModule : Module
     {
@@ -76,14 +76,6 @@ namespace Rhetos.Configuration.Autofac
             Plugins.FindAndRegisterPlugins<IDslModelIndex>(builder);
             builder.RegisterType<DslModelIndexByType>().As<IDslModelIndex>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos dlls.
             builder.RegisterType<DslModelIndexByReference>().As<IDslModelIndex>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos dlls.
-
-            /*
-            if (_deploymentTime && !_deployDatabaseOnly)
-                builder.RegisterType<DslModel>().As<IDslModel>().SingleInstance();
-            else
-                builder.RegisterType<DslModelFile>().As<IDslModel>().SingleInstance();
-            */
-            // if deployment time and !deployDatabaseOnly this registration needs to be overriden
             builder.RegisterType<DslModelFile>().As<IDslModel>().SingleInstance();
         }
     }

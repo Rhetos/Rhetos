@@ -19,23 +19,20 @@
 
 using Autofac;
 using Rhetos.Extensibility;
-using Rhetos.Logging;
+using System.Diagnostics.Contracts;
 
-namespace Rhetos
+namespace Rhetos.Configuration.Autofac.Modules
 {
-    public class DefaultAutofacConfiguration : Module
+    public class ExtensibilityModule : Module
     {
         protected override void Load(ContainerBuilder builder)
         {
-            // Specific registrations and initialization:
-            Plugins.SetInitializationLogging(new NLogProvider());
-            builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
-            builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
-            Plugins.FindAndRegisterPlugins<IService>(builder);
-            Plugins.FindAndRegisterPlugins<IHomePageSnippet>(builder);
+            Contract.Requires(builder != null);
 
-            // General registrations:
-            builder.RegisterModule(new Rhetos.Configuration.Autofac.DefaultAutofacConfiguration(deploymentTime: false, deployDatabaseOnly: false));
+            builder.RegisterGeneric(typeof(PluginsMetadataCache<>)).SingleInstance();
+            builder.RegisterGeneric(typeof(PluginsContainer<>)).As(typeof(IPluginsContainer<>)).InstancePerLifetimeScope();
+            builder.RegisterGeneric(typeof(NamedPlugins<>)).As(typeof(INamedPlugins<>)).InstancePerLifetimeScope();
+            Plugins.FindAndRegisterModules(builder);
 
             base.Load(builder);
         }

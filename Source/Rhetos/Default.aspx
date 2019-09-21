@@ -27,17 +27,5 @@
         User authentication type: <%=Context.User.Identity.AuthenticationType %><br />
         Is 64-bit process: <%=Environment.Is64BitProcess %><br />
     </p>
-
-<%
-    var registrations = Autofac.Integration.Wcf.AutofacServiceHostFactory.Container.ComponentRegistry.Registrations;
-    var list = new List<Autofac.Core.IComponentRegistration>();
-    foreach (var r in registrations) list.Add(r);
-    list.Sort((a, b) => a.ToString().CompareTo(b.ToString()));
-    Response.Write("<pre>");
-    foreach (var r in list)
-        Response.Write(r + "\n");
-    Response.Write("</pre>");
-%>
-
 </body>
 </html>

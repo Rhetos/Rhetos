@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rhetos.Configuration.Autofac
+namespace Rhetos.Configuration.Autofac.Modules
 {
     public class RuntimeModule : Module
     {

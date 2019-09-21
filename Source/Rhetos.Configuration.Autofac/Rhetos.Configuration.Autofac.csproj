@@ -98,14 +98,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="New\ContainerBuilderExtensions.cs" />
-    <Compile Include="DefaultAutofacConfiguration.cs" />
-    <Compile Include="New\CoreModule.cs" />
-    <Compile Include="New\RuntimeModule.cs" />
-    <Compile Include="New\DeployModule.cs" />
+    <Compile Include="ContainerBuilderExtensions.cs" />
+    <Compile Include="Modules\CoreModule.cs" />
+    <Compile Include="DeployType.cs" />
+    <Compile Include="Modules\RuntimeModule.cs" />
+    <Compile Include="Modules\DeployModule.cs" />
     <Compile Include="RhetosTestContainer.cs" />
-    <Compile Include="DatabaseGeneratorModuleConfiguration.cs" />
-    <Compile Include="ExtensibilityModuleConfiguration.cs" />
+    <Compile Include="Modules\ExtensibilityModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="..\Rhetos\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>

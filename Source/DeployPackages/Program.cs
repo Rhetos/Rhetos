@@ -19,6 +19,7 @@
 
 using Autofac;
 using Rhetos;
+using Rhetos.Configuration.Autofac;
 using Rhetos.Deployment;
 using Rhetos.Dom;
 using Rhetos.Extensibility;
@@ -166,8 +167,11 @@ namespace DeployPackages
             logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
+            Plugins.SetInitializationLogging(DeploymentUtility.InitializationLogProvider);
+            var deployType = arguments.DeployDatabaseOnly ? DeployType.DeployDatabaseOnly : DeployType.DeployFull;
             var builder = new ContainerBuilder()
-                .AddRhetosDeployPackages(true, arguments);
+                .AddRhetosDeployment(arguments.ShortTransactions, deployType)
+                .AddUserAndLoggingOverrides();
 
             using (var container = builder.Build())
             {
@@ -190,8 +194,11 @@ namespace DeployPackages
             logger.Trace("Loading generated plugins.");
             var stopwatch = Stopwatch.StartNew();
 
+            Plugins.SetInitializationLogging(DeploymentUtility.InitializationLogProvider);
             var builder = new ContainerBuilder()
-                .AddRhetosDeployPackages(false, arguments);
+                .AddApplicationInitialization(arguments)
+                .AddRhetosRuntime()
+                .AddUserAndLoggingOverrides();
             
             using (var container = builder.Build())
             {

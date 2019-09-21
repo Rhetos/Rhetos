@@ -48,7 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AutofacModuleConfiguration.cs" />
+    <Compile Include="ContainerBuilderExtensions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="..\Rhetos\Properties\GlobalAssemblyInfo.cs">

@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Rhetos.Compiler;
+using Rhetos.DatabaseGenerator;
 using Rhetos.Deployment;
 using Rhetos.Dom;
 using Rhetos.Dsl;
@@ -11,7 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rhetos.Configuration.Autofac
+namespace Rhetos.Configuration.Autofac.Modules
 {
     /// <summary>
     /// This module handles code generation and code compilation. 
@@ -19,17 +20,41 @@ namespace Rhetos.Configuration.Autofac
     /// </summary>
     public class DeployModule : Module
     {
+        private readonly bool shortTransactions;
+
+        public DeployModule(bool shortTransactions)
+        {
+            this.shortTransactions = shortTransactions;
+        }
+
         protected override void Load(ContainerBuilder builder)
         {
+            AddDatabaseGenerator(builder);
             AddDsl(builder);
             AddDom(builder);
             AddPersistence(builder);
             AddCompiler(builder);
 
+            builder.RegisterType<ApplicationGenerator>();
+            Plugins.FindAndRegisterPlugins<IGenerator>(builder);
+
             base.Load(builder);
         }
 
-        // TODO: this is misnomer, since CoreModule also has AddDsl group
+        private void AddDatabaseGenerator(ContainerBuilder builder)
+        {
+            builder.RegisterType<ConceptApplicationRepository>().As<IConceptApplicationRepository>();
+            builder.RegisterType<DatabaseGenerator.DatabaseGenerator>().As<IDatabaseGenerator>();
+            builder.RegisterType<DatabaseGenerator.ConceptDataMigrationExecuter>().As<IConceptDataMigrationExecuter>();
+            builder.RegisterInstance(new DatabaseGeneratorOptions { ShortTransactions = shortTransactions });
+            Plugins.FindAndRegisterPlugins<IConceptDatabaseDefinition>(builder);
+            builder.RegisterType<NullImplementation>().As<IConceptDatabaseDefinition>();
+            Plugins.FindAndRegisterPlugins<IConceptDataMigration>(builder, typeof(IConceptDataMigration<>));
+            builder.RegisterType<DataMigrationScripts>();
+            builder.RegisterType<DatabaseCleaner>();
+        }
+
+        // TODO: this is a misnomer, since CoreModule also has AddDsl method
         private void AddDsl(ContainerBuilder builder)
         {
             builder.RegisterType<DiskDslScriptLoader>().As<IDslScriptsProvider>().SingleInstance();
