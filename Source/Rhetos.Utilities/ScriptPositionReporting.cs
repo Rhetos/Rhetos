@@ -63,7 +63,7 @@ namespace Rhetos.Utilities
             if (position >= text.Length)
                 return "";
 
-            text = text.Substring(position, maxLength * 2);
+            text = text.Substring(position, Math.Min(maxLength * 2, text.Length - position));
             text = string.Join(" ", text.Split(new char[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
             text = text.Limit(maxLength, "...");
             return text;
