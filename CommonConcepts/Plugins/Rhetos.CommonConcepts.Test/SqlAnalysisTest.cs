@@ -253,14 +253,18 @@ namespace CommonConcepts.Test
                 { "select /*a.1(), */a.2() from a.3/*inner join a.4, a.5*/", "a.2, a.3" },
                 { "select a.1 from \"a\".\"2\", a.3", "a.2, a.3" },
                 { "select a.1 from a.2, /*a.3, a.4*/ a.5, [a.6], \"a.9\", 'a.11, a.12', a.13", "a.13, a.2, a.5" },
-                { "select a.1 from a/*xxx*/./*xxx*/2/*xxx*/ join /*xxx*/a.3", "a.2, a.3" }
+                { "select a.1 from a/*xxx*/./*xxx*/2/*xxx*/ join /*xxx*/a.3", "a.2, a.3" },
+
+                { "INSERT INTO a.b SELECT * FROM c.d", "a.b, c.d" },
+                { "MERGE INTO a.b USING c.d ON ...", "a.b, c.d" },
+                { "MERGE a.b USING c.d src ON ...", "a.b, c.d" },
             };
 
             foreach (var test in tests)
                 Assert.AreEqual(
                     test.Value,
                     TestUtility.Dump(ExtractPossibleObjectsAccessor(test.Key)),
-                    "Input: " + test.Key); 
+                    "Input: " + test.Key);
         }
 
         class SimpleConceptInfo : IConceptInfo
