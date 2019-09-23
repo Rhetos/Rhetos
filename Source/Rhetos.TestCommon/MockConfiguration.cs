@@ -30,6 +30,8 @@ namespace Rhetos.TestCommon
     {
         public Lazy<bool> GetBool(string key, bool defaultValue) => Get(key, defaultValue);
 
+        public Lazy<T> GetEnum<T>(string key, T defaultValue) where T : struct => Get(key, defaultValue);
+
         public Lazy<int> GetInt(string key, int defaultValue) => Get(key, defaultValue);
 
         public Lazy<string> GetString(string key, string defaultValue) => Get(key, defaultValue);
@@ -37,7 +39,7 @@ namespace Rhetos.TestCommon
         private Lazy<T> Get<T>(string key, T defaultValue)
         {
             object value;
-            if (!this.TryGetValue(key, out value))
+            if (!TryGetValue(key, out value))
                 value = defaultValue;
             return new Lazy<T>(() => (T)value);
         }

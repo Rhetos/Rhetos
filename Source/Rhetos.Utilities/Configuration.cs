@@ -39,8 +39,7 @@ namespace Rhetos.Utilities
                 string value = ConfigUtility.GetAppSetting(key);
                 if (!string.IsNullOrEmpty(value))
                 {
-                    int result;
-                    if (int.TryParse(value, out result))
+                    if (int.TryParse(value, out int result))
                         return result;
                     throw new FrameworkException("Invalid '" + key + "' parameter in configuration file: '" + value + "' is not an integer value.");
                 }
@@ -56,10 +55,28 @@ namespace Rhetos.Utilities
                 string value = ConfigUtility.GetAppSetting(key);
                 if (!string.IsNullOrEmpty(value))
                 {
-                    bool result;
-                    if (bool.TryParse(value, out result))
+                    if (bool.TryParse(value, out bool result))
                         return result;
                     throw new FrameworkException("Invalid '" + key + "' parameter in configuration file: '" + value + "' is not a boolean value. Allowed values are True and False.");
+                }
+                else
+                    return defaultValue;
+            });
+        }
+
+        public Lazy<T> GetEnum<T>(string key, T defaultValue) where T: struct
+        {
+            return new Lazy<T>(() =>
+            {
+                var value = ConfigUtility.GetAppSetting(key);
+                if (!string.IsNullOrEmpty(value))
+                {
+                    if (Enum.TryParse(value, true, out T parsedValue))
+                        return parsedValue;
+                    else
+                        throw new FrameworkException(
+                            $"Invalid '{key}' parameter in configuration file: '{value}' is not a valid value." +
+                            $" Allowed values are: {string.Join(", ", Enum.GetNames(typeof(T)))}.");
                 }
                 else
                     return defaultValue;

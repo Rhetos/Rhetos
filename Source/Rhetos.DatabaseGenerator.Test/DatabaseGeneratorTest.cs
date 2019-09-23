@@ -728,6 +728,11 @@ namespace Rhetos.DatabaseGenerator.Test
             return new Lazy<bool>(() => defaultValue);
         }
 
+        public Lazy<T> GetEnum<T>(string key, T defaultValue) where T : struct
+        {
+            return new Lazy<T>(() => defaultValue);
+        }
+
         public Lazy<int> GetInt(string key, int defaultValue)
         {
             return new Lazy<int>(() => defaultValue);
