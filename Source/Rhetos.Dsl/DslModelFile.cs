@@ -103,6 +103,7 @@ namespace Rhetos.Dsl
                 PreserveReferencesHandling = PreserveReferencesHandling.All,
                 ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
                 TypeNameHandling = TypeNameHandling.All,
+                Formatting = Formatting.Indented,
             };
 
             string serializedConcepts = JsonConvert.SerializeObject(concepts, serializerSettings);
