@@ -134,6 +134,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplicationConfiguration\ConfigurationBuilder.cs" />
+    <Compile Include="ApplicationConfiguration\ConfigurationProvider.cs" />
+    <Compile Include="ApplicationConfiguration\DefaultSources\KeyValueSourceBuilderExtensions.cs" />
+    <Compile Include="ApplicationConfiguration\IConfigurationBuilder.cs" />
+    <Compile Include="ApplicationConfiguration\IConfigurationProvider.cs" />
+    <Compile Include="ApplicationConfiguration\IConfigurationSource.cs" />
+    <Compile Include="ApplicationConfiguration\DefaultSources\KeyValuesSource.cs" />
     <Compile Include="Arguments.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="ConfigUtility.cs" />
@@ -196,6 +203,7 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
