@@ -51,6 +51,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EdmxGenerator.cs" />
+    <Compile Include="EdmxInitialCodeSnippet.cs" />
     <Compile Include="MsSqlExecuter.cs" />
     <Compile Include="EntityFrameworkMappingGenerator.cs" />
     <Compile Include="PersistenceTransaction.cs" />

@@ -36,8 +36,10 @@ namespace Rhetos.Configuration.Autofac
         {
             if (_deploymentTime)
             {
+                builder.RegisterType<EdmxGenerator>().As<IGenerator>();
                 builder.RegisterType<EntityFrameworkMappingGenerator>().As<IGenerator>();
                 Plugins.FindAndRegisterPlugins<IConceptMapping>(builder, typeof(ConceptMapping<>));
+                Plugins.FindAndRegisterPlugins<IEdmxCodeGenerator>(builder);
             }
             else
             {

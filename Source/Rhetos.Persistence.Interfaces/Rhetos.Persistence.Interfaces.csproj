@@ -98,6 +98,7 @@
   <ItemGroup>
     <Compile Include="EntityFrameworkMapping.cs" />
     <Compile Include="IConceptMapping.cs" />
+    <Compile Include="IEdmxCodeGenerator.cs" />
     <Compile Include="IPersistenceCache.cs" />
     <Compile Include="IPersistenceTransaction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
