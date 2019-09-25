@@ -40,9 +40,9 @@ SELECT
     CASE WHEN ([Extent1].[Code] IS NULL) THEN N'' ELSE  CAST( [Extent1].[Code] AS nvarchar(max)) END + N'-' + CASE WHEN ([Extent1].[Name] IS NULL) THEN N'' ELSE [Extent1].[Name] END AS [C1]
     FROM  [TestFullTextSearch].[Simple] AS [Extent1]
     LEFT OUTER JOIN [TestFullTextSearch].[Simple_Search] AS [Extent2] ON [Extent1].[ID] = [Extent2].[ID]
-    WHERE ([Rhetos].[InterceptFullTextSearch]([Extent1].[ID], @p__linq__0, N'TestFullTextSearch.Simple_Search', N'*')) = 1 AND ( NOT (([Extent1].[ID] = [Extent2].[ID]) AND (0 = (CASE WHEN ([Extent2].[ID] IS NULL) THEN cast(1 as bit) ELSE cast(0 as bit) END))))
+    WHERE ([RhetosSM].[InterceptFullTextSearch]([Extent1].[ID], @p__linq__0, N'TestFullTextSearch.Simple_Search', N'*')) = 1 AND ( NOT (([Extent1].[ID] = [Extent2].[ID]) AND (0 = (CASE WHEN ([Extent2].[ID] IS NULL) THEN cast(1 as bit) ELSE cast(0 as bit) END))))
 	
-AND ([Rhetos].[InterceptFullTextSearch]([Extent1].[ID2], N'a2', N'TestFullTextSearch.Simple_Search2', N'(a, b, c)')) = 1";
+AND ([RhetosSM].[InterceptFullTextSearch]([Extent1].[ID2], N'a2', N'TestFullTextSearch.Simple_Search2', N'(a, b, c)')) = 1";
 
             var command = new SqlCommand(generatedQuery);
             new FullTextSearchInterceptor().ReaderExecuting(command, null);
@@ -66,15 +66,15 @@ AND [Extent1].[ID2] IN (SELECT [KEY] FROM CONTAINSTABLE(TestFullTextSearch.Simpl
             var tests = new Dictionary<string, string>
             {
                 {
-                    @"([Rhetos].[InterceptFullTextSearch]([Extent1].[ID2], N'a2', N'TestFullTextSearch.Simple_Search2', N'(a, b, c)')) = 1",
+                    @"([RhetosSM].[InterceptFullTextSearch]([Extent1].[ID2], N'a2', N'TestFullTextSearch.Simple_Search2', N'(a, b, c)')) = 1",
                     @"[Extent1].[ID2] IN (SELECT [KEY] FROM CONTAINSTABLE(TestFullTextSearch.Simple_Search2, (a, b, c), N'a2'))"
                 },
                 {
-                    @"([Rhetos].[InterceptFullTextSearch]([Extent1].[ID2], N'a2', N'TestFullTextSearch.Simple_Search2', N'abc')) = 1",
+                    @"([RhetosSM].[InterceptFullTextSearch]([Extent1].[ID2], N'a2', N'TestFullTextSearch.Simple_Search2', N'abc')) = 1",
                     @"[Extent1].[ID2] IN (SELECT [KEY] FROM CONTAINSTABLE(TestFullTextSearch.Simple_Search2, abc, N'a2'))"
                 },
                 {
-                    @"([Rhetos].[InterceptFullTextSearch]([Extent1].[ID2], N'a2', N'TestFullTextSearch.Simple_Search2', N'*')) = 1",
+                    @"([RhetosSM].[InterceptFullTextSearch]([Extent1].[ID2], N'a2', N'TestFullTextSearch.Simple_Search2', N'*')) = 1",
                     @"[Extent1].[ID2] IN (SELECT [KEY] FROM CONTAINSTABLE(TestFullTextSearch.Simple_Search2, *, N'a2'))"
                 },
             };
@@ -93,23 +93,23 @@ AND [Extent1].[ID2] IN (SELECT [KEY] FROM CONTAINSTABLE(TestFullTextSearch.Simpl
             var tests = new Dictionary<string, string>
             {
                 {
-                    @"([Rhetos].[InterceptFullTextSearch](@id, N'a2', N'TestFullTextSearch.Simple_Search2', N'(a, b, c)')) = 1",
+                    @"([RhetosSM].[InterceptFullTextSearch](@id, N'a2', N'TestFullTextSearch.Simple_Search2', N'(a, b, c)')) = 1",
                     @"Invalid FullTextSearch 'itemId' parameter format"
                 },
                 {
-                    @"([Rhetos].[InterceptFullTextSearch]([Extent1].[ID2], N'a'a2', N'TestFullTextSearch.Simple_Search2', N'(a, b, c)')) = 1",
+                    @"([RhetosSM].[InterceptFullTextSearch]([Extent1].[ID2], N'a'a2', N'TestFullTextSearch.Simple_Search2', N'(a, b, c)')) = 1",
                     @"Invalid FullTextSearch 'pattern' parameter format"
                 },
                 {
-                    @"([Rhetos].[InterceptFullTextSearch]([Extent1].[ID2], Na2, N'TestFullTextSearch.Simple_Search2', N'(a, b, c)')) = 1",
+                    @"([RhetosSM].[InterceptFullTextSearch]([Extent1].[ID2], Na2, N'TestFullTextSearch.Simple_Search2', N'(a, b, c)')) = 1",
                     @"Invalid FullTextSearch 'pattern' parameter format"
                 },
                 {
-                    @"([Rhetos].[InterceptFullTextSearch]([Extent1].[ID2], N'a2', N'TestFullTextSearch'Simple_Search2', N'(a, b, c)')) = 1",
+                    @"([RhetosSM].[InterceptFullTextSearch]([Extent1].[ID2], N'a2', N'TestFullTextSearch'Simple_Search2', N'(a, b, c)')) = 1",
                     @"Invalid FullTextSearch 'tableName' parameter format"
                 },
                 {
-                    @"([Rhetos].[InterceptFullTextSearch]([Extent1].[ID2], N'a2', N'TestFullTextSearch.Simple_Search2', N'a, b, c)')) = 1",
+                    @"([RhetosSM].[InterceptFullTextSearch]([Extent1].[ID2], N'a2', N'TestFullTextSearch.Simple_Search2', N'a, b, c)')) = 1",
                     @"Invalid FullTextSearch 'searchColumns' parameter format"
                 },
                 {

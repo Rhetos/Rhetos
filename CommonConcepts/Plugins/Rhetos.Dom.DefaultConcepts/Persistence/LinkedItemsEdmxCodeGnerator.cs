@@ -31,15 +31,11 @@ using Rhetos.Persistence;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    [Export(typeof(IEdmxCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(LinkedItemsInfo))]
-    [ExportMetadata(MefProvider.DependsOn, typeof(DataStructureEdmxCodeGenerator))]
-    public class LinkedItemsEdmxCodeGenerator : IEdmxCodeGenerator
+    [Export(typeof(IConceptMapping))]
+    public class LinkedItemsEdmxCodeGenerator : ConceptMapping<LinkedItemsInfo>
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        public override void GenerateCode(LinkedItemsInfo linkedItemsInfo, ICodeBuilder codeBuilder)
         {
-            var linkedItemsInfo = conceptInfo as LinkedItemsInfo;
-
             if (linkedItemsInfo.DataStructure is IOrmDataStructure)
             {
                 codeBuilder.InsertCode(GetNavigationPropertyNodeForConceptualModel(linkedItemsInfo), DataStructureEdmxCodeGenerator.ConceptualModelEntityTypeNavigationPropertyTag.Evaluate(linkedItemsInfo.DataStructure));

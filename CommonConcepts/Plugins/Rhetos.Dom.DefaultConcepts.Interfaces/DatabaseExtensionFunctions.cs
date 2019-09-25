@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Persistence;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -34,7 +35,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// If b is null, SQL query will use IS NULL instead of the equality operator.
         /// </summary>
-        [DbFunction("Rhetos", "StringEqualsCaseInsensitive")]
+        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringEqualsCaseInsensitive")]
         public static bool EqualsCaseInsensitive(this string a, string b)
         {
             if (b == null)
@@ -46,7 +47,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// If b is null, SQL query will use IS NOT NULL instead of the inequality operator.
         /// </summary>
-        [DbFunction("Rhetos", "StringNotEqualsCaseInsensitive")]
+        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringNotEqualsCaseInsensitive")]
         public static bool NotEqualsCaseInsensitive(this string a, string b)
         {
             if (b == null)
@@ -55,62 +56,62 @@ namespace Rhetos.Dom.DefaultConcepts
                 return a == null || !a.Equals(b, StringComparison.InvariantCultureIgnoreCase);
         }
 
-        [DbFunction("Rhetos", "StringIsLessThen")]
+        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringIsLessThen")]
         public static bool IsLessThen(this string a, string b)
         {
             return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) < 0;
         }
 
-        [DbFunction("Rhetos", "StringIsLessThenOrEqual")]
+        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringIsLessThenOrEqual")]
         public static bool IsLessThenOrEqual(this string a, string b)
         {
             return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) <= 0;
         }
 
-        [DbFunction("Rhetos", "StringIsGreaterThen")]
+        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringIsGreaterThen")]
         public static bool IsGreaterThen(this string a, string b)
         {
             return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) > 0;
         }
 
-        [DbFunction("Rhetos", "StringIsGreaterThenOrEqual")]
+        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringIsGreaterThenOrEqual")]
         public static bool IsGreaterThenOrEqual(this string a, string b)
         {
             return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) >= 0;
         }
 
-        [DbFunction("Rhetos", "IntStartsWith")]
+        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "IntStartsWith")]
         public static bool StartsWith(this int? a, string b)
         {
             return a != null && b != null && a.ToString().StartsWith(b);
         }
 
-        [DbFunction("Rhetos", "StringStartsWithCaseInsensitive")]
+        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringStartsWithCaseInsensitive")]
         public static bool StartsWithCaseInsensitive(this string a, string b)
         {
             return a != null && b != null && a.StartsWith(b, StringComparison.InvariantCultureIgnoreCase);
         }
 
-        [DbFunction("Rhetos", "StringEndsWithCaseInsensitive")]
+        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringEndsWithCaseInsensitive")]
         public static bool EndsWithCaseInsensitive(this string a, string b)
         {
             return a != null && b != null && a.EndsWith(b, StringComparison.InvariantCultureIgnoreCase);
         }
 
-        [DbFunction("Rhetos", "StringContainsCaseInsensitive")]
+        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringContainsCaseInsensitive")]
         public static bool ContainsCaseInsensitive(this string a, string b)
         {
             return a != null && b != null && a.IndexOf(b, StringComparison.InvariantCultureIgnoreCase) >= 0;
         }
 
-        [DbFunction("Rhetos", "StringLike")]
+        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringLike")]
         [Obsolete("Use the Like() method instead")]
         public static bool SqlLike(this string text, string pattern)
         {
             return Like(text, pattern);
         }
 
-        [DbFunction("Rhetos", "StringLike")]
+        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringLike")]
         public static bool Like(this string text, string pattern)
         {
             if (text == null || pattern == null)
@@ -125,7 +126,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return regex.IsMatch(text);
         }
 
-        [DbFunction("Rhetos", "IntCastToString")]
+        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "IntCastToString")]
         public static string CastToString(this int? a)
         {
             if (a == null)
@@ -134,7 +135,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return a.ToString();
         }
 
-        [DbFunction("Rhetos", "GuidIsGreaterThan")]
+        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "GuidIsGreaterThan")]
         public static bool GuidIsGreaterThan(this Guid g1, Guid g2)
         {
             string a = g1.ToString();
@@ -142,7 +143,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) > 0;
         }
 
-        [DbFunction("Rhetos", "GuidIsGreaterThanOrEqual")]
+        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "GuidIsGreaterThanOrEqual")]
         public static bool GuidIsGreaterThanOrEqual(this Guid g1, Guid g2)
         {
             string a = g1.ToString();
@@ -150,7 +151,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) >= 0;
         }
 
-        [DbFunction("Rhetos", "GuidIsLessThan")]
+        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "GuidIsLessThan")]
         public static bool GuidIsLessThan(this Guid g1, Guid g2)
         {
             string a = g1.ToString();
@@ -158,7 +159,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) < 0;
         }
 
-        [DbFunction("Rhetos", "GuidIsLessThanOrEqual")]
+        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "GuidIsLessThanOrEqual")]
         public static bool GuidIsLessThanOrEqual(this Guid g1, Guid g2)
         {
             string a = g1.ToString();
@@ -170,7 +171,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         /// <param name="tableName">Table that contains the full-text search indexed columns. It is usually the entity's table or a table that references the entity's table.</param>
         /// <param name="searchColumns">Full-text search indexed columns. See the columns list parameter on CONTAINSTABLE function for Microsoft SQL server database.</param>
-        [DbFunction("Rhetos", InterceptFullTextSearchFunction)]
+        [DbFunction(EntityFrameworkMapping.StorageModelNamespace, InterceptFullTextSearchFunction)]
         public static bool FullTextSearch(Guid itemId, string pattern, string tableName, string searchColumns)
         {
             throw new ClientException("Full-text search cannot be executed on loaded data. Use this function in a LINQ query to execute FTS on database.");
@@ -178,7 +179,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         /// <param name="tableName">Table that contains the full-text search indexed columns. It is usually the entity's table or a table that references the entity's table.</param>
         /// <param name="searchColumns">Full-text search indexed columns. See the columns list parameter on CONTAINSTABLE function for Microsoft SQL server database.</param>
-        [DbFunction("Rhetos", InterceptFullTextSearchFunction)]
+        [DbFunction(EntityFrameworkMapping.StorageModelNamespace, InterceptFullTextSearchFunction)]
         public static bool FullTextSearch(Guid itemId, string pattern, string tableName, string searchColumns, int? rankTop)
         {
             throw new ClientException("Full-text search cannot be executed on loaded data. Use this function in a LINQ query to execute FTS on database.");
@@ -186,7 +187,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         /// <param name="tableName">Table that contains the full-text search indexed columns. It is usually the entity's table or a table that references the entity's table.</param>
         /// <param name="searchColumns">Full-text search indexed columns. See the columns list parameter on CONTAINSTABLE function for Microsoft SQL server database.</param>
-        [DbFunction("Rhetos", InterceptFullTextSearchFunction)]
+        [DbFunction(EntityFrameworkMapping.StorageModelNamespace, InterceptFullTextSearchFunction)]
         public static bool FullTextSearch(int itemId, string pattern, string tableName, string searchColumns)
         {
             throw new ClientException("Full-text search cannot be executed on loaded data. Use this function in a LINQ query to execute FTS on database.");
@@ -194,7 +195,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         /// <param name="tableName">Table that contains the full-text search indexed columns. It is usually the entity's table or a table that references the entity's table.</param>
         /// <param name="searchColumns">Full-text search indexed columns. See the columns list parameter on CONTAINSTABLE function for Microsoft SQL server database.</param>
-        [DbFunction("Rhetos", InterceptFullTextSearchFunction)]
+        [DbFunction(EntityFrameworkMapping.StorageModelNamespace, InterceptFullTextSearchFunction)]
         public static bool FullTextSearch(int itemId, string pattern, string tableName, string searchColumns, int? rankTop)
         {
             throw new ClientException("Full-text search cannot be executed on loaded data. Use this function in a LINQ query to execute FTS on database.");

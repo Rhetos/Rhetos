@@ -31,14 +31,11 @@ using Rhetos.Persistence;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    [Export(typeof(IEdmxCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(PropertyInfo))]
-    [ExportMetadata(MefProvider.DependsOn, typeof(DataStructureEdmxCodeGenerator))]
-    public class PropertyEdmxCodeGenerator : IEdmxCodeGenerator
+    [Export(typeof(IConceptMapping))]
+    public class PropertyEdmxCodeGenerator : ConceptMapping<PropertyInfo>
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        public override void GenerateCode(PropertyInfo propertyInfo, ICodeBuilder codeBuilder)
         {
-            var propertyInfo = conceptInfo as PropertyInfo;
             if (propertyInfo.DataStructure is IOrmDataStructure && IsTypeSupported(propertyInfo.GetType()))
             {
                 codeBuilder.InsertCode("\n" + GetPropertyElementForConceptualModel(propertyInfo), DataStructureEdmxCodeGenerator.ConceptualModelEntityTypePropertyTag.Evaluate(propertyInfo.DataStructure));

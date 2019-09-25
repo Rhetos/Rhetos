@@ -17,37 +17,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
-using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl;
 using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Persistence;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    [Export(typeof(IEdmxCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(ReferencePropertyInfo))]
-    [ExportMetadata(MefProvider.DependsOn, typeof(DataStructureEdmxCodeGenerator))]
-    public class ReferencePropertyEdmxCodeGenerator : IEdmxCodeGenerator
+    [Export(typeof(IConceptMapping))]
+    public class ReferencePropertyEdmxCodeGenerator : ConceptMapping<ReferencePropertyInfo>
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        public override void GenerateCode(ReferencePropertyInfo referencePropertyInfo, ICodeBuilder codeBuilder)
         {
-            var referencePropertyInfo = conceptInfo as ReferencePropertyInfo;
-
             if (referencePropertyInfo.DataStructure is IOrmDataStructure && referencePropertyInfo.Referenced is IOrmDataStructure)
             {
                 codeBuilder.InsertCode(GetNavigationPropertyNodeForConceptualModel(referencePropertyInfo), DataStructureEdmxCodeGenerator.ConceptualModelEntityTypeNavigationPropertyTag.Evaluate(referencePropertyInfo.DataStructure));
                 if (referencePropertyInfo.Referenced.GetKeyProperties().Equals(referencePropertyInfo.DataStructure.GetKeyProperties()))
-                    codeBuilder.InsertCode(GetAssoctiationNodeForConceptualModelForSelfReference(referencePropertyInfo), EdmxInitialCodeSnippet.ConceptualModelAssociationTag);
+                    codeBuilder.InsertCode(GetAssoctiationNodeForConceptualModelForSelfReference(referencePropertyInfo), EntityFrameworkMapping.ConceptualModelTag);
                 else
-                    codeBuilder.InsertCode(GetAssoctiationNodeForConceptualModel(referencePropertyInfo), EdmxInitialCodeSnippet.ConceptualModelAssociationTag);
-                codeBuilder.InsertCode(GetAssoctiationSetNodeForConceptualModel(referencePropertyInfo), EdmxInitialCodeSnippet.ConceptualModelAssociationSetTag);
+                    codeBuilder.InsertCode(GetAssoctiationNodeForConceptualModel(referencePropertyInfo), EntityFrameworkMapping.ConceptualModelTag);
+                codeBuilder.InsertCode(GetAssoctiationSetNodeForConceptualModel(referencePropertyInfo), EntityFrameworkMapping.ConceptualModelEntityContainerTag);
                 codeBuilder.InsertCode(GetPropertyElementForConceptualModel(referencePropertyInfo), DataStructureEdmxCodeGenerator.ConceptualModelEntityTypePropertyTag.Evaluate(referencePropertyInfo.DataStructure));
 
                 codeBuilder.InsertCode(GetScalarPropertyElement(referencePropertyInfo), DataStructureEdmxCodeGenerator.EntitySetMappingPropertyTag.Evaluate(referencePropertyInfo.DataStructure));
@@ -55,13 +45,13 @@ namespace Rhetos.Dom.DefaultConcepts
                 codeBuilder.InsertCode(GetPropertyElementForStorageModel(referencePropertyInfo), DataStructureEdmxCodeGenerator.StorageModelEntityTypePropertyTag.Evaluate(referencePropertyInfo.DataStructure));
                 if (referencePropertyInfo.Referenced.GetKeyProperties().Equals(referencePropertyInfo.DataStructure.GetKeyProperties()))
                 {
-                    codeBuilder.InsertCode(GetAssoctiationNodeForStorageModelForSelfReference(referencePropertyInfo), EdmxInitialCodeSnippet.StorageModelAssociationTag);
-                    codeBuilder.InsertCode(GetAssoctiationSetNodeForStorageModelForSelfeference(referencePropertyInfo), EdmxInitialCodeSnippet.StorageModelAssociationSetTag);
+                    codeBuilder.InsertCode(GetAssoctiationNodeForStorageModelForSelfReference(referencePropertyInfo), EntityFrameworkMapping.StorageModelTag);
+                    codeBuilder.InsertCode(GetAssoctiationSetNodeForStorageModelForSelfeference(referencePropertyInfo), EntityFrameworkMapping.StorageModelEntityContainerTag);
                 }
                 else
                 {
-                    codeBuilder.InsertCode(GetAssoctiationNodeForStorageModel(referencePropertyInfo), EdmxInitialCodeSnippet.StorageModelAssociationTag);
-                    codeBuilder.InsertCode(GetAssoctiationSetNodeForStorageModel(referencePropertyInfo), EdmxInitialCodeSnippet.StorageModelAssociationSetTag);
+                    codeBuilder.InsertCode(GetAssoctiationNodeForStorageModel(referencePropertyInfo), EntityFrameworkMapping.StorageModelTag);
+                    codeBuilder.InsertCode(GetAssoctiationSetNodeForStorageModel(referencePropertyInfo), EntityFrameworkMapping.StorageModelEntityContainerTag);
                 }
             }
         }

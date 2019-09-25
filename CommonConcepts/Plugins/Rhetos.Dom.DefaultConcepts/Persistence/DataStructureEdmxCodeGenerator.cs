@@ -31,9 +31,8 @@ using Rhetos.Persistence;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    [Export(typeof(IEdmxCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(DataStructureInfo))]
-    public class DataStructureEdmxCodeGenerator : IEdmxCodeGenerator
+    [Export(typeof(IConceptMapping))]
+    public class DataStructureEdmxCodeGenerator : ConceptMapping<DataStructureInfo>
     {
         public static readonly XmlTag<DataStructureInfo> ConceptualModelEntityTypePropertyTag = "ConceptualModelEntityTypeProperty";
 
@@ -45,26 +44,24 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static readonly XmlTag<DataStructureInfo> StorageModelCustomannotationIndexForIDTag = "StorageModelCustomannotationIndexForID";
 
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        public override void GenerateCode(DataStructureInfo dataStructureInfo, ICodeBuilder codeBuilder)
         {
-            var dataStructureInfo = conceptInfo as DataStructureInfo;
-
             if (dataStructureInfo is IOrmDataStructure)
             {
-                codeBuilder.InsertCode(GetEntityTypeNodeForConceptualModel(dataStructureInfo), EdmxInitialCodeSnippet.ConceptualModeEntityTypeTag);
-                codeBuilder.InsertCode(GetEntitySetNodeForConceptualModel(dataStructureInfo), EdmxInitialCodeSnippet.ConceptualModeEntitySetTag);
+                codeBuilder.InsertCode(GetEntityTypeNodeForConceptualModel(dataStructureInfo), EntityFrameworkMapping.ConceptualModelTag);
+                codeBuilder.InsertCode(GetEntitySetNodeForConceptualModel(dataStructureInfo), EntityFrameworkMapping.ConceptualModelEntityContainerTag);
 
-                codeBuilder.InsertCode(GetEntitySetMappingForMapping(dataStructureInfo), EdmxInitialCodeSnippet.MappingTag);
+                codeBuilder.InsertCode(GetEntitySetMappingForMapping(dataStructureInfo), EntityFrameworkMapping.MappingEntityContainerTag);
 
-                codeBuilder.InsertCode(GetEntityTypeNodeForStorageModel(dataStructureInfo), EdmxInitialCodeSnippet.StorageModeEntityTypeTag);
-                codeBuilder.InsertCode(GetEntitySetNodeForStorageModel(dataStructureInfo), EdmxInitialCodeSnippet.StorageModeEntitySetTag);
+                codeBuilder.InsertCode(GetEntityTypeNodeForStorageModel(dataStructureInfo), EntityFrameworkMapping.StorageModelTag);
+                codeBuilder.InsertCode(GetEntitySetNodeForStorageModel(dataStructureInfo), EntityFrameworkMapping.StorageModelEntityContainerTag);
             }
         }
 
         private static string GetEntitySetMappingForMapping(DataStructureInfo dataStructureInfo)
         {
             return "\n" + $@"  <EntitySetMapping Name=""{GetName(dataStructureInfo)}"">
-    <EntityTypeMapping TypeName=""Common.{GetName(dataStructureInfo)}"">
+    <EntityTypeMapping TypeName=""{EntityFrameworkMapping.ConceptualModelNamespace}.{GetName(dataStructureInfo)}"">
       <MappingFragment StoreEntitySet=""{GetName(dataStructureInfo)}"">
         <ScalarProperty Name=""ID"" ColumnName=""ID"" />{EntitySetMappingPropertyTag.Evaluate(dataStructureInfo)}
       </MappingFragment>

@@ -17,40 +17,29 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
-using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl;
 using Rhetos.Compiler;
+using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Persistence;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    [Export(typeof(IEdmxCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(UniqueReferenceInfo))]
-    [ExportMetadata(MefProvider.DependsOn, typeof(DataStructureEdmxCodeGenerator))]
-    public class UniqueReferenceEdmxCodeGenerator : IEdmxCodeGenerator
+    [Export(typeof(IConceptMapping))]
+    public class UniqueReferenceEdmxCodeGenerator : ConceptMapping<UniqueReferenceInfo>
     {
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        public override void GenerateCode(UniqueReferenceInfo uniqueReferenceInfo, ICodeBuilder codeBuilder)
         {
-            var uniqueReferenceInfo = conceptInfo as UniqueReferenceInfo;
-
             if (uniqueReferenceInfo.Base is IOrmDataStructure && uniqueReferenceInfo.Extension is IOrmDataStructure)
             {
                 codeBuilder.InsertCode(GetNavigationPropertyNodeForConceptualModelForExtension(uniqueReferenceInfo), DataStructureEdmxCodeGenerator.ConceptualModelEntityTypeNavigationPropertyTag.Evaluate(uniqueReferenceInfo.Base));
                 codeBuilder.InsertCode(GetNavigationPropertyNodeForConceptualModel(uniqueReferenceInfo), DataStructureEdmxCodeGenerator.ConceptualModelEntityTypeNavigationPropertyTag.Evaluate(uniqueReferenceInfo.Extension));
-                codeBuilder.InsertCode(GetAssociationNodeForConceptualModel(uniqueReferenceInfo), EdmxInitialCodeSnippet.ConceptualModelAssociationTag);
+                codeBuilder.InsertCode(GetAssociationNodeForConceptualModel(uniqueReferenceInfo), EntityFrameworkMapping.ConceptualModelTag);
 
-                codeBuilder.InsertCode(GetAssociationSetNodeForConceptualModel(uniqueReferenceInfo), EdmxInitialCodeSnippet.ConceptualModelAssociationSetTag);
+                codeBuilder.InsertCode(GetAssociationSetNodeForConceptualModel(uniqueReferenceInfo), EntityFrameworkMapping.ConceptualModelEntityContainerTag);
 
-                codeBuilder.InsertCode(GetAssociationNodeForStorageModel(uniqueReferenceInfo), EdmxInitialCodeSnippet.StorageModelAssociationTag);
+                codeBuilder.InsertCode(GetAssociationNodeForStorageModel(uniqueReferenceInfo), EntityFrameworkMapping.StorageModelTag);
                 codeBuilder.InsertCode(GetAttributeForIDPropertyForStorageModel(), DataStructureEdmxCodeGenerator.StorageModelCustomannotationIndexForIDTag.Evaluate(uniqueReferenceInfo.Extension));
-                codeBuilder.InsertCode(GetAssociationSetNodeForStorageModel(uniqueReferenceInfo), EdmxInitialCodeSnippet.StorageModelAssociationSetTag);
+                codeBuilder.InsertCode(GetAssociationSetNodeForStorageModel(uniqueReferenceInfo), EntityFrameworkMapping.StorageModelEntityContainerTag);
             }
         }
 
@@ -104,7 +93,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetAttributeForIDPropertyForStorageModel()
         {
-            return "\n" + $@" customannotation:Index=""{{ Name: IX_ID, Order: 0 }}""";
+            return $@" customannotation:Index=""{{ Name: IX_ID, Order: 0 }}""";
         }
 
         private static string GetNavigationPropertyNodeForConceptualModel(UniqueReferenceInfo uniqueReferenceInfo)

@@ -28,8 +28,15 @@ namespace Rhetos.Persistence
     public static class EntityFrameworkMapping
     {
         public static readonly string ConceptualModelTag = "<!--ConceptualModel-->";
+        public static readonly string ConceptualModelEntityContainerTag = "<!--ConceptualModelEntityContainer-->";
         public static readonly string MappingTag = "<!--Mapping-->";
+        public static readonly string MappingEntityContainerTag = "<!--MappingEntityContainer-->";
         public static readonly string StorageModelTag = "<!--StorageModel-->";
+        public static readonly string StorageModelEntityContainerTag = "<!--StorageModelEntityContainer-->";
+
         public static readonly string[] ModelFiles = new[] { "ServerDomEdm.csdl", "ServerDomEdm.msl", "ServerDomEdm.ssdl" };
+
+        public const string ConceptualModelNamespace = "RhetosCM";
+        public const string StorageModelNamespace = "RhetosSM";
     }
 }
