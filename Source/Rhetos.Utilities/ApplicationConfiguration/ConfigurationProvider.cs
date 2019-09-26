@@ -19,7 +19,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -34,25 +36,101 @@ namespace Rhetos.Utilities.ApplicationConfiguration
             this.configurationValues = configurationValues;
         }
 
-        public T ConfigureOptions<T>(string configurationPath = "")
+        public T ConfigureOptions<T>(string configurationPath = "", bool requireAllMembers = false)
         {
-            throw new NotImplementedException();
+            var optionsType = typeof(T);
+            var optionsInstance = Activator.CreateInstance(optionsType);
+
+            var props = optionsType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var fields = optionsType.GetFields(BindingFlags.Public | BindingFlags.Instance);
+            var members = props.Cast<MemberInfo>().Concat(fields.Cast<MemberInfo>()).ToList();
+
+            var membersBound = new List<MemberInfo>();
+            foreach (var member in members)
+            {
+                if (TryGetConfigurationValue(member.Name, out var memberValue, configurationPath))
+                {
+                    SetMemberValue(optionsInstance, member, memberValue);
+
+                    if (requireAllMembers)
+                        membersBound.Add(member);
+                }
+            }
+
+            if (requireAllMembers && membersBound.Count != members.Count)
+            {
+                var missing = members.Where(a => !membersBound.Contains(a)).Select(a => a.Name);
+                throw new FrameworkException($"Binding requires all members to be present in configuration, but some are missing: {string.Join(",", missing)}.");
+            }
+
+            return (T)optionsInstance;
         }
 
-        public T GetValue<T>(string configurationKey, T defaultValue, string configurationPath = "")
+        public T GetValue<T>(string configurationKey, T defaultValue = default, string configurationPath = "")
         {
-            if (!string.IsNullOrEmpty(configurationPath))
-                configurationKey = $"{configurationPath}__{configurationKey}";
-            
-            if (!configurationValues.TryGetValue(configurationKey, out var value))
+            if (!TryGetConfigurationValue(configurationKey, out var value, configurationPath))
                 return defaultValue;
 
             return Convert<T>(value);
         }
 
+        private void SetMemberValue(object instance, MemberInfo member, object value)
+        {
+            if (member is PropertyInfo propertyInfo)
+                propertyInfo.SetValue(instance, Convert(propertyInfo.PropertyType, value));
+            else if (member is FieldInfo fieldInfo)
+                fieldInfo.SetValue(instance, Convert(fieldInfo.FieldType, value));
+            else
+                throw new FrameworkException($"Unhandled member type {member.GetType()}.");
+        }
+
+        private bool TryGetConfigurationValue(string configurationKey, out object result, string configurationPath = "")
+        {
+            if (!string.IsNullOrEmpty(configurationPath))
+                configurationKey = $"{configurationPath}__{configurationKey}";
+
+            return configurationValues.TryGetValue(configurationKey, out result);
+        }
+
+
         private T Convert<T>(object value)
         {
-            throw new NotImplementedException();
+            return (T)Convert(typeof(T), value);
+        }
+
+        private object Convert(Type targetType, object value)
+        {
+            if (targetType == value.GetType()) return value;
+
+            if (!(value is string))
+                throw new FrameworkException($"Can't convert configuration value from type {value.GetType()} to {targetType}. Configuration values can only be fetched in their original type or parsed from string.");
+
+            try
+            {
+                var valueString = value as string;
+
+                if (targetType == typeof(int))
+                    return int.Parse(valueString);
+                else if (targetType == typeof(double))
+                    return double.Parse(NormalizeDecimalSeparator(valueString));
+                else if (targetType == typeof(bool))
+                    return bool.Parse(valueString);
+                else if (targetType.IsEnum)
+                    return Enum.Parse(targetType, valueString);
+            }
+            catch (Exception e)
+            {
+                throw new FrameworkException($"Type conversion failed converting '{value}' to {targetType}.", e);
+            }
+
+            throw new FrameworkException($"Configuration type {targetType} is not supported.");
+        }
+
+        private string NormalizeDecimalSeparator(string value)
+        {
+            return value
+                .Replace(".", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator)
+                .Replace(",", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
         }
     }
 }
