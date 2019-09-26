@@ -185,15 +185,14 @@ namespace Rhetos.Dsl.DefaultConcepts
             return '\0';
         }
 
-        private static string sqlIdentifier = @"\w+|\[\w+\]|\""\w+\"""; // Use of special characters inside the bracket is not supported. DependsOn can be manually created for such objects.
-        private static string sqlName = string.Format(@"({0})\s*\.\s*({0})", sqlIdentifier);
+        private static readonly string sqlIdentifier = @"\w+|\[\w+\]|\""\w+\"""; // Use of special characters inside the bracket is not supported. DependsOn can be manually created for such objects.
+        private static readonly string sqlName = string.Format(@"(?<schema>{0})\s*\.\s*(?<name>{0})", sqlIdentifier);
 
-        private static Regex fromRegex = new Regex(@"\bFROM\s+" + sqlName, RegexOptions.IgnoreCase);
-        private static Regex joinRegex = new Regex(@"\bJOIN\s+" + sqlName, RegexOptions.IgnoreCase);
-        private static Regex scalarFunctionRegex = new Regex(sqlName + @"\s*\(");
-        private static Regex crossJoinFromRegex = new Regex(@"\bFROM\b", RegexOptions.IgnoreCase);
-        private static Regex crossJoinRegex = new Regex(@",\s*" + sqlName);
-        private static Regex identifierRegex = new Regex(sqlIdentifier);
+        private static readonly Regex simpleUsageRegex = new Regex(@"\b(FROM|JOIN|INTO|MERGE|USING)\s+" + sqlName, RegexOptions.IgnoreCase);
+        private static readonly Regex scalarFunctionRegex = new Regex(sqlName + @"\s*\(");
+        private static readonly Regex crossJoinFromRegex = new Regex(@"\bFROM\b", RegexOptions.IgnoreCase);
+        private static readonly Regex crossJoinRegex = new Regex(@",\s*" + sqlName);
+        private static readonly Regex identifierRegex = new Regex(sqlIdentifier);
 
         private static List<string> ExtractPossibleObjects(string sql)
         {
@@ -201,8 +200,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             var sqlObjects = new List<string>();
 
-            Extract(sql, sqlObjects, fromRegex);
-            Extract(sql, sqlObjects, joinRegex);
+            Extract(sql, sqlObjects, simpleUsageRegex);
             Extract(sql, sqlObjects, scalarFunctionRegex);
 
             var firstFrom = crossJoinFromRegex.Match(sql);
@@ -215,7 +213,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         private static void Extract(string sql, List<string> sqlObjects, Regex regex, int startPosition = 0)
         {
             foreach (Match match in regex.Matches(sql, startPosition))
-                sqlObjects.Add(RemoveQuotes(match.Groups[1].Value) + "." + RemoveQuotes(match.Groups[2].Value));
+                sqlObjects.Add(RemoveQuotes(match.Groups["schema"].Value) + "." + RemoveQuotes(match.Groups["name"].Value));
         }
 
         private static string RemoveQuotes(string name)

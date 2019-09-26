@@ -141,7 +141,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (node == _oldParameter)
                     return _newParameter;
                 else
-                    return node;
+                    return base.VisitParameter(node);
             }
         }
     }

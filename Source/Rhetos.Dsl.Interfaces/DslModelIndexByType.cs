@@ -17,13 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Diagnostics.Contracts;
-using System.ComponentModel.Composition;
-using Rhetos.Utilities;
 
 namespace Rhetos.Dsl
 {

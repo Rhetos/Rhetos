@@ -17,29 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Dsl;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.ComponentModel.Composition;
 
-namespace Rhetos.CommonConcepts.Test.Mocks
+namespace Rhetos.Dsl.DefaultConcepts
 {
-    public class DslModelMock : List<IConceptInfo>, IDslModel
+    [Export(typeof(IConceptInfo))]
+    public class ModificationTimeOfInfrastructureInfo : IConceptInfo
     {
-        public IEnumerable<IConceptInfo> Concepts { get { return this; } }
-
-        public IConceptInfo FindByKey(string conceptKey)
-        {
-            return this.SingleOrDefault(c => c.GetKey() == conceptKey);
-        }
-
-        public T GetIndex<T>() where T : IDslModelIndex
-        {
-            IDslModelIndex index = (IDslModelIndex)typeof(T).GetConstructor(new Type[] { }).Invoke(new object[] { });
-            foreach (var concept in Concepts)
-                index.Add(concept);
-            return (T)index;
-        }
+        [ConceptKey]
+        public DataStructureInfo DataStructure { get; set; }
     }
 }

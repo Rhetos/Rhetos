@@ -35,7 +35,7 @@ namespace Rhetos.Dsl
         private readonly ILogger _logger;
         private readonly ILogger _evaluatorsOrderLogger;
         private readonly ILogger _dslModelConceptsLogger;
-        private readonly DslContainer _dslContainer;
+        private readonly Lazy<DslContainer> _initializedDslContainer;
         private readonly IIndex<Type, IEnumerable<IConceptMacro>>  _macros;
         private readonly IEnumerable<Type> _macroTypes;
         private readonly IEnumerable<Type> _conceptTypes;
@@ -57,7 +57,7 @@ namespace Rhetos.Dsl
             _logger = logProvider.GetLogger("DslModel");
             _evaluatorsOrderLogger = logProvider.GetLogger("MacroEvaluatorsOrder");
             _dslModelConceptsLogger = logProvider.GetLogger("DslModelConcepts");
-            _dslContainer = dslContainer;
+            _initializedDslContainer = new Lazy<DslContainer>(() => Initialize(dslContainer));
             _macros = macros;
             _macroTypes = macroPrototypes.Select(macro => macro.GetType());
             _conceptTypes = conceptPrototypes.Select(conceptInfo => conceptInfo.GetType());
@@ -67,66 +67,33 @@ namespace Rhetos.Dsl
 
         #region IDslModel implementation
 
-        public IEnumerable<IConceptInfo> Concepts
-        {
-            get
-            {
-                if (!_initialized)
-                    Initialize();
-                return _dslContainer.Concepts;
-            }
-        }
+        public IEnumerable<IConceptInfo> Concepts => _initializedDslContainer.Value.Concepts;
 
-        public IConceptInfo FindByKey(string conceptKey)
-        {
-            if (!_initialized)
-                Initialize();
-            return _dslContainer.FindByKey(conceptKey);
-        }
+        public IConceptInfo FindByKey(string conceptKey) => _initializedDslContainer.Value.FindByKey(conceptKey);
 
-        public IEnumerable<IConceptInfo> FindByType(Type conceptType)
-        {
-            if (!_initialized)
-                Initialize();
-            return _dslContainer.FindByType(conceptType);
-        }
-
-        public T GetIndex<T>() where T : IDslModelIndex
-        {
-            if (!_initialized)
-                Initialize();
-            return _dslContainer.GetIndex<T>();
-        }
+        public T GetIndex<T>() where T : IDslModelIndex => _initializedDslContainer.Value.GetIndex<T>();
 
         #endregion
 
-        private bool _initialized;
-        private readonly object _initializationLock = new object();
-
-        private void Initialize()
+        private DslContainer Initialize(DslContainer dslContainer)
         {
-            if (!_initialized)
-                lock (_initializationLock)
-                    if (!_initialized)
-                    {
-                        var swTotal = Stopwatch.StartNew();
-                        var parsedConcepts = _dslParser.ParsedConcepts;
+            var swTotal = Stopwatch.StartNew();
+            var parsedConcepts = _dslParser.ParsedConcepts;
 
-                        var swFirstAdd = Stopwatch.StartNew();
-                        _dslContainer.AddNewConceptsAndReplaceReferences(parsedConcepts);
-                        _performanceLogger.Write(swFirstAdd, $"DslModel.Initialize: First AddNewConceptsAndReplaceReferences ({_dslContainer.Concepts.Count()} concepts).");
+            var swFirstAdd = Stopwatch.StartNew();
+            dslContainer.AddNewConceptsAndReplaceReferences(parsedConcepts);
+            _performanceLogger.Write(swFirstAdd, $"DslModel.Initialize: First AddNewConceptsAndReplaceReferences ({dslContainer.Concepts.Count()} concepts).");
 
-                        ExpandMacroConcepts();
-                        _dslContainer.ReportErrorForUnresolvedConcepts();
-                        CheckSemantics();
-                        _dslContainer.SortReferencesBeforeUsingConcept();
-                        LogDslModel();
-                        ReportObsoleteConcepts();
-                        _dslModelFile.SaveConcepts(_dslContainer.Concepts);
+            ExpandMacroConcepts(dslContainer);
+            dslContainer.ReportErrorForUnresolvedConcepts();
+            CheckSemantics(dslContainer);
+            dslContainer.SortReferencesBeforeUsingConcept();
+            LogDslModel(dslContainer);
+            ReportObsoleteConcepts(dslContainer);
+            _dslModelFile.SaveConcepts(dslContainer.Concepts);
 
-                        _performanceLogger.Write(swTotal, $"DslModel.Initialize ({_dslContainer.Concepts.Count()} concepts).");
-                        _initialized = true;
-                    }
+            _performanceLogger.Write(swTotal, $"DslModel.Initialize ({dslContainer.Concepts.Count()} concepts).");
+            return dslContainer;
         }
 
         private const int MacroIterationLimit = 200;
@@ -146,7 +113,7 @@ namespace Rhetos.Dsl
             public string Created;
         }
 
-        private void ExpandMacroConcepts()
+        private void ExpandMacroConcepts(DslContainer dslContainer)
         {
             var swTotal = Stopwatch.StartNew();
             var sw = Stopwatch.StartNew();
@@ -159,11 +126,11 @@ namespace Rhetos.Dsl
             var recommendedMacroOrder = _macroOrderRepository.Load().ToDictionary(m => m.EvaluatorName, m => m.EvaluatorOrder);
             var macroEvaluators = ListMacroEvaluators(recommendedMacroOrder);
             var macroStopwatches = macroEvaluators.ToDictionary(macro => macro.Name, macro => new Stopwatch());
-            var createdTypesInIteration = new List<CreatedTypesInIteration>(_dslContainer.Concepts.Count() * 5);
+            var createdTypesInIteration = new List<CreatedTypesInIteration>(dslContainer.Concepts.Count() * 5);
             _performanceLogger.Write(sw, "DslModel.ExpandMacroConcepts initialization ("
                 + macroEvaluators.Count + " evaluators, "
-                + _dslContainer.Concepts.Count() + " parsed concepts resolved, "
-                + _dslContainer.UnresolvedConceptsCount() + " unresolved).");
+                + dslContainer.Concepts.Count() + " parsed concepts resolved, "
+                + dslContainer.UnresolvedConceptsCount() + " unresolved).");
 
             do
             {
@@ -180,21 +147,21 @@ namespace Rhetos.Dsl
                 foreach (var macroEvaluator in macroEvaluators)
                 {
                     macroStopwatches[macroEvaluator.Name].Start();
-                    foreach (var conceptInfo in _dslContainer.FindByType(macroEvaluator.Implements, macroEvaluator.ImplementsDerivations).ToList())
+                    foreach (var conceptInfo in dslContainer.FindByType(macroEvaluator.Implements, macroEvaluator.ImplementsDerivations).ToList())
                     {
-                        var macroCreatedConcepts = macroEvaluator.Evaluate(conceptInfo, _dslContainer);
+                        var macroCreatedConcepts = macroEvaluator.Evaluate(conceptInfo, dslContainer);
                         CsUtility.Materialize(ref macroCreatedConcepts);
 
-                        if (macroCreatedConcepts != null && macroCreatedConcepts.Count() > 0)
+                        if (macroCreatedConcepts != null && macroCreatedConcepts.Any())
                         {
                             _logger.Trace(() => "Evaluating macro " + macroEvaluator.Name + " on " + conceptInfo.GetShortDescription() + ".");
 
                             var aiCreatedConcepts = AlternativeInitialization.InitializeNonparsableProperties(macroCreatedConcepts, _logger);
 
-                            var newConceptsReport = _dslContainer.AddNewConceptsAndReplaceReferences(
+                            var newConceptsReport = dslContainer.AddNewConceptsAndReplaceReferences(
                                 aiCreatedConcepts.Concat(macroCreatedConcepts));
 
-                            _logger.Trace(() => LogCreatedConcepts(macroCreatedConcepts, newConceptsReport));
+                            _logger.Trace(() => LogCreatedConcepts(dslContainer, macroCreatedConcepts, newConceptsReport));
 
                             iterationCreatedConcepts.AddRange(newConceptsReport.NewUniqueConcepts);
 
@@ -206,13 +173,13 @@ namespace Rhetos.Dsl
                         }
                     }
                     macroStopwatches[macroEvaluator.Name].Stop();
-                };
+                }
 
                 lastResolvedConceptTimeByIteration.Add(lastResolvedConceptTime);
 
                 _performanceLogger.Write(sw, "DslModel.ExpandMacroConcepts iteration " + iteration + " ("
                     + iterationCreatedConcepts.Count + " new concepts, "
-                    + _dslContainer.UnresolvedConceptsCount() + " left unresolved).");
+                    + dslContainer.UnresolvedConceptsCount() + " left unresolved).");
 
             } while (iterationCreatedConcepts.Count > 0);
 
@@ -228,7 +195,7 @@ namespace Rhetos.Dsl
             _performanceLogger.Write(swTotal, "DslModel.ExpandMacroConcepts.");
         }
 
-        private string LogCreatedConcepts(IEnumerable<IConceptInfo> macroCreatedConcepts, DslContainer.AddNewConceptsReport newConceptsReport)
+        private string LogCreatedConcepts(DslContainer dslContainer, IEnumerable<IConceptInfo> macroCreatedConcepts, DslContainer.AddNewConceptsReport newConceptsReport)
         {
             var report = new StringBuilder();
             var newUniqueIndex = new HashSet<string>(newConceptsReport.NewUniqueConcepts.Select(c => c.GetKey()));
@@ -237,7 +204,7 @@ namespace Rhetos.Dsl
             LogConcepts(report, "New unique", newConceptsReport.NewUniqueConcepts);
             LogConcepts(report, "New resolved", newConceptsReport.NewlyResolvedConcepts.Where(c => newUniqueIndex.Contains(c.GetKey())));
             LogConcepts(report, "Old resolved", newConceptsReport.NewlyResolvedConcepts.Where(c => !newUniqueIndex.Contains(c.GetKey())));
-            LogConcepts(report, "New unresolved", newConceptsReport.NewUniqueConcepts.Where(c => _dslContainer.FindByKey(c.GetKey()) == null));
+            LogConcepts(report, "New unresolved", newConceptsReport.NewUniqueConcepts.Where(c => dslContainer.FindByKey(c.GetKey()) == null));
 
             return report.ToString();
         }
@@ -245,13 +212,13 @@ namespace Rhetos.Dsl
         private void LogConcepts(StringBuilder report, string reportName, IEnumerable<IConceptInfo> concepts, bool first = false)
         {
             CsUtility.Materialize(ref concepts);
-            if (concepts != null && concepts.Count() > 0)
+            if (concepts != null && concepts.Any())
                 report.Append(first ? "" : "\r\n").Append(reportName).Append(": ").Append(string.Join(", ", concepts.Select(c => c.GetShortDescription())) + ".");
         }
 
         private string LogCreatedTypesInIteration(List<CreatedTypesInIteration> createdTypesInIteration)
         {
-            var report = new StringBuilder(createdTypesInIteration.Count() * 50);
+            var report = new StringBuilder(createdTypesInIteration.Count * 50);
             report.Append("Created types:");
             foreach (var ct in createdTypesInIteration)
                 report.Append("\r\n").Append(ct.Iteration).Append("\t")
@@ -329,7 +296,7 @@ namespace Rhetos.Dsl
             var report = new StringBuilder();
 
             int previousIterationTime = 0;
-            for (int i = 0; i < lastResolvedConceptTimeByIteration.Count(); i++)
+            for (int i = 0; i < lastResolvedConceptTimeByIteration.Count; i++)
             {
                 report.AppendLine("Iteration " + (i + 1) + ":");
                 foreach (var evaluator in orderedMacros)
@@ -353,18 +320,18 @@ namespace Rhetos.Dsl
             _macroOrderRepository.Save(macroOrders);
         }
 
-        private void CheckSemantics()
+        private void CheckSemantics(DslContainer dslContainer)
         {
             var sw = Stopwatch.StartNew();
 
             // Validations are grouped by concept type, for group performance diagnostics.
             var validationsByConcept = new MultiDictionary<Type, Action>();
 
-            foreach (var conceptValidation in _dslContainer.FindByType<IValidationConcept>())
-                validationsByConcept.Add(conceptValidation.GetType(), () => conceptValidation.CheckSemantics(_dslContainer.Concepts));
+            foreach (var conceptValidation in dslContainer.FindByType<IValidationConcept>())
+                validationsByConcept.Add(conceptValidation.GetType(), () => conceptValidation.CheckSemantics(dslContainer.Concepts));
 
-            foreach (var conceptValidation in _dslContainer.FindByType<IValidatedConcept>())
-                validationsByConcept.Add(conceptValidation.GetType(), () => conceptValidation.CheckSemantics(_dslContainer));
+            foreach (var conceptValidation in dslContainer.FindByType<IValidatedConcept>())
+                validationsByConcept.Add(conceptValidation.GetType(), () => conceptValidation.CheckSemantics(dslContainer));
 
             var validationStopwatches = new Dictionary<Type, Stopwatch>();
 
@@ -385,26 +352,26 @@ namespace Rhetos.Dsl
             _performanceLogger.Write(sw, "DslModel.CheckSemantics");
         }
 
-        private void LogDslModel()
+        private void LogDslModel(DslContainer dslContainer)
         {
             var sw = Stopwatch.StartNew();
 
             // It is important to avoid generating the log data if the logger is not enabled.
-            var sortedConceptsLog = new Lazy<List<string>>(() => _dslContainer.Concepts
+            var sortedConceptsLog = new Lazy<List<string>>(() => dslContainer.Concepts
                 .Select(c => c.GetFullDescription())
                 .OrderBy(log => log)
                 .ToList());
 
             const int chunkSize = 10000; // Keeping the message size under NLog memory limit.
-            for (int start = 0; start < _dslContainer.Concepts.Count(); start += chunkSize)
+            for (int start = 0; start < dslContainer.Concepts.Count(); start += chunkSize)
                 _dslModelConceptsLogger.Trace(() => string.Join("\r\n", sortedConceptsLog.Value.Skip(start).Take(chunkSize)));
 
             _performanceLogger.Write(sw, "DslModel.LogDslModel.");
         }
 
-        private void ReportObsoleteConcepts()
+        private void ReportObsoleteConcepts(DslContainer dslContainer)
         {
-            var obsoleteConceptsByType = _dslContainer.Concepts
+            var obsoleteConceptsByType = dslContainer.Concepts
                 .GroupBy(concept => concept.GetType())
                 .Select(conceptsGroup => new
                 {

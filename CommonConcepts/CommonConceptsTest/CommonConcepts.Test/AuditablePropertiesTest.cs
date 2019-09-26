@@ -130,7 +130,7 @@ namespace CommonConcepts.Test
                     Assert.IsNotNull(generatedModificationTime, testInfo + " Insert: Generated ModificationTime is null.");
 
                     var expectedTime = ReadExpectedResult(insertData, start).Value;
-                    AssertJustAfter(expectedTime, generatedModificationTime, "After insert");
+                    AssertJustAfter(expectedTime, generatedModificationTime, testInfo + " After insert");
                 }
 
                 if (string.IsNullOrEmpty(updateData))
@@ -144,7 +144,7 @@ namespace CommonConcepts.Test
                     Assert.IsNotNull(generatedModificationTime, testInfo + " Update: Generated ModificationTime is null.");
 
                     var expectedTime = ReadExpectedResult(updateData, start).Value;
-                    AssertJustAfter(expectedTime, generatedModificationTime, "After update");
+                    AssertJustAfter(expectedTime, generatedModificationTime, testInfo + " After update");
                 }
             }
         }

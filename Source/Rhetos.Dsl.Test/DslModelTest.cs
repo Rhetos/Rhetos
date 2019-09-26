@@ -127,8 +127,16 @@ namespace Rhetos.Dsl.Test
 
         static IDslModel NewDslModel(IDslParser parser, IEnumerable<IConceptInfo> conceptPrototypes)
         {
-            var dslContainter = new DslContainer(new ConsoleLogProvider(), new MockPluginsContainer<IDslModelIndex>(new DslModelIndexByType()));
-            var dslModel = new DslModel(parser, new ConsoleLogProvider(), dslContainter, new StubMacroIndex(), new IConceptMacro[] { }, conceptPrototypes, new StubMacroOrderRepository(), new StubDslModelFile());
+            var dslContainter = new DslContainer(new ConsoleLogProvider(), new MockPluginsContainer<IDslModelIndex>(new DslModelIndexByType()), new MockConfiguration());
+            var dslModel = new DslModel(
+                parser,
+                new ConsoleLogProvider(),
+                dslContainter,
+                new StubMacroIndex(),
+                new IConceptMacro[] { },
+                conceptPrototypes,
+                new StubMacroOrderRepository(),
+                new StubDslModelFile());
             return dslModel;
         }
 
