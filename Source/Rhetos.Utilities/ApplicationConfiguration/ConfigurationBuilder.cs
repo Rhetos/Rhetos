@@ -29,9 +29,10 @@ namespace Rhetos.Utilities.ApplicationConfiguration
     {
         private readonly List<IConfigurationSource> configurationSources = new List<IConfigurationSource>();
 
-        public void Add(IConfigurationSource source)
+        public IConfigurationBuilder Add(IConfigurationSource source)
         {
             configurationSources.Add(source);
+            return this;
         }
 
         public IConfigurationProvider Build()

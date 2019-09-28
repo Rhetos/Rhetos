@@ -29,5 +29,6 @@ namespace Rhetos.Utilities.ApplicationConfiguration
     {
         T GetValue<T>(string configurationKey, T defaultValue = default, string configurationPath = "");
         T ConfigureOptions<T>(string configurationPath = "", bool requireAllMembers = false);
+        string[] AllKeys { get; }
     }
 }

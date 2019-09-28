@@ -27,7 +27,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration
 {
     public interface IConfigurationBuilder
     {
-        void Add(IConfigurationSource source);
+        IConfigurationBuilder Add(IConfigurationSource source);
         IConfigurationProvider Build();
     }
 }

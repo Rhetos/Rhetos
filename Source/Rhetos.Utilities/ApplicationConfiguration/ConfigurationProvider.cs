@@ -74,6 +74,8 @@ namespace Rhetos.Utilities.ApplicationConfiguration
             return Convert<T>(value);
         }
 
+        public string[] AllKeys => configurationValues.Keys.ToArray();
+
         private void SetMemberValue(object instance, MemberInfo member, object value)
         {
             if (member is PropertyInfo propertyInfo)
@@ -100,7 +102,8 @@ namespace Rhetos.Utilities.ApplicationConfiguration
 
         private object Convert(Type targetType, object value)
         {
-            if (targetType == value.GetType()) return value;
+            if (value == null) return null;
+            if (targetType == value.GetType() || targetType == typeof(object)) return value;
 
             if (!(value is string))
                 throw new FrameworkException($"Can't convert configuration value from type {value.GetType()} to {targetType}. Configuration values can only be fetched in their original type or parsed from string.");

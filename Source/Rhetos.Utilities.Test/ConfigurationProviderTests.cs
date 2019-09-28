@@ -32,6 +32,18 @@ namespace Rhetos.Utilities.Test
     public class ConfigurationProviderTests
     {
         [TestMethod]
+        public void AllKeys()
+        {
+            var provider = new ConfigurationBuilder()
+                .AddKeyValue("App__TestSection__StringValue", "hello")
+                .AddKeyValue("RootValue", "world")
+                .Build();
+
+            var keys = string.Join(",", provider.AllKeys);
+            Assert.AreEqual("App__TestSection__StringValue,RootValue", keys);
+        }
+
+        [TestMethod]
         public void GetByPathAndName()
         {
             var provider = new ConfigurationBuilder()
@@ -203,6 +215,18 @@ namespace Rhetos.Utilities.Test
 
             Assert.AreEqual("101", poco2.opt1);
             Assert.AreEqual("102", poco2.opt2);
+        }
+
+        [TestMethod]
+        public void SystemConfigurationSource()
+        {
+            var provider = new ConfigurationBuilder()
+                .AddSystemConfiguration()
+                .Build();
+
+            Assert.IsTrue(provider.AllKeys.Contains("ConnectionStrings__ServerConnectionString__Name"));
+            Assert.AreEqual(30, provider.GetValue("SqlCommandTimeout", 0));
+            Assert.AreEqual("TestSettingValue", provider.GetValue("AdditionalTestSetting", "", "TestSection"));
         }
     }
 }

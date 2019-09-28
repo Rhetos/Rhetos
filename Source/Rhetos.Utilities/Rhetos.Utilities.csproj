@@ -136,7 +136,9 @@
   <ItemGroup>
     <Compile Include="ApplicationConfiguration\ConfigurationBuilder.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationProvider.cs" />
-    <Compile Include="ApplicationConfiguration\DefaultSources\KeyValueSourceBuilderExtensions.cs" />
+    <Compile Include="ApplicationConfiguration\ConnectionStringOptions.cs" />
+    <Compile Include="ApplicationConfiguration\DefaultSources\DefaultSourcesBuilderExtensions.cs" />
+    <Compile Include="ApplicationConfiguration\DefaultSources\SystemConfigurationSource.cs" />
     <Compile Include="ApplicationConfiguration\IConfigurationBuilder.cs" />
     <Compile Include="ApplicationConfiguration\IConfigurationProvider.cs" />
     <Compile Include="ApplicationConfiguration\IConfigurationSource.cs" />
