@@ -20,9 +20,11 @@
 using Rhetos.Utilities.ApplicationConfiguration.DefaultSources;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Configuration;
 
 namespace Rhetos.Utilities.ApplicationConfiguration
 {
@@ -40,9 +42,27 @@ namespace Rhetos.Utilities.ApplicationConfiguration
             return builder;
         }
 
-        public static IConfigurationBuilder AddSystemConfiguration(this IConfigurationBuilder builder)
+        public static IConfigurationBuilder AddConfigurationManagerConfiguration(this IConfigurationBuilder builder)
         {
-            builder.Add(new SystemConfigurationSource());
+            builder.Add(new ConfigurationManagerSource());
+            return builder;
+        }
+
+        public static IConfigurationBuilder AddConfigurationFile(this IConfigurationBuilder builder, string filePath)
+        {
+            ExeConfigurationFileMap configMap = new ExeConfigurationFileMap { ExeConfigFilename = filePath };
+            System.Configuration.Configuration configuration = ConfigurationManager.OpenMappedExeConfiguration(configMap, ConfigurationUserLevel.None);
+            builder.Add(new ConfigurationFileSource(configuration));
+            return builder;
+        }
+
+        public static IConfigurationBuilder AddWebConfiguration(this IConfigurationBuilder builder, string webRootPath)
+        {
+            VirtualDirectoryMapping vdm = new VirtualDirectoryMapping(webRootPath, true);
+            WebConfigurationFileMap wcfm = new WebConfigurationFileMap();
+            wcfm.VirtualDirectories.Add("/", vdm);
+            System.Configuration.Configuration configuration = WebConfigurationManager.OpenMappedWebConfiguration(wcfm, "/");
+            builder.Add(new ConfigurationFileSource(configuration));
             return builder;
         }
     }

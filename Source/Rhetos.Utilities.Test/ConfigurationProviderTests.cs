@@ -218,15 +218,67 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
-        public void SystemConfigurationSource()
+        public void ConfigurationManagerSource()
         {
             var provider = new ConfigurationBuilder()
-                .AddSystemConfiguration()
+                .AddConfigurationManagerConfiguration()
                 .Build();
 
             Assert.IsTrue(provider.AllKeys.Contains("ConnectionStrings__ServerConnectionString__Name"));
             Assert.AreEqual(30, provider.GetValue("SqlCommandTimeout", 0));
             Assert.AreEqual("TestSettingValue", provider.GetValue("AdditionalTestSetting", "", "TestSection"));
+        }
+
+        [TestMethod]
+        public void ConfigurationFileSource()
+        {
+            var provider = new ConfigurationBuilder()
+                .AddConfigurationFile("TestCfg.config")
+                .Build();
+
+            Assert.IsTrue(provider.AllKeys.Contains("ConnectionStrings__TestConnectionString__Name"));
+            Assert.AreEqual(99, provider.GetValue("TestCfgValue", 0));
+        }
+
+        [TestMethod]
+        public void WebConfigurationSource()
+        {
+            var rootPath = AppDomain.CurrentDomain.BaseDirectory;
+            System.Diagnostics.Trace.WriteLine($"Using {rootPath} as rootPath.");
+            var provider = new ConfigurationBuilder()
+                .AddWebConfiguration(rootPath)
+                .Build();
+
+            Assert.IsTrue(provider.AllKeys.Contains("ConnectionStrings__WebConnectionString__Name"));
+            Assert.AreEqual(199, provider.GetValue("TestWebValue", 0));
+        }
+
+        public class PocoSingleValid
+        {
+            public int opt = 1;
+            private int optPrivate = 2;
+            public readonly int optReadOnlyField = 3;
+            public int optGetOnlyProperty => 4;
+            public int GetOptPrivate() => optPrivate;
+        }
+
+        [TestMethod]
+        public void IgnoresNonSettable()
+        {
+            var provider = new ConfigurationBuilder()
+                .AddKeyValue("opt", 11)
+                .AddKeyValue("optPrivate", 12)
+                .AddKeyValue("optReadOnlyField", 13)
+                .AddKeyValue("optGetOnlyProperty", 14)
+                .Build();
+
+            var options = provider.ConfigureOptions<PocoSingleValid>();
+
+            Assert.AreEqual(11, options.opt);
+            Assert.AreEqual(2, options.GetOptPrivate());
+            Assert.AreEqual(3, options.optReadOnlyField);
+            Assert.AreEqual(4, options.optGetOnlyProperty);
+
         }
     }
 }

@@ -26,36 +26,26 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Utilities.ApplicationConfiguration.DefaultSources
 {
-    public class SystemConfigurationSource : IConfigurationSource
+    public class ConfigurationManagerSource : IConfigurationSource
     {
         public Dictionary<string, object> Load()
         {
-            var settings = new Dictionary<string, object>();
-
+            var appSettings = new List<KeyValuePair<string, string>>();
             if (ConfigurationManager.AppSettings != null)
             {
                 foreach (var key in ConfigurationManager.AppSettings.AllKeys)
-                {
-                    var normalizedKey = key
-                        .Replace(".", "__")
-                        .Replace(":", "__");
-                    settings[normalizedKey] = ConfigurationManager.AppSettings[key];
-                }
+                    appSettings.Add(new KeyValuePair<string, string>(key, ConfigurationManager.AppSettings[key]));
             }
 
-
+            var connectionStrings = new List<ConnectionStringSettings>();
             if (ConfigurationManager.ConnectionStrings != null)
             {
                 foreach (ConnectionStringSettings connectionString in ConfigurationManager.ConnectionStrings)
-                {
-                    var connectionSectionName = $"ConnectionStrings__{connectionString.Name}";
-                    settings[$"{connectionSectionName}__Name"] = connectionString.Name;
-                    settings[$"{connectionSectionName}__ConnectionString"] = connectionString.ConnectionString;
-                    settings[$"{connectionSectionName}__ProviderName"] = connectionString.ProviderName;
-                }
+                    connectionStrings.Add(connectionString);
             }
 
-            return settings;
+            return new DotNetConfigurationSource(appSettings, connectionStrings)
+                .Load();
         }
     }
 }

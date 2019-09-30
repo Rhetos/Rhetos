@@ -41,8 +41,8 @@ namespace Rhetos.Utilities.ApplicationConfiguration
             var optionsType = typeof(T);
             var optionsInstance = Activator.CreateInstance(optionsType);
 
-            var props = optionsType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            var fields = optionsType.GetFields(BindingFlags.Public | BindingFlags.Instance);
+            var props = optionsType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(a => a.CanWrite);
+            var fields = optionsType.GetFields(BindingFlags.Public | BindingFlags.Instance).Where(a => !a.IsInitOnly);
             var members = props.Cast<MemberInfo>().Concat(fields.Cast<MemberInfo>()).ToList();
 
             var membersBound = new List<MemberInfo>();

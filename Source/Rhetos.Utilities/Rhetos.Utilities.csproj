@@ -138,7 +138,9 @@
     <Compile Include="ApplicationConfiguration\ConfigurationProvider.cs" />
     <Compile Include="ApplicationConfiguration\ConnectionStringOptions.cs" />
     <Compile Include="ApplicationConfiguration\DefaultSources\DefaultSourcesBuilderExtensions.cs" />
-    <Compile Include="ApplicationConfiguration\DefaultSources\SystemConfigurationSource.cs" />
+    <Compile Include="ApplicationConfiguration\DefaultSources\ConfigurationManagerSource.cs" />
+    <Compile Include="ApplicationConfiguration\DefaultSources\ConfigurationFileSource.cs" />
+    <Compile Include="ApplicationConfiguration\DefaultSources\DotNetConfigurationSource.cs" />
     <Compile Include="ApplicationConfiguration\IConfigurationBuilder.cs" />
     <Compile Include="ApplicationConfiguration\IConfigurationProvider.cs" />
     <Compile Include="ApplicationConfiguration\IConfigurationSource.cs" />
@@ -156,6 +158,8 @@
     <Compile Include="ISqlUtility.cs" />
     <Compile Include="IUserInfoAdmin.cs" />
     <Compile Include="ListOfTuples.cs" />
+    <Compile Include="RhetosOptions.cs" />
+    <Compile Include="ServerEnvironment.cs" />
     <Compile Include="SqlTransactionBatches.cs" />
     <Compile Include="NoLocalizer.cs" />
     <Compile Include="ILocalizer.cs" />
