@@ -32,8 +32,10 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             HardcodedEntityInfo info = (HardcodedEntityInfo)conceptInfo;
-            var codeSnippet = $@"throw new Rhetos.UserException(""It is not allowed to modify hard-coded data in {conceptInfo.GetKeyProperties()}."");";
-            codeBuilder.InsertCode(codeSnippet, WritableOrmDataStructureCodeGenerator.InitializationTag, info);
+            var codeSnippet =
+            $@"throw new Rhetos.UserException(""It is not allowed to modify hard-coded data in {{0}}."", new []{{""{conceptInfo.GetKeyProperties()}""}}, null, null);
+            ";
+            codeBuilder.InsertCode(codeSnippet, WritableOrmDataStructureCodeGenerator.ArgumentValidationTag, info);
         }
     }
 }
