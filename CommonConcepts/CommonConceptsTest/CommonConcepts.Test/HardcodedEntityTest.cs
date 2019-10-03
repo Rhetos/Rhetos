@@ -91,5 +91,21 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("a\r\n'\r\nb", item.Description);
             }
         }
+
+        [TestMethod]
+        public void ModifyingHardcodedEntityTest()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                TestUtility.ShouldFail<Rhetos.UserException>(() => {
+                    repository.TestHardcodedEntity.SimpleHardcodedEntity.Insert(new TestHardcodedEntity.SimpleHardcodedEntity
+                    {
+                        Description = "Test"
+                    });
+                }, "It is not allowed to modify hard-coded data in {0}");
+            }
+        }
     }
 }
