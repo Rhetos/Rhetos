@@ -104,7 +104,7 @@ namespace CommonConcepts.Test
                     {
                         Description = "Test"
                     });
-                }, "It is not allowed to modify hard-coded data in {0}");
+                }, "It is not allowed to modify hard-coded data in TestHardcodedEntity.SimpleHardcodedEntity");
             }
         }
     }
