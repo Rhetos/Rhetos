@@ -114,7 +114,7 @@ namespace Rhetos.Deployment
             string configFilePath = Path.Combine(GetConfigurationFolder(), configFileName);
 
             if (File.Exists(configFilePath))
-                return File.ReadAllText(configFilePath, Encoding.Default);
+                return File.ReadAllText(configFilePath, Encoding.UTF8);
             else
                 throw new UserException($"Missing configuration file '{configFilePath}'." +
                     $" Please copy the template file '{templateFileName}' to '{Path.GetFileName(configFilePath)}'." +

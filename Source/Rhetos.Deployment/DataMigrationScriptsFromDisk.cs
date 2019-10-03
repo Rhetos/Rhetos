@@ -34,10 +34,12 @@ namespace Rhetos.Deployment
         const string DataMigrationSubfolderPrefix = DataMigrationSubfolder + @"\";
 
         protected readonly IInstalledPackages _installedPackages;
+        private readonly IConfiguration _configuration;
 
-        public DataMigrationScriptsFromDisk(IInstalledPackages installedPackages)
+        public DataMigrationScriptsFromDisk(IInstalledPackages installedPackages, IConfiguration configuration)
         {
             _installedPackages = installedPackages;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -60,7 +62,7 @@ namespace Rhetos.Deployment
 
                 var packageScripts =
                     (from file in files
-                     let scriptContent = File.ReadAllText(file.PhysicalPath, Encoding.Default)
+                     let scriptContent = FilesUtility.ReadAllText(file.PhysicalPath, _configuration)
                      select new DataMigrationScript
                      {
                          Tag = ParseScriptTag(scriptContent, file.PhysicalPath),

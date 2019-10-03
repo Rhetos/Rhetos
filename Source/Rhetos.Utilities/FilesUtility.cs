@@ -163,6 +163,14 @@ namespace Rhetos.Utilities
                 return new string[] { };
         }
 
+        public static string ReadAllText(string path, IConfiguration configuration)
+        {
+            if (configuration.GetBool("UseDefaultEncodingWhenReadingFiles", true).Value)
+                return File.ReadAllText(path, Encoding.Default);
+            else
+                return File.ReadAllText(path, Encoding.UTF8);
+        }
+
         public static string RelativeToAbsolutePath(string baseFolder, string path)
         {
             return Path.GetFullPath(Path.Combine(baseFolder, path));
