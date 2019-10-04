@@ -23,6 +23,7 @@ using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -230,6 +231,7 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
+        [DeploymentItem("TestCfg.config")]
         public void ConfigurationFileSource()
         {
             var provider = new ConfigurationBuilder()
@@ -241,6 +243,7 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
+        [DeploymentItem("Web.config")]
         public void WebConfigurationSource()
         {
             var rootPath = AppDomain.CurrentDomain.BaseDirectory;

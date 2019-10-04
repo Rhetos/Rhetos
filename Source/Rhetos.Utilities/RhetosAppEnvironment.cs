@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Utilities
 {
-    public class ServerEnvironment
+    public class RhetosAppEnvironment
     {
-        public string RhetosServerRootPath { get; }
+        public string RootPath { get; }
         private readonly Lazy<string> _packagesCacheFolder;
         private readonly Lazy<string> _resourcesFolder;
         private readonly Lazy<string> _binFolder;
@@ -18,15 +18,15 @@ namespace Rhetos.Utilities
         private readonly Lazy<string> _generatedFilesCacheFolder;
         private readonly Lazy<string> _pluginsFolder;
 
-        public ServerEnvironment(RhetosOptions options)
+        public RhetosAppEnvironment(RhetosAppOptions options)
         {
-            RhetosServerRootPath = options.RhetosServerRootPath;
-            _packagesCacheFolder = new Lazy<string>(() => Path.Combine(RhetosServerRootPath, "PackagesCache"));
-            _resourcesFolder = new Lazy<string>(() => Path.Combine(RhetosServerRootPath, "Resources"));
-            _binFolder = new Lazy<string>(() => Path.Combine(RhetosServerRootPath, "bin"));
-            _generatedFolder = new Lazy<string>(() => Path.Combine(RhetosServerRootPath, "bin\\Generated"));
-            _generatedFilesCacheFolder = new Lazy<string>(() => Path.Combine(RhetosServerRootPath, "GeneratedFilesCache"));
-            _pluginsFolder = new Lazy<string>(() => Path.Combine(RhetosServerRootPath, "bin\\Plugins"));
+            RootPath = options.RootPath;
+            _packagesCacheFolder = new Lazy<string>(() => Path.Combine(RootPath, "PackagesCache"));
+            _resourcesFolder = new Lazy<string>(() => Path.Combine(RootPath, "Resources"));
+            _binFolder = new Lazy<string>(() => Path.Combine(RootPath, "bin"));
+            _generatedFolder = new Lazy<string>(() => Path.Combine(RootPath, "bin\\Generated"));
+            _generatedFilesCacheFolder = new Lazy<string>(() => Path.Combine(RootPath, "GeneratedFilesCache"));
+            _pluginsFolder = new Lazy<string>(() => Path.Combine(RootPath, "bin\\Plugins"));
         }
 
         public string PackagesCacheFolder => _packagesCacheFolder.Value;

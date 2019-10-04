@@ -65,5 +65,11 @@ namespace Rhetos.Utilities.ApplicationConfiguration
             builder.Add(new ConfigurationFileSource(configuration));
             return builder;
         }
+
+        public static IConfigurationBuilder SetRhetosAppRootPath(this IConfigurationBuilder builder, string rhetosAppRootPath)
+        {
+            builder.AddKeyValue(nameof(RhetosAppOptions.RootPath), rhetosAppRootPath);
+            return builder;
+        }
     }
 }

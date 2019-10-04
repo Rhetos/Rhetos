@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Utilities
 {
-    public class RhetosOptions
+    public class RhetosAppOptions
     {
-        public string RhetosServerRootPath { get; set; }
+        public string RootPath { get; set; }
     }
 }
