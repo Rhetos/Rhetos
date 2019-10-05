@@ -45,6 +45,11 @@ namespace DeployPackages
 
             try
             {
+                var configurationBuilder = new ConfigurationBuilder()
+                    .AddCommandLineArguments(args, "/", nameof(DeployOptions));
+
+                var deployOptions = configurationBuilder.Build().ConfigureOptions<DeployOptions>(nameof(DeployOptions));
+
                 logger = DeploymentUtility.InitializationLogProvider.GetLogger("DeployPackages"); // Setting the final log provider inside the try-catch block, so that the simple ConsoleLogger can be used (see above) in case of an initialization error.
 
                 arguments = new DeployArguments(args);
@@ -68,14 +73,18 @@ namespace DeployPackages
                     .SetRhetosAppRootPath(rhetosAppRootPath)
                     .Build();
 
-
                 Paths.InitializeRhetosServerRootPath(rhetosAppRootPath);
 
                 oldCurrentDirectory = Directory.GetCurrentDirectory();
                 Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
 
-                var deployManager = new DeployManager(logger, arguments);
-                deployManager.DeployApplication();
+                var packageManager = new PackageManager(logger, arguments);
+                packageManager.InitialCleanup();
+                packageManager.DownloadPackages();
+
+                var deployManager = new ApplicationDeployment(logger, arguments);
+                deployManager.GenerateApplication();
+                deployManager.InitializeGeneratedApplication();
 
                 logger.Trace("Done.");
             }

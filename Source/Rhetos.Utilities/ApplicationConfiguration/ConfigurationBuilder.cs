@@ -42,8 +42,13 @@ namespace Rhetos.Utilities.ApplicationConfiguration
             foreach (var configurationSource in configurationSources)
             {
                 var sourceValues = configurationSource.Load();
-                foreach (var sourceValue in sourceValues) 
-                    configurationValues[sourceValue.Key] = sourceValue.Value;
+                foreach (var sourceValue in sourceValues)
+                {
+                    if (string.IsNullOrWhiteSpace(sourceValue.Key)) 
+                        throw new FrameworkException("Trying to add empty or null configuration key.");
+
+                    configurationValues[sourceValue.Key.ToLowerInvariant()] = sourceValue.Value;
+                }
             }
             return new ConfigurationProvider(configurationValues);
         }

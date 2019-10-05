@@ -16,89 +16,18 @@ using System.Threading.Tasks;
 
 namespace DeployPackages
 {
-    public class DeployManager
+    public class ApplicationDeployment
     {
         private readonly ILogger logger;
         private readonly DeployArguments deployArguments;
 
-        public DeployManager(ILogger logger, DeployArguments deployArguments)
+        public ApplicationDeployment(ILogger logger, DeployArguments deployArguments)
         {
             this.logger = logger;
             this.deployArguments = deployArguments;
         }
         
-        public void DeployApplication()
-        {
-            InitialCleanup();
-            DownloadPackages();
-            GenerateApplication();
-            InitializeGeneratedApplication();
-        }
-
-        private void InitialCleanup()
-        {
-            // Warning to backup obsolete folders:
-
-            var obsoleteFolders = new string[]
-            {
-                Path.Combine(Paths.RhetosServerRootPath, "DslScripts"),
-                Path.Combine(Paths.RhetosServerRootPath, "DataMigration")
-            };
-            var obsoleteFolder = obsoleteFolders.FirstOrDefault(folder => Directory.Exists(folder));
-            if (obsoleteFolder != null)
-                throw new UserException("Please backup all Rhetos server folders and delete obsolete folder '" + obsoleteFolder + "'. It is no longer used.");
-
-            // Delete obsolete generated files:
-
-            var deleteObsoleteFiles = new string[]
-            {
-                Path.Combine(Paths.BinFolder, "ServerDom.cs"),
-                Path.Combine(Paths.BinFolder, "ServerDom.dll"),
-                Path.Combine(Paths.BinFolder, "ServerDom.pdb")
-            };
-            var filesUtility = new FilesUtility(DeploymentUtility.InitializationLogProvider);
-            foreach (var path in deleteObsoleteFiles)
-                if (File.Exists(path))
-                {
-                    logger.Info($"Deleting obsolete file '{path}'.");
-                    filesUtility.SafeDeleteFile(path);
-                }
-
-            // Backup and delete generated files:
-
-            if (!deployArguments.DeployDatabaseOnly)
-            {
-                logger.Trace("Moving old generated files to cache.");
-                new GeneratedFilesCache(DeploymentUtility.InitializationLogProvider).MoveGeneratedFilesToCache();
-                filesUtility.SafeCreateDirectory(Paths.GeneratedFolder);
-            }
-            else
-            {
-                var missingFile = Paths.DomAssemblyFiles.FirstOrDefault(f => !File.Exists(f));
-                if (missingFile != null)
-                    throw new UserException($"'/DatabaseOnly' switch cannot be used if the server have not been deployed successfully before. Run a regular deployment instead. Missing '{missingFile}'.");
-
-                logger.Info("Skipped deleting old generated files (DeployDatabaseOnly).");
-            }
-        }
-
-        private void DownloadPackages()
-        {
-            if (!deployArguments.DeployDatabaseOnly)
-            {
-                logger.Trace("Getting packages.");
-                var config = new DeploymentConfiguration(DeploymentUtility.InitializationLogProvider);
-                var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = deployArguments.IgnorePackageDependencies };
-                var packageDownloader = new PackageDownloader(config, DeploymentUtility.InitializationLogProvider, packageDownloaderOptions);
-                var packages = packageDownloader.GetPackages();
-
-                InstalledPackages.Save(packages);
-            }
-            else
-                logger.Info("Skipped download packages (DeployDatabaseOnly).");
-        }
-
-        private void GenerateApplication()
+        public void GenerateApplication()
         {
             logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
@@ -122,7 +51,7 @@ namespace DeployPackages
             }
         }
 
-        private void InitializeGeneratedApplication()
+        public void InitializeGeneratedApplication()
         {
             // Creating a new container builder instead of using builder.Update, because of severe performance issues with the Update method.
             Plugins.ClearCache();

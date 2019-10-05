@@ -137,6 +137,7 @@
     <Compile Include="ApplicationConfiguration\ConfigurationBuilder.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationProvider.cs" />
     <Compile Include="ApplicationConfiguration\ConnectionStringOptions.cs" />
+    <Compile Include="ApplicationConfiguration\DefaultSources\CommandLineArgumentsSource.cs" />
     <Compile Include="ApplicationConfiguration\DefaultSources\DefaultSourcesBuilderExtensions.cs" />
     <Compile Include="ApplicationConfiguration\DefaultSources\ConfigurationManagerSource.cs" />
     <Compile Include="ApplicationConfiguration\DefaultSources\ConfigurationFileSource.cs" />

@@ -29,6 +29,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration
 {
     public class ConfigurationProvider : IConfigurationProvider
     {
+        public static readonly string ConfigurationPathSeparator = ":";
         private readonly Dictionary<string, object> configurationValues;
 
         public ConfigurationProvider(Dictionary<string, object> configurationValues)
@@ -88,8 +89,9 @@ namespace Rhetos.Utilities.ApplicationConfiguration
 
         private bool TryGetConfigurationValue(string configurationKey, out object result, string configurationPath = "")
         {
+            configurationKey = configurationKey.ToLowerInvariant();
             if (!string.IsNullOrEmpty(configurationPath))
-                configurationKey = $"{configurationPath}__{configurationKey}";
+                configurationKey = $"{configurationPath.ToLowerInvariant()}{ConfigurationPathSeparator}{configurationKey}";
 
             return configurationValues.TryGetValue(configurationKey, out result);
         }

@@ -30,10 +30,10 @@ namespace Rhetos.Utilities.ApplicationConfiguration.DefaultSources
 
             foreach (ConnectionStringSettings connectionString in connectionStrings)
             {
-                var connectionSectionName = $"ConnectionStrings__{connectionString.Name}";
-                settings[$"{connectionSectionName}__Name"] = connectionString.Name;
-                settings[$"{connectionSectionName}__ConnectionString"] = connectionString.ConnectionString;
-                settings[$"{connectionSectionName}__ProviderName"] = connectionString.ProviderName;
+                var connectionSectionName = $"ConnectionStrings{ConfigurationProvider.ConfigurationPathSeparator}{connectionString.Name}";
+                settings[$"{connectionSectionName}{ConfigurationProvider.ConfigurationPathSeparator}Name"] = connectionString.Name;
+                settings[$"{connectionSectionName}{ConfigurationProvider.ConfigurationPathSeparator}ConnectionString"] = connectionString.ConnectionString;
+                settings[$"{connectionSectionName}{ConfigurationProvider.ConfigurationPathSeparator}ProviderName"] = connectionString.ProviderName;
             }
 
             return settings;
@@ -42,8 +42,8 @@ namespace Rhetos.Utilities.ApplicationConfiguration.DefaultSources
         private static string NormalizeConfigurationKey(string key)
         {
             return key
-                .Replace(".", "__")
-                .Replace(":", "__");
+                .Replace(".", ConfigurationProvider.ConfigurationPathSeparator)
+                .Replace("__", ConfigurationProvider.ConfigurationPathSeparator);
        }
     }
 }

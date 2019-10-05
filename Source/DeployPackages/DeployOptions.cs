@@ -23,15 +23,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rhetos.Utilities.ApplicationConfiguration
+namespace DeployPackages
 {
-    /// <summary>
-    /// Each implementation source is responsible for normalizing configuration paths to predefined colon (:) separator.
-    /// Empty path fragments are not allowed. Path should not start with a separator (root configuration items are just verbatim setting names).
-    /// Paths and keys are NOT case sensitive.
-    /// </summary>
-    public interface IConfigurationSource
+    public class DeployOptions
     {
-        Dictionary<string, object> Load();
+        public bool Help { get; set; }
+        public bool StartPaused { get; set; }
+        public bool Debug { get; set; }
+        public bool NoPause { get; set; }
+        public bool IgnoreDependencies { get; set; }
+        public bool ShortTransactions { get; set; }
+        public bool DatabaseOnly { get; set; }
+        public bool SkipRecompute { get; set; }
     }
 }

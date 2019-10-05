@@ -36,27 +36,47 @@ namespace Rhetos.Utilities.Test
         public void AllKeys()
         {
             var provider = new ConfigurationBuilder()
-                .AddKeyValue("App__TestSection__StringValue", "hello")
+                .AddKeyValue("App:TestSection:StringValue", "hello")
                 .AddKeyValue("RootValue", "world")
                 .Build();
 
             var keys = string.Join(",", provider.AllKeys);
-            Assert.AreEqual("App__TestSection__StringValue,RootValue", keys);
+            Assert.AreEqual("app:testsection:stringvalue,rootvalue", keys);
+        }
+
+        [TestMethod]
+        public void ThrowsOnInvalidKeys()
+        {
+            {
+                var builder = new ConfigurationBuilder()
+                    .AddKeyValue("  ", "ble");
+                TestUtility.ShouldFail<FrameworkException>(() => builder.Build(), "empty or null configuration key");
+            }
+            {
+                var builder = new ConfigurationBuilder()
+                    .AddKeyValue("", "ble");
+                TestUtility.ShouldFail<FrameworkException>(() => builder.Build(), "empty or null configuration key");
+            }
+            {
+                var builder = new ConfigurationBuilder()
+                    .AddKeyValue(null, "ble");
+                TestUtility.ShouldFail<ArgumentNullException>(() => builder.Build());
+            }
         }
 
         [TestMethod]
         public void GetByPathAndName()
         {
             var provider = new ConfigurationBuilder()
-                .AddKeyValue("App__TestSection__StringValue", "hello")
+                .AddKeyValue("App:TestSection:StringValue", "Hello")
                 .AddKeyValue("RootValue", "world")
                 .Build();
 
             Assert.AreEqual("n/a", provider.GetValue("StringValue", "n/a"));
-            Assert.AreEqual("hello", provider.GetValue("StringValue", "n/a", "App__TestSection"));
-            Assert.AreEqual("n/a", provider.GetValue("stringvalue", "n/a", "App__TestSection"));
+            Assert.AreEqual("Hello", provider.GetValue("StringValue", "n/a", "App:TestSection"));
+            Assert.AreEqual("Hello", provider.GetValue("stringvalue", "n/a", "app:testSection"));
 
-            Assert.AreEqual("n/a", provider.GetValue("RootValue", "n/a", "App__TestSection"));
+            Assert.AreEqual("n/a", provider.GetValue("RootValue", "n/a", "App:TestSection"));
             Assert.AreEqual("world", provider.GetValue("RootValue", "n/a"));
         }
 
@@ -71,7 +91,7 @@ namespace Rhetos.Utilities.Test
         public void ImplicitDefaults()
         {
             var provider = new ConfigurationBuilder()
-                .AddKeyValue("App__TestSection__StringValue", "hello")
+                .AddKeyValue("App:TestSection:StringValue", "hello")
                 .Build();
 
             Assert.AreEqual(null, provider.GetValue<string>("StringValue"));
@@ -139,16 +159,16 @@ namespace Rhetos.Utilities.Test
         public void CorrectlyBindsOptions()
         {
             var provider = new ConfigurationBuilder()
-                .AddKeyValue("App__StringProp", "stringConfigured")
+                .AddKeyValue("App:StringProp", "stringConfigured")
                 .AddKeyValue("StringProp2", "stringConfigured")
-                .AddKeyValue("App__IntProp", "5")
+                .AddKeyValue("App:IntProp", "5")
                 .AddKeyValue("IntProp2", 5)
-                .AddKeyValue("App__BoolValue", true)
-                .AddKeyValue("App__DoubleValueComma", "3,14")
-                .AddKeyValue("App__DoubleValueDot", "3.15")
-                .AddKeyValue("App__DoubleValueObject", 3.16)
-                .AddKeyValue("App__EnumValueString", "ValueA")
-                .AddKeyValue("App__EnumValueObject", TestEnum.ValueB)
+                .AddKeyValue("App:BoolValue", true)
+                .AddKeyValue("App:doublevaluecomma", "3,14")
+                .AddKeyValue("APP:DOUBLEVALUEDOT", "3.15")
+                .AddKeyValue("App:DoubleValueObject", 3.16)
+                .AddKeyValue("App:EnumValueString", "ValueA")
+                .AddKeyValue("App:EnumValueObject", TestEnum.ValueB)
                 .Build();
 
             TestUtility.ShouldFail<FrameworkException>(() => provider.ConfigureOptions<PocoOptions>("App", true), "requires all members");
@@ -170,7 +190,7 @@ namespace Rhetos.Utilities.Test
         {
             {
                 var provider = new ConfigurationBuilder()
-                    .AddKeyValue("App__EnumValueString", "ValueC")
+                    .AddKeyValue("App:EnumValueString", "ValueC")
                     .Build();
 
                 TestUtility.ShouldFail<FrameworkException>(() => provider.ConfigureOptions<PocoOptions>("App"), "Type conversion failed");
@@ -178,7 +198,7 @@ namespace Rhetos.Utilities.Test
 
             {
                 var provider = new ConfigurationBuilder()
-                    .AddKeyValue("App__IntProp", "120_not_int")
+                    .AddKeyValue("App:IntProp", "120_not_int")
                     .Build();
 
                 TestUtility.ShouldFail<FrameworkException>(() => provider.ConfigureOptions<PocoOptions>("App"), "Type conversion failed");
@@ -207,8 +227,8 @@ namespace Rhetos.Utilities.Test
         {
             var provider = new ConfigurationBuilder()
                 .AddKeyValue("opt1", "1")
-                .AddKeyValue("section__opt1", "101")
-                .AddKeyValue("section__opt2", "102")
+                .AddKeyValue("section:opt1", "101")
+                .AddKeyValue("section:opt2", "102")
                 .Build();
 
             TestUtility.ShouldFail(() => provider.ConfigureOptions<Poco2>(requireAllMembers: true), "requires all members", "opt2");
@@ -219,13 +239,14 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
+        [DeploymentItem("ConnectionStrings.config")]
         public void ConfigurationManagerSource()
         {
             var provider = new ConfigurationBuilder()
                 .AddConfigurationManagerConfiguration()
                 .Build();
 
-            Assert.IsTrue(provider.AllKeys.Contains("ConnectionStrings__ServerConnectionString__Name"));
+            Assert.IsTrue(provider.AllKeys.Contains("connectionstrings:serverconnectionstring:name"));
             Assert.AreEqual(30, provider.GetValue("SqlCommandTimeout", 0));
             Assert.AreEqual("TestSettingValue", provider.GetValue("AdditionalTestSetting", "", "TestSection"));
         }
@@ -238,7 +259,7 @@ namespace Rhetos.Utilities.Test
                 .AddConfigurationFile("TestCfg.config")
                 .Build();
 
-            Assert.IsTrue(provider.AllKeys.Contains("ConnectionStrings__TestConnectionString__Name"));
+            Assert.IsTrue(provider.AllKeys.Contains("connectionstrings:testconnectionstring:name"));
             Assert.AreEqual(99, provider.GetValue("TestCfgValue", 0));
         }
 
@@ -252,7 +273,7 @@ namespace Rhetos.Utilities.Test
                 .AddWebConfiguration(rootPath)
                 .Build();
 
-            Assert.IsTrue(provider.AllKeys.Contains("ConnectionStrings__WebConnectionString__Name"));
+            Assert.IsTrue(provider.AllKeys.Contains("connectionstrings:webconnectionstring:name"));
             Assert.AreEqual(199, provider.GetValue("TestWebValue", 0));
         }
 
@@ -282,6 +303,63 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(3, options.optReadOnlyField);
             Assert.AreEqual(4, options.optGetOnlyProperty);
 
+        }
+
+        public class PocoConstructor
+        {
+            private readonly int a;
+            public PocoConstructor(int a)
+            {
+                this.a = a;
+            }
+        }
+
+        [TestMethod]
+        public void ThrowsOnNoConstructor()
+        {
+            var provider = new ConfigurationBuilder()
+                .Build();
+
+            TestUtility.ShouldFail<MissingMethodException>(() => provider.ConfigureOptions<PocoConstructor>(), "No parameterless constructor");
+        }
+
+        [TestMethod]
+        public void CommandLineArguments()
+        {
+            var provider = new ConfigurationBuilder()
+                .AddCommandLineArguments(new [] { "/option1", "/Option2", "-option3" }, "/")
+                .Build();
+
+            Assert.IsTrue(provider.AllKeys.Contains("option1"));
+            Assert.IsTrue(provider.AllKeys.Contains("option2"));
+            Assert.IsFalse(provider.AllKeys.Contains("option3"));
+
+            Assert.IsTrue(provider.GetValue("option1", false));
+            Assert.IsTrue(provider.GetValue("option2", false));
+        }
+
+        [TestMethod]
+        public void CommandLineArgumentsPath()
+        {
+            var provider = new ConfigurationBuilder()
+                .AddCommandLineArguments(new[] { "-option1", "/Option2", "/option3" }, "-", "TestSection")
+                .Build();
+
+            Assert.IsTrue(provider.AllKeys.Contains("testsection:option1"));
+            Assert.IsFalse(provider.AllKeys.Contains("testsection:option2"));
+            Assert.IsFalse(provider.AllKeys.Contains("option3"));
+
+            Assert.IsTrue(provider.GetValue("Option1", false, "TestSection"));
+        }
+
+        [TestMethod]
+        public void CommandLineArgumentsSkipEmpty()
+        {
+            var provider = new ConfigurationBuilder()
+                .AddCommandLineArguments(new [] { "/", "/  ", "/help" }, "/")
+                .Build();
+
+            Assert.AreEqual(1, provider.AllKeys.Count());
         }
     }
 }
