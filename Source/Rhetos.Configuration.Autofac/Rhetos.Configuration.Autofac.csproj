@@ -100,7 +100,6 @@
   <ItemGroup>
     <Compile Include="ContainerBuilderExtensions.cs" />
     <Compile Include="Modules\CoreModule.cs" />
-    <Compile Include="DeployType.cs" />
     <Compile Include="Modules\RuntimeModule.cs" />
     <Compile Include="Modules\DeployModule.cs" />
     <Compile Include="RhetosTestContainer.cs" />

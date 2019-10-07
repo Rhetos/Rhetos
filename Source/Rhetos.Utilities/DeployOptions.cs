@@ -23,7 +23,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DeployPackages
+namespace Rhetos.Utilities
 {
     public class DeployOptions
     {

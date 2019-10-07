@@ -25,6 +25,7 @@ using Rhetos.Dom;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Persistence;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,13 +40,6 @@ namespace Rhetos.Configuration.Autofac.Modules
     /// </summary>
     public class DeployModule : Module
     {
-        private readonly bool shortTransactions;
-
-        public DeployModule(bool shortTransactions)
-        {
-            this.shortTransactions = shortTransactions;
-        }
-
         protected override void Load(ContainerBuilder builder)
         {
             AddDatabaseGenerator(builder);
@@ -65,7 +59,8 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<ConceptApplicationRepository>().As<IConceptApplicationRepository>();
             builder.RegisterType<DatabaseGenerator.DatabaseGenerator>().As<IDatabaseGenerator>();
             builder.RegisterType<DatabaseGenerator.ConceptDataMigrationExecuter>().As<IConceptDataMigrationExecuter>();
-            builder.RegisterInstance(new DatabaseGeneratorOptions { ShortTransactions = shortTransactions });
+            // TODO SS: just use DeployOptions directly instead?
+            builder.Register(a => new DatabaseGeneratorOptions { ShortTransactions = a.Resolve<DeployOptions>().ShortTransactions }).SingleInstance();
             Plugins.FindAndRegisterPlugins<IConceptDatabaseDefinition>(builder);
             builder.RegisterType<NullImplementation>().As<IConceptDatabaseDefinition>();
             Plugins.FindAndRegisterPlugins<IConceptDataMigration>(builder, typeof(IConceptDataMigration<>));

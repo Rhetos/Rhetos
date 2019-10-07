@@ -40,13 +40,14 @@ namespace Rhetos.Configuration.Autofac
             return builder;
         }
 
-        public static ContainerBuilder AddRhetosDeployment(this ContainerBuilder builder, bool shortTransactions, DeployType deployType)
+        public static ContainerBuilder AddRhetosDeployment(this ContainerBuilder builder)
         {
             builder.RegisterModule(new CoreModule());
-            builder.RegisterModule(new DeployModule(shortTransactions));
+            builder.RegisterModule(new DeployModule());
 
-            if (deployType == DeployType.DeployFull)
-                builder.RegisterType<DslModel>().As<IDslModel>().SingleInstance();
+            // TODO SS: is this the correct way to do this?
+            builder.RegisterType<DslModel>();
+            builder.Register(a => a.Resolve<DeployOptions>().DatabaseOnly ? a.Resolve<IDslModelFile>() as IDslModel : a.Resolve<DslModel>() as IDslModel).SingleInstance();
 
             builder.RegisterModule(new ExtensibilityModule());
             return builder;

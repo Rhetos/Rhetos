@@ -19,12 +19,12 @@ namespace DeployPackages
     public class ApplicationDeployment
     {
         private readonly ILogger logger;
-        private readonly DeployArguments deployArguments;
+        private readonly DeployOptions deployOptions;
 
-        public ApplicationDeployment(ILogger logger, DeployArguments deployArguments)
+        public ApplicationDeployment(ILogger logger, DeployOptions deployOptions)
         {
             this.logger = logger;
-            this.deployArguments = deployArguments;
+            this.deployOptions = deployOptions;
         }
         
         public void GenerateApplication()
@@ -33,10 +33,11 @@ namespace DeployPackages
             var stopwatch = Stopwatch.StartNew();
 
             Plugins.SetInitializationLogging(DeploymentUtility.InitializationLogProvider);
-            var deployType = deployArguments.DeployDatabaseOnly ? DeployType.DeployDatabaseOnly : DeployType.DeployFull;
             var builder = new ContainerBuilder()
-                .AddRhetosDeployment(deployArguments.ShortTransactions, deployType)
+                .AddRhetosDeployment()
                 .AddUserAndLoggingOverrides();
+
+            builder.RegisterInstance(deployOptions);
 
             using (var container = builder.Build())
             {
@@ -44,10 +45,10 @@ namespace DeployPackages
                 performanceLogger.Write(stopwatch, "DeployPackages.Program: Modules and plugins registered.");
                 Plugins.LogRegistrationStatistics("Generating application", container);
 
-                if (deployArguments.Debug)
+                if (deployOptions.Debug)
                     container.Resolve<DomGeneratorOptions>().Debug = true;
 
-                container.Resolve<ApplicationGenerator>().ExecuteGenerators(deployArguments.DeployDatabaseOnly);
+                container.Resolve<ApplicationGenerator>().ExecuteGenerators(deployOptions.DatabaseOnly);
             }
         }
 
@@ -61,9 +62,11 @@ namespace DeployPackages
 
             Plugins.SetInitializationLogging(DeploymentUtility.InitializationLogProvider);
             var builder = new ContainerBuilder()
-                .AddApplicationInitialization(deployArguments)
+                .AddApplicationInitialization()
                 .AddRhetosRuntime()
                 .AddUserAndLoggingOverrides();
+
+            builder.RegisterInstance(deployOptions);
 
             using (var container = builder.Build())
             {

@@ -37,34 +37,37 @@ namespace DeployPackages
 {
     public static class Program
     {
+        private readonly static Dictionary<string, string> validArguments =  new Dictionary<string, string>()
+        {
+            { "/StartPaused", "Use for debugging with Visual Studio (Attach to Process)." },
+            { "/Debug", "Generates unoptimized dlls (ServerDom.*.dll, e.g.) for debugging." },
+            { "/NoPause", "Don't pause on error. Use this switch for build automation." },
+            { "/IgnoreDependencies", "Allow installing incompatible versions of Rhetos packages." },
+            { "/ShortTransactions", "Commit transaction after creating or dropping each database object." },
+            { "/DatabaseOnly", "Keep old plugins and files in bin\\Generated." },
+            { "/SkipRecompute", "Use this if you want to skip all computed data." }
+        };
+
         public static int Main(string[] args)
         {
             ILogger logger = new ConsoleLogger("DeployPackages"); // Using the simplest logger outside of try-catch block.
             string oldCurrentDirectory = null;
-            DeployArguments arguments = null;
+            DeployOptions deployOptions = null;
 
             try
             {
-                var configurationBuilder = new ConfigurationBuilder()
-                    .AddCommandLineArguments(args, "/", nameof(DeployOptions));
+                if (!ValidateArguments(args))
+                    return 1;
 
-                var deployOptions = configurationBuilder.Build().ConfigureOptions<DeployOptions>(nameof(DeployOptions));
+                deployOptions = new ConfigurationBuilder()
+                    .AddCommandLineArguments(args, "/")
+                    .Build()
+                    .ConfigureOptions<DeployOptions>();
 
                 logger = DeploymentUtility.InitializationLogProvider.GetLogger("DeployPackages"); // Setting the final log provider inside the try-catch block, so that the simple ConsoleLogger can be used (see above) in case of an initialization error.
 
-                arguments = new DeployArguments(args);
-                if (arguments.Help)
-                    return 1;
-
-                if (arguments.StartPaused)
-                {
-                    if (!Environment.UserInteractive)
-                        throw new Rhetos.UserException("DeployPackages parameter 'StartPaused' must not be set, because the application is executed in a non-interactive environment.");
-
-                    // Use for debugging (Attach to Process)
-                    Console.WriteLine("Press any key to continue . . .");
-                    Console.ReadKey(true);
-                }
+                if (deployOptions.StartPaused)
+                    StartPaused();
 
                 var rhetosAppRootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..");
                 var configurationProvider = new ConfigurationBuilder()
@@ -78,11 +81,11 @@ namespace DeployPackages
                 oldCurrentDirectory = Directory.GetCurrentDirectory();
                 Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
 
-                var packageManager = new PackageManager(logger, arguments);
+                var packageManager = new PackageManager(logger, deployOptions);
                 packageManager.InitialCleanup();
                 packageManager.DownloadPackages();
 
-                var deployManager = new ApplicationDeployment(logger, arguments);
+                var deployManager = new ApplicationDeployment(logger, deployOptions);
                 deployManager.GenerateApplication();
                 deployManager.InitializeGeneratedApplication();
 
@@ -94,7 +97,7 @@ namespace DeployPackages
                 if (ex is ReflectionTypeLoadException)
                     logger.Error(CsUtility.ReportTypeLoadException((ReflectionTypeLoadException)ex));
 
-                InteractiveExceptionInfo(ex, !arguments.NoPauseOnError);
+                InteractiveExceptionInfo(ex, !(deployOptions?.NoPause ?? false));
 
                 return 1;
             }
@@ -105,6 +108,40 @@ namespace DeployPackages
             }
 
             return 0;
+        }
+
+        private static void StartPaused()
+        {
+            if (!Environment.UserInteractive)
+                throw new Rhetos.UserException("DeployPackages parameter 'StartPaused' must not be set, because the application is executed in a non-interactive environment.");
+
+            // Use for debugging (Attach to Process)
+            Console.WriteLine("Press any key to continue . . .");
+            Console.ReadKey(true);
+        }
+
+        private static bool ValidateArguments(string[] args)
+        {
+            if (args.Contains("/?"))
+            {
+                ShowHelp();
+                return false;
+            }
+
+            var invalidArgument = args.FirstOrDefault(a => !validArguments.Keys.Contains(a, StringComparer.InvariantCultureIgnoreCase));
+            if (invalidArgument != null)
+            {
+                ShowHelp();
+                throw new ApplicationException($"Unexpected command-line argument: '{invalidArgument}'.");
+            }
+            return true;
+        }
+
+        private static void ShowHelp()
+        {
+            Console.WriteLine("Command-line arguments:");
+            foreach (var argument in validArguments)
+                Console.WriteLine($"{argument.Key.PadRight(20)} {argument.Value}");
         }
 
         private static void InteractiveExceptionInfo(Exception e, bool pauseOnError)

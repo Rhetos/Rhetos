@@ -30,10 +30,9 @@ namespace Rhetos.Configuration.Autofac
 {
     public static class ContainerBuilderExtensions
     {
-        public static ContainerBuilder AddApplicationInitialization(this ContainerBuilder builder, DeployArguments configurationArguments)
+        public static ContainerBuilder AddApplicationInitialization(this ContainerBuilder builder)
         {
             builder.RegisterType<ApplicationInitialization>();
-            builder.RegisterInstance(configurationArguments).As<DeployArguments>();
             Plugins.FindAndRegisterPlugins<IServerInitializer>(builder);
             return builder;
         }

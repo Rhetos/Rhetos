@@ -50,7 +50,6 @@
   <ItemGroup>
     <Compile Include="ContainerBuilderExtensions.cs" />
     <Compile Include="ApplicationDeployment.cs" />
-    <Compile Include="DeployOptions.cs" />
     <Compile Include="PackageManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

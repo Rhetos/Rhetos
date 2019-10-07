@@ -33,14 +33,14 @@ namespace DeployPackages
     public class PackageManager
     {
         private readonly ILogger logger;
-        private readonly DeployArguments deployArguments;
         private readonly FilesUtility filesUtility;
+        private readonly DeployOptions deployOptions;
 
-        public PackageManager(ILogger logger, DeployArguments deployArguments)
+        public PackageManager(ILogger logger, DeployOptions deployOptions)
         {
             this.logger = logger;
-            this.deployArguments = deployArguments;
             filesUtility = new FilesUtility(DeploymentUtility.InitializationLogProvider);
+            this.deployOptions = deployOptions;
         }
 
         public void InitialCleanup()
@@ -49,7 +49,7 @@ namespace DeployPackages
             DeleteObsoleteGeneratedFiles();
 
             // Backup and delete generated files:
-            if (!deployArguments.DeployDatabaseOnly)
+            if (!deployOptions.DatabaseOnly)
             {
                 logger.Trace("Moving old generated files to cache.");
                 new GeneratedFilesCache(DeploymentUtility.InitializationLogProvider).MoveGeneratedFilesToCache();
@@ -67,7 +67,7 @@ namespace DeployPackages
 
         public void DownloadPackages()
         {
-            if (deployArguments.DeployDatabaseOnly)
+            if (deployOptions.DatabaseOnly)
             {
                 logger.Info("Skipped download packages (DeployDatabaseOnly).");
                 return;
@@ -75,7 +75,7 @@ namespace DeployPackages
 
             logger.Trace("Getting packages.");
             var config = new DeploymentConfiguration(DeploymentUtility.InitializationLogProvider);
-            var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = deployArguments.IgnorePackageDependencies };
+            var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = deployOptions.IgnoreDependencies };
             var packageDownloader = new PackageDownloader(config, DeploymentUtility.InitializationLogProvider, packageDownloaderOptions);
             var packages = packageDownloader.GetPackages();
 
