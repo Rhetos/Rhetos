@@ -37,7 +37,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration
             this.configurationValues = configurationValues;
         }
 
-        public T ConfigureOptions<T>(string configurationPath = "", bool requireAllMembers = false)
+        public T ConfigureOptions<T>(string configurationPath = "", bool requireAllMembers = false) where T : class
         {
             var optionsType = typeof(T);
             var optionsInstance = Activator.CreateInstance(optionsType);

@@ -22,6 +22,7 @@ using Rhetos.Configuration.Autofac.Modules;
 using Rhetos.Deployment;
 using Rhetos.Dsl;
 using Rhetos.Utilities;
+using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,6 +51,18 @@ namespace Rhetos.Configuration.Autofac
             builder.Register(a => a.Resolve<DeployOptions>().DatabaseOnly ? a.Resolve<IDslModelFile>() as IDslModel : a.Resolve<DslModel>() as IDslModel).SingleInstance();
 
             builder.RegisterModule(new ExtensibilityModule());
+            return builder;
+        }
+
+        public static ContainerBuilder AddConfiguration(this ContainerBuilder builder, IConfigurationProvider configurationProvider)
+        {
+            builder.RegisterInstance(configurationProvider);
+            return builder;
+        }
+
+        public static ContainerBuilder AddConfiguredOptions<T>(this ContainerBuilder builder, IConfigurationProvider configurationProvider) where T : class
+        {
+            builder.RegisterInstance(configurationProvider.ConfigureOptions<T>());
             return builder;
         }
     }

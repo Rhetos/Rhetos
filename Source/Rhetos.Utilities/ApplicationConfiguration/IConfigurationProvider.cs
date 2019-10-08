@@ -28,7 +28,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration
     public interface IConfigurationProvider
     {
         T GetValue<T>(string configurationKey, T defaultValue = default, string configurationPath = "");
-        T ConfigureOptions<T>(string configurationPath = "", bool requireAllMembers = false);
+        T ConfigureOptions<T>(string configurationPath = "", bool requireAllMembers = false) where T : class;
         string[] AllKeys { get; }
     }
 }

@@ -6,6 +6,7 @@ using Rhetos.Dom;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
+using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,12 +20,12 @@ namespace DeployPackages
     public class ApplicationDeployment
     {
         private readonly ILogger logger;
-        private readonly DeployOptions deployOptions;
+        private readonly InitializationContext initializationContext;
 
-        public ApplicationDeployment(ILogger logger, DeployOptions deployOptions)
+        public ApplicationDeployment(InitializationContext initializationContext)
         {
-            this.logger = logger;
-            this.deployOptions = deployOptions;
+            this.logger = initializationContext.LogProvider.GetLogger("DeployPackages");
+            this.initializationContext = initializationContext;
         }
         
         public void GenerateApplication()
@@ -32,12 +33,12 @@ namespace DeployPackages
             logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            Plugins.SetInitializationLogging(DeploymentUtility.InitializationLogProvider);
+            Plugins.SetInitializationLogging(initializationContext.LogProvider);
             var builder = new ContainerBuilder()
                 .AddRhetosDeployment()
-                .AddUserAndLoggingOverrides();
-
-            builder.RegisterInstance(deployOptions);
+                .AddUserAndLoggingOverrides()
+                .AddConfiguration(initializationContext.ConfigurationProvider)
+                .AddConfiguredOptions<DeployOptions>(initializationContext.ConfigurationProvider);
 
             using (var container = builder.Build())
             {
@@ -45,10 +46,7 @@ namespace DeployPackages
                 performanceLogger.Write(stopwatch, "DeployPackages.Program: Modules and plugins registered.");
                 Plugins.LogRegistrationStatistics("Generating application", container);
 
-                if (deployOptions.Debug)
-                    container.Resolve<DomGeneratorOptions>().Debug = true;
-
-                container.Resolve<ApplicationGenerator>().ExecuteGenerators(deployOptions.DatabaseOnly);
+                container.Resolve<ApplicationGenerator>().ExecuteGenerators();
             }
         }
 
@@ -60,13 +58,13 @@ namespace DeployPackages
             logger.Trace("Loading generated plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            Plugins.SetInitializationLogging(DeploymentUtility.InitializationLogProvider);
+            Plugins.SetInitializationLogging(initializationContext.LogProvider);
             var builder = new ContainerBuilder()
                 .AddApplicationInitialization()
                 .AddRhetosRuntime()
-                .AddUserAndLoggingOverrides();
-
-            builder.RegisterInstance(deployOptions);
+                .AddUserAndLoggingOverrides()
+                .AddConfiguration(initializationContext.ConfigurationProvider)
+                .AddConfiguredOptions<DeployOptions>(initializationContext.ConfigurationProvider);
 
             using (var container = builder.Build())
             {
@@ -98,6 +96,5 @@ namespace DeployPackages
             else
                 logger.Trace($"Missing {Path.GetFileName(configFile)}.");
         }
-
     }
 }

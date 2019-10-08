@@ -21,6 +21,7 @@ using Rhetos;
 using Rhetos.Deployment;
 using Rhetos.Logging;
 using Rhetos.Utilities;
+using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -35,12 +36,14 @@ namespace DeployPackages
         private readonly ILogger logger;
         private readonly FilesUtility filesUtility;
         private readonly DeployOptions deployOptions;
+        private readonly InitializationContext initializationContext;
 
-        public PackageManager(ILogger logger, DeployOptions deployOptions)
+        public PackageManager(InitializationContext initializationContext)
         {
-            this.logger = logger;
-            filesUtility = new FilesUtility(DeploymentUtility.InitializationLogProvider);
-            this.deployOptions = deployOptions;
+            this.logger = initializationContext.LogProvider.GetLogger("DeployPackages");
+            filesUtility = new FilesUtility(initializationContext.LogProvider);
+            this.deployOptions = initializationContext.ConfigurationProvider.ConfigureOptions<DeployOptions>();
+            this.initializationContext = initializationContext;
         }
 
         public void InitialCleanup()
@@ -52,7 +55,7 @@ namespace DeployPackages
             if (!deployOptions.DatabaseOnly)
             {
                 logger.Trace("Moving old generated files to cache.");
-                new GeneratedFilesCache(DeploymentUtility.InitializationLogProvider).MoveGeneratedFilesToCache();
+                new GeneratedFilesCache(initializationContext.LogProvider).MoveGeneratedFilesToCache();
                 filesUtility.SafeCreateDirectory(Paths.GeneratedFolder);
             }
             else
@@ -74,9 +77,9 @@ namespace DeployPackages
             }
 
             logger.Trace("Getting packages.");
-            var config = new DeploymentConfiguration(DeploymentUtility.InitializationLogProvider);
+            var config = new DeploymentConfiguration(initializationContext.LogProvider);
             var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = deployOptions.IgnoreDependencies };
-            var packageDownloader = new PackageDownloader(config, DeploymentUtility.InitializationLogProvider, packageDownloaderOptions);
+            var packageDownloader = new PackageDownloader(config, initializationContext.LogProvider, packageDownloaderOptions);
             var packages = packageDownloader.GetPackages();
 
             InstalledPackages.Save(packages);

@@ -50,42 +50,35 @@ namespace DeployPackages
 
         public static int Main(string[] args)
         {
-            ILogger logger = new ConsoleLogger("DeployPackages"); // Using the simplest logger outside of try-catch block.
-            string oldCurrentDirectory = null;
-            DeployOptions deployOptions = null;
+            var logProvider = new NLogProvider();
+            var logger = logProvider.GetLogger("DeployPackages");
+            var pauseOnError = true;
 
             try
             {
                 if (!ValidateArguments(args))
                     return 1;
 
-                deployOptions = new ConfigurationBuilder()
-                    .AddCommandLineArguments(args, "/")
-                    .Build()
-                    .ConfigureOptions<DeployOptions>();
+                var configurationProvider = BuildConfigurationProvider(args);
+                var initializationContext = new InitializationContext(
+                    logProvider,
+                    configurationProvider,
+                    new RhetosAppEnvironment(configurationProvider.ConfigureOptions<RhetosAppOptions>()));
 
-                logger = DeploymentUtility.InitializationLogProvider.GetLogger("DeployPackages"); // Setting the final log provider inside the try-catch block, so that the simple ConsoleLogger can be used (see above) in case of an initialization error.
+                var deployOptions = configurationProvider.ConfigureOptions<DeployOptions>();
+
+                pauseOnError = !deployOptions.NoPause;
 
                 if (deployOptions.StartPaused)
                     StartPaused();
 
-                var rhetosAppRootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..");
-                var configurationProvider = new ConfigurationBuilder()
-                    .AddConfigurationManagerConfiguration()
-                    .AddWebConfiguration(rhetosAppRootPath)
-                    .SetRhetosAppRootPath(rhetosAppRootPath)
-                    .Build();
+                Paths.InitializeRhetosServerRootPath(initializationContext.RhetosAppEnvironment.RootPath);
 
-                Paths.InitializeRhetosServerRootPath(rhetosAppRootPath);
-
-                oldCurrentDirectory = Directory.GetCurrentDirectory();
-                Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
-
-                var packageManager = new PackageManager(logger, deployOptions);
+                var packageManager = new PackageManager(initializationContext);
                 packageManager.InitialCleanup();
                 packageManager.DownloadPackages();
 
-                var deployManager = new ApplicationDeployment(logger, deployOptions);
+                var deployManager = new ApplicationDeployment(initializationContext);
                 deployManager.GenerateApplication();
                 deployManager.InitializeGeneratedApplication();
 
@@ -97,17 +90,23 @@ namespace DeployPackages
                 if (ex is ReflectionTypeLoadException)
                     logger.Error(CsUtility.ReportTypeLoadException((ReflectionTypeLoadException)ex));
 
-                InteractiveExceptionInfo(ex, !(deployOptions?.NoPause ?? false));
+                InteractiveExceptionInfo(ex, pauseOnError);
 
                 return 1;
             }
-            finally
-            {
-                if (oldCurrentDirectory != null && Directory.Exists(oldCurrentDirectory))
-                    Directory.SetCurrentDirectory(oldCurrentDirectory);
-            }
 
             return 0;
+        }
+
+        private static IConfigurationProvider BuildConfigurationProvider(string[] args)
+        {
+            var rhetosAppRootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..");
+            return new ConfigurationBuilder()
+                .SetRhetosAppRootPath(rhetosAppRootPath)
+                .AddConfigurationManagerConfiguration()
+                .AddWebConfiguration(rhetosAppRootPath)
+                .AddCommandLineArguments(args, "/")
+                .Build();
         }
 
         private static void StartPaused()

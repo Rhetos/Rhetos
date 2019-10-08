@@ -44,6 +44,7 @@ namespace Rhetos.Deployment
         private readonly IDatabaseGenerator _databaseGenerator;
         private readonly IDslScriptsProvider _dslScriptsLoader;
         private readonly IConceptDataMigrationExecuter _dataMigrationFromCodeExecuter;
+        private readonly DeployOptions _deployOptions;
 
         public ApplicationGenerator(
             ILogProvider logProvider,
@@ -55,7 +56,8 @@ namespace Rhetos.Deployment
             DataMigrationScripts dataMigration,
             IDatabaseGenerator databaseGenerator,
             IDslScriptsProvider dslScriptsLoader,
-            IConceptDataMigrationExecuter dataMigrationFromCodeExecuter)
+            IConceptDataMigrationExecuter dataMigrationFromCodeExecuter,
+            DeployOptions deployOptions)
         {
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _performanceLogger = logProvider.GetLogger("Performance");
@@ -68,10 +70,13 @@ namespace Rhetos.Deployment
             _databaseGenerator = databaseGenerator;
             _dslScriptsLoader = dslScriptsLoader;
             _dataMigrationFromCodeExecuter = dataMigrationFromCodeExecuter;
+            _deployOptions = deployOptions;
         }
 
-        public void ExecuteGenerators(bool deployDatabaseOnly)
+        public void ExecuteGenerators()
         {
+            var deployDatabaseOnly = _deployOptions.DatabaseOnly;
+
             _deployPackagesLogger.Trace("SQL connection: " + SqlUtility.SqlConnectionInfo(SqlUtility.ConnectionString));
             ValidateDbConnection();
 

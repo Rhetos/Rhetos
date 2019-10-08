@@ -85,7 +85,8 @@ namespace Rhetos.Configuration.Autofac.Modules
 
         private void AddDom(ContainerBuilder builder)
         {
-            builder.RegisterType<DomGeneratorOptions>().SingleInstance();
+            // TODO SS: make it cleaner..single options object?
+            builder.Register(a => new DomGeneratorOptions() { Debug = a.ResolveOptional<DeployOptions>()?.Debug ?? false }).SingleInstance();
             builder.RegisterType<DomGenerator>().As<IDomainObjectModel>().SingleInstance();
         }
 
