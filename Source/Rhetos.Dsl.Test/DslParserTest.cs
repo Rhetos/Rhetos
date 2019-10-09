@@ -69,7 +69,7 @@ namespace Rhetos.Dsl.Test
 
         internal static TokenReader TestTokenReader(string dsl, int position = 0)
         {
-            return new TokenReader(new Tokenizer(new MockDslScriptsProvider(dsl), new MockConfiguration()).GetTokens(), position);
+            return new TokenReader(new Tokenizer(new MockDslScriptsProvider(dsl), null).GetTokens(), position);
         }
 
 
@@ -103,7 +103,7 @@ namespace Rhetos.Dsl.Test
             var conceptParsers = new MultiDictionary<string, IConceptParser> ();
             conceptParsers.Add("b", new List<IConceptParser>() { new TestErrorParser("b") });
 
-            TokenReader tokenReader = new TokenReader(new Tokenizer(new MockDslScriptsProvider(dsl), new MockConfiguration()).GetTokens(), 0);
+            TokenReader tokenReader = new TokenReader(new Tokenizer(new MockDslScriptsProvider(dsl),null).GetTokens(), 0);
 
             var e = TestUtility.ShouldFail<DslSyntaxException>(
                 () => new TestDslParser(dsl).ParseNextConcept(tokenReader, null, conceptParsers));
@@ -312,7 +312,7 @@ namespace Rhetos.Dsl.Test
         private static IEnumerable<IConceptInfo> DslParserParse(params string[] dsl)
         {
             var dslParser = new DslParser(
-                new Tokenizer(new MockDslScriptsProvider(dsl), new MockConfiguration()),
+                new Tokenizer(new MockDslScriptsProvider(dsl), null),
                 new IConceptInfo[] { new SimpleConceptInfo() },
                 new ConsoleLogProvider());
             var parsedConcepts = dslParser.ParsedConcepts;

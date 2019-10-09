@@ -138,7 +138,7 @@ namespace Rhetos.Dsl.Test
 
         private static List<Token> TestGetTokens(string dsl)
         {
-            return new Tokenizer(new MockDslScriptsProvider(dsl), new MockConfiguration()).GetTokens();
+            return new Tokenizer(new MockDslScriptsProvider(dsl), null).GetTokens();
         }
 
         static void CheckAll(string expectedCSV, string dsl)

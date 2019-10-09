@@ -29,14 +29,14 @@ namespace Rhetos.Dsl
     public class Tokenizer
     {
         private readonly IDslScriptsProvider _dslScriptsProvider;
-        private readonly IConfiguration _configuration;
+        private readonly FilesUtility _filesUtility;
         List<Token> _tokens = null;
         object _tokensLock = new object();
 
-        public Tokenizer(IDslScriptsProvider dslScriptsProvider, IConfiguration configuration)
+        public Tokenizer(IDslScriptsProvider dslScriptsProvider, FilesUtility filesUtility)
         {
             _dslScriptsProvider = dslScriptsProvider;
-            _configuration = configuration;
+            _filesUtility = filesUtility;
         }
 
         public List<Token> GetTokens()
@@ -63,7 +63,7 @@ namespace Rhetos.Dsl
                         break;
 
                     int startPosition = scriptPosition;
-                    Token t = TokenizerInternals.GetNextToken_ValueType(dslScript, ref scriptPosition, (path) => FilesUtility.ReadAllText(path, _configuration));
+                    Token t = TokenizerInternals.GetNextToken_ValueType(dslScript, ref scriptPosition, _filesUtility.ReadAllText);
                     t.DslScript = dslScript;
                     t.PositionInDslScript = startPosition;
 

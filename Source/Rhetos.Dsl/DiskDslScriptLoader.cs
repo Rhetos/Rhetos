@@ -30,12 +30,12 @@ namespace Rhetos.Dsl
     public class DiskDslScriptLoader : IDslScriptsProvider
     {
         private readonly Lazy<IEnumerable<DslScript>> _scripts;
-        private readonly IConfiguration _configuration;
+        private readonly FilesUtility _filesUtility;
 
-        public DiskDslScriptLoader(IInstalledPackages installedPackages, IConfiguration configuration)
+        public DiskDslScriptLoader(IInstalledPackages installedPackages, FilesUtility filesUtility)
         {
             _scripts = new Lazy<IEnumerable<DslScript>>(() => LoadScripts(installedPackages));
-            _configuration = configuration;
+            _filesUtility = filesUtility;
         }
 
         public IEnumerable<DslScript> DslScripts => _scripts.Value;
@@ -59,7 +59,7 @@ namespace Rhetos.Dsl
                     {
                         // Using package.Id instead of full package subfolder name, in order to keep the same script path between different versions of the package (the folder name will contain the version number).
                         Name = package.Id + "\\" + file.InPackagePath.Substring(DslScriptsSubfolderPrefix.Length),
-                        Script = FilesUtility.ReadAllText(file.PhysicalPath, _configuration),
+                        Script = _filesUtility.ReadAllText(file.PhysicalPath),
                         Path = file.PhysicalPath
                     });
         }
