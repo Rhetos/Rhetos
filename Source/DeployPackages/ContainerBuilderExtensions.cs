@@ -40,6 +40,8 @@ namespace Rhetos.Configuration.Autofac
         public static ContainerBuilder AddUserAndLoggingOverrides(this ContainerBuilder builder)
         {
             builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
+            
+            // TODO SS: this is not needed?
             builder.RegisterInstance(DeploymentUtility.InitializationLogProvider).As<ILogProvider>(); // InitializationLogProvider allows overriding deployment logging (both within and outside IoC).
             return builder;
         }

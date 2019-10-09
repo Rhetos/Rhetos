@@ -102,6 +102,7 @@
     <Compile Include="Modules\CoreModule.cs" />
     <Compile Include="Modules\RuntimeModule.cs" />
     <Compile Include="Modules\DeployModule.cs" />
+    <Compile Include="ContextContainerBuilder.cs" />
     <Compile Include="RhetosTestContainer.cs" />
     <Compile Include="Modules\ExtensibilityModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

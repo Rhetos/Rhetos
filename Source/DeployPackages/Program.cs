@@ -72,6 +72,7 @@ namespace DeployPackages
                 if (deployOptions.StartPaused)
                     StartPaused();
 
+                // TODO SS: pending removal, should use RhetosAppEnvironment directly
                 Paths.InitializeRhetosServerRootPath(initializationContext.RhetosAppEnvironment.RootPath);
 
                 var packageManager = new PackageManager(initializationContext);
@@ -84,13 +85,15 @@ namespace DeployPackages
 
                 logger.Trace("Done.");
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                logger.Error(ex.ToString());
-                if (ex is ReflectionTypeLoadException)
-                    logger.Error(CsUtility.ReportTypeLoadException((ReflectionTypeLoadException)ex));
+                logger.Error(e.ToString());
 
-                InteractiveExceptionInfo(ex, pauseOnError);
+                if (e is ReflectionTypeLoadException reflectionTypeLoadException)
+                    logger.Error(CsUtility.ReportTypeLoadException(reflectionTypeLoadException));
+
+                if (Environment.UserInteractive)
+                    InteractiveExceptionInfo(e, pauseOnError);
 
                 return 1;
             }
@@ -114,7 +117,6 @@ namespace DeployPackages
             if (!Environment.UserInteractive)
                 throw new Rhetos.UserException("DeployPackages parameter 'StartPaused' must not be set, because the application is executed in a non-interactive environment.");
 
-            // Use for debugging (Attach to Process)
             Console.WriteLine("Press any key to continue . . .");
             Console.ReadKey(true);
         }
@@ -145,8 +147,6 @@ namespace DeployPackages
 
         private static void InteractiveExceptionInfo(Exception e, bool pauseOnError)
         {
-            if (!Environment.UserInteractive) return;
-
             PrintSummary(e);
 
             if (pauseOnError)
