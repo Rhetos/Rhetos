@@ -175,11 +175,11 @@ namespace Rhetos.Utilities
             if (defaultEncodingWhenReadingFiles)
             {
                 return File.ReadAllText(path, Encoding.Default);
-
             }
-            else {
+            else
+            {
                 var text = File.ReadAllText(path);
-                // Any invalid UTF-8 character is interpreted as �
+                //Occurrence of the character � is interpreted as invalid UTF-8
                 var inavlidCharIndex = text.IndexOf((char)65533);
                 if (inavlidCharIndex != -1)
                     _logger.Info($@"WARNING: File '{path}' contains invalid UTF-8 character at line {ScriptPositionReporting.Line(text, inavlidCharIndex)}.");
