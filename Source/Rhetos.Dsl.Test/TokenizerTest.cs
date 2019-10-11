@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rhetos.TestCommon;
+using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.Test
 {
@@ -138,7 +139,7 @@ namespace Rhetos.Dsl.Test
 
         private static List<Token> TestGetTokens(string dsl)
         {
-            return new Tokenizer(new MockDslScriptsProvider(dsl), null).GetTokens();
+            return new Tokenizer(new MockDslScriptsProvider(dsl), new FilesUtility(new NullLogProvider())).GetTokens();
         }
 
         static void CheckAll(string expectedCSV, string dsl)
