@@ -60,7 +60,7 @@ EXEC Rhetos.DataMigrationApplyMultiple '{concept.Module.Name}', '{concept.Name}'
 $@"EXEC Rhetos.DataMigrationUse '{concept.Module.Name}', '{concept.Name}', 'ID', 'uniqueidentifier';
 GO
 
-CREATE TABLE #{concept.Module.Name}_{concept.Name} (ID uniqueidentifier)
+CREATE TABLE #{concept.Module.Name}_{concept.Name} (ID uniqueidentifier);
 {InsertValuesTag.Evaluate(concept)}
 
 DELETE FROM _{concept.Module.Name}.{concept.Name} WHERE ID NOT IN
