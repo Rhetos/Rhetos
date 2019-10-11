@@ -25,6 +25,11 @@ Module TestHardcodedEntity
         }
     }
 
+    //Used to test if deployment will fail when no entry is defined
+    Hardcoded EmptyHardcodedEntity
+    {
+    }
+
     Entity ReferenceToHardcodedEntity
     {
         LongString Content { Required; }
