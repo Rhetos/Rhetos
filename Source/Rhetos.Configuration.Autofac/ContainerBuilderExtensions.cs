@@ -60,15 +60,15 @@ namespace Rhetos.Configuration.Autofac
             return builder;
         }
 
-        public static ContainerBuilder AddConfiguredOptions<T>(this ContainerBuilder builder, IConfigurationProvider configurationProvider) where T : class
+        public static ContainerBuilder AddOptions<T>(this ContainerBuilder builder, IConfigurationProvider configurationProvider) where T : class
         {
-            builder.RegisterInstance(configurationProvider.ConfigureOptions<T>());
+            builder.RegisterInstance(configurationProvider.GetOptions<T>());
             return builder;
         }
 
         public static ContainerBuilder AddOptions<T>(this ContainerBuilder builder) where T : class
         {
-            builder.Register(a => a.Resolve<IConfigurationProvider>().ConfigureOptions<T>()).SingleInstance();
+            builder.Register(a => a.Resolve<IConfigurationProvider>().GetOptions<T>()).SingleInstance();
             return builder;
         }
     }

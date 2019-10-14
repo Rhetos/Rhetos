@@ -17,18 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac;
-using Rhetos;
-using Rhetos.Configuration.Autofac;
-using Rhetos.Deployment;
-using Rhetos.Dom;
-using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -37,7 +30,7 @@ namespace DeployPackages
 {
     public static class Program
     {
-        private readonly static Dictionary<string, string> validArguments =  new Dictionary<string, string>()
+        private readonly static Dictionary<string, string> _validArguments =  new Dictionary<string, string>()
         {
             { "/StartPaused", "Use for debugging with Visual Studio (Attach to Process)." },
             { "/Debug", "Generates unoptimized dlls (ServerDom.*.dll, e.g.) for debugging." },
@@ -54,6 +47,8 @@ namespace DeployPackages
             var logger = logProvider.GetLogger("DeployPackages");
             var pauseOnError = true;
 
+            logger.Trace(() => "Logging configured.");
+
             try
             {
                 if (!ValidateArguments(args))
@@ -63,9 +58,9 @@ namespace DeployPackages
                 var initializationContext = new InitializationContext(
                     logProvider,
                     configurationProvider,
-                    new RhetosAppEnvironment(configurationProvider.ConfigureOptions<RhetosAppOptions>()));
+                    new RhetosAppEnvironment(configurationProvider.GetOptions<RhetosAppOptions>()));
 
-                var deployOptions = configurationProvider.ConfigureOptions<DeployOptions>();
+                var deployOptions = configurationProvider.GetOptions<DeployOptions>();
 
                 pauseOnError = !deployOptions.NoPause;
 
@@ -106,8 +101,8 @@ namespace DeployPackages
             var rhetosAppRootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..");
             return new ConfigurationBuilder()
                 .SetRhetosAppRootPath(rhetosAppRootPath)
-                .AddConfigurationManagerConfiguration()
                 .AddWebConfiguration(rhetosAppRootPath)
+                .AddConfigurationManagerConfiguration()
                 .AddCommandLineArguments(args, "/")
                 .Build();
         }
@@ -129,7 +124,7 @@ namespace DeployPackages
                 return false;
             }
 
-            var invalidArgument = args.FirstOrDefault(a => !validArguments.Keys.Contains(a, StringComparer.InvariantCultureIgnoreCase));
+            var invalidArgument = args.FirstOrDefault(a => !_validArguments.Keys.Contains(a, StringComparer.InvariantCultureIgnoreCase));
             if (invalidArgument != null)
             {
                 ShowHelp();
@@ -141,7 +136,7 @@ namespace DeployPackages
         private static void ShowHelp()
         {
             Console.WriteLine("Command-line arguments:");
-            foreach (var argument in validArguments)
+            foreach (var argument in _validArguments)
                 Console.WriteLine($"{argument.Key.PadRight(20)} {argument.Value}");
         }
 

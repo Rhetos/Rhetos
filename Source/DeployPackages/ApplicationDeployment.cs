@@ -38,25 +38,25 @@ namespace DeployPackages
 {
     public class ApplicationDeployment
     {
-        private readonly ILogger logger;
-        private readonly InitializationContext initializationContext;
+        private readonly ILogger _logger;
+        private readonly InitializationContext _initializationContext;
 
         public ApplicationDeployment(InitializationContext initializationContext)
         {
-            this.logger = initializationContext.LogProvider.GetLogger("DeployPackages");
-            this.initializationContext = initializationContext;
+            _logger = initializationContext.LogProvider.GetLogger("DeployPackages");
+            _initializationContext = initializationContext;
         }
         
         public void GenerateApplication()
         {
-            logger.Trace("Loading plugins.");
+            _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            Plugins.SetInitializationLogging(initializationContext.LogProvider);
-            var builder = new ContextContainerBuilder(initializationContext)
+            Plugins.SetInitializationLogging(_initializationContext.LogProvider);
+            var builder = new ContextContainerBuilder(_initializationContext)
                 .AddRhetosDeployment()
                 .AddUserAndLoggingOverrides()
-                .AddConfiguredOptions<DeployOptions>(initializationContext.ConfigurationProvider);
+                .AddOptions<DeployOptions>(_initializationContext.ConfigurationProvider);
 
             using (var container = builder.Build())
             {
@@ -74,15 +74,15 @@ namespace DeployPackages
             // Creating a new container builder instead of using builder.Update, because of severe performance issues with the Update method.
             Plugins.ClearCache();
 
-            logger.Trace("Loading generated plugins.");
+            _logger.Trace("Loading generated plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            Plugins.SetInitializationLogging(initializationContext.LogProvider);
-            var builder = new ContextContainerBuilder(initializationContext)
+            Plugins.SetInitializationLogging(_initializationContext.LogProvider);
+            var builder = new ContextContainerBuilder(_initializationContext)
                 .AddApplicationInitialization()
                 .AddRhetosRuntime()
                 .AddUserAndLoggingOverrides()
-                .AddConfiguredOptions<DeployOptions>(initializationContext.ConfigurationProvider);
+                .AddOptions<DeployOptions>(_initializationContext.ConfigurationProvider);
 
             using (var container = builder.Build())
             {
@@ -94,7 +94,7 @@ namespace DeployPackages
 
                 if (!initializers.Any())
                 {
-                    logger.Trace("No server initialization plugins.");
+                    _logger.Trace("No server initialization plugins.");
                 }
                 else
                 {
@@ -110,9 +110,9 @@ namespace DeployPackages
         {
             var configFile = Paths.RhetosServerWebConfigFile;
             if (FilesUtility.SafeTouch(configFile))
-                logger.Trace($"Updated {Path.GetFileName(configFile)} modification date to restart server.");
+                _logger.Trace($"Updated {Path.GetFileName(configFile)} modification date to restart server.");
             else
-                logger.Trace($"Missing {Path.GetFileName(configFile)}.");
+                _logger.Trace($"Missing {Path.GetFileName(configFile)}.");
         }
     }
 }

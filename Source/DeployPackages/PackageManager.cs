@@ -33,17 +33,17 @@ namespace DeployPackages
 {
     public class PackageManager
     {
-        private readonly ILogger logger;
-        private readonly FilesUtility filesUtility;
-        private readonly DeployOptions deployOptions;
-        private readonly InitializationContext initializationContext;
+        private readonly ILogger _logger;
+        private readonly FilesUtility _filesUtility;
+        private readonly DeployOptions _deployOptions;
+        private readonly InitializationContext _initializationContext;
 
         public PackageManager(InitializationContext initializationContext)
         {
-            this.logger = initializationContext.LogProvider.GetLogger("DeployPackages");
-            filesUtility = new FilesUtility(initializationContext.LogProvider);
-            this.deployOptions = initializationContext.ConfigurationProvider.ConfigureOptions<DeployOptions>();
-            this.initializationContext = initializationContext;
+            _logger = initializationContext.LogProvider.GetLogger("DeployPackages");
+            _filesUtility = new FilesUtility(initializationContext.LogProvider);
+            _deployOptions = initializationContext.ConfigurationProvider.GetOptions<DeployOptions>();
+            _initializationContext = initializationContext;
         }
 
         public void InitialCleanup()
@@ -52,11 +52,11 @@ namespace DeployPackages
             DeleteObsoleteGeneratedFiles();
 
             // Backup and delete generated files:
-            if (!deployOptions.DatabaseOnly)
+            if (!_deployOptions.DatabaseOnly)
             {
-                logger.Trace("Moving old generated files to cache.");
-                new GeneratedFilesCache(initializationContext.LogProvider).MoveGeneratedFilesToCache();
-                filesUtility.SafeCreateDirectory(Paths.GeneratedFolder);
+                _logger.Trace("Moving old generated files to cache.");
+                new GeneratedFilesCache(_initializationContext.LogProvider).MoveGeneratedFilesToCache();
+                _filesUtility.SafeCreateDirectory(Paths.GeneratedFolder);
             }
             else
             {
@@ -64,22 +64,22 @@ namespace DeployPackages
                 if (missingFile != null)
                     throw new UserException($"'/DatabaseOnly' switch cannot be used if the server have not been deployed successfully before. Run a regular deployment instead. Missing '{missingFile}'.");
 
-                logger.Info("Skipped deleting old generated files (DeployDatabaseOnly).");
+                _logger.Info("Skipped deleting old generated files (DeployDatabaseOnly).");
             }
         }
 
         public void DownloadPackages()
         {
-            if (deployOptions.DatabaseOnly)
+            if (_deployOptions.DatabaseOnly)
             {
-                logger.Info("Skipped download packages (DeployDatabaseOnly).");
+                _logger.Info("Skipped download packages (DeployDatabaseOnly).");
                 return;
             }
 
-            logger.Trace("Getting packages.");
-            var config = new DeploymentConfiguration(initializationContext.LogProvider);
-            var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = deployOptions.IgnoreDependencies };
-            var packageDownloader = new PackageDownloader(config, initializationContext.LogProvider, packageDownloaderOptions);
+            _logger.Trace("Getting packages.");
+            var config = new DeploymentConfiguration(_initializationContext.LogProvider);
+            var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = _deployOptions.IgnoreDependencies };
+            var packageDownloader = new PackageDownloader(config, _initializationContext.LogProvider, packageDownloaderOptions);
             var packages = packageDownloader.GetPackages();
 
             InstalledPackages.Save(packages);
@@ -109,8 +109,8 @@ namespace DeployPackages
             foreach (var path in deleteObsoleteFiles)
                 if (File.Exists(path))
                 {
-                    logger.Info($"Deleting obsolete file '{path}'.");
-                    filesUtility.SafeDeleteFile(path);
+                    _logger.Info($"Deleting obsolete file '{path}'.");
+                    _filesUtility.SafeDeleteFile(path);
                 }
         }
     }

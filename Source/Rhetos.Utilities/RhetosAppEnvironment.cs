@@ -11,30 +11,23 @@ namespace Rhetos.Utilities
     public class RhetosAppEnvironment
     {
         public string RootPath { get; }
-        private readonly Lazy<string> _packagesCacheFolder;
-        private readonly Lazy<string> _resourcesFolder;
-        private readonly Lazy<string> _binFolder;
-        private readonly Lazy<string> _generatedFolder;
-        private readonly Lazy<string> _generatedFilesCacheFolder;
-        private readonly Lazy<string> _pluginsFolder;
+        public string PackagesCacheFolder { get; }
+        public string ResourcesFolder { get; }
+        public string BinFolder { get; }
+        public string GeneratedFolder { get; }
+        public string GeneratedFilesCacheFolder { get; }
+        public string PluginsFolder { get; }
 
         public RhetosAppEnvironment(RhetosAppOptions options)
         {
             RootPath = options.RootPath;
-            _packagesCacheFolder = new Lazy<string>(() => Path.Combine(RootPath, "PackagesCache"));
-            _resourcesFolder = new Lazy<string>(() => Path.Combine(RootPath, "Resources"));
-            _binFolder = new Lazy<string>(() => Path.Combine(RootPath, "bin"));
-            _generatedFolder = new Lazy<string>(() => Path.Combine(RootPath, "bin\\Generated"));
-            _generatedFilesCacheFolder = new Lazy<string>(() => Path.Combine(RootPath, "GeneratedFilesCache"));
-            _pluginsFolder = new Lazy<string>(() => Path.Combine(RootPath, "bin\\Plugins"));
+            PackagesCacheFolder = Path.Combine(RootPath, "PackagesCache");
+            ResourcesFolder = Path.Combine(RootPath, "Resources");
+            BinFolder = Path.Combine(RootPath, "bin");
+            GeneratedFolder = Path.Combine(RootPath, "bin\\Generated");
+            GeneratedFilesCacheFolder = Path.Combine(RootPath, "GeneratedFilesCache");
+            PluginsFolder = Path.Combine(RootPath, "bin\\Plugins");
         }
-
-        public string PackagesCacheFolder => _packagesCacheFolder.Value;
-        public string ResourcesFolder => _resourcesFolder.Value;
-        public string BinFolder => _binFolder.Value;
-        public string GeneratedFolder => _generatedFolder.Value;
-        public string GeneratedFilesCacheFolder => _generatedFilesCacheFolder.Value;
-        public string PluginsFolder => _pluginsFolder.Value;
 
         public string GetDomAssemblyFile(DomAssemblies domAssembly) => Path.Combine(GeneratedFolder, $"ServerDom.{domAssembly}.dll");
         /// <summary>

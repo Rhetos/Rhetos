@@ -30,14 +30,14 @@ namespace Rhetos.Utilities.ApplicationConfiguration
     public class ConfigurationProvider : IConfigurationProvider
     {
         public static readonly string ConfigurationPathSeparator = ":";
-        private readonly Dictionary<string, object> configurationValues;
+        private readonly Dictionary<string, object> _configurationValues;
 
         public ConfigurationProvider(Dictionary<string, object> configurationValues)
         {
-            this.configurationValues = configurationValues;
+            _configurationValues = configurationValues;
         }
 
-        public T ConfigureOptions<T>(string configurationPath = "", bool requireAllMembers = false) where T : class
+        public T GetOptions<T>(string configurationPath = "", bool requireAllMembers = false) where T : class
         {
             var optionsType = typeof(T);
             var optionsInstance = Activator.CreateInstance(optionsType);
@@ -75,7 +75,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration
             return Convert<T>(value);
         }
 
-        public string[] AllKeys => configurationValues.Keys.ToArray();
+        public string[] AllKeys => _configurationValues.Keys.ToArray();
 
         private void SetMemberValue(object instance, MemberInfo member, object value)
         {
@@ -93,7 +93,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration
             if (!string.IsNullOrEmpty(configurationPath))
                 configurationKey = $"{configurationPath.ToLowerInvariant()}{ConfigurationPathSeparator}{configurationKey}";
 
-            return configurationValues.TryGetValue(configurationKey, out result);
+            return _configurationValues.TryGetValue(configurationKey, out result);
         }
 
 

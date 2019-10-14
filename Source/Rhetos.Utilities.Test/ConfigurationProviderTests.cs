@@ -171,8 +171,8 @@ namespace Rhetos.Utilities.Test
                 .AddKeyValue("App:EnumValueObject", TestEnum.ValueB)
                 .Build();
 
-            TestUtility.ShouldFail<FrameworkException>(() => provider.ConfigureOptions<PocoOptions>("App", true), "requires all members");
-            var options = provider.ConfigureOptions<PocoOptions>("App");
+            TestUtility.ShouldFail<FrameworkException>(() => provider.GetOptions<PocoOptions>("App", true), "requires all members");
+            var options = provider.GetOptions<PocoOptions>("App");
             Assert.AreEqual("stringConfigured", options.StringProp);
             Assert.AreEqual("defaultString", options.StringProp2);
             Assert.AreEqual(5, options.IntProp);
@@ -193,7 +193,7 @@ namespace Rhetos.Utilities.Test
                     .AddKeyValue("App:EnumValueString", "ValueC")
                     .Build();
 
-                TestUtility.ShouldFail<FrameworkException>(() => provider.ConfigureOptions<PocoOptions>("App"), "Type conversion failed");
+                TestUtility.ShouldFail<FrameworkException>(() => provider.GetOptions<PocoOptions>("App"), "Type conversion failed");
             }
 
             {
@@ -201,7 +201,7 @@ namespace Rhetos.Utilities.Test
                     .AddKeyValue("App:IntProp", "120_not_int")
                     .Build();
 
-                TestUtility.ShouldFail<FrameworkException>(() => provider.ConfigureOptions<PocoOptions>("App"), "Type conversion failed");
+                TestUtility.ShouldFail<FrameworkException>(() => provider.GetOptions<PocoOptions>("App"), "Type conversion failed");
             }
         }
 
@@ -212,7 +212,7 @@ namespace Rhetos.Utilities.Test
                 .AddKeyValue("JustAField", 1337)
                 .Build();
 
-            var options = provider.ConfigureOptions<PocoOptions>();
+            var options = provider.GetOptions<PocoOptions>();
             Assert.AreEqual(options.JustAField, 1337);
         }
 
@@ -231,8 +231,8 @@ namespace Rhetos.Utilities.Test
                 .AddKeyValue("section:opt2", "102")
                 .Build();
 
-            TestUtility.ShouldFail(() => provider.ConfigureOptions<Poco2>(requireAllMembers: true), "requires all members", "opt2");
-            var poco2 = provider.ConfigureOptions<Poco2>("section", true);
+            TestUtility.ShouldFail(() => provider.GetOptions<Poco2>(requireAllMembers: true), "requires all members", "opt2");
+            var poco2 = provider.GetOptions<Poco2>("section", true);
 
             Assert.AreEqual("101", poco2.opt1);
             Assert.AreEqual("102", poco2.opt2);
@@ -296,7 +296,7 @@ namespace Rhetos.Utilities.Test
                 .AddKeyValue("optGetOnlyProperty", 14)
                 .Build();
 
-            var options = provider.ConfigureOptions<PocoSingleValid>();
+            var options = provider.GetOptions<PocoSingleValid>();
 
             Assert.AreEqual(11, options.opt);
             Assert.AreEqual(2, options.GetOptPrivate());
@@ -320,7 +320,7 @@ namespace Rhetos.Utilities.Test
             var provider = new ConfigurationBuilder()
                 .Build();
 
-            TestUtility.ShouldFail<MissingMethodException>(() => provider.ConfigureOptions<PocoConstructor>(), "No parameterless constructor");
+            TestUtility.ShouldFail<MissingMethodException>(() => provider.GetOptions<PocoConstructor>(), "No parameterless constructor");
         }
 
         [TestMethod]
