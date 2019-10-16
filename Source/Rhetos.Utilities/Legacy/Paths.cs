@@ -26,85 +26,42 @@ using System.Text;
 
 namespace Rhetos.Utilities
 {
+    [Obsolete("Use RhetosAppEnvironment instead.")]
     public static class Paths
     {
+        private static RhetosAppEnvironment _rhetosAppEnvironment;
+
         /// <summary>
         /// Initialize Paths for the Rhetos server.
         /// </summary>
-        public static void InitializeRhetosServer()
+        public static void Initialize(RhetosAppEnvironment rhetosAppEnvironment)
         {
-            RhetosServerRootPath = AppDomain.CurrentDomain.BaseDirectory;
-            IsRhetosServer = true;
+            _rhetosAppEnvironment = rhetosAppEnvironment;
         }
-
-        /// <summary>
-        /// Initialize Paths for any application other then Rhetos server.
-        /// </summary>
-        public static void InitializeRhetosServerRootPath(string rhetosServerRootPath)
-        {
-            RhetosServerRootPath = rhetosServerRootPath;
-            IsRhetosServer = false;
-        }
-
-        private static bool? _isRhetosServer = null;
-
-        public static bool IsRhetosServer
-        {
-            get
-            {
-                if (_isRhetosServer == null)
-                    throw new FrameworkException("Rhetos server is not initialized (Paths class).");
-
-                return _isRhetosServer.Value;
-            }
-
-            private set
-            {
-                if (_isRhetosServer != null && _isRhetosServer != value)
-                    throw new FrameworkException($"{nameof(IsRhetosServer)} is already initialized to a different value. Old value = '{_isRhetosServer}', new value = '{value}'.");
-
-                _isRhetosServer = value;
-            }
-        }
-
-        private static string _rhetosServerRootPath;
 
         public static string RhetosServerRootPath
         {
             get
             {
-                if (_rhetosServerRootPath == null)
+                if (_rhetosAppEnvironment == null)
                     throw new FrameworkException("Rhetos server is not initialized (Paths class).");
 
-                return _rhetosServerRootPath;
-            }
-
-            private set
-            {
-                if (value == null)
-                    throw new FrameworkException($"{nameof(RhetosServerRootPath)} is set to null.");
-
-                value = Path.GetFullPath(value);
-
-                if (_rhetosServerRootPath != null && _rhetosServerRootPath != value)
-                    throw new FrameworkException($"{nameof(RhetosServerRootPath)} is already initialized to a different value. Old value = '{_rhetosServerRootPath}', new value = '{value}'.");
-
-                _rhetosServerRootPath = value;
+                return _rhetosAppEnvironment.RootPath;
             }
         }
 
-        public static string PackagesCacheFolder => Path.Combine(RhetosServerRootPath, "PackagesCache");
-        public static string ResourcesFolder => Path.Combine(RhetosServerRootPath, "Resources");
-        public static string BinFolder => Path.Combine(RhetosServerRootPath, "bin");
-        public static string GeneratedFolder => Path.Combine(RhetosServerRootPath, "bin\\Generated");
-        public static string GeneratedFilesCacheFolder => Path.Combine(RhetosServerRootPath, "GeneratedFilesCache");
-        public static string PluginsFolder => Path.Combine(RhetosServerRootPath, "bin\\Plugins");
-        public static string RhetosServerWebConfigFile => Path.Combine(RhetosServerRootPath, "Web.config");
-        public static string ConnectionStringsFile => Path.Combine(RhetosServerRootPath, @"bin\ConnectionStrings.config");
-        public static string GetDomAssemblyFile(DomAssemblies domAssembly) => Path.Combine(GeneratedFolder, $"ServerDom.{domAssembly}.dll");
+        public static string PackagesCacheFolder => _rhetosAppEnvironment.PackagesCacheFolder;
+        public static string ResourcesFolder => _rhetosAppEnvironment.ResourcesFolder;
+        public static string BinFolder => _rhetosAppEnvironment.BinFolder;
+        public static string GeneratedFolder => _rhetosAppEnvironment.GeneratedFolder;
+        public static string GeneratedFilesCacheFolder => _rhetosAppEnvironment.GeneratedFilesCacheFolder;
+        public static string PluginsFolder => _rhetosAppEnvironment.PluginsFolder;
+        public static string RhetosServerWebConfigFile => Path.Combine(_rhetosAppEnvironment.RootPath, "Web.config");
+        public static string ConnectionStringsFile => Path.Combine(_rhetosAppEnvironment.RootPath, @"bin\ConnectionStrings.config");
+        public static string GetDomAssemblyFile(DomAssemblies domAssembly) => _rhetosAppEnvironment.GetDomAssemblyFile(domAssembly);
         /// <summary>
         /// List of the generated dll files that make the domain object model (ServerDom.*.dll).
         /// </summary>
-        public static IEnumerable<string> DomAssemblyFiles => Enum.GetValues(typeof(DomAssemblies)).Cast<DomAssemblies>().Select(domAssembly => GetDomAssemblyFile(domAssembly));
+        public static IEnumerable<string> DomAssemblyFiles => _rhetosAppEnvironment.DomAssemblyFiles;
     }
 }

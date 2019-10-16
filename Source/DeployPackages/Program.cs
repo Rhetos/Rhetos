@@ -67,8 +67,7 @@ namespace DeployPackages
                 if (deployOptions.StartPaused)
                     StartPaused();
 
-                // TODO SS: pending removal, should use RhetosAppEnvironment directly
-                Paths.InitializeRhetosServerRootPath(initializationContext.RhetosAppEnvironment.RootPath);
+                LegacyUtilities.Initialize(configurationProvider);
 
                 var packageManager = new PackageManager(initializationContext);
                 packageManager.InitialCleanup();

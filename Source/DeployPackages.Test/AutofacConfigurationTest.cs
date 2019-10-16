@@ -23,9 +23,9 @@ using Rhetos.Configuration.Autofac;
 using Rhetos.Dsl;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
+using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -36,12 +36,22 @@ namespace DeployPackages.Test
     [TestClass]
     public class AutofacConfigurationTest
     {
+        private readonly IConfigurationProvider _configurationProvider;
+        public AutofacConfigurationTest()
+        {
+            _configurationProvider = new ConfigurationBuilder()
+                .SetRhetosAppRootPath(AppDomain.CurrentDomain.BaseDirectory)
+                .AddConfigurationManagerConfiguration()
+                .Build();
+
+            LegacyUtilities.Initialize(_configurationProvider);
+        }
+
         [TestMethod]
         public void CorrectRegistrationsDeployTime()
         {
-            Paths.InitializeRhetosServer();
-
             var builder = new ContainerBuilder()
+                .AddConfiguration(_configurationProvider) // DeployTime utilizes legacy IConfiguration which relies on IConfigurationProvider, so we have to register it
                 .AddRhetosDeployment()
                 .AddUserAndLoggingOverrides();
             builder.RegisterInstance(new DeployOptions());
@@ -61,9 +71,8 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsDeployTimeDatabaseOnly()
         {
-            Paths.InitializeRhetosServer();
-
             var builder = new ContainerBuilder()
+                .AddConfiguration(_configurationProvider) // DeployTime utilizes legacy IConfiguration which relies on IConfigurationProvider, so we have to register it
                 .AddRhetosDeployment()
                 .AddUserAndLoggingOverrides();
 
@@ -84,8 +93,6 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsRuntimeWithInitialization()
         {
-            Paths.InitializeRhetosServer();
-
             var builder = new ContainerBuilder()
                 .AddApplicationInitialization()
                 .AddRhetosRuntime()
@@ -105,7 +112,6 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsServerRuntime()
         {
-            Paths.InitializeRhetosServer();
             var builder = new ContainerBuilder()
                 .AddRhetosRuntime();
 
@@ -137,6 +143,7 @@ Activator = ConceptApplicationRepository (ReflectionActivator), Services = [Rhet
 Activator = ConceptDataMigrationExecuter (ReflectionActivator), Services = [Rhetos.DatabaseGenerator.IConceptDataMigrationExecuter], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = ConceptMetadata (ReflectionActivator), Services = [Rhetos.Dsl.ConceptMetadata], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = Configuration (ReflectionActivator), Services = [Rhetos.Utilities.IConfiguration], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
+Activator = ConfigurationProvider (ProvidedInstanceActivator), Services = [Rhetos.Utilities.ApplicationConfiguration.IConfigurationProvider], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = ConnectionString (ProvidedInstanceActivator), Services = [Rhetos.Utilities.ConnectionString], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = DatabaseCleaner (ReflectionActivator), Services = [Rhetos.Deployment.DatabaseCleaner], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = DatabaseGenerator (ReflectionActivator), Services = [Rhetos.DatabaseGenerator.IDatabaseGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
@@ -185,6 +192,7 @@ Activator = ConceptApplicationRepository (ReflectionActivator), Services = [Rhet
 Activator = ConceptDataMigrationExecuter (ReflectionActivator), Services = [Rhetos.DatabaseGenerator.IConceptDataMigrationExecuter], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = ConceptMetadata (ReflectionActivator), Services = [Rhetos.Dsl.ConceptMetadata], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = Configuration (ReflectionActivator), Services = [Rhetos.Utilities.IConfiguration], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
+Activator = ConfigurationProvider (ProvidedInstanceActivator), Services = [Rhetos.Utilities.ApplicationConfiguration.IConfigurationProvider], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = ConnectionString (ProvidedInstanceActivator), Services = [Rhetos.Utilities.ConnectionString], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = DatabaseCleaner (ReflectionActivator), Services = [Rhetos.Deployment.DatabaseCleaner], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = DatabaseGenerator (ReflectionActivator), Services = [Rhetos.DatabaseGenerator.IDatabaseGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope

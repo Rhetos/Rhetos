@@ -159,6 +159,7 @@
     <Compile Include="Legacy\IConfiguration.cs" />
     <Compile Include="ISqlUtility.cs" />
     <Compile Include="IUserInfoAdmin.cs" />
+    <Compile Include="Legacy\LegacyUtilities.cs" />
     <Compile Include="ListOfTuples.cs" />
     <Compile Include="RhetosAppOptions.cs" />
     <Compile Include="RhetosAppEnvironment.cs" />

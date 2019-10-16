@@ -98,7 +98,7 @@ namespace Rhetos.Configuration.Autofac
                     lock (_containerInitializationLock)
                         if (_iocContainer == null)
                         {
-                            Paths.InitializeRhetosServerRootPath(SearchForRhetosServerRootFolder());
+                            Paths.Initialize(new RhetosAppEnvironment(new RhetosAppOptions() { RootPath = SearchForRhetosServerRootFolder() }));
                             _iocContainer = InitializeIocContainer();
                         }
                 }

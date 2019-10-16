@@ -46,7 +46,6 @@ namespace Rhetos.Configuration.Autofac
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new DeployModule());
 
-            // TODO SS: is this the correct way to do this?
             builder.RegisterType<DslModel>();
             builder.Register(a => a.Resolve<DeployOptions>().DatabaseOnly ? a.Resolve<IDslModelFile>() as IDslModel : a.Resolve<DslModel>() as IDslModel).SingleInstance();
 

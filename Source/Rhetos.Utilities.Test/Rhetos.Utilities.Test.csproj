@@ -62,6 +62,7 @@
     <Compile Include="ConfigurationProviderTests.cs" />
     <Compile Include="DatabaseTimeCacheTest.cs" />
     <Compile Include="FilesUtilityTest.cs" />
+    <Compile Include="LegacyUtilitiesTests.cs" />
     <Compile Include="MsSqlUtilityTest.cs" />
     <Compile Include="NoLocalizerTest.cs" />
     <Compile Include="CsUtilityTest.cs" />

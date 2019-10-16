@@ -247,9 +247,23 @@ namespace Rhetos.Utilities.Test
                 .Build();
 
             Assert.IsTrue(provider.AllKeys.Contains("connectionstrings:serverconnectionstring:name"));
-            Assert.AreEqual(30, provider.GetValue("SqlCommandTimeout", 0));
+            Assert.AreEqual(31, provider.GetValue("SqlCommandTimeout", 0));
             Assert.AreEqual("TestSettingValue", provider.GetValue("AdditionalTestSetting", "", "TestSection"));
         }
+
+        [TestMethod]
+        [DeploymentItem("ConnectionStrings.config")]
+        public void BindsConnectionStringOptions()
+        {
+            var provider = new ConfigurationBuilder()
+                .AddConfigurationManagerConfiguration()
+                .Build();
+
+            var connectionStringOptions = provider.GetOptions<ConnectionStringOptions>("ConnectionStrings:ServerConnectionString");
+            Assert.AreEqual("ServerConnectionString", connectionStringOptions.Name);
+            Assert.AreEqual("Rhetos.MsSql", connectionStringOptions.ProviderName);
+        }
+
 
         [TestMethod]
         [DeploymentItem("TestCfg.config")]

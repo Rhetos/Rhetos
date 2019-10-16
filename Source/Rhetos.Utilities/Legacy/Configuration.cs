@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,45 +26,29 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Utilities
 {
+    [Obsolete("Use IConfigurationProvider instead.")]
     public class Configuration : IConfiguration
     {
+        private readonly IConfigurationProvider _configurationProvider;
+
+        public Configuration(IConfigurationProvider configurationProvider)
+        {
+            _configurationProvider = configurationProvider;
+        }
+
         public Lazy<string> GetString(string key, string defaultValue)
         {
-            return new Lazy<string>(() => ConfigUtility.GetAppSetting(key) ?? defaultValue);
+            return new Lazy<string>(() => _configurationProvider.GetValue(key, defaultValue));
         }
 
         public Lazy<int> GetInt(string key, int defaultValue)
         {
-            return new Lazy<int>(() =>
-            {
-                string value = ConfigUtility.GetAppSetting(key);
-                if (!string.IsNullOrEmpty(value))
-                {
-                    int result;
-                    if (int.TryParse(value, out result))
-                        return result;
-                    throw new FrameworkException("Invalid '" + key + "' parameter in configuration file: '" + value + "' is not an integer value.");
-                }
-                else
-                    return defaultValue;
-            });
+            return new Lazy<int>(() => _configurationProvider.GetValue<int>(key, defaultValue));
         }
 
         public Lazy<bool> GetBool(string key, bool defaultValue)
         {
-            return new Lazy<bool>(() =>
-            {
-                string value = ConfigUtility.GetAppSetting(key);
-                if (!string.IsNullOrEmpty(value))
-                {
-                    bool result;
-                    if (bool.TryParse(value, out result))
-                        return result;
-                    throw new FrameworkException("Invalid '" + key + "' parameter in configuration file: '" + value + "' is not a boolean value. Allowed values are True and False.");
-                }
-                else
-                    return defaultValue;
-            });
+            return new Lazy<bool>(() => _configurationProvider.GetValue(key, defaultValue));
         }
     }
 }

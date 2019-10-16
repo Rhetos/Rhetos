@@ -24,6 +24,7 @@ using Rhetos.Configuration.Autofac;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
+using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -41,7 +42,14 @@ namespace Rhetos
         {
             var stopwatch = Stopwatch.StartNew();
 
-            Paths.InitializeRhetosServer();
+            var configurationProvider = new ConfigurationBuilder()
+                .SetRhetosAppRootPath(AppDomain.CurrentDomain.BaseDirectory)
+                .AddWebConfiguration(AppDomain.CurrentDomain.BaseDirectory)
+                .Build();
+
+            LegacyUtilities.Initialize(configurationProvider);
+
+            // Paths.Initialize(new RhetosAppEnvironment(new RhetosAppOptions() { RootPath = AppDomain.CurrentDomain.BaseDirectory }));
 
             var builder = CreateServerContainer();
             AutofacServiceHostFactory.Container = builder.Build();

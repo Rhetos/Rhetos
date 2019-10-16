@@ -27,12 +27,23 @@ using Rhetos.Deployment;
 using System.Data;
 using System.Text.RegularExpressions;
 using Rhetos.TestCommon;
+using Rhetos.Utilities.ApplicationConfiguration;
 
 namespace Rhetos.Deployment.Test
 {
     [TestClass]
     public class DatabaseCleanerTest
     {
+        public DatabaseCleanerTest()
+        {
+            var configurationProvider = new ConfigurationBuilder()
+                .SetRhetosAppRootPath(AppDomain.CurrentDomain.BaseDirectory)
+                .AddConfigurationManagerConfiguration()
+                .Build();
+
+            LegacyUtilities.Initialize(configurationProvider);
+        }
+
         private class MockSqlExecuter : ISqlExecuter
         {
             DataTable Columns;

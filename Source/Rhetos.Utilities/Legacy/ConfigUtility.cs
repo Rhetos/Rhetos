@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,8 +26,16 @@ using System.Web.Configuration;
 
 namespace Rhetos.Utilities
 {
+    [Obsolete("Use IConfigurationProvider instead.")]
     public static class ConfigUtility
     {
+        private static IConfigurationProvider _configurationProvider;
+
+        public static void Initialize(IConfigurationProvider configurationProvider)
+        {
+            _configurationProvider = configurationProvider;
+        }
+
         /// <summary>
         /// Use "Configuration.GetInt" or "Configuration.GetBool" instead.
         /// Reads the web service configuration from appSettings group in web.config file.
@@ -35,41 +44,30 @@ namespace Rhetos.Utilities
         /// </summary>
         public static string GetAppSetting(string key)
         {
-            string settingValue = System.Configuration.ConfigurationManager.AppSettings[key];
+            if (_configurationProvider == null)
+                throw new FrameworkException("ConfigUtility not initialized.");
 
-            if (settingValue == null && !Paths.IsRhetosServer)
-            {
-                var setting = RhetosWebConfig.Value.AppSettings.Settings[key];
-                if (setting != null)
-                    settingValue = setting.Value;
-            }
-
-            return settingValue;
+            return _configurationProvider.GetValue<string>(key);
         }
 
         private const string ServerConnectionStringName = "ServerConnectionString";
 
         public static System.Configuration.ConnectionStringSettings GetConnectionString()
         {
-            System.Configuration.ConnectionStringSettings connectionStringConfiguration = System.Configuration.ConfigurationManager.ConnectionStrings[ServerConnectionStringName];
+            if (_configurationProvider == null)
+                throw new FrameworkException("ConfigUtility not initialized.");
 
-            if (connectionStringConfiguration == null && !Paths.IsRhetosServer)
-                connectionStringConfiguration = RhetosWebConfig.Value.ConnectionStrings.ConnectionStrings[ServerConnectionStringName];
+            var connectionStringOptions = _configurationProvider.GetOptions<ConnectionStringOptions>($"ConnectionStrings:{ServerConnectionStringName}");
 
-            if (connectionStringConfiguration == null)
+            if (string.IsNullOrEmpty(connectionStringOptions.Name))
                 throw new FrameworkException("Missing '" + ServerConnectionStringName + "' connection string in the Rhetos server's configuration.");
 
-            return connectionStringConfiguration;
-        }
+            var connectionStringSettings = new System.Configuration.ConnectionStringSettings(
+                connectionStringOptions.Name,
+                connectionStringOptions.ConnectionString,
+                connectionStringOptions.ProviderName);
 
-        private static Lazy<System.Configuration.Configuration> RhetosWebConfig = new Lazy<System.Configuration.Configuration>(InitializeWebConfiguration);
-
-        private static System.Configuration.Configuration InitializeWebConfiguration()
-        {
-            VirtualDirectoryMapping vdm = new VirtualDirectoryMapping(Paths.RhetosServerRootPath, true);
-            WebConfigurationFileMap wcfm = new WebConfigurationFileMap();
-            wcfm.VirtualDirectories.Add("/", vdm);
-            return WebConfigurationManager.OpenMappedWebConfiguration(wcfm, "/");
+            return connectionStringSettings;
         }
     }
 }

@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Data;
+using Rhetos.Utilities.ApplicationConfiguration;
 
 namespace Rhetos.Utilities.Test
 {
@@ -32,6 +33,16 @@ namespace Rhetos.Utilities.Test
     [DeploymentItem("ConnectionStrings.config")]
     public class SqlUtilityTest
     {
+        public SqlUtilityTest()
+        {
+            var configurationProvider = new ConfigurationBuilder()
+                .SetRhetosAppRootPath(AppDomain.CurrentDomain.BaseDirectory)
+                .AddConfigurationManagerConfiguration()
+                .Build();
+
+            LegacyUtilities.Initialize(configurationProvider);
+        }
+
         [TestMethod]
         public void OracleLimitIdentifierLength()
         {
