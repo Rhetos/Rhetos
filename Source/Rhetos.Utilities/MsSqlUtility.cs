@@ -31,28 +31,24 @@ namespace Rhetos.Utilities
     public class MsSqlUtility : ISqlUtility
     {
         /// <summary>
-        /// Creates an SQL query that sets context_info connection variable to contain data about the user.
+        /// Creates an SQL command that sets context_info connection variable to contain data about the user.
         /// The context_info variable can be used in SQL server to extract user info in certain situations such as logging trigger.
         /// </summary>
-        public static string SetUserContextInfoQuery(IUserInfo userInfo)
+        /// <returns>
+        /// Returns null is the user is not recognized.
+        /// </returns>
+        public static DbCommand SetUserContextInfoQuery(IUserInfo userInfo)
         {
-            string text = SqlUtility.UserContextInfoText(userInfo);
-            if (string.IsNullOrEmpty(text))
-                return "";
+            if (!userInfo.IsUserRecognized)
+                return null;
 
-            if (text.Length > 128)
-                text = text.Substring(1, 128);
+            string userInfoText = SqlUtility.UserContextInfoText(userInfo);
+            byte[] encodedUserInfo = userInfoText.Take(128).Select(c => (byte)(c < 256 ? c : '?')).ToArray();
 
-            var query = new StringBuilder(text.Length * 2 + 2);
-            query.Append("SET CONTEXT_INFO 0x");
-            foreach (char c in text)
-            {
-                int i = c;
-                if (i > 255) i = '?';
-                query.Append(i.ToString("x2"));
-            }
-
-            return query.ToString();
+            // Using SQL query parameter, instead of a literal, to reduce load on the SQL Server execution plan cache.
+            var command = new SqlCommand("SET CONTEXT_INFO @userInfo");
+            command.Parameters.AddWithValue("@userInfo", encodedUserInfo);
+            return command;
         }
 
         public static DateTime GetDatabaseTime(ISqlExecuter sqlExecuter)
@@ -61,7 +57,7 @@ namespace Rhetos.Utilities
             sqlExecuter.ExecuteReader("SELECT GETDATE()",
                 reader => databaseTime = reader.GetDateTime(0));
             if (databaseTime == DateTime.MinValue)
-                throw new ApplicationException("Cannot read database server time.");
+                throw new FrameworkException("Cannot read database server time.");
             return databaseTime;
         }
 
