@@ -33,6 +33,7 @@ using System.ServiceModel.Channels;
 using Autofac;
 using Autofac.Integration.Wcf;
 using Rhetos.Utilities;
+using System.Runtime.Serialization;
 
 namespace Rhetos.Web
 {
@@ -85,6 +86,24 @@ namespace Rhetos.Web
             {
                 responseStatusCode = HttpStatusCode.BadRequest;
                 responseMessage = new ResponseMessage { SystemMessage = error.Message };
+            }
+            else if (error is InvalidOperationException && error.Message.StartsWith("The incoming message has an unexpected message format 'Raw'"))
+            {
+                responseStatusCode = HttpStatusCode.BadRequest;
+                responseMessage = new ResponseMessage
+                {
+                    SystemMessage = "The incoming message has an unexpected message format 'Raw'. Set the Content-Type to 'application/json'." +
+                        " " + FrameworkException.SeeLogMessage(error)
+                };
+            }
+            else if (error is SerializationException && !error.StackTrace.ToString().Contains("Rhetos"))
+            {
+                responseStatusCode = HttpStatusCode.BadRequest;
+                responseMessage = new ResponseMessage
+                {
+                    SystemMessage = "Serialization error: Please check if the request body has a valid JSON format."
+                        + " " + FrameworkException.SeeLogMessage(error)
+                };
             }
             else
             {
