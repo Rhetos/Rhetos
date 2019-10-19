@@ -55,11 +55,7 @@ namespace DeployPackages
                     return 1;
 
                 var configurationProvider = BuildConfigurationProvider(args);
-                var initializationContext = new InitializationContext(
-                    logProvider,
-                    configurationProvider,
-                    new RhetosAppEnvironment(configurationProvider.GetOptions<RhetosAppOptions>()));
-
+                var initializationContext = new InitializationContext(configurationProvider, logProvider);
                 var deployOptions = configurationProvider.GetOptions<DeployOptions>();
 
                 pauseOnError = !deployOptions.NoPause;

@@ -51,7 +51,7 @@ namespace Rhetos
 
             // Paths.Initialize(new RhetosAppEnvironment(new RhetosAppOptions() { RootPath = AppDomain.CurrentDomain.BaseDirectory }));
 
-            var builder = CreateServerContainer();
+            var builder = CreateServerContainer(configurationProvider);
             AutofacServiceHostFactory.Container = builder.Build();
 
             var logProvider = AutofacServiceHostFactory.Container.Resolve<ILogProvider>();
@@ -80,9 +80,9 @@ namespace Rhetos
             _performanceLogger.Write(stopwatch, "All services initialized.");
         }
 
-        private ContainerBuilder CreateServerContainer()
+        private ContainerBuilder CreateServerContainer(IConfigurationProvider configurationProvider)
         {
-            var builder = new ContainerBuilder();
+            var builder = new ContextContainerBuilder(configurationProvider, new NLogProvider());
 
             // Specific registrations and initialization:
             Plugins.SetInitializationLogging(new NLogProvider());

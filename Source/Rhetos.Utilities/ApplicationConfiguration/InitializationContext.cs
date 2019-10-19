@@ -17,11 +17,19 @@ namespace Rhetos.Utilities.ApplicationConfiguration
         public IConfigurationProvider ConfigurationProvider { get; }
         public RhetosAppEnvironment RhetosAppEnvironment { get; }
 
-        public InitializationContext(ILogProvider logProvider, IConfigurationProvider configurationProvider, RhetosAppEnvironment rhetosAppEnvironment)
+        public InitializationContext(IConfigurationProvider configurationProvider, ILogProvider logProvider, RhetosAppEnvironment rhetosAppEnvironment)
         {
-            this.LogProvider = logProvider;
             this.ConfigurationProvider = configurationProvider;
+            this.LogProvider = logProvider;
             this.RhetosAppEnvironment = rhetosAppEnvironment;
         }
+
+        /// <summary>
+        /// Creates a context with RhetosAppEnvironment automatically resolved and created from provided configuration.
+        /// </summary>
+        public InitializationContext(IConfigurationProvider configurationProvider, ILogProvider logProvider)
+            : this(configurationProvider, logProvider, new RhetosAppEnvironment(configurationProvider.GetOptions<RhetosAppOptions>())) 
+        { }
+
     }
 }

@@ -24,6 +24,7 @@ using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.Security;
 using Rhetos.Utilities;
+using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -98,8 +99,15 @@ namespace Rhetos.Configuration.Autofac
                     lock (_containerInitializationLock)
                         if (_iocContainer == null)
                         {
-                            Paths.Initialize(new RhetosAppEnvironment(new RhetosAppOptions() { RootPath = SearchForRhetosServerRootFolder() }));
-                            _iocContainer = InitializeIocContainer();
+                            var rhetosAppRootPath = SearchForRhetosServerRootFolder();
+                            var configurationProvider = new ConfigurationBuilder()
+                                .SetRhetosAppRootPath(rhetosAppRootPath)
+                                .AddWebConfiguration(rhetosAppRootPath)
+                                .Build();
+
+                            LegacyUtilities.Initialize(configurationProvider);
+
+                            _iocContainer = InitializeIocContainer(configurationProvider);
                         }
                 }
 
@@ -146,7 +154,7 @@ namespace Rhetos.Configuration.Autofac
             throw new ApplicationException("Cannot locate a valid Rhetos server's folder from '" + Environment.CurrentDirectory + "'. Unexpected folder '" + folder.FullName + "'.");
         }
 
-        private IContainer InitializeIocContainer()
+        private IContainer InitializeIocContainer(IConfigurationProvider configurationProvider)
         {
             AppDomain.CurrentDomain.AssemblyResolve += SearchForAssembly;
 
@@ -154,7 +162,7 @@ namespace Rhetos.Configuration.Autofac
             Plugins.SetInitializationLogging(new ConsoleLogProvider());
 
             // General registrations:
-            var builder = new ContainerBuilder()
+            var builder = new ContextContainerBuilder(configurationProvider, new ConsoleLogProvider())
                 .AddRhetosRuntime();
 
             // Specific registrations override:

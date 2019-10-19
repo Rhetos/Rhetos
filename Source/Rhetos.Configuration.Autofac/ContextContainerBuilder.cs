@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Rhetos.Logging;
 using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
@@ -36,12 +37,23 @@ namespace Rhetos.Configuration.Autofac
     {
         public InitializationContext InitializationContext { get; }
 
+        /// <summary>
+        /// Initializes a container with specified InitializationContext.
+        /// </summary>
         public ContextContainerBuilder(InitializationContext initializationContext)
         {
             this.InitializationContext = initializationContext;
             this.RegisterInstance(initializationContext.ConfigurationProvider);
             this.RegisterInstance(initializationContext.RhetosAppEnvironment);
             this.RegisterInstance(initializationContext.LogProvider);
+        }
+
+        /// <summary>
+        /// Initializes a container with new InitializationContext created from specified parameters.
+        /// </summary>
+        public ContextContainerBuilder(IConfigurationProvider configurationProvider, ILogProvider logProvider)
+            : this(new InitializationContext(configurationProvider, logProvider))
+        {
         }
     }
 }
