@@ -100,17 +100,9 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetEntitySetNodeForStorageModel(DataStructureInfo dataStructureInfo)
         {
-            if (dataStructureInfo is LegacyEntityInfo)
-            {
-                var legacyEntityInfo = dataStructureInfo as LegacyEntityInfo;
-                return $@"
-    <EntitySet Name=""{GetName(dataStructureInfo)}"" EntityType=""Self.{GetName(dataStructureInfo)}"" Schema=""{legacyEntityInfo.View.Split('.')[0]}"" Table=""{legacyEntityInfo.View.Split('.')[1]}"" />";
-            }
-            else
-            {
-                return $@"
-    <EntitySet Name=""{GetName(dataStructureInfo)}"" EntityType=""Self.{GetName(dataStructureInfo)}"" Schema=""{dataStructureInfo.Module.Name}"" Table=""{dataStructureInfo.Name}"" />";
-            }
+            var ormStructure = (IOrmDataStructure)dataStructureInfo;
+            return $@"
+    <EntitySet Name=""{GetName(dataStructureInfo)}"" EntityType=""Self.{GetName(dataStructureInfo)}"" Schema=""{ormStructure.GetOrmSchema()}"" Table=""{ormStructure.GetOrmDatabaseObject()}"" />";
         }
 
         public static string GetName(DataStructureInfo dataStructureInfo)
