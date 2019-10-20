@@ -38,9 +38,9 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             if (propertyInfo.DataStructure is IOrmDataStructure && IsTypeSupported(propertyInfo.GetType()))
             {
-                codeBuilder.InsertCode("\n" + GetPropertyElementForConceptualModel(propertyInfo), DataStructureEdmxCodeGenerator.ConceptualModelEntityTypePropertyTag.Evaluate(propertyInfo.DataStructure));
-                codeBuilder.InsertCode("\n" + GetScalarPropertyElement(propertyInfo), DataStructureEdmxCodeGenerator.EntitySetMappingPropertyTag.Evaluate(propertyInfo.DataStructure));
-                codeBuilder.InsertCode("\n" + GetPropertyElementForStorageModel(propertyInfo), DataStructureEdmxCodeGenerator.StorageModelEntityTypePropertyTag.Evaluate(propertyInfo.DataStructure));
+                codeBuilder.InsertCode("\r\n" + GetPropertyElementForConceptualModel(propertyInfo), DataStructureEdmxCodeGenerator.ConceptualModelEntityTypePropertyTag.Evaluate(propertyInfo.DataStructure));
+                codeBuilder.InsertCode("\r\n" + GetScalarPropertyElement(propertyInfo), DataStructureEdmxCodeGenerator.EntitySetMappingPropertyTag.Evaluate(propertyInfo.DataStructure));
+                codeBuilder.InsertCode("\r\n" + GetPropertyElementForStorageModel(propertyInfo), DataStructureEdmxCodeGenerator.StorageModelEntityTypePropertyTag.Evaluate(propertyInfo.DataStructure));
             }
         }
 

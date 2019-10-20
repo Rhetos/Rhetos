@@ -45,7 +45,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetAssociationSetNodeForStorageModel(UniqueReferenceInfo uniqueReferenceInfo)
         {
-            return "\n" + $@"  <AssociationSet Name=""{GetAssociationSetName(uniqueReferenceInfo)}"" Association=""Self.{GetAssociationSetName(uniqueReferenceInfo)}"">
+            return $@"
+  <AssociationSet Name=""{GetAssociationSetName(uniqueReferenceInfo)}"" Association=""Self.{GetAssociationSetName(uniqueReferenceInfo)}"">
     <End Role=""{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Base)}"" EntitySet=""{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Base)}"" />
     <End Role=""{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}"" EntitySet=""{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}"" />
   </AssociationSet>";
@@ -53,7 +54,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetAssociationSetNodeForConceptualModel(UniqueReferenceInfo uniqueReferenceInfo)
         {
-            return "\n" + $@"	<AssociationSet Name=""{GetAssociationSetName(uniqueReferenceInfo)}"" Association=""Self.{GetAssociationSetName(uniqueReferenceInfo)}"">
+            return $@"
+	<AssociationSet Name=""{GetAssociationSetName(uniqueReferenceInfo)}"" Association=""Self.{GetAssociationSetName(uniqueReferenceInfo)}"">
 		<End Role=""{GetAssociationSetName(uniqueReferenceInfo)}_Source"" EntitySet=""{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}"" />
 		<End Role=""{GetAssociationSetName(uniqueReferenceInfo)}_Target"" EntitySet=""{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Base)}"" />
 	</AssociationSet>";
@@ -61,7 +63,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetAssociationNodeForStorageModel(UniqueReferenceInfo uniqueReferenceInfo)
         {
-            return "\n" + $@"  <Association Name=""{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}_Base"">
+            return $@"
+  <Association Name=""{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}_Base"">
     <End Role=""{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Base)}"" Type=""Self.{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Base)}"" Multiplicity=""1"" />
     <End Role=""{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}"" Type=""Self.{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}"" Multiplicity=""0..1"" />
     <ReferentialConstraint>
@@ -77,7 +80,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetAssociationNodeForConceptualModel(UniqueReferenceInfo uniqueReferenceInfo)
         {
-            return "\n" + $@"  <Association Name=""{GetAssociationSetName(uniqueReferenceInfo)}"">
+            return $@"
+  <Association Name=""{GetAssociationSetName(uniqueReferenceInfo)}"">
     <End Role=""{GetAssociationSetName(uniqueReferenceInfo)}_Source"" Type=""Self.{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}"" Multiplicity=""0..1"" />
     <End Role=""{GetAssociationSetName(uniqueReferenceInfo)}_Target"" Type=""Self.{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Base)}"" Multiplicity=""1"" />
     <ReferentialConstraint>
@@ -98,12 +102,14 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetNavigationPropertyNodeForConceptualModel(UniqueReferenceInfo uniqueReferenceInfo)
         {
-            return "\n" + $@"    <NavigationProperty Name=""Base"" Relationship=""Self.{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}_Base"" FromRole=""{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}_Base_Source"" ToRole=""{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}_Base_Target"" />";
+            return $@"
+    <NavigationProperty Name=""Base"" Relationship=""Self.{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}_Base"" FromRole=""{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}_Base_Source"" ToRole=""{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}_Base_Target"" />";
         }
 
         private static string GetNavigationPropertyNodeForConceptualModelForExtension(UniqueReferenceInfo uniqueReferenceInfo)
         {
-            return "\n" + $@"    <NavigationProperty Name=""{GetNavigationPropertyNameForConceptualModelForExtension(uniqueReferenceInfo)}"" Relationship=""Self.{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}_Base"" FromRole=""{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}_Base_Target"" ToRole=""{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}_Base_Source"" />";
+            return $@"
+    <NavigationProperty Name=""{GetNavigationPropertyNameForConceptualModelForExtension(uniqueReferenceInfo)}"" Relationship=""Self.{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}_Base"" FromRole=""{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}_Base_Target"" ToRole=""{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}_Base_Source"" />";
         }
 
         private static string GetNavigationPropertyNameForConceptualModelForExtension(UniqueReferenceInfo uniqueReferenceInfo)

@@ -43,7 +43,8 @@ namespace Rhetos.Dom.DefaultConcepts
         }
         private static string GetNavigationPropertyNodeForConceptualModel(LinkedItemsInfo linkedItemsInfo)
         {
-            return "\n" + $@"    <NavigationProperty FromRole=""{GetName(linkedItemsInfo)}_Target"" Name=""{linkedItemsInfo.Name}"" Relationship=""Self.{ GetName(linkedItemsInfo)}"" ToRole=""{ GetName(linkedItemsInfo)}_Source"" />";
+            return $@"
+    <NavigationProperty FromRole=""{GetName(linkedItemsInfo)}_Target"" Name=""{linkedItemsInfo.Name}"" Relationship=""Self.{ GetName(linkedItemsInfo)}"" ToRole=""{ GetName(linkedItemsInfo)}_Source"" />";
         }
 
         private static string GetName(LinkedItemsInfo linkedItemsInfo)

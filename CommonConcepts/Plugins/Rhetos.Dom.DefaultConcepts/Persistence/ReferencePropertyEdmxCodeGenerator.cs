@@ -58,7 +58,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetAssoctiationNodeForStorageModel(ReferencePropertyInfo referencePropertyInfo)
         {
-            return "\n" + $@"  <Association Name=""{GetRefrenceName(referencePropertyInfo)}"">
+            return $@"
+  <Association Name=""{GetRefrenceName(referencePropertyInfo)}"">
     <End Role=""{DataStructureEdmxCodeGenerator.GetName(referencePropertyInfo.Referenced)}"" Type=""Self.{DataStructureEdmxCodeGenerator.GetName(referencePropertyInfo.Referenced)}"" Multiplicity=""0..1"" />
     <End Role=""{DataStructureEdmxCodeGenerator.GetName(referencePropertyInfo.DataStructure)}"" Type=""Self.{DataStructureEdmxCodeGenerator.GetName(referencePropertyInfo.DataStructure)}"" Multiplicity=""*"" />
     <ReferentialConstraint>
@@ -74,7 +75,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetAssoctiationNodeForStorageModelForSelfReference(ReferencePropertyInfo referencePropertyInfo)
         {
-            return "\n" + $@"  <Association Name=""{GetRefrenceName(referencePropertyInfo)}"">
+            return $@"
+  <Association Name=""{GetRefrenceName(referencePropertyInfo)}"">
     <End Role=""{DataStructureEdmxCodeGenerator.GetName(referencePropertyInfo.Referenced)}"" Type=""Self.{DataStructureEdmxCodeGenerator.GetName(referencePropertyInfo.Referenced)}"" Multiplicity=""0..1"" />
     <End Role=""{DataStructureEdmxCodeGenerator.GetName(referencePropertyInfo.DataStructure)}Self"" Type=""Self.{DataStructureEdmxCodeGenerator.GetName(referencePropertyInfo.DataStructure)}"" Multiplicity=""*"" />
     <ReferentialConstraint>
@@ -90,7 +92,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetAssoctiationNodeForConceptualModel(ReferencePropertyInfo reference)
         {
-            return "\n" + $@"  <Association Name=""{GetRefrenceName(reference)}"">
+            return $@"
+  <Association Name=""{GetRefrenceName(reference)}"">
     <End Role=""{GetRefrenceName(reference)}_Source"" Type=""Self.{DataStructureEdmxCodeGenerator.GetName(reference.DataStructure)}"" Multiplicity=""*"" />
     <End Role=""{GetRefrenceName(reference)}_Target"" Type=""Self.{DataStructureEdmxCodeGenerator.GetName(reference.Referenced)}"" Multiplicity=""0..1"" />
     <ReferentialConstraint>
@@ -106,7 +109,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetAssoctiationNodeForConceptualModelForSelfReference(ReferencePropertyInfo reference)
         {
-            return "\n" + $@"  <Association Name=""{GetRefrenceName(reference)}"">
+            return $@"
+  <Association Name=""{GetRefrenceName(reference)}"">
     <End Role=""{GetRefrenceName(reference)}_Source"" Type=""Self.{DataStructureEdmxCodeGenerator.GetName(reference.DataStructure)}"" Multiplicity=""*"" />
     <End Role=""{GetRefrenceName(reference)}_Target"" Type=""Self.{DataStructureEdmxCodeGenerator.GetName(reference.Referenced)}"" Multiplicity=""0..1"" />
     <ReferentialConstraint>
@@ -122,7 +126,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetAssoctiationSetNodeForConceptualModel(ReferencePropertyInfo reference)
         {
-            return "\n" + $@"	<AssociationSet Name=""{GetRefrenceName(reference)}"" Association=""Self.{GetRefrenceName(reference)}"">
+            return $@"
+	<AssociationSet Name=""{GetRefrenceName(reference)}"" Association=""Self.{GetRefrenceName(reference)}"">
 		<End Role=""{GetRefrenceName(reference)}_Source"" EntitySet=""{DataStructureEdmxCodeGenerator.GetName(reference.DataStructure)}"" />
 		<End Role=""{GetRefrenceName(reference)}_Target"" EntitySet=""{DataStructureEdmxCodeGenerator.GetName(reference.Referenced)}"" />
 	</AssociationSet>";
@@ -130,7 +135,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetAssoctiationSetNodeForStorageModelForSelfeference(ReferencePropertyInfo reference)
         {
-            return "\n" + $@"  <AssociationSet Name=""{GetRefrenceName(reference)}"" Association=""Self.{GetRefrenceName(reference)}"">
+            return $@"
+  <AssociationSet Name=""{GetRefrenceName(reference)}"" Association=""Self.{GetRefrenceName(reference)}"">
     <End Role=""{DataStructureEdmxCodeGenerator.GetName(reference.Referenced)}"" EntitySet=""{DataStructureEdmxCodeGenerator.GetName(reference.Referenced)}"" />
     <End Role=""{DataStructureEdmxCodeGenerator.GetName(reference.DataStructure)}Self"" EntitySet=""{DataStructureEdmxCodeGenerator.GetName(reference.DataStructure)}"" />
   </AssociationSet>";
@@ -138,7 +144,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetAssoctiationSetNodeForStorageModel(ReferencePropertyInfo reference)
         {
-            return "\n" + $@"  <AssociationSet Name=""{GetRefrenceName(reference)}"" Association=""Self.{GetRefrenceName(reference)}"">
+            return $@"
+  <AssociationSet Name=""{GetRefrenceName(reference)}"" Association=""Self.{GetRefrenceName(reference)}"">
     <End Role=""{DataStructureEdmxCodeGenerator.GetName(reference.Referenced)}"" EntitySet=""{DataStructureEdmxCodeGenerator.GetName(reference.Referenced)}"" />
     <End Role=""{DataStructureEdmxCodeGenerator.GetName(reference.DataStructure)}"" EntitySet=""{DataStructureEdmxCodeGenerator.GetName(reference.DataStructure)}"" />
   </AssociationSet>";
@@ -146,22 +153,26 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetPropertyElementForStorageModel(ReferencePropertyInfo referencePropertyInfo)
         {
-            return "\n" + $@"    <Property Name=""{referencePropertyInfo.Name}ID"" Type=""uniqueidentifier"" customannotation:Index=""{{ Name: IX_{referencePropertyInfo.Name}ID, Order: 0 }}"" Nullable=""true"" />"; ;
+            return $@"
+    <Property Name=""{referencePropertyInfo.Name}ID"" Type=""uniqueidentifier"" customannotation:Index=""{{ Name: IX_{referencePropertyInfo.Name}ID, Order: 0 }}"" Nullable=""true"" />"; ;
         }
 
         private static string GetPropertyElementForConceptualModel(ReferencePropertyInfo referencePropertyInfo)
         {
-            return "\n" + $@"    <Property Name=""{referencePropertyInfo.Name}ID"" Type=""Guid"" />";
+            return $@"
+    <Property Name=""{referencePropertyInfo.Name}ID"" Type=""Guid"" />";
         }
 
         private static string GetScalarPropertyElement(ReferencePropertyInfo referencePropertyInfo)
         {
-            return "\n" + $@"        <ScalarProperty Name=""{referencePropertyInfo.Name}ID"" ColumnName=""{referencePropertyInfo.Name}ID"" />";
+            return $@"
+        <ScalarProperty Name=""{referencePropertyInfo.Name}ID"" ColumnName=""{referencePropertyInfo.Name}ID"" />";
         }
 
         private static string GetNavigationPropertyNodeForConceptualModel(ReferencePropertyInfo referencePropertyInfo)
         {
-            return "\n" + $@"    <NavigationProperty Name=""{referencePropertyInfo.Name}"" Relationship=""Self.{GetRefrenceName(referencePropertyInfo)}"" FromRole=""{GetRefrenceName(referencePropertyInfo)}_Source"" ToRole=""{GetRefrenceName(referencePropertyInfo)}_Target"" />";
+            return $@"
+    <NavigationProperty Name=""{referencePropertyInfo.Name}"" Relationship=""Self.{GetRefrenceName(referencePropertyInfo)}"" FromRole=""{GetRefrenceName(referencePropertyInfo)}_Source"" ToRole=""{GetRefrenceName(referencePropertyInfo)}_Target"" />";
         }
 
         public static string GetRefrenceName(ReferencePropertyInfo referencePropertyInfo)

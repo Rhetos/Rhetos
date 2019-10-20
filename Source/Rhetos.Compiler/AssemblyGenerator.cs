@@ -177,7 +177,7 @@ namespace Rhetos.Compiler
             else
                 report.AppendLine(":");
 
-            report.Append(string.Join("\n",
+            report.Append(string.Join("\r\n",
                 errors.Take(_errorReportLimit.Value).Select(error => error.ToString() + ReportContext(error, sourceCode, sourcePath))));
 
             if (errors.Count > _errorReportLimit.Value)
