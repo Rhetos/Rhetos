@@ -49,7 +49,8 @@ namespace Rhetos.Utilities.ApplicationConfiguration
             var membersBound = new List<MemberInfo>();
             foreach (var member in members)
             {
-                if (TryGetConfigurationValue(member.Name, out var memberValue, configurationPath))
+                var effectiveName = member.Name.Replace("__", ConfigurationPathSeparator); // allow binding to property designating a full path to configuration value
+                if (TryGetConfigurationValue(effectiveName, out var memberValue, configurationPath))
                 {
                     SetMemberValue(optionsInstance, member, memberValue);
 

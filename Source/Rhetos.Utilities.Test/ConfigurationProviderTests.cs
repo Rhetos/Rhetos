@@ -337,6 +337,31 @@ namespace Rhetos.Utilities.Test
             TestUtility.ShouldFail<MissingMethodException>(() => provider.GetOptions<PocoConstructor>(), "No parameterless constructor");
         }
 
+        public class PocoPath
+        {
+            public int Section__A__Option1 = -1;
+        }
+
+        [TestMethod]
+        public void BindsPropertyWithFullPath()
+        {
+            {
+                var provider = new ConfigurationBuilder()
+                    .AddKeyValue("section:a:option1", 42)
+                    .Build();
+
+                Assert.AreEqual(42, provider.GetOptions<PocoPath>().Section__A__Option1);
+            }
+
+            {
+                var provider = new ConfigurationBuilder()
+                    .AddKeyValue("option1", 42)
+                    .Build();
+
+                Assert.AreEqual(-1, provider.GetOptions<PocoPath>().Section__A__Option1);
+            }
+        }
+
         [TestMethod]
         public void CommandLineArguments()
         {

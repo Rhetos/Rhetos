@@ -18,9 +18,9 @@ namespace Rhetos.Utilities
         public string GeneratedFilesCacheFolder { get; }
         public string PluginsFolder { get; }
 
-        public RhetosAppEnvironment(RhetosAppOptions options)
+        public RhetosAppEnvironment(string rootPath)
         {
-            RootPath = options.RootPath;
+            RootPath = rootPath;
             PackagesCacheFolder = Path.Combine(RootPath, "PackagesCache");
             ResourcesFolder = Path.Combine(RootPath, "Resources");
             BinFolder = Path.Combine(RootPath, "bin");

@@ -28,7 +28,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration
         /// Creates a context with RhetosAppEnvironment automatically resolved and created from provided configuration.
         /// </summary>
         public InitializationContext(IConfigurationProvider configurationProvider, ILogProvider logProvider)
-            : this(configurationProvider, logProvider, new RhetosAppEnvironment(configurationProvider.GetOptions<RhetosAppOptions>())) 
+            : this(configurationProvider, logProvider, new RhetosAppEnvironment(configurationProvider.GetOptions<RhetosAppOptions>().RootPath)) 
         { }
 
     }

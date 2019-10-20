@@ -25,6 +25,7 @@ using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.Security;
 using Rhetos.Utilities;
+using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,6 +48,7 @@ namespace Rhetos.Configuration.Autofac.Modules
 
         private void AddCommon(ContainerBuilder builder)
         {
+            builder.Register(a => a.Resolve<IConfigurationProvider>().GetOptions<RhetosAppOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<InstalledPackages>().As<IInstalledPackages>().SingleInstance();
             builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));
             builder.RegisterType<NLogProvider>().As<ILogProvider>().InstancePerLifetimeScope();

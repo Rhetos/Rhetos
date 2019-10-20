@@ -30,6 +30,7 @@ namespace Rhetos.Security
 {
     public class AuthorizationManager : IAuthorizationManager
     {
+        private readonly RhetosAppOptions _rhetosAppOptions;
         private readonly IUserInfo _userInfo;
         private readonly IPluginsContainer<IClaimProvider> _claimProviders;
         private readonly ILogger _logger;
@@ -38,10 +39,9 @@ namespace Rhetos.Security
         private readonly HashSet<string> _allClaimsForUsers; // Case-insensitive hashset.
         private readonly IAuthorizationProvider _authorizationProvider;
         private readonly ILocalizer _localizer;
-        private readonly IConfiguration _configuration;
 
         public AuthorizationManager(
-            IConfiguration configuration,
+            RhetosAppOptions rhetosAppOptions,
             IPluginsContainer<IClaimProvider> claimProviders,
             IUserInfo userInfo,
             ILogProvider logProvider,
@@ -49,23 +49,22 @@ namespace Rhetos.Security
             IWindowsSecurity windowsSecurity,
             ILocalizer localizer)
         {
-            _configuration = configuration;
+            _rhetosAppOptions = rhetosAppOptions;
             _userInfo = userInfo;
             _claimProviders = claimProviders;
             _authorizationProvider = authorizationProvider;
             _logger = logProvider.GetLogger(GetType().Name);
             _performanceLogger = logProvider.GetLogger("Performance");
-            _allowBuiltinAdminOverride = _configuration.GetBool("BuiltinAdminOverride", false).Value;
+            _allowBuiltinAdminOverride = _rhetosAppOptions.BuiltinAdminOverride;
             _allClaimsForUsers = FromConfigAllClaimsForUsers();
             _localizer = localizer;
         }
 
         private HashSet<string> FromConfigAllClaimsForUsers()
         {
-            const string settingsKey = "Security.AllClaimsForUsers";
             try
             {
-                string setting = _configuration.GetString(settingsKey, "").Value;
+                var setting = _rhetosAppOptions.Security__AllClaimsForUsers;
                 var users = setting.Split(',').Select(u => u.Trim()).Where(u => !string.IsNullOrEmpty(u))
                     .Select(u => u.Split('@'))
                     .Select(u => new { UserName = u[0], HostName = u[1] })
@@ -79,7 +78,7 @@ namespace Rhetos.Security
             }
             catch (Exception ex)
             {
-                throw new FrameworkException($"Invalid '{settingsKey}' parameter format in web.config. Expected comma-separated list of entries formatted as username@servername.", ex);
+                throw new FrameworkException($"Invalid '{nameof(RhetosAppOptions.Security__AllClaimsForUsers)}' parameter format in web.config. Expected comma-separated list of entries formatted as username@servername.", ex);
             }
         }
 

@@ -55,8 +55,7 @@ namespace DeployPackages
             Plugins.SetInitializationLogging(_initializationContext.LogProvider);
             var builder = new ContextContainerBuilder(_initializationContext)
                 .AddRhetosDeployment()
-                .AddUserOverride()
-                .AddOptions<DeployOptions>(_initializationContext.ConfigurationProvider);
+                .AddUserOverride();
 
             using (var container = builder.Build())
             {
@@ -81,8 +80,7 @@ namespace DeployPackages
             var builder = new ContextContainerBuilder(_initializationContext)
                 .AddApplicationInitialization()
                 .AddRhetosRuntime()
-                .AddUserOverride()
-                .AddOptions<DeployOptions>(_initializationContext.ConfigurationProvider);
+                .AddUserOverride();
 
             using (var container = builder.Build())
             {

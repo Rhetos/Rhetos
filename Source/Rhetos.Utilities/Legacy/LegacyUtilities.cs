@@ -12,7 +12,7 @@ namespace Rhetos.Utilities
         public static void Initialize(IConfigurationProvider configurationProvider)
         {
             var rhetosAppOptions = configurationProvider.GetOptions<RhetosAppOptions>();
-            var rhetosAppEnvironment = new RhetosAppEnvironment(rhetosAppOptions);
+            var rhetosAppEnvironment = new RhetosAppEnvironment(rhetosAppOptions.RootPath);
             Paths.Initialize(rhetosAppEnvironment);
             ConfigUtility.Initialize(configurationProvider);
         }

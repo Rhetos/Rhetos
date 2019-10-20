@@ -30,6 +30,7 @@ namespace Rhetos.Dom.DefaultConcepts
     public class AuthorizationDataLoader : IAuthorizationData
     {
         private readonly ILogger _logger;
+        private readonly RhetosAppOptions _rhetosAppOptions;
         private readonly IQueryableRepository<IPrincipal> _principalRepository;
         private readonly IQueryableRepository<IPrincipalHasRole> _principalRolesRepository;
         private readonly Lazy<GenericRepository<IPrincipal>> _principalGenericRepository; // Lazy because it's rarely used.
@@ -41,10 +42,12 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public AuthorizationDataLoader(
             ILogProvider logProvider,
+            RhetosAppOptions rhetosAppOptions,
             INamedPlugins<IRepository> repositories,
             Lazy<GenericRepository<IPrincipal>> principalGenericRepository)
         {
             _logger = logProvider.GetLogger(GetType().Name);
+            _rhetosAppOptions = rhetosAppOptions;
             _principalRepository = (IQueryableRepository<IPrincipal>)repositories.GetPlugin("Common.Principal");
             _principalGenericRepository = principalGenericRepository;
             _principalRolesRepository = (IQueryableRepository<IPrincipalHasRole>)repositories.GetPlugin("Common.PrincipalHasRole");
@@ -53,21 +56,6 @@ namespace Rhetos.Dom.DefaultConcepts
             _rolePermissionRepository = (IQueryableRepository<IRolePermission>)repositories.GetPlugin("Common.RolePermission");
             _roleRepository = (IQueryableRepository<IRole>)repositories.GetPlugin("Common.Role");
             _claimRepository = (IQueryableRepository<ICommonClaim>)repositories.GetPlugin("Common.Claim");
-        }
-
-        private static bool? _shouldAddUnregisteredPrincipal;
-
-        private static bool ShouldAddUnregisteredPrincipal()
-        {
-            if (_shouldAddUnregisteredPrincipal == null)
-            {
-                string setting = ConfigUtility.GetAppSetting("AuthorizationAddUnregisteredPrincipals");
-                if (!string.IsNullOrEmpty(setting))
-                    _shouldAddUnregisteredPrincipal = bool.Parse(setting);
-                else
-                    _shouldAddUnregisteredPrincipal = false;
-            }
-            return _shouldAddUnregisteredPrincipal.Value;
         }
 
         private Guid GetPrincipalID(string username)
@@ -84,7 +72,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (principal.ID == default(Guid))
             {
-                if (ShouldAddUnregisteredPrincipal())
+                if (_rhetosAppOptions.AuthorizationAddUnregisteredPrincipals)
                 {
                     _logger.Info(() => "Adding unregistered principal '" + username + "'. See AuthorizationAddUnregisteredPrincipals in web.config.");
                     var newPrincipal = _principalGenericRepository.Value.CreateInstance();

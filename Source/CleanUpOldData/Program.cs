@@ -34,7 +34,7 @@ namespace CleanupOldData
         {
             try
             {
-                Paths.Initialize(new RhetosAppEnvironment(new RhetosAppOptions() { RootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..") }));
+                Paths.Initialize(new RhetosAppEnvironment(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..")));
 
                 string connectionString = SqlUtility.ConnectionString;
                 Console.WriteLine("SQL connection: " + SqlUtility.SqlConnectionInfo(connectionString));

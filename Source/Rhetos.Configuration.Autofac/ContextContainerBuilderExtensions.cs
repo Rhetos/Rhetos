@@ -31,9 +31,9 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Configuration.Autofac
 {
-    public static class ContainerBuilderExtensions
+    public static class ContextContainerBuilderExtensions
     {
-        public static ContainerBuilder AddRhetosRuntime(this ContainerBuilder builder)
+        public static ContextContainerBuilder AddRhetosRuntime(this ContextContainerBuilder builder)
         {
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new RuntimeModule());
@@ -41,8 +41,9 @@ namespace Rhetos.Configuration.Autofac
             return builder;
         }
 
-        public static ContainerBuilder AddRhetosDeployment(this ContainerBuilder builder)
+        public static ContextContainerBuilder AddRhetosDeployment(this ContextContainerBuilder builder, DeployOptions deployOptions)
         {
+            builder.RegisterInstance(deployOptions).PreserveExistingDefaults();
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new DeployModule());
 
@@ -53,19 +54,26 @@ namespace Rhetos.Configuration.Autofac
             return builder;
         }
 
-        public static ContainerBuilder AddConfiguration(this ContainerBuilder builder, IConfigurationProvider configurationProvider)
+        public static ContextContainerBuilder AddRhetosDeployment(this ContextContainerBuilder builder)
+        {
+            var deployOptions = builder.InitializationContext.ConfigurationProvider.GetOptions<DeployOptions>();
+            builder.AddRhetosDeployment(deployOptions);
+            return builder;
+        }
+
+        public static ContextContainerBuilder AddConfiguration(this ContextContainerBuilder builder, IConfigurationProvider configurationProvider)
         {
             builder.RegisterInstance(configurationProvider);
             return builder;
         }
 
-        public static ContainerBuilder AddOptions<T>(this ContainerBuilder builder, IConfigurationProvider configurationProvider) where T : class
+        public static ContextContainerBuilder AddOptions<T>(this ContextContainerBuilder builder, IConfigurationProvider configurationProvider) where T : class
         {
             builder.RegisterInstance(configurationProvider.GetOptions<T>());
             return builder;
         }
 
-        public static ContainerBuilder AddOptions<T>(this ContainerBuilder builder) where T : class
+        public static ContextContainerBuilder AddOptions<T>(this ContextContainerBuilder builder) where T : class
         {
             builder.Register(a => a.Resolve<IConfigurationProvider>().GetOptions<T>()).SingleInstance();
             return builder;

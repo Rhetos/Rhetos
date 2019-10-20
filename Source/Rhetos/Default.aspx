@@ -27,5 +27,18 @@
         User authentication type: <%=Context.User.Identity.AuthenticationType %><br />
         Is 64-bit process: <%=Environment.Is64BitProcess %><br />
     </p>
+    <div>
+<%
+    var rhetosAppOptions = Autofac.ResolutionExtensions.Resolve<Rhetos.Utilities.RhetosAppOptions>(Autofac.Integration.Wcf.AutofacServiceHostFactory.Container);
+    var serializedOptions = Newtonsoft.Json.JsonConvert.SerializeObject(rhetosAppOptions, Newtonsoft.Json.Formatting.Indented);
+%>
+    <p>
+        Running RhetosAppOptions:
+        <pre>
+<%=serializedOptions%>
+        </pre>
+    </p>
+    </div>
+
 </body>
 </html>

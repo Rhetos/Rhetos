@@ -92,11 +92,11 @@ FROM
     [Export(typeof(IConceptMacro))]
     public class ExtensibleSubtypeSqlViewMacro : IConceptMacro<ExtensibleSubtypeSqlViewInfo>
     {
-        IConfiguration _configuration;
+        private readonly RhetosAppOptions _rhetosAppOptions;
 
-        public ExtensibleSubtypeSqlViewMacro(IConfiguration configuration)
+        public ExtensibleSubtypeSqlViewMacro(RhetosAppOptions rhetosAppOptions)
         {
-            _configuration = configuration;
+            _rhetosAppOptions = rhetosAppOptions;
         }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(ExtensibleSubtypeSqlViewInfo conceptInfo, IDslModel existingConcepts)
@@ -124,7 +124,7 @@ FROM
             var missingProperties = missingImplementations.Select(subim => subim.Property).Where(supp => !subtypeProperties.Any(subp => subp.Name == supp.Name));
             var missingPropertiesToAdd = missingProperties.Select(missing => DslUtility.CreatePassiveClone(missing, conceptInfo.IsSubtypeOf.Subtype)).ToList();
 
-            if (_configuration.GetBool("CommonConcepts.Legacy.AutoGeneratePolymorphicProperty", true).Value == false
+            if (_rhetosAppOptions.CommonConcepts__Legacy__AutoGeneratePolymorphicProperty == false
                 && missingProperties.Count() > 0)
             {
                 throw new DslSyntaxException( "The property " + missingProperties.First().GetUserDescription() + 

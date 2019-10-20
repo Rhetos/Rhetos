@@ -38,14 +38,14 @@ namespace Rhetos.Configuration.Autofac
         public InitializationContext InitializationContext { get; }
 
         /// <summary>
-        /// Initializes a container with specified InitializationContext.
+        /// Initializes a container with specified InitializationContext. Registers ConfigurationProvider and RhetosAppEnvironment instances to newly created container.
+        /// LogProvider is not registered and is meant to be used during the lifetime of registration and container building process.
         /// </summary>
         public ContextContainerBuilder(InitializationContext initializationContext)
         {
             this.InitializationContext = initializationContext;
             this.RegisterInstance(initializationContext.ConfigurationProvider);
             this.RegisterInstance(initializationContext.RhetosAppEnvironment);
-            this.RegisterInstance(initializationContext.LogProvider);
         }
 
         /// <summary>

@@ -31,14 +31,17 @@ namespace Rhetos.Dom.DefaultConcepts
     public class AuthorizationDataCache : IAuthorizationData
     {
         private readonly ILogger _logger;
+        private readonly RhetosAppOptions _rhetosAppOptions;
         private readonly Lazy<AuthorizationDataLoader> _authorizationDataReader;
         private readonly ObjectCache _cache = MemoryCache.Default;
 
         public AuthorizationDataCache(
             ILogProvider logProvider,
+            RhetosAppOptions rhetosAppOptions,
             Lazy<AuthorizationDataLoader> authorizationDataReader)
         {
             _logger = logProvider.GetLogger(GetType().Name);
+            _rhetosAppOptions = rhetosAppOptions;
             _authorizationDataReader = authorizationDataReader;
         }
 
@@ -94,21 +97,6 @@ namespace Rhetos.Dom.DefaultConcepts
                 cache.Remove(key);
         }
 
-        private static double? _defaultExpirationSeconds = null;
-
-        private double GetDefaultExpirationSeconds()
-        {
-            if (_defaultExpirationSeconds == null)
-            {
-                string value = ConfigUtility.GetAppSetting("AuthorizationCacheExpirationSeconds");
-                if (!string.IsNullOrEmpty(value))
-                    _defaultExpirationSeconds = double.Parse(value);
-                else
-                    _defaultExpirationSeconds = 30;
-            }
-            return _defaultExpirationSeconds.Value;
-        }
-
         private T CacheGetOrAdd<T>(string key, Func<T> valueCreator, double absoluteExpirationInSeconds)
         {
             T value = (T)_cache.Get(key);
@@ -133,21 +121,21 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return CacheGetOrAdd("AuthorizationDataCache.Principal." + username.ToLower(),
                 () => _authorizationDataReader.Value.GetPrincipal(username),
-                GetDefaultExpirationSeconds());
+                _rhetosAppOptions.AuthorizationCacheExpirationSeconds);
         }
 
         public IEnumerable<Guid> GetPrincipalRoles(IPrincipal principal)
         {
             return CacheGetOrAdd("AuthorizationDataCache.PrincipalRoles." + principal.Name.ToLower() + "." + principal.ID.ToString(),
                 () => _authorizationDataReader.Value.GetPrincipalRoles(principal),
-                GetDefaultExpirationSeconds());
+                _rhetosAppOptions.AuthorizationCacheExpirationSeconds);
         }
 
         public IEnumerable<Guid> GetRoleRoles(Guid roleId)
         {
             return CacheGetOrAdd("AuthorizationDataCache.RoleRoles." + roleId.ToString(),
                 () => _authorizationDataReader.Value.GetRoleRoles(roleId),
-                GetDefaultExpirationSeconds());
+                _rhetosAppOptions.AuthorizationCacheExpirationSeconds);
         }
 
         /// <summary>
@@ -157,7 +145,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return CacheGetOrAdd("AuthorizationDataCache.PrincipalPermissions." + principal.Name.ToLower() + "." + principal.ID.ToString(),
                 () => _authorizationDataReader.Value.GetPrincipalPermissions(principal, null),
-                GetDefaultExpirationSeconds());
+                _rhetosAppOptions.AuthorizationCacheExpirationSeconds);
         }
 
         /// <summary>
@@ -196,7 +184,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     freshPermissionsByRole.Add(roleId, new List<RolePermissionInfo>());
 
             foreach (var rolePermissions in freshPermissionsByRole)
-                _cache.Set(cacheKey(rolePermissions.Key), rolePermissions.Value, DateTimeOffset.Now.AddSeconds(GetDefaultExpirationSeconds()));
+                _cache.Set(cacheKey(rolePermissions.Key), rolePermissions.Value, DateTimeOffset.Now.AddSeconds(_rhetosAppOptions.AuthorizationCacheExpirationSeconds));
 
             return result ?? Enumerable.Empty<RolePermissionInfo>();
         }
@@ -209,7 +197,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return CacheGetOrAdd("AuthorizationDataCache.Roles",
                 () => _authorizationDataReader.Value.GetRoles(null),
-                GetDefaultExpirationSeconds());
+                _rhetosAppOptions.AuthorizationCacheExpirationSeconds);
         }
 
         /// <summary>
@@ -220,7 +208,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return CacheGetOrAdd("AuthorizationDataCache.Claims",
                 () => _authorizationDataReader.Value.GetClaims(null),
-                GetDefaultExpirationSeconds() > 0 ? 60*60*24*365 : 0); // Claims do not expire. They cannot be modified at run-time, only at deploy-time.
+                _rhetosAppOptions.AuthorizationCacheExpirationSeconds > 0 ? 60*60*24*365 : 0); // Claims do not expire. They cannot be modified at run-time, only at deploy-time.
         }
     }
 }

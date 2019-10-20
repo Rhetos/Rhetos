@@ -28,16 +28,18 @@ using System.Collections.Generic;
 
 namespace Rhetos.Configuration.Autofac
 {
-    public static class ContainerBuilderExtensions
+    public static class ContextContainerBuilderExtensions
     {
-        public static ContainerBuilder AddApplicationInitialization(this ContainerBuilder builder)
+        public static ContextContainerBuilder AddApplicationInitialization(this ContextContainerBuilder builder)
         {
+            var deployOptions = builder.InitializationContext.ConfigurationProvider.GetOptions<DeployOptions>();
+            builder.RegisterInstance(deployOptions).PreserveExistingDefaults();
             builder.RegisterType<ApplicationInitialization>();
             Plugins.FindAndRegisterPlugins<IServerInitializer>(builder);
             return builder;
         }
 
-        public static ContainerBuilder AddUserOverride(this ContainerBuilder builder)
+        public static ContextContainerBuilder AddUserOverride(this ContextContainerBuilder builder)
         {
             builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
             return builder;

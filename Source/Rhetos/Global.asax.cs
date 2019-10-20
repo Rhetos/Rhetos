@@ -49,8 +49,6 @@ namespace Rhetos
 
             LegacyUtilities.Initialize(configurationProvider);
 
-            // Paths.Initialize(new RhetosAppEnvironment(new RhetosAppOptions() { RootPath = AppDomain.CurrentDomain.BaseDirectory }));
-
             var builder = CreateServerContainer(configurationProvider);
             AutofacServiceHostFactory.Container = builder.Build();
 
