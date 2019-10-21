@@ -217,22 +217,19 @@ raiserror('fff', 18, 118)"
             var sqlExecuter = NewSqlExecuter(SqlUtility.ConnectionString, testUser);
             var result = new List<object>();
             sqlExecuter.ExecuteReader("SELECT context_info()", reader => result.Add(reader[0]));
+
             Console.WriteLine(result.Single());
             Assert.AreEqual(typeof(DBNull), result.Single().GetType());
         }
+
+        private const string contextInfoToText = "(CONVERT([varchar](128),left(context_info(),isnull(nullif(charindex(0x00,context_info())-(1),(-1)),(128))),(0)))";
 
         [TestMethod]
         public void SendUserInfoInSqlContext_ReadWithUser()
         {
             var testUser = new TestUserInfo("Bob", "HAL9000");
-            var sqlExecuter = NewSqlExecuter(testUser);
-            var result = new List<string>();
-            sqlExecuter.ExecuteReader(
-                @"SELECT (CONVERT([varchar](128),left(context_info(),isnull(nullif(charindex(0x00,context_info())-(1),(-1)),(128))),(0)))",
-                reader => result.Add(reader[0].ToString()));
-            Console.WriteLine(result.Single());
-            Assert.IsTrue(result.Single().Contains(testUser.UserName), "context_info should contain username.");
-            Assert.IsTrue(result.Single().Contains(testUser.Workstation), "context_info should contain client workstation.");
+
+            Assert.AreEqual("Rhetos:Bob,HAL9000", ReadContextWithSqlExecuter(testUser));
         }
 
         [TestMethod]
@@ -243,16 +240,41 @@ raiserror('fff', 18, 118)"
             string table = GetRandomTableName();
 
             var result = new List<string>();
-            sqlExecuter.ExecuteSql(new [] {
-                @"SELECT Context = (CONVERT([varchar](128),left(context_info(),isnull(nullif(charindex(0x00,context_info())-(1),(-1)),(128))),(0))) INTO " + table});
-
+            sqlExecuter.ExecuteSql($"SELECT Context = {contextInfoToText} INTO {table}");
             sqlExecuter.ExecuteReader(
                 @"SELECT * FROM " + table,
                 reader => result.Add(reader[0].ToString()));
 
-            Console.WriteLine(result.Single());
-            Assert.IsTrue(result.Single().Contains(testUser.UserName), "context_info should contain username.");
-            Assert.IsTrue(result.Single().Contains(testUser.Workstation), "context_info should contain client workstation.");
+            Assert.AreEqual("Rhetos:Bob,HAL9000", TestUtility.Dump(result));
+        }
+
+        [TestMethod]
+        public void SendUserInfoInSqlContext_NonAscii()
+        {
+            var testUser = new TestUserInfo("BobČ", "HAL9000ž");
+
+            Assert.AreEqual("Rhetos:Bob?,HAL9000?", ReadContextWithSqlExecuter(testUser));
+        }
+
+        [TestMethod]
+        public void SendUserInfoInSqlContext_Long()
+        {
+            string userName = "abc" + new string('x', 100);
+            string workstationName = "def" + new string('x', 100);
+            var testUser = new TestUserInfo(userName, workstationName);
+            string expected = $"Rhetos:{userName},{workstationName}".Limit(128);
+
+            Assert.AreEqual(expected, ReadContextWithSqlExecuter(testUser));
+        }
+
+        private static string ReadContextWithSqlExecuter(TestUserInfo testUser)
+        {
+            var sqlExecuter = NewSqlExecuter(testUser);
+            var result = new List<string>();
+            sqlExecuter.ExecuteReader(
+                $"SELECT {contextInfoToText}",
+                reader => result.Add(reader[0].ToString()));
+            return result.Single();
         }
     }
 }

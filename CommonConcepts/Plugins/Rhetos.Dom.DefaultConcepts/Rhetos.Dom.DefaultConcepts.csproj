@@ -145,13 +145,17 @@
     <Compile Include="DomHelper.cs" />
     <Compile Include="KeepSynchronizedHelper.cs" />
     <Compile Include="Persistence\DatabaseExtensionFunctionsMapping.cs" />
-    <Compile Include="Persistence\EntityFrameworkGenerateMetadataFiles.cs" />
+    <Compile Include="Persistence\DataStructureEdmxCodeGenerator.cs" />
     <Compile Include="Persistence\EntityFrameworkMetadata.cs" />
     <Compile Include="FilterExpression.cs" />
     <Compile Include="GenericRepository.cs" />
     <Compile Include="GenericRepositories.cs" />
     <Compile Include="Persistence\FullTextSearchInterceptor.cs" />
     <Compile Include="Persistence\FullTextSearchInterceptorCodeGenerator.cs" />
+    <Compile Include="Persistence\LinkedItemsEdmxCodeGnerator.cs" />
+    <Compile Include="Persistence\PropertyEdmxCodeGenerator.cs" />
+    <Compile Include="Persistence\ReferencePropertyEdmxCodeGenerator.cs" />
+    <Compile Include="Persistence\UniqueReferenceEdmxCodeGenerator.cs" />
     <Compile Include="PropertySelectorExpression.cs" />
     <Compile Include="HierarchyItem.cs" />
     <Compile Include="KeepSynchronizedRecomputeOnDeploy.cs" />
@@ -236,6 +240,10 @@
     <ProjectReference Include="..\..\..\Source\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj">
       <Project>{bb7e5668-1b43-4fce-a832-444cc57fee80}</Project>
       <Name>Rhetos.Logging.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Persistence\Rhetos.Persistence.csproj">
+      <Project>{02415b9e-fb00-451d-8b1a-b4a3ce150f2d}</Project>
+      <Name>Rhetos.Persistence</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Source\Rhetos.Security\Rhetos.Security.csproj">
       <Project>{f3480d1e-1c20-448d-b2f6-133472ceeb93}</Project>

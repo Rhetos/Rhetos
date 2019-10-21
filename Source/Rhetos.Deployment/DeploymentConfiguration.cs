@@ -57,7 +57,7 @@ namespace Rhetos.Deployment
 
         private List<PackageRequest> LoadPackageRequest()
         {
-            const string configFileUsage = "Edit the new file to set which Rhetos packages will be deployed. Note that removing a Rhetos package from the file will uninstall the package.";
+            const string configFileUsage = "Edit the file to specify which Rhetos packages will be deployed. Note that removing a package from the file will uninstall the package.";
             string xml = ReadConfigFile(PackagesConfigurationFileName, PackagesConfigurationTemplateFileName, configFileUsage);
             var xdoc = XDocument.Parse(xml);
             var requests = xdoc.Root.Elements().Select(packageXml =>
@@ -70,9 +70,9 @@ namespace Rhetos.Deployment
                 }).ToList();
 
             if (requests.Any(r => string.IsNullOrEmpty(r.Id)))
-                throw new UserException("Invalid configuration file format '" + PackagesConfigurationFileName + "'. Missing attribute 'id'.");
+                throw new UserException($"Invalid configuration file format '{PackagesConfigurationFileName}'. Missing attribute 'id'.");
             if (requests.Count == 0)
-                _logger.Error("No packages defined in '" + PackagesConfigurationFileName  + "'. " + configFileUsage);
+                _logger.Info($"Warning: No packages specified in '{PackagesConfigurationFileName}'. {configFileUsage}");
             Version dummy;
             // Simple version format in config file will be converted to a specific version "[ver,ver]", instead of being used as a minimal version (as in NuGet dependencies) in order to conform to NuGet packages.config convention.
             foreach (var request in requests)

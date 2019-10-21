@@ -27,9 +27,28 @@ namespace Rhetos.Persistence
 {
     public static class EntityFrameworkMapping
     {
+        /// <summary>
+        /// For EDM functions inserted at this tag, set the DbFunction attribute namespace name to <see cref="ConceptualModelNamespace"/>.
+        /// </summary>
         public static readonly string ConceptualModelTag = "<!--ConceptualModel-->";
+
+        public const string ConceptualModelNamespace = "Rhetos";
+
+        public static readonly string ConceptualModelEntityContainerTag = "<!--ConceptualModelEntityContainer-->";
+
         public static readonly string MappingTag = "<!--Mapping-->";
+
+        public static readonly string MappingEntityContainerTag = "<!--MappingEntityContainer-->";
+
+        /// <summary>
+        /// For EDM functions inserted at this tag, set the DbFunction attribute namespace name to <see cref="StorageModelNamespace"/>.
+        /// </summary>
         public static readonly string StorageModelTag = "<!--StorageModel-->";
+
+        public const string StorageModelNamespace = "Rhetos.Store";
+
+        public static readonly string StorageModelEntityContainerTag = "<!--StorageModelEntityContainer-->";
+
         public static readonly string[] ModelFiles = new[] { "ServerDomEdm.csdl", "ServerDomEdm.msl", "ServerDomEdm.ssdl" };
     }
 }
