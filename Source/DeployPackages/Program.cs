@@ -74,8 +74,9 @@ namespace DeployPackages
             {
                 logger.Error(ex.ToString());
 
-                if (ex is ReflectionTypeLoadException)
-                    logger.Error(CsUtility.ReportTypeLoadException((ReflectionTypeLoadException)ex));
+                string typeLoadReport = CsUtility.ReportTypeLoadException(ex);
+                if (typeLoadReport != null)
+                    logger.Error(typeLoadReport);
 
                 if (Environment.UserInteractive)
                 {

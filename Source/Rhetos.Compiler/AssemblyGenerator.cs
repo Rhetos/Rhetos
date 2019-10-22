@@ -206,9 +206,14 @@ namespace Rhetos.Compiler
             {
                 assembly.GetTypes();
             }
-            catch (ReflectionTypeLoadException ex)
+            catch (Exception ex)
             {
-                throw new FrameworkException(CsUtility.ReportTypeLoadException(ex, $"Error while compiling {Path.GetFileName(outputAssemblyPath)}.", referencedAssembliesPaths), ex);
+                string contextInfo = $"Error while compiling {Path.GetFileName(outputAssemblyPath)}.";
+                string typeLoadReport = CsUtility.ReportTypeLoadException(ex, contextInfo, referencedAssembliesPaths);
+                if (typeLoadReport != null)
+                    throw new FrameworkException(typeLoadReport, ex);
+                else
+                    ExceptionsUtility.Rethrow(ex);
             }
         }
 
