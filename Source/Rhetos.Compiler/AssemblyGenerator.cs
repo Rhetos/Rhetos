@@ -84,7 +84,7 @@ namespace Rhetos.Compiler
                 generatedAssembly = Assembly.LoadFrom(outputAssemblyPath);
                 _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Assembly from cache ({dllName}).");
 
-                FailOnTypeLoadErrors(generatedAssembly, outputAssemblyPath);
+                FailOnTypeLoadErrors(generatedAssembly, outputAssemblyPath, assemblySource.RegisteredReferences);
                 _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({dllName}).");
             }
             else
@@ -123,7 +123,7 @@ namespace Rhetos.Compiler
 
                     generatedAssembly = Assembly.LoadFrom(outputAssemblyPath);
 
-                    FailOnTypeLoadErrors(generatedAssembly, outputAssemblyPath);
+                    FailOnTypeLoadErrors(generatedAssembly, outputAssemblyPath, assemblySource.RegisteredReferences);
                     _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({dllName}).");
                 }
             }
@@ -200,7 +200,7 @@ namespace Rhetos.Compiler
                 return "";
         }
 
-        private void FailOnTypeLoadErrors(Assembly assembly, string outputAssemblyPath)
+        private void FailOnTypeLoadErrors(Assembly assembly, string outputAssemblyPath, IEnumerable<string> referencedAssembliesPaths)
         {
             try
             {
@@ -208,7 +208,7 @@ namespace Rhetos.Compiler
             }
             catch (ReflectionTypeLoadException ex)
             {
-                throw new FrameworkException(CsUtility.ReportTypeLoadException(ex, $"Error while compiling {Path.GetFileName(outputAssemblyPath)}."), ex);
+                throw new FrameworkException(CsUtility.ReportTypeLoadException(ex, $"Error while compiling {Path.GetFileName(outputAssemblyPath)}.", referencedAssembliesPaths), ex);
             }
         }
 

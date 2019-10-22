@@ -187,41 +187,58 @@ namespace Rhetos.Utilities
         /// <summary>
         /// Creates a detailed report message for the ReflectionTypeLoadException.
         /// </summary>
-        public static string ReportTypeLoadException(ReflectionTypeLoadException rtle, string errorContext = null)
+        public static string ReportTypeLoadException(ReflectionTypeLoadException rtle, string errorContext = null, IEnumerable<string> referencedAssembliesPaths = null)
         {
-            var report = new StringBuilder();
+            var report = new List<string>();
 
-            if (string.IsNullOrEmpty(errorContext))
-                report.Append(errorContext + " ");
+            report.Add(
+                (string.IsNullOrEmpty(errorContext) ? errorContext + " " : "")
+                + "Check for missing assembly or unsupported assembly version. "
+                + rtle.Message);
 
-            report.Append("Check for missing assembly or unsupported assembly version. " + rtle.Message);
-
-            var distinctLoaderExceptions = rtle.LoaderExceptions.GroupBy(exception => exception.Message).Select(group => group.First()).ToList();
+            List<Exception> distinctLoaderExceptions = rtle.LoaderExceptions.GroupBy(exception => exception.Message).Select(group => group.First()).ToList();
 
             const int maxErrors = 5;
 
             bool fusionLogReported = false;
             foreach (var loaderException in distinctLoaderExceptions.Take(maxErrors))
             {
-                report.AppendLine().Append(loaderException.GetType().Name + ": " + loaderException.Message);
+                report.Add(loaderException.GetType().Name + ": " + loaderException.Message);
 
                 if (!fusionLogReported && loaderException is FileLoadException && !string.IsNullOrEmpty(((FileLoadException)loaderException).FusionLog))
                 {
-                    report.AppendLine().Append(((FileLoadException)loaderException).FusionLog);
+                    report.Add(((FileLoadException)loaderException).FusionLog);
                     fusionLogReported = true;
                 }
 
                 if (!fusionLogReported && loaderException is FileNotFoundException && !string.IsNullOrEmpty(((FileNotFoundException)loaderException).FusionLog))
                 {
-                    report.AppendLine().Append(((FileNotFoundException)loaderException).FusionLog);
+                    report.Add(((FileNotFoundException)loaderException).FusionLog);
                     fusionLogReported = true;
                 }
             }
 
             if (distinctLoaderExceptions.Count > maxErrors)
-                report.AppendLine().Append("... ");
+                report.Add("...");
 
-            return report.ToString();
+            foreach (string assemblyPath in referencedAssembliesPaths)
+            {
+                try
+                {
+                    Assembly.LoadFrom(assemblyPath).GetTypes();
+                }
+                catch (Exception ex)
+                {
+                    Exception[] reportExceptions = (ex as ReflectionTypeLoadException)?.LoaderExceptions;
+                    if (reportExceptions == null || !reportExceptions.Any())
+                        reportExceptions = new[] { ex };
+
+                    foreach (var exceptionInfo in reportExceptions.Select(re => re.GetType().Name + ": " + re.Message).Distinct().Take(5))
+                        report.Add($"* '{Path.GetFileName(assemblyPath)}' throws {exceptionInfo}.");
+                }
+            }
+
+            return string.Join("\r\n", report);
         }
 
         /// <summary>
