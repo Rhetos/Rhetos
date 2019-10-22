@@ -62,9 +62,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Autofac.4.9.4\lib\net45\Autofac.dll</HintPath>
     </Reference>
-    <Reference Include="Autofac.Configuration">
-      <HintPath>..\..\packages\Autofac.Configuration.3.3.0\lib\net40\Autofac.Configuration.dll</HintPath>
-    </Reference>
     <Reference Include="Autofac.Integration.Wcf">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Autofac.Wcf.4.1.0\lib\net45\Autofac.Integration.Wcf.dll</HintPath>

@@ -18,7 +18,6 @@
 */
 
 using Autofac;
-using Autofac.Configuration;
 using Autofac.Integration.Wcf;
 using Rhetos.Logging;
 using Rhetos.Utilities;
@@ -42,7 +41,7 @@ namespace Rhetos
             Paths.InitializeRhetosServer();
 
             var builder = new ContainerBuilder();
-            builder.RegisterModule(new ConfigurationSettingsReader("autofacComponents"));
+            builder.RegisterModule<Rhetos.DefaultAutofacConfiguration>();
             AutofacServiceHostFactory.Container = builder.Build();
 
             var logProvider = AutofacServiceHostFactory.Container.Resolve<ILogProvider>();
