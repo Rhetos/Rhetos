@@ -12,9 +12,10 @@
      (see [instructions](https://stackoverflow.com/a/10877950/2086516)).
      If you have a *.nuspec* file that contains this project's dll,
      replace `target="lib\net451"` with `target="lib\net472"`.
-* Upgraded to the latest version of Autofac (4.9.4), Autofac.Wcf (4.1.0) and Newtonsoft.Json (12.0.2).
+* Upgraded project dependencies to the latest version:
+  Autofac (4.9.4), Autofac.Wcf (4.1.0) and Newtonsoft.Json (12.0.2).
   1. To allow the old plugins to work with new version of the dependencies,
-     add the following three `<dependentAssembly>` elements to `configuration/runtime`
+     add the following three `<dependentAssembly>` elements to `configuration/runtime/assemblyBinding`
      in your application's configuration file (App.config or Web.config).
      If you application (or unit test project, e.g.) does not have the config file,
      create it in Visual Studio: Project => Add New Item => Application Configuration File.
