@@ -12,6 +12,36 @@
      (see [instructions](https://stackoverflow.com/a/10877950/2086516)).
      If you have a *.nuspec* file that contains this project's dll,
      replace `target="lib\net451"` with `target="lib\net472"`.
+* Upgraded to the latest version of Autofac (4.9.4), Autofac.Wcf (4.1.0) and Newtonsoft.Json (12.0.2).
+  1. To allow the old plugins to work with new version of the dependencies,
+     add the following three `<dependentAssembly>` elements to `configuration/runtime`
+     in your application's configuration file (App.config or Web.config).
+     If you application (or unit test project, e.g.) does not have the config file,
+     create it in Visual Studio: Project => Add New Item => Application Configuration File.
+        ```xml
+        <?xml version="1.0" encoding="utf-8" ?>
+        <configuration>
+          <runtime>
+            <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+              <dependentAssembly>
+                <assemblyIdentity name="Autofac" publicKeyToken="17863af14b0044da" culture="neutral" />
+                <bindingRedirect oldVersion="0.0.0.0-4.9.4.0" newVersion="4.9.4.0" />
+              </dependentAssembly>
+              <dependentAssembly>
+                <assemblyIdentity name="Autofac.Integration.Wcf" publicKeyToken="17863af14b0044da" culture="neutral" />
+                <bindingRedirect oldVersion="0.0.0.0-4.1.0.0" newVersion="4.1.0.0" />
+              </dependentAssembly>
+              <dependentAssembly>
+                <assemblyIdentity name="Newtonsoft.Json" publicKeyToken="30ad4fe6b2a6aeed" culture="neutral" />
+                <bindingRedirect oldVersion="0.0.0.0-12.0.0.0" newVersion="12.0.0.0" />
+              </dependentAssembly>
+            </assemblyBinding>
+          </runtime>
+        </configuration>
+        ```
+   2. If the assemblyBinding (above) is not correctly set, the application might fail with an error
+      "System.InvalidCastException: Unable to cast object of type '...' to type 'Autofac.Module'."
+* Removed dependency to Autofac.Configuration.
 
 ### Internal improvements
 
