@@ -53,8 +53,9 @@
        "*The service '...' cannot be activated due to an exception during compilation ...*"
        or "*The service '...' configured for WCF is not registered with the Autofac container.*",
        make sure that you still have the `probing` element in the Web.config.
-* Removed dependency to Autofac.Configuration.
-  1. If your package requires it, please add it to the package's nuspec dependencies.
+* Removed dependency to Autofac.Configuration and DotNetZip (Ionic.Zip).
+  1. If your application or plugin package requires one of the dependencies,
+     specify the dependency in the .nuspec file.
 * Default EF storage model namespace changed from "Rhetos" to "Rhetos.Store".
   1. If you have an `IConceptMapping` plugin that creates EF metadata for custom SQL function
      at `EntityFrameworkMapping.StorageModelTag`, then modify the DbFunction attribute on
