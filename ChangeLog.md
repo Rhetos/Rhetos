@@ -4,7 +4,7 @@
 
 ### Breaking changes
 
-* Upgrade from .NET Framework 4.5.1 to .NET Framework 4.7.2 (issue #52).
+* Upgrade from .NET Framework 4.5.1 to **.NET Framework 4.7.2** (issue #52).
   1. Update *Web.config* in your Rhetos server:
      replace *multiple* instances of `targetFramework="4.5.1"` with `targetFramework="4.7.2"`.
   2. If your Visual Studio project *directly references* ServerDom dlls,
@@ -13,11 +13,12 @@
      If you have a *.nuspec* file that contains this project's dll,
      replace `target="lib\net451"` with `target="lib\net472"`.
 * Upgraded project dependencies to the latest version:
-  Autofac 3.5.2 to 4.9.4,
-  Autofac.Wcf 3.0.1 to 4.1.0,
-  and Newtonsoft.Json 6.0.8 to 12.0.2.
-  1. To allow the old packages to work with new version of the dependencies,
-     without recompiling them,
+  **Autofac** 3.5.2 to 4.9.4,
+  **Autofac.Wcf** 3.0.1 to 4.1.0,
+  **NLog** 4.5.4 to 4.6.7,
+  and **Newtonsoft.Json** 6.0.8 to 12.0.2.
+  1. To allow the existing packages to work with new version of the dependencies,
+     without upgrading the packages,
      add the following three `<dependentAssembly>` elements to `configuration/runtime/assemblyBinding`
      in your application's configuration file (App.config or Web.config).
      If you application (or unit test project, e.g.) does not have the config file,
@@ -46,14 +47,14 @@
      </configuration>
      ```
   2. Troubleshooting:
-     * If deployment fails with
+     * If an application fails with
        "*System.InvalidCastException: Unable to cast object of type '...' to type 'Autofac.Module'.*",
-       make sure that the `dependentAssembly` elements are configured exactly as above.
+       make sure that the `dependentAssembly` elements are configured as described above.
      * If a web request returns error
        "*The service '...' cannot be activated due to an exception during compilation ...*"
        or "*The service '...' configured for WCF is not registered with the Autofac container.*",
        make sure that you still have the `probing` element in the Web.config.
-* Removed dependency to Autofac.Configuration and DotNetZip (Ionic.Zip).
+* Removed dependency to **Autofac.Configuration** and **DotNetZip (Ionic.Zip)**.
   1. If your application or plugin package requires one of the dependencies,
      specify the dependency in the .nuspec file.
 * Default EF storage model namespace changed from "Rhetos" to "Rhetos.Store".
