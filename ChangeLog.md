@@ -27,6 +27,8 @@
      <configuration>
        <runtime>
          <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+           ...
+           ...
            <dependentAssembly>
              <assemblyIdentity name="Autofac" publicKeyToken="17863af14b0044da" culture="neutral" />
              <bindingRedirect oldVersion="0.0.0.0-4.9.4.0" newVersion="4.9.4.0" />
@@ -43,15 +45,21 @@
        </runtime>
      </configuration>
      ```
-     If the assemblyBinding (above) is not correctly set, the application might fail with an error
-     "System.InvalidCastException: Unable to cast object of type '...' to type 'Autofac.Module'."
+  2. Troubleshooting:
+     * If deployment fails with
+       "*System.InvalidCastException: Unable to cast object of type '...' to type 'Autofac.Module'.*",
+       make sure that the `dependentAssembly` elements are configured exactly as above.
+     * If a web request returns error
+       "*The service '...' cannot be activated due to an exception during compilation ...*"
+       or "*The service '...' configured for WCF is not registered with the Autofac container.*",
+       make sure that you still have the `probing` element in the Web.config.
 * Removed dependency to Autofac.Configuration.
-  1. If your package requires it, please add it to the nuspec dependencies.
+  1. If your package requires it, please add it to the package's nuspec dependencies.
 * Default EF storage model namespace changed from "Rhetos" to "Rhetos.Store".
-  1. If you have IConceptMapping plugin that creates EF metadata for custom SQL function
-     at EntityFrameworkMapping.StorageModelTag, then modify the DbFunction attribute on
-     the related C# method from "Rhetos" to the value of EntityFrameworkMapping.StorageModelNamespace
-     (only for those functions that use the *StorageModelTag*!).
+  1. If you have an `IConceptMapping` plugin that creates EF metadata for custom SQL function
+     at `EntityFrameworkMapping.StorageModelTag`, then modify the DbFunction attribute on
+     the related C# method from `"Rhetos"` to `EntityFrameworkMapping.StorageModelNamespace`.
+     Note that this should be done only for *StorageModelTag* functions, not *ConceptualModelTag*.
 
 ### Internal improvements
 
