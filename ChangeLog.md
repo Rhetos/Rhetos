@@ -4,61 +4,35 @@
 
 ### Breaking changes
 
-* Upgrade from .NET Framework 4.5.1 to **.NET Framework 4.7.2** (issue #52).
-  1. Update *Web.config* in your Rhetos server:
+1. Upgrade from .NET Framework 4.5.1 to .NET Framework 4.7.2 (issue #52).
+   * **Update *Web.config*** in your Rhetos server application:
      replace *multiple* instances of `targetFramework="4.5.1"` with `targetFramework="4.7.2"`.
-  2. If your Visual Studio project *directly references* ServerDom dlls,
-     change the *Target framework* in project properties to ".NET Framework 4.7.2"
-     (see [instructions](https://stackoverflow.com/a/10877950/2086516)).
-     If you have a *.nuspec* file that contains this project's dll,
-     replace `target="lib\net451"` with `target="lib\net472"`.
-* Upgraded project dependencies to the latest version:
-  **Autofac** 3.5.2 to 4.9.4,
-  **Autofac.Wcf** 3.0.1 to 4.1.0,
-  **NLog** 4.5.4 to 4.6.7,
-  and **Newtonsoft.Json** 6.0.8 to 12.0.2.
-  1. To allow the existing packages to work with new version of the dependencies,
-     without upgrading the packages,
-     add the following three `<dependentAssembly>` elements to `configuration/runtime/assemblyBinding`
-     in your application's configuration file (App.config or Web.config).
-     If you application (or unit test project, e.g.) does not have the config file,
-     create it in Visual Studio: Project => Add New Item => Application Configuration File.
-     ```xml
-     <?xml version="1.0" encoding="utf-8" ?>
-     <configuration>
-       <runtime>
-         <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
-           ...
-           ...
-           <dependentAssembly>
-             <assemblyIdentity name="Autofac" publicKeyToken="17863af14b0044da" culture="neutral" />
-             <bindingRedirect oldVersion="0.0.0.0-4.9.4.0" newVersion="4.9.4.0" />
-           </dependentAssembly>
-           <dependentAssembly>
-             <assemblyIdentity name="Autofac.Integration.Wcf" publicKeyToken="17863af14b0044da" culture="neutral" />
-             <bindingRedirect oldVersion="0.0.0.0-4.1.0.0" newVersion="4.1.0.0" />
-           </dependentAssembly>
-           <dependentAssembly>
-             <assemblyIdentity name="Newtonsoft.Json" publicKeyToken="30ad4fe6b2a6aeed" culture="neutral" />
-             <bindingRedirect oldVersion="0.0.0.0-12.0.0.0" newVersion="12.0.0.0" />
-           </dependentAssembly>
-         </assemblyBinding>
-       </runtime>
-     </configuration>
-     ```
-  2. Troubleshooting:
-     * If an application fails with
-       "*System.InvalidCastException: Unable to cast object of type '...' to type 'Autofac.Module'.*",
-       make sure that the `dependentAssembly` elements are configured as described above.
-     * If a web request returns error
-       "*The service '...' cannot be activated due to an exception during compilation ...*"
-       or "*The service '...' configured for WCF is not registered with the Autofac container.*",
-       make sure that you still have the `probing` element in the Web.config.
-* Removed dependency to **Autofac.Configuration** and **DotNetZip (Ionic.Zip)**.
-  1. If your application or plugin package requires one of the dependencies,
-     specify the dependency in the .nuspec file.
-* Default EF storage model namespace changed from "Rhetos" to "Rhetos.Store".
-  1. If you have an `IConceptMapping` plugin that creates EF metadata for custom SQL function
+   * If your Visual Studio project *directly references* ServerDom dlls,
+     **change the *Target framework*** in project properties to ".NET Framework 4.7.2":
+     In Visual Studio right-click on your project, select Properties, select the Application tab,
+     change the Target framework to the ".NET Framework 4.7.2".
+     If you are not seeing .NET Framework 4.7.2 as an option there, ensure you have it installed.
+   * If you have a *.nuspec* file that contains your project's dll,
+     **replace** `target="lib\net451"` with `target="lib\net472"` in the .nuspec.
+2. Upgraded project dependencies to the latest version:
+   Autofac 3.5.2 to 4.9.4,
+   Autofac.Wcf 3.0.1 to 4.1.0,
+   NLog 4.5.4 to 4.6.7,
+   and Newtonsoft.Json 6.0.8 to 12.0.2.
+   * To allow your existing Rhetos application to work with existing plugin packages,
+     without recompiling them with new version of the dependencies,
+     you will need to add `bindingRedirect` configuration in the .config file.
+     **See the instructions at** [Using old packages with new NuGet dependencies](https://github.com/Rhetos/Rhetos/wiki/Using-old-packages-with-new-NuGet-dependencies).
+     If the `bindingRedirect` is missing, the application will return
+     one of the following errors on startup:
+       * *System.InvalidCastException: Unable to cast object of type '...' to type 'Autofac.Module'.*
+       * *Could not load file or assembly 'Autofac, Version=3.3.0.0, ...*
+       * *ReflectionTypeLoadException: Unable to load one or more of the requested types. Retrieve the LoaderExceptions property for more information.*
+3. Removed dependency to Autofac.Configuration and DotNetZip (Ionic.Zip).
+   * If your application or plugin package requires one of the dependencies,
+     add the dependency specification in the .nuspec file.
+4. Default EF storage model namespace changed from "Rhetos" to "Rhetos.Store".
+   * If you have an `IConceptMapping` plugin that creates EF metadata for custom SQL function
      at `EntityFrameworkMapping.StorageModelTag`, then modify the DbFunction attribute on
      the related C# method from `"Rhetos"` to `EntityFrameworkMapping.StorageModelNamespace`.
      Note that this should be done only for *StorageModelTag* functions, not *ConceptualModelTag*.
