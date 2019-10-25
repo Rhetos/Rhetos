@@ -44,6 +44,7 @@ namespace DeployPackages
             _filesUtility = new FilesUtility(initializationContext.LogProvider);
             _deployOptions = initializationContext.ConfigurationProvider.GetOptions<DeployOptions>();
             _initializationContext = initializationContext;
+            LegacyUtilities.Initialize(_initializationContext.ConfigurationProvider);
         }
 
         public void InitialCleanup()

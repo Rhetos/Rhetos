@@ -63,12 +63,11 @@ namespace DeployPackages
                 if (deployOptions.StartPaused)
                     StartPaused();
 
-                LegacyUtilities.Initialize(configurationProvider);
-
+                
                 var packageManager = new PackageManager(initializationContext);
                 packageManager.InitialCleanup();
                 packageManager.DownloadPackages();
-
+                
                 var deployManager = new ApplicationDeployment(initializationContext);
                 deployManager.GenerateApplication();
                 deployManager.InitializeGeneratedApplication();
@@ -95,8 +94,7 @@ namespace DeployPackages
         {
             var rhetosAppRootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..");
             return new ConfigurationBuilder()
-                .SetRhetosAppRootPath(rhetosAppRootPath)
-                .AddWebConfiguration(rhetosAppRootPath)
+                .AddRhetosAppConfiguration(rhetosAppRootPath)
                 .AddConfigurationManagerConfiguration()
                 .AddCommandLineArguments(args, "/")
                 .Build();

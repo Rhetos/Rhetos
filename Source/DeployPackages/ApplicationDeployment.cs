@@ -52,7 +52,6 @@ namespace DeployPackages
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            Plugins.SetInitializationLogging(_initializationContext.LogProvider);
             var builder = new ContextContainerBuilder(_initializationContext)
                 .AddRhetosDeployment()
                 .AddUserOverride();
@@ -75,7 +74,6 @@ namespace DeployPackages
             _logger.Trace("Loading generated plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            Plugins.SetInitializationLogging(_initializationContext.LogProvider);
             var builder = new ContextContainerBuilder(_initializationContext)
                 .AddApplicationInitialization()
                 .AddRhetosRuntime()
@@ -105,7 +103,7 @@ namespace DeployPackages
 
         private void RestartWebServer()
         {
-            var configFile = Paths.RhetosServerWebConfigFile;
+            var configFile = Path.Combine(_initializationContext.RhetosAppEnvironment.RootPath, "Web.config");
             if (FilesUtility.SafeTouch(configFile))
                 _logger.Trace($"Updated {Path.GetFileName(configFile)} modification date to restart server.");
             else

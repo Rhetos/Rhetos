@@ -18,7 +18,9 @@
 */
 
 using Autofac;
+using Rhetos.Extensibility;
 using Rhetos.Logging;
+using Rhetos.Utilities;
 using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
@@ -40,12 +42,17 @@ namespace Rhetos.Configuration.Autofac
         /// <summary>
         /// Initializes a container with specified InitializationContext. Registers ConfigurationProvider and RhetosAppEnvironment instances to newly created container.
         /// LogProvider is not registered and is meant to be used during the lifetime of registration and container building process.
+        /// LegacyUtilities will also be initialized with the given configuration.
         /// </summary>
         public ContextContainerBuilder(InitializationContext initializationContext)
         {
             this.InitializationContext = initializationContext;
             this.RegisterInstance(initializationContext.ConfigurationProvider);
             this.RegisterInstance(initializationContext.RhetosAppEnvironment);
+
+            // this is a patch/mock to provide backward compatibility for all usages of old static classes
+            LegacyUtilities.Initialize(initializationContext.ConfigurationProvider);
+            Plugins.SetInitializationLogging(initializationContext.LogProvider);
         }
 
         /// <summary>

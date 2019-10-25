@@ -43,8 +43,7 @@ namespace Rhetos
             var stopwatch = Stopwatch.StartNew();
 
             var configurationProvider = new ConfigurationBuilder()
-                .SetRhetosAppRootPath(AppDomain.CurrentDomain.BaseDirectory)
-                .AddWebConfiguration(AppDomain.CurrentDomain.BaseDirectory)
+                .AddRhetosAppConfiguration(AppDomain.CurrentDomain.BaseDirectory)
                 .Build();
 
             LegacyUtilities.Initialize(configurationProvider);
@@ -82,8 +81,6 @@ namespace Rhetos
         {
             var builder = new ContextContainerBuilder(configurationProvider, new NLogProvider());
 
-            // Specific registrations and initialization:
-            Plugins.SetInitializationLogging(new NLogProvider());
             builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
             builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
             Plugins.FindAndRegisterPlugins<IService>(builder);

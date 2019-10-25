@@ -101,8 +101,7 @@ namespace Rhetos.Configuration.Autofac
                         {
                             var rhetosAppRootPath = SearchForRhetosServerRootFolder();
                             var configurationProvider = new ConfigurationBuilder()
-                                .SetRhetosAppRootPath(rhetosAppRootPath)
-                                .AddWebConfiguration(rhetosAppRootPath)
+                                .AddRhetosAppConfiguration(rhetosAppRootPath)
                                 .Build();
 
                             LegacyUtilities.Initialize(configurationProvider);
@@ -157,9 +156,6 @@ namespace Rhetos.Configuration.Autofac
         private IContainer InitializeIocContainer(IConfigurationProvider configurationProvider)
         {
             AppDomain.CurrentDomain.AssemblyResolve += SearchForAssembly;
-
-            // Specific registrations and initialization:
-            Plugins.SetInitializationLogging(new ConsoleLogProvider());
 
             // General registrations:
             var builder = new ContextContainerBuilder(configurationProvider, new ConsoleLogProvider())

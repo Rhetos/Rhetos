@@ -64,7 +64,20 @@ namespace Rhetos.Utilities.ApplicationConfiguration
             return builder;
         }
 
-        public static IConfigurationBuilder AddWebConfiguration(this IConfigurationBuilder builder, string webRootPath)
+        /// <summary>
+        /// Sets RhetosAppRootPath to specified path and loads default configuration for the app at that path.
+        /// Currently, web.config is expected to exist at the path and configuration will be loaded from it.
+        /// This is planned for phasing out in favor of separate config file used only for Rhetos app.
+        /// </summary>
+        public static IConfigurationBuilder AddRhetosAppConfiguration(this IConfigurationBuilder builder, string rhetosAppRootPath)
+        {
+            rhetosAppRootPath = Path.GetFullPath(rhetosAppRootPath);
+            builder.AddKeyValue(nameof(RhetosAppOptions.RootPath), rhetosAppRootPath);
+            builder.AddWebConfiguration(rhetosAppRootPath);
+            return builder;
+        }
+
+        private static IConfigurationBuilder AddWebConfiguration(this IConfigurationBuilder builder, string webRootPath)
         {
             webRootPath = Path.GetFullPath(webRootPath);
             VirtualDirectoryMapping vdm = new VirtualDirectoryMapping(webRootPath, true);
@@ -72,13 +85,6 @@ namespace Rhetos.Utilities.ApplicationConfiguration
             wcfm.VirtualDirectories.Add("/", vdm);
             System.Configuration.Configuration configuration = WebConfigurationManager.OpenMappedWebConfiguration(wcfm, "/");
             builder.Add(new ConfigurationFileSource(configuration));
-            return builder;
-        }
-
-        public static IConfigurationBuilder SetRhetosAppRootPath(this IConfigurationBuilder builder, string rhetosAppRootPath)
-        {
-            rhetosAppRootPath = Path.GetFullPath(rhetosAppRootPath);
-            builder.AddKeyValue(nameof(RhetosAppOptions.RootPath), rhetosAppRootPath);
             return builder;
         }
     }

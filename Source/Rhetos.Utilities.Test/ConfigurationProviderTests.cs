@@ -284,7 +284,7 @@ namespace Rhetos.Utilities.Test
             var rootPath = AppDomain.CurrentDomain.BaseDirectory;
             System.Diagnostics.Trace.WriteLine($"Using {rootPath} as rootPath.");
             var provider = new ConfigurationBuilder()
-                .AddWebConfiguration(rootPath)
+                .AddRhetosAppConfiguration(rootPath)
                 .Build();
 
             Assert.IsTrue(provider.AllKeys.Contains("connectionstrings:webconnectionstring:name"));
