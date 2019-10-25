@@ -43,7 +43,7 @@ namespace Rhetos.Configuration.Autofac.Modules
         protected override void Load(ContainerBuilder builder)
         {
             AddDatabaseGenerator(builder);
-            AddDsl(builder);
+            AddDslDeployment(builder);
             AddDom(builder);
             AddPersistence(builder);
             AddCompiler(builder);
@@ -59,7 +59,6 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<ConceptApplicationRepository>().As<IConceptApplicationRepository>();
             builder.RegisterType<DatabaseGenerator.DatabaseGenerator>().As<IDatabaseGenerator>();
             builder.RegisterType<DatabaseGenerator.ConceptDataMigrationExecuter>().As<IConceptDataMigrationExecuter>();
-            // TODO SS: just use DeployOptions directly instead?
             builder.Register(a => new DatabaseGeneratorOptions { ShortTransactions = a.Resolve<DeployOptions>().ShortTransactions }).SingleInstance();
             Plugins.FindAndRegisterPlugins<IConceptDatabaseDefinition>(builder);
             builder.RegisterType<NullImplementation>().As<IConceptDatabaseDefinition>();
@@ -68,8 +67,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<DatabaseCleaner>();
         }
 
-        // TODO: this is a misnomer, since CoreModule also has AddDsl method
-        private void AddDsl(ContainerBuilder builder)
+        private void AddDslDeployment(ContainerBuilder builder)
         {
             builder.RegisterType<DiskDslScriptLoader>().As<IDslScriptsProvider>().SingleInstance();
             builder.RegisterType<Tokenizer>().SingleInstance();
@@ -85,7 +83,6 @@ namespace Rhetos.Configuration.Autofac.Modules
 
         private void AddDom(ContainerBuilder builder)
         {
-            // TODO SS: make it cleaner..single options object?
             builder.Register(a => new DomGeneratorOptions() { Debug = a.ResolveOptional<DeployOptions>()?.Debug ?? false }).SingleInstance();
             builder.RegisterType<DomGenerator>().As<IDomainObjectModel>().SingleInstance();
         }

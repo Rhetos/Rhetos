@@ -35,5 +35,9 @@ namespace Rhetos.Utilities
         public bool ShortTransactions { get; set; }
         public bool DatabaseOnly { get; set; }
         public bool SkipRecompute { get; set; }
+
+        public bool DataMigration__SkipScriptsWithWrongOrder { get; set; } = true;
+        public bool CommonConcepts__Legacy__AutoGeneratePolymorphicProperty { get; set; } = true;
+        public bool CommonConcepts__Legacy__CascadeDeleteInDatabase { get; set; } = true;
     }
 }

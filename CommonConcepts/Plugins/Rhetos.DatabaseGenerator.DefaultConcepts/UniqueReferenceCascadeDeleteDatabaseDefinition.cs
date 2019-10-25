@@ -34,9 +34,9 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     {
         private readonly bool _legacyCascadeDeleteInDatabase;
 
-        public UniqueReferenceCascadeDeleteDatabaseDefinition(RhetosAppOptions rhetosAppOptions)
+        public UniqueReferenceCascadeDeleteDatabaseDefinition(DeployOptions deployOptions)
         {
-            _legacyCascadeDeleteInDatabase = rhetosAppOptions.CommonConcepts__Legacy__CascadeDeleteInDatabase;
+            _legacyCascadeDeleteInDatabase = deployOptions.CommonConcepts__Legacy__CascadeDeleteInDatabase;
         }
 
         public void ExtendDatabaseStructure(

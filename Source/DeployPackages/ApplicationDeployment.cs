@@ -59,7 +59,6 @@ namespace DeployPackages
 
             using (var container = builder.Build())
             {
-                // TODO SS: misnomers? what are we actually measuring - this is measuring container building performance, NOT plugin registration
                 var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
                 performanceLogger.Write(stopwatch, "DeployPackages.Program: Modules and plugins registered.");
                 Plugins.LogRegistrationStatistics("Generating application", container);
