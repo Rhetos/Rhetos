@@ -56,9 +56,19 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>Return direct and indirect user's roles.</summary>
         public IEnumerable<Guid> GetUsersRoles(IPrincipal principal)
         {
-            IEnumerable<Guid> directUserRoles = _authorizationData.GetPrincipalRoles(principal);
-            IEnumerable<Guid> allUserRoles = Graph.IncludeDependents(directUserRoles, _authorizationData.GetRoleRoles);
-            return allUserRoles;
+            var directUserRoles = new List<Guid>();
+
+            if (principal != null)
+            {
+                directUserRoles.AddRange(_authorizationData.GetPrincipalRoles(principal));
+                if (_authorizationData.GetSystemRoles().TryGetValue(SystemRole.AllPrincipals, out Guid allPrincipalsRoleId))
+                    directUserRoles.Add(allPrincipalsRoleId);
+            }
+
+            if (_authorizationData.GetSystemRoles().TryGetValue(SystemRole.Anonymous, out Guid anonymousRoleId))
+                directUserRoles.Add(anonymousRoleId);
+
+            return Graph.IncludeDependents(directUserRoles, _authorizationData.GetRoleRoles);
         }
 
         /// <summary>Inactive or nonexistent claims will have ID set to null.</summary>

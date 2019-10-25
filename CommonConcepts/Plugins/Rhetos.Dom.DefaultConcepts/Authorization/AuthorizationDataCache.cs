@@ -44,7 +44,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         // This property must not be static, and AuthorizationDataCache must be registered as InstancePerLifetimeScope,
         // in order to avoid multiple reading of data on parallel requests from the same user and to avoid locking between users.
-        private object _userLevelCacheUpdateLock = new object();
+        private readonly object _userLevelCacheUpdateLock = new object();
 
         public static void ClearCache()
         {
@@ -92,6 +92,13 @@ namespace Rhetos.Dom.DefaultConcepts
             var cache = MemoryCache.Default;
             foreach (string key in deleteKeys)
                 cache.Remove(key);
+
+            var systemRoles = (IDictionary<SystemRole, Guid>)cache.Get("AuthorizationDataCache.SystemRoles");
+            if (systemRoles != null && systemRoles.Values.Intersect(roleIds).Any())
+            {
+                _logger.Trace(() => "ClearCacheRoles: SystemRoles.");
+                cache.Remove("AuthorizationDataCache.SystemRoles");
+            }
         }
 
         private static double? _defaultExpirationSeconds = null;
@@ -109,7 +116,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return _defaultExpirationSeconds.Value;
         }
 
-        private T CacheGetOrAdd<T>(string key, Func<T> valueCreator, double absoluteExpirationInSeconds)
+        private T CacheGetOrAdd<T>(string key, Func<T> valueCreator, double relativeExpirationInSeconds)
         {
             T value = (T)_cache.Get(key);
             if (value == null)
@@ -121,7 +128,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         _logger.Trace(() => "Cache miss: " + key + ".");
                         value = valueCreator();
                         if (value != null)
-                            _cache.Set(key, value, DateTimeOffset.Now.AddSeconds(absoluteExpirationInSeconds));
+                            _cache.Set(key, value, DateTimeOffset.Now.AddSeconds(relativeExpirationInSeconds));
                         else
                             _logger.Trace(() => "Not caching null value: " + key + ".");
                     }
@@ -183,11 +190,11 @@ namespace Rhetos.Dom.DefaultConcepts
                     _logger.Trace(() => "Cache miss: " + key + ".");
                 }
             }
-            
+
             var freshPermissions = missingCache.Count == 0
                 ? Enumerable.Empty<RolePermissionInfo>()
-                :_authorizationDataReader.Value.GetRolePermissions(missingCache, null);
-            
+                : _authorizationDataReader.Value.GetRolePermissions(missingCache, null);
+
             result = result == null ? freshPermissions : result.Concat(freshPermissions);
 
             var freshPermissionsByRole = freshPermissions.GroupBy(p => p.RoleID).ToDictionary(group => group.Key, group => group.ToList());
@@ -208,7 +215,14 @@ namespace Rhetos.Dom.DefaultConcepts
         public IDictionary<Guid, string> GetRoles(IEnumerable<Guid> roleIds = null)
         {
             return CacheGetOrAdd("AuthorizationDataCache.Roles",
-                () => _authorizationDataReader.Value.GetRoles(null),
+                () => _authorizationDataReader.Value.GetRoles(),
+                GetDefaultExpirationSeconds());
+        }
+
+        public IDictionary<SystemRole, Guid> GetSystemRoles()
+        {
+            return CacheGetOrAdd("AuthorizationDataCache.SystemRoles",
+                () => _authorizationDataReader.Value.GetSystemRoles(),
                 GetDefaultExpirationSeconds());
         }
 
@@ -220,7 +234,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return CacheGetOrAdd("AuthorizationDataCache.Claims",
                 () => _authorizationDataReader.Value.GetClaims(null),
-                GetDefaultExpirationSeconds() > 0 ? 60*60*24*365 : 0); // Claims do not expire. They cannot be modified at run-time, only at deploy-time.
+                GetDefaultExpirationSeconds() > 0 ? 60 * 60 * 24 * 365 : 0); // Claims do not expire. They cannot be modified at run-time, only at deploy-time.
         }
     }
 }

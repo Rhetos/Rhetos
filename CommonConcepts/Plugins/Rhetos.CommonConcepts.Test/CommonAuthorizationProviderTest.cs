@@ -264,6 +264,7 @@ namespace Rhetos.CommonConcepts.Test
             var log1 = SimpleTest(useCache: true);
             Assert.AreEqual(@"Principal.pr0.
 PrincipalRoles.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+SystemRoles.
 RoleRoles.33395e07-8d14-4db9-bd79-c0c3e8407feb.
 RoleRoles.44495e07-8d14-4db9-bd79-c0c3e8407feb.
 Claims.
@@ -367,6 +368,7 @@ RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMisses(log1))
             var log1 = SimilarClaimsTest(useCache: true);
             Assert.AreEqual(@"Principal.pr0.
 PrincipalRoles.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+SystemRoles.
 RoleRoles.33395e07-8d14-4db9-bd79-c0c3e8407feb.
 RoleRoles.44495e07-8d14-4db9-bd79-c0c3e8407feb.
 Claims.
@@ -454,11 +456,14 @@ PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMiss
             var log1 = ClearCachePrincipalsRoles_GetAuthorization();
             Assert.AreEqual(@"Principal.pr0.
 PrincipalRoles.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+SystemRoles.
 RoleRoles.33395e07-8d14-4db9-bd79-c0c3e8407feb.
 RoleRoles.44495e07-8d14-4db9-bd79-c0c3e8407feb.
+RoleRoles.55595e07-8d14-4db9-bd79-c0c3e8407feb.
 Claims.
 PrincipalPermissions.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 RolePermissions.33395e07-8d14-4db9-bd79-c0c3e8407feb.
+RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.
 RolePermissions.44495e07-8d14-4db9-bd79-c0c3e8407feb.
 Roles.
 Principal.pr1.
@@ -474,9 +479,20 @@ RoleRoles.33395e07-8d14-4db9-bd79-c0c3e8407feb.
 PrincipalPermissions.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 RolePermissions.33395e07-8d14-4db9-bd79-c0c3e8407feb.
 Roles.", ReportCacheMisses(log2));
+
+            var log3 = ClearCachePrincipalsRoles_GetAuthorization(editSystemRole: true);
+            Assert.AreEqual(@"Principal.pr0.
+PrincipalRoles.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+SystemRoles.
+RoleRoles.33395e07-8d14-4db9-bd79-c0c3e8407feb.
+RoleRoles.55595e07-8d14-4db9-bd79-c0c3e8407feb.
+PrincipalPermissions.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+RolePermissions.33395e07-8d14-4db9-bd79-c0c3e8407feb.
+RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.
+Roles.", ReportCacheMisses(log3));
         }
 
-        public List<string> ClearCachePrincipalsRoles_GetAuthorization()
+        public List<string> ClearCachePrincipalsRoles_GetAuthorization(bool editSystemRole = false)
         {
             var principals = new IPrincipal[] {
                 new MockPrincipal { ID = new Guid("11195E07-8D14-4DB9-BD79-C0C3E8407FEB"), Name = "pr0" },
@@ -484,7 +500,8 @@ Roles.", ReportCacheMisses(log2));
 
             var roles = new IRole[] {
                 new MockRole { ID = new Guid("33395E07-8D14-4DB9-BD79-C0C3E8407FEB"), Name = "r0" },
-                new MockRole { ID = new Guid("44495E07-8D14-4DB9-BD79-C0C3E8407FEB"), Name = "r1" } };
+                new MockRole { ID = new Guid("44495E07-8D14-4DB9-BD79-C0C3E8407FEB"), Name = "r1" },
+                new MockRole { ID = new Guid("55595E07-8D14-4DB9-BD79-C0C3E8407FEB"), Name = SystemRole.AllPrincipals.ToString() } };
 
             var principalRoles = new IPrincipalHasRole[] {
                 new MockPrincipalHasRole(principals[0], roles[0]),
@@ -535,6 +552,8 @@ Roles.", ReportCacheMisses(log2));
             var cache = authorizationContext.AuthorizationDataCache;
             cache.ClearCachePrincipals(new[] { principals[0] });
             cache.ClearCacheRoles(new[] { roles[0].ID });
+            if (editSystemRole)
+                cache.ClearCacheRoles(new[] { roles[2].ID });
 
             var provider = authorizationContext.CommonAuthorizationProvider;
             Assert.AreEqual("True, True, False, False, False, True, False, False", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr0"), claims)));

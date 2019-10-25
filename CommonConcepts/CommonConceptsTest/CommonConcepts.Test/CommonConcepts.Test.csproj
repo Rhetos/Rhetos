@@ -152,6 +152,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActionTest.cs" />
+    <Compile Include="AuthorizationProvider.cs" />
     <Compile Include="AutoCodeCachedTest.cs" />
     <Compile Include="BinaryTest.cs" />
     <Compile Include="AutoCodeTest.cs" />
