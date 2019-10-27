@@ -101,6 +101,17 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(TestEnum.None, provider.GetValue<TestEnum>("EnumValue"));
         }
 
+        [TestMethod]
+        public void EnumBindingIsVerbose()
+        {
+            var provider = new ConfigurationBuilder()
+                .AddKeyValue("EnumValue", "hello")
+                .Build();
+
+            var frameworkException = TestUtility.ShouldFail<FrameworkException>(() => provider.GetValue<TestEnum>("EnumValue"));
+            Assert.IsTrue(frameworkException.InnerException.Message.Contains("Allowed values for TestEnum are: None, ValueA, ValueB"));
+        }
+
         public enum FakeEnum
         {
             None

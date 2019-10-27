@@ -122,7 +122,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration
                 else if (targetType == typeof(bool))
                     return bool.Parse(valueString);
                 else if (targetType.IsEnum)
-                    return Enum.Parse(targetType, valueString);
+                    return ParseEnumVerbose(targetType, valueString);
             }
             catch (Exception e)
             {
@@ -130,6 +130,21 @@ namespace Rhetos.Utilities.ApplicationConfiguration
             }
 
             throw new FrameworkException($"Configuration type {targetType} is not supported.");
+        }
+
+        private object ParseEnumVerbose(Type enumType, string valueString)
+        {
+            try
+            {
+                return Enum.Parse(enumType, valueString);
+            }
+            catch (Exception e)
+            {
+                throw new FrameworkException(
+                    $"Invalid enum value in configuration file: '{valueString}' is not a valid value. "
+                    + $"Allowed values for {enumType.Name} are: {string.Join(", ", Enum.GetNames(enumType))}.", 
+                    e);
+            }
         }
 
         private string NormalizeDecimalSeparator(string value)

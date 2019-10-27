@@ -50,5 +50,10 @@ namespace Rhetos.Utilities
         {
             return new Lazy<bool>(() => _configurationProvider.GetValue(key, defaultValue));
         }
+
+        public Lazy<T> GetEnum<T>(string key, T defaultValue) where T : struct
+        {
+            return new Lazy<T>(() => _configurationProvider.GetValue(key, defaultValue));
+        }
     }
 }
