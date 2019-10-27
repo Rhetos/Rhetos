@@ -13,6 +13,11 @@ REM Delete packages' bineries and their copy in Rhetos folder:
 @DEL /F/S/Q "Source\Rhetos\GeneratedFilesCache"
 @DEL /F/S/Q "Source\Rhetos\PackagesCache"
 @DEL /F/S/Q "Source\Rhetos\Resources"
+@RD /S/Q "Source\Rhetos\DataMigration"
+@RD /S/Q "Source\Rhetos\DslScripts"
+@RD /S/Q "Source\Rhetos\GeneratedFilesCache"
+@RD /S/Q "Source\Rhetos\PackagesCache"
+@RD /S/Q "Source\Rhetos\Resources"
 
 REM Delete build logs:
 @DEL *.log

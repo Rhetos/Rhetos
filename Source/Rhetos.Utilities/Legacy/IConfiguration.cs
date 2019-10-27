@@ -30,5 +30,6 @@ namespace Rhetos.Utilities
         Lazy<string> GetString(string key, string defaultValue);
         Lazy<int> GetInt(string key, int defaultValue);
         Lazy<bool> GetBool(string key, bool defaultValue);
+        Lazy<T> GetEnum<T>(string key, T defaultValue) where T : struct;
     }
 }

@@ -56,14 +56,14 @@ namespace Rhetos.Compiler
         {
             var stopwatch = Stopwatch.StartNew();
 
+            manifestResources = manifestResources ?? Array.Empty<ManifestResource>();
+
             string dllName = Path.GetFileName(outputAssemblyPath);
 
             // Save source file and it's hash value:
             string sourceCode = // The compiler parameters are included in the source, in order to invalidate the assembly cache when the parameters are changed.
-                string.Concat(assemblySource.RegisteredReferences.Select(reference => $"// Reference: {reference}\r\n"))
-                + (manifestResources != null
-                    ? string.Concat(manifestResources.Select(resource => $"// Resource: \"{resource.Name}\", {resource.Path}\r\n"))
-                    : "")
+                string.Concat(assemblySource.RegisteredReferences.Select(reference => $"// Reference: {PathAndVersion(reference)}\r\n"))
+                + string.Concat(manifestResources.Select(resource => $"// Resource: \"{resource.Name}\", {PathAndVersion(resource.Path)}\r\n"))
                 + $"// DomGeneratorOptions.Debug = \"{_domGeneratorOptions.Debug}\"\r\n\r\n"
                 + assemblySource.GeneratedCode;
 
@@ -110,7 +110,7 @@ namespace Rhetos.Compiler
                 {
                     var pdbPath = Path.ChangeExtension(outputAssemblyPath, ".pdb");
 
-                    var resources = manifestResources?.Select(x => new ResourceDescription(x.Name, () => File.OpenRead(x.Path), x.IsPublic));
+                    var resources = manifestResources.Select(x => new ResourceDescription(x.Name, () => File.OpenRead(x.Path), x.IsPublic));
                     var options = new EmitOptions(debugInformationFormat: DebugInformationFormat.PortablePdb, pdbFilePath: pdbPath);
                     var emitResult = compilation.Emit(dllStream, pdbStream, manifestResources: resources, options: options);
                     _performanceLogger.Write(stopwatch, $"AssemblyGenerator: CSharpCompilation.Create ({dllName}).");
@@ -129,6 +129,15 @@ namespace Rhetos.Compiler
             }
 
             return generatedAssembly;
+        }
+
+        private string PathAndVersion(string path)
+        {
+            var file = new FileInfo(path);
+            if (file.Exists)
+                return $"{path}, {file.LastWriteTime.ToString("o")}";
+            else
+                return path;
         }
 
         private static string GetAssemblyName(string dllName)
@@ -168,7 +177,7 @@ namespace Rhetos.Compiler
             else
                 report.AppendLine(":");
 
-            report.Append(string.Join("\n",
+            report.Append(string.Join("\r\n",
                 errors.Take(_errorReportLimit.Value).Select(error => error.ToString() + ReportContext(error, sourceCode, sourcePath))));
 
             if (errors.Count > _errorReportLimit.Value)

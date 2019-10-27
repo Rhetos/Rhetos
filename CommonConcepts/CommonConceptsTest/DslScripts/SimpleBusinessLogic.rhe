@@ -192,8 +192,15 @@ Module TestAuditable
         ShortString Name;
         Reference Parent TestAuditable.Parent;
         DateTime Started { CreationTime; }
-        DateTime ModifiedParentProperty { ModificationTimeOf TestAuditable.Simple.Parent; }
-        DateTime ModifiedNameOrParentModification { ModificationTimeOf TestAuditable.Simple.Name; ModificationTimeOf TestAuditable.Simple.ModifiedParentProperty; }
+        DateTime ModifiedParentProperty
+        {
+            ModificationTimeOf TestAuditable.Simple.Parent;
+        }
+        DateTime ModifiedNameOrParentModification
+        {
+            ModificationTimeOf TestAuditable.Simple.Name;
+            ModificationTimeOf TestAuditable.Simple.ModifiedParentProperty;
+        }
     }
 
     Entity Simple2

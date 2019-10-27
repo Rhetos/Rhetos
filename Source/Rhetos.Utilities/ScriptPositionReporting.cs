@@ -30,17 +30,11 @@ namespace Rhetos.Utilities
     {
         public static int Line(string text, int position)
         {
-            Contract.Requires(text != null);
-            Contract.Requires(position >= 0 && position < text.Length);
-
             return text.Substring(0, position).Count(c => c == '\n') + 1;
         }
 
         public static int Column(string text, int position)
         {
-            Contract.Requires(text != null);
-            Contract.Requires(position >= 0 && position < text.Length);
-
             if (position == 0)
                 return 1;
             int end = text.LastIndexOf('\n', position - 1);
@@ -66,14 +60,10 @@ namespace Rhetos.Utilities
 
         public static string FollowingText(string text, int position, int maxLength)
         {
-            Contract.Requires(text != null);
-            Contract.Requires(position >= 0 && position < text.Length);
-            Contract.Requires(maxLength >= 0);
-
             if (position >= text.Length)
                 return "";
 
-            text = text.Substring(position);
+            text = text.Substring(position, Math.Min(maxLength * 2, text.Length - position));
             text = string.Join(" ", text.Split(new char[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
             text = text.Limit(maxLength, "...");
             return text;

@@ -18,14 +18,9 @@
 */
 
 using Rhetos.Compiler;
-using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -40,25 +35,28 @@ namespace Rhetos.Dom.DefaultConcepts
             string timeProperty = info.Property.GetSimplePropertyName();
             string modifiedProperty = info.ModifiedProperty.GetSimplePropertyName();
 
-            string snippet =
-            $@"{{ 
-                var now = SqlUtility.GetDatabaseTime(_executionContext.SqlExecuter);
-
-                foreach (var newItem in insertedNew)
-                    if(newItem.{timeProperty} == null)
+            string propertyInitialization =
+                    $@"if(newItem.{timeProperty} == null)
                         newItem.{timeProperty} = now;
+                    ";
+            codeBuilder.InsertCode(propertyInitialization, ModificationTimeOfInfrastructureCodeGenerator.PropertyInitializationTag, info.Dependency_Infrastructure);
 
-                var modifiedItems = updatedOld
-					.Zip(updatedNew, (oldValue, newValue) => new {{ oldValue, newValue }})
-					.Where(modified => modified.oldValue.{modifiedProperty} == null && modified.newValue.{modifiedProperty} != null
-                        || modified.oldValue.{modifiedProperty} != null && !modified.oldValue.{modifiedProperty}.Equals(modified.newValue.{modifiedProperty}));
+            string updateModified =
+                    $@"{{
+                        var modifiedItems = updatedOld
+					        .Zip(updatedNew, (oldValue, newValue) => new {{ oldValue, newValue }})
+					        .Where(modified => modified.oldValue.{modifiedProperty} == null && modified.newValue.{modifiedProperty} != null
+                                || modified.oldValue.{modifiedProperty} != null && !modified.oldValue.{modifiedProperty}.Equals(modified.newValue.{modifiedProperty}));
 
-                foreach (var modified in modifiedItems)
-                    modified.newValue.{timeProperty} = now;
-            }}
-            ";
-
-            codeBuilder.InsertCode(snippet, WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Property.DataStructure);
+                        foreach (var modified in modifiedItems)
+                            if (modified.newValue.{timeProperty} != now)
+                            {{
+                                modified.newValue.{timeProperty} = now;
+                                updateModificationTime = true;
+                            }}
+                    }}
+                    ";
+            codeBuilder.InsertCode(updateModified, ModificationTimeOfInfrastructureCodeGenerator.UpdateModifiedTag, info.Dependency_Infrastructure);
         }
     }
 }

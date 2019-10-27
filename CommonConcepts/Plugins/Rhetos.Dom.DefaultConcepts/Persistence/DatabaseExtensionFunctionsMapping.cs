@@ -39,141 +39,110 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
     <Parameter Name=""b"" Type=""Edm.String"" />
     <DefiningExpression>a = b</DefiningExpression>
   </Function>
-
   <Function Name=""StringNotEqualsCaseInsensitive"" ReturnType=""Edm.Boolean"">
     <Parameter Name=""a"" Type=""Edm.String"" />
     <Parameter Name=""b"" Type=""Edm.String"" />
     <DefiningExpression>a != b</DefiningExpression>
   </Function>
-
   <Function Name=""StringIsLessThen"" ReturnType=""Edm.Boolean"">
     <Parameter Name=""a"" Type=""Edm.String"" />
     <Parameter Name=""b"" Type=""Edm.String"" />
     <DefiningExpression>a &lt; b</DefiningExpression>
   </Function>
-
   <Function Name=""StringIsLessThenOrEqual"" ReturnType=""Edm.Boolean"">
     <Parameter Name=""a"" Type=""Edm.String"" />
     <Parameter Name=""b"" Type=""Edm.String"" />
     <DefiningExpression>a &lt;= b</DefiningExpression>
   </Function>
-
   <Function Name=""StringIsGreaterThen"" ReturnType=""Edm.Boolean"">
     <Parameter Name=""a"" Type=""Edm.String"" />
     <Parameter Name=""b"" Type=""Edm.String"" />
     <DefiningExpression>a &gt; b</DefiningExpression>
   </Function>
-
   <Function Name=""StringIsGreaterThenOrEqual"" ReturnType=""Edm.Boolean"">
     <Parameter Name=""a"" Type=""Edm.String"" />
     <Parameter Name=""b"" Type=""Edm.String"" />
     <DefiningExpression>a &gt;= b</DefiningExpression>
   </Function>
-
   <Function Name=""IntStartsWith"" ReturnType=""Edm.Boolean"">
     <Parameter Name=""a"" Type=""Edm.Int32"" />
     <Parameter Name=""b"" Type=""Edm.String"" />
     <DefiningExpression>CAST(a as Edm.String) LIKE b + '%'</DefiningExpression>
   </Function>
-
   <Function Name=""StringStartsWithCaseInsensitive"" ReturnType=""Edm.Boolean"">
     <Parameter Name=""a"" Type=""Edm.String"" />
     <Parameter Name=""b"" Type=""Edm.String"" />
     <DefiningExpression>a LIKE b + '%'</DefiningExpression>
   </Function>
-
   <Function Name=""StringEndsWithCaseInsensitive"" ReturnType=""Edm.Boolean"">
     <Parameter Name=""a"" Type=""Edm.String"" />
     <Parameter Name=""b"" Type=""Edm.String"" />
     <DefiningExpression>a LIKE '%' + b</DefiningExpression>
   </Function>
-
   <Function Name=""StringContainsCaseInsensitive"" ReturnType=""Edm.Boolean"">
     <Parameter Name=""a"" Type=""Edm.String"" />
     <Parameter Name=""b"" Type=""Edm.String"" />
     <DefiningExpression>a LIKE '%' + b + '%'</DefiningExpression>
   </Function>
-
   <Function Name=""StringLike"" ReturnType=""Edm.Boolean"">
     <Parameter Name=""text"" Type=""Edm.String"" />
     <Parameter Name=""pattern"" Type=""Edm.String"" />
     <DefiningExpression>text LIKE pattern</DefiningExpression>
   </Function>
-
   <Function Name=""IntCastToString"" ReturnType=""Edm.String"">
     <Parameter Name=""a"" Type=""Edm.Int32"" />
     <DefiningExpression>CAST(a as Edm.String)</DefiningExpression>
   </Function>
-
   <Function Name=""GuidIsGreaterThan"" ReturnType=""Edm.Boolean"">
     <Parameter Name=""a"" Type=""Edm.Guid"" />
     <Parameter Name=""b"" Type=""Edm.Guid"" />
     <DefiningExpression>a &gt; b</DefiningExpression>
   </Function>
-
   <Function Name=""GuidIsGreaterThanOrEqual"" ReturnType=""Edm.Boolean"">
     <Parameter Name=""a"" Type=""Edm.Guid"" />
     <Parameter Name=""b"" Type=""Edm.Guid"" />
     <DefiningExpression>a &gt;= b</DefiningExpression>
   </Function>
-
   <Function Name=""GuidIsLessThan"" ReturnType=""Edm.Boolean"">
     <Parameter Name=""a"" Type=""Edm.Guid"" />
     <Parameter Name=""b"" Type=""Edm.Guid"" />
     <DefiningExpression>a &lt; b</DefiningExpression>
   </Function>
-
   <Function Name=""GuidIsLessThanOrEqual"" ReturnType=""Edm.Boolean"">
     <Parameter Name=""a"" Type=""Edm.Guid"" />
     <Parameter Name=""b"" Type=""Edm.Guid"" />
     <DefiningExpression>a &lt;= b</DefiningExpression>
   </Function>
-
 ", EntityFrameworkMapping.ConceptualModelTag);
 
             codeBuilder.InsertCode(
-@"  <Function Name=""" + DatabaseExtensionFunctions.InterceptFullTextSearchFunction + @""" ReturnType=""bit"" >
+$@"  <Function Name=""{DatabaseExtensionFunctions.InterceptFullTextSearchFunction}"" ReturnType=""bit"" >
     <Parameter Name = ""itemId"" Mode = ""In"" Type = ""uniqueidentifier"" />
     <Parameter Name = ""pattern"" Mode = ""In"" Type = ""nvarchar"" />
     <Parameter Name = ""tableName"" Mode = ""In"" Type = ""nvarchar"" />
     <Parameter Name = ""searchColumns"" Mode = ""In"" Type = ""nvarchar"" />
   </Function>
-
-", EntityFrameworkMapping.StorageModelTag);
-
-            codeBuilder.InsertCode(
-@"  <Function Name=""" + DatabaseExtensionFunctions.InterceptFullTextSearchFunction + @""" ReturnType=""bit"" >
+  <Function Name=""{DatabaseExtensionFunctions.InterceptFullTextSearchFunction}"" ReturnType=""bit"" >
     <Parameter Name = ""itemId"" Mode = ""In"" Type = ""uniqueidentifier"" />
     <Parameter Name = ""pattern"" Mode = ""In"" Type = ""nvarchar"" />
     <Parameter Name = ""tableName"" Mode = ""In"" Type = ""nvarchar"" />
     <Parameter Name = ""searchColumns"" Mode = ""In"" Type = ""nvarchar"" />
     <Parameter Name = ""rankTop"" Mode = ""In"" Type = ""int"" />
   </Function>
-
-", EntityFrameworkMapping.StorageModelTag);
-
-            codeBuilder.InsertCode(
-@"  <Function Name=""" + DatabaseExtensionFunctions.InterceptFullTextSearchFunction + @""" ReturnType=""bit"" >
+  <Function Name=""{DatabaseExtensionFunctions.InterceptFullTextSearchFunction}"" ReturnType=""bit"" >
     <Parameter Name = ""itemId"" Mode = ""In"" Type = ""int"" />
     <Parameter Name = ""pattern"" Mode = ""In"" Type = ""nvarchar"" />
     <Parameter Name = ""tableName"" Mode = ""In"" Type = ""nvarchar"" />
     <Parameter Name = ""searchColumns"" Mode = ""In"" Type = ""nvarchar"" />
   </Function>
-
-", EntityFrameworkMapping.StorageModelTag);
-
-            codeBuilder.InsertCode(
-@"  <Function Name=""" + DatabaseExtensionFunctions.InterceptFullTextSearchFunction + @""" ReturnType=""bit"" >
+  <Function Name=""{DatabaseExtensionFunctions.InterceptFullTextSearchFunction}"" ReturnType=""bit"" >
     <Parameter Name = ""itemId"" Mode = ""In"" Type = ""int"" />
     <Parameter Name = ""pattern"" Mode = ""In"" Type = ""nvarchar"" />
     <Parameter Name = ""tableName"" Mode = ""In"" Type = ""nvarchar"" />
     <Parameter Name = ""searchColumns"" Mode = ""In"" Type = ""nvarchar"" />
     <Parameter Name = ""rankTop"" Mode = ""In"" Type = ""int"" />
   </Function>
-
 ", EntityFrameworkMapping.StorageModelTag);
-
-
         }
     }
 }

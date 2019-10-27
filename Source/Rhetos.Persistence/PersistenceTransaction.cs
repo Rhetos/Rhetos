@@ -32,12 +32,12 @@ namespace Rhetos.Persistence
         private readonly ILogger _logger;
         private readonly string _connectionString;
         private readonly IUserInfo _userInfo;
+        private readonly int _persistenceTransactionId;
 
         private DbConnection _connection;
         private DbTransaction _transaction;
         private bool _disposed;
         private bool _discard;
-        private int _persistenceTransactionId;
         static int _counter = 0;
 
         public PersistenceTransaction(ILogProvider logProvider, ConnectionString connectionString, IUserInfo userInfo)
@@ -175,11 +175,11 @@ namespace Rhetos.Persistence
                     _connection.Open();
 
                     if (_userInfo.IsUserRecognized)
-                        using (var sqlCommand = _connection.CreateCommand())
-                        {
-                            sqlCommand.CommandText = MsSqlUtility.SetUserContextInfoQuery(_userInfo);
-                            sqlCommand.ExecuteNonQuery();
-                        }
+                    {
+                        var sqlCommand = MsSqlUtility.SetUserContextInfoQuery(_userInfo);
+                        sqlCommand.Connection = _connection;
+                        sqlCommand.ExecuteNonQuery();
+                    }
 
                     _logger.Trace(() => "Beginning transaction (" + _persistenceTransactionId + ").");
                     _transaction = _connection.BeginTransaction();

@@ -167,20 +167,6 @@ namespace Common
             Database.UseTransaction(persistenceTransaction.Transaction);
         }}
 
-        /// <summary>
-        /// This constructor is used at deployment-time to create slow EntityFrameworkContext instance before the metadata files are generated.
-        /// The instance is used by EntityFrameworkGenerateMetadataFiles to generate the metadata files.
-        /// </summary>
-        protected EntityFrameworkContext(
-            System.Data.Common.DbConnection connection,
-            EntityFrameworkConfiguration entityFrameworkConfiguration, // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
-            Rhetos.Utilities.RhetosAppOptions rhetosAppOptions)
-            : base(connection, true)
-        {{
-            _rhetosAppOptions = rhetosAppOptions;
-            Initialize();
-        }}
-
         private void Initialize()
         {{
             System.Data.Entity.Database.SetInitializer<EntityFrameworkContext>(null); // Prevent EF from creating database objects.

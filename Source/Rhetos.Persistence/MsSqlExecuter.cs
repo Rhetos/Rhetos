@@ -198,7 +198,7 @@ namespace Rhetos.Persistence
                             command.Transaction = _persistenceTransaction.Transaction;
 
                     if (createOwnConnection)
-                        SetContextInfo(command);
+                        SetContextInfo(command.Connection, command.Transaction);
                 }
                 catch (SqlException ex)
                 {
@@ -247,11 +247,13 @@ namespace Rhetos.Persistence
                 sw.Restart(); // _performanceLogger.Write would restart the stopwatch.
         }
 
-        private void SetContextInfo(DbCommand sqlCommand)
+        private void SetContextInfo(DbConnection connection, DbTransaction transaction)
         {
             if (_userInfo.IsUserRecognized)
             {
-                sqlCommand.CommandText = MsSqlUtility.SetUserContextInfoQuery(_userInfo);
+                var sqlCommand = MsSqlUtility.SetUserContextInfoQuery(_userInfo);
+                sqlCommand.Connection = connection;
+                sqlCommand.Transaction = transaction;
                 sqlCommand.ExecuteNonQuery();
             }
         }

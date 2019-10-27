@@ -147,6 +147,10 @@
     <Compile Include="IWritableRepository.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Persistence.Interfaces\Rhetos.Persistence.Interfaces.csproj">
+      <Project>{5E3BBD83-91CB-4FBA-81B2-79A81EC94D70}</Project>
+      <Name>Rhetos.Persistence.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Source\Rhetos.Utilities\Rhetos.Utilities.csproj">
       <Project>{71e63722-57bc-41df-9ff5-57ecc67e4bc1}</Project>
       <Name>Rhetos.Utilities</Name>

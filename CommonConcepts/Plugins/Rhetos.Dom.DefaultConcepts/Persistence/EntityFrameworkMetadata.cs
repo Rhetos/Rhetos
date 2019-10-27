@@ -36,7 +36,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
         private readonly ILogger _performanceLogger;
         private MetadataWorkspace _metadataWorkspace;
         private bool _initialized;
-        private object _initializationLock = new object();
+        private readonly object _initializationLock = new object();
 
         public EntityFrameworkMetadata(ILogProvider logProvider)
         {
@@ -53,22 +53,9 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                         {
                             var sw = Stopwatch.StartNew();
 
-                            var filesFromCode = SegmentsFromCode.Select(segment => segment.FileName)
-                                .Select(fileName => Path.Combine(Paths.GeneratedFolder, fileName))
-                                .ToList();
-
-                            if (File.Exists(filesFromCode.First()))
-                            {
-                                var filesFromGenerator = EntityFrameworkMapping.ModelFiles
-                                    .Select(fileName => Path.Combine(Paths.GeneratedFolder, fileName));
-                                var loadFiles = filesFromGenerator.Concat(filesFromCode)
-                                    .Where(file => File.Exists(file))
-                                    .ToList();
-                                _metadataWorkspace = new MetadataWorkspace(loadFiles, new Assembly[] { });
-                                _performanceLogger.Write(sw, "EntityFrameworkMetadata: Load EDM files.");
-                            }
-                            else
-                                throw new FrameworkException("Entity Framework metadata files are not yet generated.");
+                            var modelFilesPath = EntityFrameworkMapping.ModelFiles.Select(fileName => Path.Combine(Paths.GeneratedFolder, fileName));
+                            _metadataWorkspace = new MetadataWorkspace(modelFilesPath, new Assembly[] { });
+                            _performanceLogger.Write(sw, "EntityFrameworkMetadata: Load EDM files.");
 
                             _initialized = true;
                         }
@@ -76,18 +63,5 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                 return _metadataWorkspace;
             }
         }
-
-        internal class Segment
-        {
-            public string TagName;
-            public string FileName;
-        }
-
-        internal static readonly Segment[] SegmentsFromCode = new Segment[]
-        {
-            new Segment { FileName = "ServerDomEdmFromCode.csdl", TagName = "ConceptualModels" },
-            new Segment { FileName = "ServerDomEdmFromCode.msl", TagName = "Mappings" },
-            new Segment { FileName = "ServerDomEdmFromCode.ssdl", TagName = "StorageModels" },
-        };
     }
 }

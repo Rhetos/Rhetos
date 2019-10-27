@@ -17,17 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ModificationTimeOf")]
-    public class ModificationTimeOfInfo : IValidatedConcept
+    public class ModificationTimeOfInfo : IValidatedConcept, IAlternativeInitializationConcept
     {
         [ConceptKey]
         public DateTimePropertyInfo Property { get; set; }
@@ -35,9 +32,22 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public PropertyInfo ModifiedProperty { get; set; }
 
+        public ModificationTimeOfInfrastructureInfo Dependency_Infrastructure { get; set; }
+
         public void CheckSemantics(IDslModel existingConcepts)
         {
             DslUtility.CheckIfPropertyBelongsToDataStructure(ModifiedProperty, Property.DataStructure, this);
+        }
+
+        public IEnumerable<string> DeclareNonparsableProperties()
+        {
+            return new[] { nameof(Dependency_Infrastructure) };
+        }
+
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            Dependency_Infrastructure = new ModificationTimeOfInfrastructureInfo { DataStructure = Property.DataStructure };
+            createdConcepts = new[] { Dependency_Infrastructure };
         }
     }
 

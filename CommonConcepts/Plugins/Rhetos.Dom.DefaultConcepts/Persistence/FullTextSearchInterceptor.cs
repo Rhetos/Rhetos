@@ -27,6 +27,7 @@ using System.Threading.Tasks;
 using System.Data.Common;
 using System.Data;
 using System.Text.RegularExpressions;
+using Rhetos.Persistence;
 
 namespace Rhetos.Dom.DefaultConcepts.Persistence
 {
@@ -70,7 +71,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
         {
             if (cmd.CommandText.Contains(DatabaseExtensionFunctions.InterceptFullTextSearchFunction))
             {
-                var parseFtsQuery = new Regex(@"\(\[Rhetos\]\.\[" + DatabaseExtensionFunctions.InterceptFullTextSearchFunction + @"\]\((?<itemId>.+?), (?<pattern>.*?), (?<tableName>.*?), (?<searchColumns>.*?)(, (?<rankTop>[^']*?))?\)\) = 1", RegexOptions.Singleline);
+                var parseFtsQuery = new Regex($@"\(\[{EntityFrameworkMapping.StorageModelNamespace}\]\.\[{DatabaseExtensionFunctions.InterceptFullTextSearchFunction}\]\((?<itemId>.+?), (?<pattern>.*?), (?<tableName>.*?), (?<searchColumns>.*?)(, (?<rankTop>[^']*?))?\)\) = 1", RegexOptions.Singleline);
                 // Hack: rankTop above is detected as 'expression without quotes' to help with disambiguation with searchColumns when there are multiple comma-separated columns.
 
                 var ftsQueries = parseFtsQuery.Matches(cmd.CommandText).Cast<Match>();
