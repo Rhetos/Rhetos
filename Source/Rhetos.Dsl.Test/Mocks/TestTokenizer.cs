@@ -17,21 +17,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Rhetos.TestCommon
+namespace Rhetos.Dsl.Test
 {
-    public class NullLogProvider : ILogProvider
+    public class TestTokenizer : Tokenizer
     {
-        public ILogger GetLogger(string eventName)
+        public TestTokenizer(params string[] dslScripts)
+            : base(new MockDslScriptsProvider(dslScripts), new FilesUtility(new ConsoleLogProvider()))
         {
-            return new NullLogger();
         }
-    }
-
-    public class NullLogger : ILogger
-    {
-        public void Write(EventType eventType, Func<string> logMessage) { }
     }
 }
