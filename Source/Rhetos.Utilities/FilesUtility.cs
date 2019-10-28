@@ -182,11 +182,14 @@ namespace Rhetos.Utilities
             }
             else
             {
-                var text = File.ReadAllText(path);
+                var text = File.ReadAllText(path, Encoding.UTF8);
                 //Occurrence of the character � is interpreted as invalid UTF-8
                 var inavlidCharIndex = text.IndexOf((char)65533);
                 if (inavlidCharIndex != -1)
-                    _logger.Info($@"WARNING: File '{path}' contains invalid UTF-8 character at line {ScriptPositionReporting.Line(text, inavlidCharIndex)}. Save text file as UTF-8.");
+                {
+                    _logger.Info($@"WARNING: File '{path}' contains invalid UTF-8 character at line {ScriptPositionReporting.Line(text, inavlidCharIndex)}. Reading with default system encoding instead. Save text file as UTF-8.");
+                    text = File.ReadAllText(path, Encoding.Default);
+                }
                 return text;
             }
         }
