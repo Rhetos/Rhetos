@@ -17,14 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Xml.Serialization;
 
 namespace Rhetos.Deployment
 {
@@ -33,17 +31,16 @@ namespace Rhetos.Deployment
     {
         /// <summary>
         /// Available location options:
-        /// 1. Online nuget gallery ("http://..." or "https://...").
-        /// 2. Local folder or network folder with nuget packages.
+        /// 1. NuGet gallery ("http://..." or "https://...").
+        /// 2. Local folder or network folder with NuGet packages.
         /// 3. Package project's source folder (unpacked, useful for package development).
         /// </summary>
         public PackageSource(string location)
         {
             if (string.IsNullOrEmpty(location))
-                throw new UserException(string.Format(
-                    "Invalid configuration file. Provided location is empty. Check the configuration files {1} and {2}.",
-                    DeploymentConfiguration.SourcesConfigurationFileName,
-                    DeploymentConfiguration.PackagesConfigurationFileName));
+                throw new UserException(
+                    $"Invalid configuration file. Provided location is empty. Check the configuration files" +
+                    $" {DeploymentConfiguration.SourcesConfigurationFileName} and {DeploymentConfiguration.PackagesConfigurationFileName}.");
 
             ProvidedLocation = location;
 
