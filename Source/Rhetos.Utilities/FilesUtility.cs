@@ -163,6 +163,30 @@ namespace Rhetos.Utilities
                 return new string[] { };
         }
 
+        public string ReadAllText(string path)
+        {
+            bool defaultEncodingWhenReadingFiles;
+            string value = ConfigUtility.GetAppSetting("Rhetos.Legacy.DefaultEncodingWhenReadingFiles");
+            if (!string.IsNullOrEmpty(value))
+                defaultEncodingWhenReadingFiles = bool.Parse(value);
+            else
+                defaultEncodingWhenReadingFiles = true;
+
+            if (defaultEncodingWhenReadingFiles)
+            {
+                return File.ReadAllText(path, Encoding.Default);
+            }
+            else
+            {
+                var text = File.ReadAllText(path);
+                //Occurrence of the character � is interpreted as invalid UTF-8
+                var inavlidCharIndex = text.IndexOf((char)65533);
+                if (inavlidCharIndex != -1)
+                    _logger.Info($@"WARNING: File '{path}' contains invalid UTF-8 character at line {ScriptPositionReporting.Line(text, inavlidCharIndex)}. Save text file as UTF-8.");
+                return text;
+            }
+        }
+
         public static string RelativeToAbsolutePath(string baseFolder, string path)
         {
             return Path.GetFullPath(Path.Combine(baseFolder, path));

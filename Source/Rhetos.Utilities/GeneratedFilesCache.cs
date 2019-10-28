@@ -100,7 +100,7 @@ namespace Rhetos.Utilities
         public byte[] LoadHash(string sampleSourceFile)
         {
             string hashFile = Path.GetFullPath(Path.ChangeExtension(sampleSourceFile, ".hash"));
-            return CsUtility.HexToByteArray(File.ReadAllText(hashFile, Encoding.Default));
+            return CsUtility.HexToByteArray(File.ReadAllText(hashFile, Encoding.ASCII));
         }
 
         /// <summary>

@@ -28,13 +28,15 @@ namespace Rhetos.Dsl
 {
     public class Tokenizer
     {
-        IDslScriptsProvider _dslScriptsProvider;
+        private readonly IDslScriptsProvider _dslScriptsProvider;
+        private readonly FilesUtility _filesUtility;
         List<Token> _tokens = null;
         object _tokensLock = new object();
 
-        public Tokenizer(IDslScriptsProvider dslScriptsProvider)
+        public Tokenizer(IDslScriptsProvider dslScriptsProvider, FilesUtility filesUtility)
         {
             _dslScriptsProvider = dslScriptsProvider;
+            _filesUtility = filesUtility;
         }
 
         public List<Token> GetTokens()
@@ -61,7 +63,7 @@ namespace Rhetos.Dsl
                         break;
 
                     int startPosition = scriptPosition;
-                    Token t = TokenizerInternals.GetNextToken_ValueType(dslScript, ref scriptPosition);
+                    Token t = TokenizerInternals.GetNextToken_ValueType(dslScript, ref scriptPosition, _filesUtility.ReadAllText);
                     t.DslScript = dslScript;
                     t.PositionInDslScript = startPosition;
 
@@ -84,7 +86,7 @@ namespace Rhetos.Dsl
                 position++;
         }
 
-        public static Token GetNextToken_ValueType(DslScript dslScript, ref int position)
+        public static Token GetNextToken_ValueType(DslScript dslScript, ref int position, Func<string, string> readAllTextfromFile)
         {
             string script = dslScript.Script;
             if (position < script.Length && Whitespaces.Contains(script[position]))
@@ -105,7 +107,7 @@ namespace Rhetos.Dsl
             else if (IsExternalTextStart(script[position]))
                 return new Token
                 {
-                    Value = ReadExternalText(dslScript, ref position),
+                    Value = ReadExternalText(dslScript, ref position, readAllTextfromFile),
                     Type = TokenType.Text
                 };
             else if (IsSingleLineCommentStart(script, position))
@@ -198,7 +200,7 @@ namespace Rhetos.Dsl
 
         private static HashSet<char> invalidPathChars = new HashSet<char>(Path.GetInvalidPathChars());
 
-        private static string ReadExternalText(DslScript dslScript, ref int end)
+        private static string ReadExternalText(DslScript dslScript, ref int end, Func<string, string> readAllTextfromFile)
         {
             string script = dslScript.Script;
             int begin = end;
@@ -217,10 +219,10 @@ namespace Rhetos.Dsl
 
             string basicFilePath = script.Substring(begin + 1, end - begin - 2);
             string dslScriptFolder = Path.GetDirectoryName(dslScript.Path);
-            return LoadFile(Path.Combine(dslScriptFolder, basicFilePath), dslScript, begin);
+            return LoadFile(Path.Combine(dslScriptFolder, basicFilePath), dslScript, begin, readAllTextfromFile);
         }
 
-        private static string LoadFile(string basicFilePath, DslScript dslScript, int begin)
+        private static string LoadFile(string basicFilePath, DslScript dslScript, int begin, Func<string, string> readAllTextfromFile)
         {
             var filePaths = new List<string> { basicFilePath };
 
@@ -239,7 +241,7 @@ namespace Rhetos.Dsl
 
             foreach (var filePath in filePaths)
                 if (File.Exists(filePath))
-                    return File.ReadAllText(filePath, Encoding.Default);
+                    return readAllTextfromFile(filePath);
 
             throw new DslSyntaxException("Cannot find the extension file referenced in DSL script. " + dslScript.ReportPosition(begin) + "\r\nLooking for files:\r\n" + string.Join("\r\n", filePaths));
         }

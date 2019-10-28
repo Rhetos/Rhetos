@@ -33,6 +33,7 @@ namespace Rhetos.Configuration.Autofac
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<XmlUtility>().SingleInstance();
+            builder.RegisterType<FilesUtility>().SingleInstance();
             builder.RegisterType<Rhetos.Utilities.Configuration>().As<Rhetos.Utilities.IConfiguration>().SingleInstance();
             Plugins.FindAndRegisterPlugins<ILocalizer>(builder);
             builder.RegisterType<NoLocalizer>().As<ILocalizer>().SingleInstance().PreserveExistingDefaults();

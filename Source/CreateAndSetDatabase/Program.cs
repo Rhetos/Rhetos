@@ -61,7 +61,7 @@ namespace CreateAndSetDatabase
         {
             var replaceRegex = new Regex(regex, RegexOptions.Multiline);
             var encoding = GetFileEncoding(fileName);
-            string fileText = File.ReadAllText(fileName, Encoding.Default);
+            string fileText = File.ReadAllText(fileName, Encoding.UTF8);
 
             var match = replaceRegex.Match(fileText);
             if (match.Success)
