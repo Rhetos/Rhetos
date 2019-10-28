@@ -29,10 +29,21 @@ namespace Rhetos.Utilities
     public class FilesUtility
     {
         private readonly ILogger _logger;
+        private readonly Lazy<bool> _defaultEncodingWhenReadingFiles;
 
         public FilesUtility(ILogProvider logProvider)
         {
             _logger = logProvider.GetLogger(GetType().Name);
+            _defaultEncodingWhenReadingFiles = new Lazy<bool>(GetDefaultEncodingOption);
+        }
+
+        private bool GetDefaultEncodingOption()
+        {
+            string value = ConfigUtility.GetAppSetting("Rhetos.Legacy.DefaultEncodingWhenReadingFiles");
+            if (!string.IsNullOrEmpty(value))
+                return bool.Parse(value);
+            else
+                return true;
         }
 
         private void Retry(Action action, Func<string> actionName)
@@ -165,14 +176,7 @@ namespace Rhetos.Utilities
 
         public string ReadAllText(string path)
         {
-            bool defaultEncodingWhenReadingFiles;
-            string value = ConfigUtility.GetAppSetting("Rhetos.Legacy.DefaultEncodingWhenReadingFiles");
-            if (!string.IsNullOrEmpty(value))
-                defaultEncodingWhenReadingFiles = bool.Parse(value);
-            else
-                defaultEncodingWhenReadingFiles = true;
-
-            if (defaultEncodingWhenReadingFiles)
+            if (_defaultEncodingWhenReadingFiles.Value)
             {
                 return File.ReadAllText(path, Encoding.Default);
             }
