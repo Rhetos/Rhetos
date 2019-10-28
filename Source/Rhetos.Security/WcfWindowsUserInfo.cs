@@ -69,7 +69,10 @@ namespace Rhetos.Security
         private void CheckIfUserRecognized()
         {
             if (!IsUserRecognized)
-                throw new ClientException("User is not authenticated.");
+                throw new ClientException("User is not authenticated.")
+                {
+                    HttpStatusCode = HttpStatusCode.Unauthorized
+                };
         }
 
         private bool InitIsUserRecognized()

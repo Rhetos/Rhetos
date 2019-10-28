@@ -40,9 +40,9 @@ namespace CommonConcepts.Test
         private static readonly string RolePrefix = "TestCaching";
         private static readonly string Role1Name = RolePrefix + Guid.NewGuid();
         private static readonly string Role2Name = RolePrefix + Guid.NewGuid();
-        private static readonly Claim Claim1 = new Claim("Common.Principal", "Read");
-        private static readonly Claim Claim2 = new Claim("Common.Principal", "New");
-        private static readonly Claim Claim3 = new Claim("Common.Principal", "Remove");
+        private static readonly Claim Claim1 = new Claim("Common.Log", "Read");
+        private static readonly Claim Claim2 = new Claim("Common.Log", "New");
+        private static readonly Claim Claim3 = new Claim("Common.Log", "Remove");
 
         [TestInitialize]
         public void InsertTestPermissions()
@@ -221,45 +221,21 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertOrUpdateSystemRole()
         {
-            using (var container = new RhetosTestContainer(commitChanges: false))
-            {
-                var log = new List<string>();
-                container.AddLogMonitor(log);
-                container.AddFakeUser(User1Name);
-
-                var context = container.Resolve<Common.ExecutionContext>();
-                var authorizationManager = container.Resolve<IAuthorizationManager>();
-
-                if (!context.Repository.Common.Role.Query().Any(r => r.Name == SystemRole.AllPrincipals.ToString()))
-                    context.Repository.Common.Role.Insert(new Common.Role { Name = SystemRole.AllPrincipals.ToString() });
-
-                AuthorizationDataCache.ClearCache();
-
-                // Get user authorization:
-
-                TestUtility.Dump(authorizationManager.GetAuthorizations(new[] { Claim1 }));
-
-                Assert.AreEqual(
-                    "Claims, Principal, PrincipalPermissions, PrincipalRoles, RolePermissions, RolePermissions, RolePermissions, RoleRoles, RoleRoles, RoleRoles, Roles, SystemRoles",
-                    ReportCacheMisses(log, "Initial authorization"), "Initial permission should yield cache misses. See test output log for details.");
-
-                // Modify the permissions. Part of the cache might be invalidated:
-
-                Console.WriteLine("== Begin test change ==");
-                var systemRole = context.Repository.Common.Role.Load(r => r.Name == SystemRole.AllPrincipals.ToString()).Single();
-                Console.WriteLine($"Updating system role {systemRole.ID}.");
-                systemRole.Name += "x";
-                context.Repository.Common.Role.Update(systemRole);
-                Console.WriteLine("== End test change ==");
-
-                // Get user authorization, with partially invalidated cache:
-
-                TestUtility.Dump(authorizationManager.GetAuthorizations(new[] { Claim1 }));
-
-                Assert.AreEqual(
-                    "Roles, SystemRoles",
-                    ReportCacheMisses(log, "Authorization after cache invalidation"));
-            }
+            Assert.AreEqual("Roles, SystemRoles",
+                TestPermissionsCachingOnChange(
+                    context =>
+                    {
+                        var systemRole = context.Repository.Common.Role.Load(r => r.Name == SystemRole.AllPrincipals.ToString()).Single();
+                        Console.WriteLine($"Updating system role {systemRole.ID}.");
+                        systemRole.Name += "x";
+                        context.Repository.Common.Role.Update(systemRole);
+                    },
+                    new[] { true, true, false },
+                    context =>
+                    {
+                        if (!context.Repository.Common.Role.Query().Any(r => r.Name == SystemRole.AllPrincipals.ToString()))
+                            context.Repository.Common.Role.Insert(new Common.Role { Name = SystemRole.AllPrincipals.ToString() });
+                    }));
         }
 
         [TestMethod]
@@ -307,7 +283,7 @@ namespace CommonConcepts.Test
                     new[] { true, false, false }));
         }
 
-        public string TestPermissionsCachingOnChange(Action<Common.ExecutionContext> change, bool[] expectedPermissionsAfterChange)
+        public string TestPermissionsCachingOnChange(Action<Common.ExecutionContext> change, bool[] expectedPermissionsAfterChange, Action<Common.ExecutionContext> init = null)
         {
             using (var container = new RhetosTestContainer(commitChanges: false))
             {
@@ -318,14 +294,30 @@ namespace CommonConcepts.Test
                 var context = container.Resolve<Common.ExecutionContext>();
                 var authorizationManager = container.Resolve<IAuthorizationManager>();
 
+                Console.WriteLine("== Begin test initialization ==");
+                init?.Invoke(context);
+                Console.WriteLine("== End test initialization ==");
+
                 AuthorizationDataCache.ClearCache();
 
                 // Get user authorization:
 
-                Assert.AreEqual(TestUtility.Dump(new[] { true, true, false }),
+                Assert.AreEqual(
+                    TestUtility.Dump(new[] { true, true, false }),
                     TestUtility.Dump(authorizationManager.GetAuthorizations(new[] { Claim1, Claim2, Claim3 })));
 
-                Assert.AreEqual("Claims, Principal, PrincipalPermissions, PrincipalRoles, RolePermissions, RolePermissions, RoleRoles, RoleRoles, Roles, SystemRoles",
+                var systemRoles = Enum.GetNames(typeof(SystemRole));
+                var systemRolesCount = context.Repository.Common.Role.Query(r => systemRoles.Contains(r.Name)).Count();
+
+                var loadingFullAuthorizationData = new List<string> { "Claims", "Principal", "PrincipalPermissions", "PrincipalRoles", "RolePermissions", "RolePermissions", "RoleRoles", "RoleRoles", "Roles", "SystemRoles" };
+                for (int i = 0; i < systemRolesCount; i++)
+                {
+                    loadingFullAuthorizationData.Add("RolePermissions");
+                    loadingFullAuthorizationData.Add("RoleRoles");
+                }
+
+                Assert.AreEqual(
+                    TestUtility.DumpSorted(loadingFullAuthorizationData),
                     ReportCacheMisses(log, "Initial authorization"), "Initial permission should yield cache misses. See test output log for details.");
 
                 // Modify the permissions. Part of the cache might be invalidated:
@@ -336,7 +328,8 @@ namespace CommonConcepts.Test
 
                 // Get user authorization, with partially invalidated cache:
 
-                Assert.AreEqual(TestUtility.Dump(expectedPermissionsAfterChange),
+                Assert.AreEqual(
+                    TestUtility.Dump(expectedPermissionsAfterChange),
                     TestUtility.Dump(authorizationManager.GetAuthorizations(new[] { Claim1, Claim2, Claim3 })));
 
                 return ReportCacheMisses(log, "Authorization after cache invalidation");

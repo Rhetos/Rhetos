@@ -81,8 +81,7 @@ namespace Rhetos.Processing
 
         public ProcessingResult Execute(IList<ICommandInfo> commands)
         {
-            _requestLogger.Trace(() => string.Format("User: {0}, Commands({1}): {2}.", _userInfo.UserName, commands.Count,
-                string.Join(", ", commands.Select(c => c.ToString()))));
+            _requestLogger.Trace(() => $"User: {ReportUserNameOrAnonymous(_userInfo)}, Commands({commands.Count}): {string.Join(", ", commands.Select(c => c.ToString()))}.");
             var executionId = Guid.NewGuid();
             _commandsLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionCommandsLogEntry { ExecutionId = executionId, UserInfo = _userInfo.Report(), Commands = commands }));
 
@@ -182,9 +181,8 @@ namespace Rhetos.Processing
 
                     ex = _sqlUtility.InterpretSqlException(ex) ?? ex;
 
-                    if (ex is UserException)
+                    if (ex is UserException userException)
                     {
-                        var userException = (UserException)ex;
                         userMessage = _localizer[userException.Message, userException.MessageParameters]; // TODO: Remove this code after cleaning the double layer of exceptions in the server response call stack.
                         systemMessage = userException.SystemMessage;
                     }
@@ -234,5 +232,7 @@ namespace Rhetos.Processing
 
             return result;
         }
+
+        private static string ReportUserNameOrAnonymous(IUserInfo userInfo) => userInfo.IsUserRecognized ? userInfo.UserName : "<anonymous>";
     }
 }

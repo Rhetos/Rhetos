@@ -51,8 +51,7 @@ namespace CommonConcepts.Test
 
                 // Insert test user and roles:
 
-                var testPrincipal = new Common.Principal { Name = testUserName };
-                repository.Common.Principal.Insert(testPrincipal);
+                var testPrincipal = context.InsertPrincipalOrReadId(testUserName);
 
                 var roles = context.Repository.Common.Role;
 
@@ -67,7 +66,7 @@ namespace CommonConcepts.Test
                 // Test automatically assigned system roles:
 
                 var authorizationProvider = (CommonAuthorizationProvider)container.Resolve<IAuthorizationProvider>();
-                Func<Common.Principal, string[]> getUserRolesNames = principal =>
+                Func<IPrincipal, string[]> getUserRolesNames = principal =>
                     authorizationProvider.GetUsersRoles(principal).Select(id => repository.Common.Role.Load(new[] { id }).Single().Name).ToArray();
 
                 Assert.AreEqual(

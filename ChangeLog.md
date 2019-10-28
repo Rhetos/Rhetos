@@ -37,6 +37,34 @@
      the related C# method from `"Rhetos"` to `EntityFrameworkMapping.StorageModelNamespace`.
      Note that this should be done only for *StorageModelTag* functions, not *ConceptualModelTag*.
 
+### New features
+
+* AllPrincipals role.
+  * Every authenticated user (Common.Principal) is automatically assumed to has a role named "AllPrincipals",
+    if this role exists in Common.Role.
+    To specify [basic permissions](https://github.com/Rhetos/Rhetos/wiki/Basic-permissions)
+    that all users automatically have, create the role named "AllPrincipals"
+    and assign the role permission (Common.RolePermission)
+    or inherit permissions from other roles (Common.RoleInheritsRole).
+    Each principal will have a role AllPrincipals even if there are no records in Common.PrincipalHasRole.
+* Unauthenticated user access and Anonymous role.
+  * Every authenticated and unauthenticated user is automatically assumed to has a role named "Anonymous",
+    if this role exists in Common.Role.
+    Unauthenticated user permissions can be specified in the Common.Role with name "Anonymous".
+  * Note that IIS does not support Anonymous and Windows authentication on the same web application.
+  * To enable anonymous access make sure that *Web.config* does not contain `<deny users="?" />`.
+    If you don't need anonymous access, keep this line for improved security and performance.
+  * Troubleshooting: If you have added Anonymous permissions, but still getting `HTTP Error 401.0 - Unauthorized`,
+    review the stack trace in RhetosServer.log to make sure that your authentication plugin (IUserInfo implementation)
+    handles unauthenticated users correctly.
+  * Disclaimer: Anonymous web methods should be avoided for business features, and manually configured in web.config
+    by `location / system.web / authorization / allow` elements.
+    This is important to reduce security impact of any mistake in configuration or implementation of business application's permissions.
+    If you need a public Web API to expose a subset of the application's business features or data,
+    the best practice is to create a stand-alone web service with custom developed API.
+    This will allow for easier maintenance of backward compatible API and versioning with multiple actively supported versions,
+    while making internal changes in your application's data structure and other features.
+
 ### Internal improvements
 
 * C# 6.0 and C# 7.0 features are now available in DSL code snippets (issue #52).

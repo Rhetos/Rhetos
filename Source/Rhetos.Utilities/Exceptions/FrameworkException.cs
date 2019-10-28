@@ -26,7 +26,9 @@ using System.Text;
 namespace Rhetos
 {
     /// <summary>
-    /// An internal error of the Rhetos platform occurred. If it is encountered a bug report should be submitted to Rhetos platform development team.
+    /// An internal error of the Rhetos platform occurred.
+    /// If it is encountered a bug report should be submitted to Rhetos platform development team.
+    /// Web response HTTP status code on this exception is 500.
     /// </summary>
     [global::System.Serializable]
     public class FrameworkException : RhetosException

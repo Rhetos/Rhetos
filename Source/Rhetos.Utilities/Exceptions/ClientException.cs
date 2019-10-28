@@ -18,14 +18,16 @@
 */
 
 using System;
+using System.Net;
 
 namespace Rhetos
 {
     /// <summary>
     /// Exception denotes a request or data format error occurred in communication between client and server. 
     /// Client is not adhering to server API.
+    /// Web response HTTP status code on this exception is 400 by default, but can be configured by <see cref="HttpStatusCode"/>.
     /// </summary>
-    [global::System.Serializable]
+    [Serializable]
     public class ClientException : RhetosException
     {
         public ClientException() { }
@@ -35,5 +37,7 @@ namespace Rhetos
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context)
             : base(info, context) { }
+
+        public HttpStatusCode HttpStatusCode { get; set; } = HttpStatusCode.BadRequest;
     }
 }

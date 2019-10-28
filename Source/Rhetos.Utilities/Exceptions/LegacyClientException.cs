@@ -18,14 +18,13 @@
 */
 
 using System;
-using System.Net;
 
 namespace Rhetos
 {
     /// <summary>
     /// Legacy exception allows backward compatible JSON response format (a string instead of an object).
     /// </summary>
-    [global::System.Serializable]
+    [Serializable]
     [Obsolete("Use ClientException instead.")]
     public class LegacyClientException : ClientException
     {
@@ -36,8 +35,6 @@ namespace Rhetos
             System.Runtime.Serialization.SerializationInfo info,
             System.Runtime.Serialization.StreamingContext context)
                 : base(info, context) { }
-
-        public HttpStatusCode HttpStatusCode { get; set; } = HttpStatusCode.BadRequest;
 
         public bool Severe { get; set; } = true;
     }
