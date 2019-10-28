@@ -252,7 +252,7 @@ namespace Rhetos.CommonConcepts.Test
         [TestMethod]
         public void SimpleTest_Reader()
         {
-            var log = SimpleTest(useCache: false, 0);
+            var log = SimpleTest(false, 0);
             Assert.AreEqual("", ReportCacheMisses(log));
         }
 
@@ -263,7 +263,7 @@ namespace Rhetos.CommonConcepts.Test
 
             AuthorizationDataCache.ClearCache();
 
-            var log1 = SimpleTest(useCache: true, expiration);
+            var log1 = SimpleTest(true, expiration);
             Assert.AreEqual(@"Principal.pr0.
 PrincipalRoles.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 RoleRoles.33395e07-8d14-4db9-bd79-c0c3e8407feb.
@@ -281,7 +281,7 @@ RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMisses(log1))
 
             Console.WriteLine("Reusing cache");
 
-            var log2 = SimpleTest(useCache: true, expiration);
+            var log2 = SimpleTest(true, expiration);
             Assert.AreEqual("", ReportCacheMisses(log2));
         }
 
@@ -353,7 +353,7 @@ RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMisses(log1))
         [TestMethod]
         public void SimilarClaimsTestWithReader()
         {
-            var log = SimilarClaimsTest(useCache: false, 0);
+            var log = SimilarClaimsTest(false, 0);
             Assert.AreEqual("", ReportCacheMisses(log));
         }
 
@@ -364,7 +364,7 @@ RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMisses(log1))
 
             AuthorizationDataCache.ClearCache();
 
-            var log1 = SimilarClaimsTest(useCache: true, expiration);
+            var log1 = SimilarClaimsTest(true, expiration);
             Assert.AreEqual(@"Principal.pr0.
 PrincipalRoles.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 RoleRoles.33395e07-8d14-4db9-bd79-c0c3e8407feb.
@@ -380,7 +380,7 @@ PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMiss
 
             Console.WriteLine("Reusing cache");
 
-            var log2 = SimilarClaimsTest(useCache: true, expiration);
+            var log2 = SimilarClaimsTest(true, expiration);
             Assert.AreEqual("", ReportCacheMisses(log2));
         }
 
@@ -528,7 +528,7 @@ Roles.", ReportCacheMisses(log2));
             };
 
             var authorizationContext = NewAuthorizationContext(principals, roles, principalRoles, roleRoles, commonClaims, rolePermissions, principalPermissions,
-                useCache: true, authorizationCacheExpirationSeconds);
+                true, authorizationCacheExpirationSeconds);
 
             var cache = authorizationContext.AuthorizationDataCache;
             cache.ClearCachePrincipals(new[] { principals[0] });

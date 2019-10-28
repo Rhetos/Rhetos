@@ -68,7 +68,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration
             return (T)optionsInstance;
         }
 
-        public T GetValue<T>(string configurationKey, T defaultValue = default, string configurationPath = "")
+        public T GetValue<T>(string configurationKey, T defaultValue = default(T), string configurationPath = "")
         {
             if (!TryGetConfigurationValue(configurationKey, out var value, configurationPath))
                 return defaultValue;
