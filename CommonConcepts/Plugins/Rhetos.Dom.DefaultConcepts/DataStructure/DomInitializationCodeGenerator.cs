@@ -410,9 +410,12 @@ namespace Common
                 {{
                     Guid id = idBuffer.Single();
                     itemBuffer = Query().Where(item => item.ID == id).GenericToSimple<TEntity>().ToList();
+                }}else if(!idBuffer.Any())
+                {{
+                    itemBuffer = new List<TEntity>();  
                 }}
                 else
-                    itemBuffer = Query().Where(item => idBuffer.Contains(item.ID)).GenericToSimple<TEntity>().ToList();
+                    itemBuffer = Query().WhereContains(idBuffer.ToList(), item => item.ID).GenericToSimple<TEntity>().ToList();
                 result.AddRange(itemBuffer);
             }}
             return result.ToArray();
@@ -443,6 +446,10 @@ namespace Common
             {{
                 Guid id = ids.Single();
                 return items.Where(item => item.ID == id);
+            }}
+            else if (ids.Count() < _domRepository.Common.FilterId.CreateQueryableFilterIdsMinimumCount)
+            {{
+                return items.WhereContains(ids.ToList(), item => item.ID);
             }}
             else
             {{

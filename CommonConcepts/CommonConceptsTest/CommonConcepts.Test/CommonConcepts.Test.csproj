@@ -167,6 +167,7 @@
     <Compile Include="DataMigrationTest.cs" />
     <Compile Include="HardcodedEntityTest.cs" />
     <Compile Include="Helpers\PrincipalHelper.cs" />
+    <Compile Include="EFOptimizationTest.cs" />
     <Compile Include="ReferenceTest.cs" />
     <Compile Include="FullTextSearchTest.cs" />
     <Compile Include="Helpers\RhetosTestContainerExtensions.cs" />
