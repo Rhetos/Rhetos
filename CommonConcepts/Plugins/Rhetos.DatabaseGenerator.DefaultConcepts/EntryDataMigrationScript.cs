@@ -32,7 +32,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         public void GenerateCode(EntryInfo concept, IDataMigrationScriptBuilder codeBuilder)
         {
             string insertSnippet = $@"
-INSERT INTO #{concept.HardcodedEntity.Module.Name}_{concept.HardcodedEntity.Name} (ID) VALUES ('{concept.GetIdentifier()}');";
+INSERT INTO #entries (ID) VALUES ('{concept.GetIdentifier()}');";
             codeBuilder.InsertCode(insertSnippet, HardcodedEntityDataMigrationScript.InsertValuesTag, concept.HardcodedEntity);
 
             codeBuilder.InsertCode($@"
