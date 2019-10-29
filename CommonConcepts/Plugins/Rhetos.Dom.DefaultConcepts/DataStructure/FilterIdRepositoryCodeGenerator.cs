@@ -44,9 +44,7 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         const string snippet =
-        @"public int CreateQueryableFilterIdsMinimumCount { get { return 200; } }
-
-        /// <summary>
+        @"/// <summary>
         /// Depending on the ids count, this method will return the list of IDs, or insert the ids to the database and return an SQL query that selects the ids.
         /// EF 6.1.3 has performance issues on Contains function with large lists. It seems to have O(n^2) time complexity.
         /// </summary>
@@ -54,7 +52,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             Rhetos.Utilities.CsUtility.Materialize(ref ids);
 
-            if (ids.Count() < CreateQueryableFilterIdsMinimumCount)
+            if (ids.Count() < 200)
                 return ids;
 
             var handle = Guid.NewGuid();

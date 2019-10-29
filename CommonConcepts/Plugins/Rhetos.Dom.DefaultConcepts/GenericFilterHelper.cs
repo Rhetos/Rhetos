@@ -310,7 +310,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
                             expression = Expression.Call(containsMethod, constant, convertedMemberAccess);
 
-                            if (propertyBasicType == typeof(Guid) && typeof(IEnumerable<Guid>).IsAssignableFrom(filter.Value.GetType()))
+                            if (propertyBasicType == typeof(Guid) && filter.Value is IEnumerable<Guid>)
                                 expression = EFExpression.OptimizeContains(expression);
 
                             if (filter.Operation.Equals("notin", StringComparison.OrdinalIgnoreCase))

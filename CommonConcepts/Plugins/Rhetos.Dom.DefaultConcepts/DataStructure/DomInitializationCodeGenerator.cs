@@ -406,11 +406,12 @@ namespace Common
             {{
                 Guid[] idBuffer = identifiers.Skip(i * BufferSize).Take(BufferSize).ToArray();
                 List<TEntity> itemBuffer;
-                if (idBuffer.Count() == 1) // EF 6.1.3. does not use parametrized SQL query for Contains() function. The equality comparer is used instead, to reuse cached execution plans.
+                if (idBuffer.Length == 1) // EF 6.1.3. does not use parametrized SQL query for Contains() function. The equality comparer is used instead, to reuse cached execution plans.
                 {{
                     Guid id = idBuffer.Single();
                     itemBuffer = Query().Where(item => item.ID == id).GenericToSimple<TEntity>().ToList();
-                }}else if(!idBuffer.Any())
+                }}
+                else if(!idBuffer.Any())
                 {{
                     itemBuffer = new List<TEntity>();  
                 }}
@@ -447,15 +448,15 @@ namespace Common
                 Guid id = ids.Single();
                 return items.Where(item => item.ID == id);
             }}
-            else if (ids.Count() < _domRepository.Common.FilterId.CreateQueryableFilterIdsMinimumCount)
-            {{
-                return items.WhereContains(ids.ToList(), item => item.ID);
-            }}
             else
             {{
                 // Depending on the ids count, this method will return the list of IDs, or insert the ids to the database and return an SQL query that selects the ids.
                 var idsQuery = _domRepository.Common.FilterId.CreateQueryableFilterIds(ids);
-                return items.Where(item => idsQuery.Contains(item.ID));
+
+                if (idsQuery is IList<Guid>)
+                    return items.WhereContains(idsQuery.ToList(), item => item.ID);
+                else
+                    return items.Where(item => idsQuery.Contains(item.ID));
             }}
         }}
     }}

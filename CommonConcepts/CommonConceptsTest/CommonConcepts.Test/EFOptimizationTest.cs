@@ -25,6 +25,7 @@ using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
 using Rhetos.Dom.DefaultConcepts;
 using System.Linq.Expressions;
+using Rhetos.TestCommon;
 
 namespace CommonConcepts.Test
 {
@@ -74,6 +75,7 @@ namespace CommonConcepts.Test
 
                 var containsExpression = EFExpression.OptimizeContains<Common.Queryable.Test12_Entity3>(x => listIds.Contains(x.Entity2.Entity1ID.Value));
                 var whereContainsSql = repository.Test12.Entity3.Query().Where(containsExpression).ToString();
+                Console.WriteLine(whereContainsSql);
                 Assert.IsFalse(whereContainsSql.ToLower().Contains(id1.ToString().ToLower()));
                 Assert.AreEqual(id3, repository.Test12.Entity3.Query().Where(containsExpression).Single().ID);
             }
@@ -127,6 +129,54 @@ namespace CommonConcepts.Test
 
                 var record1 = repository.Test12.Entity1.Query().Where(EFExpression.OptimizeContains<Common.Queryable.Test12_Entity1>(x => listWithNullValue.Contains(x.GuidProperty))).Single();
                 Assert.AreEqual(id1, record1.ID);
+            }
+        }
+
+        [TestMethod]
+        public void OptimizeContainsNullableWithMixedNullValueTest()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var id1 = Guid.NewGuid();
+                var id2 = Guid.NewGuid();
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                    {
+                        $@"INSERT INTO Test12.Entity1 (ID) SELECT '{id1}';",
+                        $@"INSERT INTO Test12.Entity1 (ID) SELECT '{id2}';",
+                    });
+                Console.WriteLine($"ID1: {id1}");
+                Console.WriteLine($"ID2: {id2}");
+
+                var listWithNullValue = new List<Guid?> { null, id1 };
+
+                {
+                    var basicQuery = repository.Test12.Entity1.Query().Where(x => listWithNullValue.Contains(x.GuidProperty));
+                    var optimizedQuery = repository.Test12.Entity1.Query().Where(EFExpression.OptimizeContains<Common.Queryable.Test12_Entity1>(x => listWithNullValue.Contains(x.GuidProperty)));
+                    Console.WriteLine(basicQuery.ToString());
+                    Console.WriteLine(optimizedQuery.ToString());
+
+                    Assert.AreEqual(
+                        TestUtility.DumpSorted(basicQuery, item => item.ID),
+                        TestUtility.DumpSorted(optimizedQuery, item => item.ID));
+                    Assert.AreEqual(
+                        TestUtility.DumpSorted(basicQuery.ToSimple().ToList(), item => item.ID),
+                        TestUtility.DumpSorted(optimizedQuery.ToSimple().ToList(), item => item.ID));
+                }
+                {
+                    var basicQuery = repository.Test12.Entity1.Query().Where(x => listWithNullValue.Contains(x.ID));
+                    var optimizedQuery = repository.Test12.Entity1.Query().Where(EFExpression.OptimizeContains<Common.Queryable.Test12_Entity1>(x => listWithNullValue.Contains(x.ID)));
+                    Console.WriteLine(basicQuery.ToString());
+                    Console.WriteLine(optimizedQuery.ToString());
+
+                    Assert.AreEqual(
+                        TestUtility.DumpSorted(basicQuery, item => item.ID),
+                        TestUtility.DumpSorted(optimizedQuery, item => item.ID));
+                    Assert.AreEqual(
+                        TestUtility.DumpSorted(basicQuery.ToSimple().ToList(), item => item.ID),
+                        TestUtility.DumpSorted(optimizedQuery.ToSimple().ToList(), item => item.ID));
+                }
             }
         }
 
