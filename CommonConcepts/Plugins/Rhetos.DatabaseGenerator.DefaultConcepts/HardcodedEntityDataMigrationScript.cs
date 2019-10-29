@@ -41,12 +41,12 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 EXEC Rhetos.DataMigrationUse '{concept.Module.Name}', '{concept.Name}', 'ID', 'uniqueidentifier';{DataMigrationUseTag.Evaluate(concept)}
 GO
 
-CREATE TABLE #entries (ID uniqueidentifier);
+DECLARE @entries TABLE (ID uniqueidentifier PRIMARY KEY);
 {InsertValuesTag.Evaluate(concept)}
 
 INSERT INTO _{concept.Module.Name}.{concept.Name} (ID)
 SELECT newItem.ID
-FROM #entries newItem
+FROM @entries newItem
 	LEFT JOIN _{concept.Module.Name}.{concept.Name} existingItem ON existingItem.ID = newItem.ID
 WHERE
 	existingItem.ID IS NULL;
@@ -60,12 +60,12 @@ EXEC Rhetos.DataMigrationApplyMultiple '{concept.Module.Name}', '{concept.Name}'
 $@"EXEC Rhetos.DataMigrationUse '{concept.Module.Name}', '{concept.Name}', 'ID', 'uniqueidentifier';
 GO
 
-CREATE TABLE #entries (ID uniqueidentifier);
+DECLARE @entries TABLE (ID uniqueidentifier PRIMARY KEY);
 {InsertValuesTag.Evaluate(concept)}
 
 DELETE FROM _{concept.Module.Name}.{concept.Name} WHERE ID NOT IN
 (
-    SELECT ID FROM #entries
+    SELECT ID FROM @entries
 );
 
 EXEC Rhetos.DataMigrationApplyMultiple '{concept.Module.Name}', '{concept.Name}', 'ID';");
