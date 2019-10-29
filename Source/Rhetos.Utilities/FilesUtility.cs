@@ -53,9 +53,7 @@ namespace Rhetos.Utilities
                     if (tries == maxTries - 1) // Logging the second retry instead of the first one, because first retries are too common.
                         _logger.Trace(() => "Waiting to " + actionName.Invoke() + ".");
 
-                    if (Environment.UserInteractive)
-                        System.Threading.Thread.Sleep(500);
-                    continue;
+                    System.Threading.Thread.Sleep(500);
                 }
             }
         }
