@@ -29,21 +29,10 @@ namespace Rhetos.Utilities
     public class FilesUtility
     {
         private readonly ILogger _logger;
-        private readonly Lazy<bool> _defaultEncodingWhenReadingFiles;
 
         public FilesUtility(ILogProvider logProvider)
         {
             _logger = logProvider.GetLogger(GetType().Name);
-            _defaultEncodingWhenReadingFiles = new Lazy<bool>(GetDefaultEncodingOption);
-        }
-
-        private bool GetDefaultEncodingOption()
-        {
-            string value = ConfigUtility.GetAppSetting("Rhetos.Legacy.DefaultEncodingWhenReadingFiles");
-            if (!string.IsNullOrEmpty(value))
-                return bool.Parse(value);
-            else
-                return true;
         }
 
         private void Retry(Action action, Func<string> actionName)
@@ -176,22 +165,21 @@ namespace Rhetos.Utilities
 
         public string ReadAllText(string path)
         {
-            if (_defaultEncodingWhenReadingFiles.Value)
+            var text = File.ReadAllText(path, Encoding.UTF8);
+            //Occurrence of the character � is interpreted as invalid UTF-8
+            var invalidCharIndex = text.IndexOf((char)65533);
+            if (invalidCharIndex != -1)
             {
-                return File.ReadAllText(path, Encoding.Default);
-            }
-            else
-            {
-                var text = File.ReadAllText(path, Encoding.UTF8);
-                //Occurrence of the character � is interpreted as invalid UTF-8
-                var inavlidCharIndex = text.IndexOf((char)65533);
-                if (inavlidCharIndex != -1)
-                {
-                    _logger.Info($@"WARNING: File '{path}' contains invalid UTF-8 character at line {ScriptPositionReporting.Line(text, inavlidCharIndex)}. Reading with default system encoding instead. Save text file as UTF-8.");
+                bool tryDefault = !Encoding.Default.Equals(Encoding.UTF8);
+
+                _logger.Info($"WARNING: File '{path}' contains invalid UTF-8 character at line {ScriptPositionReporting.Line(text, invalidCharIndex)}." +
+                    (tryDefault ? $" Reading with default system encoding instead." : "") +
+                    $" Save text file as UTF-8.");
+
+                if (tryDefault)
                     text = File.ReadAllText(path, Encoding.Default);
-                }
-                return text;
             }
+            return text;
         }
 
         public static string RelativeToAbsolutePath(string baseFolder, string path)

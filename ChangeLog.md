@@ -74,6 +74,7 @@
 * Bugfix: "MissingMethodException: Method not found Common.Queryable..." on deployment (issue #178).
 * Bugfix: Multiple ModificationTimeOf on same entity may not detect some indirect property changes.
 * Bugfix: Corrected backward compatibility issue for SamePropertyValue (since v2.11).
+* Using UTF-8 by default to read .rhe and .sql files. Fallback to default system encoding in case of an error. (issue #163).
 * AutodetectSqlDependencies now detects INSERT INTO, MERGE and JOIN query parts.
 * Improved error reporting:
   explanatory Web API response for invalid JSON format,
