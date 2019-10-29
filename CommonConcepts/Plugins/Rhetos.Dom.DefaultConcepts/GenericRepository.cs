@@ -491,7 +491,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 // The filterExpression must use EntityType or EntityNavigationType, depending on the provided query.
                 var itemType = items.GetType().GetInterface("IEnumerable`1").GetGenericArguments()[0];
 
-                var filterExpression = EFExpression.OptimizeContains(_genericFilterHelper.ToExpression((IEnumerable<PropertyFilter>)parameter, itemType)) as LambdaExpression;
+                var filterExpression = _genericFilterHelper.ToExpression((IEnumerable<PropertyFilter>)parameter, itemType);
                 if (Reflection.IsQueryable(items))
                 {
                     var query = Reflection.AsQueryable(items);

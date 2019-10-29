@@ -49,7 +49,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public void ReaderExecuting(
             DbCommand command, DbCommandInterceptionContext<DbDataReader> interceptionContext)
         {
-            RewriteQuerry(command);
+            RewriteQuery(command);
         }
 
         public void ReaderExecuted(
@@ -61,7 +61,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public void ScalarExecuting(
             DbCommand command, DbCommandInterceptionContext<object> interceptionContext)
         {
-            RewriteQuerry(command);
+            RewriteQuery(command);
         }
 
         public void ScalarExecuted(
@@ -70,7 +70,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         }
 
-        private static void RewriteQuerry(DbCommand cmd)
+        private static void RewriteQuery(DbCommand cmd)
         {
             if (cmd.CommandText.Contains(EFExpression.ContainsIdsFunction))
             {
@@ -83,26 +83,32 @@ namespace Rhetos.Dom.DefaultConcepts
                     string id = containsIdsQuery.Groups["id"].Value;
                     string concatenatedIds = containsIdsQuery.Groups["concatenatedIds"].Value;
 
-                    var indexofConcatenatedIdsParameter = cmd.Parameters.IndexOf(concatenatedIds.Replace("@", ""));
-                    var concatentaedIdsParameterValue = cmd.Parameters[indexofConcatenatedIdsParameter].Value as string;
+                    var indexOfConcatenatedIdsParameter = cmd.Parameters.IndexOf(concatenatedIds.Replace("@", ""));
+                    var concatenatedIdsParameterValue = (string)cmd.Parameters[indexOfConcatenatedIdsParameter].Value;
 
                     string containsIdsSql;
-                    if (string.IsNullOrEmpty(concatentaedIdsParameterValue))
+                    if (string.IsNullOrEmpty(concatenatedIdsParameterValue))
                         containsIdsSql = "1 = 0";
                     else
-                        containsIdsSql = string.Format("{0} IN ({1})", id, string.Join(",", concatentaedIdsParameterValue.Split(',').Select(x => "'" + x + "'")));
+                        containsIdsSql = string.Format("{0} IN ({1})", id,
+                            string.Join(",", concatenatedIdsParameterValue.Split(',').Select((x, i) => NewLine(i) + "'" + x + "'")));
 
                     cmd.CommandText =
                         cmd.CommandText.Substring(0, containsIdsQuery.Index)
                         + containsIdsSql
                         + cmd.CommandText.Substring(containsIdsQuery.Index + containsIdsQuery.Length);
 
-                    cmd.Parameters.RemoveAt(indexofConcatenatedIdsParameter);
+                    cmd.Parameters.RemoveAt(indexOfConcatenatedIdsParameter);
                 }
             }
 
             if (cmd.CommandText.Contains(EFExpression.ContainsIdsFunction))
                 throw new FrameworkException("Error while parsing ContainsIds query. Not all conditions were handled.");
         }
+
+        /// <summary>
+        /// SQL Profiler and some other utilities could have issues with very long text lines.
+        /// </summary>
+        private static string NewLine(int i) => ((i % 20 == 0) && (i > 0)) ? "\r\n" : "";
     }
 }

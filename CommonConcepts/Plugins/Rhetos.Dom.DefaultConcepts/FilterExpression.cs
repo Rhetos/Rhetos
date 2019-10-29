@@ -124,25 +124,5 @@ namespace Rhetos.Dom.DefaultConcepts
             var parameterReplacer = new ParameterReplacer(b.Parameters.Single(), a.Parameters.Single());
             b = (Expression<Func<T, bool>>)parameterReplacer.Visit(b);
         }
-
-        private class ParameterReplacer : ExpressionVisitor
-        {
-            private readonly ParameterExpression _oldParameter;
-            private readonly ParameterExpression _newParameter;
-
-            internal ParameterReplacer(ParameterExpression oldParameter, ParameterExpression newParameter)
-            {
-                _oldParameter = oldParameter;
-                _newParameter = newParameter;
-            }
-
-            protected override Expression VisitParameter(ParameterExpression node)
-            {
-                if (node == _oldParameter)
-                    return _newParameter;
-                else
-                    return base.VisitParameter(node);
-            }
-        }
     }
 }

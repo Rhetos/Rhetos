@@ -49,8 +49,63 @@ namespace CommonConcepts.Test
                         $@"INSERT INTO Test12.Entity3 (ID, Entity2ID) SELECT '{id3}', '{id2}';"
                     });
 
-                var record = repository.Test12.Entity3.Query().WhereContains(new List<Guid>() { id1 }, x => x.Entity2.Entity1.ID).Single();
+                var record = repository.Test12.Entity3.Query().WhereContains(new List<Guid>() { id1, id2 }, x => x.Entity2.Entity1.ID).Single();
                 Assert.AreEqual(id3, record.ID);
+            }
+        }
+
+        [TestMethod]
+        public void MultipleWhereContainsTest()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var id1 = Guid.NewGuid();
+                var id2 = Guid.NewGuid();
+                var id3 = Guid.NewGuid();
+
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                    {
+                        $@"INSERT INTO Test12.Entity1 (ID) SELECT '{id1}';",
+                        $@"INSERT INTO Test12.Entity2 (ID, Entity1ID) SELECT '{id2}', '{id1}';",
+                        $@"INSERT INTO Test12.Entity3 (ID, Entity2ID) SELECT '{id3}', '{id2}';"
+                    });
+
+                var records = repository.Test12.Entity3.Query()
+                    .WhereContains(new List<Guid>() { id1 }, e3 => e3.Entity2.Entity1.ID)
+                    .WhereContains(new List<Guid>() { id2 }, e3 => e3.Entity2.ID)
+                    .Select(e3 => e3.ID);
+                Console.WriteLine(records.Expression.ToString());
+                Console.WriteLine(records.ToString());
+                Assert.AreEqual(id3.ToString(), TestUtility.DumpSorted(records));
+            }
+        }
+
+        [TestMethod]
+        public void WhereEmptyContainsTest()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var id1 = Guid.NewGuid();
+                var id2 = Guid.NewGuid();
+                var id3 = Guid.NewGuid();
+
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                    {
+                        $@"INSERT INTO Test12.Entity1 (ID) SELECT '{id1}';",
+                        $@"INSERT INTO Test12.Entity2 (ID, Entity1ID) SELECT '{id2}', '{id1}';",
+                        $@"INSERT INTO Test12.Entity3 (ID, Entity2ID) SELECT '{id3}', '{id2}';"
+                    });
+
+                var records = repository.Test12.Entity3.Query()
+                    .WhereContains(new List<Guid>() { }, e3 => e3.Entity2.Entity1.ID)
+                    .Select(e3 => e3.ID);
+                Console.WriteLine(records.Expression.ToString());
+                Console.WriteLine(records.ToString());
+                Assert.AreEqual("", TestUtility.DumpSorted(records));
             }
         }
 
