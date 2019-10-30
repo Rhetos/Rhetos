@@ -18,6 +18,7 @@
    Autofac 3.5.2 to 4.9.4,
    Autofac.Wcf 3.0.1 to 4.1.0,
    NLog 4.5.4 to 4.6.7,
+   NuGet.Core 2.8.3 to 2.14.0
    and Newtonsoft.Json 6.0.8 to 12.0.2.
    * To allow your existing Rhetos application to work with existing plugin packages,
      without recompiling them with new version of the dependencies,
@@ -74,13 +75,15 @@
 * Bugfix: "MissingMethodException: Method not found Common.Queryable..." on deployment (issue #178).
 * Bugfix: Multiple ModificationTimeOf on same entity may not detect some indirect property changes.
 * Bugfix: Corrected backward compatibility issue for SamePropertyValue (since v2.11).
-* Using UTF-8 by default to read .rhe and .sql files. Fallback to default system encoding in case of an error. (issue #163).
+* Bugfix: NuGet download results with error "... already has a dependency defined for 'NETStandard.Library'" (issue #215).
+* Using UTF-8 by default to read .rhe and .sql files. Fallback to default system encoding in case of an error. (issue #163)
 * AutodetectSqlDependencies now detects INSERT INTO, MERGE and JOIN query parts.
 * Improved error reporting:
   explanatory Web API response for invalid JSON format,
   cause analysis for type load errors,
   warnings on empty build, ...
 * DSL parser disambiguation for flat syntax over nested syntax (issue #210).
+* Entity Framework query optimizations for better reuse of query cache in both EF and database (issues #169 and #167).
 
 ## 2.12.0 (2019-09-09)
 
