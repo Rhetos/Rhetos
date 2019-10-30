@@ -74,7 +74,9 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             if (cmd.CommandText.Contains(EFExpression.ContainsIdsFunction))
             {
-                var parseContainsIdsQuery = new Regex($@"\(\[{EntityFrameworkMapping.StorageModelNamespace}\]\.\[{EFExpression.ContainsIdsFunction}\]\((?<id>.+?), (?<concatenatedIds>.*?)\)\) = 1", RegexOptions.Singleline);
+                const string testTrue = "= 1";
+                const string testFalse = "<> 1";
+                var parseContainsIdsQuery = new Regex($@"\(\[{EntityFrameworkMapping.StorageModelNamespace}\]\.\[{EFExpression.ContainsIdsFunction}\]\((?<id>.+?), (?<concatenatedIds>.*?)\)\) (?<test>{testTrue}|{testFalse})", RegexOptions.Singleline);
 
                 var containsIdsQueries = parseContainsIdsQuery.Matches(cmd.CommandText).Cast<Match>();
 
@@ -82,6 +84,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 {
                     string id = containsIdsQuery.Groups["id"].Value;
                     string concatenatedIds = containsIdsQuery.Groups["concatenatedIds"].Value;
+                    string test = containsIdsQuery.Groups["test"].Value;
 
                     var indexOfConcatenatedIdsParameter = cmd.Parameters.IndexOf(concatenatedIds.Replace("@", ""));
                     var concatenatedIdsParameterValue = (string)cmd.Parameters[indexOfConcatenatedIdsParameter].Value;
@@ -90,8 +93,11 @@ namespace Rhetos.Dom.DefaultConcepts
                     if (string.IsNullOrEmpty(concatenatedIdsParameterValue))
                         containsIdsSql = "1 = 0";
                     else
-                        containsIdsSql = string.Format("{0} IN ({1})", id,
-                            string.Join(",", concatenatedIdsParameterValue.Split(',').Select((x, i) => NewLine(i) + "'" + x + "'")));
+                    {
+                        string operation = (test == testTrue) ? "IN" : "NOT IN";
+                        string idsList = string.Join(",", concatenatedIdsParameterValue.Split(',').Select((x, i) => NewLine(i) + "'" + x + "'"));
+                        containsIdsSql = $"{id} {operation} ({idsList})";
+                    }
 
                     cmd.CommandText =
                         cmd.CommandText.Substring(0, containsIdsQuery.Index)

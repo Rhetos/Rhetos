@@ -36,7 +36,7 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     public class GenericFilterHelper
     {
-        IDomainObjectModel _domainObjectModel;
+        readonly IDomainObjectModel _domainObjectModel;
 
         public GenericFilterHelper(IDomainObjectModel domainObjectModel)
         {
@@ -55,7 +55,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             ParameterExpression parameter = Expression.Parameter(parameterType, "p");
 
-            if (propertyFilters == null || propertyFilters.Count() == 0)
+            if (propertyFilters == null || !propertyFilters.Any())
                 return Expression.Lambda(Expression.Constant(true), parameter);
 
             Expression resultCondition = null;
@@ -79,7 +79,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 bool propertyIsNullableValueType = memberAccess.Type.IsGenericType && memberAccess.Type.GetGenericTypeDefinition() == typeof(Nullable<>);
                 Type propertyBasicType = propertyIsNullableValueType ? memberAccess.Type.GetGenericArguments().Single() : memberAccess.Type;
 
-                Expression constant;
+                ConstantExpression constant;
                 // Operations 'equal' and 'notequal' are supported for backward compatibility.
                 if (new[] { "equals", "equal", "notequals", "notequal", "greater", "greaterequal", "less", "lessequal" }.Contains(filter.Operation, StringComparer.OrdinalIgnoreCase))
                 {
@@ -106,13 +106,8 @@ namespace Rhetos.Dom.DefaultConcepts
                         Type nullableMemberType = typeof(Nullable<>).MakeGenericType(memberAccess.Type);
                         memberAccess = Expression.Convert(memberAccess, nullableMemberType);
                     }
-                    if (propertyBasicType == typeof(Guid))
-                    {
-                        Expression<Func<object>> idLambda = () => convertedValue;
-                        constant = Expression.Convert(idLambda.Body, memberAccess.Type);
-                    }
-                    else
-                        constant = Expression.Constant(convertedValue, memberAccess.Type);
+
+                    constant = Expression.Constant(convertedValue, memberAccess.Type);
                 }
                 else if (new[] { "startswith", "endswith", "contains", "notcontains" }.Contains(filter.Operation, StringComparer.OrdinalIgnoreCase))
                 {
@@ -175,14 +170,24 @@ namespace Rhetos.Dom.DefaultConcepts
                 {
                     case "equals":
                     case "equal":
-                        if (propertyBasicType == typeof(string))
+                        if (propertyBasicType == typeof(Guid) && constant.Value is Guid constantIdEquals)
+                        {
+                            Expression<Func<object>> idLambda = () => constantIdEquals;
+                            expression = Expression.Equal(memberAccess, Expression.Convert(idLambda.Body, memberAccess.Type));
+                        }
+                        else if (propertyBasicType == typeof(string))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("EqualsCaseInsensitive"), memberAccess, constant);
                         else
                             expression = Expression.Equal(memberAccess, constant);
                         break;
                     case "notequals":
                     case "notequal":
-                        if (propertyBasicType == typeof(string))
+                        if (propertyBasicType == typeof(Guid) && constant.Value is Guid constantIdNotEquals)
+                        {
+                            Expression<Func<object>> idLambda = () => constantIdNotEquals;
+                            expression = Expression.Equal(memberAccess, Expression.Convert(idLambda.Body, memberAccess.Type));
+                        }
+                        else if (propertyBasicType == typeof(string))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("NotEqualsCaseInsensitive"), memberAccess, constant);
                         else
                             expression = Expression.NotEqual(memberAccess, constant);
@@ -296,22 +301,45 @@ namespace Rhetos.Dom.DefaultConcepts
                     case "in":
                     case "notin":
                         {
-                            Type collectionBasicType = typeof(IQueryable).IsAssignableFrom(constant.Type)
-                                ? typeof(Queryable) : typeof(Enumerable);
                             Type collectionElement = GetElementType(constant.Type);
-                            var containsMethod = collectionBasicType.GetMethods()
-                                .Where(m => m.Name == "Contains" && m.GetParameters().Count() == 2)
-                                .Single()
-                                .MakeGenericMethod(collectionElement);
-
                             Expression convertedMemberAccess = memberAccess.Type != collectionElement
                                 ? Expression.Convert(memberAccess, collectionElement)
                                 : memberAccess;
 
-                            expression = Expression.Call(containsMethod, constant, convertedMemberAccess);
+                            // TODO: EFExpression.OptimizeContains should be simplified to work with the same expression as in the "else" part below,
+                            // without the `Expression.Lambda` wrapper.
+                            if (constant.Value is List<Guid> idsList)
+                            {
+                                Expression<Func<List<Guid>>> idsLambda = () => idsList;
+                                var idsContainsExpression = Expression.Lambda(
+                                    Expression.Call(
+                                        idsLambda.Body,
+                                        typeof(List<Guid>).GetMethod("Contains"),
+                                        convertedMemberAccess),
+                                    parameter);
+                                expression = ((LambdaExpression)EFExpression.OptimizeContains(idsContainsExpression)).Body;
+                            }
+                            else if (constant.Value is List<Guid?> idsListNullable)
+                            {
+                                Expression<Func<List<Guid?>>> idsLambda = () => idsListNullable;
+                                var idsContainsExpression = Expression.Lambda(
+                                    Expression.Call(
+                                        idsLambda.Body,
+                                        typeof(List<Guid?>).GetMethod("Contains"),
+                                        convertedMemberAccess),
+                                    parameter);
+                                expression = ((LambdaExpression)EFExpression.OptimizeContains(idsContainsExpression)).Body;
+                            }
+                            else
+                            {
+                                Type collectionBasicType = typeof(IQueryable).IsAssignableFrom(constant.Type)
+                                    ? typeof(Queryable) : typeof(Enumerable);
+                                var containsMethod = collectionBasicType.GetMethods()
+                                    .Single(m => m.Name == "Contains" && m.GetParameters().Count() == 2)
+                                    .MakeGenericMethod(collectionElement);
 
-                            if (propertyBasicType == typeof(Guid) && filter.Value is IEnumerable<Guid>)
-                                expression = EFExpression.OptimizeContains(expression);
+                                expression = Expression.Call(containsMethod, constant, convertedMemberAccess);
+                            }
 
                             if (filter.Operation.Equals("notin", StringComparison.OrdinalIgnoreCase))
                                 expression = Expression.Not(expression);
@@ -366,20 +394,20 @@ namespace Rhetos.Dom.DefaultConcepts
         private void AdjustListTypeNullable<TPropertyBasicType>(ref IEnumerable list, bool propertyIsNullableValueType)
             where TPropertyBasicType : struct
         {
-            if (list is IQueryable<TPropertyBasicType>)
+            if (list is IQueryable<TPropertyBasicType> queryable)
             {
                 if (propertyIsNullableValueType)
-                    list = ((IQueryable<TPropertyBasicType>)list).Cast<TPropertyBasicType?>();
+                    list = queryable.Cast<TPropertyBasicType?>();
             }
-            else if (list is IEnumerable<TPropertyBasicType>)
+            else if (list is IEnumerable<TPropertyBasicType> enumerable)
             {
                 if (propertyIsNullableValueType)
-                    list = ((IEnumerable<TPropertyBasicType>)list).Cast<TPropertyBasicType?>().ToList();
+                    list = enumerable.Cast<TPropertyBasicType?>().ToList();
             }
-            else if (list is IList<TPropertyBasicType?>) // This scenario is optional, but simplifies the resulting filter expression.
+            else if (list is IList<TPropertyBasicType?> listOfNullable) // This scenario is optional, but simplifies the resulting filter expression.
             {
                 if (!propertyIsNullableValueType)
-                    list = ((IList<TPropertyBasicType?>)list).Where(g => g.HasValue).Select(g => g.Value).ToList();
+                    list = listOfNullable.Where(g => g.HasValue).Select(g => g.Value).ToList();
             }
         }
 
@@ -441,26 +469,22 @@ namespace Rhetos.Dom.DefaultConcepts
         private static readonly MethodInfo OrderByAscendingMethod =
             typeof(Queryable).GetMethods()
                 .Where(method => method.Name == "OrderBy")
-                .Where(method => method.GetParameters().Length == 2)
-                .Single();
+                .Single(method => method.GetParameters().Length == 2);
 
         private static readonly MethodInfo OrderByDescendingMethod =
             typeof(Queryable).GetMethods()
                 .Where(method => method.Name == "OrderByDescending")
-                .Where(method => method.GetParameters().Length == 2)
-                .Single();
+                .Single(method => method.GetParameters().Length == 2);
 
         private static readonly MethodInfo ThenByAscendingMethod =
             typeof(Queryable).GetMethods()
                 .Where(method => method.Name == "ThenBy")
-                .Where(method => method.GetParameters().Length == 2)
-                .Single();
+                .Single(method => method.GetParameters().Length == 2);
 
         private static readonly MethodInfo ThenByDescendingMethod =
             typeof(Queryable).GetMethods()
                 .Where(method => method.Name == "ThenByDescending")
-                .Where(method => method.GetParameters().Length == 2)
-                .Single();
+                .Single(method => method.GetParameters().Length == 2);
 
         #endregion
         //================================================================
