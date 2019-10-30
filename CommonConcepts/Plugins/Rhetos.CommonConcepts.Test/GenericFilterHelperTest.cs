@@ -231,7 +231,7 @@ namespace Rhetos.CommonConcepts.Test
         [TestMethod]
         public void TolerateInvalidTypeOfEmptyArray()
         {
-            // Element type cannot be defected for empty JSON array, therefore the application should
+            // Element type cannot be detected for empty JSON array, therefore the application should
             // tolerate invalid element type of the array is empty.
 
             var idnull = (Guid?)null;

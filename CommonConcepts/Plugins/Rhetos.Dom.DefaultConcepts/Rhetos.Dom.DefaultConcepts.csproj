@@ -144,7 +144,6 @@
     <Compile Include="Authorization\DeactivateClaimsCodeGenerator.cs" />
     <Compile Include="DomHelper.cs" />
     <Compile Include="ParameterReplacer.cs" />
-    <Compile Include="QueryableExtensions.cs" />
     <Compile Include="KeepSynchronizedHelper.cs" />
     <Compile Include="Persistence\ContainsIdsInterceptor.cs" />
     <Compile Include="Persistence\ContainsIdsInterceptorCodeGenerator.cs" />
