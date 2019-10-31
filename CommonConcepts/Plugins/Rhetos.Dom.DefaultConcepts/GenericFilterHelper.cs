@@ -172,10 +172,13 @@ namespace Rhetos.Dom.DefaultConcepts
                     case "equal":
                         if (propertyBasicType == typeof(Guid) && constant.Value is Guid constantIdEquals)
                         {
+                            // Using a different expression instead of the constant, to force Entity Framework to
+                            // use query parameter instead of hardcoding the constant value (literal) into the generated query.
+                            // Query with parameter will allow cache reuse for both EF LINQ compiler and database SQL compiler.
                             Expression<Func<object>> idLambda = () => constantIdEquals;
                             expression = Expression.Equal(memberAccess, Expression.Convert(idLambda.Body, memberAccess.Type));
                         }
-                        else if (propertyBasicType == typeof(string))
+                        else if (propertyBasicType == typeof(string) && constant.Value != null)
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("EqualsCaseInsensitive"), memberAccess, constant);
                         else
                             expression = Expression.Equal(memberAccess, constant);
@@ -184,10 +187,13 @@ namespace Rhetos.Dom.DefaultConcepts
                     case "notequal":
                         if (propertyBasicType == typeof(Guid) && constant.Value is Guid constantIdNotEquals)
                         {
+                            // Using a different expression instead of the constant, to force Entity Framework to
+                            // use query parameter instead of hardcoding the constant value (literal) into the generated query.
+                            // Query with parameter will allow cache reuse for both EF LINQ compiler and database SQL compiler.
                             Expression<Func<object>> idLambda = () => constantIdNotEquals;
                             expression = Expression.Equal(memberAccess, Expression.Convert(idLambda.Body, memberAccess.Type));
                         }
-                        else if (propertyBasicType == typeof(string))
+                        else if (propertyBasicType == typeof(string) && constant.Value != null)
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("NotEqualsCaseInsensitive"), memberAccess, constant);
                         else
                             expression = Expression.NotEqual(memberAccess, constant);
