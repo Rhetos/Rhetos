@@ -28,19 +28,35 @@ namespace Rhetos.TestCommon
 {
     public class MockConfiguration : Dictionary<string, object>, IConfiguration
     {
-        public Lazy<bool> GetBool(string key, bool defaultValue) => Get(key, defaultValue);
+        private readonly bool _defaultToSystemConfiguration;
+        private readonly Configuration _systemConfiguration = new Configuration();
 
-        public Lazy<T> GetEnum<T>(string key, T defaultValue) where T : struct => Get(key, defaultValue);
+        public MockConfiguration()
+        {
+            _defaultToSystemConfiguration = false;
+        }
 
-        public Lazy<int> GetInt(string key, int defaultValue) => Get(key, defaultValue);
+        public MockConfiguration(bool defaultToSystemConfiguration)
+        {
+            _defaultToSystemConfiguration = defaultToSystemConfiguration;
+        }
 
-        public Lazy<string> GetString(string key, string defaultValue) => Get(key, defaultValue);
+        public Lazy<bool> GetBool(string key, bool defaultValue) => Get(key, defaultValue, _systemConfiguration.GetBool);
 
-        private Lazy<T> Get<T>(string key, T defaultValue)
+        public Lazy<T> GetEnum<T>(string key, T defaultValue) where T : struct => Get(key, defaultValue, _systemConfiguration.GetEnum<T>);
+
+        public Lazy<int> GetInt(string key, int defaultValue) => Get(key, defaultValue, _systemConfiguration.GetInt);
+
+        public Lazy<string> GetString(string key, string defaultValue) => Get(key, defaultValue, _systemConfiguration.GetString);
+
+        private Lazy<T> Get<T>(string key, T defaultValue, Func<string, T, Lazy<T>> systemConfigurationGetter)
         {
             object value;
             if (!TryGetValue(key, out value))
-                value = defaultValue;
+                if (_defaultToSystemConfiguration)
+                    return systemConfigurationGetter(key, defaultValue);
+                else
+                    value = defaultValue;
             return new Lazy<T>(() => (T)value);
         }
     }
