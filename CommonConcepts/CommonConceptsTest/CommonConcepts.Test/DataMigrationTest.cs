@@ -37,7 +37,7 @@ namespace CommonConcepts.Test
     {
         class SimpleScriptsProvider : IDataMigrationScriptsProvider
         {
-            List<DataMigrationScript> _scripts;
+            readonly List<DataMigrationScript> _scripts;
 
             public SimpleScriptsProvider(string scriptsDescription)
             {

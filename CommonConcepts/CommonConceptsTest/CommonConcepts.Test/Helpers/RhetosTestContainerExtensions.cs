@@ -29,7 +29,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CommonConcepts.Test.Helpers
+namespace CommonConcepts.Test
 {
     /// <summary>
     /// These methods should be called before any object is resolved from the container.
@@ -70,6 +70,18 @@ namespace CommonConcepts.Test.Helpers
             container.InitializeSession += builder =>
                 builder.RegisterInstance(new TestUserInfo(username))
                 .As<IUserInfo>();
+        }
+
+        public static void OverrideConfiguration(this RhetosTestContainer container, params (string Key, object Value)[] settings)
+        {
+            var mockConfiguration = new MockConfiguration(true);
+            foreach (var setting in settings)
+            {
+                Console.WriteLine($"{setting.Key} = {setting.Value}");
+                mockConfiguration.Add(setting.Key, setting.Value);
+            }
+
+            container.InitializeSession += builder => builder.RegisterInstance<IConfiguration>(mockConfiguration);
         }
     }
 }

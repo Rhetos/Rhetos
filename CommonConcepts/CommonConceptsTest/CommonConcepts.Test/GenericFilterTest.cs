@@ -94,7 +94,7 @@ namespace CommonConcepts.Test
 
         private static Expression<Func<TEntity, bool>> GenericFilterHelperToExpression<TEntity>(IEnumerable<FilterCriteria> propertyFiltersCriteria)
         {
-            if (propertyFiltersCriteria.Count() == 0)
+            if (!propertyFiltersCriteria.Any())
                 return item => true;
 
             using (var container = new RhetosTestContainer())
@@ -432,7 +432,7 @@ namespace CommonConcepts.Test
 
                 // Null and empty string:
 
-                Func<string, string, object, IQueryable<TestGenericFilter.Simple>> filter1 = (property, operation, value) =>
+                IQueryable<TestGenericFilter.Simple> filter1(string property, string operation, object value) =>
                     GenericFilterHelperFilter(simple, new[] {
                         new FilterCriteria { Property = property, Operation = operation, Value = value },
                         new FilterCriteria { Property = "Code", Operation = "less", Value = 0 }});
@@ -446,7 +446,7 @@ namespace CommonConcepts.Test
 
                 // Null datetime:
 
-                Func<string, string, object, IQueryable<TestGenericFilter.Simple>> filter2 = (property, operation, value) =>
+                IQueryable<TestGenericFilter.Simple> filter2(string property, string operation, object value) =>
                     GenericFilterHelperFilter(simple, new[] {
                         new FilterCriteria { Property = property, Operation = operation, Value = value },
                         new FilterCriteria { Property = "Code", Operation = "greater", Value = 0 }});
@@ -456,7 +456,7 @@ namespace CommonConcepts.Test
 
                 // Null reference:
 
-                Func<string, string, object, IQueryable<TestGenericFilter.Child>> filterChild = (property, operation, value) =>
+                IQueryable<TestGenericFilter.Child> filterChild(string property, string operation, object value) =>
                     GenericFilterHelperFilter(child, new[] {
                         new FilterCriteria { Property = property, Operation = operation, Value = value }});
 
@@ -465,7 +465,7 @@ namespace CommonConcepts.Test
 
                 // Null int:
 
-                Func<string, string, object, IQueryable<TestGenericFilter.Simple>> filterSimple = (property, operation, value) =>
+                IQueryable<TestGenericFilter.Simple> filterSimple(string property, string operation, object value) =>
                     GenericFilterHelperFilter(simple, new[] {
                         new FilterCriteria { Property = property, Operation = operation, Value = value }});
 
