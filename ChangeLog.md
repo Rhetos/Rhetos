@@ -84,6 +84,8 @@
   warnings on empty build, ...
 * DSL parser disambiguation for flat syntax over nested syntax (issue #210).
 * Entity Framework query optimizations for better reuse of query cache in both EF and database (issues #169 and #167).
+* Recommended value `EntityFramework.UseDatabaseNullSemantics` set to True for new applications
+  (see [recommendations](https://github.com/Rhetos/Rhetos/wiki/Migrating-an-existing-application-to-UseDatabaseNullSemantics)).
 
 ## 2.12.0 (2019-09-09)
 
