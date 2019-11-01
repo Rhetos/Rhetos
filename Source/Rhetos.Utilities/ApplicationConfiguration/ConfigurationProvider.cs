@@ -34,7 +34,8 @@ namespace Rhetos.Utilities.ApplicationConfiguration
 
         public ConfigurationProvider(Dictionary<string, object> configurationValues)
         {
-            _configurationValues = configurationValues;
+            _configurationValues = configurationValues
+                .ToDictionary(a => NormalizePathSeparators(a.Key), a => a.Value);
         }
 
         public T GetOptions<T>(string configurationPath = "", bool requireAllMembers = false) where T : class
@@ -90,7 +91,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration
 
         private bool TryGetConfigurationValue(string configurationKey, out object result, string configurationPath = "")
         {
-            configurationKey = configurationKey.ToLowerInvariant();
+            configurationKey = NormalizePathSeparators(configurationKey).ToLowerInvariant();
             if (!string.IsNullOrEmpty(configurationPath))
                 configurationKey = $"{configurationPath.ToLowerInvariant()}{ConfigurationPathSeparator}{configurationKey}";
 
@@ -145,6 +146,13 @@ namespace Rhetos.Utilities.ApplicationConfiguration
                     + $"Allowed values for {enumType.Name} are: {string.Join(", ", Enum.GetNames(enumType))}.", 
                     e);
             }
+        }
+
+        private string NormalizePathSeparators(string key)
+        {
+            return key
+                .Replace("__", ConfigurationPathSeparator)
+                .Replace(".", ConfigurationPathSeparator);
         }
 
         private string NormalizeDecimalSeparator(string value)

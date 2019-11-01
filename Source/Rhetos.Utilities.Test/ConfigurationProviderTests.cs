@@ -65,6 +65,38 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
+        public void OldDotConventionInvariance()
+        {
+            var provider = new ConfigurationBuilder()
+                .AddConfigurationManagerConfiguration()
+                .Build();
+
+            Assert.AreEqual("DotDot", provider.GetValue<string>("TestSection.OldDotConvention"));
+        }
+
+        [TestMethod]
+        public void PathSeparatorInvariance()
+        {
+            var provider = new ConfigurationBuilder()
+                .AddKeyValue("Test__Underscore", "underscore")
+                .AddKeyValue("Test:Colon", "colon")
+                .AddKeyValue("Test.Dot", "dot")
+                .Build();
+
+            Assert.AreEqual("underscore", provider.GetValue<string>("test__underscore"));
+            Assert.AreEqual("underscore", provider.GetValue<string>("test:underscore"));
+            Assert.AreEqual("underscore", provider.GetValue<string>("test.underscore"));
+
+            Assert.AreEqual("colon", provider.GetValue<string>("test__colon"));
+            Assert.AreEqual("colon", provider.GetValue<string>("test:colon"));
+            Assert.AreEqual("colon", provider.GetValue<string>("test.colon"));
+
+            Assert.AreEqual("dot", provider.GetValue<string>("test__dot"));
+            Assert.AreEqual("dot", provider.GetValue<string>("test:dot"));
+            Assert.AreEqual("dot", provider.GetValue<string>("test.dot"));
+        }
+
+        [TestMethod]
         public void GetByPathAndName()
         {
             var provider = new ConfigurationBuilder()
