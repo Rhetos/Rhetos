@@ -26,7 +26,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.DefaultSources
             var settings = new Dictionary<string, object>();
 
             foreach (var pair in appSettings)
-                settings[NormalizeConfigurationKey(pair.Key)] = pair.Value;
+                settings[pair.Key] = pair.Value;
 
             foreach (ConnectionStringSettings connectionString in connectionStrings)
             {
@@ -38,12 +38,5 @@ namespace Rhetos.Utilities.ApplicationConfiguration.DefaultSources
 
             return settings;
         }
-
-        private static string NormalizeConfigurationKey(string key)
-        {
-            return key
-                .Replace(".", ConfigurationProvider.ConfigurationPathSeparator)
-                .Replace("__", ConfigurationProvider.ConfigurationPathSeparator);
-       }
     }
 }
