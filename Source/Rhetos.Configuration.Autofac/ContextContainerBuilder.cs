@@ -38,21 +38,24 @@ namespace Rhetos.Configuration.Autofac
     public class ContextContainerBuilder : ContainerBuilder
     {
         public InitializationContext InitializationContext { get; }
+        public ContainerBuilderPluginRegistration PluginRegistration { get; }
 
         /// <summary>
         /// Initializes a container with specified InitializationContext. Registers ConfigurationProvider and RhetosAppEnvironment instances to newly created container.
         /// LogProvider is not registered and is meant to be used during the lifetime of registration and container building process.
         /// LegacyUtilities will also be initialized with the given configuration.
         /// </summary>
-        public ContextContainerBuilder(InitializationContext initializationContext)
+        public ContextContainerBuilder(InitializationContext initializationContext, IPluginScanner pluginScanner = null)
         {
             this.InitializationContext = initializationContext;
             this.RegisterInstance(initializationContext.ConfigurationProvider);
             this.RegisterInstance(initializationContext.RhetosAppEnvironment);
 
+            this.PluginRegistration = new ContainerBuilderPluginRegistration(this, initializationContext.LogProvider, pluginScanner ?? new MefPluginScanner());
+            Plugins.Initialize(PluginRegistration);
+
             // this is a patch/mock to provide backward compatibility for all usages of old static classes
             LegacyUtilities.Initialize(initializationContext.ConfigurationProvider);
-            Plugins.SetInitializationLogging(initializationContext.LogProvider);
         }
 
         /// <summary>

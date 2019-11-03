@@ -86,6 +86,10 @@
       <Project>{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}</Project>
       <Name>Rhetos.Utilities</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Configuration.Autofac\Rhetos.Configuration.Autofac.csproj">
+      <Project>{759CEA3C-1CD0-449C-977E-102CE308F4DE}</Project>
+      <Name>Rhetos.Configuration.Autofac</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Dom.Interfaces\Rhetos.Dom.Interfaces.csproj">
       <Project>{91bdf488-0921-4969-8a53-32169338d8db}</Project>
       <Name>Rhetos.Dom.Interfaces</Name>

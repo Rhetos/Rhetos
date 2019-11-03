@@ -32,6 +32,7 @@ using Rhetos.TestCommon;
 using System.Text.RegularExpressions;
 using Rhetos.Dom;
 using Rhetos.Utilities.ApplicationConfiguration;
+using Rhetos.Configuration.Autofac;
 
 namespace Rhetos.DatabaseGenerator.Test
 {

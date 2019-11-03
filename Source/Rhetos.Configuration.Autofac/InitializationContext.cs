@@ -1,11 +1,14 @@
-﻿using Rhetos.Logging;
+﻿using Rhetos.Extensibility;
+using Rhetos.Logging;
+using Rhetos.Utilities;
+using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rhetos.Utilities.ApplicationConfiguration
+namespace Rhetos.Configuration.Autofac
 {
     /// <summary>
     /// Provider necessary to initialize Rhetos framework.
@@ -25,7 +28,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration
         }
 
         /// <summary>
-        /// Creates a context with RhetosAppEnvironment automatically resolved and created from provided configuration.
+        /// Creates a context with RhetosAppEnvironment automatically resolved and created from provided configuration. Creates a new instance of default PluginsProviderMef.
         /// </summary>
         public InitializationContext(IConfigurationProvider configurationProvider, ILogProvider logProvider)
             : this(configurationProvider, logProvider, new RhetosAppEnvironment(configurationProvider.GetOptions<RhetosAppOptions>().RootPath)) 

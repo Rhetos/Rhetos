@@ -42,11 +42,11 @@ namespace Rhetos
         {
             var stopwatch = Stopwatch.StartNew();
 
+            _logger = new NLogProvider().GetLogger("Configuration");
+
             var configurationProvider = new ConfigurationBuilder()
                 .AddRhetosAppConfiguration(AppDomain.CurrentDomain.BaseDirectory)
                 .Build();
-
-            LegacyUtilities.Initialize(configurationProvider);
 
             var builder = CreateServerContainer(configurationProvider);
             AutofacServiceHostFactory.Container = builder.Build();

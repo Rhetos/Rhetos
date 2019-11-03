@@ -24,7 +24,7 @@ using System.Text;
 
 namespace Rhetos.Extensibility
 {
-    internal class PluginInfo
+    public class PluginInfo
     {
         public Type Type;
         public Dictionary<string, object> Metadata;

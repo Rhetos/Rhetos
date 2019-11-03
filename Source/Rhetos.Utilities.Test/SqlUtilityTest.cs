@@ -26,6 +26,7 @@ using System.Linq;
 using System.Reflection;
 using System.Data;
 using Rhetos.Utilities.ApplicationConfiguration;
+using Rhetos.Configuration.Autofac;
 
 namespace Rhetos.Utilities.Test
 {

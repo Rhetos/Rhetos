@@ -29,13 +29,16 @@
     </p>
     <div>
 <%
-    var rhetosAppOptions = Autofac.ResolutionExtensions.Resolve<Rhetos.Utilities.RhetosAppOptions>(Autofac.Integration.Wcf.AutofacServiceHostFactory.Container);
-    var serializedOptions = Newtonsoft.Json.JsonConvert.SerializeObject(rhetosAppOptions, Newtonsoft.Json.Formatting.Indented);
+    var configurationProvider = Autofac.ResolutionExtensions.Resolve<Rhetos.Utilities.ApplicationConfiguration.IConfigurationProvider>(Autofac.Integration.Wcf.AutofacServiceHostFactory.Container);
+    var fullConfiguration = "";
+    foreach (var key in configurationProvider.AllKeys)
+        fullConfiguration += key.PadRight(70) + " =>  " + configurationProvider.GetValue<string>(key) + "\n";
 %>
+    <br />
     <p>
-        Running RhetosAppOptions:
+        Running configuration values:
         <pre>
-<%=serializedOptions%>
+<%=fullConfiguration%>
         </pre>
     </p>
     </div>

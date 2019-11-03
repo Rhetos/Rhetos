@@ -237,6 +237,10 @@
     <Compile Include="SimpleBusinessLogic\PessimisticLockingCodeGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Extensibility\Rhetos.Extensibility.csproj">
+      <Project>{7eaf15bd-39c9-44ab-8834-ec0ae013a8a2}</Project>
+      <Name>Rhetos.Extensibility</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Source\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj">
       <Project>{bb7e5668-1b43-4fce-a832-444cc57fee80}</Project>
       <Name>Rhetos.Logging.Interfaces</Name>

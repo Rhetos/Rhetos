@@ -18,6 +18,7 @@
 */
 
 using Rhetos;
+using Rhetos.Configuration.Autofac;
 using Rhetos.Deployment;
 using Rhetos.Logging;
 using Rhetos.Utilities;
@@ -38,13 +39,13 @@ namespace DeployPackages
         private readonly DeployOptions _deployOptions;
         private readonly InitializationContext _initializationContext;
 
-        public PackageManager(InitializationContext initializationContext)
+        public PackageManager(IConfigurationProvider configurationProvider, ILogProvider logProvider)
         {
-            _logger = initializationContext.LogProvider.GetLogger("DeployPackages");
-            _filesUtility = new FilesUtility(initializationContext.LogProvider);
-            _deployOptions = initializationContext.ConfigurationProvider.GetOptions<DeployOptions>();
-            _initializationContext = initializationContext;
-            LegacyUtilities.Initialize(_initializationContext.ConfigurationProvider);
+            _logger = logProvider.GetLogger("DeployPackages");
+            _filesUtility = new FilesUtility(logProvider);
+            _deployOptions = configurationProvider.GetOptions<DeployOptions>();
+            _initializationContext = new InitializationContext(configurationProvider, logProvider);
+            LegacyUtilities.Initialize(configurationProvider);
         }
 
         public void InitialCleanup()

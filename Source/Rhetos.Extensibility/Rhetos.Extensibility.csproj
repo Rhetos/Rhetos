@@ -123,11 +123,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="InitializationLogging.cs" />
+    <Compile Include="IPluginScanner.cs" />
+    <Compile Include="NamedPluginsExtensions.cs" />
     <Compile Include="PluginInfo.cs" />
     <Compile Include="MefPluginScanner.cs" />
     <Compile Include="NamedPlugins.cs" />
     <Compile Include="PluginsContainer.cs" />
     <Compile Include="PluginsMetadataCache.cs" />
+    <Compile Include="ContainerBuilderPluginRegistration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="..\Rhetos\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>

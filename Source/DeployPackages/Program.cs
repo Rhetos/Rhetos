@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Configuration.Autofac;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using Rhetos.Utilities.ApplicationConfiguration;
@@ -55,7 +56,6 @@ namespace DeployPackages
                     return 1;
 
                 var configurationProvider = BuildConfigurationProvider(args);
-                var initializationContext = new InitializationContext(configurationProvider, logProvider);
                 var deployOptions = configurationProvider.GetOptions<DeployOptions>();
 
                 pauseOnError = !deployOptions.NoPause;
@@ -64,11 +64,11 @@ namespace DeployPackages
                     StartPaused();
 
                 
-                var packageManager = new PackageManager(initializationContext);
+                var packageManager = new PackageManager(configurationProvider, logProvider);
                 packageManager.InitialCleanup();
                 packageManager.DownloadPackages();
                 
-                var deployManager = new ApplicationDeployment(initializationContext);
+                var deployManager = new ApplicationDeployment(configurationProvider, logProvider);
                 deployManager.GenerateApplication();
                 deployManager.InitializeGeneratedApplication();
 

@@ -44,9 +44,7 @@ namespace Rhetos.Utilities
         /// </summary>
         public static string GetAppSetting(string key)
         {
-            if (_configurationProvider == null)
-                throw new FrameworkException("ConfigUtility not initialized.");
-
+            ThrowIfNotInitialized();
             return _configurationProvider.GetValue<string>(key);
         }
 
@@ -54,8 +52,7 @@ namespace Rhetos.Utilities
 
         public static System.Configuration.ConnectionStringSettings GetConnectionString()
         {
-            if (_configurationProvider == null)
-                throw new FrameworkException("ConfigUtility not initialized.");
+            ThrowIfNotInitialized();
 
             var connectionStringOptions = _configurationProvider.GetOptions<ConnectionStringOptions>($"ConnectionStrings:{ServerConnectionStringName}");
 
@@ -68,6 +65,12 @@ namespace Rhetos.Utilities
                 connectionStringOptions.ProviderName);
 
             return connectionStringSettings;
+        }
+
+        private static void ThrowIfNotInitialized()
+        {
+            if (_configurationProvider == null)
+                throw new FrameworkException("ConfigUtility is not initialized. Use LegacyUtilities.Initialize() to initialize obsolete static utilities or use the new IConfigurationProvider.");
         }
     }
 }

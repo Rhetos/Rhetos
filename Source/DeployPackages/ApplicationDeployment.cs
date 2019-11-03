@@ -39,12 +39,14 @@ namespace DeployPackages
     public class ApplicationDeployment
     {
         private readonly ILogger _logger;
-        private readonly InitializationContext _initializationContext;
+        private readonly IConfigurationProvider _configurationProvider;
+        private readonly ILogProvider _logProvider;
 
-        public ApplicationDeployment(InitializationContext initializationContext)
+        public ApplicationDeployment(IConfigurationProvider configurationProvider, ILogProvider logProvider)
         {
-            _logger = initializationContext.LogProvider.GetLogger("DeployPackages");
-            _initializationContext = initializationContext;
+            _logger = logProvider.GetLogger("DeployPackages");
+            _configurationProvider = configurationProvider;
+            _logProvider = logProvider;
         }
         
         public void GenerateApplication()
@@ -52,7 +54,7 @@ namespace DeployPackages
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var builder = new ContextContainerBuilder(_initializationContext)
+            var builder = new ContextContainerBuilder(new InitializationContext(_configurationProvider, _logProvider))
                 .AddRhetosDeployment()
                 .AddUserOverride();
 
@@ -69,12 +71,14 @@ namespace DeployPackages
         public void InitializeGeneratedApplication()
         {
             // Creating a new container builder instead of using builder.Update, because of severe performance issues with the Update method.
-            Plugins.ClearCache();
+            // Plugins.ClearCache();
 
             _logger.Trace("Loading generated plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var builder = new ContextContainerBuilder(_initializationContext)
+            var initializationContext = new InitializationContext(_configurationProvider, _logProvider);
+
+            var builder = new ContextContainerBuilder(initializationContext)
                 .AddApplicationInitialization()
                 .AddRhetosRuntime()
                 .AddUserOverride();
@@ -103,7 +107,8 @@ namespace DeployPackages
 
         private void RestartWebServer()
         {
-            var configFile = Path.Combine(_initializationContext.RhetosAppEnvironment.RootPath, "Web.config");
+            var rhetosAppEnvironment = _configurationProvider.GetOptions<RhetosAppEnvironment>();
+            var configFile = Path.Combine(rhetosAppEnvironment.RootPath, "Web.config");
             if (FilesUtility.SafeTouch(configFile))
                 _logger.Trace($"Updated {Path.GetFileName(configFile)} modification date to restart server.");
             else

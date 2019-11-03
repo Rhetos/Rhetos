@@ -28,6 +28,7 @@ using System.Data;
 using System.Text.RegularExpressions;
 using Rhetos.TestCommon;
 using Rhetos.Utilities.ApplicationConfiguration;
+using Rhetos.Configuration.Autofac;
 
 namespace Rhetos.Deployment.Test
 {

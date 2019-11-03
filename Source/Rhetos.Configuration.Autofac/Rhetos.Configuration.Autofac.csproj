@@ -99,6 +99,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ContextContainerBuilderExtensions.cs" />
+    <Compile Include="InitializationContext.cs" />
     <Compile Include="Modules\CoreModule.cs" />
     <Compile Include="Modules\RuntimeModule.cs" />
     <Compile Include="Modules\DeployModule.cs" />

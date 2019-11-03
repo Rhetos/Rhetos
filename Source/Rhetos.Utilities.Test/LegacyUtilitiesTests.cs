@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
