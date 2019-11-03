@@ -62,7 +62,7 @@ namespace DeployPackages
             {
                 var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
                 performanceLogger.Write(stopwatch, "DeployPackages.Program: Modules and plugins registered.");
-                Plugins.LogRegistrationStatistics("Generating application", container);
+                Plugins.LogRegistrationStatistics("Generating application", container, _logProvider);
 
                 container.Resolve<ApplicationGenerator>().ExecuteGenerators();
             }
@@ -89,7 +89,7 @@ namespace DeployPackages
                 var initializers = ApplicationInitialization.GetSortedInitializers(container);
 
                 performanceLogger.Write(stopwatch, "DeployPackages.Program: New modules and plugins registered.");
-                Plugins.LogRegistrationStatistics("Initializing application", container);
+                Plugins.LogRegistrationStatistics("Initializing application", container, _logProvider);
 
                 if (!initializers.Any())
                 {
@@ -107,7 +107,7 @@ namespace DeployPackages
 
         private void RestartWebServer()
         {
-            var rhetosAppEnvironment = _configurationProvider.GetOptions<RhetosAppEnvironment>();
+            var rhetosAppEnvironment = new RhetosAppEnvironment(_configurationProvider.GetOptions<RhetosAppOptions>().RootPath);
             var configFile = Path.Combine(rhetosAppEnvironment.RootPath, "Web.config");
             if (FilesUtility.SafeTouch(configFile))
                 _logger.Trace($"Updated {Path.GetFileName(configFile)} modification date to restart server.");

@@ -15,6 +15,9 @@ namespace Rhetos.Utilities
             var rhetosAppEnvironment = new RhetosAppEnvironment(rhetosAppOptions.RootPath);
             Paths.Initialize(rhetosAppEnvironment);
             ConfigUtility.Initialize(configurationProvider);
+            
+            var connectionStringOptions = configurationProvider.GetOptions<ConnectionStringOptions>("ConnectionStrings:ServerConnectionString");
+            SqlUtility.Initialize(rhetosAppOptions, connectionStringOptions);
         }
     }
 }

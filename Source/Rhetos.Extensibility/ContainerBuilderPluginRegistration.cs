@@ -35,6 +35,7 @@ namespace Rhetos.Extensibility
         private readonly IPluginScanner _pluginScanner;
 
         public ContainerBuilder Builder => _builder;
+        public IPluginScanner PluginScanner => _pluginScanner;
 
         public ContainerBuilderPluginRegistration(ContainerBuilder builder, ILogProvider logProvider, IPluginScanner pluginScanner)
         {
@@ -173,30 +174,25 @@ namespace Rhetos.Extensibility
         }
 
         #region Log registration statistics
-        public void LogRegistrationStatistics(string title, IContainer container)
+        public static string GetRegistrationStatistics(string title, IContainer container)
         {
-            Func<string> generateReport = () =>
-            {
-                var registrations = container.ComponentRegistry.Registrations
-                    .SelectMany(r => r.Services.Select(s => new { pluginInterface = GetServiceType(s), pluginType = r.Activator.LimitType, registration = r }))
-                    .OrderBy(r => r.pluginInterface)
-                    .ToList();
+            var registrations = container.ComponentRegistry.Registrations
+                .SelectMany(r => r.Services.Select(s => new { pluginInterface = GetServiceType(s), pluginType = r.Activator.LimitType, registration = r }))
+                .OrderBy(r => r.pluginInterface)
+                .ToList();
 
-                var stats = registrations.GroupBy(r => r.pluginInterface)
-                    .Select(g => new
-                    {
-                        pluginInterface = g.Key,
-                        pluginsCountDistinct = g.Select(x => x.pluginType).Distinct().Count(),
-                        pluginsCount = g.Select(x => x.pluginType).Count()
-                    })
-                    .OrderBy(stat => stat.pluginInterface)
-                    .ToList();
+            var stats = registrations.GroupBy(r => r.pluginInterface)
+                .Select(g => new
+                {
+                    pluginInterface = g.Key,
+                    pluginsCountDistinct = g.Select(x => x.pluginType).Distinct().Count(),
+                    pluginsCount = g.Select(x => x.pluginType).Count()
+                })
+                .OrderBy(stat => stat.pluginInterface)
+                .ToList();
 
-                return title + ":" + string.Join("", stats.Select(stat => "\r\n"
-                    + stat.pluginInterface + " " + stat.pluginsCountDistinct + " " + stat.pluginsCount));
-            };
-
-            _logger.Trace(generateReport);
+            return title + ":" + string.Join("", stats.Select(stat => "\r\n"
+                + stat.pluginInterface + " " + stat.pluginsCountDistinct + " " + stat.pluginsCount));
         }
 
         private static string GetServiceType(Autofac.Core.Service service)

@@ -18,23 +18,26 @@
 */
 
 using Autofac;
+using Rhetos.Logging;
 using System;
 
 namespace Rhetos.Extensibility
 {
+    [Obsolete("Use ContainerBuilderPluginRegistration instead. Use PluginRegistration on ContextContainerBuilder or resolve from ContainerBuilder with extension method builder.GetPluginRegistration().")]
     public static class Plugins
     {
-        private static ContainerBuilderPluginRegistration _pluginRegistration;
+        private static Func<ContainerBuilder, ContainerBuilderPluginRegistration> _pluginRegistrationFactory;
 
-        public static void Initialize(ContainerBuilderPluginRegistration pluginRegistration)
+        public static void Initialize(Func<ContainerBuilder, ContainerBuilderPluginRegistration> pluginRegistrationFactory)
         {
-            _pluginRegistration = pluginRegistration;
+            _pluginRegistrationFactory = pluginRegistrationFactory;
         }
 
         public static void FindAndRegisterModules(ContainerBuilder builder)
         {
-            ThrowIfNotInitializedOrOutOfScope(builder);
-            _pluginRegistration.FindAndRegisterModules();
+            ThrowIfNotInitialized();
+            _pluginRegistrationFactory(builder)
+                .FindAndRegisterModules();
         }
 
         public static void ClearCache()
@@ -44,42 +47,43 @@ namespace Rhetos.Extensibility
 
         public static void FindAndRegisterPlugins<TPluginInterface>(ContainerBuilder builder)
         {
-            ThrowIfNotInitializedOrOutOfScope(builder);
-            _pluginRegistration.FindAndRegisterPlugins<TPluginInterface>();
+            ThrowIfNotInitialized();
+            _pluginRegistrationFactory(builder)
+                .FindAndRegisterPlugins<TPluginInterface>();
         }
 
         public static void FindAndRegisterPlugins<TPluginInterface>(ContainerBuilder builder, Type genericImplementationBase)
         {
-            ThrowIfNotInitializedOrOutOfScope(builder);
-            _pluginRegistration.FindAndRegisterPlugins<TPluginInterface>(genericImplementationBase);
+            ThrowIfNotInitialized();
+            _pluginRegistrationFactory(builder)
+                .FindAndRegisterPlugins<TPluginInterface>(genericImplementationBase);
         }
 
         public static void CheckOverride<TInterface, TImplementation>(ContainerBuilder builder, params Type[] expectedPreviousPlugins)
         {
-            ThrowIfNotInitializedOrOutOfScope(builder);
-            _pluginRegistration.CheckOverride<TInterface, TImplementation>(expectedPreviousPlugins);
+            ThrowIfNotInitialized();
+            _pluginRegistrationFactory(builder)
+                .CheckOverride<TInterface, TImplementation>(expectedPreviousPlugins);
         }
 
         public static void SuppressPlugin<TPluginInterface, TPlugin>(ContainerBuilder builder)
             where TPlugin : TPluginInterface
         {
-            ThrowIfNotInitializedOrOutOfScope(builder);
-            _pluginRegistration.SuppressPlugin<TPluginInterface, TPlugin>();
+            ThrowIfNotInitialized();
+            _pluginRegistrationFactory(builder)
+                .SuppressPlugin<TPluginInterface, TPlugin>();
         }
 
-        public static void LogRegistrationStatistics(string title, IContainer container)
+        public static void LogRegistrationStatistics(string title, IContainer container, ILogProvider logProvider)
         {
-            ThrowIfNotInitializedOrOutOfScope(null);
-            _pluginRegistration.LogRegistrationStatistics(title, container);
+            var logger = logProvider.GetLogger("Plugins");
+            logger.Trace(() => ContainerBuilderPluginRegistration.GetRegistrationStatistics(title, container));
         }
 
-        private static void ThrowIfNotInitializedOrOutOfScope(ContainerBuilder builder)
+        private static void ThrowIfNotInitialized()
         {
-            if (_pluginRegistration == null)
+            if (_pluginRegistrationFactory == null)
                 throw new FrameworkException("Plugins legacy utility has not been initialized. Use Plugins.Initialize() to initialize or migrate to new convention.");
-
-            if (builder != null && builder != _pluginRegistration.Builder)
-                throw new FrameworkException("Plugins legacy utility has been initialized with one instance of ContainerBuilder and method is called with another instance.");
         }
     }
 }

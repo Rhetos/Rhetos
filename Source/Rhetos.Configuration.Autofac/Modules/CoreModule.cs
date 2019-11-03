@@ -38,10 +38,12 @@ namespace Rhetos.Configuration.Autofac.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
+            var pluginRegistration = builder.GetPluginRegistration();
+
             AddCommon(builder);
-            AddSecurity(builder);
-            AddUtilities(builder);
-            AddDsl(builder);
+            AddSecurity(builder, pluginRegistration);
+            AddUtilities(builder, pluginRegistration);
+            AddDsl(builder, pluginRegistration);
 
             base.Load(builder);
         }
@@ -54,7 +56,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<NLogProvider>().As<ILogProvider>().InstancePerLifetimeScope();
         }
 
-        private void AddSecurity(ContainerBuilder builder)
+        private void AddSecurity(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
             builder.RegisterType<WindowsSecurity>().As<IWindowsSecurity>().SingleInstance();
             builder.RegisterType<AuthorizationManager>().As<IAuthorizationManager>().InstancePerLifetimeScope();
@@ -64,15 +66,16 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<NullAuthorizationProvider>().As<IAuthorizationProvider>().PreserveExistingDefaults();
 
             // Cannot use FindAndRegisterPlugins on IUserInfo because each type should be manually registered with InstancePerLifetimeScope.
-            Plugins.FindAndRegisterPlugins<IAuthorizationProvider>(builder);
-            Plugins.FindAndRegisterPlugins<IClaimProvider>(builder);
+            pluginRegistration.FindAndRegisterPlugins<IAuthorizationProvider>();
+            pluginRegistration.FindAndRegisterPlugins<IClaimProvider>();
         }
 
-        private void AddUtilities(ContainerBuilder builder)
+        private void AddUtilities(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
             builder.RegisterType<XmlUtility>().SingleInstance();
+            builder.RegisterType<FilesUtility>().SingleInstance();
             builder.RegisterType<Rhetos.Utilities.Configuration>().As<Rhetos.Utilities.IConfiguration>().SingleInstance();
-            Plugins.FindAndRegisterPlugins<ILocalizer>(builder);
+            pluginRegistration.FindAndRegisterPlugins<ILocalizer>();
             builder.RegisterType<NoLocalizer>().As<ILocalizer>().SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<GeneratedFilesCache>().SingleInstance();
 
@@ -94,10 +97,10 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<SqlTransactionBatches>().InstancePerLifetimeScope();
         }
 
-        private void AddDsl(ContainerBuilder builder)
+        private void AddDsl(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
             builder.RegisterType<DslContainer>();
-            Plugins.FindAndRegisterPlugins<IDslModelIndex>(builder);
+            pluginRegistration.FindAndRegisterPlugins<IDslModelIndex>();
             builder.RegisterType<DslModelIndexByType>().As<IDslModelIndex>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos dlls.
             builder.RegisterType<DslModelIndexByReference>().As<IDslModelIndex>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos dlls.
             builder.RegisterType<DslModelFile>().As<IDslModel>().SingleInstance();

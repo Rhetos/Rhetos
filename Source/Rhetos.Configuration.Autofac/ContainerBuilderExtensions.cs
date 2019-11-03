@@ -18,31 +18,23 @@
 */
 
 using Autofac;
-using Rhetos.Deployment;
-using Rhetos.Dsl;
 using Rhetos.Extensibility;
-using Rhetos.Logging;
-using Rhetos.Security;
-using Rhetos.Utilities;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Rhetos.Configuration.Autofac
 {
-    public static class ContextContainerBuilderExtensions
+    public static class ContainerBuilderExtensions
     {
-        public static ContextContainerBuilder AddApplicationInitialization(this ContextContainerBuilder builder)
+        /// <summary>
+        /// Extension which resolves PluginRegistration instance from properly initialized ContainerBuilder.
+        /// </summary>
+        public static ContainerBuilderPluginRegistration GetPluginRegistration(this ContainerBuilder builder)
         {
-            var deployOptions = builder.InitializationContext.ConfigurationProvider.GetOptions<DeployOptions>();
-            builder.RegisterInstance(deployOptions).PreserveExistingDefaults();
-            builder.RegisterType<ApplicationInitialization>();
-            builder.PluginRegistration.FindAndRegisterPlugins<IServerInitializer>();
-            return builder;
-        }
-
-        public static ContextContainerBuilder AddUserOverride(this ContextContainerBuilder builder)
-        {
-            builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
-            return builder;
+            return ContextContainerBuilder.GetPluginRegistration(builder);
         }
     }
 }

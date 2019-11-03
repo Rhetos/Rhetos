@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Utilities;
+using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +30,7 @@ namespace Rhetos.TestCommon
     public class MockConfiguration : Dictionary<string, object>, IConfiguration
     {
         private readonly bool _defaultToSystemConfiguration;
-        private readonly Configuration _systemConfiguration = new Configuration();
+        private readonly Configuration _systemConfiguration = new Configuration(new ConfigurationBuilder().AddConfigurationManagerConfiguration().Build());
 
         public MockConfiguration()
         {

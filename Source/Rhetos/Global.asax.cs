@@ -82,8 +82,8 @@ namespace Rhetos
 
             builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
             builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
-            Plugins.FindAndRegisterPlugins<IService>(builder);
-            Plugins.FindAndRegisterPlugins<IHomePageSnippet>(builder);
+            builder.PluginRegistration.FindAndRegisterPlugins<IService>();
+            builder.PluginRegistration.FindAndRegisterPlugins<IHomePageSnippet>();
 
             // General registrations:
             builder.AddRhetosRuntime();

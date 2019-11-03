@@ -51,11 +51,17 @@ namespace Rhetos.Configuration.Autofac
             this.RegisterInstance(initializationContext.ConfigurationProvider);
             this.RegisterInstance(initializationContext.RhetosAppEnvironment);
 
-            this.PluginRegistration = new ContainerBuilderPluginRegistration(this, initializationContext.LogProvider, pluginScanner ?? new MefPluginScanner());
-            Plugins.Initialize(PluginRegistration);
+            pluginScanner = pluginScanner ?? new MefPluginScanner();
+
+            this.PluginRegistration = new ContainerBuilderPluginRegistration(this, initializationContext.LogProvider, pluginScanner);
+            Plugins.Initialize(builder => GetPluginRegistration(builder));
 
             // this is a patch/mock to provide backward compatibility for all usages of old static classes
             LegacyUtilities.Initialize(initializationContext.ConfigurationProvider);
+
+            // make properties accessible to modules which are provided with new/unique instance of ContainerBuilder
+            this.Properties.Add(nameof(Rhetos.Configuration.Autofac.InitializationContext), InitializationContext);
+            this.Properties.Add(nameof(ContainerBuilderPluginRegistration), PluginRegistration);
         }
 
         /// <summary>
@@ -64,6 +70,47 @@ namespace Rhetos.Configuration.Autofac
         public ContextContainerBuilder(IConfigurationProvider configurationProvider, ILogProvider logProvider)
             : this(new InitializationContext(configurationProvider, logProvider))
         {
+        }
+
+        /// <summary>
+        /// Resolves InitializationContext object from Autofac ContainerBuilder.
+        /// Use when ContextContainerBuilder instance is not available, as in Module.Load().
+        /// </summary>
+        public static InitializationContext GetInitializationContext(ContainerBuilder builder)
+        {
+            if (builder is ContextContainerBuilder contextContainerBuilder)
+                return contextContainerBuilder.InitializationContext;
+
+            var key = nameof(Rhetos.Configuration.Autofac.InitializationContext);
+            if (builder.Properties.TryGetValue(key, out var initializationContext) && (initializationContext is InitializationContext))
+                return initializationContext as InitializationContext;
+
+            throw new FrameworkException($"ContainerBuilder does not contain an entry for {nameof(Rhetos.Configuration.Autofac.InitializationContext)}. " +
+                $"This container was probably not created as {nameof(ContextContainerBuilder)}.");
+        }
+
+        /// <summary>
+        /// Resolves ContainerBuilderPluginRegistration object from Autofac ContainerBuilder.
+        /// Use when ContextContainerBuilder instance is not available, as in Module.Load(). 
+        /// </summary>
+        public static ContainerBuilderPluginRegistration GetPluginRegistration(ContainerBuilder builder)
+        {
+            if (builder is ContextContainerBuilder contextContainerBuilder)
+                return contextContainerBuilder.PluginRegistration;
+
+            // if this is not ContextContainerBuilder then we need to create a new instance of PluginRegistration initialized with this new builder, based on stored properties
+            var key = nameof(ContainerBuilderPluginRegistration);
+            if (builder.Properties.TryGetValue(key, out var pluginRegistration) && (pluginRegistration is ContainerBuilderPluginRegistration))
+            {
+                var initializationContext = GetInitializationContext(builder);
+                return new ContainerBuilderPluginRegistration(
+                    builder, 
+                    initializationContext.LogProvider, 
+                    (pluginRegistration as ContainerBuilderPluginRegistration).PluginScanner);
+            }
+
+            throw new FrameworkException($"ContainerBuilder does not contain an entry for {nameof(ContainerBuilderPluginRegistration)}. " +
+                $"This container was probably not created as {nameof(ContextContainerBuilder)}.");
         }
     }
 }

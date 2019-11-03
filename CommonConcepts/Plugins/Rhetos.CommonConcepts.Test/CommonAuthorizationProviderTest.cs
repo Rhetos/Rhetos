@@ -478,7 +478,7 @@ PrincipalPermissions.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 RolePermissions.33395e07-8d14-4db9-bd79-c0c3e8407feb.
 Roles.", ReportCacheMisses(log2));
 
-            var log3 = ClearCachePrincipalsRoles_GetAuthorization(editSystemRole: true);
+            var log3 = ClearCachePrincipalsRoles_GetAuthorization(expiration, editSystemRole: true);
             Assert.AreEqual(@"Principal.pr0.
 PrincipalRoles.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 SystemRoles.

@@ -102,6 +102,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ContainerBuilderExtensions.cs" />
     <Compile Include="ContextContainerBuilderExtensions.cs" />
     <Compile Include="InitializationContext.cs" />
     <Compile Include="Modules\CoreModule.cs" />

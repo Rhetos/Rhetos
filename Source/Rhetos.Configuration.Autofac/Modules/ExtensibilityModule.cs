@@ -29,10 +29,12 @@ namespace Rhetos.Configuration.Autofac.Modules
         {
             Contract.Requires(builder != null);
 
+            var pluginRegistration = builder.GetPluginRegistration();
+
             builder.RegisterGeneric(typeof(PluginsMetadataCache<>)).SingleInstance();
             builder.RegisterGeneric(typeof(PluginsContainer<>)).As(typeof(IPluginsContainer<>)).InstancePerLifetimeScope();
             builder.RegisterGeneric(typeof(NamedPlugins<>)).As(typeof(INamedPlugins<>)).InstancePerLifetimeScope();
-            Plugins.FindAndRegisterModules(builder);
+            pluginRegistration.FindAndRegisterModules();
 
             base.Load(builder);
         }

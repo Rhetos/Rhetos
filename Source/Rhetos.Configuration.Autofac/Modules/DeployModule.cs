@@ -42,32 +42,34 @@ namespace Rhetos.Configuration.Autofac.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            AddDatabaseGenerator(builder);
-            AddDslDeployment(builder);
+            var pluginRegistration = builder.GetPluginRegistration();
+
+            AddDatabaseGenerator(builder, pluginRegistration);
+            AddDslDeployment(builder, pluginRegistration);
             AddDom(builder);
-            AddPersistence(builder);
-            AddCompiler(builder);
+            AddPersistence(builder, pluginRegistration);
+            AddCompiler(builder, pluginRegistration);
 
             builder.RegisterType<ApplicationGenerator>();
-            Plugins.FindAndRegisterPlugins<IGenerator>(builder);
+            pluginRegistration.FindAndRegisterPlugins<IGenerator>();
 
             base.Load(builder);
         }
 
-        private void AddDatabaseGenerator(ContainerBuilder builder)
+        private void AddDatabaseGenerator(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
             builder.RegisterType<ConceptApplicationRepository>().As<IConceptApplicationRepository>();
             builder.RegisterType<DatabaseGenerator.DatabaseGenerator>().As<IDatabaseGenerator>();
             builder.RegisterType<DatabaseGenerator.ConceptDataMigrationExecuter>().As<IConceptDataMigrationExecuter>();
             builder.Register(a => new DatabaseGeneratorOptions { ShortTransactions = a.Resolve<DeployOptions>().ShortTransactions }).SingleInstance();
-            Plugins.FindAndRegisterPlugins<IConceptDatabaseDefinition>(builder);
+            pluginRegistration.FindAndRegisterPlugins<IConceptDatabaseDefinition>();
             builder.RegisterType<NullImplementation>().As<IConceptDatabaseDefinition>();
-            Plugins.FindAndRegisterPlugins<IConceptDataMigration>(builder, typeof(IConceptDataMigration<>));
+            pluginRegistration.FindAndRegisterPlugins<IConceptDataMigration>(typeof(IConceptDataMigration<>));
             builder.RegisterType<DataMigrationScripts>();
             builder.RegisterType<DatabaseCleaner>();
         }
 
-        private void AddDslDeployment(ContainerBuilder builder)
+        private void AddDslDeployment(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
             builder.RegisterType<DiskDslScriptLoader>().As<IDslScriptsProvider>().SingleInstance();
             builder.RegisterType<Tokenizer>().SingleInstance();
@@ -76,9 +78,9 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<MacroOrderRepository>().As<IMacroOrderRepository>();
             builder.RegisterType<ConceptMetadata>().SingleInstance();
             builder.RegisterType<InitializationConcept>().As<IConceptInfo>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos dlls.
-            Plugins.FindAndRegisterPlugins<IConceptInfo>(builder);
-            Plugins.FindAndRegisterPlugins<IConceptMacro>(builder, typeof(IConceptMacro<>));
-            Plugins.FindAndRegisterPlugins<IConceptMetadataExtension>(builder);
+            pluginRegistration.FindAndRegisterPlugins<IConceptInfo>();
+            pluginRegistration.FindAndRegisterPlugins<IConceptMacro>(typeof(IConceptMacro<>));
+            pluginRegistration.FindAndRegisterPlugins<IConceptMetadataExtension>();
         }
 
         private void AddDom(ContainerBuilder builder)
@@ -87,20 +89,20 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<DomGenerator>().As<IDomainObjectModel>().SingleInstance();
         }
 
-        private void AddPersistence(ContainerBuilder builder)
+        private void AddPersistence(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
             builder.RegisterType<DataMigrationScriptsFromDisk>().As<IDataMigrationScriptsProvider>();
             builder.RegisterType<EntityFrameworkMappingGenerator>().As<IGenerator>();
-            Plugins.FindAndRegisterPlugins<IConceptMapping>(builder, typeof(ConceptMapping<>));
+            pluginRegistration.FindAndRegisterPlugins<IConceptMapping>(typeof(ConceptMapping<>));
 
         }
 
-        private void AddCompiler(ContainerBuilder builder)
+        private void AddCompiler(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
             builder.RegisterType<CodeBuilder>().As<ICodeBuilder>();
             builder.RegisterType<CodeGenerator>().As<ICodeGenerator>();
             builder.RegisterType<AssemblyGenerator>().As<IAssemblyGenerator>();
-            Plugins.FindAndRegisterPlugins<IConceptCodeGenerator>(builder);
+            pluginRegistration.FindAndRegisterPlugins<IConceptCodeGenerator>();
         }
     }
 }

@@ -35,16 +35,18 @@ namespace Rhetos.Configuration.Autofac.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
+            var pluginRegistration = builder.GetPluginRegistration();
+
             builder.RegisterType<DomLoader>().As<IDomainObjectModel>().SingleInstance();
             builder.RegisterType<PersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope();
 
             // Processing as group?
             builder.RegisterType<XmlDataTypeProvider>().As<IDataTypeProvider>().SingleInstance();
             builder.RegisterType<ProcessingEngine>().As<IProcessingEngine>();
-            Plugins.FindAndRegisterPlugins<ICommandData>(builder);
-            Plugins.FindAndRegisterPlugins<ICommandImplementation>(builder);
-            Plugins.FindAndRegisterPlugins<ICommandObserver>(builder);
-            Plugins.FindAndRegisterPlugins<ICommandInfo>(builder);
+            pluginRegistration.FindAndRegisterPlugins<ICommandData>();
+            pluginRegistration.FindAndRegisterPlugins<ICommandImplementation>();
+            pluginRegistration.FindAndRegisterPlugins<ICommandObserver>();
+            pluginRegistration.FindAndRegisterPlugins<ICommandInfo>();
 
             base.Load(builder);
         }

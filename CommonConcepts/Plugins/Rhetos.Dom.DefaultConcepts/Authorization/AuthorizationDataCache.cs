@@ -204,14 +204,14 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return CacheGetOrAdd("AuthorizationDataCache.Roles",
                 () => _authorizationDataReader.Value.GetRoles(),
-                GetDefaultExpirationSeconds());
+                _rhetosAppOptions.AuthorizationCacheExpirationSeconds);
         }
 
         public IDictionary<SystemRole, Guid> GetSystemRoles()
         {
             return CacheGetOrAdd("AuthorizationDataCache.SystemRoles",
                 () => _authorizationDataReader.Value.GetSystemRoles(),
-                GetDefaultExpirationSeconds());
+                _rhetosAppOptions.AuthorizationCacheExpirationSeconds);
         }
 
         /// <summary>
