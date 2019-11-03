@@ -39,9 +39,19 @@ namespace Rhetos.Extensibility
         /// </summary>
         private MultiDictionary<string, PluginInfo> _pluginsByExport = null;
         private object _pluginsLock = new object();
+        private readonly ILogger _logger;
+        private readonly ILogger _performanceLogger;
+        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
 
         public string Implements => MefProvider.Implements;
         public string DependsOn => MefProvider.DependsOn;
+
+        public MefPluginScanner(RhetosAppEnvironment rhetosAppEnvironment, ILogProvider logProvider)
+        {
+            _performanceLogger = logProvider.GetLogger("Performance");
+            _logger = logProvider.GetLogger("Plugins");
+            _rhetosAppEnvironment = rhetosAppEnvironment;
+        }
 
         /// <summary>
         /// Returns plugins that are registered for the given interface, sorted by dependencies (MefPovider.DependsOn).
@@ -74,7 +84,7 @@ namespace Rhetos.Extensibility
         {
             var stopwatch = Stopwatch.StartNew();
 
-            string[] pluginsPath = new[] { Paths.PluginsFolder, Paths.GeneratedFolder };
+            string[] pluginsPath = new[] { _rhetosAppEnvironment.PluginsFolder, _rhetosAppEnvironment.GeneratedFolder };
 
             List<string> assemblies = new List<string>();
             foreach (var path in pluginsPath)
@@ -87,9 +97,9 @@ namespace Rhetos.Extensibility
             assemblies.Sort();
 
             foreach (var assembly in assemblies)
-                InitializationLogging.Logger.Trace(() => "Found assembly: " + assembly);
+                _logger.Trace(() => "Found assembly: " + assembly);
 
-            InitializationLogging.PerformanceLogger.Write(stopwatch, "MefPluginScanner: Listed assemblies (" + assemblies.Count + ").");
+            _performanceLogger.Write(stopwatch, "MefPluginScanner: Listed assemblies (" + assemblies.Count + ").");
             return assemblies;
         }
 
@@ -130,7 +140,7 @@ namespace Rhetos.Extensibility
             foreach (var pluginsGroup in pluginsByExport)
                 SortByDependency(pluginsGroup.Value);
 
-            InitializationLogging.PerformanceLogger.Write(stopwatch, "MefPluginScanner: Loaded plugins (" + pluginsCount + ").");
+            _performanceLogger.Write(stopwatch, "MefPluginScanner: Loaded plugins (" + pluginsCount + ").");
             return pluginsByExport;
         }
 

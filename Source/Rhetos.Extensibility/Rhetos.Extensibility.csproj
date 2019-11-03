@@ -122,7 +122,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="InitializationLogging.cs" />
     <Compile Include="IPluginScanner.cs" />
     <Compile Include="NamedPluginsExtensions.cs" />
     <Compile Include="PluginInfo.cs" />

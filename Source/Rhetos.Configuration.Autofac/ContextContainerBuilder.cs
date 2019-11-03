@@ -51,7 +51,7 @@ namespace Rhetos.Configuration.Autofac
             this.RegisterInstance(initializationContext.ConfigurationProvider);
             this.RegisterInstance(initializationContext.RhetosAppEnvironment);
 
-            pluginScanner = pluginScanner ?? new MefPluginScanner();
+            pluginScanner = pluginScanner ?? new MefPluginScanner(initializationContext.RhetosAppEnvironment, initializationContext.LogProvider);
 
             this.PluginRegistration = new ContainerBuilderPluginRegistration(this, initializationContext.LogProvider, pluginScanner);
             Plugins.Initialize(builder => GetPluginRegistration(builder));
