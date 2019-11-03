@@ -53,9 +53,7 @@ namespace Rhetos.Utilities
                     if (tries == maxTries - 1) // Logging the second retry instead of the first one, because first retries are too common.
                         _logger.Trace(() => "Waiting to " + actionName.Invoke() + ".");
 
-                    if (Environment.UserInteractive)
-                        System.Threading.Thread.Sleep(500);
-                    continue;
+                    System.Threading.Thread.Sleep(500);
                 }
             }
         }
@@ -161,6 +159,25 @@ namespace Rhetos.Utilities
                 return Directory.GetFiles(directory, pattern, searchOption);
             else
                 return new string[] { };
+        }
+
+        public string ReadAllText(string path)
+        {
+            var text = File.ReadAllText(path, Encoding.UTF8);
+            //Occurrence of the character � is interpreted as invalid UTF-8
+            var invalidCharIndex = text.IndexOf((char)65533);
+            if (invalidCharIndex != -1)
+            {
+                bool tryDefault = !Encoding.Default.Equals(Encoding.UTF8);
+
+                _logger.Info($"WARNING: File '{path}' contains invalid UTF-8 character at line {ScriptPositionReporting.Line(text, invalidCharIndex)}." +
+                    (tryDefault ? $" Reading with default system encoding instead." : "") +
+                    $" Save text file as UTF-8.");
+
+                if (tryDefault)
+                    text = File.ReadAllText(path, Encoding.Default);
+            }
+            return text;
         }
 
         public static string RelativeToAbsolutePath(string baseFolder, string path)

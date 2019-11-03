@@ -63,7 +63,7 @@ namespace Rhetos.Dsl.Test
     {
         internal static TokenReader TestTokenReader(string dsl, int position = 0)
         {
-            return new TokenReader(new Tokenizer(new MockDslScriptsProvider(dsl)).GetTokens(), position);
+            return new TokenReader(new TestTokenizer(dsl).GetTokens(), position);
         }
 
         class SimpleConceptInfo : IConceptInfo

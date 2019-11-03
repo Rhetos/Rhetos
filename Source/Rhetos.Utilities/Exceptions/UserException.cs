@@ -23,12 +23,13 @@ namespace Rhetos
 {
     /// <summary>
     /// This exceptions denotes an error during validation of data vs business logic rules.
-    /// These errors result from end users' incorrect usage of the application.
+    /// These errors result from end user's incorrect usage of the application.
+    /// Web response HTTP status code on this exception is 400.
     /// </summary>
     [global::System.Serializable]
     public class UserException : RhetosException
     {
-        public string SystemMessage; // TODO: Remove this property. Use RhetosException.Info property instead.
+        public string SystemMessage; // TODO: Remove this property and switch to RhetosException.Info property for error metadata.
 
         /// <summary>
         /// The MessageParameters are used with the Message property, matching the arguments of the string.Format(Message, MessageParameters) method.

@@ -653,3 +653,21 @@ Module TestComputedFrom
         ShortString Control;
     }
 }
+
+Module Test12
+{
+    Entity Entity1
+    {
+        Guid GuidProperty;
+    }
+
+    Entity Entity2
+    {
+        Reference Entity1;
+    }
+
+    Entity Entity3
+    {
+        Reference Entity2;
+    }
+}

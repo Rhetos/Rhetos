@@ -126,7 +126,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public IEnumerable<PrincipalPermissionInfo> GetPrincipalPermissions(IPrincipal principal, IEnumerable<Guid> claimIds = null)
         {
             CsUtility.Materialize(ref claimIds);
-            if (claimIds != null && claimIds.Count() == 0)
+            if (claimIds != null && !claimIds.Any())
                 return Enumerable.Empty<PrincipalPermissionInfo>();
 
             var query = _principalPermissionRepository.Query()
@@ -153,7 +153,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             CsUtility.Materialize(ref roleIds);
             CsUtility.Materialize(ref claimIds);
-            if (roleIds.Count() == 0 || (claimIds != null && claimIds.Count() == 0))
+            if (!roleIds.Any() || (claimIds != null && !claimIds.Any()))
                 return Enumerable.Empty<RolePermissionInfo>();
 
             var query = _rolePermissionRepository.Query()
@@ -179,7 +179,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public IDictionary<Guid, string> GetRoles(IEnumerable<Guid> roleIds = null)
         {
             CsUtility.Materialize(ref roleIds);
-            if (roleIds != null && roleIds.Count() == 0)
+            if (roleIds != null && !roleIds.Any())
                 return new Dictionary<Guid, string>();
 
             var query = _roleRepository.Query();
@@ -187,9 +187,20 @@ namespace Rhetos.Dom.DefaultConcepts
                 query = query.Where(role => roleIds.Contains(role.ID));
 
             return query
-                .Select(role => new { ID = role.ID, Name = role.Name })
-                .ToList()
+                .Select(role => new { role.ID, role.Name }) // This select avoids loading extra columns from database.
                 .ToDictionary(role => role.ID, role => role.Name);
+        }
+
+        public IDictionary<SystemRole, Guid> GetSystemRoles()
+        {
+            string[] roleNames = Enum.GetNames(typeof(SystemRole));
+
+            return _roleRepository.Query()
+                .Where(role => roleNames.Contains(role.Name))
+                .Select(role => new { role.ID, role.Name }) // This select avoids loading extra columns from database.
+                .AsEnumerable()
+                .Where(role => roleNames.Contains(role.Name)) // Ignore any extra names returned by case-insensitive database search.
+                .ToDictionary(role => (SystemRole)Enum.Parse(typeof(SystemRole), role.Name), role => role.ID);
         }
 
         /// <summary>
@@ -199,7 +210,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public IDictionary<Claim, ClaimInfo> GetClaims(IEnumerable<Claim> requiredClaims = null)
         {
             CsUtility.Materialize(ref requiredClaims);
-            if (requiredClaims != null && requiredClaims.Count() == 0)
+            if (requiredClaims != null && !requiredClaims.Any())
                 return new Dictionary<Claim, ClaimInfo>();
 
             var queryClaims = _claimRepository.Query().Where(claim => claim.Active != null && claim.Active.Value);
@@ -230,8 +241,7 @@ namespace Rhetos.Dom.DefaultConcepts
             catch
             {
                 var duplicates = loadedClaims.GroupBy(item => new Claim(item.Resource, item.Right))
-                    .Where(g => g.Count() > 1)
-                    .FirstOrDefault();
+                    .FirstOrDefault(g => g.Count() > 1);
                 if (duplicates != null)
                     throw new FrameworkException(string.Format("Loaded duplicate claims: '{0} {1}' and '{2} {3}'.",
                         duplicates.First().Resource, duplicates.First().Right,

@@ -152,6 +152,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActionTest.cs" />
+    <Compile Include="AuthorizationProvider.cs" />
     <Compile Include="AutoCodeCachedTest.cs" />
     <Compile Include="BinaryTest.cs" />
     <Compile Include="AutoCodeTest.cs" />
@@ -166,6 +167,7 @@
     <Compile Include="DataMigrationTest.cs" />
     <Compile Include="HardcodedEntityTest.cs" />
     <Compile Include="Helpers\PrincipalHelper.cs" />
+    <Compile Include="EFOptimizationTest.cs" />
     <Compile Include="ReferenceTest.cs" />
     <Compile Include="FullTextSearchTest.cs" />
     <Compile Include="Helpers\RhetosTestContainerExtensions.cs" />
@@ -225,6 +227,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="READ_ME.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

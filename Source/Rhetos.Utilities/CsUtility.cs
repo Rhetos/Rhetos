@@ -186,42 +186,74 @@ namespace Rhetos.Utilities
 
         /// <summary>
         /// Creates a detailed report message for the ReflectionTypeLoadException.
+        /// Returns null if the exception cannot be interpreted as a type load exception.
         /// </summary>
-        public static string ReportTypeLoadException(ReflectionTypeLoadException rtle, string errorContext = null)
+        public static string ReportTypeLoadException(Exception ex, string errorContext = null, IEnumerable<string> referencedAssembliesPaths = null)
         {
-            var report = new StringBuilder();
+            List<Exception> loaderExceptions;
+            if (ex is ReflectionTypeLoadException)
+                loaderExceptions = ((ReflectionTypeLoadException)ex).LoaderExceptions.GroupBy(exception => exception.Message).Select(group => group.First()).ToList();
+            else if (ex is FileLoadException)
+                loaderExceptions = new List<Exception> { ex };
+            else
+                return null;
 
-            if (string.IsNullOrEmpty(errorContext))
-                report.Append(errorContext + " ");
+            var report = new List<string>();
+            report.Add(
+                (string.IsNullOrEmpty(errorContext) ? errorContext + " " : "")
+                + "Please check if the assembly is missing or has a different version.");
+            report.AddRange(ReportLoaderExceptions(loaderExceptions));
+            report.AddRange(ReportAssemblyLoadErrors(referencedAssembliesPaths));
 
-            report.Append("Check for missing assembly or unsupported assembly version. " + rtle.Message);
+            return string.Join("\r\n", report);
+        }
 
-            var distinctLoaderExceptions = rtle.LoaderExceptions.GroupBy(exception => exception.Message).Select(group => group.First()).ToList();
-
+        private static IEnumerable<string> ReportLoaderExceptions(List<Exception> distinctLoaderExceptions)
+        {
             const int maxErrors = 5;
 
             bool fusionLogReported = false;
             foreach (var loaderException in distinctLoaderExceptions.Take(maxErrors))
             {
-                report.AppendLine().Append(loaderException.GetType().Name + ": " + loaderException.Message);
+                yield return loaderException.GetType().Name + ": " + loaderException.Message;
 
                 if (!fusionLogReported && loaderException is FileLoadException && !string.IsNullOrEmpty(((FileLoadException)loaderException).FusionLog))
                 {
-                    report.AppendLine().Append(((FileLoadException)loaderException).FusionLog);
+                    yield return ((FileLoadException)loaderException).FusionLog;
                     fusionLogReported = true;
                 }
 
                 if (!fusionLogReported && loaderException is FileNotFoundException && !string.IsNullOrEmpty(((FileNotFoundException)loaderException).FusionLog))
                 {
-                    report.AppendLine().Append(((FileNotFoundException)loaderException).FusionLog);
+                    yield return ((FileNotFoundException)loaderException).FusionLog;
                     fusionLogReported = true;
                 }
             }
 
             if (distinctLoaderExceptions.Count > maxErrors)
-                report.AppendLine().Append("... ");
+                yield return "...";
+        }
 
-            return report.ToString();
+        private static IEnumerable<string> ReportAssemblyLoadErrors(IEnumerable<string> referencedAssembliesPaths)
+        {
+            var report = new List<string>();
+            foreach (string assemblyPath in referencedAssembliesPaths)
+            {
+                try
+                {
+                    Assembly.LoadFrom(assemblyPath).GetTypes();
+                }
+                catch (Exception ex)
+                {
+                    Exception[] reportExceptions = (ex as ReflectionTypeLoadException)?.LoaderExceptions;
+                    if (reportExceptions == null || !reportExceptions.Any())
+                        reportExceptions = new[] { ex };
+
+                    foreach (var exceptionInfo in reportExceptions.Select(re => re.GetType().Name + ": " + re.Message).Distinct().Take(5))
+                        report.Add($"* '{Path.GetFileName(assemblyPath)}' throws {exceptionInfo}.");
+                }
+            }
+            return report;
         }
 
         /// <summary>

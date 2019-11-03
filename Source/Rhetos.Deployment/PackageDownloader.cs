@@ -26,7 +26,7 @@ using System.IO;
 using System.Linq;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using Ionic.Zip;
+using System.IO.Compression;
 
 namespace Rhetos.Deployment
 {
@@ -216,8 +216,9 @@ namespace Rhetos.Deployment
             if (source.Path == null || !Directory.Exists(source.Path))
                 return null;
 
-            var packageExtensions = new[] { "*.nupkg", GetZipPackageName(request) };
-            var existingPackageFiles = packageExtensions.SelectMany(ext => Directory.GetFiles(source.Path, ext));
+            var packageFilePatterns = new[] { "*.nupkg", GetExpectedZipPackage(request)?.FileName };
+            var existingPackageFiles = packageFilePatterns.Where(pattern => pattern != null)
+                .SelectMany(ext => Directory.GetFiles(source.Path, ext));
 
             var existingMetadataFiles = Directory.GetFiles(source.Path, "*.nuspec");
             if (existingMetadataFiles.Length > 1)
@@ -313,7 +314,7 @@ namespace Rhetos.Deployment
                 .Select(dependency => new PackageRequest
                 {
                     Id = dependency.Id,
-                    VersionsRange = dependency.VersionSpec != null ? dependency.VersionSpec.ToString() : null,
+                    VersionsRange = dependency.VersionSpec?.ToString(),
                     RequestedBy = "package " + package.Id
                 }).ToList();
 
@@ -370,37 +371,58 @@ namespace Rhetos.Deployment
         {
             if (source.Path == null)
                 return null;
-            Version simpleVersion;
-            if (!Version.TryParse(request.VersionsRange, out simpleVersion))
+
+            var zipPackage = GetExpectedZipPackage(request);
+            if (zipPackage == null)
                 return null;
 
-            string zipPackageName = GetZipPackageName(request);
-            string zipPackagePath = Path.Combine(source.Path, zipPackageName);
+            string zipPackagePath = Path.Combine(source.Path, zipPackage.FileName);
 
             if (!File.Exists(zipPackagePath))
             {
-                _logger.Trace(() => "There is no legacy file " + zipPackageName + " in " + source.ProvidedLocation + ".");
+                _logger.Trace(() => $"There is no legacy zip package at {zipPackagePath}.");
                 return null;
             }
 
-            _logger.Trace(() => "Reading package " + request.Id + " from legacy file " + zipPackageName + ".");
-            _deployPackagesLogger.Trace(() => "Reading " + request.Id + " from legacy file.");
+            _logger.Trace(() => $"Reading package {request.Id} from legacy file {zipPackagePath}.");
+            _deployPackagesLogger.Trace(() => $"Reading {request.Id} from legacy zip file.");
 
-            string targetFolder = GetTargetFolder(request.Id, request.VersionsRange);
+            string targetFolder = GetTargetFolder(request.Id, zipPackage.Version);
             _filesUtility.EmptyDirectory(targetFolder);
-            using (var zipFile = ZipFile.Read(zipPackagePath))
-                foreach (var zipEntry in zipFile)
-                    zipEntry.Extract(targetFolder, ExtractExistingFileAction.OverwriteSilently);
+            ZipFile.ExtractToDirectory(zipPackagePath, targetFolder);
 
             binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Plugins"), Paths.PluginsFolder, recursive: false);
             binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Resources"), Paths.ResourcesFolder, SimplifyPackageName(request.Id), recursive: true);
 
-            return new InstalledPackage(request.Id, request.VersionsRange, new List<PackageRequest> { }, targetFolder, request, source.ProcessedLocation);
+            return new InstalledPackage(request.Id, zipPackage.Version, new List<PackageRequest> { }, targetFolder, request, source.ProcessedLocation);
         }
 
-        private string GetZipPackageName(PackageRequest request)
+        public class ExpectedZipPackage
         {
-            return request.Id + (request.VersionsRange != null ? "_" + request.VersionsRange.Replace('.', '_') : "") + ".zip";
+            public string FileName { get; set; }
+            public string Version { get; set; }
+        }
+
+        /// <summary>
+        /// Returns null if the zip package is not supported for this request.
+        /// </summary>
+        private ExpectedZipPackage GetExpectedZipPackage(PackageRequest request)
+        {
+            if (request.VersionsRange == null)
+                return null;
+
+            var requestVersionsRange = VersionUtility.ParseVersionSpec(request.VersionsRange);
+            if (!SpecifiedMinVersion(requestVersionsRange))
+                return null;
+
+            string version = requestVersionsRange.MinVersion.ToString();
+
+            return new ExpectedZipPackage { FileName = $"{request.Id}_{version?.Replace('.', '_')}.zip", Version = version };
+        }
+
+        private static bool SpecifiedMinVersion(IVersionSpec requestVersionsRange)
+        {
+            return requestVersionsRange.MinVersion != null && !requestVersionsRange.MinVersion.Equals(new SemanticVersion("0.0"));
         }
 
         #endregion
@@ -421,7 +443,7 @@ namespace Rhetos.Deployment
                 : new VersionSpec();
 
             // Default NuGet behavior is to download the smallest version in the given range, so only MinVersion is checked here:
-            if (requestVersionsRange.MinVersion == null || requestVersionsRange.MinVersion.Equals(new SemanticVersion("0.0")))
+            if (!SpecifiedMinVersion(requestVersionsRange))
             {
                 _logger.Trace(() => $"Not looking for {request.ReportIdVersionsRange()} in packages cache because the request does not specify an exact version.");
                 return null;
@@ -466,7 +488,7 @@ namespace Rhetos.Deployment
                 : new VersionSpec();
             IEnumerable<IPackage> packages = nugetRepository.FindPackages(request.Id, requestVersionsRange, allowPrereleaseVersions: true, allowUnlisted: true).ToList();
 
-            if (requestVersionsRange.MinVersion != null && !requestVersionsRange.MinVersion.Equals(new SemanticVersion("0.0")))
+            if (SpecifiedMinVersion(requestVersionsRange))
                 packages = packages.OrderBy(p => p.Version); // Find the lowest compatible version if the version is specified (default NuGet behavior).
             else
                 packages = packages.OrderByDescending(p => p.Version);

@@ -25,35 +25,25 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
-using System.Xml.Serialization;
 
 namespace Rhetos.Deployment
 {
     public class DeploymentConfiguration
     {
         private readonly ILogger _logger;
+        private readonly Lazy<IEnumerable<PackageRequest>> _packageRequests;
+        private readonly Lazy<IEnumerable<PackageSource>> _packageSources;
 
         public DeploymentConfiguration(ILogProvider logProvider)
         {
             _logger = logProvider.GetLogger(GetType().Name);
+            _packageRequests = new Lazy<IEnumerable<PackageRequest>>(LoadPackageRequest);
+            _packageSources = new Lazy<IEnumerable<PackageSource>>(LoadPackageSources);
         }
 
-        private List<PackageRequest> _packageRequests;
-        public IEnumerable<PackageRequest> PackageRequests { get { Initialize(); return _packageRequests; } }
+        public IEnumerable<PackageRequest> PackageRequests => _packageRequests.Value;
 
-        private List<PackageSource> _packageSources;
-        public IEnumerable<PackageSource> PackageSources { get { Initialize(); return _packageSources; } }
-
-        private object _initializationLock = new object();
-
-        private void Initialize()
-        {
-            lock (_initializationLock)
-            {
-                _packageRequests = LoadPackageRequest();
-                _packageSources = LoadPackageSources();
-            }
-        }
+        public IEnumerable<PackageSource> PackageSources => _packageSources.Value;
 
         private List<PackageRequest> LoadPackageRequest()
         {
@@ -87,7 +77,7 @@ namespace Rhetos.Deployment
             string xml = ReadConfigFile(SourcesConfigurationFileName, SourcesConfigurationTemplateFileName, configFileUsage);
             var xdoc = XDocument.Parse(xml);
             var sources = xdoc.Root.Elements()
-                .Select(sourceXml => new PackageSource((string)sourceXml.Attribute("location").Value))
+                .Select(sourceXml => new PackageSource(sourceXml.Attribute("location").Value))
                 .ToList();
 
             if (sources.Count == 0)
@@ -114,7 +104,7 @@ namespace Rhetos.Deployment
             string configFilePath = Path.Combine(GetConfigurationFolder(), configFileName);
 
             if (File.Exists(configFilePath))
-                return File.ReadAllText(configFilePath, Encoding.Default);
+                return File.ReadAllText(configFilePath, Encoding.UTF8);
             else
                 throw new UserException($"Missing configuration file '{configFilePath}'." +
                     $" Please copy the template file '{templateFileName}' to '{Path.GetFileName(configFilePath)}'." +

@@ -100,7 +100,7 @@ namespace Rhetos.Utilities
         public byte[] LoadHash(string sampleSourceFile)
         {
             string hashFile = Path.GetFullPath(Path.ChangeExtension(sampleSourceFile, ".hash"));
-            return CsUtility.HexToByteArray(File.ReadAllText(hashFile, Encoding.Default));
+            return CsUtility.HexToByteArray(File.ReadAllText(hashFile, Encoding.ASCII));
         }
 
         /// <summary>
@@ -162,7 +162,7 @@ namespace Rhetos.Utilities
             if (cachedHashFile == null)
                 return ValueOrError.CreateError("Missing hash file.");
 
-            byte[] cachedHash = CsUtility.HexToByteArray(File.ReadAllText(cachedHashFile, Encoding.Default));
+            byte[] cachedHash = CsUtility.HexToByteArray(File.ReadAllText(cachedHashFile, Encoding.ASCII));
             if (cachedHash == null || cachedHash.Length == 0)
                 return ValueOrError.CreateError("Missing hash value.");
 

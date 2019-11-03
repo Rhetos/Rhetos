@@ -107,5 +107,22 @@ namespace CommonConcepts.Test
                 }, "It is not allowed to modify hard-coded data", "TestHardcodedEntity.SimpleHardcodedEntity");
             }
         }
+
+        [TestMethod]
+        public void HardcodedEntityAndPolymorphicTests()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var implementation1 = new TestHardcodedEntity.ReferenceToHardcodedImplementation1 { ID = Guid.NewGuid() };
+                repository.TestHardcodedEntity.ReferenceToHardcodedImplementation1.Insert(implementation1);
+                var implementation2 = new TestHardcodedEntity.ReferenceToHardcodedImplementation2 { ID = Guid.NewGuid() };
+                repository.TestHardcodedEntity.ReferenceToHardcodedImplementation2.Insert(implementation2);
+
+                Assert.AreEqual(TestHardcodedEntity.SimpleHardcodedEntity.SpecialDescription, repository.TestHardcodedEntity.ReferenceToHardcoded.Query(x => x.ID == implementation1.ID).First().SimpleHardcodedEntityID.Value);
+                Assert.AreEqual(TestHardcodedEntity.SimpleHardcodedEntity.StatusWithoutIntPropertyDefined, repository.TestHardcodedEntity.ReferenceToHardcoded.Query(x => x.ID == implementation2.ID).First().SimpleHardcodedEntityID.Value);
+            }
+        }
     }
 }

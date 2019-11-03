@@ -17,25 +17,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Rhetos
+namespace Rhetos.Dsl.Test
 {
-    /// <summary>
-    /// Legacy exception allows backward compatible JSON response format (a string instead of an object).
-    /// </summary>
-    [Serializable]
-    [Obsolete("Use ClientException instead.")]
-    public class LegacyClientException : ClientException
+    public class TestTokenizer : Tokenizer
     {
-        public LegacyClientException() : base() { }
-        public LegacyClientException(string message) : base(message) { }
-        public LegacyClientException(string message, Exception inner) : base(message, inner) { }
-        protected LegacyClientException(
-            System.Runtime.Serialization.SerializationInfo info,
-            System.Runtime.Serialization.StreamingContext context)
-                : base(info, context) { }
-
-        public bool Severe { get; set; } = true;
+        public TestTokenizer(params string[] dslScripts)
+            : base(new MockDslScriptsProvider(dslScripts), new FilesUtility(new ConsoleLogProvider()))
+        {
+        }
     }
 }

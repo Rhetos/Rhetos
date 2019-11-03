@@ -31,7 +31,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
         public void GenerateCode(EntryInfo concept, IDataMigrationScriptBuilder codeBuilder)
         {
-            string insertSnippet = $@"SELECT ID = '{concept.GetIdentifier()}'";
+            string insertSnippet = $@"
+INSERT INTO @entries (ID) VALUES ('{concept.GetIdentifier()}');";
             codeBuilder.InsertCode(insertSnippet, HardcodedEntityDataMigrationScript.InsertValuesTag, concept.HardcodedEntity);
 
             codeBuilder.InsertCode($@"

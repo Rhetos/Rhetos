@@ -256,38 +256,40 @@ namespace CommonConcepts.Test.OldConcepts
         [TestMethod]
         public void UniqueReferenceCascadeDelete()
         {
-            using (var container = new RhetosTestContainer())
-            {
-                var repository = container.Resolve<Common.DomRepository>();
+            foreach (bool useDatabaseNullSemantics in new[] { false, true })
+                using (var container = new RhetosTestContainer())
+                {
+                    container.OverrideConfiguration(("EntityFramework.UseDatabaseNullSemantics", useDatabaseNullSemantics));
+                    var repository = container.Resolve<Common.DomRepository>();
 
-                var p1 = new TestBrowse.ParentBase { Name = "p1" };
-                var p2 = new TestBrowse.ParentBase { Name = "p2" };
-                repository.TestBrowse.ParentBase.Insert(p1, p2);
+                    var p1 = new TestBrowse.ParentBase { Name = "p1" };
+                    var p2 = new TestBrowse.ParentBase { Name = "p2" };
+                    repository.TestBrowse.ParentBase.Insert(p1, p2);
 
-                var pur1 = new TestBrowse.ParentUniqueReference { ID = p1.ID, Name3 = "pur1" };
-                var pur2 = new TestBrowse.ParentUniqueReference { ID = p2.ID, Name3 = "pur2" };
-                repository.TestBrowse.ParentUniqueReference.Insert(pur1, pur2);
+                    var pur1 = new TestBrowse.ParentUniqueReference { ID = p1.ID, Name3 = "pur1" };
+                    var pur2 = new TestBrowse.ParentUniqueReference { ID = p2.ID, Name3 = "pur2" };
+                    repository.TestBrowse.ParentUniqueReference.Insert(pur1, pur2);
 
-                var urc1 = new TestBrowse.UniqueReferenceChild { ID = p1.ID, Name4 = "urc1" };
-                var urc2 = new TestBrowse.UniqueReferenceChild { ID = p2.ID, Name4 = "urc2" };
-                repository.TestBrowse.UniqueReferenceChild.Insert(urc1, urc2);
+                    var urc1 = new TestBrowse.UniqueReferenceChild { ID = p1.ID, Name4 = "urc1" };
+                    var urc2 = new TestBrowse.UniqueReferenceChild { ID = p2.ID, Name4 = "urc2" };
+                    repository.TestBrowse.UniqueReferenceChild.Insert(urc1, urc2);
 
-                Func<string> report = () => TestUtility.DumpSorted(
-                    repository.TestBrowse.ParentBase.Query(new[] { p1.ID, p2.ID }),
-                    item => item.Name + "-" + item.Extension_ParentUniqueReference.Name3 + "-" + item.Extension_ParentUniqueReference.Extension_UniqueReferenceChild.Name4);
+                    Func<string> report = () => TestUtility.DumpSorted(
+                        repository.TestBrowse.ParentBase.Query(new[] { p1.ID, p2.ID }).ToList(),
+                        item => item.Name + "-" + item.Extension_ParentUniqueReference?.Name3 + "-" + item.Extension_ParentUniqueReference?.Extension_UniqueReferenceChild.Name4);
 
-                Assert.AreEqual("p1-pur1-urc1, p2-pur2-urc2", report());
+                    Assert.AreEqual("p1-pur1-urc1, p2-pur2-urc2", report());
 
-                repository.TestBrowse.ParentUniqueReference.Delete(pur1);
-                Assert.AreEqual("p1--, p2-pur2-urc2", report());
+                    repository.TestBrowse.ParentUniqueReference.Delete(pur1);
+                    Assert.AreEqual("p1--, p2-pur2-urc2", report());
 
-                repository.TestBrowse.ParentBase.Delete(p1);
-                Assert.AreEqual("p2-pur2-urc2", report());
+                    repository.TestBrowse.ParentBase.Delete(p1);
+                    Assert.AreEqual("p2-pur2-urc2", report());
 
-                TestUtility.ShouldFail<Rhetos.UserException>(
-                    () => repository.TestBrowse.ParentBase.Delete(p2),
-                    "It is not allowed to delete a record that is referenced by other records.");
-            }
+                    TestUtility.ShouldFail<Rhetos.UserException>(
+                        () => repository.TestBrowse.ParentBase.Delete(p2),
+                        "It is not allowed to delete a record that is referenced by other records.");
+                }
         }
     }
 }

@@ -17,8 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac;
 using System;
-using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -33,126 +33,130 @@ namespace CommonConcepts.Test
     [TestClass]
     public class DatabaseExtensionsTest
     {
-        private void TestString(
-            IEnumerable<string> testData,
-            string testParameter,
-            string expectedResult,
-            Func<string, Expression<Func<TestDatabaseExtensions.Simple, bool>>> filterExpressionForTest)
-        {
-            TestStrings(testData, new[] { Tuple.Create<string, string>(testParameter, expectedResult) }, filterExpressionForTest);
-        }
-
         private void TestStrings(
-            IEnumerable<string> testData,
-            IDictionary<string, string> testQueries,
-            Func<string, Expression<Func<TestDatabaseExtensions.Simple, bool>>> filterExpressionForTest)
+            IEnumerable<string> data,
+            Func<string, Expression<Func<TestDatabaseExtensions.Simple, bool>>> filter,
+            params (string FilterParameter, string ExpectedResult)[] tests)
         {
-            TestStrings(testData, testQueries.Select(test => Tuple.Create(test.Key, test.Value)).ToList(), filterExpressionForTest);
-        }
+            Assert.AreNotEqual(0, tests.Length);
 
-        private void TestStrings(
-            IEnumerable<string> testData,
-            IEnumerable<Tuple<string, string>> testQueries,
-            Func<string, Expression<Func<TestDatabaseExtensions.Simple, bool>>> filterExpressionForTest)
-        {
+            var report = new List<string>();
+            var expectedReport = new List<string>();
+
             // Test SQL:
 
-            using (var container = new RhetosTestContainer())
-            {
-                container.Resolve<ISqlExecuter>().ExecuteSql(
-                    new[] { "DELETE FROM TestDatabaseExtensions.Simple" }
-                    .Concat(testData.Select(name => "INSERT INTO TestDatabaseExtensions.Simple (Name) SELECT " + SqlUtility.QuoteText(name))));
-
-                var repository = container.Resolve<Common.DomRepository>();
-
-                foreach (var test in testQueries)
+            foreach (bool useDatabaseNullSemantics in new[] { false, true })
+                using (var container = new RhetosTestContainer())
                 {
-                    var filterExpression = filterExpressionForTest(test.Item1);
-                    string info = "SQL filter '" + filterExpression.ToString() + "' for input '" + test.Item1 + "'";
-                    Console.WriteLine(info);
-                    var filtered = repository.TestDatabaseExtensions.Simple.Query().Where(filterExpression).ToList();
-                    Assert.AreEqual(test.Item2, TestUtility.DumpSorted(filtered, item => item.Name ?? "<null>"), info);
+                    container.OverrideConfiguration(("EntityFramework.UseDatabaseNullSemantics", useDatabaseNullSemantics));
+
+                    container.Resolve<ISqlExecuter>().ExecuteSql(
+                        new[] { "DELETE FROM TestDatabaseExtensions.Simple" }
+                        .Concat(data.Select(name => "INSERT INTO TestDatabaseExtensions.Simple (Name) SELECT " + SqlUtility.QuoteText(name))));
+
+                    var repository = container.Resolve<Common.DomRepository>();
+
+                    foreach (var test in tests)
+                    {
+                        var expectedOptions = test.ExpectedResult.Split('/');
+                        string expectedOption = (!useDatabaseNullSemantics || expectedOptions.Length == 1)
+                            ? expectedOptions[0]
+                            : expectedOptions[1];
+
+                        var filterExpression = filter(test.FilterParameter);
+                        var filtered = repository.TestDatabaseExtensions.Simple.Query().Where(filterExpression).ToList();
+
+                        string reportFormat = $"SQL{(useDatabaseNullSemantics ? " DBNULL" : "")}: {test.FilterParameter ?? "null"} => {{0}}";
+                        Console.WriteLine(string.Format(reportFormat, filterExpression));
+                        expectedReport.Add(string.Format(reportFormat, expectedOption));
+                        report.Add(string.Format(reportFormat, TestUtility.DumpSorted(filtered, item => item.Name ?? "null")));
+                    }
                 }
-            }
 
             // Test C#:
 
             {
-                var items = testData.Select(name => new TestDatabaseExtensions.Simple { Name = name }).ToList();
+                var items = data.Select(name => new TestDatabaseExtensions.Simple { Name = name }).ToList();
 
-                foreach (var test in testQueries)
+                foreach (var test in tests)
                 {
-                    var filterExpression = filterExpressionForTest(test.Item1);
+                    string expectedOption = test.ExpectedResult.Split('/')[0]; // C# result is expected to be same as SQL for useDatabaseNullSemantics=false.
+
+                    var filterExpression = filter(test.FilterParameter);
                     var filterFunction = filterExpression.Compile();
-                    string info = "C# filter '" + filterExpression.ToString() + "' for input '" + test.Item1 + "'";
-                    Console.WriteLine(info);
                     var filtered = items.Where(filterFunction).ToList();
-                    Assert.AreEqual(test.Item2, TestUtility.DumpSorted(filtered, item => item.Name ?? "<null>"), info);
+
+                    string reportFormat = $"C#: {test.FilterParameter ?? "null"} => {{0}}";
+                    Console.WriteLine(string.Format(reportFormat, filterExpression));
+                    expectedReport.Add(string.Format(reportFormat, expectedOption));
+                    report.Add(string.Format(reportFormat, TestUtility.DumpSorted(filtered, item => item.Name ?? "null")));
                 }
             }
+
+            Assert.AreEqual(string.Join("\r\n", expectedReport), string.Join("\r\n", report));
         }
 
         private void TestIntegers(
-            IEnumerable<int?> testData,
-            IEnumerable<Tuple<string, string>> testQueries,
-            Func<string, Expression<Func<TestDatabaseExtensions.Simple, bool>>> filterExpressionForTest)
+            IEnumerable<int?> data,
+            Func<string, Expression<Func<TestDatabaseExtensions.Simple, bool>>> filter,
+            params (string FilterParameter, string ExpectedResult)[] tests)
         {
+            Assert.AreNotEqual(0, tests.Length);
+
             // Test SQL:
 
             using (var container = new RhetosTestContainer())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(
                     new[] { "DELETE FROM TestDatabaseExtensions.Simple" }
-                    .Concat(testData.Select(code => "INSERT INTO TestDatabaseExtensions.Simple (Code) SELECT "
+                    .Concat(data.Select(code => "INSERT INTO TestDatabaseExtensions.Simple (Code) SELECT "
                         + (code != null ? code.ToString() : "NULL"))));
 
                 var repository = container.Resolve<Common.DomRepository>();
 
-                foreach (var test in testQueries)
+                foreach (var test in tests)
                 {
-                    var filterExpression = filterExpressionForTest(test.Item1);
-                    string info = "SQL filter '" + filterExpression.ToString() + "' for input '" + test.Item1 + "'";
+                    var filterExpression = filter(test.FilterParameter);
+                    string info = "SQL filter '" + filterExpression.ToString() + "' for input '" + test.FilterParameter + "'";
                     Console.WriteLine(info);
                     var filtered = repository.TestDatabaseExtensions.Simple.Query().Where(filterExpression).ToList();
-                    Assert.AreEqual(test.Item2, TestUtility.DumpSorted(filtered, item => item.Code != null ? item.Code.ToString() : "<null>"), info);
+                    Assert.AreEqual(test.ExpectedResult, TestUtility.DumpSorted(filtered, item => item.Code != null ? item.Code.ToString() : "null"), info);
                 }
             }
 
             // Test C#:
 
             {
-                var items = testData.Select(code => new TestDatabaseExtensions.Simple { Code = code }).ToList();
+                var items = data.Select(code => new TestDatabaseExtensions.Simple { Code = code }).ToList();
 
-                foreach (var test in testQueries)
+                foreach (var test in tests)
                 {
-                    var filterExpression = filterExpressionForTest(test.Item1);
+                    var filterExpression = filter(test.FilterParameter);
                     var filterFunction = filterExpression.Compile();
-                    string info = "C# filter '" + filterExpression.ToString() + "' for input '" + test.Item1 + "'";
+                    string info = "C# filter '" + filterExpression.ToString() + "' for input '" + test.FilterParameter + "'";
                     Console.WriteLine(info);
                     var filtered = items.Where(filterFunction).ToList();
-                    Assert.AreEqual(test.Item2, TestUtility.DumpSorted(filtered, item => item.Code != null ? item.Code.ToString() : "<null>"), info);
+                    Assert.AreEqual(test.ExpectedResult, TestUtility.DumpSorted(filtered, item => item.Code != null ? item.Code.ToString() : "null"), info);
                 }
             }
         }
 
         [TestMethod]
-        public void EqualsOperatorDontTestCase()
+        public void EqualsOperator()
         {
+            // We are not testing case-sensitivity here. Equals operator is CS in C# and CI in SQL by default.
             var testData = new[] { "a", "b", null };
 
-            var testQueries = new List<Tuple<string, string>>
-            {
-                Tuple.Create("a", "a"),
-                Tuple.Create<string, string>(null, "<null>"),
-            };
-
-            TestStrings(testData, testQueries, parameter => item => item.Name == parameter);
+            TestStrings(testData, parameter => item => item.Name == parameter,
+                ("a", "a"),
+                (null, "null/")); // For UseDatabaseNullSemantics=true this will generate SQL query "Name = @ParameterNull" and will not return the null values.
 
             // Testing for null LITERAL, instead of null VARIABLE.
             // The variable is translated to SQL similar to "WHERE Name = @p OR (Name IS NULL AND @p IS NULL)".
             // The literal is translated to SQL "WHERE Name IS NULL".
 
-            TestString(testData, null, "<null>", parameter => item => item.Name == null);
+            TestStrings(testData, parameter => item => item.Name == null,
+                (null, "null"));
         }
 
         [TestMethod]
@@ -160,40 +164,35 @@ namespace CommonConcepts.Test
         {
             var testData = new[] { "a", "A", "b", null };
 
-            var testQueries = new List<Tuple<string, string>>
-            {
-                Tuple.Create("a", "a, A"),
-                Tuple.Create("A", "a, A"),
-                Tuple.Create<string, string>(null, "<null>"),
-            };
-
-            TestStrings(testData, testQueries, parameter => item => item.Name.EqualsCaseInsensitive(parameter));
+            TestStrings(testData, parameter => item => item.Name.EqualsCaseInsensitive(parameter),
+                ("a", "a, A"),
+                ("A", "a, A"),
+                (null, "null/")); // Same as EqualsOperator(), for UseDatabaseNullSemantics=true, searching by parameter set to null value will not return the null values.
 
             // Testing for null LITERAL, instead of null VARIABLE.
             // The variable is translated to SQL similar to "WHERE Name = @p OR (Name IS NULL AND @p IS NULL)".
             // The literal is translated to SQL "WHERE Name IS NULL".
 
-            TestString(testData, null, "<null>", parameter => item => item.Name.EqualsCaseInsensitive(null));
+            TestStrings(testData, parameter => item => item.Name.EqualsCaseInsensitive(null),
+                (null, "null/")); // Different from EqualsOperator(): for UseDatabaseNullSemantics=true, even with constant value, EqualsCaseInsensitive will generate SQL '= null' and not return the null values.
         }
 
         [TestMethod]
-        public void NotEqualsOperatorDontTestCase()
+        public void NotEqualsOperator()
         {
+            // We are not testing case-sensitivity here. Equals operator is CS in C# and CI in SQL by default.
             var testData = new[] { "a", "b", null };
 
-            var testQueries = new List<Tuple<string, string>>
-            {
-                Tuple.Create("a", "<null>, b"),
-                Tuple.Create<string, string>(null, "a, b"),
-            };
-
-            TestStrings(testData, testQueries, parameter => item => item.Name != parameter);
+            TestStrings(testData, parameter => item => item.Name != parameter,
+                ("a", "b, null/b"), // For UseDatabaseNullSemantics=true this will generate SQL query "Name <> @ParameterA" and will not return the null values.
+                (null, "a, b/")); // For UseDatabaseNullSemantics=true this will generate SQL query "Name <> @ParameterNull" and will return no records.
 
             // Testing for null LITERAL, instead of null VARIABLE.
             // The variable is translated to SQL similar to "WHERE Name <> @p OR (Name IS NULL AND @p IS NOT NULL) OR ...".
             // The literal is translated to SQL "WHERE Name IS NOT NULL".
 
-            TestString(testData, null, "a, b", parameter => item => item.Name != null);
+            TestStrings(testData, parameter => item => item.Name != null,
+                (null, "a, b"));
         }
 
         [TestMethod]
@@ -201,21 +200,18 @@ namespace CommonConcepts.Test
         {
             var testData = new[] { "a", "A", "b", null };
 
-            var testQueries = new List<Tuple<string, string>>
-            {
-                Tuple.Create("a", "<null>, b"),
-                Tuple.Create("A", "<null>, b"),
-                Tuple.Create("B", "<null>, a, A"),
-                Tuple.Create<string, string>(null, "a, A, b"),
-            };
-
-            TestStrings(testData, testQueries, parameter => item => item.Name.NotEqualsCaseInsensitive(parameter));
+            TestStrings(testData, parameter => item => item.Name.NotEqualsCaseInsensitive(parameter),
+                ("a", "b, null/b"), // Same as EqualsOperator(), for UseDatabaseNullSemantics=true this will generate SQL query "Name <> @ParameterA" and will not return the null values.
+                ("A", "b, null/b"),
+                ("B", "a, A, null/a, A"),
+                (null, "a, A, b/")); // Same as EqualsOperator(), for UseDatabaseNullSemantics=true this will generate SQL query "Name <> @ParameterNull" and will return no records.
 
             // Null value should be provided as a LITERAL, not as a VARIABLE.
             // The variable is translated to SQL similar to "WHERE Name <> @p OR (Name IS NULL AND @p IS NOT NULL) OR ...".
             // The literal is translated to SQL "WHERE Name IS NOT NULL".
 
-            TestString(testData, null, "a, A, b", parameter => item => item.Name.NotEqualsCaseInsensitive(null));
+            TestStrings(testData, parameter => item => item.Name.NotEqualsCaseInsensitive(null),
+                (null, "a, A, b/")); // Different from EqualsOperator(): for UseDatabaseNullSemantics=true, even with constant value, EqualsCaseInsensitive will generate SQL '<> null' and not return the null values.
         }
 
         [TestMethod]
@@ -223,16 +219,12 @@ namespace CommonConcepts.Test
         {
             var testData = new[] { "a", "A", "b", "B", null };
 
-            var testQueries = new List<Tuple<string, string>>
-            {
-                Tuple.Create("a", ""),
-                Tuple.Create("A", ""),
-                Tuple.Create("b", "a, A"),
-                Tuple.Create("B", "a, A"),
-                Tuple.Create<string, string>(null, ""),
-            };
-
-            TestStrings(testData, testQueries, parameter => item => item.Name.IsLessThen(parameter));
+            TestStrings(testData, parameter => item => item.Name.IsLessThen(parameter),
+                ("a", ""),
+                ("A", ""),
+                ("b", "a, A"),
+                ("B", "a, A"),
+                (null, ""));
         }
 
         [TestMethod]
@@ -240,16 +232,12 @@ namespace CommonConcepts.Test
         {
             var testData = new[] { "a", "A", "b", "B", null };
 
-            var testQueries = new List<Tuple<string, string>>
-            {
-                Tuple.Create("a", "a, A"),
-                Tuple.Create("A", "a, A"),
-                Tuple.Create("b", "a, A, b, B"),
-                Tuple.Create("B", "a, A, b, B"),
-                Tuple.Create<string, string>(null, ""),
-            };
-
-            TestStrings(testData, testQueries, parameter => item => item.Name.IsLessThenOrEqual(parameter));
+            TestStrings(testData, parameter => item => item.Name.IsLessThenOrEqual(parameter),
+                ("a", "a, A"),
+                ("A", "a, A"),
+                ("b", "a, A, b, B"),
+                ("B", "a, A, b, B"),
+                (null, ""));
         }
 
         [TestMethod]
@@ -257,16 +245,12 @@ namespace CommonConcepts.Test
         {
             var testData = new[] { "a", "A", "b", "B", null };
 
-            var testQueries = new List<Tuple<string, string>>
-            {
-                Tuple.Create("a", "b, B"),
-                Tuple.Create("A", "b, B"),
-                Tuple.Create("b", ""),
-                Tuple.Create("B", ""),
-                Tuple.Create<string, string>(null, ""),
-            };
-
-            TestStrings(testData, testQueries, parameter => item => item.Name.IsGreaterThen(parameter));
+            TestStrings(testData, parameter => item => item.Name.IsGreaterThen(parameter),
+                ("a", "b, B"),
+                ("A", "b, B"),
+                ("b", ""),
+                ("B", ""),
+                (null, ""));
         }
 
         [TestMethod]
@@ -274,16 +258,12 @@ namespace CommonConcepts.Test
         {
             var testData = new[] { "a", "A", "b", "B", null };
 
-            var testQueries = new List<Tuple<string, string>>
-            {
-                Tuple.Create("a", "a, A, b, B"),
-                Tuple.Create("A", "a, A, b, B"),
-                Tuple.Create("b", "b, B"),
-                Tuple.Create("B", "b, B"),
-                Tuple.Create<string, string>(null, ""),
-            };
-
-            TestStrings(testData, testQueries, parameter => item => item.Name.IsGreaterThenOrEqual(parameter));
+            TestStrings(testData, parameter => item => item.Name.IsGreaterThenOrEqual(parameter),
+                ("a", "a, A, b, B"),
+                ("A", "a, A, b, B"),
+                ("b", "b, B"),
+                ("B", "b, B"),
+                (null, ""));
         }
 
         [TestMethod]
@@ -291,16 +271,12 @@ namespace CommonConcepts.Test
         {
             var testData = new int?[] { 1, 123, 2, null };
 
-            var testQueries = new List<Tuple<string, string>>
-            {
-                Tuple.Create("1", "1, 123"),
-                Tuple.Create("123", "123"),
-                Tuple.Create("2", "2"),
-                Tuple.Create("", "1, 123, 2"), // Different results for C# method and Entity SQL function 'StartsWith".
-                Tuple.Create<string, string>(null, ""),
-            };
-
-            TestIntegers(testData, testQueries, parameter => item => item.Code.StartsWith(parameter));
+            TestIntegers(testData, parameter => item => item.Code.StartsWith(parameter),
+                ("1", "1, 123"),
+                ("123", "123"),
+                ("2", "2"),
+                ("", "1, 123, 2"), // Different results for C# method and Entity SQL function 'StartsWith".
+                (null, ""));
         }
 
         [TestMethod]
@@ -308,15 +284,11 @@ namespace CommonConcepts.Test
         {
             var testData = new [] { "a1", "A2", "b", null };
 
-            var testQueries = new List<Tuple<string, string>>
-            {
-                Tuple.Create("a", "a1, A2"),
-                Tuple.Create("b", "b"),
-                Tuple.Create("", "a1, A2, b"),
-                Tuple.Create<string, string>(null, ""),
-            };
-
-            TestStrings(testData, testQueries, parameter => item => item.Name.StartsWithCaseInsensitive(parameter));
+            TestStrings(testData, parameter => item => item.Name.StartsWithCaseInsensitive(parameter),
+                ("a", "a1, A2"),
+                ("b", "b"),
+                ("", "a1, A2, b"),
+                (null, ""));
         }
 
         [TestMethod]
@@ -324,15 +296,11 @@ namespace CommonConcepts.Test
         {
             var testData = new[] { "ab", "BA", "c", null };
 
-            var testQueries = new List<Tuple<string, string>>
-            {
-                Tuple.Create("a", "ab, BA"),
-                Tuple.Create("c", "c"),
-                Tuple.Create("", "ab, BA, c"),
-                Tuple.Create<string, string>(null, ""),
-            };
-
-            TestStrings(testData, testQueries, parameter => item => item.Name.ContainsCaseInsensitive(parameter));
+            TestStrings(testData, parameter => item => item.Name.ContainsCaseInsensitive(parameter),
+                ("a", "ab, BA"),
+                ("c", "c"),
+                ("", "ab, BA, c"),
+                (null, ""));
         }
 
         [TestMethod]
@@ -340,29 +308,24 @@ namespace CommonConcepts.Test
         {
             var testData = new[] { @"abc1", @"bbb2", @".*(\" };
 
-            var testQueries = new Dictionary<string, string>
-            {
-                { "%b%", "abc1, bbb2" },
-                { "b%", "bbb2" },
-                { "%1", "abc1" },
-                { "%", @".*(\, abc1, bbb2" },
-                { "%3%", "" },
-                { "", "" },
-                { "bbb2", "bbb2" },
-                { "abc%1", "abc1" },
-                { "%abc1%", "abc1" },
-                { "%ABC1%", "abc1" },
-                { "ABC1", "abc1" },
-                { "abc_", "abc1" },
-                { "abc__", "" },
-                { "%.%", @".*(\" },
-                { "%*%", @".*(\" },
-                { "%(%", @".*(\" },
-                { @"%\%", @".*(\" },
-            };
-
-            TestStrings(testData, testQueries, parameter =>
-                item => item.Name.Like(parameter));
+            TestStrings(testData, parameter => item => item.Name.Like(parameter),
+                ("%b%", "abc1, bbb2" ),
+                ("b%", "bbb2"),
+                ("%1", "abc1"),
+                ("%", @".*(\, abc1, bbb2"),
+                ("%3%", ""),
+                ("", ""),
+                ("bbb2", "bbb2"),
+                ("abc%1", "abc1"),
+                ("%abc1%", "abc1"),
+                ("%ABC1%", "abc1"),
+                ("ABC1", "abc1"),
+                ("abc_", "abc1"),
+                ("abc__", ""),
+                ("%.%", @".*(\"),
+                ("%*%", @".*(\"),
+                ("%(%", @".*(\"),
+                (@"%\%", @".*(\" ));
         }
 
         [TestMethod]
@@ -382,7 +345,7 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
 
                 var loaded = repository.TestDatabaseExtensions.Simple.Query().Select(item => item.Code.CastToString()).ToList();
-                Assert.AreEqual("<null>, 0, 1, 123, -123456789", TestUtility.DumpSorted(loaded, str => str ?? "<null>"));
+                Assert.AreEqual("0, 1, 123, -123456789, null", TestUtility.DumpSorted(loaded, str => str ?? "null"));
 
                 var filtered = repository.TestDatabaseExtensions.Simple.Query()
                     .Where(item => item.Code.CastToString().StartsWith("1"))
@@ -396,7 +359,7 @@ namespace CommonConcepts.Test
                 var items = testData.Select(code => new TestDatabaseExtensions.Simple { Code = code }).ToList();
 
                 var loaded = items.Select(item => item.Code.CastToString()).ToList();
-                Assert.AreEqual("<null>, 0, 1, 123, -123456789", TestUtility.DumpSorted(loaded, str => str ?? "<null>"));
+                Assert.AreEqual("0, 1, 123, -123456789, null", TestUtility.DumpSorted(loaded, str => str ?? "null"));
             }
         }
     }

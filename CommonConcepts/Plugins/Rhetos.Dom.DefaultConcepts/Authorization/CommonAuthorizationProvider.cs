@@ -39,7 +39,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public IList<bool> GetAuthorizations(IUserInfo userInfo, IList<Claim> requiredClaims)
         {
-            PrincipalInfo principal = _authorizationData.GetPrincipal(userInfo.UserName);
+            PrincipalInfo principal = userInfo.IsUserRecognized ? _authorizationData.GetPrincipal(userInfo.UserName) : null;
             IEnumerable<Guid> userRoles = GetUsersRoles(principal);
 
             IEnumerable<ClaimInfo> claims = GetClaims(requiredClaims);
@@ -56,9 +56,19 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>Return direct and indirect user's roles.</summary>
         public IEnumerable<Guid> GetUsersRoles(IPrincipal principal)
         {
-            IEnumerable<Guid> directUserRoles = _authorizationData.GetPrincipalRoles(principal);
-            IEnumerable<Guid> allUserRoles = Graph.IncludeDependents(directUserRoles, _authorizationData.GetRoleRoles);
-            return allUserRoles;
+            var directUserRoles = new List<Guid>();
+
+            if (principal != null)
+            {
+                directUserRoles.AddRange(_authorizationData.GetPrincipalRoles(principal));
+                if (_authorizationData.GetSystemRoles().TryGetValue(SystemRole.AllPrincipals, out Guid allPrincipalsRoleId))
+                    directUserRoles.Add(allPrincipalsRoleId);
+            }
+
+            if (_authorizationData.GetSystemRoles().TryGetValue(SystemRole.Anonymous, out Guid anonymousRoleId))
+                directUserRoles.Add(anonymousRoleId);
+
+            return Graph.IncludeDependents(directUserRoles, _authorizationData.GetRoleRoles);
         }
 
         /// <summary>Inactive or nonexistent claims will have ID set to null.</summary>
@@ -68,8 +78,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return requiredClaims
                 .Select(claim =>
                 {
-                    ClaimInfo claimInfo;
-                    if (claimsIndex.TryGetValue(claim, out claimInfo))
+                    if (claimsIndex.TryGetValue(claim, out ClaimInfo claimInfo))
                         return claimInfo;
                     return new ClaimInfo { ID = null, Resource = claim.Resource, Right = claim.Right };
                 })
@@ -88,9 +97,11 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var claimIdsIndex = new HashSet<Guid>(claims.Where(claim => claim.ID != null).Select(claim => claim.ID.Value));
 
-            var principalPermissions = _authorizationData.GetPrincipalPermissions(principal, claimIdsIndex)
-                .Where(pp => claimIdsIndex.Contains(pp.ClaimID))
-                .Select(pp => new Permission { PrincipalID = pp.PrincipalID, ClaimID = pp.ClaimID, IsAuthorized = pp.IsAuthorized });
+            var principalPermissions = principal != null
+                ? _authorizationData.GetPrincipalPermissions(principal, claimIdsIndex)
+                    .Where(pp => claimIdsIndex.Contains(pp.ClaimID))
+                    .Select(pp => new Permission { PrincipalID = pp.PrincipalID, ClaimID = pp.ClaimID, IsAuthorized = pp.IsAuthorized })
+                : Array.Empty<Permission>();
 
             var rolePermissions = _authorizationData.GetRolePermissions(userRoles, claimIdsIndex)
                 .Where(rp => claimIdsIndex.Contains(rp.ClaimID))
@@ -123,7 +134,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var roleNames = userRoles.Select(roleId => GetRoleNameSafe(roleId, roleNamesIndex)).ToList();
             roleNames.Sort();
-            return string.Format("User {0} has {1} roles: {2}.", userInfo.UserName, roleNames.Count, string.Join(", ", roleNames));
+            return $"User {ReportUserNameOrAnonymous(userInfo)} has {roleNames.Count} roles: {string.Join(", ", roleNames)}.";
         }
 
         /// <summary>
@@ -150,38 +161,45 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 var permissionsDescription = claimPermissions
                     .Select(permission => new
-                        {
-                            permission.IsAuthorized,
-                            PrincipalOrRoleName = permission.PrincipalID != null
-                                ? ("principal " + (permission.PrincipalID.Value == principal.ID ? principal.Name : permission.PrincipalID.Value.ToString()))
+                    {
+                        permission.IsAuthorized,
+                        PrincipalOrRoleName = permission.PrincipalID != null
+                                ? ("principal " + GetPermissionsPrincipalNameSafe(permission, principal))
                                 : ("role " + GetRoleNameSafe(permission.RoleID.Value, roleNamesIndex))
-                        })
+                    })
                     .ToList();
 
                 var allowedFor = permissionsDescription.Where(p => p.IsAuthorized).Select(p => p.PrincipalOrRoleName).ToList();
                 var deniedFor = permissionsDescription.Where(p => !p.IsAuthorized).Select(p => p.PrincipalOrRoleName).ToList();
 
-                string explanation = "User " + userInfo.UserName + " " + (claimResult.UserHasIt ? "has" : "doesn't have")
-                    + " claim '" + claimResult.Claim.Resource + " " + claimResult.Claim.Right + "'. It is ";
-
+                string explanation;
                 if (deniedFor.Count != 0)
+                {
                     if (allowedFor.Count != 0)
-                        explanation += "denied for " + string.Join(", ", deniedFor) + " and allowed for " + string.Join(", ", allowedFor) + " (deny overrides allow).";
+                        explanation = $"It is denied for {string.Join(", ", deniedFor)} and allowed for {string.Join(", ", allowedFor)} (deny overrides allow).";
                     else
-                        explanation += "denied for " + string.Join(", ", deniedFor) + ".";
+                        explanation = $"It is denied for {string.Join(", ", deniedFor)}.";
+                }
+                else if (allowedFor.Count != 0)
+                    explanation = $"It is allowed for {string.Join(", ", allowedFor)}.";
+                else if (claimResult.Claim.ID == null)
+                    explanation = "It is denied by default (the claim does not exist or is no longer active).";
                 else
-                    if (allowedFor.Count != 0)
-                        explanation += "allowed for " + string.Join(", ", allowedFor) + ".";
-                    else
-                        if (claimResult.Claim.ID == null)
-                            explanation += "denied by default (the claim does not exist or is no longer active).";
-                        else
-                            explanation += "denied by default (no permissions defined).";
+                    explanation = "It is denied by default (no permissions defined).";
 
-                report.Add(explanation);
+                report.Add($"User {ReportUserNameOrAnonymous(userInfo)} {(claimResult.UserHasIt ? "has" : "doesn't have")} claim '{claimResult.Claim.Resource} {claimResult.Claim.Right}'. {explanation}");
             }
 
             return string.Join("\r\n", report);
+        }
+
+        /// <summary>Returns principal, ID instead of the principal name, if the name is not available.</summary>
+
+        private static string GetPermissionsPrincipalNameSafe(Permission permission, PrincipalInfo principal)
+        {
+            return principal != null && permission.PrincipalID == principal.ID
+                ? principal.Name
+                : permission.PrincipalID.Value.ToString();
         }
 
         /// <summary>Returns role ID instead of the role name, if the role does not exist in the index.</summary>
@@ -192,5 +210,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 return roleName;
             return roleId.ToString();
         }
+
+        private static string ReportUserNameOrAnonymous(IUserInfo userInfo) => userInfo.IsUserRecognized ? userInfo.UserName : "<anonymous>";
     }
 }

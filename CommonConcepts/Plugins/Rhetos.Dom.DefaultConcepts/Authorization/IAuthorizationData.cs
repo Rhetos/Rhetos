@@ -40,6 +40,8 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         IDictionary<Guid, string> GetRoles(IEnumerable<Guid> roleIds = null);
 
+        IDictionary<SystemRole, Guid> GetSystemRoles();
+
         IEnumerable<Guid> GetRoleRoles(Guid roleId);
 
         /// <summary>
@@ -53,4 +55,6 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         IDictionary<Claim, ClaimInfo> GetClaims(IEnumerable<Claim> requiredClaims = null);
     }
+
+    public enum SystemRole { AllPrincipals, Anonymous };
 }

@@ -85,7 +85,7 @@ namespace Rhetos.Compiler
                 generatedAssembly = Assembly.LoadFrom(outputAssemblyPath);
                 _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Assembly from cache ({dllName}).");
 
-                FailOnTypeLoadErrors(generatedAssembly, outputAssemblyPath);
+                FailOnTypeLoadErrors(generatedAssembly, outputAssemblyPath, assemblySource.RegisteredReferences);
                 _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({dllName}).");
             }
             else
@@ -124,7 +124,7 @@ namespace Rhetos.Compiler
 
                     generatedAssembly = Assembly.LoadFrom(outputAssemblyPath);
 
-                    FailOnTypeLoadErrors(generatedAssembly, outputAssemblyPath);
+                    FailOnTypeLoadErrors(generatedAssembly, outputAssemblyPath, assemblySource.RegisteredReferences);
                     _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({dllName}).");
                 }
             }
@@ -201,15 +201,20 @@ namespace Rhetos.Compiler
                 return "";
         }
 
-        private void FailOnTypeLoadErrors(Assembly assembly, string outputAssemblyPath)
+        private void FailOnTypeLoadErrors(Assembly assembly, string outputAssemblyPath, IEnumerable<string> referencedAssembliesPaths)
         {
             try
             {
                 assembly.GetTypes();
             }
-            catch (ReflectionTypeLoadException ex)
+            catch (Exception ex)
             {
-                throw new FrameworkException(CsUtility.ReportTypeLoadException(ex, $"Error while compiling {Path.GetFileName(outputAssemblyPath)}."), ex);
+                string contextInfo = $"Error while compiling {Path.GetFileName(outputAssemblyPath)}.";
+                string typeLoadReport = CsUtility.ReportTypeLoadException(ex, contextInfo, referencedAssembliesPaths);
+                if (typeLoadReport != null)
+                    throw new FrameworkException(typeLoadReport, ex);
+                else
+                    ExceptionsUtility.Rethrow(ex);
             }
         }
 

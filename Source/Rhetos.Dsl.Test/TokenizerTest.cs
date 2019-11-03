@@ -22,6 +22,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rhetos.TestCommon;
+using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.Test
 {
@@ -60,7 +62,7 @@ namespace Rhetos.Dsl.Test
         private static Token TestGetNextToken_ValueType(string dsl, ref int position)
         {
             var dslScript = new MockDslScript(dsl);
-            return TokenizerInternals.GetNextToken_ValueType(dslScript, ref position);
+            return TokenizerInternals.GetNextToken_ValueType(dslScript, ref position, System.IO.File.ReadAllText);
         }
 
         static void CheckSingle(TokenType expectedType, string expectedValue, string dsl)
@@ -137,7 +139,7 @@ namespace Rhetos.Dsl.Test
 
         private static List<Token> TestGetTokens(string dsl)
         {
-            return new Tokenizer(new MockDslScriptsProvider(dsl)).GetTokens();
+            return new TestTokenizer(dsl).GetTokens();
         }
 
         static void CheckAll(string expectedCSV, string dsl)

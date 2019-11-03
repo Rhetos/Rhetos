@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 
 namespace Rhetos.Security
 {
@@ -86,18 +87,28 @@ namespace Rhetos.Security
         {
             var sw = Stopwatch.StartNew();
 
-            if (_allClaimsForUsers.Contains(_userInfo.UserName)
-                || _allowBuiltinAdminOverride
-                    && _userInfo is IUserInfoAdmin
-                    && ((IUserInfoAdmin)_userInfo).IsBuiltInAdministrator)
+            if (AssumeAllClaims())
             {
-                _logger.Trace(() => string.Format("User {0} has built-in administrator privileges.", _userInfo.UserName));
+                _logger.Trace(() => $"User {ReportUserNameOrAnonymous(_userInfo)} has built-in administrator privileges.");
                 return Enumerable.Repeat(true, requiredClaims.Count()).ToArray();
             }
 
             var authorizations = _authorizationProvider.GetAuthorizations(_userInfo, requiredClaims);
             _performanceLogger.Write(sw, "AuthorizationManager.GetAuthorizations");
             return authorizations;
+        }
+
+        private bool AssumeAllClaims()
+        {
+            return _userInfo.IsUserRecognized
+                &&
+                (
+                    _allClaimsForUsers.Contains(_userInfo.UserName)
+                    ||
+                    _allowBuiltinAdminOverride
+                        && _userInfo is IUserInfoAdmin
+                        && ((IUserInfoAdmin)_userInfo).IsBuiltInAdministrator
+                );
         }
 
         public string Authorize(IList<ICommandInfo> commandInfos)
@@ -108,15 +119,20 @@ namespace Rhetos.Security
             _performanceLogger.Write(sw, "AuthorizationManager.Authorize requiredClaims");
 
             var claimsAuthorization = requiredClaims.Zip(GetAuthorizations(requiredClaims), (claim, authorized) => new { claim, authorized });
-            var unauthorized = claimsAuthorization.FirstOrDefault(ca => ca.authorized == false);
+            var unauthorized = claimsAuthorization.FirstOrDefault(ca => !ca.authorized);
             _performanceLogger.Write(sw, "AuthorizationManager.Authorize unauthorizedClaim");
 
             if (unauthorized != null)
             {
-                _logger.Trace(() => string.Format("User {0} does not posses claim {1}.", _userInfo.UserName, unauthorized.claim.FullName));
+                _logger.Trace(() => $"User {ReportUserNameOrAnonymous(_userInfo)} does not have claim {unauthorized.claim.FullName}.");
+
+                // If user is unauthenticated, assume that the cause is not lack of permissions, but missing authentication.
+                // Throwing HttpStatusCode.Unauthorized to direct the user to the standard login process.
+                if (!_userInfo.IsUserRecognized)
+                    throw new ClientException("User is not authenticated.") { HttpStatusCode = HttpStatusCode.Unauthorized };
 
                 return _localizer["You are not authorized for action '{0}' on resource '{1}', user '{2}'.",
-                    unauthorized.claim.Right, unauthorized.claim.Resource, _userInfo.UserName];
+                    unauthorized.claim.Right, unauthorized.claim.Resource, ReportUserNameOrAnonymous(_userInfo)];
             }
 
             return null;
@@ -133,5 +149,7 @@ namespace Rhetos.Security
             }
             return requiredClaims;
         }
+
+        private static string ReportUserNameOrAnonymous(IUserInfo userInfo) => userInfo.IsUserRecognized ? userInfo.UserName : "<anonymous>";
     }
 }

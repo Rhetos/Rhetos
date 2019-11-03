@@ -94,7 +94,7 @@ namespace CommonConcepts.Test
 
         private static Expression<Func<TEntity, bool>> GenericFilterHelperToExpression<TEntity>(IEnumerable<FilterCriteria> propertyFiltersCriteria)
         {
-            if (propertyFiltersCriteria.Count() == 0)
+            if (!propertyFiltersCriteria.Any())
                 return item => true;
 
             using (var container = new RhetosTestContainer())
@@ -432,7 +432,7 @@ namespace CommonConcepts.Test
 
                 // Null and empty string:
 
-                Func<string, string, object, IQueryable<TestGenericFilter.Simple>> filter1 = (property, operation, value) =>
+                IQueryable<TestGenericFilter.Simple> filter1(string property, string operation, object value) =>
                     GenericFilterHelperFilter(simple, new[] {
                         new FilterCriteria { Property = property, Operation = operation, Value = value },
                         new FilterCriteria { Property = "Code", Operation = "less", Value = 0 }});
@@ -446,7 +446,7 @@ namespace CommonConcepts.Test
 
                 // Null datetime:
 
-                Func<string, string, object, IQueryable<TestGenericFilter.Simple>> filter2 = (property, operation, value) =>
+                IQueryable<TestGenericFilter.Simple> filter2(string property, string operation, object value) =>
                     GenericFilterHelperFilter(simple, new[] {
                         new FilterCriteria { Property = property, Operation = operation, Value = value },
                         new FilterCriteria { Property = "Code", Operation = "greater", Value = 0 }});
@@ -456,7 +456,7 @@ namespace CommonConcepts.Test
 
                 // Null reference:
 
-                Func<string, string, object, IQueryable<TestGenericFilter.Child>> filterChild = (property, operation, value) =>
+                IQueryable<TestGenericFilter.Child> filterChild(string property, string operation, object value) =>
                     GenericFilterHelperFilter(child, new[] {
                         new FilterCriteria { Property = property, Operation = operation, Value = value }});
 
@@ -465,7 +465,7 @@ namespace CommonConcepts.Test
 
                 // Null int:
 
-                Func<string, string, object, IQueryable<TestGenericFilter.Simple>> filterSimple = (property, operation, value) =>
+                IQueryable<TestGenericFilter.Simple> filterSimple(string property, string operation, object value) =>
                     GenericFilterHelperFilter(simple, new[] {
                         new FilterCriteria { Property = property, Operation = operation, Value = value }});
 
@@ -532,6 +532,67 @@ namespace CommonConcepts.Test
                 var genericFilter = new FilterCriteria { Property = "ParentID", Operation = "In", Value = subquery };
                 var queryGenericFilter = repository.TestGenericFilter.Child.Query(new[] { genericFilter }).Select(item => item.ID);
                 Assert.AreEqual(expectedSql, queryGenericFilter.ToString(), "Generic filter's Value parameter should be implemented as a LINQ subquery as generated a single SQL query.");
+            }
+        }
+
+        [TestMethod]
+        public void OptimizeEqualsGuidTest()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+                var id = Guid.NewGuid();
+
+                var sqlQuery1 = repository.TestGenericFilter.Child.Query(new FilterCriteria("ID", "equals", id)).ToString();
+                TestUtility.AssertNotContains(sqlQuery1, id.ToString());
+
+                var sqlQuery2 = repository.TestGenericFilter.Child.Query(new FilterCriteria("ParentID", "equals", id)).ToString();
+                TestUtility.AssertNotContains(sqlQuery2, id.ToString());
+
+                var nullableId = new Nullable<Guid>(Guid.NewGuid());
+                var sqlQuery3 = repository.TestGenericFilter.Child.Query(new FilterCriteria("ID", "equals", nullableId)).ToString();
+                TestUtility.AssertNotContains(sqlQuery3, nullableId.Value.ToString());
+
+                var sqlQuery4 = repository.TestGenericFilter.Child.Query(new FilterCriteria("ParentID", "equals", nullableId)).ToString();
+                TestUtility.AssertNotContains(sqlQuery4, nullableId.Value.ToString());
+            }
+        }
+
+        [TestMethod]
+        public void OptimizeInGuid()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var context = container.Resolve<Common.ExecutionContext>();
+                var repository = context.Repository;
+
+                var s1 = new TestGenericFilter.Simple { Name = "s1" };
+                var s2 = new TestGenericFilter.Simple { Name = "s2" };
+                var s3 = new TestGenericFilter.Simple { Name = "s3" };
+                var s4 = new TestGenericFilter.Simple { Name = "s4" };
+                repository.TestGenericFilter.Simple.Insert(s1, s2, s3, s4);
+
+                var c1 = new TestGenericFilter.Child { Name = "c1", ParentID = s1.ID };
+                var c2 = new TestGenericFilter.Child { Name = "c2", ParentID = s2.ID };
+                var c3 = new TestGenericFilter.Child { Name = "c3", ParentID = s3.ID };
+                var c4 = new TestGenericFilter.Child { Name = "c4", ParentID = s4.ID };
+                repository.TestGenericFilter.Child.Insert(c1, c2, c3, c4);
+
+                var filter = new[]
+                {
+                    new FilterCriteria("ID", "in", new List<Guid> { c1.ID, c2.ID, c3.ID, c4.ID }),
+                    new FilterCriteria("ID", "notin", new List<Guid> { c1.ID }),
+                    new FilterCriteria("ParentID", "notin", new List<Guid> { s2.ID }),
+                };
+
+                var q = repository.TestGenericFilter.Child.Query(filter);
+                var sql = q.ToString();
+                Console.WriteLine(sql);
+                Assert.AreEqual("c3, c4", TestUtility.DumpSorted(q, c => c.Name));
+
+                TestUtility.AssertNotContains(q.ToString(), c3.ID.ToString(), "Optimized ID 'in'.");
+                TestUtility.AssertNotContains(q.ToString(), c1.ID.ToString(), "Optimized ID 'notin'.");
+                TestUtility.AssertNotContains(q.ToString(), s2.ID.ToString(), "Optimized ParentID 'notin'.");
             }
         }
     }

@@ -20,11 +20,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Rhetos
 {
-    [global::System.Serializable]
+    /// <summary>
+    /// Base class for Rhetos framework and application exceptions.
+    /// </summary>
+    [Serializable]
     public abstract class RhetosException : Exception
     {
         /// <summary>

@@ -340,7 +340,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         new[] { Expression.Property(filterPredicateParameter, "ID") }),
                     filterPredicateParameter);
 
-                return Reflection.Where(query, filterPredicate);
+                return Reflection.Where(query, EFExpression.OptimizeContains(filterPredicate));
             }
 
             // It there is only enumerable filter available, use inefficient loader with in-memory filtering: Filter(All(), parameter)
@@ -490,8 +490,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 // The filterExpression must use EntityType or EntityNavigationType, depending on the provided query.
                 var itemType = items.GetType().GetInterface("IEnumerable`1").GetGenericArguments()[0];
-                var filterExpression = _genericFilterHelper.ToExpression((IEnumerable<PropertyFilter>)parameter, itemType);
 
+                var filterExpression = _genericFilterHelper.ToExpression((IEnumerable<PropertyFilter>)parameter, itemType);
                 if (Reflection.IsQueryable(items))
                 {
                     var query = Reflection.AsQueryable(items);
@@ -540,7 +540,7 @@ namespace Rhetos.Dom.DefaultConcepts
                             new[] { Expression.Property(filterPredicateParameter, "ID") }),
                         filterPredicateParameter);
 
-                    return Reflection.Where((IQueryable<TEntityInterface>)items, filterPredicate);
+                    return Reflection.Where((IQueryable<TEntityInterface>)items, EFExpression.OptimizeContains(filterPredicate));
                 }
 
                 return items.Where(item => ((List<Guid>)parameter).Contains(item.ID));

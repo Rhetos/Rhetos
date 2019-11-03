@@ -17,34 +17,34 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Logging;
-using Rhetos.TestCommon;
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Rhetos.Dsl;
+using Rhetos.Utilities;
+using System.ComponentModel.Composition;
 
-namespace Rhetos.Dsl.Test
+namespace Rhetos.Dsl.DefaultConcepts
 {
-    class TestDslParser : DslParser
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("Implements")]
+    public class SubtypeImplementsReferenceToHardcodedEntityInfo : IMacroConcept
     {
-        public TestDslParser(string dsl, IConceptInfo[] conceptInfoPlugins = null)
-            : base (
-                new TestTokenizer(dsl),
-                conceptInfoPlugins ?? new IConceptInfo[] { },
-                new ConsoleLogProvider())
-        {
-        }
+        [ConceptKey]
+        public IsSubtypeOfInfo IsSubtypeOf { get; set; }
 
-        new public IEnumerable<IConceptInfo> ExtractConcepts(MultiDictionary<string, IConceptParser> conceptParsers)
-        {
-            return base.ExtractConcepts(conceptParsers);
-        }
+        [ConceptKey]
+        public PropertyInfo Property { get; set; }
 
-        new public IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, MultiDictionary<string, IConceptParser> conceptParsers)
+        public EntryInfo Entry { get; set; }
+
+        IEnumerable<IConceptInfo> IMacroConcept.CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return base.ParseNextConcept(tokenReader, context, conceptParsers);
+            return new List<IConceptInfo>
+            {
+                new SubtypeImplementsPropertyInfo{ IsSubtypeOf = IsSubtypeOf, Property = Property, Expression = "'" + Entry.GetIdentifier().ToString() + "'"}
+            };
         }
     }
 }

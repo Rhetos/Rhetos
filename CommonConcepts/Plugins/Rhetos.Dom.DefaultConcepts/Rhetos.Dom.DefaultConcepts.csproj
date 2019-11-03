@@ -48,7 +48,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autofac">
-      <HintPath>..\..\..\packages\Autofac.3.5.2\lib\net40\Autofac.dll</HintPath>
+      <HintPath>..\..\..\packages\Autofac.4.9.4\lib\net45\Autofac.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework">
       <HintPath>..\..\..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
@@ -143,7 +143,10 @@
     <Compile Include="DataStructure\Writing\OnSaveValidateCodeGenerator.cs" />
     <Compile Include="Authorization\DeactivateClaimsCodeGenerator.cs" />
     <Compile Include="DomHelper.cs" />
+    <Compile Include="ParameterReplacer.cs" />
     <Compile Include="KeepSynchronizedHelper.cs" />
+    <Compile Include="Persistence\ContainsIdsInterceptor.cs" />
+    <Compile Include="Persistence\ContainsIdsInterceptorCodeGenerator.cs" />
     <Compile Include="Persistence\DatabaseExtensionFunctionsMapping.cs" />
     <Compile Include="Persistence\DataStructureEdmxCodeGenerator.cs" />
     <Compile Include="Persistence\EntityFrameworkMetadata.cs" />

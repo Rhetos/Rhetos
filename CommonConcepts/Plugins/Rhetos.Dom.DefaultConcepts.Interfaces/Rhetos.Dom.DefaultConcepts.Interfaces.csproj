@@ -107,6 +107,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EFExpression.cs" />
     <Compile Include="EntityBase.cs" />
     <Compile Include="FilterSubtype.cs" />
     <Compile Include="ActiveItems.cs" />

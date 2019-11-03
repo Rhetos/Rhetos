@@ -27,7 +27,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [Export(typeof(IConceptDataMigration))]
     public class HardcodedEntityDataMigrationScript : IConceptDataMigration<HardcodedEntityInfo>
     {
-        public static readonly SqlTag<HardcodedEntityInfo> InsertValuesTag = new SqlTag<HardcodedEntityInfo>("InsertValues", TagType.Appendable, "{0}", " UNION ALL\r\n			{0}");
+        public static readonly SqlTag<HardcodedEntityInfo> InsertValuesTag = new SqlTag<HardcodedEntityInfo>("InsertValues");
 
         public static readonly SqlTag<HardcodedEntityInfo> DataMigrationUseTag = new SqlTag<HardcodedEntityInfo>("DataMigrationUse");
 
@@ -41,12 +41,12 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 EXEC Rhetos.DataMigrationUse '{concept.Module.Name}', '{concept.Name}', 'ID', 'uniqueidentifier';{DataMigrationUseTag.Evaluate(concept)}
 GO
 
+DECLARE @entries TABLE (ID uniqueidentifier PRIMARY KEY);
+{InsertValuesTag.Evaluate(concept)}
+
 INSERT INTO _{concept.Module.Name}.{concept.Name} (ID)
 SELECT newItem.ID
-FROM
-	(
-		{InsertValuesTag.Evaluate(concept)}
-	) newItem
+FROM @entries newItem
 	LEFT JOIN _{concept.Module.Name}.{concept.Name} existingItem ON existingItem.ID = newItem.ID
 WHERE
 	existingItem.ID IS NULL;
@@ -60,13 +60,12 @@ EXEC Rhetos.DataMigrationApplyMultiple '{concept.Module.Name}', '{concept.Name}'
 $@"EXEC Rhetos.DataMigrationUse '{concept.Module.Name}', '{concept.Name}', 'ID', 'uniqueidentifier';
 GO
 
+DECLARE @entries TABLE (ID uniqueidentifier PRIMARY KEY);
+{InsertValuesTag.Evaluate(concept)}
+
 DELETE FROM _{concept.Module.Name}.{concept.Name} WHERE ID NOT IN
 (
-    SELECT newItem.ID
-    FROM
-	    (
-		    {InsertValuesTag.Evaluate(concept)}
-	    ) newItem
+    SELECT ID FROM @entries
 );
 
 EXEC Rhetos.DataMigrationApplyMultiple '{concept.Module.Name}', '{concept.Name}', 'ID';");

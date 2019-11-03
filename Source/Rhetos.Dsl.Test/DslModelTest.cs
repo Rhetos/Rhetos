@@ -149,7 +149,7 @@ namespace Rhetos.Dsl.Test
 
         static List<IConceptInfo> DslModelFromScript(string dsl, IConceptInfo[] conceptInfoPluginsForGenericParser)
         {
-            var nullDslParser = new DslParser(new Tokenizer(new MockDslScriptsProvider(dsl)), conceptInfoPluginsForGenericParser, new ConsoleLogProvider());
+            var nullDslParser = new DslParser(new TestTokenizer(dsl), conceptInfoPluginsForGenericParser, new ConsoleLogProvider());
             Console.WriteLine("Parsed concepts:");
             Console.WriteLine(string.Join(Environment.NewLine, nullDslParser.ParsedConcepts.Select(ci => " - " + ci.GetShortDescription())));
 

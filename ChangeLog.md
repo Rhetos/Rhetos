@@ -4,19 +4,88 @@
 
 ### Breaking changes
 
-* Upgrade from .NET Framework 4.5.1 to **.NET Framework 4.7.2** (issue #52).
-  1. Update *Web.config* in your Rhetos server:
+1. Upgrade from .NET Framework 4.5.1 to .NET Framework 4.7.2 (issue #52).
+   * **Update *Web.config*** in your Rhetos server application:
      replace *multiple* instances of `targetFramework="4.5.1"` with `targetFramework="4.7.2"`.
-  2. If your Visual Studio project *directly references* ServerDom dlls,
-     change the *Target framework* in project properties to ".NET Framework 4.7.2"
-     (see [instructions](https://stackoverflow.com/a/10877950/2086516)).
-     If you have a *.nuspec* file that contains this project's dll,
-     replace `target="lib\net451"` with `target="lib\net472"`.
+   * If your Visual Studio project *directly references* ServerDom dlls,
+     **change the *Target framework*** in project properties to ".NET Framework 4.7.2":
+     In Visual Studio right-click on your project, select Properties, select the Application tab,
+     change the Target framework to the ".NET Framework 4.7.2".
+     If you are not seeing .NET Framework 4.7.2 as an option there, ensure you have it installed.
+   * If you have a *.nuspec* file that contains your project's dll,
+     **replace** `target="lib\net451"` with `target="lib\net472"` in the .nuspec.
+2. Upgraded project dependencies to the latest version:
+   Autofac 3.5.2 to 4.9.4,
+   Autofac.Wcf 3.0.1 to 4.1.0,
+   NLog 4.5.4 to 4.6.7,
+   NuGet.Core 2.8.3 to 2.14.0
+   and Newtonsoft.Json 6.0.8 to 12.0.2.
+   * To allow your existing Rhetos application to work with existing plugin packages,
+     without recompiling them with new version of the dependencies,
+     you will need to add `bindingRedirect` configuration in the .config file.
+     **See the instructions at** [Using old packages with new NuGet dependencies](https://github.com/Rhetos/Rhetos/wiki/Using-old-packages-with-new-NuGet-dependencies).
+     If the `bindingRedirect` is missing, the application will return
+     one of the following errors on startup:
+       * *System.InvalidCastException: Unable to cast object of type '...' to type 'Autofac.Module'.*
+       * *Could not load file or assembly 'Autofac, Version=3.3.0.0, ...*
+       * *ReflectionTypeLoadException: Unable to load one or more of the requested types. Retrieve the LoaderExceptions property for more information.*
+3. Removed dependency to Autofac.Configuration and DotNetZip (Ionic.Zip).
+   * If your application or plugin package requires one of the dependencies,
+     add the dependency specification in the .nuspec file.
+4. Default EF storage model namespace changed from "Rhetos" to "Rhetos.Store".
+   * If you have an `IConceptMapping` plugin that creates EF metadata for custom SQL function
+     at `EntityFrameworkMapping.StorageModelTag`, then modify the DbFunction attribute on
+     the related C# method from `"Rhetos"` to `EntityFrameworkMapping.StorageModelNamespace`.
+     Note that this should be done only for *StorageModelTag* functions, not *ConceptualModelTag*.
+
+### New features
+
+* AllPrincipals role.
+  * Every authenticated user (Common.Principal) is automatically assumed to has a role named "AllPrincipals",
+    if this role exists in Common.Role.
+    To specify [basic permissions](https://github.com/Rhetos/Rhetos/wiki/Basic-permissions)
+    that all users automatically have, create the role named "AllPrincipals"
+    and assign the role permission (Common.RolePermission)
+    or inherit permissions from other roles (Common.RoleInheritsRole).
+    Each principal will have a role AllPrincipals even if there are no records in Common.PrincipalHasRole.
+* Unauthenticated user access and Anonymous role.
+  * Every authenticated and unauthenticated user is automatically assumed to has a role named "Anonymous",
+    if this role exists in Common.Role.
+    Unauthenticated user permissions can be specified in the Common.Role with name "Anonymous".
+  * Note that IIS does not support Anonymous and Windows authentication on the same web application.
+  * To enable anonymous access make sure that *Web.config* does not contain `<deny users="?" />`.
+    If you don't need anonymous access, keep this line for improved security and performance.
+  * Troubleshooting: If you have added Anonymous permissions, but still getting `HTTP Error 401.0 - Unauthorized`,
+    review the stack trace in RhetosServer.log to make sure that your authentication plugin (IUserInfo implementation)
+    handles unauthenticated users correctly.
+  * Disclaimer: Anonymous web methods should be avoided for business features, and manually configured in web.config
+    by `location / system.web / authorization / allow` elements.
+    This is important to reduce security impact of any mistake in configuration or implementation of business application's permissions.
+    If you need a public Web API to expose a subset of the application's business features or data,
+    the best practice is to create a stand-alone web service with custom developed API.
+    This will allow for easier maintenance of backward compatible API and versioning with multiple actively supported versions,
+    while making internal changes in your application's data structure and other features.
 
 ### Internal improvements
 
 * C# 6.0 and C# 7.0 features are now available in DSL code snippets (issue #52).
-* Performance improvements on building large dll files (issue #52).
+* Build performance: Building large dlls is 2x faster with Roslyn compiler.
+* Build performance: Rhetos now uses custom Entity Framework metadata generator,
+  instead of automatically generated by Code First.
+* Bugfix: "MissingMethodException: Method not found Common.Queryable..." on deployment (issue #178).
+* Bugfix: Multiple ModificationTimeOf on same entity may not detect some indirect property changes.
+* Bugfix: Corrected backward compatibility issue for SamePropertyValue (since v2.11).
+* Bugfix: NuGet download results with error "... already has a dependency defined for 'NETStandard.Library'" (issue #215).
+* Using UTF-8 by default to read .rhe and .sql files. Fallback to default system encoding in case of an error. (issue #163)
+* AutodetectSqlDependencies now detects INSERT INTO, MERGE and JOIN query parts.
+* Improved error reporting:
+  explanatory Web API response for invalid JSON format,
+  cause analysis for type load errors,
+  warnings on empty build, ...
+* DSL parser disambiguation for flat syntax over nested syntax (issue #210).
+* Entity Framework query optimizations for better reuse of query cache in both EF and database (issues #169 and #167).
+* Recommended value `EntityFramework.UseDatabaseNullSemantics` set to True for new applications
+  (see [recommendations](https://github.com/Rhetos/Rhetos/wiki/Migrating-an-existing-application-to-UseDatabaseNullSemantics)).
 
 ## 2.12.0 (2019-09-09)
 

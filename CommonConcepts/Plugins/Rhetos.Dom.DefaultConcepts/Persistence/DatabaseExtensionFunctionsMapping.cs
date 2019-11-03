@@ -142,6 +142,10 @@ $@"  <Function Name=""{DatabaseExtensionFunctions.InterceptFullTextSearchFunctio
     <Parameter Name = ""searchColumns"" Mode = ""In"" Type = ""nvarchar"" />
     <Parameter Name = ""rankTop"" Mode = ""In"" Type = ""int"" />
   </Function>
+  <Function Name=""{EFExpression.ContainsIdsFunction}"" ReturnType=""bit"" >
+    <Parameter Name = ""id"" Mode = ""In"" Type = ""uniqueidentifier"" />
+    <Parameter Name = ""concatenatedids"" Mode = ""In"" Type = ""nvarchar"" />
+  </Function>
 ", EntityFrameworkMapping.StorageModelTag);
         }
     }

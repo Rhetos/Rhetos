@@ -56,7 +56,7 @@ namespace Rhetos.Security
             {
                 var endpointName = RemoteEndpointMessageProperty.Name;
                 var currentContext = OperationContext.Current;
-                endpointInfo = currentContext.IncomingMessageProperties[endpointName] as RemoteEndpointMessageProperty;
+                endpointInfo = currentContext?.IncomingMessageProperties[endpointName] as RemoteEndpointMessageProperty;
             }
             catch (Exception ex)
             {
@@ -66,7 +66,7 @@ namespace Rhetos.Security
 
             if (endpointInfo == null)
             {
-                _logger.Error("Cannot obtain client host address: RemoteEndpointMessageProperty is null.");
+                _logger.Error("Cannot obtain client host address: OperationContext RemoteEndpointMessageProperty is null.");
                 return "Cannot obtain client host address";
             }
 

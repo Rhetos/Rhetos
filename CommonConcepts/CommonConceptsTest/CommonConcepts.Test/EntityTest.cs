@@ -628,44 +628,46 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DeleteUpdateInsert_ConflictUnique()
         {
-            using (var container = new RhetosTestContainer())
-            {
-                container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.UniqueEntity");
-                var r = container.Resolve<Common.DomRepository>().TestEntity.UniqueEntity;
-                var context = container.Resolve<Common.ExecutionContext>();
+            foreach (bool useDatabaseNullSemantics in new[] { false, true })
+                using (var container = new RhetosTestContainer())
+                {
+                    container.OverrideConfiguration(("EntityFramework.UseDatabaseNullSemantics", useDatabaseNullSemantics));
+                    container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.UniqueEntity");
+                    var r = container.Resolve<Common.DomRepository>().TestEntity.UniqueEntity;
+                    var context = container.Resolve<Common.ExecutionContext>();
 
-                var ia = new TestEntity.UniqueEntity { Name = "a", ID = Guid.NewGuid() };
-                var ib = new TestEntity.UniqueEntity { Name = "b", ID = Guid.NewGuid() };
-                var ic1 = new TestEntity.UniqueEntity { Name = "c", ID = Guid.NewGuid() };
+                    var ia = new TestEntity.UniqueEntity { Name = "a", ID = Guid.NewGuid() };
+                    var ib = new TestEntity.UniqueEntity { Name = "b", ID = Guid.NewGuid() };
+                    var ic1 = new TestEntity.UniqueEntity { Name = "c", ID = Guid.NewGuid() };
 
-                r.Insert(ia, ib, ic1);
-                Assert.AreEqual("a, b, c", TestUtility.DumpSorted(r.Query(), item => item.Name + item.Data));
+                    r.Insert(ia, ib, ic1);
+                    Assert.AreEqual("a, b, c", TestUtility.DumpSorted(r.Load(), item => item.Name + item.Data));
 
-                // Deleting old 'c' and inserting new 'c'. Possible conflict on unique constraint for property Name.
+                    // Deleting old 'c' and inserting new 'c'. Possible conflict on unique constraint for property Name.
 
-                var ic2 = new TestEntity.UniqueEntity { Name = "c", ID = Guid.NewGuid() };
+                    var ic2 = new TestEntity.UniqueEntity { Name = "c", ID = Guid.NewGuid() };
 
-                r.Save(new[] { ic2 }, null, new[] { ic1 });
-                Assert.AreEqual("a, b, c", TestUtility.DumpSorted(r.Query(), item => item.Name + item.Data));
-                Guid currentCID = r.Query().Where(item => item.Name == "c").Select(item => item.ID).Single();
-                Assert.AreEqual(ic2.ID, currentCID, "new inserted item 'c'");
-                Assert.AreNotEqual(ic1.ID, currentCID, "old deleted item 'c'");
+                    r.Save(new[] { ic2 }, null, new[] { ic1 });
+                    Assert.AreEqual("a, b, c", TestUtility.DumpSorted(r.Load(), item => item.Name + item.Data));
+                    Guid currentCID = r.Query().Where(item => item.Name == "c").Select(item => item.ID).Single();
+                    Assert.AreEqual(ic2.ID, currentCID, "new inserted item 'c'");
+                    Assert.AreNotEqual(ic1.ID, currentCID, "old deleted item 'c'");
 
-                // Deleting old 'c' and inserting new 'c' with same ID. Possible conflict on primary key.
+                    // Deleting old 'c' and inserting new 'c' with same ID. Possible conflict on primary key.
 
-                var ic3 = new TestEntity.UniqueEntity { Name = "c", Data = "x", ID = ic2.ID };
+                    var ic3 = new TestEntity.UniqueEntity { Name = "c", Data = "x", ID = ic2.ID };
 
-                r.Save(new[] { ic3 }, null, new[] { ic2 });
-                Assert.AreEqual("a, b, cx", TestUtility.DumpSorted(r.Query(), item => item.Name + item.Data));
+                    r.Save(new[] { ic3 }, null, new[] { ic2 });
+                    Assert.AreEqual("a, b, cx", TestUtility.DumpSorted(r.Load(), item => item.Name + item.Data));
 
-                // Renaming old 'c' and inserting new 'c'. Possible conflict on unique constraint for property Name.
+                    // Renaming old 'c' and inserting new 'c'. Possible conflict on unique constraint for property Name.
 
-                ic3.Name = "oldc";
-                var ic4 = new TestEntity.UniqueEntity { Name = "c", ID = Guid.NewGuid() };
+                    ic3.Name = "oldc";
+                    var ic4 = new TestEntity.UniqueEntity { Name = "c", ID = Guid.NewGuid() };
 
-                r.Save(new[] { ic4 }, new[] { ic3 }, null);
-                Assert.AreEqual("a, b, c, oldcx", TestUtility.DumpSorted(r.Query(), item => item.Name + item.Data));
-            }
+                    r.Save(new[] { ic4 }, new[] { ic3 }, null);
+                    Assert.AreEqual("a, b, c, oldcx", TestUtility.DumpSorted(r.Load(), item => item.Name + item.Data));
+                }
         }
 
         [TestMethod]

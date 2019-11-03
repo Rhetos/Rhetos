@@ -21,19 +21,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.ServiceModel;
 using System.ServiceModel.Web;
-using System.Web;
 using System.ServiceModel.Dispatcher;
-using System.Xml;
-using Rhetos;
-using Rhetos.Logging;
-using System.ServiceModel.Description;
 using System.ServiceModel.Channels;
 using Autofac;
-using Autofac.Integration.Wcf;
 using Rhetos.Utilities;
 using System.Runtime.Serialization;
+using Autofac.Integration.Wcf;
 
 namespace Rhetos.Web
 {
@@ -70,22 +64,28 @@ namespace Rhetos.Web
             HttpStatusCode responseStatusCode;
             var localizer = AutofacServiceHostFactory.Container.Resolve<ILocalizer>();
 
-            if (error is UserException)
+            if (error is UserException userException)
             {
-                var userError = (UserException)error;
+                responseStatusCode = HttpStatusCode.BadRequest;
+                responseMessage = new ResponseMessage
+                {
+                    UserMessage = localizer[userException.Message, userException.MessageParameters],
+                    SystemMessage = userException.SystemMessage
+                };
+            }
+            else if (error is LegacyClientException legacyClientException)
+            {
+                responseStatusCode = legacyClientException.HttpStatusCode;
+                responseMessage = legacyClientException.Message;
+            }
+            else if (error is ClientException clientException)
+            {
+                responseStatusCode = clientException.HttpStatusCode;
+                responseMessage = new ResponseMessage { SystemMessage = clientException.Message };
 
-                responseStatusCode = HttpStatusCode.BadRequest;
-                responseMessage = new ResponseMessage { UserMessage = localizer[userError.Message, userError.MessageParameters], SystemMessage = userError.SystemMessage };
-            }
-            else if (error is LegacyClientException)
-            {
-                responseStatusCode = ((LegacyClientException)error).HttpStatusCode;
-                responseMessage = error.Message;
-            }
-            else if (error is ClientException)
-            {
-                responseStatusCode = HttpStatusCode.BadRequest;
-                responseMessage = new ResponseMessage { SystemMessage = error.Message };
+                // HACK: Old Rhetos plugins could not specify the status code. Here we match by message convention.
+                if (clientException.Message == "User is not authenticated." && responseStatusCode == HttpStatusCode.BadRequest)
+                    responseStatusCode = HttpStatusCode.Unauthorized;
             }
             else if (error is InvalidOperationException && error.Message.StartsWith("The incoming message has an unexpected message format 'Raw'"))
             {
@@ -118,7 +118,7 @@ namespace Rhetos.Web
                 new WebBodyFormatMessageProperty(WebContentFormat.Json));
 
             fault.Properties.Add(HttpResponseMessageProperty.Name,
-                new HttpResponseMessageProperty {StatusCode = responseStatusCode});
+                new HttpResponseMessageProperty { StatusCode = responseStatusCode });
 
             var response = WebOperationContext.Current.OutgoingResponse;
             response.ContentType = "application/json; charset=" + response.BindingWriteEncoding.WebName;

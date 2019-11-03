@@ -25,11 +25,37 @@ Module TestHardcodedEntity
         }
     }
 
+    //Used to test if deployment will fail when no entry is defined
+    Hardcoded EmptyHardcodedEntity
+    {
+    }
+
     Entity ReferenceToHardcodedEntity
     {
         LongString Content { Required; }
         Reference SimpleHardcodedEntity { Required; }
     }
+
+	Polymorphic ReferenceToHardcoded
+	{
+		Reference SimpleHardcodedEntity;
+	}
+
+	Entity ReferenceToHardcodedImplementation1
+	{
+		Is TestHardcodedEntity.ReferenceToHardcoded
+		{
+			Implements TestHardcodedEntity.ReferenceToHardcoded.SimpleHardcodedEntity TestHardcodedEntity.SimpleHardcodedEntity.SpecialDescription;
+		}
+	}
+
+	Entity ReferenceToHardcodedImplementation2
+	{
+		Is TestHardcodedEntity.ReferenceToHardcoded
+		{
+			Implements TestHardcodedEntity.ReferenceToHardcoded.SimpleHardcodedEntity TestHardcodedEntity.SimpleHardcodedEntity.StatusWithoutIntPropertyDefined;
+		}        
+	}
 
     SqlQueryable HardcodedEntityInSqlTest
     "

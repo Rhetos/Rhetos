@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
@@ -139,39 +140,41 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Simple_Browse()
         {
-            using (var container = new RhetosTestContainer())
-            {
-                var repository = container.Resolve<Common.DomRepository>();
+            foreach (bool useDatabaseNullSemantics in new[] { false, true })
+                using (var container = new RhetosTestContainer())
+                {
+                    container.OverrideConfiguration(("EntityFramework.UseDatabaseNullSemantics", useDatabaseNullSemantics));
 
-                // Initialize data:
+                    var repository = container.Resolve<Common.DomRepository>();
 
-                repository.TestPolymorphic.Simple1.Delete(repository.TestPolymorphic.Simple1.Query());
-                repository.TestPolymorphic.Simple2.Delete(repository.TestPolymorphic.Simple2.Query());
-                Assert.AreEqual(0, repository.TestPolymorphic.SimpleBase.Query().Count());
+                    // Initialize data:
 
-                repository.TestPolymorphic.Simple1.Insert(new[] {
-                    new TestPolymorphic.Simple1 { Name = "a", Days = 1 },
-                    new TestPolymorphic.Simple1 { Name = "b", Days = 2 },
-                    new TestPolymorphic.Simple1 { Name = "b3", Days = 2 },
-                    new TestPolymorphic.Simple1 { Name = "b7", Days = 3 },
-                });
-                repository.TestPolymorphic.Simple2.Insert(new[] {
-                    new TestPolymorphic.Simple2 { Name1 = "aa", Name2 = 11, Finish = new DateTime(2000, 1, 1) },
-                    new TestPolymorphic.Simple2 { Name1 = "bb", Name2 = 22, Finish = new DateTime(2000, 1, 2) },
-                    new TestPolymorphic.Simple2 { Name1 = "cc", Name2 = 33, Finish = new DateTime(2000, 1, 3) },
-                });
+                    repository.TestPolymorphic.Simple1.Delete(repository.TestPolymorphic.Simple1.Query());
+                    repository.TestPolymorphic.Simple2.Delete(repository.TestPolymorphic.Simple2.Query());
+                    Assert.AreEqual(0, repository.TestPolymorphic.SimpleBase.Query().Count());
 
-                // Tests:
+                    repository.TestPolymorphic.Simple1.Insert(new[] {
+                        new TestPolymorphic.Simple1 { Name = "a", Days = 1 },
+                        new TestPolymorphic.Simple1 { Name = "b", Days = 2 },
+                        new TestPolymorphic.Simple1 { Name = "b3", Days = 2 },
+                        new TestPolymorphic.Simple1 { Name = "b7", Days = 3 },
+                    });
+                    repository.TestPolymorphic.Simple2.Insert(new[] {
+                        new TestPolymorphic.Simple2 { Name1 = "aa", Name2 = 11, Finish = new DateTime(2000, 1, 1) },
+                        new TestPolymorphic.Simple2 { Name1 = "bb", Name2 = 22, Finish = new DateTime(2000, 1, 2) },
+                        new TestPolymorphic.Simple2 { Name1 = "cc", Name2 = 33, Finish = new DateTime(2000, 1, 3) },
+                    });
 
-                var report = repository.TestPolymorphic.SimpleBrowse.Query()
-                    .Where(item => item.Days == 2)
-                    .Select(item => item.Name + "/" + item.Days + "(" + item.Simple1Name + "/" + item.Simple2Name1 + "/" + item.Simple2.Name2 + ")")
-                    .ToList();
+                    // Tests:
 
-                Assert.AreEqual(
-                    "b/2(b//), b3/2(b3//), bb-22/2(/bb/22)",
-                    TestUtility.DumpSorted(report));
-            }
+                    var report = repository.TestPolymorphic.SimpleBrowse.Query(item => item.Days == 2)
+                        .AsEnumerable()
+                        .Select(item => item.Name + "/" + item.Days + "(" + item.Simple1Name + "/" + item.Simple2Name1 + "/" + item.Simple2?.Name2 + ")");
+
+                    Assert.AreEqual(
+                        "b/2(b//), b3/2(b3//), bb-22/2(/bb/22)",
+                        TestUtility.DumpSorted(report));
+                }
         }
 
         [TestMethod]
@@ -364,103 +367,109 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Disjunctive()
         {
-            using (var container = new RhetosTestContainer())
-            {
-                var repository = container.Resolve<Common.DomRepository>();
+            foreach (bool useDatabaseNullSemantics in new[] { false, true })
+                using (var container = new RhetosTestContainer())
+                {
+                    container.OverrideConfiguration(("EntityFramework.UseDatabaseNullSemantics", useDatabaseNullSemantics));
+                    var repository = container.Resolve<Common.DomRepository>();
 
-                repository.TestPolymorphic.Disjunctive1.Delete(repository.TestPolymorphic.Disjunctive1.Load());
-                repository.TestPolymorphic.Disjunctive2.Delete(repository.TestPolymorphic.Disjunctive2.Load());
-                Assert.AreEqual(0, repository.TestPolymorphic.Disjunctive.Load().Count());
+                    repository.TestPolymorphic.Disjunctive1.Delete(repository.TestPolymorphic.Disjunctive1.Load());
+                    repository.TestPolymorphic.Disjunctive2.Delete(repository.TestPolymorphic.Disjunctive2.Load());
+                    Assert.AreEqual(0, repository.TestPolymorphic.Disjunctive.Load().Count());
 
-                var d1 = new TestPolymorphic.Disjunctive1 { ID = Guid.NewGuid(), Name = "abc" };
-                repository.TestPolymorphic.Disjunctive1.Insert(new[] { d1 });
+                    var d1 = new TestPolymorphic.Disjunctive1 { ID = Guid.NewGuid(), Name = "abc" };
+                    repository.TestPolymorphic.Disjunctive1.Insert(new[] { d1 });
 
-                var d2 = new TestPolymorphic.Disjunctive2 { ID = Guid.NewGuid(), Days = 123 };
-                repository.TestPolymorphic.Disjunctive2.Insert(new[] { d2 });
+                    var d2 = new TestPolymorphic.Disjunctive2 { ID = Guid.NewGuid(), Days = 123 };
+                    repository.TestPolymorphic.Disjunctive2.Insert(new[] { d2 });
 
-                var all = repository.TestPolymorphic.Disjunctive.Query();
-                Assert.AreEqual(
-                    TestUtility.DumpSorted(new[] { d1.ID, d2.ID }),
-                    TestUtility.DumpSorted(all, item => item.ID));
+                    var all = repository.TestPolymorphic.Disjunctive.Query();
+                    Assert.AreEqual(
+                        TestUtility.DumpSorted(new[] { d1.ID, d2.ID }),
+                        TestUtility.DumpSorted(all, item => item.ID));
 
-                var browseReport = repository.TestPolymorphic.DisjunctiveBrowse.Query()
-                    .Select(item => item.Subtype + "-" + item.Disjunctive1.Name + "-" + item.Disjunctive2Days)
-                    .ToList();
-                Assert.AreEqual(
-                    "TestPolymorphic.Disjunctive1-abc-, TestPolymorphic.Disjunctive2--123",
-                    TestUtility.DumpSorted(browseReport));
-            }
+                    var browseReport = repository.TestPolymorphic.DisjunctiveBrowse.Query()
+                        .AsEnumerable()
+                        .Select(item => item.Subtype + "-" + item.Disjunctive1?.Name + "-" + item.Disjunctive2Days)
+                        .ToList();
+                    Assert.AreEqual(
+                        "TestPolymorphic.Disjunctive1-abc-, TestPolymorphic.Disjunctive2--123",
+                        TestUtility.DumpSorted(browseReport));
+                }
         }
 
         [TestMethod]
         public void MultipleImplementations()
         {
-            using (var container = new RhetosTestContainer())
-            {
-                var repository = container.Resolve<Common.DomRepository>();
+            foreach (bool useDatabaseNullSemantics in new[] { false, true })
+                using (var container = new RhetosTestContainer())
+                {
+                    container.OverrideConfiguration(("EntityFramework.UseDatabaseNullSemantics", useDatabaseNullSemantics));
+                    var repository = container.Resolve<Common.DomRepository>();
 
-                // Initialize data:
+                    // Initialize data:
 
-                repository.TestPolymorphic.MultipleImplementations.Delete(repository.TestPolymorphic.MultipleImplementations.Query());
+                    repository.TestPolymorphic.MultipleImplementations.Delete(repository.TestPolymorphic.MultipleImplementations.Query());
 
-                var mi1 = new TestPolymorphic.MultipleImplementations { Name1 = "abc", Name2 = "123" };
-                var mi2 = new TestPolymorphic.MultipleImplementations { Name1 = "def", Name2 = "456" };
+                    var mi1 = new TestPolymorphic.MultipleImplementations { Name1 = "abc", Name2 = "123" };
+                    var mi2 = new TestPolymorphic.MultipleImplementations { Name1 = "def", Name2 = "456" };
 
-                repository.TestPolymorphic.MultipleImplementations.Insert(new[] { mi1, mi2 });
+                    repository.TestPolymorphic.MultipleImplementations.Insert(new[] { mi1, mi2 });
 
-                // Testing unions:
+                    // Testing unions:
 
-                var base1 = repository.TestPolymorphic.Base1.Load();
-                Assert.AreEqual("abc, cba, def, fed", TestUtility.DumpSorted(base1, item => item.Name1));
+                    var base1 = repository.TestPolymorphic.Base1.Load();
+                    Assert.AreEqual("abc, cba, def, fed", TestUtility.DumpSorted(base1, item => item.Name1));
 
-                var base2 = repository.TestPolymorphic.Base2.Load();
-                Assert.AreEqual("123, 321, 456, 654", TestUtility.DumpSorted(base2, item => item.Name2));
+                    var base2 = repository.TestPolymorphic.Base2.Load();
+                    Assert.AreEqual("123, 321, 456, 654", TestUtility.DumpSorted(base2, item => item.Name2));
 
-                var base3 = repository.TestPolymorphic.Base3.Load();
-                Assert.AreEqual("abc-3, def-3", TestUtility.DumpSorted(base3, item => item.Name1));
+                    var base3 = repository.TestPolymorphic.Base3.Load();
+                    Assert.AreEqual("abc-3, def-3", TestUtility.DumpSorted(base3, item => item.Name1));
 
-                // Testing specific implementation ID uniqueness:
+                    // Testing specific implementation ID uniqueness:
 
-                var base1IDs = base1.Select(item => item.ID).ToList();
-                Assert.AreEqual(base1IDs.Count, base1IDs.Distinct().Count());
+                    var base1IDs = base1.Select(item => item.ID).ToList();
+                    Assert.AreEqual(base1IDs.Count, base1IDs.Distinct().Count());
 
-                // Testing specific implementation ID stability:
+                    // Testing specific implementation ID stability:
 
-                var secondRead = repository.TestPolymorphic.Base1.Query();
-                Assert.AreEqual(
-                    TestUtility.DumpSorted(base1IDs),
-                    TestUtility.DumpSorted(secondRead, item => item.ID));
+                    var secondRead = repository.TestPolymorphic.Base1.Query();
+                    Assert.AreEqual(
+                        TestUtility.DumpSorted(base1IDs),
+                        TestUtility.DumpSorted(secondRead, item => item.ID));
 
-                // Testing querying by specific implementation subtype:
+                    // Testing querying by specific implementation subtype:
 
-                Assert.AreEqual(
-                    "abc-, cba-abc, def-, fed-def",
-                    TestUtility.DumpSorted(repository.TestPolymorphic.Base1.Query()
-                        .Select(item => item.Name1 + "-" + item.MultipleImplementationsReverse.Name1)));
+                    Assert.AreEqual(
+                        "abc-, cba-abc, def-, fed-def",
+                        TestUtility.DumpSorted(repository.TestPolymorphic.Base1.Query()
+                            .ToList()
+                            .Select(item => item.Name1 + "-" + item.MultipleImplementationsReverse?.Name1)));
 
-                // Testing C# implementation:
+                    // Testing C# implementation:
 
-                int implementationHash = DomUtility.GetSubtypeImplementationHash("Reverse");
+                    int implementationHash = DomUtility.GetSubtypeImplementationHash("Reverse");
 
-                var expected = new[] {
-                    new TestPolymorphic.Base1 {
-                        ID = DomUtility.GetSubtypeImplementationId(mi1.ID, implementationHash),
-                        MultipleImplementationsReverseID = mi1.ID },
-                    new TestPolymorphic.Base1 {
-                        ID = DomUtility.GetSubtypeImplementationId(mi2.ID, implementationHash),
-                        MultipleImplementationsReverseID = mi2.ID },
-                };
-                var actual = base1.Where(item => item.MultipleImplementationsReverseID != null);
-                Assert.AreEqual(
-                    TestUtility.DumpSorted(expected, item => item.MultipleImplementationsReverseID.ToString() + "/" + item.ID.ToString()),
-                    TestUtility.DumpSorted(actual, item => item.MultipleImplementationsReverseID.ToString() + "/" + item.ID.ToString()));
+                    var expected = new[] {
+                        new TestPolymorphic.Base1 {
+                            ID = DomUtility.GetSubtypeImplementationId(mi1.ID, implementationHash),
+                            MultipleImplementationsReverseID = mi1.ID },
+                        new TestPolymorphic.Base1 {
+                            ID = DomUtility.GetSubtypeImplementationId(mi2.ID, implementationHash),
+                            MultipleImplementationsReverseID = mi2.ID },
+                    };
+                    var actual = base1.Where(item => item.MultipleImplementationsReverseID != null);
+                    Assert.AreEqual(
+                        TestUtility.DumpSorted(expected, item => item.MultipleImplementationsReverseID.ToString() + "/" + item.ID.ToString()),
+                        TestUtility.DumpSorted(actual, item => item.MultipleImplementationsReverseID.ToString() + "/" + item.ID.ToString()));
 
-                // Testing persisted IDs for specific implementation subtype:
+                    // Testing persisted IDs for specific implementation subtype:
 
-                Assert.AreEqual(
-                    TestUtility.DumpSorted(base1IDs),
-                    TestUtility.DumpSorted(repository.TestPolymorphic.Base1_Materialized.Query().Select(item => item.ID)));
-            }
+                    Assert.AreEqual(
+                        TestUtility.DumpSorted(base1IDs),
+                        TestUtility.DumpSorted(repository.TestPolymorphic.Base1_Materialized.Query().Select(item => item.ID)));
+                }
         }
 
         [TestMethod]

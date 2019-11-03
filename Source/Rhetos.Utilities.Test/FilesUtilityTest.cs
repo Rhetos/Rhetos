@@ -23,6 +23,8 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using Rhetos.TestCommon;
+using System.IO;
+using System.Text;
 
 namespace Rhetos.Utilities.Test
 {
@@ -63,6 +65,69 @@ namespace Rhetos.Utilities.Test
                     FilesUtility.AbsoluteToRelativePath(test.Item1, test.Item2),
                     $"base:'{test.Item1}', target:'{test.Item2}'");
 
+        }
+
+        [TestMethod]
+        public void ReadAllText_UTF8()
+        {
+            var log = new List<string>();
+            LogMonitor logMonitor = (eventType, eventName, message) =>
+            {
+                if (eventName == "FilesUtility" && eventType == Logging.EventType.Info)
+                    log.Add($"{message}");
+            };
+
+            var testPath = Path.GetTempFileName();
+            string sampleText = "111\r\n¤\r\n333";
+            File.WriteAllText(testPath, sampleText, Encoding.UTF8);
+
+            var files = new FilesUtility(new ConsoleLogProvider(logMonitor));
+            string readText;
+            try
+            {
+                readText = files.ReadAllText(testPath);
+            }
+            finally
+            {
+                File.Delete(testPath);
+            }
+
+            Assert.AreEqual(sampleText, readText);
+            Assert.AreEqual("", TestUtility.Dump(log));
+        }
+
+        [TestMethod]
+        public void ReadAllText_Default()
+        {
+            if (Encoding.Default == Encoding.UTF8)
+                Assert.Inconclusive("Default encoding is UTF8.");
+
+            var log = new List<string>();
+            LogMonitor logMonitor = (eventType, eventName, message) =>
+            {
+                if (eventName == "FilesUtility" && eventType == Logging.EventType.Info)
+                    log.Add($"{message()}");
+            };
+
+            var testPath = Path.GetTempFileName();
+            string sampleText = "111\r\n¤\r\n333";
+            File.WriteAllText(testPath, sampleText, Encoding.Default);
+
+            var files = new FilesUtility(new ConsoleLogProvider(logMonitor));
+            string readText;
+            try
+            {
+                readText = files.ReadAllText(testPath);
+            }
+            finally
+            {
+                File.Delete(testPath);
+            }
+
+            Assert.AreEqual(sampleText, readText);
+            TestUtility.AssertContains(
+                TestUtility.Dump(log),
+                new[] { "invalid UTF-8 character at line 2", "Reading with default system encoding" });
         }
     }
 }

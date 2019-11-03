@@ -27,6 +27,7 @@ namespace Rhetos
 {
     /// <summary>
     /// An internal error of the Rhetos server occurred. Usually a result of incorrect configuration/setup or a platform bug.
+    /// Web response HTTP status code on this exception is 500.
     /// </summary>
     [global::System.Serializable]
     public class FrameworkException : RhetosException

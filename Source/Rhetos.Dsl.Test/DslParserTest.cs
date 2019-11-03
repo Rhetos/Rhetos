@@ -69,7 +69,7 @@ namespace Rhetos.Dsl.Test
 
         internal static TokenReader TestTokenReader(string dsl, int position = 0)
         {
-            return new TokenReader(new Tokenizer(new MockDslScriptsProvider(dsl)).GetTokens(), position);
+            return new TokenReader(new TestTokenizer(dsl).GetTokens(), position);
         }
 
 
@@ -103,7 +103,7 @@ namespace Rhetos.Dsl.Test
             var conceptParsers = new MultiDictionary<string, IConceptParser> ();
             conceptParsers.Add("b", new List<IConceptParser>() { new TestErrorParser("b") });
 
-            TokenReader tokenReader = new TokenReader(new Tokenizer(new MockDslScriptsProvider(dsl)).GetTokens(), 0);
+            TokenReader tokenReader = new TokenReader(new TestTokenizer(dsl).GetTokens(), 0);
 
             var e = TestUtility.ShouldFail<DslSyntaxException>(
                 () => new TestDslParser(dsl).ParseNextConcept(tokenReader, null, conceptParsers));
@@ -290,29 +290,11 @@ namespace Rhetos.Dsl.Test
             TestUtility.ShouldFail(() => DslParserParse("simple a b"), // missing semicolon
                 "simple", "Expected \";\" or \"{\"", MockDslScript.TestScriptName, "line 1", "column 11");
         }
-
-        private static void DslParser_ErrorReporting(string dsl)
-        {
-            DslSyntaxException exception = null;
-            try
-            {
-                DslParserParse(dsl);
-            }
-            catch (DslSyntaxException ex)
-            {
-                exception = ex;
-            }
-
-            Assert.IsNotNull(exception);
-            Console.WriteLine("=============================");
-            Console.WriteLine(exception.Message);
-            Assert.IsTrue(exception.Message.Contains(MockDslScript.TestScriptName), "Error message should contain script name.");
-        }
-
+        
         private static IEnumerable<IConceptInfo> DslParserParse(params string[] dsl)
         {
             var dslParser = new DslParser(
-                new Tokenizer(new MockDslScriptsProvider(dsl)),
+                new TestTokenizer(dsl),
                 new IConceptInfo[] { new SimpleConceptInfo() },
                 new ConsoleLogProvider());
             var parsedConcepts = dslParser.ParsedConcepts;

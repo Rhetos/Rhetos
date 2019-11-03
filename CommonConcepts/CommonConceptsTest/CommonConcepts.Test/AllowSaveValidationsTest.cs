@@ -85,27 +85,29 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AllowSave()
         {
-            using (var container = new RhetosTestContainer())
-            {
-                var simple = container.Resolve<Common.DomRepository>().TestAllowSave.Simple;
-                var s1 = new TestAllowSave.Simple { Code = 1, Name = "a", CodeAS = null, NameAS = null };
-                var s2 = new TestAllowSave.Simple { Code = 1, Name = "aaaaa", CodeAS = 2, NameAS = "b" };
+            foreach (bool useDatabaseNullSemantics in new[] { false, true })
+                using (var container = new RhetosTestContainer())
+                {
+                    container.OverrideConfiguration(("EntityFramework.UseDatabaseNullSemantics", useDatabaseNullSemantics));
+                    var simple = container.Resolve<Common.DomRepository>().TestAllowSave.Simple;
+                    var s1 = new TestAllowSave.Simple { Code = 1, Name = "a", CodeAS = null, NameAS = null };
+                    var s2 = new TestAllowSave.Simple { Code = 1, Name = "aaaaa", CodeAS = 2, NameAS = "b" };
 
-                simple.Insert(s1, s2);
-                Assert.AreEqual("1a, 1aaaaa2b", TestUtility.DumpSorted(simple.Query(new[] { s1.ID, s2.ID }), s => s.Code + s.Name + s.CodeAS + s.NameAS));
-                Assert.AreEqual(0, simple.Validate(new[] { s1.ID, s2.ID }, onSave: true).Count(), "There should be no invalid items with errors that are checked on save.");
+                    simple.Insert(s1, s2);
+                    Assert.AreEqual("1a, 1aaaaa2b", TestUtility.DumpSorted(simple.Load(new[] { s1.ID, s2.ID }), s => s.Code + s.Name + s.CodeAS + s.NameAS));
+                    Assert.AreEqual(0, simple.Validate(new[] { s1.ID, s2.ID }, onSave: true).Count(), "There should be no invalid items with errors that are checked on save.");
 
-                // Errors that are NOT checked on save:
-                var errors = simple.Validate(new[] { s1.ID, s2.ID }, onSave: false);
-                Assert.AreEqual(
-                    TestUtility.DumpSorted(new[] {
-                        "The required property CodeAS is not set./CodeAS/" + s1.ID,
-                        "The required property NameAS is not set./NameAS/" + s1.ID,
-                        "[Test] Longer than 3.//" + s2.ID,
-                        "[Test] Longer than 4./Name/" + s2.ID }),
-                    TestUtility.DumpSorted(errors,
-                        error => string.Format(error.Message, error.MessageParameters) + "/" + error.Property + "/" + error.ID));
-            }
+                    // Errors that are NOT checked on save:
+                    var errors = simple.Validate(new[] { s1.ID, s2.ID }, onSave: false);
+                    Assert.AreEqual(
+                        TestUtility.DumpSorted(new[] {
+                            "The required property CodeAS is not set./CodeAS/" + s1.ID,
+                            "The required property NameAS is not set./NameAS/" + s1.ID,
+                            "[Test] Longer than 3.//" + s2.ID,
+                            "[Test] Longer than 4./Name/" + s2.ID }),
+                        TestUtility.DumpSorted(errors,
+                            error => string.Format(error.Message, error.MessageParameters) + "/" + error.Property + "/" + error.ID));
+                }
         }
 
         [TestMethod]

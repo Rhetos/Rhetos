@@ -50,26 +50,26 @@ namespace Rhetos.CommonConcepts.Test
                 .Select(name => new C { Name = name }).ToList();
             items.Add(new C { Name = null });
 
-            TestFilterByName("b1, B2", items, "startswith", "b");
-            TestFilterByName("b1, B2", items, "startswith", "B");
-            TestFilterByName("b1, B2", items, "contains", "b");
-            TestFilterByName("b1, B2", items, "contains", "B");
-            TestFilterByName("A2", items, "equal", "a2");
-            TestFilterByName("<null>, a1, a3, A4, b1, B2", items, "notequal", "a2");
-            TestFilterByName("a1, A2", items, "less", "A3");
-            TestFilterByName("a1, A2, a3", items, "lessequal", "A3");
-            TestFilterByName("a3, A4, b1, B2", items, "greater", "a2");
-            TestFilterByName("A2, a3, A4, b1, B2", items, "greaterequal", "a2");
+            Assert.AreEqual("b1, B2", TestFilterByName(items, "startswith", "b"));
+            Assert.AreEqual("b1, B2", TestFilterByName(items, "startswith", "B"));
+            Assert.AreEqual("b1, B2", TestFilterByName(items, "contains", "b"));
+            Assert.AreEqual("b1, B2", TestFilterByName(items, "contains", "B"));
+            Assert.AreEqual("A2", TestFilterByName(items, "equal", "a2"));
+            Assert.AreEqual("<null>, a1, a3, A4, b1, B2", TestFilterByName(items, "notequal", "a2"));
+            Assert.AreEqual("a1, A2", TestFilterByName(items, "less", "A3"));
+            Assert.AreEqual("a1, A2, a3", TestFilterByName(items, "lessequal", "A3"));
+            Assert.AreEqual("a3, A4, b1, B2", TestFilterByName(items, "greater", "a2"));
+            Assert.AreEqual("A2, a3, A4, b1, B2", TestFilterByName(items, "greaterequal", "a2"));
 
             items.Add(new C { Name = "" });
 
-            TestFilterByName("", items, "equal", "");
-            TestFilterByName("<null>", items, "equal", null);
-            TestFilterByName("<null>, a1, A2, a3, A4, b1, B2", items, "notequal", "");
-            TestFilterByName(", a1, A2, a3, A4, b1, B2", items, "notequal", null);
+            Assert.AreEqual("", TestFilterByName(items, "equal", ""));
+            Assert.AreEqual("<null>", TestFilterByName(items, "equal", null));
+            Assert.AreEqual("<null>, a1, A2, a3, A4, b1, B2", TestFilterByName(items, "notequal", ""));
+            Assert.AreEqual(", a1, A2, a3, A4, b1, B2", TestFilterByName(items, "notequal", null));
         }
 
-        private static void TestFilterByName(string expected, IEnumerable<C> items, string operation, object value)
+        private static string TestFilterByName(IEnumerable<C> items, string operation, object value)
         {
             var genericFilter = new FilterCriteria("Name", operation, value);
             Console.WriteLine("genericFilter: " + genericFilter.Property + " " + genericFilter.Operation + " " + genericFilter.Value);
@@ -80,7 +80,7 @@ namespace Rhetos.CommonConcepts.Test
             var filterExpression = genericFilterHelper.ToExpression<C>((IEnumerable<PropertyFilter>)filterObject.Parameter);
 
             var filteredItems = items.AsQueryable().Where(filterExpression).ToList();
-            Assert.AreEqual(expected, TestUtility.DumpSorted(filteredItems, item => item.Name ?? "<null>"), "Testing '" + operation + " " + value + "'.");
+            return TestUtility.DumpSorted(filteredItems, item => item.Name ?? "<null>");
         }
 
         [TestMethod]
@@ -150,11 +150,11 @@ namespace Rhetos.CommonConcepts.Test
             items.Add(new C { Name = null });
             items.Add(new C { Name = "" });
 
-            TestFilterByName("b1, B2", items, "in", new[] { "b1", "B2", "B2", "b3" });
-            TestFilterByName("b1, B2", items, "in", new List<string> { "b1", "B2", "B2", "b3" });
-            TestFilterByName(", <null>, a1, A2, a3, A4", items, "NotIn", new[] { "b1", "B2", "B2", "b3" });
-            TestFilterByName("<null>, a1, A2, a3, A4", items, "NotIn", new[] { "b1", "B2", "B2", "b3", "" });
-            TestFilterByName(", a1, A2, a3, A4", items, "NotIn", new[] { "b1", "B2", "B2", "b3", null });
+            Assert.AreEqual("b1, B2", TestFilterByName(items, "in", new[] { "b1", "B2", "B2", "b3" }));
+            Assert.AreEqual("b1, B2", TestFilterByName(items, "in", new List<string> { "b1", "B2", "B2", "b3" }));
+            Assert.AreEqual(", <null>, a1, A2, a3, A4", TestFilterByName(items, "NotIn", new[] { "b1", "B2", "B2", "b3" }));
+            Assert.AreEqual("<null>, a1, A2, a3, A4", TestFilterByName(items, "NotIn", new[] { "b1", "B2", "B2", "b3", "" }));
+            Assert.AreEqual(", a1, A2, a3, A4", TestFilterByName(items, "NotIn", new[] { "b1", "B2", "B2", "b3", null }));
         }
 
         [TestMethod]
@@ -231,14 +231,13 @@ namespace Rhetos.CommonConcepts.Test
         [TestMethod]
         public void TolerateInvalidTypeOfEmptyArray()
         {
-            // Element type cannot be defected for empty JSON array, therefore the application should
+            // Element type cannot be detected for empty JSON array, therefore the application should
             // tolerate invalid element type of the array is empty.
 
             var idnull = (Guid?)null;
             var id1 = new Guid(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
             var id2 = new Guid(2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
             var id3 = new Guid(3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-            var id4 = new Guid(4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
             var items = new[]
             {

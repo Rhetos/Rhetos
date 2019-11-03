@@ -18,7 +18,6 @@
 */
 
 using Autofac;
-using Autofac.Configuration;
 using Autofac.Integration.Wcf;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Extensibility;

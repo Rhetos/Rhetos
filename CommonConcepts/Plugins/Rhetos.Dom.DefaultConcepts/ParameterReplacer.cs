@@ -17,25 +17,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
+using System.Linq.Expressions;
 
-namespace Rhetos
+namespace Rhetos.Dom.DefaultConcepts
 {
-    /// <summary>
-    /// Legacy exception allows backward compatible JSON response format (a string instead of an object).
-    /// </summary>
-    [Serializable]
-    [Obsolete("Use ClientException instead.")]
-    public class LegacyClientException : ClientException
+    public class ParameterReplacer : ExpressionVisitor
     {
-        public LegacyClientException() : base() { }
-        public LegacyClientException(string message) : base(message) { }
-        public LegacyClientException(string message, Exception inner) : base(message, inner) { }
-        protected LegacyClientException(
-            System.Runtime.Serialization.SerializationInfo info,
-            System.Runtime.Serialization.StreamingContext context)
-                : base(info, context) { }
+        private readonly ParameterExpression _oldParameter;
+        private readonly ParameterExpression _newParameter;
 
-        public bool Severe { get; set; } = true;
+        public ParameterReplacer(ParameterExpression oldParameter, ParameterExpression newParameter)
+        {
+            _oldParameter = oldParameter;
+            _newParameter = newParameter;
+        }
+
+        protected override Expression VisitParameter(ParameterExpression node)
+        {
+            if (node == _oldParameter)
+                return _newParameter;
+            else
+                return base.VisitParameter(node);
+        }
     }
 }

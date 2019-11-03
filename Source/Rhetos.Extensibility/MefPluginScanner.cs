@@ -48,22 +48,25 @@ namespace Rhetos.Extensibility
         /// </summary>
         public IEnumerable<PluginInfo> FindPlugins(Type pluginInterface)
         {
-            try
+            lock (_pluginsLock)
             {
-                lock (_pluginsLock)
+                if (_pluginsByExport == null)
                 {
-                    if (_pluginsByExport == null)
+                    var assemblies = ListAssemblies();
+                    try
                     {
-                        var assemblies = ListAssemblies();
                         _pluginsByExport = LoadPlugins(assemblies);
                     }
-
-                    return _pluginsByExport.Get(pluginInterface.FullName);
+                    catch (Exception ex)
+                    {
+                        string typeLoadReport = CsUtility.ReportTypeLoadException(ex, "Cannot load plugins.", assemblies);
+                        if (typeLoadReport != null)
+                            throw new FrameworkException(typeLoadReport, ex);
+                        else
+                            ExceptionsUtility.Rethrow(ex);
+                    }
                 }
-            }
-            catch (ReflectionTypeLoadException ex)
-            {
-                throw new FrameworkException(CsUtility.ReportTypeLoadException(ex, "Cannot load plugins."), ex);
+                return _pluginsByExport.Get(pluginInterface.FullName);
             }
         }
 
