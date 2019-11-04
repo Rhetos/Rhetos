@@ -44,16 +44,19 @@ namespace Rhetos.Persistence
     {
         private const string _segmentSplitter = "<!--SegmentSplitter-->";
         private readonly ICodeGenerator _codeGenerator;
+        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
         private readonly IPluginsContainer<IConceptMapping> _plugins;
         private readonly ILogger _performanceLogger;
 
         public EntityFrameworkMappingGenerator(
             ICodeGenerator codeGenerator,
             IPluginsContainer<IConceptMapping> plugins,
+            RhetosAppEnvironment rhetosAppEnvironment,
             ILogProvider logProvider)
         {
             _plugins = plugins;
             _codeGenerator = codeGenerator;
+            _rhetosAppEnvironment = rhetosAppEnvironment;
             _performanceLogger = logProvider.GetLogger("Performance");
         }
 
@@ -70,7 +73,7 @@ namespace Rhetos.Persistence
             for (int s = 0; s < segments.Count(); s++)
             {
                 string clearedXml = XmlUtility.RemoveComments(segments[s]);
-                string filePath = Path.Combine(Paths.GeneratedFolder, EntityFrameworkMapping.ModelFiles[s]);
+                string filePath = Path.Combine(_rhetosAppEnvironment.GeneratedFolder, EntityFrameworkMapping.ModelFiles[s]);
                 File.WriteAllText(filePath, clearedXml, Encoding.UTF8);
             }
 

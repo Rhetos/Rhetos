@@ -54,7 +54,7 @@ namespace Rhetos.Configuration.Autofac
             pluginScanner = pluginScanner ?? new MefPluginScanner(initializationContext.RhetosAppEnvironment, initializationContext.LogProvider);
 
             this.PluginRegistration = new ContainerBuilderPluginRegistration(this, initializationContext.LogProvider, pluginScanner);
-            Plugins.Initialize(builder => GetPluginRegistration(builder));
+            Plugins.Initialize(GetPluginRegistration);
 
             // this is a patch/mock to provide backward compatibility for all usages of old static classes
             LegacyUtilities.Initialize(initializationContext.ConfigurationProvider);

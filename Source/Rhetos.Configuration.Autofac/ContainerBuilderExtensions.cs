@@ -30,11 +30,19 @@ namespace Rhetos.Configuration.Autofac
     public static class ContainerBuilderExtensions
     {
         /// <summary>
-        /// Extension which resolves PluginRegistration instance from properly initialized ContainerBuilder.
+        /// Extension method which resolves PluginRegistration instance from properly initialized ContainerBuilder.
         /// </summary>
         public static ContainerBuilderPluginRegistration GetPluginRegistration(this ContainerBuilder builder)
         {
             return ContextContainerBuilder.GetPluginRegistration(builder);
+        }
+
+        /// <summary>
+        /// Extension method which resolves InitializationContext instance from properly initialized ContainerBuilder.
+        /// </summary>
+        public static InitializationContext GetInitializationContext(this ContainerBuilder builder)
+        {
+            return ContextContainerBuilder.GetInitializationContext(builder);
         }
     }
 }

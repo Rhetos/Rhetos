@@ -31,14 +31,16 @@ namespace Rhetos.Dom
 {
     public class DomLoader : IDomainObjectModel
     {
+        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
 
         private List<Assembly> _assemblies;
         private readonly object _assembliesLock = new object();
 
-        public DomLoader(ILogProvider logProvider)
+        public DomLoader(RhetosAppEnvironment rhetosAppEnvironment, ILogProvider logProvider)
         {
+            _rhetosAppEnvironment = rhetosAppEnvironment;
             _logger = logProvider.GetLogger("DomLoader");
             _performanceLogger = logProvider.GetLogger("Performance");
         }
@@ -60,7 +62,7 @@ namespace Rhetos.Dom
         {
             var loaded = new List<Assembly>();
             var sw = Stopwatch.StartNew();
-            foreach (string name in Paths.DomAssemblyFiles.Select(Path.GetFileNameWithoutExtension))
+            foreach (string name in _rhetosAppEnvironment.DomAssemblyFiles.Select(Path.GetFileNameWithoutExtension))
             {
                 _logger.Trace("Loading assembly \"" + name + "\".");
                 var assembly = Assembly.Load(name);

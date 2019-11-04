@@ -21,6 +21,7 @@ using Rhetos;
 using Rhetos.Deployment;
 using Rhetos.Persistence;
 using Rhetos.Utilities;
+using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -34,7 +35,11 @@ namespace CleanupOldData
         {
             try
             {
-                Paths.Initialize(new RhetosAppEnvironment(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..")));
+                var configuration = new ConfigurationBuilder()
+                    .AddRhetosAppConfiguration(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".."))
+                    .Build();
+
+                LegacyUtilities.Initialize(configuration);
 
                 string connectionString = SqlUtility.ConnectionString;
                 Console.WriteLine("SQL connection: " + SqlUtility.SqlConnectionInfo(connectionString));

@@ -75,21 +75,21 @@ namespace Rhetos.Deployment
         /// <summary>
         /// Local paths should be absolute in runtime to avoid ambiguity of current working folder when using the Rhetos server object model from other applications.
         /// </summary>
-        public void SetAbsoluteFolderPath()
+        public void SetAbsoluteFolderPath(string rhetosAppRootPath)
         {
-            Folder = FilesUtility.RelativeToAbsolutePath(Paths.RhetosServerRootPath, Folder);
+            Folder = FilesUtility.RelativeToAbsolutePath(rhetosAppRootPath, Folder);
             foreach (var file in ContentFiles)
-                file.PhysicalPath = FilesUtility.RelativeToAbsolutePath(Paths.RhetosServerRootPath, file.PhysicalPath);
+                file.PhysicalPath = FilesUtility.RelativeToAbsolutePath(rhetosAppRootPath, file.PhysicalPath);
         }
 
         /// <summary>
         /// Local paths should be relative when saving the path to a cache file, to allow moving the Rhetos server folder to testing environment or production.
         /// </summary>
-        public void SetRelativeFolderPath()
+        public void SetRelativeFolderPath(string rhetosAppRootPath)
         {
-            Folder = FilesUtility.AbsoluteToRelativePath(Paths.RhetosServerRootPath, Folder);
+            Folder = FilesUtility.AbsoluteToRelativePath(rhetosAppRootPath, Folder);
             foreach (var file in ContentFiles)
-                file.PhysicalPath = FilesUtility.AbsoluteToRelativePath(Paths.RhetosServerRootPath, file.PhysicalPath);
+                file.PhysicalPath = FilesUtility.AbsoluteToRelativePath(rhetosAppRootPath, file.PhysicalPath);
         }
 
         private static List<ContentFile> FilesFromFolder(string folder, string packageId)
