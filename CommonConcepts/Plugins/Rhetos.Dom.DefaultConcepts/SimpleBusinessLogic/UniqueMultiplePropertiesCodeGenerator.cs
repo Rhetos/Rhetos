@@ -60,7 +60,7 @@ namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
             if (info.Dependency_SqlIndex.SqlImplementation() && info.DataStructure is IWritableOrmDataStructure)
             {
                 var ormDataStructure = (IWritableOrmDataStructure)info.DataStructure;
-                string systemMessage = "DataStructure:" + info.DataStructure + ",Property:" + info.PropertyNames;
+                string systemMessage = $"DataStructure:{info.DataStructure.FullName},Property:{info.PropertyNames}";
                 string interpretSqlError = @"if (interpretedException is Rhetos.UserException && Rhetos.Utilities.MsSqlUtility.IsUniqueError(interpretedException, "
                     + CsUtility.QuotedString(ormDataStructure.GetOrmSchema() + "." + ormDataStructure.GetOrmDatabaseObject()) + @", "
                     + CsUtility.QuotedString(SqlIndexMultipleDatabaseDefinition.ConstraintName(info.Dependency_SqlIndex)) + @"))

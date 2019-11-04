@@ -49,7 +49,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetName(LinkedItemsInfo linkedItemsInfo)
         {
-            return linkedItemsInfo.DataStructure.Module + "_" + linkedItemsInfo.ReferenceProperty.DataStructure.Name + "_" + linkedItemsInfo.DataStructure.Name;
+            return linkedItemsInfo.DataStructure.Module.Name + "_" + linkedItemsInfo.ReferenceProperty.DataStructure.Name + "_" + linkedItemsInfo.DataStructure.Name;
         }
     }
 }
