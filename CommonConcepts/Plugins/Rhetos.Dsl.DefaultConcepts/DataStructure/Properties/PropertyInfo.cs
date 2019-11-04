@@ -34,28 +34,18 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }
+
         [ConceptKey]
         public string Name { get; set; }
-
-        public override string ToString()
-        {
-            return FullName; // For backward compatibility.
-        }
-
-        public override int GetHashCode()
-        {
-            return DataStructure.Name.GetHashCode() ^ Name.GetHashCode();
-        }
 
         /// <summary>
         /// Name of the property generated in the simple POCO C# class for the data structure.
         /// This may be different from the database column or the navigation property name.
         /// Returns null, if this concept does not generate the single property on the simple class.
         /// </summary>
-        virtual public string GetSimplePropertyName()
-        {
-            return Name;
-        }
+        public virtual string GetSimplePropertyName() => Name;
+
+        public override string ToString() => FullName; // For backward compatibility.
 
         public string FullName => DataStructure.FullName + "." + Name;
     }

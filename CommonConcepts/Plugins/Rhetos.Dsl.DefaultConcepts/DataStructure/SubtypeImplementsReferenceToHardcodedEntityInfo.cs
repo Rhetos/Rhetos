@@ -43,7 +43,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             return new List<IConceptInfo>
             {
-                new SubtypeImplementsPropertyInfo{ IsSubtypeOf = IsSubtypeOf, Property = Property, Expression = "'" + Entry.GetIdentifier().ToString() + "'"}
+                new SubtypeImplementsPropertyInfo { IsSubtypeOf = IsSubtypeOf, Property = Property, Expression = SqlUtility.QuoteGuid(Entry.GetIdentifier()) }
             };
         }
     }

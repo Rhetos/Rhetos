@@ -38,11 +38,6 @@ namespace Rhetos.Dsl.Test
             public string Name { get; set; }
             public string Data { get; set; }
 
-            public override int GetHashCode()
-            {
-                return Name.GetHashCode();
-            }
-
             public SimpleConceptInfo() { }
 
             public SimpleConceptInfo(string name, string data)
@@ -56,11 +51,6 @@ namespace Rhetos.Dsl.Test
         {
             public string Extra { get; set; }
 
-            public override int GetHashCode()
-            {
-                return Name.GetHashCode();
-            }
-
             public DerivedConceptInfo(string name, string data, string extra)
                 : base(name, data)
             {
@@ -72,11 +62,6 @@ namespace Rhetos.Dsl.Test
         {
             [ConceptKey]
             public string Extra { get; set; }
-
-            public override int GetHashCode()
-            {
-                return Name.GetHashCode();
-            }
 
             public DerivedWithKeyInfo(string name, string data, string extra)
                 : base(name, data)
@@ -92,10 +77,6 @@ namespace Rhetos.Dsl.Test
             [ConceptKey]
             public SimpleConceptInfo Reference { get; set; }
 
-            public override int GetHashCode()
-            {
-                return Name.GetHashCode();
-            }
             public RefConceptInfo() { }
             public RefConceptInfo(string name, SimpleConceptInfo reference)
             {
@@ -111,10 +92,6 @@ namespace Rhetos.Dsl.Test
             [ConceptKey]
             public RefConceptInfo Reference { get; set; }
 
-            public override int GetHashCode()
-            {
-                return Name.GetHashCode();
-            }
             public RefRefConceptInfo() { }
             public RefRefConceptInfo(string name, RefConceptInfo reference)
             {

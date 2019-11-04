@@ -30,15 +30,5 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         [ConceptKey]
         public string TypeOrAssembly { get; set; }
-
-        public override string ToString()
-        {
-            return "ExternalReference: " + TypeOrAssembly;
-        }
-
-        public override int GetHashCode()
-        {
-            return TypeOrAssembly.GetHashCode();
-        }
     }
 }

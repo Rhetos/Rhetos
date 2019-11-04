@@ -31,18 +31,13 @@ namespace Rhetos.Dsl.Test
     {
         #region Sample concept classes
 
-        [ConceptKeyword("simple")]
+        [ConceptKeyword("SIMPLE")]
         class SimpleConceptInfo : IConceptInfo
         {
             [ConceptKey]
             public string Name { get; set; }
             public string Data { get; set; }
 
-            public override string ToString() { return "SIMPLE " + Name; }
-            public override int GetHashCode()
-            {
-                return Name.GetHashCode();
-            }
             public SimpleConceptInfo() { }
             public SimpleConceptInfo(string name, string data)
             {
@@ -58,11 +53,6 @@ namespace Rhetos.Dsl.Test
             public string Name { get; set; }
             [ConceptKey]
             public SimpleConceptInfo Reference { get; set; }
-
-            public override int GetHashCode()
-            {
-                return Name.GetHashCode();
-            }
         }
 
         #endregion
@@ -78,7 +68,7 @@ namespace Rhetos.Dsl.Test
         class TestErrorParser : IConceptParser
         {
             public const string ErrorMessage = "This parser expects '-' after the keyword.";
-            string Keyword;
+            readonly string Keyword;
             public TestErrorParser(string keyword)
             {
                 this.Keyword = keyword;
@@ -133,11 +123,6 @@ namespace Rhetos.Dsl.Test
             public string Name { get; set; }
             public string Data { get; set; }
             public string Data2 { get; set; }
-
-            public override int GetHashCode()
-            {
-                return Name.GetHashCode();
-            }
         }
 
         class EnclosedRefConceptInfo : IConceptInfo
@@ -146,11 +131,6 @@ namespace Rhetos.Dsl.Test
             public SimpleConceptInfo Reference { get; set; }
             [ConceptKey]
             public string Name { get; set; }
-
-            public override int GetHashCode()
-            {
-                return Name.GetHashCode();
-            }
         }
 
 
@@ -306,7 +286,8 @@ namespace Rhetos.Dsl.Test
         public void DslParser_MultipleFiles()
         {
             var concepts = DslParserParse("simple a b;", "simple c d;");
-            Assert.AreEqual("Rhetos.Dsl.InitializationConcept, SIMPLE a, SIMPLE c", TestUtility.DumpSorted(concepts));
+            Assert.AreEqual("InitializationConcept, SIMPLE a, SIMPLE c", TestUtility.DumpSorted(concepts,
+                c => c is InitializationConcept ? "InitializationConcept" : c.GetUserDescription()));
         }
 
         [TestMethod]

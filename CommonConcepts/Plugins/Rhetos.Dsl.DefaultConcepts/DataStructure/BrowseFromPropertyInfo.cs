@@ -27,17 +27,8 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         [ConceptKey]
         public PropertyInfo PropertyInfo { get; set; }
+
         public string Path { get; set; }
-
-        public override string ToString()
-        {
-            return "From: " + PropertyInfo;
-        }
-
-        public override int GetHashCode()
-        {
-            return PropertyInfo.GetHashCode();
-        }
 
         public void CheckSemantics(System.Collections.Generic.IEnumerable<IConceptInfo> concepts)
         {

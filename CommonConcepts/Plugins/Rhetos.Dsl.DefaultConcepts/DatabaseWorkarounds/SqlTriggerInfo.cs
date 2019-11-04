@@ -34,15 +34,5 @@ namespace Rhetos.Dsl.DefaultConcepts
         public string Events { get; set; }
 
         public string TriggerSource { get; set; }
-
-        public override string ToString()
-        {
-            return Structure.Name + "." + Name;
-        }
-
-        public override int GetHashCode()
-        {
-            return Name.GetHashCode();
-        }
     }
 }

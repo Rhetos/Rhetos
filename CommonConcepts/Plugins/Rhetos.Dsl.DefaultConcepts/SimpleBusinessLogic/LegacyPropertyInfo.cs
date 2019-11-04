@@ -44,16 +44,6 @@ namespace Rhetos.Dsl.DefaultConcepts
             createdConcepts = null;
         }
 
-        public override string ToString()
-        {
-            return Property.ToString() + " LegacyProperty";
-        }
-
-        public override int GetHashCode()
-        {
-            return Property.GetHashCode();
-        }
-
         public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
         {
             if (!(Property.DataStructure is LegacyEntityWithAutoCreatedViewInfo))

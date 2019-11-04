@@ -17,20 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.Dom;
+using Rhetos.Dsl;
+using Rhetos.TestCommon;
+using Rhetos.Utilities;
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using Rhetos.Compiler;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Linq;
-using Rhetos.Utilities;
-using Rhetos.Logging;
-using Rhetos.Dsl;
-using Rhetos.Extensibility;
-using System.Collections.Generic;
-using Rhetos.TestCommon;
 using System.Text.RegularExpressions;
-using Rhetos.Dom;
 
 namespace Rhetos.DatabaseGenerator.Test
 {
@@ -46,16 +43,6 @@ namespace Rhetos.DatabaseGenerator.Test
     {
         [ConceptKey]
         public string Name { get; set; }
-
-        public override string ToString()
-        {
-            return Name;
-        }
-
-        public override int GetHashCode()
-        {
-            return Name.GetHashCode();
-        }
     }
 
     [ConceptImplementationVersion(1, 0)]
@@ -224,6 +211,7 @@ namespace Rhetos.DatabaseGenerator.Test
                 {
                     var conceptApplicationRepository = TestConceptApplicationRepository(concepts);
                     var appliedConcepts = conceptApplicationRepository.Load();
+                    Assert.IsNotNull(appliedConcepts);
                 },
                 MockSqlExecuter.DependencyCa2.Id.ToString());
         }
@@ -241,6 +229,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
                 var conceptApplicationRepository = TestConceptApplicationRepository(expected);
                 var appliedConcepts = conceptApplicationRepository.Load();
+                Assert.IsNotNull(appliedConcepts);
             }
             catch (Exception ex)
             {
