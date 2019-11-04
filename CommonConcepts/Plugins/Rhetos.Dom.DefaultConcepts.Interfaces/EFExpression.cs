@@ -30,19 +30,19 @@ namespace Rhetos.Dom.DefaultConcepts
     public static class EFExpression
     {
         /// <summary>
-        /// Optimized alternative to LINQ operation "Where(item => ids.Contains(predicate))".
+        /// Optimized alternative to LINQ operation "Where(item => ids.Contains(memberSelector))".
         /// Entity Framework 6.1.3 has performance issues with Contains method: it does not cache the compiled SQL
         /// if the LINQ query has Contains method, and the compilation can take significant amount on time on complex queries.
         /// </summary>
-        public static IQueryable<T> WhereContains<T>(this IQueryable<T> query, List<Guid> ids, Expression<Func<T, Guid>> predicate)
+        public static IQueryable<T> WhereContains<T>(this IQueryable<T> query, List<Guid> ids, Expression<Func<T, Guid>> memberSelector)
         {
             Expression<Func<List<Guid>>> idsLambda = () => ids;
             var idsContainsExpression = (Expression<Func<T, bool>>)Expression.Lambda(
                 Expression.Call(
                     idsLambda.Body,
                     ListOfGuidContainsMethod,
-                    predicate.Body),
-                predicate.Parameters.Single());
+                    memberSelector.Body),
+                memberSelector.Parameters.Single());
             return query.Where(OptimizeContains(idsContainsExpression));
         }
 
@@ -109,16 +109,14 @@ namespace Rhetos.Dom.DefaultConcepts
 
                     Expression optimizedContainsExpression = Expression.Call(ContainsIdNullableMethod, node.Arguments[0], idsLambda.Body);
 
-                    optimizedContainsExpression = Expression.And(
-                            optimizedContainsExpression,
-                            Expression.NotEqual(node.Arguments[0], Expression.Constant(null)));
+                    // EF would where add here "AND argument IS NOT NULL", if UseDatabaseNullSemantics=false,
+                    // but we have removed that condition because 1. it does not change the result in the database,
+                    // and 2. there is no clean way to use the system configuration here (from static methods WhereContains and OptimizeContains).
 
                     if (outerObj.Any(x => x == null))
-                    {
                         optimizedContainsExpression = Expression.Or(
                             optimizedContainsExpression,
                             Expression.Equal(node.Arguments[0], Expression.Constant(null)));
-                    }
 
                     return optimizedContainsExpression;
                 }

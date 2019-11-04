@@ -26,6 +26,9 @@ using Rhetos.Utilities;
 using Rhetos.Dom.DefaultConcepts;
 using System.Linq.Expressions;
 using Rhetos.TestCommon;
+using System.Text.RegularExpressions;
+using Rhetos.Persistence;
+using System.Collections;
 
 namespace CommonConcepts.Test
 {
@@ -190,49 +193,97 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizeContainsNullableWithMixedNullValueTest()
         {
-            using (var container = new RhetosTestContainer())
-            {
-                var repository = container.Resolve<Common.DomRepository>();
-
-                var id1 = Guid.NewGuid();
-                var id2 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
-                    {
-                        $@"INSERT INTO Test12.Entity1 (ID) SELECT '{id1}';",
-                        $@"INSERT INTO Test12.Entity1 (ID) SELECT '{id2}';",
-                    });
-                Console.WriteLine($"ID1: {id1}");
-                Console.WriteLine($"ID2: {id2}");
-
-                var listWithNullValue = new List<Guid?> { null, id1 };
-
+            foreach (bool useDatabaseNullSemantics in new[] { false, true })
+                using (var container = new RhetosTestContainer())
                 {
-                    var basicQuery = repository.Test12.Entity1.Query().Where(x => listWithNullValue.Contains(x.GuidProperty));
-                    var optimizedQuery = repository.Test12.Entity1.Query().Where(EFExpression.OptimizeContains<Common.Queryable.Test12_Entity1>(x => listWithNullValue.Contains(x.GuidProperty)));
-                    Console.WriteLine(basicQuery.ToString());
-                    Console.WriteLine(optimizedQuery.ToString());
+                    container.OverrideConfiguration(("EntityFramework.UseDatabaseNullSemantics", useDatabaseNullSemantics));
+                    var repository = container.Resolve<Common.DomRepository>();
 
-                    Assert.AreEqual(
-                        TestUtility.DumpSorted(basicQuery, item => item.ID),
-                        TestUtility.DumpSorted(optimizedQuery, item => item.ID));
-                    Assert.AreEqual(
-                        TestUtility.DumpSorted(basicQuery.ToSimple().ToList(), item => item.ID),
-                        TestUtility.DumpSorted(optimizedQuery.ToSimple().ToList(), item => item.ID));
-                }
-                {
-                    var basicQuery = repository.Test12.Entity1.Query().Where(x => listWithNullValue.Contains(x.ID));
-                    var optimizedQuery = repository.Test12.Entity1.Query().Where(EFExpression.OptimizeContains<Common.Queryable.Test12_Entity1>(x => listWithNullValue.Contains(x.ID)));
-                    Console.WriteLine(basicQuery.ToString());
-                    Console.WriteLine(optimizedQuery.ToString());
+                    var id1 = Guid.NewGuid();
+                    var id2 = Guid.NewGuid();
+                    container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                        {
+                            $@"INSERT INTO Test12.Entity1 (ID) SELECT '{id1}';",
+                            $@"INSERT INTO Test12.Entity1 (ID) SELECT '{id2}';",
+                        });
+                    Console.WriteLine($"ID1: {id1}");
+                    Console.WriteLine($"ID2: {id2}");
 
-                    Assert.AreEqual(
-                        TestUtility.DumpSorted(basicQuery, item => item.ID),
-                        TestUtility.DumpSorted(optimizedQuery, item => item.ID));
-                    Assert.AreEqual(
-                        TestUtility.DumpSorted(basicQuery.ToSimple().ToList(), item => item.ID),
-                        TestUtility.DumpSorted(optimizedQuery.ToSimple().ToList(), item => item.ID));
+                    var listWithNullValue = new List<Guid?> { null, id1 };
+
+                    Expression<Func<Common.Queryable.Test12_Entity1, bool>> containsId = x => listWithNullValue.Contains(x.ID);
+                    CompareQueries(
+                        basicQuery: repository.Test12.Entity1.Query().Where(containsId),
+                        optimizedQuery: repository.Test12.Entity1.Query().Where(EFExpression.OptimizeContains(containsId)),
+                        testDescription: $"on ID dbNull={useDatabaseNullSemantics}");
+
+                    Expression<Func<Common.Queryable.Test12_Entity1, bool>> containsGuidProperty = x => listWithNullValue.Contains(x.GuidProperty);
+                    CompareQueries(
+                        basicQuery: repository.Test12.Entity1.Query().Where(containsGuidProperty),
+                        optimizedQuery: repository.Test12.Entity1.Query().Where(EFExpression.OptimizeContains(containsGuidProperty)),
+                        testDescription: $"on GuidProperty dbNull={useDatabaseNullSemantics}");
+
+                    Expression<Func<Common.Queryable.Test12_Entity1, bool>> notContainsId = x => !listWithNullValue.Contains(x.ID);
+                    CompareQueries(
+                        basicQuery: repository.Test12.Entity1.Query().Where(notContainsId),
+                        optimizedQuery: repository.Test12.Entity1.Query().Where(EFExpression.OptimizeContains(notContainsId)),
+                        testDescription: $"notin on ID dbNull={useDatabaseNullSemantics}");
+
+                    Expression<Func<Common.Queryable.Test12_Entity1, bool>> notContainsGuidProperty = x => !listWithNullValue.Contains(x.GuidProperty);
+                    CompareQueries(
+                        basicQuery: repository.Test12.Entity1.Query().Where(notContainsGuidProperty),
+                        optimizedQuery: repository.Test12.Entity1.Query().Where(EFExpression.OptimizeContains(notContainsGuidProperty)),
+                        testDescription: $"notin on GuidProperty dbNull={useDatabaseNullSemantics}");
                 }
-            }
+        }
+
+        private void CompareQueries(IQueryable<Common.Queryable.Test12_Entity1> basicQuery, IQueryable<Common.Queryable.Test12_Entity1> optimizedQuery, string testDescription)
+        {
+            Console.WriteLine($"basicQuery {testDescription}:\r\n{basicQuery}");
+            Console.WriteLine($"optimizedQuery {testDescription}:\r\n{optimizedQuery}");
+
+            Assert.AreEqual(
+                TestUtility.DumpSorted(basicQuery, item => item.ID),
+                TestUtility.DumpSorted(optimizedQuery, item => item.ID),
+                $"Query with select: {testDescription}.");
+
+            Assert.AreEqual(
+                TestUtility.DumpSorted(basicQuery.ToList(), item => item.ID),
+                TestUtility.DumpSorted(optimizedQuery.ToList(), item => item.ID),
+                $"Loading all: {testDescription}.");
+
+            Assert.AreEqual(
+                IgnoreContains(basicQuery.ToString(), $"basicQuery {testDescription}"),
+                IgnoreContains(optimizedQuery.ToString(), $"optimizedQuery {testDescription}"),
+                $"Comparing generated SQL queries: {testDescription}.");
+        }
+
+        private string IgnoreContains(string sql, string testDescription)
+        {
+            // Ignore SQL code for "contains", that is generated by EF:
+            const string guidList = @"(cast\('[\w-]+' as uniqueidentifier\)(, )?)*";
+            var basicContainsIdsSubquery = new Regex($@"\[\w+\]\.\[\w+\] IN \({guidList}\)");
+            sql = basicContainsIdsSubquery.Replace(sql, "<CONTAINS>");
+
+            // Ignore SQL code for "contains", that is generated by EFExpression.OptimizeContains:
+            var optimizedContainsIdsSubquery = new Regex($@"\[{EntityFrameworkMapping.StorageModelNamespace}\]\.\[{EFExpression.ContainsIdsFunction}\]\((?<id>.+?), (?<concatenatedIds>.*?)\)", RegexOptions.Singleline);
+            sql = optimizedContainsIdsSubquery.Replace(sql, "<CONTAINS>");
+
+            // Ignore "AND argument IS NOT NULL" that is sometimes added by EF, but not by EFExpression.OptimizeContains.
+            // (see explanation in ReplaceContainsVisitor.VisitMethodCall)
+            if (testDescription == "basicQuery on GuidProperty dbNull=False"
+                || testDescription == "basicQuery notin on GuidProperty dbNull=False")
+                sql = sql.Replace(
+                    "((<CONTAINS>) AND ([Extent1].[GuidProperty] IS NOT NULL))",
+                    "(<CONTAINS>)");
+
+            // Ignore different negative and positive variants:
+            sql = sql.Replace("NOT (<CONTAINS>)", "<NOT CONTAINS>");
+            sql = sql.Replace("(<CONTAINS>) <> 1", "<NOT CONTAINS>");
+            sql = sql.Replace("(<CONTAINS>) = 1", "<CONTAINS>");
+            sql = sql.Replace("  ", " ");
+
+            return sql;
         }
 
         [TestMethod]
@@ -240,7 +291,7 @@ namespace CommonConcepts.Test
         {
             var id1 = Guid.NewGuid();
             Expression<Func<Common.Queryable.Test12_Entity1, bool>> originalExpression = x => new List<Guid?> { id1 }.Contains(x.GuidProperty);
-            var optimizedExpression = EFExpression.OptimizeContains<Common.Queryable.Test12_Entity1>(originalExpression);
+            var optimizedExpression = EFExpression.OptimizeContains(originalExpression);
             Assert.AreEqual(originalExpression, optimizedExpression);
         }
     }
