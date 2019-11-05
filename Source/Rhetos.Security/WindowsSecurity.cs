@@ -37,9 +37,9 @@ namespace Rhetos.Security
     /// </summary>
     public class WindowsSecurity : IWindowsSecurity
     {
-        private ILogger _logger;
-        private ILogger _performanceLogger;
-        private IConfiguration _configuration;
+        private readonly ILogger _logger;
+        private readonly ILogger _performanceLogger;
+        private readonly IConfiguration _configuration;
 
         public WindowsSecurity(ILogProvider logProvider, IConfiguration configuration)
         {

@@ -30,6 +30,6 @@ namespace Rhetos.Security
     {
         string GetClientWorkstation();
         IEnumerable<string> GetIdentityMembership(string username);
-        bool IsBuiltInAdministrator(WindowsIdentity userInfo);
+        bool IsBuiltInAdministrator(WindowsIdentity windowsIdentity);
     }
 }

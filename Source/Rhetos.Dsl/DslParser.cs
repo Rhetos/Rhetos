@@ -29,11 +29,11 @@ namespace Rhetos.Dsl
 {
     public class DslParser : IDslParser
     {
-        protected readonly Tokenizer _tokenizer;
-        protected readonly IConceptInfo[] _conceptInfoPlugins;
-        protected readonly ILogger _performanceLogger;
-        protected readonly ILogger _logger;
-        protected readonly ILogger _keywordsLogger;
+        private readonly Tokenizer _tokenizer;
+        private readonly IConceptInfo[] _conceptInfoPlugins;
+        private readonly ILogger _performanceLogger;
+        private readonly ILogger _logger;
+        private readonly ILogger _keywordsLogger;
 
         public DslParser(Tokenizer tokenizer, IConceptInfo[] conceptInfoPlugins, ILogProvider logProvider)
         {
@@ -67,7 +67,7 @@ namespace Rhetos.Dsl
             };
         }
 
-        protected MultiDictionary<string,IConceptParser> CreateGenericParsers()
+        private MultiDictionary<string,IConceptParser> CreateGenericParsers()
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -89,7 +89,7 @@ namespace Rhetos.Dsl
             return result;
         }
 
-        protected IEnumerable<IConceptInfo> ExtractConcepts(MultiDictionary<string, IConceptParser> conceptParsers)
+        private IEnumerable<IConceptInfo> ExtractConcepts(MultiDictionary<string, IConceptParser> conceptParsers)
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -122,7 +122,7 @@ namespace Rhetos.Dsl
 
         class Interpretation { public IConceptInfo ConceptInfo; public TokenReader NextPosition; }
 
-        protected IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, MultiDictionary<string, IConceptParser> conceptParsers)
+        private IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, MultiDictionary<string, IConceptParser> conceptParsers)
         {
             var errorReports = new List<Func<string>>();
             List<Interpretation> possibleInterpretations = new List<Interpretation>();
@@ -231,7 +231,7 @@ namespace Rhetos.Dsl
             return options;
         }
 
-        protected string ReportErrorContext(IConceptInfo conceptInfo, TokenReader tokenReader)
+        private string ReportErrorContext(IConceptInfo conceptInfo, TokenReader tokenReader)
         {
             var sb = new StringBuilder();
             sb.AppendLine(tokenReader.ReportPosition());
@@ -249,7 +249,7 @@ namespace Rhetos.Dsl
             return sb.ToString();
         }
 
-        protected void UpdateContextForNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, IConceptInfo conceptInfo)
+        private void UpdateContextForNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, IConceptInfo conceptInfo)
         {
             if (tokenReader.TryRead("{"))
                 context.Push(conceptInfo);
@@ -269,7 +269,7 @@ namespace Rhetos.Dsl
             }
         }
 
-        protected IEnumerable<IConceptInfo> InitializeAlternativeInitializationConcepts(IEnumerable<IConceptInfo> parsedConcepts)
+        private IEnumerable<IConceptInfo> InitializeAlternativeInitializationConcepts(IEnumerable<IConceptInfo> parsedConcepts)
         {
             var stopwatch = Stopwatch.StartNew();
             var newConcepts = AlternativeInitialization.InitializeNonparsableProperties(parsedConcepts, _logger);
