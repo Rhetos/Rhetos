@@ -43,6 +43,7 @@ namespace CommonConcepts.Test
             string testUserName = "testUser_" + Guid.NewGuid().ToString();
             string allPrincipals = SystemRole.AllPrincipals.ToString();
             string anonymous = SystemRole.Anonymous.ToString();
+            AuthorizationDataCache.ClearCache();
 
             using (var container = new RhetosTestContainer())
             {
