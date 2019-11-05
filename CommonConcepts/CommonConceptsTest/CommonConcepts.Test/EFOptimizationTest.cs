@@ -237,6 +237,41 @@ namespace CommonConcepts.Test
                 }
         }
 
+        [TestMethod]
+        public void OptimizeEnumerableContainsTest()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var guidArray = new Guid[] { Guid.NewGuid() };
+                var sqlQuery = repository.Test12.Entity1.Query().Where(EFExpression.OptimizeContains<Common.Queryable.Test12_Entity1>(x => guidArray.Contains(x.ID))).ToString();
+                Assert.IsFalse(sqlQuery.ToLower().Contains(guidArray[0].ToString().ToLower()));
+
+                Expression<Func<Common.Queryable.Test12_Entity1, bool>> expression = x => repository.Test12.Entity2.Subquery.Select(y => y.Entity1ID.Value).Contains(x.ID);
+                Assert.AreEqual(expression, EFExpression.OptimizeContains(expression), "EFExpression.OptimizeContains should not try to optimize the method Queryable<T>.Contains(T item)");
+
+                var enumerableMock = new IEnumerableMock<Guid>(guidArray.ToList());
+                Expression<Func<Common.Queryable.Test12_Entity1, bool>> expression2 = x => enumerableMock.Contains(x.ID);
+                Assert.AreEqual(expression2, EFExpression.OptimizeContains(expression2), "EFExpression.OptimizeContains should not try to optimize the method Enumerable<Guid>.Contains(IEnumerable<Guid> items, Guid item) if the items argument is not of type IList<Guid>");
+            }
+        }
+
+        [TestMethod]
+        public void NestedPropertyContainsTest()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var c = new { Property1 = new {
+                    Property2 = new List<Guid> { Guid.NewGuid() } }
+                };
+                Expression<Func<Common.Queryable.Test12_Entity1, bool>> expression = x => c.Property1.Property2.Contains(x.ID);
+                Assert.AreEqual(expression, EFExpression.OptimizeContains(expression), "A nested propty currently is not considered in the optimization process.");
+            }
+        }
+
         private void CompareQueries(IQueryable<Common.Queryable.Test12_Entity1> basicQuery, IQueryable<Common.Queryable.Test12_Entity1> optimizedQuery, string testDescription)
         {
             Console.WriteLine($"basicQuery {testDescription}:\r\n{basicQuery}");
@@ -293,6 +328,31 @@ namespace CommonConcepts.Test
             Expression<Func<Common.Queryable.Test12_Entity1, bool>> originalExpression = x => new List<Guid?> { id1 }.Contains(x.GuidProperty);
             var optimizedExpression = EFExpression.OptimizeContains(originalExpression);
             Assert.AreEqual(originalExpression, optimizedExpression);
+        }
+
+        private class IEnumerableMock<T> : IEnumerable<T>
+        {
+            List<T> _items;
+
+            public IEnumerableMock()
+            {
+                _items = new List<T>();
+            }
+
+            public IEnumerableMock(List<T> items)
+            {
+                _items = items;
+            }
+
+            public IEnumerator<T> GetEnumerator()
+            {
+                return _items.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return _items.GetEnumerator();
+            }
         }
     }
 }
