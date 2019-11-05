@@ -33,15 +33,5 @@ namespace Rhetos.Dsl.DefaultConcepts
         public IConceptInfo Dependent { get; set; }
         [ConceptKey]
         public SqlViewInfo DependsOn { get; set; }
-
-        public override string ToString()
-        {
-            return Dependent + " depends on " + DependsOn;
-        }
-
-        public override int GetHashCode()
-        {
-            return ToString().GetHashCode();
-        }
     }
 }

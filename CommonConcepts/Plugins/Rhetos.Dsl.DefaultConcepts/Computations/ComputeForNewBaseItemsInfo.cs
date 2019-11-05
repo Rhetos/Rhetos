@@ -29,7 +29,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ComputeForNewBaseItems")]
-    public class ComputeForNewBaseItemsInfo : IAlternativeInitializationConcept, IValidationConcept
+    public class ComputeForNewBaseItemsInfo : IAlternativeInitializationConcept, IValidatedConcept
     {
         [ConceptKey]
         public EntityComputedFromInfo EntityComputedFrom { get; set; }
@@ -50,7 +50,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             createdConcepts = null;
         }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             if (Dependency_Extends.Extension != EntityComputedFrom.Target)
                 throw new DslSyntaxException("Invalid use of " + this.GetUserDescription()

@@ -85,9 +85,8 @@ namespace Rhetos.Compiler
 
         public override string ToString()
         {
-            throw new FrameworkException(string.Format(
-                "Tag must be evaluated using Evaluate() function instead of being used directly as a string. Invalid use of {1} for concept {2}, key=\"{3}\", nextEvaluationContext=\"{4}\".",
-                TagType, GetType().Name, typeof(T).Name, Key, NextEvaluationContext));
+            throw new FrameworkException($"Tag must be evaluated using Evaluate() function instead of being used directly as a string." +
+                $" Invalid use of {GetType().Name} for concept {typeof(T).Name}, key=\"{Key}\", nextEvaluationContext=\"{NextEvaluationContext}\".");
         }
     }
 

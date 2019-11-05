@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("FilterByLinkedItems")]
-    public class FilterByLinkedItemsInfo : IMacroConcept, IValidationConcept
+    public class FilterByLinkedItemsInfo : IMacroConcept, IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo Source { get; set; }
@@ -38,7 +38,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public ReferencePropertyInfo ReferenceToMe { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             if (ReferenceToMe.Referenced != Source)
                 throw new DslSyntaxException("'" + this.GetUserDescription()
@@ -65,25 +65,18 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         private static string GetFilterExpression(FilterByLinkedItemsInfo info)
         {
-            return string.Format(@"(repository, parameter) =>
+            return $@"(repository, parameter) =>
 	        {{
-                var baseRepositiory = repository.{3}.{4};
-                Guid[] references = baseRepositiory.Filter(parameter).Select(item => item.{5}ID)
+                var baseRepositiory = repository.{info.ReferenceToMe.DataStructure.FullName};
+                Guid[] references = baseRepositiory.Filter(parameter).Select(item => item.{info.ReferenceToMe.Name}ID)
                     .Where(reference => reference.HasValue).Select(reference => reference.Value)
                     .Distinct().ToArray();
-                {0}.{1}[] result = repository.{0}.{1}.Filter(references);
+                {info.Source.FullName}[] result = repository.{info.Source.FullName}.Filter(references);
 
                 Rhetos.Utilities.Graph.SortByGivenOrder(result, references, item => item.ID);
                 return result;
             }}
-",
-            info.Source.Module.Name,
-            info.Source.Name,
-            info.Parameter,
-            info.ReferenceToMe.DataStructure.Module.Name,
-            info.ReferenceToMe.DataStructure.Name,
-            info.ReferenceToMe.Name,
-            CsUtility.QuotedString(info.GetUserDescription()));
+";
         }
     }
 }

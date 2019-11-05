@@ -36,15 +36,5 @@ namespace Rhetos.Dsl.DefaultConcepts
         public string Name { get; set; }
 
         public string ViewSource { get; set; }
-
-        public override string ToString()
-        {
-            return Module.Name + "." + Name;
-        }
-
-        public override int GetHashCode()
-        {
-            return Name.GetHashCode();
-        }
     }
 }

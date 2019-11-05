@@ -26,7 +26,7 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class UniqueMultiplePropertyInfo : IConceptInfo
+    public class UniqueMultiplePropertyInfo : IValidatedConcept
     {
         [ConceptKey]
         public UniqueMultiplePropertiesInfo Unique { get; set; }
@@ -34,7 +34,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public PropertyInfo Property { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             DslUtility.CheckIfPropertyBelongsToDataStructure(Property, Unique.DataStructure, this);
         }

@@ -28,12 +28,12 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("DenyUserEdit")]
-    public class DenyUserEditDataStructureInfo : IValidationConcept
+    public class DenyUserEditDataStructureInfo : IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             if (!(DataStructure is IWritableOrmDataStructure))
                 throw new DslSyntaxException(this, this.GetKeywordOrTypeName() + " may only be used on a writable data structure, such as an Entity.");

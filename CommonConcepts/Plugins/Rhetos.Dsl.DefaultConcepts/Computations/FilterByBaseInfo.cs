@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("FilterByBase")]
-    public class FilterByBaseInfo : IValidationConcept
+    public class FilterByBaseInfo : IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo Source { get; set; }
@@ -36,17 +36,16 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public string Parameter { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
-            DataStructureInfo baseDataStructure = GetBaseDataStructure(concepts);
+            DataStructureInfo baseDataStructure = GetBaseDataStructure(existingConcepts);
             if (baseDataStructure == null)
                 throw new DslSyntaxException("Invalid use of " + this.GetUserDescription() + ". Filter's data structure '" + Source.GetKeyProperties() + "' is not an extension of another base class.");
         }
 
-        private DataStructureInfo GetBaseDataStructure(IEnumerable<IConceptInfo> concepts)
+        private DataStructureInfo GetBaseDataStructure(IDslModel concepts)
         {
-            return concepts.OfType<UniqueReferenceInfo>()
-                .Where(ci => ci.Extension == Source)
+            return concepts.FindByReference<UniqueReferenceInfo>(ci => ci.Extension, Source)
                 .Select(ci => ci.Base)
                 .SingleOrDefault();
         }
@@ -86,22 +85,16 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         private static string GetFilterExpression(FilterByBaseInfo info, DataStructureInfo baseDataStructure)
         {
-            return string.Format(@"(repository, parameter) =>
+            return $@"(repository, parameter) =>
             {{
-                var baseRepositiory = repository.{3}.{4};
+                var baseRepositiory = repository.{baseDataStructure.FullName};
                 Guid[] references = baseRepositiory.Filter(parameter).Select(item => item.ID).ToArray();
-                {0}.{1}[] result = repository.{0}.{1}.Filter(references);
+                {info.Source.FullName}[] result = repository.{info.Source.FullName}.Filter(references);
 
                 Rhetos.Utilities.Graph.SortByGivenOrder(result, references, item => item.ID);
                 return result;
             }}
-",
-            info.Source.Module.Name,
-            info.Source.Name,
-            info.Parameter,
-            baseDataStructure.Module.Name,
-            baseDataStructure.Name,
-            CsUtility.QuotedString(info.GetUserDescription()));
+";
         }
     }
 }

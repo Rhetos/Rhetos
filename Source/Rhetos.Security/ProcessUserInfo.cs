@@ -28,7 +28,7 @@ namespace Rhetos.Security
     /// </summary>
     public class ProcessUserInfo : IUserInfoAdmin
     {
-        private Lazy<WindowsIdentity> _currentUser;
+        private readonly Lazy<WindowsIdentity> _currentUser;
         private readonly IWindowsSecurity _windowsSecurity;
 
         public ProcessUserInfo(IWindowsSecurity windowsSecurity)

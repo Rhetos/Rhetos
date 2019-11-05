@@ -29,23 +29,22 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ComputeForNewBaseItems")]
-    public class PersistedComputeForNewBaseItemsWithFilterInfo : IMacroConcept, IValidationConcept
+    public class PersistedComputeForNewBaseItemsWithFilterInfo : IMacroConcept, IValidatedConcept
     {
         [ConceptKey]
         public PersistedDataStructureInfo Persisted { get; set; }
 
         public string FilterSaveExpression { get; set; }
 
-        private UniqueReferenceInfo MyExtendsConceptInfo(IEnumerable<IConceptInfo> existingConcepts)
+        private UniqueReferenceInfo MyExtendsConceptInfo(IDslModel existingConcepts)
         {
-            return existingConcepts.OfType<UniqueReferenceInfo>()
-                .Where(extends => extends.Extension == Persisted)
+            return existingConcepts.FindByReference<UniqueReferenceInfo>(extends => extends.Extension, Persisted)
                 .FirstOrDefault();
         }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
-            var myExtends = MyExtendsConceptInfo(concepts);
+            var myExtends = MyExtendsConceptInfo(existingConcepts);
             if (myExtends == null)
                 throw new DslSyntaxException("ComputeForNewBaseItemsWithFilter can only be used if the persisted data structure extends a base entity. Use 'Extends' keyword to define the extension is applicable.");
         }

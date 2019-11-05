@@ -25,28 +25,18 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("PessimisticLockingParent")]
-    public class PessimisticLockingParentInfo : IConceptInfo, IValidationConcept
+    public class PessimisticLockingParentInfo : IValidatedConcept
     {
         [ConceptKey]
         public ReferencePropertyInfo Reference { get; set; }
         
         public PessimisticLockingInfo Detail { get; set; } // This redundant property is to ensure dependencies: 1. the detail entity must have pessimistic locking, and 2. this concept's code generator is executed after that one.
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             if (Reference.DataStructure != Detail.Resource)
                 throw new DslSyntaxException("Invalid PessimisticLockingParent: reference detail '" + Reference.DataStructure.GetShortDescription()
                     + "' does not match resource '" + Detail.Resource.GetShortDescription() + "'.");
-        }
-
-        public override string ToString()
-        {
-            return "PessimisticLockingParent: " + Reference;
-        }
-
-        public override int GetHashCode()
-        {
-            return ToString().GetHashCode();
         }
     }
 }

@@ -27,7 +27,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("BeforeAction")]
-    public class BeforeActionInfo : IConceptInfo, IValidatedConcept
+    public class BeforeActionInfo : IValidatedConcept
     {
         [ConceptKey]
         public ActionInfo Action { get; set; }

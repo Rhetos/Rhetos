@@ -36,12 +36,16 @@ namespace Rhetos.Logging
 
         public void Write(EventType eventType, Func<string> logMessage)
         {
+            LogMessageGenerator logMessageGenerator = () => logMessage();
+
             if (eventType == EventType.Info)
-                Logger.Info((LogMessageGenerator)(() => logMessage()));
+                Logger.Info(logMessageGenerator);
             else if (eventType == EventType.Error)
-                Logger.Error((LogMessageGenerator)(() => logMessage()));
+                Logger.Error(logMessageGenerator);
             else
-                Logger.Trace((LogMessageGenerator)(() => logMessage()));
+                Logger.Trace(logMessageGenerator);
         }
+
+        public string Name => Logger.Name;
     }
 }

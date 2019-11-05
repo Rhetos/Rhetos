@@ -27,7 +27,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("CreatedBy")]
-    public class CreatedByInfo : IConceptInfo, IValidatedConcept
+    public class CreatedByInfo : IValidatedConcept
     {
         [ConceptKey]
         public ReferencePropertyInfo Property { get; set; }

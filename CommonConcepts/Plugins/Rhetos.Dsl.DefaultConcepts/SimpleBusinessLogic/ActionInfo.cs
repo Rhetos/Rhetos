@@ -30,15 +30,5 @@ namespace Rhetos.Dsl.DefaultConcepts
     public class ActionInfo : ParameterInfo
     {
         public string Script { get; set; }
-
-        public override string ToString()
-        {
-            return "Action: " + Module.Name + "." + Name;
-        }
-
-        public override int GetHashCode()
-        {
-            return ToString().GetHashCode();
-        }
     }
 }

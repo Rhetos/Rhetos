@@ -38,20 +38,20 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (DefaultValueInfo)conceptInfo;
-            codeBuilder.InsertCode(GenerateFuncAndCallForProperty(info, true), WritableOrmDataStructureCodeGenerator.InitializationTag, info.Property.DataStructure);
+            codeBuilder.InsertCode(GenerateFuncAndCallForProperty(info), WritableOrmDataStructureCodeGenerator.InitializationTag, info.Property.DataStructure);
         }
 
-        private string GenerateFuncAndCallForProperty(DefaultValueInfo info, bool saveFunction)
+        private string GenerateFuncAndCallForProperty(DefaultValueInfo info)
         {
             var propertyName = info.Property is ReferencePropertyInfo ? info.Property.Name + "ID" : info.Property.Name;
             return $@"
             {{
-                var defaultValueFunc_{propertyName} = Function<{info.Property.DataStructure.Module}.{info.Property.DataStructure.Name}>.Create({info.Expression});
+                var defaultValueFunc_{propertyName} = Function<{info.Property.DataStructure.FullName}>.Create({info.Expression});
 
                 foreach (var _item in insertedNew)
                 {{
                     bool setDefaultValue_{propertyName} = _item.{propertyName} == null;
-                    {DefaultValueCodeGenerator.DefaultValueValidationTag.Evaluate(info.Property.DataStructure)}
+                    {DefaultValueValidationTag.Evaluate(info.Property.DataStructure)}
                     if (setDefaultValue_{propertyName})
                         _item.{propertyName} = defaultValueFunc_{propertyName}(_item);
                 }}

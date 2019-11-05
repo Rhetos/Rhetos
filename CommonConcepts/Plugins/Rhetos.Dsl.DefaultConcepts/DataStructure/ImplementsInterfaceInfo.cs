@@ -27,7 +27,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Implements")]
-    public class ImplementsInterfaceInfo : IConceptInfo, IValidationConcept
+    public class ImplementsInterfaceInfo : IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }
@@ -43,7 +43,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             return type;
         }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             GetInterfaceType();
         }

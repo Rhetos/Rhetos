@@ -34,18 +34,13 @@ namespace Rhetos.Dsl.Test
     {
         #region Sample concept classes
 
-        [ConceptKeyword("simple")]
+        [ConceptKeyword("SIMPLE")]
         class SimpleConceptInfo : IConceptInfo
         {
             [ConceptKey]
             public string Name { get; set; }
             public string Data { get; set; }
 
-            public override string ToString() { return "SIMPLE " + Name; }
-            public override int GetHashCode()
-            {
-                return Name.GetHashCode();
-            }
             public SimpleConceptInfo() { }
             public SimpleConceptInfo(string name, string data)
             {
@@ -58,10 +53,6 @@ namespace Rhetos.Dsl.Test
         {
             public string Extra { get; set; }
 
-            public override int GetHashCode()
-            {
-                return Name.GetHashCode();
-            }
             public DerivedConceptInfo(string name, string data, string extra)
                 : base(name, data)
             {
@@ -69,6 +60,7 @@ namespace Rhetos.Dsl.Test
             }
         }
 
+        [ConceptKeyword("REF")]
         class RefConceptInfo : IConceptInfo
         {
             [ConceptKey]
@@ -76,19 +68,11 @@ namespace Rhetos.Dsl.Test
             [ConceptKey]
             public SimpleConceptInfo Reference { get; set; }
 
-            public override int GetHashCode()
-            {
-                return Name.GetHashCode();
-            }
             public RefConceptInfo() { }
             public RefConceptInfo(string name, SimpleConceptInfo reference)
             {
                 Name = name;
                 Reference = reference;
-            }
-            public override string ToString()
-            {
-                return "REF " + Name + " " + Reference.ToString();
             }
         }
 
@@ -232,7 +216,7 @@ namespace Rhetos.Dsl.Test
 
             TestUtility.ShouldFail<DslSyntaxException>(
                 () => DslModelFromConcepts(concepts),
-                "reference", "RefConceptInfo", "Simple", "rx", "bx");
+                "Referenced", "REF rx.bx", "SIMPLE bx");
         }
 
         [TestMethod]
@@ -268,9 +252,12 @@ namespace Rhetos.Dsl.Test
         }
 
 
+
         //===================================================================================
 
-        class ConceptWithSemanticsValidation : IConceptInfo, IValidationConcept
+#pragma warning disable CS0618 // Type or member is obsolete. Unit test for the obsolete interface.
+        class ConceptWithSemanticsValidation : IValidationConcept
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             [ConceptKey]
             public string Name { get; set; }
@@ -315,12 +302,12 @@ namespace Rhetos.Dsl.Test
 
         //===================================================================================
 
+        [ConceptKeyword("MACRO")]
         class MacroConceptInfo : IConceptInfo, IMacroConcept
         {
             [ConceptKey]
             public string Value { get; set; }
             public MacroConceptInfo(string value) { Value = value; }
-            public override string ToString() { return "MACRO " + Value; }
 
             public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
             {
@@ -342,19 +329,19 @@ namespace Rhetos.Dsl.Test
                                               };
             List<string> expected = new List<string> {"SIMPLE a", "MACRO b", "SIMPLE b1", "SIMPLE b2"};
 
-            List<string> actual = DslModelFromConcepts(concepts).Select(c => c.ToString()).ToList();
+            List<string> actual = DslModelFromConcepts(concepts).Select(c => c.GetUserDescription()).ToList();
 
             expected.Sort();
             actual.Sort();
             Assert.AreEqual(string.Join(", ", expected), string.Join(", ", actual));
         }
 
+        [ConceptKeyword("SECONDLEVELMACRO")]
         class SecondLevelMacroConceptInfo : IConceptInfo, IMacroConcept
         {
             [ConceptKey]
             public string Value { get; set; }
             public SecondLevelMacroConceptInfo(string value) { Value = value; }
-            public override string ToString() { return "SECONDLEVELMACRO " + Value; }
 
             public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
             {
@@ -378,7 +365,7 @@ namespace Rhetos.Dsl.Test
                                             "MACRO a", "SIMPLE a1", "SIMPLE a2",
                                             "SECONDLEVELMACRO b", "MACRO bx", "SIMPLE bx1", "SIMPLE bx2"
                                         };
-            List<string> actual = DslModelFromConcepts(concepts).Select(c => c.ToString()).ToList();
+            List<string> actual = DslModelFromConcepts(concepts).Select(c => c.GetUserDescription()).ToList();
 
             expected.Sort();
             actual.Sort();
@@ -426,7 +413,7 @@ namespace Rhetos.Dsl.Test
                                                   new MacroConceptInfo("b")
                                               };
             List<string> expected = new List<string> { "MACRO b", "SIMPLE b1", "SIMPLE b2" };
-            List<string> actual = DslModelFromConcepts(concepts).Select(c => c.ToString()).ToList();
+            List<string> actual = DslModelFromConcepts(concepts).Select(c => c.GetUserDescription()).ToList();
 
             expected.Sort();
             actual.Sort();
@@ -446,7 +433,7 @@ namespace Rhetos.Dsl.Test
 
             try
             {
-                DslModelFromConcepts(concepts).Select(c => c.ToString()).ToList();
+                DslModelFromConcepts(concepts).Select(c => c.GetUserDescription()).ToList();
             }
             catch (Exception ex)
             {
@@ -457,6 +444,7 @@ namespace Rhetos.Dsl.Test
             }
         }
 
+        [ConceptKeyword("MULTIPASS1")]
         class MultiplePassMacroConceptInfo1 : IMacroConcept
         {
             [ConceptKey]
@@ -466,12 +454,9 @@ namespace Rhetos.Dsl.Test
                 return existingConcepts.OfType<SimpleConceptInfo>().Where(c => !c.Name.StartsWith("dup"))
                     .Select(c => new SimpleConceptInfo {Name = "dup" + c.Name, Data = ""});
             }
-            public override string ToString()
-            {
-                return "MULTIPASS1 " + Value;
-            }
         }
 
+        [ConceptKeyword("MULTIPASS2")]
         class MultiplePassMacroConceptInfo2 : IMacroConcept
         {
             [ConceptKey]
@@ -482,10 +467,6 @@ namespace Rhetos.Dsl.Test
                 if (count < 3)
                     return new List<IConceptInfo> { new SimpleConceptInfo { Name = count.ToString(), Data = "" } };
                 return null;
-            }
-            public override string ToString()
-            {
-                return "MULTIPASS2 " + Value;
             }
         }
 
@@ -499,7 +480,7 @@ namespace Rhetos.Dsl.Test
                                               };
 
             var result = DslModelFromConcepts(concepts);
-            Console.WriteLine(string.Join(", ", result.Select(c => c.ToString())));
+            Console.WriteLine(string.Join(", ", result.Select(c => c.GetUserDescription())));
 
             Assert.AreEqual(3, result.OfType<SimpleConceptInfo>().Where(c => !c.Name.StartsWith("dup")).Count());
             Assert.AreEqual(3, result.OfType<SimpleConceptInfo>().Where(c => c.Name.StartsWith("dup")).Count());
@@ -515,7 +496,7 @@ namespace Rhetos.Dsl.Test
                                               };
 
             var result = DslModelFromConcepts(concepts);
-            Assert.AreEqual("MULTIPASS2 x, REF r SIMPLE 2, SIMPLE 0, SIMPLE 1, SIMPLE 2", TestUtility.DumpSorted(result, item => item.ToString()));
+            Assert.AreEqual("MULTIPASS2 x, REF r.2, SIMPLE 0, SIMPLE 1, SIMPLE 2", TestUtility.DumpSorted(result, item => item.GetUserDescription()));
         }
     }
 }

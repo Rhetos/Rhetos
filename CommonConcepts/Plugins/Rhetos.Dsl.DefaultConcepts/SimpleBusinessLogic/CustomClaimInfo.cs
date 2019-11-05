@@ -30,15 +30,5 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         [ConceptKey]
         public string ClaimRight { get; set; }
-
-        public override string ToString()
-        {
-            return ClaimResource + "." + ClaimRight;
-        }
-
-        public override int GetHashCode()
-        {
-            return ToString().GetHashCode();
-        }
     }
 }

@@ -23,31 +23,19 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("From")]
-    public class BrowseFromPropertyInfo : IValidationConcept
+    public class BrowseFromPropertyInfo : IValidatedConcept
     {
         [ConceptKey]
         public PropertyInfo PropertyInfo { get; set; }
+
         public string Path { get; set; }
 
-        public override string ToString()
-        {
-            return "From: " + PropertyInfo;
-        }
-
-        public override int GetHashCode()
-        {
-            return PropertyInfo.GetHashCode();
-        }
-
-        public void CheckSemantics(System.Collections.Generic.IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             if (!(PropertyInfo.DataStructure is BrowseDataStructureInfo))
-                throw new DslSyntaxException(string.Format(
-                    "'{0}' cannot be use on {1} ({2}). It may only be used on {3}.",
-                    this.GetKeywordOrTypeName(),
-                    PropertyInfo.DataStructure.GetKeywordOrTypeName(),
-                    PropertyInfo.GetUserDescription(),
-                    ConceptInfoHelper.GetKeywordOrTypeName(typeof(BrowseDataStructureInfo))));
+                throw new DslSyntaxException($"'{this.GetKeywordOrTypeName()}' cannot be used" +
+                    $" on {PropertyInfo.DataStructure.GetKeywordOrTypeName()} ({PropertyInfo.GetUserDescription()})." +
+                    $" It may only be used on {ConceptInfoHelper.GetKeywordOrTypeName(typeof(BrowseDataStructureInfo))}.");
         }
     }
 }

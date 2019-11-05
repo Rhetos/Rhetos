@@ -30,7 +30,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Query")]
-    public class QueryWithParameterInfo : IConceptInfo, IValidatedConcept
+    public class QueryWithParameterInfo : IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }

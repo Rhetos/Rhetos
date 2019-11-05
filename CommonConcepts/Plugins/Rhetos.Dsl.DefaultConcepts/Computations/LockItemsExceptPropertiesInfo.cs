@@ -27,7 +27,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("LockExcept")]
-    public class LockItemsExceptPropertiesInfo : IConceptInfo, IValidationConcept
+    public class LockItemsExceptPropertiesInfo : IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo Source { get; set; }
@@ -40,7 +40,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         /// <summary>A list of properties that should not be locked.</summary>
         public string ExceptProperties { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             DslUtility.ValidatePropertyListSyntax(ExceptProperties, this);
         }

@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Range")]
-    public class RangeInfo : IMacroConcept, IValidationConcept
+    public class RangeInfo : IMacroConcept, IValidatedConcept
     {
         [ConceptKey]
         public PropertyInfo PropertyFrom { get; set; }
@@ -63,9 +63,9 @@ namespace Rhetos.Dsl.DefaultConcepts
             return new IConceptInfo[] { itemFilter, invalidData, messageParameters, invalidProperty };
         }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
-            if (!(this.PropertyFrom.GetType() == this.PropertyTo.GetType()))
+            if (PropertyFrom.GetType() != PropertyTo.GetType())
                 throw new DslSyntaxException(this, "Range can only be used on two properties of same type.");
         }
     }

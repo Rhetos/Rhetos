@@ -27,7 +27,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ComputedFrom")]
-    public class PropertyComputedFromInfo : IConceptInfo, IValidationConcept, IAlternativeInitializationConcept
+    public class PropertyComputedFromInfo : IValidatedConcept, IAlternativeInitializationConcept
     {
         [ConceptKey]
         public PropertyInfo Target { get; set; }
@@ -48,7 +48,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                     Target.DataStructure.GetKeywordOrTypeName()));
         }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             InternalCheck();
         }

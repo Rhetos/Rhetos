@@ -312,40 +312,13 @@ namespace Rhetos.Dom.DefaultConcepts
                                 ? Expression.Convert(memberAccess, collectionElement)
                                 : memberAccess;
 
-                            // TODO: EFExpression.OptimizeContains should be simplified to work with the same expression as in the "else" part below,
-                            // without the `Expression.Lambda` wrapper.
-                            if (constant.Value is List<Guid> idsList)
-                            {
-                                Expression<Func<List<Guid>>> idsLambda = () => idsList;
-                                var idsContainsExpression = Expression.Lambda(
-                                    Expression.Call(
-                                        idsLambda.Body,
-                                        typeof(List<Guid>).GetMethod("Contains"),
-                                        convertedMemberAccess),
-                                    parameter);
-                                expression = ((LambdaExpression)EFExpression.OptimizeContains(idsContainsExpression)).Body;
-                            }
-                            else if (constant.Value is List<Guid?> idsListNullable)
-                            {
-                                Expression<Func<List<Guid?>>> idsLambda = () => idsListNullable;
-                                var idsContainsExpression = Expression.Lambda(
-                                    Expression.Call(
-                                        idsLambda.Body,
-                                        typeof(List<Guid?>).GetMethod("Contains"),
-                                        convertedMemberAccess),
-                                    parameter);
-                                expression = ((LambdaExpression)EFExpression.OptimizeContains(idsContainsExpression)).Body;
-                            }
-                            else
-                            {
-                                Type collectionBasicType = typeof(IQueryable).IsAssignableFrom(constant.Type)
-                                    ? typeof(Queryable) : typeof(Enumerable);
-                                var containsMethod = collectionBasicType.GetMethods()
-                                    .Single(m => m.Name == "Contains" && m.GetParameters().Count() == 2)
-                                    .MakeGenericMethod(collectionElement);
+                            Type collectionBasicType = typeof(IQueryable).IsAssignableFrom(constant.Type)
+                                ? typeof(Queryable) : typeof(Enumerable);
+                            var containsMethod = collectionBasicType.GetMethods()
+                                .Single(m => m.Name == "Contains" && m.GetParameters().Count() == 2)
+                                .MakeGenericMethod(collectionElement);
 
-                                expression = Expression.Call(containsMethod, constant, convertedMemberAccess);
-                            }
+                            expression = EFExpression.OptimizeContains(Expression.Call(containsMethod, constant, convertedMemberAccess));
 
                             if (filter.Operation.Equals("notin", StringComparison.OrdinalIgnoreCase))
                                 expression = Expression.Not(expression);

@@ -32,13 +32,12 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public DataStructureInfo Source { get; set; }
 
-        public void CheckSemantics(IDslModel concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
-            var properties = concepts.FindByReference<PropertyInfo>(p => p.DataStructure, this);
+            var properties = existingConcepts.FindByReference<PropertyInfo>(p => p.DataStructure, this);
 
             var propertyWithoutSelector = properties
-                .Where(p => concepts.FindByReference<BrowseFromPropertyInfo>(bfp => bfp.PropertyInfo, p).Count() == 0)
-                .FirstOrDefault();
+                .FirstOrDefault(p => !existingConcepts.FindByReference<BrowseFromPropertyInfo>(bfp => bfp.PropertyInfo, p).Any());
 
             if (propertyWithoutSelector != null)
                 throw new DslSyntaxException(

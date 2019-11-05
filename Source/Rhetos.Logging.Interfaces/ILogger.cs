@@ -45,6 +45,10 @@ namespace Rhetos.Logging
     public interface ILogger
     {
         void Write(EventType eventType, Func<string> logMessage);
+        /// <summary>
+        /// Returns the logger name that was provided as argument for <see cref="ILogProvider.GetLogger(string)"/>.
+        /// </summary>
+        string Name { get; }
     }
 
     public static class LoggerHelper

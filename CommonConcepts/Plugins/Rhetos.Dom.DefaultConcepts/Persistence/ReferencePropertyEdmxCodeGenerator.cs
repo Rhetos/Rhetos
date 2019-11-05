@@ -177,7 +177,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static string GetRefrenceName(ReferencePropertyInfo referencePropertyInfo)
         {
-            return $@"{referencePropertyInfo.DataStructure.Module}_{referencePropertyInfo.DataStructure.Name}_{referencePropertyInfo.Name}";
+            return $@"{referencePropertyInfo.DataStructure.Module.Name}_{referencePropertyInfo.DataStructure.Name}_{referencePropertyInfo.Name}";
         }
     }
 }

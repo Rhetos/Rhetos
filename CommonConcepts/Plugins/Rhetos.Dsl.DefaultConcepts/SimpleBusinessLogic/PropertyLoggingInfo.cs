@@ -27,7 +27,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Log")]
-    public class PropertyLoggingInfo : IConceptInfo, IValidationConcept
+    public class PropertyLoggingInfo : IValidatedConcept
     {
         [ConceptKey]
         public EntityLoggingInfo EntityLogging { get; set; }
@@ -35,7 +35,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public PropertyInfo Property { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             if (EntityLogging.Entity != Property.DataStructure)
                 throw new DslSyntaxException(string.Format(

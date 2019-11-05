@@ -26,7 +26,7 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class KeepSynchronizedOnChangedItemsInfo : IConceptInfo, IValidationConcept
+    public class KeepSynchronizedOnChangedItemsInfo : IValidatedConcept
     {
         [ConceptKey]
         public KeepSynchronizedInfo KeepSynchronized { get; set; }
@@ -34,7 +34,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public ChangesOnChangedItemsInfo UpdateOnChange { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             if (UpdateOnChange.Computation != KeepSynchronized.EntityComputedFrom.Source)
                 throw new DslSyntaxException(string.Format(

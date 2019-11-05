@@ -31,7 +31,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     [ConceptKeyword("ComputeForNewItems")]
     public class ComputeForNewItemsInfo : IConceptInfo
     {
-        // TODO: IValidationConcept: EntityComputedFrom.Source data structure should extend EntityComputedFrom.Target, or the source and the target should have the same base data structure (directly or indirectly).
+        // TODO: IValidatedConcept: EntityComputedFrom.Source data structure should extend EntityComputedFrom.Target, or the source and the target should have the same base data structure (directly or indirectly).
         [ConceptKey]
         public EntityComputedFromInfo EntityComputedFrom { get; set; }
 

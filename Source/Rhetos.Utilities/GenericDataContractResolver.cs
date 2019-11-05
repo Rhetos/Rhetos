@@ -37,7 +37,7 @@ namespace Rhetos.Utilities
             _domainObjectModel = domainObjectModel;
         }
 
-        private IDomainObjectModel _domainObjectModel;
+        private readonly IDomainObjectModel _domainObjectModel;
 
         private static string Decode(string value)
         {

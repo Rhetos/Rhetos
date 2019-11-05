@@ -29,7 +29,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RegExMatch")]
-    public class RegExMatchInfo : IMacroConcept, IValidationConcept
+    public class RegExMatchInfo : IMacroConcept, IValidatedConcept
     {
         [ConceptKey]
         public PropertyInfo Property { get; set; }
@@ -76,7 +76,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             return new IConceptInfo[] { filterParameter, itemFilter, invalidData, invalidProperty };
         }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             try
             {

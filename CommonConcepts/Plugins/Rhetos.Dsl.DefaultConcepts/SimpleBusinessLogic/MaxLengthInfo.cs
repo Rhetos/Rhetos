@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("MaxLength")]
-    public class MaxLengthInfo : IMacroConcept, IValidationConcept
+    public class MaxLengthInfo : IMacroConcept, IValidatedConcept
     {
         [ConceptKey]
         public PropertyInfo Property { get; set; }
@@ -62,14 +62,12 @@ namespace Rhetos.Dsl.DefaultConcepts
             return new IConceptInfo[] { itemFilter, invalidData, messageParameters, invalidProperty };
         }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
-            int i;
-
             if (!(this.Property is ShortStringPropertyInfo || this.Property is LongStringPropertyInfo))
                 throw new DslSyntaxException("MaxLength can only be used on ShortString or LongString.");
 
-            if (!Int32.TryParse(this.Length, out i))
+            if (!Int32.TryParse(this.Length, out int i))
                 throw new DslSyntaxException("Length is not an integer.");
         }
     }

@@ -46,5 +46,15 @@ namespace Rhetos.Logging.Test
             NLogProvider logProvider = new NLogProvider();
             Parallel.For(1, 20, x => Assert.IsNotNull(logProvider.GetLogger("abc")));
         }
+
+        [TestMethod]
+        public void LoggerName()
+        {
+            NLogProvider logProvider = new NLogProvider();
+            string loggerName = $"Space Dot.{Guid.NewGuid().ToString()}";
+            Console.WriteLine(loggerName);
+            var logger = logProvider.GetLogger(loggerName);
+            Assert.AreEqual(loggerName, logger.Name);
+        }
     }
 }

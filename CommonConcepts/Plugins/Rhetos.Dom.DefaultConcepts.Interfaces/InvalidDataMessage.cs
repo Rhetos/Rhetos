@@ -49,7 +49,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static void ValidateOnSave(IEnumerable<IEntity> inserted, IEnumerable<IEntity> updated, IValidateRepository repository, string dataStructure)
         {
-            if (inserted.Count() > 0 || updated.Count() > 0)
+            if (inserted.Any() || updated.Any())
             {
                 Guid[] newItemsIds = inserted.Concat(updated).Select(item => item.ID).ToArray();
                 var error = repository.Validate(newItemsIds, onSave: true).FirstOrDefault();

@@ -107,7 +107,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static string GetName(DataStructureInfo dataStructureInfo)
         {
-            return $@"{dataStructureInfo.Module}_{dataStructureInfo.Name}";
+            return $@"{dataStructureInfo.Module.Name}_{dataStructureInfo.Name}";
         }
     }
 }

@@ -37,14 +37,21 @@ namespace Rhetos.Dsl.Test
         {
         }
 
-        new public IEnumerable<IConceptInfo> ExtractConcepts(MultiDictionary<string, IConceptParser> conceptParsers)
+        private T Invoke<T>(string methodName, params object[] parameters)
         {
-            return base.ExtractConcepts(conceptParsers);
+            return (T)typeof(DslParser)
+                .GetMethod(methodName, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .InvokeEx(this, parameters);
         }
 
-        new public IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, MultiDictionary<string, IConceptParser> conceptParsers)
+        public IEnumerable<IConceptInfo> ExtractConcepts(MultiDictionary<string, IConceptParser> conceptParsers)
         {
-            return base.ParseNextConcept(tokenReader, context, conceptParsers);
+            return Invoke<IEnumerable<IConceptInfo>>("ExtractConcepts", conceptParsers);
+        }
+
+        public IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, MultiDictionary<string, IConceptParser> conceptParsers)
+        {
+            return Invoke<IConceptInfo>("ParseNextConcept", tokenReader, context, conceptParsers);
         }
     }
 }

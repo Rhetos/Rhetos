@@ -43,9 +43,9 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (FilterByInfo)conceptInfo;
 
             string filterImplementationSnippet =
-        $@"public global::{info.Source.Module}.{info.Source.Name}[] Filter({info.Parameter} filter_Parameter)
+        $@"public global::{info.Source.FullName}[] Filter({info.Parameter} filter_Parameter)
         {{
-            Func<Common.DomRepository, {info.Parameter}{AdditionalParametersTypeTag.Evaluate(info)}, {info.Source.Module}.{info.Source.Name}[]> filter_Function =
+            Func<Common.DomRepository, {info.Parameter}{AdditionalParametersTypeTag.Evaluate(info)}, {info.Source.FullName}[]> filter_Function =
                 {info.Expression};
 
             return filter_Function(_domRepository, filter_Parameter{AdditionalParametersArgumentTag.Evaluate(info)});

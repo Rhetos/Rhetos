@@ -26,7 +26,7 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class LockItemsLockPropertyInfo : IConceptInfo, IValidationConcept
+    public class LockItemsLockPropertyInfo : IValidatedConcept
     {
         [ConceptKey]
         public LockItemsExceptPropertiesInfo Lock { get; set; }
@@ -34,7 +34,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public PropertyInfo Property { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             DslUtility.CheckIfPropertyBelongsToDataStructure(Property, Lock.Source, this);
         }
