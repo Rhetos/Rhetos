@@ -19,18 +19,13 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.CommonConcepts.Test.Mocks;
-using Rhetos.Dom;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
-using Rhetos.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Text;
 
 namespace Rhetos.CommonConcepts.Test
 {

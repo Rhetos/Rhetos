@@ -122,7 +122,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetAssociationSetName(UniqueReferenceInfo uniqueReferenceInfo)
         {
-            return $@"{uniqueReferenceInfo.Extension.Module}_{uniqueReferenceInfo.Extension.Name}_Base";
+            return $@"{uniqueReferenceInfo.Extension.Module.Name}_{uniqueReferenceInfo.Extension.Name}_Base";
         }
     }
 }

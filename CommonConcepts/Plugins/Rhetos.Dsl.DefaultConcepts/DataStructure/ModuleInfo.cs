@@ -33,14 +33,6 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public string Name { get; set; }
 
-        public override string ToString()
-        {
-            return Name;
-        }
-
-        public override int GetHashCode()
-        {
-            return Name.GetHashCode();
-        }
+        public override string ToString() => Name; // For backward compatibility.
     }
 }

@@ -65,7 +65,7 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 var ormDataStructure = (IOrmDataStructure)info.DataStructure;
                 var referencedOrmDataStructure = (IOrmDataStructure)info.Referenced;
-                string systemMessage = "DataStructure:" + info.DataStructure + ",Property:" + info.Name + "ID,Referenced:" + info.Referenced;
+                string systemMessage = $"DataStructure:{info.DataStructure.FullName},Property:{info.Name}ID,Referenced:{info.Referenced.FullName}";
 
                 if (info.DataStructure is IWritableOrmDataStructure)
                 {

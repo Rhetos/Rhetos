@@ -66,7 +66,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             {
                 saveMethod,
                 loadOldItems,
-                new LoadOldItemsTakeInfo { LoadOldItems = loadOldItems, Path = conceptInfo.ModifiedProperty.GetSimplePropertyName() }
+                new LoadOldItemsTakeInfo { LoadOldItems = loadOldItems, Path = conceptInfo.ModifiedProperty.GetSimplePropertyName()}
             };
         }
     }

@@ -38,7 +38,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private string CheckDataSnippet(RequiredPropertyInfo info)
         {
-            string dataStructureFullName = info.Property.DataStructure.Module.Name + "." + info.Property.DataStructure.Name;
+            string dataStructureFullName = info.Property.DataStructure.FullName;
 
             return
             @"{

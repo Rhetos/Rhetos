@@ -70,11 +70,6 @@ namespace Rhetos.Dsl.Test
         {
             [ConceptKey]
             public string Name { get; set; }
-
-            public override int GetHashCode()
-            {
-                return Name.GetHashCode();
-            }
         }
 
         [TestMethod]
@@ -162,42 +157,11 @@ namespace Rhetos.Dsl.Test
 
         //===============================================================
 
-        /*
-                class FieldConceptInfo : IConceptInfo
-                {
-                    [Key]public string C;
-                    public string B { get; set; }
-                    public string A;
-
-                    public override int GetHashCode()
-                    {
-                        return C.GetHashCode();
-                    }
-                }
-
-                [TestMethod]
-                public void ParseField()
-                {
-                    var fieldParser = new GenericParserHelper<FieldConceptInfo>("field");
-                    FieldConceptInfo ci = fieldParser.QuickParse("field c b a");
-                    Assert.AreEqual("c", ci.C);
-                    Assert.AreEqual("b", ci.B);
-                    Assert.AreEqual("a", ci.A);
-                }
-        */
-
-        //===============================================================
-
         class ComplexConceptInfo : IConceptInfo
         {
             [ConceptKey]
             public string Name { get; set; }
             public SimpleConceptInfo SimpleConceptInfo { get; set; }
-
-            public override int GetHashCode()
-            {
-                return Name.GetHashCode();
-            }
         }
 
         [TestMethod]
@@ -211,129 +175,12 @@ namespace Rhetos.Dsl.Test
 
         //===============================================================
 
-        //class ArrayConceptInfo : IConceptInfo
-        //{
-        //    [ConceptKey]
-        //    public string Name { get; set; }
-        //    public string[] Values { get; set; }
-
-        //    public override int GetHashCode()
-        //    {
-        //        return Name.GetHashCode();
-        //    }
-
-        //    public override string  ToString()
-        //    {
-        //        return Name + string.Join("", Values.Select(v =>  "[" + v + "]"));
-        //    }
-        //}
-
-        //[TestMethod]
-        //public void ParseArrayTestSimple()
-        //{
-        //    var arrayParser = new GenericParserHelper<ArrayConceptInfo>("array");
-        //    Assert.AreEqual("a[b]", arrayParser.QuickParse("array a (b)").ToString());
-        //    Assert.AreEqual("a[b][c]", arrayParser.QuickParse("array a (b c)").ToString());
-        //    Assert.AreEqual("a", arrayParser.QuickParse("array a ()").ToString());
-        //}
-
-        //[TestMethod]
-        //public void ParseArrayTestText()
-        //{
-        //    var arrayParser = new GenericParserHelper<ArrayConceptInfo>("array");
-        //    Assert.AreEqual("a[b]", arrayParser.QuickParse("array a ('b')").ToString());
-        //    Assert.AreEqual("a[b][c]", arrayParser.QuickParse("array a ('b' 'c')").ToString());
-        //    Assert.AreEqual("a[b c]", arrayParser.QuickParse("array a ('b c')").ToString());
-        //    Assert.AreEqual("a[]", arrayParser.QuickParse("array a ('')").ToString());
-        //}
-
-        //[TestMethod]
-        //[ExpectedException(typeof(FrameworkException))]
-        //public void ParseArrayBracketsNotClosed()
-        //{
-        //    var arrayParser = new GenericParserHelper<ArrayConceptInfo>("array");
-        //    try
-        //    {
-        //        ArrayConceptInfo ci = arrayParser.QuickParse("array a (b");
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        Assert.IsTrue(e.Message.Contains("\")\""), "Expecting \")\".");
-        //        throw;
-        //    }
-        //}
-
-        //class ArrayOfReferencesConceptInfo : IConceptInfo
-        //{
-        //    [ConceptKey]
-        //    public string Name { get; set; }
-        //    public SimpleConceptInfo[] Values { get; set; }
-
-        //    public override int GetHashCode()
-        //    {
-        //        return Name.GetHashCode();
-        //    }
-
-        //    public override string ToString()
-        //    {
-        //        return Name + string.Join("", Values.Select(v => "[-" + v.Name + "]"));
-        //    }
-        //}
-
-        //[TestMethod]
-        //public void ParseArrayOfReferencesTestSimple()
-        //{
-        //    var arrayParser = new GenericParserHelper<ArrayOfReferencesConceptInfo>("array");
-        //    Assert.AreEqual("a[-b]", arrayParser.QuickParse("array a (b)").ToString());
-        //    Assert.AreEqual("a[-b][-c]", arrayParser.QuickParse("array a (b c)").ToString());
-        //    Assert.AreEqual("a", arrayParser.QuickParse("array a ()").ToString());
-        //}
-
-        //class ArrayOfEnclosedReferencesConceptInfo : IConceptInfo
-        //{
-        //    [ConceptKey]
-        //    public string Name { get; set; }
-        //    public EnclosedConceptInfo[] Values { get; set; }
-
-        //    public override int GetHashCode()
-        //    {
-        //        return Name.GetHashCode();
-        //    }
-
-        //    public override string ToString()
-        //    {
-        //        return Name + string.Join("", Values.Select(v => "[" + v.Parent.Name + "-" + v.Name + "]"));
-        //    }
-        //}
-
-        //[TestMethod]
-        //public void ParseArrayEnclosedOfReferencesTestSimple()
-        //{
-        //    var arrayParser = new GenericParserHelper<ArrayOfEnclosedReferencesConceptInfo>("array");
-        //    Assert.AreEqual("a[b-c]", arrayParser.QuickParse("array a (b.c)").ToString());
-        //    Assert.AreEqual("a[b-c][d-e]", arrayParser.QuickParse("array a (b.c d.e)").ToString());
-        //}
-
-        //[TestMethod]
-        //public void ParseArrayEnclosedOfReferencesTestEnclosed()
-        //{
-        //    var arrayParser = new GenericParserHelper<ArrayOfEnclosedReferencesConceptInfo>("array");
-        //    var parent = new SimpleConceptInfo {Name = "p"};
-        //    Assert.AreEqual("a[p-b]", arrayParser.QuickParse("array a (b)", parent).ToString());
-        //    Assert.AreEqual("a[p-b][p-c]", arrayParser.QuickParse("array a (b c)", parent).ToString());
-        //}
-
-
-        //===============================================================
-
         class EnclosedConceptInfo : IConceptInfo
         {
             [ConceptKey]
             public SimpleConceptInfo Parent { get; set; }
             [ConceptKey]
             public string Name { get; set; }
-
-            public override int GetHashCode() { return Name.GetHashCode(); }
         }
 
         [TestMethod]
@@ -366,8 +213,6 @@ namespace Rhetos.Dsl.Test
             public EnclosedConceptInfo Parent { get; set; }
             [ConceptKey]
             public string Name { get; set; }
-
-            public override int GetHashCode() { return Name.GetHashCode(); }
         }
 
         [TestMethod]
@@ -425,11 +270,6 @@ namespace Rhetos.Dsl.Test
             public SimpleConceptInfo Parent { get; set; }
             [ConceptKey]
             public EnclosedConceptInfo Reference { get; set; }
-
-            public override int GetHashCode()
-            {
-                return Reference.GetHashCode();
-            }
         }
 
         [TestMethod]
@@ -522,22 +362,12 @@ namespace Rhetos.Dsl.Test
             [ConceptKey]
             public string Name { get; set; }
             public string Comment { get; set; }
-
-            public override int GetHashCode()
-            {
-                return Name.GetHashCode();
-            }
         }
 
         class ReferenceWithKey : IConceptInfo
         {
             [ConceptKey]
             public ConceptWithKey Parent { get; set; }
-
-            public override int GetHashCode()
-            {
-                return Parent.GetHashCode();
-            }
         }
 
         [TestMethod]
@@ -556,11 +386,6 @@ namespace Rhetos.Dsl.Test
             [ConceptKey]
             public ConceptWithKey Parent { get; set; }
             public ConceptWithKey Reference { get; set; }
-
-            public override int GetHashCode()
-            {
-                return Parent.GetHashCode();
-            }
         }
 
         [TestMethod]
@@ -586,11 +411,6 @@ namespace Rhetos.Dsl.Test
         {
             [ConceptKey]
             public DerivedWithKey Parent { get; set; }
-
-            public override int GetHashCode()
-            {
-                return Parent.GetHashCode();
-            }
         }
 
         [TestMethod]
@@ -611,7 +431,6 @@ namespace Rhetos.Dsl.Test
         {
             [ConceptKey]
             public string Name { get; set; }
-            public override int GetHashCode() { return Name.GetHashCode(); }
         }
 
         class ExtendedRootMenuCI : MenuCI
@@ -623,7 +442,6 @@ namespace Rhetos.Dsl.Test
         internal class SubMenuCI : MenuCI
         {
             public MenuCI Parent { get; set; }
-            public override int GetHashCode() { return Name.GetHashCode(); }
         }
 
         [TestMethod]
@@ -667,8 +485,6 @@ namespace Rhetos.Dsl.Test
             public LeftRecursiveCI Parent { get; set; }
             [ConceptKey]
             public string Name { get; set; }
-
-            public override int GetHashCode() { return Name.GetHashCode(); }
         }
 
         [TestMethod]
@@ -694,11 +510,6 @@ namespace Rhetos.Dsl.Test
             public IConceptInfo Referece { get; set; }
             [ConceptKey]
             public string Data { get; set; }
-
-            public override int GetHashCode()
-            {
-                return Data.GetHashCode();
-            }
         }
 
         [TestMethod]

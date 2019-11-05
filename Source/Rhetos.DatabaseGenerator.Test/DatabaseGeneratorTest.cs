@@ -59,11 +59,6 @@ namespace Rhetos.DatabaseGenerator.Test
             [ConceptKey]
             public string Name { get; set; }
 
-            public override string ToString()
-            {
-                return string.Format("BASE {0}", Name);
-            }
-
             public static NewConceptApplication CreateApplication(string name)
             {
                 return CreateApplication(name, new SimpleConceptImplementation());
@@ -87,11 +82,6 @@ namespace Rhetos.DatabaseGenerator.Test
             [ConceptKey]
             public string Name { get; set; }
 
-            public override string ToString()
-            {
-                return string.Format("OTHER BASE {0}", Name);
-            }
-
             public static NewConceptApplication CreateApplication(string name)
             {
                 return CreateApplication(name, new SimpleConceptImplementation());
@@ -110,11 +100,6 @@ namespace Rhetos.DatabaseGenerator.Test
         public class SimpleCi : BaseCi
         {
             public string Data { get; set; }
-
-            public override string ToString()
-            {
-                return string.Format("SIMPLE {0} {1}", Name, Data);
-            }
 
             new public static NewConceptApplication CreateApplication(string sql)
             {
@@ -165,21 +150,11 @@ namespace Rhetos.DatabaseGenerator.Test
         public class SimpleCi2 : BaseCi
         {
             public string Data { get; set; }
-
-            public override string ToString()
-            {
-                return string.Format("SIMPLE2 {0} {1}", Name, Data);
-            }
         }
 
         public class SimpleCi3 : BaseCi
         {
             public string Data { get; set; }
-
-            public override string ToString()
-            {
-                return string.Format("SIMPLE3 {0} {1}", Name, Data);
-            }
         }
 
         public class ReferencingCi : IConceptInfo
@@ -187,11 +162,6 @@ namespace Rhetos.DatabaseGenerator.Test
             [ConceptKey]
             public SimpleCi Reference { get; set; }
             public string Data { get; set; }
-
-            public override string ToString()
-            {
-                return string.Format("DEPENDENT TO {0}-{1}", Reference.Name, Reference.Data);
-            }
 
             public static NewConceptApplication CreateApplication(string sql, NewConceptApplication reference)
             {
@@ -211,11 +181,6 @@ namespace Rhetos.DatabaseGenerator.Test
             public ReferencingCi Reference { get; set; }
             public string Data { get; set; }
 
-            public override string ToString()
-            {
-                return string.Format("REFERENCE TO REFERENCE TO {0} {1}", Reference.Reference.Name, Reference.Reference.Data);
-            }
-
             public static NewConceptApplication CreateApplication(string sql, NewConceptApplication reference)
             {
                 return new NewConceptApplication(
@@ -232,11 +197,6 @@ namespace Rhetos.DatabaseGenerator.Test
         {
             public BaseCi Reference1 { get; set; }
             public BaseCi Reference2 { get; set; }
-
-            public override string ToString()
-            {
-                return string.Format("MULTIREFERENCE {0}", Name);
-            }
 
             public static NewConceptApplication CreateApplication(string name, NewConceptApplication reference1, NewConceptApplication reference2)
             {

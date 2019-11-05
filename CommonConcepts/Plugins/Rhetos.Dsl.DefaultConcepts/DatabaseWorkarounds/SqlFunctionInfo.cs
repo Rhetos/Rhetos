@@ -27,20 +27,12 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         [ConceptKey]
         public ModuleInfo Module { get; set; }
+
         [ConceptKey]
         public string Name { get; set; }
 
         public string Arguments { get; set; }
+
         public string Source { get; set; }
-
-        public override string ToString()
-        {
-            return Module.Name + "." + Name;
-        }
-
-        public override int GetHashCode()
-        {
-            return Name.GetHashCode();
-        }
     }
 }
