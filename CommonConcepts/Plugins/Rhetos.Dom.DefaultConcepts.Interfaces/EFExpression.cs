@@ -60,6 +60,10 @@ namespace Rhetos.Dom.DefaultConcepts
 
         static readonly MethodInfo ListOfNullableGuidContainsMethod = typeof(List<Guid?>).GetMethod("Contains");
 
+        static readonly MethodInfo EnumerableOfGuidContainsMethod = typeof(Enumerable).GetMethods().Single(m => m.Name == "Contains" && m.GetParameters().Count() == 2).MakeGenericMethod(typeof(Guid));
+
+        static readonly MethodInfo EnumerableOfNullableGuidContainsMethod = typeof(Enumerable).GetMethods().Single(m => m.Name == "Contains" && m.GetParameters().Count() == 2).MakeGenericMethod(typeof(Guid?));
+
         private class ReplaceContainsVisitor : ExpressionVisitor
         {
             static readonly MethodInfo ContainsIdsMethod = typeof(EFExpression).GetMethod(
@@ -78,50 +82,76 @@ namespace Rhetos.Dom.DefaultConcepts
 
             protected override Expression VisitMethodCall(MethodCallExpression node)
             {
-                if (node.Object == null)
-                    return base.VisitMethodCall(node);
-
-                if (node.Object.NodeType != ExpressionType.MemberAccess)
-                    return base.VisitMethodCall(node);
-
-                FieldInfo innerField = (FieldInfo)((MemberExpression)node.Object)?.Member;
-                ConstantExpression ce = (ConstantExpression)((MemberExpression)node.Object)?.Expression;
-
-                if (innerField == null || ce == null)
-                    return base.VisitMethodCall(node);
-
-                if (node.Method == ListOfGuidContainsMethod)
+                if (node.Object != null && node.Object.NodeType == ExpressionType.MemberAccess)
                 {
-                    var outerObj = (List<Guid>)innerField.GetValue(ce.Value);
+                    FieldInfo innerField = (node.Object as MemberExpression )?.Member as FieldInfo;
+                    ConstantExpression ce = (node.Object as MemberExpression)?.Expression as ConstantExpression;
 
-                    var concatenatedIds = string.Join(",", outerObj.Distinct().Select(x => x.ToString()));
-                    Expression<Func<string>> idsLambda = () => concatenatedIds;
+                    if (innerField == null || ce == null)
+                        return base.VisitMethodCall(node);
 
-                    return Expression.Call(ContainsIdsMethod, node.Arguments[0], idsLambda.Body);
+                    if (node.Method == ListOfGuidContainsMethod && innerField.GetValue(ce.Value) is List<Guid> listOfGuid)
+                        return CreateOptimizeExpressionForListOfGuid(listOfGuid, node.Arguments[0]);
+
+                    if (node.Method == ListOfNullableGuidContainsMethod && innerField.GetValue(ce.Value) is List<Guid?> listOfNullableGuid)
+                        return CreateOptimizeExpressionForListOfNullableGuid(listOfNullableGuid, node.Arguments[0]);
                 }
-
-                if (node.Method == ListOfNullableGuidContainsMethod)
+                else if (node.Object == null && node.Arguments.Count == 2 && node.Arguments[0].NodeType == ExpressionType.Constant)
                 {
-                    var outerObj = (List<Guid?>)innerField.GetValue(ce.Value);
+                    ConstantExpression ce = node.Arguments[0] as ConstantExpression;
 
-                    var concatenatedIds = string.Join(",", outerObj.Where(x => x != null).Distinct().Select(x => x.ToString()));
-                    Expression<Func<string>> idsLambda = () => concatenatedIds;
+                    if (ce == null)
+                        return base.VisitMethodCall(node);
 
-                    Expression optimizedContainsExpression = Expression.Call(ContainsIdNullableMethod, node.Arguments[0], idsLambda.Body);
+                    if (node.Method == EnumerableOfGuidContainsMethod && ce.Value is IList<Guid> listOfGuid2)
+                        return CreateOptimizeExpressionForListOfGuid(listOfGuid2, node.Arguments[1]);
 
-                    // EF would where add here "AND argument IS NOT NULL", if UseDatabaseNullSemantics=false,
-                    // but we have removed that condition because 1. it does not change the result in the database,
-                    // and 2. there is no clean way to use the system configuration here (from static methods WhereContains and OptimizeContains).
+                    if (node.Method == EnumerableOfNullableGuidContainsMethod && ce.Value is IList<Guid?> listOfNullableGuid2)
+                        return CreateOptimizeExpressionForListOfNullableGuid(listOfNullableGuid2, node.Arguments[1]);
+                }
+                else if(node.Object == null && node.Arguments.Count == 2 && node.Arguments[0].NodeType == ExpressionType.MemberAccess)
+                {
+                    FieldInfo innerField = (node.Arguments[0] as MemberExpression)?.Member as FieldInfo;
+                    ConstantExpression ce = (node.Arguments[0] as MemberExpression)?.Expression as ConstantExpression;
 
-                    if (outerObj.Any(x => x == null))
-                        optimizedContainsExpression = Expression.Or(
-                            optimizedContainsExpression,
-                            Expression.Equal(node.Arguments[0], Expression.Constant(null)));
+                    if (innerField == null || ce == null)
+                        return base.VisitMethodCall(node);
 
-                    return optimizedContainsExpression;
+                    if (node.Method == EnumerableOfGuidContainsMethod && innerField.GetValue(ce.Value) is IList<Guid> listOfGuid)
+                        return CreateOptimizeExpressionForListOfGuid(listOfGuid, node.Arguments[1]);
+
+                    if (node.Method == EnumerableOfNullableGuidContainsMethod && innerField.GetValue(ce.Value) is IList<Guid?> listOfNullableGuid)
+                        return CreateOptimizeExpressionForListOfNullableGuid(listOfNullableGuid, node.Arguments[1]);
                 }
 
                 return base.VisitMethodCall(node);
+            }
+
+            Expression CreateOptimizeExpressionForListOfGuid(IList<Guid> guids, Expression value)
+            {
+                var concatenatedIds = string.Join(",", guids.Distinct().Select(x => x.ToString()));
+                Expression<Func<string>> idsLambda = () => concatenatedIds;
+
+                return Expression.Call(ContainsIdsMethod, value, idsLambda.Body);
+            }
+
+            Expression CreateOptimizeExpressionForListOfNullableGuid(IList<Guid?> guids, Expression value)
+            {
+                var concatenatedIds = string.Join(",", guids.Where(x => x != null).Distinct().Select(x => x.ToString()));
+                Expression<Func<string>> idsLambda = () => concatenatedIds;
+
+                Expression optimizedContainsExpression = Expression.Call(ContainsIdNullableMethod, value, idsLambda.Body);
+
+                // EF would where add here "AND argument IS NOT NULL", if UseDatabaseNullSemantics=false,
+                // but we have removed that condition because 1. it does not change the result in the database,
+                // and 2. there is no clean way to use the system configuration here (from static methods WhereContains and OptimizeContains).
+
+                if (guids.Any(x => x == null))
+                    optimizedContainsExpression = Expression.Or(
+                        optimizedContainsExpression,
+                        Expression.Equal(value, Expression.Constant(null)));
+
+                return optimizedContainsExpression;
             }
         }
 
