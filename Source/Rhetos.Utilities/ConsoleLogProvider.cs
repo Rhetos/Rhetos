@@ -43,17 +43,16 @@ namespace Rhetos.Utilities
             return new ConsoleLogger(eventName, _logMonitor);
         }
 
-        private LogMonitor _logMonitor;
+        private readonly LogMonitor _logMonitor;
     }
 
     public class ConsoleLogger : ILogger
     {
-        private readonly string _eventName;
         private readonly LogMonitor _logMonitor;
 
         public ConsoleLogger(string eventName = null, LogMonitor logMonitor = null)
         {
-            _eventName = eventName;
+            Name = eventName;
             _logMonitor = logMonitor;
         }
 
@@ -61,23 +60,22 @@ namespace Rhetos.Utilities
         {
             string message = null;
 
-            if (eventType >= _minLevel)
+            if (eventType >= MinLevel)
             {
                 try
                 {
                     message = logMessage();
-                    Write(eventType, _eventName, message.Limit(10000, true));
+                    Write(eventType, Name, message.Limit(10000, true));
                 }
                 catch (Exception ex)
                 {
                     Write(EventType.Error, GetType().Name, string.Format(
                         "Error while getting the log message ({0}: {1}). {2}",
-                        eventType, _eventName, ex.ToString()));
+                        eventType, Name, ex.ToString()));
                 }
             }
 
-            if (_logMonitor != null)
-                _logMonitor(eventType, _eventName, message != null ? () => message : logMessage); // Ensures only one evaluation of the logMessage function.
+            _logMonitor?.Invoke(eventType, Name, message != null ? () => message : logMessage); // Ensures only one evaluation of the logMessage function.
         }
 
         private static void Write(EventType eventType, string eventName, string message)
@@ -88,12 +86,8 @@ namespace Rhetos.Utilities
                 + message);
         }
 
-        private static EventType _minLevel = 0;
+        public static EventType MinLevel { get; set; } = 0;
 
-        public static EventType MinLevel
-        {
-            get { return _minLevel; }
-            set { _minLevel = value; }
-        }
+        public string Name { get; }
     }
 }

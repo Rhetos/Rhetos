@@ -33,6 +33,8 @@ namespace Rhetos.Extensibility
         private class NullLogger : ILogger
         {
             public void Write(EventType eventType, Func<string> logMessage) { }
+
+            public string Name { get; set; } = "";
         }
     }
 }
