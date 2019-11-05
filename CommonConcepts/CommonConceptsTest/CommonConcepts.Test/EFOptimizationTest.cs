@@ -354,5 +354,20 @@ namespace CommonConcepts.Test
                 return _items.GetEnumerator();
             }
         }
+
+        [TestMethod]
+        public void DontEvaluateEnumerable()
+        {
+            IEnumerable<Guid> items = Enumerable.Range(0, 1).Select<int, Guid>(x => throw new Rhetos.FrameworkException("Enumeration should not be evaluated during optimization."));
+            Expression<Func<Guid, bool>> expression = id => items.Contains(id);
+
+            Console.WriteLine(expression);
+            expression = EFExpression.OptimizeContains(expression);
+            Console.WriteLine(expression);
+
+            TestUtility.ShouldFail<Rhetos.FrameworkException>(
+                () => Assert.AreEqual(1, items.Count()),
+                "Enumeration should not be evaluated during optimization.");
+        }
     }
 }

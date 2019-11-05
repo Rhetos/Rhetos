@@ -103,11 +103,11 @@ namespace Rhetos.Dom.DefaultConcepts
                     if (ce == null)
                         return base.VisitMethodCall(node);
 
-                    if (node.Method == EnumerableOfGuidContainsMethod && ce.Value is IList<Guid> listOfGuid2)
-                        return CreateOptimizeExpressionForListOfGuid(listOfGuid2, node.Arguments[1]);
+                    if (node.Method == EnumerableOfGuidContainsMethod && ce.Value is IList<Guid> listOfGuid)
+                        return CreateOptimizeExpressionForListOfGuid(listOfGuid, node.Arguments[1]);
 
-                    if (node.Method == EnumerableOfNullableGuidContainsMethod && ce.Value is IList<Guid?> listOfNullableGuid2)
-                        return CreateOptimizeExpressionForListOfNullableGuid(listOfNullableGuid2, node.Arguments[1]);
+                    if (node.Method == EnumerableOfNullableGuidContainsMethod && ce.Value is IList<Guid?> listOfNullableGuid)
+                        return CreateOptimizeExpressionForListOfNullableGuid(listOfNullableGuid, node.Arguments[1]);
                 }
                 else if(node.Object == null && node.Arguments.Count == 2 && node.Arguments[0].NodeType == ExpressionType.MemberAccess)
                 {
@@ -143,8 +143,9 @@ namespace Rhetos.Dom.DefaultConcepts
                 Expression optimizedContainsExpression = Expression.Call(ContainsIdNullableMethod, value, idsLambda.Body);
 
                 // EF would where add here "AND argument IS NOT NULL", if UseDatabaseNullSemantics=false,
-                // but we have removed that condition because 1. it does not change the result in the database,
-                // and 2. there is no clean way to use the system configuration here (from static methods WhereContains and OptimizeContains).
+                // but we have removed that condition because:
+                // 1. it does not change the result in the database, and
+                // 2. there is no clean way to use the system configuration here (from static methods WhereContains and OptimizeContains).
 
                 if (guids.Any(x => x == null))
                     optimizedContainsExpression = Expression.Or(
