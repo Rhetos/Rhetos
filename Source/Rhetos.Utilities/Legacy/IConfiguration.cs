@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Utilities
 {
+    [Obsolete("Use IConfigurationProvider instead.")]
     public interface IConfiguration
     {
         Lazy<string> GetString(string key, string defaultValue);

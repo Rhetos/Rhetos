@@ -23,6 +23,7 @@ using Rhetos.Logging;
 using Rhetos.Security;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
+using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -72,16 +73,32 @@ namespace CommonConcepts.Test
                 .As<IUserInfo>();
         }
 
+        public static void OverrideRhetosAppOptions(this RhetosTestContainer container, RhetosAppOptions newRhetosAppOptions)
+        {
+            container.InitializeSession += builder => builder.RegisterInstance(newRhetosAppOptions);
+        }
+
+        [Obsolete("Use OverrideRhetosAppOptions")]
         public static void OverrideConfiguration(this RhetosTestContainer container, params (string Key, object Value)[] settings)
         {
-            var mockConfiguration = new MockConfiguration(true);
+            var mockConfigurationBuilder = new ConfigurationBuilder()
+                .AddConfigurationManagerConfiguration();
+            
             foreach (var setting in settings)
             {
                 Console.WriteLine($"{setting.Key} = {setting.Value}");
-                mockConfiguration.Add(setting.Key, setting.Value);
+                mockConfigurationBuilder.AddKeyValue(setting.Key, setting.Value);
             }
 
-            container.InitializeSession += builder => builder.RegisterInstance<IConfiguration>(mockConfiguration);
+            var mockConfiguration = mockConfigurationBuilder.Build();
+
+            // register new instances of ConfigurationProvider and new resolved RhetosAppOptions from it
+            // WARNING: other configured and registered option objects might contain old configuration values
+            container.InitializeSession += builder => 
+            {
+                builder.RegisterInstance(mockConfiguration.GetOptions<RhetosAppOptions>());
+                builder.RegisterInstance(mockConfiguration);
+            };
         }
     }
 }

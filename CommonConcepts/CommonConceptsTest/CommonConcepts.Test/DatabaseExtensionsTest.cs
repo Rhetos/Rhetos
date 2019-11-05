@@ -48,7 +48,7 @@ namespace CommonConcepts.Test
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
                 using (var container = new RhetosTestContainer())
                 {
-                    container.OverrideConfiguration(("EntityFramework.UseDatabaseNullSemantics", useDatabaseNullSemantics));
+                    container.OverrideRhetosAppOptions(new RhetosAppOptions() { EntityFramework__UseDatabaseNullSemantics = useDatabaseNullSemantics });
 
                     container.Resolve<ISqlExecuter>().ExecuteSql(
                         new[] { "DELETE FROM TestDatabaseExtensions.Simple" }
