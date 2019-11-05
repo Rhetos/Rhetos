@@ -221,6 +221,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertOrUpdateSystemRole()
         {
+            AuthorizationDataCache.ClearCache();
             Assert.AreEqual("Roles, SystemRoles",
                 TestPermissionsCachingOnChange(
                     context =>
