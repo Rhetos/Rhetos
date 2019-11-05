@@ -27,7 +27,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ImplementsQueryable")]
-    public class ImplementsQueryableInterfaceInfo : IConceptInfo, IValidationConcept
+    public class ImplementsQueryableInterfaceInfo : IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }
@@ -43,7 +43,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             return type;
         }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             if (!DslUtility.IsQueryable(DataStructure))
                 throw new DslSyntaxException(this, "This concept can only be used on a queryable data structure, such as Entity. " + DataStructure.GetKeywordOrTypeName() + " is not queryable.");

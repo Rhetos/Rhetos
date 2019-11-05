@@ -27,7 +27,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ChangesOnBaseItem")]
-    public class ChangesOnBaseItemInfo : IConceptInfo, IValidatedConcept
+    public class ChangesOnBaseItemInfo : IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo Computation { get; set; }

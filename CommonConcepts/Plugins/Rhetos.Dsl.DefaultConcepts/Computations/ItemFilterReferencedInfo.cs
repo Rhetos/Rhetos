@@ -43,13 +43,13 @@ namespace Rhetos.Dsl.DefaultConcepts
         /// </summary>
         public string SubFilterExpression { get; set; }
 
-        public void CheckSemantics(IDslModel concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             if (ReferenceFromMe.DataStructure != Source)
                 throw new DslSyntaxException("'" + this.GetUserDescription()
                     + "' must use a reference property that is a member of it's own data structure. Try using FilterByLinkedItems instead.");
 
-            var availableFilters = concepts.FindByReference<ItemFilterInfo>(f => f.Source, ReferenceFromMe.Referenced)
+            var availableFilters = existingConcepts.FindByReference<ItemFilterInfo>(f => f.Source, ReferenceFromMe.Referenced)
                 .Select(f => f.FilterName).OrderBy(f => f).ToList();
 
             if (!availableFilters.Contains(FilterName))

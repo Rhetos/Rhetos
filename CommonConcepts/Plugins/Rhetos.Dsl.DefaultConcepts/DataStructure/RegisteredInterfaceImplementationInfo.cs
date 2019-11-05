@@ -27,14 +27,14 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class RegisteredInterfaceImplementationInfo : IValidationConcept
+    public class RegisteredInterfaceImplementationInfo : IValidatedConcept
     {
         [ConceptKey]
         public string InterfaceAssemblyQualifiedName { get; set; }
 
         public DataStructureInfo DataStructure { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             Type myType = Type.GetType(InterfaceAssemblyQualifiedName);
             if (myType == null)

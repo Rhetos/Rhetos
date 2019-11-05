@@ -25,14 +25,14 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlDefault")]
-    public class SqlDefaultPropertyInfo : IConceptInfo, IValidationConcept
+    public class SqlDefaultPropertyInfo : IValidatedConcept
     {
         [ConceptKey]
         public PropertyInfo Property { get; set; }
 
         public string Definition { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             if (!(Property.DataStructure is EntityInfo))
                 throw new DslSyntaxException(string.Format(

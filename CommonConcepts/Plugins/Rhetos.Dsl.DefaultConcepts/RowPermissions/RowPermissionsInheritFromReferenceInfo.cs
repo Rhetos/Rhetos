@@ -27,7 +27,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("InheritFrom")]
-    public class RowPermissionsInheritFromReferenceInfo : IMacroConcept, IValidationConcept
+    public class RowPermissionsInheritFromReferenceInfo : IMacroConcept, IValidatedConcept
     {
         [ConceptKey]
         public RowPermissionsPluginableFiltersInfo RowPermissionsFilters { get; set; }
@@ -48,7 +48,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             };
         }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             DslUtility.CheckIfPropertyBelongsToDataStructure(ReferenceProperty, RowPermissionsFilters.DataStructure, this);
         }

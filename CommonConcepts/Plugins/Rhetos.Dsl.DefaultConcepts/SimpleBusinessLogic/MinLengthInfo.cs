@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("MinLength")]
-    public class MinLengthInfo : IMacroConcept, IValidationConcept
+    public class MinLengthInfo : IMacroConcept, IValidatedConcept
     {
         [ConceptKey]
         public PropertyInfo Property { get; set; }
@@ -62,7 +62,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             return new IConceptInfo[] { itemFilter, invalidData, messageParameters, invalidProperty };
         }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             int i;
 

@@ -31,7 +31,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Is")]
-    public class IsSubtypeOfInfo : IConceptInfo, IValidatedConcept
+    public class IsSubtypeOfInfo : IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo Subtype { get; set; }

@@ -24,7 +24,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RelatedItem")]
-    public class LoggingRelatedItemInfo : IConceptInfo, IValidationConcept
+    public class LoggingRelatedItemInfo : IValidatedConcept
     {
         [ConceptKey]
         public EntityLoggingInfo Logging { get; set; }
@@ -41,7 +41,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public string Relation { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             if (string.IsNullOrWhiteSpace(Relation))
                 throw new DslSyntaxException(this, "Property 'Relation' must not be empty.");

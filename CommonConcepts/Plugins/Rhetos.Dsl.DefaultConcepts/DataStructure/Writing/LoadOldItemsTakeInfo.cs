@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Take")]
-    public class LoadOldItemsTakeInfo : IConceptInfo, IValidatedConcept
+    public class LoadOldItemsTakeInfo : IValidatedConcept
     {
         [ConceptKey]
         public LoadOldItemsInfo LoadOldItems { get; set; }

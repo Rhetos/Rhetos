@@ -251,9 +251,12 @@ namespace Rhetos.Dsl.Test
         }
 
 
+
         //===================================================================================
 
-        class ConceptWithSemanticsValidation : IConceptInfo, IValidationConcept
+#pragma warning disable CS0618 // Type or member is obsolete. Unit test for the obsolete interface.
+        class ConceptWithSemanticsValidation : IValidationConcept
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             [ConceptKey]
             public string Name { get; set; }

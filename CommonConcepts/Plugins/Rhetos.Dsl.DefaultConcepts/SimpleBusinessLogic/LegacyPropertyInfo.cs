@@ -26,7 +26,7 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class LegacyPropertyInfo : IValidationConcept, IAlternativeInitializationConcept
+    public class LegacyPropertyInfo : IValidatedConcept, IAlternativeInitializationConcept
     {
         [ConceptKey]
         public PropertyInfo Property { get; set; }
@@ -44,7 +44,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             createdConcepts = null;
         }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             if (!(Property.DataStructure is LegacyEntityWithAutoCreatedViewInfo))
                 throw new DslSyntaxException("Invalid use of " + this.GetUserDescription() + "."

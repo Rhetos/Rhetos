@@ -25,12 +25,12 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AutoCode")]
-    public class AutoCodePropertyInfo : IMacroConcept, IValidationConcept
+    public class AutoCodePropertyInfo : IMacroConcept, IValidatedConcept
     {
         [ConceptKey]
         public PropertyInfo Property { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             if (!(Property is ShortStringPropertyInfo) && !(Property is IntegerPropertyInfo))
                 throw new DslSyntaxException("AutoCode is only available for ShortString and Integer properties.");

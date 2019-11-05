@@ -27,7 +27,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AutoCodeForEachCached")]
-    public class AutoCodeForEachCachedInfo : AutoCodeCachedInfo, IValidationConcept
+    public class AutoCodeForEachCachedInfo : AutoCodeCachedInfo, IValidatedConcept
     {
         public PropertyInfo Group { get; set; }
 
@@ -40,7 +40,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             };
         }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             DslUtility.CheckIfPropertyBelongsToDataStructure(Group, Property.DataStructure, this);
         }

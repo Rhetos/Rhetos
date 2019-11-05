@@ -29,7 +29,7 @@ using System.Text.RegularExpressions;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class RowPermissionsRuleInfo : IConceptInfo, IValidationConcept
+    public class RowPermissionsRuleInfo : IValidatedConcept
     {
         [ConceptKey]
         public RowPermissionsPluginableFiltersInfo RowPermissionsFilters { get; set; }
@@ -37,7 +37,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public string Name { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> existingConcepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             DslUtility.ValidateIdentifier(Name, this);
         }

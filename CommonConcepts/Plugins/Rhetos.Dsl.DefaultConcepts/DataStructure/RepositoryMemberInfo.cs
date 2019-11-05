@@ -23,7 +23,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RepositoryMember")]
-    public class RepositoryMemberInfo : IConceptInfo, IValidatedConcept
+    public class RepositoryMemberInfo : IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }

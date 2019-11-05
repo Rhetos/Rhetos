@@ -26,7 +26,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SamePropertyValue")]
-    public class SamePropertyValueInfo : IConceptInfo, IValidatedConcept
+    public class SamePropertyValueInfo : IValidatedConcept
     {
         [ConceptKey]
         public PropertyInfo DerivedProperty { get; set; }

@@ -29,7 +29,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("MaxValue")]
-    public class MaxValueInfo : IMacroConcept, IValidationConcept
+    public class MaxValueInfo : IMacroConcept, IValidatedConcept
     {
         [ConceptKey]
         public PropertyInfo Property { get; set; }
@@ -75,7 +75,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         private static readonly Regex DecimalChecker = new Regex(@"^[+-]?(\d+(\.\d*)?|\.\d+)$");
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             if (this.Property is IntegerPropertyInfo)
             {

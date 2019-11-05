@@ -27,11 +27,11 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("LinkedItems")]
-    public class LinkedItemsInfo : PropertyInfo, IConceptInfo, IValidationConcept
+    public class LinkedItemsInfo : PropertyInfo, IValidatedConcept
     {
         public ReferencePropertyInfo ReferenceProperty { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             if (!DslUtility.IsQueryable(DataStructure))
                 throw new DslSyntaxException(this, this.GetKeywordOrTypeName() + " can only be used on a queryable data structure, such as Entity. " + DataStructure.GetKeywordOrTypeName() + " is not queryable.");

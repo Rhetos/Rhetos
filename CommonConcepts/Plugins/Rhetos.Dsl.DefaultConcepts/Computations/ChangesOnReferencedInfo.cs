@@ -33,7 +33,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ChangesOnReferenced")]
-    public class ChangesOnReferencedInfo : IConceptInfo, IValidatedConcept
+    public class ChangesOnReferencedInfo : IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo Computation { get; set; }

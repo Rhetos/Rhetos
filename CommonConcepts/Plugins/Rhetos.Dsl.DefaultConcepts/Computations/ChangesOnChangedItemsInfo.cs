@@ -27,7 +27,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ChangesOnChangedItems")]
-    public class ChangesOnChangedItemsInfo : IConceptInfo, IValidationConcept
+    public class ChangesOnChangedItemsInfo : IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo Computation { get; set; }
@@ -41,7 +41,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public string FilterFormula { get; set; }
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             if (!(DependsOn is IWritableOrmDataStructure))
                 throw new DslSyntaxException(this, "DependsOn data structure must be IWritableOrmDataStructure (" + DependsOn.GetUserDescription() + ").");

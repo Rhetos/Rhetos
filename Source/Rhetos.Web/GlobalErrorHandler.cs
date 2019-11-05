@@ -41,12 +41,12 @@ namespace Rhetos.Web
         {
             if (error is UserException)
                 Logger.Trace(error.ToString);
-            else if (error is LegacyClientException)
+            else if (error is LegacyClientException legacyException)
             {
-                if (((LegacyClientException)error).Severe)
-                    Logger.Info(error.ToString);
+                if (legacyException.Severe)
+                    Logger.Info(legacyException.ToString);
                 else
-                    Logger.Trace(error.ToString);
+                    Logger.Trace(legacyException.ToString);
             }
             else if (error is ClientException)
                 Logger.Info(error.ToString);

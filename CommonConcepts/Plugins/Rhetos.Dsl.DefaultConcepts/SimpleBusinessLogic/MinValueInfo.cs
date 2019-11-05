@@ -29,7 +29,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("MinValue")]
-    public class MinValueInfo : IMacroConcept, IValidationConcept
+    public class MinValueInfo : IMacroConcept, IValidatedConcept
     {
         [ConceptKey]
         public PropertyInfo Property { get; set; }
@@ -84,7 +84,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         private static readonly Regex DecimalChecker = new Regex(@"^[+-]?(\d+(\.\d*)?|\.\d+)$");
 
-        public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
             if (this.Property is IntegerPropertyInfo)
             {
