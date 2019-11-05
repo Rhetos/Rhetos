@@ -49,7 +49,10 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Sample usage: 1. Verify that locked items are not going to be updated or deleted, 2. Cascade delete.</summary>
         public static readonly CsTag<DataStructureInfo> OldDataLoadedTag = "WritableOrm OldDataLoaded";
 
-        [Obsolete]
+        /// <summary>Use <see cref="OldDataLoadedTag"/> instead of this tag, unless you need to make additional post-processing.
+        /// Lists "updated" and "deleted" contain OLD data.
+        /// Enumerables "insertedNew", "updatedNew" and "deletedIds" contain NEW data.
+        /// Sample usage: 1. Verify that locked items are not going to be updated or deleted, 2. Cascade delete.</summary>
         public static readonly CsTag<DataStructureInfo> ProcessedOldDataTag = "WritableOrm ProcessedOldData";
 
         /// <summary>Insert code here to recompute (insert/update/delete) other entities that depend on the changes items.
