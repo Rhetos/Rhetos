@@ -1,6 +1,6 @@
 ﻿# Rhetos release notes
 
-## 3.0.0 (2019-11-06)
+## 3.0.0 (2019-11-07)
 
 ### Breaking changes
 
