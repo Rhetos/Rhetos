@@ -23,7 +23,7 @@ namespace Rhetos.Utilities
             if (string.IsNullOrEmpty(rootPath))
                 throw new FrameworkException($"Can't initialize {nameof(RhetosAppEnvironment)}. RootPath is null or not configured.");
 
-            RootPath = rootPath;
+            RootPath = Path.GetFullPath(rootPath);
             PackagesCacheFolder = Path.Combine(RootPath, "PackagesCache");
             ResourcesFolder = Path.Combine(RootPath, "Resources");
             BinFolder = Path.Combine(RootPath, "bin");

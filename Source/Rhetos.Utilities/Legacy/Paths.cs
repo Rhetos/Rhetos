@@ -44,7 +44,9 @@ namespace Rhetos.Utilities
             get
             {
                 if (_rhetosAppEnvironment == null)
-                    throw new FrameworkException("Rhetos server is not initialized (Paths class). Use LegacyUtilities.Initialize() to initialize obsolete static utilities or use RhetosAppEnvironment.");
+                    throw new FrameworkException($"Rhetos server is not initialized ({nameof(Paths)} class)." +
+                        $" Use {nameof(LegacyUtilities)}.{nameof(LegacyUtilities.Initialize)}() to initialize obsolete static utilities" +
+                        $" or use {nameof(RhetosAppEnvironment)}.");
 
                 return _rhetosAppEnvironment.RootPath;
             }
