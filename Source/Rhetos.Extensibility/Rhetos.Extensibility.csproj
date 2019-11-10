@@ -123,7 +123,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IPluginScanner.cs" />
-    <Compile Include="NamedPluginsExtensions.cs" />
     <Compile Include="PluginInfo.cs" />
     <Compile Include="MefPluginScanner.cs" />
     <Compile Include="NamedPlugins.cs" />

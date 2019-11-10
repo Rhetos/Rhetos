@@ -10,6 +10,10 @@ namespace Rhetos.Utilities
     public static class LegacyUtilities
     {
 #pragma warning disable CS0618 // Type or member is obsolete
+        /// <summary>
+        /// Use to initialize obsolete static utilities <see cref="Paths"/>, <see cref="ConfigUtility"/> and <see cref="SqlUtility"/> 
+        /// prior to using any of their methods. This will bind those utilities to configuration source compliant with new configuration convention.
+        /// </summary>
         public static void Initialize(IConfigurationProvider configurationProvider)
         {
             var rhetosAppOptions = configurationProvider.GetOptions<RhetosAppOptions>();

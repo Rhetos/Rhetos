@@ -88,7 +88,7 @@ namespace CommonConcepts.Test
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
                 using (var container = new RhetosTestContainer())
                 {
-                    container.OverrideRhetosAppOptions(new RhetosAppOptions() { EntityFramework__UseDatabaseNullSemantics = useDatabaseNullSemantics });
+                    container.SetUseDatabaseNullSemantics(useDatabaseNullSemantics);
                     var simple = container.Resolve<Common.DomRepository>().TestAllowSave.Simple;
                     var s1 = new TestAllowSave.Simple { Code = 1, Name = "a", CodeAS = null, NameAS = null };
                     var s2 = new TestAllowSave.Simple { Code = 1, Name = "aaaaa", CodeAS = 2, NameAS = "b" };

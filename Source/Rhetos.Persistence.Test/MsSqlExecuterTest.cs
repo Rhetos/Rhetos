@@ -20,6 +20,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
+using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -54,6 +55,12 @@ namespace Rhetos.Persistence.Test
         [TestInitialize]
         public void ChecklDatabaseAvailability()
         {
+            var configurationProvider = new ConfigurationBuilder()
+                .AddRhetosAppConfiguration(AppDomain.CurrentDomain.BaseDirectory)
+                .AddConfigurationManagerConfiguration()
+                .Build();
+            LegacyUtilities.Initialize(configurationProvider);
+
             TestUtility.CheckDatabaseAvailability("MsSql");
         }
 

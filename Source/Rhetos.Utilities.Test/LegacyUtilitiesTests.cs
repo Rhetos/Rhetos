@@ -31,5 +31,15 @@ namespace Rhetos.Utilities.Test
             Assert.IsFalse(string.IsNullOrEmpty(SqlUtility.ConnectionString));
             Assert.AreEqual(31, SqlUtility.SqlCommandTimeout);
         }
+
+        [TestMethod]
+        public void PathThrowsOnNullEnvironment()
+        {
+            // this will also set environment to null
+            TestUtility.ShouldFail<ArgumentNullException>(() => Paths.Initialize(null));
+            
+            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.RhetosServerRootPath), "Rhetos server is not initialized (Paths class)");
+            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFilesCacheFolder), "Rhetos server is not initialized (Paths class)");
+        }
     }
 }

@@ -73,32 +73,15 @@ namespace CommonConcepts.Test
                 .As<IUserInfo>();
         }
 
-        public static void OverrideRhetosAppOptions(this RhetosTestContainer container, RhetosAppOptions newRhetosAppOptions)
+        public static void SetUseDatabaseNullSemantics(this RhetosTestContainer container, bool useDatabaseNullSemantics)
         {
-            container.InitializeSession += builder => builder.RegisterInstance(newRhetosAppOptions);
-        }
-
-        [Obsolete("Use OverrideRhetosAppOptions")]
-        public static void OverrideConfiguration(this RhetosTestContainer container, params (string Key, object Value)[] settings)
-        {
-            var mockConfigurationBuilder = new ConfigurationBuilder()
-                .AddConfigurationManagerConfiguration();
-            
-            foreach (var setting in settings)
-            {
-                Console.WriteLine($"{setting.Key} = {setting.Value}");
-                mockConfigurationBuilder.AddKeyValue(setting.Key, setting.Value);
-            }
-
-            var mockConfiguration = mockConfigurationBuilder.Build();
-
-            // register new instances of ConfigurationProvider and new resolved RhetosAppOptions from it
-            // WARNING: other configured and registered option objects might contain old configuration values
             container.InitializeSession += builder => 
             {
-                builder.RegisterInstance(mockConfiguration.GetOptions<RhetosAppOptions>());
-                builder.RegisterInstance(mockConfiguration);
+                var newRhetosAppOptions = builder.GetInitializationContext().ConfigurationProvider.GetOptions<RhetosAppOptions>();
+                newRhetosAppOptions.EntityFramework__UseDatabaseNullSemantics = useDatabaseNullSemantics;
+                builder.RegisterInstance(newRhetosAppOptions);
             };
+            Console.WriteLine($"{nameof(RhetosAppOptions)}.{nameof(RhetosAppOptions.EntityFramework__UseDatabaseNullSemantics)} = {useDatabaseNullSemantics}");
         }
     }
 }
