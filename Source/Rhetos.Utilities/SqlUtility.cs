@@ -49,7 +49,7 @@ namespace Rhetos.Utilities
 
             ConnectionString = connectionStringOptions.ConnectionString;
             if (string.IsNullOrEmpty(ConnectionString))
-                throw new FrameworkException("Empty 'ServerConnectionString' connection string in application configuration.");
+                throw new FrameworkException("Empty or non-existant 'ServerConnectionString' connection string in application configuration.");
 
             SetLanguageFromProviderName(connectionStringOptions.ProviderName);
             InitializeProviderContext();

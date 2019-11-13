@@ -41,8 +41,9 @@ namespace Rhetos.Configuration.Autofac
             return builder;
         }
 
-        public static ContextContainerBuilder AddRhetosDeployment(this ContextContainerBuilder builder, DeployOptions deployOptions)
+        public static ContextContainerBuilder AddRhetosDeployment(this ContextContainerBuilder builder)
         {
+            var deployOptions = builder.InitializationContext.ConfigurationProvider.GetOptions<DeployOptions>();
             builder.RegisterInstance(deployOptions).PreserveExistingDefaults();
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new DeployModule());
@@ -52,13 +53,6 @@ namespace Rhetos.Configuration.Autofac
             builder.Register(a => a.Resolve<DeployOptions>().DatabaseOnly ? (IDslModel)a.Resolve<IDslModelFile>() : a.Resolve<DslModel>()).SingleInstance();
 
             builder.RegisterModule(new ExtensibilityModule());
-            return builder;
-        }
-
-        public static ContextContainerBuilder AddRhetosDeployment(this ContextContainerBuilder builder)
-        {
-            var deployOptions = builder.InitializationContext.ConfigurationProvider.GetOptions<DeployOptions>();
-            builder.AddRhetosDeployment(deployOptions);
             return builder;
         }
 

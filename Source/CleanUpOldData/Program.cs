@@ -37,6 +37,7 @@ namespace CleanupOldData
             {
                 var configuration = new ConfigurationBuilder()
                     .AddRhetosAppConfiguration(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".."))
+                    .AddConfigurationManagerConfiguration()
                     .Build();
 
                 LegacyUtilities.Initialize(configuration);
