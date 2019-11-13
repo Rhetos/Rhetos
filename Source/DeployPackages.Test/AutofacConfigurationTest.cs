@@ -53,7 +53,7 @@ namespace DeployPackages.Test
         {
             var builder = new ContextContainerBuilder(_configurationProvider, new NLogProvider())
                 .AddRhetosDeployment()
-                .AddUserOverride();
+                .AddProcessUserOverride();
 
             using (var container = builder.Build())
             {
@@ -72,7 +72,7 @@ namespace DeployPackages.Test
         {
             var builder = new ContextContainerBuilder(_configurationProvider, new NLogProvider())
                 .AddRhetosDeployment(new DeployOptions() { DatabaseOnly = true })
-                .AddUserOverride();
+                .AddProcessUserOverride();
 
             using (var container = builder.Build())
             {
@@ -92,7 +92,7 @@ namespace DeployPackages.Test
             var builder = new ContextContainerBuilder(_configurationProvider, new NLogProvider())
                 .AddApplicationInitialization()
                 .AddRhetosRuntime()
-                .AddUserOverride();
+                .AddProcessUserOverride();
 
             using (var container = builder.Build())
             {

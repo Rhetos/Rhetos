@@ -27,10 +27,15 @@ namespace Rhetos.Utilities
 {
     public class DeployOptions
     {
-        public bool Help { get; set; }
         public bool StartPaused { get; set; }
         public bool Debug { get; set; }
+        /// <summary>
+        /// No pause on error.
+        /// </summary>
         public bool NoPause { get; set; }
+        /// <summary>
+        /// Do not stop deployment if a NuGet package dependency has an incompatible version.
+        /// </summary>
         public bool IgnoreDependencies { get; set; }
         public bool ShortTransactions { get; set; }
         public bool DatabaseOnly { get; set; }

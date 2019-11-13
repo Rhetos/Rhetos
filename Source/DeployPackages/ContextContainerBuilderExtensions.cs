@@ -39,7 +39,10 @@ namespace Rhetos.Configuration.Autofac
             return builder;
         }
 
-        public static ContextContainerBuilder AddUserOverride(this ContextContainerBuilder builder)
+        /// <summary>
+        /// No matter what authentication plugin is installed, deployment is run as the user that executed the process.
+        /// </summary>
+        public static ContextContainerBuilder AddProcessUserOverride(this ContextContainerBuilder builder)
         {
             builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
             return builder;

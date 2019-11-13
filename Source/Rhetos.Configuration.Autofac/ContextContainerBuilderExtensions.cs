@@ -47,8 +47,9 @@ namespace Rhetos.Configuration.Autofac
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new DeployModule());
 
+            // Overriding IDslModel registration from core (DslModelFile), unless deploying DatabaseOnly.
             builder.RegisterType<DslModel>();
-            builder.Register(a => a.Resolve<DeployOptions>().DatabaseOnly ? a.Resolve<IDslModelFile>() as IDslModel : a.Resolve<DslModel>() as IDslModel).SingleInstance();
+            builder.Register(a => a.Resolve<DeployOptions>().DatabaseOnly ? (IDslModel)a.Resolve<IDslModelFile>() : a.Resolve<DslModel>()).SingleInstance();
 
             builder.RegisterModule(new ExtensibilityModule());
             return builder;

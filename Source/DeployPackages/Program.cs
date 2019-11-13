@@ -46,7 +46,7 @@ namespace DeployPackages
         {
             var logProvider = new NLogProvider();
             var logger = logProvider.GetLogger("DeployPackages");
-            var pauseOnError = true;
+            var pauseOnError = false;
 
             logger.Trace(() => "Logging configured.");
 
@@ -62,7 +62,6 @@ namespace DeployPackages
 
                 if (deployOptions.StartPaused)
                     StartPaused();
-
                 
                 var packageManager = new PackageManager(configurationProvider, logProvider);
                 packageManager.InitialCleanup();
@@ -101,6 +100,9 @@ namespace DeployPackages
                 .Build();
         }
 
+        /// <summary>
+        /// This feature is intended to simplify attaching debugger to the process that was run from a build script.
+        /// </summary>
         private static void StartPaused()
         {
             if (!Environment.UserInteractive)

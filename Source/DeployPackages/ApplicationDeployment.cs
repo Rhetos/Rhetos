@@ -54,9 +54,11 @@ namespace DeployPackages
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var builder = new ContextContainerBuilder(new InitializationContext(_configurationProvider, _logProvider))
+            var initializationContext = new InitializationContext(_configurationProvider, _logProvider);
+
+            var builder = new ContextContainerBuilder(initializationContext)
                 .AddRhetosDeployment()
-                .AddUserOverride();
+                .AddProcessUserOverride();
 
             using (var container = builder.Build())
             {
@@ -70,8 +72,7 @@ namespace DeployPackages
 
         public void InitializeGeneratedApplication()
         {
-            // Creating a new container builder instead of using builder.Update, because of severe performance issues with the Update method.
-            // Plugins.ClearCache();
+            // Creating a new container builder instead of using builder.Update(), because of severe performance issues with the Update method.
 
             _logger.Trace("Loading generated plugins.");
             var stopwatch = Stopwatch.StartNew();
@@ -81,7 +82,7 @@ namespace DeployPackages
             var builder = new ContextContainerBuilder(initializationContext)
                 .AddApplicationInitialization()
                 .AddRhetosRuntime()
-                .AddUserOverride();
+                .AddProcessUserOverride();
 
             using (var container = builder.Build())
             {
@@ -112,7 +113,7 @@ namespace DeployPackages
             if (FilesUtility.SafeTouch(configFile))
                 _logger.Trace($"Updated {Path.GetFileName(configFile)} modification date to restart server.");
             else
-                _logger.Trace($"Missing {Path.GetFileName(configFile)}.");
+                _logger.Trace($"Missing {configFile}.");
         }
     }
 }
