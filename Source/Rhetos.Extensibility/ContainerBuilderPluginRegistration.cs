@@ -147,7 +147,7 @@ namespace Rhetos.Extensibility
                 foreach (var metadataElement in plugin.Metadata)
                 {
                     registration = registration.WithMetadata(metadataElement.Key, metadataElement.Value);
-                    if (metadataElement.Key == _pluginScanner.Implements)
+                    if (metadataElement.Key == MefProvider.Implements)
                         registration = registration.Keyed(metadataElement.Value, exportType);
                 }
             }
@@ -170,7 +170,7 @@ namespace Rhetos.Extensibility
                     genericImplementationBase.FullName));
 
             foreach (Type implements in implementsTypes)
-                plugin.Metadata.Add(_pluginScanner.Implements, implements);
+                plugin.Metadata.Add(MefProvider.Implements, implements);
         }
 
         #region Log registration statistics
@@ -209,7 +209,7 @@ namespace Rhetos.Extensibility
             if (!type.IsGenericType)
                 return type.Name;
             else
-                return type.Name + "<" + string.Join(", ", type.GetGenericArguments().Select(ga => GetShortTypeName(ga))) + ">";
+                return type.Name + "<" + string.Join(", ", type.GetGenericArguments().Select(argumentType => GetShortTypeName(argumentType))) + ">";
         }
 
         #endregion

@@ -51,7 +51,7 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsDeployTime()
         {
-            var builder = new ContextContainerBuilder(_configurationProvider, new NLogProvider())
+            var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider())
                 .AddRhetosDeployment()
                 .AddProcessUserOverride();
 
@@ -70,7 +70,7 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsDeployTimeDatabaseOnly()
         {
-            var builder = new ContextContainerBuilder(_configurationProvider, new NLogProvider())
+            var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider())
                 .AddRhetosDeployment()
                 .AddProcessUserOverride();
 
@@ -91,7 +91,7 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsRuntimeWithInitialization()
         {
-            var builder = new ContextContainerBuilder(_configurationProvider, new NLogProvider())
+            var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider())
                 .AddApplicationInitialization()
                 .AddRhetosRuntime()
                 .AddProcessUserOverride();
@@ -110,7 +110,7 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsServerRuntime()
         {
-            var builder = new ContextContainerBuilder(_configurationProvider, new NLogProvider())
+            var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider())
                 .AddRhetosRuntime();
 
             using (var container = builder.Build())
@@ -124,8 +124,8 @@ namespace DeployPackages.Test
         private string DumpSortedRegistrations(IContainer container)
         {
             var registrations = container.ComponentRegistry.Registrations
-                    .Select(a => a.ToString())
-                    .OrderBy(a => a)
+                    .Select(registration => registration.ToString())
+                    .OrderBy(text => text)
                     .ToList();
 
             return string.Join(Environment.NewLine, registrations);

@@ -23,7 +23,7 @@ using System;
 
 namespace Rhetos.Extensibility
 {
-    [Obsolete("Use ContainerBuilderPluginRegistration instead. Use PluginRegistration on ContextContainerBuilder or resolve from ContainerBuilder with extension method builder.GetPluginRegistration().")]
+    [Obsolete("Use ContainerBuilderPluginRegistration instead. Resolve from ContainerBuilder with extension method builder.GetPluginRegistration().")]
     public static class Plugins
     {
         private static Func<ContainerBuilder, ContainerBuilderPluginRegistration> _pluginRegistrationFactory;
@@ -38,11 +38,6 @@ namespace Rhetos.Extensibility
             ThrowIfNotInitialized();
             _pluginRegistrationFactory(builder)
                 .FindAndRegisterModules();
-        }
-
-        public static void ClearCache()
-        {
-            throw new FrameworkException($"Clearing the cache of Plugins is not longer supported, initialize with new {nameof(ContainerBuilderPluginRegistration)} instance instead.");
         }
 
         public static void FindAndRegisterPlugins<TPluginInterface>(ContainerBuilder builder)

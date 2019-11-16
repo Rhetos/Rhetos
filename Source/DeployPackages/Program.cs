@@ -120,7 +120,7 @@ namespace DeployPackages
                 return false;
             }
 
-            var invalidArgument = args.FirstOrDefault(a => !_validArguments.Keys.Contains(a, StringComparer.InvariantCultureIgnoreCase));
+            var invalidArgument = args.FirstOrDefault(arg => !_validArguments.Keys.Contains(arg, StringComparer.InvariantCultureIgnoreCase));
             if (invalidArgument != null)
             {
                 ShowHelp();

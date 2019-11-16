@@ -326,8 +326,8 @@ namespace Rhetos.Deployment
                 // FrameworkAssembly is an obsolete way of marking package dependency on a specific Rhetos version:
                 var rhetosFrameworkAssemblyRegex = new Regex(@"^Rhetos\s*,\s*Version\s*=\s*(\S+)$");
                 var parseFrameworkAssembly = package.FrameworkAssemblies
-                    .Select(fa => rhetosFrameworkAssemblyRegex.Match(fa.AssemblyName.Trim()))
-                    .SingleOrDefault(m => m.Success);
+                    .Select(assembly => rhetosFrameworkAssemblyRegex.Match(assembly.AssemblyName.Trim()))
+                    .SingleOrDefault(match => match.Success);
                 if (parseFrameworkAssembly != null)
                     dependencies.Add(new PackageRequest
                     {

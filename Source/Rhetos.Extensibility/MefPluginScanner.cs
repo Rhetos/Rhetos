@@ -43,9 +43,6 @@ namespace Rhetos.Extensibility
         private readonly ILogger _performanceLogger;
         private readonly RhetosAppEnvironment _rhetosAppEnvironment;
 
-        public string Implements => MefProvider.Implements;
-        public string DependsOn => MefProvider.DependsOn;
-
         public MefPluginScanner(RhetosAppEnvironment rhetosAppEnvironment, ILogProvider logProvider)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
@@ -107,7 +104,7 @@ namespace Rhetos.Extensibility
         {
             var stopwatch = Stopwatch.StartNew();
 
-            var assemblyCatalogs = assemblies.Select(a => new AssemblyCatalog(a));
+            var assemblyCatalogs = assemblies.Select(name => new AssemblyCatalog(name));
             var container = new CompositionContainer(new AggregateCatalog(assemblyCatalogs));
             var mefPlugins = container.Catalog.Parts
                 .Select(part => new
@@ -147,13 +144,13 @@ namespace Rhetos.Extensibility
         private void SortByDependency(List<PluginInfo> plugins)
         {
             var dependencies = plugins
-                .Where(p => p.Metadata.ContainsKey(DependsOn))
-                .Select(p => Tuple.Create((Type)p.Metadata[DependsOn], p.Type))
+                .Where(plugin => plugin.Metadata.ContainsKey(MefProvider.DependsOn))
+                .Select(plugin => Tuple.Create((Type)plugin.Metadata[MefProvider.DependsOn], plugin.Type))
                 .ToList();
 
-            var pluginTypes = plugins.Select(p => p.Type).ToList();
+            var pluginTypes = plugins.Select(plugin => plugin.Type).ToList();
             Graph.TopologicalSort(pluginTypes, dependencies);
-            Graph.SortByGivenOrder(plugins, pluginTypes, p => p.Type);
+            Graph.SortByGivenOrder(plugins, pluginTypes, plugin => plugin.Type);
         }
     }
 }

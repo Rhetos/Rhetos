@@ -54,9 +54,7 @@ namespace DeployPackages
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var initializationContext = new InitializationContext(_configurationProvider, _logProvider);
-
-            var builder = new ContextContainerBuilder(initializationContext)
+            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider)
                 .AddRhetosDeployment()
                 .AddProcessUserOverride();
 
@@ -77,9 +75,7 @@ namespace DeployPackages
             _logger.Trace("Loading generated plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var initializationContext = new InitializationContext(_configurationProvider, _logProvider);
-
-            var builder = new ContextContainerBuilder(initializationContext)
+            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider)
                 .AddApplicationInitialization()
                 .AddRhetosRuntime()
                 .AddProcessUserOverride();

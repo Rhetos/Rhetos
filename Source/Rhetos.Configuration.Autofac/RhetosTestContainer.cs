@@ -104,12 +104,10 @@ namespace Rhetos.Configuration.Autofac
                             var rhetosAppRootPath = SearchForRhetosServerRootFolder();
                             var configurationProvider = new ConfigurationBuilder()
                                 .AddRhetosAppConfiguration(rhetosAppRootPath)
+                                .AddConfigurationManagerConfiguration()
                                 .Build();
 
-                            LegacyUtilities.Initialize(configurationProvider);
-
-                            var rhetosAppOptions = configurationProvider.GetOptions<RhetosAppOptions>();
-                            _rhetosAppEnvironment = new RhetosAppEnvironment(rhetosAppOptions.RootPath);
+                            _rhetosAppEnvironment = new RhetosAppEnvironment(rhetosAppRootPath);
                             _iocContainer = InitializeIocContainer(configurationProvider);
                         }
                 }
@@ -162,7 +160,7 @@ namespace Rhetos.Configuration.Autofac
             AppDomain.CurrentDomain.AssemblyResolve += SearchForAssembly;
 
             // General registrations:
-            var builder = new ContextContainerBuilder(configurationProvider, new ConsoleLogProvider())
+            var builder = new RhetosContainerBuilder(configurationProvider, new ConsoleLogProvider())
                 .AddRhetosRuntime();
 
             // Specific registrations override:

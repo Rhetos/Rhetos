@@ -38,14 +38,14 @@ namespace Rhetos.Utilities.ApplicationConfiguration.DefaultSources
             this.configurationPath = configurationPath;
         }
 
-        public Dictionary<string, object> Load()
+        public IDictionary<string, object> Load()
         {
-            var argsTrimmed = args.Select(a => a.TrimStart(argumentPrefix.ToCharArray())).Where(a => !string.IsNullOrWhiteSpace(a));
+            var argsTrimmed = args.Select(arg => arg.TrimStart(argumentPrefix.ToCharArray())).Where(arg => !string.IsNullOrWhiteSpace(arg));
             if (!string.IsNullOrEmpty(configurationPath))
-                argsTrimmed = argsTrimmed.Select(a => $"{configurationPath}{ConfigurationProvider.ConfigurationPathSeparator}{a}").ToArray();
+                argsTrimmed = argsTrimmed.Select(arg => $"{configurationPath}{ConfigurationProvider.ConfigurationPathSeparator}{arg}").ToArray();
             
             return argsTrimmed
-                .ToDictionary(a => a, _ => (object)true);
+                .ToDictionary(arg => arg, _ => (object)true);
         }
     }
 }

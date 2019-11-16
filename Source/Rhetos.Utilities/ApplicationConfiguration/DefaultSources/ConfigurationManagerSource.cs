@@ -28,7 +28,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.DefaultSources
 {
     public class ConfigurationManagerSource : IConfigurationSource
     {
-        public Dictionary<string, object> Load()
+        public IDictionary<string, object> Load()
         {
             var appSettings = new List<KeyValuePair<string, string>>();
             if (ConfigurationManager.AppSettings != null)

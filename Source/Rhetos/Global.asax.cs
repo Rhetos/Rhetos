@@ -78,12 +78,12 @@ namespace Rhetos
 
         private ContainerBuilder CreateServerContainer(IConfigurationProvider configurationProvider)
         {
-            var builder = new ContextContainerBuilder(configurationProvider, new NLogProvider());
+            var builder = new RhetosContainerBuilder(configurationProvider, new NLogProvider());
 
             builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
             builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
-            builder.PluginRegistration.FindAndRegisterPlugins<IService>();
-            builder.PluginRegistration.FindAndRegisterPlugins<IHomePageSnippet>();
+            builder.GetPluginRegistration().FindAndRegisterPlugins<IService>();
+            builder.GetPluginRegistration().FindAndRegisterPlugins<IHomePageSnippet>();
 
             // General registrations:
             builder.AddRhetosRuntime();

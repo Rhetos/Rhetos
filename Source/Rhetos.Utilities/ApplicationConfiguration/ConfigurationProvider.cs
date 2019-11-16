@@ -35,7 +35,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration
         public ConfigurationProvider(Dictionary<string, object> configurationValues)
         {
             _configurationValues = configurationValues
-                .ToDictionary(a => NormalizePathSeparators(a.Key), a => a.Value);
+                .ToDictionary(pair => NormalizePathSeparators(pair.Key), pair => pair.Value);
         }
 
         public T GetOptions<T>(string configurationPath = "", bool requireAllMembers = false) where T : class
@@ -43,8 +43,8 @@ namespace Rhetos.Utilities.ApplicationConfiguration
             var optionsType = typeof(T);
             var optionsInstance = Activator.CreateInstance(optionsType);
 
-            var props = optionsType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(a => a.CanWrite);
-            var fields = optionsType.GetFields(BindingFlags.Public | BindingFlags.Instance).Where(a => !a.IsInitOnly);
+            var props = optionsType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(prop => prop.CanWrite);
+            var fields = optionsType.GetFields(BindingFlags.Public | BindingFlags.Instance).Where(field => !field.IsInitOnly);
             var members = props.Cast<MemberInfo>().Concat(fields.Cast<MemberInfo>()).ToList();
 
             var membersBound = new List<MemberInfo>();
@@ -62,7 +62,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration
 
             if (requireAllMembers && membersBound.Count != members.Count)
             {
-                var missing = members.Where(a => !membersBound.Contains(a)).Select(a => a.Name);
+                var missing = members.Where(member => !membersBound.Contains(member)).Select(member => member.Name);
                 throw new FrameworkException($"Binding requires all members to be present in configuration, but some are missing: {string.Join(",", missing)}.");
             }
 

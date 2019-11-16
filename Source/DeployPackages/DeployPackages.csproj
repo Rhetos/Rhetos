@@ -48,7 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ContextContainerBuilderExtensions.cs" />
+    <Compile Include="RhetosContainerBuilderExtensions.cs" />
     <Compile Include="ApplicationDeployment.cs" />
     <Compile Include="PackageManager.cs" />
     <Compile Include="Program.cs" />

@@ -21,7 +21,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.DefaultSources
             this.connectionStrings = connectionStrings;
         }
 
-        public Dictionary<string, object> Load()
+        public IDictionary<string, object> Load()
         {
             var settings = new Dictionary<string, object>();
 

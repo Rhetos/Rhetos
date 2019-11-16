@@ -32,6 +32,6 @@ namespace Rhetos.Utilities.ApplicationConfiguration
     /// </summary>
     public interface IConfigurationSource
     {
-        Dictionary<string, object> Load();
+        IDictionary<string, object> Load();
     }
 }

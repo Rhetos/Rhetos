@@ -48,7 +48,7 @@ namespace Rhetos.Dom
 
         public static IEnumerable<Type> GetTypes(this IDomainObjectModel dom)
         {
-            return dom.Assemblies.SelectMany(a => a.GetTypes());
+            return dom.Assemblies.SelectMany(assembly => assembly.GetTypes());
         }
     }
 }

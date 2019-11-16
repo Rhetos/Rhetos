@@ -20,6 +20,9 @@ namespace Rhetos.Configuration.Autofac
         public IConfigurationProvider ConfigurationProvider { get; }
         public RhetosAppEnvironment RhetosAppEnvironment { get; }
 
+        /// <summary>
+        /// Creates a a new context with specified arguments.
+        /// </summary>
         public InitializationContext(IConfigurationProvider configurationProvider, ILogProvider logProvider, RhetosAppEnvironment rhetosAppEnvironment)
         {
             this.ConfigurationProvider = configurationProvider;
@@ -28,7 +31,7 @@ namespace Rhetos.Configuration.Autofac
         }
 
         /// <summary>
-        /// Creates a context with RhetosAppEnvironment automatically resolved and created from provided configuration. Creates a new instance of default PluginsProviderMef.
+        /// Creates a context with <see cref="RhetosAppEnvironment"/> automatically resolved and created from provided configuration.
         /// </summary>
         public InitializationContext(IConfigurationProvider configurationProvider, ILogProvider logProvider)
             : this(configurationProvider, logProvider, new RhetosAppEnvironment(configurationProvider.GetOptions<RhetosAppOptions>().RootPath)) 

@@ -34,9 +34,9 @@ namespace Rhetos.Utilities.ApplicationConfiguration.DefaultSources
             this.keyValuePairs = keyValuePairs;
         }
 
-        public Dictionary<string, object> Load()
+        public IDictionary<string, object> Load()
         {
-            return keyValuePairs.ToDictionary(a => a.Key, a => a.Value);
+            return keyValuePairs.ToDictionary(pair => pair.Key, pair => pair.Value);
         }
     }
 }

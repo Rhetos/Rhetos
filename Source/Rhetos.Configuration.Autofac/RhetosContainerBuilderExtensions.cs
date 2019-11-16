@@ -31,9 +31,9 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Configuration.Autofac
 {
-    public static class ContextContainerBuilderExtensions
+    public static class RhetosContainerBuilderExtensions
     {
-        public static ContextContainerBuilder AddRhetosRuntime(this ContextContainerBuilder builder)
+        public static RhetosContainerBuilder AddRhetosRuntime(this RhetosContainerBuilder builder)
         {
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new RuntimeModule());
@@ -41,36 +41,18 @@ namespace Rhetos.Configuration.Autofac
             return builder;
         }
 
-        public static ContextContainerBuilder AddRhetosDeployment(this ContextContainerBuilder builder)
+        public static RhetosContainerBuilder AddRhetosDeployment(this RhetosContainerBuilder builder)
         {
-            var deployOptions = builder.InitializationContext.ConfigurationProvider.GetOptions<DeployOptions>();
+            var deployOptions = builder.GetInitializationContext().ConfigurationProvider.GetOptions<DeployOptions>();
             builder.RegisterInstance(deployOptions).PreserveExistingDefaults();
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new DeployModule());
 
             // Overriding IDslModel registration from core (DslModelFile), unless deploying DatabaseOnly.
             builder.RegisterType<DslModel>();
-            builder.Register(a => a.Resolve<DeployOptions>().DatabaseOnly ? (IDslModel)a.Resolve<IDslModelFile>() : a.Resolve<DslModel>()).SingleInstance();
+            builder.Register(context => context.Resolve<DeployOptions>().DatabaseOnly ? (IDslModel)context.Resolve<IDslModelFile>() : context.Resolve<DslModel>()).SingleInstance();
 
             builder.RegisterModule(new ExtensibilityModule());
-            return builder;
-        }
-
-        public static ContextContainerBuilder AddConfiguration(this ContextContainerBuilder builder, IConfigurationProvider configurationProvider)
-        {
-            builder.RegisterInstance(configurationProvider);
-            return builder;
-        }
-
-        public static ContextContainerBuilder AddOptions<T>(this ContextContainerBuilder builder, IConfigurationProvider configurationProvider) where T : class
-        {
-            builder.RegisterInstance(configurationProvider.GetOptions<T>());
-            return builder;
-        }
-
-        public static ContextContainerBuilder AddOptions<T>(this ContextContainerBuilder builder) where T : class
-        {
-            builder.Register(a => a.Resolve<IConfigurationProvider>().GetOptions<T>()).SingleInstance();
             return builder;
         }
     }
