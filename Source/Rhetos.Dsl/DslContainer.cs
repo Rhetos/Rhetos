@@ -20,7 +20,6 @@
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
-using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

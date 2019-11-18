@@ -17,19 +17,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities.ApplicationConfiguration.DefaultSources;
+using Rhetos.Utilities;
+using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web.Configuration;
 
-namespace Rhetos.Utilities.ApplicationConfiguration
+namespace Rhetos
 {
-    public static class DefaultSourcesBuilderExtensions
+    public static class ConfigurationSourcesBuilderExtensions
     {
         public static IConfigurationBuilder AddKeyValues(this IConfigurationBuilder builder, params KeyValuePair<string, object>[] keyValues)
         {

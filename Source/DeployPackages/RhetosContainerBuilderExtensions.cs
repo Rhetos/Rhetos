@@ -26,7 +26,7 @@ using Rhetos.Security;
 using Rhetos.Utilities;
 using System.Collections.Generic;
 
-namespace Rhetos.Configuration.Autofac
+namespace Rhetos
 {
     public static class RhetosContainerBuilderExtensions
     {

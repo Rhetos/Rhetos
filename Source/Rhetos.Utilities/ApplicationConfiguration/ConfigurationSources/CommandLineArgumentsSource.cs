@@ -21,9 +21,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Rhetos.Utilities.ApplicationConfiguration.DefaultSources
+namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 {
     public class CommandLineArgumentsSource : IConfigurationSource
     {

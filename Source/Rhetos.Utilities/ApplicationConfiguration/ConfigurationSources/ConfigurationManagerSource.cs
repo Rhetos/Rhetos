@@ -19,24 +19,33 @@
 
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rhetos.Utilities.ApplicationConfiguration.DefaultSources
+namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 {
-    public class KeyValuesSource : IConfigurationSource
+    public class ConfigurationManagerSource : IConfigurationSource
     {
-        private readonly IList<KeyValuePair<string, object>> keyValuePairs;
-
-        public KeyValuesSource(IList<KeyValuePair<string, object>> keyValuePairs)
-        {
-            this.keyValuePairs = keyValuePairs;
-        }
-
         public IDictionary<string, object> Load()
         {
-            return keyValuePairs.ToDictionary(pair => pair.Key, pair => pair.Value);
+            var appSettings = new List<KeyValuePair<string, string>>();
+            if (ConfigurationManager.AppSettings != null)
+            {
+                foreach (var key in ConfigurationManager.AppSettings.AllKeys)
+                    appSettings.Add(new KeyValuePair<string, string>(key, ConfigurationManager.AppSettings[key]));
+            }
+
+            var connectionStrings = new List<ConnectionStringSettings>();
+            if (ConfigurationManager.ConnectionStrings != null)
+            {
+                foreach (ConnectionStringSettings connectionString in ConfigurationManager.ConnectionStrings)
+                    connectionStrings.Add(connectionString);
+            }
+
+            return new DotNetConfigurationSource(appSettings, connectionStrings)
+                .Load();
         }
     }
 }

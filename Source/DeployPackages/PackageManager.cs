@@ -18,17 +18,14 @@
 */
 
 using Rhetos;
-using Rhetos.Configuration.Autofac;
 using Rhetos.Deployment;
 using Rhetos.Logging;
 using Rhetos.Utilities;
-using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace DeployPackages
 {

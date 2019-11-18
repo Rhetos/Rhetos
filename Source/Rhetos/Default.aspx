@@ -27,21 +27,5 @@
         User authentication type: <%=Context.User.Identity.AuthenticationType %><br />
         Is 64-bit process: <%=Environment.Is64BitProcess %><br />
     </p>
-    <div>
-<%
-    var configurationProvider = Autofac.ResolutionExtensions.Resolve<Rhetos.Utilities.ApplicationConfiguration.IConfigurationProvider>(Autofac.Integration.Wcf.AutofacServiceHostFactory.Container);
-    var fullConfiguration = "";
-    foreach (var key in configurationProvider.AllKeys)
-        fullConfiguration += key.PadRight(70) + " =>  " + configurationProvider.GetValue<string>(key) + "\n";
-%>
-    <br />
-    <p>
-        Running configuration values:
-        <pre>
-<%=fullConfiguration%>
-        </pre>
-    </p>
-    </div>
-
 </body>
 </html>

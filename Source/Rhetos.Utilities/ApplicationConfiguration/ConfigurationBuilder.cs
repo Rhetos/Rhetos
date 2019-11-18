@@ -17,13 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Rhetos.Utilities.ApplicationConfiguration
+namespace Rhetos
 {
     public class ConfigurationBuilder : IConfigurationBuilder
     {
@@ -37,7 +37,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration
 
         public IConfigurationProvider Build()
         {
-            var configurationValues = new Dictionary<string, object>();
+            var configurationValues = new Dictionary<string, object>(StringComparer.InvariantCultureIgnoreCase);
 
             foreach (var configurationSource in configurationSources)
             {
@@ -47,7 +47,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration
                     if (string.IsNullOrWhiteSpace(sourceValue.Key)) 
                         throw new FrameworkException("Trying to add empty or null configuration key.");
 
-                    configurationValues[sourceValue.Key.ToLowerInvariant()] = sourceValue.Value;
+                    configurationValues[sourceValue.Key] = sourceValue.Value;
                 }
             }
             return new ConfigurationProvider(configurationValues);

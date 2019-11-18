@@ -23,11 +23,8 @@ using Oracle.ManagedDataAccess.Client;
 using System.Data.Common;
 using System.Linq;
 using System.Text;
-using System.IO;
 using System.Text.RegularExpressions;
-using System.Xml;
 using System.Data.SqlClient;
-using Rhetos.Utilities.ApplicationConfiguration;
 
 namespace Rhetos.Utilities
 {

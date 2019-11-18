@@ -19,11 +19,7 @@
 
 using Autofac;
 using Autofac.Integration.Wcf;
-using Rhetos.Configuration.Autofac;
-using Rhetos.Extensibility;
 using Rhetos.Logging;
-using Rhetos.Utilities;
-using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -41,6 +37,7 @@ namespace Rhetos
         {
             var stopwatch = Stopwatch.StartNew();
 
+            // Temporary logger used in Application_Error event handler, which can occur during configuration process.
             _logger = new NLogProvider().GetLogger("Configuration");
 
             var configurationProvider = new ConfigurationBuilder()

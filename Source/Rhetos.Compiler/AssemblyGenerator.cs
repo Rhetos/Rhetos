@@ -23,7 +23,6 @@ using Microsoft.CodeAnalysis.Emit;
 using Rhetos.Dom;
 using Rhetos.Logging;
 using Rhetos.Utilities;
-using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;

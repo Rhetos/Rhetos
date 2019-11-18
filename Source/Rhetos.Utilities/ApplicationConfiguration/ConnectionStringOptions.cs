@@ -23,7 +23,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rhetos.Utilities.ApplicationConfiguration
+namespace Rhetos
 {
     public class ConnectionStringOptions
     {

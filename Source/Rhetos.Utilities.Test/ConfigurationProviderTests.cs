@@ -19,13 +19,10 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
-using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Rhetos.Utilities.Test
 {
@@ -41,7 +38,7 @@ namespace Rhetos.Utilities.Test
                 .Build();
 
             var keys = string.Join(",", provider.AllKeys);
-            Assert.AreEqual("app:testsection:stringvalue,rootvalue", keys);
+            Assert.AreEqual("App:TestSection:StringValue,RootValue", keys);
         }
 
         [TestMethod]
@@ -75,32 +72,11 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
-        public void PathSeparatorInvariance()
-        {
-            var provider = new ConfigurationBuilder()
-                .AddKeyValue("Test__Underscore", "underscore")
-                .AddKeyValue("Test:Colon", "colon")
-                .AddKeyValue("Test.Dot", "dot")
-                .Build();
-
-            Assert.AreEqual("underscore", provider.GetValue<string>("test__underscore"));
-            Assert.AreEqual("underscore", provider.GetValue<string>("test:underscore"));
-            Assert.AreEqual("underscore", provider.GetValue<string>("test.underscore"));
-
-            Assert.AreEqual("colon", provider.GetValue<string>("test__colon"));
-            Assert.AreEqual("colon", provider.GetValue<string>("test:colon"));
-            Assert.AreEqual("colon", provider.GetValue<string>("test.colon"));
-
-            Assert.AreEqual("dot", provider.GetValue<string>("test__dot"));
-            Assert.AreEqual("dot", provider.GetValue<string>("test:dot"));
-            Assert.AreEqual("dot", provider.GetValue<string>("test.dot"));
-        }
-
-        [TestMethod]
         public void GetByPathAndName()
         {
             var provider = new ConfigurationBuilder()
                 .AddKeyValue("App:TestSection:StringValue", "Hello")
+                .AddKeyValue("App.TestSection.StringValue", "Hello2")
                 .AddKeyValue("RootValue", "world")
                 .Build();
 
@@ -110,6 +86,11 @@ namespace Rhetos.Utilities.Test
 
             Assert.AreEqual("n/a", provider.GetValue("RootValue", "n/a", "App:TestSection"));
             Assert.AreEqual("world", provider.GetValue("RootValue", "n/a"));
+
+            // dot is not a path separator
+            Assert.AreEqual("n/a", provider.GetValue("StringValue", "n/a", "App.TestSection"));
+
+            Assert.AreEqual("Hello2", provider.GetValue("App.TestSection.StringValue", "n/a"));
         }
 
         public enum TestEnum
@@ -141,7 +122,7 @@ namespace Rhetos.Utilities.Test
                 .Build();
 
             var frameworkException = TestUtility.ShouldFail<FrameworkException>(() => provider.GetValue<TestEnum>("EnumValue"));
-            Assert.IsTrue(frameworkException.InnerException.Message.Contains("Allowed values for TestEnum are: None, ValueA, ValueB"));
+            Assert.IsTrue(frameworkException.Message.Contains("Allowed values for TestEnum are: None, ValueA, ValueB"));
         }
 
         public enum FakeEnum
@@ -209,7 +190,8 @@ namespace Rhetos.Utilities.Test
                 .AddKeyValue("App:BoolValue", true)
                 .AddKeyValue("App:doublevaluecomma", "3,14")
                 .AddKeyValue("APP:DOUBLEVALUEDOT", "3.15")
-                .AddKeyValue("App:DoubleValueObject", 3.16)
+                .AddKeyValue("app:doubleValueDOT", "3.99") // override previous setting
+                .AddKeyValue("App:DoubleValueObject", "3.16")
                 .AddKeyValue("App:EnumValueString", "ValueA")
                 .AddKeyValue("App:EnumValueObject", TestEnum.ValueB)
                 .Build();
@@ -222,7 +204,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(100, options.IntProp2);
             Assert.AreEqual(true, options.BoolValue);
             Assert.AreEqual(3.14, options.DoubleValueComma);
-            Assert.AreEqual(3.15, options.DoubleValueDot);
+            Assert.AreEqual(3.99, options.DoubleValueDot);
             Assert.AreEqual(3.16, options.DoubleValueObject);
             Assert.AreEqual(TestEnum.ValueA, options.EnumValueString);
             Assert.AreEqual(TestEnum.ValueB, options.EnumValueObject);
@@ -236,7 +218,7 @@ namespace Rhetos.Utilities.Test
                     .AddKeyValue("App:EnumValueString", "ValueC")
                     .Build();
 
-                TestUtility.ShouldFail<FrameworkException>(() => provider.GetOptions<PocoOptions>("App"), "Type conversion failed");
+                TestUtility.ShouldFail<FrameworkException>(() => provider.GetOptions<PocoOptions>("App"), "Type conversion failed for configuration key 'EnumValueString'");
             }
 
             {
@@ -244,7 +226,7 @@ namespace Rhetos.Utilities.Test
                     .AddKeyValue("App:IntProp", "120_not_int")
                     .Build();
 
-                TestUtility.ShouldFail<FrameworkException>(() => provider.GetOptions<PocoOptions>("App"), "Type conversion failed");
+                TestUtility.ShouldFail<FrameworkException>(() => provider.GetOptions<PocoOptions>("App"), "Type conversion failed for configuration key 'IntProp'");
             }
         }
 
@@ -289,7 +271,7 @@ namespace Rhetos.Utilities.Test
                 .AddConfigurationManagerConfiguration()
                 .Build();
 
-            Assert.IsTrue(provider.AllKeys.Contains("connectionstrings:serverconnectionstring:name"));
+            Assert.IsTrue(provider.AllKeys.Contains("ConnectionStrings:ServerConnectionString:Name"));
             Assert.AreEqual(31, provider.GetValue("SqlCommandTimeout", 0));
             Assert.AreEqual("TestSettingValue", provider.GetValue("AdditionalTestSetting", "", "TestSection"));
         }
@@ -316,7 +298,7 @@ namespace Rhetos.Utilities.Test
                 .AddConfigurationFile("TestCfg.config")
                 .Build();
 
-            Assert.IsTrue(provider.AllKeys.Contains("connectionstrings:testconnectionstring:name"));
+            Assert.IsTrue(provider.AllKeys.Contains("ConnectionStrings:TestConnectionString:Name"));
             Assert.AreEqual(99, provider.GetValue("TestCfgValue", 0));
         }
 
@@ -330,7 +312,7 @@ namespace Rhetos.Utilities.Test
                 .AddRhetosAppConfiguration(rootPath)
                 .Build();
 
-            Assert.IsTrue(provider.AllKeys.Contains("connectionstrings:webconnectionstring:name"));
+            Assert.IsTrue(provider.AllKeys.Contains("ConnectionStrings:WebConnectionString:Name"));
             Assert.AreEqual(199, provider.GetValue("TestWebValue", 0));
         }
 
@@ -403,6 +385,85 @@ namespace Rhetos.Utilities.Test
 
                 Assert.AreEqual(-1, provider.GetOptions<PocoPath>().Section__A__Option1);
             }
+
+            {
+                var provider = new ConfigurationBuilder()
+                    .AddKeyValue("section:a:option1", "notInt")
+                    .Build();
+
+                TestUtility.ShouldFail<FrameworkException>(() => provider.GetOptions<PocoPath>(), "Type conversion failed for configuration key 'Section__A__Option1'");
+            }
+
+            // add tests for all supported separators
+        }
+
+        [TestMethod]
+        public void PropertyBindingSupportsMultipleSpecialChars()
+        {
+            {
+                var provider = new ConfigurationBuilder()
+                    .AddKeyValue("section:a:option1", 43)
+                    .Build();
+
+                Assert.AreEqual(43, provider.GetOptions<PocoPath>().Section__A__Option1);
+            }
+
+            {
+                var provider = new ConfigurationBuilder()
+                    .AddKeyValue("Section__a__Option1", 44)
+                    .Build();
+
+                Assert.AreEqual(44, provider.GetOptions<PocoPath>().Section__A__Option1);
+            }
+
+            {
+                var provider = new ConfigurationBuilder()
+                    .AddKeyValue("SECTION.A.Option1", 44)
+                    .Build();
+
+                Assert.AreEqual(44, provider.GetOptions<PocoPath>().Section__A__Option1);
+            }
+        }
+
+        [TestMethod]
+        public void PropertyBindingFailsOnMultipleMatches()
+        {
+            {
+                var provider = new ConfigurationBuilder()
+                    .AddKeyValue("section:a:option1", 45)
+                    .AddKeyValue("Section__a__Option1", 46)
+                    .Build();
+
+                TestUtility.ShouldFail<FrameworkException>(() => provider.GetOptions<PocoPath>(), "Found multiple matches while binding configuration value to member 'Section__A__Option1'");
+            }
+
+            {
+                var provider = new ConfigurationBuilder()
+                    .AddKeyValue("section.a.option1", 47)
+                    .AddKeyValue("Section__a__Option1", 48)
+                    .Build();
+
+                TestUtility.ShouldFail<FrameworkException>(() => provider.GetOptions<PocoPath>(), "Found multiple matches while binding configuration value to member 'Section__A__Option1'");
+            }
+
+            {
+                var provider = new ConfigurationBuilder()
+                    .AddKeyValue("section:a:option1", 49)
+                    .AddKeyValue("Section.a.Option1", 50)
+                    .Build();
+
+                TestUtility.ShouldFail<FrameworkException>(() => provider.GetOptions<PocoPath>(), "Found multiple matches while binding configuration value to member 'Section__A__Option1'");
+            }
+
+            {
+                var provider = new ConfigurationBuilder()
+                    .AddKeyValue("section:a:option1", 51)
+                    .AddKeyValue("Section.a.Option1", 52)
+                    .AddKeyValue("Section__a__Option1", 53)
+                    .Build();
+
+                TestUtility.ShouldFail<FrameworkException>(() => provider.GetOptions<PocoPath>(), "Found multiple matches while binding configuration value to member 'Section__A__Option1'");
+            }
         }
 
         [TestMethod]
@@ -413,10 +474,10 @@ namespace Rhetos.Utilities.Test
                 .Build();
 
             Assert.IsTrue(provider.AllKeys.Contains("option1"));
-            Assert.IsTrue(provider.AllKeys.Contains("option2"));
+            Assert.IsTrue(provider.AllKeys.Contains("Option2"));
             Assert.IsFalse(provider.AllKeys.Contains("option3"));
 
-            Assert.IsTrue(provider.GetValue("option1", false));
+            Assert.IsTrue(provider.GetValue("OPTION1", false));
             Assert.IsTrue(provider.GetValue("option2", false));
         }
 
@@ -427,11 +488,11 @@ namespace Rhetos.Utilities.Test
                 .AddCommandLineArguments(new[] { "-option1", "/Option2", "/option3" }, "-", "TestSection")
                 .Build();
 
-            Assert.IsTrue(provider.AllKeys.Contains("testsection:option1"));
-            Assert.IsFalse(provider.AllKeys.Contains("testsection:option2"));
+            Assert.IsTrue(provider.AllKeys.Contains("TestSection:option1"));
+            Assert.IsFalse(provider.AllKeys.Contains("TestSection:Option2"));
             Assert.IsFalse(provider.AllKeys.Contains("option3"));
 
-            Assert.IsTrue(provider.GetValue("Option1", false, "TestSection"));
+            Assert.IsTrue(provider.GetValue("OptioN1", false, "TESTSECTION"));
         }
 
         [TestMethod]

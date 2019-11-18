@@ -1,11 +1,11 @@
-﻿using Rhetos.Utilities.ApplicationConfiguration;
+﻿using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rhetos.Utilities
+namespace Rhetos
 {
     public static class LegacyUtilities
     {

@@ -18,13 +18,10 @@
 */
 
 using Autofac;
-using Rhetos.Configuration.Autofac;
-using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.Security;
 using Rhetos.Utilities;
-using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -120,7 +117,7 @@ namespace Rhetos.Configuration.Autofac
             }
         }
 
-        protected virtual bool IsValidRhetosServerDirectory(string path)
+        private static bool IsValidRhetosServerDirectory(string path)
         {
             return
                 File.Exists(Path.Combine(path, @"web.config"))

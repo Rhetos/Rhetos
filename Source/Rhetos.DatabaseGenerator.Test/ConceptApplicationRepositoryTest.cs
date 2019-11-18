@@ -29,8 +29,6 @@ using System.Data.Common;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Rhetos.Dom;
-using Rhetos.Utilities.ApplicationConfiguration;
-using Rhetos.Configuration.Autofac;
 
 namespace Rhetos.DatabaseGenerator.Test
 {

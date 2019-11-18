@@ -23,12 +23,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rhetos
+namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 {
-    public interface IConfigurationProvider
+    /// <summary>
+    /// Each implementation source is responsible for normalizing configuration paths to predefined colon (:) separator.
+    /// Empty path fragments are not allowed. Path should not start with a separator (root configuration items are just verbatim setting names).
+    /// Paths and keys are NOT case sensitive.
+    /// </summary>
+    public interface IConfigurationSource
     {
-        T GetValue<T>(string configurationKey, T defaultValue = default(T), string configurationPath = "");
-        T GetOptions<T>(string configurationPath = "", bool requireAllMembers = false) where T : class;
-        string[] AllKeys { get; }
+        IDictionary<string, object> Load();
     }
 }

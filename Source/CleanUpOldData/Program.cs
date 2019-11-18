@@ -21,7 +21,6 @@ using Rhetos;
 using Rhetos.Deployment;
 using Rhetos.Persistence;
 using Rhetos.Utilities;
-using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
 using System.IO;
