@@ -37,6 +37,11 @@ namespace Rhetos.Extensibility
         public ContainerBuilder Builder => _builder;
         public IPluginScanner PluginScanner => _pluginScanner;
 
+        /// <summary>
+        /// It is important to understand that Autofac will provide a new instance of <see cref="ContainerBuilder"/>
+        /// for each module registration, and this is why we need to create a fresh instance of ContainerBuilderPluginRegistration
+        /// for each module, instead of reusing a single one during the initialization of DI container.
+        /// </summary>
         public ContainerBuilderPluginRegistration(ContainerBuilder builder, ILogProvider logProvider, IPluginScanner pluginScanner)
         {
             _builder = builder;
@@ -174,7 +179,14 @@ namespace Rhetos.Extensibility
         }
 
         #region Log registration statistics
-        public static string GetRegistrationStatistics(string title, IContainer container)
+
+        public static void LogRegistrationStatistics(string title, IContainer container, ILogProvider logProvider)
+        {
+            var logger = logProvider.GetLogger("Plugins");
+            logger.Trace(() => title + ":\r\n" + string.Join("\r\n", GetRegistrationStatistics(container)));
+        }
+
+        private static IEnumerable<string> GetRegistrationStatistics(IContainer container)
         {
             var registrations = container.ComponentRegistry.Registrations
                 .SelectMany(r => r.Services.Select(s => new { pluginInterface = GetServiceType(s), pluginType = r.Activator.LimitType, registration = r }))
@@ -191,16 +203,15 @@ namespace Rhetos.Extensibility
                 .OrderBy(stat => stat.pluginInterface)
                 .ToList();
 
-            return title + ":" + string.Join("", stats.Select(stat => "\r\n"
-                + stat.pluginInterface + " " + stat.pluginsCountDistinct + " " + stat.pluginsCount));
+            return stats.Select(stat => $"{stat.pluginInterface} {stat.pluginsCountDistinct} {stat.pluginsCount}");
         }
 
         private static string GetServiceType(Autofac.Core.Service service)
         {
-            if (service is TypedService)
-                return GetShortTypeName(((TypedService)service).ServiceType);
-            if (service is KeyedService)
-                return GetShortTypeName(((KeyedService)service).ServiceType);
+            if (service is TypedService typedService)
+                return GetShortTypeName(typedService.ServiceType);
+            if (service is KeyedService keyedService)
+                return GetShortTypeName(keyedService.ServiceType);
             return service.Description;
         }
 
