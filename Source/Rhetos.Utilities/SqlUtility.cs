@@ -23,9 +23,7 @@ using Oracle.ManagedDataAccess.Client;
 using System.Data.Common;
 using System.Linq;
 using System.Text;
-using System.IO;
 using System.Text.RegularExpressions;
-using System.Xml;
 using System.Data.SqlClient;
 
 namespace Rhetos.Utilities
@@ -33,100 +31,51 @@ namespace Rhetos.Utilities
     public static class SqlUtility
     {
         // TODO: Move most of the methods to ISqlUtility.
+        public static int SqlCommandTimeout { get; private set; } = 30;
+        public static string DatabaseLanguage { get; private set; }
+        public static string NationalLanguage { get; private set; }
+        public static string ConnectionString { get; private set; }
+        public static string ProviderName { get; private set; }
 
-        private static int? _sqlCommandTimeout = null;
-        /// <summary>
-        /// In seconds.
-        /// </summary>
-        public static int SqlCommandTimeout
+        private static bool _databaseLanguageIsMsSql;
+        private static bool _databaseLanguageIsOracle;
+
+        public static void Initialize(RhetosAppOptions rhetosAppOptions, ConnectionStringOptions connectionStringOptions)
         {
-            get
-            {
-                if (!_sqlCommandTimeout.HasValue)
-                {
-                    string value = ConfigUtility.GetAppSetting("SqlCommandTimeout");
+            SqlCommandTimeout = rhetosAppOptions.SqlCommandTimeout;
 
-                    if (!string.IsNullOrEmpty(value))
-                        _sqlCommandTimeout = int.Parse(value);
-                    else
-                        _sqlCommandTimeout = 30;
-                }
-                return _sqlCommandTimeout.Value;
-            }
+            ConnectionString = connectionStringOptions.ConnectionString;
+            if (string.IsNullOrEmpty(ConnectionString))
+                throw new FrameworkException("Empty or non-existant 'ServerConnectionString' connection string in application configuration.");
+
+            SetLanguageFromProviderName(connectionStringOptions.ProviderName);
+            InitializeProviderContext();
         }
 
-        private static string _databaseLanguage;
-        private static string _nationalLanguage;
-
-        private static void SetLanguageFromProviderName(string connectionStringProvider)
+        private static void SetLanguageFromProviderName(string connectionStringProviderName)
         {
-            var match = new Regex(@"^Rhetos\.(?<DatabaseLanguage>\w+)(.(?<NationalLanguage>\w+))?$").Match(connectionStringProvider);
+            if (string.IsNullOrEmpty(connectionStringProviderName))
+                throw new FrameworkException("Missing 'providerName' attribute in 'ServerConnectionString' connection string. Expected providerName format is 'Rhetos.<database language>' or 'Rhetos.<database language>.<natural language settings>', for example 'Rhetos.MsSql' or 'Rhetos.Oracle.XGERMAN_CI'.");
+
+            var match = new Regex(@"^Rhetos\.(?<DatabaseLanguage>\w+)(.(?<NationalLanguage>\w+))?$").Match(connectionStringProviderName);
             if (!match.Success)
                 throw new FrameworkException("Invalid 'providerName' format in 'ServerConnectionString' connection string. Expected providerName format is 'Rhetos.<database language>' or 'Rhetos.<database language>.<natural language settings>', for example 'Rhetos.MsSql' or 'Rhetos.Oracle.XGERMAN_CI'.");
-            _databaseLanguage = match.Groups["DatabaseLanguage"].Value ?? "";
-            _nationalLanguage = match.Groups["NationalLanguage"].Value ?? "";
+
+            DatabaseLanguage = match.Groups["DatabaseLanguage"].Value ?? "";
+            NationalLanguage = match.Groups["NationalLanguage"].Value ?? "";
         }
 
-        private static string GetProviderNameFromConnectionString()
+        private static void InitializeProviderContext()
         {
-            var connectionStringProvider = ConfigUtility.GetConnectionString().ProviderName;
-            if (string.IsNullOrEmpty(connectionStringProvider))
-                throw new FrameworkException("Missing 'providerName' attribute in 'ServerConnectionString' connection string. Expected providerName format is 'Rhetos.<database language>' or 'Rhetos.<database language>.<natural language settings>', for example 'Rhetos.MsSql' or 'Rhetos.Oracle.XGERMAN_CI'.");
-            return connectionStringProvider;
-        }
+            _databaseLanguageIsMsSql = string.Equals(DatabaseLanguage, "MsSql", StringComparison.Ordinal);
+            _databaseLanguageIsOracle = string.Equals(DatabaseLanguage, "Oracle", StringComparison.Ordinal);
 
-        public static string DatabaseLanguage
-        {
-            get
-            {
-                if (_databaseLanguage == null)
-                    SetLanguageFromProviderName(GetProviderNameFromConnectionString());
-
-                return _databaseLanguage;
-            }
-        }
-
-        private static Lazy<bool> DatabaseLanguageIsMsSql = new Lazy<bool>(() => string.Equals(DatabaseLanguage, "MsSql", StringComparison.Ordinal));
-        private static Lazy<bool> DatabaseLanguageIsOracle = new Lazy<bool>(() => string.Equals(DatabaseLanguage, "Oracle", StringComparison.Ordinal));
-
-        public static string NationalLanguage
-        {
-            get
-            {
-                if (_nationalLanguage == null)
-                    SetLanguageFromProviderName(GetProviderNameFromConnectionString());
-                    
-                return _nationalLanguage;
-            }
-        }
-
-
-        private static string _connectionString;
-        public static string ConnectionString
-        {
-            get
-            {
-                if (_connectionString == null)
-                {
-                    _connectionString = ConfigUtility.GetConnectionString().ConnectionString;
-                    if (string.IsNullOrEmpty(_connectionString))
-                        throw new FrameworkException("Empty 'ServerConnectionString' connection string in application configuration.");
-                }
-                return _connectionString;
-            }
-        }
-
-        public static string ProviderName
-        {
-            get
-            {
-                if (DatabaseLanguageIsMsSql.Value)
-                    return "System.Data.SqlClient";
-                else if (DatabaseLanguageIsOracle.Value)
-                    return "Oracle.ManagedDataAccess.Client";
-                else
-                    throw new FrameworkException(UnsupportedLanguageError);
-            }
+            if (_databaseLanguageIsMsSql)
+                ProviderName = "System.Data.SqlClient";
+            else if (_databaseLanguageIsOracle)
+                ProviderName = "Oracle.ManagedDataAccess.Client";
+            else
+                throw new FrameworkException(UnsupportedLanguageError);
         }
 
         public static string UserContextInfoText(IUserInfo userInfo)
@@ -195,9 +144,9 @@ namespace Rhetos.Utilities
             if (error != null)
                 throw new FrameworkException("Invalid database object name: " + error);
 
-            if (DatabaseLanguageIsOracle.Value)
+            if (_databaseLanguageIsOracle)
                 name = OracleSqlUtility.LimitIdentifierLength(name);
-            if (DatabaseLanguageIsMsSql.Value)
+            if (_databaseLanguageIsMsSql)
                 name = MsSqlUtility.LimitIdentifierLength(name);
 
             return name;
@@ -224,9 +173,9 @@ namespace Rhetos.Utilities
         {
             int dotPosition = fullObjectName.IndexOf('.');
             if (dotPosition == -1)
-                if (DatabaseLanguageIsMsSql.Value)
+                if (_databaseLanguageIsMsSql)
                     return "dbo";
-                else if (DatabaseLanguageIsOracle.Value)
+                else if (_databaseLanguageIsOracle)
                     throw new FrameworkException("Missing schema name for database object '" + fullObjectName + "'.");
                 else
                     throw new FrameworkException(UnsupportedLanguageError);
@@ -270,9 +219,9 @@ namespace Rhetos.Utilities
         /// </summary>
         public static Guid ReadGuid(DbDataReader dataReader, int column)
         {
-            if (DatabaseLanguageIsMsSql.Value)
+            if (_databaseLanguageIsMsSql)
                 return dataReader.GetGuid(column);
-            else if (DatabaseLanguageIsOracle.Value)
+            else if (_databaseLanguageIsOracle)
                 return new Guid(((OracleDataReader)dataReader).GetOracleBinary(column).Value);
             else
                 throw new FrameworkException(UnsupportedLanguageError);
@@ -283,9 +232,9 @@ namespace Rhetos.Utilities
         /// </summary>
         public static int ReadInt(DbDataReader dataReader, int column)
         {
-            if (DatabaseLanguageIsMsSql.Value)
+            if (_databaseLanguageIsMsSql)
                 return dataReader.GetInt32(column);
-            else if (DatabaseLanguageIsOracle.Value)
+            else if (_databaseLanguageIsOracle)
                 return Convert.ToInt32(dataReader.GetInt64(column)); // On some systems, reading from NUMERIC(10) column will return Int64, and GetInt32 would fail.
             else
                 throw new FrameworkException(UnsupportedLanguageError);
@@ -293,9 +242,9 @@ namespace Rhetos.Utilities
 
         public static Guid StringToGuid(string guid)
         {
-            if (DatabaseLanguageIsMsSql.Value)
+            if (_databaseLanguageIsMsSql)
                 return Guid.Parse(guid);
-            else if (DatabaseLanguageIsOracle.Value)
+            else if (_databaseLanguageIsOracle)
                 return new Guid(CsUtility.HexToByteArray(guid));
             else
                 throw new FrameworkException(UnsupportedLanguageError);
@@ -320,9 +269,9 @@ namespace Rhetos.Utilities
 
         public static string GuidToString(Guid guid)
         {
-            if (DatabaseLanguageIsMsSql.Value)
+            if (_databaseLanguageIsMsSql)
                 return guid.ToString().ToUpper();
-            else if (DatabaseLanguageIsOracle.Value)
+            else if (_databaseLanguageIsOracle)
                 return CsUtility.ByteArrayToHex(guid.ToByteArray());
             else
                 throw new FrameworkException(UnsupportedLanguageError);
@@ -366,9 +315,9 @@ namespace Rhetos.Utilities
         /// </summary>
         public static string EmptyNullString(DbDataReader dataReader, int column)
         {
-            if (DatabaseLanguageIsMsSql.Value)
+            if (_databaseLanguageIsMsSql)
                 return dataReader.GetString(column) ?? "";
-            else if (DatabaseLanguageIsOracle.Value)
+            else if (_databaseLanguageIsOracle)
             {
                 var s = ((OracleDataReader)dataReader).GetOracleString(column);
                 return !s.IsNull ? s.Value : "";
@@ -421,9 +370,9 @@ namespace Rhetos.Utilities
             return DatabaseTimeCache.GetDatabaseTimeCached(() =>
             {
                 DateTime databaseTime;
-                if (DatabaseLanguageIsMsSql.Value)
+                if (_databaseLanguageIsMsSql)
                     databaseTime = MsSqlUtility.GetDatabaseTime(sqlExecuter);
-                else if (DatabaseLanguageIsOracle.Value)
+                else if (_databaseLanguageIsOracle)
                     throw new FrameworkException("GetDatabaseTime function is not yet supported in Rhetos for Oracle database.");
                 else
                     throw new FrameworkException(UnsupportedLanguageError);

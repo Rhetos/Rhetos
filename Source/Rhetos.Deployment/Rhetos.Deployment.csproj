@@ -80,13 +80,11 @@
     <Compile Include="DataMigrationScript.cs" />
     <Compile Include="DataMigrationScriptsFromDisk.cs" />
     <Compile Include="DeploymentConfiguration.cs" />
-    <Compile Include="DeploymentModuleConfiguration.cs" />
     <Compile Include="IDataMigrationScriptsProvider.cs" />
     <Compile Include="InstalledPackages.cs" />
     <Compile Include="LoggerForNuget.cs" />
     <Compile Include="PackageDownloaderOptions.cs" />
     <Compile Include="PackageSource.cs" />
-    <Compile Include="DeploymentUtility.cs" />
     <Compile Include="DatabaseCleaner.cs" />
     <Compile Include="DataMigrationScripts.cs" />
     <Compile Include="PackageDownloader.cs" />

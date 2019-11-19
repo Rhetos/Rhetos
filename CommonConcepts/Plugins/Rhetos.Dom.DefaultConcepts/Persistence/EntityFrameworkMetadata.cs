@@ -33,13 +33,15 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
 {
     public class EntityFrameworkMetadata
     {
+        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
         private readonly ILogger _performanceLogger;
         private MetadataWorkspace _metadataWorkspace;
         private bool _initialized;
         private readonly object _initializationLock = new object();
 
-        public EntityFrameworkMetadata(ILogProvider logProvider)
+        public EntityFrameworkMetadata(RhetosAppEnvironment rhetosAppEnvironment, ILogProvider logProvider)
         {
+            _rhetosAppEnvironment = rhetosAppEnvironment;
             _performanceLogger = logProvider.GetLogger("Performance");
         }
 
@@ -53,7 +55,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                         {
                             var sw = Stopwatch.StartNew();
 
-                            var modelFilesPath = EntityFrameworkMapping.ModelFiles.Select(fileName => Path.Combine(Paths.GeneratedFolder, fileName));
+                            var modelFilesPath = EntityFrameworkMapping.ModelFiles.Select(fileName => Path.Combine(_rhetosAppEnvironment.GeneratedFolder, fileName));
                             _metadataWorkspace = new MetadataWorkspace(modelFilesPath, new Assembly[] { });
                             _performanceLogger.Write(sw, "EntityFrameworkMetadata: Load EDM files.");
 

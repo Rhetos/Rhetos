@@ -28,6 +28,7 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Rhetos.Dom;
 
 namespace Rhetos.DatabaseGenerator.Test
 {
@@ -55,6 +56,15 @@ namespace Rhetos.DatabaseGenerator.Test
     [TestClass]
     public class ConceptApplicationRepositoryTest
     {
+        public ConceptApplicationRepositoryTest()
+        {
+            var configurationProvider = new ConfigurationBuilder()
+                .AddRhetosAppConfiguration(AppDomain.CurrentDomain.BaseDirectory)
+                .AddConfigurationManagerConfiguration()
+                .Build();
+            LegacyUtilities.Initialize(configurationProvider);
+        }
+
         private class MockSqlExecuter : ISqlExecuter
         {
             public static readonly NewConceptApplication DependencyCa1 = new NewConceptApplication(new TestConceptInfo { Name = "dep1" }, new TestConceptImplementation())

@@ -17,13 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using Rhetos.TestCommon;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Data;
 
 namespace Rhetos.Utilities.Test
@@ -32,6 +30,16 @@ namespace Rhetos.Utilities.Test
     [DeploymentItem("ConnectionStrings.config")]
     public class SqlUtilityTest
     {
+        public SqlUtilityTest()
+        {
+            var configurationProvider = new ConfigurationBuilder()
+                .AddRhetosAppConfiguration(AppDomain.CurrentDomain.BaseDirectory)
+                .AddConfigurationManagerConfiguration()
+                .Build();
+
+            LegacyUtilities.Initialize(configurationProvider);
+        }
+
         [TestMethod]
         public void OracleLimitIdentifierLength()
         {

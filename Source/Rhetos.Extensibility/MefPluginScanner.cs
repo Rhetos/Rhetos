@@ -32,18 +32,28 @@ using System.Text;
 
 namespace Rhetos.Extensibility
 {
-    internal static class MefPluginScanner
+    public class MefPluginScanner : IPluginScanner
     {
         /// <summary>
         /// The key is FullName of the plugin's export type (it is usually the interface it implements).
         /// </summary>
-        private static MultiDictionary<string, PluginInfo> _pluginsByExport = null;
-        private static object _pluginsLock = new object();
+        private MultiDictionary<string, PluginInfo> _pluginsByExport = null;
+        private object _pluginsLock = new object();
+        private readonly ILogger _logger;
+        private readonly ILogger _performanceLogger;
+        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
+
+        public MefPluginScanner(RhetosAppEnvironment rhetosAppEnvironment, ILogProvider logProvider)
+        {
+            _performanceLogger = logProvider.GetLogger("Performance");
+            _logger = logProvider.GetLogger("Plugins");
+            _rhetosAppEnvironment = rhetosAppEnvironment;
+        }
 
         /// <summary>
         /// Returns plugins that are registered for the given interface, sorted by dependencies (MefPovider.DependsOn).
         /// </summary>
-        internal static IEnumerable<PluginInfo> FindPlugins(ContainerBuilder builder, Type pluginInterface)
+        public IEnumerable<PluginInfo> FindPlugins(Type pluginInterface)
         {
             lock (_pluginsLock)
             {
@@ -67,11 +77,11 @@ namespace Rhetos.Extensibility
             }
         }
 
-        private static List<string> ListAssemblies()
+        private List<string> ListAssemblies()
         {
             var stopwatch = Stopwatch.StartNew();
 
-            string[] pluginsPath = new[] { Paths.PluginsFolder, Paths.GeneratedFolder };
+            string[] pluginsPath = new[] { _rhetosAppEnvironment.PluginsFolder, _rhetosAppEnvironment.GeneratedFolder };
 
             List<string> assemblies = new List<string>();
             foreach (var path in pluginsPath)
@@ -84,17 +94,17 @@ namespace Rhetos.Extensibility
             assemblies.Sort();
 
             foreach (var assembly in assemblies)
-                InitializationLogging.Logger.Trace(() => "Found assembly: " + assembly);
+                _logger.Trace(() => "Found assembly: " + assembly);
 
-            InitializationLogging.PerformanceLogger.Write(stopwatch, "MefPluginScanner: Listed assemblies (" + assemblies.Count + ").");
+            _performanceLogger.Write(stopwatch, "MefPluginScanner: Listed assemblies (" + assemblies.Count + ").");
             return assemblies;
         }
 
-        private static MultiDictionary<string, PluginInfo> LoadPlugins(List<string> assemblies)
+        private MultiDictionary<string, PluginInfo> LoadPlugins(List<string> assemblies)
         {
             var stopwatch = Stopwatch.StartNew();
 
-            var assemblyCatalogs = assemblies.Select(a => new AssemblyCatalog(a));
+            var assemblyCatalogs = assemblies.Select(name => new AssemblyCatalog(name));
             var container = new CompositionContainer(new AggregateCatalog(assemblyCatalogs));
             var mefPlugins = container.Catalog.Parts
                 .Select(part => new
@@ -127,26 +137,20 @@ namespace Rhetos.Extensibility
             foreach (var pluginsGroup in pluginsByExport)
                 SortByDependency(pluginsGroup.Value);
 
-            InitializationLogging.PerformanceLogger.Write(stopwatch, "MefPluginScanner: Loaded plugins (" + pluginsCount + ").");
+            _performanceLogger.Write(stopwatch, "MefPluginScanner: Loaded plugins (" + pluginsCount + ").");
             return pluginsByExport;
         }
 
-        private static void SortByDependency(List<PluginInfo> plugins)
+        private void SortByDependency(List<PluginInfo> plugins)
         {
             var dependencies = plugins
-                .Where(p => p.Metadata.ContainsKey(MefProvider.DependsOn))
-                .Select(p => Tuple.Create((Type)p.Metadata[MefProvider.DependsOn], p.Type))
+                .Where(plugin => plugin.Metadata.ContainsKey(MefProvider.DependsOn))
+                .Select(plugin => Tuple.Create((Type)plugin.Metadata[MefProvider.DependsOn], plugin.Type))
                 .ToList();
 
-            var pluginTypes = plugins.Select(p => p.Type).ToList();
+            var pluginTypes = plugins.Select(plugin => plugin.Type).ToList();
             Graph.TopologicalSort(pluginTypes, dependencies);
-            Graph.SortByGivenOrder(plugins, pluginTypes, p => p.Type);
-        }
-
-        internal static void ClearCache()
-        {
-            lock (_pluginsLock)
-                _pluginsByExport = null;
+            Graph.SortByGivenOrder(plugins, pluginTypes, plugin => plugin.Type);
         }
     }
 }

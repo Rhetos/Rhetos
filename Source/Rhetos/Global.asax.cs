@@ -20,7 +20,6 @@
 using Autofac;
 using Autofac.Integration.Wcf;
 using Rhetos.Logging;
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -38,10 +37,14 @@ namespace Rhetos
         {
             var stopwatch = Stopwatch.StartNew();
 
-            Paths.InitializeRhetosServer();
+            // Temporary logger used in Application_Error event handler, which can occur during configuration process.
+            _logger = new NLogProvider().GetLogger("Configuration");
 
-            var builder = new ContainerBuilder();
-            builder.RegisterModule<Rhetos.DefaultAutofacConfiguration>();
+            var configurationProvider = new ConfigurationBuilder()
+                .AddRhetosAppConfiguration(AppDomain.CurrentDomain.BaseDirectory)
+                .Build();
+
+            var builder = CreateServerContainer(configurationProvider);
             AutofacServiceHostFactory.Container = builder.Build();
 
             var logProvider = AutofacServiceHostFactory.Container.Resolve<ILogProvider>();
@@ -68,6 +71,20 @@ namespace Rhetos
             }
 
             _performanceLogger.Write(stopwatch, "All services initialized.");
+        }
+
+        private ContainerBuilder CreateServerContainer(IConfigurationProvider configurationProvider)
+        {
+            var builder = new RhetosContainerBuilder(configurationProvider, new NLogProvider());
+
+            builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
+            builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
+            builder.GetPluginRegistration().FindAndRegisterPlugins<IService>();
+            builder.GetPluginRegistration().FindAndRegisterPlugins<IHomePageSnippet>();
+
+            // General registrations:
+            builder.AddRhetosRuntime();
+            return builder;
         }
 
         // Called once for each application instance.

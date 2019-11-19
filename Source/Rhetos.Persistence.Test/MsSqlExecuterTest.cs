@@ -54,6 +54,12 @@ namespace Rhetos.Persistence.Test
         [TestInitialize]
         public void ChecklDatabaseAvailability()
         {
+            var configurationProvider = new ConfigurationBuilder()
+                .AddRhetosAppConfiguration(AppDomain.CurrentDomain.BaseDirectory)
+                .AddConfigurationManagerConfiguration()
+                .Build();
+            LegacyUtilities.Initialize(configurationProvider);
+
             TestUtility.CheckDatabaseAvailability("MsSql");
         }
 

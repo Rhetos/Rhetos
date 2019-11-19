@@ -23,6 +23,7 @@ using Rhetos.Logging;
 using Rhetos.Security;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
+using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -72,16 +73,15 @@ namespace CommonConcepts.Test
                 .As<IUserInfo>();
         }
 
-        public static void OverrideConfiguration(this RhetosTestContainer container, params (string Key, object Value)[] settings)
+        public static void SetUseDatabaseNullSemantics(this RhetosTestContainer container, bool useDatabaseNullSemantics)
         {
-            var mockConfiguration = new MockConfiguration(true);
-            foreach (var setting in settings)
+            container.InitializeSession += builder => 
             {
-                Console.WriteLine($"{setting.Key} = {setting.Value}");
-                mockConfiguration.Add(setting.Key, setting.Value);
-            }
-
-            container.InitializeSession += builder => builder.RegisterInstance<IConfiguration>(mockConfiguration);
+                var newRhetosAppOptions = builder.GetInitializationContext().ConfigurationProvider.GetOptions<RhetosAppOptions>();
+                newRhetosAppOptions.EntityFramework__UseDatabaseNullSemantics = useDatabaseNullSemantics;
+                builder.RegisterInstance(newRhetosAppOptions);
+            };
+            Console.WriteLine($"{nameof(RhetosAppOptions)}.{nameof(RhetosAppOptions.EntityFramework__UseDatabaseNullSemantics)} = {useDatabaseNullSemantics}");
         }
     }
 }

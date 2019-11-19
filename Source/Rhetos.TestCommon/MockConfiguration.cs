@@ -22,14 +22,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Rhetos.TestCommon
 {
     public class MockConfiguration : Dictionary<string, object>, IConfiguration
     {
         private readonly bool _defaultToSystemConfiguration;
-        private readonly Configuration _systemConfiguration = new Configuration();
+        private readonly Configuration _systemConfiguration = new Configuration(new ConfigurationBuilder().AddConfigurationManagerConfiguration().Build());
 
         public MockConfiguration()
         {

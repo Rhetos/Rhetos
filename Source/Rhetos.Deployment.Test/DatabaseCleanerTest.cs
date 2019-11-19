@@ -23,7 +23,6 @@ using System.Linq;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Utilities;
-using Rhetos.Deployment;
 using System.Data;
 using System.Text.RegularExpressions;
 using Rhetos.TestCommon;
@@ -33,6 +32,16 @@ namespace Rhetos.Deployment.Test
     [TestClass]
     public class DatabaseCleanerTest
     {
+        public DatabaseCleanerTest()
+        {
+            var configurationProvider = new ConfigurationBuilder()
+                .AddRhetosAppConfiguration(AppDomain.CurrentDomain.BaseDirectory)
+                .AddConfigurationManagerConfiguration()
+                .Build();
+
+            LegacyUtilities.Initialize(configurationProvider);
+        }
+
         private class MockSqlExecuter : ISqlExecuter
         {
             DataTable Columns;

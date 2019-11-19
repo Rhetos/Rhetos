@@ -134,19 +134,34 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Arguments.cs" />
-    <Compile Include="Configuration.cs" />
-    <Compile Include="ConfigUtility.cs" />
+    <Compile Include="ApplicationConfiguration\ConfigurationBuilder.cs" />
+    <Compile Include="ApplicationConfiguration\ConfigurationProvider.cs" />
+    <Compile Include="ApplicationConfiguration\ConnectionStringOptions.cs" />
+    <Compile Include="ApplicationConfiguration\ConfigurationSources\CommandLineArgumentsSource.cs" />
+    <Compile Include="ApplicationConfiguration\ConfigurationSources\ConfigurationSourcesBuilderExtensions.cs" />
+    <Compile Include="ApplicationConfiguration\ConfigurationSources\ConfigurationManagerSource.cs" />
+    <Compile Include="ApplicationConfiguration\ConfigurationSources\ConfigurationFileSource.cs" />
+    <Compile Include="ApplicationConfiguration\ConfigurationSources\DotNetConfigurationSource.cs" />
+    <Compile Include="ApplicationConfiguration\IConfigurationBuilder.cs" />
+    <Compile Include="ApplicationConfiguration\IConfigurationProvider.cs" />
+    <Compile Include="ApplicationConfiguration\ConfigurationSources\IConfigurationSource.cs" />
+    <Compile Include="ApplicationConfiguration\ConfigurationSources\KeyValuesSource.cs" />
+    <Compile Include="DeployOptions.cs" />
+    <Compile Include="Legacy\LegacyUtilities.cs" />
+    <Compile Include="Legacy\Configuration.cs" />
+    <Compile Include="Legacy\ConfigUtility.cs" />
     <Compile Include="ConnectionString.cs" />
     <Compile Include="DatabaseTimeCache.cs" />
     <Compile Include="Exceptions\LegacyClientException.cs" />
     <Compile Include="FilesUtility.cs" />
     <Compile Include="FileSyncer.cs" />
     <Compile Include="GeneratedFilesCache.cs" />
-    <Compile Include="IConfiguration.cs" />
+    <Compile Include="Legacy\IConfiguration.cs" />
     <Compile Include="ISqlUtility.cs" />
     <Compile Include="IUserInfoAdmin.cs" />
     <Compile Include="ListOfTuples.cs" />
+    <Compile Include="RhetosAppOptions.cs" />
+    <Compile Include="RhetosAppEnvironment.cs" />
     <Compile Include="SqlTransactionBatches.cs" />
     <Compile Include="NoLocalizer.cs" />
     <Compile Include="ILocalizer.cs" />
@@ -155,7 +170,7 @@
     <Compile Include="Exceptions\ClientException.cs" />
     <Compile Include="Exceptions\RhetosException.cs" />
     <Compile Include="OracleSqlUtility.cs" />
-    <Compile Include="Paths.cs" />
+    <Compile Include="Legacy\Paths.cs" />
     <Compile Include="CsUtility.cs" />
     <Compile Include="Graph.cs" />
     <Compile Include="FastReplacer.cs" />
@@ -196,6 +211,7 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

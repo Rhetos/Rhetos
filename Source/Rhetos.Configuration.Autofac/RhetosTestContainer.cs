@@ -18,8 +18,6 @@
 */
 
 using Autofac;
-using Rhetos.Configuration.Autofac;
-using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.Security;
@@ -37,10 +35,12 @@ namespace Rhetos.Configuration.Autofac
     /// </summary>
     public class RhetosTestContainer : IDisposable
     {
+
         // Global:
         private static IContainer _iocContainer;
         private static object _containerInitializationLock = new object();
         protected static ILogger _performanceLogger = new ConsoleLogger("Performance");
+        private static RhetosAppEnvironment _rhetosAppEnvironment;
 
         // Instance per test or session:
         protected ILifetimeScope _lifetimeScope;
@@ -98,8 +98,14 @@ namespace Rhetos.Configuration.Autofac
                     lock (_containerInitializationLock)
                         if (_iocContainer == null)
                         {
-                            Paths.InitializeRhetosServerRootPath(SearchForRhetosServerRootFolder());
-                            _iocContainer = InitializeIocContainer();
+                            var rhetosAppRootPath = SearchForRhetosServerRootFolder();
+                            var configurationProvider = new ConfigurationBuilder()
+                                .AddRhetosAppConfiguration(rhetosAppRootPath)
+                                .AddConfigurationManagerConfiguration()
+                                .Build();
+
+                            _rhetosAppEnvironment = new RhetosAppEnvironment(rhetosAppRootPath);
+                            _iocContainer = InitializeIocContainer(configurationProvider);
                         }
                 }
 
@@ -111,7 +117,7 @@ namespace Rhetos.Configuration.Autofac
             }
         }
 
-        protected virtual bool IsValidRhetosServerDirectory(string path)
+        private static bool IsValidRhetosServerDirectory(string path)
         {
             return
                 File.Exists(Path.Combine(path, @"web.config"))
@@ -146,16 +152,13 @@ namespace Rhetos.Configuration.Autofac
             throw new ApplicationException("Cannot locate a valid Rhetos server's folder from '" + Environment.CurrentDirectory + "'. Unexpected folder '" + folder.FullName + "'.");
         }
 
-        private IContainer InitializeIocContainer()
+        private IContainer InitializeIocContainer(IConfigurationProvider configurationProvider)
         {
             AppDomain.CurrentDomain.AssemblyResolve += SearchForAssembly;
 
-            // Specific registrations and initialization:
-            Plugins.SetInitializationLogging(new ConsoleLogProvider());
-
             // General registrations:
-            var builder = new ContainerBuilder();
-            builder.RegisterModule(new DefaultAutofacConfiguration(deploymentTime: false, deployDatabaseOnly: false));
+            var builder = new RhetosContainerBuilder(configurationProvider, new ConsoleLogProvider())
+                .AddRhetosRuntime();
 
             // Specific registrations override:
             builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
@@ -170,7 +173,7 @@ namespace Rhetos.Configuration.Autofac
 
         protected Assembly SearchForAssembly(object sender, ResolveEventArgs args)
         {
-            foreach (var folder in new[] { Paths.PluginsFolder, Paths.GeneratedFolder, Paths.BinFolder })
+            foreach (var folder in new[] { _rhetosAppEnvironment.PluginsFolder, _rhetosAppEnvironment.GeneratedFolder, _rhetosAppEnvironment.BinFolder })
             {
                 string pluginAssemblyPath = Path.Combine(folder, new AssemblyName(args.Name).Name + ".dll");
                 if (File.Exists(pluginAssemblyPath))

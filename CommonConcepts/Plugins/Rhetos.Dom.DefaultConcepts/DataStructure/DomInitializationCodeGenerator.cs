@@ -53,20 +53,11 @@ namespace Rhetos.Dom.DefaultConcepts
     using Rhetos.Dom.DefaultConcepts;
     using Rhetos.Utilities;";
 
-        private readonly IConfiguration _configuration;
-
-        public DomInitializationCodeGenerator(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
-
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (InitializationConcept)conceptInfo;
-
             codeBuilder.InsertCode(GenerateCommonClassesSnippet());
 
-            codeBuilder.InsertCode("this.Configuration.UseDatabaseNullSemantics = _configuration.GetBool(\"EntityFramework.UseDatabaseNullSemantics\", false).Value;\r\n            ", EntityFrameworkContextInitializeTag);
+            codeBuilder.InsertCode("this.Configuration.UseDatabaseNullSemantics = _rhetosAppOptions.EntityFramework__UseDatabaseNullSemantics;\r\n            ", EntityFrameworkContextInitializeTag);
 
             // Types used in the preceding code snippet:
             codeBuilder.AddReferencesFromDependency(typeof(Autofac.Module)); // Includes a reference to Autofac.dll.
@@ -162,16 +153,16 @@ namespace Common
 
     public class EntityFrameworkContext : System.Data.Entity.DbContext, Rhetos.Persistence.IPersistenceCache
     {{
-        private readonly Rhetos.Utilities.IConfiguration _configuration;
+        private readonly Rhetos.Utilities.RhetosAppOptions _rhetosAppOptions;
 
         public EntityFrameworkContext(
             Rhetos.Persistence.IPersistenceTransaction persistenceTransaction,
             Rhetos.Dom.DefaultConcepts.Persistence.EntityFrameworkMetadata metadata,
             EntityFrameworkConfiguration entityFrameworkConfiguration, // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
-            Rhetos.Utilities.IConfiguration configuration)
+            Rhetos.Utilities.RhetosAppOptions rhetosAppOptions)
             : base(new System.Data.Entity.Core.EntityClient.EntityConnection(metadata.MetadataWorkspace, persistenceTransaction.Connection), false)
         {{
-            _configuration = configuration;
+            _rhetosAppOptions = rhetosAppOptions;
             Initialize();
             Database.UseTransaction(persistenceTransaction.Transaction);
         }}

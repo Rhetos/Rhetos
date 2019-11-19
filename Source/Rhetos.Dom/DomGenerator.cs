@@ -33,6 +33,7 @@ namespace Rhetos.Dom
     {
         private readonly IPluginsContainer<IConceptCodeGenerator> _pluginRepository;
         private readonly ICodeGenerator _codeGenerator;
+        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
         private readonly ILogProvider _log;
         private readonly IAssemblyGenerator _assemblyGenerator;
 
@@ -45,11 +46,13 @@ namespace Rhetos.Dom
         public DomGenerator(
             IPluginsContainer<IConceptCodeGenerator> plugins,
             ICodeGenerator codeGenerator,
+            RhetosAppEnvironment rhetosAppEnvironment,
             ILogProvider logProvider,
             IAssemblyGenerator assemblyGenerator)
         {
             _pluginRepository = plugins;
             _codeGenerator = codeGenerator;
+            _rhetosAppEnvironment = rhetosAppEnvironment;
             _log = logProvider;
             _assemblyGenerator = assemblyGenerator;
         }
@@ -94,7 +97,7 @@ namespace Rhetos.Dom
                 string partSource = source.Substring(partStart, partEnd - partStart).Trim();
                 if (!string.IsNullOrEmpty(partSource))
                 {
-                    string assemblyFile = Paths.GetDomAssemblyFile((DomAssemblies)Enum.Parse(typeof(DomAssemblies), partName));
+                    string assemblyFile = _rhetosAppEnvironment.GetDomAssemblyFile((DomAssemblies)Enum.Parse(typeof(DomAssemblies), partName));
                     yield return new SourcePart
                     {
                         AssemblyFileName = assemblyFile,

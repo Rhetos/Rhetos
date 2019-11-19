@@ -35,7 +35,7 @@ namespace Rhetos.Deployment
         /// 2. Local folder or network folder with NuGet packages.
         /// 3. Package project's source folder (unpacked, useful for package development).
         /// </summary>
-        public PackageSource(string location)
+        public PackageSource(string rootPath, string location)
         {
             if (string.IsNullOrEmpty(location))
                 throw new UserException(
@@ -48,7 +48,7 @@ namespace Rhetos.Deployment
                 Uri = location;
             else
             {
-                Path = System.IO.Path.Combine(DeploymentConfiguration.GetConfigurationFolder(), location);
+                Path = System.IO.Path.Combine(rootPath, location);
                 string pathError = null;
                 try
                 {
