@@ -146,7 +146,7 @@ namespace Rhetos
             if (targetType.IsInstanceOfType(value)) return value;
 
             if (!(value is string))
-                throw new FrameworkException($"Can't convert configuration value from type {value.GetType()} to {targetType}. Configuration values can only be fetched in their original type or parsed from string.");
+                throw new FrameworkException($"Can't convert configuration value from type {value.GetType()} to {targetType}. Configuration values can only be fetched in their original type or parsed from string. Key '{forKeyDebugInfo}'.");
 
             try
             {
@@ -166,7 +166,7 @@ namespace Rhetos
                 throw new FrameworkException($"Type conversion failed for configuration key '{forKeyDebugInfo}' while converting value '{value}' to type '{targetType}'.", e);
             }
 
-            throw new FrameworkException($"Configuration type {targetType} is not supported.");
+            throw new FrameworkException($"Configuration type {targetType} is not supported. Key '{forKeyDebugInfo}'.");
         }
 
         private object ParseEnumVerbose(Type enumType, string valueString, string forKeyDebugInfo)
