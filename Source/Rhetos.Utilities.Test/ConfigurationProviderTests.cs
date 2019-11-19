@@ -504,5 +504,21 @@ namespace Rhetos.Utilities.Test
 
             Assert.AreEqual(1, provider.AllKeys.Count());
         }
+
+        private class PocoUnsupportedType
+        {
+            public TimeZone UnsupportedProperty { get; set; }
+        }
+
+        [TestMethod]
+        public void UnsupportedMemberType()
+        {
+            var provider = new ConfigurationBuilder()
+                .AddKeyValue("UnsupportedProperty", "123")
+                .Build();
+
+            TestUtility.ShouldFail<FrameworkException>(() => provider.GetOptions<PocoUnsupportedType>(),
+                "not supported", "TimeZone", "UnsupportedProperty");
+        }
     }
 }
