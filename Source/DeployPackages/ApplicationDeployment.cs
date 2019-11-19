@@ -59,7 +59,7 @@ namespace DeployPackages
             {
                 var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
                 performanceLogger.Write(stopwatch, "DeployPackages.Program: Modules and plugins registered.");
-                Plugins.LogRegistrationStatistics("Generating application", container, _logProvider);
+                ContainerBuilderPluginRegistration.LogRegistrationStatistics("Generating application", container, _logProvider);
 
                 container.Resolve<ApplicationGenerator>().ExecuteGenerators();
             }
@@ -83,7 +83,7 @@ namespace DeployPackages
                 var initializers = ApplicationInitialization.GetSortedInitializers(container);
 
                 performanceLogger.Write(stopwatch, "DeployPackages.Program: New modules and plugins registered.");
-                Plugins.LogRegistrationStatistics("Initializing application", container, _logProvider);
+                ContainerBuilderPluginRegistration.LogRegistrationStatistics("Initializing application", container, _logProvider);
 
                 if (!initializers.Any())
                 {

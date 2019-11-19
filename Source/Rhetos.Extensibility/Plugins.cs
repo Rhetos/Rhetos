@@ -69,12 +69,6 @@ namespace Rhetos.Extensibility
                 .SuppressPlugin<TPluginInterface, TPlugin>();
         }
 
-        public static void LogRegistrationStatistics(string title, IContainer container, ILogProvider logProvider)
-        {
-            var logger = logProvider.GetLogger("Plugins");
-            logger.Trace(() => ContainerBuilderPluginRegistration.GetRegistrationStatistics(title, container));
-        }
-
         private static void ThrowIfNotInitialized()
         {
             if (_pluginRegistrationFactory == null)
