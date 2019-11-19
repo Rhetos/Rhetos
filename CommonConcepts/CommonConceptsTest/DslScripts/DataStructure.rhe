@@ -12,7 +12,7 @@ Module TestDataStructure
 	}
 	
 	Entity CachingTestEntity { ShortString S; }
-	SqlQueryable CachingTestView "SELECT * FROM TestDataStructure.CachingTestEntity" { ShortString S; }
+	SqlQueryable CachingTestView "SELECT S FROM TestDataStructure.CachingTestEntity" { ShortString S; AutodetectSqlDependencies; }
 	
 	Entity Parent;
 	Entity Child
@@ -204,6 +204,7 @@ Module Test13
         Reference Parent Test13.LegacyMultiParent { LegacyProperty 'ParentKey1, ParentKey2' 'Test13.OldMultiParent' 'Key1, Key2'; }
         ShortString Name;
         SqlDependsOn Test13.OldMultiChild;
+		SqlDependsOn Test13.LegacyMultiParent;
     }
 }
 

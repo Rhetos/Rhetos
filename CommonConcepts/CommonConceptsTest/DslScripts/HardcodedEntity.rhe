@@ -68,5 +68,6 @@ Module TestHardcodedEntity
     "
     {
         LongString Content;
+        AutodetectSqlDependencies;
     }
 }

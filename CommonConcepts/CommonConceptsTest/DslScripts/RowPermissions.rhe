@@ -342,6 +342,7 @@ Module TestRowPermissionsInheritFull
 Module TestRowPermissionsInheritToQuery
 {
     AutoInheritRowPermissions;
+    AutodetectSqlDependencies;
     
     Entity Simple
     {

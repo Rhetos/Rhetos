@@ -403,6 +403,7 @@ Module TestSqlQueryable
 	{
 		Extends TestSqlQueryable.Document;
 		Integer NameLen;
+        AutodetectSqlDependencies;
 	}
 }
 
