@@ -31,45 +31,30 @@ namespace Rhetos.Utilities
     {
         private readonly FilesUtility _filesUtility;
         private readonly FileSyncer _syncer;
-        private readonly ILogger _logger;
         private readonly SHA1 _sha1;
 
         public GeneratedFilesCache(ILogProvider logProvider)
         {
             _filesUtility = new FilesUtility(logProvider);
             _syncer = new FileSyncer(logProvider);
-            _logger = logProvider.GetLogger("FilesCache");
             _sha1 = new SHA1CryptoServiceProvider();
         }
 
         /// <summary>
-        /// Moves only the successfully generated file groups to the cache folder, otherwise keeps the old cached files.
+        /// Moves only the successfully generated files to the cache folder, otherwise keeps the old cached files.
         /// Deletes all generated files.
         /// </summary>
         public void MoveGeneratedFilesToCache()
         {
-            // Group files by name without extension:
-
             var generatedFiles = _filesUtility.SafeGetFiles(Paths.GeneratedFolder, "*", SearchOption.AllDirectories)
-                .GroupBy(file => Path.GetFileNameWithoutExtension(file))
-                .ToDictionary(g => g.Key, g => g.ToList());
+                .Select(x => FilesUtility.AbsoluteToRelativePath(Paths.GeneratedFolder, x));
 
-            var oldFiles = ListCachedFiles();
-
-            // Move the successfully generated file groups to the cache, delete the others:
-
-            var succesfullyGeneratedGroups = generatedFiles.Keys
-                .Where(key => !oldFiles.ContainsKey(key) || generatedFiles[key].Count() >= oldFiles[key].Count())
-                .ToList();
-
-            foreach (string moveGroup in succesfullyGeneratedGroups)
-                foreach (string moveFile in generatedFiles[moveGroup])
-                    _syncer.AddFile(moveFile, Path.Combine(Paths.GeneratedFilesCacheFolder, moveGroup));
+            foreach (string generatedFile in generatedFiles)
+                _syncer.AddFile(Path.Combine(Paths.GeneratedFolder, generatedFile), Paths.GeneratedFilesCacheFolder);
             _syncer.UpdateDestination(deleteSource: true);
 
-            foreach (string deleteGroup in generatedFiles.Keys.Except(succesfullyGeneratedGroups))
-                foreach (string deleteFile in generatedFiles[deleteGroup])
-                    _filesUtility.SafeDeleteFile(deleteFile);
+            foreach (string fileToDelete in generatedFiles)
+                _filesUtility.SafeDeleteFile(Path.Combine(Paths.GeneratedFolder, fileToDelete));
         }
 
         /// <summary>
@@ -92,93 +77,38 @@ namespace Rhetos.Utilities
         /// <param name="sampleSourceFile">Any file from the cached file group, extension will be ignored.</param>
         public void SaveHash(string sampleSourceFile, byte[] hash)
         {
-            string hashFile = Path.GetFullPath(Path.ChangeExtension(sampleSourceFile, ".hash"));
+            string hashFile = sampleSourceFile + ".hash";
             File.WriteAllText(hashFile, CsUtility.ByteArrayToHex(hash), Encoding.ASCII);
         }
 
-        /// <param name="sampleSourceFile">Any file from the cached file group, extension will be ignored.</param>
-        public byte[] LoadHash(string sampleSourceFile)
-        {
-            string hashFile = Path.GetFullPath(Path.ChangeExtension(sampleSourceFile, ".hash"));
-            return CsUtility.HexToByteArray(File.ReadAllText(hashFile, Encoding.ASCII));
-        }
-
         /// <summary>
-        /// Copies the files from cache only if all of the extensions are found in the cache,
-        /// and if the sourceContent matches the corresponding sourceFile in the cache.
+        /// Copies the files from cache folder into the generated folder
         /// </summary>
-        /// <param name="sampleSourceFile">Any file from the cached file group, extension will be ignored.</param>
-        /// <returns>List of the restored files, if the files are copied from the cache, null otherwise.</returns>
-        public List<string> RestoreCachedFiles(string sampleSourceFile, byte[] sourceHash, string targetFolder, IEnumerable<string> copyExtensions)
+        /// <param name="files">Any file from the cached file group, extension will be ignored.</param>
+        /// <returns>List of the restored files, if the files are copied from the cache.</returns>
+        public List<string> RestoreCachedFiles(params string[] files)
         {
-            CsUtility.Materialize(ref copyExtensions);
-            var cachedFiles = ListCachedFiles(Path.GetFileNameWithoutExtension(sampleSourceFile), sourceHash, copyExtensions);
-
-            List<string> targetFiles;
-            string report;
-
-            if (!cachedFiles.IsError)
+            var resoredFiles = new List<string>();
+            foreach (var path in files)
             {
-                targetFiles = cachedFiles.Value.Select(source =>
-                    _filesUtility.SafeCopyFileToFolder(source, targetFolder)).ToList();
-                report = "Restored " + string.Join(", ", copyExtensions) + ".";
+                var fileTorestore = Path.Combine(Paths.GeneratedFilesCacheFolder, FilesUtility.AbsoluteToRelativePath(Paths.GeneratedFolder, path));
+                if (File.Exists(fileTorestore))
+                {
+                    var destinationPath = Path.Combine(Paths.GeneratedFolder, path);
+                    File.Move(fileTorestore, destinationPath);
+                    resoredFiles.Add(path);
+                }
             }
+            return resoredFiles;
+        }
+
+        public byte[] GetHashForCachedFile(string file)
+        {
+            var cachedHashFile = Path.Combine(Paths.GeneratedFilesCacheFolder, FilesUtility.AbsoluteToRelativePath(Paths.GeneratedFolder, file)) + ".hash";
+            if (File.Exists(cachedHashFile))
+                return CsUtility.HexToByteArray(File.ReadAllText(cachedHashFile, Encoding.ASCII));
             else
-            {
-                targetFiles = null;
-                report = cachedFiles.Error;
-            }
-
-            _logger.Trace(() => "RestoreCachedFiles for " + Path.GetFileName(sampleSourceFile) + ": " + report);
-            return targetFiles;
-        }
-
-        private Dictionary<string, List<string>> ListCachedFiles()
-        {
-            return _filesUtility.SafeGetFiles(Paths.GeneratedFilesCacheFolder, "*", SearchOption.AllDirectories)
-                .GroupBy(file => Path.GetFileName(Path.GetDirectoryName(file)))
-                .ToDictionary(g => g.Key, g => g.ToList());
-        }
-
-        public byte[] JoinHashes(IEnumerable<byte[]> hashes)
-        {
-            byte[] result = new byte[hashes.Max(h => h.Length)];
-            foreach (var hash in hashes)
-                for (int i = 0; i < hash.Length; i++)
-                    result[i] ^= hash[i];
-            return result;
-        }
-
-        private ValueOrError<List<string>> ListCachedFiles(string fileGroupName, byte[] sourceHash, IEnumerable<string> requestedExtensions)
-        {
-            var cachedFilesByExt = ListCachedFiles()
-                .GetValueOrDefault(fileGroupName)
-                ?.ToDictionary(file => Path.GetExtension(file));
-
-            if (cachedFilesByExt == null)
-                return ValueOrError.CreateError("File group not cached.");
-
-            string cachedHashFile = cachedFilesByExt.GetValueOrDefault(".hash");
-            if (cachedHashFile == null)
-                return ValueOrError.CreateError("Missing hash file.");
-
-            byte[] cachedHash = CsUtility.HexToByteArray(File.ReadAllText(cachedHashFile, Encoding.ASCII));
-            if (cachedHash == null || cachedHash.Length == 0)
-                return ValueOrError.CreateError("Missing hash value.");
-
-            if (!sourceHash.SequenceEqual(cachedHash))
-                return ValueOrError.CreateError("Different hash value.");
-
-            var requestedFiles = new List<string>(requestedExtensions.Count());
-            foreach (var extension in requestedExtensions)
-            {
-                string cachedFile = cachedFilesByExt.GetValueOrDefault(extension);
-                if (cachedFile == null)
-                    return ValueOrError.CreateError($"Extension '{extension}' not in cache.");
-                requestedFiles.Add(cachedFile);
-            }
-
-            return requestedFiles;
+                return new byte[0];
         }
     }
 }

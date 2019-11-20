@@ -73,12 +73,11 @@ namespace Rhetos.Compiler
 
             // Compile assembly or get from cache:
             Assembly generatedAssembly;
-
-            var filesFromCache = _filesCache.RestoreCachedFiles(sourcePath, sourceHash, Path.GetDirectoryName(outputAssemblyPath), new[] { ".dll", ".pdb" });
-            if (filesFromCache != null)
+            if (sourceHash.SequenceEqual(_filesCache.GetHashForCachedFile(sourcePath)))
             {
+                var filesFromCache = _filesCache.RestoreCachedFiles(new[] { "dll", "pdb" }.Select(x => Path.ChangeExtension(outputAssemblyPath, x)).ToArray());
                 _logger.Trace(() => "Restoring assembly from cache: " + dllName + ".");
-                if (!File.Exists(outputAssemblyPath))
+                if (filesFromCache.Count() != 2)
                     throw new FrameworkException($"AssemblyGenerator: RestoreCachedFiles failed to create the assembly file ({dllName}).");
 
                 generatedAssembly = Assembly.LoadFrom(outputAssemblyPath);
