@@ -21,10 +21,9 @@ using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
-using Rhetos.Logging;
 using Rhetos.Utilities;
+using System;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
 using System.Linq;
 
 namespace Rhetos.Dom.DefaultConcepts
@@ -49,9 +48,20 @@ namespace Rhetos.Dom.DefaultConcepts
             ",
                 CsUtility.QuotedString(info.EntityComputedFrom.Target.GetKeyProperties()),
                 CsUtility.QuotedString(info.EntityComputedFrom.Source.GetKeyProperties()),
-                CsUtility.QuotedString(GetRecomputeContext(info.EntityComputedFrom.Source)));
+                CsUtility.QuotedString(RemoveCsTags(GetRecomputeContext(info.EntityComputedFrom.Source))));
 
             codeBuilder.InsertCode(metadata, KeepSynchronizedRecomputeOnDeployInfrastructureCodeGenerator.AddKeepSynchronizedMetadataTag);
+        }
+
+        /// <summary>
+        /// This method removes tags from code snippet to prevent problems with new code accidentally injected into this tag.
+        /// The text will be converted to valid C# string with <see cref="CsUtility.QuotedString"/>,
+        /// but if the text contains a tag and a new code is injected here, if this code contains quotation marks,
+        /// it might result with a syntax error.
+        /// </summary>
+        private string RemoveCsTags(string text)
+        {
+            return text.Replace("/*", "/*<notag>");
         }
 
         /// <summary>
