@@ -57,6 +57,10 @@ namespace Rhetos.TestCommon
                     return systemConfigurationGetter(key, defaultValue);
                 else
                     value = defaultValue;
+
+            if (value is string && typeof(T).IsEnum)
+                value = Enum.Parse(typeof(T), (string)value);
+
             return new Lazy<T>(() => (T)value);
         }
     }

@@ -47,6 +47,7 @@ namespace Rhetos.Dsl
         private readonly List<IDslModelIndex> _dslModelIndexes;
         private readonly Dictionary<Type, IDslModelIndex> _dslModelIndexesByType;
         private readonly Lazy<SortConceptsMethod> _sortConceptsMethod;
+        private enum SortConceptsMethod { None, Key, KeyDescending };
 
         private class ConceptDescription
         {
@@ -367,28 +368,38 @@ namespace Rhetos.Dsl
             return GetRootUnresolvedConcept(referencedUnresolvedConcept, trail);
         }
         
+        /// <summary>
+        /// This method sorts concepts so that if concept A references concept B,
+        /// in the resulting list B will be positioned somewhere before A.
+        /// This will allow code generators to safely assume that the code for referenced concept B
+        /// is already generated before the concept A inserts an additional code snippet into it.
+        /// </summary>
         public void SortReferencesBeforeUsingConcept()
         {
             var sw = Stopwatch.StartNew();
 
-            if (_sortConceptsMethod.Value == SortConceptsMethod.Key)
+            if (_sortConceptsMethod.Value != SortConceptsMethod.None)
             {
-                // Initial sorting will reduce variations in the generated application source that are created by different macro evaluation order on each deployment.
-                _resolvedConcepts.Sort((a, b) => GetOrderByKey(a).CompareTo(GetOrderByKey(b)));
-                _performanceLogger.Write(sw, "DslContainer.SortReferencesBeforeUsingConcept: Sort by key.");
-            }
-            else if (_sortConceptsMethod.Value == SortConceptsMethod.KeyDescending)
+                // Initial sorting will reduce variations in the generated application source
+                // that are created by different macro evaluation order on each deployment.
+                var sortComparison = new Dictionary<SortConceptsMethod, Comparison<IConceptInfo>>
             {
-                // This option can be used in testing (along with ascending sort) to detect missing dependencies between concepts
+                    { SortConceptsMethod.Key, (a, b) => a.GetKey().CompareTo(b.GetKey()) },
+                    // Descending option can be used in testing (along with ascending sort) to detect missing dependencies between concepts
                 // (code generators might fail with "script does not contain tag", upgrade of empty database might fail with missing column, e.g.).
-                _resolvedConcepts.Sort((a, b) => -GetOrderByKey(a).CompareTo(GetOrderByKey(b)));
-                _performanceLogger.Write(sw, "DslContainer.SortReferencesBeforeUsingConcept: Sort by key descending.");
+                    { SortConceptsMethod.KeyDescending, (a, b) => -a.GetKey().CompareTo(b.GetKey()) },
+                };
+
+                _resolvedConcepts.Sort(sortComparison[_sortConceptsMethod.Value]);
+                _performanceLogger.Write(sw, $"DslContainer.SortReferencesBeforeUsingConcept: Initial sort by {_sortConceptsMethod.Value}.");
             }
 
             List<IConceptInfo> sortedList = new List<IConceptInfo>(_resolvedConcepts.Count);
             Dictionary<IConceptInfo, bool> processed = _resolvedConcepts.ToDictionary(ci => ci, ci => false);
 
-            foreach (var concept in _resolvedConcepts)
+            foreach (var concept in _resolvedConcepts.Where(c => c is InitializationConcept))
+                AddReferencesBeforeConcept(concept, sortedList, processed);
+            foreach (var concept in _resolvedConcepts.Where(c => !(c is InitializationConcept)))
                 AddReferencesBeforeConcept(concept, sortedList, processed);
 
             if (sortedList.Count != _resolvedConcepts.Count)
@@ -396,11 +407,6 @@ namespace Rhetos.Dsl
             _resolvedConcepts.Clear();
             _resolvedConcepts.AddRange(sortedList);
             _performanceLogger.Write(sw, "DslContainer.SortReferencesBeforeUsingConcept.");
-        }
-
-        static string GetOrderByKey(IConceptInfo concept)
-        {
-            return concept is InitializationConcept ? string.Empty : concept.GetKey();
         }
 
         private static void AddReferencesBeforeConcept(IConceptInfo concept, List<IConceptInfo> sortedList, Dictionary<IConceptInfo, bool> processed)
@@ -417,7 +423,5 @@ namespace Rhetos.Dsl
                     AddReferencesBeforeConcept((IConceptInfo)member.GetValue(concept), sortedList, processed);
             sortedList.Add(concept);
         }
-
-        enum SortConceptsMethod { None, Key, KeyDescending };
     }
 }
