@@ -1,5 +1,7 @@
 Module TestFullTextSearch
 {
+	AutoDetectSqlDependencies;
+
 	Entity Simple
 	{
 		ShortString Name;
@@ -21,7 +23,6 @@ Module TestFullTextSearch
 	SqlQueryable ComputeSimpleFTS
 		"SELECT ID, Text = Name + '/' + CONVERT(NVARCHAR(100), Code) FROM TestFullTextSearch.Simple"
 	{
-		AutoDetectSqlDependencies;
 		Extends TestFullTextSearch.Simple;
 		LongString Text;
 	}
