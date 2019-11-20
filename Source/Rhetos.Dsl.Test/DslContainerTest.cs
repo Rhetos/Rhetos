@@ -23,6 +23,7 @@ using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace Rhetos.Dsl.Test
@@ -32,9 +33,27 @@ namespace Rhetos.Dsl.Test
     {
         class DslContainerAccessor : DslContainer
         {
-            public DslContainerAccessor()
-                : base(new ConsoleLogProvider(), new MockPluginsContainer<IDslModelIndex>(new DslModelIndexByType()), new ConfigurationBuilder().Build())
+            public DslContainerAccessor(IConfigurationProvider configuration = null)
+                : base(new ConsoleLogProvider(),
+                      new MockPluginsContainer<IDslModelIndex>(new DslModelIndexByType()),
+                      configuration ?? new ConfigurationBuilder().Build())
             {
+            }
+
+            public List<IConceptInfo> ResolvedConcepts
+            {
+                get
+                {
+                    return (List<IConceptInfo>)typeof(DslContainer)
+                        .GetField("_resolvedConcepts", BindingFlags.NonPublic | BindingFlags.Instance)
+                        .GetValue(this);
+                }
+                set
+                {
+                    typeof(DslContainer)
+                        .GetField("_resolvedConcepts", BindingFlags.NonPublic | BindingFlags.Instance)
+                        .SetValue(this, value);
+                }
             }
         }
 
@@ -111,7 +130,6 @@ namespace Rhetos.Dsl.Test
             Assert.IsTrue(new IConceptInfo[] { d, i, j, g, h }
                 .Any(conceptInfo => ex.Message.Contains(conceptInfo.GetUserDescription())));
         }
-
 
         [TestMethod]
         public void CircularReferences()
@@ -199,6 +217,45 @@ namespace Rhetos.Dsl.Test
                 {
                     TestUtility.ShouldFail(() => dslContainer.AddNewConceptsAndReplaceReferences(newConceptsSet.Item1), newConceptsSet.Item4);
                 }
+            }
+        }
+
+        [TestMethod]
+        public void Sorting()
+        {
+            var cInit = new InitializationConcept { RhetosVersion = "init" };
+            var c01 = new C0 { Name = "1" };
+            var c02 = new C0 { Name = "2" };
+            var c03 = new C0 { Name = "3" };
+            var cB1 = new CBase { Name = "1" };
+            var cB2 = new CBase { Name = "2" };
+            var c2Dependant = new C2 { Name = "dep", Ref1 = c01, Ref2 = cB2 };
+
+            var testData = new List<IConceptInfo> { c02, c01, cB2, c2Dependant, cInit, c03, cB1 };
+
+            // The expected positions may somewhat change if the sorting algorithm internals change.
+            var tests = new List<(string SortMethod, List<IConceptInfo> ExpectedResult)>
+            {
+                // cInit always goes first. cDependant does not need to move because it is after referenced c1 and c5.
+                ( "None", new List<IConceptInfo> { cInit, c02, c01, cB2, c2Dependant, c03, cB1 } ),
+
+                // cB2 is pushed before c2Dependant, to respect dependency precedence.
+                ( "Key", new List<IConceptInfo> { cInit, c01, c02, c03, cB2, c2Dependant, cB1 } ),
+
+                // c01 is pushed before c2Dependant, to respect dependency precedence.
+                ( "KeyDescending", new List<IConceptInfo> { cInit, cB2, cB1, c01, c2Dependant, c03, c02 } ),
+            };
+
+            foreach (var test in tests)
+            {
+                var configuration = new ConfigurationBuilder().AddKeyValue("CommonConcepts.Debug.SortConcepts", test.SortMethod).Build();
+                var dslContainer = new DslContainerAccessor(configuration);
+                dslContainer.ResolvedConcepts = testData;
+                dslContainer.SortReferencesBeforeUsingConcept();
+                Assert.AreEqual(
+                    TestUtility.Dump(test.ExpectedResult, c => c.GetKey()),
+                    TestUtility.Dump(dslContainer.ResolvedConcepts, c => c.GetKey()),
+                    test.SortMethod);
             }
         }
     }
