@@ -382,6 +382,7 @@ Module TestGenericFilter
 		Integer Code;
 		ShortString Name;
 		DateTime Start;
+        Guid Identifier;
 	}
     
     Entity Child

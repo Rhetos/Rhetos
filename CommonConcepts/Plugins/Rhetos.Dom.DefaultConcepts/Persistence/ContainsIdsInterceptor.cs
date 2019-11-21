@@ -91,7 +91,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
                     string containsIdsSql;
                     if (string.IsNullOrEmpty(concatenatedIdsParameterValue))
-                        containsIdsSql = "1 = 0";
+                        containsIdsSql = (test == testTrue) ? "1 = 0" : "1 = 1";
                     else
                     {
                         string operation = (test == testTrue) ? "IN" : "NOT IN";
