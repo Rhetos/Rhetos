@@ -191,7 +191,7 @@ namespace Rhetos.Dom.DefaultConcepts
                             // use query parameter instead of hardcoding the constant value (literal) into the generated query.
                             // Query with parameter will allow cache reuse for both EF LINQ compiler and database SQL compiler.
                             Expression<Func<object>> idLambda = () => constantIdNotEquals;
-                            expression = Expression.Equal(memberAccess, Expression.Convert(idLambda.Body, memberAccess.Type));
+                            expression = Expression.NotEqual(memberAccess, Expression.Convert(idLambda.Body, memberAccess.Type));
                         }
                         else if (propertyBasicType == typeof(string) && constant.Value != null)
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("NotEqualsCaseInsensitive"), memberAccess, constant);
