@@ -41,15 +41,17 @@ namespace Rhetos.Compiler
         private readonly Lazy<int> _errorReportLimit;
         private readonly GeneratedFilesCache _filesCache;
         private readonly DomGeneratorOptions _domGeneratorOptions;
+        private readonly FilesUtility _filesUtility;
 
         public AssemblyGenerator(ILogProvider logProvider, IConfiguration configuration,
-            GeneratedFilesCache filesCache, DomGeneratorOptions domGeneratorOptions)
+            GeneratedFilesCache filesCache, DomGeneratorOptions domGeneratorOptions, FilesUtility filesUtility)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("AssemblyGenerator");
             _errorReportLimit = configuration.GetInt("AssemblyGenerator.ErrorReportLimit", 5);
             _filesCache = filesCache;
             _domGeneratorOptions = domGeneratorOptions;
+            _filesUtility = filesUtility;
         }
 
         public Assembly Generate(IAssemblySource assemblySource, string outputAssemblyPath, IEnumerable<ManifestResource> manifestResources = null)
@@ -73,12 +75,16 @@ namespace Rhetos.Compiler
 
             // Compile assembly or get from cache:
             Assembly generatedAssembly;
+            var filesToRestore = new[] { "dll", "pdb" }.Select(x => Path.ChangeExtension(outputAssemblyPath, x));
+            List<string> restoredFilesFromCache = null;
             if (sourceHash.SequenceEqual(_filesCache.GetHashForCachedFile(sourcePath)))
+                restoredFilesFromCache = _filesCache.RestoreCachedFiles(filesToRestore.ToArray());
+            else
+                restoredFilesFromCache = new List<string>();
+
+            if (restoredFilesFromCache.Count()  == filesToRestore.Count())
             {
-                var filesFromCache = _filesCache.RestoreCachedFiles(new[] { "dll", "pdb" }.Select(x => Path.ChangeExtension(outputAssemblyPath, x)).ToArray());
                 _logger.Trace(() => "Restoring assembly from cache: " + dllName + ".");
-                if (filesFromCache.Count() != 2)
-                    throw new FrameworkException($"AssemblyGenerator: RestoreCachedFiles failed to create the assembly file ({dllName}).");
 
                 generatedAssembly = Assembly.LoadFrom(outputAssemblyPath);
                 _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Assembly from cache ({dllName}).");
@@ -88,6 +94,9 @@ namespace Rhetos.Compiler
             }
             else
             {
+                foreach (var restoredFile in restoredFilesFromCache)
+                    _filesUtility.SafeDeleteFile(restoredFile);
+
                 _logger.Trace(() => "Compiling assembly: " + dllName + ".");
 
                 var references = assemblySource.RegisteredReferences

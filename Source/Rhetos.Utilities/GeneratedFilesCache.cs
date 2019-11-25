@@ -84,7 +84,7 @@ namespace Rhetos.Utilities
         /// <summary>
         /// Copies the files from cache folder into the generated folder
         /// </summary>
-        /// <param name="files">Any file from the cached file group, extension will be ignored.</param>
+        /// <param name="files">List of files to retore</param>
         /// <returns>List of the restored files, if the files are copied from the cache.</returns>
         public List<string> RestoreCachedFiles(params string[] files)
         {
@@ -95,7 +95,7 @@ namespace Rhetos.Utilities
                 if (File.Exists(fileTorestore))
                 {
                     var destinationPath = Path.Combine(Paths.GeneratedFolder, path);
-                    File.Move(fileTorestore, destinationPath);
+                    _filesUtility.SafeCopyFile(fileTorestore, destinationPath);
                     resoredFiles.Add(path);
                 }
             }
