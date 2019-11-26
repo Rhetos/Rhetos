@@ -1,5 +1,11 @@
 ﻿# Rhetos release notes
 
+## 3.0.1 (2019-11-22)
+
+### Internal improvements
+
+* Bugfix: GenericFilter "notequal" and "notequals" translates to Expression.Equal (issue #225).
+
 ## 3.0.0 (2019-11-07)
 
 ### Breaking changes

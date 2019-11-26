@@ -254,6 +254,35 @@ namespace CommonConcepts.Test
             }
         }
 
+        [TestMethod]
+        public void FilterGuidOperations()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var ids = new[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                    {
+                        "DELETE FROM TestGenericFilter.Simple;",
+                        $@"INSERT INTO TestGenericFilter.Simple (Identifier) SELECT '{ids[0]}';",
+                        $@"INSERT INTO TestGenericFilter.Simple (Identifier) SELECT '{ids[1]}';",
+                        $@"INSERT INTO TestGenericFilter.Simple (Identifier) SELECT '{ids[2]}';",
+                        $@"INSERT INTO TestGenericFilter.Simple (Identifier) SELECT '{ids[3]}';",
+                    });
+
+                var repository = container.Resolve<Common.DomRepository>();
+                FilterIdentifier(repository, "equals", ids[0], ids[0]);
+                FilterIdentifier(repository, "notequals", ids[0], ids[1], ids[2], ids[3]);
+                FilterIdentifier(repository, "equals", null, new Guid[0]);
+                FilterIdentifier(repository, "notequals", null, ids[0], ids[1], ids[2], ids[3]);
+                FilterIdentifierArray(repository, "in", new[] { ids[0] }, new[] { ids[0] });
+                FilterIdentifierArray(repository, "in", new[] { ids[0], ids[1] }, new[] { ids[0], ids[1] });
+                FilterIdentifierArray(repository, "in", new Guid[] { }, new Guid[] { });
+                FilterIdentifierArray(repository, "notin", new[] { ids[0] }, new[] { ids[1], ids[2], ids[3] });
+                FilterIdentifierArray(repository, "notin", new[] { ids[0], ids[1] }, new[] { ids[2], ids[3] });
+                FilterIdentifierArray(repository, "notin", new Guid[] { }, new Guid[] { ids[0], ids[1], ids[2], ids[3] });
+            }
+        }
+
         private static void FilterCode(Common.DomRepository repository, string operation, string value, string expectedCodes)
         {
             Console.WriteLine("TEST CODE: " + operation + " " + value);
@@ -261,6 +290,22 @@ namespace CommonConcepts.Test
             var result = GenericFilterHelperFilter(source, new[] { new FilterCriteria { Property = "Code", Operation = operation, Value =
                 SameTypeOperations.Contains(operation) ? (object) int.Parse(value) : value } });
             Assert.AreEqual(expectedCodes, TestUtility.DumpSorted(result, item => item.Code.ToString()));
+        }
+
+        private static void FilterIdentifier(Common.DomRepository repository, string operation, Guid? value, params Guid[] expectedValues)
+        {
+            Console.WriteLine("TEST Identifier: " + operation + " " + value);
+            var source = repository.TestGenericFilter.Simple.Query();
+            var result = GenericFilterHelperFilter(source, new[] { new FilterCriteria { Property = "Identifier", Operation = operation, Value = value } });
+            Assert.AreEqual(TestUtility.DumpSorted(expectedValues.Select(x => x.ToString())), TestUtility.DumpSorted(result, item => item.Identifier.ToString()));
+        }
+
+        private static void FilterIdentifierArray(Common.DomRepository repository, string operation, Guid[] values, Guid[] expectedValues)
+        {
+            Console.WriteLine("TEST Identifier: " + operation + " " + string.Join(", ", expectedValues.Select(x => x.ToString())));
+            var source = repository.TestGenericFilter.Simple.Query();
+            var result = GenericFilterHelperFilter(source, new[] { new FilterCriteria { Property = "Identifier", Operation = operation, Value = values } });
+            Assert.AreEqual(TestUtility.DumpSorted(expectedValues.Select(x => x.ToString())), TestUtility.DumpSorted(result, item => item.Identifier.ToString()));
         }
 
         private static void FilterStartDateIn(Common.DomRepository repository, string value, string expectedCodes)
