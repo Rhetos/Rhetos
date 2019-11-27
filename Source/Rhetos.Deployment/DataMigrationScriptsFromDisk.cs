@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Newtonsoft.Json;
+using Rhetos.Extensibility;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
@@ -24,22 +26,29 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Rhetos.Deployment
 {
-    public class DataMigrationScriptsFromDisk : IDataMigrationScriptsProvider
+    public class DataMigrationScriptsFromDisk : IDataMigrationScriptsProvider, IGenerator
     {
+        const string DataMigrationScriptsFileName = "DataMigrationScripts.json";
         const string DataMigrationSubfolder = "DataMigration";
         const string DataMigrationSubfolderPrefix = DataMigrationSubfolder + @"\";
 
         protected readonly IInstalledPackages _installedPackages;
         private readonly FilesUtility _filesUtility;
+        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
+        private List<DataMigrationScript> _scripts;
 
-        public DataMigrationScriptsFromDisk(IInstalledPackages installedPackages, FilesUtility filesUtility)
+        public IEnumerable<string> Dependencies => new List<string>();
+
+        public DataMigrationScriptsFromDisk(IInstalledPackages installedPackages,
+            FilesUtility filesUtility,
+            RhetosAppEnvironment rhetosAppEnvironment)
         {
             _installedPackages = installedPackages;
             _filesUtility = filesUtility;
+            _rhetosAppEnvironment = rhetosAppEnvironment;
         }
 
         /// <summary>
@@ -47,6 +56,20 @@ namespace Rhetos.Deployment
         /// respecting package dependencies and natural sort order by path.
         /// </summary>
         public List<DataMigrationScript> Load()
+        {
+            if (_scripts == null)
+            {
+                var dataMigrationScriptsFilePath = Path.Combine(_rhetosAppEnvironment.GeneratedFolder, DataMigrationScriptsFileName);
+                if (!File.Exists(dataMigrationScriptsFilePath))
+                    throw new FrameworkException($@"The file {dataMigrationScriptsFilePath} that is used to execute the data migration is missing.");
+                var serializedConcepts = File.ReadAllText(dataMigrationScriptsFilePath, Encoding.UTF8);
+                _scripts =  JsonConvert.DeserializeObject<List<DataMigrationScript>>(serializedConcepts);
+            }
+
+            return _scripts;
+        }
+
+        public void Generate()
         {
             var allScripts = new List<DataMigrationScript>();
 
@@ -81,7 +104,10 @@ namespace Rhetos.Deployment
                     "Data migration scripts '{0}' and '{1}' have same tag '{2}' in their headers.",
                     badGroup.First().Path, badGroup.ElementAt(1).Path, badGroup.Key));
 
-            return allScripts;
+            string serializedMigrationScripts = JsonConvert.SerializeObject(allScripts, Formatting.Indented);
+            File.WriteAllText(Path.Combine(_rhetosAppEnvironment.GeneratedFolder, DataMigrationScriptsFileName), serializedMigrationScripts, Encoding.UTF8);
+
+            _scripts = new List<DataMigrationScript>(allScripts);
         }
 
         protected static readonly Regex ScriptIdRegex = new Regex(@"^/\*DATAMIGRATION (.+)\*/");

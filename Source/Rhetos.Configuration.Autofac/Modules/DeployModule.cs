@@ -93,6 +93,7 @@ namespace Rhetos.Configuration.Autofac.Modules
         {
             builder.RegisterType<DataMigrationScriptsFromDisk>().As<IDataMigrationScriptsProvider>();
             builder.RegisterType<EntityFrameworkMappingGenerator>().As<IGenerator>();
+            builder.RegisterType<DataMigrationScriptsFromDisk>().As<IGenerator>();
             pluginRegistration.FindAndRegisterPlugins<IConceptMapping>(typeof(ConceptMapping<>));
 
         }
