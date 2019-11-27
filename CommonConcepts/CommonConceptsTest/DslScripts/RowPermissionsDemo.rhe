@@ -157,6 +157,8 @@
             Reference Division2 DemoRowPermissions2.Division { SamePropertyValue 'Base' DemoRowPermissions2.Document.Division; }
 
             RowPermissions { InheritFromBase; }
+
+            AutodetectSqlDependencies;
         }
 
         SqlQueryable DocumentInfo2
@@ -172,5 +174,7 @@
             Reference Division2 DemoRowPermissions2.Division { SamePropertyValue 'Base.Division'; }
 
             RowPermissions { InheritFromBase; }
-        }        
+
+            AutodetectSqlDependencies;
+        }
     }
