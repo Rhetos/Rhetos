@@ -17,39 +17,35 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Dsl;
-using Rhetos.Extensibility;
+using Newtonsoft.Json;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
-using System.Diagnostics;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace Rhetos.DatabaseGenerator
 {
     public class ConceptDataMigrationExecuter : IConceptDataMigrationExecuter
     {
-        private readonly ILogger _performanceLogger;
-        private readonly ILogger _logger;
         private readonly ILogger _deployPackagesLogger;
         private readonly SqlTransactionBatches _sqlExecuter;
-        private readonly IDslModel _dslModel;
-        private readonly IPluginsContainer<IConceptDataMigration> _plugins;
+        RhetosAppEnvironment _rhetosAppEnvironment;
         private readonly Lazy<GeneratedDataMigrationScripts> _scripts;
+
+        public IEnumerable<string> Dependencies => new List<string>();
 
         public ConceptDataMigrationExecuter(
             ILogProvider logProvider,
             SqlTransactionBatches sqlExecuter,
-            IDslModel dslModel,
-            IPluginsContainer<IConceptDataMigration> plugins)
+            RhetosAppEnvironment rhetosAppEnvironment)
         {
-            _performanceLogger = logProvider.GetLogger("Performance");
-            _logger = logProvider.GetLogger(GetType().Name);
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _sqlExecuter = sqlExecuter;
-            _dslModel = dslModel;
-            _plugins = plugins;
-            _scripts = new Lazy<GeneratedDataMigrationScripts>(ExecutePlugins);
+            _rhetosAppEnvironment = rhetosAppEnvironment;
+            _scripts = new Lazy<GeneratedDataMigrationScripts>(LoadScripts);
         }
 
         public void ExecuteBeforeDataMigrationScripts()
@@ -74,32 +70,10 @@ namespace Rhetos.DatabaseGenerator
                 }));
         }
 
-        private GeneratedDataMigrationScripts ExecutePlugins()
+        private GeneratedDataMigrationScripts LoadScripts()
         {
-            var stopwatch = Stopwatch.StartNew();
-
-            var codeBuilder = new DataMigrationScriptBuilder();
-
-            foreach (var conceptInfo in _dslModel.Concepts)
-                foreach (var plugin in _plugins.GetImplementations(conceptInfo.GetType()))
-                {
-                    try
-                    {
-                        plugin.GenerateCode(conceptInfo, codeBuilder);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Error("Part of the source code that was generated before the exception was thrown is written in the trace log.");
-                        _logger.Trace(codeBuilder.GeneratedCode);
-                        throw new FrameworkException($"Error while generating data-migration script for '{conceptInfo.GetUserDescription()}'.", ex);
-                    }
-                }
-
-            _logger.Trace(codeBuilder.GeneratedCode);
-
-            _performanceLogger.Write(stopwatch, "DataMigrationScriptGenerator: Scripts generated.");
-
-            return codeBuilder.GetDataMigrationScripts();
+            var serializedConcepts = File.ReadAllText(Path.Combine(_rhetosAppEnvironment.GeneratedFolder, ConceptDataMigrationGenerator.ConceptDataMigrationScriptsFileName), Encoding.UTF8);
+            return JsonConvert.DeserializeObject<GeneratedDataMigrationScripts>(serializedConcepts);
         }
     }
 }

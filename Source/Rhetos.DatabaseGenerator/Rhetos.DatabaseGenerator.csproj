@@ -119,6 +119,7 @@
   <ItemGroup>
     <Compile Include="ConceptApplicationDependency.cs" />
     <Compile Include="ConceptApplication.cs" />
+    <Compile Include="ConceptDataMigrationGenerator.cs" />
     <Compile Include="DataMigrationScriptBuilder.cs" />
     <Compile Include="ConceptDataMigrationExecuter.cs" />
     <Compile Include="DataMigrationScriptUtility.cs" />
@@ -170,6 +171,11 @@
     <EmbeddedResource Include="Sql.Oracle.resx">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>12.0.2</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
