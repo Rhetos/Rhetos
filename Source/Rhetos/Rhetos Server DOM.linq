@@ -49,6 +49,7 @@
   <Namespace>System.Xml.Serialization</Namespace>
   <Namespace>Autofac</Namespace>
   <Namespace>Rhetos.TestCommon</Namespace>
+  <Namespace>Rhetos</Namespace>
 </Query>
 
 void Main()
