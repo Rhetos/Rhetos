@@ -50,7 +50,7 @@ namespace Rhetos.Utilities
                 .Select(x => FilesUtility.AbsoluteToRelativePath(Paths.GeneratedFolder, x));
 
             foreach (string generatedFile in generatedFiles)
-                _syncer.AddFile(Path.Combine(Paths.GeneratedFolder, generatedFile), Paths.GeneratedFilesCacheFolder);
+                _syncer.AddFile(Path.Combine(Paths.GeneratedFolder, generatedFile), Paths.GeneratedFilesCacheFolder, Path.Combine(Paths.GeneratedFilesCacheFolder, generatedFile));
             _syncer.UpdateDestination(deleteSource: true);
 
             foreach (string fileToDelete in generatedFiles)
