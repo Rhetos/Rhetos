@@ -17,16 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Extensibility;
+using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Rhetos.Dsl;
-using Rhetos.Extensibility;
-using System.Globalization;
-using Rhetos.Utilities;
-using Rhetos.Compiler;
-using Rhetos.Logging;
 using System.Text;
 
 namespace Rhetos.DatabaseGenerator
@@ -53,7 +52,7 @@ namespace Rhetos.DatabaseGenerator
             _performanceLogger = logProvider.GetLogger("Performance");
         }
 
-        protected List<NewConceptApplication> CreateNewApplications()
+        private List<NewConceptApplication> CreateNewApplications()
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -65,9 +64,11 @@ namespace Rhetos.DatabaseGenerator
                 if (!implementations.Any())
                     implementations = new[] { new NullImplementation() };
 
-                conceptApplications.AddRange(implementations.Select(impl => new NewConceptApplication(conceptInfo, impl))); // DependsOn, CreateQuery and RemoveQuery will be set later.
+                conceptApplications.AddRange(implementations.Select(impl => new NewConceptApplication(conceptInfo, impl)));
+                // NewConceptApplication has some properties uninitialized.
+                // See the summary comment in NewConceptApplication for details.
             }
-            
+
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: Created concept applications from plugins.");
 
             ComputeDependsOn(conceptApplications);
@@ -81,7 +82,7 @@ namespace Rhetos.DatabaseGenerator
             return conceptApplications;
         }
 
-        protected void ComputeDependsOn(IEnumerable<NewConceptApplication> newConceptApplications)
+        private void ComputeDependsOn(IEnumerable<NewConceptApplication> newConceptApplications)
         {
             var stopwatch = Stopwatch.StartNew();
             foreach (var conceptApplication in newConceptApplications)
@@ -97,7 +98,7 @@ namespace Rhetos.DatabaseGenerator
         /// <summary>
         /// Updates ConceptApplication.DependsOn property from "flat" list of dependencies.
         /// </summary>
-        protected static void UpdateConceptApplicationsFromDependencyList(IEnumerable<Dependency> dependencies)
+        private static void UpdateConceptApplicationsFromDependencyList(IEnumerable<Dependency> dependencies)
         {
             var dependenciesByConceptApplication = dependencies
                 .GroupBy(d => d.Dependent, d => new ConceptApplicationDependency { ConceptApplication = d.DependsOn, DebugInfo = d.DebugInfo });
@@ -111,7 +112,7 @@ namespace Rhetos.DatabaseGenerator
             }
         }
 
-        protected IEnumerable<Dependency> ExtractDependencies(IEnumerable<NewConceptApplication> newConceptApplications)
+        private IEnumerable<Dependency> ExtractDependencies(IEnumerable<NewConceptApplication> newConceptApplications)
         {
             var stopwatch = Stopwatch.StartNew();
             
@@ -127,7 +128,7 @@ namespace Rhetos.DatabaseGenerator
             return combined;
         }
 
-        protected IEnumerable<Dependency> ExtractDependenciesFromConceptInfos(IEnumerable<NewConceptApplication> newConceptApplications)
+        private static IEnumerable<Dependency> ExtractDependenciesFromConceptInfos(IEnumerable<NewConceptApplication> newConceptApplications)
         {
             var conceptInfos = newConceptApplications.Select(conceptApplication => conceptApplication.ConceptInfo).Distinct();
 
@@ -137,7 +138,7 @@ namespace Rhetos.DatabaseGenerator
             return GetConceptApplicationDependencies(conceptInfoDependencies, newConceptApplications);
         }
 
-        protected static IEnumerable<Dependency> GetConceptApplicationDependencies(IEnumerable<Tuple<IConceptInfo, IConceptInfo, string>> conceptInfoDependencies, IEnumerable<ConceptApplication> conceptApplications)
+        private static IEnumerable<Dependency> GetConceptApplicationDependencies(IEnumerable<Tuple<IConceptInfo, IConceptInfo, string>> conceptInfoDependencies, IEnumerable<ConceptApplication> conceptApplications)
         {
             var conceptApplicationsByConceptInfoKey = conceptApplications
                 .GroupBy(ca => ca.ConceptInfoKey)
@@ -161,7 +162,7 @@ namespace Rhetos.DatabaseGenerator
             return conceptApplicationDependencies.ToList();
         }
 
-        protected static IEnumerable<Dependency> ExtractDependenciesFromMefPluginMetadata(IPluginsContainer<IConceptDatabaseDefinition> plugins, IEnumerable<NewConceptApplication> newConceptApplications)
+        private static IEnumerable<Dependency> ExtractDependenciesFromMefPluginMetadata(IPluginsContainer<IConceptDatabaseDefinition> plugins, IEnumerable<NewConceptApplication> newConceptApplications)
         {
             var dependencies = new List<Dependency>();
 
@@ -185,7 +186,7 @@ namespace Rhetos.DatabaseGenerator
             return dependencies.Distinct().ToList();
         }
 
-        protected static IEnumerable<Tuple<Type, Type, string>> GetImplementationDependencies(IPluginsContainer<IConceptDatabaseDefinition> plugins, IEnumerable<Type> conceptImplementations)
+        private static IEnumerable<Tuple<Type, Type, string>> GetImplementationDependencies(IPluginsContainer<IConceptDatabaseDefinition> plugins, IEnumerable<Type> conceptImplementations)
         {
             var dependencies = new List<Tuple<Type, Type, string>>();
 
@@ -219,7 +220,7 @@ namespace Rhetos.DatabaseGenerator
             return dependencies;
         }
 
-        protected static void AddDependenciesOnSameConceptInfo(
+        private static void AddDependenciesOnSameConceptInfo(
             IEnumerable<ConceptApplication> applications1,
             IEnumerable<ConceptApplication> applications2,
             string debugInfo,
@@ -236,25 +237,29 @@ namespace Rhetos.DatabaseGenerator
                     });
         }
 
-        protected void ComputeCreateAndRemoveQuery(List<NewConceptApplication> newConceptApplications, IEnumerable<IConceptInfo> allConceptInfos)
+        private static void ComputeCreateAndRemoveQuery(List<NewConceptApplication> newConceptApplications, IEnumerable<IConceptInfo> allConceptInfos)
         {
+            // Generate RemoveQuery:
+
+            foreach (var ca in newConceptApplications)
+                ca.RemoveQuery = GenerateRemoveQuery(ca.ConceptImplementation, ca.ConceptInfo);
+
+            // Generate CreateQuery:
+
             Graph.TopologicalSort(newConceptApplications, ConceptApplication.GetDependencyPairs(newConceptApplications));
-
-            var conceptInfosByKey = allConceptInfos.ToDictionary(ci => ci.GetKey());
-
             var sqlCodeBuilder = new CodeBuilder("/*", "*/");
             var createdDependencies = new List<Tuple<IConceptInfo, IConceptInfo, string>>();
-            foreach (var ca in newConceptApplications)
+            var conceptInfosByKey = allConceptInfos.ToDictionary(ci => ci.GetKey());
+
+            for (int i = 0; i < newConceptApplications.Count; i++)
             {
-                AddConceptApplicationSeparator(ca, sqlCodeBuilder);
-
-                // Generate RemoveQuery:
-
-                GenerateRemoveQuery(ca);
-
-                // Generate CreateQuery:
-
-                sqlCodeBuilder.InsertCode(ca.ConceptImplementation.CreateDatabaseStructure(ca.ConceptInfo) + Environment.NewLine);
+                var ca = newConceptApplications[i];
+                string createQuery = ca.ConceptImplementation.CreateDatabaseStructure(ca.ConceptInfo);
+                if (!string.IsNullOrWhiteSpace(createQuery))
+                {
+                    sqlCodeBuilder.InsertCode(GetConceptApplicationSeparator(i));
+                    sqlCodeBuilder.InsertCode(createQuery);
+                }
 
                 if (ca.ConceptImplementation is IConceptDatabaseDefinitionExtension)
                 {
@@ -279,16 +284,13 @@ namespace Rhetos.DatabaseGenerator
             UpdateConceptApplicationsFromDependencyList(createdConceptApplicationDependencies);
         }
 
-        public static void GenerateRemoveQuery(NewConceptApplication ca)
+        private static string GenerateRemoveQuery(IConceptDatabaseDefinition implementation, IConceptInfo conceptInfo)
         {
-            ca.RemoveQuery = ca.ConceptImplementation.RemoveDatabaseStructure(ca.ConceptInfo);
-            if (ca.RemoveQuery != null)
-                ca.RemoveQuery = ca.RemoveQuery.Trim();
-            else
-                ca.RemoveQuery = "";
+            string removeQuery = implementation.RemoveDatabaseStructure(conceptInfo);
+            return removeQuery?.Trim() ?? "";
         }
 
-        protected static IConceptInfo GetValidConceptInfo(string conceptInfoKey, Dictionary<string, IConceptInfo> conceptInfosByKey, NewConceptApplication debugContextNewConceptApplication)
+        private static IConceptInfo GetValidConceptInfo(string conceptInfoKey, Dictionary<string, IConceptInfo> conceptInfosByKey, NewConceptApplication debugContextNewConceptApplication)
         {
             if (!conceptInfosByKey.ContainsKey(conceptInfoKey))
                 throw new FrameworkException(string.Format(
@@ -298,34 +300,39 @@ namespace Rhetos.DatabaseGenerator
             return conceptInfosByKey[conceptInfoKey];
         }
 
-        protected const string NextConceptApplicationSeparator = "/*NextConceptApplication*/";
-        protected const string NextConceptApplicationIdPrefix = "/*ConceptApplicationId:";
-        protected const string NextConceptApplicationIdSuffix = "*/";
+        private const string ConceptApplicationSeparatorPrefix = "\r\n--RhetosConceptApplicationSeparator ";
+        private const string ConceptApplicationSeparatorSuffix = "\r\n";
 
-        protected static void AddConceptApplicationSeparator(ConceptApplication ca, CodeBuilder sqlCodeBuilder)
+        private static string GetConceptApplicationSeparator(int scriptKey)
         {
-            sqlCodeBuilder.InsertCode(string.Format("{0}{1}{2}{3}\r\n",
-                NextConceptApplicationSeparator, NextConceptApplicationIdPrefix, ca.Id, NextConceptApplicationIdSuffix));
+            return ConceptApplicationSeparatorPrefix + scriptKey + ConceptApplicationSeparatorSuffix;
         }
 
-        protected static void ExtractCreateQueries(string generatedSqlCode, IEnumerable<ConceptApplication> toBeInserted)
+        private static void ExtractCreateQueries(string generatedSqlCode, List<NewConceptApplication> newConceptApplications)
         {
-            var sqls = generatedSqlCode.Split(new[] { NextConceptApplicationSeparator }, StringSplitOptions.None).ToList();
-            if (sqls.Count > 0) sqls.RemoveAt(0);
+            var sqls = generatedSqlCode.Split(new[] { ConceptApplicationSeparatorPrefix }, StringSplitOptions.None).ToList();
+            if (sqls.Count > 0 && sqls[0].Length > 0)
+                throw new FrameworkException($"Unexpected generated script format: The first segment should be empty:\r\n{sqls[0].Limit(200)}");
 
-            var toBeInsertedById = toBeInserted.ToDictionary(ca => ca.Id);
-
-            int guidLength = Guid.Empty.ToString().Length;
-            foreach (var sql in sqls)
+            foreach (var sql in sqls.Skip(1))
             {
-                var id = Guid.Parse(sql.Substring(NextConceptApplicationIdPrefix.Length, guidLength));
-                toBeInsertedById[id].CreateQuery = sql
-                    .Substring(NextConceptApplicationIdPrefix.Length + guidLength +NextConceptApplicationIdSuffix.Length)
-                    .Trim();
+                int scriptKeyEnd = sql.IndexOf(ConceptApplicationSeparatorSuffix);
+                if (scriptKeyEnd < 0)
+                    throw new FrameworkException($"Unexpected generated script format: Missing {nameof(ConceptApplicationSeparatorSuffix)}.");
+                if (scriptKeyEnd == 0)
+                    throw new FrameworkException($"Unexpected generated script format: Missing script key.");
+
+                int scriptKey = int.Parse(sql.Substring(0, scriptKeyEnd));
+
+                newConceptApplications[scriptKey].CreateQuery = sql.Substring(scriptKeyEnd + ConceptApplicationSeparatorSuffix.Length).Trim();
             }
+
+            foreach (var ca in newConceptApplications)
+                if (ca.CreateQuery == null)
+                    ca.CreateQuery = "";
         }
 
-        private string ReportDependencies(List<NewConceptApplication> conceptApplications)
+        private static string ReportDependencies(List<NewConceptApplication> conceptApplications)
         {
             var report = new StringBuilder();
             report.Append("Dependencies:");

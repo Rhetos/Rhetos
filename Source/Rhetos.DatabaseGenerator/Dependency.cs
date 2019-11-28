@@ -36,7 +36,7 @@ namespace Rhetos.DatabaseGenerator
 
         public override int GetHashCode()
         {
-            return DependsOn.Id.GetHashCode() ^ Dependent.Id.GetHashCode() ^ DebugInfo.GetHashCode();
+            return DependsOn.ConceptInfoKey.GetHashCode() ^ Dependent.ConceptInfoKey.GetHashCode();
         }
     }
 }
