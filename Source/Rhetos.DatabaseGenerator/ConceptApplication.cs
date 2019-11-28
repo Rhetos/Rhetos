@@ -77,5 +77,13 @@ namespace Rhetos.DatabaseGenerator
                 .Where(dependency => dependency.Item1 != dependency.Item2)
                 .ToList();
         }
+
+        public static void CheckKeyUniqueness(IEnumerable<ConceptApplication> appliedConcepts, string errorContext)
+        {
+            var firstError = appliedConcepts.GroupBy(pca => pca.GetConceptApplicationKey()).Where(g => g.Count() > 1).FirstOrDefault();
+            if (firstError != null)
+                throw new FrameworkException(String.Format("More than one concept application with same key {2} ('{0}') loaded in repository. Concept application IDs: {1}.",
+                    firstError.Key, string.Join(", ", firstError.Select(ca => SqlUtility.QuoteGuid(ca.Id))), errorContext));
+        }
     }
 }

@@ -64,7 +64,7 @@
     <Compile Include="ConceptInfoHelperTest.cs" />
     <Compile Include="DslContainerTest.cs" />
     <Compile Include="DslParserTest.cs" />
-    <Compile Include="DslParser_Accessor.cs" />
+    <Compile Include="DslParserAccessor.cs" />
     <Compile Include="DslScriptTest.cs" />
     <Compile Include="DslModelTest.cs" />
     <Compile Include="GenericParserTest.cs" />

@@ -17,34 +17,34 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Extensibility;
+using Rhetos.Logging;
+using Rhetos.TestCommon;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Rhetos.DatabaseGenerator.Test
+namespace Rhetos.Dsl.Test
 {
-    public class NullPluginsContainer<T> : IPluginsContainer<T>
+    class TestDslParser : DslParser, ITestAccessor
     {
-        public IEnumerable<T> GetPlugins()
+        public TestDslParser(string dsl, IConceptInfo[] conceptInfoPlugins = null)
+            : base (
+                new TestTokenizer(dsl),
+                conceptInfoPlugins ?? new IConceptInfo[] { },
+                new ConsoleLogProvider())
         {
-            return new T[] {};
         }
 
-        public Type GetMetadata(T plugin, string metadataKey)
+        public IEnumerable<IConceptInfo> ExtractConcepts(MultiDictionary<string, IConceptParser> conceptParsers)
         {
-            return null;
+            return (IEnumerable<IConceptInfo>)this.Invoke("ExtractConcepts", conceptParsers);
         }
 
-        public Type GetMetadata(Type pluginType, string metadataKey)
+        public IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, MultiDictionary<string, IConceptParser> conceptParsers)
         {
-            return null;
-        }
-
-        public IEnumerable<T> GetImplementations(Type implements)
-        {
-            return new T[] { };
+            return (IConceptInfo)this.Invoke("ParseNextConcept", tokenReader, context, conceptParsers);
         }
     }
 }

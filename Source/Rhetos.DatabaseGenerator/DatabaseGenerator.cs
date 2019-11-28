@@ -17,17 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Rhetos.Dsl;
-using Rhetos.Extensibility;
-using System.Globalization;
-using Rhetos.Utilities;
-using Rhetos.Compiler;
-using Rhetos.Logging;
-using System.Text;
 
 namespace Rhetos.DatabaseGenerator
 {
@@ -86,7 +81,7 @@ namespace Rhetos.DatabaseGenerator
                 MatchAndComputeNewApplicationIds(oldApplications, newApplications);
                 _performanceLogger.Write(stopwatch, "DatabaseGenerator: Match new and old concept applications.");
 
-                ConceptApplicationRepository.CheckKeyUniqueness(newApplications, "created");
+                ConceptApplication.CheckKeyUniqueness(newApplications, "generated, after matching");
                 _performanceLogger.Write(stopwatch, "DatabaseGenerator: Verify new concept applications' integrity.");
                 newApplications = TrimEmptyApplications(newApplications);
                 _performanceLogger.Write(stopwatch, "DatabaseGenerator: Removed unused concept applications.");
@@ -107,7 +102,7 @@ namespace Rhetos.DatabaseGenerator
             }
         }
 
-        protected static void MatchAndComputeNewApplicationIds(List<ConceptApplication> oldApplications, List<NewConceptApplication> newApplications)
+        private static void MatchAndComputeNewApplicationIds(List<ConceptApplication> oldApplications, List<NewConceptApplication> newApplications)
         {
             var oldApplicationIds = oldApplications.ToDictionary(oa => oa.GetConceptApplicationKey(), oa => oa.Id);
             foreach (var newApp in newApplications) 
@@ -115,7 +110,7 @@ namespace Rhetos.DatabaseGenerator
                     newApp.Id = Guid.NewGuid();
         }
 
-        protected List<NewConceptApplication> TrimEmptyApplications(List<NewConceptApplication> newApplications)
+        private List<NewConceptApplication> TrimEmptyApplications(List<NewConceptApplication> newApplications)
         {
             var emptyCreateQuery = newApplications.Where(ca => string.IsNullOrWhiteSpace(ca.CreateQuery)).ToList();
             var emptyCreateHasRemove = emptyCreateQuery.FirstOrDefault(ca => !string.IsNullOrWhiteSpace(ca.RemoveQuery));
@@ -133,7 +128,7 @@ namespace Rhetos.DatabaseGenerator
             return newApplications.Except(removeLeaves).ToList();
         }
 
-        protected void CalculateApplicationsToBeRemovedAndInserted(
+        private void CalculateApplicationsToBeRemovedAndInserted(
             IEnumerable<ConceptApplication> oldApplications, IEnumerable<NewConceptApplication> newApplications,
             out List<ConceptApplication> toBeRemoved, out List<NewConceptApplication> toBeInserted)
         {
@@ -221,7 +216,7 @@ namespace Rhetos.DatabaseGenerator
             return $"Old: {CsUtility.ReportSegment(oldQuery, c, 400)}\r\nNew: {CsUtility.ReportSegment(newQuery, c, 400)}";
         }
 
-        protected void ApplyChangesToDatabase(
+        private void ApplyChangesToDatabase(
             List<ConceptApplication> oldApplications, List<NewConceptApplication> newApplications,
             List<ConceptApplication> toBeRemoved, List<NewConceptApplication> toBeInserted)
         {
@@ -243,7 +238,7 @@ namespace Rhetos.DatabaseGenerator
             _performanceLogger.Write(stopwatch, $"DatabaseGenerator.ApplyChangesToDatabase: Executed {sqlScripts.Where(sql => !string.IsNullOrEmpty(sql)).Count()} SQL scripts.");
         }
 
-        protected List<string> ApplyChangesToDatabase_Remove(List<ConceptApplication> toBeRemoved, List<ConceptApplication> oldApplications)
+        private List<string> ApplyChangesToDatabase_Remove(List<ConceptApplication> toBeRemoved, List<ConceptApplication> oldApplications)
         {
             var newScripts = new List<string>();
 
@@ -271,7 +266,7 @@ namespace Rhetos.DatabaseGenerator
             return newScripts;
         }
 
-        protected List<string> ApplyChangesToDatabase_Insert(List<NewConceptApplication> toBeInserted, List<NewConceptApplication> newApplications)
+        private List<string> ApplyChangesToDatabase_Insert(List<NewConceptApplication> toBeInserted, List<NewConceptApplication> newApplications)
         {
             var newScripts = new List<string>();
 
@@ -312,7 +307,7 @@ namespace Rhetos.DatabaseGenerator
             yield return Sql.Get("DatabaseGenerator_CommitAfterDDL");
         }
 
-        protected List<string> ApplyChangesToDatabase_Unchanged(List<NewConceptApplication> toBeInserted, List<NewConceptApplication> newApplications, List<ConceptApplication> oldApplications)
+        private List<string> ApplyChangesToDatabase_Unchanged(List<NewConceptApplication> toBeInserted, List<NewConceptApplication> newApplications, List<ConceptApplication> oldApplications)
         {
             var newScripts = new List<string>();
 
@@ -335,7 +330,7 @@ namespace Rhetos.DatabaseGenerator
             return newScripts;
         }
 
-        protected static string[] SplitSqlScript(string script)
+        private static string[] SplitSqlScript(string script)
         {
             if (string.IsNullOrEmpty(script))
                 return new string[] { };
@@ -344,7 +339,7 @@ namespace Rhetos.DatabaseGenerator
                 .Select(query => query.Trim()).ToArray();
         }
 
-        protected void LogDatabaseChanges(ConceptApplication conceptApplication, string action, Func<string> additionalInfo = null)
+        private void LogDatabaseChanges(ConceptApplication conceptApplication, string action, Func<string> additionalInfo = null)
         {
             _conceptsLogger.Trace("{0} {1}, ID={2}.{3}{4}",
                 action,
@@ -354,7 +349,7 @@ namespace Rhetos.DatabaseGenerator
                 additionalInfo != null ? additionalInfo() : null);
         }
 
-        protected void VerifyIntegrity()
+        private void VerifyIntegrity()
         {
             try
             {

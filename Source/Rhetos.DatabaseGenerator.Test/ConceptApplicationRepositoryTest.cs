@@ -28,7 +28,6 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Rhetos.Dom;
 
 namespace Rhetos.DatabaseGenerator.Test
 {
@@ -196,7 +195,6 @@ namespace Rhetos.DatabaseGenerator.Test
         {
             return new ConceptApplicationRepository(
                 new MockSqlExecuter(conceptApplications),
-                new ConsoleLogProvider(),
                 new XmlUtility(new DomainObjectModelMock()));
         }
 

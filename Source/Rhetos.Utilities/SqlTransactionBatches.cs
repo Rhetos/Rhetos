@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -53,6 +54,7 @@ namespace Rhetos.Utilities
             _logger = logProvider.GetLogger(nameof(SqlTransactionBatches));
         }
 
+        [DebuggerDisplay("{Name ?? CsUtility.Limit(Sql, 100)}")]
         public class SqlScript
         {
             public string Name;
