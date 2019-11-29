@@ -18,19 +18,14 @@
 */
 
 using Autofac;
-using Rhetos;
 using Rhetos.Deployment;
-using Rhetos.Dom;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 
 namespace Rhetos
 {
@@ -41,7 +36,7 @@ namespace Rhetos
         private readonly ILogProvider _logProvider;
         private readonly RhetosAppEnvironment _rhetosAppEnvironment;
         private readonly FilesUtility _filesUtility;
-        private readonly InitializationContext _initializationContext;
+        private readonly DeployOptions _deployOptions;
 
         public ApplicationDeployment(IConfigurationProvider configurationProvider, ILogProvider logProvider)
         {
@@ -49,12 +44,45 @@ namespace Rhetos
             _configurationProvider = configurationProvider;
             _logProvider = logProvider;
             _filesUtility = new FilesUtility(logProvider);
-            _initializationContext = new InitializationContext(configurationProvider, logProvider);
             _rhetosAppEnvironment = new RhetosAppEnvironment(_configurationProvider.GetOptions<RhetosAppOptions>().RootPath);
+            _deployOptions = configurationProvider.GetOptions<DeployOptions>();
             LegacyUtilities.Initialize(configurationProvider);
         }
 
-        public void GenerateApplication()
+        public void InitialCleanup()
+        {
+            ThrowOnObsoleteFolders();
+            DeleteObsoleteGeneratedFiles();
+
+            // Backup and delete generated files:
+            if (!_deployOptions.DatabaseOnly)
+            {
+                _logger.Trace("Moving old generated files to cache.");
+                new GeneratedFilesCache(_rhetosAppEnvironment, _logProvider).MoveGeneratedFilesToCache();
+                _filesUtility.SafeCreateDirectory(_rhetosAppEnvironment.GeneratedFolder);
+            }
+            else
+            {
+                var missingFile = _rhetosAppEnvironment.DomAssemblyFiles.FirstOrDefault(f => !File.Exists(f));
+                if (missingFile != null)
+                    throw new UserException($"'/DatabaseOnly' switch cannot be used if the server have not been deployed successfully before. Run a regular deployment instead. Missing '{missingFile}'.");
+
+                _logger.Info("Skipped deleting old generated files (DeployDatabaseOnly).");
+            }
+        }
+
+        public void DownloadPackages(bool ignoreDependencies)
+        {
+            _logger.Trace("Getting packages.");
+            var config = new DeploymentConfiguration(_rhetosAppEnvironment, _logProvider);
+            var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = ignoreDependencies };
+            var packageDownloader = new PackageDownloader(config, _rhetosAppEnvironment, _logProvider, packageDownloaderOptions);
+            var packages = packageDownloader.GetPackages();
+
+            InstalledPackages.Save(packages, _rhetosAppEnvironment);
+        }
+
+        public void GenerateApplication(bool cleanupGeneratedFolder)
         {
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
@@ -63,8 +91,8 @@ namespace Rhetos
                 .AddRhetosDeployment()
                 .AddProcessUserOverride();
 
-            AppDomain.CurrentDomain.AssemblyResolve += SearchForAssembly;
-            AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve += SearchForAssembly;
+            if(cleanupGeneratedFolder)
+                InitialCleanup();
 
             using (var container = builder.Build())
             {
@@ -72,20 +100,8 @@ namespace Rhetos
                 performanceLogger.Write(stopwatch, "DeployPackages.Program: Modules and plugins registered.");
                 Plugins.LogRegistrationStatistics("Generating application", container, _logProvider);
 
-                var rhetosAppEnviorment = container.Resolve<RhetosAppEnvironment>();
-                ThrowOnObsoleteFolders(rhetosAppEnviorment);
-                DeleteObsoleteGeneratedFiles(rhetosAppEnviorment);
-
-                container.Resolve<ILogProvider>().GetLogger("DeployPackages").Trace("Moving old generated files to cache.");
-                container.Resolve<GeneratedFilesCache>().MoveGeneratedFilesToCache();
-                container.Resolve<FilesUtility>().SafeCreateDirectory(rhetosAppEnviorment.GeneratedFolder);
-
-                container.Resolve<ApplicationGenerator>().ExecuteGenerators();
-
+                container.Resolve<ApplicationGenerator>().ParseDslAndExecuteGenerators();
             }
-
-            AppDomain.CurrentDomain.AssemblyResolve -= SearchForAssembly;
-            AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve -= SearchForAssembly;
         }
 
         public void CheckForUpdateDatabaseConditions()
@@ -104,17 +120,14 @@ namespace Rhetos
                 .AddRhetosDeployment()
                 .AddProcessUserOverride();
 
-            AppDomain.CurrentDomain.AssemblyResolve += SearchForAssembly;
-
             using (var container = builder.Build())
             {
                 var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
                 performanceLogger.Write(stopwatch, "DeployPackages.Program: Modules and plugins registered.");
                 Plugins.LogRegistrationStatistics("Generating application", container, _logProvider);
+
                 container.Resolve<ApplicationGenerator>().UpdateDatabase();
             }
-
-            AppDomain.CurrentDomain.AssemblyResolve -= SearchForAssembly;
         }
 
         public void InitializeGeneratedApplication()
@@ -123,8 +136,6 @@ namespace Rhetos
 
             _logger.Trace("Loading generated plugins.");
             var stopwatch = Stopwatch.StartNew();
-
-            AppDomain.CurrentDomain.AssemblyResolve += SearchForAssembly;
 
             var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider)
                 .AddApplicationInitialization()
@@ -149,31 +160,27 @@ namespace Rhetos
                         ApplicationInitialization.ExecuteInitializer(container, initializer);
                 }
             }
-
-            AppDomain.CurrentDomain.AssemblyResolve -= SearchForAssembly;
-
-            RestartWebServer();
         }
 
-        private void ThrowOnObsoleteFolders(RhetosAppEnvironment rhetosAppEnvironment)
+        private void ThrowOnObsoleteFolders()
         {
             var obsoleteFolders = new string[]
             {
-                Path.Combine(rhetosAppEnvironment.RootPath, "DslScripts"),
-                Path.Combine(rhetosAppEnvironment.RootPath, "DataMigration")
+                Path.Combine(_rhetosAppEnvironment.RootPath, "DslScripts"),
+                Path.Combine(_rhetosAppEnvironment.RootPath, "DataMigration")
             };
             var obsoleteFolder = obsoleteFolders.FirstOrDefault(folder => Directory.Exists(folder));
             if (obsoleteFolder != null)
                 throw new UserException("Please backup all Rhetos server folders and delete obsolete folder '" + obsoleteFolder + "'. It is no longer used.");
         }
 
-        private void DeleteObsoleteGeneratedFiles(RhetosAppEnvironment rhetosAppEnvironment)
+        private void DeleteObsoleteGeneratedFiles()
         {
             var deleteObsoleteFiles = new string[]
             {
-                Path.Combine(rhetosAppEnvironment.BinFolder, "ServerDom.cs"),
-                Path.Combine(rhetosAppEnvironment.BinFolder, "ServerDom.dll"),
-                Path.Combine(rhetosAppEnvironment.BinFolder, "ServerDom.pdb")
+                Path.Combine(_rhetosAppEnvironment.BinFolder, "ServerDom.cs"),
+                Path.Combine(_rhetosAppEnvironment.BinFolder, "ServerDom.dll"),
+                Path.Combine(_rhetosAppEnvironment.BinFolder, "ServerDom.pdb")
             };
 
             foreach (var path in deleteObsoleteFiles)
@@ -184,29 +191,23 @@ namespace Rhetos
                 }
         }
 
-        private void RestartWebServer()
+        public static void PrintErrorSummary(Exception ex)
+        {
+            Console.WriteLine();
+            Console.WriteLine("=============== ERROR SUMMARY ===============");
+            Console.WriteLine(ex.GetType().Name + ": " + ExceptionsUtility.SafeFormatUserMessage(ex));
+            Console.WriteLine("=============================================");
+            Console.WriteLine();
+            Console.WriteLine("See DeployPackages.log for more information on error. Enable TraceLog in DeployPackages.exe.config for even more details.");
+        }
+
+        public void RestartWebServer()
         {
             var configFile = Path.Combine(_rhetosAppEnvironment.RootPath, "Web.config");
             if (FilesUtility.SafeTouch(configFile))
                 _logger.Trace($"Updated {Path.GetFileName(configFile)} modification date to restart server.");
             else
                 _logger.Trace($"Missing {configFile}.");
-        }
-
-        protected Assembly SearchForAssembly(object sender, ResolveEventArgs args)
-        {
-            var loadedAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetName().Name == new AssemblyName(args.Name).Name);
-
-            if (loadedAssembly != null)
-                return loadedAssembly;
-
-            foreach (var folder in new[] { Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), _rhetosAppEnvironment.BinFolder, _rhetosAppEnvironment.PluginsFolder, _rhetosAppEnvironment.GeneratedFolder })
-            {
-                string pluginAssemblyPath = Path.Combine(folder, new AssemblyName(args.Name).Name + ".dll");
-                if (File.Exists(pluginAssemblyPath))
-                    return Assembly.LoadFrom(pluginAssemblyPath);
-            }
-            return null;
         }
     }
 }

@@ -61,14 +61,22 @@ namespace DeployPackages
 
                 if (deployOptions.StartPaused)
                     StartPaused();
-                
-                var packageManager = new PackageManager(configurationProvider, logProvider);
-                packageManager.InitialCleanup();
-                packageManager.DownloadPackages();
-                
-                var deployManager = new ApplicationDeployment(configurationProvider, logProvider);
-                deployManager.GenerateApplication();
+
+                var deployManager = new Rhetos.ApplicationDeployment(configurationProvider, logProvider);
+                if (!deployOptions.DatabaseOnly)
+                {
+                    deployManager.InitialCleanup();
+                    deployManager.DownloadPackages(deployOptions.IgnoreDependencies);
+                    deployManager.GenerateApplication(false);
+                }
+                else {
+                    logger.Info("Skipped download packages (DeployDatabaseOnly).");
+                    logger.Info("Skipped code generators (DeployDatabaseOnly).");
+                }
+
+                deployManager.UpdateDatabase();
                 deployManager.InitializeGeneratedApplication();
+                deployManager.RestartWebServer();
 
                 logger.Trace("Done.");
             }
@@ -137,23 +145,13 @@ namespace DeployPackages
 
         private static void InteractiveExceptionInfo(Exception e, bool pauseOnError)
         {
-            PrintSummary(e);
+            ApplicationDeployment.PrintErrorSummary(e);
 
             if (pauseOnError)
             {
                 Console.WriteLine("Press any key to continue . . .  (use /NoPause switch to avoid pause on error)");
                 Console.ReadKey(true);
             }
-        }
-
-        private static void PrintSummary(Exception ex)
-        {
-            Console.WriteLine();
-            Console.WriteLine("=============== ERROR SUMMARY ===============");
-            Console.WriteLine(ex.GetType().Name + ": " + ExceptionsUtility.SafeFormatUserMessage(ex));
-            Console.WriteLine("=============================================");
-            Console.WriteLine();
-            Console.WriteLine("See DeployPackages.log for more information on error. Enable TraceLog in DeployPackages.exe.config for even more details.");
         }
     }
 }

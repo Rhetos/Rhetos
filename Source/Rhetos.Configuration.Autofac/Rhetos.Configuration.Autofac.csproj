@@ -102,6 +102,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplicationDeployment.cs" />
     <Compile Include="ContainerBuilderExtensions.cs" />
     <Compile Include="RhetosContainerBuilderExtensions.cs" />
     <Compile Include="InitializationContext.cs" />

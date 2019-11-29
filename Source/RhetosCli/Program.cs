@@ -17,59 +17,37 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using DeployPackages;
-using Rhetos;
-using Rhetos.Logging;
-using Rhetos.Utilities;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Rhetos.Logging;
+using Rhetos.Utilities;
 
 namespace Rhetos
 {
     public static class Program
     {
-        private readonly static Dictionary<string, string> _validArguments = new Dictionary<string, string>()
-        {
-            { "/StartPaused", "Use for debugging with Visual Studio (Attach to Process)." },
-            { "/Debug", "Generates unoptimized dlls (ServerDom.*.dll, e.g.) for debugging." },
-            { "/NoPause", "Don't pause on error. Use this switch for build automation." },
-            { "/IgnoreDependencies", "Allow installing incompatible versions of Rhetos packages." },
-            { "/ShortTransactions", "Commit transaction after creating or dropping each database object." },
-            { "/DatabaseOnly", "Keep old plugins and files in bin\\Generated." },
-            { "/SkipRecompute", "Use this if you want to skip all computed data." }
-        };
-
         public static int Main(string[] args)
         {
             var logProvider = new NLogProvider();
             var logger = logProvider.GetLogger("DeployPackages");
-            var pauseOnError = false;
-
-            var command = args[0];
 
             logger.Trace(() => "Logging configured.");
 
             try
             {
-                if (!ValidateArguments(args.Skip(2).ToArray()))
-                    return 1;
+                var command = args[0];
+                var rhetosServerRootFolder = args[1];
 
                 var configurationProvider = BuildConfigurationProvider(args);
-                var deployOptions = configurationProvider.GetOptions<DeployOptions>();
-
-                pauseOnError = !deployOptions.NoPause;
-
-                if (deployOptions.StartPaused)
-                    StartPaused();
+                AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(rhetosServerRootFolder);
 
                 if (string.Compare(command, "restore", true) == 0)
-                    new PackageManager(configurationProvider, logProvider).DownloadPackages();
+                    new ApplicationDeployment(configurationProvider, logProvider).DownloadPackages(false);
 
                 if (string.Compare(command, "build", true) == 0)
-                    new ApplicationDeployment(configurationProvider, logProvider).GenerateApplication();
+                    new ApplicationDeployment(configurationProvider, logProvider).GenerateApplication(true);
 
                 if (string.Compare(command, "dbupdate", true) == 0)
                     new ApplicationDeployment(configurationProvider, logProvider).UpdateDatabase();
@@ -88,7 +66,7 @@ namespace Rhetos
                     logger.Error(typeLoadReport);
 
                 if (Environment.UserInteractive)
-                    InteractiveExceptionInfo(e, pauseOnError);
+                    ApplicationDeployment.PrintErrorSummary(e);
 
                 return 1;
             }
@@ -101,65 +79,26 @@ namespace Rhetos
             return new ConfigurationBuilder()
                 .AddRhetosAppConfiguration(args[1])
                 .AddConfigurationManagerConfiguration()
-                .AddCommandLineArguments(args, "/")
                 .Build();
         }
 
-        /// <summary>
-        /// This feature is intended to simplify attaching debugger to the process that was run from a build script.
-        /// </summary>
-        private static void StartPaused()
+        private static ResolveEventHandler GetSearchForAssemblyDelegate(string rhetosServerRootFolder)
         {
-            if (!Environment.UserInteractive)
-                throw new Rhetos.UserException("DeployPackages parameter 'StartPaused' must not be set, because the application is executed in a non-interactive environment.");
+            var rhetosAppEnvironment = new RhetosAppEnvironment(rhetosServerRootFolder);
+            return new ResolveEventHandler((object sender, ResolveEventArgs args) => {
+                var loadedAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetName().Name == new AssemblyName(args.Name).Name);
 
-            Console.WriteLine("Press any key to continue . . .");
-            Console.ReadKey(true);
-        }
+                if (loadedAssembly != null)
+                    return loadedAssembly;
 
-        private static bool ValidateArguments(string[] args)
-        {
-            if (args.Contains("/?"))
-            {
-                ShowHelp();
-                return false;
-            }
-
-            var invalidArgument = args.FirstOrDefault(arg => !_validArguments.Keys.Contains(arg, StringComparer.InvariantCultureIgnoreCase));
-            if (invalidArgument != null)
-            {
-                ShowHelp();
-                throw new ApplicationException($"Unexpected command-line argument: '{invalidArgument}'.");
-            }
-            return true;
-        }
-
-        private static void ShowHelp()
-        {
-            Console.WriteLine("Command-line arguments:");
-            foreach (var argument in _validArguments)
-                Console.WriteLine($"{argument.Key.PadRight(20)} {argument.Value}");
-        }
-
-        private static void InteractiveExceptionInfo(Exception e, bool pauseOnError)
-        {
-            PrintSummary(e);
-
-            if (pauseOnError)
-            {
-                Console.WriteLine("Press any key to continue . . .  (use /NoPause switch to avoid pause on error)");
-                Console.ReadKey(true);
-            }
-        }
-
-        private static void PrintSummary(Exception ex)
-        {
-            Console.WriteLine();
-            Console.WriteLine("=============== ERROR SUMMARY ===============");
-            Console.WriteLine(ex.GetType().Name + ": " + ExceptionsUtility.SafeFormatUserMessage(ex));
-            Console.WriteLine("=============================================");
-            Console.WriteLine();
-            Console.WriteLine("See DeployPackages.log for more information on error. Enable TraceLog in DeployPackages.exe.config for even more details.");
+                foreach (var folder in new[] { Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), rhetosAppEnvironment.BinFolder, rhetosAppEnvironment.PluginsFolder, rhetosAppEnvironment.GeneratedFolder })
+                {
+                    string pluginAssemblyPath = Path.Combine(folder, new AssemblyName(args.Name).Name + ".dll");
+                    if (File.Exists(pluginAssemblyPath))
+                        return Assembly.LoadFrom(pluginAssemblyPath);
+                }
+                return null;
+            });
         }
     }
 }
