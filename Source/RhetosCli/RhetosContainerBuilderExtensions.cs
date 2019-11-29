@@ -19,12 +19,14 @@
 
 using Autofac;
 using Rhetos.Deployment;
+using Rhetos.Dsl;
 using Rhetos.Extensibility;
+using Rhetos.Logging;
 using Rhetos.Security;
 using Rhetos.Utilities;
-using Rhetos;
+using System.Collections.Generic;
 
-namespace DeployPackages
+namespace Rhetos
 {
     public static class RhetosContainerBuilderExtensions
     {

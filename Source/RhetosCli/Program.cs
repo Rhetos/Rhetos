@@ -17,18 +17,149 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using DeployPackages;
+using Rhetos;
+using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 
-namespace RhetosCli
+namespace Rhetos
 {
-    class Program
+    public static class Program
     {
-        static void Main(string[] args)
+        private readonly static Dictionary<string, string> _validArguments = new Dictionary<string, string>()
         {
+            { "/StartPaused", "Use for debugging with Visual Studio (Attach to Process)." },
+            { "/Debug", "Generates unoptimized dlls (ServerDom.*.dll, e.g.) for debugging." },
+            { "/NoPause", "Don't pause on error. Use this switch for build automation." },
+            { "/IgnoreDependencies", "Allow installing incompatible versions of Rhetos packages." },
+            { "/ShortTransactions", "Commit transaction after creating or dropping each database object." },
+            { "/DatabaseOnly", "Keep old plugins and files in bin\\Generated." },
+            { "/SkipRecompute", "Use this if you want to skip all computed data." }
+        };
+
+        public static int Main(string[] args)
+        {
+            var logProvider = new NLogProvider();
+            var logger = logProvider.GetLogger("DeployPackages");
+            var pauseOnError = false;
+
+            var command = args[0];
+
+            logger.Trace(() => "Logging configured.");
+
+            try
+            {
+                if (!ValidateArguments(args.Skip(2).ToArray()))
+                    return 1;
+
+                var configurationProvider = BuildConfigurationProvider(args);
+                var deployOptions = configurationProvider.GetOptions<DeployOptions>();
+
+                pauseOnError = !deployOptions.NoPause;
+
+                if (deployOptions.StartPaused)
+                    StartPaused();
+
+                if (string.Compare(command, "restore", true) == 0)
+                    new PackageManager(configurationProvider, logProvider).DownloadPackages();
+
+                if (string.Compare(command, "build", true) == 0)
+                    new ApplicationDeployment(configurationProvider, logProvider).GenerateApplication();
+
+                if (string.Compare(command, "dbupdate", true) == 0)
+                    new ApplicationDeployment(configurationProvider, logProvider).UpdateDatabase();
+
+                if (string.Compare(command, "appinitialize", true) == 0)
+                    new ApplicationDeployment(configurationProvider, logProvider).InitializeGeneratedApplication();
+
+                logger.Trace("Done.");
+            }
+            catch (Exception e)
+            {
+                logger.Error(e.ToString());
+
+                string typeLoadReport = CsUtility.ReportTypeLoadException(e);
+                if (typeLoadReport != null)
+                    logger.Error(typeLoadReport);
+
+                if (Environment.UserInteractive)
+                    InteractiveExceptionInfo(e, pauseOnError);
+
+                return 1;
+            }
+
+            return 0;
+        }
+
+        private static IConfigurationProvider BuildConfigurationProvider(string[] args)
+        {
+            return new ConfigurationBuilder()
+                .AddRhetosAppConfiguration(args[1])
+                .AddConfigurationManagerConfiguration()
+                .AddCommandLineArguments(args, "/")
+                .Build();
+        }
+
+        /// <summary>
+        /// This feature is intended to simplify attaching debugger to the process that was run from a build script.
+        /// </summary>
+        private static void StartPaused()
+        {
+            if (!Environment.UserInteractive)
+                throw new Rhetos.UserException("DeployPackages parameter 'StartPaused' must not be set, because the application is executed in a non-interactive environment.");
+
+            Console.WriteLine("Press any key to continue . . .");
+            Console.ReadKey(true);
+        }
+
+        private static bool ValidateArguments(string[] args)
+        {
+            if (args.Contains("/?"))
+            {
+                ShowHelp();
+                return false;
+            }
+
+            var invalidArgument = args.FirstOrDefault(arg => !_validArguments.Keys.Contains(arg, StringComparer.InvariantCultureIgnoreCase));
+            if (invalidArgument != null)
+            {
+                ShowHelp();
+                throw new ApplicationException($"Unexpected command-line argument: '{invalidArgument}'.");
+            }
+            return true;
+        }
+
+        private static void ShowHelp()
+        {
+            Console.WriteLine("Command-line arguments:");
+            foreach (var argument in _validArguments)
+                Console.WriteLine($"{argument.Key.PadRight(20)} {argument.Value}");
+        }
+
+        private static void InteractiveExceptionInfo(Exception e, bool pauseOnError)
+        {
+            PrintSummary(e);
+
+            if (pauseOnError)
+            {
+                Console.WriteLine("Press any key to continue . . .  (use /NoPause switch to avoid pause on error)");
+                Console.ReadKey(true);
+            }
+        }
+
+        private static void PrintSummary(Exception ex)
+        {
+            Console.WriteLine();
+            Console.WriteLine("=============== ERROR SUMMARY ===============");
+            Console.WriteLine(ex.GetType().Name + ": " + ExceptionsUtility.SafeFormatUserMessage(ex));
+            Console.WriteLine("=============================================");
+            Console.WriteLine();
+            Console.WriteLine("See DeployPackages.log for more information on error. Enable TraceLog in DeployPackages.exe.config for even more details.");
         }
     }
 }

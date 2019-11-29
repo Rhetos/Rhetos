@@ -73,7 +73,7 @@ namespace Rhetos.Deployment
             _deployOptions = deployOptions;
         }
 
-        public void ExecuteGenerators()
+        public void ExecuteGeneratorsAndUpdateDatabase()
         {
             var deployDatabaseOnly = _deployOptions.DatabaseOnly;
 
@@ -109,6 +109,78 @@ namespace Rhetos.Deployment
                 if (!generators.Any())
                     _deployPackagesLogger.Trace("No additional generators.");
             }
+
+            _deployPackagesLogger.Trace("Cleaning old migration data.");
+            _databaseCleaner.RemoveRedundantMigrationColumns();
+            _databaseCleaner.RefreshDataMigrationRows();
+
+            _dataMigrationFromCodeExecuter.ExecuteBeforeDataMigrationScripts();
+
+            _deployPackagesLogger.Trace("Executing data migration scripts.");
+            var dataMigrationReport = _dataMigration.Execute();
+
+            _dataMigrationFromCodeExecuter.ExecuteAfterDataMigrationScripts();
+
+            _deployPackagesLogger.Trace("Upgrading database.");
+            try
+            {
+                _databaseGenerator.UpdateDatabaseStructure();
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    _dataMigration.Undo(dataMigrationReport.CreatedTags);
+                }
+                catch (Exception undoException)
+                {
+                    _deployPackagesLogger.Error(undoException.ToString());
+                }
+                ExceptionsUtility.Rethrow(ex);
+            }
+
+            _deployPackagesLogger.Trace("Deleting redundant migration data.");
+            _databaseCleaner.RemoveRedundantMigrationColumns();
+            _databaseCleaner.RefreshDataMigrationRows();
+
+            _deployPackagesLogger.Trace("Uploading DSL scripts.");
+            UploadDslScriptsToServer();
+        }
+
+        public void ExecuteGenerators()
+        {
+            var deployDatabaseOnly = _deployOptions.DatabaseOnly;
+
+            _deployPackagesLogger.Trace("Parsing DSL scripts.");
+            int dslModelConceptsCount = _dslModel.Concepts.Count();
+            _deployPackagesLogger.Trace("Application model has " + dslModelConceptsCount + " statements.");
+
+            _deployPackagesLogger.Trace("Compiling DOM assembly.");
+            int generatedTypesCount = _domGenerator.GetTypes().Count();
+            if (generatedTypesCount == 0)
+            {
+                _deployPackagesLogger.Info("Warning: Empty assembly is generated.");
+            }
+            else
+                _deployPackagesLogger.Trace("Generated " + generatedTypesCount + " types.");
+
+            var generators = GetSortedGenerators();
+            foreach (var generator in generators)
+            {
+                _deployPackagesLogger.Trace("Executing " + generator.GetType().Name + ".");
+                generator.Generate();
+            }
+            if (!generators.Any())
+                _deployPackagesLogger.Trace("No additional generators.");
+        }
+
+        public void UpdateDatabase()
+        {
+            _deployPackagesLogger.Trace("SQL connection: " + SqlUtility.SqlConnectionInfo(SqlUtility.ConnectionString));
+            ValidateDbConnection();
+
+            _deployPackagesLogger.Trace("Preparing Rhetos database.");
+            PrepareRhetosDatabase();
 
             _deployPackagesLogger.Trace("Cleaning old migration data.");
             _databaseCleaner.RemoveRedundantMigrationColumns();

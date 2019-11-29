@@ -47,7 +47,7 @@ namespace Rhetos.Deployment
 
         private const string PackagesFileName = "InstalledPackages.json";
 
-        private static string PackagesFilePath(RhetosAppEnvironment rhetosAppEnvironment) => Path.Combine(rhetosAppEnvironment.GeneratedFolder, PackagesFileName);
+        private static string PackagesFilePath(RhetosAppEnvironment rhetosAppEnvironment) => Path.Combine(rhetosAppEnvironment.BinFolder, PackagesFileName);
 
         private IEnumerable<InstalledPackage> Load()
         {

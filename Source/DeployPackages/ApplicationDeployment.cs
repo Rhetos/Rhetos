@@ -61,7 +61,7 @@ namespace DeployPackages
                 performanceLogger.Write(stopwatch, "DeployPackages.Program: Modules and plugins registered.");
                 Plugins.LogRegistrationStatistics("Generating application", container, _logProvider);
 
-                container.Resolve<ApplicationGenerator>().ExecuteGenerators();
+                container.Resolve<ApplicationGenerator>().ExecuteGeneratorsAndUpdateDatabase();
             }
         }
 
