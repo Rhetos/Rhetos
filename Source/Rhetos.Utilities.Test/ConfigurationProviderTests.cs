@@ -21,6 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
@@ -540,7 +541,7 @@ namespace Rhetos.Utilities.Test
             var builder = new ConfigurationBuilder()
                 .Add(new JsonFileSource("NonExistant.json"));
 
-            TestUtility.ShouldFail<FrameworkException>(() => builder.Build(), "Specified Json", "doesn't exist");
+            TestUtility.ShouldFail<FileNotFoundException>(() => builder.Build(), "NonExistant.json");
         }
 
         [TestMethod]
@@ -569,7 +570,9 @@ namespace Rhetos.Utilities.Test
             ""Colon:DoubleValue"": 3.14
         } 
     },
-    ""TrailDouble"":  12.9 
+    ""TrailDouble"":  12.9,
+    ""GuidAsString"": ""c7653c46-62a2-427b-8841-183bae56d743"",
+    ""DateTimeAsString"": ""2019-12-01T15:34:50.7962010Z""
 }";
 
             var provider = new ConfigurationBuilder()
@@ -581,7 +584,10 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(3.14, provider.GetValue("Colon:DoubleValue", 0.0, "Section:SubSection"));
             Assert.AreEqual("StringValue", provider.GetValue("StringProp", "", "Section"));
             Assert.AreEqual(12.9, provider.GetValue("TrailDouble", 0.0));
-            Assert.AreEqual(5, provider.AllKeys.Length);
+            // ensure some specific string values are kept as strings and not implicitly parsed by json parser
+            Assert.AreEqual("c7653c46-62a2-427b-8841-183bae56d743", provider.GetValue("GuidAsString", ""));
+            Assert.AreEqual("2019-12-01T15:34:50.7962010Z", provider.GetValue("DateTimeAsString", ""));
+            Assert.AreEqual(7, provider.AllKeys.Length);
         }
 
         [TestMethod]

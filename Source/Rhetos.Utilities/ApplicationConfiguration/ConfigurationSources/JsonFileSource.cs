@@ -20,22 +20,11 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 
         public IDictionary<string, object> Load()
         {
-            if (!File.Exists(_filePath))
-                throw new FrameworkException($"Specified Json configuration file '{_filePath}' doesn't exist.");
-
-            string json;
-            try
-            {
-                json = File.ReadAllText(_filePath);
-            }
-            catch (Exception e)
-            {
-                throw new FrameworkException($"Error reading Json configuration file '{_filePath}'.", e);
-            }
+            var jsonText = File.ReadAllText(_filePath);
 
             try
             {
-                var jsonSource = new JsonSource(json);
+                var jsonSource = new JsonSource(jsonText);
                 return jsonSource.Load();
             }
             catch (Exception e)
