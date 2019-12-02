@@ -65,5 +65,25 @@ namespace Rhetos.DatabaseGenerator
             var fullTypeName = GetTypeNameWithoutVersion(assemblyQualifiedName);
             return fullTypeName.Substring(fullTypeName.LastIndexOf('.') + 1); // Works even for type without namespace.
         }
+
+        /// <summary>Using generics to work on both ConceptApplication and NewConceptApplication.</summary>
+        /// <returns>Item2 depends on item1.</returns>
+        public static List<Tuple<TConceptApplication, TConceptApplication>> GetDependencyPairs<TConceptApplication>(IEnumerable<TConceptApplication> conceptApplications)
+            where TConceptApplication : ConceptApplication
+        {
+            return conceptApplications
+                .SelectMany(dependent => dependent.DependsOn
+                    .Select(dependsOn => Tuple.Create((TConceptApplication)dependsOn.ConceptApplication, dependent)))
+                .Where(dependency => dependency.Item1 != dependency.Item2)
+                .ToList();
+        }
+
+        public static void CheckKeyUniqueness(IEnumerable<ConceptApplication> appliedConcepts, string errorContext)
+        {
+            var firstError = appliedConcepts.GroupBy(pca => pca.GetConceptApplicationKey()).Where(g => g.Count() > 1).FirstOrDefault();
+            if (firstError != null)
+                throw new FrameworkException(String.Format("More than one concept application with same key {2} ('{0}') loaded in repository. Concept application IDs: {1}.",
+                    firstError.Key, string.Join(", ", firstError.Select(ca => SqlUtility.QuoteGuid(ca.Id))), errorContext));
+        }
     }
 }

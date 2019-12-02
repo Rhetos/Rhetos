@@ -18,25 +18,14 @@
 */
 
 using System;
+using Rhetos.Dsl;
+using Rhetos.Compiler;
+using System.Collections.Generic;
 
 namespace Rhetos.DatabaseGenerator
 {
-    public struct Dependency : IEquatable<Dependency>
+    public interface IDatabaseModel
     {
-        public ConceptApplication DependsOn;
-        public ConceptApplication Dependent;
-        public string DebugInfo;
-
-        public bool Equals(Dependency other)
-        {
-            return other.DependsOn.GetConceptApplicationKey().Equals(DependsOn.GetConceptApplicationKey())
-                   && other.Dependent.GetConceptApplicationKey().Equals(Dependent.GetConceptApplicationKey())
-                   && other.DebugInfo == DebugInfo;
-        }
-
-        public override int GetHashCode()
-        {
-            return DependsOn.ConceptInfoKey.GetHashCode() ^ Dependent.ConceptInfoKey.GetHashCode();
-        }
+        List<NewConceptApplication> ConceptApplications { get; }
     }
 }

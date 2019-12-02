@@ -17,26 +17,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
+using Rhetos.Dsl;
 
 namespace Rhetos.DatabaseGenerator
 {
-    public struct Dependency : IEquatable<Dependency>
+    /// <summary>
+    /// This concept implementation is used for concepts that have no database implementation.
+    /// This is useful for handling dependencies between concept application in situations where one concept application depends on another concept info
+    /// that has no implementation and which depends on a third concept application. First concept application should indirectly depend on third, even though there
+    /// is no second concept application.  Such scenarios are easier to handle if every concept has its implementation.
+    /// </summary>
+    public class NullImplementation : IConceptDatabaseDefinition
     {
-        public ConceptApplication DependsOn;
-        public ConceptApplication Dependent;
-        public string DebugInfo;
-
-        public bool Equals(Dependency other)
-        {
-            return other.DependsOn.GetConceptApplicationKey().Equals(DependsOn.GetConceptApplicationKey())
-                   && other.Dependent.GetConceptApplicationKey().Equals(Dependent.GetConceptApplicationKey())
-                   && other.DebugInfo == DebugInfo;
-        }
-
-        public override int GetHashCode()
-        {
-            return DependsOn.ConceptInfoKey.GetHashCode() ^ Dependent.ConceptInfoKey.GetHashCode();
-        }
+        public string CreateDatabaseStructure(IConceptInfo conceptInfo) { return ""; }
+        public string RemoveDatabaseStructure(IConceptInfo conceptInfo) { return ""; }
     }
 }

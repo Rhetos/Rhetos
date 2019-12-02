@@ -17,26 +17,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Dsl;
 using System;
+using System.Collections.Generic;
 
-namespace Rhetos.DatabaseGenerator
+namespace Rhetos.DatabaseGenerator.Test
 {
-    public struct Dependency : IEquatable<Dependency>
+    public class MockDslModel : IDslModel
     {
-        public ConceptApplication DependsOn;
-        public ConceptApplication Dependent;
-        public string DebugInfo;
-
-        public bool Equals(Dependency other)
+        public MockDslModel(IEnumerable<IConceptInfo> conceptInfos) { Concepts = conceptInfos; }
+        public IEnumerable<IConceptInfo> Concepts { get; private set; }
+        public IConceptInfo FindByKey(string conceptKey) { throw new NotImplementedException(); }
+        public T GetIndex<T>() where T : IDslModelIndex
         {
-            return other.DependsOn.GetConceptApplicationKey().Equals(DependsOn.GetConceptApplicationKey())
-                   && other.Dependent.GetConceptApplicationKey().Equals(Dependent.GetConceptApplicationKey())
-                   && other.DebugInfo == DebugInfo;
-        }
-
-        public override int GetHashCode()
-        {
-            return DependsOn.ConceptInfoKey.GetHashCode() ^ Dependent.ConceptInfoKey.GetHashCode();
+            throw new NotImplementedException();
         }
     }
 }
