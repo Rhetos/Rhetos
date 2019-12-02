@@ -18,6 +18,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -104,18 +105,17 @@ namespace Rhetos
 
         private static ResolveEventHandler GetSearchForAssemblyDelegate(params string[] folders)
         {
+            var searchFolders = new List<string> { Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) }.Union(folders);
             return new ResolveEventHandler((object sender, ResolveEventArgs args) =>
             {
-                // TODO: Review if loadedAssembly is needed.
-                var loadedAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetName().Name == new AssemblyName(args.Name).Name);
-                if (loadedAssembly != null)
-                    return loadedAssembly;
-
-                foreach (var folder in folders)
+                foreach (var folder in searchFolders)
                 {
                     string pluginAssemblyPath = Path.Combine(folder, new AssemblyName(args.Name).Name + ".dll");
                     if (File.Exists(pluginAssemblyPath))
+                    {
+                        Console.WriteLine("Resolving assembly from paths: " + pluginAssemblyPath);
                         return Assembly.LoadFrom(pluginAssemblyPath);
+                    }
                 }
                 return null;
             });
