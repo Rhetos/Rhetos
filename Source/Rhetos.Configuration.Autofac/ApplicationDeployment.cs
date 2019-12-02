@@ -82,7 +82,7 @@ namespace Rhetos
             InstalledPackages.Save(packages, _rhetosAppEnvironment);
         }
 
-        public void GenerateApplication(bool cleanupGeneratedFolder)
+        public void GenerateApplication()
         {
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
@@ -90,9 +90,6 @@ namespace Rhetos
             var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider)
                 .AddRhetosDeployment()
                 .AddProcessUserOverride();
-
-            if(cleanupGeneratedFolder)
-                InitialCleanup();
 
             using (var container = builder.Build())
             {

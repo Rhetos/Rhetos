@@ -67,7 +67,7 @@ namespace DeployPackages
                 {
                     deployManager.InitialCleanup();
                     deployManager.DownloadPackages(deployOptions.IgnoreDependencies);
-                    deployManager.GenerateApplication(false);
+                    deployManager.GenerateApplication();
                 }
                 else {
                     logger.Info("Skipped download packages (DeployDatabaseOnly).");
