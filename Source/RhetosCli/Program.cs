@@ -32,7 +32,6 @@ namespace Rhetos
         {
             var logProvider = new NLogProvider();
             var logger = logProvider.GetLogger("DeployPackages");
-
             logger.Trace(() => "Logging configured.");
 
             try
@@ -41,24 +40,40 @@ namespace Rhetos
                 var rhetosServerRootFolder = args[1];
 
                 var configurationProvider = BuildConfigurationProvider(args);
-                AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(rhetosServerRootFolder);
-
+                var deployOptions = configurationProvider.GetOptions<DeployOptions>();
                 var deployment = new ApplicationDeployment(configurationProvider, logProvider);
+                var rhetosAppEnvironment = new RhetosAppEnvironment(rhetosServerRootFolder);
 
                 if (string.Compare(command, "restore", true) == 0)
-                    deployment.DownloadPackages(false);
-
-                if (string.Compare(command, "build", true) == 0)
                 {
+                    AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
+                        rhetosAppEnvironment.BinFolder);
+                    deployment.DownloadPackages(deployOptions.IgnoreDependencies);
+                }
+                else if (string.Compare(command, "build", true) == 0)
+                {
+                    AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
+                        rhetosAppEnvironment.BinFolder,
+                        rhetosAppEnvironment.PluginsFolder);
                     deployment.InitialCleanup();
                     deployment.GenerateApplication();
                 }
-
-                if (string.Compare(command, "dbupdate", true) == 0)
+                else if (string.Compare(command, "dbupdate", true) == 0)
+                {
+                    AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
+                        rhetosAppEnvironment.BinFolder,
+                        rhetosAppEnvironment.PluginsFolder,
+                        rhetosAppEnvironment.GeneratedFolder);
                     deployment.UpdateDatabase();
-
-                if (string.Compare(command, "appinitialize", true) == 0)
+                }
+                else if (string.Compare(command, "appinitialize", true) == 0)
+                {
+                    AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
+                        rhetosAppEnvironment.BinFolder,
+                        rhetosAppEnvironment.PluginsFolder,
+                        rhetosAppEnvironment.GeneratedFolder);
                     deployment.InitializeGeneratedApplication();
+                }
 
                 logger.Trace("Done.");
             }
@@ -87,16 +102,16 @@ namespace Rhetos
                 .Build();
         }
 
-        private static ResolveEventHandler GetSearchForAssemblyDelegate(string rhetosServerRootFolder)
+        private static ResolveEventHandler GetSearchForAssemblyDelegate(params string[] folders)
         {
-            var rhetosAppEnvironment = new RhetosAppEnvironment(rhetosServerRootFolder);
-            return new ResolveEventHandler((object sender, ResolveEventArgs args) => {
+            return new ResolveEventHandler((object sender, ResolveEventArgs args) =>
+            {
+                // TODO: Review if loadedAssembly is needed.
                 var loadedAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetName().Name == new AssemblyName(args.Name).Name);
-
                 if (loadedAssembly != null)
                     return loadedAssembly;
 
-                foreach (var folder in new[] { Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), rhetosAppEnvironment.BinFolder, rhetosAppEnvironment.PluginsFolder, rhetosAppEnvironment.GeneratedFolder })
+                foreach (var folder in folders)
                 {
                     string pluginAssemblyPath = Path.Combine(folder, new AssemblyName(args.Name).Name + ".dll");
                     if (File.Exists(pluginAssemblyPath))
