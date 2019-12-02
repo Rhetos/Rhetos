@@ -43,22 +43,22 @@ namespace Rhetos
                 var configurationProvider = BuildConfigurationProvider(args);
                 AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(rhetosServerRootFolder);
 
-                var applicationDeployment = new ApplicationDeployment(configurationProvider, logProvider);
+                var deployment = new ApplicationDeployment(configurationProvider, logProvider);
 
                 if (string.Compare(command, "restore", true) == 0)
-                    applicationDeployment.DownloadPackages(false);
+                    deployment.DownloadPackages(false);
 
                 if (string.Compare(command, "build", true) == 0)
                 {
-                    applicationDeployment.InitialCleanup();
-                    applicationDeployment.GenerateApplication();
+                    deployment.InitialCleanup();
+                    deployment.GenerateApplication();
                 }
 
                 if (string.Compare(command, "dbupdate", true) == 0)
-                    applicationDeployment.UpdateDatabase();
+                    deployment.UpdateDatabase();
 
                 if (string.Compare(command, "appinitialize", true) == 0)
-                    applicationDeployment.InitializeGeneratedApplication();
+                    deployment.InitializeGeneratedApplication();
 
                 logger.Trace("Done.");
             }

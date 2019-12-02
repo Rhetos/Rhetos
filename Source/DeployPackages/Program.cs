@@ -62,21 +62,23 @@ namespace DeployPackages
                 if (deployOptions.StartPaused)
                     StartPaused();
 
-                var deployManager = new Rhetos.ApplicationDeployment(configurationProvider, logProvider);
+                var deployment = new Rhetos.ApplicationDeployment(configurationProvider, logProvider);
                 if (!deployOptions.DatabaseOnly)
                 {
-                    deployManager.InitialCleanup();
-                    deployManager.DownloadPackages(deployOptions.IgnoreDependencies);
-                    deployManager.GenerateApplication();
+                    deployment.InitialCleanup();
+                    deployment.DownloadPackages(deployOptions.IgnoreDependencies);
+                    deployment.GenerateApplication();
                 }
-                else {
+                else
+                {
+                    logger.Info("Skipped deleting old generated files (DeployDatabaseOnly).");
                     logger.Info("Skipped download packages (DeployDatabaseOnly).");
                     logger.Info("Skipped code generators (DeployDatabaseOnly).");
                 }
 
-                deployManager.UpdateDatabase();
-                deployManager.InitializeGeneratedApplication();
-                deployManager.RestartWebServer();
+                deployment.UpdateDatabase();
+                deployment.InitializeGeneratedApplication();
+                deployment.RestartWebServer();
 
                 logger.Trace("Done.");
             }

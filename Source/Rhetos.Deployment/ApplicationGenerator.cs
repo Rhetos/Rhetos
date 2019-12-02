@@ -72,24 +72,10 @@ namespace Rhetos.Deployment
             _deployOptions = deployOptions;
         }
 
-        public void ExecuteGeneratorsAndUpdateDatabase()
-        {
-            var deployDatabaseOnly = _deployOptions.DatabaseOnly;
-
-            ParseDslScripts();
-
-            if (deployDatabaseOnly)
-                _deployPackagesLogger.Info("Skipped code generators (DeployDatabaseOnly).");
-            else
-            {
-                ExecuteGenerators();
-            }
-
-            UpdateDatabase();
-        }
-
         public void ExecuteGenerators()
         {
+            CheckDslModelErrors();
+
             _deployPackagesLogger.Trace("Compiling DOM assembly.");
             int generatedTypesCount = _domGenerator.GetTypes().Count();
             if (generatedTypesCount == 0)
@@ -109,14 +95,11 @@ namespace Rhetos.Deployment
                 _deployPackagesLogger.Trace("No additional generators.");
         }
 
-        public void ParseDslAndExecuteGenerators()
-        {
-            ParseDslScripts();
-
-            ExecuteGenerators();
-        }
-
-        public void ParseDslScripts()
+        /// <summary>
+        /// Creating the DSL model instance *before* executing code generators, to proved better error reporting
+        /// and make it clear that a code generator did not cause a parser error.
+        /// </summary>
+        public void CheckDslModelErrors()
         {
             _deployPackagesLogger.Trace("Parsing DSL scripts.");
             int dslModelConceptsCount = _dslModel.Concepts.Count();

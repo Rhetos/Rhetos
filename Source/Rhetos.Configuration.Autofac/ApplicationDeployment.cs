@@ -49,26 +49,15 @@ namespace Rhetos
             LegacyUtilities.Initialize(configurationProvider);
         }
 
+        /// <summary>
+        /// Backup and delete generated files.
+        /// </summary>
         public void InitialCleanup()
         {
-            ThrowOnObsoleteFolders();
-            DeleteObsoleteGeneratedFiles();
-
-            // Backup and delete generated files:
-            if (!_deployOptions.DatabaseOnly)
-            {
-                _logger.Trace("Moving old generated files to cache.");
-                new GeneratedFilesCache(_rhetosAppEnvironment, _logProvider).MoveGeneratedFilesToCache();
-                _filesUtility.SafeCreateDirectory(_rhetosAppEnvironment.GeneratedFolder);
-            }
-            else
-            {
-                var missingFile = _rhetosAppEnvironment.DomAssemblyFiles.FirstOrDefault(f => !File.Exists(f));
-                if (missingFile != null)
-                    throw new UserException($"'/DatabaseOnly' switch cannot be used if the server have not been deployed successfully before. Run a regular deployment instead. Missing '{missingFile}'.");
-
-                _logger.Info("Skipped deleting old generated files (DeployDatabaseOnly).");
-            }
+            DeleteObsoleteFiles();
+            _logger.Trace("Moving old generated files to cache.");
+            new GeneratedFilesCache(_rhetosAppEnvironment, _logProvider).MoveGeneratedFilesToCache();
+            _filesUtility.SafeCreateDirectory(_rhetosAppEnvironment.GeneratedFolder);
         }
 
         public void DownloadPackages(bool ignoreDependencies)
@@ -97,19 +86,17 @@ namespace Rhetos
                 performanceLogger.Write(stopwatch, "DeployPackages.Program: Modules and plugins registered.");
                 Plugins.LogRegistrationStatistics("Generating application", container, _logProvider);
 
-                container.Resolve<ApplicationGenerator>().ParseDslAndExecuteGenerators();
+                container.Resolve<ApplicationGenerator>().ExecuteGenerators();
             }
-        }
-
-        public void CheckForUpdateDatabaseConditions()
-        {
-            var missingFile = _rhetosAppEnvironment.DomAssemblyFiles.FirstOrDefault(f => !File.Exists(f));
-            if (missingFile != null)
-                throw new UserException($"'/DatabaseOnly' switch cannot be used if the server have not been deployed successfully before. Run a regular deployment instead. Missing '{missingFile}'.");
         }
 
         public void UpdateDatabase()
         {
+            // TODO: Remove this after refactoring UpdateDatabase to use generated database model file.
+            var missingFile = _rhetosAppEnvironment.DomAssemblyFiles.FirstOrDefault(f => !File.Exists(f));
+            if (missingFile != null)
+                throw new UserException($"'/DatabaseOnly' switch cannot be used if the server have not been deployed successfully before. Run a regular deployment instead. Missing '{missingFile}'.");
+
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
@@ -159,7 +146,11 @@ namespace Rhetos
             }
         }
 
-        private void ThrowOnObsoleteFolders()
+        /// <summary>
+        /// Deletes left-over files from old versions of Rhetos framework.
+        /// Throws an exception if important data might be lost.
+        /// </summary>
+        private void DeleteObsoleteFiles()
         {
             var obsoleteFolders = new string[]
             {
@@ -169,10 +160,7 @@ namespace Rhetos
             var obsoleteFolder = obsoleteFolders.FirstOrDefault(folder => Directory.Exists(folder));
             if (obsoleteFolder != null)
                 throw new UserException("Please backup all Rhetos server folders and delete obsolete folder '" + obsoleteFolder + "'. It is no longer used.");
-        }
 
-        private void DeleteObsoleteGeneratedFiles()
-        {
             var deleteObsoleteFiles = new string[]
             {
                 Path.Combine(_rhetosAppEnvironment.BinFolder, "ServerDom.cs"),
