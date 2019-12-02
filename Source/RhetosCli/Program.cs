@@ -113,7 +113,6 @@ namespace Rhetos
                     string pluginAssemblyPath = Path.Combine(folder, new AssemblyName(args.Name).Name + ".dll");
                     if (File.Exists(pluginAssemblyPath))
                     {
-                        Console.WriteLine("Resolving assembly from paths: " + pluginAssemblyPath);
                         return Assembly.LoadFrom(pluginAssemblyPath);
                     }
                 }
