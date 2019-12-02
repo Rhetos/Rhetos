@@ -47,6 +47,7 @@ namespace Rhetos.Deployment
 
         private const string PackagesFileName = "InstalledPackages.json";
 
+        // TODO: DeployPackages must use rhetosAppEnvironment.GeneratedFolder, to avoid bundling this file with source configuration files and to make sure it is deleted on each build.
         private static string PackagesFilePath(RhetosAppEnvironment rhetosAppEnvironment) => Path.Combine(rhetosAppEnvironment.BinFolder, PackagesFileName);
 
         private IEnumerable<InstalledPackage> Load()
