@@ -21,8 +21,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 
 namespace Rhetos.Utilities.Test
 {
@@ -519,6 +521,82 @@ namespace Rhetos.Utilities.Test
 
             TestUtility.ShouldFail<FrameworkException>(() => provider.GetOptions<PocoUnsupportedType>(),
                 "not supported", "TimeZone", "UnsupportedProperty");
+        }
+
+        [TestMethod]
+        [DeploymentItem("JsonConfigurationFile.json")]
+        public void JsonConfigurationCorrect()
+        {
+            var provider = new ConfigurationBuilder()
+                .Add(new JsonFileSource("JsonConfigurationFile.json"))
+                .Build();
+
+            Assert.AreEqual(3, provider.GetValue("Prop", 0));
+            Assert.AreEqual("SectionPropValue", provider.GetValue("SectionProp", "", "Section"));
+        }
+
+        [TestMethod]
+        public void JsonFileNotFoundThrows()
+        {
+            var builder = new ConfigurationBuilder()
+                .Add(new JsonFileSource("NonExistant.json"));
+
+            TestUtility.ShouldFail<FileNotFoundException>(() => builder.Build(), "NonExistant.json");
+        }
+
+        [TestMethod]
+        [DeploymentItem("JsonConfigurationFile_Invalid.json")]
+        public void InvalidJsonFileThrows()
+        {
+            var builder = new ConfigurationBuilder()
+                .Add(new JsonFileSource("JsonConfigurationFile_Invalid.json"));
+
+            TestUtility.ShouldFail<FrameworkException>(() => builder.Build(), "Error parsing Json contents", "JsonConfigurationFile_Invalid.json");
+        }
+
+        [TestMethod]
+        public void CorrectlyParsesJson()
+        {
+            var jsonText = @"
+{
+    ""IntProp"": 1,
+    /* comment */
+    ""Section"": 
+    {
+        ""StringProp"": ""StringValue"",
+        ""SubSection"": 
+        {
+            ""Dot.BoolValue"": 12,
+            ""Colon:DoubleValue"": 3.14
+        } 
+    },
+    ""TrailDouble"":  12.9,
+    ""GuidAsString"": ""c7653c46-62a2-427b-8841-183bae56d743"",
+    ""DateTimeAsString"": ""2019-12-01T15:34:50.7962010Z""
+}";
+
+            var provider = new ConfigurationBuilder()
+                .Add(new JsonSource(jsonText))
+                .Build();
+
+            Assert.AreEqual(1, provider.GetValue("IntProp", 1));
+            Assert.AreEqual(12, provider.GetValue("Dot.BoolValue", 0, "Section:SubSection"));
+            Assert.AreEqual(3.14, provider.GetValue("Colon:DoubleValue", 0.0, "Section:SubSection"));
+            Assert.AreEqual("StringValue", provider.GetValue("StringProp", "", "Section"));
+            Assert.AreEqual(12.9, provider.GetValue("TrailDouble", 0.0));
+            // ensure some specific string values are kept as strings and not implicitly parsed by json parser
+            Assert.AreEqual("c7653c46-62a2-427b-8841-183bae56d743", provider.GetValue("GuidAsString", ""));
+            Assert.AreEqual("2019-12-01T15:34:50.7962010Z", provider.GetValue("DateTimeAsString", ""));
+            Assert.AreEqual(7, provider.AllKeys.Length);
+        }
+
+        [TestMethod]
+        public void JsonErrorsThrow()
+        {
+            Func<string, IConfigurationProvider> buildWithJson = jsonText => new ConfigurationBuilder().Add(new JsonSource(jsonText)).Build();
+
+            TestUtility.ShouldFail(() => buildWithJson("{"), "Error reading JObject from JsonReader");
+            TestUtility.ShouldFail<FrameworkException>(() => buildWithJson("{\"array\": [] }"), "Json token type Array is not allowed");
         }
     }
 }
