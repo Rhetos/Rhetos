@@ -27,7 +27,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace Rhetos.Deployment
 {
@@ -75,40 +74,45 @@ namespace Rhetos.Deployment
 
         public void ExecuteGenerators()
         {
-            var deployDatabaseOnly = _deployOptions.DatabaseOnly;
+            CheckDslModelErrors();
 
+            _deployPackagesLogger.Trace("Compiling DOM assembly.");
+            int generatedTypesCount = _domGenerator.GetTypes().Count();
+            if (generatedTypesCount == 0)
+            {
+                _deployPackagesLogger.Info("Warning: Empty assembly is generated.");
+            }
+            else
+                _deployPackagesLogger.Trace("Generated " + generatedTypesCount + " types.");
+
+            var generators = GetSortedGenerators();
+            foreach (var generator in generators)
+            {
+                _deployPackagesLogger.Trace("Executing " + generator.GetType().Name + ".");
+                generator.Generate();
+            }
+            if (!generators.Any())
+                _deployPackagesLogger.Trace("No additional generators.");
+        }
+
+        /// <summary>
+        /// Creating the DSL model instance *before* executing code generators, to proved better error reporting
+        /// and make it clear that a code generator did not cause a parser error.
+        /// </summary>
+        public void CheckDslModelErrors()
+        {
+            _deployPackagesLogger.Trace("Parsing DSL scripts.");
+            int dslModelConceptsCount = _dslModel.Concepts.Count();
+            _deployPackagesLogger.Trace("Application model has " + dslModelConceptsCount + " statements.");
+        }
+
+        public void UpdateDatabase()
+        {
             _deployPackagesLogger.Trace("SQL connection: " + SqlUtility.SqlConnectionInfo(SqlUtility.ConnectionString));
             ValidateDbConnection();
 
             _deployPackagesLogger.Trace("Preparing Rhetos database.");
             PrepareRhetosDatabase();
-
-            _deployPackagesLogger.Trace("Parsing DSL scripts.");
-            int dslModelConceptsCount = _dslModel.Concepts.Count();
-            _deployPackagesLogger.Trace("Application model has " + dslModelConceptsCount + " statements.");
-
-            if (deployDatabaseOnly)
-                _deployPackagesLogger.Info("Skipped code generators (DeployDatabaseOnly).");
-            else
-            {
-                _deployPackagesLogger.Trace("Compiling DOM assembly.");
-                int generatedTypesCount = _domGenerator.GetTypes().Count();
-                if (generatedTypesCount == 0)
-                {
-                    _deployPackagesLogger.Info("Warning: Empty assembly is generated.");
-                }
-                else
-                    _deployPackagesLogger.Trace("Generated " + generatedTypesCount + " types.");
-
-                var generators = GetSortedGenerators();
-                foreach (var generator in generators)
-                {
-                    _deployPackagesLogger.Trace("Executing " + generator.GetType().Name + ".");
-                    generator.Generate();
-                }
-                if (!generators.Any())
-                    _deployPackagesLogger.Trace("No additional generators.");
-            }
 
             _deployPackagesLogger.Trace("Cleaning old migration data.");
             _databaseCleaner.RemoveRedundantMigrationColumns();
