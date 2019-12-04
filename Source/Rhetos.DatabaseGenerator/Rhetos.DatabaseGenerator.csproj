@@ -123,14 +123,17 @@
     <Compile Include="ConceptApplicationDependency.cs" />
     <Compile Include="ConceptApplication.cs" />
     <Compile Include="ConceptDataMigrationGenerator.cs" />
+    <Compile Include="DatabaseModelBuilder.cs" />
     <Compile Include="DataMigrationScriptBuilder.cs" />
     <Compile Include="ConceptDataMigrationExecuter.cs" />
     <Compile Include="DataMigrationScriptUtility.cs" />
     <Compile Include="IConceptApplicationRepository.cs" />
+    <Compile Include="IDatabaseModel.cs" />
     <Compile Include="DatabaseGenerator.cs" />
     <Compile Include="ConceptApplicationRepository.cs" />
     <Compile Include="Dependency.cs" />
     <Compile Include="NewConceptApplication.cs" />
+    <Compile Include="NullImplementation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="..\Rhetos\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>

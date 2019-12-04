@@ -64,6 +64,12 @@ namespace Rhetos
             return builder;
         }
 
+        public static IConfigurationBuilder AddJsonFile(this IConfigurationBuilder builder, string jsonFilePath)
+        {
+            builder.Add(new JsonFileSource(jsonFilePath));
+            return builder;
+        }
+
         /// <summary>
         /// Sets RhetosAppRootPath to specified path and loads default configuration for the app at that path.
         /// Currently, web.config is expected to exist at the path and configuration will be loaded from it.

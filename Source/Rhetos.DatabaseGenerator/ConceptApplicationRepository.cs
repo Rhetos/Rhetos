@@ -32,23 +32,20 @@ namespace Rhetos.DatabaseGenerator
     public class ConceptApplicationRepository : IConceptApplicationRepository
     {
         private readonly ISqlExecuter _sqlExecuter;
-        private readonly ILogger _logger;
         private readonly XmlUtility _xmlUtility;
 
         public ConceptApplicationRepository(
             ISqlExecuter sqlExecuter,
-            ILogProvider logProvider,
             XmlUtility xmlUtility)
         {
             _sqlExecuter = sqlExecuter;
-            _logger = logProvider.GetLogger("ConceptApplicationRepository");
             _xmlUtility = xmlUtility;
         }
 
         public List<ConceptApplication> Load()
         {
             var previoslyAppliedConcepts = LoadOldConceptApplicationsFromDatabase();
-            CheckKeyUniqueness(previoslyAppliedConcepts, "loaded");
+            ConceptApplication.CheckKeyUniqueness(previoslyAppliedConcepts, "loaded");
 
             var dependencies = LoadDependenciesFromDatabase();
             EvaluateDependencies(previoslyAppliedConcepts, dependencies); // Replace guids with actual ConceptApplication instances.
@@ -101,14 +98,6 @@ namespace Rhetos.DatabaseGenerator
                     });
                 });
             return dependencies;
-        }
-
-        public static void CheckKeyUniqueness(IEnumerable<ConceptApplication> appliedConcepts, string errorContext)
-        {
-            var firstError = appliedConcepts.GroupBy(pca => pca.GetConceptApplicationKey()).Where(g => g.Count() > 1).FirstOrDefault();
-            if (firstError != null)
-                throw new FrameworkException(String.Format("More than one concept application with same key {2} ('{0}') loaded in repository. Concept application IDs: {1}.",
-                    firstError.Key, string.Join(", ", firstError.Select(ca => SqlUtility.QuoteGuid(ca.Id))), errorContext));
         }
 
         private static void EvaluateDependencies(List<ConceptApplication> previoslyAppliedConcepts, List<DependencyGuids> dependencies)

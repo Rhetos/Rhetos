@@ -32,13 +32,24 @@ namespace Rhetos.Utilities
     {
         // TODO: Move most of the methods to ISqlUtility.
         public static int SqlCommandTimeout { get; private set; } = 30;
-        public static string DatabaseLanguage { get; private set; }
-        public static string NationalLanguage { get; private set; }
-        public static string ConnectionString { get; private set; }
-        public static string ProviderName { get; private set; }
+        public static string DatabaseLanguage { get => CheckIfInitialized(_databaseLanguage); private set => _databaseLanguage = value; }
+        public static string NationalLanguage { get => CheckIfInitialized(_nationalLanguage); private set => _nationalLanguage = value; }
+        public static string ConnectionString { get => CheckIfInitialized(_connectionString); private set => _connectionString = value; }
+        public static string ProviderName { get => CheckIfInitialized(_providerName); private set => _providerName = value; }
 
         private static bool _databaseLanguageIsMsSql;
         private static bool _databaseLanguageIsOracle;
+        private static string _databaseLanguage;
+        private static string _nationalLanguage;
+        private static string _connectionString;
+        private static string _providerName;
+
+        private static T CheckIfInitialized<T>(T value)
+        {
+            if (value == null)
+                throw new FrameworkException("SqlUtility has not been initialized. Call LegacyUtilities.Initialize() at application startup.");
+            return value;
+        }
 
         public static void Initialize(RhetosAppOptions rhetosAppOptions, ConnectionStringOptions connectionStringOptions)
         {

@@ -17,23 +17,31 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Rhetos.Utilities
+namespace Rhetos.DatabaseGenerator.Test
 {
-    public class RhetosAppOptions
+    public class MockSqlExecuter : ISqlExecuter
     {
-        public string RootPath { get; set; }
-        public bool BuiltinAdminOverride { get; set; } = false;
-        public int SqlCommandTimeout { get;set; } = 30;
-        public double AuthorizationCacheExpirationSeconds { get; set; } = 30;
-        public bool AuthorizationAddUnregisteredPrincipals { get; set; } = false;
-        public bool Security__LookupClientHostname { get; set; } = false;
-        public string Security__AllClaimsForUsers { get; set; } = "";
-        public bool EntityFramework__UseDatabaseNullSemantics { get; set; } = false;
+        public List<Tuple<List<string>, bool>> ExecutedScriptsWithTransaction { get; private set; } = new List<Tuple<List<string>, bool>>();
+
+        public void ExecuteReader(string command, Action<System.Data.Common.DbDataReader> action)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
+        {
+            ExecuteSql(commands, useTransaction, null, null);
+        }
+
+        public void ExecuteSql(IEnumerable<string> commands, bool useTransaction,
+            Action<int> beforeExecute, Action<int> afterExecute)
+        {
+            ExecutedScriptsWithTransaction.Add(Tuple.Create(commands.ToList(), useTransaction));
+        }
     }
 }

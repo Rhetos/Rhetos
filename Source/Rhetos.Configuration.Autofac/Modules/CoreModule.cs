@@ -83,9 +83,6 @@ namespace Rhetos.Configuration.Autofac.Modules
                 new { Dialect = "Oracle", SqlExecuter = typeof(OracleSqlExecuter), SqlUtility = typeof(OracleSqlUtility) },
             }.ToDictionary(imp => imp.Dialect);
 
-            if (string.IsNullOrEmpty(SqlUtility.DatabaseLanguage))
-                throw new FrameworkException("SqlUtility has not been initialized. LegacyUtilities.Initialize() should be called at application startup.");
-
             var sqlImplementation = sqlImplementations.GetValue(SqlUtility.DatabaseLanguage,
                 () => "Unsupported database language '" + SqlUtility.DatabaseLanguage
                     + "'. Supported languages are: " + string.Join(", ", sqlImplementations.Keys) + ".");

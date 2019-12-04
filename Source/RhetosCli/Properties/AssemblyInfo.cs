@@ -24,10 +24,10 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("DeployPackages.Test")]
+[assembly: AssemblyTitle("RhetosCli")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyProduct("DeployPackages.Test")]
+[assembly: AssemblyProduct("RhetosCli")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
@@ -36,7 +36,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("a0fec8ba-d4fd-48b8-9813-c1cf3c2bd49b")]
+[assembly: Guid("13864809-505b-4fe3-b04e-31f9735b5ffc")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -47,3 +47,4 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
+// [assembly: AssemblyVersion("1.0.*")]

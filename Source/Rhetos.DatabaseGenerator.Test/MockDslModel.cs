@@ -17,23 +17,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Dsl;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Rhetos.Utilities
+namespace Rhetos.DatabaseGenerator.Test
 {
-    public class RhetosAppOptions
+    public class MockDslModel : IDslModel
     {
-        public string RootPath { get; set; }
-        public bool BuiltinAdminOverride { get; set; } = false;
-        public int SqlCommandTimeout { get;set; } = 30;
-        public double AuthorizationCacheExpirationSeconds { get; set; } = 30;
-        public bool AuthorizationAddUnregisteredPrincipals { get; set; } = false;
-        public bool Security__LookupClientHostname { get; set; } = false;
-        public string Security__AllClaimsForUsers { get; set; } = "";
-        public bool EntityFramework__UseDatabaseNullSemantics { get; set; } = false;
+        public MockDslModel(IEnumerable<IConceptInfo> conceptInfos) { Concepts = conceptInfos; }
+        public IEnumerable<IConceptInfo> Concepts { get; private set; }
+        public IConceptInfo FindByKey(string conceptKey) { throw new NotImplementedException(); }
+        public T GetIndex<T>() where T : IDslModelIndex
+        {
+            throw new NotImplementedException();
+        }
     }
 }
