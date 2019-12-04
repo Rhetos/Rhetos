@@ -68,6 +68,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             pluginRegistration.FindAndRegisterPlugins<IConceptDataMigration>(typeof(IConceptDataMigration<>));
             builder.RegisterType<DataMigrationScripts>();
             builder.RegisterType<DatabaseCleaner>();
+            builder.RegisterType<ConceptDataMigrationGenerator>().As<IGenerator>();
         }
 
         private void AddDslDeployment(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
