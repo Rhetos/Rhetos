@@ -151,7 +151,7 @@
     <Compile Include="ApplicationConfiguration\IConfigurationProvider.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationSources\IConfigurationSource.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationSources\KeyValuesSource.cs" />
-    <Compile Include="DeployOptions.cs" />
+    <Compile Include="BuildOptions.cs" />
     <Compile Include="Legacy\LegacyUtilities.cs" />
     <Compile Include="Legacy\Configuration.cs" />
     <Compile Include="Legacy\ConfigUtility.cs" />

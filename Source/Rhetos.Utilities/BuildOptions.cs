@@ -25,15 +25,15 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Utilities
 {
-    public class RhetosAppOptions
+    public class BuildOptions
     {
-        public string RootPath { get; set; }
-        public bool BuiltinAdminOverride { get; set; } = false;
-        public int SqlCommandTimeout { get;set; } = 30;
-        public bool SkipRecompute { get; set; }
-        public double AuthorizationCacheExpirationSeconds { get; set; } = 30;
-        public bool AuthorizationAddUnregisteredPrincipals { get; set; } = false;
-        public bool Security__LookupClientHostname { get; set; } = false;
-        public string Security__AllClaimsForUsers { get; set; } = "";
+        public bool Debug { get; set; }
+        public bool ShortTransactions { get; set; }
+        // redundant options with deploy options of the same name, one should be removed
+        public bool DatabaseOnly { get; set; }
+        public bool EntityFramework__UseDatabaseNullSemantics { get; set; } = false;
+        public bool DataMigration__SkipScriptsWithWrongOrder { get; set; } = true;
+        public bool CommonConcepts__Legacy__AutoGeneratePolymorphicProperty { get; set; } = true;
+        public bool CommonConcepts__Legacy__CascadeDeleteInDatabase { get; set; } = true;
     }
 }

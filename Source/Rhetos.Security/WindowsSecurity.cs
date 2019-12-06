@@ -80,7 +80,7 @@ namespace Rhetos.Security
 
                 if (string.IsNullOrEmpty(name))
                 {
-                    string ipv4 = IPv4FromIPv6.Match(endpointInfo.Address).Groups[1].Value;
+                    var ipv4 = IPv4FromIPv6.Match(endpointInfo.Address).Groups[1].Value;
                     if (!string.IsNullOrEmpty(ipv4))
                     {
                         _logger.Trace(() => "Extracted IPv4 address: " + ipv4);
@@ -125,7 +125,7 @@ namespace Rhetos.Security
         {
             // WARNING: When making any changes to this function, please make sure that it works correctly when the process is run on IIS with the "ApplicationPoolIdentity".
 
-            WindowsPrincipal principal = new WindowsPrincipal(windowsIdentity);
+            var principal = new WindowsPrincipal(windowsIdentity);
 
             // Returns true if user is a local administrator AND the process is running under elevated privileges.
             return principal.IsInRole(WindowsBuiltInRole.Administrator);
@@ -140,14 +140,14 @@ namespace Rhetos.Security
         {
             var stopwatch = Stopwatch.StartNew();
 
-            string accountName = RemoveDomainPrefix(username);
+            var accountName = RemoveDomainPrefix(username);
 
             // Search user's domain groups:
 
             var userNestedMembership = new List<string>();
 
-            DirectoryEntry domainConnection = new DirectoryEntry("LDAP://" + Environment.UserDomainName);
-            DirectorySearcher searcher = new DirectorySearcher(domainConnection);
+            var domainConnection = new DirectoryEntry("LDAP://" + Environment.UserDomainName);
+            var searcher = new DirectorySearcher(domainConnection);
             searcher.Filter = "(samAccountName=" + accountName + ")";
             searcher.PropertiesToLoad.Add("name");
 
@@ -167,7 +167,7 @@ namespace Rhetos.Security
 
                 userNestedMembership.Add(accountName);
 
-                DirectoryEntry theUser = searchResult.GetDirectoryEntry();
+                var theUser = searchResult.GetDirectoryEntry();
                 theUser.RefreshCache(new[] { "tokenGroups" });
 
                 foreach (byte[] resultBytes in theUser.Properties["tokenGroups"])
@@ -178,22 +178,22 @@ namespace Rhetos.Security
 
                     _logger.Trace(() => string.Format("User '{0}' is a member of group with objectSid '{1}'.", accountName, mySID.Value));
 
-                    DirectorySearcher sidSearcher = new DirectorySearcher(domainConnection);
+                    var sidSearcher = new DirectorySearcher(domainConnection);
                     sidSearcher.Filter = "(objectSid=" + mySID.Value + ")";
                     sidSearcher.PropertiesToLoad.Add("name");
                     sidSearcher.PropertiesToLoad.Add("displayname");
 
-                    SearchResult sidResult = sidSearcher.FindOne();
+                    var sidResult = sidSearcher.FindOne();
                     if (sidResult != null)
                     {
-                        string name = sidResult.Properties["name"][0].ToString();
+                        var name = sidResult.Properties["name"][0].ToString();
                         userNestedMembership.Add(name);
                         _logger.Trace(() => string.Format("Added membership to group with name '{0}' for user '{1}'.", name, accountName));
 
                         var displayNameProperty = sidResult.Properties["displayname"];
                         if (displayNameProperty.Count > 0)
                         {
-                            string displayName = displayNameProperty[0].ToString();
+                            var displayName = displayNameProperty[0].ToString();
                             if (!string.Equals(name, displayName))
                             {
                                 userNestedMembership.Add(displayName);
@@ -228,7 +228,7 @@ namespace Rhetos.Security
                 throw new ClientException(msg);
             }
 
-            string usernameWithoutDomain = username.Substring(domainPrefix.Length);
+            var usernameWithoutDomain = username.Substring(domainPrefix.Length);
             _logger.Trace(() => "Identity without domain: " + usernameWithoutDomain);
             return usernameWithoutDomain;
         }

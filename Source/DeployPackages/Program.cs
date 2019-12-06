@@ -18,6 +18,7 @@
 */
 
 using Rhetos;
+using Rhetos.Deployment;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;

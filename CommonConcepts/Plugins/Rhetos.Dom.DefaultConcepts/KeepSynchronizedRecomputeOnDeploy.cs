@@ -38,21 +38,21 @@ namespace Rhetos.Dom.DefaultConcepts
         ILogger _performanceLogger;
         ILogger _logger;
         CurrentKeepSynchronizedMetadata _currentKeepSynchronizedMetadata;
-        DeployOptions _deployOptions;
+        private RhetosAppOptions _rhetosAppOptions;
         IDslModel _dslModel;
 
         public KeepSynchronizedRecomputeOnDeploy(
             GenericRepositories genericRepositories,
             ILogProvider logProvider,
             CurrentKeepSynchronizedMetadata currentKeepSynchronizedMetadata,
-            DeployOptions deployOptions,
+            RhetosAppOptions rhetosAppOptions,
             IDslModel dslModel)
         {
             _genericRepositories = genericRepositories;
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("KeepSynchronizedRecomputeOnDeploy");
             _currentKeepSynchronizedMetadata = currentKeepSynchronizedMetadata;
-            _deployOptions = deployOptions;
+            _rhetosAppOptions = rhetosAppOptions;
             _dslModel = dslModel;
         }
 
@@ -67,7 +67,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             var skipRecomputeDslConcept = new HashSet<string>(_dslModel.FindByType<SkipRecomputeOnDeployInfo>().Select(GetComputationKey));
 
-            bool skipRecomputeDeployParameter = _deployOptions.SkipRecompute;
+            bool skipRecomputeDeployParameter = _rhetosAppOptions.SkipRecompute;
 
             IEnumerable<IKeepSynchronizedMetadata> toInsert, toUpdate, toDelete;
             keepSyncRepos.Diff(oldItems, _currentKeepSynchronizedMetadata, new SameRecord(), SameValue, Assign, out toInsert, out toUpdate, out toDelete);

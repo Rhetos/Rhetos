@@ -77,11 +77,11 @@ namespace CommonConcepts.Test
         {
             container.InitializeSession += builder => 
             {
-                var newRhetosAppOptions = builder.GetInitializationContext().ConfigurationProvider.GetOptions<RhetosAppOptions>();
-                newRhetosAppOptions.EntityFramework__UseDatabaseNullSemantics = useDatabaseNullSemantics;
-                builder.RegisterInstance(newRhetosAppOptions);
+                var newBuildOptions = builder.GetInitializationContext().ConfigurationProvider.GetOptions<BuildOptions>();
+                newBuildOptions.EntityFramework__UseDatabaseNullSemantics = useDatabaseNullSemantics;
+                builder.RegisterInstance(newBuildOptions);
             };
-            Console.WriteLine($"{nameof(RhetosAppOptions)}.{nameof(RhetosAppOptions.EntityFramework__UseDatabaseNullSemantics)} = {useDatabaseNullSemantics}");
+            Console.WriteLine($"{nameof(BuildOptions)}.{nameof(BuildOptions.EntityFramework__UseDatabaseNullSemantics)} = {useDatabaseNullSemantics}");
         }
     }
 }
