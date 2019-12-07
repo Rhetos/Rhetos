@@ -110,7 +110,7 @@ namespace Rhetos
                 performanceLogger.Write(stopwatch, "DeployPackages.Program: Modules and plugins registered.");
                 ContainerBuilderPluginRegistration.LogRegistrationStatistics("Generating application", container, _logProvider);
 
-                container.Resolve<ApplicationGenerator>().UpdateDatabase();
+                container.Resolve<DatabaseDeployment>().UpdateDatabase();
             }
         }
 

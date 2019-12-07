@@ -29,8 +29,8 @@ namespace Rhetos.DatabaseGenerator
     public class NewConceptApplication : ConceptApplication
     {
         /// <summary>
-        /// Properties DependsOn, CreateQuery, RemoveQuery will be set by DatabaseModelBuilder.
-        /// Id will be updated later by DatabaseGenerator, when matching with the old concepts applications if same.
+        /// Properties DependsOn, CreateQuery, RemoveQuery will be set by <see cref="DatabaseModelGenerator"/>.
+        /// Id will be updated later by <see cref="DatabaseGenerator"/>, when matching with the old concepts applications if same.
         /// OldCreationOrder will not be set or used.Is used only in base for old concept applications.
         /// </summary>
         public NewConceptApplication(IConceptInfo conceptInfo, IConceptDatabaseDefinition conceptImplementation)
