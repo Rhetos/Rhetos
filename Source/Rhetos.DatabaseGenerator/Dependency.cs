@@ -23,20 +23,20 @@ namespace Rhetos.DatabaseGenerator
 {
     public struct Dependency : IEquatable<Dependency>
     {
-        public ConceptApplication DependsOn;
-        public ConceptApplication Dependent;
+        public NewConceptApplication DependsOn;
+        public NewConceptApplication Dependent;
         public string DebugInfo;
 
         public bool Equals(Dependency other)
         {
-            return other.DependsOn.GetConceptApplicationKey().Equals(DependsOn.GetConceptApplicationKey())
-                   && other.Dependent.GetConceptApplicationKey().Equals(Dependent.GetConceptApplicationKey())
+            return other.DependsOn.ConceptApplication.GetConceptApplicationKey().Equals(DependsOn.ConceptApplication.GetConceptApplicationKey())
+                   && other.Dependent.ConceptApplication.GetConceptApplicationKey().Equals(Dependent.ConceptApplication.GetConceptApplicationKey())
                    && other.DebugInfo == DebugInfo;
         }
 
         public override int GetHashCode()
         {
-            return DependsOn.ConceptInfoKey.GetHashCode() ^ Dependent.ConceptInfoKey.GetHashCode();
+            return DependsOn.ConceptApplication.ConceptInfoKey.GetHashCode() ^ Dependent.ConceptApplication.ConceptInfoKey.GetHashCode();
         }
     }
 }

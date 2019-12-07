@@ -17,48 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Rhetos.Dsl;
-using Rhetos.Utilities;
+using System;
+using System.Linq;
 
 namespace Rhetos.DatabaseGenerator
 {
-    public class NewConceptApplication : ConceptApplication
+    public class NewConceptApplication
     {
-        /// <summary>
-        /// Properties DependsOn, CreateQuery, RemoveQuery will be set by <see cref="DatabaseModelGenerator"/>.
-        /// Id will be updated later by <see cref="DatabaseGenerator"/>, when matching with the old concepts applications if same.
-        /// OldCreationOrder will not be set or used.Is used only in base for old concept applications.
-        /// </summary>
-        public NewConceptApplication(IConceptInfo conceptInfo, IConceptDatabaseDefinition conceptImplementation)
-        {
-            ConceptInfo = conceptInfo;
-            ConceptInfoTypeName = conceptInfo.GetType().AssemblyQualifiedName;
-            ConceptInfoKey = conceptInfo.GetKey();
-            ConceptImplementation = conceptImplementation;
-            ConceptImplementationType = conceptImplementation.GetType();
-            ConceptImplementationTypeName = ConceptImplementationType.AssemblyQualifiedName;
-            ConceptImplementationVersion = GetVersionFromAttribute(ConceptImplementationType);
-        }
-
-        private static Version GetVersionFromAttribute(Type implementationType)
-        {
-            ConceptImplementationVersionAttribute versionAttribute = implementationType
-                .GetCustomAttributes(typeof(ConceptImplementationVersionAttribute), false)
-                .SingleOrDefault()
-                as ConceptImplementationVersionAttribute;
-
-            if (versionAttribute != null)
-                return versionAttribute.Version;
-            return new Version(0, 0);
-        }
-
+        public ConceptApplication ConceptApplication;
         public IConceptInfo ConceptInfo;
         public IConceptDatabaseDefinition ConceptImplementation;
         public Type ConceptImplementationType;
-        public Version ConceptImplementationVersion;
     }
 }

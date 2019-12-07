@@ -246,8 +246,8 @@ namespace Rhetos.DatabaseGenerator.Test
             var conceptApplications = databaseModelGenerator.CreateNewApplications();
             tempConceptInfoDependencies = null;
 
-            var ca1 = conceptApplications.Where(ca => ca.ConceptInfo == ci1).Single();
-            var ca3 = conceptApplications.Where(ca => ca.ConceptInfo == ci3).Single();
+            var ca1 = conceptApplications.Where(ca => ca.ConceptInfoKey == ci1.GetKey()).Single();
+            var ca3 = conceptApplications.Where(ca => ca.ConceptInfoKey == ci3.GetKey()).Single();
 
             Assert.IsTrue(DirectAndIndirectDependencies(ca1).Contains(ca3), "Concept application ca3 should be included in direct or indirect dependencies of ca1.");
         }

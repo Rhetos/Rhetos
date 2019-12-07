@@ -18,7 +18,6 @@
 */
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System.Diagnostics;
@@ -68,10 +67,9 @@ namespace Rhetos.DatabaseGenerator
         JsonSerializerSettings JsonSerializerSettings => new JsonSerializerSettings
         {
             PreserveReferencesHandling = PreserveReferencesHandling.Objects,
-            ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-            TypeNameHandling = TypeNameHandling.Auto,
+            //ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
+            //TypeNameHandling = TypeNameHandling.None,
             Formatting = Formatting.Indented,
-            Converters = new[] { new VersionConverter() },
         };
     }
 }

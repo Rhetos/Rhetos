@@ -17,12 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Rhetos.Dsl;
-using Rhetos.Utilities;
 
 namespace Rhetos.DatabaseGenerator
 {
@@ -34,8 +32,8 @@ namespace Rhetos.DatabaseGenerator
         public string ConceptInfoKey;
         public string ConceptImplementationTypeName;
 
-        public string CreateQuery; // SQL query used to create the concept in database.
-        public string RemoveQuery; // SQL query used to remove the concept in database.
+        public string CreateQuery; // SQL query that creates the concept in database.
+        public string RemoveQuery; // SQL query that removes the concept from database.
         public ConceptApplicationDependency[] DependsOn;
         public int OldCreationOrder;
 
@@ -66,14 +64,11 @@ namespace Rhetos.DatabaseGenerator
             return fullTypeName.Substring(fullTypeName.LastIndexOf('.') + 1); // Works even for type without namespace.
         }
 
-        /// <summary>Using generics to work on both ConceptApplication and NewConceptApplication.</summary>
-        /// <returns>Item2 depends on item1.</returns>
-        public static List<Tuple<TConceptApplication, TConceptApplication>> GetDependencyPairs<TConceptApplication>(IEnumerable<TConceptApplication> conceptApplications)
-            where TConceptApplication : ConceptApplication
+        public static List<Tuple<ConceptApplication, ConceptApplication>> GetDependencyPairs(IEnumerable<ConceptApplication> conceptApplications)
         {
             return conceptApplications
                 .SelectMany(dependent => dependent.DependsOn
-                    .Select(dependsOn => Tuple.Create((TConceptApplication)dependsOn.ConceptApplication, dependent)))
+                    .Select(dependsOn => Tuple.Create(dependsOn.ConceptApplication, dependent)))
                 .Where(dependency => dependency.Item1 != dependency.Item2)
                 .ToList();
         }

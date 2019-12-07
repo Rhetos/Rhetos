@@ -45,7 +45,6 @@ namespace Rhetos.DatabaseGenerator.Test
         public string Name { get; set; }
     }
 
-    [ConceptImplementationVersion(1, 0)]
     class TestConceptImplementation : IConceptDatabaseDefinition
     {
         public string CreateDatabaseStructure(IConceptInfo conceptInfo) { return ""; }
@@ -119,14 +118,14 @@ namespace Rhetos.DatabaseGenerator.Test
 
                 if (sqlSplit.Contains("AppliedConcept"))
                 {
-                    // SELECT ID, InfoType, SerializedInfo, ConceptInfoKey, ImplementationType, ConceptImplementationVersion, CreateQuery, RemoveQuery, ModificationOrder
+                    // SELECT ID, InfoType, ConceptInfoKey, ImplementationType, CreateQuery, RemoveQuery, ModificationOrder
                     table.Columns.Add(new DataColumn("ID", typeof(Guid)));
                     table.Columns.Add();
                     table.Columns.Add();
                     table.Columns.Add();
                     table.Columns.Add();
                     table.Columns.Add();
-                    table.Columns.Add(new DataColumn("ModificationOrder", typeof(Int32)));
+                    table.Columns.Add(new DataColumn("ModificationOrder", typeof(int)));
 
                     foreach (var ca in Expected)
                         AddRow(table, ca);
@@ -151,7 +150,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
             private static void AddRow(DataTable table, ConceptApplication ca)
             {
-                // SELECT ID, InfoType, SerializedInfo, ConceptInfoKey, ImplementationType, ConceptImplementationVersion, CreateQuery, RemoveQuery, ModificationOrder
+                // SELECT ID, InfoType, ConceptInfoKey, ImplementationType, CreateQuery, RemoveQuery, ModificationOrder
                 table.Rows.Add(
                     ca.Id,
                     ca.ConceptInfoTypeName,
@@ -193,9 +192,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
         private ConceptApplicationRepository TestConceptApplicationRepository(IEnumerable<ConceptApplication> conceptApplications)
         {
-            return new ConceptApplicationRepository(
-                new MockSqlExecuter(conceptApplications),
-                new XmlUtility(new DomainObjectModelMock()));
+            return new ConceptApplicationRepository(new MockSqlExecuter(conceptApplications));
         }
 
         [TestMethod]

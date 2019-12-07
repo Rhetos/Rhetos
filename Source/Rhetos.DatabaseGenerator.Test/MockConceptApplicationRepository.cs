@@ -20,9 +20,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rhetos.Dsl;
-using Rhetos.TestCommon;
-using Rhetos.Utilities;
 
 namespace Rhetos.DatabaseGenerator.Test
 {
@@ -30,39 +27,39 @@ namespace Rhetos.DatabaseGenerator.Test
     {
         public List<ConceptApplication> ConceptApplications { get; set; }
         public List<ConceptApplication> DeletedLog { get; private set; } = new List<ConceptApplication>();
-        public List<NewConceptApplication> InsertedLog { get; private set; } = new List<NewConceptApplication>();
-        public List<Tuple<NewConceptApplication, ConceptApplication>> UpdatedLog { get; private set; } = new List<Tuple<NewConceptApplication, ConceptApplication>>();
+        public List<ConceptApplication> InsertedLog { get; private set; } = new List<ConceptApplication>();
+        public List<Tuple<ConceptApplication, ConceptApplication>> UpdatedLog { get; private set; } = new List<Tuple<ConceptApplication, ConceptApplication>>();
 
         public List<ConceptApplication> Load()
         {
             return ConceptApplications;
         }
 
-        public List<string> DeleteMetadataSql(ConceptApplication ca)
+        public List<string> DeleteMetadataSql(ConceptApplication oldCA)
         {
-            DeletedLog.Add(ca);
-            return new List<string> { $"del {ca.ConceptInfoKey}" };
+            DeletedLog.Add(oldCA);
+            return new List<string> { $"del {oldCA.ConceptInfoKey}" };
         }
 
-        public List<string> InsertMetadataSql(NewConceptApplication ca)
+        public List<string> InsertMetadataSql(ConceptApplication newCA)
         {
-            InsertedLog.Add(ca);
-            return new List<string> { $"ins {ca.ConceptInfoKey}" };
+            InsertedLog.Add(newCA);
+            return new List<string> { $"ins {newCA.ConceptInfoKey}" };
         }
 
-        private ConceptApplicationRepository _conceptApplicationRepository = new ConceptApplicationRepository(null, new Utilities.XmlUtility(null));
+        private ConceptApplicationRepository _conceptApplicationRepository = new ConceptApplicationRepository(null);
 
-        public List<string> UpdateMetadataSql(NewConceptApplication ca, ConceptApplication oldApp)
+        public List<string> UpdateMetadataSql(ConceptApplication newCA, ConceptApplication oldCA)
         {
             // This is called event if the metadata has not changed.
             // It is responsible for checking if the new CA has same metadata at the old one.
-            var sql = _conceptApplicationRepository.UpdateMetadataSql(ca, oldApp);
-            Console.WriteLine($"[UpdateMetadataSql] {ca.ConceptInfoKey}:{string.Concat(sql.Select(script => $"\r\n - {script}"))}.");
+            var sql = _conceptApplicationRepository.UpdateMetadataSql(newCA, oldCA);
+            Console.WriteLine($"[UpdateMetadataSql] {newCA.ConceptInfoKey}:{string.Concat(sql.Select(script => $"\r\n - {script}"))}.");
 
             if (sql.Any())
             {
-                UpdatedLog.Add(Tuple.Create(ca, oldApp));
-                return new List<string> { $"upd {ca.ConceptInfoKey}" };
+                UpdatedLog.Add(Tuple.Create(newCA, oldCA));
+                return new List<string> { $"upd {newCA.ConceptInfoKey}" };
             }
             else
                 return new List<string> { };

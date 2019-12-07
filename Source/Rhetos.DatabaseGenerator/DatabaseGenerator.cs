@@ -92,7 +92,7 @@ namespace Rhetos.DatabaseGenerator
                 _performanceLogger.Write(stopwatch, "DatabaseGenerator: Removed unused concept applications.");
 
                 List<ConceptApplication> toBeRemoved;
-                List<NewConceptApplication> toBeInserted;
+                List<ConceptApplication> toBeInserted;
                 CalculateApplicationsToBeRemovedAndInserted(oldApplications, newApplications, out toBeRemoved, out toBeInserted);
                 _performanceLogger.Write(stopwatch, "DatabaseGenerator: Analyzed differences in database structure.");
 
@@ -107,7 +107,7 @@ namespace Rhetos.DatabaseGenerator
             }
         }
 
-        private static void MatchAndComputeNewApplicationIds(List<ConceptApplication> oldApplications, List<NewConceptApplication> newApplications)
+        private static void MatchAndComputeNewApplicationIds(List<ConceptApplication> oldApplications, List<ConceptApplication> newApplications)
         {
             var oldApplicationIds = oldApplications.ToDictionary(oa => oa.GetConceptApplicationKey(), oa => oa.Id);
             foreach (var newApp in newApplications) 
@@ -115,7 +115,7 @@ namespace Rhetos.DatabaseGenerator
                     newApp.Id = Guid.NewGuid();
         }
 
-        private List<NewConceptApplication> TrimEmptyApplications(List<NewConceptApplication> newApplications)
+        private List<ConceptApplication> TrimEmptyApplications(List<ConceptApplication> newApplications)
         {
             var emptyCreateQuery = newApplications.Where(ca => string.IsNullOrWhiteSpace(ca.CreateQuery)).ToList();
             var emptyCreateHasRemove = emptyCreateQuery.FirstOrDefault(ca => !string.IsNullOrWhiteSpace(ca.RemoveQuery));
@@ -134,8 +134,8 @@ namespace Rhetos.DatabaseGenerator
         }
 
         private void CalculateApplicationsToBeRemovedAndInserted(
-            IEnumerable<ConceptApplication> oldApplications, IEnumerable<NewConceptApplication> newApplications,
-            out List<ConceptApplication> toBeRemoved, out List<NewConceptApplication> toBeInserted)
+            IEnumerable<ConceptApplication> oldApplications, IEnumerable<ConceptApplication> newApplications,
+            out List<ConceptApplication> toBeRemoved, out List<ConceptApplication> toBeInserted)
         {
             var oldApplicationsByKey = oldApplications.ToDictionary(a => a.GetConceptApplicationKey());
             var newApplicationsByKey = newApplications.ToDictionary(a => a.GetConceptApplicationKey());
@@ -222,8 +222,8 @@ namespace Rhetos.DatabaseGenerator
         }
 
         private void ApplyChangesToDatabase(
-            List<ConceptApplication> oldApplications, List<NewConceptApplication> newApplications,
-            List<ConceptApplication> toBeRemoved, List<NewConceptApplication> toBeInserted)
+            List<ConceptApplication> oldApplications, List<ConceptApplication> newApplications,
+            List<ConceptApplication> toBeRemoved, List<ConceptApplication> toBeInserted)
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -271,7 +271,7 @@ namespace Rhetos.DatabaseGenerator
             return newScripts;
         }
 
-        private List<string> ApplyChangesToDatabase_Insert(List<NewConceptApplication> toBeInserted, List<NewConceptApplication> newApplications)
+        private List<string> ApplyChangesToDatabase_Insert(List<ConceptApplication> toBeInserted, List<ConceptApplication> newApplications)
         {
             var newScripts = new List<string>();
 
@@ -312,7 +312,7 @@ namespace Rhetos.DatabaseGenerator
             yield return Sql.Get("DatabaseGenerator_CommitAfterDDL");
         }
 
-        private List<string> ApplyChangesToDatabase_Unchanged(List<NewConceptApplication> toBeInserted, List<NewConceptApplication> newApplications, List<ConceptApplication> oldApplications)
+        private List<string> ApplyChangesToDatabase_Unchanged(List<ConceptApplication> toBeInserted, List<ConceptApplication> newApplications, List<ConceptApplication> oldApplications)
         {
             var newScripts = new List<string>();
 

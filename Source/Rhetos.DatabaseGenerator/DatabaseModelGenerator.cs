@@ -59,7 +59,7 @@ namespace Rhetos.DatabaseGenerator
 
         IEnumerable<string> IGenerator.Dependencies => Array.Empty<string>();
 
-        private List<NewConceptApplication> CreateNewApplications()
+        private List<ConceptApplication> CreateNewApplications()
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -71,9 +71,21 @@ namespace Rhetos.DatabaseGenerator
                 if (!implementations.Any())
                     implementations = new[] { new NullImplementation() };
 
-                conceptApplications.AddRange(implementations.Select(impl => new NewConceptApplication(conceptInfo, impl)));
-                // NewConceptApplication has some properties uninitialized.
-                // See the summary comment in NewConceptApplication for details.
+                conceptApplications.AddRange(implementations.Select(conceptImplementation => new NewConceptApplication
+                {
+                    ConceptApplication = new ConceptApplication
+                    {
+                        // Properties DependsOn, CreateQuery, RemoveQuery will be set later by DatabaseModelGenerator.
+                        // Property Id will be set by DatabaseGenerator when matching with the old concepts applications if same.
+                        // Property OldCreationOrder will not be set or used. It is used only when loading old concept applications from database.
+                        ConceptInfoTypeName = conceptInfo.GetType().AssemblyQualifiedName,
+                        ConceptInfoKey = conceptInfo.GetKey(),
+                        ConceptImplementationTypeName = conceptImplementation.GetType().AssemblyQualifiedName,
+                    },
+                    ConceptInfo = conceptInfo,
+                    ConceptImplementation = conceptImplementation,
+                    ConceptImplementationType = conceptImplementation.GetType(),
+                }));
             }
 
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: Created concept applications from plugins.");
@@ -86,14 +98,14 @@ namespace Rhetos.DatabaseGenerator
 
             _logger.Trace(() => ReportDependencies(conceptApplications));
 
-            return conceptApplications;
+            return conceptApplications.Select(ca => ca.ConceptApplication).ToList();
         }
 
         private void ComputeDependsOn(IEnumerable<NewConceptApplication> newConceptApplications)
         {
             var stopwatch = Stopwatch.StartNew();
             foreach (var conceptApplication in newConceptApplications)
-                conceptApplication.DependsOn = new ConceptApplicationDependency[] {};
+                conceptApplication.ConceptApplication.DependsOn = new ConceptApplicationDependency[] {};
 
             var dependencies = ExtractDependencies(newConceptApplications);
             _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: ExtractDependencies executed.");
@@ -142,7 +154,7 @@ namespace Rhetos.DatabaseGenerator
             var conceptInfoDependencies = conceptInfos.SelectMany(conceptInfo => conceptInfo.GetAllDependencies()
                 .Select(dependency => Tuple.Create(dependency, conceptInfo, "Direct or indirect IConceptInfo reference")));
 
-            return GetConceptApplicationDependencies(conceptInfoDependencies, newConceptApplications);
+            return GetConceptApplicationDependencies(conceptInfoDependencies, newConceptApplications.Select(ca => ca.ConceptApplication));
         }
 
         private static IEnumerable<Dependency> GetConceptApplicationDependencies(IEnumerable<Tuple<IConceptInfo, IConceptInfo, string>> conceptInfoDependencies, IEnumerable<ConceptApplication> conceptApplications)
@@ -175,7 +187,7 @@ namespace Rhetos.DatabaseGenerator
 
             var conceptApplicationsByImplementation = newConceptApplications
                 .GroupBy(ca => ca.ConceptImplementationType)
-                .ToDictionary(g => g.Key, g => g.ToList());
+                .ToDictionary(g => g.Key, g => g.Select(ca => ca.ConceptApplication).ToList());
 
             var distinctConceptImplementations = newConceptApplications.Select(ca => ca.ConceptImplementationType).Distinct().ToList();
 
@@ -249,7 +261,7 @@ namespace Rhetos.DatabaseGenerator
             // Generate RemoveQuery:
 
             foreach (var ca in newConceptApplications)
-                ca.RemoveQuery = GenerateRemoveQuery(ca.ConceptImplementation, ca.ConceptInfo);
+                ca.ConceptApplication.RemoveQuery = GenerateRemoveQuery(ca.ConceptImplementation, ca.ConceptInfo);
 
             // Generate CreateQuery:
 
@@ -331,22 +343,22 @@ namespace Rhetos.DatabaseGenerator
 
                 int scriptKey = int.Parse(sql.Substring(0, scriptKeyEnd));
 
-                newConceptApplications[scriptKey].CreateQuery = sql.Substring(scriptKeyEnd + ConceptApplicationSeparatorSuffix.Length).Trim();
+                newConceptApplications[scriptKey].ConceptApplication.CreateQuery = sql.Substring(scriptKeyEnd + ConceptApplicationSeparatorSuffix.Length).Trim();
             }
 
             foreach (var ca in newConceptApplications)
-                if (ca.CreateQuery == null)
-                    ca.CreateQuery = "";
+                if (ca.ConceptApplication.CreateQuery == null)
+                    ca.ConceptApplication.CreateQuery = "";
         }
 
         private static string ReportDependencies(List<NewConceptApplication> conceptApplications)
         {
             var report = new StringBuilder();
             report.Append("Dependencies:");
-            foreach (var ca in conceptApplications.Where(x => x.DependsOn.Any()))
+            foreach (var ca in conceptApplications.Where(x => x.ConceptApplication.DependsOn.Any()))
             {
                 report.AppendLine().Append(ca.ToString()).Append(" depends on:");
-                foreach (var dep in ca.DependsOn)
+                foreach (var dep in ca.ConceptApplication.DependsOn)
                     report.Append("\r\n  ").Append(dep.ConceptApplication.ToString()).Append(" (").Append(dep.DebugInfo).Append(")");
             };
             return report.ToString();

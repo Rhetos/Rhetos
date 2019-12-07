@@ -17,17 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
-using Rhetos.Logging;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rhetos.DatabaseGenerator.Test
 {
@@ -40,9 +35,9 @@ namespace Rhetos.DatabaseGenerator.Test
         {
         }
 
-        public List<NewConceptApplication> CreateNewApplications()
+        public List<ConceptApplication> CreateNewApplications()
         {
-            return (List<NewConceptApplication>)this.Invoke("CreateNewApplications");
+            return (List<ConceptApplication>)this.Invoke("CreateNewApplications");
         }
 
         public static string GetConceptApplicationSeparator(int scriptKey)

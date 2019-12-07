@@ -17,29 +17,21 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Globalization;
-using Rhetos.Utilities;
-using Rhetos.Dsl;
-using Rhetos.Extensibility;
-using Rhetos.Logging;
-using System.Text;
 
 namespace Rhetos.DatabaseGenerator
 {
     public class ConceptApplicationRepository : IConceptApplicationRepository
     {
         private readonly ISqlExecuter _sqlExecuter;
-        private readonly XmlUtility _xmlUtility;
 
         public ConceptApplicationRepository(
-            ISqlExecuter sqlExecuter,
-            XmlUtility xmlUtility)
+            ISqlExecuter sqlExecuter)
         {
             _sqlExecuter = sqlExecuter;
-            _xmlUtility = xmlUtility;
         }
 
         public List<ConceptApplication> Load()
@@ -48,7 +40,7 @@ namespace Rhetos.DatabaseGenerator
             ConceptApplication.CheckKeyUniqueness(previoslyAppliedConcepts, "loaded");
 
             var dependencies = LoadDependenciesFromDatabase();
-            EvaluateDependencies(previoslyAppliedConcepts, dependencies); // Replace guids with actual ConceptApplication instances.
+            EvaluateDependencies(previoslyAppliedConcepts, dependencies); // Replace GUIDs with actual ConceptApplication instances.
 
             return previoslyAppliedConcepts;
         }
@@ -138,63 +130,59 @@ namespace Rhetos.DatabaseGenerator
             return Sql.Get("ConceptApplicationRepository_DeleteAll");
         }
 
-        public List<string> DeleteMetadataSql(ConceptApplication ca)
+        public List<string> DeleteMetadataSql(ConceptApplication oldCA)
         {
             return new List<string>
             {
-                Sql.Format("ConceptApplicationRepository_Delete", SqlUtility.QuoteGuid(ca.Id))
+                Sql.Format("ConceptApplicationRepository_Delete", SqlUtility.QuoteGuid(oldCA.Id))
             };
         }
 
-        public List<string> InsertMetadataSql(NewConceptApplication ca)
+        public List<string> InsertMetadataSql(ConceptApplication newCA)
         {
             var sql = new List<string>();
 
             sql.Add(Sql.Format("ConceptApplicationRepository_Insert",
-                SqlUtility.QuoteGuid(ca.Id),
-                SqlUtility.QuoteText(ca.ConceptInfoTypeName),
-                SqlUtility.QuoteText(ca.ConceptInfoKey),
-                SqlUtility.QuoteText(ca.ConceptImplementationTypeName),
-                SqlUtility.QuoteText(_xmlUtility.SerializeToXml(ca.ConceptInfo)),
-                SqlUtility.QuoteText(ca.CreateQuery),
-                SqlUtility.QuoteText(ca.RemoveQuery),
-                SqlUtility.QuoteText(ca.ConceptImplementationVersion.ToString())));
+                SqlUtility.QuoteGuid(newCA.Id),
+                SqlUtility.QuoteText(newCA.ConceptInfoTypeName),
+                SqlUtility.QuoteText(newCA.ConceptInfoKey),
+                SqlUtility.QuoteText(newCA.ConceptImplementationTypeName),
+                SqlUtility.QuoteText(newCA.CreateQuery),
+                SqlUtility.QuoteText(newCA.RemoveQuery)));
 
-            foreach (var dependsOnId in ca.DependsOn.Select(d => d.ConceptApplication.Id).Distinct())
+            foreach (var dependsOnId in newCA.DependsOn.Select(d => d.ConceptApplication.Id).Distinct())
                 sql.Add(Sql.Format("ConceptApplicationRepository_InsertDependency",
-                    SqlUtility.QuoteGuid(ca.Id),
+                    SqlUtility.QuoteGuid(newCA.Id),
                     SqlUtility.QuoteGuid(dependsOnId)));
 
             return sql;
         }
 
-        public List<string> UpdateMetadataSql(NewConceptApplication ca, ConceptApplication oldApp)
+        public List<string> UpdateMetadataSql(ConceptApplication newCA, ConceptApplication oldApp)
         {
             var sql = new List<string>();
-            if (oldApp.RemoveQuery != ca.RemoveQuery)
+            if (oldApp.RemoveQuery != newCA.RemoveQuery)
                 sql.Add(Sql.Format("ConceptApplicationRepository_Update",
-                    SqlUtility.QuoteGuid(ca.Id),
-                    SqlUtility.QuoteText(ca.ConceptInfoTypeName),
-                    SqlUtility.QuoteText(ca.ConceptInfoKey),
-                    SqlUtility.QuoteText(ca.ConceptImplementationTypeName),
-                    SqlUtility.QuoteText(_xmlUtility.SerializeToXml(ca.ConceptInfo)),
-                    SqlUtility.QuoteText(ca.CreateQuery),
-                    SqlUtility.QuoteText(ca.RemoveQuery),
-                    SqlUtility.QuoteText(ca.ConceptImplementationVersion.ToString())));
+                    SqlUtility.QuoteGuid(newCA.Id),
+                    SqlUtility.QuoteText(newCA.ConceptInfoTypeName),
+                    SqlUtility.QuoteText(newCA.ConceptInfoKey),
+                    SqlUtility.QuoteText(newCA.ConceptImplementationTypeName),
+                    SqlUtility.QuoteText(newCA.CreateQuery),
+                    SqlUtility.QuoteText(newCA.RemoveQuery)));
 
             HashSet<Guid> oldDependsOn = new HashSet<Guid>(oldApp.DependsOn.Select(depOn => depOn.ConceptApplication.Id));
-            HashSet<Guid> newDependsOn = new HashSet<Guid>(ca.DependsOn.Select(depOn => depOn.ConceptApplication.Id));
+            HashSet<Guid> newDependsOn = new HashSet<Guid>(newCA.DependsOn.Select(depOn => depOn.ConceptApplication.Id));
 
-            foreach (var dependsOnId in ca.DependsOn.Select(d => d.ConceptApplication.Id).Distinct())
+            foreach (var dependsOnId in newCA.DependsOn.Select(d => d.ConceptApplication.Id).Distinct())
                 if (!oldDependsOn.Contains(dependsOnId))
                     sql.Add(Sql.Format("ConceptApplicationRepository_InsertDependency",
-                        SqlUtility.QuoteGuid(ca.Id),
+                        SqlUtility.QuoteGuid(newCA.Id),
                         SqlUtility.QuoteGuid(dependsOnId)));
 
             foreach (var dependsOnId in oldApp.DependsOn.Select(d => d.ConceptApplication.Id).Distinct())
                 if (!newDependsOn.Contains(dependsOnId))
                     sql.Add(Sql.Format("ConceptApplicationRepository_DeleteDependency",
-                        SqlUtility.QuoteGuid(ca.Id),
+                        SqlUtility.QuoteGuid(newCA.Id),
                         SqlUtility.QuoteGuid(dependsOnId)));
 
             return sql;

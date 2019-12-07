@@ -32,7 +32,6 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
     [Export(typeof(IConceptDatabaseDefinition))]
     [ExportMetadata(MefProvider.Implements, typeof(BoolPropertyInfo))]
-    [ConceptImplementationVersion(2, 0)]
     public class BoolPropertyDatabaseDefinition : IConceptDatabaseDefinition
     {
         ConceptMetadata _conceptMetadata;

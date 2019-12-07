@@ -173,7 +173,7 @@ namespace Rhetos.DatabaseGenerator.Test
             }
 
             var conceptApplicationRepository = new MockConceptApplicationRepository { ConceptApplications = oldApplications.ToList() };
-            var databaseModel = new DatabaseModel { ConceptApplications = newApplications.ToList() };
+            var databaseModel = new DatabaseModel { ConceptApplications = newApplications.ToList<ConceptApplication>() };
             var testConfig = new MockConfiguration { { "SqlExecuter.MaxJoinedScriptCount", 1 } };
             var sqlExecuter = new MockSqlExecuter();
             var sqlTransactionBatches = new SqlTransactionBatches(sqlExecuter, testConfig, new ConsoleLogProvider());
@@ -196,7 +196,7 @@ namespace Rhetos.DatabaseGenerator.Test
                 (Report: string.Join(", ", sqlExecuter.ExecutedScriptsWithTransaction.SelectMany(script => script.Item1)),
                 SqlExecuter: sqlExecuter,
                 RemovedConcepts: conceptApplicationRepository.DeletedLog,
-                InsertedConcepts: conceptApplicationRepository.InsertedLog);
+                InsertedConcepts: conceptApplicationRepository.InsertedLog.Cast<NewConceptApplication>().ToList());
         }
 
         //============================================================================

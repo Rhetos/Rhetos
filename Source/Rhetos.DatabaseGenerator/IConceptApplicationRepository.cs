@@ -24,9 +24,9 @@ namespace Rhetos.DatabaseGenerator
 {
     public interface IConceptApplicationRepository
     {
-        List<string> InsertMetadataSql(NewConceptApplication ca);
-        List<string> UpdateMetadataSql(NewConceptApplication ca, ConceptApplication oldApp);
-        List<string> DeleteMetadataSql(ConceptApplication ca);
+        List<string> InsertMetadataSql(ConceptApplication newCA);
+        List<string> UpdateMetadataSql(ConceptApplication newCA, ConceptApplication oldCA);
+        List<string> DeleteMetadataSql(ConceptApplication oldCA);
         List<ConceptApplication> Load();
     }
 }

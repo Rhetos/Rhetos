@@ -134,19 +134,17 @@ END;</value>
 	InfoType NCLOB;
 	ConceptInfoKey NCLOB;
 	ImplementationType NCLOB;
-	SerializedInfo NCLOB;
 	CreateQuery NCLOB;
 	RemoveQuery NCLOB;
 BEGIN
 	InfoType := N{1};
 	ConceptInfoKey := N{2};
 	ImplementationType := N{3};
-	SerializedInfo := N{4};
-	CreateQuery := N{5};
-	RemoveQuery := N{6};
+	CreateQuery := N{4};
+	RemoveQuery := N{5};
 	
-	INSERT INTO Rhetos.AppliedConcept (ID, InfoType, ConceptInfoKey, ImplementationType, SerializedInfo, CreateQuery, RemoveQuery, ConceptImplementationVersion)
-	VALUES ({0}, InfoType, ConceptInfoKey, ImplementationType, SerializedInfo, CreateQuery, RemoveQuery, N{7});
+	INSERT INTO Rhetos.AppliedConcept (ID, InfoType, ConceptInfoKey, ImplementationType, CreateQuery, RemoveQuery)
+	VALUES ({0}, InfoType, ConceptInfoKey, ImplementationType, CreateQuery, RemoveQuery);
 END;</value>
   </data>
   <data name="ConceptApplicationRepository_Update" xml:space="preserve">
@@ -154,26 +152,22 @@ END;</value>
 	vInfoType NCLOB;
 	vConceptInfoKey NCLOB;
 	vImplementationType NCLOB;
-	vSerializedInfo NCLOB;
 	vCreateQuery NCLOB;
 	vRemoveQuery NCLOB;
 BEGIN
 	vInfoType := N{1};
 	vConceptInfoKey := N{2};
 	vImplementationType := N{3};
-	vSerializedInfo := N{4};
-	vCreateQuery := N{5};
-	vRemoveQuery := N{6};
+	vCreateQuery := N{4};
+	vRemoveQuery := N{5};
 	
 	UPDATE Rhetos.AppliedConcept
 	SET
     InfoType = vInfoType,
     ConceptInfoKey = vConceptInfoKey,
     ImplementationType = vImplementationType,
-    SerializedInfo = vSerializedInfo,
     CreateQuery = vCreateQuery,
     RemoveQuery = vRemoveQuery,
-    ConceptImplementationVersion = N{7}
   WHERE ID = {0};
 END;</value>
   </data>
