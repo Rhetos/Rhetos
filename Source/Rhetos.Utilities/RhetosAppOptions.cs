@@ -31,6 +31,7 @@ namespace Rhetos.Utilities
         public bool BuiltinAdminOverride { get; set; } = false;
         public int SqlCommandTimeout { get;set; } = 30;
         public bool SkipRecompute { get; set; }
+        public bool EntityFramework__UseDatabaseNullSemantics { get; set; } = false;
         public double AuthorizationCacheExpirationSeconds { get; set; } = 30;
         public bool AuthorizationAddUnregisteredPrincipals { get; set; } = false;
         public bool Security__LookupClientHostname { get; set; } = false;
