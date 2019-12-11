@@ -42,6 +42,7 @@ namespace Rhetos.Dsl
 
         const string DslScriptsSubfolder = "DslScripts";
         const string DslScriptsSubfolderPrefix = DslScriptsSubfolder + @"\";
+        const string DslScriptsSubfolderPrefix2 = DslScriptsSubfolder + @"/";
 
         private List<DslScript> LoadScripts(IInstalledPackages installedPackages)
         {
@@ -51,7 +52,8 @@ namespace Rhetos.Dsl
         private IEnumerable<DslScript> LoadPackageScripts(InstalledPackage package)
         {
             return package.ContentFiles
-                .Where(file => file.InPackagePath.StartsWith(DslScriptsSubfolderPrefix, StringComparison.OrdinalIgnoreCase)
+                .Where(file => (file.InPackagePath.StartsWith(DslScriptsSubfolderPrefix, StringComparison.OrdinalIgnoreCase) ||
+                    file.InPackagePath.StartsWith(DslScriptsSubfolderPrefix2, StringComparison.OrdinalIgnoreCase))
                     && string.Equals(Path.GetExtension(file.InPackagePath), ".rhe", StringComparison.OrdinalIgnoreCase))
                 .OrderBy(file => file.InPackagePath)
                 .Select(file =>

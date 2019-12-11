@@ -32,6 +32,7 @@ namespace Rhetos.Deployment
     {
         const string DataMigrationSubfolder = "DataMigration";
         const string DataMigrationSubfolderPrefix = DataMigrationSubfolder + @"\";
+        const string DataMigrationSubfolderPrefix2 = DataMigrationSubfolder + @"/";
 
         protected readonly IInstalledPackages _installedPackages;
         private readonly FilesUtility _filesUtility;
@@ -53,7 +54,8 @@ namespace Rhetos.Deployment
             // The packages are sorted by their dependencies, so the data migration scripts from one module may use the data that was prepared by the module it depends on.
             foreach (var package in _installedPackages.Packages)
             {
-                var files = package.ContentFiles.Where(file => file.InPackagePath.StartsWith(DataMigrationSubfolderPrefix, StringComparison.OrdinalIgnoreCase));
+                var files = package.ContentFiles.Where(file => file.InPackagePath.StartsWith(DataMigrationSubfolderPrefix, StringComparison.OrdinalIgnoreCase) ||
+                    file.InPackagePath.StartsWith(DataMigrationSubfolderPrefix2, StringComparison.OrdinalIgnoreCase));
 
                 const string expectedExtension = ".sql";
                 var badFile = files.FirstOrDefault(file => !string.Equals(Path.GetExtension(file.InPackagePath), expectedExtension, StringComparison.OrdinalIgnoreCase));

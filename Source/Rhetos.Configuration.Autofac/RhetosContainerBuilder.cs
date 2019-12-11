@@ -42,12 +42,12 @@ namespace Rhetos
         /// <see cref="ILogProvider"/> is not registered and is meant to be used during the lifetime of registration and container building process.
         /// <see cref="LegacyUtilities"/> will also be initialized with the given configuration.
         /// </summary>
-        public RhetosContainerBuilder(InitializationContext initializationContext)
+        public RhetosContainerBuilder(InitializationContext initializationContext, string[] assemblies)
         {
             this.RegisterInstance(initializationContext.ConfigurationProvider);
             this.RegisterInstance(initializationContext.RhetosAppEnvironment);
 
-            var pluginScanner = new MefPluginScanner(initializationContext.RhetosAppEnvironment, initializationContext.LogProvider);
+            var pluginScanner = new MefPluginScanner(initializationContext.RhetosAppEnvironment, assemblies, initializationContext.LogProvider);
 
             // make properties accessible to modules which are provided with new/unique instance of ContainerBuilder
             this.Properties.Add(nameof(InitializationContext), initializationContext);
@@ -66,9 +66,18 @@ namespace Rhetos
         /// <see cref="LegacyUtilities"/> will also be initialized with the given configuration.
         /// </summary>
         public RhetosContainerBuilder(IConfigurationProvider configurationProvider, ILogProvider logProvider)
-            : this(new InitializationContext(configurationProvider, logProvider))
+            : this(new InitializationContext(configurationProvider, logProvider), null)
         {
         }
 
+        public RhetosContainerBuilder(IConfigurationProvider configurationProvider, string[] assemblies, ILogProvider logProvider)
+            : this(new InitializationContext(configurationProvider, logProvider), assemblies)
+        {
+        }
+
+        public RhetosContainerBuilder(IConfigurationProvider configurationProvider, ILogProvider logProvider, RhetosAppEnvironment rhetosAppEnviorment)
+            : this(new InitializationContext(configurationProvider, logProvider, rhetosAppEnviorment), null)
+        {
+        }
     }
 }

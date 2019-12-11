@@ -42,12 +42,14 @@ namespace Rhetos.Extensibility
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
         private readonly RhetosAppEnvironment _rhetosAppEnvironment;
+        private readonly string[] _assemblies;
 
-        public MefPluginScanner(RhetosAppEnvironment rhetosAppEnvironment, ILogProvider logProvider)
+        public MefPluginScanner(RhetosAppEnvironment rhetosAppEnvironment, string[] assemblies, ILogProvider logProvider)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("Plugins");
             _rhetosAppEnvironment = rhetosAppEnvironment;
+            _assemblies = assemblies;
         }
 
         /// <summary>
@@ -80,6 +82,9 @@ namespace Rhetos.Extensibility
         private List<string> ListAssemblies()
         {
             var stopwatch = Stopwatch.StartNew();
+
+            if (_assemblies != null)
+                return _assemblies.ToList();
 
             string[] pluginsPath = new[] { _rhetosAppEnvironment.PluginsFolder, _rhetosAppEnvironment.GeneratedFolder };
 

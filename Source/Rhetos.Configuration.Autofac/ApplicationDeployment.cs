@@ -35,6 +35,7 @@ namespace Rhetos
         private readonly IConfigurationProvider _configurationProvider;
         private readonly ILogProvider _logProvider;
         private readonly RhetosAppEnvironment _rhetosAppEnvironment;
+        private readonly BuildOptions _buildOptions;
         private readonly FilesUtility _filesUtility;
         private readonly DeployOptions _deployOptions;
 
@@ -44,6 +45,7 @@ namespace Rhetos
             _configurationProvider = configurationProvider;
             _logProvider = logProvider;
             _filesUtility = new FilesUtility(logProvider);
+            _buildOptions = _configurationProvider.GetOptions<BuildOptions>();
             _rhetosAppEnvironment = new RhetosAppEnvironment(_configurationProvider.GetOptions<RhetosAppOptions>().RootPath);
             _deployOptions = configurationProvider.GetOptions<DeployOptions>();
             LegacyUtilities.Initialize(configurationProvider);
@@ -56,8 +58,19 @@ namespace Rhetos
         {
             DeleteObsoleteFiles();
             _logger.Trace("Moving old generated files to cache.");
-            new GeneratedFilesCache(_rhetosAppEnvironment, _logProvider).MoveGeneratedFilesToCache();
+            new GeneratedFilesCache(_buildOptions, _logProvider).MoveGeneratedFilesToCache();
             _filesUtility.SafeCreateDirectory(_rhetosAppEnvironment.GeneratedFolder);
+        }
+
+        public void InitializeForBuild()
+        {
+            _filesUtility.SafeCreateDirectory(_buildOptions.GeneratedAssetsFolder);
+            _filesUtility.SafeCreateDirectory(_buildOptions.GeneratedFilesCacheFolder);
+            _filesUtility.SafeCreateDirectory(_buildOptions.GeneratedSourceFolder);
+
+            _filesUtility.EmptyDirectory(_buildOptions.GeneratedAssetsFolder);
+            _filesUtility.EmptyDirectory(_buildOptions.GeneratedFilesCacheFolder);
+            _filesUtility.EmptyDirectory(_buildOptions.GeneratedSourceFolder);
         }
 
         public void DownloadPackages(bool ignoreDependencies)

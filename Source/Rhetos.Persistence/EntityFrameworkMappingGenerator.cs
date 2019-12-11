@@ -44,19 +44,19 @@ namespace Rhetos.Persistence
     {
         private const string _segmentSplitter = "<!--SegmentSplitter-->";
         private readonly ICodeGenerator _codeGenerator;
-        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
+        private readonly BuildOptions _buildOptions;
         private readonly IPluginsContainer<IConceptMapping> _plugins;
         private readonly ILogger _performanceLogger;
 
         public EntityFrameworkMappingGenerator(
             ICodeGenerator codeGenerator,
             IPluginsContainer<IConceptMapping> plugins,
-            RhetosAppEnvironment rhetosAppEnvironment,
+            BuildOptions buildOptions,
             ILogProvider logProvider)
         {
             _plugins = plugins;
             _codeGenerator = codeGenerator;
-            _rhetosAppEnvironment = rhetosAppEnvironment;
+            _buildOptions = buildOptions;
             _performanceLogger = logProvider.GetLogger("Performance");
         }
 
@@ -73,7 +73,7 @@ namespace Rhetos.Persistence
             for (int s = 0; s < segments.Count(); s++)
             {
                 string clearedXml = XmlUtility.RemoveComments(segments[s]);
-                string filePath = Path.Combine(_rhetosAppEnvironment.GeneratedFolder, EntityFrameworkMapping.ModelFiles[s]);
+                string filePath = Path.Combine(_buildOptions.GeneratedAssetsFolder, EntityFrameworkMapping.ModelFiles[s]);
                 File.WriteAllText(filePath, clearedXml, Encoding.UTF8);
             }
 
@@ -99,7 +99,7 @@ $@"<Schema Namespace=""{EntityFrameworkMapping.ConceptualModelNamespace}"" Alias
   </EntityContainerMapping>
 </Mapping>
 {_segmentSplitter}
-<Schema Namespace=""{EntityFrameworkMapping.StorageModelNamespace}"" Provider=""System.Data.SqlClient"" ProviderManifestToken=""{MsSqlUtility.GetProviderManifestToken()}"" Alias=""Self"" xmlns:customannotation=""http://schemas.microsoft.com/ado/2013/11/edm/customannotation"" xmlns=""http://schemas.microsoft.com/ado/2009/11/edm/ssdl"">
+<Schema Namespace=""{EntityFrameworkMapping.StorageModelNamespace}"" Provider=""System.Data.SqlClient"" ProviderManifestToken=""2012"" Alias=""Self"" xmlns:customannotation=""http://schemas.microsoft.com/ado/2013/11/edm/customannotation"" xmlns=""http://schemas.microsoft.com/ado/2009/11/edm/ssdl"">
   {EntityFrameworkMapping.StorageModelTag}
   <EntityContainer Name=""CodeFirstDatabase"">
     {EntityFrameworkMapping.StorageModelEntityContainerTag}

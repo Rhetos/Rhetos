@@ -83,7 +83,16 @@ namespace Rhetos
             return builder;
         }
 
-        private static IConfigurationBuilder AddWebConfiguration(this IConfigurationBuilder builder, string webRootPath)
+        public static IConfigurationBuilder AddRhetosDefaultBuildConfiguration(this IConfigurationBuilder builder, string projectRootPath)
+        {
+            builder.AddKeyValue(nameof(BuildOptions.GeneratedAssetsFolder), Path.Combine(projectRootPath, "bin", "Debug", "net472", "RhetosGenerated"));
+            builder.AddKeyValue(nameof(BuildOptions.GeneratedFilesCacheFolder), Path.Combine(projectRootPath, "obj", "RhetosGeneratedCache"));
+            builder.AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), Path.Combine(projectRootPath, "RhetosGeneratedSource"));
+            builder.AddKeyValue(nameof(BuildOptions.DatabaseLanguage), "MsSql");
+            return builder;
+        }
+
+        public static IConfigurationBuilder AddWebConfiguration(this IConfigurationBuilder builder, string webRootPath)
         {
             webRootPath = Path.GetFullPath(webRootPath);
             VirtualDirectoryMapping vdm = new VirtualDirectoryMapping(webRootPath, true);

@@ -56,11 +56,17 @@ namespace Rhetos.Utilities
             SqlCommandTimeout = rhetosAppOptions.SqlCommandTimeout;
 
             ConnectionString = connectionStringOptions.ConnectionString;
-            if (string.IsNullOrEmpty(ConnectionString))
-                throw new FrameworkException("Empty or non-existant 'ServerConnectionString' connection string in application configuration.");
 
-            SetLanguageFromProviderName(connectionStringOptions.ProviderName);
-            InitializeProviderContext();
+            if (!string.IsNullOrEmpty(connectionStringOptions.ConnectionString))
+            {
+                SetLanguageFromProviderName(connectionStringOptions.ProviderName);
+                InitializeProviderContext(false);
+            }
+            else
+            {
+                InitializeProviderContext(true);
+                _databaseLanguage = "MsSql";
+            }
         }
 
         private static void SetLanguageFromProviderName(string connectionStringProviderName)
@@ -76,10 +82,17 @@ namespace Rhetos.Utilities
             NationalLanguage = match.Groups["NationalLanguage"].Value ?? "";
         }
 
-        private static void InitializeProviderContext()
+        private static void InitializeProviderContext(bool useDeafult)
         {
-            _databaseLanguageIsMsSql = string.Equals(DatabaseLanguage, "MsSql", StringComparison.Ordinal);
-            _databaseLanguageIsOracle = string.Equals(DatabaseLanguage, "Oracle", StringComparison.Ordinal);
+            if (useDeafult)
+            {
+                _databaseLanguageIsMsSql = true;
+            }
+            else
+            {
+                _databaseLanguageIsMsSql = string.Equals(DatabaseLanguage, "MsSql", StringComparison.Ordinal);
+                _databaseLanguageIsOracle = string.Equals(DatabaseLanguage, "Oracle", StringComparison.Ordinal);
+            }
 
             if (_databaseLanguageIsMsSql)
                 ProviderName = "System.Data.SqlClient";

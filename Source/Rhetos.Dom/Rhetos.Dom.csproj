@@ -55,6 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DomainObjectModelProvider.cs" />
     <Compile Include="DomGenerator.cs" />
     <Compile Include="DomLoader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

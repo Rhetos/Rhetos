@@ -24,18 +24,18 @@ using System.Reflection;
 using Rhetos.Extensibility;
 using Rhetos.Utilities;
 using Rhetos.Logging;
+using ICodeGenerator = Rhetos.Compiler.ICodeGenerator;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Rhetos.Dom
 {
-    public class DomGenerator : IGenerator
+    public class DomainObjectModelProvider : IDomainObjectModel
     {
         private readonly IPluginsContainer<IConceptCodeGenerator> _pluginRepository;
         private readonly ICodeGenerator _codeGenerator;
+        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
         private readonly ILogProvider _log;
         private readonly IAssemblyGenerator _assemblyGenerator;
-        private readonly BuildOptions _buildOptions;
 
         private List<Assembly> _assemblies;
 
@@ -43,23 +43,31 @@ namespace Rhetos.Dom
         /// If assemblyName is not null, the assembly will be saved on disk.
         /// If assemblyName is null, the assembly will be generated in memory.
         /// </summary>
-        public DomGenerator(
+        public DomainObjectModelProvider(
             IPluginsContainer<IConceptCodeGenerator> plugins,
             ICodeGenerator codeGenerator,
+            RhetosAppEnvironment rhetosAppEnvironment,
             ILogProvider logProvider,
-            IAssemblyGenerator assemblyGenerator,
-            BuildOptions buildOptions)
+            IAssemblyGenerator assemblyGenerator)
         {
             _pluginRepository = plugins;
             _codeGenerator = codeGenerator;
+            _rhetosAppEnvironment = rhetosAppEnvironment;
             _log = logProvider;
             _assemblyGenerator = assemblyGenerator;
-            _buildOptions = buildOptions;
         }
 
-        public IEnumerable<string> Dependencies => new List<string>();
+        public IEnumerable<Assembly> Assemblies
+        {
+            get
+            {
+                if (_assemblies == null)
+                    GenerateObjectModel();
+                return _assemblies;
+            }
+        }
 
-        public void Generate()
+        private void GenerateObjectModel()
         {
             IAssemblySource assemblySource = _codeGenerator.ExecutePlugins(_pluginRepository, "/*", "*/", null);
             _log.GetLogger("Domain Object Model references").Trace(() => string.Join(", ", assemblySource.RegisteredReferences));
@@ -68,7 +76,7 @@ namespace Rhetos.Dom
             _assemblies = new List<Assembly>();
             foreach (var sourcePart in SplitAssemblySource(assemblySource))
             {
-                _assemblyGenerator.Generate(sourcePart.AssemblySource, sourcePart.AssemblyFileName);
+                _assemblies.Add(_assemblyGenerator.Generate(sourcePart.AssemblySource, sourcePart.AssemblyFileName));
             }
         }
 
@@ -89,7 +97,7 @@ namespace Rhetos.Dom
                 string partSource = source.Substring(partStart, partEnd - partStart).Trim();
                 if (!string.IsNullOrEmpty(partSource))
                 {
-                    string assemblyFile = Path.Combine(_buildOptions.GeneratedSourceFolder, $"ServerDom.{(DomAssemblies)Enum.Parse(typeof(DomAssemblies), partName)}.dll");// _rhetosAppEnvironment.GetDomAssemblyFile((DomAssemblies)Enum.Parse(typeof(DomAssemblies), partName));
+                    string assemblyFile = _rhetosAppEnvironment.GetDomAssemblyFile((DomAssemblies)Enum.Parse(typeof(DomAssemblies), partName));
                     yield return new SourcePart
                     {
                         AssemblyFileName = assemblyFile,

@@ -79,6 +79,7 @@
     <Compile Include="ConnectionStringReport.cs" />
     <Compile Include="DataMigrationScript.cs" />
     <Compile Include="DataMigrationScriptsFromDisk.cs" />
+    <Compile Include="Dbupdate.cs" />
     <Compile Include="DeploymentConfiguration.cs" />
     <Compile Include="DeployOptions.cs" />
     <Compile Include="IDataMigrationScriptsProvider.cs" />

@@ -238,6 +238,7 @@
     <Compile Include="AssemblyGenerator.cs" />
     <Compile Include="CodeBuilder.cs" />
     <Compile Include="CodeGenerator.cs" />
+    <Compile Include="SimpleAssemblyGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="..\Rhetos\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>

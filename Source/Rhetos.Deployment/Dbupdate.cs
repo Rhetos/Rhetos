@@ -18,92 +18,39 @@
 */
 
 using Rhetos.DatabaseGenerator;
-using Rhetos.Dom;
-using Rhetos.Dsl;
-using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace Rhetos.Deployment
 {
-    public class ApplicationGenerator
+    public class Dbupdate
     {
         private readonly ILogger _deployPackagesLogger;
-        private readonly ILogger _performanceLogger;
         private readonly ISqlExecuter _sqlExecuter;
-        private readonly IDslModel _dslModel;
-        private readonly IDomainObjectModel _domGenerator;
-        private readonly IPluginsContainer<IGenerator> _generatorsContainer;
         private readonly DatabaseCleaner _databaseCleaner;
         private readonly DataMigrationScripts _dataMigration;
         private readonly IDatabaseGenerator _databaseGenerator;
-        private readonly IDslScriptsProvider _dslScriptsLoader;
         private readonly IConceptDataMigrationExecuter _dataMigrationFromCodeExecuter;
 
-        public ApplicationGenerator(
+        public Dbupdate(
             ILogProvider logProvider,
             ISqlExecuter sqlExecuter,
-            IDslModel dslModel,
-            IDomainObjectModel domGenerator,
-            IPluginsContainer<IGenerator> generatorsContainer,
             DatabaseCleaner databaseCleaner,
             DataMigrationScripts dataMigration,
             IDatabaseGenerator databaseGenerator,
-            IDslScriptsProvider dslScriptsLoader,
             IConceptDataMigrationExecuter dataMigrationFromCodeExecuter)
         {
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
-            _performanceLogger = logProvider.GetLogger("Performance");
             _sqlExecuter = sqlExecuter;
-            _dslModel = dslModel;
-            _domGenerator = domGenerator;
-            _generatorsContainer = generatorsContainer;
             _databaseCleaner = databaseCleaner;
             _dataMigration = dataMigration;
             _databaseGenerator = databaseGenerator;
-            _dslScriptsLoader = dslScriptsLoader;
             _dataMigrationFromCodeExecuter = dataMigrationFromCodeExecuter;
         }
 
-        public void ExecuteGenerators()
-        {
-            CheckDslModelErrors();
-
-            _deployPackagesLogger.Trace("Compiling DOM assembly.");
-            int generatedTypesCount = _domGenerator.GetTypes().Count();
-            if (generatedTypesCount == 0)
-            {
-                _deployPackagesLogger.Info("Warning: Empty assembly is generated.");
-            }
-            else
-                _deployPackagesLogger.Trace("Generated " + generatedTypesCount + " types.");
-
-            var generators = GetSortedGenerators(_generatorsContainer, _deployPackagesLogger);
-            foreach (var generator in generators)
-            {
-                _deployPackagesLogger.Trace("Executing " + generator.GetType().Name + ".");
-                generator.Generate();
-            }
-            if (!generators.Any())
-                _deployPackagesLogger.Trace("No additional generators.");
-        }
-
-        /// <summary>
-        /// Creating the DSL model instance *before* executing code generators, to proved better error reporting
-        /// and make it clear that a code generator did not cause a parser error.
-        /// </summary>
-        public void CheckDslModelErrors()
-        {
-            _deployPackagesLogger.Trace("Parsing DSL scripts.");
-            int dslModelConceptsCount = _dslModel.Concepts.Count();
-            _deployPackagesLogger.Trace("Application model has " + dslModelConceptsCount + " statements.");
-        }
-
-        public void UpdateDatabase()
+        public void Execute()
         {
             _deployPackagesLogger.Trace("SQL connection: " + SqlUtility.SqlConnectionInfo(SqlUtility.ConnectionString));
             ValidateDbConnection();
@@ -145,7 +92,6 @@ namespace Rhetos.Deployment
             _databaseCleaner.RefreshDataMigrationRows();
 
             _deployPackagesLogger.Trace("Uploading DSL scripts.");
-            UploadDslScriptsToServer();
         }
 
         private void ValidateDbConnection()
@@ -167,46 +113,6 @@ namespace Rhetos.Deployment
 
             var sqlScripts = SqlUtility.SplitBatches(sql);
             _sqlExecuter.ExecuteSql(sqlScripts);
-        }
-
-        public static IList<IGenerator> GetSortedGenerators(IPluginsContainer<IGenerator> generatorsContainer, ILogger deployPackagesLogger)
-        {
-            // The plugins in the container are sorted by their dependencies defined in ExportMetadata attribute (static typed):
-            var generators = generatorsContainer.GetPlugins().ToArray();
-
-            // Additional sorting by loosely-typed dependencies from the Dependencies property:
-            var generatorNames = generators.Select(GetGeneratorName).ToList();
-            var dependencies = generators.Where(gen => gen.Dependencies != null)
-                .SelectMany(gen => gen.Dependencies.Select(dependsOn => Tuple.Create(dependsOn, GetGeneratorName(gen))))
-                .ToList();
-            Graph.TopologicalSort(generatorNames, dependencies);
-
-            foreach (var missingDependency in dependencies.Where(dep => !generatorNames.Contains(dep.Item1)))
-                deployPackagesLogger.Info($"Missing dependency '{missingDependency.Item1}' for application generator '{missingDependency.Item2}'.");
-
-            Graph.SortByGivenOrder(generators, generatorNames, GetGeneratorName);
-            return generators;
-        }
-
-        private static string GetGeneratorName(IGenerator gen)
-        {
-            return gen.GetType().FullName;
-        }
-
-        private void UploadDslScriptsToServer()
-        {
-            var sql = new List<string>();
-
-            sql.Add(Sql.Get("DslScriptManager_Delete"));
-
-            sql.AddRange(_dslScriptsLoader.DslScripts.Select(dslScript => Sql.Format(
-                "DslScriptManager_Insert",
-                SqlUtility.QuoteText(dslScript.Name),
-                SqlUtility.QuoteText(dslScript.Script))));
-
-            _sqlExecuter.ExecuteSql(sql);
-
-            _deployPackagesLogger.Trace("Uploaded " + _dslScriptsLoader.DslScripts.Count() + " DSL scripts to database.");
         }
     }
 }
