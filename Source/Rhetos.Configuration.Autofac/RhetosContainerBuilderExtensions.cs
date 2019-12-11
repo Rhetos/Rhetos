@@ -39,14 +39,14 @@ namespace Rhetos
 
         public static RhetosContainerBuilder AddRhetosDeployment(this RhetosContainerBuilder builder)
         {
-            var deployOptions = builder.GetInitializationContext().ConfigurationProvider.GetOptions<DeployOptions>();
-            builder.RegisterInstance(deployOptions).PreserveExistingDefaults();
+            var buildOptions = builder.GetInitializationContext().ConfigurationProvider.GetOptions<BuildOptions>();
+            builder.RegisterInstance(buildOptions).PreserveExistingDefaults();
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new DeployModule());
 
             // Overriding IDslModel registration from core (DslModelFile), unless deploying DatabaseOnly.
             builder.RegisterType<DslModel>();
-            builder.Register(context => context.Resolve<DeployOptions>().DatabaseOnly ? (IDslModel)context.Resolve<IDslModelFile>() : context.Resolve<DslModel>()).SingleInstance();
+            builder.Register(context => context.Resolve<BuildOptions>().DatabaseOnly ? (IDslModel)context.Resolve<IDslModelFile>() : context.Resolve<DslModel>()).SingleInstance();
 
             builder.RegisterModule(new ExtensibilityModule());
             return builder;
@@ -54,8 +54,6 @@ namespace Rhetos
 
         public static RhetosContainerBuilder AddApplicationInitialization(this RhetosContainerBuilder builder)
         {
-            var deployOptions = builder.GetInitializationContext().ConfigurationProvider.GetOptions<DeployOptions>();
-            builder.RegisterInstance(deployOptions).PreserveExistingDefaults();
             builder.RegisterType<ApplicationInitialization>();
             builder.GetPluginRegistration().FindAndRegisterPlugins<IServerInitializer>();
             return builder;

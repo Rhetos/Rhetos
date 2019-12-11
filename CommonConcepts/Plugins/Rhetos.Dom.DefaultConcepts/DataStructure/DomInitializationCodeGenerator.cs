@@ -162,7 +162,7 @@ namespace Common
             Rhetos.Utilities.RhetosAppOptions rhetosAppOptions)
             : base(new System.Data.Entity.Core.EntityClient.EntityConnection(metadata.MetadataWorkspace, persistenceTransaction.Connection), false)
         {{
-            _rhetosAppOptions = rhetosAppOptions;
+            _rhetosAppOptions = rhetosAppOptions; 
             Initialize();
             Database.UseTransaction(persistenceTransaction.Transaction);
         }}

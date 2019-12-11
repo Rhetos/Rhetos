@@ -43,7 +43,6 @@ namespace Rhetos.Deployment
         private readonly IDatabaseGenerator _databaseGenerator;
         private readonly IDslScriptsProvider _dslScriptsLoader;
         private readonly IConceptDataMigrationExecuter _dataMigrationFromCodeExecuter;
-        private readonly DeployOptions _deployOptions;
 
         public ApplicationGenerator(
             ILogProvider logProvider,
@@ -55,8 +54,7 @@ namespace Rhetos.Deployment
             DataMigrationScripts dataMigration,
             IDatabaseGenerator databaseGenerator,
             IDslScriptsProvider dslScriptsLoader,
-            IConceptDataMigrationExecuter dataMigrationFromCodeExecuter,
-            DeployOptions deployOptions)
+            IConceptDataMigrationExecuter dataMigrationFromCodeExecuter)
         {
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _performanceLogger = logProvider.GetLogger("Performance");
@@ -69,7 +67,6 @@ namespace Rhetos.Deployment
             _databaseGenerator = databaseGenerator;
             _dslScriptsLoader = dslScriptsLoader;
             _dataMigrationFromCodeExecuter = dataMigrationFromCodeExecuter;
-            _deployOptions = deployOptions;
         }
 
         public void ExecuteGenerators()
@@ -198,7 +195,7 @@ namespace Rhetos.Deployment
 
         private void UploadDslScriptsToServer()
         {
-            List<string> sql = new List<string>();
+            var sql = new List<string>();
 
             sql.Add(Sql.Get("DslScriptManager_Delete"));
 

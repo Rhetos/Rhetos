@@ -21,6 +21,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Rhetos.Deployment;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 

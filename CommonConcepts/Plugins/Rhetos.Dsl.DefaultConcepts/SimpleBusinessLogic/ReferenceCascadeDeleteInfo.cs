@@ -47,11 +47,11 @@ namespace Rhetos.Dsl.DefaultConcepts
     [Export(typeof(IConceptMacro))]
     public class ReferenceCascadeDeleteMacro : IConceptMacro<ReferenceCascadeDeleteInfo>
     {
-        private readonly DeployOptions _deployOptions;
+        private readonly BuildOptions _buildOptions;
 
-        public ReferenceCascadeDeleteMacro(DeployOptions deployOptions)
+        public ReferenceCascadeDeleteMacro(BuildOptions buildOptions)
         {
-            _deployOptions = deployOptions;
+            _buildOptions = buildOptions;
         }
         public IEnumerable<IConceptInfo> CreateNewConcepts(ReferenceCascadeDeleteInfo conceptInfo, IDslModel existingConcepts)
         {
@@ -67,7 +67,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             // Cascade delete FK in database is not needed because the server application will explicitly delete the referencing data (to ensure server-side validations and recomputations).
             // Cascade delete in database is just a legacy feature, a convenience for development and testing.
             // It is turned off by default because if a record is deleted by cascade delete directly in the database, then the business logic implemented in application layer will not be executed.
-            if (_deployOptions.CommonConcepts__Legacy__CascadeDeleteInDatabase)
+            if (_buildOptions.CommonConcepts__Legacy__CascadeDeleteInDatabase)
             {
                 var dbConstraint = (ReferencePropertyDbConstraintInfo)existingConcepts.FindByKey($"ReferencePropertyDbConstraintInfo {conceptInfo.Reference}");
                 if (dbConstraint != null)

@@ -62,7 +62,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<ConceptApplicationRepository>().As<IConceptApplicationRepository>();
             builder.RegisterType<DatabaseGenerator.DatabaseGenerator>().As<IDatabaseGenerator>();
             builder.RegisterType<DatabaseGenerator.ConceptDataMigrationExecuter>().As<IConceptDataMigrationExecuter>();
-            builder.Register(context => new DatabaseGeneratorOptions { ShortTransactions = context.Resolve<DeployOptions>().ShortTransactions }).SingleInstance();
+            builder.Register(context => new DatabaseGeneratorOptions { ShortTransactions = context.Resolve<BuildOptions>().ShortTransactions }).SingleInstance();
             pluginRegistration.FindAndRegisterPlugins<IConceptDatabaseDefinition>();
             builder.RegisterType<NullImplementation>().As<IConceptDatabaseDefinition>();
             pluginRegistration.FindAndRegisterPlugins<IConceptDataMigration>(typeof(IConceptDataMigration<>));
@@ -87,7 +87,7 @@ namespace Rhetos.Configuration.Autofac.Modules
 
         private void AddDom(ContainerBuilder builder)
         {
-            builder.Register(context => new DomGeneratorOptions() { Debug = context.ResolveOptional<DeployOptions>()?.Debug ?? false }).SingleInstance();
+            builder.Register(context => new DomGeneratorOptions() { Debug = context.ResolveOptional<BuildOptions>()?.Debug ?? false }).SingleInstance();
             builder.RegisterType<DomGenerator>().As<IDomainObjectModel>().SingleInstance();
         }
 

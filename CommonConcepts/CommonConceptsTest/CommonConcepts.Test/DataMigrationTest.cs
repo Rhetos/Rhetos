@@ -78,8 +78,8 @@ namespace CommonConcepts.Test
                 foreach (string scriptsDescription in scriptsDescriptions)
                 {
                     var scriptsProvider = new SimpleScriptsProvider(scriptsDescription);
-                    var deployOptions = new DeployOptions() { DataMigration__SkipScriptsWithWrongOrder = skipScriptsWithWrongOrder };
-                    var dataMigration = new DataMigrationScripts(sqlExecuter, container.Resolve<ILogProvider>(), scriptsProvider, deployOptions, sqlBatches);
+                    var buildOptions = new BuildOptions() { DataMigration__SkipScriptsWithWrongOrder = skipScriptsWithWrongOrder };
+                    var dataMigration = new DataMigrationScripts(sqlExecuter, container.Resolve<ILogProvider>(), scriptsProvider, buildOptions, sqlBatches);
                     dataMigration.Execute();
                 }
 

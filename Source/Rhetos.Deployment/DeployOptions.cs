@@ -23,12 +23,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rhetos.Utilities
+namespace Rhetos.Deployment
 {
+    /// <summary>
+    /// Options specific to DeployPackages utility. Should not be used outside of that scope.
+    /// </summary>
     public class DeployOptions
     {
         public bool StartPaused { get; set; }
-        public bool Debug { get; set; }
         /// <summary>
         /// No pause on error.
         /// </summary>
@@ -37,12 +39,6 @@ namespace Rhetos.Utilities
         /// Do not stop deployment if a NuGet package dependency has an incompatible version.
         /// </summary>
         public bool IgnoreDependencies { get; set; }
-        public bool ShortTransactions { get; set; }
         public bool DatabaseOnly { get; set; }
-        public bool SkipRecompute { get; set; }
-
-        public bool DataMigration__SkipScriptsWithWrongOrder { get; set; } = true;
-        public bool CommonConcepts__Legacy__AutoGeneratePolymorphicProperty { get; set; } = true;
-        public bool CommonConcepts__Legacy__CascadeDeleteInDatabase { get; set; } = true;
     }
 }
