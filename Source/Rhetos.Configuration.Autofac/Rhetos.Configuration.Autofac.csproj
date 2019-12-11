@@ -105,6 +105,7 @@
   <ItemGroup>
     <Compile Include="ApplicationDeployment.cs" />
     <Compile Include="ContainerBuilderExtensions.cs" />
+    <Compile Include="RhetosContainer.cs" />
     <Compile Include="RhetosContainerBuilderExtensions.cs" />
     <Compile Include="InitializationContext.cs" />
     <Compile Include="Modules\CoreModule.cs" />

@@ -119,7 +119,7 @@ namespace Rhetos
             //builder.RegisterType<DomGenerator>().As<IDomainObjectModel>().SingleInstance();
             builder.RegisterType<DomGenerator>().As<IGenerator>().SingleInstance();
 
-            builder.RegisterType<DataMigrationScriptsFromDisk>().As<IDataMigrationScriptsProvider>();
+            builder.RegisterType<DataMigrationScriptsFromDiskGenerator>().As<IGenerator>();
             builder.RegisterType<EntityFrameworkMappingGenerator>().As<IGenerator>();
             pluginRegistration.FindAndRegisterPlugins<IConceptMapping>(typeof(ConceptMapping<>));
 
@@ -190,19 +190,19 @@ namespace Rhetos
             pluginRegistration.FindAndRegisterPlugins<IDslModelIndex>();
             builder.RegisterType<DslModelIndexByType>().As<IDslModelIndex>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos dlls.
             builder.RegisterType<DslModelIndexByReference>().As<IDslModelIndex>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos dlls.
-            builder.RegisterType<DslModelFile>().As<IDslModel>().SingleInstance();
+            builder.RegisterType<DslModelFromFile>().As<IDslModel>().SingleInstance();
 
             builder.RegisterType<DatabaseModelBuilder>().As<IDatabaseModel>();
             builder.RegisterType<ConceptApplicationRepository>().As<IConceptApplicationRepository>();
             builder.RegisterType<DatabaseGenerator.DatabaseGenerator>().As<IDatabaseGenerator>();
             builder.RegisterType<DatabaseGenerator.ConceptDataMigrationExecuter>().As<IConceptDataMigrationExecuter>();
-            builder.Register(context => new DatabaseGeneratorOptions { ShortTransactions = context.Resolve<BuildOptions>().ShortTransactions }).SingleInstance();
+            builder.Register(context => new DatabaseGeneratorOptions { ShortTransactions = false }).SingleInstance();
             pluginRegistration.FindAndRegisterPlugins<IConceptDatabaseDefinition>();
             builder.RegisterType<NullImplementation>().As<IConceptDatabaseDefinition>();
             pluginRegistration.FindAndRegisterPlugins<IConceptDataMigration>(typeof(IConceptDataMigration<>));
             builder.RegisterType<DataMigrationScripts>();
             builder.RegisterType<DatabaseCleaner>();
-            builder.RegisterType<ConceptDataMigrationGenerator>().As<IGenerator>();
+            builder.RegisterType<DataMigrationScriptsFromDisk>().As<IDataMigrationScriptsProvider>().SingleInstance();
 
             builder.RegisterType<Tokenizer>().SingleInstance();
             builder.RegisterType<DslModelFile>().As<IDslModelFile>().SingleInstance();
@@ -212,8 +212,7 @@ namespace Rhetos
             pluginRegistration.FindAndRegisterPlugins<IConceptMacro>(typeof(IConceptMacro<>));
             pluginRegistration.FindAndRegisterPlugins<IConceptMetadataExtension>();
 
-            builder.Register(context => new DomGeneratorOptions() { Debug = context.ResolveOptional<BuildOptions>()?.Debug ?? false }).SingleInstance();
-            builder.RegisterType<DomainObjectModelProvider>().As<IDomainObjectModel>().SingleInstance();
+            builder.RegisterType<DomLoader>().As<IDomainObjectModel>().SingleInstance();
 
             pluginRegistration.FindAndRegisterPlugins<IConceptMapping>(typeof(ConceptMapping<>));
 
@@ -223,8 +222,6 @@ namespace Rhetos
             builder.RegisterGeneric(typeof(PluginsMetadataCache<>)).SingleInstance();
             builder.RegisterGeneric(typeof(PluginsContainer<>)).As(typeof(IPluginsContainer<>)).InstancePerLifetimeScope();
             builder.RegisterGeneric(typeof(NamedPlugins<>)).As(typeof(INamedPlugins<>)).InstancePerLifetimeScope();
-            pluginRegistration.FindAndRegisterModules();
-
 
             return builder;
         }

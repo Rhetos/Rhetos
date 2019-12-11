@@ -41,8 +41,8 @@ namespace Rhetos
             var logger = logProvider.GetLogger("DeployPackages");
             logger.Trace(() => "Logging configured.");
 
-            /*try
-            {*/
+            try
+            {
                 var command = args[0];
                 if (string.Compare(command, "build", true) == 0)
                 {
@@ -99,9 +99,7 @@ namespace Rhetos
                     var deployOptions = configurationProvider.GetOptions<DeployOptions>();
                     var deployment = new ApplicationDeployment(configurationProvider, logProvider);
                     AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
-                        rhetosAppEnvironment.BinFolder,
-                        rhetosAppEnvironment.PluginsFolder,
-                        rhetosAppEnvironment.GeneratedFolder);
+                        rhetosAppEnvironment.BinFolder);
 
                     logger.Trace("Loading plugins.");
                     var stopwatch = Stopwatch.StartNew();
@@ -118,8 +116,7 @@ namespace Rhetos
                         performanceLogger.Write(stopwatch, "DeployPackages.Program: Modules and plugins registered.");
                         ContainerBuilderPluginRegistration.LogRegistrationStatistics("Generating application", container, logProvider);
 
-                    var a = container.Resolve<ISqlExecuter>();
-                    container.Resolve<Dbupdate>().Execute();
+                        container.Resolve<Dbupdate>().Execute();
                     }
                 }
                 else if (string.Compare(command, "appinitialize", true) == 0)
@@ -137,7 +134,7 @@ namespace Rhetos
                 }
 
                 logger.Trace("Done.");
-            /*}
+            }
             catch (Exception e)
             {
                 logger.Error(e.ToString());
@@ -150,7 +147,7 @@ namespace Rhetos
                     ApplicationDeployment.PrintErrorSummary(e);
 
                 return 1;
-            }*/
+            }
 
             return 0;
         }

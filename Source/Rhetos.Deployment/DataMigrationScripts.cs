@@ -34,17 +34,15 @@ namespace Rhetos.Deployment
         protected readonly ILogger _deployPackagesLogger;
         protected readonly IDataMigrationScriptsProvider _scriptsProvider;
         protected readonly SqlTransactionBatches _sqlTransactionBatches;
-        protected readonly BuildOptions _buildOptions;
 
         public DataMigrationScripts(ISqlExecuter sqlExecuter, ILogProvider logProvider, IDataMigrationScriptsProvider scriptsProvider, 
-            BuildOptions buildOptions, SqlTransactionBatches sqlTransactionBatches)
+            SqlTransactionBatches sqlTransactionBatches)
         {
             _sqlExecuter = sqlExecuter;
             _logger = logProvider.GetLogger("DataMigration");
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _scriptsProvider = scriptsProvider;
             _sqlTransactionBatches = sqlTransactionBatches;
-            _buildOptions = buildOptions;
         }
 
         public DataMigrationReport Execute()
@@ -69,19 +67,20 @@ namespace Rhetos.Deployment
             string skippedReport = string.Empty;
             if (skipped.Count > 0)
             {
-                if (_buildOptions.DataMigration__SkipScriptsWithWrongOrder)
-                {
-                    // Ignore skipped scripts for backward compatibility.
-                    LogScripts("Skipped older script", skipped, EventType.Info);
-                    toExecute = toExecute.Except(skipped).ToList();
-                    skippedReport = " " + skipped.Count + " older skipped.";
-                }
-                else
-                {
+                //TODO: Put this maybe in runtime options
+                //if (_buildOptions.DataMigration__SkipScriptsWithWrongOrder)
+                //{
+                //    // Ignore skipped scripts for backward compatibility.
+                //    LogScripts("Skipped older script", skipped, EventType.Info);
+                //    toExecute = toExecute.Except(skipped).ToList();
+                //    skippedReport = " " + skipped.Count + " older skipped.";
+                //}
+                //else
+                //{
                     // Execute skipped scripts even though this means the scripts will be executed in the incorrect order.
                     // The message is logged as an *error* to increase the chance of being noticed because it is one-off event, even though it is not blocking.
                     LogScripts("Executing script in an incorrect order", skipped, EventType.Info);
-                }
+                //}
             }
 
             ApplyToDatabase(toRemove, toExecute);

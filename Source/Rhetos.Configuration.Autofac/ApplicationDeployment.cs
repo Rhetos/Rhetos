@@ -62,17 +62,6 @@ namespace Rhetos
             _filesUtility.SafeCreateDirectory(_rhetosAppEnvironment.GeneratedFolder);
         }
 
-        public void InitializeForBuild()
-        {
-            _filesUtility.SafeCreateDirectory(_buildOptions.GeneratedAssetsFolder);
-            _filesUtility.SafeCreateDirectory(_buildOptions.GeneratedFilesCacheFolder);
-            _filesUtility.SafeCreateDirectory(_buildOptions.GeneratedSourceFolder);
-
-            _filesUtility.EmptyDirectory(_buildOptions.GeneratedAssetsFolder);
-            _filesUtility.EmptyDirectory(_buildOptions.GeneratedFilesCacheFolder);
-            _filesUtility.EmptyDirectory(_buildOptions.GeneratedSourceFolder);
-        }
-
         public void DownloadPackages(bool ignoreDependencies)
         {
             _logger.Trace("Getting packages.");

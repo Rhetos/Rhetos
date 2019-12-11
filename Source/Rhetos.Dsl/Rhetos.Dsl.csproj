@@ -131,6 +131,7 @@
     <Compile Include="DiskDslScriptLoader.cs" />
     <Compile Include="DslContainer.cs" />
     <Compile Include="DslModelFile.cs" />
+    <Compile Include="DslModelFromFile.cs" />
     <Compile Include="DslParser.cs" />
     <Compile Include="DslModel.cs" />
     <Compile Include="GenericParser.cs" />

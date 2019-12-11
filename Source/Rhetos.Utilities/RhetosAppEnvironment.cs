@@ -64,6 +64,7 @@ namespace Rhetos.Utilities
 
             BinFolder = binFolder;
             AssetsFolder = assetsFolder;
+            PluginsFolder = binFolder;
         }
 
         public string GetDomAssemblyFile(DomAssemblies domAssembly) => Path.Combine(GeneratedFolder, $"ServerDom.{domAssembly}.dll");
