@@ -91,9 +91,8 @@ namespace Rhetos.Configuration.Autofac.Modules
 
         private void AddPersistence(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
-            builder.RegisterType<DataMigrationScriptsFromDisk>().As<IDataMigrationScriptsProvider>();
+            builder.RegisterType<DataMigrationScriptsFromDisk>().As<IDataMigrationScriptsProvider>().As<IGenerator>().SingleInstance();
             builder.RegisterType<EntityFrameworkMappingGenerator>().As<IGenerator>();
-            builder.RegisterType<DataMigrationScriptsFromDisk>().As<IGenerator>();
             pluginRegistration.FindAndRegisterPlugins<IConceptMapping>(typeof(ConceptMapping<>));
 
         }

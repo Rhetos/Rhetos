@@ -19,9 +19,11 @@
 
 using Newtonsoft.Json;
 using Rhetos.Extensibility;
+using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -38,17 +40,20 @@ namespace Rhetos.Deployment
         protected readonly IInstalledPackages _installedPackages;
         private readonly FilesUtility _filesUtility;
         private readonly RhetosAppEnvironment _rhetosAppEnvironment;
+        private readonly ILogger _performanceLogger;
         private List<DataMigrationScript> _scripts;
 
         public IEnumerable<string> Dependencies => new List<string>();
 
         public DataMigrationScriptsFromDisk(IInstalledPackages installedPackages,
             FilesUtility filesUtility,
-            RhetosAppEnvironment rhetosAppEnvironment)
+            RhetosAppEnvironment rhetosAppEnvironment,
+            ILogProvider logProvider)
         {
             _installedPackages = installedPackages;
             _filesUtility = filesUtility;
             _rhetosAppEnvironment = rhetosAppEnvironment;
+            _performanceLogger = logProvider.GetLogger("Performance");
         }
 
         /// <summary>
@@ -59,11 +64,13 @@ namespace Rhetos.Deployment
         {
             if (_scripts == null)
             {
+                var stopwatch = Stopwatch.StartNew();
                 var dataMigrationScriptsFilePath = Path.Combine(_rhetosAppEnvironment.GeneratedFolder, DataMigrationScriptsFileName);
                 if (!File.Exists(dataMigrationScriptsFilePath))
                     throw new FrameworkException($@"The file {dataMigrationScriptsFilePath} that is used to execute the data migration is missing.");
                 var serializedConcepts = File.ReadAllText(dataMigrationScriptsFilePath, Encoding.UTF8);
                 _scripts =  JsonConvert.DeserializeObject<List<DataMigrationScript>>(serializedConcepts);
+                _performanceLogger.Write(stopwatch, $@"DataMigrationScriptsFromDisk: Loaded {_scripts.Count} scripts from generated file.");
             }
 
             return _scripts;
@@ -104,10 +111,11 @@ namespace Rhetos.Deployment
                     "Data migration scripts '{0}' and '{1}' have same tag '{2}' in their headers.",
                     badGroup.First().Path, badGroup.ElementAt(1).Path, badGroup.Key));
 
-            string serializedMigrationScripts = JsonConvert.SerializeObject(allScripts, Formatting.Indented);
+            _scripts = allScripts;
+            var stopwatch = Stopwatch.StartNew();
+            string serializedMigrationScripts = JsonConvert.SerializeObject(_scripts, Formatting.Indented);
             File.WriteAllText(Path.Combine(_rhetosAppEnvironment.GeneratedFolder, DataMigrationScriptsFileName), serializedMigrationScripts, Encoding.UTF8);
-
-            _scripts = new List<DataMigrationScript>(allScripts);
+            _performanceLogger.Write(stopwatch, $@"DataMigrationScriptsFromDisk: Saved {_scripts.Count} scripts to generated file.");
         }
 
         protected static readonly Regex ScriptIdRegex = new Regex(@"^/\*DATAMIGRATION (.+)\*/");
