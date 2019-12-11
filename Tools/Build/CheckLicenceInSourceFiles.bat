@@ -9,16 +9,16 @@ for /R %%f in (*.cs) do (
     set "skiprule=0"
     
     set "replaced=x!filepath:\obj\=!"
-    if not !replaced!==x!filepath! set /A skiprule+=1
+    if not "!replaced!"=="x!filepath!" set /A skiprule+=1
     
     set "replaced=x!filepath:\bin\=!"
-    if not !replaced!==x!filepath! set /A skiprule+=1
+    if not "!replaced!"=="x!filepath!" set /A skiprule+=1
 
     set "replaced=x!filepath:\GeneratedFilesCache\=!"
-    if not !replaced!==x!filepath! set /A skiprule+=1
+    if not "!replaced!"=="x!filepath!" set /A skiprule+=1
 
     if !skiprule!==0 (
-        findstr /L /M /C:"under the terms of the GNU Affero General Public License" !filepath! >nul
+        findstr /L /M /C:"under the terms of the GNU Affero General Public License" "!filepath!" >nul
         if errorlevel 1 (
             set /A FilesMissingLicense+=1
             echo Source file missing license notice: "!filepath!""
