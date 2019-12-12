@@ -32,7 +32,7 @@ namespace Rhetos.DatabaseGenerator
     {
         private readonly ILogger _deployPackagesLogger;
         private readonly SqlTransactionBatches _sqlExecuter;
-        RhetosAppEnvironment _rhetosAppEnvironment;
+        RhetosAppOptions _rhetosAppOptions;
         private readonly Lazy<GeneratedDataMigrationScripts> _scripts;
 
         public IEnumerable<string> Dependencies => new List<string>();
@@ -40,11 +40,11 @@ namespace Rhetos.DatabaseGenerator
         public ConceptDataMigrationExecuter(
             ILogProvider logProvider,
             SqlTransactionBatches sqlExecuter,
-            RhetosAppEnvironment rhetosAppEnvironment)
+            RhetosAppOptions rhetosAppOptions)
         {
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _sqlExecuter = sqlExecuter;
-            _rhetosAppEnvironment = rhetosAppEnvironment;
+            _rhetosAppOptions = rhetosAppOptions;
             _scripts = new Lazy<GeneratedDataMigrationScripts>(LoadScripts);
         }
 
@@ -72,7 +72,7 @@ namespace Rhetos.DatabaseGenerator
 
         private GeneratedDataMigrationScripts LoadScripts()
         {
-            var serializedConcepts = File.ReadAllText(Path.Combine(_rhetosAppEnvironment.AssetsFolder, ConceptDataMigrationGenerator.ConceptDataMigrationScriptsFileName), Encoding.UTF8);
+            var serializedConcepts = File.ReadAllText(Path.Combine(_rhetosAppOptions.AssetsFolder, ConceptDataMigrationGenerator.ConceptDataMigrationScriptsFileName), Encoding.UTF8);
             return JsonConvert.DeserializeObject<GeneratedDataMigrationScripts>(serializedConcepts);
         }
     }

@@ -21,63 +21,53 @@ using Autofac;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
-using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rhetos
 {
     /// <summary>
     /// Container builder initialized with <see cref="InitializationContext"/>.
     /// It makes the <see cref="InitializationContext"/> and <see cref="IPluginScanner"/> accessible during registration process and
-    /// registers <see cref="IConfigurationProvider"/> and <see cref="RhetosAppEnvironment"/> to the container.
+    /// registers <see cref="IConfigurationProvider"/> and <see cref="RhetosAppOptions"/> to the container.
     /// </summary>
     public class RhetosContainerBuilder : ContainerBuilder
     {
         /// <summary>
         /// Initializes a container with specified <see cref="InitializationContext"/>. 
-        /// Registers <see cref="IConfigurationProvider"/> and <see cref="RhetosAppEnvironment"/> instances to newly created container.
+        /// Registers <see cref="IConfigurationProvider"/> and <see cref="RhetosAppOptions"/> instances to newly created container.
         /// <see cref="ILogProvider"/> is not registered and is meant to be used during the lifetime of registration and container building process.
         /// <see cref="LegacyUtilities"/> will also be initialized with the given configuration.
         /// </summary>
-        public RhetosContainerBuilder(InitializationContext initializationContext, string[] assemblies)
+        public RhetosContainerBuilder(IConfigurationProvider configurationProvider, ILogProvider logProvider, List<string> assemblies)
         {
-            this.RegisterInstance(initializationContext.ConfigurationProvider);
-            this.RegisterInstance(initializationContext.RhetosAppEnvironment);
+            this.RegisterInstance(configurationProvider);
 
-            var pluginScanner = new MefPluginScanner(initializationContext.RhetosAppEnvironment, assemblies, initializationContext.LogProvider);
+            var pluginScanner = new MefPluginScanner(assemblies, logProvider);
+            this.RegisterInstance(pluginScanner).As<IPluginScanner>();
 
             // make properties accessible to modules which are provided with new/unique instance of ContainerBuilder
-            this.Properties.Add(nameof(InitializationContext), initializationContext);
             this.Properties.Add(nameof(IPluginScanner), pluginScanner);
+            this.Properties.Add(nameof(ILogProvider), logProvider);
 
             // this is a patch/mock to provide backward compatibility for all usages of old static classes
-            LegacyUtilities.Initialize(initializationContext.ConfigurationProvider);
+            LegacyUtilities.Initialize(configurationProvider);
 
             Plugins.Initialize(builder => builder.GetPluginRegistration());
         }
 
-        /// <summary>
-        /// Initializes a container with new <see cref="InitializationContext"/> created from specified arguments. 
-        /// Registers <see cref="IConfigurationProvider"/> and <see cref="RhetosAppEnvironment"/> instances to newly created container.
-        /// <see cref="ILogProvider"/> is not registered and is meant to be used during the lifetime of registration and container building process.
-        /// <see cref="LegacyUtilities"/> will also be initialized with the given configuration.
-        /// </summary>
-        public RhetosContainerBuilder(IConfigurationProvider configurationProvider, ILogProvider logProvider)
-            : this(new InitializationContext(configurationProvider, logProvider), null)
+        public RhetosContainerBuilder(IConfigurationProvider configurationProvider, ILogProvider logProvider) :
+            this(configurationProvider, logProvider, SearchForAssemblies(configurationProvider))
         {
         }
 
-        public RhetosContainerBuilder(IConfigurationProvider configurationProvider, string[] assemblies, ILogProvider logProvider)
-            : this(new InitializationContext(configurationProvider, logProvider), assemblies)
+        private static List<string> SearchForAssemblies(IConfigurationProvider configurationProvider)
         {
-        }
-
-        public RhetosContainerBuilder(IConfigurationProvider configurationProvider, ILogProvider logProvider, RhetosAppEnvironment rhetosAppEnviorment)
-            : this(new InitializationContext(configurationProvider, logProvider, rhetosAppEnviorment), null)
-        {
+            var rhetosAppOptions = configurationProvider.GetOptions<RhetosAppOptions>();
+            if (string.IsNullOrEmpty(rhetosAppOptions.BinFolder))
+                throw new FrameworkException("");
+            return Directory.GetFiles(rhetosAppOptions.BinFolder, "*.dll").Union(Directory.GetFiles(rhetosAppOptions.BinFolder, "*.exe")).ToList();
         }
     }
 }

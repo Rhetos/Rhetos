@@ -26,6 +26,7 @@ using System.Reflection;
 using Autofac;
 using Newtonsoft.Json.Linq;
 using Rhetos.Deployment;
+using Rhetos.Dom;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
@@ -53,7 +54,7 @@ namespace Rhetos
                         .Build();
                     var assemblies = GetAssemblies(Path.Combine(projectRootFolder, "obj", "project.assets.json"));
                     var installedPackages = GetPackages(projectRootFolder, Path.Combine(projectRootFolder, "obj", "project.assets.json"));
-                    AppDomain.CurrentDomain.AssemblyResolve += GetExplicitSearchForAssemblyDelegate(assemblies);
+                    AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(assemblies);
 
                     var filesUtility = new FilesUtility(logProvider);
                     var buildOptions = configurationProvider.GetOptions<BuildOptions>();
@@ -67,7 +68,8 @@ namespace Rhetos
                     filesUtility.EmptyDirectory(buildOptions.GeneratedSourceFolder);
 
                     var stopwatch = Stopwatch.StartNew();
-                    using (var container = new RhetosContainerBuilder(configurationProvider, assemblies, logProvider).AddRhetosBuildModules(installedPackages).Build())
+                    using (var container = new RhetosContainerBuilder(configurationProvider, logProvider, assemblies.ToList()).
+                        AddRhetosBuildModules(installedPackages, configurationProvider.GetOptions<BuildOptions>()).Build())
                     {
                         var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
                         performanceLogger.Write(stopwatch, "DeployPackages.Program: Modules and plugins registered.");
@@ -92,21 +94,21 @@ namespace Rhetos
                 {
                     var binFolder = args[1];
                     var configurationProvider = new ConfigurationBuilder()
+                        .AddRhetosRuntimeConfiguration(binFolder)
                         .AddWebConfiguration(args[1])
                         .AddConfigurationManagerConfiguration()
                         .Build();
-                    var rhetosAppEnvironment = new RhetosAppEnvironment(binFolder, Path.Combine(binFolder, "RhetosGenerated"));
                     var deployOptions = configurationProvider.GetOptions<DeployOptions>();
+                    var appOptions = configurationProvider.GetOptions<RhetosAppOptions>();
                     var deployment = new ApplicationDeployment(configurationProvider, logProvider);
-                    AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
-                        rhetosAppEnvironment.BinFolder);
+                    AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(FindAssembliesInFolder(appOptions.BinFolder));
 
                     logger.Trace("Loading plugins.");
                     var stopwatch = Stopwatch.StartNew();
 
                     LegacyUtilities.Initialize(configurationProvider);
 
-                    var builder = new RhetosContainerBuilder(configurationProvider, logProvider, rhetosAppEnvironment)
+                    var builder = new RhetosContainerBuilder(configurationProvider, logProvider)
                         .AddRhetosDbupdateModules()
                         .AddProcessUserOverride();
 
@@ -123,13 +125,10 @@ namespace Rhetos
                 {
                     var rhetosServerRootFolder = args[1];
                     var configurationProvider = BuildConfigurationProvider(args);
-                    var rhetosAppEnvironment = new RhetosAppEnvironment(rhetosServerRootFolder);
+                    var rhetosAppOptions = configurationProvider.GetOptions<RhetosAppOptions>();
                     var deployOptions = configurationProvider.GetOptions<DeployOptions>();
                     var deployment = new ApplicationDeployment(configurationProvider, logProvider);
-                    AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
-                        rhetosAppEnvironment.BinFolder,
-                        rhetosAppEnvironment.PluginsFolder,
-                        rhetosAppEnvironment.GeneratedFolder);
+                    AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(FindAssembliesInFolder(rhetosAppOptions.BinFolder));
                     deployment.InitializeGeneratedApplication();
                 }
 
@@ -160,26 +159,12 @@ namespace Rhetos
                 .Build();
         }
 
-        private static ResolveEventHandler GetSearchForAssemblyDelegate(params string[] folders)
+        private static string[] FindAssembliesInFolder(string folder)
         {
-            return new ResolveEventHandler((object sender, ResolveEventArgs args) =>
-            {
-                // TODO: Review if loadedAssembly is needed.
-                var loadedAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetName().Name == new AssemblyName(args.Name).Name);
-                if (loadedAssembly != null)
-                    return loadedAssembly;
-
-                foreach (var folder in folders)
-                {
-                    string pluginAssemblyPath = Path.Combine(folder, new AssemblyName(args.Name).Name + ".dll");
-                    if (File.Exists(pluginAssemblyPath))
-                        return Assembly.LoadFrom(pluginAssemblyPath);
-                }
-                return null;
-            });
+            return Directory.GetFiles(folder, "*.dll").Union(Directory.GetFiles(folder, "*.exe")).ToArray();
         }
 
-        private static ResolveEventHandler GetExplicitSearchForAssemblyDelegate(params string[] assemblies)
+        private static ResolveEventHandler GetSearchForAssemblyDelegate(params string[] assemblies)
         {
             return new ResolveEventHandler((object sender, ResolveEventArgs args) =>
             {

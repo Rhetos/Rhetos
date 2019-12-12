@@ -35,16 +35,16 @@ namespace Rhetos.Deployment
     {
         const string DataMigrationScriptsFileName = "DataMigrationScripts.json";
 
-        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
+        private readonly RhetosAppOptions _rhetosAppOptions;
         private readonly ILogger _performanceLogger;
         private List<DataMigrationScript> _scripts;
 
         public IEnumerable<string> Dependencies => new List<string>();
 
-        public DataMigrationScriptsFromDisk(RhetosAppEnvironment rhetosAppEnvironment,
+        public DataMigrationScriptsFromDisk(RhetosAppOptions rhetosAppOptions,
             ILogProvider logProvider)
         {
-            _rhetosAppEnvironment = rhetosAppEnvironment;
+            _rhetosAppOptions = rhetosAppOptions;
             _performanceLogger = logProvider.GetLogger("Performance");
         }
 
@@ -57,7 +57,7 @@ namespace Rhetos.Deployment
             if (_scripts == null)
             {
                 var stopwatch = Stopwatch.StartNew();
-                var dataMigrationScriptsFilePath = Path.Combine(_rhetosAppEnvironment.AssetsFolder, DataMigrationScriptsFileName);
+                var dataMigrationScriptsFilePath = Path.Combine(_rhetosAppOptions.AssetsFolder, DataMigrationScriptsFileName);
                 if (!File.Exists(dataMigrationScriptsFilePath))
                     throw new FrameworkException($@"The file {dataMigrationScriptsFilePath} that is used to execute the data migration is missing.");
                 var serializedConcepts = File.ReadAllText(dataMigrationScriptsFilePath, Encoding.UTF8);

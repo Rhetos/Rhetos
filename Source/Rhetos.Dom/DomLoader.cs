@@ -17,61 +17,55 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System.IO;
+using Rhetos.Extensibility;
 
 namespace Rhetos.Dom
 {
     public class DomLoader : IDomainObjectModel
     {
-        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
+        private readonly RhetosAppOptions _rhetosAppOptions;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
+        private readonly IPluginScanner _pluginScanner;
 
-        private List<Assembly> _assemblies;
+        private Assembly _domAssembly;
         private readonly object _assembliesLock = new object();
 
-        public DomLoader(RhetosAppEnvironment rhetosAppEnvironment, ILogProvider logProvider)
+        public DomLoader(RhetosAppOptions rhetosAppOptions, ILogProvider logProvider, IPluginScanner pluginScanner)
         {
-            _rhetosAppEnvironment = rhetosAppEnvironment;
+            _rhetosAppOptions = rhetosAppOptions;
             _logger = logProvider.GetLogger("DomLoader");
             _performanceLogger = logProvider.GetLogger("Performance");
+            _pluginScanner = pluginScanner;
         }
 
         public IEnumerable<Assembly> Assemblies
         {
             get
             {
-                if (_assemblies == null)
+                if (_domAssembly == null)
                     lock (_assembliesLock)
-                        if (_assemblies == null)
-                            _assemblies = LoadObjectModel();
+                        if (_domAssembly == null)
+                            _domAssembly = LoadObjectModel();
 
-                return _assemblies;
+                return new List<Assembly> { _domAssembly };
             }
         }
 
-        private List<Assembly> LoadObjectModel()
+        private Assembly LoadObjectModel()
         {
-            var loaded = new List<Assembly>();
             var sw = Stopwatch.StartNew();
-            foreach (string name in _rhetosAppEnvironment.DomAssemblyFiles.Select(Path.GetFileNameWithoutExtension))
-            {
-                _logger.Trace("Loading assembly \"" + name + "\".");
-                var assembly = Assembly.Load(name);
-                if (assembly == null)
-                    throw new FrameworkException($"Failed to load assembly '{name}'.");
-                loaded.Add(assembly);
-                _performanceLogger.Write(sw, "DomLoader.LoadObjectModel " + name);
-            }
-            return loaded;
+            //TODO: Check if we need to load the assembly after we have found it
+            var domAssembly =  _pluginScanner.FindPlugins("Common.DomRepository").First().Type.Assembly;
+            _performanceLogger.Write(sw, "DomLoader.LoadObjectModel " + domAssembly.GetName().Name);
+            return domAssembly;
         }
     }
 }

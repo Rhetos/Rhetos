@@ -78,7 +78,7 @@ namespace Rhetos
         public static IConfigurationBuilder AddRhetosAppConfiguration(this IConfigurationBuilder builder, string rhetosAppRootPath)
         {
             rhetosAppRootPath = Path.GetFullPath(rhetosAppRootPath);
-            builder.AddKeyValue(nameof(RhetosAppOptions.RootPath), rhetosAppRootPath);
+            builder.AddKeyValue("RootPath", rhetosAppRootPath);
             builder.AddWebConfiguration(rhetosAppRootPath);
             return builder;
         }
@@ -89,6 +89,13 @@ namespace Rhetos
             builder.AddKeyValue(nameof(BuildOptions.GeneratedFilesCacheFolder), Path.Combine(projectRootPath, "obj", "RhetosGeneratedCache"));
             builder.AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), Path.Combine(projectRootPath, "RhetosGeneratedSource"));
             builder.AddKeyValue(nameof(BuildOptions.DatabaseLanguage), "MsSql");
+            return builder;
+        }
+
+        public static IConfigurationBuilder AddRhetosRuntimeConfiguration(this IConfigurationBuilder builder, string binFolder)
+        {
+            builder.AddKeyValue(nameof(RhetosAppOptions.BinFolder), binFolder);
+            builder.AddKeyValue(nameof(RhetosAppOptions.AssetsFolder), Path.Combine(binFolder, "RhetosGenerated"));
             return builder;
         }
 

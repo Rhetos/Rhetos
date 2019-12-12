@@ -36,9 +36,8 @@ namespace Rhetos
 {
     public static class RhetosContainerBuilderExtensions
     {
-        public static RhetosContainerBuilder AddRhetosBuildModules(this RhetosContainerBuilder builder, List<InstalledPackage> installedPackages)
+        public static RhetosContainerBuilder AddRhetosBuildModules(this RhetosContainerBuilder builder, List<InstalledPackage> installedPackages, BuildOptions buildOptions)
         {
-            var buildOptions = builder.GetInitializationContext().ConfigurationProvider.GetOptions<BuildOptions>();
             builder.RegisterInstance(buildOptions).PreserveExistingDefaults();
 
             var pluginRegistration = builder.GetPluginRegistration();
@@ -236,8 +235,7 @@ namespace Rhetos
 
         public static RhetosContainerBuilder AddRhetosDeployment(this RhetosContainerBuilder builder)
         {
-            var buildOptions = builder.GetInitializationContext().ConfigurationProvider.GetOptions<BuildOptions>();
-            builder.RegisterInstance(buildOptions).PreserveExistingDefaults();
+            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<BuildOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new DeployModule());
 

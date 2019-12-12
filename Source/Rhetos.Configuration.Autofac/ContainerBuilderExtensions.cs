@@ -19,28 +19,12 @@
 
 using Rhetos;
 using Rhetos.Extensibility;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using Rhetos.Logging;
 
 namespace Autofac
 {
     public static class ContainerBuilderExtensions
     {
-        /// <summary>
-        /// Extension method which resolves <see cref="InitializationContext"/> instance from properly initialized <see cref="RhetosContainerBuilder"/>.
-        /// </summary>
-        public static InitializationContext GetInitializationContext(this ContainerBuilder builder)
-        {
-            var key = nameof(InitializationContext);
-            if (builder.Properties.TryGetValue(key, out var initializationContext) && (initializationContext is InitializationContext))
-                return initializationContext as InitializationContext;
-
-            throw new FrameworkException($"{nameof(ContainerBuilder)} does not contain an entry for {nameof(InitializationContext)}. " +
-                $"This container was probably not created as {nameof(RhetosContainerBuilder)}.");
-        }
-
         /// <summary>
         /// Extension method which resolves <see cref="IPluginScanner"/> instance from properly initialized <see cref="RhetosContainerBuilder"/>.
         /// </summary>
@@ -55,17 +39,28 @@ namespace Autofac
         }
 
         /// <summary>
+        /// Extension method which resolves <see cref="ILogProvider"/> instance from properly initialized <see cref="RhetosContainerBuilder"/>.
+        /// </summary>
+        public static ILogProvider GetLogProvider(this ContainerBuilder builder)
+        {
+            var key = nameof(ILogProvider);
+            if (builder.Properties.TryGetValue(key, out var logProvider) && (logProvider is ILogProvider iLogProvider))
+                return iLogProvider;
+
+            throw new FrameworkException($"{nameof(ContainerBuilder)} does not contain an entry for {nameof(ILogProvider)}. " +
+                $"This container was probably not created as {nameof(RhetosContainerBuilder)}.");
+        }
+
+        /// <summary>
         /// Extension method which resolves new <see cref="ContainerBuilderPluginRegistration"/> instance from properly initialized <see cref="RhetosContainerBuilder"/>.
         /// </summary>
         public static ContainerBuilderPluginRegistration GetPluginRegistration(this ContainerBuilder builder)
         {
             var pluginScanner = builder.GetPluginScanner();
-            var initializationContext = builder.GetInitializationContext();
+            var logProvider = builder.GetLogProvider();
 
             return new ContainerBuilderPluginRegistration(
-                builder,
-                initializationContext.LogProvider,
-                pluginScanner);
+                builder, logProvider, pluginScanner);
         }
     }
 }

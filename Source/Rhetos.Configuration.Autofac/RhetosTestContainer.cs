@@ -40,12 +40,11 @@ namespace Rhetos.Configuration.Autofac
         private static IContainer _iocContainer;
         private static object _containerInitializationLock = new object();
         protected static ILogger _performanceLogger = new ConsoleLogger("Performance");
-        private static RhetosAppEnvironment _rhetosAppEnvironment;
 
         // Instance per test or session:
         protected ILifetimeScope _lifetimeScope;
         protected bool _commitChanges;
-        protected string _explicitRhetosServerFolder;
+        protected Lazy<string> _rhetosServerFolder;
         public event Action<ContainerBuilder> InitializeSession;
 
         /// <param name="commitChanges">
@@ -62,7 +61,7 @@ namespace Rhetos.Configuration.Autofac
                     throw new ArgumentException("The given folder does not exist: " + Path.GetFullPath(rhetosServerFolder) + ".");
 
             _commitChanges = commitChanges;
-            _explicitRhetosServerFolder = rhetosServerFolder;
+            _rhetosServerFolder = new Lazy<string>(() => rhetosServerFolder != null ? rhetosServerFolder : SearchForRhetosServerRootFolder());
         }
 
         /// <summary>
@@ -98,13 +97,12 @@ namespace Rhetos.Configuration.Autofac
                     lock (_containerInitializationLock)
                         if (_iocContainer == null)
                         {
-                            var rhetosAppRootPath = SearchForRhetosServerRootFolder();
+                            var rhetosAppRootPath = _rhetosServerFolder.Value;
                             var configurationProvider = new ConfigurationBuilder()
                                 .AddRhetosAppConfiguration(rhetosAppRootPath)
                                 .AddConfigurationManagerConfiguration()
                                 .Build();
 
-                            _rhetosAppEnvironment = new RhetosAppEnvironment(rhetosAppRootPath);
                             _iocContainer = InitializeIocContainer(configurationProvider);
                         }
                 }
@@ -126,9 +124,6 @@ namespace Rhetos.Configuration.Autofac
 
         protected string SearchForRhetosServerRootFolder()
         {
-            if (_explicitRhetosServerFolder != null)
-                return _explicitRhetosServerFolder;
-
             var folder = new DirectoryInfo(Environment.CurrentDirectory);
 
             if (IsValidRhetosServerDirectory(folder.FullName))
@@ -173,7 +168,8 @@ namespace Rhetos.Configuration.Autofac
 
         protected Assembly SearchForAssembly(object sender, ResolveEventArgs args)
         {
-            foreach (var folder in new[] { _rhetosAppEnvironment.PluginsFolder, _rhetosAppEnvironment.GeneratedFolder, _rhetosAppEnvironment.BinFolder })
+            var rootFolder = _rhetosServerFolder.Value;
+            foreach (var folder in new[] { Paths.GetPluginsFolder(rootFolder), Paths.GetGeneratedFolder(rootFolder), Paths.GetBinFolder(rootFolder) })
             {
                 string pluginAssemblyPath = Path.Combine(folder, new AssemblyName(args.Name).Name + ".dll");
                 if (File.Exists(pluginAssemblyPath))

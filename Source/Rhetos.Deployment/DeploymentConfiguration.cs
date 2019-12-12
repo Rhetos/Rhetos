@@ -35,9 +35,9 @@ namespace Rhetos.Deployment
         private readonly Lazy<IEnumerable<PackageRequest>> _packageRequests;
         private readonly Lazy<IEnumerable<PackageSource>> _packageSources;
 
-        public DeploymentConfiguration(RhetosAppEnvironment rhetosAppEnvironment, ILogProvider logProvider)
+        public DeploymentConfiguration(string rootPath, ILogProvider logProvider)
         {
-            _rootPath = rhetosAppEnvironment.RootPath;
+            _rootPath = rootPath;
             _logger = logProvider.GetLogger(GetType().Name);
             _packageRequests = new Lazy<IEnumerable<PackageRequest>>(LoadPackageRequest);
             _packageSources = new Lazy<IEnumerable<PackageSource>>(LoadPackageSources);

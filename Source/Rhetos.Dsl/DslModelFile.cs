@@ -32,18 +32,18 @@ namespace Rhetos.Dsl
     {
         private readonly ILogger _performanceLogger;
         private readonly DslContainer _dslContainer;
-        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
+        private readonly RhetosAppOptions _rhetosAppOptions;
         private readonly BuildOptions _buildOptions;
 
         public DslModelFile(
             ILogProvider logProvider,
             DslContainer dslContainer,
-            RhetosAppEnvironment rhetosAppEnvironment,
+            RhetosAppOptions rhetosAppOptions,
             BuildOptions buildOptions)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _dslContainer = dslContainer;
-            _rhetosAppEnvironment = rhetosAppEnvironment;
+            _rhetosAppOptions = rhetosAppOptions;
             _buildOptions = buildOptions;
         }
 
@@ -123,7 +123,7 @@ namespace Rhetos.Dsl
         {
             var sw = Stopwatch.StartNew();
 
-            string path = Path.Combine(_rhetosAppEnvironment.AssetsFolder, DslModelFileName);
+            string path = Path.Combine(_rhetosAppOptions.AssetsFolder, DslModelFileName);
             string serializedConcepts = File.ReadAllText(path, Encoding.UTF8);
 
             var serializerSettings = new JsonSerializerSettings

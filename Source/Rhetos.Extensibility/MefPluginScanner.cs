@@ -25,10 +25,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.ReflectionModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 
 namespace Rhetos.Extensibility
 {
@@ -39,70 +36,47 @@ namespace Rhetos.Extensibility
         /// </summary>
         private MultiDictionary<string, PluginInfo> _pluginsByExport = null;
         private object _pluginsLock = new object();
-        private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
-        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
-        private readonly string[] _assemblies;
+        private readonly List<string> _assemblyList;
 
-        public MefPluginScanner(RhetosAppEnvironment rhetosAppEnvironment, string[] assemblies, ILogProvider logProvider)
+        public MefPluginScanner(List<string> assemblyList, ILogProvider logProvider)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
-            _logger = logProvider.GetLogger("Plugins");
-            _rhetosAppEnvironment = rhetosAppEnvironment;
-            _assemblies = assemblies;
+            _assemblyList = assemblyList;
         }
 
         /// <summary>
-        /// Returns plugins that are registered for the given interface, sorted by dependencies (MefPovider.DependsOn).
+        /// Returns plugins that are registered for the given type, sorted by dependencies (MefPovider.DependsOn).
         /// </summary>
         public IEnumerable<PluginInfo> FindPlugins(Type pluginInterface)
+        {
+            return FindPlugins(pluginInterface.FullName);
+        }
+
+        /// <summary>
+        /// Returns plugins that are registered for the given type, sorted by dependencies (MefPovider.DependsOn).
+        /// </summary>
+        public IEnumerable<PluginInfo> FindPlugins(string name)
         {
             lock (_pluginsLock)
             {
                 if (_pluginsByExport == null)
                 {
-                    var assemblies = ListAssemblies();
                     try
                     {
-                        _pluginsByExport = LoadPlugins(assemblies);
+                        _pluginsByExport = LoadPlugins(_assemblyList);
                     }
                     catch (Exception ex)
                     {
-                        string typeLoadReport = CsUtility.ReportTypeLoadException(ex, "Cannot load plugins.", assemblies);
+                        string typeLoadReport = CsUtility.ReportTypeLoadException(ex, "Cannot load plugins.", _assemblyList);
                         if (typeLoadReport != null)
                             throw new FrameworkException(typeLoadReport, ex);
                         else
                             ExceptionsUtility.Rethrow(ex);
                     }
                 }
-                return _pluginsByExport.Get(pluginInterface.FullName);
+                return _pluginsByExport.Get(name);
             }
-        }
-
-        private List<string> ListAssemblies()
-        {
-            var stopwatch = Stopwatch.StartNew();
-
-            if (_assemblies != null)
-                return _assemblies.ToList();
-
-            string[] pluginsPath = new[] { _rhetosAppEnvironment.PluginsFolder, _rhetosAppEnvironment.GeneratedFolder };
-
-            List<string> assemblies = new List<string>();
-            foreach (var path in pluginsPath)
-                if (File.Exists(path))
-                    assemblies.Add(Path.GetFullPath(path));
-                else if (Directory.Exists(path))
-                    assemblies.AddRange(Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories));
-            // If the path does not exist, it may be generated later (see DetectAndRegisterNewModulesAndPlugins).
-
-            assemblies.Sort();
-
-            foreach (var assembly in assemblies)
-                _logger.Trace(() => "Found assembly: " + assembly);
-
-            _performanceLogger.Write(stopwatch, "MefPluginScanner: Listed assemblies (" + assemblies.Count + ").");
-            return assemblies;
         }
 
         private MultiDictionary<string, PluginInfo> LoadPlugins(List<string> assemblies)

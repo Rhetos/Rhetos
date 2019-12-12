@@ -228,6 +228,7 @@ namespace Common
     using Autofac;
     {ModuleCodeGenerator.CommonUsingTag}
 
+    [System.ComponentModel.Composition.Export(typeof(DomRepository))]
     public class DomRepository
     {{
         private readonly Rhetos.Extensibility.INamedPlugins<IRepository> _repositories;

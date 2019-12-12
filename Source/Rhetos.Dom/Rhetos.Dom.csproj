@@ -64,6 +64,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Rhetos.Extensibility\Rhetos.Extensibility.csproj">
+      <Project>{7EAF15BD-39C9-44AB-8834-EC0AE013A8A2}</Project>
+      <Name>Rhetos.Extensibility</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj">
       <Project>{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}</Project>
       <Name>Rhetos.Utilities</Name>

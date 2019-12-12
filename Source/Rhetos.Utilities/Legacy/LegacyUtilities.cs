@@ -18,11 +18,6 @@
 */
 
 using Rhetos.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rhetos
 {
@@ -36,8 +31,8 @@ namespace Rhetos
         public static void Initialize(IConfigurationProvider configurationProvider)
         {
             var rhetosAppOptions = configurationProvider.GetOptions<RhetosAppOptions>();
-            var rhetosAppEnvironment = new RhetosAppEnvironment(rhetosAppOptions.RootPath);
-            Paths.Initialize(rhetosAppEnvironment);
+            //TODO: This is initialized with the IConfigurationProvider because there will probably be some logic in the Initializetion based on the prvided configuration
+            Paths.Initialize(configurationProvider);
             ConfigUtility.Initialize(configurationProvider);
             
             var connectionStringOptions = configurationProvider.GetOptions<ConnectionStringOptions>("ConnectionStrings:ServerConnectionString");

@@ -17,15 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 namespace Rhetos.Deployment
 {
     public class PackageDownloaderOptions
     {
         public bool IgnorePackageDependencies { get; set; }
+        public string ResourcesFolder { get; set; }
+        public string PackagesCacheFolder { get; set; }
+        public string PluginsFolder { get; set; }
+        public string RootFolder { get; set; }
     }
 }
