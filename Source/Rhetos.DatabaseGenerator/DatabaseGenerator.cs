@@ -125,11 +125,8 @@ namespace Rhetos.DatabaseGenerator
 
             var removeLeaves = Graph.RemovableLeaves(emptyCreateQuery, ConceptApplication.GetDependencyPairs(newApplications));
 
-            foreach (var remove in removeLeaves)
-            {
-                var r = remove;
-                _logger.Trace(() => "Removing empty leaf concept application " + r + ".");
-            }
+            _logger.Trace(() => $"Removing {removeLeaves.Count} empty leaf concept applications:{string.Concat(removeLeaves.Select(l => "\r\n-" + l))}");
+
             return newApplications.Except(removeLeaves).ToList();
         }
 

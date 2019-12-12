@@ -91,7 +91,7 @@ namespace Rhetos.DatabaseGenerator
                 IConceptDatabaseDefinition[] implementations = _plugins.GetImplementations(conceptInfo.GetType()).ToArray();
 
                 if (!implementations.Any())
-                    implementations = new[] { new NullImplementation() };
+                    implementations = _nullImplementations;
 
                 codeGenerators.AddRange(implementations.Select(
                     conceptImplementation => new CodeGenerator(conceptInfo, conceptImplementation)));
@@ -100,44 +100,7 @@ namespace Rhetos.DatabaseGenerator
             return codeGenerators;
         }
 
-        private static List<DatabaseObject> ConstructDatabaseObjects(
-            List<CodeGenerator> codeGenerators,
-            Dictionary<int, string> createQueryByCodeGenerator,
-            Dictionary<int, string> removeQueryByCodeGenerator,
-            IEnumerable<CodeGeneratorDependency> allDependencies)
-        {
-            var allDependenciesByCodeGenerator = allDependencies.ToMultiDictionary(d => d.Dependent.Id, d => d.DependsOn);
-
-            var databaseObjectByCodeGenerator = codeGenerators.ToDictionary(
-                cg => cg.Id,
-                cg => new DatabaseObject
-                {
-                    ConceptInfoTypeName = cg.ConceptInfo.GetType().AssemblyQualifiedName,
-                    ConceptInfoKey = cg.ConceptInfo.GetKey(),
-                    ConceptImplementationTypeName = cg.ConceptImplementation.GetType().AssemblyQualifiedName,
-                    DependsOn = null, // It will be updated later. All database objects must be constructed first, because DependsOn will reference other instances.
-                    CreateQuery = createQueryByCodeGenerator.GetValueOrDefault(cg.Id) ?? "",
-                    RemoveQuery = removeQueryByCodeGenerator.GetValueOrDefault(cg.Id) ?? "",
-                });
-
-            foreach (var ca in databaseObjectByCodeGenerator)
-            {
-                var codeGeneratorId = ca.Key;
-                var generatedDatabaseObject = ca.Value;
-
-                var dependsOnCodeGenerators = allDependenciesByCodeGenerator.GetValueOrDefault(codeGeneratorId);
-                var dependsOnDatabaseObjects = dependsOnCodeGenerators
-                    ?.Distinct()
-                    ?.Where(cg => cg.Id != codeGeneratorId) // Remove any self-reference.
-                    ?.Select(cg => databaseObjectByCodeGenerator[cg.Id]).ToArray()
-                    ?? Array.Empty<DatabaseObject>();
-
-                generatedDatabaseObject.DependsOn = dependsOnDatabaseObjects;
-            }
-
-            var databaseObjects = databaseObjectByCodeGenerator.Values.ToList();
-            return databaseObjects;
-        }
+        private readonly IConceptDatabaseDefinition[] _nullImplementations = new[] { new NullImplementation() };
 
         private void ComputeCreateAndRemoveQuery(
             List<CodeGenerator> codeGenerators,
@@ -236,6 +199,45 @@ namespace Rhetos.DatabaseGenerator
                 CodeGeneratorId: int.Parse(generatedScript.Substring(0, scriptKeyEnd)),
                 Sql: generatedScript.Substring(scriptKeyEnd + DatabaseObjectSeparatorSuffix.Length).Trim()
             );
+        }
+
+        private static List<DatabaseObject> ConstructDatabaseObjects(
+            List<CodeGenerator> codeGenerators,
+            Dictionary<int, string> createQueryByCodeGenerator,
+            Dictionary<int, string> removeQueryByCodeGenerator,
+            IEnumerable<CodeGeneratorDependency> allDependencies)
+        {
+            var allDependenciesByCodeGenerator = allDependencies.ToMultiDictionary(d => d.Dependent.Id, d => d.DependsOn);
+
+            var databaseObjectByCodeGenerator = codeGenerators.ToDictionary(
+                cg => cg.Id,
+                cg => new DatabaseObject
+                {
+                    ConceptInfoTypeName = cg.ConceptInfo.GetType().AssemblyQualifiedName,
+                    ConceptInfoKey = cg.ConceptInfo.GetKey(),
+                    ConceptImplementationTypeName = cg.ConceptImplementation.GetType().AssemblyQualifiedName,
+                    DependsOn = null, // It will be updated later. All database objects must be constructed first, because DependsOn will reference other instances.
+                    CreateQuery = createQueryByCodeGenerator.GetValueOrDefault(cg.Id) ?? "",
+                    RemoveQuery = removeQueryByCodeGenerator.GetValueOrDefault(cg.Id) ?? "",
+                });
+
+            foreach (var ca in databaseObjectByCodeGenerator)
+            {
+                var codeGeneratorId = ca.Key;
+                var generatedDatabaseObject = ca.Value;
+
+                var dependsOnCodeGenerators = allDependenciesByCodeGenerator.GetValueOrDefault(codeGeneratorId);
+                var dependsOnDatabaseObjects = dependsOnCodeGenerators
+                    ?.Distinct()
+                    ?.Where(cg => cg.Id != codeGeneratorId) // Remove any self-reference.
+                    ?.Select(cg => databaseObjectByCodeGenerator[cg.Id]).ToArray()
+                    ?? Array.Empty<DatabaseObject>();
+
+                generatedDatabaseObject.DependsOn = dependsOnDatabaseObjects;
+            }
+
+            var databaseObjects = databaseObjectByCodeGenerator.Values.ToList();
+            return databaseObjects;
         }
     }
 }
