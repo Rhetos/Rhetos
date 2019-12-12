@@ -64,10 +64,9 @@
     <Compile Include="ConceptApplicationRepositoryTest.cs" />
     <Compile Include="DatabaseModelBuilderTest.cs" />
     <Compile Include="DatabaseGeneratorTest.cs" />
-    <Compile Include="DatabaseModelBuilderAccessor.cs" />
+    <Compile Include="DatabaseModelGeneratorAccessor.cs" />
     <Compile Include="DataMigrationScriptBuilderTest.cs" />
     <Compile Include="MockConceptApplicationRepository.cs" />
-    <Compile Include="MockDatabaseModel.cs" />
     <Compile Include="MockDatabasePluginsContainer.cs" />
     <Compile Include="MockDslModel.cs" />
     <Compile Include="MockSqlExecuter.cs" />

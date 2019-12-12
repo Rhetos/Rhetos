@@ -31,33 +31,38 @@ using System.Threading.Tasks;
 
 namespace Rhetos.DatabaseGenerator.Test
 {
-    public class DatabaseModelBuilderAccessor : DatabaseModelBuilder, ITestAccessor
+    public class DatabaseModelGeneratorAccessor : DatabaseModelGenerator, ITestAccessor
     {
-        public DatabaseModelBuilderAccessor(
+        public DatabaseModelGeneratorAccessor(
             IPluginsContainer<IConceptDatabaseDefinition> plugins,
             IDslModel dslModel)
-            : base(plugins, dslModel, new ConsoleLogProvider())
+            : base(plugins, dslModel, new ConsoleLogProvider(), null)
         {
+        }
+
+        public List<NewConceptApplication> CreateNewApplications()
+        {
+            return (List<NewConceptApplication>)this.Invoke("CreateNewApplications");
         }
 
         public static string GetConceptApplicationSeparator(int scriptKey)
         {
-            return (string)TestAccessorHelpers.Invoke<DatabaseModelBuilder>("GetConceptApplicationSeparator", scriptKey);
+            return (string)TestAccessorHelpers.Invoke<DatabaseModelGenerator>("GetConceptApplicationSeparator", scriptKey);
         }
 
         public static void ExtractCreateQueries(string generatedSqlCode, List<NewConceptApplication> newConceptApplications)
         {
-            TestAccessorHelpers.Invoke<DatabaseModelBuilder>("ExtractCreateQueries", generatedSqlCode, newConceptApplications);
+            TestAccessorHelpers.Invoke<DatabaseModelGenerator>("ExtractCreateQueries", generatedSqlCode, newConceptApplications);
         }
 
         public static IEnumerable<Dependency> GetConceptApplicationDependencies(IEnumerable<Tuple<IConceptInfo, IConceptInfo, string>> conceptInfoDependencies, IEnumerable<ConceptApplication> conceptApplications)
         {
-            return (IEnumerable<Dependency>)TestAccessorHelpers.Invoke<DatabaseModelBuilder>("GetConceptApplicationDependencies", conceptInfoDependencies, conceptApplications);
+            return (IEnumerable<Dependency>)TestAccessorHelpers.Invoke<DatabaseModelGenerator>("GetConceptApplicationDependencies", conceptInfoDependencies, conceptApplications);
         }
 
         public static IEnumerable<Dependency> ExtractDependenciesFromConceptInfos(IEnumerable<NewConceptApplication> newConceptApplications)
         {
-            return (IEnumerable<Dependency>)TestAccessorHelpers.Invoke<DatabaseModelBuilder>("ExtractDependenciesFromConceptInfos", newConceptApplications);
+            return (IEnumerable<Dependency>)TestAccessorHelpers.Invoke<DatabaseModelGenerator>("ExtractDependenciesFromConceptInfos", newConceptApplications);
         }
 
         public void ComputeDependsOn(IEnumerable<NewConceptApplication> newConceptApplications)

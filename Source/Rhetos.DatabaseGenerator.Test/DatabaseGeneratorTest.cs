@@ -165,7 +165,7 @@ namespace Rhetos.DatabaseGenerator.Test
                 implementations.Add(new NullImplementation());
                 var databasePlugins = MockDatabasePluginsContainer.Create(implementations);
 
-                var databaseModelBuilder = new DatabaseModelBuilderAccessor(databasePlugins, null);
+                var databaseModelBuilder = new DatabaseModelGeneratorAccessor(databasePlugins, null);
                 databaseModelBuilder.ComputeDependsOn(oldApplications.Cast<NewConceptApplication>());
                 databaseModelBuilder.ComputeDependsOn(newApplications);
                 TestUtility.Dump(oldApplications, a => $"\r\n{a} DEPENDS ON:{string.Concat(a.DependsOn.Select(d => $"\r\n - {d.ConceptApplication}"))}.");
@@ -173,7 +173,7 @@ namespace Rhetos.DatabaseGenerator.Test
             }
 
             var conceptApplicationRepository = new MockConceptApplicationRepository { ConceptApplications = oldApplications.ToList() };
-            var databaseModel = new MockDatabaseModel { ConceptApplications = newApplications.ToList() };
+            var databaseModel = new DatabaseModel { ConceptApplications = newApplications.ToList() };
             var testConfig = new MockConfiguration { { "SqlExecuter.MaxJoinedScriptCount", 1 } };
             var sqlExecuter = new MockSqlExecuter();
             var sqlTransactionBatches = new SqlTransactionBatches(sqlExecuter, testConfig, new ConsoleLogProvider());
