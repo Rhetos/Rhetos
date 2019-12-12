@@ -708,8 +708,13 @@ BEGIN
     ALTER TABLE Rhetos.DataMigrationScript
         DROP CONSTRAINT DF_DataMigrationScript_Active;
 END
+GO
 
 -- Keeping the old columns for now, to avoid errors in existing applications' data-migration scripts.
+
+ALTER TABLE Rhetos.AppliedConcept ALTER COLUMN SerializedInfo nvarchar(max) NULL;
+ALTER TABLE Rhetos.AppliedConcept ALTER COLUMN ConceptImplementationVersion nvarchar(256) NULL;
+
 UPDATE
 	Rhetos.AppliedConcept
 SET

@@ -23,9 +23,9 @@ namespace Rhetos.DatabaseGenerator
 {
     /// <summary>
     /// This concept implementation is used for concepts that have no database implementation.
-    /// This is useful for handling dependencies between concept application in situations where one concept application depends on another concept info
-    /// that has no implementation and which depends on a third concept application. First concept application should indirectly depend on third, even though there
-    /// is no second concept application.  Such scenarios are easier to handle if every concept has its implementation.
+    /// This is useful for handling dependencies between database objects in situations where one database objects depends on another concept info
+    /// that has no implementation and which depends on a third database object. First database object should indirectly depend on third, even though there
+    /// is no second database object implementation.  Such scenarios are easier to handle if every concept has its implementation.
     /// </summary>
     public class NullImplementation : IConceptDatabaseDefinition
     {

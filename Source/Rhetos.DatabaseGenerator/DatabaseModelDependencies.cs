@@ -46,15 +46,9 @@ namespace Rhetos.DatabaseGenerator
             IEnumerable<CodeGenerator> codeGenerators,
             IPluginsContainer<IConceptDatabaseDefinition> plugins)
         {
-            var stopwatch = Stopwatch.StartNew();
-            
             var dependenciesFromConceptInfo = ExtractDependenciesFromConceptInfos(codeGenerators);
-            _logger.Trace(() => ReportDependencies("Direct or indirect IConceptInfo reference", dependenciesFromConceptInfo));
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: ExtractDependenciesFromConceptInfos executed.");
-            
+           
             var dependenciesFromMefPluginMetadata = ExtractDependenciesFromMefPluginMetadata(plugins, codeGenerators);
-            _logger.Trace(() => ReportDependencies("MefPlugin DependsOn", dependenciesFromMefPluginMetadata));
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: ExtractDependenciesFromMefPluginMetadata executed.");
             
             return dependenciesFromConceptInfo.Union(dependenciesFromMefPluginMetadata).ToList();
         }
@@ -62,15 +56,19 @@ namespace Rhetos.DatabaseGenerator
         private List<CodeGeneratorDependency> ExtractDependenciesFromConceptInfos(
             IEnumerable<CodeGenerator> codeGenerators)
         {
-            var conceptInfos = codeGenerators.Select(codeGenerator => codeGenerator.ConceptInfo).Distinct();
+            var stopwatch = Stopwatch.StartNew();
 
+            var conceptInfos = codeGenerators.Select(codeGenerator => codeGenerator.ConceptInfo).Distinct();
             var conceptInfoDependencies = conceptInfos.SelectMany(conceptInfo => conceptInfo.GetAllDependencies()
                 .Select(dependency => Tuple.Create(dependency, conceptInfo)));
+            var dependencies = ConceptDependencyToCodeGeneratorsDependency(conceptInfoDependencies, codeGenerators);
 
-            return ConceptDependencyToImplementationDependency(conceptInfoDependencies, codeGenerators);
+            _performanceLogger.Write(stopwatch, $"{nameof(DatabaseModelDependencies)}.{nameof(ExtractDependenciesFromConceptInfos)}.");
+            _logger.Trace(() => ReportDependencies("Direct or indirect IConceptInfo reference", dependencies));
+            return dependencies;
         }
 
-        public List<CodeGeneratorDependency> ConceptDependencyToImplementationDependency(
+        public List<CodeGeneratorDependency> ConceptDependencyToCodeGeneratorsDependency(
             IEnumerable<Tuple<IConceptInfo, IConceptInfo>> conceptInfoDependencies,
             IEnumerable<CodeGenerator> codeGenerators)
         {
@@ -85,12 +83,12 @@ namespace Rhetos.DatabaseGenerator
                 from conceptInfoKeyDependency in conceptInfoKeyDependencies
                 where codeGeneratorsByConceptInfoKey.ContainsKey(conceptInfoKeyDependency.Item1)
                       && codeGeneratorsByConceptInfoKey.ContainsKey(conceptInfoKeyDependency.Item2)
-                from dependsOnConceptApplication in codeGeneratorsByConceptInfoKey[conceptInfoKeyDependency.Item1]
-                from dependentConceptApplication in codeGeneratorsByConceptInfoKey[conceptInfoKeyDependency.Item2]
+                from dependsOnCodeGenerator in codeGeneratorsByConceptInfoKey[conceptInfoKeyDependency.Item1]
+                from dependentCodeGenerator in codeGeneratorsByConceptInfoKey[conceptInfoKeyDependency.Item2]
                 select new CodeGeneratorDependency
                     {
-                        DependsOn = dependsOnConceptApplication,
-                        Dependent = dependentConceptApplication,
+                        DependsOn = dependsOnCodeGenerator,
+                        Dependent = dependentCodeGenerator,
                     };
 
             return codeGeneratorDependencies.ToList();
@@ -100,6 +98,7 @@ namespace Rhetos.DatabaseGenerator
             IPluginsContainer<IConceptDatabaseDefinition> plugins,
             IEnumerable<CodeGenerator> codeGenerators)
         {
+            var stopwatch = Stopwatch.StartNew();
             var dependencies = new List<CodeGeneratorDependency>();
 
             var codeGeneratorsByImplementationType = codeGenerators
@@ -118,7 +117,12 @@ namespace Rhetos.DatabaseGenerator
                         codeGeneratorsByImplementationType[implementationDependency.Item2],
                         dependencies);
 
-            return dependencies.Distinct().ToList();
+            dependencies = dependencies.Distinct().ToList();
+
+            _performanceLogger.Write(stopwatch, $"{nameof(DatabaseModelDependencies)}.{nameof(ExtractDependenciesFromMefPluginMetadata)}.");
+            _logger.Trace(() => ReportDependencies("MefPlugin DependsOn", dependencies));
+
+            return dependencies;
         }
 
         private List<Tuple<Type, Type>> GetImplementationDependencies(IPluginsContainer<IConceptDatabaseDefinition> plugins, IEnumerable<Type> conceptImplementations)
@@ -156,17 +160,17 @@ namespace Rhetos.DatabaseGenerator
         }
 
         private void AddDependenciesOnSameConceptInfo(
-            IEnumerable<CodeGenerator> applications1,
-            IEnumerable<CodeGenerator> applications2,
+            IEnumerable<CodeGenerator> codeGenerators1,
+            IEnumerable<CodeGenerator> codeGenerators2,
             List<CodeGeneratorDependency> dependencies)
         {
-            var applications2ByConceptInfoKey = applications2.ToDictionary(a => a.ConceptInfo.GetKey());
-            dependencies.AddRange(from application1 in applications1
-                where applications2ByConceptInfoKey.ContainsKey(application1.ConceptInfo.GetKey())
+            var codeGenerators2ByConceptInfoKey = codeGenerators2.ToDictionary(cg => cg.ConceptInfo.GetKey());
+            dependencies.AddRange(from codeGenerator1 in codeGenerators1
+                where codeGenerators2ByConceptInfoKey.ContainsKey(codeGenerator1.ConceptInfo.GetKey())
                 select new CodeGeneratorDependency
                     {
-                        DependsOn = application1,
-                        Dependent = applications2ByConceptInfoKey[application1.ConceptInfo.GetKey()],
+                        DependsOn = codeGenerator1,
+                        Dependent = codeGenerators2ByConceptInfoKey[codeGenerator1.ConceptInfo.GetKey()],
                     });
         }
 

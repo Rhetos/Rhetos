@@ -40,174 +40,9 @@ namespace Rhetos.DatabaseGenerator.Test
             LegacyUtilities.Initialize(configurationProvider);
         }
 
-        /*
-        #region Helper classes
-
-        private class SimpleConceptImplementation : IConceptDatabaseDefinition
-        {
-            public string CreateDatabaseStructure(IConceptInfo conceptInfo) { return "create " + ((BaseCi)conceptInfo).Name; }
-            public string RemoveDatabaseStructure(IConceptInfo conceptInfo) { return "remove " + ((BaseCi)conceptInfo).Name; }
-        }
-
-        private class DependentConceptImplementation : IConceptDatabaseDefinition
-        {
-            public string CreateDatabaseStructure(IConceptInfo conceptInfo) { return "CREATE DependentConceptImplementation"; }
-            public string RemoveDatabaseStructure(IConceptInfo conceptInfo) { return ""; }
-        }
-
-        private class NoTransactionConceptImplementation : IConceptDatabaseDefinition
-        {
-            public string CreateDatabaseStructure(IConceptInfo conceptInfo) { return SqlUtility.NoTransactionTag + "create " + ((BaseCi)conceptInfo).Name; }
-            public string RemoveDatabaseStructure(IConceptInfo conceptInfo) { return SqlUtility.NoTransactionTag + "remove " + ((BaseCi)conceptInfo).Name; }
-        }
-
-        private class BaseCi : IConceptInfo
-        {
-            [ConceptKey]
-            public string Name { get; set; }
-        }
-
-        private static CodeGenerator CreateBaseCiApplication(string name, IConceptDatabaseDefinition implementation = null)
-        {
-            implementation = implementation ?? new SimpleConceptImplementation();
-            var conceptInfo = new BaseCi { Name = name };
-            return new CodeGenerator(conceptInfo, implementation)
-            {
-                CreateQuery = implementation.CreateDatabaseStructure(conceptInfo),
-                RemoveQuery = implementation.RemoveDatabaseStructure(conceptInfo),
-                DependsOn = new ConceptApplicationDependency[] { },
-                ConceptImplementationType = implementation.GetType(),
-            };
-        }
-
-        private class SimpleCi : BaseCi
-        {
-            public string Data { get; set; }
-        }
-
-        private static CodeGenerator CreateSimpleCiApplication(string name, string sql = null, string data = null, ConceptApplication dependsOn = null, IConceptDatabaseDefinition implementation = null)
-        {
-            return new CodeGenerator(new SimpleCi { Name = name, Data = data ?? $"{name}Data" }, implementation ?? new SimpleConceptImplementation())
-            {
-                CreateQuery = sql ?? $"{name}Sql",
-                DependsOn = dependsOn == null ? new ConceptApplicationDependency[] { } : new[] { new ConceptApplicationDependency { ConceptApplication = dependsOn } }
-            };
-        }
-
-        private class ReferencingCi : IConceptInfo
-        {
-            [ConceptKey]
-            public SimpleCi Reference { get; set; }
-            public string Data { get; set; }
-
-            public static CodeGenerator CreateApplication(CodeGenerator reference, string sql = null)
-            {
-                return new CodeGenerator(
-                    new ReferencingCi { Reference = (SimpleCi)(reference.ConceptInfo), Data = "data" },
-                    new SimpleConceptImplementation())
-                {
-                    CreateQuery = sql ?? "dependentSql",
-                    DependsOn = new ConceptApplicationDependency[] { }
-                };
-            }
-        }
-
-        private class ReferenceToReferencingCi : IConceptInfo
-        {
-            [ConceptKey]
-            public ReferencingCi Reference { get; set; }
-            public string Data { get; set; }
-
-            public static CodeGenerator CreateApplication(string sql, CodeGenerator reference)
-            {
-                return new CodeGenerator(
-                    new ReferenceToReferencingCi { Reference = (ReferencingCi)(reference.ConceptInfo), Data = "data" },
-                    new SimpleConceptImplementation())
-                {
-                    CreateQuery = sql,
-                    DependsOn = new ConceptApplicationDependency[] { }
-                };
-            }
-        }
-
-        #endregion Helper classes
-        */
         #region Helper methods
-        /*
-    /// <summary>
-    /// Report contains created and removed concept applications in the mock database.
-    /// It contains metadata changes (ins, upd, del) and object creation scripts.
-    /// </summary>
-    private
-        (string Report,
-        MockSqlExecuter SqlExecuter,
-        List<ConceptApplication> RemovedConcepts,
-        List<ConceptApplication> InsertedConcepts)
-        DatabaseGeneratorUpdateDatabase(
-            IEnumerable<CodeGenerator> oldCodeGenerators,
-            IEnumerable<CodeGenerator> newCodeGenerators)
-    {
-        // Create concept applications from code generators:
 
-        var duplicate = oldCodeGenerators.Cast<CodeGenerator>().Intersect(newCodeGenerators).FirstOrDefault();
-        if (duplicate != null)
-            Assert.Fail($"Incorrect test input data: newApplications contains an instance from oldApplications: {duplicate}.");
-
-        var oldConceptApplications = CreateConceptApplications(oldCodeGenerators);
-        var newConceptApplications = CreateConceptApplications(newCodeGenerators);
-
-        // Update mock database (based on difference between old and new concept applications):
-
-        var conceptApplicationRepository = new MockConceptApplicationRepository { ConceptApplications = oldConceptApplications };
-        var databaseModel = new DatabaseModel { ConceptApplications = newConceptApplications };
-        var testConfig = new MockConfiguration { { "SqlExecuter.MaxJoinedScriptCount", 1 } };
-        var sqlExecuter = new MockSqlExecuter();
-        var sqlTransactionBatches = new SqlTransactionBatches(sqlExecuter, testConfig, new ConsoleLogProvider());
-
-        IDatabaseGenerator databaseGenerator = new DatabaseGenerator(
-            sqlTransactionBatches,
-            conceptApplicationRepository,
-            new ConsoleLogProvider(),
-            new DatabaseGeneratorOptions { ShortTransactions = false },
-            databaseModel);
-
-        databaseGenerator.UpdateDatabaseStructure();
-
-        // Report changes in mock database:
-
-        TestUtility.Dump(
-            sqlExecuter.ExecutedScriptsWithTransaction,
-            script => (script.Item2 ? "tran" : "notran")
-                + string.Concat(script.Item1.Select(sql => "\r\n  - " + sql.Replace('\r', ' ').Replace('\n', ' '))));
-
-        return
-            (Report: string.Join(", ", sqlExecuter.ExecutedScriptsWithTransaction.SelectMany(script => script.Item1)),
-            SqlExecuter: sqlExecuter,
-            RemovedConcepts: conceptApplicationRepository.DeletedLog,
-            InsertedConcepts: conceptApplicationRepository.InsertedLog.ToList());
-    }
-
-    private List<ConceptApplication> CreateConceptApplications(IEnumerable<CodeGenerator> codeGenerators)
-    {
-        var implementations = new PluginsMetadataList<IConceptDatabaseDefinition>();
-        var implementationNames = oldCodeGenerators.Concat(newCodeGenerators).Select(ca => ca.ConceptImplementationTypeName).Distinct();
-        foreach (var implementationName in implementationNames)
-            implementations.Add((IConceptDatabaseDefinition)Activator.CreateInstance(Type.GetType(implementationName)));
-        implementations.Add(new NullImplementation());
-        var databasePlugins = MockDatabasePluginsContainer.Create(implementations);
-
-        var databaseModelBuilder = new DatabaseModelBuilderAccessor(databasePlugins, null);
-        databaseModelBuilder.CreateDatabaseModel;
-
-        databaseModelBuilder.ComputeDependsOn(oldCodeGenerators.Cast<CodeGenerator>());
-        databaseModelBuilder.ComputeDependsOn(newCodeGenerators);
-        TestUtility.Dump(oldCodeGenerators, a => $"\r\n{a} DEPENDS ON:{string.Concat(a.DependsOn.Select(d => $"\r\n - {d.ConceptApplication}"))}.");
-        TestUtility.Dump(newCodeGenerators, a => $"\r\n{a} DEPENDS ON:{string.Concat(a.DependsOn.Select(d => $"\r\n - {d.ConceptApplication}"))}.");
-    }
-
-    */
-
-        private List<ConceptApplication> CreateConceptApplications(params IConceptInfo[] concepts)
+        private List<DatabaseObject> CreateConceptApplications(params IConceptInfo[] concepts)
         {
             var implementations = new PluginsMetadataList<IConceptDatabaseDefinition>()
             {
@@ -223,7 +58,7 @@ namespace Rhetos.DatabaseGenerator.Test
                 new ConsoleLogProvider(),
                 new DatabaseModelDependencies(new ConsoleLogProvider()));
 
-            var conceptApplications = databaseModelBuilder.CreateDatabaseModel().ConceptApplications;
+            var conceptApplications = databaseModelBuilder.CreateDatabaseModel().DatabaseObjects;
             Console.WriteLine("ConceptApplications:"
                 + string.Concat(conceptApplications.Select(ca => $"\r\n- {ca}, depends on: {string.Join(", ", ca.DependsOn.Select(d => d.ToString()))}.")));
             return conceptApplications;
@@ -239,13 +74,13 @@ namespace Rhetos.DatabaseGenerator.Test
             List<ConceptApplication> RemovedConcepts,
             List<ConceptApplication> InsertedConcepts)
             DatabaseGeneratorUpdateDatabase(
-                IEnumerable<ConceptApplication> oldConceptApplications,
-                IEnumerable<ConceptApplication> newConceptApplications)
+                IList<DatabaseObject> oldConceptApplications,
+                IList<DatabaseObject> newConceptApplications)
         {
             // Update mock database (based on difference between old and new concept applications):
 
-            var conceptApplicationRepository = new MockConceptApplicationRepository(oldConceptApplications);
-            var databaseModel = new DatabaseModel { ConceptApplications = newConceptApplications.ToList() };
+            var conceptApplicationRepository = new MockConceptApplicationRepository(ConceptApplication.FromDatabaseObjects(oldConceptApplications));
+            var databaseModel = new DatabaseModel { DatabaseObjects = newConceptApplications.ToList() };
             var testConfig = new MockConfiguration { { "SqlExecuter.MaxJoinedScriptCount", 1 } };
             var sqlExecuter = new MockSqlExecuter();
             var sqlTransactionBatches = new SqlTransactionBatches(sqlExecuter, testConfig, new ConsoleLogProvider());

@@ -58,10 +58,10 @@ namespace Rhetos.DatabaseGenerator
             var stopwatch = Stopwatch.StartNew();
 
             var codeGenerators = CreateCodeGenerators();
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: Created concept applications from plugins.");
+            _performanceLogger.Write(stopwatch, $"{nameof(DatabaseModelBuilder)}.{nameof(CreateDatabaseModel)}: Created database objects from plugins.");
 
             var codeGeneratorDependencies = _databaseModelDependencies.ExtractCodeGeneratorDependencies(codeGenerators, _plugins);
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: Computed dependencies.");
+            _performanceLogger.Write(stopwatch, $"{nameof(DatabaseModelBuilder)}.{nameof(CreateDatabaseModel)}: Computed dependencies.");
 
             ComputeCreateAndRemoveQuery(
                 codeGenerators,
@@ -70,12 +70,17 @@ namespace Rhetos.DatabaseGenerator
                 out var createQueryByCodeGenerator,
                 out var removeQueryByCodeGenerator,
                 out var sqlScriptDependencies);
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: Generated SQL queries for new concept applications.");
+            _performanceLogger.Write(stopwatch, $"{nameof(DatabaseModelBuilder)}.{nameof(CreateDatabaseModel)}: Generated SQL queries for new database objects.");
 
             var allDependencies = codeGeneratorDependencies.Concat(sqlScriptDependencies);
-            var conceptApplications = ConstructConceptApplications(codeGenerators, createQueryByCodeGenerator, removeQueryByCodeGenerator, allDependencies);
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: Created concept applications.");
-            return new DatabaseModel { ConceptApplications = conceptApplications };
+            var databaseObjects = ConstructDatabaseObjects(codeGenerators, createQueryByCodeGenerator, removeQueryByCodeGenerator, allDependencies);
+
+            var duplicate = databaseObjects.GroupBy(dbObject => dbObject).Where(group => group.Count() > 1).FirstOrDefault();
+            if (duplicate != null)
+                throw new FrameworkException($"Duplicate generated database object: {duplicate.Key}, count {duplicate.Count()}.");
+
+            _performanceLogger.Write(stopwatch, $"{nameof(DatabaseModelBuilder)}.{nameof(CreateDatabaseModel)}: Created database objects.");
+            return new DatabaseModel { DatabaseObjects = databaseObjects };
         }
 
         private List<CodeGenerator> CreateCodeGenerators()
@@ -95,7 +100,7 @@ namespace Rhetos.DatabaseGenerator
             return codeGenerators;
         }
 
-        private static List<ConceptApplication> ConstructConceptApplications(
+        private static List<DatabaseObject> ConstructDatabaseObjects(
             List<CodeGenerator> codeGenerators,
             Dictionary<int, string> createQueryByCodeGenerator,
             Dictionary<int, string> removeQueryByCodeGenerator,
@@ -103,37 +108,35 @@ namespace Rhetos.DatabaseGenerator
         {
             var allDependenciesByCodeGenerator = allDependencies.ToMultiDictionary(d => d.Dependent.Id, d => d.DependsOn);
 
-            var conceptApplicationByCodeGenerator = codeGenerators.ToDictionary(
+            var databaseObjectByCodeGenerator = codeGenerators.ToDictionary(
                 cg => cg.Id,
-                cg => new ConceptApplication
+                cg => new DatabaseObject
                 {
-                    Id = Guid.Empty, // It will be set by DatabaseGenerator when matching with the old concepts applications if same.
                     ConceptInfoTypeName = cg.ConceptInfo.GetType().AssemblyQualifiedName,
                     ConceptInfoKey = cg.ConceptInfo.GetKey(),
                     ConceptImplementationTypeName = cg.ConceptImplementation.GetType().AssemblyQualifiedName,
-                    DependsOn = null, // It will be updated later. All concept applications must be constructed first, because DependsOn will reference other instances.
+                    DependsOn = null, // It will be updated later. All database objects must be constructed first, because DependsOn will reference other instances.
                     CreateQuery = createQueryByCodeGenerator.GetValueOrDefault(cg.Id) ?? "",
                     RemoveQuery = removeQueryByCodeGenerator.GetValueOrDefault(cg.Id) ?? "",
-                    OldCreationOrder = 0, // It will not be set or used. It is used only when loading old concept applications from database.
                 });
 
-            foreach (var ca in conceptApplicationByCodeGenerator)
+            foreach (var ca in databaseObjectByCodeGenerator)
             {
                 var codeGeneratorId = ca.Key;
-                var generatedConceptApplication = ca.Value;
+                var generatedDatabaseObject = ca.Value;
 
                 var dependsOnCodeGenerators = allDependenciesByCodeGenerator.GetValueOrDefault(codeGeneratorId);
-                var dependsOnConceptApplications = dependsOnCodeGenerators
+                var dependsOnDatabaseObjects = dependsOnCodeGenerators
                     ?.Distinct()
                     ?.Where(cg => cg.Id != codeGeneratorId) // Remove any self-reference.
-                    ?.Select(cg => conceptApplicationByCodeGenerator[cg.Id]).ToArray()
-                    ?? Array.Empty<ConceptApplication>();
+                    ?.Select(cg => databaseObjectByCodeGenerator[cg.Id]).ToArray()
+                    ?? Array.Empty<DatabaseObject>();
 
-                generatedConceptApplication.DependsOn = dependsOnConceptApplications;
+                generatedDatabaseObject.DependsOn = dependsOnDatabaseObjects;
             }
 
-            var conceptApplications = conceptApplicationByCodeGenerator.Values.ToList();
-            return conceptApplications;
+            var databaseObjects = databaseObjectByCodeGenerator.Values.ToList();
+            return databaseObjects;
         }
 
         private void ComputeCreateAndRemoveQuery(
@@ -183,7 +186,7 @@ namespace Rhetos.DatabaseGenerator
 
             createQueryByCodeGenerator = ExtractCreateQueries(sqlCodeBuilder.GeneratedCode);
 
-            sqlScriptDependencies = _databaseModelDependencies.ConceptDependencyToImplementationDependency(
+            sqlScriptDependencies = _databaseModelDependencies.ConceptDependencyToCodeGeneratorsDependency(
                 createdDependencies.Select(d => Tuple.Create(d.DependsOn, d.Dependent)),
                 codeGenerators);
 
@@ -191,27 +194,27 @@ namespace Rhetos.DatabaseGenerator
             _logger.Trace(() => _databaseModelDependencies.ReportDependencies("SQL script", reportDependencies));
         }
 
-        private static IConceptInfo GetValidConceptInfo(string conceptInfoKey, Dictionary<string, IConceptInfo> conceptInfosByKey, CodeGenerator debugContextNewConceptApplication)
+        private static IConceptInfo GetValidConceptInfo(string conceptInfoKey, Dictionary<string, IConceptInfo> conceptInfosByKey, CodeGenerator debugContextNewDatabaseObject)
         {
             if (!conceptInfosByKey.ContainsKey(conceptInfoKey))
                 throw new FrameworkException(string.Format(
                     "DatabaseGenerator error while generating code with plugin {0}: Extension created a dependency to the nonexistent concept info {1}.",
-                    debugContextNewConceptApplication.ConceptImplementation.GetType().Name,
+                    debugContextNewDatabaseObject.ConceptImplementation.GetType().Name,
                     conceptInfoKey));
             return conceptInfosByKey[conceptInfoKey];
         }
 
-        private const string ConceptApplicationSeparatorPrefix = "\r\n--RhetosConceptApplicationSeparator ";
-        private const string ConceptApplicationSeparatorSuffix = "\r\n";
+        private const string DatabaseObjectSeparatorPrefix = "\r\n--RhetosDatabaseObjectSeparator ";
+        private const string DatabaseObjectSeparatorSuffix = "\r\n";
 
         private static string GetCodeGeneratorSeparator(int codeGeneratorId)
         {
-            return ConceptApplicationSeparatorPrefix + codeGeneratorId + ConceptApplicationSeparatorSuffix;
+            return DatabaseObjectSeparatorPrefix + codeGeneratorId + DatabaseObjectSeparatorSuffix;
         }
 
         private static Dictionary<int, string> ExtractCreateQueries(string generatedSqlCode)
         {
-            var generatedScripts = generatedSqlCode.Split(new[] { ConceptApplicationSeparatorPrefix }, StringSplitOptions.None).ToList();
+            var generatedScripts = generatedSqlCode.Split(new[] { DatabaseObjectSeparatorPrefix }, StringSplitOptions.None).ToList();
             if (generatedScripts.Count > 0 && generatedScripts[0].Length > 0)
                 throw new FrameworkException($"Unexpected generated script format: The first segment should be empty:\r\n{generatedScripts[0].Limit(200)}");
 
@@ -222,16 +225,16 @@ namespace Rhetos.DatabaseGenerator
 
         private static (int CodeGeneratorId, string Sql) ParseGeneratedScript(string generatedScript)
         {
-            int scriptKeyEnd = generatedScript.IndexOf(ConceptApplicationSeparatorSuffix);
+            int scriptKeyEnd = generatedScript.IndexOf(DatabaseObjectSeparatorSuffix);
             if (scriptKeyEnd < 0)
-                throw new FrameworkException($"Unexpected generated script format: Missing {nameof(ConceptApplicationSeparatorSuffix)}.");
+                throw new FrameworkException($"Unexpected generated script format: Missing {nameof(DatabaseObjectSeparatorSuffix)}.");
             if (scriptKeyEnd == 0)
                 throw new FrameworkException($"Unexpected generated script format: Missing script key.");
 
             return
             (
                 CodeGeneratorId: int.Parse(generatedScript.Substring(0, scriptKeyEnd)),
-                Sql: generatedScript.Substring(scriptKeyEnd + ConceptApplicationSeparatorSuffix.Length).Trim()
+                Sql: generatedScript.Substring(scriptKeyEnd + DatabaseObjectSeparatorSuffix.Length).Trim()
             );
         }
     }

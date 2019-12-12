@@ -61,7 +61,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConcaptApplicationExtension.cs" />
+    <Compile Include="DatabaseObjectExtensions.cs" />
     <Compile Include="ConceptApplicationRepositoryTest.cs" />
     <Compile Include="DatabaseGeneratorTest.Concepts.cs" />
     <Compile Include="DatabaseModelBuilderTest.cs" />

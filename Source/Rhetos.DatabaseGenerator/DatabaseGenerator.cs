@@ -80,7 +80,7 @@ namespace Rhetos.DatabaseGenerator
                 var oldApplications = _conceptApplicationRepository.Load();
                 _performanceLogger.Write(stopwatch, "DatabaseGenerator: Loaded old concept applications.");
 
-                var newApplications = _databaseModel.ConceptApplications;
+                var newApplications = ConceptApplication.FromDatabaseObjects(_databaseModel.DatabaseObjects);
                 _performanceLogger.Write(stopwatch, "DatabaseGenerator: Got new concept applications.");
 
                 MatchAndComputeNewApplicationIds(oldApplications, newApplications);

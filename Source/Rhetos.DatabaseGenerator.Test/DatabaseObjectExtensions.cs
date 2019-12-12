@@ -23,9 +23,14 @@ using System.Linq;
 
 namespace Rhetos.DatabaseGenerator.Test
 {
-    public static class ConcaptApplicationExtension
+    public static class DatabaseObjectExtensions
     {
         public static ConceptApplication Find<T>(this IEnumerable<ConceptApplication> conceptApplications) where T : IConceptInfo
+        {
+            return conceptApplications.Where(ca => ca.ConceptInfoTypeName.StartsWith(typeof(T).FullName + ",")).Single();
+        }
+
+        public static DatabaseObject Find<T>(this IEnumerable<DatabaseObject> conceptApplications) where T : IConceptInfo
         {
             return conceptApplications.Where(ca => ca.ConceptInfoTypeName.StartsWith(typeof(T).FullName + ",")).Single();
         }

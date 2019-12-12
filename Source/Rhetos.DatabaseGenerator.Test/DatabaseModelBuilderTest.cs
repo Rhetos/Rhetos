@@ -196,7 +196,7 @@ namespace Rhetos.DatabaseGenerator.Test
             var conceptInfoDependencies = new[] { Tuple.Create(ci2, ci1) };
 
             var actual = new DatabaseModelDependencies(new ConsoleLogProvider())
-                .ConceptDependencyToImplementationDependency(conceptInfoDependencies, new[] { ca1a, ca1b, ca2a, ca2b });
+                .ConceptDependencyToCodeGeneratorsDependency(conceptInfoDependencies, new[] { ca1a, ca1b, ca2a, ca2b });
 
             Assert.AreEqual(
                 "2a-1a, 2a-1b, 2b-1a, 2b-1b",
@@ -238,7 +238,7 @@ namespace Rhetos.DatabaseGenerator.Test
             var dslModel = new MockDslModel(new[] { ci1, ci2, ci3 });
             var databasePlugins = MockDatabasePluginsContainer.Create(conceptImplementations);
             var databaseModelBuilder = new DatabaseModelBuilderAccessor(databasePlugins, dslModel);
-            var conceptApplications = databaseModelBuilder.CreateDatabaseModel().ConceptApplications;
+            var conceptApplications = databaseModelBuilder.CreateDatabaseModel().DatabaseObjects;
 
             tempConceptInfoDependencies = null;
 
@@ -248,7 +248,7 @@ namespace Rhetos.DatabaseGenerator.Test
             Assert.IsTrue(DirectAndIndirectDependencies(ca1).Contains(ca3), "Concept application ca3 should be included in direct or indirect dependencies of ca1.");
         }
 
-        private static IEnumerable<ConceptApplication> DirectAndIndirectDependencies(ConceptApplication ca)
+        private static IEnumerable<DatabaseObject> DirectAndIndirectDependencies(DatabaseObject ca)
         {
             return ca.DependsOn
                 .Union(ca.DependsOn.SelectMany(DirectAndIndirectDependencies));

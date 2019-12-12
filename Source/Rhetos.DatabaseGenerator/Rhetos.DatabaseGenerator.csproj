@@ -120,6 +120,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DatabaseObject.cs" />
     <Compile Include="ConceptApplication.cs" />
     <Compile Include="DatabaseModelFile.cs" />
     <Compile Include="DatabaseModelBuilder.cs" />

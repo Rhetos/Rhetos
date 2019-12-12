@@ -24,65 +24,66 @@ using System.Linq;
 
 namespace Rhetos.DatabaseGenerator
 {
-    public class ConceptApplication
+    /// <summary>
+    /// A wrapper around a DatabaseObject, for handling previously deployed database objects.
+    /// </summary>
+    public class ConceptApplication : DatabaseObject
     {
+        /// <summary>
+        /// The Id will be the same for the matching pairs of newly generated objects and old ones from the existing database that is being updated.
+        /// It simplifies some optimizations and also simplifies loading and saving database objects metadata, especially DependsOn list.
+        /// </summary>
         public Guid Id;
 
         /// <summary>
-        /// AssemblyQualifiedName
+        /// Ordering of the previously created database objects. The opposite ordering will be used for removing the objects.
         /// </summary>
-        public string ConceptInfoTypeName;
-        /// <summary>
-        /// See <see cref="Rhetos.Dsl.ConceptInfoHelper.GetKey"/>.
-        /// </summary>
-        public string ConceptInfoKey;
-        /// <summary>
-        /// AssemblyQualifiedName
-        /// </summary>
-        public string ConceptImplementationTypeName;
-
-        /// <summary>
-        /// SQL query that creates the concept in database.
-        /// </summary>
-        public string CreateQuery;
-        /// <summary>
-        /// SQL query that removes the concept from database.
-        /// </summary>
-        public string RemoveQuery;
-        public ConceptApplication[] DependsOn;
         public int OldCreationOrder;
 
+        public ConceptApplication()
+        {
+        }
+
+        public ConceptApplication(DatabaseObject databaseObject)
+        {
+            ConceptInfoTypeName = databaseObject.ConceptInfoTypeName;
+            ConceptInfoKey = databaseObject.ConceptInfoKey;
+            ConceptImplementationTypeName = databaseObject.ConceptImplementationTypeName;
+            CreateQuery = databaseObject.CreateQuery;
+            RemoveQuery = databaseObject.RemoveQuery;
+            DependsOn = null; // Dependencies will be set later to reference the new concept applications.
+        }
+
+        public IEnumerable<ConceptApplication> DependsOnConceptApplications => DependsOn.Cast<ConceptApplication>();
+
+        public static List<ConceptApplication> FromDatabaseObjects(IList<DatabaseObject> databaseObjects)
+        {
+            var conceptApplications = databaseObjects.Select(o => new ConceptApplication(o)).ToList();
+
+            var pairs = databaseObjects.Zip(conceptApplications, (databaseObject, conceptApplication) => new { databaseObject, conceptApplication });
+            var applicationByObject = pairs.ToDictionary(pair => pair.databaseObject, pair => pair.conceptApplication);
+            foreach (var pair in pairs)
+                pair.conceptApplication.DependsOn = pair.databaseObject.DependsOn.Select(dbObject => applicationByObject[dbObject]).ToArray();
+
+            return conceptApplications;
+        }
+
         private string _conceptApplicationKey;
+
+        /// <summary>
+        /// Used for matching the newly generated objects with the old ones from the existing database that is being updated.
+        /// </summary>
         public string GetConceptApplicationKey()
         {
             if (_conceptApplicationKey == null)
-                _conceptApplicationKey = ConceptInfoKey + "/" + GetTypeNameWithoutVersion(ConceptImplementationTypeName);
+                _conceptApplicationKey = ConceptInfoKey + "/" + GetConceptImplementationType_FullName();
             return _conceptApplicationKey;
-        }
-
-        private string _toString;
-        public override string ToString()
-        {
-            if (_toString == null)
-                _toString = ConceptInfoKey + "/" + GetUserFriendlyTypeName(ConceptImplementationTypeName);
-            return _toString;
-        }
-
-        private static string GetTypeNameWithoutVersion(string assemblyQualifiedName)
-        {
-            return assemblyQualifiedName.Substring(0, assemblyQualifiedName.IndexOf(','));
-        }
-
-        private static string GetUserFriendlyTypeName(string assemblyQualifiedName)
-        {
-            var fullTypeName = GetTypeNameWithoutVersion(assemblyQualifiedName);
-            return fullTypeName.Substring(fullTypeName.LastIndexOf('.') + 1); // Works even for type without namespace.
         }
 
         public static List<Tuple<ConceptApplication, ConceptApplication>> GetDependencyPairs(IEnumerable<ConceptApplication> conceptApplications)
         {
             return conceptApplications
-                .SelectMany(dependent => dependent.DependsOn
+                .SelectMany(dependent => dependent.DependsOnConceptApplications
                     .Select(dependsOn => Tuple.Create(dependsOn, dependent)))
                 .Where(dependency => dependency.Item1 != dependency.Item2)
                 .ToList();

@@ -23,6 +23,6 @@ namespace Rhetos.DatabaseGenerator
 {
     public class DatabaseModel
     {
-        public List<ConceptApplication> ConceptApplications { get; set; }
+        public List<DatabaseObject> DatabaseObjects { get; set; }
     }
 }

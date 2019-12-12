@@ -17,14 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dsl;
-using Rhetos.TestCommon;
 using Rhetos.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Rhetos.DatabaseGenerator.Test
 {
