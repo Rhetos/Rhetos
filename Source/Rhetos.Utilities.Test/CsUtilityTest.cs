@@ -268,5 +268,41 @@ namespace Rhetos.Utilities.Test
             foreach (var test in tests)
                 Assert.AreEqual(test.Item4, CsUtility.ReportSegment(test.Item1, test.Item2, test.Item3), $"Test: {test.Item1} {test.Item2} {test.Item3}");
         }
+
+        [TestMethod]
+        public void GetShortTypeName()
+        {
+            var types = new[]
+            {
+                typeof(int),
+                typeof(string),
+                typeof(InnerClass),
+                typeof(List<int>),
+                typeof(List<string>),
+                typeof(List<InnerClass>),
+                typeof(int[]),
+                typeof(string[]),
+                typeof(InnerClass[]),
+                typeof(Dictionary<List<InnerClass[]>, InnerClass>),
+            };
+
+            var results = types.Select(t => CsUtility.GetShortTypeName(t)).ToList();
+
+            string expected =
+@"Int32
+String
+InnerClass
+List`1<Int32>
+List`1<String>
+List`1<InnerClass>
+Int32[]
+String[]
+InnerClass[]
+Dictionary`2<List`1<InnerClass[]>, InnerClass>";
+
+            TestUtility.AssertAreEqualByLine(expected, string.Join("\r\n", results));
+        }
+
+        class InnerClass { };
     }
 }

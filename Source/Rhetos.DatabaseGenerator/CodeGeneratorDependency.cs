@@ -17,11 +17,23 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
+
 namespace Rhetos.DatabaseGenerator
 {
-    public interface IDatabaseModelFile
+    public class CodeGeneratorDependency : IEquatable<CodeGeneratorDependency>
     {
-        void Save(DatabaseModel databaseModel);
-        DatabaseModel Load();
+        public CodeGenerator DependsOn;
+        public CodeGenerator Dependent;
+
+        public bool Equals(CodeGeneratorDependency other)
+        {
+            return other.DependsOn.Id == DependsOn.Id && other.Dependent.Id == Dependent.Id;
+        }
+
+        public override int GetHashCode()
+        {
+            return DependsOn.Id.GetHashCode() ^ Dependent.Id.GetHashCode();
+        }
     }
 }

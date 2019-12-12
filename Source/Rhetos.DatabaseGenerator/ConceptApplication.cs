@@ -28,13 +28,28 @@ namespace Rhetos.DatabaseGenerator
     {
         public Guid Id;
 
+        /// <summary>
+        /// AssemblyQualifiedName
+        /// </summary>
         public string ConceptInfoTypeName;
+        /// <summary>
+        /// See <see cref="Rhetos.Dsl.ConceptInfoHelper.GetKey"/>.
+        /// </summary>
         public string ConceptInfoKey;
+        /// <summary>
+        /// AssemblyQualifiedName
+        /// </summary>
         public string ConceptImplementationTypeName;
 
-        public string CreateQuery; // SQL query that creates the concept in database.
-        public string RemoveQuery; // SQL query that removes the concept from database.
-        public ConceptApplicationDependency[] DependsOn;
+        /// <summary>
+        /// SQL query that creates the concept in database.
+        /// </summary>
+        public string CreateQuery;
+        /// <summary>
+        /// SQL query that removes the concept from database.
+        /// </summary>
+        public string RemoveQuery;
+        public ConceptApplication[] DependsOn;
         public int OldCreationOrder;
 
         private string _conceptApplicationKey;
@@ -68,7 +83,7 @@ namespace Rhetos.DatabaseGenerator
         {
             return conceptApplications
                 .SelectMany(dependent => dependent.DependsOn
-                    .Select(dependsOn => Tuple.Create(dependsOn.ConceptApplication, dependent)))
+                    .Select(dependsOn => Tuple.Create(dependsOn, dependent)))
                 .Where(dependency => dependency.Item1 != dependency.Item2)
                 .ToList();
         }

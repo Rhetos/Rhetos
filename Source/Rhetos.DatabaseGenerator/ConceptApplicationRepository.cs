@@ -86,7 +86,6 @@ namespace Rhetos.DatabaseGenerator
                     {
                         Dependent = SqlUtility.ReadGuid(dataReader, 0),
                         DependsOn = SqlUtility.ReadGuid(dataReader, 1),
-                        DebugInfo = "From database"
                     });
                 });
             return dependencies;
@@ -94,7 +93,7 @@ namespace Rhetos.DatabaseGenerator
 
         private static void EvaluateDependencies(List<ConceptApplication> previoslyAppliedConcepts, List<DependencyGuids> dependencies)
         {
-            var dependenciesByDependent = dependencies.GroupBy(d => d.Dependent).ToDictionary(g => g.Key, g => g.Select(item => new { Id = item.DependsOn, item.DebugInfo }).ToArray());
+            var dependenciesByDependent = dependencies.ToMultiDictionary(d => d.Dependent, d => d.DependsOn);
             var conceptApplicationsById = previoslyAppliedConcepts.ToDictionary(ca => ca.Id);
 
             foreach (var dependent in previoslyAppliedConcepts)
@@ -102,14 +101,11 @@ namespace Rhetos.DatabaseGenerator
                 var dependsOns = dependenciesByDependent.GetValueOrDefault(dependent.Id);
                 if (dependsOns != null)
                     dependent.DependsOn = dependsOns
-                        .Select(dependsOn => new ConceptApplicationDependency
-                            {
-                                ConceptApplication = conceptApplicationsById.GetValue(dependsOn.Id, "Nonexistent dependency on Rhetos.AppliedConcept, ID={0}, referenced from table Rhetos.AppliedConceptDependsOn column DependsOn."),
-                                DebugInfo = dependsOn.DebugInfo
-                            })
+                        .Select(dependsOn => conceptApplicationsById.GetValue(dependsOn,
+                            "Nonexistent dependency on Rhetos.AppliedConcept, ID={0}, referenced from table Rhetos.AppliedConceptDependsOn column DependsOn."))
                         .ToArray();
                 else
-                    dependent.DependsOn = new ConceptApplicationDependency[] { };
+                    dependent.DependsOn = Array.Empty<ConceptApplication>();
             }
 
             var invalidDependentId = dependenciesByDependent.Keys.Except(previoslyAppliedConcepts.Select(ca => ca.Id)).ToArray();
@@ -122,7 +118,6 @@ namespace Rhetos.DatabaseGenerator
         {
             public Guid Dependent;
             public Guid DependsOn;
-            public string DebugInfo;
         }
 
         public static string DeleteAllMetadataSql()
@@ -150,7 +145,7 @@ namespace Rhetos.DatabaseGenerator
                 SqlUtility.QuoteText(newCA.CreateQuery),
                 SqlUtility.QuoteText(newCA.RemoveQuery)));
 
-            foreach (var dependsOnId in newCA.DependsOn.Select(d => d.ConceptApplication.Id).Distinct())
+            foreach (var dependsOnId in newCA.DependsOn.Select(d => d.Id).Distinct())
                 sql.Add(Sql.Format("ConceptApplicationRepository_InsertDependency",
                     SqlUtility.QuoteGuid(newCA.Id),
                     SqlUtility.QuoteGuid(dependsOnId)));
@@ -170,16 +165,16 @@ namespace Rhetos.DatabaseGenerator
                     SqlUtility.QuoteText(newCA.CreateQuery),
                     SqlUtility.QuoteText(newCA.RemoveQuery)));
 
-            HashSet<Guid> oldDependsOn = new HashSet<Guid>(oldApp.DependsOn.Select(depOn => depOn.ConceptApplication.Id));
-            HashSet<Guid> newDependsOn = new HashSet<Guid>(newCA.DependsOn.Select(depOn => depOn.ConceptApplication.Id));
+            HashSet<Guid> oldDependsOn = new HashSet<Guid>(oldApp.DependsOn.Select(depOn => depOn.Id));
+            HashSet<Guid> newDependsOn = new HashSet<Guid>(newCA.DependsOn.Select(depOn => depOn.Id));
 
-            foreach (var dependsOnId in newCA.DependsOn.Select(d => d.ConceptApplication.Id).Distinct())
+            foreach (var dependsOnId in newCA.DependsOn.Select(d => d.Id).Distinct())
                 if (!oldDependsOn.Contains(dependsOnId))
                     sql.Add(Sql.Format("ConceptApplicationRepository_InsertDependency",
                         SqlUtility.QuoteGuid(newCA.Id),
                         SqlUtility.QuoteGuid(dependsOnId)));
 
-            foreach (var dependsOnId in oldApp.DependsOn.Select(d => d.ConceptApplication.Id).Distinct())
+            foreach (var dependsOnId in oldApp.DependsOn.Select(d => d.Id).Distinct())
                 if (!newDependsOn.Contains(dependsOnId))
                     sql.Add(Sql.Format("ConceptApplicationRepository_DeleteDependency",
                         SqlUtility.QuoteGuid(newCA.Id),

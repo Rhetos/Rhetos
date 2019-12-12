@@ -26,7 +26,7 @@ using System.Text;
 
 namespace Rhetos.DatabaseGenerator
 {
-    public class DatabaseModelFile : IDatabaseModelFile
+    public class DatabaseModelFile
     {
         private readonly ILogger _performanceLogger;
         private readonly RhetosAppEnvironment _rhetosAppEnvironment;
@@ -67,8 +67,6 @@ namespace Rhetos.DatabaseGenerator
         JsonSerializerSettings JsonSerializerSettings => new JsonSerializerSettings
         {
             PreserveReferencesHandling = PreserveReferencesHandling.Objects,
-            //ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-            //TypeNameHandling = TypeNameHandling.None,
             Formatting = Formatting.Indented,
         };
     }
