@@ -17,15 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using Rhetos.Dsl;
-using Rhetos.Compiler;
-using System.Collections.Generic;
-
 namespace Rhetos.DatabaseGenerator
 {
-    public interface IDatabaseModel
+    public interface IDatabaseModelFile
     {
-        List<NewConceptApplication> ConceptApplications { get; }
+        void Save(DatabaseModel databaseModel);
+        DatabaseModel Load();
     }
 }

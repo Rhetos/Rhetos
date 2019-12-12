@@ -30,27 +30,34 @@ using System.Text;
 
 namespace Rhetos.DatabaseGenerator
 {
-    public class DatabaseModelBuilder : IDatabaseModel
+    public class DatabaseModelGenerator : IGenerator
     {
-        public List<NewConceptApplication> ConceptApplications => _conceptApplications.Value;
-        private readonly Lazy<List<NewConceptApplication>> _conceptApplications;
-
         private readonly IPluginsContainer<IConceptDatabaseDefinition> _plugins;
         private readonly IDslModel _dslModel;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
+        private readonly IDatabaseModelFile _databaseModelFile;
 
-        public DatabaseModelBuilder(
+        public DatabaseModelGenerator(
             IPluginsContainer<IConceptDatabaseDefinition> plugins,
             IDslModel dslModel,
-            ILogProvider logProvider)
+            ILogProvider logProvider,
+            IDatabaseModelFile databaseModelFile)
         {
             _plugins = plugins;
             _dslModel = dslModel;
-            _conceptApplications = new Lazy<List<NewConceptApplication>>(CreateNewApplications);
             _logger = logProvider.GetLogger(GetType().Name);
             _performanceLogger = logProvider.GetLogger("Performance");
+            _databaseModelFile = databaseModelFile;
         }
+
+        public void Generate()
+        {
+            var databaseModel = new DatabaseModel { ConceptApplications = CreateNewApplications() };
+            _databaseModelFile.Save(databaseModel);
+        }
+
+        IEnumerable<string> IGenerator.Dependencies => Array.Empty<string>();
 
         private List<NewConceptApplication> CreateNewApplications()
         {

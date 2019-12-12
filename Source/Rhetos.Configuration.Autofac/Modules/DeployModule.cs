@@ -51,6 +51,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             AddCompiler(builder, pluginRegistration);
 
             builder.RegisterType<ApplicationGenerator>();
+            builder.RegisterType<DatabaseDeployment>();
             pluginRegistration.FindAndRegisterPlugins<IGenerator>();
 
             base.Load(builder);
@@ -58,10 +59,12 @@ namespace Rhetos.Configuration.Autofac.Modules
 
         private void AddDatabaseGenerator(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
-            builder.RegisterType<DatabaseModelBuilder>().As<IDatabaseModel>();
+            builder.RegisterType<DatabaseModelGenerator>().As<IGenerator>();
+            builder.RegisterType<DatabaseModelFile>().As<IDatabaseModelFile>();
+            builder.Register(context => context.Resolve<IDatabaseModelFile>().Load()).As<DatabaseModel>().SingleInstance();
             builder.RegisterType<ConceptApplicationRepository>().As<IConceptApplicationRepository>();
             builder.RegisterType<DatabaseGenerator.DatabaseGenerator>().As<IDatabaseGenerator>();
-            builder.RegisterType<DatabaseGenerator.ConceptDataMigrationExecuter>().As<IConceptDataMigrationExecuter>();
+            builder.RegisterType<ConceptDataMigrationExecuter>().As<IConceptDataMigrationExecuter>();
             builder.Register(context => new DatabaseGeneratorOptions { ShortTransactions = context.Resolve<DeployOptions>().ShortTransactions }).SingleInstance();
             pluginRegistration.FindAndRegisterPlugins<IConceptDatabaseDefinition>();
             builder.RegisterType<NullImplementation>().As<IConceptDatabaseDefinition>();

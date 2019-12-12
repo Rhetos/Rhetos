@@ -26,6 +26,11 @@ using System.Linq;
 
 namespace Rhetos.DatabaseGenerator
 {
+    /// <summary>
+    /// Updates the target database structure.
+    /// Executes DDL SQL scripts based on the difference between the current generated database model (from DSL scripts)
+    /// and the previously created objects in database (from metadata in table Rhetos.AppliedConcept).
+    /// </summary>
     public class DatabaseGenerator : IDatabaseGenerator
     {
         private readonly SqlTransactionBatches _sqlTransactionBatches;
@@ -36,7 +41,7 @@ namespace Rhetos.DatabaseGenerator
         private readonly ILogger _deployPackagesLogger;
         private readonly ILogger _performanceLogger;
         private readonly DatabaseGeneratorOptions _options;
-        private readonly IDatabaseModel _databaseModel;
+        private readonly DatabaseModel _databaseModel;
 
         private bool DatabaseUpdated = false;
         private readonly object _databaseUpdateLock = new object();
@@ -46,7 +51,7 @@ namespace Rhetos.DatabaseGenerator
             IConceptApplicationRepository conceptApplicationRepository,
             ILogProvider logProvider,
             DatabaseGeneratorOptions options,
-            IDatabaseModel databaseModel)
+            DatabaseModel databaseModel)
         {
             _sqlTransactionBatches = sqlTransactionBatches;
             _conceptApplicationRepository = conceptApplicationRepository;
