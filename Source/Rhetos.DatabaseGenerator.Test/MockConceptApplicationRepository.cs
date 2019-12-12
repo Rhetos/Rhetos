@@ -25,14 +25,19 @@ namespace Rhetos.DatabaseGenerator.Test
 {
     public class MockConceptApplicationRepository : IConceptApplicationRepository
     {
-        public List<ConceptApplication> ConceptApplications { get; set; }
-        public List<ConceptApplication> DeletedLog { get; private set; } = new List<ConceptApplication>();
-        public List<ConceptApplication> InsertedLog { get; private set; } = new List<ConceptApplication>();
+        public MockConceptApplicationRepository(IEnumerable<ConceptApplication> conceptApplications)
+        {
+            _conceptApplications = conceptApplications.ToList();
+        }
+
+        private List<ConceptApplication> _conceptApplications;
+        public List<ConceptApplication> DeletedLog { get; } = new List<ConceptApplication>();
+        public List<ConceptApplication> InsertedLog { get; } = new List<ConceptApplication>();
         public List<Tuple<ConceptApplication, ConceptApplication>> UpdatedLog { get; private set; } = new List<Tuple<ConceptApplication, ConceptApplication>>();
 
         public List<ConceptApplication> Load()
         {
-            return ConceptApplications;
+            return _conceptApplications;
         }
 
         public List<string> DeleteMetadataSql(ConceptApplication oldCA)
