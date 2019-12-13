@@ -52,7 +52,7 @@ namespace Rhetos.Utilities.Test
         public void PathThrowsOnNullEnvironment()
         {
             // this will also set environment to null
-            TestUtility.ShouldFail<ArgumentNullException>(() => Paths.Initialize(null));
+            TestUtility.ShouldFail<ArgumentNullException>(() => Paths.Initialize(null, new RhetosAppOptions(), new BuildOptions()));
             
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.RhetosServerRootPath), "Rhetos server is not initialized (Paths class)");
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFilesCacheFolder), "Rhetos server is not initialized (Paths class)");

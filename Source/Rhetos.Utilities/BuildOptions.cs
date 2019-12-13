@@ -17,16 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rhetos.Utilities
 {
     public class BuildOptions
     {
+        public string GeneratedAssetsFolder { get; set; }
+        public string GeneratedSourceFolder { get; set; }
+        public string GeneratedFilesCacheFolder { get; set; }
         public bool Debug { get; set; }
         public bool ShortTransactions { get; set; }
         // redundant options with deploy options of the same name, one should be removed

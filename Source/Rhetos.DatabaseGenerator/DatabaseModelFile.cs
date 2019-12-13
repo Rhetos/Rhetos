@@ -29,17 +29,18 @@ namespace Rhetos.DatabaseGenerator
     public class DatabaseModelFile
     {
         private readonly ILogger _performanceLogger;
-        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
+        //TODO: Use custom options class
+        private readonly RhetosAppOptions _rhetosAppOptions;
 
         private const string DatabaseModelFileName = "DatabaseModel.json";
-        private string DatabaseModelFilePath => Path.Combine(_rhetosAppEnvironment.GeneratedFolder, DatabaseModelFileName);
+        private string DatabaseModelFilePath => Path.Combine(_rhetosAppOptions.AssetsFolder, DatabaseModelFileName);
 
         public DatabaseModelFile(
             ILogProvider logProvider,
-            RhetosAppEnvironment rhetosAppEnvironment)
+            RhetosAppOptions rhetosAppOptions)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
-            _rhetosAppEnvironment = rhetosAppEnvironment;
+            _rhetosAppOptions = rhetosAppOptions;
         }
 
         public void Save(DatabaseModel databaseModel)

@@ -31,12 +31,10 @@ namespace Rhetos.Deployment
 {
     public class InstalledPackages : IInstalledPackages
     {
-        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
         private readonly ILogger _logger;
 
-        public InstalledPackages(RhetosAppEnvironment rhetosAppEnvironment, ILogProvider logProvider)
+        public InstalledPackages(ILogProvider logProvider)
         {
-            _rhetosAppEnvironment = rhetosAppEnvironment;
             _logger = logProvider.GetLogger(GetType().Name);
             _packages = new Lazy<IEnumerable<InstalledPackage>>(Load);
         }
@@ -47,17 +45,14 @@ namespace Rhetos.Deployment
 
         private const string PackagesFileName = "InstalledPackages.json";
 
-        // TODO: DeployPackages must use rhetosAppEnvironment.GeneratedFolder, to avoid bundling this file with source configuration files and to make sure it is deleted on each build.
-        private static string PackagesFilePath(RhetosAppEnvironment rhetosAppEnvironment) => Path.Combine(rhetosAppEnvironment.BinFolder, PackagesFileName);
-
         private IEnumerable<InstalledPackage> Load()
         {
-            string serialized = File.ReadAllText(PackagesFilePath(_rhetosAppEnvironment), Encoding.UTF8);
+            string serialized = File.ReadAllText(Path.Combine(Paths.GeneratedFolder, PackagesFileName), Encoding.UTF8);
             var packages = (IEnumerable<InstalledPackage>)JsonConvert.DeserializeObject(serialized, _serializerSettings);
 
             // Package folder is saved as relative path, to allow moving the deployed folder.
             foreach (var package in packages)
-                package.SetAbsoluteFolderPath(_rhetosAppEnvironment.RootPath);
+                package.SetAbsoluteFolderPath(Paths.RhetosServerRootPath);
 
             foreach (var package in packages)
                 _logger.Trace(() => package.Report());
@@ -65,20 +60,20 @@ namespace Rhetos.Deployment
             return packages;
         }
 
-        public static void Save(IEnumerable<InstalledPackage> packages, RhetosAppEnvironment rhetosAppEnvironment)
+        public static void Save(IEnumerable<InstalledPackage> packages)
         {
             CsUtility.Materialize(ref packages);
 
             // Package folder is saved as relative path, to allow moving the deployed folder.
             foreach (var package in packages)
-                package.SetRelativeFolderPath(rhetosAppEnvironment.RootPath);
+                package.SetRelativeFolderPath(Paths.RhetosServerRootPath);
 
             string serialized = JsonConvert.SerializeObject(packages, _serializerSettings);
 
             foreach (var package in packages)
-                package.SetAbsoluteFolderPath(rhetosAppEnvironment.RootPath);
+                package.SetAbsoluteFolderPath(Paths.RhetosServerRootPath);
 
-            File.WriteAllText(PackagesFilePath(rhetosAppEnvironment), serialized, Encoding.UTF8);
+            File.WriteAllText(Path.Combine(Paths.GeneratedFolder, PackagesFileName), serialized, Encoding.UTF8);
         }
 
         private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings

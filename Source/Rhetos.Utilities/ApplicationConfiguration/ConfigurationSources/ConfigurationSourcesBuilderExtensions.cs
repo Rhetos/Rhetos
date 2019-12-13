@@ -78,7 +78,12 @@ namespace Rhetos
         public static IConfigurationBuilder AddRhetosAppConfiguration(this IConfigurationBuilder builder, string rhetosAppRootPath)
         {
             rhetosAppRootPath = Path.GetFullPath(rhetosAppRootPath);
-            builder.AddKeyValue(nameof(RhetosAppOptions.RootPath), rhetosAppRootPath);
+            builder.AddKeyValue("RootPath", rhetosAppRootPath);
+            builder.AddKeyValue(nameof(BuildOptions.GeneratedAssetsFolder), Path.Combine(rhetosAppRootPath, "bin\\Generated"));
+            builder.AddKeyValue(nameof(BuildOptions.GeneratedFilesCacheFolder), Path.Combine(rhetosAppRootPath, "GeneratedFilesCache"));
+            builder.AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), Path.Combine(rhetosAppRootPath, "bin\\Generated"));
+            builder.AddKeyValue(nameof(RhetosAppOptions.AssetsFolder), Path.Combine(rhetosAppRootPath, "bin\\Generated"));
+            builder.AddKeyValue(nameof(RhetosAppOptions.BinFolder), Path.Combine(rhetosAppRootPath, "bin"));
             builder.AddWebConfiguration(rhetosAppRootPath);
             return builder;
         }

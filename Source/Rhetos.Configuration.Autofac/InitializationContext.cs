@@ -34,24 +34,14 @@ namespace Rhetos
     {
         public ILogProvider LogProvider { get; }
         public IConfigurationProvider ConfigurationProvider { get; }
-        public RhetosAppEnvironment RhetosAppEnvironment { get; }
 
         /// <summary>
         /// Creates a a new context with specified arguments.
         /// </summary>
-        public InitializationContext(IConfigurationProvider configurationProvider, ILogProvider logProvider, RhetosAppEnvironment rhetosAppEnvironment)
+        public InitializationContext(IConfigurationProvider configurationProvider, ILogProvider logProvider)
         {
             this.ConfigurationProvider = configurationProvider;
             this.LogProvider = logProvider;
-            this.RhetosAppEnvironment = rhetosAppEnvironment;
         }
-
-        /// <summary>
-        /// Creates a context with <see cref="RhetosAppEnvironment"/> automatically resolved and created from provided configuration.
-        /// </summary>
-        public InitializationContext(IConfigurationProvider configurationProvider, ILogProvider logProvider)
-            : this(configurationProvider, logProvider, new RhetosAppEnvironment(configurationProvider.GetOptions<RhetosAppOptions>().RootPath)) 
-        { }
-
     }
 }
