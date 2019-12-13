@@ -36,7 +36,6 @@ namespace Rhetos
         private readonly ILogProvider _logProvider;
         private readonly RhetosAppEnvironment _rhetosAppEnvironment;
         private readonly FilesUtility _filesUtility;
-        private readonly DeployOptions _deployOptions;
 
         public ApplicationDeployment(IConfigurationProvider configurationProvider, ILogProvider logProvider)
         {
@@ -45,7 +44,6 @@ namespace Rhetos
             _logProvider = logProvider;
             _filesUtility = new FilesUtility(logProvider);
             _rhetosAppEnvironment = new RhetosAppEnvironment(_configurationProvider.GetOptions<RhetosAppOptions>().RootPath);
-            _deployOptions = configurationProvider.GetOptions<DeployOptions>();
             LegacyUtilities.Initialize(configurationProvider);
         }
 
