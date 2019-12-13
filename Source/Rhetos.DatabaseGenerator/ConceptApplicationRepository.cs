@@ -68,8 +68,11 @@ namespace Rhetos.DatabaseGenerator
 
             var invalidCa = previoslyAppliedConcepts.FirstOrDefault(ca => ca.ConceptInfoKey == ObsoleteConceptApplicationMark);
             if (invalidCa != null)
-                throw new FrameworkException("Obsolete concept application loaded from database (Rhetos.ConceptApplication, ID = " + SqlUtility.GuidToString(invalidCa.Id)
-                    + "). Upgrade procedure for old version of the system should include deployment with empty DslScritps folder (using old version of Rhetos server and packages) to remove old database structure and keep the data.");
+                throw new FrameworkException($"Obsolete concept application loaded from database" +
+                    $" (Rhetos.ConceptApplication, ID = {SqlUtility.GuidToString(invalidCa.Id)})." +
+                    $" The update procedure for old version of the system should include deployment" +
+                    $" with empty DslScritps folder (using old version of Rhetos server and packages)" +
+                    $" to remove old database structure and keep the data.");
 
             return previoslyAppliedConcepts;
         }

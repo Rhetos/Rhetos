@@ -33,21 +33,29 @@ namespace Rhetos
         {
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new RuntimeModule());
+            builder.RegisterType<DslModelFile>().As<IDslModel>().SingleInstance();
             builder.RegisterModule(new ExtensibilityModule());
             return builder;
         }
 
-        public static RhetosContainerBuilder AddRhetosDeployment(this RhetosContainerBuilder builder)
+        public static RhetosContainerBuilder AddRhetosBuild(this RhetosContainerBuilder builder)
         {
             var buildOptions = builder.GetInitializationContext().ConfigurationProvider.GetOptions<BuildOptions>();
             builder.RegisterInstance(buildOptions).PreserveExistingDefaults();
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new DeployModule());
+            builder.RegisterType<DslModel>().As<IDslModel>().SingleInstance();
+            builder.RegisterModule(new ExtensibilityModule());
+            return builder;
+        }
 
-            // Overriding IDslModel registration from core (DslModelFile), unless deploying DatabaseOnly.
-            builder.RegisterType<DslModel>();
-            builder.Register(context => context.Resolve<BuildOptions>().DatabaseOnly ? (IDslModel)context.Resolve<IDslModelFile>() : context.Resolve<DslModel>()).SingleInstance();
-
+        public static RhetosContainerBuilder AddRhetosDbUpdate(this RhetosContainerBuilder builder)
+        {
+            var buildOptions = builder.GetInitializationContext().ConfigurationProvider.GetOptions<BuildOptions>();
+            builder.RegisterInstance(buildOptions).PreserveExistingDefaults();
+            builder.RegisterModule(new CoreModule());
+            builder.RegisterModule(new DeployModule());
+            builder.RegisterType<DslModelFile>().As<IDslModel>().SingleInstance();
             builder.RegisterModule(new ExtensibilityModule());
             return builder;
         }

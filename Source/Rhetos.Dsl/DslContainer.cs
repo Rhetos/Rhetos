@@ -380,7 +380,7 @@ namespace Rhetos.Dsl
             else if (_sortConceptsMethod == SortConceptsMethod.KeyDescending)
             {
                 // This option can be used in testing (along with ascending sort) to detect missing dependencies between concepts
-                // (code generators might fail with "script does not contain tag", upgrade of empty database might fail with missing column, e.g.).
+                // (code generators might fail with "script does not contain tag", update of empty database might fail with missing column, e.g.).
                 _resolvedConcepts.Sort((a, b) => -GetOrderByKey(a).CompareTo(GetOrderByKey(b)));
                 _performanceLogger.Write(sw, "DslContainer.SortReferencesBeforeUsingConcept: Sort by key descending.");
             }

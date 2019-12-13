@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Autofac.Core;
 using Rhetos.Deployment;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
@@ -75,7 +76,7 @@ namespace Rhetos
             var stopwatch = Stopwatch.StartNew();
 
             var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider)
-                .AddRhetosDeployment()
+                .AddRhetosBuild()
                 .AddProcessUserOverride();
 
             using (var container = builder.Build())
@@ -90,16 +91,11 @@ namespace Rhetos
 
         public void UpdateDatabase()
         {
-            // TODO: Remove this after refactoring UpdateDatabase to use generated database model file.
-            var missingFile = _rhetosAppEnvironment.DomAssemblyFiles.FirstOrDefault(f => !File.Exists(f));
-            if (missingFile != null)
-                throw new UserException($"'/DatabaseOnly' switch cannot be used if the server have not been deployed successfully before. Run a regular deployment instead. Missing '{missingFile}'.");
-
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
             var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider)
-                .AddRhetosDeployment()
+                .AddRhetosDbUpdate()
                 .AddProcessUserOverride();
 
             using (var container = builder.Build())
@@ -176,6 +172,9 @@ namespace Rhetos
 
         public static void PrintErrorSummary(Exception ex)
         {
+            while (ex is DependencyResolutionException && ex.InnerException != null)
+                ex = ex.InnerException;
+
             Console.WriteLine();
             Console.WriteLine("=============== ERROR SUMMARY ===============");
             Console.WriteLine(ex.GetType().Name + ": " + ExceptionsUtility.SafeFormatUserMessage(ex));

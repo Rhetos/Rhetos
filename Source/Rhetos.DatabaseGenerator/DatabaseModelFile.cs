@@ -57,7 +57,16 @@ namespace Rhetos.DatabaseGenerator
         {
             var stopwatch = Stopwatch.StartNew();
 
-            var serializedModel = File.ReadAllText(DatabaseModelFilePath, Encoding.UTF8);
+            string serializedModel;
+            try
+            {
+                serializedModel = File.ReadAllText(DatabaseModelFilePath, Encoding.UTF8);
+            }
+            catch (FileNotFoundException ex)
+            {
+                throw new FrameworkException("Cannot update database because the database model was not generated." +
+                    " Please check that the build has completed successfully before updating the database.", ex);
+            }
             var databaseModel = JsonConvert.DeserializeObject<DatabaseModel>(serializedModel, JsonSerializerSettings);
             _performanceLogger.Write(stopwatch, $"{nameof(DatabaseModelFile)}.{nameof(Load)}.");
 

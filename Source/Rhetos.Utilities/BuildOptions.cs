@@ -29,8 +29,6 @@ namespace Rhetos.Utilities
     {
         public bool Debug { get; set; }
         public bool ShortTransactions { get; set; }
-        // redundant options with deploy options of the same name, one should be removed
-        public bool DatabaseOnly { get; set; }
         public bool DataMigration__SkipScriptsWithWrongOrder { get; set; } = true;
         public bool CommonConcepts__Legacy__AutoGeneratePolymorphicProperty { get; set; } = true;
         public bool CommonConcepts__Legacy__CascadeDeleteInDatabase { get; set; } = true;
