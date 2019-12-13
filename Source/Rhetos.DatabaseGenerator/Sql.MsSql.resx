@@ -125,8 +125,8 @@
 DELETE FROM Rhetos.AppliedConcept;</value>
   </data>
   <data name="ConceptApplicationRepository_Insert" xml:space="preserve">
-    <value>INSERT INTO Rhetos.AppliedConcept (ID, InfoType, ConceptInfoKey, ImplementationType, SerializedInfo, CreateQuery, RemoveQuery, ConceptImplementationVersion)
-VALUES ({0}, N{1}, N{2}, N{3}, N{4}, N{5}, N{6}, N{7})</value>
+    <value>INSERT INTO Rhetos.AppliedConcept (ID, InfoType, ConceptInfoKey, ImplementationType, CreateQuery, RemoveQuery)
+VALUES ({0}, N{1}, N{2}, N{3}, N{4}, N{5})</value>
   </data>
   <data name="ConceptApplicationRepository_Update" xml:space="preserve">
     <value>UPDATE Rhetos.AppliedConcept
@@ -134,10 +134,8 @@ SET
   InfoType = N{1},
   ConceptInfoKey = N{2},
   ImplementationType = N{3},
-  SerializedInfo = N{4},
-  CreateQuery = N{5},
-  RemoveQuery = N{6},
-  ConceptImplementationVersion = N{7}
+  CreateQuery = N{4},
+  RemoveQuery = N{5}
 WHERE ID = {0}</value>
   </data>
   <data name="DatabaseGenerator_CommitAfterDDL" xml:space="preserve">

@@ -24,6 +24,7 @@ using System.Text;
 
 namespace Rhetos.DatabaseGenerator
 {
+    [Obsolete("This feature is no longer used by Rhetos, and will be deleted in future versions. Database upgrade relies solely on SQL scripts generated from DSL concepts.")]
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
     public sealed class ConceptImplementationVersionAttribute : Attribute
     {

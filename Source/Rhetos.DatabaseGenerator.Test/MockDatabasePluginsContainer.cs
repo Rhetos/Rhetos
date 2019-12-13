@@ -30,8 +30,11 @@ namespace Rhetos.DatabaseGenerator.Test
 {
     public static class MockDatabasePluginsContainer
     {
-        public static PluginsContainer<IConceptDatabaseDefinition> Create(PluginsMetadataList<IConceptDatabaseDefinition> conceptImplementations)
+        public static PluginsContainer<IConceptDatabaseDefinition> Create(PluginsMetadataList<IConceptDatabaseDefinition> conceptImplementations = null)
         {
+            if (conceptImplementations == null)
+                conceptImplementations = new PluginsMetadataList<IConceptDatabaseDefinition>();
+
             Lazy<IEnumerable<IConceptDatabaseDefinition>> plugins = new Lazy<IEnumerable<IConceptDatabaseDefinition>>(() =>
                 conceptImplementations.Select(pm => pm.Plugin));
             Lazy<IEnumerable<Meta<IConceptDatabaseDefinition>>> pluginsWithMetadata = new Lazy<IEnumerable<Meta<IConceptDatabaseDefinition>>>(() =>
@@ -76,12 +79,17 @@ namespace Rhetos.DatabaseGenerator.Test
     {
         public void Add(TPlugin plugin, Dictionary<string, object> metadata)
         {
-            this.Add((plugin, metadata));
+            Add((plugin, metadata));
         }
 
         public void Add(TPlugin plugin)
         {
-            this.Add((plugin, new Dictionary<string, object> { }));
+            Add((plugin, new Dictionary<string, object> { }));
+        }
+
+        public void Add(TPlugin plugin, Type implementsConceptInfo)
+        {
+            Add((plugin, new Dictionary<string, object> { { MefProvider.Implements, implementsConceptInfo } }));
         }
     }
 }

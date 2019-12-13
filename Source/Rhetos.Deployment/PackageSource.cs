@@ -60,11 +60,10 @@ namespace Rhetos.Deployment
                 }
 
                 if (pathError != null || (!Directory.Exists(Path) && !File.Exists(Path)))
-                    throw new UserException(string.Format(
-                        "Invalid configuration file. Provided location '{0}' is not a valid URI or an existing path. Check the configuration files {1} and {2}.",
-                        location,
-                        DeploymentConfiguration.SourcesConfigurationFileName,
-                        DeploymentConfiguration.PackagesConfigurationFileName));
+                    throw new UserException($"Invalid package source configuration." +
+                        $" Provided location '{location}' is not a valid URI or an existing path ('{Path}')." +
+                        $" Check the configuration files {DeploymentConfiguration.SourcesConfigurationFileName}" +
+                        $" and {DeploymentConfiguration.PackagesConfigurationFileName}.");
             }
         }
 

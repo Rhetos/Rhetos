@@ -33,7 +33,6 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
     [Export(typeof(IConceptDatabaseDefinition))]
     [ExportMetadata(MefProvider.Implements, typeof(SqlIndexMultipleInfo))]
-    [ConceptImplementationVersion(2, 0)]
     public class SqlIndexMultipleDatabaseDefinition : IConceptDatabaseDefinition
     {
         /// <summary>

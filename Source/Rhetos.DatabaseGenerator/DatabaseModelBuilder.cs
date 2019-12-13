@@ -26,323 +26,218 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 
 namespace Rhetos.DatabaseGenerator
 {
-    public class DatabaseModelBuilder : IDatabaseModel
+    /// <summary>
+    /// Builds a <see cref="DatabaseModel"/> from DSL model and database code generators.
+    /// </summary>
+    public class DatabaseModelBuilder
     {
-        public List<NewConceptApplication> ConceptApplications => _conceptApplications.Value;
-        private readonly Lazy<List<NewConceptApplication>> _conceptApplications;
-
         private readonly IPluginsContainer<IConceptDatabaseDefinition> _plugins;
         private readonly IDslModel _dslModel;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
+        private readonly DatabaseModelDependencies _databaseModelDependencies;
 
         public DatabaseModelBuilder(
             IPluginsContainer<IConceptDatabaseDefinition> plugins,
             IDslModel dslModel,
-            ILogProvider logProvider)
+            ILogProvider logProvider,
+            DatabaseModelDependencies databaseModelDependencies)
         {
             _plugins = plugins;
             _dslModel = dslModel;
-            _conceptApplications = new Lazy<List<NewConceptApplication>>(CreateNewApplications);
             _logger = logProvider.GetLogger(GetType().Name);
             _performanceLogger = logProvider.GetLogger("Performance");
+            _databaseModelDependencies = databaseModelDependencies;
         }
 
-        private List<NewConceptApplication> CreateNewApplications()
+        public DatabaseModel CreateDatabaseModel()
         {
             var stopwatch = Stopwatch.StartNew();
 
-            var conceptApplications = new List<NewConceptApplication>();
+            var codeGenerators = CreateCodeGenerators();
+            _performanceLogger.Write(stopwatch, $"{nameof(DatabaseModelBuilder)}.{nameof(CreateDatabaseModel)}: Created database objects from plugins.");
+
+            var codeGeneratorDependencies = _databaseModelDependencies.ExtractCodeGeneratorDependencies(codeGenerators, _plugins);
+            _performanceLogger.Write(stopwatch, $"{nameof(DatabaseModelBuilder)}.{nameof(CreateDatabaseModel)}: Computed dependencies.");
+
+            ComputeCreateAndRemoveQuery(
+                codeGenerators,
+                codeGeneratorDependencies,
+                _dslModel.Concepts,
+                out var createQueryByCodeGenerator,
+                out var removeQueryByCodeGenerator,
+                out var sqlScriptDependencies);
+            _performanceLogger.Write(stopwatch, $"{nameof(DatabaseModelBuilder)}.{nameof(CreateDatabaseModel)}: Generated SQL queries for new database objects.");
+
+            var allDependencies = codeGeneratorDependencies.Concat(sqlScriptDependencies);
+            var databaseObjects = ConstructDatabaseObjects(codeGenerators, createQueryByCodeGenerator, removeQueryByCodeGenerator, allDependencies);
+
+            var duplicate = databaseObjects.GroupBy(dbObject => dbObject).Where(group => group.Count() > 1).FirstOrDefault();
+            if (duplicate != null)
+                throw new FrameworkException($"Duplicate generated database object: {duplicate.Key}, count {duplicate.Count()}.");
+
+            _performanceLogger.Write(stopwatch, $"{nameof(DatabaseModelBuilder)}.{nameof(CreateDatabaseModel)}: Created database objects.");
+            return new DatabaseModel { DatabaseObjects = databaseObjects };
+        }
+
+        private List<CodeGenerator> CreateCodeGenerators()
+        {
+            var codeGenerators = new List<CodeGenerator>();
             foreach (var conceptInfo in _dslModel.Concepts)
             {
                 IConceptDatabaseDefinition[] implementations = _plugins.GetImplementations(conceptInfo.GetType()).ToArray();
 
                 if (!implementations.Any())
-                    implementations = new[] { new NullImplementation() };
+                    implementations = _nullImplementations;
 
-                conceptApplications.AddRange(implementations.Select(impl => new NewConceptApplication(conceptInfo, impl)));
-                // NewConceptApplication has some properties uninitialized.
-                // See the summary comment in NewConceptApplication for details.
+                codeGenerators.AddRange(implementations.Select(
+                    conceptImplementation => new CodeGenerator(conceptInfo, conceptImplementation)));
             }
 
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: Created concept applications from plugins.");
-
-            ComputeDependsOn(conceptApplications);
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: Computed dependencies.");
-
-            ComputeCreateAndRemoveQuery(conceptApplications, _dslModel.Concepts);
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: Generated SQL queries for new concept applications.");
-
-            _logger.Trace(() => ReportDependencies(conceptApplications));
-
-            return conceptApplications;
+            return codeGenerators;
         }
 
-        private void ComputeDependsOn(IEnumerable<NewConceptApplication> newConceptApplications)
-        {
-            var stopwatch = Stopwatch.StartNew();
-            foreach (var conceptApplication in newConceptApplications)
-                conceptApplication.DependsOn = new ConceptApplicationDependency[] {};
+        private readonly IConceptDatabaseDefinition[] _nullImplementations = new[] { new NullImplementation() };
 
-            var dependencies = ExtractDependencies(newConceptApplications);
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: ExtractDependencies executed.");
-
-            UpdateConceptApplicationsFromDependencyList(dependencies);
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: UpdateConceptApplicationsFromDependencyList executed.");
-        }
-
-        /// <summary>
-        /// Updates ConceptApplication.DependsOn property from "flat" list of dependencies.
-        /// </summary>
-        private static void UpdateConceptApplicationsFromDependencyList(IEnumerable<Dependency> dependencies)
-        {
-            var dependenciesByConceptApplication = dependencies
-                .GroupBy(d => d.Dependent, d => new ConceptApplicationDependency { ConceptApplication = d.DependsOn, DebugInfo = d.DebugInfo });
-
-            foreach (var dependencyGroup in dependenciesByConceptApplication)
-            {
-                var dependent = dependencyGroup.Key;
-                var newDependsOn = dependencyGroup.Distinct().Union(dependent.DependsOn);
-
-                dependent.DependsOn = newDependsOn.ToArray();
-            }
-        }
-
-        private IEnumerable<Dependency> ExtractDependencies(IEnumerable<NewConceptApplication> newConceptApplications)
-        {
-            var stopwatch = Stopwatch.StartNew();
-            
-            var exFromConceptInfo = ExtractDependenciesFromConceptInfos(newConceptApplications).ToList();
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: ExtractDependenciesFromConceptInfos executed.");
-            
-            var exFromMefPluginMetadata = ExtractDependenciesFromMefPluginMetadata(_plugins, newConceptApplications).ToList();
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: ExtractDependenciesFromMefPluginMetadata executed.");
-            
-            var combined = exFromConceptInfo.Union(exFromMefPluginMetadata).ToList();
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator.CreateNewApplications: Dependencies union executed.");
-            
-            return combined;
-        }
-
-        private static IEnumerable<Dependency> ExtractDependenciesFromConceptInfos(IEnumerable<NewConceptApplication> newConceptApplications)
-        {
-            var conceptInfos = newConceptApplications.Select(conceptApplication => conceptApplication.ConceptInfo).Distinct();
-
-            var conceptInfoDependencies = conceptInfos.SelectMany(conceptInfo => conceptInfo.GetAllDependencies()
-                .Select(dependency => Tuple.Create(dependency, conceptInfo, "Direct or indirect IConceptInfo reference")));
-
-            return GetConceptApplicationDependencies(conceptInfoDependencies, newConceptApplications);
-        }
-
-        private static IEnumerable<Dependency> GetConceptApplicationDependencies(IEnumerable<Tuple<IConceptInfo, IConceptInfo, string>> conceptInfoDependencies, IEnumerable<ConceptApplication> conceptApplications)
-        {
-            var conceptApplicationsByConceptInfoKey = conceptApplications
-                .GroupBy(ca => ca.ConceptInfoKey)
-                .ToDictionary(g => g.Key, g => g.ToList());
-
-            var conceptInfoKeyDependencies = conceptInfoDependencies.Select(dep => Tuple.Create(dep.Item1.GetKey(), dep.Item2.GetKey(), dep.Item3));
-
-            var conceptApplicationDependencies =
-                from conceptInfoKeyDependency in conceptInfoKeyDependencies
-                where conceptApplicationsByConceptInfoKey.ContainsKey(conceptInfoKeyDependency.Item1)
-                      && conceptApplicationsByConceptInfoKey.ContainsKey(conceptInfoKeyDependency.Item2)
-                from dependsOnConceptApplication in conceptApplicationsByConceptInfoKey[conceptInfoKeyDependency.Item1]
-                from dependentConceptApplication in conceptApplicationsByConceptInfoKey[conceptInfoKeyDependency.Item2]
-                select new Dependency
-                    {
-                        DependsOn = dependsOnConceptApplication,
-                        Dependent = dependentConceptApplication,
-                        DebugInfo = conceptInfoKeyDependency.Item3
-                    };
-
-            return conceptApplicationDependencies.ToList();
-        }
-
-        private static IEnumerable<Dependency> ExtractDependenciesFromMefPluginMetadata(IPluginsContainer<IConceptDatabaseDefinition> plugins, IEnumerable<NewConceptApplication> newConceptApplications)
-        {
-            var dependencies = new List<Dependency>();
-
-            var conceptApplicationsByImplementation = newConceptApplications
-                .GroupBy(ca => ca.ConceptImplementationType)
-                .ToDictionary(g => g.Key, g => g.ToList());
-
-            var distinctConceptImplementations = newConceptApplications.Select(ca => ca.ConceptImplementationType).Distinct().ToList();
-
-            var implementationDependencies = GetImplementationDependencies(plugins, distinctConceptImplementations);
-
-            foreach (var implementationDependency in implementationDependencies)
-                if (conceptApplicationsByImplementation.ContainsKey(implementationDependency.Item1)
-                    && conceptApplicationsByImplementation.ContainsKey(implementationDependency.Item2))
-                    AddDependenciesOnSameConceptInfo(
-                        conceptApplicationsByImplementation[implementationDependency.Item1],
-                        conceptApplicationsByImplementation[implementationDependency.Item2],
-                        implementationDependency.Item3,
-                        dependencies);
-
-            return dependencies.Distinct().ToList();
-        }
-
-        private static IEnumerable<Tuple<Type, Type, string>> GetImplementationDependencies(IPluginsContainer<IConceptDatabaseDefinition> plugins, IEnumerable<Type> conceptImplementations)
-        {
-            var dependencies = new List<Tuple<Type, Type, string>>();
-
-            foreach (Type conceptImplementation in conceptImplementations)
-            {
-                Type dependency = plugins.GetMetadata(conceptImplementation, "DependsOn");
-
-                if (dependency == null)
-                    continue;
-                Type implements = plugins.GetMetadata(conceptImplementation, "Implements");
-                Type dependencyImplements = plugins.GetMetadata(dependency, "Implements");
-
-                if (!implements.Equals(dependencyImplements)
-                    && !implements.IsAssignableFrom(dependencyImplements)
-                    && !dependencyImplements.IsAssignableFrom(implements))
-                    throw new FrameworkException(string.Format(
-                        "DatabaseGenerator plugin {0} cannot depend on {1}."
-                        + "\"DependsOn\" value in ExportMetadata attribute must reference implementation of same concept."
-                        + " This additional dependencies should be used only to disambiguate between plugins that implement same IConceptInfo."
-                        + " {2} implements {3}, while {4} implements {5}.",
-                        conceptImplementation.FullName,
-                        dependency.FullName,
-                        conceptImplementation.Name,
-                        implements.FullName,
-                        dependency.Name,
-                        dependencyImplements.FullName));
-
-                dependencies.Add(Tuple.Create(dependency, conceptImplementation, "DependsOn metadata"));
-            }
-
-            return dependencies;
-        }
-
-        private static void AddDependenciesOnSameConceptInfo(
-            IEnumerable<ConceptApplication> applications1,
-            IEnumerable<ConceptApplication> applications2,
-            string debugInfo,
-            List<Dependency> dependencies)
-        {
-            var applications2ByConceptInfoKey = applications2.ToDictionary(a => a.ConceptInfoKey);
-            dependencies.AddRange(from application1 in applications1
-                where applications2ByConceptInfoKey.ContainsKey(application1.ConceptInfoKey)
-                select new Dependency
-                    {
-                        DependsOn = application1,
-                        Dependent = applications2ByConceptInfoKey[application1.ConceptInfoKey],
-                        DebugInfo = debugInfo
-                    });
-        }
-
-        private static void ComputeCreateAndRemoveQuery(List<NewConceptApplication> newConceptApplications, IEnumerable<IConceptInfo> allConceptInfos)
+        private void ComputeCreateAndRemoveQuery(
+            List<CodeGenerator> codeGenerators,
+            List<CodeGeneratorDependency> codeGeneratorDependencies,
+            IEnumerable<IConceptInfo> allConceptInfos,
+            out Dictionary<int, string> createQueryByCodeGenerator,
+            out Dictionary<int, string> removeQueryByCodeGenerator,
+            out List<CodeGeneratorDependency> sqlScriptDependencies)
         {
             // Generate RemoveQuery:
 
-            foreach (var ca in newConceptApplications)
-                ca.RemoveQuery = GenerateRemoveQuery(ca.ConceptImplementation, ca.ConceptInfo);
+            removeQueryByCodeGenerator = codeGenerators.ToDictionary(
+                cg => cg.Id,
+                cg => cg.ConceptImplementation.RemoveDatabaseStructure(cg.ConceptInfo)?.Trim() ?? "");
 
             // Generate CreateQuery:
 
-            Graph.TopologicalSort(newConceptApplications, ConceptApplication.GetDependencyPairs(newConceptApplications));
+            Graph.TopologicalSort(codeGenerators, codeGeneratorDependencies.Select(d => Tuple.Create(d.DependsOn, d.Dependent)));
             var sqlCodeBuilder = new CodeBuilder("/*", "*/");
-            var createdDependencies = new List<Tuple<IConceptInfo, IConceptInfo, string>>();
+            var createdDependencies = new List<(IConceptInfo DependsOn, IConceptInfo Dependent)>();
             var conceptInfosByKey = allConceptInfos.ToDictionary(ci => ci.GetKey());
 
-            for (int i = 0; i < newConceptApplications.Count; i++)
+            foreach (var cg in codeGenerators)
             {
-                var ca = newConceptApplications[i];
-                string createQuery = ca.ConceptImplementation.CreateDatabaseStructure(ca.ConceptInfo);
+                string createQuery = cg.ConceptImplementation.CreateDatabaseStructure(cg.ConceptInfo);
                 if (!string.IsNullOrWhiteSpace(createQuery))
                 {
-                    sqlCodeBuilder.InsertCode(GetConceptApplicationSeparator(i));
+                    sqlCodeBuilder.InsertCode(GetCodeGeneratorSeparator(cg.Id));
                     sqlCodeBuilder.InsertCode(createQuery);
                 }
 
-                if (ca.ConceptImplementation is IConceptDatabaseDefinitionExtension)
+                if (cg.ConceptImplementation is IConceptDatabaseDefinitionExtension conceptDatabaseDefinitionExtension)
                 {
-                    IEnumerable<Tuple<IConceptInfo, IConceptInfo>> pluginCreatedDependencies;
-                    ((IConceptDatabaseDefinitionExtension)ca.ConceptImplementation).ExtendDatabaseStructure(ca.ConceptInfo, sqlCodeBuilder, out pluginCreatedDependencies);
+                    conceptDatabaseDefinitionExtension.ExtendDatabaseStructure(
+                        cg.ConceptInfo, sqlCodeBuilder, out var pluginCreatedDependencies);
 
                     if (pluginCreatedDependencies != null)
-                    {
-                        var resolvedDependencies = pluginCreatedDependencies.Select(dep => Tuple.Create(
-                            GetValidConceptInfo(dep.Item1.GetKey(), conceptInfosByKey, ca),
-                            GetValidConceptInfo(dep.Item2.GetKey(), conceptInfosByKey, ca),
-                            "ExtendDatabaseStructure " + ca.ToString())).ToList();
-                        
-                        createdDependencies.AddRange(resolvedDependencies);
-                    }
+                        createdDependencies.AddRange(pluginCreatedDependencies
+                            .Select(dep =>
+                            (
+                                DependsOn: GetValidConceptInfo(dep.Item1.GetKey(), conceptInfosByKey, cg),
+                                Dependent: GetValidConceptInfo(dep.Item2.GetKey(), conceptInfosByKey, cg)
+                            )));
                 }
             }
 
-            ExtractCreateQueries(sqlCodeBuilder.GeneratedCode, newConceptApplications);
+            createQueryByCodeGenerator = ExtractCreateQueries(sqlCodeBuilder.GeneratedCode);
 
-            var createdConceptApplicationDependencies = GetConceptApplicationDependencies(createdDependencies, newConceptApplications);
-            UpdateConceptApplicationsFromDependencyList(createdConceptApplicationDependencies);
+            sqlScriptDependencies = _databaseModelDependencies.ConceptDependencyToCodeGeneratorsDependency(
+                createdDependencies.Select(d => Tuple.Create(d.DependsOn, d.Dependent)),
+                codeGenerators);
+
+            var reportDependencies = sqlScriptDependencies;
+            _logger.Trace(() => _databaseModelDependencies.ReportDependencies("SQL script", reportDependencies));
         }
 
-        private static string GenerateRemoveQuery(IConceptDatabaseDefinition implementation, IConceptInfo conceptInfo)
-        {
-            string removeQuery = implementation.RemoveDatabaseStructure(conceptInfo);
-            return removeQuery?.Trim() ?? "";
-        }
-
-        private static IConceptInfo GetValidConceptInfo(string conceptInfoKey, Dictionary<string, IConceptInfo> conceptInfosByKey, NewConceptApplication debugContextNewConceptApplication)
+        private static IConceptInfo GetValidConceptInfo(string conceptInfoKey, Dictionary<string, IConceptInfo> conceptInfosByKey, CodeGenerator debugContextNewDatabaseObject)
         {
             if (!conceptInfosByKey.ContainsKey(conceptInfoKey))
                 throw new FrameworkException(string.Format(
                     "DatabaseGenerator error while generating code with plugin {0}: Extension created a dependency to the nonexistent concept info {1}.",
-                    debugContextNewConceptApplication.ConceptImplementationType.Name,
+                    debugContextNewDatabaseObject.ConceptImplementation.GetType().Name,
                     conceptInfoKey));
             return conceptInfosByKey[conceptInfoKey];
         }
 
-        private const string ConceptApplicationSeparatorPrefix = "\r\n--RhetosConceptApplicationSeparator ";
-        private const string ConceptApplicationSeparatorSuffix = "\r\n";
+        private const string DatabaseObjectSeparatorPrefix = "\r\n--RhetosDatabaseObjectSeparator ";
+        private const string DatabaseObjectSeparatorSuffix = "\r\n";
 
-        private static string GetConceptApplicationSeparator(int scriptKey)
+        private static string GetCodeGeneratorSeparator(int codeGeneratorId)
         {
-            return ConceptApplicationSeparatorPrefix + scriptKey + ConceptApplicationSeparatorSuffix;
+            return DatabaseObjectSeparatorPrefix + codeGeneratorId + DatabaseObjectSeparatorSuffix;
         }
 
-        private static void ExtractCreateQueries(string generatedSqlCode, List<NewConceptApplication> newConceptApplications)
+        private static Dictionary<int, string> ExtractCreateQueries(string generatedSqlCode)
         {
-            var sqls = generatedSqlCode.Split(new[] { ConceptApplicationSeparatorPrefix }, StringSplitOptions.None).ToList();
-            if (sqls.Count > 0 && sqls[0].Length > 0)
-                throw new FrameworkException($"Unexpected generated script format: The first segment should be empty:\r\n{sqls[0].Limit(200)}");
+            var generatedScripts = generatedSqlCode.Split(new[] { DatabaseObjectSeparatorPrefix }, StringSplitOptions.None).ToList();
+            if (generatedScripts.Count > 0 && generatedScripts[0].Length > 0)
+                throw new FrameworkException($"Unexpected generated script format: The first segment should be empty:\r\n{generatedScripts[0].Limit(200)}");
 
-            foreach (var sql in sqls.Skip(1))
+            return generatedScripts.Skip(1)
+                .Select(ParseGeneratedScript)
+                .ToDictionary(script => script.CodeGeneratorId, script => script.Sql);
+        }
+
+        private static (int CodeGeneratorId, string Sql) ParseGeneratedScript(string generatedScript)
+        {
+            int scriptKeyEnd = generatedScript.IndexOf(DatabaseObjectSeparatorSuffix);
+            if (scriptKeyEnd < 0)
+                throw new FrameworkException($"Unexpected generated script format: Missing {nameof(DatabaseObjectSeparatorSuffix)}.");
+            if (scriptKeyEnd == 0)
+                throw new FrameworkException($"Unexpected generated script format: Missing script key.");
+
+            return
+            (
+                CodeGeneratorId: int.Parse(generatedScript.Substring(0, scriptKeyEnd)),
+                Sql: generatedScript.Substring(scriptKeyEnd + DatabaseObjectSeparatorSuffix.Length).Trim()
+            );
+        }
+
+        private static List<DatabaseObject> ConstructDatabaseObjects(
+            List<CodeGenerator> codeGenerators,
+            Dictionary<int, string> createQueryByCodeGenerator,
+            Dictionary<int, string> removeQueryByCodeGenerator,
+            IEnumerable<CodeGeneratorDependency> allDependencies)
+        {
+            var allDependenciesByCodeGenerator = allDependencies.ToMultiDictionary(d => d.Dependent.Id, d => d.DependsOn);
+
+            var databaseObjectByCodeGenerator = codeGenerators.ToDictionary(
+                cg => cg.Id,
+                cg => new DatabaseObject
+                {
+                    ConceptInfoTypeName = cg.ConceptInfo.GetType().AssemblyQualifiedName,
+                    ConceptInfoKey = cg.ConceptInfo.GetKey(),
+                    ConceptImplementationTypeName = cg.ConceptImplementation.GetType().AssemblyQualifiedName,
+                    DependsOn = null, // It will be updated later. All database objects must be constructed first, because DependsOn will reference other instances.
+                    CreateQuery = createQueryByCodeGenerator.GetValueOrDefault(cg.Id) ?? "",
+                    RemoveQuery = removeQueryByCodeGenerator.GetValueOrDefault(cg.Id) ?? "",
+                });
+
+            foreach (var ca in databaseObjectByCodeGenerator)
             {
-                int scriptKeyEnd = sql.IndexOf(ConceptApplicationSeparatorSuffix);
-                if (scriptKeyEnd < 0)
-                    throw new FrameworkException($"Unexpected generated script format: Missing {nameof(ConceptApplicationSeparatorSuffix)}.");
-                if (scriptKeyEnd == 0)
-                    throw new FrameworkException($"Unexpected generated script format: Missing script key.");
+                var codeGeneratorId = ca.Key;
+                var generatedDatabaseObject = ca.Value;
 
-                int scriptKey = int.Parse(sql.Substring(0, scriptKeyEnd));
+                var dependsOnCodeGenerators = allDependenciesByCodeGenerator.GetValueOrDefault(codeGeneratorId);
+                var dependsOnDatabaseObjects = dependsOnCodeGenerators
+                    ?.Distinct()
+                    ?.Where(cg => cg.Id != codeGeneratorId) // Remove any self-reference.
+                    ?.Select(cg => databaseObjectByCodeGenerator[cg.Id]).ToArray()
+                    ?? Array.Empty<DatabaseObject>();
 
-                newConceptApplications[scriptKey].CreateQuery = sql.Substring(scriptKeyEnd + ConceptApplicationSeparatorSuffix.Length).Trim();
+                generatedDatabaseObject.DependsOn = dependsOnDatabaseObjects;
             }
 
-            foreach (var ca in newConceptApplications)
-                if (ca.CreateQuery == null)
-                    ca.CreateQuery = "";
-        }
-
-        private static string ReportDependencies(List<NewConceptApplication> conceptApplications)
-        {
-            var report = new StringBuilder();
-            report.Append("Dependencies:");
-            foreach (var ca in conceptApplications.Where(x => x.DependsOn.Any()))
-            {
-                report.AppendLine().Append(ca.ToString()).Append(" depends on:");
-                foreach (var dep in ca.DependsOn)
-                    report.Append("\r\n  ").Append(dep.ConceptApplication.ToString()).Append(" (").Append(dep.DebugInfo).Append(")");
-            };
-            return report.ToString();
+            var databaseObjects = databaseObjectByCodeGenerator.Values.ToList();
+            return databaseObjects;
         }
     }
 }

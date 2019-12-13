@@ -20,6 +20,7 @@
 using Autofac;
 using Autofac.Core;
 using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -209,18 +210,10 @@ namespace Rhetos.Extensibility
         private static string GetServiceType(Autofac.Core.Service service)
         {
             if (service is TypedService typedService)
-                return GetShortTypeName(typedService.ServiceType);
+                return CsUtility.GetShortTypeName(typedService.ServiceType);
             if (service is KeyedService keyedService)
-                return GetShortTypeName(keyedService.ServiceType);
+                return CsUtility.GetShortTypeName(keyedService.ServiceType);
             return service.Description;
-        }
-
-        private static string GetShortTypeName(Type type)
-        {
-            if (!type.IsGenericType)
-                return type.Name;
-            else
-                return type.Name + "<" + string.Join(", ", type.GetGenericArguments().Select(argumentType => GetShortTypeName(argumentType))) + ">";
         }
 
         #endregion

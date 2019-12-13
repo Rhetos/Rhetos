@@ -17,18 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl;
-using Rhetos.Utilities;
 
 namespace Rhetos.DatabaseGenerator
 {
-    public class ConceptApplicationDependency
+    public class DatabaseModel
     {
-        public ConceptApplication ConceptApplication;
-        public string DebugInfo;
+        public List<DatabaseObject> DatabaseObjects { get; set; }
     }
 }

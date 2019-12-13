@@ -17,26 +17,31 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Extensibility;
 using System;
+using System.Collections.Generic;
 
 namespace Rhetos.DatabaseGenerator
 {
-    public struct Dependency : IEquatable<Dependency>
+    /// <summary>
+    /// A deployment plugin that creates the database model file when building Rhetos application.
+    /// </summary>
+    public class DatabaseModelGenerator : IGenerator
     {
-        public ConceptApplication DependsOn;
-        public ConceptApplication Dependent;
-        public string DebugInfo;
+        private readonly DatabaseModelBuilder _databaseModelBuilder;
+        private readonly DatabaseModelFile _databaseModelFile;
 
-        public bool Equals(Dependency other)
+        public DatabaseModelGenerator(DatabaseModelBuilder databaseModelBuilder, DatabaseModelFile databaseModelFile)
         {
-            return other.DependsOn.GetConceptApplicationKey().Equals(DependsOn.GetConceptApplicationKey())
-                   && other.Dependent.GetConceptApplicationKey().Equals(Dependent.GetConceptApplicationKey())
-                   && other.DebugInfo == DebugInfo;
+            _databaseModelBuilder = databaseModelBuilder;
+            _databaseModelFile = databaseModelFile;
         }
 
-        public override int GetHashCode()
+        public void Generate()
         {
-            return DependsOn.ConceptInfoKey.GetHashCode() ^ Dependent.ConceptInfoKey.GetHashCode();
+            _databaseModelFile.Save(_databaseModelBuilder.CreateDatabaseModel());
         }
+
+        IEnumerable<string> IGenerator.Dependencies => Array.Empty<string>();
     }
 }

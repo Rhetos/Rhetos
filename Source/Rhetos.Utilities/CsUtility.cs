@@ -404,5 +404,16 @@ namespace Rhetos.Utilities
                 + query.Substring(start, end - start).Replace(@"\", @"\\").Replace("\r", @"\r").Replace("\n", @"\n").Replace("\t", @"\t")
                 + suffix;
         }
+
+        /// <summary>
+        /// Simplified type name for logging and reporting, without namespace and assembly information.
+        /// </summary>
+        public static string GetShortTypeName(Type type)
+        {
+            if (!type.IsGenericType)
+                return type.Name;
+            else
+                return type.Name + "<" + string.Join(", ", type.GetGenericArguments().Select(argumentType => GetShortTypeName(argumentType))) + ">";
+        }
     }
 }

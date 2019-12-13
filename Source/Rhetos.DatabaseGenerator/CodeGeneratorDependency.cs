@@ -18,13 +18,22 @@
 */
 
 using System;
-using System.Collections.Generic;
-using Rhetos.Dsl;
 
-namespace Rhetos.DatabaseGenerator.Test
+namespace Rhetos.DatabaseGenerator
 {
-    public class MockDatabaseModel : IDatabaseModel
+    public class CodeGeneratorDependency : IEquatable<CodeGeneratorDependency>
     {
-        public List<NewConceptApplication> ConceptApplications { get; set; }
+        public CodeGenerator DependsOn;
+        public CodeGenerator Dependent;
+
+        public bool Equals(CodeGeneratorDependency other)
+        {
+            return other.DependsOn.Id == DependsOn.Id && other.Dependent.Id == Dependent.Id;
+        }
+
+        public override int GetHashCode()
+        {
+            return DependsOn.Id.GetHashCode() ^ Dependent.Id.GetHashCode();
+        }
     }
 }

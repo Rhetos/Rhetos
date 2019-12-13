@@ -31,7 +31,6 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
     [Export(typeof(IConceptDatabaseDefinition))]
     [ExportMetadata(MefProvider.Implements, typeof(LoggingRelatedItemInfo))]
-    [ConceptImplementationVersion(2, 0)]
     public class LoggingRelatedItemDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
