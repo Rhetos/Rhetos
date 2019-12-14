@@ -94,6 +94,7 @@ namespace Rhetos.Dom
                 string partSource = source.Substring(partStart, partEnd - partStart).Trim();
                 if (!string.IsNullOrEmpty(partSource))
                 {
+                    //TODO: Refactor tis so that it does not use the Paths class
                     string assemblyFile = Paths.GetDomAssemblyFile((DomAssemblies)Enum.Parse(typeof(DomAssemblies), partName));
                     yield return new SourcePart
                     {

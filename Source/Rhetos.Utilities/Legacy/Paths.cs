@@ -48,7 +48,7 @@ namespace Rhetos.Utilities
         public static string ResourcesFolder => Path.Combine(NonNullRhetosRootPath, "Resources");
         public static string BinFolder => NonNullRhetosAppOptions.BinFolder;
         public static string GeneratedFolder => NotNullGeneratedFolder;
-        public static string GeneratedFilesCacheFolder => Path.Combine(NonNullRhetosRootPath, "GeneratedFilesCache");
+        public static string GeneratedFilesCacheFolder => NonNullBuildOptions.GeneratedFilesCacheFolder;
         public static string PluginsFolder => Path.Combine(NonNullRhetosRootPath, "bin\\Plugins");
         public static string RhetosServerWebConfigFile => Path.Combine(NonNullRhetosRootPath, "Web.config");
         public static string ConnectionStringsFile => Path.Combine(NonNullRhetosRootPath, @"bin\ConnectionStrings.config");
@@ -76,17 +76,17 @@ namespace Rhetos.Utilities
 
         private static void AssertRhetosRootPathNotNull()
         {
-            if (_appOptions == null)
+            if (_rootPath == null)
                 throw new FrameworkException($"Rhetos server is not initialized ({nameof(Paths)} class)." +
                     $" Use {nameof(LegacyUtilities)}.{nameof(LegacyUtilities.Initialize)}() to initialize obsolete static utilities");
         }
 
         private static void ValidateGeneratedFolder()
         {
-            if (_appOptions == null && _buildOptions == null)
+            if (NonNullRhetosAppOptions.AssetsFolder == null && NonNullBuildOptions.GeneratedAssetsFolder == null)
                 throw new FrameworkException($@"One of the following value should be set. {nameof(RhetosAppOptions.AssetsFolder)} or {nameof(BuildOptions.GeneratedAssetsFolder)}");
 
-            if (_appOptions != null && _buildOptions != null && _appOptions.AssetsFolder != _buildOptions.GeneratedAssetsFolder)
+            if (NonNullRhetosAppOptions.AssetsFolder != null && NonNullBuildOptions.GeneratedAssetsFolder != null && _appOptions.AssetsFolder != _buildOptions.GeneratedAssetsFolder)
                 throw new FrameworkException($@"Invalid initialization of class {nameof(Paths)}. The value of {nameof(RhetosAppOptions.AssetsFolder)} and {nameof(BuildOptions.GeneratedAssetsFolder)} should be equal.");
         }
 
