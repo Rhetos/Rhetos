@@ -18,14 +18,12 @@
 */
 
 using Rhetos;
-using Rhetos.Deployment;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace DeployPackages
 {
@@ -63,7 +61,7 @@ namespace DeployPackages
                 if (deployOptions.StartPaused)
                     StartPaused();
 
-                var deployment = new Rhetos.ApplicationDeployment(configurationProvider, logProvider);
+                var deployment = new ApplicationDeployment(configurationProvider, logProvider);
                 if (!deployOptions.DatabaseOnly)
                 {
                     deployment.InitialCleanup();
@@ -116,7 +114,7 @@ namespace DeployPackages
         private static void StartPaused()
         {
             if (!Environment.UserInteractive)
-                throw new Rhetos.UserException("DeployPackages parameter 'StartPaused' must not be set, because the application is executed in a non-interactive environment.");
+                throw new UserException("DeployPackages parameter 'StartPaused' must not be set, because the application is executed in a non-interactive environment.");
 
             Console.WriteLine("Press any key to continue . . .");
             Console.ReadKey(true);

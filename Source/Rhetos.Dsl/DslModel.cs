@@ -28,6 +28,9 @@ using System.Text;
 
 namespace Rhetos.Dsl
 {
+    /// <summary>
+    /// Builds DslModel from DSL scripts.
+    /// </summary>
     public class DslModel : IDslModel
     {
         private readonly IDslParser _dslParser;
