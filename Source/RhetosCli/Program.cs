@@ -17,13 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Rhetos.Deployment;
-using Rhetos.Logging;
-using Rhetos.Utilities;
 
 namespace Rhetos
 {
@@ -41,7 +40,6 @@ namespace Rhetos
                 var rhetosServerRootFolder = args[1];
 
                 var configurationProvider = BuildConfigurationProvider(args);
-                var deployOptions = configurationProvider.GetOptions<DeployOptions>();
                 var rhetosAppOptions = configurationProvider.GetOptions<RhetosAppOptions>();
                 var deployment = new ApplicationDeployment(configurationProvider, logProvider);
 
@@ -49,7 +47,7 @@ namespace Rhetos
                 {
                     AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
                         rhetosAppOptions.BinFolder);
-                    deployment.DownloadPackages(deployOptions.IgnoreDependencies);
+                    deployment.DownloadPackages(false);
                 }
                 else if (string.Compare(command, "build", true) == 0)
                 {

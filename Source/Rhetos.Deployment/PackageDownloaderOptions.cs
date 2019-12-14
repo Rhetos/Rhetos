@@ -26,6 +26,9 @@ namespace Rhetos.Deployment
 {
     public class PackageDownloaderOptions
     {
+        /// <summary>
+        /// Do not stop deployment if a NuGet package dependency has an incompatible version.
+        /// </summary>
         public bool IgnorePackageDependencies { get; set; }
     }
 }

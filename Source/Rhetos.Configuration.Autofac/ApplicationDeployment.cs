@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Autofac.Core;
 using Rhetos.Deployment;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
@@ -36,7 +37,6 @@ namespace Rhetos
         private readonly ILogProvider _logProvider;
         private readonly RhetosAppOptions _rhetosAppOptions;
         private readonly FilesUtility _filesUtility;
-        private readonly DeployOptions _deployOptions;
 
         public ApplicationDeployment(IConfigurationProvider configurationProvider, ILogProvider logProvider)
         {
@@ -45,7 +45,6 @@ namespace Rhetos
             _logProvider = logProvider;
             _filesUtility = new FilesUtility(logProvider);
             _rhetosAppOptions = configurationProvider.GetOptions<RhetosAppOptions>();
-            _deployOptions = configurationProvider.GetOptions<DeployOptions>();
             LegacyUtilities.Initialize(configurationProvider);
         }
 
@@ -77,7 +76,7 @@ namespace Rhetos
             var stopwatch = Stopwatch.StartNew();
 
             var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider)
-                .AddRhetosDeployment()
+                .AddRhetosBuild()
                 .AddProcessUserOverride();
 
             using (var container = builder.Build())
@@ -101,7 +100,7 @@ namespace Rhetos
             var stopwatch = Stopwatch.StartNew();
 
             var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider)
-                .AddRhetosDeployment()
+                .AddRhetosDbUpdate()
                 .AddProcessUserOverride();
 
             using (var container = builder.Build())
@@ -178,6 +177,9 @@ namespace Rhetos
 
         public static void PrintErrorSummary(Exception ex)
         {
+            while (ex is DependencyResolutionException && ex.InnerException != null)
+                ex = ex.InnerException;
+
             Console.WriteLine();
             Console.WriteLine("=============== ERROR SUMMARY ===============");
             Console.WriteLine(ex.GetType().Name + ": " + ExceptionsUtility.SafeFormatUserMessage(ex));
