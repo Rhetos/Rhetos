@@ -91,11 +91,6 @@ namespace Rhetos
 
         public void UpdateDatabase()
         {
-            // TODO: Remove this after refactoring UpdateDatabase to use generated database model file.
-            var missingFile = Paths.DomAssemblyFiles.FirstOrDefault(f => !File.Exists(f));
-            if (missingFile != null)
-                throw new UserException($"'/DatabaseOnly' switch cannot be used if the server have not been deployed successfully before. Run a regular deployment instead. Missing '{missingFile}'.");
-
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
