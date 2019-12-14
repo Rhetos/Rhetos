@@ -26,50 +26,106 @@ using System.Text;
 
 namespace Rhetos.Utilities
 {
-    [Obsolete("Use RhetosAppEnvironment instead.")]
+    [Obsolete("Use RhetosAppOptions or BuildOptions instead.")]
     public static class Paths
     {
-        private static RhetosAppEnvironment _rhetosAppEnvironment;
+        private static string _rootPath;
+        private static RhetosAppOptions _appOptions;
+        private static BuildOptions _buildOptions;
 
         /// <summary>
         /// Initialize Paths for the Rhetos server.
         /// </summary>
-        public static void Initialize(RhetosAppEnvironment rhetosAppEnvironment)
+        public static void Initialize(string rootPath, RhetosAppOptions appOptions, BuildOptions buildOptions)
         {
-            _rhetosAppEnvironment = rhetosAppEnvironment;
-            if (rhetosAppEnvironment == null) 
-                throw new ArgumentNullException(nameof(rhetosAppEnvironment), "Can't initialize utility with null RhetosAppEnvironment.");
+            _rootPath = rootPath;
+            _appOptions = appOptions;
+            _buildOptions = buildOptions;
         }
 
-        public static string RhetosServerRootPath => NonNullRhetosAppEnvironment.RootPath;
-        public static string PackagesCacheFolder => NonNullRhetosAppEnvironment.PackagesCacheFolder;
-        public static string ResourcesFolder => NonNullRhetosAppEnvironment.ResourcesFolder;
-        public static string BinFolder => NonNullRhetosAppEnvironment.BinFolder;
-        public static string GeneratedFolder => NonNullRhetosAppEnvironment.GeneratedFolder;
-        public static string GeneratedFilesCacheFolder => NonNullRhetosAppEnvironment.GeneratedFilesCacheFolder;
-        public static string PluginsFolder => NonNullRhetosAppEnvironment.PluginsFolder;
-        public static string RhetosServerWebConfigFile => Path.Combine(NonNullRhetosAppEnvironment.RootPath, "Web.config");
-        public static string ConnectionStringsFile => Path.Combine(NonNullRhetosAppEnvironment.RootPath, @"bin\ConnectionStrings.config");
-        public static string GetDomAssemblyFile(DomAssemblies domAssembly) => NonNullRhetosAppEnvironment.GetDomAssemblyFile(domAssembly);
+        public static string RhetosServerRootPath => NonNullRhetosRootPath;
+        public static string PackagesCacheFolder => Path.Combine(NonNullRhetosRootPath, "PackagesCache");
+        public static string ResourcesFolder => Path.Combine(NonNullRhetosRootPath, "Resources");
+        public static string BinFolder => NonNullRhetosAppOptions.BinFolder;
+        public static string GeneratedFolder => NotNullGeneratedFolder;
+        public static string GeneratedFilesCacheFolder => NonNullBuildOptions.GeneratedFilesCacheFolder;
+        public static string PluginsFolder => Path.Combine(NonNullRhetosRootPath, "bin\\Plugins");
+        public static string RhetosServerWebConfigFile => Path.Combine(NonNullRhetosRootPath, "Web.config");
+        public static string ConnectionStringsFile => Path.Combine(NonNullRhetosRootPath, @"bin\ConnectionStrings.config");
+        public static string GetDomAssemblyFile(DomAssemblies domAssembly) => Path.Combine(NotNullGeneratedFolder, $"ServerDom.{domAssembly}.dll");
         /// <summary>
         /// List of the generated dll files that make the domain object model (ServerDom.*.dll).
         /// </summary>
-        public static IEnumerable<string> DomAssemblyFiles => NonNullRhetosAppEnvironment.DomAssemblyFiles;
+        public static IEnumerable<string> DomAssemblyFiles => Enum.GetValues(typeof(DomAssemblies)).Cast<DomAssemblies>().Select(domAssembly => GetDomAssemblyFile(domAssembly));
 
-        private static void AssertRhetosAppEnvironmentNotNull()
+        private static void AssertRhetosAppOptionsNotNull()
         {
-            if (_rhetosAppEnvironment == null)
+            if (_appOptions == null)
                 throw new FrameworkException($"Rhetos server is not initialized ({nameof(Paths)} class)." +
                     $" Use {nameof(LegacyUtilities)}.{nameof(LegacyUtilities.Initialize)}() to initialize obsolete static utilities" +
-                    $" or use {nameof(RhetosAppEnvironment)}.");
+                    $" or use {nameof(RhetosAppOptions)}.");
         }
 
-        private static RhetosAppEnvironment NonNullRhetosAppEnvironment
+        private static void AssertBuildOptionsNotNull()
+        {
+            if (_appOptions == null)
+                throw new FrameworkException($"Rhetos server is not initialized ({nameof(Paths)} class)." +
+                    $" Use {nameof(LegacyUtilities)}.{nameof(LegacyUtilities.Initialize)}() to initialize obsolete static utilities" +
+                    $" or use {nameof(BuildOptions)}.");
+        }
+
+        private static void AssertRhetosRootPathNotNull()
+        {
+            if (_rootPath == null)
+                throw new FrameworkException($"Rhetos server is not initialized ({nameof(Paths)} class)." +
+                    $" Use {nameof(LegacyUtilities)}.{nameof(LegacyUtilities.Initialize)}() to initialize obsolete static utilities");
+        }
+
+        private static void ValidateGeneratedFolder()
+        {
+            if (NonNullRhetosAppOptions.AssetsFolder == null && NonNullBuildOptions.GeneratedAssetsFolder == null)
+                throw new FrameworkException($@"One of the following value should be set. {nameof(RhetosAppOptions.AssetsFolder)} or {nameof(BuildOptions.GeneratedAssetsFolder)}");
+
+            if (NonNullRhetosAppOptions.AssetsFolder != null && NonNullBuildOptions.GeneratedAssetsFolder != null && _appOptions.AssetsFolder != _buildOptions.GeneratedAssetsFolder)
+                throw new FrameworkException($@"Invalid initialization of class {nameof(Paths)}. The value of {nameof(RhetosAppOptions.AssetsFolder)} and {nameof(BuildOptions.GeneratedAssetsFolder)} should be equal.");
+        }
+
+        private static RhetosAppOptions NonNullRhetosAppOptions
         {
             get
             {
-                AssertRhetosAppEnvironmentNotNull();
-                return _rhetosAppEnvironment;
+                AssertRhetosAppOptionsNotNull();
+                return _appOptions;
+            }
+        }
+
+        private static BuildOptions NonNullBuildOptions
+        {
+            get
+            {
+                AssertBuildOptionsNotNull();
+                return _buildOptions;
+            }
+        }
+
+        private static string NonNullRhetosRootPath
+        {
+            get
+            {
+                AssertRhetosRootPathNotNull();
+                return _rootPath;
+            }
+        }
+
+        private static string NotNullGeneratedFolder
+        {
+            get
+            {
+                ValidateGeneratedFolder();
+                if (_appOptions.AssetsFolder != null)
+                    return _appOptions.AssetsFolder;
+                else
+                    return _buildOptions.GeneratedAssetsFolder;
             }
         }
     }

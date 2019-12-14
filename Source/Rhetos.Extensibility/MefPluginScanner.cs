@@ -27,8 +27,6 @@ using System.ComponentModel.Composition.ReflectionModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 
 namespace Rhetos.Extensibility
 {
@@ -41,13 +39,11 @@ namespace Rhetos.Extensibility
         private object _pluginsLock = new object();
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
-        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
 
-        public MefPluginScanner(RhetosAppEnvironment rhetosAppEnvironment, ILogProvider logProvider)
+        public MefPluginScanner(ILogProvider logProvider)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("Plugins");
-            _rhetosAppEnvironment = rhetosAppEnvironment;
         }
 
         /// <summary>
@@ -81,7 +77,8 @@ namespace Rhetos.Extensibility
         {
             var stopwatch = Stopwatch.StartNew();
 
-            string[] pluginsPath = new[] { _rhetosAppEnvironment.PluginsFolder, _rhetosAppEnvironment.GeneratedFolder };
+            //TODO: Refactor it so that it uses an explicitly defined assemly list
+            string[] pluginsPath = new[] { Paths.PluginsFolder, Paths.GeneratedFolder };
 
             List<string> assemblies = new List<string>();
             foreach (var path in pluginsPath)

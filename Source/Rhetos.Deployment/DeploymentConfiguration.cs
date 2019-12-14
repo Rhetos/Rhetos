@@ -30,14 +30,12 @@ namespace Rhetos.Deployment
 {
     public class DeploymentConfiguration
     {
-        private readonly string _rootPath;
         private readonly ILogger _logger;
         private readonly Lazy<IEnumerable<PackageRequest>> _packageRequests;
         private readonly Lazy<IEnumerable<PackageSource>> _packageSources;
 
-        public DeploymentConfiguration(RhetosAppEnvironment rhetosAppEnvironment, ILogProvider logProvider)
+        public DeploymentConfiguration(ILogProvider logProvider)
         {
-            _rootPath = rhetosAppEnvironment.RootPath;
             _logger = logProvider.GetLogger(GetType().Name);
             _packageRequests = new Lazy<IEnumerable<PackageRequest>>(LoadPackageRequest);
             _packageSources = new Lazy<IEnumerable<PackageSource>>(LoadPackageSources);
@@ -79,7 +77,7 @@ namespace Rhetos.Deployment
             string xml = ReadConfigFile(SourcesConfigurationFileName, SourcesConfigurationTemplateFileName, configFileUsage);
             var xdoc = XDocument.Parse(xml);
             var sources = xdoc.Root.Elements()
-                .Select(sourceXml => new PackageSource(_rootPath, sourceXml.Attribute("location").Value))
+                .Select(sourceXml => new PackageSource(Paths.RhetosServerRootPath, sourceXml.Attribute("location").Value))
                 .ToList();
 
             if (sources.Count == 0)
@@ -97,7 +95,7 @@ namespace Rhetos.Deployment
 
         private string ReadConfigFile(string configFileName, string templateFileName, string configFileUsage)
         {
-            string configFilePath = Path.Combine(_rootPath, configFileName);
+            string configFilePath = Path.Combine(Paths.RhetosServerRootPath, configFileName);
 
             if (File.Exists(configFilePath))
                 return File.ReadAllText(configFilePath, Encoding.UTF8);

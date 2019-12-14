@@ -35,7 +35,7 @@ namespace Rhetos
         private readonly ILogger _logger;
         private readonly IConfigurationProvider _configurationProvider;
         private readonly ILogProvider _logProvider;
-        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
+        private readonly RhetosAppOptions _rhetosAppOptions;
         private readonly FilesUtility _filesUtility;
 
         public ApplicationDeployment(IConfigurationProvider configurationProvider, ILogProvider logProvider)
@@ -44,7 +44,7 @@ namespace Rhetos
             _configurationProvider = configurationProvider;
             _logProvider = logProvider;
             _filesUtility = new FilesUtility(logProvider);
-            _rhetosAppEnvironment = new RhetosAppEnvironment(_configurationProvider.GetOptions<RhetosAppOptions>().RootPath);
+            _rhetosAppOptions = configurationProvider.GetOptions<RhetosAppOptions>();
             LegacyUtilities.Initialize(configurationProvider);
         }
 
@@ -55,19 +55,19 @@ namespace Rhetos
         {
             DeleteObsoleteFiles();
             _logger.Trace("Moving old generated files to cache.");
-            new GeneratedFilesCache(_rhetosAppEnvironment, _logProvider).MoveGeneratedFilesToCache();
-            _filesUtility.SafeCreateDirectory(_rhetosAppEnvironment.GeneratedFolder);
+            new GeneratedFilesCache(_logProvider).MoveGeneratedFilesToCache();
+            _filesUtility.SafeCreateDirectory(Paths.GeneratedFolder);
         }
 
         public void DownloadPackages(bool ignoreDependencies)
         {
             _logger.Trace("Getting packages.");
-            var config = new DeploymentConfiguration(_rhetosAppEnvironment, _logProvider);
+            var config = new DeploymentConfiguration(_logProvider);
             var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = ignoreDependencies };
-            var packageDownloader = new PackageDownloader(config, _rhetosAppEnvironment, _logProvider, packageDownloaderOptions);
+            var packageDownloader = new PackageDownloader(config, _logProvider, packageDownloaderOptions);
             var packages = packageDownloader.GetPackages();
 
-            InstalledPackages.Save(packages, _rhetosAppEnvironment);
+            InstalledPackages.Save(packages);
         }
 
         public void GenerateApplication()
@@ -148,8 +148,8 @@ namespace Rhetos
         {
             var obsoleteFolders = new string[]
             {
-                Path.Combine(_rhetosAppEnvironment.RootPath, "DslScripts"),
-                Path.Combine(_rhetosAppEnvironment.RootPath, "DataMigration")
+                Path.Combine(Paths.RhetosServerRootPath, "DslScripts"),
+                Path.Combine(Paths.RhetosServerRootPath, "DataMigration")
             };
             var obsoleteFolder = obsoleteFolders.FirstOrDefault(folder => Directory.Exists(folder));
             if (obsoleteFolder != null)
@@ -157,9 +157,9 @@ namespace Rhetos
 
             var deleteObsoleteFiles = new string[]
             {
-                Path.Combine(_rhetosAppEnvironment.BinFolder, "ServerDom.cs"),
-                Path.Combine(_rhetosAppEnvironment.BinFolder, "ServerDom.dll"),
-                Path.Combine(_rhetosAppEnvironment.BinFolder, "ServerDom.pdb")
+                Path.Combine(_rhetosAppOptions.BinFolder, "ServerDom.cs"),
+                Path.Combine(_rhetosAppOptions.BinFolder, "ServerDom.dll"),
+                Path.Combine(_rhetosAppOptions.BinFolder, "ServerDom.pdb")
             };
 
             foreach (var path in deleteObsoleteFiles)
@@ -185,7 +185,7 @@ namespace Rhetos
 
         public void RestartWebServer()
         {
-            var configFile = Path.Combine(_rhetosAppEnvironment.RootPath, "Web.config");
+            var configFile = Path.Combine(Paths.RhetosServerRootPath, "Web.config");
             if (FilesUtility.SafeTouch(configFile))
                 _logger.Trace($"Updated {Path.GetFileName(configFile)} modification date to restart server.");
             else

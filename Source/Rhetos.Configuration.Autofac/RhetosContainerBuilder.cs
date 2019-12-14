@@ -20,34 +20,27 @@
 using Autofac;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
-using Rhetos.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rhetos
 {
     /// <summary>
     /// Container builder initialized with <see cref="InitializationContext"/>.
     /// It makes the <see cref="InitializationContext"/> and <see cref="IPluginScanner"/> accessible during registration process and
-    /// registers <see cref="IConfigurationProvider"/> and <see cref="RhetosAppEnvironment"/> to the container.
+    /// registers <see cref="IConfigurationProvider"/> to the container.
     /// </summary>
     public class RhetosContainerBuilder : ContainerBuilder
     {
         /// <summary>
         /// Initializes a container with specified <see cref="InitializationContext"/>. 
-        /// Registers <see cref="IConfigurationProvider"/> and <see cref="RhetosAppEnvironment"/> instances to newly created container.
+        /// Registers the <see cref="IConfigurationProvider"/> instance to newly created container.
         /// <see cref="ILogProvider"/> is not registered and is meant to be used during the lifetime of registration and container building process.
         /// <see cref="LegacyUtilities"/> will also be initialized with the given configuration.
         /// </summary>
         public RhetosContainerBuilder(InitializationContext initializationContext)
         {
             this.RegisterInstance(initializationContext.ConfigurationProvider);
-            this.RegisterInstance(initializationContext.RhetosAppEnvironment);
 
-            var pluginScanner = new MefPluginScanner(initializationContext.RhetosAppEnvironment, initializationContext.LogProvider);
+            var pluginScanner = new MefPluginScanner(initializationContext.LogProvider);
 
             // make properties accessible to modules which are provided with new/unique instance of ContainerBuilder
             this.Properties.Add(nameof(InitializationContext), initializationContext);
@@ -61,7 +54,7 @@ namespace Rhetos
 
         /// <summary>
         /// Initializes a container with new <see cref="InitializationContext"/> created from specified arguments. 
-        /// Registers <see cref="IConfigurationProvider"/> and <see cref="RhetosAppEnvironment"/> instances to newly created container.
+        /// Registers the <see cref="IConfigurationProvider"/> instance to newly created container.
         /// <see cref="ILogProvider"/> is not registered and is meant to be used during the lifetime of registration and container building process.
         /// <see cref="LegacyUtilities"/> will also be initialized with the given configuration.
         /// </summary>

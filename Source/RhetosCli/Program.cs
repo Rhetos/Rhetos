@@ -40,37 +40,37 @@ namespace Rhetos
                 var rhetosServerRootFolder = args[1];
 
                 var configurationProvider = BuildConfigurationProvider(args);
+                var rhetosAppOptions = configurationProvider.GetOptions<RhetosAppOptions>();
                 var deployment = new ApplicationDeployment(configurationProvider, logProvider);
-                var rhetosAppEnvironment = new RhetosAppEnvironment(rhetosServerRootFolder);
 
                 if (string.Compare(command, "restore", true) == 0)
                 {
                     AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
-                        rhetosAppEnvironment.BinFolder);
-                    deployment.DownloadPackages(ignoreDependencies: false);
+                        rhetosAppOptions.BinFolder);
+                    deployment.DownloadPackages(false);
                 }
                 else if (string.Compare(command, "build", true) == 0)
                 {
                     AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
-                        rhetosAppEnvironment.BinFolder,
-                        rhetosAppEnvironment.PluginsFolder);
+                        Paths.BinFolder,
+                        Paths.PluginsFolder);
                     deployment.InitialCleanup();
                     deployment.GenerateApplication();
                 }
                 else if (string.Compare(command, "dbupdate", true) == 0)
                 {
                     AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
-                        rhetosAppEnvironment.BinFolder,
-                        rhetosAppEnvironment.PluginsFolder,
-                        rhetosAppEnvironment.GeneratedFolder);
+                        rhetosAppOptions.BinFolder,
+                        Paths.PluginsFolder,
+                        Paths.GeneratedFolder);
                     deployment.UpdateDatabase();
                 }
                 else if (string.Compare(command, "appinitialize", true) == 0)
                 {
                     AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
-                        rhetosAppEnvironment.BinFolder,
-                        rhetosAppEnvironment.PluginsFolder,
-                        rhetosAppEnvironment.GeneratedFolder);
+                        rhetosAppOptions.BinFolder,
+                        Paths.PluginsFolder,
+                        Paths.GeneratedFolder);
                     deployment.InitializeGeneratedApplication();
                 }
 

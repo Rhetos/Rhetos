@@ -31,16 +31,14 @@ namespace Rhetos.Dom
 {
     public class DomLoader : IDomainObjectModel
     {
-        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
 
         private List<Assembly> _assemblies;
         private readonly object _assembliesLock = new object();
 
-        public DomLoader(RhetosAppEnvironment rhetosAppEnvironment, ILogProvider logProvider)
+        public DomLoader(ILogProvider logProvider)
         {
-            _rhetosAppEnvironment = rhetosAppEnvironment;
             _logger = logProvider.GetLogger("DomLoader");
             _performanceLogger = logProvider.GetLogger("Performance");
         }
@@ -62,7 +60,8 @@ namespace Rhetos.Dom
         {
             var loaded = new List<Assembly>();
             var sw = Stopwatch.StartNew();
-            foreach (string name in _rhetosAppEnvironment.DomAssemblyFiles.Select(Path.GetFileNameWithoutExtension))
+            //This should be a legacy way to load the DomainObjectModel so it is ok to use the Paths class
+            foreach (string name in Paths.DomAssemblyFiles.Select(Path.GetFileNameWithoutExtension))
             {
                 _logger.Trace("Loading assembly \"" + name + "\".");
                 var assembly = Assembly.Load(name);

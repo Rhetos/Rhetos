@@ -40,7 +40,6 @@ namespace Rhetos.Configuration.Autofac
         private static IContainer _iocContainer;
         private static object _containerInitializationLock = new object();
         protected static ILogger _performanceLogger = new ConsoleLogger("Performance");
-        private static RhetosAppEnvironment _rhetosAppEnvironment;
 
         // Instance per test or session:
         protected ILifetimeScope _lifetimeScope;
@@ -104,7 +103,6 @@ namespace Rhetos.Configuration.Autofac
                                 .AddConfigurationManagerConfiguration()
                                 .Build();
 
-                            _rhetosAppEnvironment = new RhetosAppEnvironment(rhetosAppRootPath);
                             _iocContainer = InitializeIocContainer(configurationProvider);
                         }
                 }
@@ -173,7 +171,7 @@ namespace Rhetos.Configuration.Autofac
 
         protected Assembly SearchForAssembly(object sender, ResolveEventArgs args)
         {
-            foreach (var folder in new[] { _rhetosAppEnvironment.PluginsFolder, _rhetosAppEnvironment.GeneratedFolder, _rhetosAppEnvironment.BinFolder })
+            foreach (var folder in new[] { Paths.PluginsFolder, Paths.GeneratedFolder, Paths.BinFolder })
             {
                 string pluginAssemblyPath = Path.Combine(folder, new AssemblyName(args.Name).Name + ".dll");
                 if (File.Exists(pluginAssemblyPath))
