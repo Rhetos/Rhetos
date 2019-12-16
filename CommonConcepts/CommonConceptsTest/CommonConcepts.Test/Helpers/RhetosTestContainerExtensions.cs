@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Rhetos;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Logging;
 using Rhetos.Security;
@@ -77,9 +78,17 @@ namespace CommonConcepts.Test
         {
             container.InitializeSession += builder => 
             {
-                var newRhetosAppOptions = builder.GetInitializationContext().ConfigurationProvider.GetOptions<RhetosAppOptions>();
-                newRhetosAppOptions.EntityFramework__UseDatabaseNullSemantics = useDatabaseNullSemantics;
-                builder.RegisterInstance(newRhetosAppOptions);
+                var key = nameof(IConfigurationProvider);
+                if (builder.Properties.TryGetValue(key, out var configurationProvider) && (configurationProvider is IConfigurationProvider iConfigurationProvider))
+                {
+                    var rhetosAppOptions = iConfigurationProvider.GetOptions<RhetosAppOptions>();
+                    rhetosAppOptions.EntityFramework__UseDatabaseNullSemantics = useDatabaseNullSemantics;
+                    builder.RegisterInstance(rhetosAppOptions);
+                }
+                else
+                {
+                    throw new FrameworkException($"{nameof(ContainerBuilder)} does not contain an entry for {nameof(IConfigurationProvider)}.");
+                }
             };
             Console.WriteLine($"{nameof(RhetosAppOptions)}.{nameof(RhetosAppOptions.EntityFramework__UseDatabaseNullSemantics)} = {useDatabaseNullSemantics}");
         }

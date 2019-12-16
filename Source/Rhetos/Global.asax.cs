@@ -75,7 +75,7 @@ namespace Rhetos
 
         private ContainerBuilder CreateServerContainer(IConfigurationProvider configurationProvider)
         {
-            var builder = new RhetosContainerBuilder(configurationProvider, new NLogProvider());
+            var builder = new RhetosContainerBuilder(configurationProvider, new NLogProvider(), LegacyUtilities.GetListAssembliesDelegate());
 
             builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
             builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
