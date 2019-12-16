@@ -67,7 +67,7 @@ namespace Rhetos
             var packageDownloader = new PackageDownloader(config, _logProvider, packageDownloaderOptions);
             var packages = packageDownloader.GetPackages();
 
-            InstalledPackages.Save(packages);
+            new InstalledPackagesProvider(_logProvider).Save(packages);
         }
 
         public void GenerateApplication()

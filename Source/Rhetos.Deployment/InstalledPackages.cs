@@ -17,71 +17,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Newtonsoft.Json;
-using Rhetos.Logging;
-using Rhetos.Utilities;
-using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
 
 namespace Rhetos.Deployment
 {
     public class InstalledPackages : IInstalledPackages
     {
-        private readonly ILogger _logger;
+        private readonly IEnumerable<InstalledPackage> _packages;
 
-        public InstalledPackages(ILogProvider logProvider)
+        public IEnumerable<InstalledPackage> Packages => _packages;
+
+        public InstalledPackages(IEnumerable<InstalledPackage> packages)
         {
-            _logger = logProvider.GetLogger(GetType().Name);
-            _packages = new Lazy<IEnumerable<InstalledPackage>>(Load);
+            _packages = packages;
         }
-
-        public IEnumerable<InstalledPackage> Packages => _packages.Value;
-
-        private Lazy<IEnumerable<InstalledPackage>> _packages;
-
-        private const string PackagesFileName = "InstalledPackages.json";
-
-        private IEnumerable<InstalledPackage> Load()
-        {
-            string serialized = File.ReadAllText(Path.Combine(Paths.GeneratedFolder, PackagesFileName), Encoding.UTF8);
-            var packages = (IEnumerable<InstalledPackage>)JsonConvert.DeserializeObject(serialized, _serializerSettings);
-
-            // Package folder is saved as relative path, to allow moving the deployed folder.
-            foreach (var package in packages)
-                package.SetAbsoluteFolderPath(Paths.RhetosServerRootPath);
-
-            foreach (var package in packages)
-                _logger.Trace(() => package.Report());
-
-            return packages;
-        }
-
-        public static void Save(IEnumerable<InstalledPackage> packages)
-        {
-            CsUtility.Materialize(ref packages);
-
-            // Package folder is saved as relative path, to allow moving the deployed folder.
-            foreach (var package in packages)
-                package.SetRelativeFolderPath(Paths.RhetosServerRootPath);
-
-            string serialized = JsonConvert.SerializeObject(packages, _serializerSettings);
-
-            foreach (var package in packages)
-                package.SetAbsoluteFolderPath(Paths.RhetosServerRootPath);
-
-            File.WriteAllText(Path.Combine(Paths.GeneratedFolder, PackagesFileName), serialized, Encoding.UTF8);
-        }
-
-        private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
-        {
-            PreserveReferencesHandling = PreserveReferencesHandling.All,
-            ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-            TypeNameHandling = TypeNameHandling.All,
-            Formatting = Formatting.Indented
-        };
     }
 }
