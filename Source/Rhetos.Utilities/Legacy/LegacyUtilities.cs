@@ -60,8 +60,6 @@ namespace Rhetos
                         assemblies.AddRange(Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories));
                 // If the path does not exist, it may be generated later (see DetectAndRegisterNewModulesAndPlugins).
 
-                assemblies.Sort();
-
                 return assemblies;
             };
         }
