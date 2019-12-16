@@ -48,7 +48,7 @@ namespace Rhetos.Configuration.Autofac.Modules
 
         private void AddCommon(ContainerBuilder builder)
         {
-            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<RhetosAppOptions>()).SingleInstance().PreserveExistingDefaults();
+            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<AssetsOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<InstalledPackages>().As<IInstalledPackages>().SingleInstance();
             builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));
             builder.RegisterType<NLogProvider>().As<ILogProvider>().InstancePerLifetimeScope();
@@ -56,6 +56,8 @@ namespace Rhetos.Configuration.Autofac.Modules
 
         private void AddSecurity(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
+            // TODO: SecurityOptions should probably not be required build container and possibly even for dbupgrade. Move to specific module registrations after refactor.
+            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<SecurityOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<WindowsSecurity>().As<IWindowsSecurity>().SingleInstance();
             builder.RegisterType<AuthorizationManager>().As<IAuthorizationManager>().InstancePerLifetimeScope();
 

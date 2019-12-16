@@ -37,11 +37,13 @@ namespace Rhetos
         {
             var rhetosAppOptions = configurationProvider.GetOptions<RhetosAppOptions>();
             var buildOptions = configurationProvider.GetOptions<BuildOptions>();
-            Paths.Initialize(configurationProvider.GetValue<string>("RootPath"), rhetosAppOptions, buildOptions);
+            var assetsOptions = configurationProvider.GetOptions<AssetsOptions>();
+            Paths.Initialize(configurationProvider.GetValue<string>("RootPath"), rhetosAppOptions, buildOptions, assetsOptions);
             ConfigUtility.Initialize(configurationProvider);
             
             var connectionStringOptions = configurationProvider.GetOptions<ConnectionStringOptions>("ConnectionStrings:ServerConnectionString");
-            SqlUtility.Initialize(rhetosAppOptions, connectionStringOptions);
+            var sqlOptions = configurationProvider.GetOptions<SqlOptions>();
+            SqlUtility.Initialize(sqlOptions, connectionStringOptions);
         }
 #pragma warning restore CS0618 // Type or member is obsolete
     }

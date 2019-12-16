@@ -51,9 +51,9 @@ namespace Rhetos.Utilities
             return value;
         }
 
-        public static void Initialize(RhetosAppOptions rhetosAppOptions, ConnectionStringOptions connectionStringOptions)
+        public static void Initialize(SqlOptions sqlOptions, ConnectionStringOptions connectionStringOptions)
         {
-            SqlCommandTimeout = rhetosAppOptions.SqlCommandTimeout;
+            SqlCommandTimeout = sqlOptions.SqlCommandTimeout;
 
             ConnectionString = connectionStringOptions.ConnectionString;
             if (string.IsNullOrEmpty(ConnectionString))

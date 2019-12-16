@@ -22,6 +22,7 @@ using Rhetos.Extensibility;
 using Rhetos.TestCommon;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -51,7 +52,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void PathThrowsOnNullEnvironment()
         {
-            Paths.Initialize(null, null, null);
+            Paths.Initialize(null, null, null, null);
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.RhetosServerRootPath), "Rhetos server is not initialized (Paths class)");
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.BinFolder), "Rhetos server is not initialized (Paths class)");
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFilesCacheFolder), "Rhetos server is not initialized (Paths class)");
@@ -60,11 +61,11 @@ namespace Rhetos.Utilities.Test
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.PluginsFolder), "Rhetos server is not initialized (Paths class)");
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.ResourcesFolder), "Rhetos server is not initialized (Paths class)");
 
-            Paths.Initialize(null, new RhetosAppOptions(), new BuildOptions());
-            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFolder), "One of the following value should be set");
+            Paths.Initialize(null, new RhetosAppOptions(), new BuildOptions(), null);
+            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFolder), "Rhetos server is not initialized (Paths class)");
 
-            Paths.Initialize(null, new RhetosAppOptions { AssetsFolder = @"C:\My folder 1"}, new BuildOptions { GeneratedAssetsFolder = @"C:\My folder 2" });
-            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFolder), "Invalid initialization of class Paths.");
+            Paths.Initialize(null, null, null, new AssetsOptions());
+            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFolder), "AssetsFolder expected to be configured");
         }
     }
 }

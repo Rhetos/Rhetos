@@ -39,21 +39,21 @@ namespace Rhetos.Deployment
 
         protected readonly IInstalledPackages _installedPackages;
         private readonly FilesUtility _filesUtility;
-        private readonly RhetosAppOptions _rhetosAppOptions;
         private readonly ILogger _performanceLogger;
         private List<DataMigrationScript> _scripts;
+        private readonly AssetsOptions _assetsOptions;
 
         public IEnumerable<string> Dependencies => new List<string>();
 
         public DataMigrationScriptsFromDisk(IInstalledPackages installedPackages,
             FilesUtility filesUtility,
-            RhetosAppOptions rhetosAppOptions,
+            AssetsOptions assetsOptions,
             ILogProvider logProvider)
         {
             _installedPackages = installedPackages;
             _filesUtility = filesUtility;
-            _rhetosAppOptions = rhetosAppOptions;
             _performanceLogger = logProvider.GetLogger("Performance");
+            _assetsOptions = assetsOptions;
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace Rhetos.Deployment
             if (_scripts == null)
             {
                 var stopwatch = Stopwatch.StartNew();
-                var dataMigrationScriptsFilePath = Path.Combine(_rhetosAppOptions.AssetsFolder, DataMigrationScriptsFileName);
+                var dataMigrationScriptsFilePath = Path.Combine(_assetsOptions.AssetsFolder, DataMigrationScriptsFileName);
                 if (!File.Exists(dataMigrationScriptsFilePath))
                     throw new FrameworkException($@"The file {dataMigrationScriptsFilePath} that is used to execute the data migration is missing.");
                 var serializedConcepts = File.ReadAllText(dataMigrationScriptsFilePath, Encoding.UTF8);
@@ -114,7 +114,7 @@ namespace Rhetos.Deployment
             _scripts = allScripts;
             var stopwatch = Stopwatch.StartNew();
             string serializedMigrationScripts = JsonConvert.SerializeObject(_scripts, Formatting.Indented);
-            File.WriteAllText(Path.Combine(_rhetosAppOptions.AssetsFolder, DataMigrationScriptsFileName), serializedMigrationScripts, Encoding.UTF8);
+            File.WriteAllText(Path.Combine(_assetsOptions.AssetsFolder, DataMigrationScriptsFileName), serializedMigrationScripts, Encoding.UTF8);
             _performanceLogger.Write(stopwatch, $@"DataMigrationScriptsFromDisk: Saved {_scripts.Count} scripts to generated file.");
         }
 

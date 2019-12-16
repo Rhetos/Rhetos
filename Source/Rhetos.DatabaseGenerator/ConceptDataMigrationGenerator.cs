@@ -38,22 +38,22 @@ namespace Rhetos.DatabaseGenerator
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
         private readonly IDslModel _dslModel;
-        private readonly BuildOptions _buildOptions;
         private readonly IPluginsContainer<IConceptDataMigration> _plugins;
+        private readonly AssetsOptions _assetsOptions;
 
         public IEnumerable<string> Dependencies => new List<string>();
 
         public ConceptDataMigrationGenerator(
             ILogProvider logProvider,
             IDslModel dslModel,
-            BuildOptions buildOptions,
+            AssetsOptions assetsOptions,
             IPluginsContainer<IConceptDataMigration> plugins)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger(GetType().Name);
             _dslModel = dslModel;
-            _buildOptions = buildOptions;
             _plugins = plugins;
+            _assetsOptions = assetsOptions;
         }
 
         public void Generate()
@@ -82,7 +82,7 @@ namespace Rhetos.DatabaseGenerator
             _performanceLogger.Write(stopwatch, "DataMigrationScriptGenerator: Scripts generated.");
 
             string serializedConcepts = JsonConvert.SerializeObject(codeBuilder.GetDataMigrationScripts(), Formatting.Indented);
-            File.WriteAllText(Path.Combine(_buildOptions.GeneratedAssetsFolder, ConceptDataMigrationScriptsFileName), serializedConcepts, Encoding.UTF8);
+            File.WriteAllText(Path.Combine(_assetsOptions.AssetsFolder, ConceptDataMigrationScriptsFileName), serializedConcepts, Encoding.UTF8);
         }
     }
 }

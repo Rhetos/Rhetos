@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Rhetos.Utilities;
 
 namespace Rhetos.Configuration.Autofac.Modules
 {
@@ -37,6 +38,7 @@ namespace Rhetos.Configuration.Autofac.Modules
         {
             var pluginRegistration = builder.GetPluginRegistration();
 
+            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<RhetosAppOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<DomLoader>().As<IDomainObjectModel>().SingleInstance();
             builder.RegisterType<PersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope();
 

@@ -151,6 +151,7 @@
     <Compile Include="ApplicationConfiguration\IConfigurationProvider.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationSources\IConfigurationSource.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationSources\KeyValuesSource.cs" />
+    <Compile Include="AssetsOptions.cs" />
     <Compile Include="BuildOptions.cs" />
     <Compile Include="Legacy\LegacyUtilities.cs" />
     <Compile Include="Legacy\Configuration.cs" />
@@ -166,6 +167,8 @@
     <Compile Include="IUserInfoAdmin.cs" />
     <Compile Include="ListOfTuples.cs" />
     <Compile Include="RhetosAppOptions.cs" />
+    <Compile Include="SecurityOptions.cs" />
+    <Compile Include="SqlOptions.cs" />
     <Compile Include="SqlTransactionBatches.cs" />
     <Compile Include="NoLocalizer.cs" />
     <Compile Include="ILocalizer.cs" />
