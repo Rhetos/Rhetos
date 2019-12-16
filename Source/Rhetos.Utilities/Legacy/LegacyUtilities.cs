@@ -18,11 +18,8 @@
 */
 
 using Rhetos.Utilities;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 
 namespace Rhetos
 {
@@ -42,6 +39,23 @@ namespace Rhetos
             
             var connectionStringOptions = configurationProvider.GetOptions<ConnectionStringOptions>("ConnectionStrings:ServerConnectionString");
             SqlUtility.Initialize(rhetosAppOptions, connectionStringOptions);
+        }
+
+        public static List<string> ListAssemblies()
+        {
+            string[] pluginsPath = new[] { Paths.PluginsFolder, Paths.GeneratedFolder };
+
+            List<string> assemblies = new List<string>();
+            foreach (var path in pluginsPath)
+                if (File.Exists(path))
+                    assemblies.Add(Path.GetFullPath(path));
+                else if (Directory.Exists(path))
+                    assemblies.AddRange(Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories));
+            // If the path does not exist, it may be generated later (see DetectAndRegisterNewModulesAndPlugins).
+
+            assemblies.Sort();
+
+            return assemblies;
         }
 #pragma warning restore CS0618 // Type or member is obsolete
     }

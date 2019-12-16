@@ -25,7 +25,6 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.ReflectionModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 
 namespace Rhetos.Extensibility
@@ -37,13 +36,15 @@ namespace Rhetos.Extensibility
         /// </summary>
         private MultiDictionary<string, PluginInfo> _pluginsByExport = null;
         private object _pluginsLock = new object();
-        private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
+        private readonly ILogger _logger;
+        private readonly List<string> _assemblyList;
 
-        public MefPluginScanner(ILogProvider logProvider)
+        public MefPluginScanner(List<string> assemblyList, ILogProvider logProvider)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("Plugins");
+            _assemblyList = assemblyList;
         }
 
         /// <summary>
@@ -55,14 +56,16 @@ namespace Rhetos.Extensibility
             {
                 if (_pluginsByExport == null)
                 {
-                    var assemblies = ListAssemblies();
                     try
                     {
-                        _pluginsByExport = LoadPlugins(assemblies);
+                        foreach (var assembly in _assemblyList)
+                            _logger.Trace(() => "Searching for plugins in assembly: " + assembly);
+
+                        _pluginsByExport = LoadPlugins(_assemblyList);
                     }
                     catch (Exception ex)
                     {
-                        string typeLoadReport = CsUtility.ReportTypeLoadException(ex, "Cannot load plugins.", assemblies);
+                        string typeLoadReport = CsUtility.ReportTypeLoadException(ex, "Cannot load plugins.", _assemblyList);
                         if (typeLoadReport != null)
                             throw new FrameworkException(typeLoadReport, ex);
                         else
@@ -73,29 +76,6 @@ namespace Rhetos.Extensibility
             }
         }
 
-        private List<string> ListAssemblies()
-        {
-            var stopwatch = Stopwatch.StartNew();
-
-            //TODO: Refactor it so that it uses an explicitly defined assemly list
-            string[] pluginsPath = new[] { Paths.PluginsFolder, Paths.GeneratedFolder };
-
-            List<string> assemblies = new List<string>();
-            foreach (var path in pluginsPath)
-                if (File.Exists(path))
-                    assemblies.Add(Path.GetFullPath(path));
-                else if (Directory.Exists(path))
-                    assemblies.AddRange(Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories));
-            // If the path does not exist, it may be generated later (see DetectAndRegisterNewModulesAndPlugins).
-
-            assemblies.Sort();
-
-            foreach (var assembly in assemblies)
-                _logger.Trace(() => "Found assembly: " + assembly);
-
-            _performanceLogger.Write(stopwatch, "MefPluginScanner: Listed assemblies (" + assemblies.Count + ").");
-            return assemblies;
-        }
 
         private MultiDictionary<string, PluginInfo> LoadPlugins(List<string> assemblies)
         {

@@ -20,10 +20,10 @@
 using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos;
-using Rhetos.Dsl;
 using Rhetos.Logging;
 using Rhetos.TestCommon;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace DeployPackages.Test
@@ -45,7 +45,7 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsBuildTime()
         {
-            var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider())
+            var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider(), new List<string>())
                 .AddRhetosBuild()
                 .AddProcessUserOverride();
 
@@ -60,7 +60,7 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsDbUpdate()
         {
-            var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider())
+            var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider(), new List<string>())
                 .AddRhetosDbUpdate()
                 .AddProcessUserOverride();
 
@@ -75,7 +75,7 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsRuntimeWithInitialization()
         {
-            var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider())
+            var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider(), new List<string>())
                 .AddApplicationInitialization()
                 .AddRhetosRuntime()
                 .AddProcessUserOverride();
@@ -94,7 +94,7 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsServerRuntime()
         {
-            var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider())
+            var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider(), new List<string>())
                 .AddRhetosRuntime();
 
             using (var container = builder.Build())
@@ -119,7 +119,7 @@ namespace DeployPackages.Test
 @"Activator = ApplicationGenerator (ReflectionActivator), Services = [Rhetos.Deployment.ApplicationGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = AssemblyGenerator (ReflectionActivator), Services = [Rhetos.Compiler.IAssemblyGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = AuthorizationManager (ReflectionActivator), Services = [Rhetos.Security.IAuthorizationManager], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
-Activator = BuildOptions (ProvidedInstanceActivator), Services = [Rhetos.Utilities.BuildOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
+Activator = BuildOptions (DelegateActivator), Services = [Rhetos.Utilities.BuildOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = CodeBuilder (ReflectionActivator), Services = [Rhetos.Compiler.ICodeBuilder], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = CodeGenerator (ReflectionActivator), Services = [Rhetos.Compiler.ICodeGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = ConceptApplicationRepository (ReflectionActivator), Services = [Rhetos.DatabaseGenerator.IConceptApplicationRepository], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
@@ -174,7 +174,7 @@ Activator = XmlUtility (ReflectionActivator), Services = [Rhetos.Utilities.XmlUt
 @"Activator = ApplicationGenerator (ReflectionActivator), Services = [Rhetos.Deployment.ApplicationGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = AssemblyGenerator (ReflectionActivator), Services = [Rhetos.Compiler.IAssemblyGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = AuthorizationManager (ReflectionActivator), Services = [Rhetos.Security.IAuthorizationManager], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
-Activator = BuildOptions (ProvidedInstanceActivator), Services = [Rhetos.Utilities.BuildOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
+Activator = BuildOptions (DelegateActivator), Services = [Rhetos.Utilities.BuildOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = CodeBuilder (ReflectionActivator), Services = [Rhetos.Compiler.ICodeBuilder], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = CodeGenerator (ReflectionActivator), Services = [Rhetos.Compiler.ICodeGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = ConceptApplicationRepository (ReflectionActivator), Services = [Rhetos.DatabaseGenerator.IConceptApplicationRepository], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope

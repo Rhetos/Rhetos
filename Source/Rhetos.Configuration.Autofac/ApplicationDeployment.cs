@@ -75,7 +75,7 @@ namespace Rhetos
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider)
+            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, LegacyUtilities.ListAssemblies())
                 .AddRhetosBuild()
                 .AddProcessUserOverride();
 
@@ -94,7 +94,7 @@ namespace Rhetos
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider)
+            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, LegacyUtilities.ListAssemblies())
                 .AddRhetosDbUpdate()
                 .AddProcessUserOverride();
 
@@ -115,7 +115,7 @@ namespace Rhetos
             _logger.Trace("Loading generated plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider)
+            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, LegacyUtilities.ListAssemblies())
                 .AddApplicationInitialization()
                 .AddRhetosRuntime()
                 .AddProcessUserOverride();

@@ -40,8 +40,7 @@ namespace Rhetos
 
         public static RhetosContainerBuilder AddRhetosBuild(this RhetosContainerBuilder builder)
         {
-            var buildOptions = builder.GetInitializationContext().ConfigurationProvider.GetOptions<BuildOptions>();
-            builder.RegisterInstance(buildOptions).PreserveExistingDefaults();
+            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<BuildOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new DeployModule());
             builder.RegisterType<DslModel>().As<IDslModel>().SingleInstance();
@@ -51,8 +50,7 @@ namespace Rhetos
 
         public static RhetosContainerBuilder AddRhetosDbUpdate(this RhetosContainerBuilder builder)
         {
-            var buildOptions = builder.GetInitializationContext().ConfigurationProvider.GetOptions<BuildOptions>();
-            builder.RegisterInstance(buildOptions).PreserveExistingDefaults();
+            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<BuildOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new DeployModule());
             builder.RegisterType<DslModelFile>().As<IDslModel>().SingleInstance();

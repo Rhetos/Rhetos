@@ -155,7 +155,7 @@ namespace Rhetos.Configuration.Autofac
             AppDomain.CurrentDomain.AssemblyResolve += SearchForAssembly;
 
             // General registrations:
-            var builder = new RhetosContainerBuilder(configurationProvider, new ConsoleLogProvider())
+            var builder = new RhetosContainerBuilder(configurationProvider, new ConsoleLogProvider(), LegacyUtilities.ListAssemblies())
                 .AddRhetosRuntime();
 
             // Specific registrations override:
