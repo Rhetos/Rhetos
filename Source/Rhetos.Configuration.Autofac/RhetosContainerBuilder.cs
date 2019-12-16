@@ -20,48 +20,42 @@
 using Autofac;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
+using System;
+using System.Collections.Generic;
 
 namespace Rhetos
 {
     /// <summary>
-    /// Container builder initialized with <see cref="InitializationContext"/>.
-    /// It makes the <see cref="InitializationContext"/> and <see cref="IPluginScanner"/> accessible during registration process and
+    /// Container builder initialized with <see cref="IConfigurationProvider"/>.
+    /// It makes the <see cref="ILogProvider"/> and <see cref="IPluginScanner"/> accessible during registration process and
     /// registers <see cref="IConfigurationProvider"/> to the container.
     /// </summary>
     public class RhetosContainerBuilder : ContainerBuilder
     {
         /// <summary>
-        /// Initializes a container with specified <see cref="InitializationContext"/>. 
-        /// Registers the <see cref="IConfigurationProvider"/> instance to newly created container.
+        /// Initializes a container with specified <see cref="IConfigurationProvider"/>. 
+        /// Registers <see cref="IConfigurationProvider"/> instance to newly created container.
+        /// The assembly list is used for plugins search when using the <see cref="ContainerBuilderPluginRegistration"/>.
         /// <see cref="ILogProvider"/> is not registered and is meant to be used during the lifetime of registration and container building process.
         /// <see cref="LegacyUtilities"/> will also be initialized with the given configuration.
         /// </summary>
-        public RhetosContainerBuilder(InitializationContext initializationContext)
+        public RhetosContainerBuilder(IConfigurationProvider configurationProvider, ILogProvider logProvider, Func<List<string>> findAssemblies)
         {
-            this.RegisterInstance(initializationContext.ConfigurationProvider);
+            this.RegisterInstance(configurationProvider);
 
-            var pluginScanner = new MefPluginScanner(initializationContext.LogProvider);
+            var pluginScanner = new MefPluginScanner(findAssemblies, logProvider);
 
             // make properties accessible to modules which are provided with new/unique instance of ContainerBuilder
-            this.Properties.Add(nameof(InitializationContext), initializationContext);
             this.Properties.Add(nameof(IPluginScanner), pluginScanner);
+            this.Properties.Add(nameof(ILogProvider), logProvider);
+            //TODO: This property is added so that it can be used during the execution of automated tests.
+            //Maybe there is a better way to address this issue.
+            this.Properties.Add(nameof(IConfigurationProvider), configurationProvider);
 
             // this is a patch/mock to provide backward compatibility for all usages of old static classes
-            LegacyUtilities.Initialize(initializationContext.ConfigurationProvider);
+            LegacyUtilities.Initialize(configurationProvider);
 
             Plugins.Initialize(builder => builder.GetPluginRegistration());
         }
-
-        /// <summary>
-        /// Initializes a container with new <see cref="InitializationContext"/> created from specified arguments. 
-        /// Registers the <see cref="IConfigurationProvider"/> instance to newly created container.
-        /// <see cref="ILogProvider"/> is not registered and is meant to be used during the lifetime of registration and container building process.
-        /// <see cref="LegacyUtilities"/> will also be initialized with the given configuration.
-        /// </summary>
-        public RhetosContainerBuilder(IConfigurationProvider configurationProvider, ILogProvider logProvider)
-            : this(new InitializationContext(configurationProvider, logProvider))
-        {
-        }
-
     }
 }

@@ -25,7 +25,6 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.ReflectionModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 
 namespace Rhetos.Extensibility
@@ -37,13 +36,15 @@ namespace Rhetos.Extensibility
         /// </summary>
         private MultiDictionary<string, PluginInfo> _pluginsByExport = null;
         private object _pluginsLock = new object();
-        private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
+        private readonly ILogger _logger;
+        private readonly Func<List<string>> _findAssemblies;
 
-        public MefPluginScanner(ILogProvider logProvider)
+        public MefPluginScanner(Func<List<string>> findAssemblies, ILogProvider logProvider)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("Plugins");
+            _findAssemblies = findAssemblies;
         }
 
         /// <summary>
@@ -55,9 +56,12 @@ namespace Rhetos.Extensibility
             {
                 if (_pluginsByExport == null)
                 {
-                    var assemblies = ListAssemblies();
+                    var assemblies = _findAssemblies();
                     try
                     {
+                        foreach (var assembly in assemblies)
+                            _logger.Trace(() => "Searching for plugins in assembly: " + assembly);
+
                         _pluginsByExport = LoadPlugins(assemblies);
                     }
                     catch (Exception ex)
@@ -73,29 +77,6 @@ namespace Rhetos.Extensibility
             }
         }
 
-        private List<string> ListAssemblies()
-        {
-            var stopwatch = Stopwatch.StartNew();
-
-            //TODO: Refactor it so that it uses an explicitly defined assemly list
-            string[] pluginsPath = new[] { Paths.PluginsFolder, Paths.GeneratedFolder };
-
-            List<string> assemblies = new List<string>();
-            foreach (var path in pluginsPath)
-                if (File.Exists(path))
-                    assemblies.Add(Path.GetFullPath(path));
-                else if (Directory.Exists(path))
-                    assemblies.AddRange(Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories));
-            // If the path does not exist, it may be generated later (see DetectAndRegisterNewModulesAndPlugins).
-
-            assemblies.Sort();
-
-            foreach (var assembly in assemblies)
-                _logger.Trace(() => "Found assembly: " + assembly);
-
-            _performanceLogger.Write(stopwatch, "MefPluginScanner: Listed assemblies (" + assemblies.Count + ").");
-            return assemblies;
-        }
 
         private MultiDictionary<string, PluginInfo> LoadPlugins(List<string> assemblies)
         {
