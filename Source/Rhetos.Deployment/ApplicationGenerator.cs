@@ -32,33 +32,21 @@ namespace Rhetos.Deployment
     {
         private readonly ILogger _deployPackagesLogger;
         private readonly IDslModel _dslModel;
-        private readonly IDomainObjectModel _domGenerator;
         private readonly IPluginsContainer<IGenerator> _generatorsContainer;
 
         public ApplicationGenerator(
             ILogProvider logProvider,
             IDslModel dslModel,
-            IDomainObjectModel domGenerator,
             IPluginsContainer<IGenerator> generatorsContainer)
         {
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _dslModel = dslModel;
-            _domGenerator = domGenerator;
             _generatorsContainer = generatorsContainer;
         }
 
         public void ExecuteGenerators()
         {
             CheckDslModelErrors();
-
-            _deployPackagesLogger.Trace("Compiling DOM assembly.");
-            int generatedTypesCount = _domGenerator.GetTypes().Count();
-            if (generatedTypesCount == 0)
-            {
-                _deployPackagesLogger.Info("Warning: Empty assembly is generated.");
-            }
-            else
-                _deployPackagesLogger.Trace("Generated " + generatedTypesCount + " types.");
 
             var generators = GetSortedGenerators();
             foreach (var generator in generators)
@@ -96,7 +84,15 @@ namespace Rhetos.Deployment
             foreach (var missingDependency in dependencies.Where(dep => !generatorNames.Contains(dep.Item1)))
                 _deployPackagesLogger.Info($"Missing dependency '{missingDependency.Item1}' for application generator '{missingDependency.Item2}'.");
 
+            var domGeneratorType = "Rhetos.Dom.DomGenerator";
+            var indexofDomgenerator = generatorNames.IndexOf(domGeneratorType);
+            if (indexofDomgenerator == -1)
+                throw new FrameworkException($@"Could not find Generator of type {domGeneratorType}");
+            generatorNames.RemoveAt(indexofDomgenerator);
+            generatorNames.Insert(0, domGeneratorType);
+
             Graph.SortByGivenOrder(generators, generatorNames, GetGeneratorName);
+
             return generators;
         }
 
