@@ -17,15 +17,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
 namespace Rhetos.Utilities
 {
-    public class RhetosAppOptions
+    public class SqlOptions
     {
-        public string BinFolder { get; set; }
-        public bool BuiltinAdminOverride { get; set; } = false;
-        public bool SkipRecompute { get; set; }
-        public bool EntityFramework__UseDatabaseNullSemantics { get; set; } = false;
-        public double AuthorizationCacheExpirationSeconds { get; set; } = 30;
-        public bool AuthorizationAddUnregisteredPrincipals { get; set; } = false;
+        public int SqlCommandTimeout { get; set; } = 30;
     }
 }

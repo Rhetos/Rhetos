@@ -22,7 +22,6 @@ namespace Rhetos.Utilities
 {
     public class BuildOptions
     {
-        public string GeneratedAssetsFolder { get; set; }
         public string GeneratedSourceFolder { get; set; }
         public string GeneratedFilesCacheFolder { get; set; }
         public bool Debug { get; set; }

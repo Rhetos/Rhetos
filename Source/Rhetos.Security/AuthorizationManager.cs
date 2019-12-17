@@ -40,6 +40,7 @@ namespace Rhetos.Security
         private readonly HashSet<string> _allClaimsForUsers; // Case-insensitive hashset.
         private readonly IAuthorizationProvider _authorizationProvider;
         private readonly ILocalizer _localizer;
+        private readonly SecurityOptions _securityOptions;
 
         public AuthorizationManager(
             RhetosAppOptions rhetosAppOptions,
@@ -48,9 +49,11 @@ namespace Rhetos.Security
             ILogProvider logProvider,
             IAuthorizationProvider authorizationProvider,
             IWindowsSecurity windowsSecurity,
+            SecurityOptions securityOptions,
             ILocalizer localizer)
         {
             _rhetosAppOptions = rhetosAppOptions;
+            _securityOptions = securityOptions;
             _userInfo = userInfo;
             _claimProviders = claimProviders;
             _authorizationProvider = authorizationProvider;
@@ -65,7 +68,7 @@ namespace Rhetos.Security
         {
             try
             {
-                var setting = _rhetosAppOptions.Security__AllClaimsForUsers;
+                var setting = _securityOptions.Security__AllClaimsForUsers;
                 var users = setting.Split(',').Select(u => u.Trim()).Where(u => !string.IsNullOrEmpty(u))
                     .Select(u => u.Split('@'))
                     .Select(u => new { UserName = u[0], HostName = u[1] })
@@ -79,7 +82,7 @@ namespace Rhetos.Security
             }
             catch (Exception ex)
             {
-                throw new FrameworkException($"Invalid '{nameof(RhetosAppOptions.Security__AllClaimsForUsers)}' parameter format in web.config. Expected comma-separated list of entries formatted as username@servername.", ex);
+                throw new FrameworkException($"Invalid '{nameof(SecurityOptions.Security__AllClaimsForUsers)}' parameter format in web.config. Expected comma-separated list of entries formatted as username@servername.", ex);
             }
         }
 

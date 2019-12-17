@@ -32,15 +32,17 @@ namespace Rhetos.Utilities
         private static string _rootPath;
         private static RhetosAppOptions _appOptions;
         private static BuildOptions _buildOptions;
+        private static AssetsOptions _assetsOptions;
 
         /// <summary>
         /// Initialize Paths for the Rhetos server.
         /// </summary>
-        public static void Initialize(string rootPath, RhetosAppOptions appOptions, BuildOptions buildOptions)
+        public static void Initialize(string rootPath, RhetosAppOptions appOptions, BuildOptions buildOptions, AssetsOptions assetsOptions)
         {
             _rootPath = rootPath;
             _appOptions = appOptions;
             _buildOptions = buildOptions;
+            _assetsOptions = assetsOptions;
         }
 
         public static string RhetosServerRootPath => NonNullRhetosRootPath;
@@ -83,15 +85,12 @@ namespace Rhetos.Utilities
 
         private static void ValidateGeneratedFolder()
         {
-            if (_appOptions == null && _buildOptions == null)
+            if (_assetsOptions == null)
                 throw new FrameworkException($"Rhetos server is not initialized ({nameof(Paths)} class)." +
                     $" Use {nameof(LegacyUtilities)}.{nameof(LegacyUtilities.Initialize)}() to initialize obsolete static utilities");
 
-            if (_appOptions?.AssetsFolder == null && _buildOptions?.GeneratedAssetsFolder == null)
-                throw new FrameworkException($@"One of the following value should be set. {nameof(RhetosAppOptions.AssetsFolder)} or {nameof(BuildOptions.GeneratedAssetsFolder)}");
-
-            if (_appOptions?.AssetsFolder != null && _buildOptions?.GeneratedAssetsFolder != null && _appOptions.AssetsFolder != _buildOptions.GeneratedAssetsFolder)
-                throw new FrameworkException($@"Invalid initialization of class {nameof(Paths)}. The value of {nameof(RhetosAppOptions.AssetsFolder)} and {nameof(BuildOptions.GeneratedAssetsFolder)} should be equal.");
+            if (string.IsNullOrEmpty(_assetsOptions.AssetsFolder))
+                throw new FrameworkException($"{nameof(AssetsOptions.AssetsFolder)} expected to be configured with valid value, but is empty.");
         }
 
         private static RhetosAppOptions NonNullRhetosAppOptions
@@ -126,10 +125,7 @@ namespace Rhetos.Utilities
             get
             {
                 ValidateGeneratedFolder();
-                if (_appOptions?.AssetsFolder != null)
-                    return _appOptions.AssetsFolder;
-                else
-                    return _buildOptions.GeneratedAssetsFolder;
+                return _assetsOptions.AssetsFolder;
             }
         }
     }

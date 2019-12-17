@@ -32,17 +32,16 @@ namespace Rhetos.Dsl
     {
         private readonly ILogger _performanceLogger;
         private readonly DslContainer _dslContainer;
-        //TODO: Use custom options class
-        private readonly RhetosAppOptions _rhetosAppOptions;
+        private readonly AssetsOptions _assetsOptions;
 
         public DslModelFile(
             ILogProvider logProvider,
             DslContainer dslContainer,
-            RhetosAppOptions rhetosAppOptions)
+            AssetsOptions assetsOptions)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _dslContainer = dslContainer;
-            _rhetosAppOptions = rhetosAppOptions;
+            _assetsOptions = assetsOptions;
         }
 
         #region IDslModel implementation
@@ -112,7 +111,7 @@ namespace Rhetos.Dsl
             string serializedConcepts = JsonConvert.SerializeObject(concepts, serializerSettings);
             _performanceLogger.Write(sw, "DslModelFile.SaveConcepts: Serialize.");
 
-            string path = Path.Combine(_rhetosAppOptions.AssetsFolder, DslModelFileName);
+            string path = Path.Combine(_assetsOptions.AssetsFolder, DslModelFileName);
             File.WriteAllText(path, serializedConcepts, Encoding.UTF8);
             _performanceLogger.Write(sw, "DslModelFile.SaveConcepts: Write.");
         }
@@ -121,7 +120,7 @@ namespace Rhetos.Dsl
         {
             var sw = Stopwatch.StartNew();
 
-            string path = Path.Combine(_rhetosAppOptions.AssetsFolder, DslModelFileName);
+            string path = Path.Combine(_assetsOptions.AssetsFolder, DslModelFileName);
             string serializedConcepts = File.ReadAllText(path, Encoding.UTF8);
 
             var serializerSettings = new JsonSerializerSettings
