@@ -40,7 +40,6 @@ namespace Rhetos.Deployment
         protected readonly IInstalledPackages _installedPackages;
         private readonly FilesUtility _filesUtility;
         private readonly ILogger _performanceLogger;
-        private List<DataMigrationScript> _scripts;
         private readonly AssetsOptions _assetsOptions;
 
         public IEnumerable<string> Dependencies => new List<string>();
@@ -62,18 +61,14 @@ namespace Rhetos.Deployment
         /// </summary>
         public List<DataMigrationScript> Load()
         {
-            if (_scripts == null)
-            {
-                var stopwatch = Stopwatch.StartNew();
-                var dataMigrationScriptsFilePath = Path.Combine(_assetsOptions.AssetsFolder, DataMigrationScriptsFileName);
-                if (!File.Exists(dataMigrationScriptsFilePath))
-                    throw new FrameworkException($@"The file {dataMigrationScriptsFilePath} that is used to execute the data migration is missing.");
-                var serializedConcepts = File.ReadAllText(dataMigrationScriptsFilePath, Encoding.UTF8);
-                _scripts =  JsonConvert.DeserializeObject<List<DataMigrationScript>>(serializedConcepts);
-                _performanceLogger.Write(stopwatch, $@"DataMigrationScriptsFromDisk: Loaded {_scripts.Count} scripts from generated file.");
-            }
-
-            return _scripts;
+            var stopwatch = Stopwatch.StartNew();
+            var dataMigrationScriptsFilePath = Path.Combine(_assetsOptions.AssetsFolder, DataMigrationScriptsFileName);
+            if (!File.Exists(dataMigrationScriptsFilePath))
+                throw new FrameworkException($@"The file {dataMigrationScriptsFilePath} that is used to execute the data migration is missing. Please check that the build has completed successfully before updating the database.");
+            var serializedConcepts = File.ReadAllText(dataMigrationScriptsFilePath, Encoding.UTF8);
+            var scripts = JsonConvert.DeserializeObject<List<DataMigrationScript>>(serializedConcepts);
+            _performanceLogger.Write(stopwatch, $@"DataMigrationScriptsFromDisk: Loaded {_scripts.Count} scripts from generated file.");
+            return scripts;
         }
 
         public void Generate()
@@ -111,11 +106,10 @@ namespace Rhetos.Deployment
                     "Data migration scripts '{0}' and '{1}' have same tag '{2}' in their headers.",
                     badGroup.First().Path, badGroup.ElementAt(1).Path, badGroup.Key));
 
-            _scripts = allScripts;
             var stopwatch = Stopwatch.StartNew();
-            string serializedMigrationScripts = JsonConvert.SerializeObject(_scripts, Formatting.Indented);
+            string serializedMigrationScripts = JsonConvert.SerializeObject(allScripts, Formatting.Indented);
             File.WriteAllText(Path.Combine(_assetsOptions.AssetsFolder, DataMigrationScriptsFileName), serializedMigrationScripts, Encoding.UTF8);
-            _performanceLogger.Write(stopwatch, $@"DataMigrationScriptsFromDisk: Saved {_scripts.Count} scripts to generated file.");
+            _performanceLogger.Write(stopwatch, $@"DataMigrationScriptsFromDisk: Saved {allScripts.Count} scripts to generated file.");
         }
 
         protected static readonly Regex ScriptIdRegex = new Regex(@"^/\*DATAMIGRATION (.+)\*/");

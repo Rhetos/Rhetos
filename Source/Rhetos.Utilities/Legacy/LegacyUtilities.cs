@@ -54,11 +54,8 @@ namespace Rhetos
 
                 List<string> assemblies = new List<string>();
                 foreach (var path in pluginsPath)
-                    if (File.Exists(path))
-                        assemblies.Add(Path.GetFullPath(path));
-                    else if (Directory.Exists(path))
+                    if (Directory.Exists(path))
                         assemblies.AddRange(Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories));
-                // If the path does not exist, it may be generated later (see DetectAndRegisterNewModulesAndPlugins).
 
                 return assemblies;
             };

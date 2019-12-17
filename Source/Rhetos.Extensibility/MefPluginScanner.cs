@@ -40,6 +40,10 @@ namespace Rhetos.Extensibility
         private readonly ILogger _performanceLogger;
         private readonly Func<List<string>> _findAssemblies;
 
+        /// <summary>
+        /// It searches for type implementations in the provided list of assemblies.
+        /// </summary>
+        /// <param name="findAssemblies">It should return the list of assemblies that will be searched when invoking the method <see cref="MefPluginScanner.FindPlugins"/></param>
         public MefPluginScanner(Func<List<string>> findAssemblies, ILogProvider logProvider)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
@@ -79,7 +83,7 @@ namespace Rhetos.Extensibility
         {
             var stopwatch = Stopwatch.StartNew();
 
-            List<string> assemblies = _findAssemblies(); ;
+            var assemblies = _findAssemblies();
             assemblies.Sort();
 
             foreach (var assembly in assemblies)
