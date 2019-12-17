@@ -43,9 +43,6 @@ namespace Rhetos.DatabaseGenerator
         private readonly DatabaseGeneratorOptions _options;
         private readonly DatabaseModel _databaseModel;
 
-        private bool DatabaseUpdated = false;
-        private readonly object _databaseUpdateLock = new object();
-
         public DatabaseGenerator(
             SqlTransactionBatches sqlTransactionBatches, 
             IConceptApplicationRepository conceptApplicationRepository,
@@ -65,46 +62,36 @@ namespace Rhetos.DatabaseGenerator
 
         public void UpdateDatabaseStructure()
         {
-            if (DatabaseUpdated) // performance optimization
-                _deployPackagesLogger.Trace("Database already updated.");
+            _logger.Trace("Updating database structure.");
+            var stopwatchTotal = Stopwatch.StartNew();
+            var stopwatch = Stopwatch.StartNew();
 
-            lock (_databaseUpdateLock)
-            {
-                if (DatabaseUpdated)
-                    _deployPackagesLogger.Trace("Database already updated.");
+            var oldApplications = _conceptApplicationRepository.Load();
+            _performanceLogger.Write(stopwatch, "DatabaseGenerator: Loaded old concept applications.");
 
-                _logger.Trace("Updating database structure.");
-                var stopwatchTotal = Stopwatch.StartNew();
-                var stopwatch = Stopwatch.StartNew();
+            var newApplications = ConceptApplication.FromDatabaseObjects(_databaseModel.DatabaseObjects);
+            _performanceLogger.Write(stopwatch, "DatabaseGenerator: Got new concept applications.");
 
-                var oldApplications = _conceptApplicationRepository.Load();
-                _performanceLogger.Write(stopwatch, "DatabaseGenerator: Loaded old concept applications.");
+            MatchAndComputeNewApplicationIds(oldApplications, newApplications);
+            _performanceLogger.Write(stopwatch, "DatabaseGenerator: Match new and old concept applications.");
 
-                var newApplications = ConceptApplication.FromDatabaseObjects(_databaseModel.DatabaseObjects);
-                _performanceLogger.Write(stopwatch, "DatabaseGenerator: Got new concept applications.");
+            ConceptApplication.CheckKeyUniqueness(newApplications, "generated, after matching");
+            _performanceLogger.Write(stopwatch, "DatabaseGenerator: Verify new concept applications' integrity.");
+            newApplications = TrimEmptyApplications(newApplications);
+            _performanceLogger.Write(stopwatch, "DatabaseGenerator: Removed unused concept applications.");
 
-                MatchAndComputeNewApplicationIds(oldApplications, newApplications);
-                _performanceLogger.Write(stopwatch, "DatabaseGenerator: Match new and old concept applications.");
+            List<ConceptApplication> toBeRemoved;
+            List<ConceptApplication> toBeInserted;
+            CalculateApplicationsToBeRemovedAndInserted(oldApplications, newApplications, out toBeRemoved, out toBeInserted);
+            _performanceLogger.Write(stopwatch, "DatabaseGenerator: Analyzed differences in database structure.");
 
-                ConceptApplication.CheckKeyUniqueness(newApplications, "generated, after matching");
-                _performanceLogger.Write(stopwatch, "DatabaseGenerator: Verify new concept applications' integrity.");
-                newApplications = TrimEmptyApplications(newApplications);
-                _performanceLogger.Write(stopwatch, "DatabaseGenerator: Removed unused concept applications.");
+            ApplyChangesToDatabase(oldApplications, newApplications, toBeRemoved, toBeInserted);
+            _performanceLogger.Write(stopwatch, "DatabaseGenerator: Applied changes to database.");
 
-                List<ConceptApplication> toBeRemoved;
-                List<ConceptApplication> toBeInserted;
-                CalculateApplicationsToBeRemovedAndInserted(oldApplications, newApplications, out toBeRemoved, out toBeInserted);
-                _performanceLogger.Write(stopwatch, "DatabaseGenerator: Analyzed differences in database structure.");
+            VerifyIntegrity();
+            _performanceLogger.Write(stopwatch, "DatabaseGenerator: Verified integrity of saved concept applications metadata.");
 
-                ApplyChangesToDatabase(oldApplications, newApplications, toBeRemoved, toBeInserted);
-                _performanceLogger.Write(stopwatch, "DatabaseGenerator: Applied changes to database.");
-
-                VerifyIntegrity();
-                _performanceLogger.Write(stopwatch, "DatabaseGenerator: Verified integrity of saved concept applications metadata.");
-
-                _performanceLogger.Write(stopwatchTotal, "DatabaseGenerator.UpdateDatabaseStructure");
-                DatabaseUpdated = true;
-            }
+            _performanceLogger.Write(stopwatchTotal, "DatabaseGenerator.UpdateDatabaseStructure");
         }
 
         private static void MatchAndComputeNewApplicationIds(List<ConceptApplication> oldApplications, List<ConceptApplication> newApplications)
@@ -335,7 +322,7 @@ namespace Rhetos.DatabaseGenerator
         private static string[] SplitSqlScript(string script)
         {
             if (string.IsNullOrEmpty(script))
-                return new string[] { };
+                return Array.Empty<string>();
             return script.Split(new[] { SqlUtility.ScriptSplitterTag }, StringSplitOptions.RemoveEmptyEntries)
                 .Where(query => !string.IsNullOrWhiteSpace(query))
                 .Select(query => query.Trim()).ToArray();
