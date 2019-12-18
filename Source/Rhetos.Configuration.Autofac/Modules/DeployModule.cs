@@ -71,9 +71,12 @@ namespace Rhetos.Configuration.Autofac.Modules
             pluginRegistration.FindAndRegisterPlugins<IConceptDatabaseDefinition>();
             builder.RegisterType<NullImplementation>().As<IConceptDatabaseDefinition>();
             pluginRegistration.FindAndRegisterPlugins<IConceptDataMigration>(typeof(IConceptDataMigration<>));
-            builder.RegisterType<DataMigrationScripts>();
+            builder.RegisterType<DataMigrationScriptsFile>();
+            builder.Register(context => context.Resolve<DataMigrationScriptsFile>().Load()).As<DataMigrationScripts>().SingleInstance();
+            builder.RegisterType<DataMigrationScriptsExecuter>();
             builder.RegisterType<DatabaseCleaner>();
             builder.RegisterType<ConceptDataMigrationGenerator>().As<IGenerator>();
+            builder.RegisterType<DataMigrationScriptsGenerator>().As<IGenerator>();
         }
 
         private void AddDslDeployment(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
@@ -98,7 +101,6 @@ namespace Rhetos.Configuration.Autofac.Modules
 
         private void AddPersistence(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
-            builder.RegisterType<DataMigrationScriptsFromDisk>().As<IDataMigrationScriptsProvider>().As<IGenerator>().SingleInstance();
             builder.RegisterType<EntityFrameworkMappingGenerator>().As<IGenerator>();
             pluginRegistration.FindAndRegisterPlugins<IConceptMapping>(typeof(ConceptMapping<>));
 

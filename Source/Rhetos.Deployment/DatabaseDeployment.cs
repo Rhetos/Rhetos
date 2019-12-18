@@ -33,7 +33,7 @@ namespace Rhetos.Deployment
         private readonly ILogger _deployPackagesLogger;
         private readonly ISqlExecuter _sqlExecuter;
         private readonly DatabaseCleaner _databaseCleaner;
-        private readonly DataMigrationScripts _dataMigration;
+        private readonly DataMigrationScriptsExecuter _dataMigrationScriptsExecuter;
         private readonly IDatabaseGenerator _databaseGenerator;
         private readonly IDslScriptsProvider _dslScriptsLoader;
         private readonly IConceptDataMigrationExecuter _dataMigrationFromCodeExecuter;
@@ -42,7 +42,7 @@ namespace Rhetos.Deployment
             ILogProvider logProvider,
             ISqlExecuter sqlExecuter,
             DatabaseCleaner databaseCleaner,
-            DataMigrationScripts dataMigration,
+            DataMigrationScriptsExecuter dataMigrationScriptsExecuter,
             IDatabaseGenerator databaseGenerator,
             IDslScriptsProvider dslScriptsLoader,
             IConceptDataMigrationExecuter dataMigrationFromCodeExecuter)
@@ -50,7 +50,7 @@ namespace Rhetos.Deployment
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _sqlExecuter = sqlExecuter;
             _databaseCleaner = databaseCleaner;
-            _dataMigration = dataMigration;
+            _dataMigrationScriptsExecuter = dataMigrationScriptsExecuter;
             _databaseGenerator = databaseGenerator;
             _dslScriptsLoader = dslScriptsLoader;
             _dataMigrationFromCodeExecuter = dataMigrationFromCodeExecuter;
@@ -71,7 +71,7 @@ namespace Rhetos.Deployment
             _dataMigrationFromCodeExecuter.ExecuteBeforeDataMigrationScripts();
 
             _deployPackagesLogger.Trace("Executing data migration scripts.");
-            var dataMigrationReport = _dataMigration.Execute();
+            var dataMigrationReport = _dataMigrationScriptsExecuter.Execute();
 
             _dataMigrationFromCodeExecuter.ExecuteAfterDataMigrationScripts();
 
@@ -84,7 +84,7 @@ namespace Rhetos.Deployment
             {
                 try
                 {
-                    _dataMigration.Undo(dataMigrationReport.CreatedTags);
+                    _dataMigrationScriptsExecuter.Undo(dataMigrationReport.CreatedTags);
                 }
                 catch (Exception undoException)
                 {
