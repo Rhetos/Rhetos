@@ -35,10 +35,10 @@ namespace Rhetos
         /// <summary>
         /// Initializes a container with specified <see cref="IConfigurationProvider"/>. 
         /// Registers <see cref="IConfigurationProvider"/> instance to newly created container.
-        /// The assembly list is used for plugins search when using the <see cref="ContainerBuilderPluginRegistration"/>.
         /// <see cref="ILogProvider"/> is not registered and is meant to be used during the lifetime of registration and container building process.
         /// <see cref="LegacyUtilities"/> will also be initialized with the given configuration.
         /// </summary>
+        /// <param name="findAssemblies">The findAssemblies function should return a list of assembly paths that will be used for plugins search when using the <see cref="ContainerBuilderPluginRegistration"/></param>
         public RhetosContainerBuilder(IConfigurationProvider configurationProvider, ILogProvider logProvider, Func<List<string>> findAssemblies)
         {
             this.RegisterInstance(configurationProvider);

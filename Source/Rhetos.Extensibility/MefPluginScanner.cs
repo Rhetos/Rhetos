@@ -43,7 +43,7 @@ namespace Rhetos.Extensibility
         /// <summary>
         /// It searches for type implementations in the provided list of assemblies.
         /// </summary>
-        /// <param name="findAssemblies">It should return the list of assemblies that will be searched when invoking the method <see cref="MefPluginScanner.FindPlugins"/></param>
+        /// <param name="findAssemblies">The findAssemblies function should return a list of assembly paths that will be searched when invoking the method <see cref="MefPluginScanner.FindPlugins"/></param>
         public MefPluginScanner(Func<List<string>> findAssemblies, ILogProvider logProvider)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
