@@ -18,6 +18,8 @@
 */
 
 using Autofac;
+using Autofac.Features.Metadata;
+using Rhetos;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Logging;
 using Rhetos.Security;
@@ -75,11 +77,10 @@ namespace CommonConcepts.Test
 
         public static void SetUseDatabaseNullSemantics(this RhetosTestContainer container, bool useDatabaseNullSemantics)
         {
-            container.InitializeSession += builder => 
+            container.InitializeSession += builder =>
             {
-                var newRhetosAppOptions = builder.GetInitializationContext().ConfigurationProvider.GetOptions<RhetosAppOptions>();
-                newRhetosAppOptions.EntityFramework__UseDatabaseNullSemantics = useDatabaseNullSemantics;
-                builder.RegisterInstance(newRhetosAppOptions);
+                builder.RegisterInstance(
+                    new RhetosAppOptions { EntityFramework__UseDatabaseNullSemantics = useDatabaseNullSemantics });
             };
             Console.WriteLine($"{nameof(RhetosAppOptions)}.{nameof(RhetosAppOptions.EntityFramework__UseDatabaseNullSemantics)} = {useDatabaseNullSemantics}");
         }

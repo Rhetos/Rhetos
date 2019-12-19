@@ -29,7 +29,7 @@ using System.Collections.Generic;
 
 namespace Rhetos.Dom
 {
-    public class DomGenerator : IDomainObjectModel
+    public class DomGenerator : IGenerator
     {
         private readonly IPluginsContainer<IConceptCodeGenerator> _pluginRepository;
         private readonly ICodeGenerator _codeGenerator;
@@ -54,17 +54,9 @@ namespace Rhetos.Dom
             _assemblyGenerator = assemblyGenerator;
         }
 
-        public IEnumerable<Assembly> Assemblies
-        {
-            get
-            {
-                if (_assemblies == null)
-                    GenerateObjectModel();
-                return _assemblies;
-            }
-        }
+        public IEnumerable<string> Dependencies => Array.Empty<string>();
 
-        private void GenerateObjectModel()
+        public void Generate()
         {
             IAssemblySource assemblySource = _codeGenerator.ExecutePlugins(_pluginRepository, "/*", "*/", null);
             _log.GetLogger("Domain Object Model references").Trace(() => string.Join(", ", assemblySource.RegisteredReferences));

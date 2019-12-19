@@ -17,63 +17,34 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Newtonsoft.Json;
 using Rhetos.Extensibility;
-using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Rhetos.Deployment
 {
-    public class DataMigrationScriptsFromDisk : IDataMigrationScriptsProvider, IGenerator
+    public class DataMigrationScriptsGenerator : IGenerator
     {
-        const string DataMigrationScriptsFileName = "DataMigrationScripts.json";
         const string DataMigrationSubfolder = "DataMigration";
         const string DataMigrationSubfolderPrefix = DataMigrationSubfolder + @"\";
 
         protected readonly InstalledPackages _installedPackages;
         private readonly FilesUtility _filesUtility;
-        private readonly ILogger _performanceLogger;
-        private List<DataMigrationScript> _scripts;
-        private readonly AssetsOptions _assetsOptions;
+        private readonly DataMigrationScriptsFile _dataMigrationScriptsFile;
 
         public IEnumerable<string> Dependencies => new List<string>();
 
-        public DataMigrationScriptsFromDisk(InstalledPackages installedPackages,
+        public DataMigrationScriptsGenerator(InstalledPackages installedPackages,
             FilesUtility filesUtility,
-            AssetsOptions assetsOptions,
-            ILogProvider logProvider)
+            DataMigrationScriptsFile dataMigrationScriptsFile)
         {
             _installedPackages = installedPackages;
             _filesUtility = filesUtility;
-            _performanceLogger = logProvider.GetLogger("Performance");
-            _assetsOptions = assetsOptions;
-        }
-
-        /// <summary>
-        /// The scripts are sorted by the intended execution order,
-        /// respecting package dependencies and natural sort order by path.
-        /// </summary>
-        public List<DataMigrationScript> Load()
-        {
-            if (_scripts == null)
-            {
-                var stopwatch = Stopwatch.StartNew();
-                var dataMigrationScriptsFilePath = Path.Combine(_assetsOptions.AssetsFolder, DataMigrationScriptsFileName);
-                if (!File.Exists(dataMigrationScriptsFilePath))
-                    throw new FrameworkException($@"The file {dataMigrationScriptsFilePath} that is used to execute the data migration is missing.");
-                var serializedConcepts = File.ReadAllText(dataMigrationScriptsFilePath, Encoding.UTF8);
-                _scripts =  JsonConvert.DeserializeObject<List<DataMigrationScript>>(serializedConcepts);
-                _performanceLogger.Write(stopwatch, $@"DataMigrationScriptsFromDisk: Loaded {_scripts.Count} scripts from generated file.");
-            }
-
-            return _scripts;
+            _dataMigrationScriptsFile = dataMigrationScriptsFile;
         }
 
         public void Generate()
@@ -111,11 +82,7 @@ namespace Rhetos.Deployment
                     "Data migration scripts '{0}' and '{1}' have same tag '{2}' in their headers.",
                     badGroup.First().Path, badGroup.ElementAt(1).Path, badGroup.Key));
 
-            _scripts = allScripts;
-            var stopwatch = Stopwatch.StartNew();
-            string serializedMigrationScripts = JsonConvert.SerializeObject(_scripts, Formatting.Indented);
-            File.WriteAllText(Path.Combine(_assetsOptions.AssetsFolder, DataMigrationScriptsFileName), serializedMigrationScripts, Encoding.UTF8);
-            _performanceLogger.Write(stopwatch, $@"DataMigrationScriptsFromDisk: Saved {_scripts.Count} scripts to generated file.");
+            _dataMigrationScriptsFile.Save(new DataMigrationScripts { Scripts = allScripts });
         }
 
         protected static readonly Regex ScriptIdRegex = new Regex(@"^/\*DATAMIGRATION (.+)\*/");

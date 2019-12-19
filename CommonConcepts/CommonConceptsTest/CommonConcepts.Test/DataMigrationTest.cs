@@ -35,32 +35,24 @@ namespace CommonConcepts.Test
     [TestClass]
     public class DataMigrationTest
     {
-        class SimpleScriptsProvider : IDataMigrationScriptsProvider
+        private DataMigrationScripts DataMigrationScriptsFromScriptsDescription(string scriptsDescription)
         {
-            readonly List<DataMigrationScript> _scripts;
-
-            public SimpleScriptsProvider(string scriptsDescription)
-            {
-                _scripts = scriptsDescription.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s))
-                    .Select(s =>
-                    {
+            var scripts = scriptsDescription.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s))
+                .Select(s =>
+                {
                         // Tag is same as Path is not provided otherwise.
                         var tagPath = s.Contains(":") ? s.Split(':') : new[] { s, s };
 
-                        return new DataMigrationScript
-                        {
-                            Tag = tagPath[0],
-                            Path = tagPath[1] + ".sql",
-                            Content = "/*" + tagPath[0] + "*/\r\nPRINT " + SqlUtility.QuoteText(tagPath[1])
-                        };
-                    })
-                    .ToList();
-            }
+                    return new DataMigrationScript
+                    {
+                        Tag = tagPath[0],
+                        Path = tagPath[1] + ".sql",
+                        Content = "/*" + tagPath[0] + "*/\r\nPRINT " + SqlUtility.QuoteText(tagPath[1])
+                    };
+                })
+                .ToList();
 
-            public List<DataMigrationScript> Load()
-            {
-                return _scripts;
-            }
+            return new DataMigrationScripts { Scripts = scripts };
         }
 
         private List<string> TestExecuteDataMigrationScripts(string[] scriptsDescriptions, string expectedResult, bool skipScriptsWithWrongOrder = false)
@@ -77,9 +69,8 @@ namespace CommonConcepts.Test
 
                 foreach (string scriptsDescription in scriptsDescriptions)
                 {
-                    var scriptsProvider = new SimpleScriptsProvider(scriptsDescription);
                     var buildOptions = new BuildOptions() { DataMigration__SkipScriptsWithWrongOrder = skipScriptsWithWrongOrder };
-                    var dataMigration = new DataMigrationScripts(sqlExecuter, container.Resolve<ILogProvider>(), scriptsProvider, buildOptions, sqlBatches);
+                    var dataMigration = new DataMigrationScriptsExecuter(sqlExecuter, container.Resolve<ILogProvider>(), DataMigrationScriptsFromScriptsDescription(scriptsDescription), buildOptions, sqlBatches);
                     dataMigration.Execute();
                 }
 

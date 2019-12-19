@@ -17,12 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
+using System.IO;
 
 namespace Rhetos
 {
@@ -44,6 +44,21 @@ namespace Rhetos
             var connectionStringOptions = configurationProvider.GetOptions<ConnectionStringOptions>("ConnectionStrings:ServerConnectionString");
             var sqlOptions = configurationProvider.GetOptions<SqlOptions>();
             SqlUtility.Initialize(sqlOptions, connectionStringOptions);
+        }
+
+        public static Func<List<string>> GetListAssembliesDelegate()
+        {
+            return () =>
+            {
+                string[] pluginsPath = new[] { Paths.PluginsFolder, Paths.GeneratedFolder };
+
+                List<string> assemblies = new List<string>();
+                foreach (var path in pluginsPath)
+                    if (Directory.Exists(path))
+                        assemblies.AddRange(Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories));
+
+                return assemblies;
+            };
         }
 #pragma warning restore CS0618 // Type or member is obsolete
     }

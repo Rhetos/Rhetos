@@ -30,35 +30,25 @@ namespace Rhetos.Deployment
 {
     public class ApplicationGenerator
     {
+        private static readonly string DomGeneratorTypeName = "Rhetos.Dom.DomGenerator";
+
         private readonly ILogger _deployPackagesLogger;
         private readonly IDslModel _dslModel;
-        private readonly IDomainObjectModel _domGenerator;
         private readonly IPluginsContainer<IGenerator> _generatorsContainer;
 
         public ApplicationGenerator(
             ILogProvider logProvider,
             IDslModel dslModel,
-            IDomainObjectModel domGenerator,
             IPluginsContainer<IGenerator> generatorsContainer)
         {
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _dslModel = dslModel;
-            _domGenerator = domGenerator;
             _generatorsContainer = generatorsContainer;
         }
 
         public void ExecuteGenerators()
         {
             CheckDslModelErrors();
-
-            _deployPackagesLogger.Trace("Compiling DOM assembly.");
-            int generatedTypesCount = _domGenerator.GetTypes().Count();
-            if (generatedTypesCount == 0)
-            {
-                _deployPackagesLogger.Info("Warning: Empty assembly is generated.");
-            }
-            else
-                _deployPackagesLogger.Trace("Generated " + generatedTypesCount + " types.");
 
             var generators = GetSortedGenerators();
             foreach (var generator in generators)
@@ -88,6 +78,14 @@ namespace Rhetos.Deployment
 
             // Additional sorting by loosely-typed dependencies from the Dependencies property:
             var generatorNames = generators.Select(GetGeneratorName).ToList();
+
+            // For backward compatibility, DomGenerator is placed at the first position, because before Rhetos v4.0 the IGenerator plugins did not need to specify dependency to it.
+            var indexofDomgenerator = generatorNames.IndexOf(DomGeneratorTypeName);
+            if (indexofDomgenerator == -1)
+                throw new FrameworkException($@"Could not find Generator of type {DomGeneratorTypeName}");
+            generatorNames.RemoveAt(indexofDomgenerator);
+            generatorNames.Insert(0, DomGeneratorTypeName);
+
             var dependencies = generators.Where(gen => gen.Dependencies != null)
                 .SelectMany(gen => gen.Dependencies.Select(dependsOn => Tuple.Create(dependsOn, GetGeneratorName(gen))))
                 .ToList();
@@ -97,6 +95,7 @@ namespace Rhetos.Deployment
                 _deployPackagesLogger.Info($"Missing dependency '{missingDependency.Item1}' for application generator '{missingDependency.Item2}'.");
 
             Graph.SortByGivenOrder(generators, generatorNames, GetGeneratorName);
+
             return generators;
         }
 
