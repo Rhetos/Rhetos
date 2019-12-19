@@ -79,7 +79,7 @@ namespace Rhetos
 
             var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, LegacyUtilities.GetListAssembliesDelegate())
                 .AddRhetosBuild()
-                .AddPluginModules();
+                .AddPluginModules(overrideUserInfoPlugins: true);
 
             using (var container = builder.Build())
             {
@@ -98,7 +98,7 @@ namespace Rhetos
 
             var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, LegacyUtilities.GetListAssembliesDelegate())
                 .AddRhetosDbUpdate()
-                .AddPluginModules();
+                .AddPluginModules(overrideUserInfoPlugins: true);
 
             using (var container = builder.Build())
             {
@@ -119,7 +119,7 @@ namespace Rhetos
 
             var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, LegacyUtilities.GetListAssembliesDelegate())
                 .AddApplicationInitialization()
-                .AddPluginModules();
+                .AddPluginModules(overrideUserInfoPlugins: true);
 
             using (var container = builder.Build())
             {

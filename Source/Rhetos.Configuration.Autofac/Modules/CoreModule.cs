@@ -60,7 +60,6 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<AuthorizationManager>().As<IAuthorizationManager>().InstancePerLifetimeScope();
 
             // Default user authentication and authorization components. Custom plugins may override it by registering their own interface implementations.
-            builder.RegisterType<ProcessUserInfo>().As<IUserInfo>().PreserveExistingDefaults();
             builder.RegisterType<NullAuthorizationProvider>().As<IAuthorizationProvider>().PreserveExistingDefaults();
 
             // Cannot use FindAndRegisterPlugins on IUserInfo because each type should be manually registered with InstancePerLifetimeScope.

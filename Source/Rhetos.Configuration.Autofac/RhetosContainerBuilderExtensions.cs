@@ -45,9 +45,11 @@ namespace Rhetos
         public static RhetosContainerBuilder AddApplicationInitialization(this RhetosContainerBuilder builder)
         {
             builder.RegisterModule(new CoreModule());
-            builder.RegisterModule(new RuntimeModule());            
+            builder.RegisterModule(new RuntimeModule());
             builder.RegisterType<ApplicationInitialization>();
             builder.GetPluginRegistration().FindAndRegisterPlugins<IServerInitializer>();
+            
+
             return builder;
         }
 
@@ -61,9 +63,12 @@ namespace Rhetos
         /// <summary>
         /// Should be called after all explicitly specified registrations, to allow plugins to override components.
         /// </summary>
-        public static RhetosContainerBuilder AddPluginModules(this RhetosContainerBuilder builder)
+        /// <param name="overrideUserInfoPlugins">Overrides <see cref="IUserInfo"/> plugins with <see cref="ProcessUserInfo"/>.</param>
+        public static RhetosContainerBuilder AddPluginModules(this RhetosContainerBuilder builder, bool overrideUserInfoPlugins)
         {
             builder.GetPluginRegistration().FindAndRegisterModules();
+            if (overrideUserInfoPlugins)
+                builder.RegisterType<ProcessUserInfo>().As<IUserInfo>(); // Any IUserInfo plugins is the container is intended to be used in a simple process or unit tests.
             return builder;
         }
     }

@@ -80,7 +80,7 @@ namespace Rhetos
             var builder = new RhetosContainerBuilder(configurationProvider, new NLogProvider(), LegacyUtilities.GetListAssembliesDelegate());
             builder.AddRhetosRuntime(); // General registrations
             builder.RegisterModule<RhetosWcfAppModule>(); // Specific registrations
-            builder.AddPluginModules(); // Plugin modules
+            builder.AddPluginModules(overrideUserInfoPlugins: false); // Plugin modules
             return builder;
         }
 

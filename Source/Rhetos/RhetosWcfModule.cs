@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Rhetos.Extensibility;
 using Rhetos.Security;
 using Rhetos.Utilities;
 using System;
@@ -31,6 +32,7 @@ namespace Rhetos
     {
         protected override void Load(ContainerBuilder builder)
         {
+            Plugins.CheckOverride<IUserInfo, WcfWindowsUserInfo>(builder);
             builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
             builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
             builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
