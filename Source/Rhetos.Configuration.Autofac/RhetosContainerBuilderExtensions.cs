@@ -20,7 +20,6 @@
 using Autofac;
 using Rhetos.Configuration.Autofac.Modules;
 using Rhetos.Deployment;
-using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Security;
 using Rhetos.Utilities;
@@ -29,39 +28,37 @@ namespace Rhetos
 {
     public static class RhetosContainerBuilderExtensions
     {
-        public static RhetosContainerBuilder AddRhetosRuntime(this RhetosContainerBuilder builder)
-        {
-            builder.RegisterModule(new CoreModule());
-            builder.RegisterModule(new RuntimeModule());
-            builder.RegisterType<DslModelFile>().As<IDslModel>().SingleInstance();
-            builder.RegisterModule(new ExtensibilityModule());
-            return builder;
-        }
-
         public static RhetosContainerBuilder AddRhetosBuild(this RhetosContainerBuilder builder)
         {
-            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<BuildOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterModule(new CoreModule());
-            builder.RegisterModule(new DeployModule());
-            builder.RegisterType<DslModel>().As<IDslModel>().SingleInstance();
+            builder.RegisterModule(new BuildModule());
             builder.RegisterModule(new ExtensibilityModule());
             return builder;
         }
 
         public static RhetosContainerBuilder AddRhetosDbUpdate(this RhetosContainerBuilder builder)
         {
-            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<BuildOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterModule(new CoreModule());
-            builder.RegisterModule(new DeployModule());
-            builder.RegisterType<DslModelFile>().As<IDslModel>().SingleInstance();
+            builder.RegisterModule(new DbUpdateModule());
             builder.RegisterModule(new ExtensibilityModule());
             return builder;
         }
 
         public static RhetosContainerBuilder AddApplicationInitialization(this RhetosContainerBuilder builder)
         {
+            builder.RegisterModule(new CoreModule());
+            builder.RegisterModule(new RuntimeModule());            
             builder.RegisterType<ApplicationInitialization>();
             builder.GetPluginRegistration().FindAndRegisterPlugins<IServerInitializer>();
+            builder.RegisterModule(new ExtensibilityModule());
+            return builder;
+        }
+
+        public static RhetosContainerBuilder AddRhetosRuntime(this RhetosContainerBuilder builder)
+        {
+            builder.RegisterModule(new CoreModule());
+            builder.RegisterModule(new RuntimeModule());
+            builder.RegisterModule(new ExtensibilityModule());
             return builder;
         }
 

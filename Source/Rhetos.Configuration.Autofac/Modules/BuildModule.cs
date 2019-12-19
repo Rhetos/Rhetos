@@ -38,10 +38,12 @@ namespace Rhetos.Configuration.Autofac.Modules
     /// This module handles code generation and code compilation. 
     /// Requires refactoring to separate the two.
     /// </summary>
-    public class DeployModule : Module
+    public class BuildModule : Module
     {
         protected override void Load(ContainerBuilder builder)
         {
+            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<BuildOptions>()).SingleInstance().PreserveExistingDefaults();
+
             var pluginRegistration = builder.GetPluginRegistration();
 
             AddDatabaseGenerator(builder, pluginRegistration);
@@ -81,6 +83,8 @@ namespace Rhetos.Configuration.Autofac.Modules
 
         private void AddDslDeployment(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
+            builder.RegisterType<DslModel>().As<IDslModel>().SingleInstance();
+
             builder.RegisterType<DiskDslScriptLoader>().As<IDslScriptsProvider>().SingleInstance();
             builder.RegisterType<Tokenizer>().SingleInstance();
             builder.RegisterType<DslModelFile>().As<IDslModelFile>().SingleInstance();

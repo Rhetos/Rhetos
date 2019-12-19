@@ -19,16 +19,11 @@
 
 using Autofac;
 using Rhetos.Dom;
-using Rhetos.Extensibility;
+using Rhetos.Dsl;
 using Rhetos.Persistence;
 using Rhetos.Processing;
-using Rhetos.XmlSerialization;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Rhetos.Utilities;
+using Rhetos.XmlSerialization;
 
 namespace Rhetos.Configuration.Autofac.Modules
 {
@@ -41,6 +36,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<RhetosAppOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<DomLoader>().As<IDomainObjectModel>().SingleInstance();
             builder.RegisterType<PersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope();
+            builder.RegisterType<DslModelFile>().As<IDslModel>().SingleInstance();
 
             // Processing as group?
             builder.RegisterType<XmlDataTypeProvider>().As<IDataTypeProvider>().SingleInstance();

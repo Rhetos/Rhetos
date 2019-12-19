@@ -25,10 +25,7 @@ using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.Security;
 using Rhetos.Utilities;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Rhetos.Configuration.Autofac.Modules
 {

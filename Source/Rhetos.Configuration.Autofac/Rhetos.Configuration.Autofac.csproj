@@ -105,10 +105,11 @@
   <ItemGroup>
     <Compile Include="ApplicationDeployment.cs" />
     <Compile Include="ContainerBuilderExtensions.cs" />
+    <Compile Include="Modules\BuildModule.cs" />
     <Compile Include="RhetosContainerBuilderExtensions.cs" />
     <Compile Include="Modules\CoreModule.cs" />
     <Compile Include="Modules\RuntimeModule.cs" />
-    <Compile Include="Modules\DeployModule.cs" />
+    <Compile Include="Modules\DbUpdateModule.cs" />
     <Compile Include="RhetosContainerBuilder.cs" />
     <Compile Include="RhetosTestContainer.cs" />
     <Compile Include="Modules\ExtensibilityModule.cs" />

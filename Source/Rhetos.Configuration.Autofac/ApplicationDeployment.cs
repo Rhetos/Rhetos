@@ -119,7 +119,6 @@ namespace Rhetos
 
             var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, LegacyUtilities.GetListAssembliesDelegate())
                 .AddApplicationInitialization()
-                .AddRhetosRuntime()
                 .AddProcessUserOverride();
 
             using (var container = builder.Build())

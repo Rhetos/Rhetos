@@ -77,7 +77,6 @@ namespace DeployPackages.Test
         {
             var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider(), () => new List<string>())
                 .AddApplicationInitialization()
-                .AddRhetosRuntime()
                 .AddProcessUserOverride();
 
             using (var container = builder.Build())
