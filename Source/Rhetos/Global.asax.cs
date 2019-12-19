@@ -78,8 +78,9 @@ namespace Rhetos
         private ContainerBuilder CreateServerContainer(IConfigurationProvider configurationProvider)
         {
             var builder = new RhetosContainerBuilder(configurationProvider, new NLogProvider(), LegacyUtilities.GetListAssembliesDelegate());
-            builder.RegisterModule<RhetosWcfAppModule>();
             builder.AddRhetosRuntime(); // General registrations
+            builder.RegisterModule<RhetosWcfAppModule>(); // Specific registrations
+            builder.AddPluginModules(); // Plugin modules
             return builder;
         }
 

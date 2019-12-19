@@ -39,6 +39,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             AddSecurity(builder, pluginRegistration);
             AddUtilities(builder, pluginRegistration);
             AddDsl(builder, pluginRegistration);
+            AddExtensibility(builder);
 
             base.Load(builder);
         }
@@ -97,6 +98,13 @@ namespace Rhetos.Configuration.Autofac.Modules
             pluginRegistration.FindAndRegisterPlugins<IDslModelIndex>();
             builder.RegisterType<DslModelIndexByType>().As<IDslModelIndex>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos dlls.
             builder.RegisterType<DslModelIndexByReference>().As<IDslModelIndex>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos dlls.
+        }
+
+        private void AddExtensibility(ContainerBuilder builder)
+        {
+            builder.RegisterGeneric(typeof(PluginsMetadataCache<>)).SingleInstance();
+            builder.RegisterGeneric(typeof(PluginsContainer<>)).As(typeof(IPluginsContainer<>)).InstancePerLifetimeScope();
+            builder.RegisterGeneric(typeof(NamedPlugins<>)).As(typeof(INamedPlugins<>)).InstancePerLifetimeScope();
         }
     }
 }

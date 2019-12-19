@@ -48,13 +48,17 @@ namespace DeployPackages.Test
         public void CorrectRegistrationsBuildTime()
         {
             var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider(), ()=> new List<string>())
-                .AddRhetosBuild();
+                .AddRhetosBuild()
+                .AddPluginModules();
 
             using (var container = builder.Build())
             {
                 var registrationsDump = DumpSortedRegistrations(container);
                 System.Diagnostics.Trace.WriteLine(registrationsDump);
                 TestUtility.AssertAreEqualByLine(_expectedRegistrationsBuild, registrationsDump);
+
+                TestAmbiguousRegistations(container,
+                    expectedMultiplePlugins: new[] { "Rhetos.Dsl.IDslModelIndex", "Rhetos.Extensibility.IGenerator" });
             }
         }
 
@@ -62,13 +66,17 @@ namespace DeployPackages.Test
         public void CorrectRegistrationsDbUpdate()
         {
             var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider(), () => new List<string>())
-                .AddRhetosDbUpdate();
+                .AddRhetosDbUpdate()
+                .AddPluginModules();
 
             using (var container = builder.Build())
             {
                 var registrationsDump = DumpSortedRegistrations(container);
                 System.Diagnostics.Trace.WriteLine(registrationsDump);
                 TestUtility.AssertAreEqualByLine(_expectedRegistrationsDbUpdate, registrationsDump);
+
+                TestAmbiguousRegistations(container,
+                    expectedMultiplePlugins: new[] { "Rhetos.Dsl.IDslModelIndex", "Rhetos.Extensibility.IGenerator" });
             }
         }
 
@@ -76,13 +84,17 @@ namespace DeployPackages.Test
         public void CorrectRegistrationsRuntimeWithInitialization()
         {
             var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider(), () => new List<string>())
-                .AddApplicationInitialization();
+                .AddApplicationInitialization()
+                .AddPluginModules();
 
             using (var container = builder.Build())
             {
                 var registrationsDump = DumpSortedRegistrations(container);
                 System.Diagnostics.Trace.WriteLine(registrationsDump);
                 TestUtility.AssertAreEqualByLine(_expectedRegistrationsRuntimeWithInitialization, registrationsDump);
+
+                TestAmbiguousRegistations(container,
+                    expectedMultiplePlugins: new[] { "Rhetos.Dsl.IDslModelIndex" });
             }
         }
 
@@ -93,15 +105,19 @@ namespace DeployPackages.Test
         public void CorrectRegistrationsServerRuntime()
         {
             var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider(), () => new List<string>());
-            builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
             builder.AddRhetosRuntime();
+            builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
+            builder.AddPluginModules();
 
             using (var container = builder.Build())
             {
                 var registrationsDump = DumpSortedRegistrations(container);
                 System.Diagnostics.Trace.WriteLine(registrationsDump);
                 TestUtility.AssertAreEqualByLine(_expectedRegistrationsServerRuntime, registrationsDump);
-                Assert.AreEqual(typeof(WcfWindowsUserInfo), container.Resolve<IUserInfo>().GetType());
+
+                TestAmbiguousRegistations(container,
+                    expectedMultiplePlugins: new[] { "Rhetos.Dsl.IDslModelIndex" },
+                    expectedOverridenRegistrations: new Dictionary<Type, string> { { typeof(IUserInfo), "WcfWindowsUserInfo" } });
             }
         }
 
@@ -113,6 +129,46 @@ namespace DeployPackages.Test
                     .ToList();
 
             return string.Join(Environment.NewLine, registrations);
+        }
+
+        private void TestAmbiguousRegistations(IContainer container, IEnumerable<string> expectedMultiplePlugins = null, IDictionary<Type, string> expectedOverridenRegistrations = null)
+        {
+            expectedMultiplePlugins = expectedMultiplePlugins ?? Array.Empty<string>();
+            expectedOverridenRegistrations = expectedOverridenRegistrations ?? new Dictionary<Type, string> { };
+            var expectedOverridenServices = expectedOverridenRegistrations.Keys.Select(serviceType => serviceType.FullName).ToList();
+
+            var multipleActivatorsByService = container.ComponentRegistry.Registrations
+                .SelectMany(registation => registation.Services.Select(service => new { registation.Activator, Service = service }))
+                .GroupBy(registation => registation.Service.Description, registration => registration.Activator.LimitType.Name)
+                .Where(serviceActivators => serviceActivators.Count() > 1)
+                .ToDictionary(serviceActivators => serviceActivators.Key, serviceActivators => serviceActivators.ToList());
+
+            var errors = new List<string>();
+
+            errors.AddRange(expectedMultiplePlugins
+                .Except(multipleActivatorsByService.Keys)
+                .Select(service => $"Service '{service}' is expected to have multiple plugins."));
+
+            errors.AddRange(expectedOverridenServices
+                .Except(multipleActivatorsByService.Keys)
+                .Select(service => $"Service '{service}' is expected to have overridden registrations."));
+
+            errors.AddRange(multipleActivatorsByService.Keys
+                .Except(expectedMultiplePlugins)
+                .Except(expectedOverridenServices)
+                .Select(service => $"Service '{service}' has multiple registrations. Add {nameof(expectedMultiplePlugins)} or {nameof(expectedOverridenRegistrations)}." +
+                    string.Concat(multipleActivatorsByService[service].Select(a => $"\r\n- {a}"))));
+
+            foreach (var overridenService in expectedOverridenRegistrations)
+            {
+                string expectedActivator = overridenService.Value;
+                string actualActivator = container.Resolve(overridenService.Key).GetType().Name;
+                if (expectedActivator != actualActivator)
+                    errors.Add($"Service '{overridenService.Key.FullName}' has activator '{actualActivator}' instead of '{expectedActivator}'.");
+            }
+
+            if (errors.Any())
+                Assert.Fail(string.Join("\r\n", errors.Select((error, index) => $"{index + 1}. {error}")));
         }
 
         const string _expectedRegistrationsBuild =

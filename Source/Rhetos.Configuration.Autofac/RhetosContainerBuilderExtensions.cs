@@ -32,7 +32,6 @@ namespace Rhetos
         {
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new BuildModule());
-            builder.RegisterModule(new ExtensibilityModule());
             return builder;
         }
 
@@ -40,7 +39,6 @@ namespace Rhetos
         {
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new DbUpdateModule());
-            builder.RegisterModule(new ExtensibilityModule());
             return builder;
         }
 
@@ -50,7 +48,6 @@ namespace Rhetos
             builder.RegisterModule(new RuntimeModule());            
             builder.RegisterType<ApplicationInitialization>();
             builder.GetPluginRegistration().FindAndRegisterPlugins<IServerInitializer>();
-            builder.RegisterModule(new ExtensibilityModule());
             return builder;
         }
 
@@ -58,7 +55,15 @@ namespace Rhetos
         {
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new RuntimeModule());
-            builder.RegisterModule(new ExtensibilityModule());
+            return builder;
+        }
+
+        /// <summary>
+        /// Should be called after all explicitly specified registrations, to allow plugins to override components.
+        /// </summary>
+        public static RhetosContainerBuilder AddPluginModules(this RhetosContainerBuilder builder)
+        {
+            builder.GetPluginRegistration().FindAndRegisterModules();
             return builder;
         }
     }

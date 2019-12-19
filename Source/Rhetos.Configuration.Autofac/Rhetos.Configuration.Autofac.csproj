@@ -112,7 +112,6 @@
     <Compile Include="Modules\DbUpdateModule.cs" />
     <Compile Include="RhetosContainerBuilder.cs" />
     <Compile Include="RhetosTestContainer.cs" />
-    <Compile Include="Modules\ExtensibilityModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="..\Rhetos\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
