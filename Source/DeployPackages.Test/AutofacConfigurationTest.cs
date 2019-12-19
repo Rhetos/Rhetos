@@ -21,7 +21,9 @@ using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos;
 using Rhetos.Logging;
+using Rhetos.Security;
 using Rhetos.TestCommon;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,8 +48,7 @@ namespace DeployPackages.Test
         public void CorrectRegistrationsBuildTime()
         {
             var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider(), ()=> new List<string>())
-                .AddRhetosBuild()
-                .AddProcessUserOverride();
+                .AddRhetosBuild();
 
             using (var container = builder.Build())
             {
@@ -61,8 +62,7 @@ namespace DeployPackages.Test
         public void CorrectRegistrationsDbUpdate()
         {
             var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider(), () => new List<string>())
-                .AddRhetosDbUpdate()
-                .AddProcessUserOverride();
+                .AddRhetosDbUpdate();
 
             using (var container = builder.Build())
             {
@@ -76,8 +76,7 @@ namespace DeployPackages.Test
         public void CorrectRegistrationsRuntimeWithInitialization()
         {
             var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider(), () => new List<string>())
-                .AddApplicationInitialization()
-                .AddProcessUserOverride();
+                .AddApplicationInitialization();
 
             using (var container = builder.Build())
             {
@@ -93,14 +92,16 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsServerRuntime()
         {
-            var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider(), () => new List<string>())
-                .AddRhetosRuntime();
+            var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider(), () => new List<string>());
+            builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
+            builder.AddRhetosRuntime();
 
             using (var container = builder.Build())
             {
                 var registrationsDump = DumpSortedRegistrations(container);
                 System.Diagnostics.Trace.WriteLine(registrationsDump);
                 TestUtility.AssertAreEqualByLine(_expectedRegistrationsServerRuntime, registrationsDump);
+                Assert.AreEqual(typeof(WcfWindowsUserInfo), container.Resolve<IUserInfo>().GetType());
             }
         }
 
@@ -168,7 +169,6 @@ Activator = ProcessUserInfo (ReflectionActivator), Services = [Rhetos.Utilities.
 Activator = SecurityOptions (DelegateActivator), Services = [Rhetos.Utilities.SecurityOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = SqlTransactionBatches (ReflectionActivator), Services = [Rhetos.Utilities.SqlTransactionBatches], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = Tokenizer (ReflectionActivator), Services = [Rhetos.Dsl.Tokenizer], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
-Activator = WcfWindowsUserInfo (ReflectionActivator), Services = [Rhetos.Utilities.IUserInfo], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = WindowsSecurity (ReflectionActivator), Services = [Rhetos.Security.IWindowsSecurity], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = XmlUtility (ReflectionActivator), Services = [Rhetos.Utilities.XmlUtility], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope";
 
@@ -226,7 +226,6 @@ Activator = ProcessUserInfo (ReflectionActivator), Services = [Rhetos.Utilities.
 Activator = SecurityOptions (DelegateActivator), Services = [Rhetos.Utilities.SecurityOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = SqlTransactionBatches (ReflectionActivator), Services = [Rhetos.Utilities.SqlTransactionBatches], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = Tokenizer (ReflectionActivator), Services = [Rhetos.Dsl.Tokenizer], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
-Activator = WcfWindowsUserInfo (ReflectionActivator), Services = [Rhetos.Utilities.IUserInfo], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = WindowsSecurity (ReflectionActivator), Services = [Rhetos.Security.IWindowsSecurity], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = XmlUtility (ReflectionActivator), Services = [Rhetos.Utilities.XmlUtility], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope";
 
@@ -257,7 +256,6 @@ Activator = ProcessUserInfo (ReflectionActivator), Services = [Rhetos.Utilities.
 Activator = RhetosAppOptions (DelegateActivator), Services = [Rhetos.Utilities.RhetosAppOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = SecurityOptions (DelegateActivator), Services = [Rhetos.Utilities.SecurityOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = SqlTransactionBatches (ReflectionActivator), Services = [Rhetos.Utilities.SqlTransactionBatches], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
-Activator = WcfWindowsUserInfo (ReflectionActivator), Services = [Rhetos.Utilities.IUserInfo], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = WindowsSecurity (ReflectionActivator), Services = [Rhetos.Security.IWindowsSecurity], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = XmlDataTypeProvider (ReflectionActivator), Services = [Rhetos.Processing.IDataTypeProvider], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = XmlUtility (ReflectionActivator), Services = [Rhetos.Utilities.XmlUtility], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope";
@@ -284,6 +282,7 @@ Activator = NoLocalizer (ReflectionActivator), Services = [Rhetos.Utilities.ILoc
 Activator = NullAuthorizationProvider (ReflectionActivator), Services = [Rhetos.Security.IAuthorizationProvider], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = PersistenceTransaction (ReflectionActivator), Services = [Rhetos.Persistence.IPersistenceTransaction], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = ProcessingEngine (ReflectionActivator), Services = [Rhetos.Processing.IProcessingEngine], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
+Activator = ProcessUserInfo (ReflectionActivator), Services = [Rhetos.Utilities.IUserInfo], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = RhetosAppOptions (DelegateActivator), Services = [Rhetos.Utilities.RhetosAppOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = SecurityOptions (DelegateActivator), Services = [Rhetos.Utilities.SecurityOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = SqlTransactionBatches (ReflectionActivator), Services = [Rhetos.Utilities.SqlTransactionBatches], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope

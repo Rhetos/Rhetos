@@ -78,8 +78,7 @@ namespace Rhetos
             var stopwatch = Stopwatch.StartNew();
 
             var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, LegacyUtilities.GetListAssembliesDelegate())
-                .AddRhetosBuild()
-                .AddProcessUserOverride();
+                .AddRhetosBuild();
 
             using (var container = builder.Build())
             {
@@ -97,8 +96,7 @@ namespace Rhetos
             var stopwatch = Stopwatch.StartNew();
 
             var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, LegacyUtilities.GetListAssembliesDelegate())
-                .AddRhetosDbUpdate()
-                .AddProcessUserOverride();
+                .AddRhetosDbUpdate();
 
             using (var container = builder.Build())
             {
@@ -118,8 +116,7 @@ namespace Rhetos
             var stopwatch = Stopwatch.StartNew();
 
             var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, LegacyUtilities.GetListAssembliesDelegate())
-                .AddApplicationInitialization()
-                .AddProcessUserOverride();
+                .AddApplicationInitialization();
 
             using (var container = builder.Build())
             {

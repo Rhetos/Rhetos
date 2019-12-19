@@ -20,6 +20,8 @@
 using Autofac;
 using Autofac.Integration.Wcf;
 using Rhetos.Logging;
+using Rhetos.Security;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -76,14 +78,8 @@ namespace Rhetos
         private ContainerBuilder CreateServerContainer(IConfigurationProvider configurationProvider)
         {
             var builder = new RhetosContainerBuilder(configurationProvider, new NLogProvider(), LegacyUtilities.GetListAssembliesDelegate());
-
-            builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
-            builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
-            builder.GetPluginRegistration().FindAndRegisterPlugins<IService>();
-            builder.GetPluginRegistration().FindAndRegisterPlugins<IHomePageSnippet>();
-
-            // General registrations:
-            builder.AddRhetosRuntime();
+            builder.RegisterModule<RhetosWcfAppModule>();
+            builder.AddRhetosRuntime(); // General registrations
             return builder;
         }
 

@@ -61,14 +61,5 @@ namespace Rhetos
             builder.RegisterModule(new ExtensibilityModule());
             return builder;
         }
-
-        /// <summary>
-        /// No matter what authentication plugin is installed, deployment is run as the user that executed the process.
-        /// </summary>
-        public static RhetosContainerBuilder AddProcessUserOverride(this RhetosContainerBuilder builder)
-        {
-            builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
-            return builder;
-        }
     }
 }

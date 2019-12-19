@@ -159,7 +159,6 @@ namespace Rhetos.Configuration.Autofac
                 .AddRhetosRuntime();
 
             // Specific registrations override:
-            builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
             builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
 
             // Build the container:

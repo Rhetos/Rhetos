@@ -86,6 +86,10 @@
       <Project>{8C9F1C24-2D9C-420B-9787-3FCAD96C5B3E}</Project>
       <Name>Rhetos.Logging</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Security\Rhetos.Security.csproj">
+      <Project>{f3480d1e-1c20-448d-b2f6-133472ceeb93}</Project>
+      <Name>Rhetos.Security</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.TestCommon\Rhetos.TestCommon.csproj">
       <Project>{43ba178b-7642-473c-a43a-dbf58294635a}</Project>
       <Name>Rhetos.TestCommon</Name>
