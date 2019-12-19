@@ -1,5 +1,7 @@
 param([string]$version, [string]$prerelease)
 
+$ErrorActionPreference = 'Stop'
+
 If ($prerelease -eq 'auto')
 {
     $prerelease = ('dev'+(get-date -format 'yyMMddHHmm')+(git rev-parse --short HEAD)).Substring(0,20)
