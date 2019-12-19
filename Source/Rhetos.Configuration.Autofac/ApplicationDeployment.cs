@@ -65,9 +65,11 @@ namespace Rhetos
             var config = new DeploymentConfiguration(_logProvider);
             var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = ignoreDependencies };
             var packageDownloader = new PackageDownloader(config, _logProvider, packageDownloaderOptions);
-            var packages = packageDownloader.GetPackages();
-
-            new InstalledPackagesProvider(_logProvider).Save(packages);
+            var installedPackages = new InstalledPackages
+            {
+                Packages = packageDownloader.GetPackages()
+            };
+            new InstalledPackagesProvider(_logProvider).Save(installedPackages);
         }
 
         public void GenerateApplication()

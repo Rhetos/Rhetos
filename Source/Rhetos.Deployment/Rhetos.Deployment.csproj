@@ -82,7 +82,6 @@
     <Compile Include="DataMigrationScriptsFromDisk.cs" />
     <Compile Include="DeploymentConfiguration.cs" />
     <Compile Include="IDataMigrationScriptsProvider.cs" />
-    <Compile Include="InstalledPackages.cs" />
     <Compile Include="InstalledPackagesProvider.cs" />
     <Compile Include="LoggerForNuget.cs" />
     <Compile Include="PackageDownloaderOptions.cs" />

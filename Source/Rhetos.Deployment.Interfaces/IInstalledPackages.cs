@@ -22,6 +22,7 @@ using System.Collections.Generic;
 
 namespace Rhetos.Deployment
 {
+    [Obsolete("Use InstalledPackages class instead.")]
     public interface IInstalledPackages
     {
         /// <summary>

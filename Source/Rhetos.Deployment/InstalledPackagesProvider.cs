@@ -38,32 +38,30 @@ namespace Rhetos.Deployment
 
         private const string PackagesFileName = "InstalledPackages.json";
 
-        public IInstalledPackages Load()
+        public InstalledPackages Load()
         {
             string serialized = File.ReadAllText(Path.Combine(Paths.GeneratedFolder, PackagesFileName), Encoding.UTF8);
-            var packages = (IEnumerable<InstalledPackage>)JsonConvert.DeserializeObject(serialized, _serializerSettings);
+            var installedPackages = JsonConvert.DeserializeObject<InstalledPackages>(serialized, _serializerSettings);
 
             // Package folder is saved as relative path, to allow moving the deployed folder.
-            foreach (var package in packages)
+            foreach (var package in installedPackages.Packages)
                 package.SetAbsoluteFolderPath(Paths.RhetosServerRootPath);
 
-            foreach (var package in packages)
+            foreach (var package in installedPackages.Packages)
                 _logger.Trace(() => package.Report());
 
-            return new InstalledPackages(packages);
+            return installedPackages;
         }
 
-        public void Save(IEnumerable<InstalledPackage> packages)
+        public void Save(InstalledPackages installedPackages)
         {
-            CsUtility.Materialize(ref packages);
-
             // Package folder is saved as relative path, to allow moving the deployed folder.
-            foreach (var package in packages)
+            foreach (var package in installedPackages.Packages)
                 package.SetRelativeFolderPath(Paths.RhetosServerRootPath);
 
-            string serialized = JsonConvert.SerializeObject(packages, _serializerSettings);
+            string serialized = JsonConvert.SerializeObject(installedPackages, _serializerSettings);
 
-            foreach (var package in packages)
+            foreach (var package in installedPackages.Packages)
                 package.SetAbsoluteFolderPath(Paths.RhetosServerRootPath);
 
             File.WriteAllText(Path.Combine(Paths.GeneratedFolder, PackagesFileName), serialized, Encoding.UTF8);
@@ -73,7 +71,6 @@ namespace Rhetos.Deployment
         {
             PreserveReferencesHandling = PreserveReferencesHandling.All,
             ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-            TypeNameHandling = TypeNameHandling.All,
             Formatting = Formatting.Indented
         };
     }

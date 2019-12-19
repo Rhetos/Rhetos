@@ -23,13 +23,11 @@ namespace Rhetos.Deployment
 {
     public class InstalledPackages : IInstalledPackages
     {
-        private readonly IEnumerable<InstalledPackage> _packages;
+        /// <summary>
+        /// The packages are sorted by dependencies.
+        /// </summary>
+        public List<InstalledPackage> Packages;
 
-        public IEnumerable<InstalledPackage> Packages => _packages;
-
-        public InstalledPackages(IEnumerable<InstalledPackage> packages)
-        {
-            _packages = packages;
-        }
+        IEnumerable<InstalledPackage> IInstalledPackages.Packages => Packages;
     }
 }

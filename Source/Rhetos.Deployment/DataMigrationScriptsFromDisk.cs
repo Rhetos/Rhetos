@@ -37,7 +37,7 @@ namespace Rhetos.Deployment
         const string DataMigrationSubfolder = "DataMigration";
         const string DataMigrationSubfolderPrefix = DataMigrationSubfolder + @"\";
 
-        protected readonly IInstalledPackages _installedPackages;
+        protected readonly InstalledPackages _installedPackages;
         private readonly FilesUtility _filesUtility;
         private readonly ILogger _performanceLogger;
         private List<DataMigrationScript> _scripts;
@@ -45,7 +45,7 @@ namespace Rhetos.Deployment
 
         public IEnumerable<string> Dependencies => new List<string>();
 
-        public DataMigrationScriptsFromDisk(IInstalledPackages installedPackages,
+        public DataMigrationScriptsFromDisk(InstalledPackages installedPackages,
             FilesUtility filesUtility,
             AssetsOptions assetsOptions,
             ILogProvider logProvider)
