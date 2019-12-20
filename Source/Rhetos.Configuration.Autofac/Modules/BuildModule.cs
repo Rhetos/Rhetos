@@ -38,7 +38,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             var pluginRegistration = builder.GetPluginRegistration();
 
             AddDatabaseGenerator(builder, pluginRegistration);
-            AddDslDeployment(builder, pluginRegistration);
+            AddDsl(builder, pluginRegistration);
             AddDom(builder);
             AddPersistence(builder, pluginRegistration);
             AddCompiler(builder, pluginRegistration);
@@ -72,10 +72,9 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<ConceptDataMigrationGenerator>().As<IGenerator>();
         }
 
-        private void AddDslDeployment(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
+        private void AddDsl(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
             builder.RegisterType<DslModel>().As<IDslModel>().SingleInstance();
-
             builder.RegisterType<DiskDslScriptLoader>().As<IDslScriptsProvider>().SingleInstance();
             builder.RegisterType<Tokenizer>().SingleInstance();
             builder.RegisterType<DslModelFile>().As<IDslModelFile>().SingleInstance();
