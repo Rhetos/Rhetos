@@ -39,6 +39,7 @@
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -97,6 +98,10 @@
     <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj">
       <Project>{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}</Project>
       <Name>Rhetos.Utilities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos\Rhetos.csproj">
+      <Project>{f395c923-6001-478d-9eff-f28a51f62be4}</Project>
+      <Name>Rhetos</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

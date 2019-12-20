@@ -17,18 +17,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac;
-using Rhetos.Configuration.Autofac.Modules;
+using Rhetos.Utilities;
 
-namespace Rhetos
+namespace Rhetos.Deployment
 {
-    public static class RhetosContainerBuilderExtensions
+    public class ConnectionStringReport
     {
-        public static RhetosContainerBuilder AddRhetosRuntime(this RhetosContainerBuilder builder)
+        private const string _checkDboMembershipMsSql = "SELECT IS_MEMBER('db_owner')";
+
+        public static void ValidateDbConnection(ISqlExecuter sqlExecuter)
         {
-            builder.RegisterModule(new CoreModule());
-            builder.RegisterModule(new RuntimeModule());
-            return builder;
+            // This validation currently runs only on MS SQL databases.
+            if (SqlUtility.DatabaseLanguage == "MsSql")
+            {
+                bool isDbo = false;
+                sqlExecuter.ExecuteReader(_checkDboMembershipMsSql, reader =>
+                {
+                    if (!reader.IsDBNull(0) && ((int)reader[0] == 1)) isDbo = true;
+                });
+                if (!isDbo)
+                    throw (new FrameworkException("Current user does not have db_owner role for the database."));
+            }
         }
     }
 }

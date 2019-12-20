@@ -59,7 +59,7 @@ namespace Rhetos.Deployment
         public void UpdateDatabase()
         {
             _deployPackagesLogger.Trace("SQL connection: " + SqlUtility.SqlConnectionInfo(SqlUtility.ConnectionString));
-            ValidateDbConnection();
+            ConnectionStringReport.ValidateDbConnection(_sqlExecuter);
 
             _deployPackagesLogger.Trace("Preparing Rhetos database.");
             PrepareRhetosDatabase();
@@ -99,15 +99,6 @@ namespace Rhetos.Deployment
 
             _deployPackagesLogger.Trace("Uploading DSL scripts.");
             UploadDslScriptsToServer();
-        }
-
-        private void ValidateDbConnection()
-        {
-            var connectionReport = new ConnectionStringReport(_sqlExecuter);
-            if (!connectionReport.connectivity)
-                throw (connectionReport.exceptionRaised);
-            else if (!connectionReport.isDbo)
-                throw (new FrameworkException("Current user does not have db_owner role for the database."));
         }
 
         private void PrepareRhetosDatabase()

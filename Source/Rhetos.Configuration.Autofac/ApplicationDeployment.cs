@@ -19,11 +19,14 @@
 
 using Autofac;
 using Autofac.Core;
+using Rhetos.Configuration.Autofac.Modules;
 using Rhetos.Deployment;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
+using Rhetos.Security;
 using Rhetos.Utilities;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -35,14 +38,16 @@ namespace Rhetos
         private readonly ILogger _logger;
         private readonly IConfigurationProvider _configurationProvider;
         private readonly ILogProvider _logProvider;
+        private readonly Func<List<string>> _findAssemblies;
         private readonly RhetosAppOptions _rhetosAppOptions;
         private readonly FilesUtility _filesUtility;
 
-        public ApplicationDeployment(IConfigurationProvider configurationProvider, ILogProvider logProvider)
+        public ApplicationDeployment(IConfigurationProvider configurationProvider, ILogProvider logProvider, Func<List<string>> findAssemblies)
         {
             _logger = logProvider.GetLogger("DeployPackages");
             _configurationProvider = configurationProvider;
             _logProvider = logProvider;
+            _findAssemblies = findAssemblies;
             _filesUtility = new FilesUtility(logProvider);
             _rhetosAppOptions = configurationProvider.GetOptions<RhetosAppOptions>();
             LegacyUtilities.Initialize(configurationProvider);
@@ -77,9 +82,7 @@ namespace Rhetos
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, LegacyUtilities.GetListAssembliesDelegate())
-                .AddRhetosBuild()
-                .AddPluginModules(overrideUserInfoPlugins: true);
+            var builder = RegisterComponentsForBuild();
 
             using (var container = builder.Build())
             {
@@ -91,14 +94,22 @@ namespace Rhetos
             }
         }
 
+        internal RhetosContainerBuilder RegisterComponentsForBuild()
+        {
+            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _findAssemblies);
+            builder.RegisterModule(new CoreModule());
+            builder.RegisterModule(new BuildModule());
+            builder.GetPluginRegistration().FindAndRegisterPluginModules();
+            builder.RegisterType<NullUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container should not execute the application's business features.
+            return builder;
+        }
+
         public void UpdateDatabase()
         {
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, LegacyUtilities.GetListAssembliesDelegate())
-                .AddRhetosDbUpdate()
-                .AddPluginModules(overrideUserInfoPlugins: true);
+            var builder = RegisterComponentsForDbUpdate();
 
             using (var container = builder.Build())
             {
@@ -110,6 +121,16 @@ namespace Rhetos
             }
         }
 
+        internal RhetosContainerBuilder RegisterComponentsForDbUpdate()
+        {
+            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _findAssemblies);
+            builder.RegisterModule(new CoreModule());
+            builder.RegisterModule(new DbUpdateModule());
+            builder.GetPluginRegistration().FindAndRegisterPluginModules();
+            builder.RegisterType<NullUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container should not execute the application's business features.
+            return builder;
+        }
+
         public void InitializeGeneratedApplication()
         {
             // Creating a new container builder instead of using builder.Update(), because of severe performance issues with the Update method.
@@ -117,9 +138,7 @@ namespace Rhetos
             _logger.Trace("Loading generated plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, LegacyUtilities.GetListAssembliesDelegate())
-                .AddApplicationInitialization()
-                .AddPluginModules(overrideUserInfoPlugins: true);
+            var builder = RegisterComponentsForAppInitialization();
 
             using (var container = builder.Build())
             {
@@ -139,6 +158,18 @@ namespace Rhetos
                         ApplicationInitialization.ExecuteInitializer(container, initializer);
                 }
             }
+        }
+
+        internal RhetosContainerBuilder RegisterComponentsForAppInitialization()
+        {
+            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _findAssemblies);
+            builder.RegisterModule(new CoreModule());
+            builder.RegisterModule(new RuntimeModule());
+            builder.RegisterType<ApplicationInitialization>();
+            builder.GetPluginRegistration().FindAndRegisterPlugins<IServerInitializer>();
+            builder.GetPluginRegistration().FindAndRegisterPluginModules();
+            builder.RegisterType<ProcessUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container is intended to be used in a simple process.
+            return builder;
         }
 
         /// <summary>

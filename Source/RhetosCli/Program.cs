@@ -41,7 +41,7 @@ namespace Rhetos
 
                 var configurationProvider = BuildConfigurationProvider(args);
                 var rhetosAppOptions = configurationProvider.GetOptions<RhetosAppOptions>();
-                var deployment = new ApplicationDeployment(configurationProvider, logProvider);
+                var deployment = new ApplicationDeployment(configurationProvider, logProvider, LegacyUtilities.GetListAssembliesDelegate());
 
                 if (string.Compare(command, "restore", true) == 0)
                 {

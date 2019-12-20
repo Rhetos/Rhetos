@@ -61,7 +61,7 @@ namespace DeployPackages
                 if (deployOptions.StartPaused)
                     StartPaused();
 
-                var deployment = new ApplicationDeployment(configurationProvider, logProvider);
+                var deployment = new ApplicationDeployment(configurationProvider, logProvider, LegacyUtilities.GetListAssembliesDelegate());
                 if (!deployOptions.DatabaseOnly)
                 {
                     deployment.InitialCleanup();
