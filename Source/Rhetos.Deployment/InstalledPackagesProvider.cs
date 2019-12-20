@@ -40,7 +40,7 @@ namespace Rhetos.Deployment
 
         public InstalledPackages Load()
         {
-            string serialized = File.ReadAllText(Path.Combine(Paths.GeneratedFolder, PackagesFileName), Encoding.UTF8);
+            string serialized = File.ReadAllText(Path.Combine(Paths.PluginsFolder, PackagesFileName), Encoding.UTF8);
             var installedPackages = JsonConvert.DeserializeObject<InstalledPackages>(serialized, _serializerSettings);
 
             // Package folder is saved as relative path, to allow moving the deployed folder.
@@ -64,7 +64,7 @@ namespace Rhetos.Deployment
             foreach (var package in installedPackages.Packages)
                 package.SetAbsoluteFolderPath(Paths.RhetosServerRootPath);
 
-            File.WriteAllText(Path.Combine(Paths.GeneratedFolder, PackagesFileName), serialized, Encoding.UTF8);
+            File.WriteAllText(Path.Combine(Paths.PluginsFolder, PackagesFileName), serialized, Encoding.UTF8);
         }
 
         private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
