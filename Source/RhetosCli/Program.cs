@@ -54,7 +54,6 @@ namespace Rhetos
                     AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
                         Paths.BinFolder,
                         Paths.PluginsFolder);
-                    deployment.InitialCleanup();
                     deployment.GenerateApplication();
                 }
                 else if (string.Compare(command, "dbupdate", true) == 0)

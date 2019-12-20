@@ -64,7 +64,7 @@ namespace Rhetos.Deployment
         /// Downloads the packages from the provided sources, if not already downloaded.
         /// Unpacks the packages, if not already unpacked.
         /// </summary>
-        public List<InstalledPackage> GetPackages()
+        public InstalledPackages GetPackages()
         {
             var sw = Stopwatch.StartNew();
             var installedPackages = new List<InstalledPackage>();
@@ -102,7 +102,7 @@ namespace Rhetos.Deployment
 
             _performanceLogger.Write(sw, "PackageDownloader.GetPackages.");
 
-            return installedPackages;
+            return new InstalledPackages { Packages = installedPackages };
         }
 
         private static void SortByDependencies(List<InstalledPackage> installedPackages)

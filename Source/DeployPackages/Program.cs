@@ -64,7 +64,7 @@ namespace DeployPackages
                 var deployment = new ApplicationDeployment(configurationProvider, logProvider, LegacyUtilities.GetListAssembliesDelegate());
                 if (!deployOptions.DatabaseOnly)
                 {
-                    deployment.InitialCleanup();
+                    DeleteObsoleteFiles(logProvider, logger);
                     deployment.DownloadPackages(deployOptions.IgnoreDependencies);
                     deployment.GenerateApplication();
                 }
@@ -142,6 +142,38 @@ namespace DeployPackages
             Console.WriteLine("Command-line arguments:");
             foreach (var argument in _validArguments)
                 Console.WriteLine($"{argument.Key.PadRight(20)} {argument.Value}");
+        }
+
+        /// <summary>
+        /// Deletes left-over files from old versions of Rhetos framework.
+        /// Throws an exception if important data might be lost.
+        /// </summary>
+        private static void DeleteObsoleteFiles(ILogProvider logProvider, ILogger logger)
+        {
+            var filesUtility = new FilesUtility(logProvider);
+
+            var obsoleteFolders = new string[]
+            {
+                Path.Combine(Paths.RhetosServerRootPath, "DslScripts"),
+                Path.Combine(Paths.RhetosServerRootPath, "DataMigration")
+            };
+            var obsoleteFolder = obsoleteFolders.FirstOrDefault(folder => Directory.Exists(folder));
+            if (obsoleteFolder != null)
+                throw new UserException("Please backup all Rhetos server folders and delete obsolete folder '" + obsoleteFolder + "'. It is no longer used.");
+
+            var deleteObsoleteFiles = new string[]
+            {
+                Path.Combine(Paths.BinFolder, "ServerDom.cs"),
+                Path.Combine(Paths.BinFolder, "ServerDom.dll"),
+                Path.Combine(Paths.BinFolder, "ServerDom.pdb")
+            };
+
+            foreach (var path in deleteObsoleteFiles)
+                if (File.Exists(path))
+                {
+                    logger.Info($"Deleting obsolete file '{path}'.");
+                    filesUtility.SafeDeleteFile(path);
+                }
         }
 
         private static void InteractiveExceptionInfo(Exception e, bool pauseOnError)

@@ -53,32 +53,22 @@ namespace Rhetos
             LegacyUtilities.Initialize(configurationProvider);
         }
 
-        /// <summary>
-        /// Backup and delete generated files.
-        /// </summary>
-        public void InitialCleanup()
-        {
-            DeleteObsoleteFiles();
-            _logger.Trace("Moving old generated files to cache.");
-            new GeneratedFilesCache(_logProvider).MoveGeneratedFilesToCache();
-            _filesUtility.SafeCreateDirectory(Paths.GeneratedFolder);
-        }
-
         public void DownloadPackages(bool ignoreDependencies)
         {
             _logger.Trace("Getting packages.");
             var config = new DeploymentConfiguration(_logProvider);
             var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = ignoreDependencies };
             var packageDownloader = new PackageDownloader(config, _logProvider, packageDownloaderOptions);
-            var installedPackages = new InstalledPackages
-            {
-                Packages = packageDownloader.GetPackages()
-            };
+            var installedPackages = packageDownloader.GetPackages();
             new InstalledPackagesProvider(_logProvider).Save(installedPackages);
         }
 
         public void GenerateApplication()
         {
+            _logger.Trace("Moving old generated files to cache.");
+            new GeneratedFilesCache(_logProvider).MoveGeneratedFilesToCache();
+            _filesUtility.SafeCreateDirectory(Paths.GeneratedFolder);
+
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
@@ -169,36 +159,6 @@ namespace Rhetos
             builder.GetPluginRegistration().FindAndRegisterPluginModules();
             builder.RegisterType<ProcessUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container is intended to be used in a simple process.
             return builder;
-        }
-
-        /// <summary>
-        /// Deletes left-over files from old versions of Rhetos framework.
-        /// Throws an exception if important data might be lost.
-        /// </summary>
-        private void DeleteObsoleteFiles()
-        {
-            var obsoleteFolders = new string[]
-            {
-                Path.Combine(Paths.RhetosServerRootPath, "DslScripts"),
-                Path.Combine(Paths.RhetosServerRootPath, "DataMigration")
-            };
-            var obsoleteFolder = obsoleteFolders.FirstOrDefault(folder => Directory.Exists(folder));
-            if (obsoleteFolder != null)
-                throw new UserException("Please backup all Rhetos server folders and delete obsolete folder '" + obsoleteFolder + "'. It is no longer used.");
-
-            var deleteObsoleteFiles = new string[]
-            {
-                Path.Combine(_rhetosAppOptions.BinFolder, "ServerDom.cs"),
-                Path.Combine(_rhetosAppOptions.BinFolder, "ServerDom.dll"),
-                Path.Combine(_rhetosAppOptions.BinFolder, "ServerDom.pdb")
-            };
-
-            foreach (var path in deleteObsoleteFiles)
-                if (File.Exists(path))
-                {
-                    _logger.Info($"Deleting obsolete file '{path}'.");
-                    _filesUtility.SafeDeleteFile(path);
-                }
         }
 
         public static void PrintErrorSummary(Exception ex)
