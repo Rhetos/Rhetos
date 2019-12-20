@@ -34,10 +34,6 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Configuration.Autofac.Modules
 {
-    /// <summary>
-    /// This module handles code generation and code compilation. 
-    /// Requires refactoring to separate the two.
-    /// </summary>
     public class BuildModule : Module
     {
         protected override void Load(ContainerBuilder builder)

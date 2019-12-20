@@ -165,8 +165,7 @@ namespace Rhetos
             var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _findAssemblies);
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new RuntimeModule());
-            builder.RegisterType<ApplicationInitialization>();
-            builder.GetPluginRegistration().FindAndRegisterPlugins<IServerInitializer>();
+            builder.RegisterModule(new AppInitializeModule());
             builder.GetPluginRegistration().FindAndRegisterPluginModules();
             builder.RegisterType<ProcessUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container is intended to be used in a simple process.
             return builder;
