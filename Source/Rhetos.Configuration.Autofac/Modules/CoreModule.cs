@@ -23,7 +23,6 @@ using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Persistence;
-using Rhetos.Security;
 using Rhetos.Utilities;
 using System.Linq;
 
@@ -36,7 +35,6 @@ namespace Rhetos.Configuration.Autofac.Modules
             var pluginRegistration = builder.GetPluginRegistration();
 
             AddCommon(builder);
-            AddSecurity(builder, pluginRegistration);
             AddUtilities(builder, pluginRegistration);
             AddDsl(builder, pluginRegistration);
             AddExtensibility(builder);
@@ -52,28 +50,12 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<NLogProvider>().As<ILogProvider>().InstancePerLifetimeScope();
         }
 
-        private void AddSecurity(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
-        {
-            // TODO: SecurityOptions should probably not be required build container and possibly even for dbupgrade. Move to specific module registrations after refactor.
-            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<SecurityOptions>()).SingleInstance().PreserveExistingDefaults();
-            builder.RegisterType<WindowsSecurity>().As<IWindowsSecurity>().SingleInstance();
-            builder.RegisterType<AuthorizationManager>().As<IAuthorizationManager>().InstancePerLifetimeScope();
-
-            // Default user authentication and authorization components. Custom plugins may override it by registering their own interface implementations.
-            builder.RegisterType<NullAuthorizationProvider>().As<IAuthorizationProvider>().PreserveExistingDefaults();
-
-            // Cannot use FindAndRegisterPlugins on IUserInfo because each type should be manually registered with InstancePerLifetimeScope.
-            pluginRegistration.FindAndRegisterPlugins<IAuthorizationProvider>();
-            pluginRegistration.FindAndRegisterPlugins<IClaimProvider>();
-        }
-
         private void AddUtilities(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
             builder.RegisterType<XmlUtility>().SingleInstance();
             builder.RegisterType<FilesUtility>().SingleInstance();
-            builder.RegisterType<Rhetos.Utilities.Configuration>().As<Rhetos.Utilities.IConfiguration>().SingleInstance();
-            pluginRegistration.FindAndRegisterPlugins<ILocalizer>();
-            builder.RegisterType<NoLocalizer>().As<ILocalizer>().SingleInstance().PreserveExistingDefaults();
+            builder.RegisterType<Utilities.Configuration>().As<IConfiguration>().SingleInstance();
+
             builder.RegisterType<GeneratedFilesCache>().SingleInstance();
 
             var sqlImplementations = new[]
