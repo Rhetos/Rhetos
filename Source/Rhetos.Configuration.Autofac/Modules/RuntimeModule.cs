@@ -35,28 +35,20 @@ namespace Rhetos.Configuration.Autofac.Modules
         {
             var pluginRegistration = builder.GetPluginRegistration();
 
-            AddSecurity(builder, pluginRegistration);
-            AddUtilities(builder, pluginRegistration);
-
             builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<RhetosAppOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<DomLoader>().As<IDomainObjectModel>().SingleInstance();
             builder.RegisterType<PersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope();
             builder.RegisterType<DslModelFile>().As<IDslModel>().SingleInstance();
 
-            // Processing as group?
-            builder.RegisterType<XmlDataTypeProvider>().As<IDataTypeProvider>().SingleInstance();
-            builder.RegisterType<ProcessingEngine>().As<IProcessingEngine>();
-            pluginRegistration.FindAndRegisterPlugins<ICommandData>();
-            pluginRegistration.FindAndRegisterPlugins<ICommandImplementation>();
-            pluginRegistration.FindAndRegisterPlugins<ICommandObserver>();
-            pluginRegistration.FindAndRegisterPlugins<ICommandInfo>();
+            AddSecurity(builder, pluginRegistration);
+            AddUtilities(builder, pluginRegistration);
+            AddCommandsProcessing(builder, pluginRegistration);
 
             base.Load(builder);
         }
 
         private void AddSecurity(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
-            // TODO: SecurityOptions should probably not be required build container and possibly even for dbupgrade. Move to specific module registrations after refactor.
             builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<SecurityOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<WindowsSecurity>().As<IWindowsSecurity>().SingleInstance();
             builder.RegisterType<AuthorizationManager>().As<IAuthorizationManager>().InstancePerLifetimeScope();
@@ -73,6 +65,16 @@ namespace Rhetos.Configuration.Autofac.Modules
         {
             pluginRegistration.FindAndRegisterPlugins<ILocalizer>();
             builder.RegisterType<NoLocalizer>().As<ILocalizer>().SingleInstance().PreserveExistingDefaults();
+        }
+
+        private static void AddCommandsProcessing(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
+        {
+            builder.RegisterType<XmlDataTypeProvider>().As<IDataTypeProvider>().SingleInstance();
+            builder.RegisterType<ProcessingEngine>().As<IProcessingEngine>();
+            pluginRegistration.FindAndRegisterPlugins<ICommandData>();
+            pluginRegistration.FindAndRegisterPlugins<ICommandImplementation>();
+            pluginRegistration.FindAndRegisterPlugins<ICommandObserver>();
+            pluginRegistration.FindAndRegisterPlugins<ICommandInfo>();
         }
     }
 }
