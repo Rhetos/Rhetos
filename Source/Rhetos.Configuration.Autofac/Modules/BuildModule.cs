@@ -44,7 +44,6 @@ namespace Rhetos.Configuration.Autofac.Modules
             AddCompiler(builder, pluginRegistration);
 
             builder.RegisterType<ApplicationGenerator>();
-            builder.RegisterType<DatabaseDeployment>();
             pluginRegistration.FindAndRegisterPlugins<IGenerator>();
 
             base.Load(builder);

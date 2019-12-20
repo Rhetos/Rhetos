@@ -32,12 +32,8 @@ namespace Rhetos.Configuration.Autofac.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            var pluginRegistration = builder.GetPluginRegistration();
-
             AddCommon(builder);
-            AddUtilities(builder, pluginRegistration);
-            AddDsl(builder, pluginRegistration);
-            AddExtensibility(builder);
+            AddUtilities(builder);
 
             base.Load(builder);
         }
@@ -50,7 +46,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<NLogProvider>().As<ILogProvider>().InstancePerLifetimeScope();
         }
 
-        private void AddUtilities(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
+        private void AddUtilities(ContainerBuilder builder)
         {
             builder.RegisterType<XmlUtility>().SingleInstance();
             builder.RegisterType<FilesUtility>().SingleInstance();
@@ -71,21 +67,6 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType(sqlImplementation.SqlExecuter).As<ISqlExecuter>().InstancePerLifetimeScope();
             builder.RegisterType(sqlImplementation.SqlUtility).As<ISqlUtility>().InstancePerLifetimeScope();
             builder.RegisterType<SqlTransactionBatches>().InstancePerLifetimeScope();
-        }
-
-        private void AddDsl(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
-        {
-            builder.RegisterType<DslContainer>();
-            pluginRegistration.FindAndRegisterPlugins<IDslModelIndex>();
-            builder.RegisterType<DslModelIndexByType>().As<IDslModelIndex>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos dlls.
-            builder.RegisterType<DslModelIndexByReference>().As<IDslModelIndex>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos dlls.
-        }
-
-        private void AddExtensibility(ContainerBuilder builder)
-        {
-            builder.RegisterGeneric(typeof(PluginsMetadataCache<>)).SingleInstance();
-            builder.RegisterGeneric(typeof(PluginsContainer<>)).As(typeof(IPluginsContainer<>)).InstancePerLifetimeScope();
-            builder.RegisterGeneric(typeof(NamedPlugins<>)).As(typeof(INamedPlugins<>)).InstancePerLifetimeScope();
         }
     }
 }

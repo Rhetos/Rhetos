@@ -18,13 +18,8 @@
 */
 
 using Autofac;
-using Rhetos.Compiler;
 using Rhetos.DatabaseGenerator;
 using Rhetos.Deployment;
-using Rhetos.Dom;
-using Rhetos.Dsl;
-using Rhetos.Extensibility;
-using Rhetos.Persistence;
 using Rhetos.Utilities;
 
 namespace Rhetos.Configuration.Autofac.Modules
@@ -36,22 +31,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             // TOOD: Remove BuildOptions from DbUpdate.
             builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<BuildOptions>()).SingleInstance().PreserveExistingDefaults();
 
-            var pluginRegistration = builder.GetPluginRegistration();
-
-            AddDatabaseGenerator(builder, pluginRegistration);
-            AddDom(builder);
-            AddPersistence(builder, pluginRegistration);
-            AddCompiler(builder, pluginRegistration);
-
-            builder.RegisterType<ApplicationGenerator>();
             builder.RegisterType<DatabaseDeployment>();
-            pluginRegistration.FindAndRegisterPlugins<IGenerator>();
-
-            base.Load(builder);
-        }
-
-        private void AddDatabaseGenerator(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
-        {
             builder.RegisterType<DatabaseCleaner>();
 
             // Updating database from database model:
@@ -71,27 +51,8 @@ namespace Rhetos.Configuration.Autofac.Modules
             // Executing data migration from plugins:
 
             builder.RegisterType<ConceptDataMigrationExecuter>().As<IConceptDataMigrationExecuter>();
-        }
 
-        private void AddDom(ContainerBuilder builder)
-        {
-            builder.Register(context => new DomGeneratorOptions() { Debug = context.ResolveOptional<BuildOptions>()?.Debug ?? false }).SingleInstance();
-            builder.RegisterType<DomGenerator>().As<IGenerator>();
-        }
-
-        private void AddPersistence(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
-        {
-            builder.RegisterType<EntityFrameworkMappingGenerator>().As<IGenerator>();
-            pluginRegistration.FindAndRegisterPlugins<IConceptMapping>(typeof(ConceptMapping<>));
-
-        }
-
-        private void AddCompiler(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
-        {
-            builder.RegisterType<CodeBuilder>().As<ICodeBuilder>();
-            builder.RegisterType<Compiler.CodeGenerator>().As<ICodeGenerator>();
-            builder.RegisterType<AssemblyGenerator>().As<IAssemblyGenerator>();
-            pluginRegistration.FindAndRegisterPlugins<IConceptCodeGenerator>();
+            base.Load(builder);
         }
     }
 }

@@ -106,6 +106,7 @@
     <Compile Include="ApplicationDeployment.cs" />
     <Compile Include="ContainerBuilderExtensions.cs" />
     <Compile Include="Modules\BuildModule.cs" />
+    <Compile Include="Modules\CorePluginsModule.cs" />
     <Compile Include="Modules\CoreModule.cs" />
     <Compile Include="Modules\AppInitializeModule.cs" />
     <Compile Include="Modules\RuntimeModule.cs" />

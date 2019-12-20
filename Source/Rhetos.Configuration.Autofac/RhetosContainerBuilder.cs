@@ -59,6 +59,7 @@ namespace Rhetos
         public RhetosContainerBuilder AddRhetosRuntime()
         {
             this.RegisterModule(new CoreModule());
+            this.RegisterModule(new CorePluginsModule());
             this.RegisterModule(new RuntimeModule());
             return this;
         }
