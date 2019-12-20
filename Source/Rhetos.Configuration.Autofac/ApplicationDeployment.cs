@@ -38,11 +38,11 @@ namespace Rhetos
         private readonly ILogger _logger;
         private readonly IConfigurationProvider _configurationProvider;
         private readonly ILogProvider _logProvider;
-        private readonly Func<List<string>> _findAssemblies;
+        private readonly Func<IEnumerable<string>> _findAssemblies;
         private readonly RhetosAppOptions _rhetosAppOptions;
         private readonly FilesUtility _filesUtility;
 
-        public ApplicationDeployment(IConfigurationProvider configurationProvider, ILogProvider logProvider, Func<List<string>> findAssemblies)
+        public ApplicationDeployment(IConfigurationProvider configurationProvider, ILogProvider logProvider, Func<IEnumerable<string>> findAssemblies)
         {
             _logger = logProvider.GetLogger("DeployPackages");
             _configurationProvider = configurationProvider;

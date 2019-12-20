@@ -75,7 +75,7 @@ namespace Rhetos
             _performanceLogger.Write(stopwatch, "All services initialized.");
         }
 
-        internal static ContainerBuilder CreateServerContainer(IConfigurationProvider configurationProvider, ILogProvider logProvider, Func<List<string>> findAssemblies)
+        internal static ContainerBuilder CreateServerContainer(IConfigurationProvider configurationProvider, ILogProvider logProvider, Func<IEnumerable<string>> findAssemblies)
         {
             var builder = new RhetosContainerBuilder(configurationProvider, logProvider, findAssemblies);
             
