@@ -57,6 +57,7 @@ namespace Rhetos
                     if (Directory.Exists(path)) // Some paths don't exist in certain phases of build and deployment.
                         assemblies.AddRange(Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories));
 
+                assemblies.Sort();
                 return assemblies;
             };
         }

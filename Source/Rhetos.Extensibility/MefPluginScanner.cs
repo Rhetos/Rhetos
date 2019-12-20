@@ -85,7 +85,6 @@ namespace Rhetos.Extensibility
             var stopwatch = Stopwatch.StartNew();
 
             var assemblies = _findAssemblies().ToList();
-            assemblies.Sort();
 
             foreach (var assembly in assemblies)
                 if (!File.Exists(assembly))
