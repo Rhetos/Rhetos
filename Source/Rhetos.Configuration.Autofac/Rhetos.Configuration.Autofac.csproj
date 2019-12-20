@@ -106,7 +106,6 @@
     <Compile Include="ApplicationDeployment.cs" />
     <Compile Include="ContainerBuilderExtensions.cs" />
     <Compile Include="Modules\BuildModule.cs" />
-    <Compile Include="RhetosContainerBuilderExtensions.cs" />
     <Compile Include="Modules\CoreModule.cs" />
     <Compile Include="Modules\RuntimeModule.cs" />
     <Compile Include="Modules\DbUpdateModule.cs" />

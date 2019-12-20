@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Rhetos.Configuration.Autofac.Modules;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using System;
@@ -53,6 +54,13 @@ namespace Rhetos
             LegacyUtilities.Initialize(configurationProvider);
 
             Plugins.Initialize(builder => builder.GetPluginRegistration());
+        }
+
+        public RhetosContainerBuilder AddRhetosRuntime()
+        {
+            this.RegisterModule(new CoreModule());
+            this.RegisterModule(new RuntimeModule());
+            return this;
         }
     }
 }
