@@ -53,24 +53,25 @@ namespace Rhetos.Configuration.Autofac.Modules
 
         private void AddDatabaseGenerator(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
-            builder.RegisterType<DatabaseModelDependencies>();
-            builder.RegisterType<DatabaseModelBuilder>();
-            builder.RegisterType<DatabaseModelGenerator>().As<IGenerator>();
+            builder.RegisterType<DatabaseCleaner>();
+
+            // Updating database from database model:
+
             builder.RegisterType<DatabaseModelFile>();
             builder.Register(context => context.Resolve<DatabaseModelFile>().Load()).As<DatabaseModel>().SingleInstance();
             builder.RegisterType<ConceptApplicationRepository>().As<IConceptApplicationRepository>();
-            builder.RegisterType<DatabaseGenerator.DatabaseGenerator>().As<IDatabaseGenerator>();
-            builder.RegisterType<ConceptDataMigrationExecuter>().As<IConceptDataMigrationExecuter>();
             builder.Register(context => new DatabaseGeneratorOptions { ShortTransactions = context.Resolve<BuildOptions>().ShortTransactions }).SingleInstance();
-            pluginRegistration.FindAndRegisterPlugins<IConceptDatabaseDefinition>();
-            builder.RegisterType<NullImplementation>().As<IConceptDatabaseDefinition>();
-            pluginRegistration.FindAndRegisterPlugins<IConceptDataMigration>(typeof(IConceptDataMigration<>));
+            builder.RegisterType<DatabaseGenerator.DatabaseGenerator>().As<IDatabaseGenerator>();
+
+            // Executing data migration from SQL scripts:
+
             builder.RegisterType<DataMigrationScriptsFile>();
             builder.Register(context => context.Resolve<DataMigrationScriptsFile>().Load()).As<DataMigrationScripts>().SingleInstance();
             builder.RegisterType<DataMigrationScriptsExecuter>();
-            builder.RegisterType<DatabaseCleaner>();
-            builder.RegisterType<ConceptDataMigrationGenerator>().As<IGenerator>();
-            builder.RegisterType<DataMigrationScriptsGenerator>().As<IGenerator>();
+
+            // Executing data migration from plugins:
+
+            builder.RegisterType<ConceptDataMigrationExecuter>().As<IConceptDataMigrationExecuter>();
         }
 
         private void AddDslDeployment(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
