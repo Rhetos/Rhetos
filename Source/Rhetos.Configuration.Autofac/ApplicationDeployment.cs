@@ -39,7 +39,6 @@ namespace Rhetos
         private readonly IConfigurationProvider _configurationProvider;
         private readonly ILogProvider _logProvider;
         private readonly Func<IEnumerable<string>> _findAssemblies;
-        private readonly RhetosAppOptions _rhetosAppOptions;
         private readonly FilesUtility _filesUtility;
 
         public ApplicationDeployment(IConfigurationProvider configurationProvider, ILogProvider logProvider, Func<IEnumerable<string>> findAssemblies)
@@ -49,7 +48,6 @@ namespace Rhetos
             _logProvider = logProvider;
             _findAssemblies = findAssemblies;
             _filesUtility = new FilesUtility(logProvider);
-            _rhetosAppOptions = configurationProvider.GetOptions<RhetosAppOptions>();
             LegacyUtilities.Initialize(configurationProvider);
         }
 
@@ -63,6 +61,8 @@ namespace Rhetos
             new InstalledPackagesProvider(_logProvider).Save(installedPackages);
         }
 
+        //=====================================================================
+
         public void GenerateApplication()
         {
             _logger.Trace("Moving old generated files to cache.");
@@ -72,7 +72,7 @@ namespace Rhetos
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var builder = RegisterComponentsForBuild();
+            var builder = CreateBuildComponentsContainer();
 
             using (var container = builder.Build())
             {
@@ -84,7 +84,7 @@ namespace Rhetos
             }
         }
 
-        internal RhetosContainerBuilder RegisterComponentsForBuild()
+        internal RhetosContainerBuilder CreateBuildComponentsContainer()
         {
             var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _findAssemblies);
             builder.RegisterModule(new CoreModule());
@@ -95,12 +95,14 @@ namespace Rhetos
             return builder;
         }
 
+        //=====================================================================
+
         public void UpdateDatabase()
         {
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var builder = RegisterComponentsForDbUpdate();
+            var builder = CreateDbUpdateComponentsContainer();
 
             using (var container = builder.Build())
             {
@@ -112,7 +114,7 @@ namespace Rhetos
             }
         }
 
-        internal RhetosContainerBuilder RegisterComponentsForDbUpdate()
+        internal RhetosContainerBuilder CreateDbUpdateComponentsContainer()
         {
             var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _findAssemblies);
             builder.RegisterModule(new CoreModule());
@@ -122,6 +124,8 @@ namespace Rhetos
             return builder;
         }
 
+        //=====================================================================
+
         public void InitializeGeneratedApplication()
         {
             // Creating a new container builder instead of using builder.Update(), because of severe performance issues with the Update method.
@@ -129,7 +133,7 @@ namespace Rhetos
             _logger.Trace("Loading generated plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var builder = RegisterComponentsForAppInitialization();
+            var builder = CreateAppInitializationComponentsContainer();
 
             using (var container = builder.Build())
             {
@@ -151,7 +155,7 @@ namespace Rhetos
             }
         }
 
-        internal RhetosContainerBuilder RegisterComponentsForAppInitialization()
+        internal RhetosContainerBuilder CreateAppInitializationComponentsContainer()
         {
             var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _findAssemblies);
             builder.AddRhetosRuntime();
@@ -160,6 +164,8 @@ namespace Rhetos
             builder.RegisterType<ProcessUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container is intended to be used in a simple process.
             return builder;
         }
+
+        //=====================================================================
 
         public static void PrintErrorSummary(Exception ex)
         {

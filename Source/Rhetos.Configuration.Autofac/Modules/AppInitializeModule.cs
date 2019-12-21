@@ -27,7 +27,6 @@ namespace Rhetos.Configuration.Autofac.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<ApplicationInitialization>();
             builder.GetPluginRegistration().FindAndRegisterPlugins<IServerInitializer>();
             base.Load(builder);
         }

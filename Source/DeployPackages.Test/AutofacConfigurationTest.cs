@@ -52,7 +52,7 @@ namespace DeployPackages.Test
         public void CorrectRegistrationsBuildTime()
         {
             var deployment = new ApplicationDeployment(_configurationProvider, new NLogProvider(), PluginsFromThisAssembly);
-            var builder = deployment.RegisterComponentsForBuild();
+            var builder = deployment.CreateBuildComponentsContainer();
 
             using (var container = builder.Build())
             {
@@ -70,7 +70,7 @@ namespace DeployPackages.Test
         public void CorrectRegistrationsDbUpdate()
         {
             var deployment = new ApplicationDeployment(_configurationProvider, new NLogProvider(), PluginsFromThisAssembly);
-            var builder = deployment.RegisterComponentsForDbUpdate();
+            var builder = deployment.CreateDbUpdateComponentsContainer();
 
             using (var container = builder.Build())
             {
@@ -87,7 +87,7 @@ namespace DeployPackages.Test
         public void CorrectRegistrationsRuntimeWithInitialization()
         {
             var deployment = new ApplicationDeployment(_configurationProvider, new NLogProvider(), PluginsFromThisAssembly);
-            var builder = deployment.RegisterComponentsForAppInitialization();
+            var builder = deployment.CreateAppInitializationComponentsContainer();
 
             using (var container = builder.Build())
             {

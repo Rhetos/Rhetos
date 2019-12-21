@@ -30,7 +30,7 @@ namespace Rhetos.Deployment
 {
     public class ApplicationGenerator
     {
-        private static readonly string DomGeneratorTypeName = "Rhetos.Dom.DomGenerator";
+        private const string DomGeneratorTypeName = "Rhetos.Dom.DomGenerator";
 
         private readonly ILogger _deployPackagesLogger;
         private readonly IDslModel _dslModel;
