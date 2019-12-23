@@ -32,7 +32,7 @@ namespace Rhetos
         public static readonly string ConfigurationPathSeparator = ":";
         private readonly Dictionary<string, object> _configurationValues;
 
-        public ConfigurationProvider(Dictionary<string, object> configurationValues)
+        public ConfigurationProvider(IDictionary<string, object> configurationValues)
         {
             _configurationValues = configurationValues
                 .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.InvariantCultureIgnoreCase);
