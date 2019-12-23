@@ -37,8 +37,10 @@
     </Reference>
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -52,6 +54,8 @@
     </Compile>
     <Compile Include="AutofacConfigurationTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestWebSecurity.cs" />
+    <Compile Include="TestWebSecurityModule.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DeployPackages\DeployPackages.csproj">
@@ -86,6 +90,10 @@
       <Project>{8C9F1C24-2D9C-420B-9787-3FCAD96C5B3E}</Project>
       <Name>Rhetos.Logging</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Security\Rhetos.Security.csproj">
+      <Project>{f3480d1e-1c20-448d-b2f6-133472ceeb93}</Project>
+      <Name>Rhetos.Security</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.TestCommon\Rhetos.TestCommon.csproj">
       <Project>{43ba178b-7642-473c-a43a-dbf58294635a}</Project>
       <Name>Rhetos.TestCommon</Name>
@@ -93,6 +101,10 @@
     <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj">
       <Project>{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}</Project>
       <Name>Rhetos.Utilities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos\Rhetos.csproj">
+      <Project>{f395c923-6001-478d-9eff-f28a51f62be4}</Project>
+      <Name>Rhetos</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

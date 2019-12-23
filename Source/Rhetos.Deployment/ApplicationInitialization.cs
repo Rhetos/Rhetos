@@ -35,7 +35,7 @@ namespace Rhetos.Deployment
     /// This class does not conform to the standard IoC design pattern.
     /// It uses IoC container directly because it needs to handle a special scope control (separate database connections) and error handling.
     /// </summary>
-    public class ApplicationInitialization
+    public static class ApplicationInitialization
     {
         public static IEnumerable<Type> GetSortedInitializers(IContainer container)
         {
@@ -44,7 +44,7 @@ namespace Rhetos.Deployment
 
             // Additional sorting by loosely-typed dependencies from the Dependencies property:
             var initNames = initializers.Select(init => init.GetType().FullName).ToList();
-            var initDependencies = initializers.SelectMany(init => (init.Dependencies ?? new string[0]).Select(x => Tuple.Create(x, init.GetType().FullName)));
+            var initDependencies = initializers.SelectMany(init => (init.Dependencies ?? Array.Empty<string>()).Select(x => Tuple.Create(x, init.GetType().FullName)));
             Graph.TopologicalSort(initNames, initDependencies);
 
             var sortedInitializers = initializers.ToArray();

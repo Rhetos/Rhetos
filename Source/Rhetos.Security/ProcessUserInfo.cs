@@ -26,15 +26,13 @@ namespace Rhetos.Security
     /// <summary>
     /// Used for Rhetos system utilities (DeployPackages.exe, e.g.) when web authentication is not applicable.
     /// </summary>
-    public class ProcessUserInfo : IUserInfoAdmin
+    public class ProcessUserInfo : IUserInfo
     {
         private readonly Lazy<WindowsIdentity> _currentUser;
-        private readonly IWindowsSecurity _windowsSecurity;
 
-        public ProcessUserInfo(IWindowsSecurity windowsSecurity)
+        public ProcessUserInfo()
         {
             _currentUser = new Lazy<WindowsIdentity>(() => WindowsIdentity.GetCurrent());
-            _windowsSecurity = windowsSecurity;
         }
 
         #region IUserInfoAdmin interface implementation
@@ -53,8 +51,6 @@ namespace Rhetos.Security
         }
 
         public string Report() => UserName + "," + Workstation;
-
-        public bool IsBuiltInAdministrator => IsUserRecognized && _windowsSecurity.IsBuiltInAdministrator(_currentUser.Value);
 
         #endregion
 

@@ -20,6 +20,8 @@
 using Autofac;
 using Autofac.Integration.Wcf;
 using Rhetos.Logging;
+using Rhetos.Security;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -44,7 +46,7 @@ namespace Rhetos
                 .AddRhetosAppConfiguration(AppDomain.CurrentDomain.BaseDirectory)
                 .Build();
 
-            var builder = CreateServerContainer(configurationProvider);
+            var builder = CreateServerContainer(configurationProvider, new NLogProvider(), LegacyUtilities.GetListAssembliesDelegate());
             AutofacServiceHostFactory.Container = builder.Build();
 
             var logProvider = AutofacServiceHostFactory.Container.Resolve<ILogProvider>();
@@ -73,17 +75,22 @@ namespace Rhetos
             _performanceLogger.Write(stopwatch, "All services initialized.");
         }
 
-        private ContainerBuilder CreateServerContainer(IConfigurationProvider configurationProvider)
+        internal static ContainerBuilder CreateServerContainer(IConfigurationProvider configurationProvider, ILogProvider logProvider, Func<IEnumerable<string>> findAssemblies)
         {
-            var builder = new RhetosContainerBuilder(configurationProvider, new NLogProvider(), LegacyUtilities.GetListAssembliesDelegate());
+            var builder = new RhetosContainerBuilder(configurationProvider, logProvider, findAssemblies);
+            
+            // General registrations
+            builder.AddRhetosRuntime();
 
+            // Specific registrations
+            builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
             builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
             builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
             builder.GetPluginRegistration().FindAndRegisterPlugins<IService>();
             builder.GetPluginRegistration().FindAndRegisterPlugins<IHomePageSnippet>();
 
-            // General registrations:
-            builder.AddRhetosRuntime();
+            // Plugin modules
+            builder.GetPluginRegistration().FindAndRegisterPluginModules();
             return builder;
         }
 

@@ -84,9 +84,11 @@ namespace Rhetos.Deployment.Test
 
                 var dataTable = options.First(o => command.Contains(o.Key)).Value;
 
-                var reader = new DataTableReader(dataTable);
-                while (reader.Read())
-                    action(reader);
+                using (var reader = new DataTableReader(dataTable))
+                {
+                    while (reader.Read())
+                        action(reader);
+                }
             }
 
             Regex DropColumn = new Regex(@"^ALTER TABLE \[(\w+)\].\[(\w+)\] DROP COLUMN \[(\w+)\]$");

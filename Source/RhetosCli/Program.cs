@@ -41,7 +41,7 @@ namespace Rhetos
 
                 var configurationProvider = BuildConfigurationProvider(args);
                 var rhetosAppOptions = configurationProvider.GetOptions<RhetosAppOptions>();
-                var deployment = new ApplicationDeployment(configurationProvider, logProvider);
+                var deployment = new ApplicationDeployment(configurationProvider, logProvider, LegacyUtilities.GetListAssembliesDelegate());
 
                 if (string.Compare(command, "restore", true) == 0)
                 {
@@ -54,7 +54,6 @@ namespace Rhetos
                     AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
                         Paths.BinFolder,
                         Paths.PluginsFolder);
-                    deployment.InitialCleanup();
                     deployment.GenerateApplication();
                 }
                 else if (string.Compare(command, "dbupdate", true) == 0)

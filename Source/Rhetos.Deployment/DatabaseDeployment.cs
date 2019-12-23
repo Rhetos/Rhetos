@@ -35,7 +35,6 @@ namespace Rhetos.Deployment
         private readonly DatabaseCleaner _databaseCleaner;
         private readonly DataMigrationScriptsExecuter _dataMigrationScriptsExecuter;
         private readonly IDatabaseGenerator _databaseGenerator;
-        private readonly IDslScriptsProvider _dslScriptsLoader;
         private readonly IConceptDataMigrationExecuter _dataMigrationFromCodeExecuter;
 
         public DatabaseDeployment(
@@ -44,7 +43,6 @@ namespace Rhetos.Deployment
             DatabaseCleaner databaseCleaner,
             DataMigrationScriptsExecuter dataMigrationScriptsExecuter,
             IDatabaseGenerator databaseGenerator,
-            IDslScriptsProvider dslScriptsLoader,
             IConceptDataMigrationExecuter dataMigrationFromCodeExecuter)
         {
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
@@ -52,14 +50,13 @@ namespace Rhetos.Deployment
             _databaseCleaner = databaseCleaner;
             _dataMigrationScriptsExecuter = dataMigrationScriptsExecuter;
             _databaseGenerator = databaseGenerator;
-            _dslScriptsLoader = dslScriptsLoader;
             _dataMigrationFromCodeExecuter = dataMigrationFromCodeExecuter;
         }
 
         public void UpdateDatabase()
         {
             _deployPackagesLogger.Trace("SQL connection: " + SqlUtility.SqlConnectionInfo(SqlUtility.ConnectionString));
-            ValidateDbConnection();
+            ConnectionStringReport.ValidateDbConnection(_sqlExecuter);
 
             _deployPackagesLogger.Trace("Preparing Rhetos database.");
             PrepareRhetosDatabase();
@@ -96,18 +93,6 @@ namespace Rhetos.Deployment
             _deployPackagesLogger.Trace("Deleting redundant migration data.");
             _databaseCleaner.RemoveRedundantMigrationColumns();
             _databaseCleaner.RefreshDataMigrationRows();
-
-            _deployPackagesLogger.Trace("Uploading DSL scripts.");
-            UploadDslScriptsToServer();
-        }
-
-        private void ValidateDbConnection()
-        {
-            var connectionReport = new ConnectionStringReport(_sqlExecuter);
-            if (!connectionReport.connectivity)
-                throw (connectionReport.exceptionRaised);
-            else if (!connectionReport.isDbo)
-                throw (new FrameworkException("Current user does not have db_owner role for the database."));
         }
 
         private void PrepareRhetosDatabase()
@@ -120,22 +105,6 @@ namespace Rhetos.Deployment
 
             var sqlScripts = SqlUtility.SplitBatches(sql);
             _sqlExecuter.ExecuteSql(sqlScripts);
-        }
-
-        private void UploadDslScriptsToServer()
-        {
-            var sql = new List<string>();
-
-            sql.Add(Sql.Get("DslScriptManager_Delete"));
-
-            sql.AddRange(_dslScriptsLoader.DslScripts.Select(dslScript => Sql.Format(
-                "DslScriptManager_Insert",
-                SqlUtility.QuoteText(dslScript.Name),
-                SqlUtility.QuoteText(dslScript.Script))));
-
-            _sqlExecuter.ExecuteSql(sql);
-
-            _deployPackagesLogger.Trace("Uploaded " + _dslScriptsLoader.DslScripts.Count() + " DSL scripts to database.");
         }
     }
 }

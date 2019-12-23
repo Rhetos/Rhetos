@@ -18,24 +18,23 @@
 */
 
 using Autofac;
-using Rhetos.Extensibility;
-using System.Diagnostics.Contracts;
+using Rhetos.Security;
+using Rhetos.Utilities;
+using System.ComponentModel.Composition;
 
-namespace Rhetos.Configuration.Autofac.Modules
+namespace DeployPackages.Test
 {
-    public class ExtensibilityModule : Module
+    [Export(typeof(Module))]
+    public class TestWebSecurityModule : Module
     {
         protected override void Load(ContainerBuilder builder)
         {
-            Contract.Requires(builder != null);
+            // CheckOverride is implemented here as a legacy feature:
+            // WcfWindowsUserInfo is correctly expected here for runtime registration, but this plugin module is also
+            // registered at build-time, so this specific CheckOverride should be ignored by Rhetos framework at build time.
+            builder.GetPluginRegistration().CheckOverride<IUserInfo, TestWebSecurityUserInfo>(typeof(WcfWindowsUserInfo));
 
-            var pluginRegistration = builder.GetPluginRegistration();
-
-            builder.RegisterGeneric(typeof(PluginsMetadataCache<>)).SingleInstance();
-            builder.RegisterGeneric(typeof(PluginsContainer<>)).As(typeof(IPluginsContainer<>)).InstancePerLifetimeScope();
-            builder.RegisterGeneric(typeof(NamedPlugins<>)).As(typeof(INamedPlugins<>)).InstancePerLifetimeScope();
-            pluginRegistration.FindAndRegisterModules();
-
+            builder.RegisterType<TestWebSecurityUserInfo>().As<IUserInfo>();
             base.Load(builder);
         }
     }

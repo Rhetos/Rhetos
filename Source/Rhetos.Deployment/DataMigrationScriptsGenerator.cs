@@ -27,6 +27,9 @@ using System.Text.RegularExpressions;
 
 namespace Rhetos.Deployment
 {
+    /// <summary>
+    /// Generates data migration script from provided SQL scripts.
+    /// </summary>
     public class DataMigrationScriptsGenerator : IGenerator
     {
         const string DataMigrationSubfolder = "DataMigration";

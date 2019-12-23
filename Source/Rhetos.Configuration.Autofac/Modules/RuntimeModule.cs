@@ -19,16 +19,13 @@
 
 using Autofac;
 using Rhetos.Dom;
+using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Persistence;
 using Rhetos.Processing;
-using Rhetos.XmlSerialization;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Rhetos.Security;
 using Rhetos.Utilities;
+using Rhetos.XmlSerialization;
 
 namespace Rhetos.Configuration.Autofac.Modules
 {
@@ -41,16 +38,43 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<RhetosAppOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<DomLoader>().As<IDomainObjectModel>().SingleInstance();
             builder.RegisterType<PersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope();
+            builder.RegisterType<DslModelFile>().As<IDslModel>().SingleInstance();
 
-            // Processing as group?
+            AddSecurity(builder, pluginRegistration);
+            AddUtilities(builder, pluginRegistration);
+            AddCommandsProcessing(builder, pluginRegistration);
+
+            base.Load(builder);
+        }
+
+        private void AddSecurity(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
+        {
+            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<SecurityOptions>()).SingleInstance().PreserveExistingDefaults();
+            builder.RegisterType<WindowsSecurity>().As<IWindowsSecurity>().SingleInstance();
+            builder.RegisterType<AuthorizationManager>().As<IAuthorizationManager>().InstancePerLifetimeScope();
+
+            // Default user authentication and authorization components. Custom plugins may override it by registering their own interface implementations.
+            builder.RegisterType<NullAuthorizationProvider>().As<IAuthorizationProvider>().PreserveExistingDefaults();
+
+            // Cannot use FindAndRegisterPlugins on IUserInfo because each type should be manually registered with InstancePerLifetimeScope.
+            pluginRegistration.FindAndRegisterPlugins<IAuthorizationProvider>();
+            pluginRegistration.FindAndRegisterPlugins<IClaimProvider>();
+        }
+
+        private void AddUtilities(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
+        {
+            pluginRegistration.FindAndRegisterPlugins<ILocalizer>();
+            builder.RegisterType<NoLocalizer>().As<ILocalizer>().SingleInstance().PreserveExistingDefaults();
+        }
+
+        private static void AddCommandsProcessing(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
+        {
             builder.RegisterType<XmlDataTypeProvider>().As<IDataTypeProvider>().SingleInstance();
             builder.RegisterType<ProcessingEngine>().As<IProcessingEngine>();
             pluginRegistration.FindAndRegisterPlugins<ICommandData>();
             pluginRegistration.FindAndRegisterPlugins<ICommandImplementation>();
             pluginRegistration.FindAndRegisterPlugins<ICommandObserver>();
             pluginRegistration.FindAndRegisterPlugins<ICommandInfo>();
-
-            base.Load(builder);
         }
     }
 }

@@ -37,7 +37,7 @@ namespace Rhetos.Extensibility
         {
             ThrowIfNotInitialized();
             _pluginRegistrationFactory(builder)
-                .FindAndRegisterModules();
+                .FindAndRegisterPluginModules();
         }
 
         public static void FindAndRegisterPlugins<TPluginInterface>(ContainerBuilder builder)

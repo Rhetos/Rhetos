@@ -53,7 +53,7 @@ namespace Rhetos.Extensibility
         /// <summary>
         /// Find and registers Autofac modules that are implemented as plugins.
         /// </summary>
-        public void FindAndRegisterModules()
+        public void FindAndRegisterPluginModules()
         {
             var modules = _pluginScanner.FindPlugins(typeof(Module));
 
@@ -110,6 +110,14 @@ namespace Rhetos.Extensibility
 
                 var missingRegistration = expectedPreviousPlugins.Except(existingRegistrations).ToList();
                 var excessRegistration = existingRegistrations.Except(expectedPreviousPlugins).ToList();
+
+                // Backward compatibility for old plugins: Old command-line utilities and unit tests might expect
+                // to override WcfWindowsUserInfo, but it is no longer used in that context.
+                var ignoredMissing = missingRegistration.RemoveAll(registation => registation.FullName == "Rhetos.Security.WcfWindowsUserInfo");
+                if (ignoredMissing > 0)
+                    _logger.Trace($"Expecting WcfWindowsUserInfo registered while overriding '{typeof(TInterface).Name}'" +
+                        $" with '{typeof(TImplementation).FullName}'. Error is ignored for backward compatibility," +
+                        $" WcfWindowsUserInfo is no longer used in context of command-line utilities or unit tests.");
 
                 if (missingRegistration.Count > 0 || excessRegistration.Count > 0)
                 {

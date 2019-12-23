@@ -227,7 +227,8 @@
 
 ### Breaking changes
 
-* *ServerDom.dll* moved from bin to bin\Generated and split to the following files: ServerDom.Repositories.dll, ServerDom.Model.dll, ServerDom.Orm.dll.
+* *ServerDom.dll* moved from `bin` to `bin\Generated` and split to the following files: ServerDom.Repositories.dll, ServerDom.Model.dll, ServerDom.Orm.dll.
+  * Please **delete** any remaining ServerDom.* files from the bin folder.
 * When using **AllProperties** concept on **ComputedFrom** or **Persisted**, it is no longer allowed to override the target property name for the computed properties. Use an explicit property mapping instead.
 
 ### New features
@@ -624,6 +625,8 @@
 * `CreatePackage.exe` tool is deleted. New Rhetos packages should be packed by [NuGet](https://www.nuget.org/).
 * `DeployPackages.exe` reads the package list from *RhetosPackages.config* and *RhetosPackageSources.config*.
   Empty prototypes of those files are created on first deploy.
+* `DeployPackages.exe` will no longer read source files from `DslScripts` and `DataMigration` subfolders in the Rhetos server application (e.g. `RhetosServer\DslScripts`).
+  * Please **backup** all Rhetos server folders and **delete** obsolete subfolders `DslScripts` and `DataMigration`.
 * **FilterByReferenced** will yield syntax error if the referenced filter name does not match exactly.
   In previous versions, a different filter name was allowed by optional namespace.
 

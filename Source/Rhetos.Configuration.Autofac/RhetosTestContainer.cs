@@ -155,11 +155,12 @@ namespace Rhetos.Configuration.Autofac
             AppDomain.CurrentDomain.AssemblyResolve += SearchForAssembly;
 
             // General registrations:
-            var builder = new RhetosContainerBuilder(configurationProvider, new ConsoleLogProvider(), LegacyUtilities.GetListAssembliesDelegate())
-                .AddRhetosRuntime();
+            var builder = new RhetosContainerBuilder(configurationProvider, new ConsoleLogProvider(), LegacyUtilities.GetListAssembliesDelegate());
+            builder.AddRhetosRuntime();
+            builder.GetPluginRegistration().FindAndRegisterPluginModules();
 
-            // Specific registrations override:
-            builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
+            // Overriding registrations from plugins:
+            builder.RegisterType<ProcessUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container is intended to be used in a simple process or unit tests.
             builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
 
             // Build the container:

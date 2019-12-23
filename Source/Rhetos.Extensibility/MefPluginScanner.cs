@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.ReflectionModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace Rhetos.Extensibility
@@ -38,13 +39,13 @@ namespace Rhetos.Extensibility
         private object _pluginsLock = new object();
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
-        private readonly Func<List<string>> _findAssemblies;
+        private readonly Func<IEnumerable<string>> _findAssemblies;
 
         /// <summary>
         /// It searches for type implementations in the provided list of assemblies.
         /// </summary>
-        /// <param name="findAssemblies">The findAssemblies function should return a list of assembly paths that will be searched when invoking the method <see cref="MefPluginScanner.FindPlugins"/></param>
-        public MefPluginScanner(Func<List<string>> findAssemblies, ILogProvider logProvider)
+        /// <param name="findAssemblies">The findAssemblies function should return a list of assembly file paths that will be searched for plugins when invoking the method <see cref="MefPluginScanner.FindPlugins"/></param>
+        public MefPluginScanner(Func<IEnumerable<string>> findAssemblies, ILogProvider logProvider)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("Plugins");
@@ -83,13 +84,15 @@ namespace Rhetos.Extensibility
         {
             var stopwatch = Stopwatch.StartNew();
 
-            var assemblies = _findAssemblies();
-            assemblies.Sort();
+            var assemblies = _findAssemblies().ToList();
 
             foreach (var assembly in assemblies)
-                _logger.Trace(() => "Found assembly: " + assembly);
+                if (!File.Exists(assembly))
+                    throw new FrameworkException($"{nameof(MefPluginScanner)}: The given assembly file path does not exist: '{assembly}'.");
+                else
+                    _logger.Trace(() => $"Searching for plugins in '{assembly}'");
 
-            _performanceLogger.Write(stopwatch, "MefPluginScanner: Listed assemblies (" + assemblies.Count + ").");
+            _performanceLogger.Write(stopwatch, $"{nameof(MefPluginScanner)}: Listed assemblies ({assemblies.Count}).");
             return assemblies;
         }
 
@@ -130,7 +133,7 @@ namespace Rhetos.Extensibility
             foreach (var pluginsGroup in pluginsByExport)
                 SortByDependency(pluginsGroup.Value);
 
-            _performanceLogger.Write(stopwatch, "MefPluginScanner: Loaded plugins (" + pluginsCount + ").");
+            _performanceLogger.Write(stopwatch, $"{nameof(MefPluginScanner)}: Loaded plugins ({pluginsCount}).");
             return pluginsByExport;
         }
 

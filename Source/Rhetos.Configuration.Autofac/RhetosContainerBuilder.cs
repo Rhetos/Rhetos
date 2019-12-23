@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Rhetos.Configuration.Autofac.Modules;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using System;
@@ -39,7 +40,7 @@ namespace Rhetos
         /// <see cref="LegacyUtilities"/> will also be initialized with the given configuration.
         /// </summary>
         /// <param name="findAssemblies">The findAssemblies function should return a list of assembly paths that will be used for plugins search when using the <see cref="ContainerBuilderPluginRegistration"/></param>
-        public RhetosContainerBuilder(IConfigurationProvider configurationProvider, ILogProvider logProvider, Func<List<string>> findAssemblies)
+        public RhetosContainerBuilder(IConfigurationProvider configurationProvider, ILogProvider logProvider, Func<IEnumerable<string>> findAssemblies)
         {
             this.RegisterInstance(configurationProvider);
 
@@ -53,6 +54,14 @@ namespace Rhetos
             LegacyUtilities.Initialize(configurationProvider);
 
             Plugins.Initialize(builder => builder.GetPluginRegistration());
+        }
+
+        public RhetosContainerBuilder AddRhetosRuntime()
+        {
+            this.RegisterModule(new CoreModule());
+            this.RegisterModule(new CorePluginsModule());
+            this.RegisterModule(new RuntimeModule());
+            return this;
         }
     }
 }

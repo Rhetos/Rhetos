@@ -117,10 +117,4 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="DslScriptManager_Delete" xml:space="preserve">
-    <value>DELETE FROM Rhetos.DslScript</value>
-  </data>
-  <data name="DslScriptManager_Insert" xml:space="preserve">
-    <value>INSERT INTO Rhetos.DslScript(Name, Dsl) VALUES (N{0}, N{1})</value>
-  </data>
 </root>

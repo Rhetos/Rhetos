@@ -19,11 +19,14 @@
 
 using Autofac;
 using Autofac.Core;
+using Rhetos.Configuration.Autofac.Modules;
 using Rhetos.Deployment;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
+using Rhetos.Security;
 using Rhetos.Utilities;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -35,28 +38,17 @@ namespace Rhetos
         private readonly ILogger _logger;
         private readonly IConfigurationProvider _configurationProvider;
         private readonly ILogProvider _logProvider;
-        private readonly RhetosAppOptions _rhetosAppOptions;
+        private readonly Func<IEnumerable<string>> _findAssemblies;
         private readonly FilesUtility _filesUtility;
 
-        public ApplicationDeployment(IConfigurationProvider configurationProvider, ILogProvider logProvider)
+        public ApplicationDeployment(IConfigurationProvider configurationProvider, ILogProvider logProvider, Func<IEnumerable<string>> findAssemblies)
         {
             _logger = logProvider.GetLogger("DeployPackages");
             _configurationProvider = configurationProvider;
             _logProvider = logProvider;
+            _findAssemblies = findAssemblies;
             _filesUtility = new FilesUtility(logProvider);
-            _rhetosAppOptions = configurationProvider.GetOptions<RhetosAppOptions>();
             LegacyUtilities.Initialize(configurationProvider);
-        }
-
-        /// <summary>
-        /// Backup and delete generated files.
-        /// </summary>
-        public void InitialCleanup()
-        {
-            DeleteObsoleteFiles();
-            _logger.Trace("Moving old generated files to cache.");
-            new GeneratedFilesCache(_logProvider).MoveGeneratedFilesToCache();
-            _filesUtility.SafeCreateDirectory(Paths.GeneratedFolder);
         }
 
         public void DownloadPackages(bool ignoreDependencies)
@@ -65,21 +57,22 @@ namespace Rhetos
             var config = new DeploymentConfiguration(_logProvider);
             var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = ignoreDependencies };
             var packageDownloader = new PackageDownloader(config, _logProvider, packageDownloaderOptions);
-            var installedPackages = new InstalledPackages
-            {
-                Packages = packageDownloader.GetPackages()
-            };
+            var installedPackages = packageDownloader.GetPackages();
             new InstalledPackagesProvider(_logProvider).Save(installedPackages);
         }
 
+        //=====================================================================
+
         public void GenerateApplication()
         {
+            _logger.Trace("Moving old generated files to cache.");
+            new GeneratedFilesCache(_logProvider).MoveGeneratedFilesToCache();
+            _filesUtility.SafeCreateDirectory(Paths.GeneratedFolder);
+
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, LegacyUtilities.GetListAssembliesDelegate())
-                .AddRhetosBuild()
-                .AddProcessUserOverride();
+            var builder = CreateBuildComponentsContainer();
 
             using (var container = builder.Build())
             {
@@ -91,14 +84,25 @@ namespace Rhetos
             }
         }
 
+        internal RhetosContainerBuilder CreateBuildComponentsContainer()
+        {
+            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _findAssemblies);
+            builder.RegisterModule(new CoreModule());
+            builder.RegisterModule(new CorePluginsModule());
+            builder.RegisterModule(new BuildModule());
+            builder.GetPluginRegistration().FindAndRegisterPluginModules();
+            builder.RegisterType<NullUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container should not execute the application's business features.
+            return builder;
+        }
+
+        //=====================================================================
+
         public void UpdateDatabase()
         {
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, LegacyUtilities.GetListAssembliesDelegate())
-                .AddRhetosDbUpdate()
-                .AddProcessUserOverride();
+            var builder = CreateDbUpdateComponentsContainer();
 
             using (var container = builder.Build())
             {
@@ -110,6 +114,18 @@ namespace Rhetos
             }
         }
 
+        internal RhetosContainerBuilder CreateDbUpdateComponentsContainer()
+        {
+            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _findAssemblies);
+            builder.RegisterModule(new CoreModule());
+            builder.RegisterModule(new DbUpdateModule());
+            builder.GetPluginRegistration().FindAndRegisterPluginModules();
+            builder.RegisterType<NullUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container should not execute the application's business features.
+            return builder;
+        }
+
+        //=====================================================================
+
         public void InitializeGeneratedApplication()
         {
             // Creating a new container builder instead of using builder.Update(), because of severe performance issues with the Update method.
@@ -117,10 +133,7 @@ namespace Rhetos
             _logger.Trace("Loading generated plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, LegacyUtilities.GetListAssembliesDelegate())
-                .AddApplicationInitialization()
-                .AddRhetosRuntime()
-                .AddProcessUserOverride();
+            var builder = CreateAppInitializationComponentsContainer();
 
             using (var container = builder.Build())
             {
@@ -142,35 +155,17 @@ namespace Rhetos
             }
         }
 
-        /// <summary>
-        /// Deletes left-over files from old versions of Rhetos framework.
-        /// Throws an exception if important data might be lost.
-        /// </summary>
-        private void DeleteObsoleteFiles()
+        internal RhetosContainerBuilder CreateAppInitializationComponentsContainer()
         {
-            var obsoleteFolders = new string[]
-            {
-                Path.Combine(Paths.RhetosServerRootPath, "DslScripts"),
-                Path.Combine(Paths.RhetosServerRootPath, "DataMigration")
-            };
-            var obsoleteFolder = obsoleteFolders.FirstOrDefault(folder => Directory.Exists(folder));
-            if (obsoleteFolder != null)
-                throw new UserException("Please backup all Rhetos server folders and delete obsolete folder '" + obsoleteFolder + "'. It is no longer used.");
-
-            var deleteObsoleteFiles = new string[]
-            {
-                Path.Combine(_rhetosAppOptions.BinFolder, "ServerDom.cs"),
-                Path.Combine(_rhetosAppOptions.BinFolder, "ServerDom.dll"),
-                Path.Combine(_rhetosAppOptions.BinFolder, "ServerDom.pdb")
-            };
-
-            foreach (var path in deleteObsoleteFiles)
-                if (File.Exists(path))
-                {
-                    _logger.Info($"Deleting obsolete file '{path}'.");
-                    _filesUtility.SafeDeleteFile(path);
-                }
+            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _findAssemblies);
+            builder.AddRhetosRuntime();
+            builder.RegisterModule(new AppInitializeModule());
+            builder.GetPluginRegistration().FindAndRegisterPluginModules();
+            builder.RegisterType<ProcessUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container is intended to be used in a simple process.
+            return builder;
         }
+
+        //=====================================================================
 
         public static void PrintErrorSummary(Exception ex)
         {

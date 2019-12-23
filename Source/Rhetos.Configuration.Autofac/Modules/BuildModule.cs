@@ -26,32 +26,24 @@ using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Persistence;
 using Rhetos.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rhetos.Configuration.Autofac.Modules
 {
-    /// <summary>
-    /// This module handles code generation and code compilation. 
-    /// Requires refactoring to separate the two.
-    /// </summary>
-    public class DeployModule : Module
+    public class BuildModule : Module
     {
         protected override void Load(ContainerBuilder builder)
         {
+            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<BuildOptions>()).SingleInstance().PreserveExistingDefaults();
+
             var pluginRegistration = builder.GetPluginRegistration();
 
             AddDatabaseGenerator(builder, pluginRegistration);
-            AddDslDeployment(builder, pluginRegistration);
+            AddDsl(builder, pluginRegistration);
             AddDom(builder);
             AddPersistence(builder, pluginRegistration);
             AddCompiler(builder, pluginRegistration);
 
             builder.RegisterType<ApplicationGenerator>();
-            builder.RegisterType<DatabaseDeployment>();
             pluginRegistration.FindAndRegisterPlugins<IGenerator>();
 
             base.Load(builder);
@@ -59,28 +51,29 @@ namespace Rhetos.Configuration.Autofac.Modules
 
         private void AddDatabaseGenerator(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
+            // Generating database model:
+
             builder.RegisterType<DatabaseModelDependencies>();
             builder.RegisterType<DatabaseModelBuilder>();
-            builder.RegisterType<DatabaseModelGenerator>().As<IGenerator>();
             builder.RegisterType<DatabaseModelFile>();
-            builder.Register(context => context.Resolve<DatabaseModelFile>().Load()).As<DatabaseModel>().SingleInstance();
-            builder.RegisterType<ConceptApplicationRepository>().As<IConceptApplicationRepository>();
-            builder.RegisterType<DatabaseGenerator.DatabaseGenerator>().As<IDatabaseGenerator>();
-            builder.RegisterType<ConceptDataMigrationExecuter>().As<IConceptDataMigrationExecuter>();
-            builder.Register(context => new DatabaseGeneratorOptions { ShortTransactions = context.Resolve<BuildOptions>().ShortTransactions }).SingleInstance();
-            pluginRegistration.FindAndRegisterPlugins<IConceptDatabaseDefinition>();
-            builder.RegisterType<NullImplementation>().As<IConceptDatabaseDefinition>();
+            builder.RegisterType<DatabaseModelGenerator>().As<IGenerator>();
+
+            // Generating data migration from SQL scripts:
+
             pluginRegistration.FindAndRegisterPlugins<IConceptDataMigration>(typeof(IConceptDataMigration<>));
             builder.RegisterType<DataMigrationScriptsFile>();
-            builder.Register(context => context.Resolve<DataMigrationScriptsFile>().Load()).As<DataMigrationScripts>().SingleInstance();
-            builder.RegisterType<DataMigrationScriptsExecuter>();
-            builder.RegisterType<DatabaseCleaner>();
-            builder.RegisterType<ConceptDataMigrationGenerator>().As<IGenerator>();
             builder.RegisterType<DataMigrationScriptsGenerator>().As<IGenerator>();
+
+            // Generating data migration from plugins:
+
+            pluginRegistration.FindAndRegisterPlugins<IConceptDatabaseDefinition>();
+            builder.RegisterType<NullImplementation>().As<IConceptDatabaseDefinition>();
+            builder.RegisterType<ConceptDataMigrationGenerator>().As<IGenerator>();
         }
 
-        private void AddDslDeployment(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
+        private void AddDsl(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
+            builder.RegisterType<DslModel>().As<IDslModel>().SingleInstance();
             builder.RegisterType<DiskDslScriptLoader>().As<IDslScriptsProvider>().SingleInstance();
             builder.RegisterType<Tokenizer>().SingleInstance();
             builder.RegisterType<DslModelFile>().As<IDslModelFile>().SingleInstance();

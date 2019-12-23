@@ -31,6 +31,9 @@ using System.Text;
 
 namespace Rhetos.DatabaseGenerator
 {
+    /// <summary>
+    /// Generates data migration script from provided DSL concept implementation plugins.
+    /// </summary>
     public class ConceptDataMigrationGenerator : IGenerator
     {
         public const string ConceptDataMigrationScriptsFileName = "ConceptDataMigrationScripts.json";
@@ -79,7 +82,7 @@ namespace Rhetos.DatabaseGenerator
 
             _logger.Trace(codeBuilder.GeneratedCode);
 
-            _performanceLogger.Write(stopwatch, "DataMigrationScriptGenerator: Scripts generated.");
+            _performanceLogger.Write(stopwatch, "ConceptDataMigrationGenerator: Scripts generated.");
 
             string serializedConcepts = JsonConvert.SerializeObject(codeBuilder.GetDataMigrationScripts(), Formatting.Indented);
             File.WriteAllText(Path.Combine(_assetsOptions.AssetsFolder, ConceptDataMigrationScriptsFileName), serializedConcepts, Encoding.UTF8);
