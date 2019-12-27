@@ -383,15 +383,15 @@ namespace Rhetos.Dsl
                 // Initial sorting will reduce variations in the generated application source
                 // that are created by different macro evaluation order on each deployment.
                 var sortComparison = new Dictionary<SortConceptsMethod, Comparison<IConceptInfo>>
-            {
+                {
                     { SortConceptsMethod.Key, (a, b) => a.GetKey().CompareTo(b.GetKey()) },
                     // Descending option can be used in testing (along with ascending sort) to detect missing dependencies between concepts
-                // (code generators might fail with "script does not contain tag", update of empty database might fail with missing column, e.g.).
+                    // (code generators might fail with "script does not contain tag", update of empty database might fail with missing column, e.g.).
                     { SortConceptsMethod.KeyDescending, (a, b) => -a.GetKey().CompareTo(b.GetKey()) },
                 };
 
-                _resolvedConcepts.Sort(sortComparison[_sortConceptsMethod.Value]);
-                _performanceLogger.Write(sw, $"DslContainer.SortReferencesBeforeUsingConcept: Initial sort by {_sortConceptsMethod.Value}.");
+                _resolvedConcepts.Sort(sortComparison[_sortConceptsMethod]);
+                _performanceLogger.Write(sw, $"DslContainer.SortReferencesBeforeUsingConcept: Initial sort by {_sortConceptsMethod}.");
             }
 
             List<IConceptInfo> sortedList = new List<IConceptInfo>(_resolvedConcepts.Count);

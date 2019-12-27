@@ -33,7 +33,7 @@ namespace Rhetos.Dsl.Test
     {
         class DslContainerAccessor : DslContainer
         {
-            public DslContainerAccessor(IConfiguration configuration = null)
+            public DslContainerAccessor(IConfigurationProvider configuration = null)
                 : base(new ConsoleLogProvider(),
                       new MockPluginsContainer<IDslModelIndex>(new DslModelIndexByType()),
                       configuration ?? new ConfigurationBuilder().Build())
@@ -248,7 +248,10 @@ namespace Rhetos.Dsl.Test
 
             foreach (var test in tests)
             {
-                var configuration = new MockConfiguration { { "CommonConcepts.Debug.SortConcepts", test.SortMethod } };
+                var configuration = new ConfigurationBuilder()
+                    .AddKeyValue("CommonConcepts.Debug.SortConcepts", test.SortMethod.ToString())
+                    .Build();
+
                 var dslContainer = new DslContainerAccessor(configuration);
                 dslContainer.ResolvedConcepts = testData;
                 dslContainer.SortReferencesBeforeUsingConcept();
@@ -256,7 +259,7 @@ namespace Rhetos.Dsl.Test
                     TestUtility.Dump(test.ExpectedResult, c => c.GetKey()),
                     TestUtility.Dump(dslContainer.ResolvedConcepts, c => c.GetKey()),
                     test.SortMethod);
-    }
-}
+            }
+        }
     }
 }
