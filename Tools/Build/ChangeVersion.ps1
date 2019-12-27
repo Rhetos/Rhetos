@@ -16,14 +16,28 @@ Else
     $fullVersion = $version
 }
 
+[string[]]$exclude = @('bin', 'obj', 'packages', 'TestResults', 'PackagesCache', 'Install', '.*', 'Logs')
+[string[]]$folders = @()
+[string[]]$foldersNew = Get-Location
+while ($foldersNew.Count -gt 0)
+{
+    [string[]]$folders += $foldersNew
+    [string[]]$foldersNew = Get-ChildItem $foldersNew -Directory -Exclude $exclude
+}
+$folders = $folders | Sort-Object
+
 function RegexReplace ($fileSearch, $replacePattern, $replaceWith)
 {
-    Get-ChildItem $fileSearch -r `
-        | Where-Object { $_.FullName -notlike '*\PackagesCache\*' } `
+    Get-ChildItem -File -Path $folders -Filter $fileSearch `
+        | Select-Object -ExpandProperty FullName `
         | ForEach-Object {
-            $c = [IO.File]::ReadAllText($_.FullName, [System.Text.Encoding]::Default) -Replace $replacePattern, $replaceWith;
-            [IO.File]::WriteAllText($_.FullName, $c, [System.Text.Encoding]::UTF8)
+            $text = [IO.File]::ReadAllText($_, [System.Text.Encoding]::UTF8)
+            $replaced = $text -Replace $replacePattern, $replaceWith
+            if ($replaced -ne $text) {
+                Write-Output $_
+                [IO.File]::WriteAllText($_, $replaced, [System.Text.Encoding]::UTF8)
             }
+        }
 }
 
 Write-Output "Setting version '$fullVersion'."
