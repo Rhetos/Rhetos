@@ -3,8 +3,6 @@ SETLOCAL
 @SET Config=%1%
 @IF [%1] == [] SET Config=Debug
 
-REM git pull --ff-only || echo CANNOT AUTOMATICALLY GET LATEST VERSION. CHECK IF A MANUAL MERGE IS NEEDED. && GOTO Error0
-
 CALL Clean.bat || GOTO Error0
 
 CALL Build.bat %Config% /NOPAUSE || GOTO Error0
