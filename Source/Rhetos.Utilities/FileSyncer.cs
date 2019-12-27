@@ -103,6 +103,7 @@ namespace Rhetos.Utilities
                 _filesByDestination.AddKey(destinationFolder);
         }
 
+        /// <param name="deleteSource">Deleting the source files might improve performance because it moves the files instead of copying them.</param>
         public void UpdateDestination(bool deleteSource = false)
         {
             var sw = Stopwatch.StartNew();
