@@ -67,5 +67,25 @@ namespace Rhetos.Utilities.Test
             Paths.Initialize(null, null, null, new AssetsOptions());
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFolder), "AssetsFolder expected to be configured");
         }
+
+        [TestMethod]
+        public void PathsInitializationTest()
+        {
+            var rootPath = @"C:\RhetosServer";
+            var configurationProvider = new ConfigurationBuilder().
+                AddRhetosAppConfiguration(rootPath).Build();
+            Paths.Initialize(rootPath,
+                configurationProvider.GetOptions<RhetosAppOptions>(),
+                configurationProvider.GetOptions<BuildOptions>(),
+                configurationProvider.GetOptions<AssetsOptions>());
+
+            Assert.AreEqual(rootPath, Paths.RhetosServerRootPath);
+            Assert.AreEqual(Path.Combine(rootPath, "GeneratedFilesCache"), Paths.GeneratedFilesCacheFolder);
+            Assert.AreEqual(Path.Combine(rootPath, "bin"), Paths.BinFolder);
+            Assert.AreEqual(Path.Combine(rootPath, "bin\\Generated"), Paths.GeneratedFolder);
+            Assert.AreEqual(Path.Combine(rootPath, "PackagesCache"), Paths.PackagesCacheFolder);
+            Assert.AreEqual(Path.Combine(rootPath, "bin\\Plugins"), Paths.PluginsFolder);
+            Assert.AreEqual(Path.Combine(rootPath, "Resources"), Paths.ResourcesFolder);
+        }
     }
 }

@@ -52,8 +52,6 @@ namespace Rhetos.Utilities
         public static string GeneratedFolder => NotNullGeneratedFolder;
         public static string GeneratedFilesCacheFolder => NonNullBuildOptions.GeneratedFilesCacheFolder;
         public static string PluginsFolder => Path.Combine(NonNullRhetosRootPath, "bin\\Plugins");
-        public static string RhetosServerWebConfigFile => Path.Combine(NonNullRhetosRootPath, "Web.config");
-        public static string ConnectionStringsFile => Path.Combine(NonNullRhetosRootPath, @"bin\ConnectionStrings.config");
         public static string GetDomAssemblyFile(DomAssemblies domAssembly) => Path.Combine(NotNullGeneratedFolder, $"ServerDom.{domAssembly}.dll");
         /// <summary>
         /// List of the generated dll files that make the domain object model (ServerDom.*.dll).
