@@ -163,16 +163,63 @@ namespace Rhetos.Extensibility
             return pluginsByExport;
         }
 
-        private static Dictionary<Type, List<PluginInfo>> GetMefExportsForAssembly(string assemblyPath, List<string> typesToCheck = null)
+        private Dictionary<Type, List<PluginInfo>> GetMefExportsForAssembly(string assemblyPath, List<string> typesToCheck = null)
         {
             if (typesToCheck != null && typesToCheck.Count == 0) return new Dictionary<Type, List<PluginInfo>>();
 
-            var assembly = Assembly.LoadFrom(assemblyPath);
+            var assembly = LoadAssembly(assemblyPath);
             var types = typesToCheck == null
                 ? assembly.GetTypes()
                 : typesToCheck.Select(type => Type.GetType(type)).ToArray();
 
             return GetMefExportsForTypes(types);
+        }
+
+        private Assembly LoadAssembly(string assemblyPath)
+        {
+            Assembly assembly = null;
+            var assemblyFilename = Path.GetFileNameWithoutExtension(assemblyPath);
+
+            try
+            {
+                assembly = Assembly.Load(assemblyFilename);
+                _logger.Trace($"'{assemblyFilename}' loaded from '{assembly.Location}'.");
+            }
+            catch (Exception e)
+            {
+                _logger.Trace($"'{assemblyFilename}' could not by loaded from probing paths. ({e.GetType().Name}: {e.Message})");
+            }
+
+            if (assembly == null)
+            {
+                try
+                {
+                    assembly = Assembly.LoadFrom(assemblyPath);
+                    _logger.Trace($"'{assemblyFilename}' loaded from '{assembly.Location}' via explicit LoadFrom.");
+                }
+                catch (Exception e)
+                {
+                    _logger.Trace($"'{assemblyFilename}' could not by loaded from '{assemblyPath}'. ({e.GetType().Name}: {e.Message})");
+                }
+            }
+
+            if (assembly == null)
+                throw new FrameworkException($"Failed to load requested assembly '{assemblyFilename}' either from application probing paths or from '{assemblyPath}'.");
+
+            ValidateAssembliesEquivalent(assemblyPath, assembly.Location);
+            return assembly;
+        }
+
+        private void ValidateAssembliesEquivalent(string requestedPath, string actualPath)
+        {
+            if (requestedPath.Equals(actualPath, StringComparison.InvariantCultureIgnoreCase)) 
+                return;
+
+            var requestedFile = new FileInfo(requestedPath);
+            var actualFile = new FileInfo(actualPath);
+
+            if (requestedFile.Length != actualFile.Length || requestedFile.LastWriteTimeUtc != actualFile.LastWriteTimeUtc)
+                _logger.Info($"Assembly at requested path '{requestedPath}' is not the same as loaded assembly at '{actualPath}'. This can cause issues with types.");
         }
 
         private static Dictionary<Type, List<PluginInfo>> GetMefExportsForTypes(Type[] types)
