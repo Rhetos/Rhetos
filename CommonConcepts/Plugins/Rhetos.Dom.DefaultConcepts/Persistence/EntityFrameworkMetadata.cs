@@ -21,6 +21,8 @@ using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.Utilities;
 using System.Data.Entity.Core.Metadata.Edm;
+using System.Data.Entity.Infrastructure;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -31,15 +33,19 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
     public class EntityFrameworkMetadata
     {
         private readonly ILogger _performanceLogger;
+        private readonly ILogger _logger;
         private MetadataWorkspace _metadataWorkspace;
         private bool _initialized;
         private readonly object _initializationLock = new object();
         private readonly AssetsOptions _assetsOptions;
+        private readonly ConnectionString _connectionString;
 
-        public EntityFrameworkMetadata(AssetsOptions assetsOptions, ILogProvider logProvider)
+        public EntityFrameworkMetadata(AssetsOptions assetsOptions, ILogProvider logProvider, ConnectionString connectionString)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
+            _logger = logProvider.GetLogger(nameof(EntityFrameworkMetadata));
             _assetsOptions = assetsOptions;
+            _connectionString = connectionString;
         }
 
         public MetadataWorkspace MetadataWorkspace
@@ -52,14 +58,43 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                         {
                             var sw = Stopwatch.StartNew();
 
+                            SetProviderManifestTokenIfNeeded(sw);
+
                             var modelFilesPath = EntityFrameworkMapping.ModelFiles.Select(fileName => Path.Combine(_assetsOptions.AssetsFolder, fileName));
                             _metadataWorkspace = new MetadataWorkspace(modelFilesPath, new Assembly[] { });
-                            _performanceLogger.Write(sw, "EntityFrameworkMetadata: Load EDM files.");
+                            _performanceLogger.Write(sw, $@"{nameof(EntityFrameworkMetadata)}: Load EDM files.");
 
                             _initialized = true;
                         }
 
                 return _metadataWorkspace;
+            }
+        }
+
+        private void SetProviderManifestTokenIfNeeded(Stopwatch sw)
+        {
+            var ssdlFileName = EntityFrameworkMapping.ModelFiles.First(x => x.EndsWith(".ssdl"));
+            var ssdlFile = Path.Combine(_assetsOptions.AssetsFolder, ssdlFileName);
+            string firstLineInSsdl;
+            _logger.Trace("Checking if ProviderManifestToken is set.");
+            using (StreamReader reader = new StreamReader(ssdlFile))
+            {
+                firstLineInSsdl = reader.ReadLine();
+            }
+
+            if (firstLineInSsdl.Contains(EntityFrameworkMappingGenerator.ProviderManifestTokenPlaceholder))
+            {
+                _logger.Info("Resolving ProviderManifestToken.");
+                var lines = File.ReadAllLines(ssdlFile);
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    var manifestToken = new DefaultManifestTokenResolver().ResolveManifestToken(connection);
+                    lines[0] = lines[0].Replace(EntityFrameworkMappingGenerator.ProviderManifestTokenPlaceholder, $@"ProviderManifestToken=""{manifestToken}""");
+                    File.WriteAllLines(ssdlFile, lines);
+                    _logger.Info($@"Set ProviderManifestToken to {manifestToken}.");
+                }
+
+                _performanceLogger.Write(sw, $@"{nameof(EntityFrameworkMetadata)}: Initialized {ssdlFileName} file.");
             }
         }
     }

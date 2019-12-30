@@ -187,8 +187,6 @@
     <Compile Include="MsSqlUtility.cs" />
     <Compile Include="ConsoleLogProvider.cs" />
     <Compile Include="OracleSqlExecuter.cs" />
-    <Compile Include="ServerType.cs" />
-    <Compile Include="SqlProviderManifest.cs" />
     <Compile Include="SqlTransactionBatch.cs" />
     <Compile Include="SqlUtility.cs" />
     <Compile Include="Exceptions\UserException.cs" />
@@ -199,7 +197,6 @@
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ScriptPositionReporting.cs" />
-    <Compile Include="SqlVersion.cs" />
     <Compile Include="SystemUtility.cs" />
     <Compile Include="XmlUtility.cs" />
     <Compile Include="ValueOrError.cs" />

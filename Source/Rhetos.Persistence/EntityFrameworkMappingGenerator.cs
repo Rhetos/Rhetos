@@ -42,6 +42,8 @@ namespace Rhetos.Persistence
 
     public class EntityFrameworkMappingGenerator : IGenerator
     {
+        public const string ProviderManifestTokenPlaceholder = "EntityFrameworkProviderManifestTokenPlaceholder";  
+
         private const string _segmentSplitter = "<!--SegmentSplitter-->";
         private readonly ICodeGenerator _codeGenerator;
         private readonly IPluginsContainer<IConceptMapping> _plugins;
@@ -99,7 +101,7 @@ $@"<Schema Namespace=""{EntityFrameworkMapping.ConceptualModelNamespace}"" Alias
   </EntityContainerMapping>
 </Mapping>
 {_segmentSplitter}
-<Schema Namespace=""{EntityFrameworkMapping.StorageModelNamespace}"" Provider=""System.Data.SqlClient"" ProviderManifestToken=""{MsSqlUtility.GetProviderManifestToken()}"" Alias=""Self"" xmlns:customannotation=""http://schemas.microsoft.com/ado/2013/11/edm/customannotation"" xmlns=""http://schemas.microsoft.com/ado/2009/11/edm/ssdl"">
+<Schema Namespace=""{EntityFrameworkMapping.StorageModelNamespace}"" Provider=""System.Data.SqlClient"" {ProviderManifestTokenPlaceholder} Alias=""Self"" xmlns:customannotation=""http://schemas.microsoft.com/ado/2013/11/edm/customannotation"" xmlns=""http://schemas.microsoft.com/ado/2009/11/edm/ssdl"">
   {EntityFrameworkMapping.StorageModelTag}
   <EntityContainer Name=""CodeFirstDatabase"">
     {EntityFrameworkMapping.StorageModelEntityContainerTag}
