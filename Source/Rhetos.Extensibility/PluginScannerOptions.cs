@@ -24,6 +24,5 @@ namespace Rhetos.Extensibility
     public class PluginScannerOptions
     {
         public string GeneratedFilesCacheFolder { get; set; }
-        public string PluginScannerCacheFilename { get; set; } = "Rhetos.CachedPluginScanner.Cache.json";
     }
 }

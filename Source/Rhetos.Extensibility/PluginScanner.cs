@@ -32,6 +32,8 @@ namespace Rhetos.Extensibility
 {
     public class PluginScanner : IPluginScanner
     {
+        private const string _pluginScannerCacheFilename = "Rhetos.CachedPluginScanner.Cache.json";
+
         /// <summary>
         /// The key is FullName of the plugin's export type (it is usually the interface it implements).
         /// </summary>
@@ -104,7 +106,7 @@ namespace Rhetos.Extensibility
         {
             var stopwatch = Stopwatch.StartNew();
 
-            var cacheFilename = Path.Combine(_options.GeneratedFilesCacheFolder, _options.PluginScannerCacheFilename);
+            var cacheFilename = Path.Combine(_options.GeneratedFilesCacheFolder, _pluginScannerCacheFilename);
             var cacheContents = Directory.Exists(_options.GeneratedFilesCacheFolder) && File.Exists(cacheFilename) ? File.ReadAllText(cacheFilename) : null;
             var cache = cacheContents == null ? new PluginsCacheData() : JsonConvert.DeserializeObject<PluginsCacheData>(cacheContents);
 
@@ -178,6 +180,7 @@ namespace Rhetos.Extensibility
         private Assembly LoadAssembly(string assemblyPath)
         {
             Assembly assembly = null;
+            Exception lastError = null;
             var assemblyFilename = Path.GetFileNameWithoutExtension(assemblyPath);
 
             try
@@ -187,7 +190,8 @@ namespace Rhetos.Extensibility
             }
             catch (Exception e)
             {
-                _logger.Trace($"'{assemblyFilename}' could not by loaded from probing paths. ({e.GetType().Name}: {e.Message})");
+                _logger.Trace($"'{assemblyFilename}' could not by loaded from probing paths: {e}");
+                lastError = e;
             }
 
             if (assembly == null)
@@ -199,12 +203,13 @@ namespace Rhetos.Extensibility
                 }
                 catch (Exception e)
                 {
-                    _logger.Trace($"'{assemblyFilename}' could not by loaded from '{assemblyPath}'. ({e.GetType().Name}: {e.Message})");
+                    _logger.Trace($"'{assemblyFilename}' could not by loaded from '{assemblyPath}': {e}");
+                    lastError = e;
                 }
             }
 
             if (assembly == null)
-                throw new FrameworkException($"Failed to load requested assembly '{assemblyFilename}' either from application probing paths or from '{assemblyPath}'.");
+                throw new FrameworkException($"Failed to load requested assembly '{assemblyFilename}' either from application probing paths or from '{assemblyPath}'.", lastError);
 
             ValidateAssembliesEquivalent(assemblyPath, assembly.Location);
             return assembly;
