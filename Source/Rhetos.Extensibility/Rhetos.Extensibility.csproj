@@ -111,6 +111,9 @@
     <Reference Include="Autofac">
       <HintPath>..\..\packages\Autofac.4.9.4\lib\net45\Autofac.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.configuration" />
@@ -122,9 +125,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PluginScanner.cs" />
+    <Compile Include="PluginScannerOptions.cs" />
+    <Compile Include="PluginsCacheData.cs" />
     <Compile Include="IPluginScanner.cs" />
     <Compile Include="PluginInfo.cs" />
-    <Compile Include="MefPluginScanner.cs" />
     <Compile Include="NamedPlugins.cs" />
     <Compile Include="PluginsContainer.cs" />
     <Compile Include="PluginsMetadataCache.cs" />

@@ -24,8 +24,6 @@ using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rhetos.Extensibility
 {
@@ -34,9 +32,6 @@ namespace Rhetos.Extensibility
         private readonly ILogger _logger;
         private readonly ContainerBuilder _builder;
         private readonly IPluginScanner _pluginScanner;
-
-        public ContainerBuilder Builder => _builder;
-        public IPluginScanner PluginScanner => _pluginScanner;
 
         /// <summary>
         /// It is important to understand that Autofac will provide a new instance of <see cref="ContainerBuilder"/>
