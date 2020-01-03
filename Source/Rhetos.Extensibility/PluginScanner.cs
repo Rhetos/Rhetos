@@ -106,8 +106,8 @@ namespace Rhetos.Extensibility
         {
             var stopwatch = Stopwatch.StartNew();
 
-            var cacheFilename = Path.Combine(_options.GeneratedFilesCacheFolder, _pluginScannerCacheFilename);
-            var cacheContents = Directory.Exists(_options.GeneratedFilesCacheFolder) && File.Exists(cacheFilename) ? File.ReadAllText(cacheFilename) : null;
+            var cacheFilename = Path.Combine(_options.CacheFolder, _pluginScannerCacheFilename);
+            var cacheContents = Directory.Exists(_options.CacheFolder) && File.Exists(cacheFilename) ? File.ReadAllText(cacheFilename) : null;
             var cache = cacheContents == null ? new PluginsCacheData() : JsonConvert.DeserializeObject<PluginsCacheData>(cacheContents);
 
             var newCache = new PluginsCacheData();
@@ -151,7 +151,7 @@ namespace Rhetos.Extensibility
             var cacheValid = newCacheContents == cacheContents;
             if (!cacheValid)
             {
-                _filesUtility.SafeCreateDirectory(_options.GeneratedFilesCacheFolder);
+                _filesUtility.SafeCreateDirectory(_options.CacheFolder);
                 File.WriteAllText(cacheFilename, newCacheContents);
             }
 

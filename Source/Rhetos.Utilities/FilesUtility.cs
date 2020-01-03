@@ -126,10 +126,15 @@ namespace Rhetos.Utilities
 
         public void SafeCopyFile(string sourceFile, string destinationFile)
         {
+            SafeCopyFile(sourceFile, destinationFile, false);
+        }
+
+        public void SafeCopyFile(string sourceFile, string destinationFile, bool overwrite)
+        {
             try
             {
                 SafeCreateDirectory(Path.GetDirectoryName(destinationFile));
-                Retry(() => File.Copy(sourceFile, destinationFile), () => "copy file " + sourceFile);
+                Retry(() => File.Copy(sourceFile, destinationFile, overwrite), () => "copy file " + sourceFile);
             }
             catch (Exception ex)
             {

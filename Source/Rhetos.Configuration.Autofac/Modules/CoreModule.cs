@@ -52,8 +52,6 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<FilesUtility>().SingleInstance();
             builder.RegisterType<Utilities.Configuration>().As<IConfiguration>().SingleInstance();
 
-            builder.RegisterType<GeneratedFilesCache>().SingleInstance();
-
             var sqlImplementations = new[]
             {
                 new { Dialect = "MsSql", SqlExecuter = typeof(MsSqlExecuter), SqlUtility = typeof(MsSqlUtility) },

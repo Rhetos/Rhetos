@@ -161,7 +161,6 @@
     <Compile Include="Exceptions\LegacyClientException.cs" />
     <Compile Include="FilesUtility.cs" />
     <Compile Include="FileSyncer.cs" />
-    <Compile Include="GeneratedFilesCache.cs" />
     <Compile Include="Legacy\IConfiguration.cs" />
     <Compile Include="ISqlUtility.cs" />
     <Compile Include="IUserInfoAdmin.cs" />

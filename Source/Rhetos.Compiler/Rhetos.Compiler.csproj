@@ -212,6 +212,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyGenerator.cs" />
+    <Compile Include="CacheUtility.cs" />
     <Compile Include="CodeBuilder.cs" />
     <Compile Include="CodeGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

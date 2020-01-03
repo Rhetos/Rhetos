@@ -65,9 +65,9 @@ namespace Rhetos
 
         public void GenerateApplication()
         {
-            _logger.Trace("Moving old generated files to cache.");
-            new GeneratedFilesCache(_logProvider).MoveGeneratedFilesToCache();
             _filesUtility.SafeCreateDirectory(Paths.GeneratedFolder);
+            _filesUtility.EmptyDirectory(Paths.GeneratedFolder);
+            _filesUtility.SafeCreateDirectory(_configurationProvider.GetOptions<BuildOptions>().CacheFolder);
 
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();

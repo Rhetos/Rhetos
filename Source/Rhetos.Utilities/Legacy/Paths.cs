@@ -50,7 +50,6 @@ namespace Rhetos.Utilities
         public static string ResourcesFolder => Path.Combine(NonNullRhetosRootPath, "Resources");
         public static string BinFolder => NonNullRhetosAppOptions.BinFolder;
         public static string GeneratedFolder => NotNullGeneratedFolder;
-        public static string GeneratedFilesCacheFolder => NonNullBuildOptions.GeneratedFilesCacheFolder;
         public static string PluginsFolder => Path.Combine(NonNullRhetosRootPath, "bin\\Plugins");
         public static string GetDomAssemblyFile(DomAssemblies domAssembly) => Path.Combine(NotNullGeneratedFolder, $"ServerDom.{domAssembly}.dll");
         /// <summary>

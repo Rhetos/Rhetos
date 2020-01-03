@@ -51,7 +51,7 @@ namespace Rhetos.Dsl
 
         public List<MacroOrder> Load()
         {
-            var cacheFilePath = Path.Combine(_buildOptions.GeneratedFilesCacheFolder, Path.GetFileNameWithoutExtension(MacroOrderFileName), MacroOrderFileName);
+            var cacheFilePath = Path.Combine(_buildOptions.CacheFolder, Path.GetFileNameWithoutExtension(MacroOrderFileName), MacroOrderFileName);
             if (File.Exists(cacheFilePath))
             {
                 var serializedConcepts = File.ReadAllText(cacheFilePath, Encoding.UTF8);

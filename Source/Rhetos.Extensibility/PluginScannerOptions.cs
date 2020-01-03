@@ -23,6 +23,6 @@ namespace Rhetos.Extensibility
 {
     public class PluginScannerOptions
     {
-        public string GeneratedFilesCacheFolder { get; set; }
+        public string CacheFolder { get; set; }
     }
 }

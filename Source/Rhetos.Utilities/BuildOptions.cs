@@ -23,7 +23,7 @@ namespace Rhetos.Utilities
     public class BuildOptions
     {
         public string GeneratedSourceFolder { get; set; }
-        public string GeneratedFilesCacheFolder { get; set; }
+        public string CacheFolder { get; set; }
         public bool Debug { get; set; }
         public bool ShortTransactions { get; set; }
         public bool DataMigration__SkipScriptsWithWrongOrder { get; set; } = true;

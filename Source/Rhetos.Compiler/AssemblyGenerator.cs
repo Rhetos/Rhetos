@@ -39,17 +39,17 @@ namespace Rhetos.Compiler
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
         private readonly int _errorReportLimit;
-        private readonly GeneratedFilesCache _filesCache;
         private readonly DomGeneratorOptions _domGeneratorOptions;
+        private readonly CacheUtility _cacheUtility;
 
         public AssemblyGenerator(ILogProvider logProvider, IConfigurationProvider configurationProvider,
-            GeneratedFilesCache filesCache, DomGeneratorOptions domGeneratorOptions)
+            DomGeneratorOptions domGeneratorOptions, BuildOptions buildOptions, FilesUtility filesUtility)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("AssemblyGenerator");
             _errorReportLimit = configurationProvider.GetValue("AssemblyGenerator.ErrorReportLimit", 5);
-            _filesCache = filesCache;
             _domGeneratorOptions = domGeneratorOptions;
+            _cacheUtility = new CacheUtility(typeof(AssemblyGenerator), buildOptions, filesUtility);
         }
 
         public Assembly Generate(IAssemblySource assemblySource, string outputAssemblyPath, IEnumerable<ManifestResource> manifestResources = null)
@@ -68,14 +68,14 @@ namespace Rhetos.Compiler
                 + assemblySource.GeneratedCode;
 
             string sourcePath = Path.GetFullPath(Path.ChangeExtension(outputAssemblyPath, ".cs"));
-            var sourceHash = _filesCache.SaveSourceAndHash(sourcePath, sourceCode);
-            _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Save source and hash ({dllName}).");
+            File.WriteAllText(sourcePath, sourceCode, Encoding.UTF8);
+            _performanceLogger.Write(stopwatch, $@"{nameof(AssemblyGenerator)}: Save source.");
 
             // Compile assembly or get from cache:
             Assembly generatedAssembly;
-
-            var filesFromCache = _filesCache.RestoreCachedFiles(sourcePath, sourceHash, Path.GetDirectoryName(outputAssemblyPath), new[] { ".dll", ".pdb" });
-            if (filesFromCache != null)
+            var pdbPath = Path.ChangeExtension(outputAssemblyPath, ".pdb");
+            var sourceHash = _cacheUtility.ComputeHash(sourceCode);
+            if (sourceHash.SequenceEqual(_cacheUtility.LoadHash(sourcePath)) && TryRestoreCachedFiles(outputAssemblyPath, pdbPath))
             {
                 _logger.Trace(() => "Restoring assembly from cache: " + dllName + ".");
                 if (!File.Exists(outputAssemblyPath))
@@ -108,8 +108,6 @@ namespace Rhetos.Compiler
                 using (var dllStream = new MemoryStream())
                 using (var pdbStream = new MemoryStream())
                 {
-                    var pdbPath = Path.ChangeExtension(outputAssemblyPath, ".pdb");
-
                     var resources = manifestResources.Select(x => new ResourceDescription(x.Name, () => File.OpenRead(x.Path), x.IsPublic));
                     var options = new EmitOptions(debugInformationFormat: DebugInformationFormat.PortablePdb, pdbFilePath: pdbPath);
                     var emitResult = compilation.Emit(dllStream, pdbStream, manifestResources: resources, options: options);
@@ -126,6 +124,9 @@ namespace Rhetos.Compiler
                     FailOnTypeLoadErrors(generatedAssembly, outputAssemblyPath, assemblySource.RegisteredReferences);
                     _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({dllName}).");
                 }
+
+                SaveFilesToCache(sourcePath, outputAssemblyPath, pdbPath, sourceHash);
+                _performanceLogger.Write(stopwatch, $@"{nameof(AssemblyGenerator)}: Save files to cache.");
             }
 
             return generatedAssembly;
@@ -254,6 +255,18 @@ namespace Rhetos.Compiler
                     return " " + warningMessage.Substring(obsoleteInfoStart + obsoleteInfoTag.Length);
             }
             return "";
+        }
+
+        private bool TryRestoreCachedFiles(string outputAssemblyPath, string pdbPath)
+        {
+            return _cacheUtility.MoveFromCache(outputAssemblyPath) && _cacheUtility.MoveFromCache(pdbPath);
+        }
+
+        private void SaveFilesToCache(string sourcePath, string outputAssemblyPath, string pdbPath, byte[] sourceHash)
+        {
+            _cacheUtility.SaveHash(sourcePath, sourceHash);
+            _cacheUtility.MoveToCache(outputAssemblyPath);
+            _cacheUtility.MoveToCache(pdbPath);
         }
 
         [Obsolete("See the description in IAssemblyGenerator.")]

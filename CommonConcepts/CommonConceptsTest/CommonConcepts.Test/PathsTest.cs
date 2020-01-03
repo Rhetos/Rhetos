@@ -44,7 +44,6 @@ namespace CommonConcepts.Test
                 configurationProvider.GetOptions<AssetsOptions>());
 
             Assert.AreEqual(rootPath, Paths.RhetosServerRootPath);
-            Assert.AreEqual(Path.Combine(rootPath, "GeneratedFilesCache"), Paths.GeneratedFilesCacheFolder);
             Assert.AreEqual(Path.Combine(rootPath, "bin"), Paths.BinFolder);
             Assert.AreEqual(Path.Combine(rootPath, "bin\\Generated"), Paths.GeneratedFolder);
             Assert.AreEqual(Path.Combine(rootPath, "PackagesCache"), Paths.PackagesCacheFolder);
