@@ -191,8 +191,8 @@ namespace Rhetos.Utilities
         public static string ReportTypeLoadException(Exception ex, string errorContext = null, IEnumerable<string> referencedAssembliesPaths = null)
         {
             List<Exception> loaderExceptions;
-            if (ex is ReflectionTypeLoadException)
-                loaderExceptions = ((ReflectionTypeLoadException)ex).LoaderExceptions.GroupBy(exception => exception.Message).Select(group => group.First()).ToList();
+            if (ex is ReflectionTypeLoadException typeLoadException)
+                loaderExceptions = typeLoadException.LoaderExceptions.GroupBy(exception => exception.Message).Select(group => group.First()).ToList();
             else if (ex is FileLoadException)
                 loaderExceptions = new List<Exception> { ex };
             else

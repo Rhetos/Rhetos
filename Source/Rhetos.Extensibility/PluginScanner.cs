@@ -32,13 +32,13 @@ namespace Rhetos.Extensibility
 {
     public class PluginScanner : IPluginScanner
     {
-        private const string _pluginScannerCacheFilename = "Rhetos.CachedPluginScanner.Cache.json";
+        private const string _pluginScannerCacheFilename = "Rhetos.PluginScanner.Cache.json";
 
         /// <summary>
         /// The key is FullName of the plugin's export type (it is usually the interface it implements).
         /// </summary>
         private MultiDictionary<string, PluginInfo> _pluginsByExport = null;
-        private object _pluginsLock = new object();
+        private readonly object _pluginsLock = new object();
         private readonly ILogger _logger;
         private readonly FilesUtility _filesUtility;
         private readonly ILogger _performanceLogger;
@@ -180,36 +180,23 @@ namespace Rhetos.Extensibility
         private Assembly LoadAssembly(string assemblyPath)
         {
             Assembly assembly = null;
-            Exception lastError = null;
             var assemblyFilename = Path.GetFileNameWithoutExtension(assemblyPath);
 
             try
             {
                 assembly = Assembly.Load(assemblyFilename);
-                _logger.Trace($"'{assemblyFilename}' loaded from '{assembly.Location}'.");
+                _logger.Trace($"Assembly '{assemblyFilename}' loaded from '{assembly.Location}'.");
             }
             catch (Exception e)
             {
-                _logger.Trace($"'{assemblyFilename}' could not by loaded from probing paths: {e}");
-                lastError = e;
+                _logger.Trace(() => $"'{assemblyFilename}' could not by loaded from probing paths: {e}");
             }
 
             if (assembly == null)
             {
-                try
-                {
-                    assembly = Assembly.LoadFrom(assemblyPath);
-                    _logger.Trace($"'{assemblyFilename}' loaded from '{assembly.Location}' via explicit LoadFrom.");
-                }
-                catch (Exception e)
-                {
-                    _logger.Trace($"'{assemblyFilename}' could not by loaded from '{assemblyPath}': {e}");
-                    lastError = e;
-                }
+                _logger.Trace($"Loading assembly '{assemblyFilename}' from '{assemblyPath}' via explicit LoadFrom.");
+                assembly = Assembly.LoadFrom(assemblyPath);
             }
-
-            if (assembly == null)
-                throw new FrameworkException($"Failed to load requested assembly '{assemblyFilename}' either from application probing paths or from '{assemblyPath}'.", lastError);
 
             ValidateAssembliesEquivalent(assemblyPath, assembly.Location);
             return assembly;
@@ -225,6 +212,8 @@ namespace Rhetos.Extensibility
 
             if (requestedFile.Length != actualFile.Length || requestedFile.LastWriteTimeUtc != actualFile.LastWriteTimeUtc)
                 _logger.Info($"Assembly at requested path '{requestedPath}' is not the same as loaded assembly at '{actualPath}'. This can cause issues with types.");
+            else
+                _logger.Trace($"Same assembly loaded from '{actualPath}' instead of '{requestedPath}'.");
         }
 
         private static Dictionary<Type, List<PluginInfo>> GetMefExportsForTypes(Type[] types)
