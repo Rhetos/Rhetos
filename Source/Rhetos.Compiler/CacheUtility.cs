@@ -27,22 +27,20 @@ namespace Rhetos.Compiler
 {
     internal class CacheUtility
     {
-        private readonly BuildOptions _buildOptions;
         private readonly FilesUtility _filesUtility;
-        private readonly SHA1 _sha1;
+        private readonly SHA256 _sha256;
         private readonly string _cacheDirectory;
 
         public CacheUtility(Type generatorType, BuildOptions buildOptions, FilesUtility filesUtility)
         {
-            _buildOptions = buildOptions;
             _filesUtility = filesUtility;
-            _sha1 = new SHA1CryptoServiceProvider();
-            _cacheDirectory = Path.Combine(_buildOptions.CacheFolder, generatorType.Name);
+            _sha256 = SHA256.Create();
+            _cacheDirectory = Path.Combine(buildOptions.CacheFolder, generatorType.Name);
         }
 
         private string GetHashFile(string sourceFile) => Path.Combine(_cacheDirectory, Path.GetFileName(sourceFile) + ".hash");
 
-        public byte[] ComputeHash(string sourceContent) => _sha1.ComputeHash(Encoding.UTF8.GetBytes(sourceContent));
+        public byte[] ComputeHash(string sourceContent) => _sha256.ComputeHash(Encoding.UTF8.GetBytes(sourceContent));
 
         public void SaveHash(string sourceFile, byte[] hash)
         {
@@ -55,28 +53,25 @@ namespace Rhetos.Compiler
             return File.Exists(GetHashFile(sourceFile)) ? CsUtility.HexToByteArray(File.ReadAllText(GetHashFile(sourceFile), Encoding.ASCII)) : new byte[] { };
         }
 
-        public void MoveToCache(string file)
+        public bool FileIsCached(string file)
+        {
+            if (!File.Exists(GetCachedFile(file)))
+                return false;
+            return true;
+        }
+
+        public void CopyToCache(string file)
         {
             CreateCacheDirectoryIfNotExist();
             _filesUtility.SafeCopyFile(file, GetCachedFile(file), true);
         }
 
-        public bool MoveFromCache(string file)
+        public void CopyFromCache(string file)
         {
-            if (!File.Exists(GetCachedFile(file)))
-                return false;
-
             _filesUtility.SafeCopyFile(GetCachedFile(file), file);
-
-            return true;
         }
 
-        private string GetCachedFile(string file)
-        {
-            //TODO: We need to decide if the Paths.GeneratedFolder (for generated assemblies) will be mapped to a folder in the BuildOptions class or something else
-            var relativePathToGeneratedFolder = FilesUtility.AbsoluteToRelativePath(Paths.GeneratedFolder, file);
-            return Path.Combine(_cacheDirectory, relativePathToGeneratedFolder);
-        }
+        private string GetCachedFile(string file) => Path.Combine(_cacheDirectory, Path.GetFileName(file));
 
         private void CreateCacheDirectoryIfNotExist()
         {

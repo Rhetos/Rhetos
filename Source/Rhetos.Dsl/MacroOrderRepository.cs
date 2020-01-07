@@ -31,8 +31,6 @@ namespace Rhetos.Dsl
         public decimal EvaluatorOrder { get; set; }
     }
 
-    //TODO: Refactor this class so that it can be used with RhetosCli
-    //Currently the GeneratedFilesCache class has some design incompatibility with the new RhetosCli
     /// <summary>
     /// Reads from file the recommended order of macro concepts evaluation.
     /// The order is optimized to reduce number of iteration in macro evaluation.
@@ -41,12 +39,10 @@ namespace Rhetos.Dsl
     {
         private const string MacroOrderFileName = "MacroOrder.json";
         private readonly BuildOptions _buildOptions;
-        private readonly AssetsOptions _assetsOptions;
 
-        public MacroOrderRepository(BuildOptions buildOptions, AssetsOptions assetsOptions)
+        public MacroOrderRepository(BuildOptions buildOptions)
         {
             _buildOptions = buildOptions;
-            _assetsOptions = assetsOptions;
         }
 
         public List<MacroOrder> Load()
@@ -66,7 +62,7 @@ namespace Rhetos.Dsl
         public void Save(IEnumerable<MacroOrder> macroOrders)
         {
             string serializedConcepts = JsonConvert.SerializeObject(macroOrders, Formatting.Indented);
-            string path = Path.Combine(_assetsOptions.AssetsFolder, MacroOrderFileName);
+            string path = Path.Combine(_buildOptions.CacheFolder, MacroOrderFileName);
             File.WriteAllText(path, serializedConcepts, Encoding.UTF8);
         }
     }

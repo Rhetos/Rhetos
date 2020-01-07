@@ -259,14 +259,19 @@ namespace Rhetos.Compiler
 
         private bool TryRestoreCachedFiles(string outputAssemblyPath, string pdbPath)
         {
-            return _cacheUtility.MoveFromCache(outputAssemblyPath) && _cacheUtility.MoveFromCache(pdbPath);
+            if (!_cacheUtility.FileIsCached(outputAssemblyPath) || !_cacheUtility.FileIsCached(pdbPath))
+                return false;
+
+            _cacheUtility.CopyFromCache(outputAssemblyPath);
+            _cacheUtility.CopyFromCache(pdbPath);
+            return true;
         }
 
         private void SaveFilesToCache(string sourcePath, string outputAssemblyPath, string pdbPath, byte[] sourceHash)
         {
             _cacheUtility.SaveHash(sourcePath, sourceHash);
-            _cacheUtility.MoveToCache(outputAssemblyPath);
-            _cacheUtility.MoveToCache(pdbPath);
+            _cacheUtility.CopyToCache(outputAssemblyPath);
+            _cacheUtility.CopyToCache(pdbPath);
         }
 
         [Obsolete("See the description in IAssemblyGenerator.")]
