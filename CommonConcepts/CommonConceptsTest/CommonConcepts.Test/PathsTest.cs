@@ -47,7 +47,6 @@ namespace CommonConcepts.Test
             Assert.AreEqual(Path.Combine(rootPath, "GeneratedFilesCache"), Paths.GeneratedFilesCacheFolder);
             Assert.AreEqual(Path.Combine(rootPath, "bin"), Paths.BinFolder);
             Assert.AreEqual(Path.Combine(rootPath, "bin\\Generated"), Paths.GeneratedFolder);
-            Assert.AreEqual(Path.Combine(rootPath, "PackagesCache"), Paths.PackagesCacheFolder);
             Assert.AreEqual(Path.Combine(rootPath, "bin\\Plugins"), Paths.PluginsFolder);
             Assert.AreEqual(Path.Combine(rootPath, "Resources"), Paths.ResourcesFolder);
         }

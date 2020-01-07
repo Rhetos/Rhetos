@@ -46,7 +46,6 @@ namespace Rhetos.Utilities
         }
 
         public static string RhetosServerRootPath => NonNullRhetosRootPath;
-        public static string PackagesCacheFolder => Path.Combine(NonNullRhetosRootPath, "PackagesCache");
         public static string ResourcesFolder => Path.Combine(NonNullRhetosRootPath, "Resources");
         public static string BinFolder => NonNullRhetosAppOptions.BinFolder;
         public static string GeneratedFolder => NotNullGeneratedFolder;
