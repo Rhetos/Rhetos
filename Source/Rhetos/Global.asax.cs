@@ -46,7 +46,8 @@ namespace Rhetos
                 .AddRhetosAppConfiguration(AppDomain.CurrentDomain.BaseDirectory)
                 .Build();
 
-            var builder = CreateServerContainer(configurationProvider, new NLogProvider(), LegacyUtilities.GetListAssembliesDelegate());
+            var builder = new RhetosContainerBuilder(configurationProvider, new NLogProvider(), LegacyUtilities.GetListAssembliesDelegate());
+            AddRhetosComponents(builder);
             AutofacServiceHostFactory.Container = builder.Build();
 
             var logProvider = AutofacServiceHostFactory.Container.Resolve<ILogProvider>();
@@ -75,10 +76,8 @@ namespace Rhetos
             _performanceLogger.Write(stopwatch, "All services initialized.");
         }
 
-        internal static ContainerBuilder CreateServerContainer(IConfigurationProvider configurationProvider, ILogProvider logProvider, Func<IEnumerable<string>> findAssemblies)
+        internal static void AddRhetosComponents(RhetosContainerBuilder builder)
         {
-            var builder = new RhetosContainerBuilder(configurationProvider, logProvider, findAssemblies);
-            
             // General registrations
             builder.AddRhetosRuntime();
 
@@ -91,7 +90,6 @@ namespace Rhetos
 
             // Plugin modules
             builder.GetPluginRegistration().FindAndRegisterPluginModules();
-            return builder;
         }
 
         // Called once for each application instance.

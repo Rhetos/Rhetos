@@ -250,7 +250,7 @@ namespace Rhetos.Utilities
                         reportExceptions = new[] { ex };
 
                     foreach (var exceptionInfo in reportExceptions.Select(re => re.GetType().Name + ": " + re.Message).Distinct().Take(5))
-                        report.Add($"* '{Path.GetFileName(assemblyPath)}' throws {exceptionInfo}.");
+                        report.Add($"* '{Path.GetFileName(assemblyPath)}' throws {exceptionInfo}");
                 }
             }
             return report;
@@ -268,7 +268,7 @@ namespace Rhetos.Utilities
             int strIndex = 0;
             int prefixIndex = 0;
             var matches = new List<string>();
-            while (strIndex < strings.Count() && prefixIndex < prefixes.Count())
+            while (strIndex < strings.Count && prefixIndex < prefixes.Count)
             {
                 string str = strings[strIndex];
                 string prefix = prefixes[prefixIndex];

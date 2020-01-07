@@ -184,12 +184,17 @@ namespace Rhetos.Extensibility
 
             try
             {
+                // Trying to load the assembly in a standard way (from probing paths), before loading explicitly from the specified path (Assembly.LoadFrom).
+                // This will reduce possible issues with multiple instances of same assembly loaded from different paths,
+                // for example, a plugin assembly loaded explicitly from NuGet packages folder by this class, and a copy of the same assembly
+                // loaded implicitly from bin folder by some other component.
                 assembly = Assembly.Load(assemblyFilename);
                 _logger.Trace($"Assembly '{assemblyFilename}' loaded from '{assembly.Location}'.");
             }
             catch (Exception e)
             {
-                _logger.Trace(() => $"'{assemblyFilename}' could not by loaded from probing paths: {e}");
+                // This exception is expected if loading a plugin assembly outside of bin folder.
+                _logger.Trace(() => $"'{assemblyFilename}' could not be loaded from probing paths. {e.GetType().Name}: {e.Message}");
             }
 
             if (assembly == null)

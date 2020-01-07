@@ -20,9 +20,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Compiler;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 
@@ -38,22 +36,20 @@ namespace Rhetos.Extensibility.Test
         [TestMethod]
         public void AnalyzeAndReportTypeLoadException()
         {
-            IEnumerable<string> findAssemblies() => new[] { GetOldAssemblyPath() };
+            IEnumerable<string> findAssemblies() => new[] { GetIncompatibleAssemblyPath() };
             PluginScannerOptions options = new PluginScannerOptions { GeneratedFilesCacheFolder = "." };
             var pluginsScanner = new PluginScanner(findAssemblies, options, new ConsoleLogProvider());
 
             TestUtility.ShouldFail<FrameworkException>(
-                () => pluginsScanner.FindPlugins(typeof(IConceptCodeGenerator)),
+                () => pluginsScanner.FindPlugins(typeof(IGenerator)),
                 "Please check if the assembly is missing or has a different version.",
-                "'Rhetos.Dom.DefaultConcepts.dll' throws FileNotFoundException: Could not load file or assembly 'Rhetos.Security.Interfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null' or one of its dependencies. The system cannot find the file specified.",
-                "'Rhetos.Dom.DefaultConcepts.dll' throws FileNotFoundException: Could not load file or assembly 'Autofac, Version=3.5.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da' or one of its dependencies. The system cannot find the file specified.",
-                "'Rhetos.Dom.DefaultConcepts.dll' throws FileNotFoundException: Could not load file or assembly 'Rhetos.Persistence.Interfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null' or one of its dependencies. The system cannot find the file specified.");
+                "'Rhetos.RestGenerator.dll' throws FileNotFoundException: Could not load file or assembly 'Autofac, Version=3.5.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da' or one of its dependencies. The system cannot find the file specified.");
         }
 
-        private static string GetOldAssemblyPath()
+        private static string GetIncompatibleAssemblyPath()
         {
-            string startingFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            string oldAssemblyPathInRepository = @"packages\Rhetos.CommonConcepts.1.0.0\lib\net451\Rhetos.Dom.DefaultConcepts.dll";
+            string startingFolder = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            string oldAssemblyPathInRepository = @"packages\Rhetos.RestGenerator.2.1.0\lib\net451\Rhetos.RestGenerator.dll";
             var testFolder = new DirectoryInfo(startingFolder);
 
             string oldAssemblyPath;

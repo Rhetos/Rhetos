@@ -104,7 +104,8 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsServerRuntime()
         {
-            var builder = Rhetos.Global.CreateServerContainer(_configurationProvider, new NLogProvider(), PluginsFromThisAssembly);
+            var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider(), PluginsFromThisAssembly);
+            Rhetos.Global.AddRhetosComponents(builder);
 
             using (var container = builder.Build())
             {

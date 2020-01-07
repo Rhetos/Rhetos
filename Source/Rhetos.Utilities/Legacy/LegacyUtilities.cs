@@ -17,11 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 
 namespace Rhetos
@@ -46,10 +44,14 @@ namespace Rhetos
             SqlUtility.Initialize(sqlOptions, connectionStringOptions);
         }
 
+        /// <summary>
+        /// Returns list of assemblies that will be scanned for plugin exports.
+        /// </summary>
         public static Func<List<string>> GetListAssembliesDelegate()
         {
             return () =>
             {
+                // Rhetos framework does not contain plugins exports (only explicit registration), so only plugins and generated files need to be scanned for plugins.
                 string[] pluginsPath = new[] { Paths.PluginsFolder, Paths.GeneratedFolder };
 
                 List<string> assemblies = new List<string>();
