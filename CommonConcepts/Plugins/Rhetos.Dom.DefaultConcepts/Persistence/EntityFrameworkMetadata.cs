@@ -20,6 +20,7 @@
 using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.Utilities;
+using System.Collections.Generic;
 using System.Data.Entity.Core.Metadata.Edm;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
@@ -27,6 +28,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Rhetos.Dom.DefaultConcepts.Persistence
 {
@@ -58,11 +61,11 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                         {
                             var sw = Stopwatch.StartNew();
 
-                            SetProviderManifestTokenIfNeeded(sw);
+                            var modelFilesPath = EntityFrameworkMapping.ModelFiles.Select(fileName => Path.Combine(_assetsOptions.AssetsFolder, fileName)).ToList();
+                            SetProviderManifestTokenIfNeeded(sw, modelFilesPath);
 
-                            var modelFilesPath = EntityFrameworkMapping.ModelFiles.Select(fileName => Path.Combine(_assetsOptions.AssetsFolder, fileName));
                             _metadataWorkspace = new MetadataWorkspace(modelFilesPath, new Assembly[] { });
-                            _performanceLogger.Write(sw, $@"{nameof(EntityFrameworkMetadata)}: Load EDM files.");
+                            _performanceLogger.Write(sw, $"{nameof(EntityFrameworkMetadata)}: Load EDM files.");
 
                             _initialized = true;
                         }
@@ -71,30 +74,51 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
             }
         }
 
-        private void SetProviderManifestTokenIfNeeded(Stopwatch sw)
+        private void SetProviderManifestTokenIfNeeded(Stopwatch sw, List<string> modelFilesPath)
         {
-            var ssdlFileName = EntityFrameworkMapping.ModelFiles.First(x => x.EndsWith(".ssdl"));
-            var ssdlFile = Path.Combine(_assetsOptions.AssetsFolder, ssdlFileName);
-            string firstLineInSsdl;
-            _logger.Trace("Checking if ProviderManifestToken is set.");
-            using (StreamReader reader = new StreamReader(ssdlFile))
+            string expectedManifestToken = GetDatabaseManifestToken();
+
+            var ssdlFile = modelFilesPath.Single(path => path.EndsWith(".ssdl"));
+            string ssdlFirstLine = ReadFirstLine(ssdlFile);
+            var existingManifestToken = _manifestTokenRegex.Match(ssdlFirstLine).Groups["token"];
+            _performanceLogger.Write(sw, $@"{nameof(EntityFrameworkMetadata)}: Checked if ProviderManifestToken is set.");
+
+            if (!existingManifestToken.Success)
+                throw new FrameworkException($"Cannot find ProviderManifestToken attribute in '{ssdlFile}'.");
+
+            if (existingManifestToken.Value != expectedManifestToken)
             {
-                firstLineInSsdl = reader.ReadLine();
+                if (existingManifestToken.Value == EntityFrameworkMappingGenerator.ProviderManifestTokenPlaceholder)
+                    _logger.Trace($@"Setting ProviderManifestToken to {expectedManifestToken}.");
+                else
+                    _logger.Info($@"Changing ProviderManifestToken from {existingManifestToken.Value} to {expectedManifestToken}.");
+
+                var lines = File.ReadAllLines(ssdlFile, Encoding.UTF8);
+                lines[0] = ssdlFirstLine.Substring(0, existingManifestToken.Index)
+                    + expectedManifestToken
+                    + ssdlFirstLine.Substring(existingManifestToken.Index + existingManifestToken.Length);
+                File.WriteAllLines(ssdlFile, lines, Encoding.UTF8);
+
+                _performanceLogger.Write(sw, $@"{nameof(EntityFrameworkMetadata)}: Initialized {Path.GetFileName(ssdlFile)}.");
             }
+        }
 
-            if (firstLineInSsdl.Contains(EntityFrameworkMappingGenerator.ProviderManifestTokenPlaceholder))
+        private static readonly Regex _manifestTokenRegex = new Regex(@"ProviderManifestToken=""(?<token>.*?)""");
+
+        private string GetDatabaseManifestToken()
+        {
+            _logger.Trace("Resolving ProviderManifestToken.");
+            using (var connection = new SqlConnection(_connectionString))
             {
-                _logger.Info("Resolving ProviderManifestToken.");
-                var lines = File.ReadAllLines(ssdlFile);
-                using (var connection = new SqlConnection(_connectionString))
-                {
-                    var manifestToken = new DefaultManifestTokenResolver().ResolveManifestToken(connection);
-                    lines[0] = lines[0].Replace(EntityFrameworkMappingGenerator.ProviderManifestTokenPlaceholder, $@"ProviderManifestToken=""{manifestToken}""");
-                    File.WriteAllLines(ssdlFile, lines);
-                    _logger.Info($@"Set ProviderManifestToken to {manifestToken}.");
-                }
+                return new DefaultManifestTokenResolver().ResolveManifestToken(connection);
+            }
+        }
 
-                _performanceLogger.Write(sw, $@"{nameof(EntityFrameworkMetadata)}: Initialized {ssdlFileName} file.");
+        private string ReadFirstLine(string ssdlFile)
+        {
+            using (var reader = new StreamReader(ssdlFile, Encoding.UTF8))
+            {
+                return reader.ReadLine();
             }
         }
     }
