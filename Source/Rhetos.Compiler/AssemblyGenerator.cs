@@ -164,7 +164,8 @@ namespace Rhetos.Compiler
                 return;
 
             var errors = emitResult.Diagnostics
-                .Where(x => x.IsWarningAsError || x.Severity == DiagnosticSeverity.Error)
+                .Where(e => e.Severity == DiagnosticSeverity.Error || e.IsWarningAsError)
+                .OrderBy(e => e.Location?.SourceSpan.Start).ThenBy(e => e.ToString())
                 .ToList();
 
             if (!errors.Any())
@@ -178,8 +179,9 @@ namespace Rhetos.Compiler
             else
                 report.AppendLine(":");
 
-            report.Append(string.Join("\r\n",
-                errors.Take(_errorReportLimit).Select(error => error.ToString() + ReportContext(error, sourceCode, sourcePath))));
+            report.Append(string.Join("\r\n", errors
+                .Take(_errorReportLimit)
+                .Select(error => error.ToString() + ReportContext(error, sourceCode, sourcePath))));
 
             if (errors.Count > _errorReportLimit)
             {
@@ -221,7 +223,8 @@ namespace Rhetos.Compiler
         private void ReportWarnings(EmitResult emitResult, string outputAssemblyPath)
         {
             List<Diagnostic> warnings = emitResult.Diagnostics
-                .Where(x => x.Severity == DiagnosticSeverity.Warning)
+                .Where(w => w.Severity == DiagnosticSeverity.Warning)
+                .OrderBy(w => w.Location?.SourceSpan.Start).ThenBy(w => w.ToString())
                 .ToList();
 
             if (!warnings.Any())
