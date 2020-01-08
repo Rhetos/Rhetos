@@ -32,7 +32,7 @@ namespace Rhetos.Extensibility
 {
     public class PluginScanner : IPluginScanner
     {
-        private const string _pluginScannerCacheFilename = "Rhetos.PluginScanner.Cache.json";
+        private const string _pluginScannerCacheFilename = "PluginScanner.Cache.json";
 
         /// <summary>
         /// The key is FullName of the plugin's export type (it is usually the interface it implements).

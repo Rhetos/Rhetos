@@ -39,15 +39,13 @@ namespace Rhetos.Dsl
     {
         private const string MacroOrderFileName = "MacroOrder.json";
         private readonly BuildOptions _buildOptions;
-        private readonly FilesUtility _filesUtility;
 
-        public MacroOrderRepository(BuildOptions buildOptions, FilesUtility filesUtility)
+        public MacroOrderRepository(BuildOptions buildOptions)
         {
             _buildOptions = buildOptions;
-            _filesUtility = filesUtility;
         }
 
-        private string CacheFilePath => Path.Combine(_buildOptions.CacheFolder, nameof(MacroOrder), MacroOrderFileName);
+        private string CacheFilePath => Path.Combine(_buildOptions.CacheFolder, MacroOrderFileName);
 
         public List<MacroOrder> Load()
         {
@@ -65,7 +63,6 @@ namespace Rhetos.Dsl
         public void Save(IEnumerable<MacroOrder> macroOrders)
         {
             string serializedConcepts = JsonConvert.SerializeObject(macroOrders, Formatting.Indented);
-            _filesUtility.SafeCreateDirectory(Path.GetDirectoryName(CacheFilePath));
             File.WriteAllText(CacheFilePath, serializedConcepts, Encoding.UTF8);
         }
     }
