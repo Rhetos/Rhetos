@@ -53,10 +53,9 @@ namespace Rhetos.Deployment
         public DataMigrationScripts Load()
         {
             var stopwatch = Stopwatch.StartNew();
-            var dataMigrationScriptsFilePath = Path.Combine(_assetsOptions.AssetsFolder, DataMigrationScriptsFileName);
-            if (!File.Exists(dataMigrationScriptsFilePath))
-                throw new FrameworkException($@"The file {dataMigrationScriptsFilePath} that is used to execute the data migration is missing. Please check that the build has completed successfully before updating the database.");
-            var serializedConcepts = File.ReadAllText(dataMigrationScriptsFilePath, Encoding.UTF8);
+            if (!File.Exists(DataMigrationScriptsFilePath))
+                throw new FrameworkException($@"The file {DataMigrationScriptsFilePath} that is used to execute the data migration is missing. Please check that the build has completed successfully before updating the database.");
+            var serializedConcepts = File.ReadAllText(DataMigrationScriptsFilePath, Encoding.UTF8);
             var dataMigrationScripts = JsonConvert.DeserializeObject<DataMigrationScripts>(serializedConcepts);
             _performanceLogger.Write(stopwatch, $@"DataMigrationScriptsFromDisk: Loaded {dataMigrationScripts.Scripts.Count} scripts from generated file.");
             return dataMigrationScripts;
@@ -66,8 +65,10 @@ namespace Rhetos.Deployment
         {
             var stopwatch = Stopwatch.StartNew();
             string serializedMigrationScripts = JsonConvert.SerializeObject(dataMigrationScripts, Formatting.Indented);
-            File.WriteAllText(Path.Combine(_assetsOptions.AssetsFolder, DataMigrationScriptsFileName), serializedMigrationScripts, Encoding.UTF8);
+            File.WriteAllText(DataMigrationScriptsFilePath, serializedMigrationScripts, Encoding.UTF8);
             _performanceLogger.Write(stopwatch, $@"DataMigrationScriptsFromDisk: Saved {dataMigrationScripts.Scripts.Count} scripts to generated file.");
         }
+
+        private string DataMigrationScriptsFilePath => Path.Combine(_assetsOptions.AssetsFolder, DataMigrationScriptsFileName);
     }
 }

@@ -111,17 +111,17 @@ namespace Rhetos.Dsl
             string serializedConcepts = JsonConvert.SerializeObject(concepts, serializerSettings);
             _performanceLogger.Write(sw, "DslModelFile.SaveConcepts: Serialize.");
 
-            string path = Path.Combine(_assetsOptions.AssetsFolder, DslModelFileName);
-            File.WriteAllText(path, serializedConcepts, Encoding.UTF8);
+            File.WriteAllText(DslModelFilePath, serializedConcepts, Encoding.UTF8);
             _performanceLogger.Write(sw, "DslModelFile.SaveConcepts: Write.");
         }
+
+        private string DslModelFilePath => Path.Combine(_assetsOptions.AssetsFolder, DslModelFileName);
 
         private IEnumerable<IConceptInfo> LoadConcepts()
         {
             var sw = Stopwatch.StartNew();
 
-            string path = Path.Combine(_assetsOptions.AssetsFolder, DslModelFileName);
-            string serializedConcepts = File.ReadAllText(path, Encoding.UTF8);
+            string serializedConcepts = File.ReadAllText(DslModelFilePath, Encoding.UTF8);
 
             var serializerSettings = new JsonSerializerSettings
             {
