@@ -40,7 +40,6 @@ namespace CommonConcepts.Test
                 AddRhetosAppConfiguration(rootPath).Build();
             Paths.Initialize(rootPath,
                 configurationProvider.GetOptions<RhetosAppOptions>(),
-                configurationProvider.GetOptions<BuildOptions>(),
                 configurationProvider.GetOptions<AssetsOptions>());
 
             Assert.AreEqual(rootPath, Paths.RhetosServerRootPath);

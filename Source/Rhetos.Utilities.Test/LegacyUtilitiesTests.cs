@@ -52,17 +52,17 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void PathThrowsOnNullEnvironment()
         {
-            Paths.Initialize(null, null, null, null);
+            Paths.Initialize(null, null, null);
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.RhetosServerRootPath), "Rhetos server is not initialized (Paths class)");
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.BinFolder), "Rhetos server is not initialized (Paths class)");
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFolder), "Rhetos server is not initialized (Paths class)");
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.PluginsFolder), "Rhetos server is not initialized (Paths class)");
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.ResourcesFolder), "Rhetos server is not initialized (Paths class)");
 
-            Paths.Initialize(null, new RhetosAppOptions(), new BuildOptions(), null);
+            Paths.Initialize(null, new RhetosAppOptions(), null);
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFolder), "Rhetos server is not initialized (Paths class)");
 
-            Paths.Initialize(null, null, null, new AssetsOptions());
+            Paths.Initialize(null, null, new AssetsOptions());
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFolder), "AssetsFolder expected to be configured");
         }
     }
