@@ -39,16 +39,16 @@ namespace Rhetos.Compiler
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
         private readonly int _errorReportLimit;
-        private readonly DomGeneratorOptions _domGeneratorOptions;
+        private readonly BuildOptions _buildOptions;
         private readonly CacheUtility _cacheUtility;
 
         public AssemblyGenerator(ILogProvider logProvider, IConfigurationProvider configurationProvider,
-            DomGeneratorOptions domGeneratorOptions, BuildOptions buildOptions, FilesUtility filesUtility)
+            BuildOptions buildOptions, FilesUtility filesUtility)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("AssemblyGenerator");
             _errorReportLimit = configurationProvider.GetValue("AssemblyGenerator.ErrorReportLimit", 5);
-            _domGeneratorOptions = domGeneratorOptions;
+            _buildOptions = buildOptions;
             _cacheUtility = new CacheUtility(typeof(AssemblyGenerator), buildOptions, filesUtility);
         }
 
@@ -58,23 +58,29 @@ namespace Rhetos.Compiler
 
             manifestResources = manifestResources ?? Array.Empty<ManifestResource>();
 
-            string dllName = Path.GetFileName(outputAssemblyPath);
-
             // Save source file and it's hash value:
             string sourceCode = // The compiler parameters are included in the source, in order to invalidate the assembly cache when the parameters are changed.
                 string.Concat(assemblySource.RegisteredReferences.Select(reference => $"// Reference: {PathAndVersion(reference)}\r\n"))
                 + string.Concat(manifestResources.Select(resource => $"// Resource: \"{resource.Name}\", {PathAndVersion(resource.Path)}\r\n"))
-                + $"// DomGeneratorOptions.Debug = \"{_domGeneratorOptions.Debug}\"\r\n\r\n"
+                + $"// Debug = \"{_buildOptions.Debug}\"\r\n\r\n"
                 + assemblySource.GeneratedCode;
 
             string sourcePath = Path.GetFullPath(Path.ChangeExtension(outputAssemblyPath, ".cs"));
             File.WriteAllText(sourcePath, sourceCode, Encoding.UTF8);
             _performanceLogger.Write(stopwatch, $@"{nameof(AssemblyGenerator)}: Save source.");
 
-            // Compile assembly or get from cache:
+            return CompileAssemblyOrGetFromCache(outputAssemblyPath, sourceCode, sourcePath, assemblySource.RegisteredReferences, manifestResources);
+        }
+
+        private Assembly CompileAssemblyOrGetFromCache(string outputAssemblyPath, string sourceCode, string sourcePath, IEnumerable<string> registeredReferences, IEnumerable<ManifestResource> manifestResources)
+        {
+            var stopwatch = Stopwatch.StartNew();
+
             Assembly generatedAssembly;
+            string dllName = Path.GetFileName(outputAssemblyPath);
             var pdbPath = Path.ChangeExtension(outputAssemblyPath, ".pdb");
             var sourceHash = _cacheUtility.ComputeHash(sourceCode);
+
             if (sourceHash.SequenceEqual(_cacheUtility.LoadHash(sourcePath)) && TryRestoreCachedFiles(outputAssemblyPath, pdbPath))
             {
                 _logger.Trace(() => "Restoring assembly from cache: " + dllName + ".");
@@ -84,14 +90,14 @@ namespace Rhetos.Compiler
                 generatedAssembly = Assembly.LoadFrom(outputAssemblyPath);
                 _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Assembly from cache ({dllName}).");
 
-                FailOnTypeLoadErrors(generatedAssembly, outputAssemblyPath, assemblySource.RegisteredReferences);
+                FailOnTypeLoadErrors(generatedAssembly, outputAssemblyPath, registeredReferences);
                 _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({dllName}).");
             }
             else
             {
                 _logger.Trace(() => "Compiling assembly: " + dllName + ".");
 
-                var references = assemblySource.RegisteredReferences
+                var references = registeredReferences
                     .Select(reference => MetadataReference.CreateFromFile(reference)).ToList();
 
                 var assemblyName = GetAssemblyName(dllName);
@@ -99,7 +105,7 @@ namespace Rhetos.Compiler
                     OutputKind.DynamicallyLinkedLibrary,
                     assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default,
                     moduleName: assemblyName,
-                    optimizationLevel: _domGeneratorOptions.Debug ? OptimizationLevel.Debug : OptimizationLevel.Release);
+                    optimizationLevel: _buildOptions.Debug ? OptimizationLevel.Debug : OptimizationLevel.Release);
 
                 var encoding = new UTF8Encoding(true); // This encoding is used when saving the source file.
                 var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode, null, sourcePath, encoding);
@@ -121,7 +127,7 @@ namespace Rhetos.Compiler
 
                     generatedAssembly = Assembly.LoadFrom(outputAssemblyPath);
 
-                    FailOnTypeLoadErrors(generatedAssembly, outputAssemblyPath, assemblySource.RegisteredReferences);
+                    FailOnTypeLoadErrors(generatedAssembly, outputAssemblyPath, registeredReferences);
                     _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({dllName}).");
                 }
 

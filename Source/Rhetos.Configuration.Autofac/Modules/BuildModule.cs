@@ -89,7 +89,6 @@ namespace Rhetos.Configuration.Autofac.Modules
 
         private void AddDom(ContainerBuilder builder)
         {
-            builder.Register(context => new DomGeneratorOptions() { Debug = context.ResolveOptional<BuildOptions>()?.Debug ?? false }).SingleInstance();
             builder.RegisterType<DomGenerator>().As<IGenerator>();
         }
 
