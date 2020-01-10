@@ -132,7 +132,7 @@ namespace DeployPackages
             if (invalidArgument != null)
             {
                 ShowHelp();
-                throw new ApplicationException($"Unexpected command-line argument: '{invalidArgument}'.");
+                throw new FrameworkException($"Unexpected command-line argument: '{invalidArgument}'.");
             }
             return true;
         }

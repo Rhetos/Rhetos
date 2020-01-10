@@ -116,7 +116,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 return true;
             if (_propertiesSelector.Body is NewExpression)
                 return false;
-            throw new ApplicationException("The given propertiesSelector must be a MemberExpression or a NewExpression (for multiple members).");
+            throw new FrameworkException("The given propertiesSelector must be a MemberExpression or a NewExpression (for multiple members).");
         }
 
         private IEnumerable<Expression> InitializeMemberExpressions()

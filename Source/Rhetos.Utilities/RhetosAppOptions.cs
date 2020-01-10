@@ -23,7 +23,7 @@ namespace Rhetos.Utilities
     {
         public string BinFolder { get; set; }
         public bool BuiltinAdminOverride { get; set; } = false;
-        public bool SkipRecompute { get; set; }
+        public bool SkipRecompute { get; set; } = false;
         public bool EntityFramework__UseDatabaseNullSemantics { get; set; } = false;
         public double AuthorizationCacheExpirationSeconds { get; set; } = 30;
         public bool AuthorizationAddUnregisteredPrincipals { get; set; } = false;
