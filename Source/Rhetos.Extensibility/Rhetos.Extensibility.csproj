@@ -125,8 +125,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PluginScannerCache.cs" />
     <Compile Include="PluginScanner.cs" />
-    <Compile Include="PluginScannerOptions.cs" />
     <Compile Include="PluginsCacheData.cs" />
     <Compile Include="IPluginScanner.cs" />
     <Compile Include="PluginInfo.cs" />

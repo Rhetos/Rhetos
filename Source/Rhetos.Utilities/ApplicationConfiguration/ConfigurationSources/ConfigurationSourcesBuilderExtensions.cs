@@ -49,6 +49,9 @@ namespace Rhetos
             return builder;
         }
 
+        /// <summary>
+        /// Adds current application's default configuration (see <see cref="ConfigurationManager.AppSettings"/>).
+        /// </summary>
         public static IConfigurationBuilder AddConfigurationManagerConfiguration(this IConfigurationBuilder builder)
         {
             builder.Add(new ConfigurationManagerSource());
@@ -71,18 +74,29 @@ namespace Rhetos
         }
 
         /// <summary>
-        /// Sets RhetosAppRootPath to specified path and loads default configuration for the app at that path.
+        /// Initializes run-time configuration for the Rhetos application.
         /// Currently, web.config is expected to exist at the path and configuration will be loaded from it.
         /// This is planned for phasing out in favor of separate config file used only for Rhetos app.
         /// </summary>
         public static IConfigurationBuilder AddRhetosAppConfiguration(this IConfigurationBuilder builder, string rhetosAppRootPath)
         {
             rhetosAppRootPath = Path.GetFullPath(rhetosAppRootPath);
+
+            bool oldBuildProcess = File.Exists(Path.Combine(rhetosAppRootPath, @"bin\DeployPackages.exe"));
+            if (oldBuildProcess)
+            {
+                // Legacy build process with DeployPackage
+                builder.AddKeyValue(nameof(AssetsOptions.AssetsFolder), Path.Combine(rhetosAppRootPath, "bin\\Generated"));
+                builder.AddKeyValue(nameof(RhetosAppOptions.BinFolder), Path.Combine(rhetosAppRootPath, "bin"));
+            }
+            else
+            {
+                // New build process with Rhetos CLI
+                builder.AddKeyValue(nameof(AssetsOptions.AssetsFolder), Path.Combine(rhetosAppRootPath, "RhetosAssets"));
+                builder.AddKeyValue(nameof(RhetosAppOptions.BinFolder), Path.Combine(rhetosAppRootPath, "bin"));
+            }
+
             builder.AddKeyValue("RootPath", rhetosAppRootPath);
-            builder.AddKeyValue(nameof(AssetsOptions.AssetsFolder), Path.Combine(rhetosAppRootPath, "bin\\Generated"));
-            builder.AddKeyValue(nameof(BuildOptions.CacheFolder), Path.Combine(rhetosAppRootPath, "GeneratedFilesCache"));
-            builder.AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), Path.Combine(rhetosAppRootPath, "bin\\Generated"));
-            builder.AddKeyValue(nameof(RhetosAppOptions.BinFolder), Path.Combine(rhetosAppRootPath, "bin"));
             builder.AddWebConfiguration(rhetosAppRootPath);
             return builder;
         }

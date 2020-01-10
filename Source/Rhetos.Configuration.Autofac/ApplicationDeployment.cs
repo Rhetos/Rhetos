@@ -65,9 +65,10 @@ namespace Rhetos
 
         public void GenerateApplication()
         {
-            _filesUtility.SafeCreateDirectory(Paths.GeneratedFolder);
             _filesUtility.EmptyDirectory(Paths.GeneratedFolder);
-            _filesUtility.SafeCreateDirectory(_configurationProvider.GetOptions<BuildOptions>().CacheFolder);
+            _filesUtility.EmptyDirectory(_configurationProvider.GetOptions<AssetsOptions>().AssetsFolder);
+            _filesUtility.EmptyDirectory(_configurationProvider.GetOptions<BuildOptions>().GeneratedSourceFolder);
+            _filesUtility.SafeCreateDirectory(_configurationProvider.GetOptions<BuildOptions>().CacheFolder); // Cache should not be deleted between builds.
 
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
