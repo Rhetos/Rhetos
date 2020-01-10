@@ -65,7 +65,6 @@ namespace Rhetos
 
         public void GenerateApplication()
         {
-            _filesUtility.EmptyDirectory(Paths.GeneratedFolder);
             _filesUtility.EmptyDirectory(_configurationProvider.GetOptions<AssetsOptions>().AssetsFolder);
             _filesUtility.EmptyDirectory(_configurationProvider.GetOptions<BuildOptions>().GeneratedSourceFolder);
             _filesUtility.SafeCreateDirectory(_configurationProvider.GetOptions<BuildOptions>().CacheFolder); // Cache should not be deleted between builds.
