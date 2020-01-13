@@ -136,11 +136,6 @@ namespace CreateIISExpressSite
 
                 Console.WriteLine("DONE");
             }
-            catch (ApplicationException ex)
-            {
-                Console.WriteLine("ERROR: " + ex.Message);
-                return 1;
-            }
             catch (Exception ex)
             {
                 Console.WriteLine("ERROR:");

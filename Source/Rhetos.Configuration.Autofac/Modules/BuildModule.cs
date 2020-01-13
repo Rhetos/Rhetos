@@ -42,6 +42,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             AddDom(builder);
             AddPersistence(builder, pluginRegistration);
             AddCompiler(builder, pluginRegistration);
+            builder.RegisterType<PluginScannerCache>().As<IGenerator>();
 
             builder.RegisterType<ApplicationGenerator>();
             pluginRegistration.FindAndRegisterPlugins<IGenerator>();
@@ -88,7 +89,6 @@ namespace Rhetos.Configuration.Autofac.Modules
 
         private void AddDom(ContainerBuilder builder)
         {
-            builder.Register(context => new DomGeneratorOptions() { Debug = context.ResolveOptional<BuildOptions>()?.Debug ?? false }).SingleInstance();
             builder.RegisterType<DomGenerator>().As<IGenerator>();
         }
 

@@ -20,6 +20,7 @@
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -36,41 +37,31 @@ namespace Rhetos
 
             try
             {
-                var command = args[0];
-                var rhetosServerRootFolder = args[1];
+                var commands = new Dictionary<string, Action<string>>(StringComparer.OrdinalIgnoreCase)
+                {
+                    { "restore", rhetosAppRootPath => Restore(rhetosAppRootPath, logProvider) },
+                    { "build", rhetosAppRootPath => Build(rhetosAppRootPath, logProvider) },
+                    { "dbupdate", rhetosAppRootPath => DbUpdate(rhetosAppRootPath, logProvider) },
+                    { "appinitialize", rhetosAppRootPath => AppInitialize(rhetosAppRootPath, logProvider) },
+                };
 
-                var configurationProvider = BuildConfigurationProvider(args);
-                var rhetosAppOptions = configurationProvider.GetOptions<RhetosAppOptions>();
-                var deployment = new ApplicationDeployment(configurationProvider, logProvider, LegacyUtilities.GetListAssembliesDelegate());
+                string usageReport = "Usage: rhetos.exe <command> <rhetos app folder>\r\n\r\nCommands: "
+                    + string.Join(", ", commands.Keys);
 
-                if (string.Compare(command, "restore", true) == 0)
+                if (args.Length != 2)
                 {
-                    AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
-                        rhetosAppOptions.BinFolder);
-                    deployment.DownloadPackages(false);
+                    logger.Error($"Invalid command-line arguments.\r\n\r\n{usageReport}");
+                    return 1;
                 }
-                else if (string.Compare(command, "build", true) == 0)
+                else if (!commands.ContainsKey(args[0]))
                 {
-                    AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
-                        Paths.BinFolder,
-                        Paths.PluginsFolder);
-                    deployment.GenerateApplication();
+                    logger.Error($"Invalid command '{args[0]}'.\r\n\r\n{usageReport}");
+                    return 1;
                 }
-                else if (string.Compare(command, "dbupdate", true) == 0)
+                else
                 {
-                    AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
-                        rhetosAppOptions.BinFolder,
-                        Paths.PluginsFolder,
-                        Paths.GeneratedFolder);
-                    deployment.UpdateDatabase();
-                }
-                else if (string.Compare(command, "appinitialize", true) == 0)
-                {
-                    AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
-                        rhetosAppOptions.BinFolder,
-                        Paths.PluginsFolder,
-                        Paths.GeneratedFolder);
-                    deployment.InitializeGeneratedApplication();
+                    string rhetosAppRootPath = args[1];
+                    commands[args[0]].Invoke(rhetosAppRootPath);
                 }
 
                 logger.Trace("Done.");
@@ -92,12 +83,55 @@ namespace Rhetos
             return 0;
         }
 
-        private static IConfigurationProvider BuildConfigurationProvider(string[] args)
+        private static void Restore(string rhetosAppRootPath, NLogProvider logProvider)
+        {
+            var configurationProvider = RhetosConfigurationBuilder(rhetosAppRootPath).Build();
+            var deployment = new ApplicationDeployment(configurationProvider, logProvider, LegacyUtilities.GetListAssembliesDelegate());
+            AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
+                Paths.BinFolder);
+            deployment.DownloadPackages(false);
+        }
+
+        private static void Build(string rhetosAppRootPath, NLogProvider logProvider)
+        {
+            var configurationProvider = RhetosConfigurationBuilder(rhetosAppRootPath)
+                .AddKeyValue(nameof(BuildOptions.CacheFolder), Path.Combine(rhetosAppRootPath, "obj\\Rhetos"))
+                .AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), Path.Combine(rhetosAppRootPath, "RhetosSource"))
+                .Build();
+            var deployment = new ApplicationDeployment(configurationProvider, logProvider, LegacyUtilities.GetListAssembliesDelegate());
+            AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
+                Paths.BinFolder,
+                Paths.PluginsFolder);
+            deployment.GenerateApplication();
+        }
+
+        private static void DbUpdate(string rhetosAppRootPath, NLogProvider logProvider)
+        {
+            var configurationProvider = RhetosConfigurationBuilder(rhetosAppRootPath).Build();
+            var deployment = new ApplicationDeployment(configurationProvider, logProvider, LegacyUtilities.GetListAssembliesDelegate());
+            AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
+                Paths.BinFolder,
+                Paths.PluginsFolder,
+                Paths.GeneratedFolder);
+            deployment.UpdateDatabase();
+        }
+
+        private static void AppInitialize(string rhetosAppRootPath, NLogProvider logProvider)
+        {
+            var configurationProvider = RhetosConfigurationBuilder(rhetosAppRootPath).Build();
+            var deployment = new ApplicationDeployment(configurationProvider, logProvider, LegacyUtilities.GetListAssembliesDelegate());
+            AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
+                Paths.BinFolder,
+                Paths.PluginsFolder,
+                Paths.GeneratedFolder);
+            deployment.InitializeGeneratedApplication();
+        }
+
+        private static IConfigurationBuilder RhetosConfigurationBuilder(string rhetosAppRootPath)
         {
             return new ConfigurationBuilder()
-                .AddRhetosAppConfiguration(args[1])
-                .AddConfigurationManagerConfiguration()
-                .Build();
+                .AddRhetosAppConfiguration(rhetosAppRootPath)
+                .AddConfigurationManagerConfiguration();
         }
 
         private static ResolveEventHandler GetSearchForAssemblyDelegate(params string[] folders)

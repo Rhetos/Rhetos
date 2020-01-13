@@ -17,17 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 namespace Rhetos.Dom
 {
-    public class DomGeneratorOptions
+    public static class DomGeneratorOptions
     {
-        public bool Debug { get; set; }
-
         public const string FileSplitterPrefix = "/*DomainObjectModel file: ";
         public const string FileSplitterSuffix = "*/";
     }

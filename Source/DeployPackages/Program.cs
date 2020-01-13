@@ -100,8 +100,11 @@ namespace DeployPackages
 
         private static IConfigurationProvider BuildConfigurationProvider(string[] args)
         {
-            var rhetosAppRootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..");
+            string rhetosAppRootPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".."));
+
             return new ConfigurationBuilder()
+                .AddKeyValue(nameof(BuildOptions.CacheFolder), Path.Combine(rhetosAppRootPath, "GeneratedFilesCache"))
+                .AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), Path.Combine(rhetosAppRootPath, "bin\\Generated"))
                 .AddRhetosAppConfiguration(rhetosAppRootPath)
                 .AddConfigurationManagerConfiguration()
                 .AddCommandLineArguments(args, "/")
@@ -132,7 +135,7 @@ namespace DeployPackages
             if (invalidArgument != null)
             {
                 ShowHelp();
-                throw new ApplicationException($"Unexpected command-line argument: '{invalidArgument}'.");
+                throw new FrameworkException($"Unexpected command-line argument: '{invalidArgument}'.");
             }
             return true;
         }

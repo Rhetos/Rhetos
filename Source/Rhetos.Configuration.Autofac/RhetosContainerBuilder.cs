@@ -21,6 +21,7 @@ using Autofac;
 using Rhetos.Configuration.Autofac.Modules;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 
@@ -44,7 +45,7 @@ namespace Rhetos
         {
             this.RegisterInstance(configurationProvider);
 
-            var pluginScanner = new PluginScanner(findAssemblies, configurationProvider.GetOptions<PluginScannerOptions>(), logProvider);
+            var pluginScanner = new PluginScanner(findAssemblies, configurationProvider.GetOptions<BuildOptions>(), configurationProvider.GetOptions<AssetsOptions>(), logProvider);
 
             // make properties accessible to modules which are provided with new/unique instance of ContainerBuilder
             this.Properties.Add(nameof(IPluginScanner), pluginScanner);

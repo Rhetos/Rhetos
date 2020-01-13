@@ -20,13 +20,20 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Rhetos.Extensibility
 {
-    internal class CachedFileData
+    internal class CachedFileData : IEquatable<CachedFileData>
     {
         public string ModifiedTime { get; set; }
         public List<string> TypesWithExports { get; set; } = new List<string>();
+
+        public bool Equals(CachedFileData other)
+        {
+            return ModifiedTime == other.ModifiedTime
+                && TypesWithExports.SequenceEqual(other.TypesWithExports);
+        }
     }
 
     internal class PluginsCacheData

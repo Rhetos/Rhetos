@@ -31,17 +31,15 @@ namespace Rhetos.Utilities
     {
         private static string _rootPath;
         private static RhetosAppOptions _appOptions;
-        private static BuildOptions _buildOptions;
         private static AssetsOptions _assetsOptions;
 
         /// <summary>
         /// Initialize Paths for the Rhetos server.
         /// </summary>
-        public static void Initialize(string rootPath, RhetosAppOptions appOptions, BuildOptions buildOptions, AssetsOptions assetsOptions)
+        public static void Initialize(string rootPath, RhetosAppOptions appOptions, AssetsOptions assetsOptions)
         {
             _rootPath = rootPath;
             _appOptions = appOptions;
-            _buildOptions = buildOptions;
             _assetsOptions = assetsOptions;
         }
 
@@ -62,14 +60,6 @@ namespace Rhetos.Utilities
                 throw new FrameworkException($"Rhetos server is not initialized ({nameof(Paths)} class)." +
                     $" Use {nameof(LegacyUtilities)}.{nameof(LegacyUtilities.Initialize)}() to initialize obsolete static utilities" +
                     $" or use {nameof(RhetosAppOptions)}.");
-        }
-
-        private static void AssertBuildOptionsNotNull()
-        {
-            if (_appOptions == null)
-                throw new FrameworkException($"Rhetos server is not initialized ({nameof(Paths)} class)." +
-                    $" Use {nameof(LegacyUtilities)}.{nameof(LegacyUtilities.Initialize)}() to initialize obsolete static utilities" +
-                    $" or use {nameof(BuildOptions)}.");
         }
 
         private static void AssertRhetosRootPathNotNull()
@@ -95,15 +85,6 @@ namespace Rhetos.Utilities
             {
                 AssertRhetosAppOptionsNotNull();
                 return _appOptions;
-            }
-        }
-
-        private static BuildOptions NonNullBuildOptions
-        {
-            get
-            {
-                AssertBuildOptionsNotNull();
-                return _buildOptions;
             }
         }
 

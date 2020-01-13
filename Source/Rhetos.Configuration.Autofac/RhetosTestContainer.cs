@@ -147,7 +147,7 @@ namespace Rhetos.Configuration.Autofac
             if (folder.Name == "Rhetos" && IsValidRhetosServerDirectory(folder.FullName))
                 return folder.FullName;
 
-            throw new ApplicationException("Cannot locate a valid Rhetos server's folder from '" + Environment.CurrentDirectory + "'. Unexpected folder '" + folder.FullName + "'.");
+            throw new FrameworkException("Cannot locate a valid Rhetos server's folder from '" + Environment.CurrentDirectory + "'. Unexpected folder '" + folder.FullName + "'.");
         }
 
         private IContainer InitializeIocContainer(IConfigurationProvider configurationProvider)

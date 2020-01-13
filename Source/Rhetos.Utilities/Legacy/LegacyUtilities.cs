@@ -34,9 +34,8 @@ namespace Rhetos
         public static void Initialize(IConfigurationProvider configurationProvider)
         {
             var rhetosAppOptions = configurationProvider.GetOptions<RhetosAppOptions>();
-            var buildOptions = configurationProvider.GetOptions<BuildOptions>();
             var assetsOptions = configurationProvider.GetOptions<AssetsOptions>();
-            Paths.Initialize(configurationProvider.GetValue<string>("RootPath"), rhetosAppOptions, buildOptions, assetsOptions);
+            Paths.Initialize(configurationProvider.GetValue<string>("RootPath"), rhetosAppOptions, assetsOptions);
             ConfigUtility.Initialize(configurationProvider);
             
             var connectionStringOptions = configurationProvider.GetOptions<ConnectionStringOptions>("ConnectionStrings:ServerConnectionString");

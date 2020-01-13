@@ -26,36 +26,33 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Newtonsoft.Json;
+using System.Threading;
 
 namespace Rhetos.Extensibility
 {
     public class PluginScanner : IPluginScanner
     {
-        private const string _pluginScannerCacheFilename = "PluginScanner.Cache.json";
-
         /// <summary>
         /// The key is FullName of the plugin's export type (it is usually the interface it implements).
         /// </summary>
-        private MultiDictionary<string, PluginInfo> _pluginsByExport = null;
-        private readonly object _pluginsLock = new object();
+        private readonly Lazy<MultiDictionary<string, PluginInfo>> _pluginsByExport;
         private readonly ILogger _logger;
-        private readonly FilesUtility _filesUtility;
         private readonly ILogger _performanceLogger;
-        private readonly Func<IEnumerable<string>> _findAssemblies;
-        private readonly PluginScannerOptions _options;
+        private readonly PluginScannerCache _pluginScannerCache;
+        private static readonly object _pluginsCacheLock = new object();
 
         /// <summary>
         /// It searches for type implementations in the provided list of assemblies.
         /// </summary>
         /// <param name="findAssemblies">The findAssemblies function should return a list of assembly file paths that will be searched for plugins when invoking the method <see cref="PluginScanner.FindPlugins"/></param>
-        public PluginScanner(Func<IEnumerable<string>> findAssemblies, PluginScannerOptions options, ILogProvider logProvider)
+        public PluginScanner(Func<IEnumerable<string>> findAssemblies, BuildOptions buildOptions, AssetsOptions assetsOptions, ILogProvider logProvider)
         {
-            _findAssemblies = findAssemblies;
-            _options = options;
+            _pluginsByExport = new Lazy<MultiDictionary<string, PluginInfo>>(
+                () => GetPluginsByExport(findAssemblies),
+                LazyThreadSafetyMode.ExecutionAndPublication);
+            _pluginScannerCache = new PluginScannerCache(buildOptions, assetsOptions, logProvider, new FilesUtility(logProvider));
             _performanceLogger = logProvider.GetLogger("Performance");
-            _logger = logProvider.GetLogger("Plugins");
-            _filesUtility = new FilesUtility(logProvider);
+            _logger = logProvider.GetLogger(GetType().Name);
         }
 
         /// <summary>
@@ -63,34 +60,33 @@ namespace Rhetos.Extensibility
         /// </summary>
         public IEnumerable<PluginInfo> FindPlugins(Type pluginInterface)
         {
-            lock (_pluginsLock)
-            {
-                if (_pluginsByExport == null)
-                {
-                    var assemblies = ListAssemblies();
-
-                    try
-                    {
-                        _pluginsByExport = LoadPlugins(assemblies);
-                    }
-                    catch (Exception ex)
-                    {
-                        string typeLoadReport = CsUtility.ReportTypeLoadException(ex, "Cannot load plugins.", assemblies);
-                        if (typeLoadReport != null)
-                            throw new FrameworkException(typeLoadReport, ex);
-                        else
-                            ExceptionsUtility.Rethrow(ex);
-                    }
-                }
-                return _pluginsByExport.Get(pluginInterface.FullName);
-            }
+            return _pluginsByExport.Value.Get(pluginInterface.FullName);
         }
 
-        private List<string> ListAssemblies()
+        private MultiDictionary<string, PluginInfo> GetPluginsByExport(Func<IEnumerable<string>> findAssemblies)
+        {
+            var assemblies = ListAssemblies(findAssemblies);
+            MultiDictionary<string, PluginInfo> plugins = null;
+            try
+            {
+                plugins = LoadPlugins(assemblies);
+            }
+            catch (Exception ex)
+            {
+                string typeLoadReport = CsUtility.ReportTypeLoadException(ex, "Cannot load plugins.", assemblies);
+                if (typeLoadReport != null)
+                    throw new FrameworkException(typeLoadReport, ex);
+                else
+                    ExceptionsUtility.Rethrow(ex);
+            }
+            return plugins;
+        }
+
+        private List<string> ListAssemblies(Func<IEnumerable<string>> findAssemblies)
         {
             var stopwatch = Stopwatch.StartNew();
 
-            var assemblies = _findAssemblies().ToList();
+            var assemblies = findAssemblies().ToList();
 
             foreach (var assembly in assemblies)
                 if (!File.Exists(assembly))
@@ -106,63 +102,63 @@ namespace Rhetos.Extensibility
         {
             var stopwatch = Stopwatch.StartNew();
 
-            var cacheFilename = Path.Combine(_options.CacheFolder, _pluginScannerCacheFilename);
-            var cacheContents = Directory.Exists(_options.CacheFolder) && File.Exists(cacheFilename) ? File.ReadAllText(cacheFilename) : null;
-            var cache = cacheContents == null ? new PluginsCacheData() : JsonConvert.DeserializeObject<PluginsCacheData>(cacheContents);
-
-            var newCache = new PluginsCacheData();
-            var cachedAssemblies = 0;
-            var pluginsByExport = new MultiDictionary<string, PluginInfo>();
-            var pluginsCount = 0;
-            
-            foreach (var assemblyPath in assemblyPaths)
+            lock (_pluginsCacheLock) // Reading and updating cache files should not be done in parallel.
             {
-                var assemblyModifiedToken = new FileInfo(assemblyPath).LastWriteTimeUtc.ToString("O");
-                Dictionary<Type, List<PluginInfo>> exports;
-                if (cache.Assemblies.TryGetValue(assemblyPath, out var cachedFileData) && cachedFileData.ModifiedTime == assemblyModifiedToken)
-                {
-                    exports = GetMefExportsForAssembly(assemblyPath, cachedFileData.TypesWithExports);
-                    cachedAssemblies++;
-                }
-                else
-                {
-                    exports = GetMefExportsForAssembly(assemblyPath);
-                }
+                var cache = _pluginScannerCache.LoadPluginsCacheData();
 
-                foreach (var export in exports)
+                bool cacheUpdated = false;
+                var cachedAssemblies = 0;
+                var pluginsByExport = new MultiDictionary<string, PluginInfo>();
+                var pluginsCount = 0;
+
+                foreach (var assemblyPath in assemblyPaths)
                 {
-                    foreach (var plugin in export.Value)
+                    var assemblyModifiedToken = new FileInfo(assemblyPath).LastWriteTimeUtc.ToString("O");
+                    Dictionary<Type, List<PluginInfo>> exports;
+                    if (cache.Assemblies.TryGetValue(assemblyPath, out var cachedFileData) && cachedFileData.ModifiedTime == assemblyModifiedToken)
                     {
-                        pluginsByExport.Add(export.Key.FullName, plugin);
-                        pluginsCount++;
+                        exports = GetMefExportsForAssembly(assemblyPath, cachedFileData.TypesWithExports);
+                        cachedAssemblies++;
+                    }
+                    else
+                    {
+                        exports = GetMefExportsForAssembly(assemblyPath);
+                    }
+
+                    foreach (var export in exports)
+                    {
+                        foreach (var plugin in export.Value)
+                        {
+                            pluginsByExport.Add(export.Key.FullName, plugin);
+                            pluginsCount++;
+                        }
+                    }
+
+                    var newCachedFileData = new CachedFileData()
+                    {
+                        ModifiedTime = assemblyModifiedToken,
+                        TypesWithExports = exports.SelectMany(export => export.Value.Select(plugin => plugin.Type.AssemblyQualifiedName)).Distinct().ToList()
+                    };
+                    if (!cache.Assemblies.ContainsKey(assemblyPath)
+                        || !cache.Assemblies[assemblyPath].Equals(newCachedFileData))
+                    {
+                        cache.Assemblies[assemblyPath] = newCachedFileData;
+                        cacheUpdated = true;
                     }
                 }
 
-                newCache.Assemblies.Add(assemblyPath, new CachedFileData()
-                {
-                    ModifiedTime = assemblyModifiedToken,
-                    TypesWithExports = exports.SelectMany(export => export.Value.Select(plugin => plugin.Type.AssemblyQualifiedName)).Distinct().ToList()
-                });
+                _logger.Trace($"Used cached data for {cachedAssemblies} out of total {assemblyPaths.Count} assemblies.");
+
+                if (cacheUpdated)
+                    _pluginScannerCache.SavePluginsCacheData(cache);
+
+                foreach (var pluginsGroup in pluginsByExport)
+                    SortByDependency(pluginsGroup.Value);
+
+                _performanceLogger.Write(stopwatch, $"{nameof(PluginScanner)}: Loaded plugins ({pluginsCount}).");
+
+                return pluginsByExport;
             }
-
-            _logger.Trace($"Used cached data for {cachedAssemblies} out of total {assemblyPaths.Count} assemblies.");
-
-            var newCacheContents = JsonConvert.SerializeObject(newCache, Formatting.Indented);
-            var cacheValid = newCacheContents == cacheContents;
-            if (!cacheValid)
-            {
-                _filesUtility.SafeCreateDirectory(_options.CacheFolder);
-                File.WriteAllText(cacheFilename, newCacheContents);
-            }
-
-            _logger.Trace($"CacheValid={cacheValid} for '{cacheFilename}'.{(cacheValid ? "" : " Saving new data.")}");
-
-            foreach (var pluginsGroup in pluginsByExport)
-                SortByDependency(pluginsGroup.Value);
-
-            _performanceLogger.Write(stopwatch, $"{nameof(PluginScanner)}: Loaded plugins ({pluginsCount}).");
-
-            return pluginsByExport;
         }
 
         private Dictionary<Type, List<PluginInfo>> GetMefExportsForAssembly(string assemblyPath, List<string> typesToCheck = null)
@@ -227,7 +223,7 @@ namespace Rhetos.Extensibility
                 .Select(type => new { type, customAttributeData = type.GetCustomAttributesData()})
                 .Select(info => new
                 {
-                    type = info.type,
+                    info.type,
                     exports = info.customAttributeData.Where(attr => attr.AttributeType == typeof(ExportAttribute)).ToList(),
                     metadata = info.customAttributeData.Where(attr => attr.AttributeType == typeof(ExportMetadataAttribute)).ToList()
                 });
