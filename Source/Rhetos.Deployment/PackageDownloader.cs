@@ -83,6 +83,7 @@ namespace Rhetos.Deployment
                 var newDependencies = new List<PackageRequest>();
                 foreach (var request in packageRequests)
                 {
+                    _logger.Trace(() => $"Getting package {request.ReportIdVersionRequestSource()}.");
                     if (!CheckAlreadyDownloaded(request, installedPackages))
                     {
                         var installedPackage = GetPackage(request, binFileSyncer);
@@ -126,11 +127,10 @@ namespace Rhetos.Deployment
             var existingVersion = SemanticVersion.Parse(existing.Version);
 
             if (!requestVersionsRange.Satisfies(existingVersion))
-                DependencyError(string.Format(
-                    "Incompatible package version '{0}, version {1}, requested by {2}' conflicts with previously downloaded package '{3}, version {4}, requested by {5} ({6})'.",
-                    request.Id, request.VersionsRange ?? "not specified", request.RequestedBy,
-                    existing.Id, existing.Version, existing.Request.RequestedBy, existing.Request.VersionsRange));
+                DependencyError($"Incompatible package version '{request.ReportIdVersionRequestSource()}'" +
+                    $" conflicts with previously downloaded package '{existing.ReportIdVersionRequestSource()}'.");
 
+            _logger.Trace(() => $"Package '{request.ReportIdVersionsRange()}' already downloaded: '{existing.ReportIdVersionRequestSource()}'.");
             return true;
         }
 
@@ -433,8 +433,6 @@ namespace Rhetos.Deployment
 
         private InstalledPackage TryGetPackageFromNuGetCache(PackageRequest request, FileSyncer binFileSyncer)
         {
-            var sw = Stopwatch.StartNew();
-
             // Use cache only if not deploying from source and an exact version is specified:
 
             if (request.Source != null)
@@ -456,9 +454,11 @@ namespace Rhetos.Deployment
             var nugetRepository = new LocalPackageRepository(_packagesCacheFolder, enableCaching: false);
             IPackage package = nugetRepository.FindPackage(request.Id, requestVersionsRange, allowPrereleaseVersions: true, allowUnlisted: true);
 
-            _performanceLogger.Write(sw, () => $"PackageDownloader: {(package == null ? "Did not find" : "Found")} the NuGet package {request.ReportIdVersionsRange()} in cache.");
             if (package == null)
+            {
+                _logger.Trace(() => $"Did not find NuGet package {request.ReportIdVersionsRange()} in cache.");
                 return null;
+            }
 
             // Copy binary files and resources:
 

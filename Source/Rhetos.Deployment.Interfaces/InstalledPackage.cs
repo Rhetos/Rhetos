@@ -73,6 +73,23 @@ namespace Rhetos.Deployment
         }
 
         /// <summary>
+        /// Compatible with <see cref="PackageRequest.ReportIdVersionRequestSource"/>.
+        /// </summary>
+        public string ReportIdVersionRequestSource()
+        {
+            var report = new StringBuilder(300);
+
+            report.Append(Id);
+            report.Append(", version ").Append(Version);
+            report.Append(", requested by ").Append(Request.RequestedBy);
+            report.Append(" requesting ").Append(Request.VersionsRange ?? "unspecified version");
+            if (!string.IsNullOrEmpty(Request.Source))
+                report.Append(", source \"").Append(Request.Source).Append("\"");
+
+            return report.ToString();
+        }
+
+        /// <summary>
         /// Local paths should be absolute in runtime to avoid ambiguity of current working folder when using the Rhetos server object model from other applications.
         /// </summary>
         public void SetAbsoluteFolderPath(string rhetosAppRootPath)
