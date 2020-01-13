@@ -20,8 +20,6 @@
 using Newtonsoft.Json;
 using Rhetos.Logging;
 using Rhetos.Utilities;
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -30,22 +28,24 @@ namespace Rhetos.Deployment
     public class InstalledPackagesProvider
     {
         private readonly ILogger _logger;
+        private readonly string _packagesFilePath;
 
-        public InstalledPackagesProvider(ILogProvider logProvider)
+        public InstalledPackagesProvider(ILogProvider logProvider, AssetsOptions assetsOptions)
         {
             _logger = logProvider.GetLogger(GetType().Name);
+            _packagesFilePath = Path.Combine(assetsOptions.AssetsFolder, PackagesFileName);
         }
 
         private const string PackagesFileName = "InstalledPackages.json";
 
         public InstalledPackages Load()
         {
-            string serialized = File.ReadAllText(PackagesFilePath, Encoding.UTF8);
+            string serialized = File.ReadAllText(_packagesFilePath, Encoding.UTF8);
             var installedPackages = JsonConvert.DeserializeObject<InstalledPackages>(serialized, _serializerSettings);
 
-            // Package folder is saved as relative path, to allow moving the deployed folder.
+            //We are removing the folder path because this is a build feature and any plugin that is trying to use it should get an exception
             foreach (var package in installedPackages.Packages)
-                package.SetAbsoluteFolderPath(Paths.RhetosServerRootPath);
+                package.RemoveFolderPath();
 
             foreach (var package in installedPackages.Packages)
                 _logger.Trace(() => package.Report());
@@ -53,21 +53,11 @@ namespace Rhetos.Deployment
             return installedPackages;
         }
 
-        public void Save(InstalledPackages installedPackages)
+        internal void Save(InstalledPackages installedPackages)
         {
-            // Package folder is saved as relative path, to allow moving the deployed folder.
-            foreach (var package in installedPackages.Packages)
-                package.SetRelativeFolderPath(Paths.RhetosServerRootPath);
-
             string serialized = JsonConvert.SerializeObject(installedPackages, _serializerSettings);
-
-            foreach (var package in installedPackages.Packages)
-                package.SetAbsoluteFolderPath(Paths.RhetosServerRootPath);
-
-            File.WriteAllText(PackagesFilePath, serialized, Encoding.UTF8);
+            File.WriteAllText(_packagesFilePath, serialized, Encoding.UTF8);
         }
-
-        private static string PackagesFilePath => Path.Combine(Paths.PluginsFolder, PackagesFileName);
 
         private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
         {

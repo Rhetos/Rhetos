@@ -51,19 +51,19 @@ namespace Rhetos
             LegacyUtilities.Initialize(configurationProvider);
         }
 
-        public void DownloadPackages(bool ignoreDependencies)
+        public InstalledPackages DownloadPackages(bool ignoreDependencies)
         {
             _logger.Trace("Getting packages.");
             var config = new DeploymentConfiguration(_logProvider);
             var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = ignoreDependencies };
             var packageDownloader = new PackageDownloader(config, _logProvider, packageDownloaderOptions);
             var installedPackages = packageDownloader.GetPackages();
-            new InstalledPackagesProvider(_logProvider).Save(installedPackages);
+            return installedPackages;
         }
 
         //=====================================================================
 
-        public void GenerateApplication()
+        public void GenerateApplication(InstalledPackages installedPackages)
         {
             _filesUtility.EmptyDirectory(_configurationProvider.GetOptions<AssetsOptions>().AssetsFolder);
             _filesUtility.EmptyDirectory(_configurationProvider.GetOptions<BuildOptions>().GeneratedSourceFolder);
@@ -72,7 +72,7 @@ namespace Rhetos
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var builder = CreateBuildComponentsContainer();
+            var builder = CreateBuildComponentsContainer(installedPackages);
 
             using (var container = builder.Build())
             {
@@ -84,7 +84,7 @@ namespace Rhetos
             }
         }
 
-        internal RhetosContainerBuilder CreateBuildComponentsContainer()
+        internal RhetosContainerBuilder CreateBuildComponentsContainer(InstalledPackages installedPackages)
         {
             var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _findAssemblies);
             builder.RegisterModule(new CoreModule());
@@ -92,6 +92,7 @@ namespace Rhetos
             builder.RegisterModule(new BuildModule());
             builder.GetPluginRegistration().FindAndRegisterPluginModules();
             builder.RegisterType<NullUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container should not execute the application's business features.
+            builder.RegisterInstance(installedPackages).As<IInstalledPackages>().As<InstalledPackages>();
             return builder;
         }
 

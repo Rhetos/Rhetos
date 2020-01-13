@@ -66,6 +66,10 @@
       <Project>{759cea3c-1cd0-449c-977e-102ce308f4de}</Project>
       <Name>Rhetos.Configuration.Autofac</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Deployment.Interfaces\Rhetos.Deployment.Interfaces.csproj">
+      <Project>{945537DC-4AF7-4DEF-B73C-07F19229EFE6}</Project>
+      <Name>Rhetos.Deployment.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Deployment\Rhetos.Deployment.csproj">
       <Project>{A7328BFA-A009-4F1E-B9A1-B51B2020F45C}</Project>
       <Name>Rhetos.Deployment</Name>

@@ -43,6 +43,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             AddPersistence(builder, pluginRegistration);
             AddCompiler(builder, pluginRegistration);
             builder.RegisterType<PluginScannerCache>().As<IGenerator>();
+            builder.RegisterType<InstalledPackagesGenerator>().As<IGenerator>();
 
             builder.RegisterType<ApplicationGenerator>();
             pluginRegistration.FindAndRegisterPlugins<IGenerator>();

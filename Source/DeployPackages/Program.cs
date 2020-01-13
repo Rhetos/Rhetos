@@ -65,8 +65,8 @@ namespace DeployPackages
                 if (!deployOptions.DatabaseOnly)
                 {
                     DeleteObsoleteFiles(logProvider, logger);
-                    deployment.DownloadPackages(deployOptions.IgnoreDependencies);
-                    deployment.GenerateApplication();
+                    var installedPackages = deployment.DownloadPackages(deployOptions.IgnoreDependencies);
+                    deployment.GenerateApplication(installedPackages);
                 }
                 else
                 {

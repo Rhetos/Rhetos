@@ -18,9 +18,11 @@
 */
 
 using Autofac;
+using Rhetos.Deployment;
 using Rhetos.Dom;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
+using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.Processing;
 using Rhetos.Security;
@@ -34,7 +36,7 @@ namespace Rhetos.Configuration.Autofac.Modules
         protected override void Load(ContainerBuilder builder)
         {
             var pluginRegistration = builder.GetPluginRegistration();
-
+            builder.Register(context => new InstalledPackagesProvider(context.Resolve<ILogProvider>(), context.Resolve<AssetsOptions>()).Load()).As<InstalledPackages>().As<IInstalledPackages>().SingleInstance();
             builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<RhetosAppOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<DomLoader>().As<IDomainObjectModel>().SingleInstance();
             builder.RegisterType<PersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope();

@@ -83,6 +83,7 @@
     <Compile Include="DataMigrationScriptsFile.cs" />
     <Compile Include="DataMigrationScriptsGenerator.cs" />
     <Compile Include="DeploymentConfiguration.cs" />
+    <Compile Include="InstalledPackagesGenerator.cs" />
     <Compile Include="InstalledPackagesProvider.cs" />
     <Compile Include="LoggerForNuget.cs" />
     <Compile Include="PackageDownloaderOptions.cs" />

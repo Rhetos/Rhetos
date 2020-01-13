@@ -31,17 +31,13 @@ namespace Rhetos.Deployment
     {
         const string DataMigrationScriptsFileName = "DataMigrationScripts.json";
 
-        protected readonly InstalledPackages _installedPackages;
         private readonly ILogger _performanceLogger;
         private readonly AssetsOptions _assetsOptions;
 
         public IEnumerable<string> Dependencies => new List<string>();
 
-        public DataMigrationScriptsFile(InstalledPackages installedPackages,
-            AssetsOptions assetsOptions,
-            ILogProvider logProvider)
+        public DataMigrationScriptsFile(AssetsOptions assetsOptions, ILogProvider logProvider)
         {
-            _installedPackages = installedPackages;
             _performanceLogger = logProvider.GetLogger("Performance");
             _assetsOptions = assetsOptions;
         }

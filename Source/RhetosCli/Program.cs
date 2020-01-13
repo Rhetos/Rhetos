@@ -102,7 +102,7 @@ namespace Rhetos
             AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(
                 Paths.BinFolder,
                 Paths.PluginsFolder);
-            deployment.GenerateApplication();
+            deployment.GenerateApplication(null);
         }
 
         private static void DbUpdate(string rhetosAppRootPath, NLogProvider logProvider)
