@@ -80,8 +80,6 @@ namespace Rhetos.DatabaseGenerator
                     }
                 }
 
-            _logger.Trace(codeBuilder.GeneratedCode);
-
             _performanceLogger.Write(stopwatch, "ConceptDataMigrationGenerator: Scripts generated.");
 
             string serializedConcepts = JsonConvert.SerializeObject(codeBuilder.GetDataMigrationScripts(), Formatting.Indented);

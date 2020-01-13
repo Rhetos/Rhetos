@@ -33,10 +33,7 @@ namespace Rhetos.Dom
     {
         private readonly IPluginsContainer<IConceptCodeGenerator> _pluginRepository;
         private readonly ICodeGenerator _codeGenerator;
-        private readonly ILogProvider _log;
         private readonly IAssemblyGenerator _assemblyGenerator;
-
-        private List<Assembly> _assemblies;
 
         /// <summary>
         /// If assemblyName is not null, the assembly will be saved on disk.
@@ -45,12 +42,10 @@ namespace Rhetos.Dom
         public DomGenerator(
             IPluginsContainer<IConceptCodeGenerator> plugins,
             ICodeGenerator codeGenerator,
-            ILogProvider logProvider,
             IAssemblyGenerator assemblyGenerator)
         {
             _pluginRepository = plugins;
             _codeGenerator = codeGenerator;
-            _log = logProvider;
             _assemblyGenerator = assemblyGenerator;
         }
 
@@ -59,14 +54,9 @@ namespace Rhetos.Dom
         public void Generate()
         {
             IAssemblySource assemblySource = _codeGenerator.ExecutePlugins(_pluginRepository, "/*", "*/", null);
-            _log.GetLogger("Domain Object Model references").Trace(() => string.Join(", ", assemblySource.RegisteredReferences));
-            _log.GetLogger("Domain Object Model source").Trace(assemblySource.GeneratedCode);
 
-            _assemblies = new List<Assembly>();
             foreach (var sourcePart in SplitAssemblySource(assemblySource))
-            {
-                _assemblies.Add(_assemblyGenerator.Generate(sourcePart.AssemblySource, sourcePart.AssemblyFileName));
-            }
+                _assemblyGenerator.Generate(sourcePart.AssemblySource, sourcePart.AssemblyFileName);
         }
 
         private IEnumerable<SourcePart> SplitAssemblySource(IAssemblySource assemblySource)
