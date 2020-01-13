@@ -59,8 +59,7 @@ namespace Rhetos.Utilities
 
             var connectionStringSettings = new System.Configuration.ConnectionStringSettings(
                 connectionStringOptions.Name,
-                connectionStringOptions.ConnectionString,
-                connectionStringOptions.ProviderName);
+                connectionStringOptions.ConnectionString);
 
             return connectionStringSettings;
         }

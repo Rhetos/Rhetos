@@ -34,6 +34,8 @@ namespace Rhetos.Utilities
         public static int SqlCommandTimeout { get; private set; } = 30;
         public static string DatabaseLanguage { get => CheckIfInitialized(_databaseLanguage); private set => _databaseLanguage = value; }
         public static string NationalLanguage { get => CheckIfInitialized(_nationalLanguage); private set => _nationalLanguage = value; }
+        //TODO: Remove this property when there will be a clear separation betwen the registration of core components for build and runtime
+        public static bool ConnectionStringIsSet { get { return _connectionString != null; } }
         public static string ConnectionString { get => CheckIfInitialized(_connectionString); private set => _connectionString = value; }
         public static string ProviderName { get => CheckIfInitialized(_providerName); private set => _providerName = value; }
 
@@ -51,29 +53,19 @@ namespace Rhetos.Utilities
             return value;
         }
 
-        public static void Initialize(SqlOptions sqlOptions, ConnectionStringOptions connectionStringOptions)
+        public static void Initialize(SqlOptions sqlOptions, ConnectionStringOptions connectionStringOptions, BuildOptions buildOptions)
         {
             SqlCommandTimeout = sqlOptions.SqlCommandTimeout;
 
             ConnectionString = connectionStringOptions.ConnectionString;
-            if (string.IsNullOrEmpty(ConnectionString))
-                throw new FrameworkException("Empty or non-existant 'ServerConnectionString' connection string in application configuration.");
 
-            SetLanguageFromProviderName(connectionStringOptions.ProviderName);
+            if (string.IsNullOrEmpty(buildOptions.SqlDialect))
+                throw new FrameworkException("SqlUtility is not initialized correctly. Initialize SqlUtility with a valid SqlDialect option.");
+
+            var sqlDialect = buildOptions.SqlDialect.Split('.');
+            DatabaseLanguage = sqlDialect[0];
+            NationalLanguage = sqlDialect.Length > 1 ? sqlDialect[1] : "";
             InitializeProviderContext();
-        }
-
-        private static void SetLanguageFromProviderName(string connectionStringProviderName)
-        {
-            if (string.IsNullOrEmpty(connectionStringProviderName))
-                throw new FrameworkException("Missing 'providerName' attribute in 'ServerConnectionString' connection string. Expected providerName format is 'Rhetos.<database language>' or 'Rhetos.<database language>.<natural language settings>', for example 'Rhetos.MsSql' or 'Rhetos.Oracle.XGERMAN_CI'.");
-
-            var match = new Regex(@"^Rhetos\.(?<DatabaseLanguage>\w+)(.(?<NationalLanguage>\w+))?$").Match(connectionStringProviderName);
-            if (!match.Success)
-                throw new FrameworkException("Invalid 'providerName' format in 'ServerConnectionString' connection string. Expected providerName format is 'Rhetos.<database language>' or 'Rhetos.<database language>.<natural language settings>', for example 'Rhetos.MsSql' or 'Rhetos.Oracle.XGERMAN_CI'.");
-
-            DatabaseLanguage = match.Groups["DatabaseLanguage"].Value ?? "";
-            NationalLanguage = match.Groups["NationalLanguage"].Value ?? "";
         }
 
         private static void InitializeProviderContext()

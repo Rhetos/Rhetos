@@ -40,7 +40,7 @@ namespace Rhetos
             
             var connectionStringOptions = configurationProvider.GetOptions<ConnectionStringOptions>("ConnectionStrings:ServerConnectionString");
             var sqlOptions = configurationProvider.GetOptions<SqlOptions>();
-            SqlUtility.Initialize(sqlOptions, connectionStringOptions);
+            SqlUtility.Initialize(sqlOptions, connectionStringOptions, configurationProvider.GetOptions<BuildOptions>());
         }
 
         /// <summary>

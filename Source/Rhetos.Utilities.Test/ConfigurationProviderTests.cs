@@ -288,7 +288,6 @@ namespace Rhetos.Utilities.Test
 
             var connectionStringOptions = provider.GetOptions<ConnectionStringOptions>("ConnectionStrings:ServerConnectionString");
             Assert.AreEqual("ServerConnectionString", connectionStringOptions.Name);
-            Assert.AreEqual("Rhetos.MsSql", connectionStringOptions.ProviderName);
         }
 
 

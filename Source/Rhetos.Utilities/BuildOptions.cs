@@ -24,6 +24,7 @@ namespace Rhetos.Utilities
     {
         public string GeneratedSourceFolder { get; set; }
         public string CacheFolder { get; set; }
+        public string SqlDialect { get; set; } = "MsSql";
         public bool Debug { get; set; }
         public bool ShortTransactions { get; set; }
         public bool DataMigration__SkipScriptsWithWrongOrder { get; set; } = true;
