@@ -34,7 +34,7 @@ namespace Rhetos.Utilities
         public static int SqlCommandTimeout { get; private set; } = 30;
         public static string DatabaseLanguage { get => CheckIfInitialized(_databaseLanguage); private set => _databaseLanguage = value; }
         public static string NationalLanguage { get => CheckIfInitialized(_nationalLanguage); private set => _nationalLanguage = value; }
-        //TODO: Remove this property when there will be a clear separation betwen the registration of core components for build and runtime
+        //TODO: Remove this property when there will be a clear separation between the registration of core components for build and runtime
         public static bool ConnectionStringIsSet { get { return _connectionString != null; } }
         public static string ConnectionString { get => CheckIfInitialized(_connectionString); private set => _connectionString = value; }
         public static string ProviderName { get => CheckIfInitialized(_providerName); private set => _providerName = value; }
@@ -53,18 +53,21 @@ namespace Rhetos.Utilities
             return value;
         }
 
-        public static void Initialize(SqlOptions sqlOptions, ConnectionStringOptions connectionStringOptions, BuildOptions buildOptions)
+        public static void Initialize(IConfigurationProvider configurationProvider)
         {
+            var connectionStringOptions = configurationProvider.GetOptions<ConnectionStringOptions>("ConnectionStrings:ServerConnectionString");
+            var sqlOptions = configurationProvider.GetOptions<SqlOptions>();
+            var buildOptions = configurationProvider.GetOptions<BuildOptions>();
+
             SqlCommandTimeout = sqlOptions.SqlCommandTimeout;
 
             ConnectionString = connectionStringOptions.ConnectionString;
 
-            if (string.IsNullOrEmpty(buildOptions.SqlDialect))
-                throw new FrameworkException("SqlUtility is not initialized correctly. Initialize SqlUtility with a valid SqlDialect option.");
+            if (string.IsNullOrEmpty(buildOptions.DatabaseLanguage))
+                throw new FrameworkException($"{nameof(BuildOptions)}.{nameof(BuildOptions.DatabaseLanguage)} is not configured.");
 
-            var sqlDialect = buildOptions.SqlDialect.Split('.');
-            DatabaseLanguage = sqlDialect[0];
-            NationalLanguage = sqlDialect.Length > 1 ? sqlDialect[1] : "";
+            DatabaseLanguage = buildOptions.DatabaseLanguage;
+            NationalLanguage = configurationProvider.GetValue("Oracle:NationalLanguage", ""); // TODO: Review if this is a desired key for build options after refactoring configuration key to avoid property name collisions.
             InitializeProviderContext();
         }
 

@@ -37,10 +37,7 @@ namespace Rhetos
             var assetsOptions = configurationProvider.GetOptions<AssetsOptions>();
             Paths.Initialize(configurationProvider.GetValue<string>("RootPath"), rhetosAppOptions, assetsOptions);
             ConfigUtility.Initialize(configurationProvider);
-            
-            var connectionStringOptions = configurationProvider.GetOptions<ConnectionStringOptions>("ConnectionStrings:ServerConnectionString");
-            var sqlOptions = configurationProvider.GetOptions<SqlOptions>();
-            SqlUtility.Initialize(sqlOptions, connectionStringOptions, configurationProvider.GetOptions<BuildOptions>());
+            SqlUtility.Initialize(configurationProvider);
         }
 
         /// <summary>
