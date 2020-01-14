@@ -18,12 +18,10 @@
 */
 
 using Autofac;
-using Rhetos.Logging;
 using System;
 
 namespace Rhetos.Extensibility
 {
-    [Obsolete("Use ContainerBuilderPluginRegistration instead. Resolve from ContainerBuilder with extension method builder.GetPluginRegistration().")]
     public static class Plugins
     {
         private static Func<ContainerBuilder, ContainerBuilderPluginRegistration> _pluginRegistrationFactory;
@@ -33,6 +31,7 @@ namespace Rhetos.Extensibility
             _pluginRegistrationFactory = pluginRegistrationFactory;
         }
 
+        [Obsolete("Use ContainerBuilderPluginRegistration instead. Resolve from ContainerBuilder with extension method builder.GetPluginRegistration().")]
         public static void FindAndRegisterModules(ContainerBuilder builder)
         {
             ThrowIfNotInitialized();
@@ -40,6 +39,7 @@ namespace Rhetos.Extensibility
                 .FindAndRegisterPluginModules();
         }
 
+        [Obsolete("Use ContainerBuilderPluginRegistration instead. Resolve from ContainerBuilder with extension method builder.GetPluginRegistration().")]
         public static void FindAndRegisterPlugins<TPluginInterface>(ContainerBuilder builder)
         {
             ThrowIfNotInitialized();
@@ -47,6 +47,7 @@ namespace Rhetos.Extensibility
                 .FindAndRegisterPlugins<TPluginInterface>();
         }
 
+        [Obsolete("Use ContainerBuilderPluginRegistration instead. Resolve from ContainerBuilder with extension method builder.GetPluginRegistration().")]
         public static void FindAndRegisterPlugins<TPluginInterface>(ContainerBuilder builder, Type genericImplementationBase)
         {
             ThrowIfNotInitialized();
@@ -54,6 +55,7 @@ namespace Rhetos.Extensibility
                 .FindAndRegisterPlugins<TPluginInterface>(genericImplementationBase);
         }
 
+        [Obsolete("Use ContainerBuilderPluginRegistration instead. Resolve from ContainerBuilder with extension method builder.GetPluginRegistration().")]
         public static void CheckOverride<TInterface, TImplementation>(ContainerBuilder builder, params Type[] expectedPreviousPlugins)
         {
             ThrowIfNotInitialized();
@@ -61,6 +63,7 @@ namespace Rhetos.Extensibility
                 .CheckOverride<TInterface, TImplementation>(expectedPreviousPlugins);
         }
 
+        [Obsolete("Use ContainerBuilderPluginRegistration instead. Resolve from ContainerBuilder with extension method builder.GetPluginRegistration().")]
         public static void SuppressPlugin<TPluginInterface, TPlugin>(ContainerBuilder builder)
             where TPlugin : TPluginInterface
         {

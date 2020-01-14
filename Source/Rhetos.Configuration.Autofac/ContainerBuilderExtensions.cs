@@ -18,6 +18,7 @@
 */
 
 using Rhetos;
+using Rhetos.Configuration.Autofac.Modules;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 
@@ -63,6 +64,22 @@ namespace Autofac
                 builder, logProvider, pluginScanner);
         }
 
+        /// <summary>
+        /// Registration of Rhetos framework components required for run-time.
+        /// Call this method <i>before</i> any specific components registration.
+        /// </summary>
+        public static ContainerBuilder AddRhetosRuntime(this ContainerBuilder builder)
+        {
+            builder.RegisterModule(new CoreModule());
+            builder.RegisterModule(new CorePluginsModule());
+            builder.RegisterModule(new RuntimeModule());
+            return builder;
+        }
+
+        /// <summary>
+        /// Registration of Rhetos plugin modules (implementations of <see cref="Module"/> with <see cref="System.ComponentModel.Composition.ExportAttribute"/>).
+        /// Call this method before <i>after</i> specific components registration, to allow development of addition plugin that override and customize existing components.
+        /// </summary>
         public static ContainerBuilder AddPluginModules(this ContainerBuilder builder)
         {
             builder.GetPluginRegistration().FindAndRegisterPluginModules();
