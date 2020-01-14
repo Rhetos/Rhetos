@@ -43,7 +43,8 @@ namespace Rhetos.Deployment
             string serialized = File.ReadAllText(_packagesFilePath, Encoding.UTF8);
             var installedPackages = JsonConvert.DeserializeObject<InstalledPackages>(serialized, _serializerSettings);
 
-            //We are removing the folder path because this is a build feature and any plugin that is trying to use it should get an exception
+            // We are removing the folder path because this is a build feature and any plugin that is trying to use it should get an exception.
+            // Package content files are not available at runtime, they are considered as a part of local cache on build machine.
             foreach (var package in installedPackages.Packages)
                 package.RemoveFolderPath();
 
