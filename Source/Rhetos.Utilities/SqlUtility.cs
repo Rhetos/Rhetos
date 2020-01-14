@@ -61,8 +61,7 @@ namespace Rhetos.Utilities
             var sqlOptions = configurationProvider.GetOptions<SqlOptions>();
             SqlCommandTimeout = sqlOptions.SqlCommandTimeout;
 
-            var connectionStringOptions = configurationProvider.GetOptions<ConnectionStringOptions>($"ConnectionStrings:{RhetosConnectionStringName}");
-            _connectionString = connectionStringOptions.ConnectionString;
+            _connectionString = configurationProvider.GetValue<string>($"ConnectionStrings:{RhetosConnectionStringName}:ConnectionString");
 
             var buildOptions = configurationProvider.GetOptions<BuildOptions>();
             if (string.IsNullOrEmpty(buildOptions.DatabaseLanguage))

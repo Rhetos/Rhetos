@@ -46,24 +46,6 @@ namespace Rhetos.Utilities
             return _configurationProvider.GetValue<string>(key);
         }
 
-        private const string ServerConnectionStringName = "ServerConnectionString";
-
-        public static System.Configuration.ConnectionStringSettings GetConnectionString()
-        {
-            ThrowIfNotInitialized();
-
-            var connectionStringOptions = _configurationProvider.GetOptions<ConnectionStringOptions>($"ConnectionStrings:{ServerConnectionStringName}");
-
-            if (string.IsNullOrEmpty(connectionStringOptions.Name))
-                throw new FrameworkException("Missing '" + ServerConnectionStringName + "' connection string in the Rhetos server's configuration.");
-
-            var connectionStringSettings = new System.Configuration.ConnectionStringSettings(
-                connectionStringOptions.Name,
-                connectionStringOptions.ConnectionString);
-
-            return connectionStringSettings;
-        }
-
         private static void ThrowIfNotInitialized()
         {
             if (_configurationProvider == null)
