@@ -41,6 +41,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<DomLoader>().As<IDomainObjectModel>().SingleInstance();
             builder.RegisterType<PersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope();
             builder.RegisterType<DslModelFile>().As<IDslModel>().SingleInstance();
+            builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));
 
             AddSecurity(builder, pluginRegistration);
             AddUtilities(builder, pluginRegistration);

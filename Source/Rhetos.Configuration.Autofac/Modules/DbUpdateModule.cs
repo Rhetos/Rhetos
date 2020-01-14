@@ -36,6 +36,7 @@ namespace Rhetos.Configuration.Autofac.Modules
 
             // Updating database from database model:
 
+            builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));
             builder.RegisterType<DatabaseModelFile>();
             builder.Register(context => context.Resolve<DatabaseModelFile>().Load()).As<DatabaseModel>().SingleInstance();
             builder.RegisterType<ConceptApplicationRepository>().As<IConceptApplicationRepository>();

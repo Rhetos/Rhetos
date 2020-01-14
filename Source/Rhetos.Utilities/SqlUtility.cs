@@ -17,14 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
 using Oracle.ManagedDataAccess.Client;
+using System;
 using System.Data.Common;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Data.SqlClient;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Rhetos.Utilities
 {
@@ -34,8 +32,6 @@ namespace Rhetos.Utilities
         public static int SqlCommandTimeout { get; private set; } = 30;
         public static string DatabaseLanguage { get => CheckIfInitialized(_databaseLanguage); private set => _databaseLanguage = value; }
         public static string NationalLanguage { get => CheckIfInitialized(_nationalLanguage); private set => _nationalLanguage = value; }
-        //TODO: Remove this property when there will be a clear separation between the registration of core components for build and runtime
-        public static bool ConnectionStringIsSet { get { return _connectionString != null; } }
         public static string ConnectionString { get => CheckIfInitialized(_connectionString); private set => _connectionString = value; }
         public static string ProviderName { get => CheckIfInitialized(_providerName); private set => _providerName = value; }
 

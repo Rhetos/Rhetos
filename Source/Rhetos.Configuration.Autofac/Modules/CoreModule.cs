@@ -38,8 +38,6 @@ namespace Rhetos.Configuration.Autofac.Modules
         private void AddCommon(ContainerBuilder builder)
         {
             builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<AssetsOptions>()).SingleInstance().PreserveExistingDefaults();
-            if (SqlUtility.ConnectionStringIsSet)
-                builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));
             builder.RegisterType<NLogProvider>().As<ILogProvider>().InstancePerLifetimeScope();
         }
 
