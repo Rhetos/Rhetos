@@ -157,7 +157,7 @@ namespace Rhetos.Configuration.Autofac
             // General registrations:
             var builder = new RhetosContainerBuilder(configurationProvider, new ConsoleLogProvider(), LegacyUtilities.GetListAssembliesDelegate());
             builder.AddRhetosRuntime();
-            builder.GetPluginRegistration().FindAndRegisterPluginModules();
+            builder.AddPluginModules();
 
             // Overriding registrations from plugins:
             builder.RegisterType<ProcessUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container is intended to be used in a simple process or unit tests.

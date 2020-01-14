@@ -62,5 +62,11 @@ namespace Autofac
             return new ContainerBuilderPluginRegistration(
                 builder, logProvider, pluginScanner);
         }
+
+        public static ContainerBuilder AddPluginModules(this ContainerBuilder builder)
+        {
+            builder.GetPluginRegistration().FindAndRegisterPluginModules();
+            return builder;
+        }
     }
 }
