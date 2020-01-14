@@ -89,7 +89,7 @@ namespace Rhetos
             builder.GetPluginRegistration().FindAndRegisterPlugins<IHomePageSnippet>();
 
             // Plugin modules
-            builder.GetPluginRegistration().FindAndRegisterPluginModules();
+            builder.AddPluginModules();
         }
 
         // Called once for each application instance.

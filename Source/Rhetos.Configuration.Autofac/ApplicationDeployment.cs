@@ -90,7 +90,7 @@ namespace Rhetos
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new CorePluginsModule());
             builder.RegisterModule(new BuildModule());
-            builder.GetPluginRegistration().FindAndRegisterPluginModules();
+            builder.AddPluginModules();
             builder.RegisterType<NullUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container should not execute the application's business features.
             builder.RegisterInstance(installedPackages).As<IInstalledPackages>().As<InstalledPackages>();
             return builder;
@@ -120,7 +120,7 @@ namespace Rhetos
             var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _findAssemblies);
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new DbUpdateModule());
-            builder.GetPluginRegistration().FindAndRegisterPluginModules();
+            builder.AddPluginModules();
             builder.RegisterType<NullUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container should not execute the application's business features.
             return builder;
         }
@@ -161,7 +161,7 @@ namespace Rhetos
             var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _findAssemblies);
             builder.AddRhetosRuntime();
             builder.RegisterModule(new AppInitializeModule());
-            builder.GetPluginRegistration().FindAndRegisterPluginModules();
+            builder.AddPluginModules();
             builder.RegisterType<ProcessUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container is intended to be used in a simple process.
             return builder;
         }
