@@ -18,33 +18,19 @@
 */
 
 using Autofac;
-using Rhetos.Logging;
 using Rhetos.Utilities;
 
 namespace Rhetos.Configuration.Autofac.Modules
 {
-    public class CoreModule : Module
+    internal class DatabaseRuntimeModule : Module
     {
         protected override void Load(ContainerBuilder builder)
         {
-            AddCommon(builder);
-            AddUtilities(builder);
+            builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));
+            builder.RegisterType(DatabaseTypes.GetSqlExecuterType(SqlUtility.DatabaseLanguage)).As<ISqlExecuter>().InstancePerLifetimeScope();
+            builder.RegisterType<SqlTransactionBatches>().InstancePerLifetimeScope();
 
             base.Load(builder);
-        }
-
-        private void AddCommon(ContainerBuilder builder)
-        {
-            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<AssetsOptions>()).SingleInstance().PreserveExistingDefaults();
-            builder.RegisterType<NLogProvider>().As<ILogProvider>().InstancePerLifetimeScope();
-        }
-
-        private void AddUtilities(ContainerBuilder builder)
-        {
-            builder.RegisterType<XmlUtility>().SingleInstance();
-            builder.RegisterType<FilesUtility>().SingleInstance();
-            builder.RegisterType<Utilities.Configuration>().As<IConfiguration>().SingleInstance();
-            builder.RegisterType(DatabaseTypes.GetSqlUtilityType(SqlUtility.DatabaseLanguage)).As<ISqlUtility>().InstancePerLifetimeScope();
         }
     }
 }
