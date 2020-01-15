@@ -67,8 +67,11 @@ namespace Rhetos.Extensibility
         {
             var assemblies = ListAssemblies(findAssemblies);
             MultiDictionary<string, PluginInfo> plugins = null;
+            var namesToPaths = assemblies.ToDictionary(path => Path.GetFileName(path), path => path, StringComparer.InvariantCultureIgnoreCase);
+            ResolveEventHandler resolver = (sender, args) => LoadAssemblyFromSpecifiedPaths(sender, args, namesToPaths);
             try
             {
+                AppDomain.CurrentDomain.AssemblyResolve += resolver;
                 plugins = LoadPlugins(assemblies);
             }
             catch (Exception ex)
@@ -79,7 +82,23 @@ namespace Rhetos.Extensibility
                 else
                     ExceptionsUtility.Rethrow(ex);
             }
+            finally
+            {
+                AppDomain.CurrentDomain.AssemblyResolve -= resolver;
+            }
             return plugins;
+        }
+
+        private Assembly LoadAssemblyFromSpecifiedPaths(object sender, ResolveEventArgs args, Dictionary<string, string> namesToPaths)
+        {
+            var filename = $"{new AssemblyName(args.Name).Name}.dll";
+            if (namesToPaths.TryGetValue(filename, out var path))
+            {
+                _logger.Trace(() => $"Custom resolver found assembly '{args.Name}' at '{path}'.");
+                return Assembly.LoadFrom(path);
+            }
+
+            return null;
         }
 
         private List<string> ListAssemblies(Func<IEnumerable<string>> findAssemblies)
@@ -166,6 +185,7 @@ namespace Rhetos.Extensibility
             if (typesToCheck != null && typesToCheck.Count == 0) return new Dictionary<Type, List<PluginInfo>>();
 
             var assembly = LoadAssembly(assemblyPath);
+
             var types = typesToCheck == null
                 ? assembly.GetTypes()
                 : typesToCheck.Select(type => Type.GetType(type)).ToArray();
@@ -175,31 +195,10 @@ namespace Rhetos.Extensibility
 
         private Assembly LoadAssembly(string assemblyPath)
         {
-            Assembly assembly = null;
             var assemblyFilename = Path.GetFileNameWithoutExtension(assemblyPath);
-
-            try
-            {
-                // Trying to load the assembly in a standard way (from probing paths), before loading explicitly from the specified path (Assembly.LoadFrom).
-                // This will reduce possible issues with multiple instances of same assembly loaded from different paths,
-                // for example, a plugin assembly loaded explicitly from NuGet packages folder by this class, and a copy of the same assembly
-                // loaded implicitly from bin folder by some other component.
-                assembly = Assembly.Load(assemblyFilename);
-                _logger.Trace($"Assembly '{assemblyFilename}' loaded from '{assembly.Location}'.");
-            }
-            catch (Exception e)
-            {
-                // This exception is expected if loading a plugin assembly outside of bin folder.
-                _logger.Trace(() => $"'{assemblyFilename}' could not be loaded from probing paths. {e.GetType().Name}: {e.Message}");
-            }
-
-            if (assembly == null)
-            {
-                _logger.Trace($"Loading assembly '{assemblyFilename}' from '{assemblyPath}' via explicit LoadFrom.");
-                assembly = Assembly.LoadFrom(assemblyPath);
-            }
-
+            var assembly = Assembly.Load(assemblyFilename);
             ValidateAssembliesEquivalent(assemblyPath, assembly.Location);
+
             return assembly;
         }
 
