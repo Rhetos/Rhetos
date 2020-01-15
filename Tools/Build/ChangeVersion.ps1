@@ -1,18 +1,6 @@
-param([string]$version, [string]$prerelease)
+param([version]$version, [string]$prerelease)
 
-If ($prerelease -eq 'auto')
-{
-    $prerelease = ('dev'+(get-date -format 'yyMMddHHmm')+(git rev-parse --short HEAD)).Substring(0,20)
-}
-
-If ($prerelease)
-{
-    $fullVersion = $version + '-' + $prerelease
-}
-Else
-{
-    $fullVersion = $version
-}
+$ErrorActionPreference = 'Stop'
 
 [string[]]$exclude = @('bin', 'obj', 'packages', 'TestResults', 'PackagesCache', 'Install', '.*', 'Logs')
 [string[]]$folders = @()
@@ -38,8 +26,35 @@ function RegexReplace ($fileSearch, $replacePattern, $replaceWith)
         }
 }
 
+If ($prerelease -eq 'auto')
+{
+    $prereleaseSuffix = ('-dev' + (get-date -format 'yyMMddHHmm') + (git rev-parse --short HEAD)).Substring(0,20)
+}
+ElseIf ($prerelease)
+{
+    $prereleaseSuffix = '-' + $prerelease
+}
+Else
+{
+    $prereleaseSuffix = ''
+}
+$fullVersion = $version.ToString() + $prereleaseSuffix
 Write-Output "Setting version '$fullVersion'."
 
-RegexReplace '*AssemblyInfo.cs' '([\n^]\[assembly: Assembly(File)?Version(Attribute)?\(\").*(\"\)\])' ('${1}'+$version+'${4}')
-RegexReplace '*AssemblyInfo.cs' '([\n^]\[assembly: AssemblyInformationalVersion(Attribute)?\(\").*(\"\)\])' ('${1}'+$fullVersion+'${3}')
-RegexReplace '*.nuspec' '([\n^]\s*\<version\>).*(\<\/version\>\s*)' ('${1}'+$fullVersion+'${2}')
+RegexReplace '*AssemblyInfo.cs' '([\n^]\[assembly: Assembly(File)?Version(Attribute)?\(\").*(\"\)\])' ('${1}' + $version + '${4}')
+RegexReplace '*AssemblyInfo.cs' '([\n^]\[assembly: AssemblyInformationalVersion(Attribute)?\(\").*(\"\)\])' ('${1}' + $fullVersion + '${3}')
+RegexReplace '*.nuspec' '([\n^]\s*\<version\>).*(\<\/version\>\s*)' ('${1}' + $fullVersion + '${2}')
+
+# CommonConcepts is developed together with Rhetos framework, so it is expected to match the release version. Difference in patch version (Build) is allowed here.
+If ($Version.Build -gt 0)
+{
+    $minFrameworkVersion = $version.Major.ToString() + '.' + $version.Minor.ToString() + '.0'
+}
+Else
+{
+    $minFrameworkVersion = $fullVersion # Prerelease must be included here, because its value is less then release version.
+}
+
+[string]$nextFrameworkVersion=$version.Major.ToString() + '.' + ($version.Minor + 1).ToString() + '.0'
+
+RegexReplace '*.nuspec' '(dependency id=\"Rhetos\" version=\").*?(\")' ('${1}[' + $minFrameworkVersion + ',' + $nextFrameworkVersion + ')${2}')
