@@ -20,37 +20,26 @@
 using Rhetos.Logging;
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
-using System.Data.SqlClient;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Rhetos.Utilities
 {
+
     /// <summary>
     /// This class add additional functionality over ISqlExecuter for executing a batch SQL scripts (custom transaction handling and reporting),
     /// while allowing ISqlExecuter implementations to focus on the database technology.
     /// </summary>
     public class SqlTransactionBatches
     {
-        public const string ReportProgressMsConfigKey = "SqlExecuter.ReportProgressMs";
-        public const string MaxJoinedScriptCountConfigKey = "SqlExecuter.MaxJoinedScriptCount";
-        public const string MaxJoinedScriptSizeConfigKey = "SqlExecuter.MaxJoinedScriptSize";
         private readonly ISqlExecuter _sqlExecuter;
-        private readonly int _reportDelayMs;
-        private readonly int _maxJoinedScriptCount;
-        private readonly int _maxJoinedScriptSize;
+        private readonly SqlTransactionBatchesOptions _options;
         private readonly ILogger _logger;
 
-        public SqlTransactionBatches(ISqlExecuter sqlExecuter, IConfiguration configuration, ILogProvider logProvider)
+        public SqlTransactionBatches(ISqlExecuter sqlExecuter, SqlTransactionBatchesOptions options, ILogProvider logProvider)
         {
             _sqlExecuter = sqlExecuter;
-            _reportDelayMs = configuration.GetInt(ReportProgressMsConfigKey, 1000 * 60).Value; // Report progress each minute by default
-            _maxJoinedScriptCount = configuration.GetInt(MaxJoinedScriptCountConfigKey, 100).Value;
-            _maxJoinedScriptSize = configuration.GetInt(MaxJoinedScriptSizeConfigKey, 100000).Value;
+            _options = options;
             _logger = logProvider.GetLogger(nameof(SqlTransactionBatches));
         }
 
@@ -87,10 +76,10 @@ namespace Rhetos.Utilities
                     // This is why there scrips are removed *after* grouping 
                     Scripts = group.Items.Where(s => !string.Equals(s.Sql, SqlUtility.NoTransactionTag, StringComparison.Ordinal)).ToList()
                 })
-                .Where(group => group.Scripts.Count() > 0) // Cleanup after removing the empty NoTransactionTag scripts.
+                .Where(group => group.Scripts.Count > 0) // Cleanup after removing the empty NoTransactionTag scripts.
                 .ToList();
 
-            _logger.Trace(() => "SqlBatches: " + string.Join(", ", sqlBatches.Select(b => $"{(b.UseTransaction ? "tran" : "notran")} {b.Scripts.Count()}")));
+            _logger.Trace(() => "SqlBatches: " + string.Join(", ", sqlBatches.Select(b => $"{(b.UseTransaction ? "tran" : "notran")} {b.Scripts.Count}")));
 
             int totalCount = sqlBatches.Sum(b => b.Scripts.Count);
             int previousBatchesCount = 0;
@@ -104,7 +93,7 @@ namespace Rhetos.Utilities
                     var now = DateTime.Now;
                     int executedCount = previousBatchesCount + currentBatchCount + 1;
 
-                    if (now.Subtract(lastReportTime).TotalMilliseconds > _reportDelayMs
+                    if (now.Subtract(lastReportTime).TotalMilliseconds > _options.ReportProgressMs
                         && executedCount < totalCount) // No need to report progress if the work is done.
                     {
                         double estimatedTotalMs = now.Subtract(startTime).TotalMilliseconds / executedCount * totalCount;
@@ -140,8 +129,8 @@ namespace Rhetos.Utilities
             foreach (var script in scripts)
             {
                 if (currentBatch.Count > 0 &&
-                    (currentBatch.Count + 1 > _maxJoinedScriptCount
-                    || currentBatchSize + 2 + script.Length > _maxJoinedScriptSize))
+                    (currentBatch.Count + 1 > _options.MaxJoinedScriptCount
+                    || currentBatchSize + 2 + script.Length > _options.MaxJoinedScriptSize))
                 {
                     joinedScripts.Add(string.Join("\r\n", currentBatch));
                     currentBatch.Clear();
@@ -149,7 +138,7 @@ namespace Rhetos.Utilities
                 }
 
                 currentBatch.Add(script);
-                currentBatchSize += script.Length + (currentBatch.Count() > 1 ? 2 : 0);
+                currentBatchSize += script.Length + (currentBatch.Count > 1 ? 2 : 0);
             }
 
             if (currentBatch.Count > 0)

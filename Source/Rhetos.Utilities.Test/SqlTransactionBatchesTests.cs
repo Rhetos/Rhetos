@@ -59,18 +59,18 @@ namespace Rhetos.Utilities.Tests
 
             foreach (var test in tests)
             {
-                var config = new MockConfiguration
+                var options = new SqlTransactionBatchesOptions
                 {
-                    { SqlTransactionBatches.MaxJoinedScriptCountConfigKey, test.Item2 },
-                    { SqlTransactionBatches.MaxJoinedScriptSizeConfigKey, test.Item3 },
+                    MaxJoinedScriptCount = test.Item2,
+                    MaxJoinedScriptSize = test.Item3,
                 };
-                var batches = new SqlTransactionBatches(null, config, new ConsoleLogProvider());
+                var batches = new SqlTransactionBatches(null, options, new ConsoleLogProvider());
                 var joinedScripts = batches.JoinScripts(test.Item1);
 
                 Assert.AreEqual(
                     TestUtility.Dump(test.Item4),
                     TestUtility.Dump(joinedScripts.Select(s => s.Replace("\r\n", "//"))),
-                    $"Test: '{TestUtility.Dump(test.Item1)}' - {test.Item2}, {test.Item3} => {joinedScripts.Count()}, {joinedScripts.Sum(s => s.Length)}");
+                    $"Test: '{TestUtility.Dump(test.Item1)}' - {test.Item2}, {test.Item3} => {joinedScripts.Count}, {joinedScripts.Sum(s => s.Length)}");
             }
         }
     }
