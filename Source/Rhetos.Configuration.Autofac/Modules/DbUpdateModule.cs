@@ -28,7 +28,6 @@ namespace Rhetos.Configuration.Autofac.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            // TOOD: Remove BuildOptions from DbUpdate.
             builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<BuildOptions>()).SingleInstance().PreserveExistingDefaults();
 
             builder.RegisterType<DatabaseDeployment>();
@@ -36,7 +35,7 @@ namespace Rhetos.Configuration.Autofac.Modules
 
             // Updating database from database model:
 
-            builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));
+            builder.RegisterModule(new DatabaseRuntimeModule());
             builder.RegisterType<DatabaseModelFile>();
             builder.Register(context => context.Resolve<DatabaseModelFile>().Load()).As<DatabaseModel>().SingleInstance();
             builder.RegisterType<ConceptApplicationRepository>().As<IConceptApplicationRepository>();

@@ -19,9 +19,7 @@
 
 using Autofac;
 using Rhetos.Logging;
-using Rhetos.Persistence;
 using Rhetos.Utilities;
-using System.Linq;
 
 namespace Rhetos.Configuration.Autofac.Modules
 {
@@ -46,20 +44,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<XmlUtility>().SingleInstance();
             builder.RegisterType<FilesUtility>().SingleInstance();
             builder.RegisterType<Utilities.Configuration>().As<IConfiguration>().SingleInstance();
-
-            var sqlImplementations = new[]
-            {
-                new { Dialect = "MsSql", SqlExecuter = typeof(MsSqlExecuter), SqlUtility = typeof(MsSqlUtility) },
-                new { Dialect = "Oracle", SqlExecuter = typeof(OracleSqlExecuter), SqlUtility = typeof(OracleSqlUtility) },
-            }.ToDictionary(imp => imp.Dialect);
-
-            var sqlImplementation = sqlImplementations.GetValue(SqlUtility.DatabaseLanguage,
-                () => "Unsupported database language '" + SqlUtility.DatabaseLanguage
-                    + "'. Supported languages are: " + string.Join(", ", sqlImplementations.Keys) + ".");
-
-            builder.RegisterType(sqlImplementation.SqlExecuter).As<ISqlExecuter>().InstancePerLifetimeScope();
-            builder.RegisterType(sqlImplementation.SqlUtility).As<ISqlUtility>().InstancePerLifetimeScope();
-            builder.RegisterType<SqlTransactionBatches>().InstancePerLifetimeScope();
+            builder.RegisterType(DatabaseTypes.GetSqlUtilityType(SqlUtility.DatabaseLanguage)).As<ISqlUtility>().InstancePerLifetimeScope();
         }
     }
 }

@@ -141,7 +141,7 @@ namespace CreateAndSetDatabase
             // set Rhetos to point to new database
             FileReplaceHelper.ReplaceWithRegex(connectionStringConfigPath
                             , @"<add.*?name=""ServerConnectionString""(.|\n)*?/>"
-                            , @"<add connectionString=""" + rhetosConnectionString + @""" name=""ServerConnectionString"" providerName=""Rhetos.MsSql"" />"
+                            , @"<add connectionString=""" + rhetosConnectionString + @""" name=""ServerConnectionString"" />"
                             , "Not valid ConnectionStrings.config file.");
         }
     }

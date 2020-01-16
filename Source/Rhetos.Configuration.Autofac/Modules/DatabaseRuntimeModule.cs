@@ -17,17 +17,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Autofac;
+using Rhetos.Utilities;
 
-namespace Rhetos
+namespace Rhetos.Configuration.Autofac.Modules
 {
-    public class ConnectionStringOptions
+    internal class DatabaseRuntimeModule : Module
     {
-        public string Name { get; set; }
-        public string ConnectionString { get; set; }
+        protected override void Load(ContainerBuilder builder)
+        {
+            builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));
+            builder.RegisterType(DatabaseTypes.GetSqlExecuterType(SqlUtility.DatabaseLanguage)).As<ISqlExecuter>().InstancePerLifetimeScope();
+            builder.RegisterType<SqlTransactionBatches>().InstancePerLifetimeScope();
+
+            base.Load(builder);
+        }
     }
 }

@@ -26,15 +26,16 @@ using System.Text.RegularExpressions;
 
 namespace Rhetos.Utilities
 {
+    // TODO: Move most of the methods to ISqlUtility.
     public static class SqlUtility
     {
-        // TODO: Move most of the methods to ISqlUtility.
         public static int SqlCommandTimeout { get; private set; } = 30;
-        public static string DatabaseLanguage { get => CheckIfInitialized(_databaseLanguage); private set => _databaseLanguage = value; }
-        public static string NationalLanguage { get => CheckIfInitialized(_nationalLanguage); private set => _nationalLanguage = value; }
-        public static string ConnectionString { get => CheckIfInitialized(_connectionString); private set => _connectionString = value; }
-        public static string ProviderName { get => CheckIfInitialized(_providerName); private set => _providerName = value; }
+        public static string DatabaseLanguage => CheckIfInitialized(_databaseLanguage, "database language");
+        public static string NationalLanguage => CheckIfInitialized(_nationalLanguage, "national language");
+        public static string ConnectionString => CheckIfInitialized(_connectionString, $"connection string (name=\"{RhetosConnectionStringName}\")");
+        public static string ProviderName => CheckIfInitialized(_providerName, "provider name");
 
+        private static bool _initialized = false;
         private static bool _databaseLanguageIsMsSql;
         private static bool _databaseLanguageIsOracle;
         private static string _databaseLanguage;
@@ -42,28 +43,32 @@ namespace Rhetos.Utilities
         private static string _connectionString;
         private static string _providerName;
 
-        private static T CheckIfInitialized<T>(T value)
+        private const string RhetosConnectionStringName = "ServerConnectionString";
+
+        private static T CheckIfInitialized<T>(T value, string property)
         {
-            if (value == null)
+            if (!_initialized)
                 throw new FrameworkException("SqlUtility has not been initialized. Call LegacyUtilities.Initialize() at application startup.");
+            else if (value == null)
+                throw new FrameworkException($"SqlUtility has not been initialized correctly: Value for {property} is not specified.");
             return value;
         }
 
         public static void Initialize(IConfigurationProvider configurationProvider)
         {
-            var connectionStringOptions = configurationProvider.GetOptions<ConnectionStringOptions>("ConnectionStrings:ServerConnectionString");
-            var sqlOptions = configurationProvider.GetOptions<SqlOptions>();
-            var buildOptions = configurationProvider.GetOptions<BuildOptions>();
+            _initialized = true;
 
+            var sqlOptions = configurationProvider.GetOptions<SqlOptions>();
             SqlCommandTimeout = sqlOptions.SqlCommandTimeout;
 
-            ConnectionString = connectionStringOptions.ConnectionString;
+            _connectionString = configurationProvider.GetValue<string>($"ConnectionStrings:{RhetosConnectionStringName}:ConnectionString");
 
+            var buildOptions = configurationProvider.GetOptions<BuildOptions>();
             if (string.IsNullOrEmpty(buildOptions.DatabaseLanguage))
                 throw new FrameworkException($"{nameof(BuildOptions)}.{nameof(BuildOptions.DatabaseLanguage)} is not configured.");
 
-            DatabaseLanguage = buildOptions.DatabaseLanguage;
-            NationalLanguage = configurationProvider.GetValue("Oracle:NationalLanguage", ""); // TODO: Review if this is a desired key for build options after refactoring configuration key to avoid property name collisions.
+            _databaseLanguage = buildOptions.DatabaseLanguage;
+            _nationalLanguage = configurationProvider.GetValue("Oracle:NationalLanguage", ""); // TODO: Review if this is a desired key for build options after refactoring configuration key to avoid property name collisions.
             InitializeProviderContext();
         }
 
@@ -73,9 +78,9 @@ namespace Rhetos.Utilities
             _databaseLanguageIsOracle = string.Equals(DatabaseLanguage, "Oracle", StringComparison.Ordinal);
 
             if (_databaseLanguageIsMsSql)
-                ProviderName = "System.Data.SqlClient";
+                _providerName = "System.Data.SqlClient";
             else if (_databaseLanguageIsOracle)
-                ProviderName = "Oracle.ManagedDataAccess.Client";
+                _providerName = "Oracle.ManagedDataAccess.Client";
             else
                 throw new FrameworkException(UnsupportedLanguageError);
         }

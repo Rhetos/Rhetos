@@ -141,7 +141,6 @@
     <Compile Include="ApplicationConfiguration\ConfigurationProvider.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationSources\JsonFileSource.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationSources\JsonSource.cs" />
-    <Compile Include="ApplicationConfiguration\ConnectionStringOptions.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationSources\CommandLineArgumentsSource.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationSources\ConfigurationSourcesBuilderExtensions.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationSources\ConfigurationManagerSource.cs" />

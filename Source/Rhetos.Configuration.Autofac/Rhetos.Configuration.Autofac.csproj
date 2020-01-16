@@ -109,6 +109,8 @@
     <Compile Include="Modules\CorePluginsModule.cs" />
     <Compile Include="Modules\CoreModule.cs" />
     <Compile Include="Modules\AppInitializeModule.cs" />
+    <Compile Include="Modules\DatabaseRuntimeModule.cs" />
+    <Compile Include="Modules\DatabaseTypes.cs" />
     <Compile Include="Modules\RuntimeModule.cs" />
     <Compile Include="Modules\DbUpdateModule.cs" />
     <Compile Include="RhetosContainerBuilder.cs" />

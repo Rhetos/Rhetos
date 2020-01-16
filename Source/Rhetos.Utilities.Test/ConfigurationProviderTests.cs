@@ -286,8 +286,8 @@ namespace Rhetos.Utilities.Test
                 .AddConfigurationManagerConfiguration()
                 .Build();
 
-            var connectionStringOptions = provider.GetOptions<ConnectionStringOptions>("ConnectionStrings:ServerConnectionString");
-            Assert.AreEqual("ServerConnectionString", connectionStringOptions.Name);
+            var connectionStringName = provider.GetValue<string>($"ConnectionStrings:ServerConnectionString:Name");
+            Assert.AreEqual("ServerConnectionString", connectionStringName);
         }
 
 
