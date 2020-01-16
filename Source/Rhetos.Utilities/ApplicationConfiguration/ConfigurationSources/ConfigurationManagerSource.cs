@@ -17,12 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 {
@@ -37,12 +34,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
                     appSettings.Add(new KeyValuePair<string, string>(key, ConfigurationManager.AppSettings[key]));
             }
 
-            var connectionStrings = new List<ConnectionStringSettings>();
-            if (ConfigurationManager.ConnectionStrings != null)
-            {
-                foreach (ConnectionStringSettings connectionString in ConfigurationManager.ConnectionStrings)
-                    connectionStrings.Add(connectionString);
-            }
+            var connectionStrings = ConfigurationManager.ConnectionStrings?.Cast<ConnectionStringSettings>();
 
             return new DotNetConfigurationSource(appSettings, connectionStrings)
                 .Load();
