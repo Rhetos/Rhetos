@@ -26,22 +26,28 @@ using System.Linq;
 
 namespace Rhetos
 {
-    internal class NugetUtilities
+    internal static class NugetUtilities
     {
-        internal static NuGet.ProjectModel.LockFile GetLockFile(string projectRootFolder)
+        internal static NuGet.ProjectModel.LockFile FindLockFile(string projectRootFolder)
         {
-            return NuGet.ProjectModel.LockFileUtilities.GetLockFile(Path.Combine(projectRootFolder, "obj", "project.assets.json"), null);
+            var path = Path.Combine(projectRootFolder, "obj", "project.assets.json");
+            if (!File.Exists(path))
+                throw new FrameworkException("The project.assets.json file does not exist. Switch to Nuget's PackageReference format type for your project.");
+            return NuGet.ProjectModel.LockFileUtilities.GetLockFile(path, null);
         }
 
-        internal static NuGet.Frameworks.NuGetFramework GetTargetFramework(NuGet.ProjectModel.LockFile lockFile, string target)
+        internal static NuGet.Frameworks.NuGetFramework ResolveTargetFramework(NuGet.ProjectModel.LockFile lockFile, string target)
         {
             if (string.IsNullOrEmpty(target))
             {
                 var targets = lockFile.Targets.Select(x => x.TargetFramework).Distinct();
                 if (targets.Count() > 1)
-                    throw new FrameworkException("There are multiple targets set. Pass the target version through the command line???");
+                {
+                    //TODO: Add the option name with which the target framework should be pass to  RhetosCli after it is defined
+                    throw new FrameworkException("There are multiple targets set. Pass the target version with the command line option.");
+                }
                 if (targets.Count() == 0)
-                    throw new FrameworkException("No targets???");
+                    throw new FrameworkException("No target framework found for the selected project.");
 
                 return targets.First();
             }
@@ -51,49 +57,50 @@ namespace Rhetos
             }
         }
 
+        internal static List<string> GetBuildAssemblies(NuGet.ProjectModel.LockFile lockFile, NuGet.Frameworks.NuGetFramework targetFramework)
+        {
+            return GetTargetFrameworkLibraries(lockFile, targetFramework).Select(x => new { PackageFolder = GetPackageFolderForLibrary(lockFile, x), x.CompileTimeAssemblies })
+                .SelectMany(x => x.CompileTimeAssemblies.Select(y => Path.Combine(x.PackageFolder, GetNormalizedNugetPaths(y.Path))))
+                .Where(x => Path.GetExtension(x) == ".dll").ToList();
+        }
+
         internal static InstalledPackages GetInstalledPackages(NuGet.ProjectModel.LockFile lockFile, NuGet.Frameworks.NuGetFramework targetFramework)
         {
-            var librariesForTargetFramework = lockFile.Targets.First(x => x.TargetFramework == targetFramework).Libraries;
-
             var installedPackages = new List<InstalledPackage>();
-            foreach (var targetLibrary in librariesForTargetFramework)
+            var targetLibraries = GetTargetFrameworkLibraries(lockFile, targetFramework);
+            foreach (var targetLibrary in targetLibraries)
             {
+                var packageFolder = GetPackageFolderForLibrary(lockFile, targetLibrary);
                 var library = lockFile.GetLibrary(targetLibrary.Name, targetLibrary.Version);
-                var packageFolder = GetPackageFolderForLibrary(lockFile, library);
-                var contentFiles = library.Files.Select(x => new ContentFile { PhysicalPath = Path.Combine(packageFolder, x.Replace('/', '\\')), InPackagePath = x.Replace('/', '\\') }).ToList();
+                var contentFiles = library.Files.Select(x => new ContentFile { PhysicalPath = Path.Combine(packageFolder, GetNormalizedNugetPaths(x)), InPackagePath = GetNormalizedNugetPaths(x) }).ToList();
                 installedPackages.Add(new InstalledPackage(library.Name, library.Version.Version.ToString(), null, null, null, null, contentFiles));
             }
 
-            var packages = librariesForTargetFramework.Select(x => x.Name).ToList();
-            var dependencies = librariesForTargetFramework.Select(x => x.Dependencies.Select(y => new Tuple<string, string>(x.Name, y.Id))).SelectMany(x => x);
+            return new InstalledPackages { Packages = SortInstalledPackagesByDependencies(targetLibraries, installedPackages) };
+        }
+
+        private static IList<NuGet.ProjectModel.LockFileTargetLibrary> GetTargetFrameworkLibraries(NuGet.ProjectModel.LockFile lockFile, NuGet.Frameworks.NuGetFramework targetFramework) => lockFile.Targets.Single(x => x.TargetFramework == targetFramework && x.RuntimeIdentifier == null).Libraries;
+
+        private static List<InstalledPackage> SortInstalledPackagesByDependencies(IList<NuGet.ProjectModel.LockFileTargetLibrary> targetLibraries, List<InstalledPackage> installedPackages)
+        {
+            var packages = targetLibraries.Select(x => x.Name).ToList();
+            var dependencies = targetLibraries.Select(x => x.Dependencies.Select(y => new Tuple<string, string>(x.Name, y.Id))).SelectMany(x => x);
             Graph.TopologicalSort(packages, dependencies);
+            packages.Reverse();
             Graph.SortByGivenOrder(installedPackages, packages, x => x.Id);
-
-            return new InstalledPackages { Packages = installedPackages };
+            return installedPackages;
         }
 
-        internal static List<string> GetBuildAssemblies(NuGet.ProjectModel.LockFile lockFile, NuGet.Frameworks.NuGetFramework targetFramework)
+        private static string GetPackageFolderForLibrary(NuGet.ProjectModel.LockFile lockFile, NuGet.ProjectModel.LockFileTargetLibrary targetLibrary)
         {
-            var buildAssemblies = new List<string>();
-            var librariesForTargetFramework = lockFile.Targets.First(x => x.TargetFramework == targetFramework).Libraries;
-            foreach (var targetLibrary in librariesForTargetFramework)
-            {
-                var library = lockFile.GetLibrary(targetLibrary.Name, targetLibrary.Version);
-                var packageFolder = GetPackageFolderForLibrary(lockFile, library);
-                buildAssemblies.AddRange(targetLibrary.CompileTimeAssemblies.Select(y => Path.Combine(packageFolder, y.Path.Replace('/', '\\'))));
-            }
-
-            return buildAssemblies.Where(x => !x.EndsWith("_._")).ToList();
-        }
-
-        internal static string GetPackageFolderForLibrary(NuGet.ProjectModel.LockFile lockFile, NuGet.ProjectModel.LockFileLibrary library)
-        {
-            //TODO: It should be checked if this is the correct way to resolve the nuget package folder
-            var packageFolder = lockFile.PackageFolders.Select(x => Path.Combine(x.Path, library.Path.Replace('/', '\\'))).FirstOrDefault(x => Directory.Exists(x));
+            var library = lockFile.GetLibrary(targetLibrary.Name, targetLibrary.Version);
+            var packageFolder = lockFile.PackageFolders.Select(x => Path.Combine(x.Path, GetNormalizedNugetPaths(library.Path)))
+                .FirstOrDefault(x => Directory.Exists(x));
             if (packageFolder == null)
                 throw new FrameworkException($"Could not locate the folder for package {library.Name};");
             return packageFolder;
         }
 
+        private static string GetNormalizedNugetPaths(string nugetPath) => nugetPath.Replace('/', '\\');
     }
 }

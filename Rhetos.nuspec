@@ -22,8 +22,8 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="Source\Rhetos\bin\Rhetos*.dll" target="lib\net472" />
-    <file src="Source\Rhetos\bin\Rhetos*.pdb" target="lib\net472" />
-	<file src="Source\Rhetos\bin\Rhetos*.xml" target="lib\net472" />
+    <file src="Source\Rhetos\bin\Rhetos.*.dll" target="lib\net472" />
+    <file src="Source\Rhetos\bin\Rhetos.*.pdb" target="lib\net472" />
+	<file src="Source\Rhetos\bin\Rhetos.*.xml" target="lib\net472" />
   </files>
 </package>
