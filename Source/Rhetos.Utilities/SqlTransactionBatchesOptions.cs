@@ -17,21 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac;
-using Rhetos.Utilities;
-
-namespace Rhetos.Configuration.Autofac.Modules
+namespace Rhetos.Utilities
 {
-    internal class DatabaseRuntimeModule : Module
+    public class SqlTransactionBatchesOptions
     {
-        protected override void Load(ContainerBuilder builder)
-        {
-            builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));
-            builder.RegisterType(DatabaseTypes.GetSqlExecuterType(SqlUtility.DatabaseLanguage)).As<ISqlExecuter>().InstancePerLifetimeScope();
-            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<SqlTransactionBatchesOptions>("Database:SqlTransactionBatches")).InstancePerLifetimeScope();
-            builder.RegisterType<SqlTransactionBatches>().InstancePerLifetimeScope();
-
-            base.Load(builder);
-        }
+        public int ReportProgressMs { get; set; } = 60_000; // Report progress each minute by default
+        public int MaxJoinedScriptCount { get; set; } = 100;
+        public int MaxJoinedScriptSize { get; set; } = 100_000;
     }
 }

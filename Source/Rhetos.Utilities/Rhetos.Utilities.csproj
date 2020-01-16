@@ -166,7 +166,7 @@
     <Compile Include="ListOfTuples.cs" />
     <Compile Include="RhetosAppOptions.cs" />
     <Compile Include="SecurityOptions.cs" />
-    <Compile Include="SqlOptions.cs" />
+    <Compile Include="DatabaseOptions.cs" />
     <Compile Include="SqlTransactionBatches.cs" />
     <Compile Include="NoLocalizer.cs" />
     <Compile Include="ILocalizer.cs" />
@@ -186,6 +186,7 @@
     <Compile Include="ConsoleLogProvider.cs" />
     <Compile Include="OracleSqlExecuter.cs" />
     <Compile Include="SqlTransactionBatch.cs" />
+    <Compile Include="SqlTransactionBatchesOptions.cs" />
     <Compile Include="SqlUtility.cs" />
     <Compile Include="Exceptions\UserException.cs" />
     <Compile Include="Exceptions\FrameworkException.cs" />

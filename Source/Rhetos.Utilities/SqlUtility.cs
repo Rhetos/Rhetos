@@ -58,8 +58,8 @@ namespace Rhetos.Utilities
         {
             _initialized = true;
 
-            var sqlOptions = configurationProvider.GetOptions<SqlOptions>();
-            SqlCommandTimeout = sqlOptions.SqlCommandTimeout;
+            var dbOptions = configurationProvider.GetOptions<DatabaseOptions>();
+            SqlCommandTimeout = dbOptions.SqlCommandTimeout;
 
             _connectionString = configurationProvider.GetValue<string>($"ConnectionStrings:{RhetosConnectionStringName}:ConnectionString");
 
@@ -68,7 +68,7 @@ namespace Rhetos.Utilities
                 throw new FrameworkException($"{nameof(BuildOptions)}.{nameof(BuildOptions.DatabaseLanguage)} is not configured.");
 
             _databaseLanguage = buildOptions.DatabaseLanguage;
-            _nationalLanguage = configurationProvider.GetValue("Oracle:NationalLanguage", ""); // TODO: Review if this is a desired key for build options after refactoring configuration key to avoid property name collisions.
+            _nationalLanguage = configurationProvider.GetValue("Database:Oracle:NationalLanguage", ""); // TODO: Review if this is a desired key for build options after refactoring configuration key to avoid property name collisions.
             InitializeProviderContext();
         }
 

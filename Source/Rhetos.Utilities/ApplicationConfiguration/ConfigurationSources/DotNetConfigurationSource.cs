@@ -31,9 +31,9 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
     class DotNetConfigurationSource : IConfigurationSource
     {
         private readonly IList<KeyValuePair<string, string>> appSettings;
-        private readonly IList<ConnectionStringSettings> connectionStrings;
+        private readonly IEnumerable<ConnectionStringSettings> connectionStrings;
 
-        public DotNetConfigurationSource(IList<KeyValuePair<string, string>> appSettings, IList<ConnectionStringSettings> connectionStrings)
+        public DotNetConfigurationSource(IList<KeyValuePair<string, string>> appSettings, IEnumerable<ConnectionStringSettings> connectionStrings)
         {
             this.appSettings = appSettings;
             this.connectionStrings = connectionStrings;
@@ -46,13 +46,14 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             foreach (var pair in appSettings)
                 settings[pair.Key] = pair.Value;
 
-            foreach (ConnectionStringSettings connectionString in connectionStrings)
-            {
-                var connectionSectionName = $"ConnectionStrings{ConfigurationProvider.ConfigurationPathSeparator}{connectionString.Name}";
-                settings[$"{connectionSectionName}{ConfigurationProvider.ConfigurationPathSeparator}Name"] = connectionString.Name;
-                settings[$"{connectionSectionName}{ConfigurationProvider.ConfigurationPathSeparator}ConnectionString"] = connectionString.ConnectionString;
-                settings[$"{connectionSectionName}{ConfigurationProvider.ConfigurationPathSeparator}ProviderName"] = connectionString.ProviderName;
-            }
+            if (connectionStrings != null)
+                foreach (ConnectionStringSettings connectionString in connectionStrings)
+                {
+                    var connectionSectionName = $"ConnectionStrings{ConfigurationProvider.ConfigurationPathSeparator}{connectionString.Name}";
+                    settings[$"{connectionSectionName}{ConfigurationProvider.ConfigurationPathSeparator}Name"] = connectionString.Name;
+                    settings[$"{connectionSectionName}{ConfigurationProvider.ConfigurationPathSeparator}ConnectionString"] = connectionString.ConnectionString;
+                    settings[$"{connectionSectionName}{ConfigurationProvider.ConfigurationPathSeparator}ProviderName"] = connectionString.ProviderName;
+                }
 
             return settings;
         }

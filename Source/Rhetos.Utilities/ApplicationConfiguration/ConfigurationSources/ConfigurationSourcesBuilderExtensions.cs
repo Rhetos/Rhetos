@@ -51,6 +51,8 @@ namespace Rhetos
 
         /// <summary>
         /// Adds current application's default configuration (see <see cref="ConfigurationManager.AppSettings"/>).
+        /// Note that the "current application" in this context could be a generated web application, for example,
+        /// but also a custom command-line utility that references generated Rhetos application and uses it's runtime components.
         /// </summary>
         public static IConfigurationBuilder AddConfigurationManagerConfiguration(this IConfigurationBuilder builder)
         {
@@ -82,6 +84,7 @@ namespace Rhetos
         {
             rhetosAppRootPath = Path.GetFullPath(rhetosAppRootPath);
 
+            // TODO: Remove this conditional settings after implementation of persisting build configuration for use in runtime.
             bool oldBuildProcess = File.Exists(Path.Combine(rhetosAppRootPath, @"bin\DeployPackages.exe"));
             if (oldBuildProcess)
             {
@@ -101,6 +104,12 @@ namespace Rhetos
             return builder;
         }
 
+        /// <summary>
+        /// This method is similar to <see cref="AddConfigurationManagerConfiguration"/> but work on a different application context:
+        /// It is needed for utility applications that reference the generated Rhetos applications and use it's runtime components.
+        /// This method load's the Rhetos application's configuration, while <see cref="AddConfigurationManagerConfiguration"/> loads the current utility application's configuration.
+        /// When executed from the generated Rhetos application, it should yield same result as <see cref="AddConfigurationManagerConfiguration"/>.
+        /// </summary>
         private static IConfigurationBuilder AddWebConfiguration(this IConfigurationBuilder builder, string webRootPath)
         {
             webRootPath = Path.GetFullPath(webRootPath);

@@ -81,9 +81,9 @@ namespace Rhetos.DatabaseGenerator.Test
 
             var conceptApplicationRepository = new MockConceptApplicationRepository(ConceptApplication.FromDatabaseObjects(oldConceptApplications));
             var databaseModel = new DatabaseModel { DatabaseObjects = newConceptApplications.ToList() };
-            var testConfig = new MockConfiguration { { "SqlExecuter.MaxJoinedScriptCount", 1 } };
+            var options = new SqlTransactionBatchesOptions { MaxJoinedScriptCount = 1 };
             var sqlExecuter = new MockSqlExecuter();
-            var sqlTransactionBatches = new SqlTransactionBatches(sqlExecuter, testConfig, new ConsoleLogProvider());
+            var sqlTransactionBatches = new SqlTransactionBatches(sqlExecuter, options, new ConsoleLogProvider());
 
             IDatabaseGenerator databaseGenerator = new DatabaseGenerator(
                 sqlTransactionBatches,
