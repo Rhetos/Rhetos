@@ -66,9 +66,8 @@ namespace Rhetos.Extensibility
         private MultiDictionary<string, PluginInfo> GetPluginsByExport(Func<IEnumerable<string>> findAssemblies)
         {
             var assemblies = ListAssemblies(findAssemblies);
+            var resolver = CreateAssemblyResolveDelegate(assemblies);
             MultiDictionary<string, PluginInfo> plugins = null;
-            var namesToPaths = assemblies.ToDictionary(path => Path.GetFileName(path), path => path, StringComparer.InvariantCultureIgnoreCase);
-            ResolveEventHandler resolver = (sender, args) => LoadAssemblyFromSpecifiedPaths(sender, args, namesToPaths);
             try
             {
                 AppDomain.CurrentDomain.AssemblyResolve += resolver;
@@ -87,6 +86,25 @@ namespace Rhetos.Extensibility
                 AppDomain.CurrentDomain.AssemblyResolve -= resolver;
             }
             return plugins;
+        }
+
+        private ResolveEventHandler CreateAssemblyResolveDelegate(List<string> assemblies)
+        {
+            var byFilename = assemblies
+                .GroupBy(Path.GetFileName)
+                .Select(group => new {filename = group.Key, paths = group.OrderBy(path => path.Length).ThenBy(path => path).ToList()})
+                .ToList();
+
+            foreach (var duplicate in byFilename.Where(dll => dll.paths.Count > 1))
+            {
+                var otherPaths = string.Join(",", duplicate.paths.Skip(1).Select(path => $"'{path}'"));
+                _logger.Info($"Multiple paths for '{duplicate.filename}' found. This causes ambiguous DLL loading and can cause type errors. Loaded: '{duplicate.paths.First()}', ignored: {otherPaths}.");
+            }
+
+            var namesToPaths = byFilename.ToDictionary(dll => dll.filename, dll => dll.paths.First(), StringComparer.InvariantCultureIgnoreCase);
+            ResolveEventHandler resolver = (sender, args) => LoadAssemblyFromSpecifiedPaths(sender, args, namesToPaths);
+
+            return resolver;
         }
 
         private Assembly LoadAssemblyFromSpecifiedPaths(object sender, ResolveEventArgs args, Dictionary<string, string> namesToPaths)
@@ -166,7 +184,7 @@ namespace Rhetos.Extensibility
                     }
                 }
 
-                _logger.Trace($"Used cached data for {cachedAssemblies} out of total {assemblyPaths.Count} assemblies.");
+                _logger.Trace($"Used cached data for {cachedAssemblies} out of total {assemblyPaths.Count} assemblies. {pluginsCount} total plugins loaded.");
 
                 if (cacheUpdated)
                     _pluginScannerCache.SavePluginsCacheData(cache);
