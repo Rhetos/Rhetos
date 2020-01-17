@@ -74,7 +74,7 @@ namespace Rhetos.Deployment
                 new PackageRequest { Id = "Rhetos", VersionsRange = "", Source = "", RequestedBy = "Rhetos framework" }, ".", new List<ContentFile> { }));
 
             var binFileSyncer = new FileSyncer(_logProvider);
-            binFileSyncer.AddDestinations(Paths.PluginsFolder, Paths.ResourcesFolder); // Even if there are no packages, those folders must be created and emptied.
+            binFileSyncer.AddDestinations(Paths.PluginsFolder); // Even if there are no packages, this folder must be emptied.
 
             _filesUtility.SafeCreateDirectory(_packagesCacheFolder);
             var packageRequests = _deploymentConfiguration.PackageRequests;
@@ -87,7 +87,7 @@ namespace Rhetos.Deployment
                     if (!CheckAlreadyDownloaded(request, installedPackages))
                     {
                         var installedPackage = GetPackage(request, binFileSyncer);
-                        ValidatePackage(installedPackage, request, installedPackages);
+                        ValidatePackage(installedPackage, request);
                         installedPackages.Add(installedPackage);
                         newDependencies.AddRange(installedPackage.Dependencies);
                     }
@@ -176,7 +176,7 @@ namespace Rhetos.Deployment
                 ?? TryGetPackageFromNuGet(source, request, binFileSyncer);
         }
 
-        private void ValidatePackage(InstalledPackage installedPackage, PackageRequest request, List<InstalledPackage> installedPackages)
+        private void ValidatePackage(InstalledPackage installedPackage, PackageRequest request)
         {
             if (request.Id != null
                 && !string.Equals(installedPackage.Id, request.Id, StringComparison.OrdinalIgnoreCase))
@@ -190,22 +190,6 @@ namespace Rhetos.Deployment
                     "Incompatible package version '{0}, version {1}'. Version {2} is requested from {3}'.",
                     installedPackage.Id, installedPackage.Version,
                     request.VersionsRange, request.RequestedBy));
-
-            var similarOldPackage = installedPackages.FirstOrDefault(oldPackage => !string.Equals(oldPackage.Id, installedPackage.Id, StringComparison.OrdinalIgnoreCase)
-                && string.Equals(SimplifyPackageName(oldPackage.Id), SimplifyPackageName(installedPackage.Id), StringComparison.OrdinalIgnoreCase));
-            if (similarOldPackage != null)
-                throw new UserException(string.Format(
-                    "Incompatible package names '{0}' (requested from {1}) and '{2}' (requested from {3}).",
-                    installedPackage.Id, installedPackage.Request.RequestedBy,
-                    similarOldPackage.Id, similarOldPackage.Request.RequestedBy));
-        }
-
-        private string SimplifyPackageName(string packageId)
-        {
-            const string removablePrefix = "Rhetos.";
-            if (packageId.StartsWith(removablePrefix))
-                packageId = packageId.Substring(removablePrefix.Length);
-            return packageId;
         }
 
         //================================================================
@@ -281,7 +265,7 @@ namespace Rhetos.Deployment
 
             string sourceFolder = Path.GetDirectoryName(metadataFile);
 
-            // Copy binary files and resources:
+            // Copy binary files:
 
             foreach (var file in FilterCompatibleLibFiles(packageBuilder.Files).Cast<PhysicalPackageFile>())
                 binFileSyncer.AddFile(file.SourcePath, Paths.PluginsFolder, Path.Combine(Paths.PluginsFolder, file.EffectivePath));
@@ -289,8 +273,6 @@ namespace Rhetos.Deployment
             foreach (var file in packageBuilder.Files.Cast<PhysicalPackageFile>())
                 if (file.Path.StartsWith(@"Plugins\")) // Obsolete bin folder; lib should be used instead.
                     binFileSyncer.AddFile(file.SourcePath, Paths.PluginsFolder);
-                else if (file.Path.StartsWith(@"Resources\"))
-                    binFileSyncer.AddFile(file.SourcePath, Paths.ResourcesFolder, Path.Combine(SimplifyPackageName(packageBuilder.Id), file.Path.Substring(@"Resources\".Length)));
 
             var contentFiles = packageBuilder.Files.Cast<PhysicalPackageFile>()
                 .Select(file => new ContentFile { PhysicalPath = file.SourcePath, InPackagePath = file.Path })
@@ -359,7 +341,6 @@ namespace Rhetos.Deployment
                 _logger.Error(() => "Package " + request.Id + " source folder contains Plugins that will not be installed to the Rhetos server. Add '" + request.Id + ".nuspec' file to define the which plugin files should be installed.");
 
             binFileSyncer.AddFolderContent(Path.Combine(sourceFolder, "Plugins"), Paths.PluginsFolder, recursive: false);
-            binFileSyncer.AddFolderContent(Path.Combine(sourceFolder, "Resources"), Paths.ResourcesFolder, SimplifyPackageName(request.Id), recursive: true);
 
             string defaultVersion = CreateVersionInRangeOrZero(request);
             return new InstalledPackage(request.Id, defaultVersion, new List<PackageRequest> { }, sourceFolder, request, sourceFolder);
@@ -394,7 +375,6 @@ namespace Rhetos.Deployment
             ZipFile.ExtractToDirectory(zipPackagePath, targetFolder);
 
             binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Plugins"), Paths.PluginsFolder, recursive: false);
-            binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Resources"), Paths.ResourcesFolder, SimplifyPackageName(request.Id), recursive: true);
 
             return new InstalledPackage(request.Id, zipPackage.Version, new List<PackageRequest> { }, targetFolder, request, source.ProcessedLocation);
         }
@@ -460,7 +440,7 @@ namespace Rhetos.Deployment
                 return null;
             }
 
-            // Copy binary files and resources:
+            // Copy binary files:
 
             string packageSubfolder = nugetRepository.PathResolver.GetPackageDirectory(request.Id, package.Version);
             _logger.Trace(() => $"Reading package {request.Id} from cache '{packageSubfolder}'.");
@@ -471,7 +451,6 @@ namespace Rhetos.Deployment
                 binFileSyncer.AddFile(Path.Combine(targetFolder, file.Path), Paths.PluginsFolder, Path.Combine(Paths.PluginsFolder, file.EffectivePath));
 
             binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Plugins"), Paths.PluginsFolder, recursive: false); // Obsolete bin folder; lib should be used instead.
-            binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Resources"), Paths.ResourcesFolder, SimplifyPackageName(package.Id), recursive: true);
 
             return new InstalledPackage(package.Id, package.Version.ToString(), GetNuGetPackageDependencies(package), targetFolder, request, _packagesCacheFolder);
         }
@@ -515,13 +494,12 @@ namespace Rhetos.Deployment
 
             string targetFolder = packageManager.PathResolver.GetInstallPath(package);
 
-            // Copy binary files and resources:
+            // Copy binary files:
 
             foreach (var file in FilterCompatibleLibFiles(package.GetFiles()))
                 binFileSyncer.AddFile(Path.Combine(targetFolder, file.Path), Paths.PluginsFolder, Path.Combine(Paths.PluginsFolder, file.EffectivePath));
 
             binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Plugins"), Paths.PluginsFolder, recursive: false); // Obsolete bin folder; lib should be used instead.
-            binFileSyncer.AddFolderContent(Path.Combine(targetFolder, "Resources"), Paths.ResourcesFolder, SimplifyPackageName(package.Id), recursive: true);
 
             return new InstalledPackage(package.Id, package.Version.ToString(), GetNuGetPackageDependencies(package), targetFolder, request, source.ProcessedLocation);
         }

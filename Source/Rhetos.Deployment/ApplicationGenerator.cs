@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Dom;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
@@ -30,8 +29,6 @@ namespace Rhetos.Deployment
 {
     public class ApplicationGenerator
     {
-        private const string DomGeneratorTypeName = "Rhetos.Dom.DomGenerator";
-
         private readonly ILogger _deployPackagesLogger;
         private readonly IDslModel _dslModel;
         private readonly IPluginsContainer<IGenerator> _generatorsContainer;
@@ -79,12 +76,7 @@ namespace Rhetos.Deployment
             // Additional sorting by loosely-typed dependencies from the Dependencies property:
             var generatorNames = generators.Select(GetGeneratorName).ToList();
 
-            // For backward compatibility, DomGenerator is placed at the first position, because before Rhetos v4.0 the IGenerator plugins did not need to specify dependency to it.
-            var indexofDomgenerator = generatorNames.IndexOf(DomGeneratorTypeName);
-            if (indexofDomgenerator == -1)
-                throw new FrameworkException($@"Could not find Generator of type {DomGeneratorTypeName}");
-            generatorNames.RemoveAt(indexofDomgenerator);
-            generatorNames.Insert(0, DomGeneratorTypeName);
+            MoveToFront(generatorNames, new[] { "Rhetos.Dom.DomGenerator", "Rhetos.Deployment.ResourcesGenerator" } );
 
             var dependencies = generators.Where(gen => gen.Dependencies != null)
                 .SelectMany(gen => gen.Dependencies.Select(dependsOn => Tuple.Create(dependsOn, GetGeneratorName(gen))))
@@ -97,6 +89,23 @@ namespace Rhetos.Deployment
             Graph.SortByGivenOrder(generators, generatorNames, GetGeneratorName);
 
             return generators;
+        }
+
+        /// <summary>
+        /// For backward compatibility, some generators are manually placed at the beginning,
+        /// because before Rhetos v4.0 those generators where executed explicitly before IGenerator plugins,
+        /// and other plugins did not need to specify dependency to them.
+        /// </summary>
+        private static void MoveToFront(List<string> generatorNames, string[] priorityGenerators)
+        {
+            foreach (string generator in priorityGenerators)
+            {
+                var indexofDomgenerator = generatorNames.IndexOf(generator);
+                if (indexofDomgenerator == -1)
+                    throw new FrameworkException($@"Could not find Generator of type {generator}");
+                generatorNames.RemoveAt(indexofDomgenerator);
+                generatorNames.Insert(0, generator);
+            }
         }
 
         private static string GetGeneratorName(IGenerator gen)
