@@ -97,7 +97,7 @@ namespace Rhetos.Extensibility
 
             foreach (var duplicate in byFilename.Where(dll => dll.paths.Count > 1))
             {
-                var otherPaths = string.Join(",", duplicate.paths.Skip(1).Select(path => $"'{path}'"));
+                var otherPaths = string.Join(", ", duplicate.paths.Skip(1).Select(path => $"'{path}'"));
                 _logger.Info($"Multiple paths for '{duplicate.filename}' found. This causes ambiguous DLL loading and can cause type errors. Loaded: '{duplicate.paths.First()}', ignored: {otherPaths}.");
             }
 
@@ -123,7 +123,7 @@ namespace Rhetos.Extensibility
         {
             var stopwatch = Stopwatch.StartNew();
 
-            var assemblies = findAssemblies().ToList();
+            var assemblies = findAssemblies().Select(path => Path.GetFullPath(path)).Distinct().ToList();
 
             foreach (var assembly in assemblies)
                 if (!File.Exists(assembly))
