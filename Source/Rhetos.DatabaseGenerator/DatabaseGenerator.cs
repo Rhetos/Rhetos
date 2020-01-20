@@ -38,6 +38,7 @@ namespace Rhetos.DatabaseGenerator
         private readonly ILogger _logger;
 		/// <summary>Special logger for keeping track of inserted/updated/deleted concept applications in database.</summary>
         private readonly ILogger _conceptsLogger;
+        private readonly ILogger _modifiedObjectsLogger;
         private readonly ILogger _deployPackagesLogger;
         private readonly ILogger _performanceLogger;
         private readonly DatabaseGeneratorOptions _options;
@@ -54,6 +55,7 @@ namespace Rhetos.DatabaseGenerator
             _conceptApplicationRepository = conceptApplicationRepository;
             _logger = logProvider.GetLogger("DatabaseGenerator");
             _conceptsLogger = logProvider.GetLogger("DatabaseGenerator Concepts");
+            _modifiedObjectsLogger = logProvider.GetLogger("DatabaseGenerator ModifiedObjects");
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _performanceLogger = logProvider.GetLogger("Performance");
             _options = options;
@@ -145,7 +147,7 @@ namespace Rhetos.DatabaseGenerator
                 .ToList();
 
             foreach (string ca in changedApplications)
-                _logger.Trace(() => $"Changed concept application: {ca}\r\n{ReportDiff(oldApplicationsByKey[ca].CreateQuery, newApplicationsByKey[ca].CreateQuery)}");
+                _modifiedObjectsLogger.Trace(() => $"Changed concept application: {ca}\r\n{ReportDiff(oldApplicationsByKey[ca].CreateQuery, newApplicationsByKey[ca].CreateQuery)}");
 
             // Find dependent concepts applications to be regenerated:
 
