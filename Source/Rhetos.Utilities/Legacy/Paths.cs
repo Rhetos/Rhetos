@@ -62,23 +62,6 @@ namespace Rhetos.Utilities
                     $" or use {nameof(RhetosAppOptions)}.");
         }
 
-        private static void AssertRhetosRootPathNotNull()
-        {
-            if (_rootPath == null)
-                throw new FrameworkException($"Rhetos server is not initialized ({nameof(Paths)} class)." +
-                    $" Use {nameof(LegacyUtilities)}.{nameof(LegacyUtilities.Initialize)}() to initialize obsolete static utilities");
-        }
-
-        private static void ValidateGeneratedFolder()
-        {
-            if (_assetsOptions == null)
-                throw new FrameworkException($"Rhetos server is not initialized ({nameof(Paths)} class)." +
-                    $" Use {nameof(LegacyUtilities)}.{nameof(LegacyUtilities.Initialize)}() to initialize obsolete static utilities");
-
-            if (string.IsNullOrEmpty(_assetsOptions.AssetsFolder))
-                throw new FrameworkException($"{nameof(AssetsOptions.AssetsFolder)} expected to be configured with valid value, but is empty.");
-        }
-
         private static RhetosAppOptions NonNullRhetosAppOptions
         {
             get
@@ -92,7 +75,10 @@ namespace Rhetos.Utilities
         {
             get
             {
-                AssertRhetosRootPathNotNull();
+                if (_rootPath == null)
+                    throw new FrameworkException($"Rhetos server is not initialized ({nameof(Paths)} class)." +
+                        $" Use {nameof(LegacyUtilities)}.{nameof(LegacyUtilities.Initialize)}() to initialize obsolete static utilities");
+
                 return _rootPath;
             }
         }
@@ -101,7 +87,13 @@ namespace Rhetos.Utilities
         {
             get
             {
-                ValidateGeneratedFolder();
+                if (_assetsOptions == null)
+                    throw new FrameworkException($"Rhetos server is not initialized ({nameof(Paths)} class)." +
+                        $" Use {nameof(LegacyUtilities)}.{nameof(LegacyUtilities.Initialize)}() to initialize obsolete static utilities");
+
+                if (string.IsNullOrEmpty(_assetsOptions.AssetsFolder))
+                    throw new FrameworkException($"{nameof(AssetsOptions.AssetsFolder)} expected to be configured with valid value, but is empty.");
+
                 return _assetsOptions.AssetsFolder;
             }
         }

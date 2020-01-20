@@ -39,9 +39,10 @@ namespace Rhetos.Configuration.Autofac.Modules
 
             AddDatabaseGenerator(builder, pluginRegistration);
             AddDsl(builder, pluginRegistration);
-            AddDom(builder);
             AddPersistence(builder, pluginRegistration);
             AddCompiler(builder, pluginRegistration);
+            builder.RegisterType<DomGenerator>().As<IGenerator>();
+            builder.RegisterType<ResourcesGenerator>().As<IGenerator>();
             builder.RegisterType<PluginScannerCache>().As<IGenerator>();
             builder.RegisterType<InstalledPackagesGenerator>().As<IGenerator>();
 
@@ -86,11 +87,6 @@ namespace Rhetos.Configuration.Autofac.Modules
             pluginRegistration.FindAndRegisterPlugins<IConceptInfo>();
             pluginRegistration.FindAndRegisterPlugins<IConceptMacro>(typeof(IConceptMacro<>));
             pluginRegistration.FindAndRegisterPlugins<IConceptMetadataExtension>();
-        }
-
-        private void AddDom(ContainerBuilder builder)
-        {
-            builder.RegisterType<DomGenerator>().As<IGenerator>();
         }
 
         private void AddPersistence(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
