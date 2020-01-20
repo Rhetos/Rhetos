@@ -66,9 +66,11 @@ namespace Rhetos.Extensibility
         private MultiDictionary<string, PluginInfo> GetPluginsByExport(Func<IEnumerable<string>> findAssemblies)
         {
             var assemblies = ListAssemblies(findAssemblies);
+            var resolver = CreateAssemblyResolveDelegate(assemblies);
             MultiDictionary<string, PluginInfo> plugins = null;
             try
             {
+                AppDomain.CurrentDomain.AssemblyResolve += resolver;
                 plugins = LoadPlugins(assemblies);
             }
             catch (Exception ex)
@@ -79,7 +81,42 @@ namespace Rhetos.Extensibility
                 else
                     ExceptionsUtility.Rethrow(ex);
             }
+            finally
+            {
+                AppDomain.CurrentDomain.AssemblyResolve -= resolver;
+            }
             return plugins;
+        }
+
+        private ResolveEventHandler CreateAssemblyResolveDelegate(List<string> assemblies)
+        {
+            var byFilename = assemblies
+                .GroupBy(Path.GetFileName)
+                .Select(group => new {filename = group.Key, paths = group.OrderBy(path => path.Length).ThenBy(path => path).ToList()})
+                .ToList();
+
+            foreach (var duplicate in byFilename.Where(dll => dll.paths.Count > 1))
+            {
+                var otherPaths = string.Join(",", duplicate.paths.Skip(1).Select(path => $"'{path}'"));
+                _logger.Info($"Multiple paths for '{duplicate.filename}' found. This causes ambiguous DLL loading and can cause type errors. Loaded: '{duplicate.paths.First()}', ignored: {otherPaths}.");
+            }
+
+            var namesToPaths = byFilename.ToDictionary(dll => dll.filename, dll => dll.paths.First(), StringComparer.InvariantCultureIgnoreCase);
+            ResolveEventHandler resolver = (sender, args) => LoadAssemblyFromSpecifiedPaths(sender, args, namesToPaths);
+
+            return resolver;
+        }
+
+        private Assembly LoadAssemblyFromSpecifiedPaths(object sender, ResolveEventArgs args, Dictionary<string, string> namesToPaths)
+        {
+            var filename = $"{new AssemblyName(args.Name).Name}.dll";
+            if (namesToPaths.TryGetValue(filename, out var path))
+            {
+                _logger.Trace(() => $"Custom resolver found assembly '{args.Name}' at '{path}'.");
+                return Assembly.LoadFrom(path);
+            }
+
+            return null;
         }
 
         private List<string> ListAssemblies(Func<IEnumerable<string>> findAssemblies)
@@ -147,7 +184,7 @@ namespace Rhetos.Extensibility
                     }
                 }
 
-                _logger.Trace($"Used cached data for {cachedAssemblies} out of total {assemblyPaths.Count} assemblies.");
+                _logger.Trace($"Used cached data for {cachedAssemblies} out of total {assemblyPaths.Count} assemblies. {pluginsCount} total plugins loaded.");
 
                 if (cacheUpdated)
                     _pluginScannerCache.SavePluginsCacheData(cache);
@@ -166,6 +203,7 @@ namespace Rhetos.Extensibility
             if (typesToCheck != null && typesToCheck.Count == 0) return new Dictionary<Type, List<PluginInfo>>();
 
             var assembly = LoadAssembly(assemblyPath);
+
             var types = typesToCheck == null
                 ? assembly.GetTypes()
                 : typesToCheck.Select(type => Type.GetType(type)).ToArray();
@@ -175,31 +213,10 @@ namespace Rhetos.Extensibility
 
         private Assembly LoadAssembly(string assemblyPath)
         {
-            Assembly assembly = null;
             var assemblyFilename = Path.GetFileNameWithoutExtension(assemblyPath);
-
-            try
-            {
-                // Trying to load the assembly in a standard way (from probing paths), before loading explicitly from the specified path (Assembly.LoadFrom).
-                // This will reduce possible issues with multiple instances of same assembly loaded from different paths,
-                // for example, a plugin assembly loaded explicitly from NuGet packages folder by this class, and a copy of the same assembly
-                // loaded implicitly from bin folder by some other component.
-                assembly = Assembly.Load(assemblyFilename);
-                _logger.Trace($"Assembly '{assemblyFilename}' loaded from '{assembly.Location}'.");
-            }
-            catch (Exception e)
-            {
-                // This exception is expected if loading a plugin assembly outside of bin folder.
-                _logger.Trace(() => $"'{assemblyFilename}' could not be loaded from probing paths. {e.GetType().Name}: {e.Message}");
-            }
-
-            if (assembly == null)
-            {
-                _logger.Trace($"Loading assembly '{assemblyFilename}' from '{assemblyPath}' via explicit LoadFrom.");
-                assembly = Assembly.LoadFrom(assemblyPath);
-            }
-
+            var assembly = Assembly.Load(assemblyFilename);
             ValidateAssembliesEquivalent(assemblyPath, assembly.Location);
+
             return assembly;
         }
 
