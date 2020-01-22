@@ -95,7 +95,7 @@ namespace Rhetos
             else
             {
                 // New build process with Rhetos CLI
-                builder.AddKeyValue(nameof(AssetsOptions.AssetsFolder), Path.Combine(rhetosAppRootPath, "RhetosAssets"));
+                builder.AddKeyValue(nameof(AssetsOptions.AssetsFolder), Path.Combine(rhetosAppRootPath, "bin"));
                 builder.AddKeyValue(nameof(RhetosAppOptions.BinFolder), Path.Combine(rhetosAppRootPath, "bin"));
             }
 
@@ -110,7 +110,7 @@ namespace Rhetos
         /// This method load's the Rhetos application's configuration, while <see cref="AddConfigurationManagerConfiguration"/> loads the current utility application's configuration.
         /// When executed from the generated Rhetos application, it should yield same result as <see cref="AddConfigurationManagerConfiguration"/>.
         /// </summary>
-        private static IConfigurationBuilder AddWebConfiguration(this IConfigurationBuilder builder, string webRootPath)
+        public static IConfigurationBuilder AddWebConfiguration(this IConfigurationBuilder builder, string webRootPath)
         {
             webRootPath = Path.GetFullPath(webRootPath);
             VirtualDirectoryMapping vdm = new VirtualDirectoryMapping(webRootPath, true);
