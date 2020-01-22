@@ -29,14 +29,17 @@ using System.Linq;
 
 namespace Rhetos
 {
-    internal class NugetUtilities
+    internal class NuGetUtilities
     {
         private readonly LockFile _lockFile;
         private readonly NuGetFramework _targetFramework;
 
-        public NugetUtilities(string projectRootFolder, ILogProvider logProvider, string target)
+        public NuGetUtilities(string projectRootFolder, ILogProvider logProvider, string target)
         {
-            var path = Path.Combine(projectRootFolder, "obj", "project.assets.json");
+            var objFolderPath = Path.Combine(projectRootFolder, "obj");
+            if (!Directory.Exists(objFolderPath))
+                throw new FrameworkException($"Project object files folder '{objFolderPath}' does not exist. Please make sure that a valid project folder is specified, and run NuGet restore before build.");
+            var path = Path.Combine(objFolderPath, "project.assets.json");
             if (!File.Exists(path))
                 throw new FrameworkException("The project.assets.json file does not exist. Switch to NuGet's PackageReference format type for your project.");
             _lockFile = LockFileUtilities.GetLockFile(path, new NuGetLogger(logProvider));
@@ -110,7 +113,7 @@ namespace Rhetos
                 .Select(x => Path.Combine(x.Path, GetNormalizedNugetPaths(library.Path)))
                 .FirstOrDefault(x => Directory.Exists(x));
             if (packageFolder == null)
-                throw new FrameworkException($"Could not locate the folder for package {library.Name};");
+                throw new FrameworkException($"Could not locate the folder for package '{library.Name}'.");
             return packageFolder;
         }
 

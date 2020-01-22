@@ -47,7 +47,7 @@
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="NuGetLogger.cs" />
-    <Compile Include="NugetUtilities.cs" />
+    <Compile Include="NuGetUtilities.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

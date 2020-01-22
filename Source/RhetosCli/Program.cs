@@ -89,13 +89,14 @@ namespace Rhetos
         private static void Build(string rhetosAppRootPath, NLogProvider logProvider)
         {
             var configurationProvider = new ConfigurationBuilder()
+                .AddKeyValue("RootPath", rhetosAppRootPath)
                 .AddKeyValue(nameof(AssetsOptions.AssetsFolder), Path.Combine(rhetosAppRootPath, @"bin"))
                 .AddKeyValue(nameof(BuildOptions.CacheFolder), Path.Combine(rhetosAppRootPath, "obj\\Rhetos"))
                 .AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), Path.Combine(rhetosAppRootPath, "RhetosSource"))
                 .AddConfigurationManagerConfiguration()
                 .Build();
 
-            var nuget = new NugetUtilities(rhetosAppRootPath, logProvider, null);
+            var nuget = new NuGetUtilities(rhetosAppRootPath, logProvider, null);
             var buildAssemblies = nuget.GetBuildAssemblies();
             var deployment = new ApplicationDeployment(configurationProvider, logProvider, () => buildAssemblies);
             AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(buildAssemblies.ToArray());
