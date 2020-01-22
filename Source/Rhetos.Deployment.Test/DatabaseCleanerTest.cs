@@ -35,7 +35,6 @@ namespace Rhetos.Deployment.Test
         public DatabaseCleanerTest()
         {
             var configurationProvider = new ConfigurationBuilder()
-                .AddRhetosAppConfiguration(AppDomain.CurrentDomain.BaseDirectory)
                 .AddConfigurationManagerConfiguration()
                 .Build();
 

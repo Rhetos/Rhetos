@@ -39,7 +39,6 @@ namespace Rhetos
         private readonly IConfigurationProvider _configurationProvider;
         private readonly ILogProvider _logProvider;
         private readonly Func<IEnumerable<string>> _pluginAssemblies;
-        private readonly FilesUtility _filesUtility;
 
         /// <param name="pluginAssemblies">List of assemblies (DLL file paths) that will be scanned for plugins.</param>
         public ApplicationDeployment(IConfigurationProvider configurationProvider, ILogProvider logProvider, Func<IEnumerable<string>> pluginAssemblies)
@@ -48,7 +47,6 @@ namespace Rhetos
             _configurationProvider = configurationProvider;
             _logProvider = logProvider;
             _pluginAssemblies = pluginAssemblies;
-            _filesUtility = new FilesUtility(logProvider);
             LegacyUtilities.Initialize(configurationProvider);
         }
 

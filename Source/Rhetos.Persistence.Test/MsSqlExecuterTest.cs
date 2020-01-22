@@ -55,7 +55,6 @@ namespace Rhetos.Persistence.Test
         public void ChecklDatabaseAvailability()
         {
             var configurationProvider = new ConfigurationBuilder()
-                .AddRhetosAppConfiguration(AppDomain.CurrentDomain.BaseDirectory)
                 .AddConfigurationManagerConfiguration()
                 .Build();
             LegacyUtilities.Initialize(configurationProvider);

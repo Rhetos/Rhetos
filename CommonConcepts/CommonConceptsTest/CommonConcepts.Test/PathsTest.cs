@@ -36,11 +36,10 @@ namespace CommonConcepts.Test
                 defaultRhetosServerRootFolder = rhetos.GetDefaultRhetosServerRootFolder();
 
             var rootPath = defaultRhetosServerRootFolder;
-            var configurationProvider = new ConfigurationBuilder().
-                AddRhetosAppConfiguration(rootPath).Build();
-            Paths.Initialize(rootPath,
-                configurationProvider.GetOptions<RhetosAppOptions>(),
-                configurationProvider.GetOptions<AssetsOptions>());
+            var configurationProvider = new ConfigurationBuilder()
+                .AddRhetosAppConfiguration(rootPath)
+                .Build();
+            Paths.Initialize(configurationProvider.GetOptions<RhetosAppEnvironment>());
 
             Assert.AreEqual(rootPath, Paths.RhetosServerRootPath);
             Assert.AreEqual(Path.Combine(rootPath, "bin"), Paths.BinFolder);

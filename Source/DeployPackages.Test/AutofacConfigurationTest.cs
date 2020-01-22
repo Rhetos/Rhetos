@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rhetos.Deployment;
+using System.IO;
 
 namespace DeployPackages.Test
 {
@@ -37,8 +38,15 @@ namespace DeployPackages.Test
 
         public AutofacConfigurationTest()
         {
+            string rhetosAppRootPath = AppDomain.CurrentDomain.BaseDirectory;
             _configurationProvider = new ConfigurationBuilder()
-                .AddRhetosAppConfiguration(AppDomain.CurrentDomain.BaseDirectory)
+                .AddRhetosAppEnvironment(new RhetosAppEnvironment
+                {
+                    RootPath = rhetosAppRootPath,
+                    BinFolder = Path.Combine(rhetosAppRootPath, @"bin"),
+                    AssetsFolder = Path.Combine(rhetosAppRootPath, @"bin\Generated"),
+                })
+                .AddWebConfiguration(rhetosAppRootPath)
                 .AddKeyValue(nameof(RhetosAppEnvironment.AssetsFolder), AppDomain.CurrentDomain.BaseDirectory)
                 .AddConfigurationManagerConfiguration()
                 .Build();
@@ -210,6 +218,7 @@ Activator = NullUserInfo (ReflectionActivator), Services = [Rhetos.Utilities.IUs
 Activator = PluginScannerCache (ReflectionActivator), Services = [Rhetos.Extensibility.IGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = ResourcesGenerator (ReflectionActivator), Services = [Rhetos.Extensibility.IGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = RhetosAppEnvironment (DelegateActivator), Services = [Rhetos.Utilities.RhetosAppEnvironment], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
+Activator = RhetosAppEnvironmentGenerator (ReflectionActivator), Services = [Rhetos.Extensibility.IGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = TestWebSecurityUserInfo (ReflectionActivator), Services = [Rhetos.Utilities.IUserInfo], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = Tokenizer (ReflectionActivator), Services = [Rhetos.Dsl.Tokenizer], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = XmlUtility (ReflectionActivator), Services = [Rhetos.Utilities.XmlUtility], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope";

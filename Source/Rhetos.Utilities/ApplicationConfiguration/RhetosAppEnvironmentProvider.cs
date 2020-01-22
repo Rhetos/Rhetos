@@ -50,7 +50,8 @@ namespace Rhetos.Utilities.ApplicationConfiguration
 
             var filePaths = Directory.GetFiles(rhetosAppRootPath, RhetosAppEnvironmentFileName, SearchOption.AllDirectories);
             if (!filePaths.Any())
-                throw new FrameworkException($"Missing file '{RhetosAppEnvironmentFileName}' in folder '{rhetosAppRootPath}' or subfolders.");
+                throw new FrameworkException($"Missing file '{RhetosAppEnvironmentFileName}' in folder '{rhetosAppRootPath}' or subfolders." +
+                    $" Please verify that the specified folder contains a valid Rhetos application, and that the build have passed successfully.");
             if (filePaths.Length >= 2)
                 throw new FrameworkException($"Multiple '{RhetosAppEnvironmentFileName}' files found: {string.Join(", ", filePaths)}.");
 

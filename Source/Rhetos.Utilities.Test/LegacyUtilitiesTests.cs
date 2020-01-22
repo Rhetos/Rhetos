@@ -29,7 +29,6 @@ namespace Rhetos.Utilities.Test
         public LegacyUtilitiesTests()
         {
             var configurationProvider = new ConfigurationBuilder()
-                .AddRhetosAppConfiguration(AppDomain.CurrentDomain.BaseDirectory)
                 .AddConfigurationManagerConfiguration()
                 .Build();
 

@@ -77,6 +77,7 @@ namespace Rhetos.Extensibility
             string cacheFilePath = GetExistingCacheFile() ?? _buildCacheFilePath ?? _runtimeCacheFilePath;
 
             _logger.Trace($"Writing cache to '{cacheFilePath}'.");
+            _filesUtility.SafeCreateDirectory(Path.GetDirectoryName(cacheFilePath)); // Plugin scanner can be executed before other Rhetos components are initialized.
             File.WriteAllText(cacheFilePath, JsonConvert.SerializeObject(cache, Formatting.Indented));
         }
 
