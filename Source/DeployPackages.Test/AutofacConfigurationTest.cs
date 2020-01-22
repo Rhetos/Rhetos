@@ -43,8 +43,10 @@ namespace DeployPackages.Test
                 .AddRhetosAppEnvironment(new RhetosAppEnvironment
                 {
                     RootPath = rhetosAppRootPath,
-                    BinFolder = Path.Combine(rhetosAppRootPath, @"bin"),
-                    AssetsFolder = Path.Combine(rhetosAppRootPath, @"bin\Generated"),
+                    BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
+                    AssetsFolder = Path.Combine(rhetosAppRootPath, "bin", "Generated"),
+                    LegacyPluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
+                    LegacyAssetsFolder = Path.Combine(rhetosAppRootPath, "Resources"),
                 })
                 .AddWebConfiguration(rhetosAppRootPath)
                 .AddKeyValue(nameof(RhetosAppEnvironment.AssetsFolder), AppDomain.CurrentDomain.BaseDirectory)

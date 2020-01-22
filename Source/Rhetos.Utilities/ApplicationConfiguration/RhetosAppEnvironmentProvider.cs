@@ -37,6 +37,8 @@ namespace Rhetos.Utilities.ApplicationConfiguration
                 { nameof(RhetosAppEnvironment.RootPath), FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.RootPath) },
                 { nameof(RhetosAppEnvironment.BinFolder), FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.BinFolder) },
                 { nameof(RhetosAppEnvironment.AssetsFolder), FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.AssetsFolder) },
+                { nameof(RhetosAppEnvironment.LegacyPluginsFolder), FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.LegacyPluginsFolder) },
+                { nameof(RhetosAppEnvironment.LegacyAssetsFolder), FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.LegacyAssetsFolder) },
             };
 
             string serialized = JsonConvert.SerializeObject(relativePaths, Formatting.Indented);
@@ -64,6 +66,8 @@ namespace Rhetos.Utilities.ApplicationConfiguration
                 RootPath = rhetosAppRootPath, // This is not inherited from build-time. Project folder at build could be different then output application folder.
                 BinFolder = FilesUtility.RelativeToAbsolutePath(saveFolder, relativePaths[nameof(RhetosAppEnvironment.BinFolder)]),
                 AssetsFolder = FilesUtility.RelativeToAbsolutePath(saveFolder, relativePaths[nameof(RhetosAppEnvironment.AssetsFolder)]),
+                LegacyPluginsFolder = FilesUtility.RelativeToAbsolutePath(saveFolder, relativePaths[nameof(RhetosAppEnvironment.LegacyPluginsFolder)]),
+                LegacyAssetsFolder = FilesUtility.RelativeToAbsolutePath(saveFolder, relativePaths[nameof(RhetosAppEnvironment.LegacyAssetsFolder)]),
             };
         }
     }

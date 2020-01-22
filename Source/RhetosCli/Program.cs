@@ -92,8 +92,10 @@ namespace Rhetos
                 .AddRhetosAppEnvironment(new RhetosAppEnvironment
                 {
                     RootPath = rhetosAppRootPath,
-                    BinFolder = Path.Combine(rhetosAppRootPath, @"bin"),
-                    AssetsFolder = Path.Combine(rhetosAppRootPath, @"bin"),
+                    BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
+                    AssetsFolder = Path.Combine(rhetosAppRootPath, "bin"),
+                    LegacyPluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
+                    LegacyAssetsFolder = Path.Combine(rhetosAppRootPath, "Resources"),
                 })
                 .AddKeyValue(nameof(BuildOptions.CacheFolder), Path.Combine(rhetosAppRootPath, "obj\\Rhetos"))
                 .AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), Path.Combine(rhetosAppRootPath, "RhetosSource"))

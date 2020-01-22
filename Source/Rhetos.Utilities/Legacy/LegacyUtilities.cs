@@ -28,7 +28,7 @@ namespace Rhetos
     {
 #pragma warning disable CS0618 // Type or member is obsolete
         /// <summary>
-        /// Use to initialize obsolete static utilities <see cref="Paths"/>, <see cref="ConfigUtility"/> and <see cref="SqlUtility"/> 
+        /// Use to initialize obsolete static utilities <see cref="Paths"/>, <see cref="ConfigUtility"/>, <see cref="Configuration"/> and <see cref="SqlUtility"/> 
         /// prior to using any of their methods. This will bind those utilities to configuration source compliant with new configuration convention.
         /// </summary>
         public static void Initialize(IConfigurationProvider configurationProvider)
@@ -36,17 +36,20 @@ namespace Rhetos
             Paths.Initialize(configurationProvider.GetOptions<RhetosAppEnvironment>());
             ConfigUtility.Initialize(configurationProvider);
             SqlUtility.Initialize(configurationProvider);
+            Configuration.Initialize(configurationProvider);
         }
 
         /// <summary>
         /// Returns list of assemblies that will be scanned for plugin exports.
         /// </summary>
-        public static Func<List<string>> GetListAssembliesDelegate()
+        public static Func<List<string>> GetListAssembliesDelegate(IConfigurationProvider configurationProvider)
         {
+            var rhetosAppEnvironment = configurationProvider.GetOptions<RhetosAppEnvironment>();
+
             return () =>
             {
                 // Rhetos framework does not contain plugins exports (only explicit registration), so only plugins and generated files need to be scanned for plugins.
-                string[] pluginsPath = new[] { Paths.PluginsFolder, Paths.GeneratedFolder };
+                string[] pluginsPath = new[] { rhetosAppEnvironment.LegacyPluginsFolder, rhetosAppEnvironment.AssetsFolder };
 
                 List<string> assemblies = new List<string>();
                 foreach (var path in pluginsPath)

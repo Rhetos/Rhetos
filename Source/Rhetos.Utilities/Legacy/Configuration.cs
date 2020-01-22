@@ -28,30 +28,43 @@ namespace Rhetos.Utilities
     public class Configuration : IConfiguration
     {
         private readonly IConfigurationProvider _configurationProvider;
+        private static IConfigurationProvider _staticConfigurationProvider;
+        private IConfigurationProvider AnyConfigurationProvider => _configurationProvider ?? _staticConfigurationProvider;
+
+        internal static void Initialize(IConfigurationProvider configurationProvider)
+        {
+            _staticConfigurationProvider = configurationProvider;
+        }
+
+        public Configuration()
+        {
+            // Legacy constructor, _staticConfigurationProvider will be used.
+        }
 
         public Configuration(IConfigurationProvider configurationProvider)
         {
             _configurationProvider = configurationProvider;
         }
+        
 
         public Lazy<string> GetString(string key, string defaultValue)
         {
-            return new Lazy<string>(() => _configurationProvider.GetValue(key, defaultValue));
+            return new Lazy<string>(() => AnyConfigurationProvider.GetValue(key, defaultValue));
         }
 
         public Lazy<int> GetInt(string key, int defaultValue)
         {
-            return new Lazy<int>(() => _configurationProvider.GetValue<int>(key, defaultValue));
+            return new Lazy<int>(() => AnyConfigurationProvider.GetValue(key, defaultValue));
         }
 
         public Lazy<bool> GetBool(string key, bool defaultValue)
         {
-            return new Lazy<bool>(() => _configurationProvider.GetValue(key, defaultValue));
+            return new Lazy<bool>(() => AnyConfigurationProvider.GetValue(key, defaultValue));
         }
 
         public Lazy<T> GetEnum<T>(string key, T defaultValue) where T : struct
         {
-            return new Lazy<T>(() => _configurationProvider.GetValue(key, defaultValue));
+            return new Lazy<T>(() => AnyConfigurationProvider.GetValue(key, defaultValue));
         }
     }
 }

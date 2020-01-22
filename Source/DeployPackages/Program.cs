@@ -57,28 +57,29 @@ namespace DeployPackages
                 
                 // Using build-time configuration:
                 {
+                    var rhetosAppEnvironment = new RhetosAppEnvironment
+                    {
+                        RootPath = rhetosAppRootPath,
+                        BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
+                        AssetsFolder = Path.Combine(rhetosAppRootPath, "bin", "Generated"),
+                        LegacyPluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
+                        LegacyAssetsFolder = Path.Combine(rhetosAppRootPath, "Resources"),
+                    };
                     var configurationProvider = new ConfigurationBuilder()
-                        .AddRhetosAppEnvironment(new RhetosAppEnvironment
-                        {
-                            RootPath = rhetosAppRootPath,
-                            BinFolder = Path.Combine(rhetosAppRootPath, @"bin"),
-                            AssetsFolder = Path.Combine(rhetosAppRootPath, @"bin\Generated"),
-                        })
+                        .AddRhetosAppEnvironment(rhetosAppEnvironment)
                         .AddKeyValue(nameof(BuildOptions.CacheFolder), Path.Combine(rhetosAppRootPath, "GeneratedFilesCache"))
-                        .AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), Path.Combine(rhetosAppRootPath, @"bin\Generated"))
+                        .AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), Path.Combine(rhetosAppRootPath, "bin", "Generated"))
                         .AddWebConfiguration(rhetosAppRootPath)
                         .AddConfigurationManagerConfiguration()
                         .AddCommandLineArguments(args, "/")
                         .Build();
 
                     var deployOptions = configurationProvider.GetOptions<DeployOptions>();
-
                     pauseOnError = !deployOptions.NoPause;
-
                     if (deployOptions.StartPaused)
                         StartPaused();
 
-                    var deployment = new ApplicationDeployment(configurationProvider, logProvider, LegacyUtilities.GetListAssembliesDelegate());
+                    var deployment = new ApplicationDeployment(configurationProvider, logProvider, () => Directory.GetFiles(rhetosAppEnvironment.LegacyPluginsFolder, "*.dll", SearchOption.TopDirectoryOnly));
                     if (!deployOptions.DatabaseOnly)
                     {
                         DeleteObsoleteFiles(logProvider, logger);
@@ -101,7 +102,7 @@ namespace DeployPackages
                         .AddCommandLineArguments(args, "/")
                         .Build();
 
-                    var deployment = new ApplicationDeployment(configurationProvider, logProvider, LegacyUtilities.GetListAssembliesDelegate());
+                    var deployment = new ApplicationDeployment(configurationProvider, logProvider, LegacyUtilities.GetListAssembliesDelegate(configurationProvider));
 
                     deployment.UpdateDatabase();
                     deployment.InitializeGeneratedApplication();

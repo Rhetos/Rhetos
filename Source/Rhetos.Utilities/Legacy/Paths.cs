@@ -38,35 +38,27 @@ namespace Rhetos.Utilities
             _rhetosAppEnvironment = rhetosAppEnvironment;
         }
 
-        public static string RhetosServerRootPath => SafeGetRootPath();
-        public static string ResourcesFolder => Path.Combine(SafeGetRootPath(), "Resources");
-        public static string BinFolder => SafeGetBinFolder();
-        public static string GeneratedFolder => SafeGetAssetsFolder();
-        public static string PluginsFolder => Path.Combine(SafeGetBinFolder(), "Plugins");
-        public static string GetDomAssemblyFile(DomAssemblies domAssembly) => Path.Combine(SafeGetAssetsFolder(), $"ServerDom.{domAssembly}.dll");
+        public static string RhetosServerRootPath => SafeGetAppEnvironment().RootPath
+                ?? throw new FrameworkException($"'{nameof(RhetosAppEnvironment.RootPath)}' is expected to be configured with valid value, but is empty.");
+
+        public static string ResourcesFolder => SafeGetAppEnvironment().LegacyAssetsFolder
+                ?? throw new FrameworkException($"'{nameof(RhetosAppEnvironment.LegacyAssetsFolder)}' is expected to be configured with valid value, but is empty.");
+
+        public static string BinFolder => SafeGetAppEnvironment().BinFolder
+                ?? throw new FrameworkException($"'{nameof(RhetosAppEnvironment.BinFolder)}' is expected to be configured with valid value, but is empty.");
+
+        public static string GeneratedFolder => SafeGetAppEnvironment().AssetsFolder
+                ?? throw new FrameworkException($"'{nameof(RhetosAppEnvironment.AssetsFolder)}' is expected to be configured with valid value, but is empty.");
+
+        public static string PluginsFolder => SafeGetAppEnvironment().LegacyPluginsFolder
+                ?? throw new FrameworkException($"'{nameof(RhetosAppEnvironment.LegacyPluginsFolder)}' is expected to be configured with valid value, but is empty.");
+
+        public static string GetDomAssemblyFile(DomAssemblies domAssembly) => Path.Combine(GeneratedFolder, $"ServerDom.{domAssembly}.dll");
 
         /// <summary>
         /// List of the generated DLL files that make the domain object model (ServerDom.*.dll).
         /// </summary>
         public static IEnumerable<string> DomAssemblyFiles => Enum.GetValues(typeof(DomAssemblies)).Cast<DomAssemblies>().Select(domAssembly => GetDomAssemblyFile(domAssembly));
-
-        private static string SafeGetRootPath()
-        {
-            return SafeGetAppEnvironment().RootPath
-                ?? throw new FrameworkException($"'{nameof(RhetosAppEnvironment.RootPath)}' is expected to be configured with valid value, but is empty.");
-        }
-
-        private static string SafeGetBinFolder()
-        {
-            return SafeGetAppEnvironment().BinFolder
-                ?? throw new FrameworkException($"'{nameof(RhetosAppEnvironment.BinFolder)}' is expected to be configured with valid value, but is empty.");
-        }
-
-        private static string SafeGetAssetsFolder()
-        {
-            return SafeGetAppEnvironment().AssetsFolder
-                ?? throw new FrameworkException($"'{nameof(RhetosAppEnvironment.AssetsFolder)}' is expected to be configured with valid value, but is empty.");
-        }
 
         private static RhetosAppEnvironment SafeGetAppEnvironment()
         {

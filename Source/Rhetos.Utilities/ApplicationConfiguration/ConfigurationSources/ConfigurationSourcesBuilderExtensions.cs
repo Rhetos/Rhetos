@@ -91,7 +91,9 @@ namespace Rhetos
             return builder
                 .AddKeyValue(nameof(RhetosAppEnvironment.RootPath), rhetosAppEnvironment.RootPath)
                 .AddKeyValue(nameof(RhetosAppEnvironment.BinFolder), rhetosAppEnvironment.BinFolder)
-                .AddKeyValue(nameof(RhetosAppEnvironment.AssetsFolder), rhetosAppEnvironment.AssetsFolder);
+                .AddKeyValue(nameof(RhetosAppEnvironment.AssetsFolder), rhetosAppEnvironment.AssetsFolder)
+                .AddKeyValue(nameof(RhetosAppEnvironment.LegacyPluginsFolder), rhetosAppEnvironment.LegacyPluginsFolder)
+                .AddKeyValue(nameof(RhetosAppEnvironment.LegacyAssetsFolder), rhetosAppEnvironment.LegacyAssetsFolder);
         }
 
         /// <summary>

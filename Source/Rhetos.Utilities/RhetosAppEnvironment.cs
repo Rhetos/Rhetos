@@ -30,8 +30,18 @@ namespace Rhetos.Utilities
         /// </summary>
         public string RootPath { get; set; }
 
+        public string BinFolder { get; set; }
+
         public string AssetsFolder { get; set; }
 
-        public string BinFolder { get; set; }
+        /// <summary>
+        /// This folder can be configured to support legacy plugins.
+        /// </summary>
+        public string LegacyPluginsFolder { get; set; }
+
+        /// <summary>
+        /// This folder can be configured to support legacy plugins by setting value to "Resources" subfolder inside the <see cref="RootPath"/>.
+        /// </summary>
+        public string LegacyAssetsFolder { get; set; }
     }
 }
