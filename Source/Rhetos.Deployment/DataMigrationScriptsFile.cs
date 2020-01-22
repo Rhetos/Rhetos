@@ -32,14 +32,14 @@ namespace Rhetos.Deployment
         const string DataMigrationScriptsFileName = "DataMigrationScripts.json";
 
         private readonly ILogger _performanceLogger;
-        private readonly AssetsOptions _assetsOptions;
+        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
 
         public IEnumerable<string> Dependencies => new List<string>();
 
-        public DataMigrationScriptsFile(AssetsOptions assetsOptions, ILogProvider logProvider)
+        public DataMigrationScriptsFile(RhetosAppEnvironment rhetosAppEnvironment, ILogProvider logProvider)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
-            _assetsOptions = assetsOptions;
+            _rhetosAppEnvironment = rhetosAppEnvironment;
         }
 
         /// <summary>
@@ -65,6 +65,6 @@ namespace Rhetos.Deployment
             _performanceLogger.Write(stopwatch, $@"DataMigrationScriptsFromDisk: Saved {dataMigrationScripts.Scripts.Count} scripts to generated file.");
         }
 
-        private string DataMigrationScriptsFilePath => Path.Combine(_assetsOptions.AssetsFolder, DataMigrationScriptsFileName);
+        private string DataMigrationScriptsFilePath => Path.Combine(_rhetosAppEnvironment.AssetsFolder, DataMigrationScriptsFileName);
     }
 }

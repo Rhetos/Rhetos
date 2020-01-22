@@ -35,7 +35,7 @@ namespace Rhetos.Configuration.Autofac.Modules
 
         private void AddCommon(ContainerBuilder builder)
         {
-            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<AssetsOptions>()).SingleInstance().PreserveExistingDefaults();
+            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<RhetosAppEnvironment>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<NLogProvider>().As<ILogProvider>().InstancePerLifetimeScope();
         }
 

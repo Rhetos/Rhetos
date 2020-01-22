@@ -36,12 +36,12 @@ namespace Rhetos.Extensibility
         private readonly string _runtimeCacheFilePath;
         private readonly FilesUtility _filesUtility;
 
-        public PluginScannerCache(BuildOptions buildOptions, AssetsOptions assetsOptions, ILogProvider logProvider, FilesUtility filesUtility)
+        public PluginScannerCache(BuildOptions buildOptions, RhetosAppEnvironment rhetosAppEnvironment, ILogProvider logProvider, FilesUtility filesUtility)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             if (buildOptions?.CacheFolder != null)
                 _buildCacheFilePath = Path.Combine(buildOptions.CacheFolder, _pluginScannerBuildCacheFilename);
-            _runtimeCacheFilePath = Path.Combine(assetsOptions.AssetsFolder, _pluginScannerRuntimeCacheFilename);
+            _runtimeCacheFilePath = Path.Combine(rhetosAppEnvironment.AssetsFolder, _pluginScannerRuntimeCacheFilename);
             _filesUtility = filesUtility;
         }
 

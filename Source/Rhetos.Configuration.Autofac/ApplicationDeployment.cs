@@ -66,10 +66,6 @@ namespace Rhetos
 
         public void GenerateApplication(InstalledPackages installedPackages)
         {
-            _filesUtility.EmptyDirectory(_configurationProvider.GetOptions<AssetsOptions>().AssetsFolder);
-            _filesUtility.EmptyDirectory(_configurationProvider.GetOptions<BuildOptions>().GeneratedSourceFolder);
-            _filesUtility.SafeCreateDirectory(_configurationProvider.GetOptions<BuildOptions>().CacheFolder); // Cache should not be deleted between builds.
-
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
@@ -80,7 +76,7 @@ namespace Rhetos
                 var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
                 performanceLogger.Write(stopwatch, "DeployPackages.Program: Modules and plugins registered.");
                 ContainerBuilderPluginRegistration.LogRegistrationStatistics("Generating application", container, _logProvider);
-
+                
                 container.Resolve<ApplicationGenerator>().ExecuteGenerators();
             }
         }

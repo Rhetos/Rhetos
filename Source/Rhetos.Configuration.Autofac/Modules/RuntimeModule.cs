@@ -36,7 +36,7 @@ namespace Rhetos.Configuration.Autofac.Modules
         protected override void Load(ContainerBuilder builder)
         {
             var pluginRegistration = builder.GetPluginRegistration();
-            builder.Register(context => new InstalledPackagesProvider(context.Resolve<ILogProvider>(), context.Resolve<AssetsOptions>()).Load()).As<InstalledPackages>().As<IInstalledPackages>().SingleInstance();
+            builder.Register(context => new InstalledPackagesProvider(context.Resolve<ILogProvider>(), context.Resolve<RhetosAppEnvironment>()).Load()).As<InstalledPackages>().As<IInstalledPackages>().SingleInstance();
             builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<RhetosAppOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<DomLoader>().As<IDomainObjectModel>().SingleInstance();
             builder.RegisterType<PersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope();

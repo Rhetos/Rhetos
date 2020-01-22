@@ -90,7 +90,7 @@ namespace Rhetos
         {
             var configurationProvider = new ConfigurationBuilder()
                 .AddKeyValue("RootPath", rhetosAppRootPath)
-                .AddKeyValue(nameof(AssetsOptions.AssetsFolder), Path.Combine(rhetosAppRootPath, @"bin"))
+                .AddKeyValue(nameof(RhetosAppEnvironment.AssetsFolder), Path.Combine(rhetosAppRootPath, @"bin"))
                 .AddKeyValue(nameof(BuildOptions.CacheFolder), Path.Combine(rhetosAppRootPath, "obj\\Rhetos"))
                 .AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), Path.Combine(rhetosAppRootPath, "RhetosSource"))
                 .AddConfigurationManagerConfiguration()
@@ -109,7 +109,7 @@ namespace Rhetos
                 .AddRhetosAppConfiguration(rhetosAppRootPath)
                 .AddConfigurationManagerConfiguration()
                 .Build();
-            string binFolder = configurationProvider.GetOptions<RhetosAppOptions>().BinFolder;
+            string binFolder = configurationProvider.GetOptions<RhetosAppEnvironment>().BinFolder;
             var assemblyList = Directory.GetFiles(binFolder, "*.dll");
             var deployment = new ApplicationDeployment(configurationProvider, logProvider, () => assemblyList);
             AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(assemblyList);
@@ -122,7 +122,7 @@ namespace Rhetos
                 .AddRhetosAppConfiguration(rhetosAppRootPath)
                 .AddConfigurationManagerConfiguration()
                 .Build();
-            string binFolder = configurationProvider.GetOptions<RhetosAppOptions>().BinFolder;
+            string binFolder = configurationProvider.GetOptions<RhetosAppEnvironment>().BinFolder;
             var assemblyList = Directory.GetFiles(binFolder, "*.dll");
             var deployment = new ApplicationDeployment(configurationProvider, logProvider, () => assemblyList);
             AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(assemblyList);

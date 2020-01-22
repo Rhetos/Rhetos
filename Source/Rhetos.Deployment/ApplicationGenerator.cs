@@ -32,19 +32,32 @@ namespace Rhetos.Deployment
         private readonly ILogger _deployPackagesLogger;
         private readonly IDslModel _dslModel;
         private readonly IPluginsContainer<IGenerator> _generatorsContainer;
+        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
+        private readonly BuildOptions _buildOptions;
+        private readonly FilesUtility _filesUtility;
 
         public ApplicationGenerator(
             ILogProvider logProvider,
             IDslModel dslModel,
-            IPluginsContainer<IGenerator> generatorsContainer)
+            IPluginsContainer<IGenerator> generatorsContainer,
+            RhetosAppEnvironment rhetosAppEnvironment,
+            BuildOptions buildOptions,
+            FilesUtility filesUtility)
         {
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _dslModel = dslModel;
             _generatorsContainer = generatorsContainer;
+            _rhetosAppEnvironment = rhetosAppEnvironment;
+            _buildOptions = buildOptions;
+            _filesUtility = filesUtility;
         }
 
         public void ExecuteGenerators()
         {
+            _filesUtility.EmptyDirectory(_rhetosAppEnvironment.AssetsFolder);
+            _filesUtility.EmptyDirectory(_buildOptions.GeneratedSourceFolder);
+            _filesUtility.SafeCreateDirectory(_buildOptions.CacheFolder); // Cache is not deleted between builds.
+
             CheckDslModelErrors();
 
             var generators = GetSortedGenerators();

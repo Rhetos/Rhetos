@@ -89,14 +89,14 @@ namespace Rhetos
             if (oldBuildProcess)
             {
                 // Legacy build process with DeployPackage
-                builder.AddKeyValue(nameof(AssetsOptions.AssetsFolder), Path.Combine(rhetosAppRootPath, "bin\\Generated"));
-                builder.AddKeyValue(nameof(RhetosAppOptions.BinFolder), Path.Combine(rhetosAppRootPath, "bin"));
+                builder.AddKeyValue(nameof(RhetosAppEnvironment.AssetsFolder), Path.Combine(rhetosAppRootPath, "bin\\Generated"));
+                builder.AddKeyValue(nameof(RhetosAppEnvironment.BinFolder), Path.Combine(rhetosAppRootPath, "bin"));
             }
             else
             {
                 // New build process with Rhetos CLI
-                builder.AddKeyValue(nameof(AssetsOptions.AssetsFolder), Path.Combine(rhetosAppRootPath, "bin"));
-                builder.AddKeyValue(nameof(RhetosAppOptions.BinFolder), Path.Combine(rhetosAppRootPath, "bin"));
+                builder.AddKeyValue(nameof(RhetosAppEnvironment.AssetsFolder), Path.Combine(rhetosAppRootPath, "bin"));
+                builder.AddKeyValue(nameof(RhetosAppEnvironment.BinFolder), Path.Combine(rhetosAppRootPath, "bin"));
             }
 
             builder.AddKeyValue("RootPath", rhetosAppRootPath);

@@ -40,14 +40,14 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
         private MetadataWorkspace _metadataWorkspace;
         private bool _initialized;
         private readonly object _initializationLock = new object();
-        private readonly AssetsOptions _assetsOptions;
+        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
         private readonly ConnectionString _connectionString;
 
-        public EntityFrameworkMetadata(AssetsOptions assetsOptions, ILogProvider logProvider, ConnectionString connectionString)
+        public EntityFrameworkMetadata(RhetosAppEnvironment rhetosAppEnvironment, ILogProvider logProvider, ConnectionString connectionString)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger(nameof(EntityFrameworkMetadata));
-            _assetsOptions = assetsOptions;
+            _rhetosAppEnvironment = rhetosAppEnvironment;
             _connectionString = connectionString;
         }
 
@@ -61,7 +61,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                         {
                             var sw = Stopwatch.StartNew();
 
-                            var modelFilesPath = EntityFrameworkMapping.ModelFiles.Select(fileName => Path.Combine(_assetsOptions.AssetsFolder, fileName)).ToList();
+                            var modelFilesPath = EntityFrameworkMapping.ModelFiles.Select(fileName => Path.Combine(_rhetosAppEnvironment.AssetsFolder, fileName)).ToList();
                             SetProviderManifestTokenIfNeeded(sw, modelFilesPath);
 
                             _metadataWorkspace = new MetadataWorkspace(modelFilesPath, new Assembly[] { });

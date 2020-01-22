@@ -17,16 +17,21 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Rhetos.Utilities
 {
-    public class AssetsOptions
+    /// <summary>
+    /// Basic information about generated Rhetos application.
+    /// Configured and persisted at build-time. Available at run-time.
+    /// </summary>
+    public class RhetosAppEnvironment
     {
+        /// <summary>
+        /// Rhetos application's base folder.
+        /// </summary>
+        public string RootPath { get; set; }
+
         public string AssetsFolder { get; set; }
+
+        public string BinFolder { get; set; }
     }
 }

@@ -44,7 +44,7 @@ namespace Rhetos
         {
             this.RegisterInstance(configurationProvider);
 
-            var pluginScanner = new PluginScanner(pluginAssemblies, configurationProvider.GetOptions<BuildOptions>(), configurationProvider.GetOptions<AssetsOptions>(), logProvider);
+            var pluginScanner = new PluginScanner(pluginAssemblies, configurationProvider.GetOptions<BuildOptions>(), configurationProvider.GetOptions<RhetosAppEnvironment>(), logProvider);
 
             // make properties accessible to modules which are provided with new/unique instance of ContainerBuilder
             this.Properties.Add(nameof(IPluginScanner), pluginScanner);
