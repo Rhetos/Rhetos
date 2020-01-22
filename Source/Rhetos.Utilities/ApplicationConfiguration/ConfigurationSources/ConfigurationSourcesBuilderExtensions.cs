@@ -18,13 +18,11 @@
 */
 
 using Rhetos.Utilities;
+using Rhetos.Utilities.ApplicationConfiguration;
 using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
-using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Web.Configuration;
 
 namespace Rhetos
@@ -82,26 +80,18 @@ namespace Rhetos
         /// </summary>
         public static IConfigurationBuilder AddRhetosAppConfiguration(this IConfigurationBuilder builder, string rhetosAppRootPath)
         {
-            rhetosAppRootPath = Path.GetFullPath(rhetosAppRootPath);
+            var rhetosAppEnvironment = RhetosAppEnvironmentProvider.Load(rhetosAppRootPath);
+            return builder
+                .AddRhetosAppEnvironment(rhetosAppEnvironment)
+                .AddWebConfiguration(rhetosAppRootPath);
+        }
 
-            // TODO: Remove this conditional settings after implementation of persisting build configuration for use in runtime.
-            bool oldBuildProcess = File.Exists(Path.Combine(rhetosAppRootPath, @"bin\DeployPackages.exe"));
-            if (oldBuildProcess)
-            {
-                // Legacy build process with DeployPackage
-                builder.AddKeyValue(nameof(RhetosAppEnvironment.AssetsFolder), Path.Combine(rhetosAppRootPath, "bin\\Generated"));
-                builder.AddKeyValue(nameof(RhetosAppEnvironment.BinFolder), Path.Combine(rhetosAppRootPath, "bin"));
-            }
-            else
-            {
-                // New build process with Rhetos CLI
-                builder.AddKeyValue(nameof(RhetosAppEnvironment.AssetsFolder), Path.Combine(rhetosAppRootPath, "bin"));
-                builder.AddKeyValue(nameof(RhetosAppEnvironment.BinFolder), Path.Combine(rhetosAppRootPath, "bin"));
-            }
-
-            builder.AddKeyValue("RootPath", rhetosAppRootPath);
-            builder.AddWebConfiguration(rhetosAppRootPath);
-            return builder;
+        public static IConfigurationBuilder AddRhetosAppEnvironment(this IConfigurationBuilder builder, RhetosAppEnvironment rhetosAppEnvironment)
+        {
+            return builder
+                .AddKeyValue(nameof(RhetosAppEnvironment.RootPath), rhetosAppEnvironment.RootPath)
+                .AddKeyValue(nameof(RhetosAppEnvironment.BinFolder), rhetosAppEnvironment.BinFolder)
+                .AddKeyValue(nameof(RhetosAppEnvironment.AssetsFolder), rhetosAppEnvironment.AssetsFolder);
         }
 
         /// <summary>

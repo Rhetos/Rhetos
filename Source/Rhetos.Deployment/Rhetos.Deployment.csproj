@@ -96,6 +96,7 @@
     <Compile Include="..\Rhetos\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="RhetosAppEnvironmentGenerator.cs" />
     <Compile Include="Sql.cs" />
   </ItemGroup>
   <ItemGroup>
