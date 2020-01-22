@@ -18,8 +18,11 @@
 */
 
 
+using System.Diagnostics;
+
 namespace Rhetos.Deployment
 {
+    [DebuggerDisplay("{InPackagePath}")]
     public class ContentFile
     {
         /// <summary>
