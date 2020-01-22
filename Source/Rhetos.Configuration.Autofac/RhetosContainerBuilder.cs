@@ -39,12 +39,12 @@ namespace Rhetos
         /// <see cref="ILogProvider"/> is not registered and is meant to be used during the lifetime of registration and container building process.
         /// <see cref="LegacyUtilities"/> will also be initialized with the given configuration.
         /// </summary>
-        /// <param name="findAssemblies">The findAssemblies function should return a list of assembly paths that will be used for plugins search when using the <see cref="ContainerBuilderPluginRegistration"/></param>
-        public RhetosContainerBuilder(IConfigurationProvider configurationProvider, ILogProvider logProvider, Func<IEnumerable<string>> findAssemblies)
+        /// <param name="pluginAssemblies">List of assemblies (DLL file paths) that will be used for plugins search when using the <see cref="ContainerBuilderPluginRegistration"/></param>
+        public RhetosContainerBuilder(IConfigurationProvider configurationProvider, ILogProvider logProvider, Func<IEnumerable<string>> pluginAssemblies)
         {
             this.RegisterInstance(configurationProvider);
 
-            var pluginScanner = new PluginScanner(findAssemblies, configurationProvider.GetOptions<BuildOptions>(), configurationProvider.GetOptions<AssetsOptions>(), logProvider);
+            var pluginScanner = new PluginScanner(pluginAssemblies, configurationProvider.GetOptions<BuildOptions>(), configurationProvider.GetOptions<AssetsOptions>(), logProvider);
 
             // make properties accessible to modules which are provided with new/unique instance of ContainerBuilder
             this.Properties.Add(nameof(IPluginScanner), pluginScanner);

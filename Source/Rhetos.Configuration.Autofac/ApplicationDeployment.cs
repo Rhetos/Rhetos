@@ -38,15 +38,16 @@ namespace Rhetos
         private readonly ILogger _logger;
         private readonly IConfigurationProvider _configurationProvider;
         private readonly ILogProvider _logProvider;
-        private readonly Func<IEnumerable<string>> _findAssemblies;
+        private readonly Func<IEnumerable<string>> _pluginAssemblies;
         private readonly FilesUtility _filesUtility;
 
-        public ApplicationDeployment(IConfigurationProvider configurationProvider, ILogProvider logProvider, Func<IEnumerable<string>> findAssemblies)
+        /// <param name="pluginAssemblies">List of assemblies (DLL file paths) that will be scanned for plugins.</param>
+        public ApplicationDeployment(IConfigurationProvider configurationProvider, ILogProvider logProvider, Func<IEnumerable<string>> pluginAssemblies)
         {
             _logger = logProvider.GetLogger("DeployPackages");
             _configurationProvider = configurationProvider;
             _logProvider = logProvider;
-            _findAssemblies = findAssemblies;
+            _pluginAssemblies = pluginAssemblies;
             _filesUtility = new FilesUtility(logProvider);
             LegacyUtilities.Initialize(configurationProvider);
         }
@@ -86,7 +87,7 @@ namespace Rhetos
 
         internal RhetosContainerBuilder CreateBuildComponentsContainer(InstalledPackages installedPackages)
         {
-            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _findAssemblies);
+            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _pluginAssemblies);
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new CorePluginsModule());
             builder.RegisterModule(new BuildModule());
@@ -117,7 +118,7 @@ namespace Rhetos
 
         internal RhetosContainerBuilder CreateDbUpdateComponentsContainer()
         {
-            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _findAssemblies);
+            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _pluginAssemblies);
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new DbUpdateModule());
             builder.AddPluginModules();
@@ -158,7 +159,7 @@ namespace Rhetos
 
         internal RhetosContainerBuilder CreateAppInitializationComponentsContainer()
         {
-            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _findAssemblies);
+            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _pluginAssemblies);
             builder.AddRhetosRuntime();
             builder.RegisterModule(new AppInitializeModule());
             builder.AddPluginModules();

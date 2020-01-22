@@ -44,7 +44,7 @@ namespace Rhetos.Extensibility
         /// <summary>
         /// It searches for type implementations in the provided list of assemblies.
         /// </summary>
-        /// <param name="findAssemblies">The findAssemblies function should return a list of assembly file paths that will be searched for plugins when invoking the method <see cref="PluginScanner.FindPlugins"/></param>
+        /// <param name="findAssemblies">The findAssemblies function should return a list of DLL file paths that will be searched for plugins when invoking the method <see cref="PluginScanner.FindPlugins"/></param>
         public PluginScanner(Func<IEnumerable<string>> findAssemblies, BuildOptions buildOptions, AssetsOptions assetsOptions, ILogProvider logProvider)
         {
             _pluginsByExport = new Lazy<MultiDictionary<string, PluginInfo>>(

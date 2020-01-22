@@ -95,7 +95,7 @@ namespace Rhetos
             else
             {
                 // New build process with Rhetos CLI
-                builder.AddKeyValue(nameof(AssetsOptions.AssetsFolder), Path.Combine(rhetosAppRootPath, "RhetosAssets"));
+                builder.AddKeyValue(nameof(AssetsOptions.AssetsFolder), Path.Combine(rhetosAppRootPath, "bin"));
                 builder.AddKeyValue(nameof(RhetosAppOptions.BinFolder), Path.Combine(rhetosAppRootPath, "bin"));
             }
 

@@ -39,22 +39,26 @@ namespace Rhetos
             {
                 var commands = new Dictionary<string, Action<string>>(StringComparer.OrdinalIgnoreCase)
                 {
-                    { "build", rhetosAppRootPath => Build(rhetosAppRootPath, logProvider) },
-                    { "dbupdate", rhetosAppRootPath => DbUpdate(rhetosAppRootPath, logProvider) },
-                    { "appinitialize", rhetosAppRootPath => AppInitialize(rhetosAppRootPath, logProvider) },
+                    { "build", folder => Build(folder, logProvider) },
+                    { "dbupdate", folder => DbUpdate(folder, logProvider) },
+                    { "appinitialize", folder => AppInitialize(folder, logProvider) },
                 };
 
-                string usageReport = "Usage: rhetos.exe <command> <rhetos app folder>\r\n\r\nCommands: "
-                    + string.Join(", ", commands.Keys);
+                string usageReport = "Usage:\r\n"
+                    + "rhetos.exe build <project folder>\r\n"
+                    + "rhetos.exe dbupdate <project folder>\r\n"
+                    + "rhetos.exe appinitialize <project folder>\r\n";
 
                 if (args.Length != 2)
                 {
-                    logger.Error($"Invalid command-line arguments.\r\n\r\n{usageReport}");
+                    logger.Error("Invalid command-line arguments.");
+                    Console.WriteLine("\r\n" + usageReport);
                     return 1;
                 }
                 else if (!commands.ContainsKey(args[0]))
                 {
-                    logger.Error($"Invalid command '{args[0]}'.\r\n\r\n{usageReport}");
+                    logger.Error($"Invalid command '{args[0]}'.");
+                    Console.WriteLine("\r\n" + usageReport);
                     return 1;
                 }
                 else
@@ -86,42 +90,38 @@ namespace Rhetos
         {
             var configurationProvider = new ConfigurationBuilder()
                 .AddKeyValue(nameof(AssetsOptions.AssetsFolder), Path.Combine(rhetosAppRootPath, @"bin"))
-                .AddKeyValue(nameof(RhetosAppOptions.BinFolder), Path.Combine(rhetosAppRootPath, @"bin"))
                 .AddKeyValue(nameof(BuildOptions.CacheFolder), Path.Combine(rhetosAppRootPath, "obj\\Rhetos"))
                 .AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), Path.Combine(rhetosAppRootPath, "RhetosSource"))
                 .AddConfigurationManagerConfiguration()
                 .Build();
 
-            var lockFile = NugetUtilities.FindLockFile(rhetosAppRootPath);
-            var targetFramework = NugetUtilities.ResolveTargetFramework(lockFile, null);
-            var buildAssemblies = NugetUtilities.GetBuildAssemblies(lockFile, targetFramework);
+            var nuget = new NugetUtilities(rhetosAppRootPath, logProvider, null);
+            var buildAssemblies = nuget.GetBuildAssemblies();
             var deployment = new ApplicationDeployment(configurationProvider, logProvider, () => buildAssemblies);
             AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(buildAssemblies.ToArray());
-            deployment.GenerateApplication(NugetUtilities.GetInstalledPackages(lockFile, targetFramework));
+            deployment.GenerateApplication(nuget.GetInstalledPackages());
         }
 
-        private static void DbUpdate(string binFolder, NLogProvider logProvider)
+        private static void DbUpdate(string rhetosAppRootPath, NLogProvider logProvider)
         {
             var configurationProvider = new ConfigurationBuilder()
-                .AddKeyValue(nameof(AssetsOptions.AssetsFolder), binFolder)
-                .AddKeyValue(nameof(RhetosAppOptions.BinFolder), binFolder)
-                .AddWebConfiguration(binFolder)
+                .AddRhetosAppConfiguration(rhetosAppRootPath)
                 .AddConfigurationManagerConfiguration()
                 .Build();
+            string binFolder = configurationProvider.GetOptions<RhetosAppOptions>().BinFolder;
             var assemblyList = Directory.GetFiles(binFolder, "*.dll");
             var deployment = new ApplicationDeployment(configurationProvider, logProvider, () => assemblyList);
             AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(assemblyList);
             deployment.UpdateDatabase();
         }
 
-        private static void AppInitialize(string binFolder, NLogProvider logProvider)
+        private static void AppInitialize(string rhetosAppRootPath, NLogProvider logProvider)
         {
             var configurationProvider = new ConfigurationBuilder()
-                .AddKeyValue(nameof(AssetsOptions.AssetsFolder), binFolder)
-                .AddKeyValue(nameof(RhetosAppOptions.BinFolder), binFolder)
-                .AddWebConfiguration(binFolder)
+                .AddRhetosAppConfiguration(rhetosAppRootPath)
                 .AddConfigurationManagerConfiguration()
                 .Build();
+            string binFolder = configurationProvider.GetOptions<RhetosAppOptions>().BinFolder;
             var assemblyList = Directory.GetFiles(binFolder, "*.dll");
             var deployment = new ApplicationDeployment(configurationProvider, logProvider, () => assemblyList);
             AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(assemblyList);
