@@ -22,6 +22,7 @@ namespace Rhetos.Utilities
 {
     public class BuildOptions
     {
+        public string ProjectFolder { get; set; }
         public string GeneratedSourceFolder { get; set; }
         public string CacheFolder { get; set; }
         public string DatabaseLanguage { get; set; } = "MsSql";

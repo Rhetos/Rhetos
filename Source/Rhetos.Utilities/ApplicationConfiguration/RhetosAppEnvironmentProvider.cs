@@ -18,6 +18,7 @@
 */
 
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -31,10 +32,10 @@ namespace Rhetos.Utilities.ApplicationConfiguration
 
         public static void Save(RhetosAppEnvironment rhetosAppEnvironment)
         {
-            string saveFolder = rhetosAppEnvironment.AssetsFolder;
+            string saveFolder = rhetosAppEnvironment.RootFolder;
             var relativePaths = new Dictionary<string, string>
             {
-                { nameof(RhetosAppEnvironment.RootPath), FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.RootPath) },
+                // No need to save RootFolder, the file is in that folder.
                 { nameof(RhetosAppEnvironment.BinFolder), FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.BinFolder) },
                 { nameof(RhetosAppEnvironment.AssetsFolder), FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.AssetsFolder) },
                 { nameof(RhetosAppEnvironment.LegacyPluginsFolder), FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.LegacyPluginsFolder) },
@@ -50,25 +51,29 @@ namespace Rhetos.Utilities.ApplicationConfiguration
         {
             rhetosAppRootPath = Path.GetFullPath(rhetosAppRootPath); // For better error reporting.
 
-            var filePaths = Directory.GetFiles(rhetosAppRootPath, RhetosAppEnvironmentFileName, SearchOption.AllDirectories);
-            if (!filePaths.Any())
+            var filePath = Path.Combine(rhetosAppRootPath, RhetosAppEnvironmentFileName);
+            if (!File.Exists(filePath))
                 throw new FrameworkException($"Missing file '{RhetosAppEnvironmentFileName}' in folder '{rhetosAppRootPath}' or subfolders." +
                     $" Please verify that the specified folder contains a valid Rhetos application, and that the build have passed successfully.");
-            if (filePaths.Length >= 2)
-                throw new FrameworkException($"Multiple '{RhetosAppEnvironmentFileName}' files found: {string.Join(", ", filePaths)}.");
 
-            var serialized = File.ReadAllText(filePaths.Single(), Encoding.UTF8);
+            var serialized = File.ReadAllText(filePath, Encoding.UTF8);
             var relativePaths = JsonConvert.DeserializeObject<Dictionary<string, string>>(serialized);
 
-            string saveFolder = Path.GetDirectoryName(filePaths.Single());
+            string saveFolder = Path.GetDirectoryName(filePath);
             return new RhetosAppEnvironment
             {
-                RootPath = rhetosAppRootPath, // This is not inherited from build-time. Project folder at build could be different then output application folder.
+                RootFolder = rhetosAppRootPath,
                 BinFolder = FilesUtility.RelativeToAbsolutePath(saveFolder, relativePaths[nameof(RhetosAppEnvironment.BinFolder)]),
                 AssetsFolder = FilesUtility.RelativeToAbsolutePath(saveFolder, relativePaths[nameof(RhetosAppEnvironment.AssetsFolder)]),
                 LegacyPluginsFolder = FilesUtility.RelativeToAbsolutePath(saveFolder, relativePaths[nameof(RhetosAppEnvironment.LegacyPluginsFolder)]),
                 LegacyAssetsFolder = FilesUtility.RelativeToAbsolutePath(saveFolder, relativePaths[nameof(RhetosAppEnvironment.LegacyAssetsFolder)]),
             };
+        }
+
+        public static bool IsRhetosApplicationRootFolder(string rhetosAppRootPath)
+        {
+            var filePath = Path.Combine(rhetosAppRootPath, RhetosAppEnvironmentFileName);
+            return File.Exists(filePath);
         }
     }
 }

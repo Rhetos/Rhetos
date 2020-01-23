@@ -59,7 +59,7 @@ namespace DeployPackages
                 {
                     var rhetosAppEnvironment = new RhetosAppEnvironment
                     {
-                        RootPath = rhetosAppRootPath,
+                        RootFolder = rhetosAppRootPath,
                         BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
                         AssetsFolder = Path.Combine(rhetosAppRootPath, "bin", "Generated"),
                         LegacyPluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
@@ -67,6 +67,7 @@ namespace DeployPackages
                     };
                     var configurationProvider = new ConfigurationBuilder()
                         .AddRhetosAppEnvironment(rhetosAppEnvironment)
+                        .AddKeyValue(nameof(BuildOptions.ProjectFolder), rhetosAppRootPath)
                         .AddKeyValue(nameof(BuildOptions.CacheFolder), Path.Combine(rhetosAppRootPath, "GeneratedFilesCache"))
                         .AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), Path.Combine(rhetosAppRootPath, "bin", "Generated"))
                         .AddWebConfiguration(rhetosAppRootPath)
